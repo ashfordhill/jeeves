@@ -1,0 +1,26 @@
+{
+  "receipts": [
+    {
+      "video_id": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "event_id": "b9e96ade-f233-4171-a226-2ac113a3c842",
+      "accepted_at": "2026-11-08T06:28:37.017+00:00"
+    },
+    {
+      "video_id": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "event_id": "769a276c-ff4b-4706-8455-a8a504368653",
+      "accepted_at": "2026-11-08T06:29:57.573+00:00"
+    },
+    {
+      "video_id": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "event_id": "016dddfd-e744-49aa-b86f-2d1d01f85469",
+      "accepted_at": "2026-11-08T06:30:10.163+00:00"
+    }
+  ],
+  "totals": [
+    {
+      "video_id": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "views": 3
+    }
+  ],
+  "counterMetadataConnect": false
+}

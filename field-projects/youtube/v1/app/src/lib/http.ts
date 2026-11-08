@@ -87,7 +87,7 @@ export async function createHttpService(
     return payload;
   });
   app.setNotFoundHandler(async () => {
-    throw new Unimplemented(`${id} routes (G01–G07)`);
+    throw new HttpError(404, "NOT_FOUND", "Route not found.");
   });
   await configure(app);
   return {

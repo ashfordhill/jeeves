@@ -5281,3 +5281,42 @@ Implement strict existing publication/search and ViewPlayed/receipt+increment in
 no automatic v2 before working-v1 owner/fresh review.
 
 Local commit: **FP06c: implement real media processing and public playback**.
+
+## 2026-11-08 — FP07a: committed public search and playback counts
+
+Only FP07a after **75d6275c38eeb114f74de524759cac5d341abf55**, primary main/fresh sequential sole
+writer; no branches/worktrees/stash/subdelegation/push. [Exact next interfaces/runtime/IDs](../field-projects/youtube/v1/notes/fp07a-search-counts.md),
+[evidence/provenance](../field-projects/youtube/v1/notes/evidence/fp07a/README.md). Strict explicit
+public OpenSearch mapping/query, publication-only indexer/versioned upsert, ready-validated confirmed
+ViewPlayed202, receipt+increment Counter and minimal mouse search/cumulative2s playback/count UI
+now run. Original request budgets, positive ready reader and scoped SQL/AMQP APIs reused; Counter
+has no metadata CONNECT, indexer no SQL/raw processing input. Small generated HTTP helper repair
+replaces inherited unknown-route501 with finite404 while unused shell startup still refuses.
+
+Fresh ready **fdd51924-5a94-4e45-be02-a77b3c82d1a7** (`marigoldquartz`/`saffroncobalt`/`creator`)
+searchable1.156s after ready; mouse queries/Watch, pending/invalid0 and publication repeat1doc/version1
+pass S06. S07 lost-response same-ID retry adds1/visible1.023s, same-page pause/seek/resume/explicit
+retry add0, new session adds1. Final3views honestly includes prior legitimate1 from a retained failed
+CDP freeze harness assumption; no receipt/total reset. Measured callback block with advancing media,
+controlled hidden signal and2x playback add0; controlled signal is not OS tab-hide evidence. Fresh
+invalid **023291a9-47ba-4955-ba42-7e9787a63baa** fails/public404/search0. Original ready demo remains
+ready/searchable/count0; old invalid/elapsed jobs/orphans retained. No S3 cleanup/human listening claim.
+
+Own frozen install/server+browser builds/10focused checks pass. Mandatory checks sequential/source
+steady after Docker: **398tests/50files23.74s**, **36native E2Es1.4m**, **web build1.00s**, all first
+try (existing build advisory). Actual4300 mouse current-v1 Fit22/27/Upload focus and TinyURL53 Fit12/13;
+all four full owner responses/listing unchanged, zero page errors. Final field mouse search/Watch/
+thumbnail/polling/safe error recovery passes without a count event; E2E DB default-only preserved.
+No root implementation/test/timeout/config/diagram/generator/template/pin changes. No011 needed.
+
+Final **jeeves-youtube-v1**14containers/6volumes healthy4400–4402; `.runtime`/fixture/credentials
+preserved. Creator password file `field-projects/youtube/v1/app/.runtime/secrets/creator_password`
+(username`creator`), other creator separate. Exact fixture15,584,953B/SHA16587281…68aebf9/mtime
+unchanged. Owner4300/4310/4304 watchers, other Compose projects and `.jeeves-feedback` preserved.
+Cumulative61baseline payloads+manifest unchanged/46modified-generated/29new custom files; extensions/
+integration/helper repair distinct. Effort/cost unknown; no secrets/auth traces/media/deps/dist/runtime
+or paid/cloud calls staged. Next **FP07b only** independent outside-checkout all-service S01–S08,
+normal restart/restore and owner review pack; precise copy/stop/scratch-cleanup/restore instructions
+in linked handoff. Preserve no-human-audio and remote-orphan limitations. No automatic v2.
+
+Local commit: **FP07a: implement committed public search and playback counts**.

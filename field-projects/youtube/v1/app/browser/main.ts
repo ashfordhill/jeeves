@@ -1,3 +1,4 @@
+import "./search.ts";
 import { openWatch } from "./watch.ts";
 import { clearAuth, finishLogin, login, logout, session } from "./auth.ts";
 interface Fingerprint {

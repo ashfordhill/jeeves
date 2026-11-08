@@ -1,0 +1,93 @@
+{
+  "startedAt": "2026-11-08T06:29:45.954Z",
+  "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+  "errors": [],
+  "accepted": [
+    {
+      "observedAt": "2026-11-08T06:29:58.588Z",
+      "status": 202,
+      "eventId": "769a276c-ff4b-4706-8455-a8a504368653",
+      "accepted": true,
+      "acceptedAt": "2026-11-08T06:29:58.585Z",
+      "publicationVersion": 1
+    },
+    {
+      "observedAt": "2026-11-08T06:30:10.165Z",
+      "status": 202,
+      "eventId": "016dddfd-e744-49aa-b86f-2d1d01f85469",
+      "accepted": true,
+      "acceptedAt": "2026-11-08T06:30:10.163Z",
+      "publicationVersion": 1
+    }
+  ],
+  "postRequests": [
+    {
+      "at": "2026-11-08T06:29:57.568Z",
+      "eventId": "769a276c-ff4b-4706-8455-a8a504368653"
+    },
+    {
+      "at": "2026-11-08T06:29:58.581Z",
+      "eventId": "769a276c-ff4b-4706-8455-a8a504368653"
+    },
+    {
+      "at": "2026-11-08T06:30:10.162Z",
+      "eventId": "016dddfd-e744-49aa-b86f-2d1d01f85469"
+    }
+  ],
+  "policyMethod": {
+    "suspension": "Measured synchronous main-thread block; media remains playing, first due callback resumes before pause.",
+    "background": "Controlled document.visibilityState signal on actual playing mounted page; not OS tab-hide evidence."
+  },
+  "baseline": "1",
+  "fetchOnly": {
+    "total": "1",
+    "detailsAndSearchRepeats": 5
+  },
+  "seekBefore": {
+    "from": 0.785503,
+    "to": 12.09713
+  },
+  "suspension": {
+    "blockedMs": 2600,
+    "mediaBefore": 12.12442,
+    "mediaAfter": 12.12442,
+    "pausedAfterDueCallback": true,
+    "postRequests": 0,
+    "total": "1"
+  },
+  "background": {
+    "postRequests": 0,
+    "total": "1"
+  },
+  "uncertainConfirm": {
+    "status": 202,
+    "eventId": "769a276c-ff4b-4706-8455-a8a504368653",
+    "accepted": true,
+    "acceptedAt": "2026-11-08T06:29:57.573Z",
+    "publicationVersion": 1
+  },
+  "firstVisible": {
+    "at": "2026-11-08T06:29:58.596Z",
+    "text": "2 views"
+  },
+  "samePage": {
+    "requests": 2,
+    "total": "2"
+  },
+  "explicitRetry": {
+    "status": 202,
+    "body": {
+      "eventId": "769a276c-ff4b-4706-8455-a8a504368653",
+      "accepted": true,
+      "acceptedAt": "2026-11-08T06:30:01.837Z",
+      "publicationVersion": 1
+    },
+    "total": "2"
+  },
+  "newSession": {
+    "at": "2026-11-08T06:30:11.674Z",
+    "text": "3 views",
+    "eventId": "016dddfd-e744-49aa-b86f-2d1d01f85469"
+  },
+  "finishedAt": "2026-11-08T06:30:11.916Z"
+}

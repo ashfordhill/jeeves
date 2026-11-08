@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [],
+    "source_name": "",
+    "source_kind": "exchange",
+    "destination_name": "search-indexer",
+    "destination_kind": "queue",
+    "routing_key": "search-indexer"
+  },
+  {
+    "arguments": [],
+    "source_name": "publication-events",
+    "source_kind": "exchange",
+    "destination_name": "search-indexer",
+    "destination_kind": "queue",
+    "routing_key": ""
+  }
+]

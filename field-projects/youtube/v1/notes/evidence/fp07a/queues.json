@@ -1,0 +1,42 @@
+[
+  {
+    "messages": 0,
+    "name": "completion-handler",
+    "consumers": 1
+  },
+  {
+    "messages": 0,
+    "name": "view-counter",
+    "consumers": 1
+  },
+  {
+    "messages": 0,
+    "name": "search-indexer",
+    "consumers": 1
+  },
+  {
+    "messages": 0,
+    "name": "completion-handler.failed",
+    "consumers": 0
+  },
+  {
+    "messages": 0,
+    "name": "search-indexer.failed",
+    "consumers": 0
+  },
+  {
+    "messages": 2,
+    "name": "upload-jobs.failed",
+    "consumers": 0
+  },
+  {
+    "messages": 0,
+    "name": "upload-jobs",
+    "consumers": 1
+  },
+  {
+    "messages": 0,
+    "name": "view-counter.failed",
+    "consumers": 0
+  }
+]

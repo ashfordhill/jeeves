@@ -352,3 +352,89 @@ test("packager accepts a one-segment short VOD and binds its marker inventory", 
     await fs.rm(dir, { recursive: true, force: true });
   }
 });
+
+test("playback threshold ignores seek/suspension/background/rate samples and survives pause", async () => {
+  const { PlaybackPolicy } = await import("../dist-public/playback-policy.js");
+  const p = new PlaybackPolicy();
+  p.sample(0, 0, true);
+  for (let i = 1; i <= 4; i++) assert.equal(p.sample(i / 4, i * 250, true), false);
+  assert.equal(p.seconds, 1);
+  p.reset(); // actual seek event before a large jump
+  assert.equal(p.sample(15, 1250, true), false);
+  assert.equal(p.sample(19, 5250, true), false); // suspended callback
+  assert.equal(p.seconds, 1);
+  p.sample(19.25, 5500, false); // background/paused/waiting/non-normal rate
+  p.sample(19.5, 5750, false);
+  assert.equal(p.seconds, 1);
+  p.reset(); // resume retains qualifying time
+  p.sample(10, 6000, true);
+  for (let i = 1; i <= 3; i++) assert.equal(p.sample(10 + i / 4, 6000 + i * 250, true), false);
+  assert.equal(p.sample(11, 7000, true), true);
+  p.reset();
+  p.sample(0, 8000, true);
+  for (let i = 1; i <= 12; i++) assert.equal(p.sample(i / 4, 8000 + i * 250, true), false);
+  assert.equal(p.seconds, 2); // one latch for this mounted page
+  const seek = new PlaybackPolicy();
+  seek.sample(0, 0, true);
+  seek.sample(12, 250, true);
+  assert.equal(seek.seconds, 0); // jump also refused if a browser misses a seek event
+});
+
+test("search public projection imports with path validation; empty mapping upgrades preserve data", async () => {
+  const { assertSearch, mapping, publicDocument } = await import("../dist/lib/search-schema.js");
+  const { searchInput, handle } = await import("../dist/extensions/search-query.js");
+  assert.equal(publicDocument.safeParse({}).success, false);
+  for (const q of [
+    { q: "" },
+    { q: "a", page: "0" },
+    { q: "a", page: "101" },
+    { q: "a", page: "1", size: "500" },
+  ])
+    assert.equal(searchInput.safeParse(q).success, false);
+  assert.deepEqual(searchInput.parse({ q: " title " }), { q: "title", page: 1 });
+  let existing = {},
+    changed = 0,
+    nonempty = false;
+  const client = {
+    indices: {
+      exists: async () => ({ body: true }),
+      getSettings: async () => ({
+        body: {
+          videos: { settings: { index: { number_of_shards: "1", number_of_replicas: "0" } } },
+        },
+      }),
+      getMapping: async () => ({ body: { videos: { mappings: existing } } }),
+      putMapping: async (input) => {
+        assert.deepEqual(input.body, mapping);
+        changed++;
+      },
+    },
+    count: async () => ({ body: { count: nonempty ? 1 : 0 } }),
+  };
+  await assertSearch(client);
+  assert.equal(changed, 1);
+  existing = { properties: { title: { type: "keyword" } } };
+  await assert.rejects(assertSearch(client), /properties.title.type/);
+  existing = {};
+  nonempty = true;
+  await assert.rejects(assertSearch(client), /nonempty index/);
+  existing = mapping;
+  await assertSearch(client);
+  assert.equal(changed, 2);
+  await assert.rejects(
+    handle({ search: async () => ({ body: { timed_out: true } }) }, { q: "title", page: 1 }),
+    /Incomplete/,
+  );
+});
+
+test("implemented HTTP service returns finite 404 for unknown routes", async () => {
+  const service = await createHttpService(
+    "real",
+    { requestTimeoutMs: 1000, concurrencyLimit: 1 },
+    () => {},
+  );
+  const r = await service.app.inject({ method: "GET", url: "/unknown" });
+  assert.equal(r.statusCode, 404);
+  assert.equal(r.json().error, "NOT_FOUND");
+  await service.close();
+});

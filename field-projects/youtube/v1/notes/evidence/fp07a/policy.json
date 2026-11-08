@@ -1,0 +1,23 @@
+{
+  "posts": [],
+  "errors": [],
+  "before": "3",
+  "suspended": {
+    "before": 0.412223,
+    "afterDueCallback": 3.112394,
+    "blockedMs": 2600,
+    "playingBefore": true
+  },
+  "background": {
+    "before": 3.112417,
+    "after": 5.607765,
+    "controlledSignal": true,
+    "posts": 0
+  },
+  "nonNormalRate": {
+    "rate": 2,
+    "time": 4.043975,
+    "posts": 0
+  },
+  "after": "3"
+}

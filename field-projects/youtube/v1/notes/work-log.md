@@ -504,3 +504,52 @@ repair distinct from custom media work. No feature/savings/template certificate;
 No paid/cloud/model calls or auth traces/media/secrets/deps/dist/runtime data staged.
 
 Local commit: **FP06c: implement real media processing and public playback**.
+
+## 2026-11-08 — FP07a committed public search and playback counts
+
+Only FP07a after **75d6275c38eeb114f74de524759cac5d341abf55**, primary main, fresh sequential
+Sol/xhigh agent per owner assignment, prior accepted custom code and retained actual runtime/docs
+available. No branch/worktree/stash/subdelegation/push. [Exact handoff](fp07a-search-counts.md),
+[evidence/provenance](evidence/fp07a/README.md). Implemented actual OpenSearch public projection/
+mapping, committed publication indexer, paged Search API, confirmed ready-only Watch view POST,
+transactional Counter and minimal plain browser search/count policy/UI. Existing strict envelopes,
+consumer delivery/terminal/closed APIs, ready reader and recordView/transactions reused. Small
+modified-generated HTTP helper repair makes unknown real routes404, unused shell startup still
+refuses. No metadata grant in Counter or SQL/raw processing dependency in indexer. Original request
+budgets and pins remain. Normal startup/stop includes all14implemented services/same6volumes.
+
+Fresh real video **fdd51924-5a94-4e45-be02-a77b3c82d1a7** ready→actual search1.156s, mouse title/
+description/channel hits open Watch; pending/invalid0/public404. Two repeated committed publications
+preserve1document/version1/same SHA. Lost HTTP response causes same-ID browser retry, +1 visible
+1.023s after confirm; explicit retry/pause/resume/seek add0, new session adds1. Honest final3views
+includes legitimate first1 from a retained failed CDP freeze harness assumption: active-media
+callbacks were not suspended. Measured2.6s main-thread block with media advancing2.70s, controlled
+hidden signal and2x playback all event0; controlled visibility is not OS tab-hide evidence. Safe
+UUIDs/server times/receipts/totals and timestamped durable commit logs retained. Fresh invalid
+**023291a9-47ba-4955-ba42-7e9787a63baa** fails INVALID_MEDIA/search0/public404. Original demo,
+original invalid/two elapsed FP06b jobs/remote orphans stay. No queue purge/count reset/media change.
+
+Own frozen install/server+browser build/10network-free checks pass. Failed Node18 harness launch
+refused before browser; required Node24 rerun used. Pre-runtime typo/missing accepted flag/recovery
+status were corrected; no policy weakening. Required checks sequential/source steady/after Docker:
+**398tests/50files23.74s**, **36native E2Es1.4m**, **web build1.00s** (existing advisory), all first
+try. Actual owner4300 local-v1 Fit22/27/Upload focus and TinyURL53 Fit12/13 pass; all four complete
+owner responses/listing unchanged, zero page errors. Final field mouse search/Watch/thumbnail/
+polling/error recovery passes without event/count change. E2E DB original default-only preserved.
+
+Retained jeeves-youtube-v1 all14healthy4400–4402/same6volumes/.runtime/credentials/fixture; creator
+password locally `app/.runtime/secrets/creator_password` (username`creator`). Fixture exact SHA/
+15,584,953B/mtime unchanged. Other Compose projects/owner4300/4310/4304 watchers/`.jeeves-feedback`
+preserved. Retained studio source/config/native010, frozen inputs/app`.jeeves`/manifest/generator/
+templates/pins/locks unchanged; no new design decision/duplicate011. Cumulative61baseline payloads
++manifest unchanged,46modified-generated integration,29new custom files; planned business extensions
+and HTTP helper repair explicitly classified. Active effort/tokens/cost/savings unknown; no paid/
+cloud/model calls, media/secrets/auth traces/signed URLs/deps/dist/runtime data staged. No shared
+framework/template/capacity/fraud/exactly-once certificate or automatic v2.
+
+Next FP07b only: independent outside-checkout all-service S01–S08/restart walkthrough, owner review
+pack and final source/benchmark reconciliation. Stop retained owned stack normally if ports needed,
+never bootstrap/reset its state; clean only separately named scratch runtime, then restore it and
+verify retained ready/search/count3. Keep no-human-listening and remote orphan limitations explicit.
+
+Local commit: **FP07a: implement committed public search and playback counts**.

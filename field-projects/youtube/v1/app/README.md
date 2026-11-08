@@ -1,13 +1,12 @@
-# YouTube local v1 — upload, processing and public playback
+# YouTube local v1 — upload, search, playback and counts
 
 This independent app began as generated baseline `02ac280da62616e9c7aad7f88457dcb72084cb25`.
 FP06a added owned state/contracts; FP06b implements creator sign-in and real resumable multipart
-uploads; FP06c adds CPU encoding, committed publication and public HLS playback. `.jeeves/` stays the immutable historical partial report/input. Current custom intent is
+uploads; FP06c adds CPU encoding, committed publication and public HLS playback. FP07a adds committed-publication search and basic actual-playback counts. `.jeeves/` stays the immutable historical partial report/input. Current custom intent is
 in `config/implementation-source.json` and `config/ownership.json`. Do not regenerate over it.
 
-**Search and view counting are still unavailable.** Their services/consumers stay stopped until
-FP07a; committed publications remain durable in the indexer queue. This is an in-repository
-processing/playback smoke, not the independent integrated S01/S08 walkthrough assigned to FP07b.
+All core handlers now run. This is bounded in-repository flow evidence; the independent integrated
+S01–S08 walkthrough and review pack remain assigned to FP07b.
 
 Requirements: Linux amd64 Docker Compose, Node24.21.0, pnpm12.16.1, free loopback ports4400–4402,
 and OpenSearch's documented `vm.max_map_count` prerequisite (at least262144). Setup does not
@@ -33,9 +32,9 @@ play/pause/seek controls.
 First-run creates private `.runtime/`, generated credentials and two local creator accounts;
 builds app/edge; starts PostgreSQL, RabbitMQ, Garage, Keycloak, OpenSearch and Valkey; bootstraps
 Garage once; runs versioned SQL migrations and idempotent broker/search settings assertions;
-then starts **upload, completion-handler, transcoder, watch and edge**, with Valkey for the
-positive ready cache. There are eleven long-running containers and six persistent volumes.
-Search API, search-indexer and view-counter remain stopped. Do not run a broad application profile.
+then starts **upload, completion-handler, transcoder, watch, search, search-indexer, view-counter
+and edge**, with Valkey for the positive ready cache. There are fourteen long-running containers
+and six persistent volumes. Use the documented commands for this complete implemented subset.
 
 Open **http://127.0.0.1:4400/**. Click Sign in; username `creator`. Read its password locally from
 `.runtime/secrets/creator_password` (do not paste it into logs or Git). `other-creator` and
@@ -93,9 +92,9 @@ it is not a way to attach the new tracked first-run path to unknown volumes.
 | Upload | `metadata_upload`: private videos/uploads/outbox DML, no inbox/delete/DDL; originals bucket key + broker; no owner/Counts/identity-admin mount |
 | Video lifecycle | `metadata_lifecycle`, private Video DML + inbox; publication publisher |
 | Watch | `metadata_reader`: ready view only; `counts_reader`: totals only; cache + view publisher |
-| Count worker (stopped) | `counts_writer`: private receipts/totals only |
+| Count worker | `counts_writer`: private receipts/totals only |
 | Transcoder | Broker + S3, no SQL |
-| Search/indexer (stopped) | Search network client, indexer broker, no SQL/S3 |
+| Search/indexer | Search network client, indexer broker, no SQL/S3 |
 
 All Upload auth/JWKS and request dependency work is inside awaited handlers and the5000ms/500
 admission budget. Dependency attempts are bounded. A response deadline does not cancel admitted
@@ -120,9 +119,30 @@ creates a new video/job. Their late encoded outputs do not make them public.
 After upload, select View status or Refresh to see pending, processing, ready or a finite safe
 failure. Ready rows offer **Watch video**. Public visitors can paste a ready Video ID into
 **Open video**, or open `http://127.0.0.1:4400/?watch=<videoId>`. Details, thumbnail and standard
-HLS controls work signed out. Pending/failed IDs give404 and no playable Watch result. Counts
-currently show0 from empty totals; `POST /api/watch/videos/:videoId/views` explicitly gives503.
-No playback event is published to the unimplemented Counter. Search is visibly unavailable.
+HLS controls work signed out. Pending/failed IDs give404 and no playable Watch result. **Find a public video** searches title, description or channel and opens Watch by mouse.
+`GET /api/search/videos?q=<1–200 characters>&page=<1–100>` returns at most20 hits, sorted by
+relevance, published time and video ID. Invalid query/unknown routes return finite400/404.
+Only committed ready/public publications enter OpenSearch; the indexer has no metadata SQL grant
+and never consumes raw processing results. Its strict public mapping is added to the historical
+empty index without reset; incompatible mappings/settings refuse with the exact field and an
+explicit-migration instruction. Repeat publication upserts the same video ID at external version1.
+
+A view counts after **2 cumulative actual played seconds** at normal speed on the mounted Watch
+page. Paused, waiting, seeking, hidden/background, non-normal-rate or suspended callback samples
+receive no credit. Short250ms samples require advancing media and bounded wall deltas≤500ms;
+seek jumps and activity changes reset the sample while preserving accumulated qualifying time.
+One random event ID belongs to that page/video session, including retries. Pause/resume/seek,
+details polling, searches and media GETs never create another event. Opening the video again or
+reloading creates a new session and may count once after qualifying playback.
+
+Watch validates a strict `{eventId}` UUID body and ready public metadata, stamps server timestamps/
+version, then confirms a persistent matching-ID broker event before202 `{eventId,accepted:true,
+acceptedAt,publicationVersion}`. Counter commits receipt `(videoId,eventId)` and increment together,
+then acknowledges; duplicates add0. It cannot connect to metadata. Browser retries an uncertain
+response three times with the same ID and offers a mouse retry with that ID after a finite error.
+Counts refresh separately every2seconds without remounting the player or resetting its session;
+target commit is immediate/≤2s and bounded smoke visibility≤10s after accepted confirmation.
+This is basic anonymous engagement counting, with no fraud/unique-viewer guarantee.
 
 Transcoder has broker+S3 only, no SQL mount. It checks1–256MiB original bytes and SHA256, MP4/
 H.264/AAC/landscape720p–1080p/1–600s, then CPU encodes640×360 and1280×720 H.264/yuv420p/AAC with

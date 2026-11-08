@@ -167,3 +167,29 @@ repair (idempotent admitted-work drain/fatal self-await fix) and retains real/ha
 Cumulative [provenance](evidence/fp06c/provenance.json) is file accounting, not coverage or template
 credit. Existing reuse hypotheses remain hypotheses; active time/cost/savings unknown. No generic
 DSL, new source/diagram decision, certification campaign or automatic v2 follows from this unit.
+
+## 2026-11-08 — FP07a committed search and playback counts
+
+- **D28 (observed derived publication):** actual OpenSearch uses a strict public field mapping,
+  ready/public filters, bounded paged title/description/channel queries and stable ordering.
+  Indexer consumes only committed publication, with no metadata SQL/raw processing dependency;
+  `_id=videoId`/external_gte version1 preserves one document across repeats. Empty historical
+  index receives compatible mapping without reset; incompatible mapping precisely refuses.
+  Fresh ready→search1.156s, pending/invalid public exclusion and mouse Watch link pass S06.
+- **D29 (observed event policy):** normal-speed short advancing playback samples accumulate2s
+  per mounted session; pause/seek/inactive/suspended samples reset only the sample. One UUID
+  survives HTTP retries; persistent matching-ID confirm precedes202, transaction receipt+increment
+  precedes ack. Fresh count reads stay outside positive metadata cache. Actual lost-response retry
+  adds1/visible1.023s, explicit repeat/pause/seek/resume add0, new page adds1. Advancing media during
+  a measured main-thread block/controlled hidden signal/2x rate adds0; OS tab hiding is not claimed.
+- **D30 (no inferred template adoption):** cumulative provenance separates three planned custom
+  business extensions, modified-generated service integration and the small finite404 helper repair.
+  H02/H03/H04 have concrete bounded observations; another plausible use is committed catalog search
+  and idempotent document-engagement events, but ownership/version/policy choices remain custom.
+  No shared abstraction/capacity/fraud/exactly-once certificate or measured time/cost/savings credit.
+  Retained failed CDP-freeze assumption counted real playback legitimately; no receipts were reset.
+
+All core14 services now run through retained normal start/stop;6volumes/credentials/fixture and
+original demo stay. FP07b independent integrated walkthrough remains; frozen inputs/config/native010/
+app`.jeeves`/generator/templates/pins unchanged. Audio/no-human-listening and remote orphan limits
+stay explicit. No additional source decision/snapshot011 or automatic v2 follows from this unit.

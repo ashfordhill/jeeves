@@ -1,0 +1,84 @@
+{
+  "eventId": "c2c4d67a-2635-5597-a429-0ecac67c7e12",
+  "before": {
+    "version": 1,
+    "seqNo": 1,
+    "source": {
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+      "thumbnail": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:28:28.089Z",
+      "publicationVersion": 1,
+      "visibility": "public",
+      "state": "ready"
+    },
+    "sourceSha256": "e72a965817d220cdfb5009775227b2174f822b73cab0e9dafda096201fdeb38a"
+  },
+  "after": {
+    "version": 1,
+    "seqNo": 3,
+    "source": {
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+      "thumbnail": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:28:28.089Z",
+      "publicationVersion": 1,
+      "visibility": "public",
+      "state": "ready"
+    },
+    "sourceSha256": "e72a965817d220cdfb5009775227b2174f822b73cab0e9dafda096201fdeb38a"
+  },
+  "documentsForVideo": 1,
+  "mapping": {
+    "videos": {
+      "mappings": {
+        "dynamic": "strict",
+        "properties": {
+          "channel": {
+            "type": "text"
+          },
+          "description": {
+            "type": "text"
+          },
+          "durationSeconds": {
+            "type": "double"
+          },
+          "manifest": {
+            "type": "keyword",
+            "index": false
+          },
+          "publicationVersion": {
+            "type": "integer"
+          },
+          "publishedAt": {
+            "type": "date"
+          },
+          "state": {
+            "type": "keyword"
+          },
+          "thumbnail": {
+            "type": "keyword",
+            "index": false
+          },
+          "title": {
+            "type": "text"
+          },
+          "videoId": {
+            "type": "keyword"
+          },
+          "visibility": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}

@@ -156,6 +156,9 @@ if (command === "stop") {
     "stop",
     "edge",
     "watch",
+    "search",
+    "search-indexer",
+    "view-counter",
     "upload",
     "transcoder",
     "completion-handler",
@@ -235,11 +238,23 @@ step("migrations", () => compose("run", "--rm", "--no-deps", "migrate"));
 step("broker-assertions", () => compose("run", "--rm", "--no-deps", "broker-init"));
 step("search-assertions", () => compose("run", "--rm", "--no-deps", "search-init"));
 step("implemented-app", () =>
-  compose("up", "-d", "--wait", "upload", "completion-handler", "transcoder", "watch", "edge"),
+  compose(
+    "up",
+    "-d",
+    "--wait",
+    "upload",
+    "completion-handler",
+    "transcoder",
+    "watch",
+    "search",
+    "search-indexer",
+    "view-counter",
+    "edge",
+  ),
 );
 if (!state.done.includes("initialized")) state.done.push("initialized");
 state.volumes = recordVolumes();
 save();
 console.log(
-  `Processing and playback ready at http://127.0.0.1:4400 (Compose ${project}). Search/indexer and Counts consumers remain stopped.`,
+  `Core upload, watch, search and playback counts ready at http://127.0.0.1:4400 (Compose ${project}).`,
 );

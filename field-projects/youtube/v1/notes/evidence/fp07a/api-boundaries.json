@@ -1,0 +1,86 @@
+{
+  "before": "3",
+  "after": "3",
+  "checks": [
+    {
+      "path": "/search/videos?q=",
+      "status": 400,
+      "body": {
+        "error": "SEARCH_QUERY",
+        "message": "Enter a query of 1\u2013200 characters and a page from 1\u2013100."
+      }
+    },
+    {
+      "path": "/search/videos?q=fixture&page=101",
+      "status": 400,
+      "body": {
+        "error": "SEARCH_QUERY",
+        "message": "Enter a query of 1\u2013200 characters and a page from 1\u2013100."
+      }
+    },
+    {
+      "path": "/search/videos?q=fixture&page=1.5",
+      "status": 400,
+      "body": {
+        "error": "SEARCH_QUERY",
+        "message": "Enter a query of 1\u2013200 characters and a page from 1\u2013100."
+      }
+    },
+    {
+      "path": "/search/videos?q=fixture&size=500",
+      "status": 400,
+      "body": {
+        "error": "SEARCH_QUERY",
+        "message": "Enter a query of 1\u2013200 characters and a page from 1\u2013100."
+      }
+    },
+    {
+      "path": "/watch/videos/bad/views",
+      "status": 400,
+      "body": {
+        "error": "VIEW_REQUEST",
+        "message": "Supply a video UUID and an eventId UUID only."
+      }
+    },
+    {
+      "path": "/watch/videos/023291a9-47ba-4955-ba42-7e9787a63baa/views",
+      "status": 404,
+      "body": {
+        "error": "VIDEO_NOT_READY",
+        "message": "This video is not publicly available."
+      }
+    },
+    {
+      "path": "/watch/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/views",
+      "status": 400,
+      "body": {
+        "error": "VIEW_REQUEST",
+        "message": "Supply a video UUID and an eventId UUID only."
+      }
+    },
+    {
+      "path": "/watch/unknown",
+      "status": 404,
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Route not found."
+      }
+    },
+    {
+      "path": "/search/unknown",
+      "status": 404,
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Route not found."
+      }
+    },
+    {
+      "path": "/upload/unknown",
+      "status": 404,
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Route not found."
+      }
+    }
+  ]
+}

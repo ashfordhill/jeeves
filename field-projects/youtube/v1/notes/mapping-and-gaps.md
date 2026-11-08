@@ -111,3 +111,17 @@ S04 passes; S05 has five-second decoded video, unmuted decoded 440 Hz PCM, mouse
 requests, with no human listening observation. The fixed-deadline staged jobs correctly fail.
 Remote partial/orphan objects remain a documented limit; local temp cleanup is unconditional.
 G08's local security/provider/scale limits and independent integrated FP07b acceptance remain.
+
+## FP07a committed search/count observations
+
+[FP07a](evidence/fp07a/README.md) now exercises G02's committed publication boundary through actual
+OpenSearch title/description/channel queries and versioned repeated upserts; public pending/invalid
+exclusion and1.156s ready→search are observed. G04 includes the same minimal mouse search/Watch UI;
+G05 now has actual cumulative-play policy, confirmed events, transactionally deduplicated receipts/
+totals, fresh count polling, lost-response retry0 and new-session+1. All core handlers run; no
+business placeholder remains. Frozen S06/S07 pass these bounded in-repo flows. No blanket gap,
+security/scale/production/certification closure or retroactive generated-template credit follows.
+Independent integrated all-service S01–S08 outside-checkout evidence remains FP07b, with original
+S05 no-human-listening and remote orphan-output limitations retained. Source/native010 intent and
+frozen inputs remain unchanged. See exact safe event/video IDs, failed harness assumption and file
+accounting; no tidy reset, feature percentage, effort saving or automatic v2 decision is inferred.

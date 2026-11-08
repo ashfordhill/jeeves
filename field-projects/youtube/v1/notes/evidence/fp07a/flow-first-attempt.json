@@ -1,0 +1,290 @@
+{
+  "startedAt": "2026-11-08T06:28:23.036Z",
+  "browser": "153.0.8010.12",
+  "errors": [],
+  "states": [
+    {
+      "at": "2026-11-08T06:28:23.630Z",
+      "uploadId": "6a183b64-9c79-43b3-9221-99e0ed5a41f0",
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "state": "uploading",
+      "phase": "active",
+      "expiresAt": "2026-11-09T06:28:23.566Z",
+      "createdAt": "2026-11-08T06:28:23.566Z",
+      "queuedAt": null,
+      "deadlineAt": null,
+      "jobId": null,
+      "attemptId": null,
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-08T06:28:24.344Z",
+      "uploadId": "6a183b64-9c79-43b3-9221-99e0ed5a41f0",
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "state": "pending",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:28:23.566Z",
+      "createdAt": "2026-11-08T06:28:23.566Z",
+      "queuedAt": "2026-11-08T06:28:24.260Z",
+      "deadlineAt": "2026-11-08T06:38:24.260Z",
+      "jobId": "9ae1a513-6251-4171-950a-afd2fc06d486",
+      "attemptId": "74cb8286-72a3-4549-9a6a-350bf336410b",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-08T06:28:25.005Z",
+      "uploadId": "6a183b64-9c79-43b3-9221-99e0ed5a41f0",
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "state": "processing",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:28:23.566Z",
+      "createdAt": "2026-11-08T06:28:23.566Z",
+      "queuedAt": "2026-11-08T06:28:24.260Z",
+      "deadlineAt": "2026-11-08T06:58:24.938Z",
+      "jobId": "9ae1a513-6251-4171-950a-afd2fc06d486",
+      "attemptId": "74cb8286-72a3-4549-9a6a-350bf336410b",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-08T06:28:28.190Z",
+      "uploadId": "6a183b64-9c79-43b3-9221-99e0ed5a41f0",
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "state": "ready",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:28:23.566Z",
+      "createdAt": "2026-11-08T06:28:23.566Z",
+      "queuedAt": "2026-11-08T06:28:24.260Z",
+      "deadlineAt": "2026-11-08T06:58:24.938Z",
+      "jobId": "9ae1a513-6251-4171-950a-afd2fc06d486",
+      "attemptId": "74cb8286-72a3-4549-9a6a-350bf336410b",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    }
+  ],
+  "queries": [
+    {
+      "q": "marigoldquartz",
+      "status": "1 results \u00b7 Page 1",
+      "titles": ["FP07a marigoldquartz public fixture"]
+    },
+    {
+      "q": "saffroncobalt",
+      "status": "1 results \u00b7 Page 1",
+      "titles": ["FP07a marigoldquartz public fixture"]
+    },
+    {
+      "q": "creator",
+      "status": "2 results \u00b7 Page 1",
+      "titles": ["FP07a marigoldquartz public fixture", "FP06c heliotrope public fixture"]
+    }
+  ],
+  "accepted": [
+    {
+      "at": "2026-11-08T06:28:37.022Z",
+      "status": 202,
+      "eventId": "b9e96ade-f233-4171-a226-2ac113a3c842",
+      "accepted": true,
+      "acceptedAt": "2026-11-08T06:28:37.017Z",
+      "publicationVersion": 1
+    }
+  ],
+  "postRequests": [
+    {
+      "at": "2026-11-08T06:28:37.015Z",
+      "body": {
+        "eventId": "b9e96ade-f233-4171-a226-2ac113a3c842"
+      }
+    }
+  ],
+  "mediaGets": 9,
+  "completion": {
+    "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+    "uploadId": "6a183b64-9c79-43b3-9221-99e0ed5a41f0",
+    "jobId": "9ae1a513-6251-4171-950a-afd2fc06d486",
+    "attemptId": "74cb8286-72a3-4549-9a6a-350bf336410b",
+    "state": "pending"
+  },
+  "beforeReadyWatch": {
+    "status": 404,
+    "body": {
+      "error": "VIDEO_NOT_READY",
+      "message": "This video is not publicly available."
+    }
+  },
+  "beforeReadySearch": {
+    "at": "2026-11-08T06:28:24.319Z",
+    "status": 200,
+    "body": {
+      "q": "marigoldquartz",
+      "page": 1,
+      "pageSize": 20,
+      "total": 0,
+      "hits": []
+    }
+  },
+  "ready": {
+    "uploadId": "6a183b64-9c79-43b3-9221-99e0ed5a41f0",
+    "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+    "title": "FP07a marigoldquartz public fixture",
+    "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+    "state": "ready",
+    "phase": "closed",
+    "expiresAt": "2026-11-09T06:28:23.566Z",
+    "createdAt": "2026-11-08T06:28:23.566Z",
+    "queuedAt": "2026-11-08T06:28:24.260Z",
+    "deadlineAt": "2026-11-08T06:58:24.938Z",
+    "jobId": "9ae1a513-6251-4171-950a-afd2fc06d486",
+    "attemptId": "74cb8286-72a3-4549-9a6a-350bf336410b",
+    "failure": null,
+    "file": {
+      "fileName": "youtube-v1-fixture.mp4",
+      "size": 15584953,
+      "contentType": "video/mp4",
+      "lastModified": 1794116246303,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+    },
+    "partSize": 5242880,
+    "partCount": 3,
+    "parts": []
+  },
+  "publicReady": {
+    "status": 200,
+    "body": {
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+      "thumbnail": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:28:28.089Z",
+      "publicationVersion": 1,
+      "manifestUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+      "thumbnailUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+      "views": "0"
+    }
+  },
+  "firstSearch": {
+    "at": "2026-11-08T06:28:29.245Z",
+    "status": 200,
+    "body": {
+      "q": "marigoldquartz",
+      "page": 1,
+      "pageSize": 20,
+      "total": 1,
+      "hits": [
+        {
+          "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+          "title": "FP07a marigoldquartz public fixture",
+          "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+          "channel": "creator",
+          "durationSeconds": 20,
+          "publishedAt": "2026-11-08T06:28:28.089Z",
+          "thumbnailUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg"
+        }
+      ]
+    }
+  },
+  "publicationToSearchMs": 1156,
+  "invalid": {
+    "uploadId": "826771d1-8363-4783-88b5-99435edb7adb",
+    "videoId": "023291a9-47ba-4955-ba42-7e9787a63baa",
+    "title": "FP07a invalid nephelinequartz",
+    "description": "Invalid bytes stay out of public search.",
+    "state": "failed",
+    "phase": "closed",
+    "expiresAt": "2026-11-09T06:28:29.298Z",
+    "createdAt": "2026-11-08T06:28:29.298Z",
+    "queuedAt": "2026-11-08T06:28:29.365Z",
+    "deadlineAt": "2026-11-08T06:58:29.924Z",
+    "jobId": "b842578a-f3f2-4780-91e6-6e58f5b9b07f",
+    "attemptId": "e9204ac7-e746-4ba9-b1af-6a31a4dd7a69",
+    "failure": {
+      "code": "INVALID_MEDIA",
+      "message": "Media does not meet the supported format."
+    },
+    "file": {
+      "fileName": "invalid.mp4",
+      "size": 59,
+      "contentType": "video/mp4",
+      "lastModified": 1794116620860,
+      "sha256": "0b9a5684008f4c022fa6bc5b896a8e66fb2e441f9033f7bc81ae3a15746c6273"
+    },
+    "partSize": 5242880,
+    "partCount": 1,
+    "parts": []
+  },
+  "invalidSearch": {
+    "at": "2026-11-08T06:28:30.141Z",
+    "status": 200,
+    "body": {
+      "q": "nephelinequartz",
+      "page": 1,
+      "pageSize": 20,
+      "total": 0,
+      "hits": []
+    }
+  },
+  "invalidWatch": {
+    "status": 404,
+    "body": {
+      "error": "VIDEO_NOT_READY",
+      "message": "This video is not publicly available."
+    }
+  },
+  "fetchOnlyCount": "0",
+  "beforeSeekTime": 0.777845,
+  "afterSeekTime": 13.145695,
+  "suspendedBeforeThreshold": {
+    "accepted": 1,
+    "count": "1",
+    "time": 15.890204
+  }
+}

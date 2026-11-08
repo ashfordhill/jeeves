@@ -1064,3 +1064,18 @@ beside the role subtitle. “Upload API” fits better; its Purpose retains stat
 Use concise tile names and keep detailed responsibilities in the inspector. The fitted overview
 still has small text, and the collapsed workflow cycle still uses the existing expanded fallback;
 this naming correction does not establish full owner usability or require split authority.
+
+## 2026-11-08 derived publication and observed playback
+
+A derived search index should consume committed public lifecycle facts. Processing completion
+alone cannot establish public visibility: the YouTube field app's indexer has no metadata grant,
+consumes only committed publication, and repeats the same versioned document. Keep public search
+fields explicit and refuse incompatible existing mappings without resetting data.
+
+Engagement events need an observed interaction policy separate from reads. Video details, search
+and segment delivery do not prove playback. The field app counts short advancing media samples,
+retains one event ID across retries, and commits a receipt with the increment. Cached metadata
+must not hide fresh totals. A test harness also needs observable timing: Chromium's lifecycle
+freeze command did not suspend active-media callbacks; a measured main-thread block did.
+[Bounded evidence and limitations](../field-projects/youtube/v1/notes/evidence/fp07a/README.md)
+support these app-specific lessons, without promoting a general template or capacity claim.
