@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-11-08T06:12:20.082Z",
+  "key": "ready-video:v1:fdbbc43f-78a0-4be2-9910-a383de70acf6",
+  "ttl": 3149,
+  "value": {
+    "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+    "title": "FP06c heliotrope public fixture",
+    "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+    "channel": "creator",
+    "durationSeconds": 20,
+    "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+    "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+    "publishedAt": "2026-11-08T06:04:49.243Z",
+    "publicationVersion": 1
+  },
+  "invalidKey": null,
+  "readyView": [
+    {
+      "video_id": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "channel": "creator",
+      "duration_seconds": 20,
+      "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "published_at": "2026-11-08T06:04:49.243Z",
+      "publication_version": 1
+    }
+  ],
+  "totalsFresh": []
+}

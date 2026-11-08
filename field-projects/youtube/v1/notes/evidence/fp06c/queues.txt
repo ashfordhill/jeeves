@@ -1,0 +1,11 @@
+Timeout: 60.0 seconds ...
+Listing queues for vhost / ...
+name	messages_ready	messages_unacknowledged	consumers
+completion-handler	0	0	1
+view-counter	0	0	0
+search-indexer	1	0	0
+completion-handler.failed	0	0	0
+search-indexer.failed	0	0	0
+upload-jobs.failed	1	0	0
+upload-jobs	0	0	1
+view-counter.failed	0	0	0

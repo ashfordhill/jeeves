@@ -1,0 +1,20 @@
+$ pnpm build && node --test checks/foundation.test.mjs
+$ tsc -p tsconfig.json && node scripts/build-browser.mjs
+✔ bounded destination envelopes bind stable identity and result paths (5.629653ms)
+✔ HTTP config precedes listen; deadline retains actual admission until work settles (71.165613ms)
+✔ HTTP shutdown awaits admitted work even after its response deadline (12.484591ms)
+✔ multipart inventory requires exact acknowledged parts and safe file bounds (44.612773ms)
+Ready cache unavailable; using primary
+Ready cache fill deferred
+✔ ready cache coalesces fills, never stores misses or totals, and falls back on cache errors (3.514727ms)
+{"binary":"/home/ash/.nvm/versions/node/v24.21.0/bin/node","args":["-e","const fs=require(\"node:fs\");process.on(\"SIGTERM\",()=>{});fs.writeFileSync(process.argv[1],String(process.pid));setInterval(()=>{},1000)","/tmp/youtube-process-check-EZAlK3/pid"]}
+✔ canceled subprocess is force-terminated and awaited before cleanup (1036.046246ms)
+✔ packager accepts a one-segment short VOD and binds its marker inventory (12.650712ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1326.939999

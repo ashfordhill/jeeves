@@ -1,13 +1,13 @@
-# YouTube local v1 — creator upload subset
+# YouTube local v1 — upload, processing and public playback
 
 This independent app began as generated baseline `02ac280da62616e9c7aad7f88457dcb72084cb25`.
 FP06a added owned state/contracts; FP06b implements creator sign-in and real resumable multipart
-uploads. `.jeeves/` stays the immutable historical partial report/input. Current custom intent is
+uploads; FP06c adds CPU encoding, committed publication and public HLS playback. `.jeeves/` stays the immutable historical partial report/input. Current custom intent is
 in `config/implementation-source.json` and `config/ownership.json`. Do not regenerate over it.
 
-**This is a staged upload-only runtime.** Uploads remain pending in a durable queue. Processing,
-Watch, search and view counting are not implemented yet. Their services/consumers must stay
-stopped. No complete all-services S01 or S04–S08 claim is made here.
+**Search and view counting are still unavailable.** Their services/consumers stay stopped until
+FP07a; committed publications remain durable in the indexer queue. This is an in-repository
+processing/playback smoke, not the independent integrated S01/S08 walkthrough assigned to FP07b.
 
 Requirements: Linux amd64 Docker Compose, Node24.21.0, pnpm12.16.1, free loopback ports4400–4402,
 and OpenSearch's documented `vm.max_map_count` prerequisite (at least262144). Setup does not
@@ -27,13 +27,15 @@ The app owns its compiler and dependencies. `build` compiles Node sources and se
 plain browser TypeScript, copies public CSS/HTML and installed pinned hls.js to `dist-public/`.
 No browser framework/bundler or parent workspace tooling is used. Docker builds these assets
 itself; edge uses the exact pinned nginx image and contains them without a host public mount.
-The hls.js asset is prepared for a later player and proves no playback.
+The browser prefers native HLS and otherwise uses this pinned hls.js asset with standard video
+play/pause/seek controls.
 
 First-run creates private `.runtime/`, generated credentials and two local creator accounts;
-builds app/edge; starts only PostgreSQL, RabbitMQ, Garage, Keycloak and OpenSearch; bootstraps
+builds app/edge; starts PostgreSQL, RabbitMQ, Garage, Keycloak, OpenSearch and Valkey; bootstraps
 Garage once; runs versioned SQL migrations and idempotent broker/search settings assertions;
-then starts **only upload and edge**. There are seven long-running containers. No Valkey or
-processing/lifecycle/index/count consumer starts. Do not run a broad application profile.
+then starts **upload, completion-handler, transcoder, watch and edge**, with Valkey for the
+positive ready cache. There are eleven long-running containers and six persistent volumes.
+Search API, search-indexer and view-counter remain stopped. Do not run a broad application profile.
 
 Open **http://127.0.0.1:4400/**. Click Sign in; username `creator`. Read its password locally from
 `.runtime/secrets/creator_password` (do not paste it into logs or Git). `other-creator` and
@@ -44,8 +46,7 @@ storage holds tokens for this local demo; expiry exposes Sign in again. The API 
 public issuer4401, audience, exp/sub and creator role via internal JWKS `identity:8080`.
 
 Choose a supported MP4, title and description, then Upload video. Transport accepts1 byte–256MiB;
-media support is H.264/AAC, landscape720p–1080p,1–600seconds (actual stream verification comes with
-processing). Bytes PUT directly to private originals through temporary15-minute signed URLs on
+media support is H.264/AAC, landscape720p–1080p,1–600seconds (the worker verifies actual streams before publication). Bytes PUT directly to private originals through temporary15-minute signed URLs on
 4402, using5MiB nonfinal parts. API control calls remain on4400; internal object control uses
 `objects:3900`. Exact-origin CORS exposes ETag. Original files are not public. Access logging is
 disabled at edge so callback codes do not enter logs.
@@ -66,7 +67,7 @@ pnpm start
 ```
 
 `start` rebuilds current code, asserts healthy providers, runs repeatable migrations/broker/search
-assertions and starts the same implemented subset. It never reruns secret generation or Garage
+assertions and starts the same implemented services. It never reruns secret generation or Garage
 bootstrap. `COMPOSE_PROJECT_NAME=jeeves-youtube-v1 docker compose down` (without `-v`) also retains data;
 follow it with `pnpm start` (substitute the recorded name for an alternate project).
 Default project is **jeeves-youtube-v1**. A deliberate alternate `COMPOSE_PROJECT_NAME` must be
@@ -90,10 +91,10 @@ it is not a way to attach the new tracked first-run path to unknown volumes.
 | Process | SQL/resource boundary |
 | --- | --- |
 | Upload | `metadata_upload`: private videos/uploads/outbox DML, no inbox/delete/DDL; originals bucket key + broker; no owner/Counts/identity-admin mount |
-| Video lifecycle (stopped) | `metadata_lifecycle`, private Video DML + inbox; publication publisher |
-| Watch (stopped) | `metadata_reader`: ready view only; `counts_reader`: totals only; cache + view publisher |
+| Video lifecycle | `metadata_lifecycle`, private Video DML + inbox; publication publisher |
+| Watch | `metadata_reader`: ready view only; `counts_reader`: totals only; cache + view publisher |
 | Count worker (stopped) | `counts_writer`: private receipts/totals only |
-| Transcoder (stopped) | Broker + S3, no SQL |
+| Transcoder | Broker + S3, no SQL |
 | Search/indexer (stopped) | Search network client, indexer broker, no SQL/S3 |
 
 All Upload auth/JWKS and request dependency work is inside awaited handlers and the5000ms/500
@@ -103,16 +104,44 @@ write. Completion re-lists authoritative parts, persists completing, completes/H
 object, then commits pending + stable video/job/attempt IDs + upload-jobs outbox atomically.
 Repeat complete returns the saved result. A completing-provider gap reconciles through the exact
 key and metadata; browser ETags/keys/provider IDs are never accepted as authority. Head verifies
-binding/size; it does **not** prove SHA256. The worker will rehash actual bytes. Evidence independently
+binding/size; it does **not** prove SHA256. The worker rehashes actual bytes. Evidence independently
 streams completed originals and hashes them; multipart ETag is not a content SHA256.
 
-Only Upload's dedicated upload-jobs confirmed outbox relay runs. It handles fatal publisher loss
+Upload's dedicated upload-jobs and lifecycle's publication-events confirmed outbox relays run. It handles fatal publisher loss
 by draining/closing HTTP, sweep, relay, pools and clients, then exiting. Confirm/commit gaps may
 duplicate the same event ID. A30s Upload loop handles expiry/cleanup/interrupted initialization
 and completion; a bounded paginated namespace sweep aborts recognized original multiparts older
-than24h. Completed originals are retained. No lifecycle job-deadline sweep starts in this staged
-runtime. Pending jobs still carry their fixed10min deadline: later processing must use fresh
-uploads after staged delays, never extend the policy.
+than24h. Completed originals are retained. Lifecycle checks fixed queue10min/processing30min deadlines at startup and every30s. Matching
+started/results and ready+publication intent use private inbox/CAS transactions. A result may
+precede started; duplicates/stale/late/terminal results do not republish. Deadlines never extend.
+The two uploads staged by FP06b have elapsed queue deadlines and visibly failed; re-upload
+creates a new video/job. Their late encoded outputs do not make them public.
+
+After upload, select View status or Refresh to see pending, processing, ready or a finite safe
+failure. Ready rows offer **Watch video**. Public visitors can paste a ready Video ID into
+**Open video**, or open `http://127.0.0.1:4400/?watch=<videoId>`. Details, thumbnail and standard
+HLS controls work signed out. Pending/failed IDs give404 and no playable Watch result. Counts
+currently show0 from empty totals; `POST /api/watch/videos/:videoId/views` explicitly gives503.
+No playback event is published to the unimplemented Counter. Search is visibly unavailable.
+
+Transcoder has broker+S3 only, no SQL mount. It checks1–256MiB original bytes and SHA256, MP4/
+H.264/AAC/landscape720p–1080p/1–600s, then CPU encodes640×360 and1280×720 H.264/yuv420p/AAC with
+approximately4s VOD HLS segments and a source-size JPEG. Safe argv subprocesses share a20min
+execution bound; cancellation force-terminates and awaits them before local temp cleanup.
+Segments precede rendition playlists/thumbnail/master, then a job/fingerprint/inventory-bound
+`_complete.json`. A verified marker lets the single worker re-emit stable success without
+rewriting outputs. Known invalid media confirms a failed event before failed-copy/ack; malformed
+unknown jobs do not invent state. Normal/fatal shutdown drains admitted work before dependencies
+close; fatal worker transport loss aborts active downloads/subprocesses.
+
+Watch reads only the ready public view; it caches positive public metadata for3600s with
+single-flight fill, bounded cache calls and primary fallback. It never caches misses or totals.
+Every details request reads Counts separately. Edge provides correct media MIME/range handling,
+one-minute playlists and long-lived immutable segment/thumbnail caching, without caching404s.
+The public encoded bucket can serve guessed partial keys before ready; Watch/search publication
+is the application boundary. **Remote partial/orphan prefixes are retained in this bounded v1**
+(including output for the two expired staged jobs); only local execution directories are always
+removed. No S3 cleanup or atomic multi-object/ACL publication is claimed.
 
 The retained fixture is ignored at `.runtime/media/youtube-v1-fixture.mp4`; its recipe, exact
 FFmpeg version/configuration, ffprobe output, hash and IDs are in `../notes/evidence/fp06b/`.

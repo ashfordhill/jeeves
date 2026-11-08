@@ -207,3 +207,15 @@ during staged work. Use fresh uploads in FP06c rather than extending deadlines. 
 lifecycle sweep, Watch, Search/indexer, cache or counter starts here. No S04+ or final all-service
 readiness credit. Exact IDs/credentials-file locations and next interfaces are in
 [the next-unit handoff](fp06b-upload.md). All other runtimes/watchers stay preserved.
+
+## FP06c retained processing/playback services
+
+Final `jeeves-youtube-v1` now runs eleven healthy containers at the same loopback 4400–4402:
+providers PostgreSQL/RabbitMQ/Garage/Keycloak/OpenSearch/Valkey plus Upload/lifecycle/Transcoder/
+Watch/edge. Six persistent volumes and the original `.runtime` credentials/fixture remain.
+Normal start/stop adds only these implemented services; Search API/indexer/Counter remain stopped.
+One committed publication waits in `search-indexer`; one invalid-media failed copy remains.
+The two elapsed FP06b queue deadlines produce visible failure, never refreshed deadlines or late
+publications. Fresh real video is ready and publicly playable. [Exact interfaces and limits](fp06c-playback.md)
+and [evidence](evidence/fp06c/README.md) distinguish local smoke from independent S01/S08 in FP07b.
+Only local execution temp files are always cleaned; remote partial/orphan prefixes are retained.

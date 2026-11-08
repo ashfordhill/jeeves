@@ -1,0 +1,378 @@
+{
+  "startedAt": "2026-11-08T06:04:44.143Z",
+  "browser": "153.0.8010.12",
+  "launchMuteAudioFlag": false,
+  "errors": [],
+  "states": [
+    {
+      "at": "2026-11-08T06:04:44.916Z",
+      "uploadId": "803dd497-b3a6-4e96-a1b8-529e391e3da2",
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "state": "uploading",
+      "phase": "active",
+      "expiresAt": "2026-11-09T06:04:44.685Z",
+      "createdAt": "2026-11-08T06:04:44.685Z",
+      "queuedAt": null,
+      "deadlineAt": null,
+      "jobId": null,
+      "attemptId": null,
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-08T06:04:45.569Z",
+      "uploadId": "803dd497-b3a6-4e96-a1b8-529e391e3da2",
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "state": "pending",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:04:44.685Z",
+      "createdAt": "2026-11-08T06:04:44.685Z",
+      "queuedAt": "2026-11-08T06:04:45.461Z",
+      "deadlineAt": "2026-11-08T06:14:45.461Z",
+      "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-08T06:04:46.141Z",
+      "uploadId": "803dd497-b3a6-4e96-a1b8-529e391e3da2",
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "state": "processing",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:04:44.685Z",
+      "createdAt": "2026-11-08T06:04:44.685Z",
+      "queuedAt": "2026-11-08T06:04:45.461Z",
+      "deadlineAt": "2026-11-08T06:34:46.041Z",
+      "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-08T06:04:49.309Z",
+      "uploadId": "803dd497-b3a6-4e96-a1b8-529e391e3da2",
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "state": "ready",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:04:44.685Z",
+      "createdAt": "2026-11-08T06:04:44.685Z",
+      "queuedAt": "2026-11-08T06:04:45.461Z",
+      "deadlineAt": "2026-11-08T06:34:46.041Z",
+      "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    }
+  ],
+  "puts": [
+    {
+      "number": 1,
+      "size": 5242880,
+      "status": 200,
+      "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+    },
+    {
+      "number": 2,
+      "size": 5242880,
+      "status": 200,
+      "etag": "\"8b07cb8adaef2a76957b89cf6a759510\""
+    },
+    {
+      "number": 3,
+      "size": 5099193,
+      "status": 200,
+      "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\""
+    },
+    {
+      "number": 1,
+      "status": 200,
+      "etag": "\"0bd5074df920ddbb7588f9c0fd85245a\""
+    }
+  ],
+  "media": [
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "status": 200,
+      "range": null,
+      "type": "image/jpeg"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/index.m3u8",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00000.ts",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/index.m3u8",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00001.ts",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00002.ts",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00003.ts",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00004.ts",
+      "status": 206,
+      "range": "bytes=0-",
+      "type": "video/mp2t"
+    }
+  ],
+  "stagedJobs": [
+    {
+      "uploadId": "d2c52469-916e-4428-9f56-4be397735dd6",
+      "videoId": "56815172-d561-4a8b-bf57-f4bb5f9f4063",
+      "title": "FP06b abort orchid",
+      "state": "aborted",
+      "createdAt": "2026-11-08T05:39:10.582Z",
+      "failure": null
+    },
+    {
+      "uploadId": "5cd4edbb-9143-4bd7-8ebb-80a151b2a929",
+      "videoId": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+      "title": "FP06b refresh resume orchid",
+      "state": "failed",
+      "createdAt": "2026-11-08T05:39:09.682Z",
+      "failure": {
+        "code": "QUEUE_DEADLINE",
+        "message": "Processing did not start before the deadline."
+      }
+    },
+    {
+      "uploadId": "19e4dfe6-b26c-4200-bf85-6ce8ce4cf124",
+      "videoId": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+      "title": "FP06b real multipart orchid",
+      "state": "failed",
+      "createdAt": "2026-11-08T05:39:08.157Z",
+      "failure": {
+        "code": "QUEUE_DEADLINE",
+        "message": "Processing did not start before the deadline."
+      }
+    }
+  ],
+  "pending": {
+    "status": 200,
+    "body": {
+      "uploadId": "803dd497-b3a6-4e96-a1b8-529e391e3da2",
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "state": "pending",
+      "phase": "closed",
+      "expiresAt": "2026-11-09T06:04:44.685Z",
+      "createdAt": "2026-11-08T06:04:44.685Z",
+      "queuedAt": "2026-11-08T06:04:45.461Z",
+      "deadlineAt": "2026-11-08T06:14:45.461Z",
+      "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    }
+  },
+  "pendingPublic": {
+    "status": 404,
+    "body": {
+      "error": "VIDEO_NOT_READY",
+      "message": "This video is not publicly available."
+    }
+  },
+  "ready": {
+    "uploadId": "803dd497-b3a6-4e96-a1b8-529e391e3da2",
+    "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+    "title": "FP06c heliotrope public fixture",
+    "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+    "state": "ready",
+    "phase": "closed",
+    "expiresAt": "2026-11-09T06:04:44.685Z",
+    "createdAt": "2026-11-08T06:04:44.685Z",
+    "queuedAt": "2026-11-08T06:04:45.461Z",
+    "deadlineAt": "2026-11-08T06:34:46.041Z",
+    "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+    "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+    "failure": null,
+    "file": {
+      "fileName": "youtube-v1-fixture.mp4",
+      "size": 15584953,
+      "contentType": "video/mp4",
+      "lastModified": 1794116246303,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+    },
+    "partSize": 5242880,
+    "partCount": 3,
+    "parts": []
+  },
+  "publicReady": {
+    "status": 200,
+    "body": {
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:04:49.243Z",
+      "publicationVersion": 1,
+      "manifestUrl": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "thumbnailUrl": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "views": "0"
+    }
+  },
+  "playback": {
+    "currentTime": 5.005333,
+    "paused": false,
+    "muted": false,
+    "volume": 1,
+    "readyState": 4,
+    "frames": {
+      "totalVideoFrames": 124,
+      "droppedVideoFrames": 0
+    },
+    "videoWidth": 1280,
+    "videoHeight": 720,
+    "audio": {
+      "contextState": "running",
+      "sampleRate": 44100,
+      "rms": 0.06244753965850237,
+      "peakHz": 440.0848388671875,
+      "peakDb": -48.63136291503906,
+      "humanListening": false
+    }
+  },
+  "seek": {
+    "before": 5.154667,
+    "after": 15.452538,
+    "byMouse": true
+  },
+  "range": {
+    "path": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00000.ts",
+    "status": 206,
+    "contentRange": "bytes 0-187/1785248",
+    "contentType": "video/mp2t",
+    "bytes": 188
+  },
+  "viewsPost": {
+    "status": 503,
+    "body": {
+      "error": "COUNTS_UNAVAILABLE",
+      "message": "Playback counting is not available yet."
+    }
+  },
+  "invalid": {
+    "uploadId": "335299c8-bdef-4457-82c8-35b79176ebf4",
+    "videoId": "c922e399-2095-4253-a109-cf4950d1c76c",
+    "title": "FP06c invalid heliotrope",
+    "description": "Invalid media must never publish.",
+    "state": "failed",
+    "phase": "closed",
+    "expiresAt": "2026-11-09T06:06:54.080Z",
+    "createdAt": "2026-11-08T06:06:54.080Z",
+    "queuedAt": "2026-11-08T06:06:54.136Z",
+    "deadlineAt": "2026-11-08T06:36:54.552Z",
+    "jobId": "c4ac0970-ad1e-4ac7-8c27-8fc73941e5f7",
+    "attemptId": "27decf0a-d07d-4989-a67b-bd578f565f5c",
+    "failure": {
+      "code": "INVALID_MEDIA",
+      "message": "Media does not meet the supported format."
+    },
+    "file": {
+      "fileName": "invalid.mp4",
+      "size": 59,
+      "contentType": "video/mp4",
+      "lastModified": 1794116620860,
+      "sha256": "0b9a5684008f4c022fa6bc5b896a8e66fb2e441f9033f7bc81ae3a15746c6273"
+    },
+    "partSize": 5242880,
+    "partCount": 1,
+    "parts": []
+  },
+  "invalidPublic": {
+    "status": 404,
+    "body": {
+      "error": "VIDEO_NOT_READY",
+      "message": "This video is not publicly available."
+    }
+  },
+  "finishedAt": "2026-11-08T06:06:55.100Z"
+}

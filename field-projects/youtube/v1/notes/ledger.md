@@ -144,3 +144,26 @@ foundation. The modified-generated/new-custom file accounting is [explicit](evid
 volume-guard corrections, evidence-format lint failure and retained35/36 E2E setup timeout followed
 by unchanged isolated/pass36/36. Existing Jeeves checks were kept; no timeout weakening, provider
 campaign or source diagram change. Current schema3/r6/native010 and all historical artifacts stay.
+
+## 2026-11-08 — FP06c real media and public-ready boundary
+
+- **D25 (observed processing):** custom CPU FFmpeg extensions validate bounded actual original
+  hash/size/streams, encode two HLS renditions and source-size thumbnail, validate relative
+  inventory and confirm a job/fingerprint-bound marker before success/ack. Same job/result
+  re-delivery preserves every output SHA/ETag/mtime and one publication. No SQL in Transcoder.
+- **D26 (publication and read boundary):** lifecycle uses existing atomic inbox/CAS/outbox and
+  fixed startup/30s deadline sweeps. Expired staged jobs fail and ignore late success. Ready-only
+  Watch caches only positive public metadata, single-flight/TTL3600/bounded primary fallback;
+  totals are read separately. Pending404 never masks later ready200. Signed-out mouse playback,
+  seek, actual edge MIME/range and decoded 440 Hz PCM are observed, with no human listening.
+- **D27 (explicit local limit):** local temp cleanup is unconditional, but remote partial/orphan
+  prefixes are retained, including outputs of aged staged jobs. This documents the deviation from
+  best-effort remote cleanup rather than claiming S3 cleanup or atomic object/ACL publication.
+  Search/counts stay stopped; no event reaches an unimplemented Counter. FP07a consumes retained
+  committed publication and adds actual playback counting; independent S01/S08 remain FP07b.
+
+[Evidence](evidence/fp06c/README.md) separates custom extension work from the scoped AMQP helper
+repair (idempotent admitted-work drain/fatal self-await fix) and retains real/harness failed attempts.
+Cumulative [provenance](evidence/fp06c/provenance.json) is file accounting, not coverage or template
+credit. Existing reuse hypotheses remain hypotheses; active time/cost/savings unknown. No generic
+DSL, new source/diagram decision, certification campaign or automatic v2 follows from this unit.

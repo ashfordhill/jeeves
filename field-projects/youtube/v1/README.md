@@ -12,9 +12,12 @@ limits](notes/baseline.md) and [independent build evidence](notes/evidence/fp04/
 FP05 supplies the [custom completion plan](notes/implementation-plan.md), anchored to FP04 commit
 `02ac280da62616e9c7aad7f88457dcb72084cb25`. FP06a now supplies the [custom owned-state foundation](notes/fp06a-foundation.md): schema3
 Video authority, private SQL/views, runtime grants, finite contracts/transitions/inbox/outbox and
-transport integration, with [bounded SQL/broker evidence](notes/evidence/fp06a/README.md). Next are
-FP06b upload, FP06c processing/playback, FP07a search/counts and FP07b independent walkthrough.
-All application scenarios remain incomplete. Review working v1
+transport integration, with [bounded SQL/broker evidence](notes/evidence/fp06a/README.md). FP06b
+adds actual [creator/multipart/resume/abort uploads](notes/fp06b-upload.md). FP06c adds real CPU
+encoding, lifecycle publication and [public HLS playback](notes/fp06c-playback.md), with
+[bounded media/browser evidence](notes/evidence/fp06c/README.md). S02/S03 upload and S04 processing
+have actual evidence; S05 has decoded video/PCM/mouse evidence with no human listening observation.
+Next are FP07a search/counts and FP07b independent integrated walkthrough. Review working v1
 with the owner before deciding on v2.
 
 - [Diagram history](diagrams/index.md): original owner, approved PostgreSQL, separate v1 copy and

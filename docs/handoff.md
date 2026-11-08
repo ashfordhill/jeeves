@@ -5243,3 +5243,41 @@ ready-only Watch/cache and browser HLS; Search/indexer/count remain stopped unti
 actual foundation/client interfaces are ready. No automatic v2 before working-v1 owner/fresh review.
 
 Local commit: **FP06b: implement creator multipart uploads and browser subset**.
+
+## 2026-11-08 — FP06c: real media processing and public playback
+
+Only FP06c after **384ff5172f3bfc735c82c00a22c9c04acb840b5b**, primary main/sequential sole writer;
+no branches/worktrees/stash/subdelegation/push. [Exact next interfaces/runtime/IDs](../field-projects/youtube/v1/notes/fp06c-playback.md),
+[evidence/provenance](../field-projects/youtube/v1/notes/evidence/fp06c/README.md). Real bounded CPU
+FFmpeg extensions/Transcoder (broker+S3/no SQL), validated immutable inventory/marker, confirmed
+results; lifecycle inbox/CAS/fixed deadlines/publication relay; ready-only Watch positive cache
+with fresh separate totals; plain browser public HLS/details/thumbnail/status/errors and media
+MIME/range/cache. Scoped AMQP helper repair shares idempotent admitted-work drain, graceful ack
+and fatal shutdown without self-await. Three owned-queue probes pass; only scratch queues removed.
+
+Fresh actual fixture video **fdbbc43f-78a0-4be2-9910-a383de70acf6** reaches ready with real H264/AAC
+360/720 HLS/JPEG; original/output hashes and duplicate job/result preserve outputs/one publication.
+Invalid media **c922e399-2095-4253-a109-cf4950d1c76c** visibly fails/public404. Signed-out mouse
+play5s/124 decoded frames/seek/edge206 pass; unmuted decoded PCM440.085Hz measured, **no human
+listening**. Two deliberately staged FP06b jobs fail elapsed queue deadlines and ignore late results.
+Local temps always clean; **remote partial/orphan outputs retained**, no S3 cleanup/atomic ACL claim.
+
+Own frozen install/server+browser builds/7 network-free checks pass. Required first known PGlite5s
+restart timeout397/398 retained; unchanged isolated12/12 then full **398/50 in22.56s**, **36 native
+E2Es in1.4m** first try, **web build976ms** pass. Final owner4300 mouse current-v1 Fit22/27/Upload
+focus and TinyURL53 Fit12/13, all four complete responses/listing preserved, zero page errors;
+E2E DB original default-only. No root/test/timeout/source/config/diagram/pin/lock/generator/template/
+`.jeeves`/input changes. Native010/schema3/r6/frozen-profile refusal remain; no011 needed. Harness
+failed attempts and capture timing limitations are retained in evidence. Active time/cost unknown.
+
+Final **jeeves-youtube-v1**11 containers/6 volumes remain healthy4400–4402; runtime/fixture at
+`field-projects/youtube/v1/app/.runtime/`, creator password file `.runtime/secrets/creator_password`
+(username`creator`), unchanged actual fixture SHA16587281…68aebf9/mtime. Other Compose projects,
+owner4300/4310/4304 watchers and `.jeeves-feedback` preserved. No media/secrets/auth traces/deps/
+dist/runtime/paid-cloud calls staged. Next **FP07a only**: Search/indexer/Counter remain stopped;
+one committed VideoPublished waits in search-indexer, count totals empty0, view POST explicit503.
+Implement strict existing publication/search and ViewPlayed/receipt+increment interfaces, real
+2s cumulative-play browser policy and search/count UI. FP07b independent integrated S01/S08 remains;
+no automatic v2 before working-v1 owner/fresh review.
+
+Local commit: **FP06c: implement real media processing and public playback**.

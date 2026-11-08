@@ -1,0 +1,51 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check .
+Checked 409 files in 233ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+packages/board typecheck$ tsc -p .
+packages/providers typecheck$ tsc -p .
+packages/board typecheck: Done
+packages/spec typecheck$ tsc -p .
+packages/providers typecheck: Done
+packages/spec typecheck: Done
+apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+apps/server typecheck$ tsc -p .
+apps/web typecheck: Done
+apps/server typecheck: Done
+$ vitest run
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |server| src/routes/projects.test.ts (12 tests | 1 failed) 14489ms
+   ❯ undo and redo (3)
+     × restores snapshots as new revisions and survives a server restart 5010ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |server| src/routes/projects.test.ts > undo and redo > restores snapshots as new revisions and survives a server restart
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/routes/projects.test.ts:228:3
+    226|
+    227| describe("undo and redo", () => {
+    228|   it("restores snapshots as new revisions and survives a server restar…
+       |   ^
+    229|     const dir = mkdtempSync(join(tmpdir(), "jeeves-s3-"));
+    230|     try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 49 passed (50)
+      Tests  1 failed | 397 passed (398)
+   Start at  00:13:13
+   Duration  22.37s (tests 71%, import 15%, transform 9%, environment 4%)
+
+  Transform  |generator| transforming modules took 2.90s · 45% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

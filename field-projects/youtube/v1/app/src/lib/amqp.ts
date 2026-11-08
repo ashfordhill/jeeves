@@ -75,6 +75,7 @@ export class NonRetryable extends Error {
 }
 export interface ConsumerOptions {
   onTerminal?: (body: Buffer, delivery: Delivery, error: unknown) => Promise<void>;
+  onFatal?: () => void;
 }
 export type MessageHandler = (body: Buffer, delivery: Delivery) => Promise<void>;
 export async function consume(
@@ -87,6 +88,9 @@ export async function consume(
   const connection = await broker(),
     channel = await connection.createConfirmChannel();
   let closing = false;
+  let fatalClosure = false;
+  let shutdown: Promise<void> | undefined;
+  let consumerTag: string | undefined;
   let onSignal: () => void = () => {};
   let finishClosed!: (result: { fatal: boolean }) => void;
   const closed = new Promise<{ fatal: boolean }>((resolve) => {
@@ -98,14 +102,13 @@ export async function consume(
   const inFlight = new Set<Promise<void>>();
   channel.on("error", () => console.error("AMQP consumer channel unavailable"));
   await channel.prefetch(concurrency, false);
-  const fatal = async () => {
-    if (closing) return;
-    closing = true;
+  // Initiate fatal closure without awaiting from an admitted task: that task is
+  // itself part of the drain. closed resolves only after all admitted work settles.
+  const fatal = () => {
+    fatalClosure = true;
     process.exitCode = 1;
-    await channel.close().catch(() => {});
-    await connection.close().catch(() => {});
-    removeSignals();
-    finishClosed({ fatal: true });
+    options.onFatal?.();
+    void close();
   };
   channel.once("close", () => {
     if (!closing) void fatal();
@@ -116,7 +119,11 @@ export async function consume(
   const consumer = await channel.consume(
     queue,
     (message) => {
-      if (!message || closing) return;
+      if (!message) {
+        fatal();
+        return;
+      }
+      if (closing) return;
       const task = (async () => {
         const headers = message.properties.headers ?? {},
           raw = headers["x-delivery-attempt"] ?? headers["x-scaffold-attempt"] ?? 0,
@@ -130,9 +137,9 @@ export async function consume(
         };
         try {
           await handle(message.content, delivery);
-          if (!closing) channel.ack(message);
+          if (!fatalClosure) channel.ack(message);
         } catch (error) {
-          if (closing) return;
+          if (fatalClosure) return;
           const terminal = error instanceof NonRetryable || attempts >= retryLimit,
             destination = terminal ? `${queue}.failed` : queue;
           try {
@@ -158,10 +165,10 @@ export async function consume(
                 done,
               ),
             );
-            if (!closing) channel.ack(message);
+            if (!fatalClosure) channel.ack(message);
             console.error(`AMQP delivery deferred to ${destination}`);
           } catch {
-            await fatal();
+            fatal();
           }
         }
       })();
@@ -170,16 +177,20 @@ export async function consume(
     },
     { noAck: false },
   );
-  const close = async () => {
-    if (closing) return;
-    await channel.cancel(consumer.consumerTag);
-    await Promise.allSettled([...inFlight]);
+  consumerTag = consumer.consumerTag;
+  function close() {
+    if (shutdown) return shutdown;
     closing = true;
-    await channel.close();
-    await connection.close();
-    removeSignals();
-    finishClosed({ fatal: false });
-  };
+    shutdown = (async () => {
+      if (consumerTag) await channel.cancel(consumerTag).catch(() => {});
+      await Promise.allSettled([...inFlight]);
+      await channel.close().catch(() => {});
+      await connection.close().catch(() => {});
+      removeSignals();
+      finishClosed({ fatal: fatalClosure });
+    })();
+    return shutdown;
+  }
   onSignal = () => {
     void close().catch(() => fatal());
   };

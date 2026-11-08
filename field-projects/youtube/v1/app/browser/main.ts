@@ -1,3 +1,4 @@
+import { openWatch } from "./watch.ts";
 import { clearAuth, finishLogin, login, logout, session } from "./auth.ts";
 interface Fingerprint {
   fileName: string;
@@ -186,6 +187,14 @@ async function recent() {
       });
       row.append(abort);
     }
+    if (r.state === "ready") {
+      const watch = document.createElement("button");
+      watch.textContent = "Watch video";
+      watch.onclick = () => {
+        void openWatch(r.videoId);
+      };
+      row.append(watch);
+    }
     container.append(row);
   }
 }
@@ -268,8 +277,7 @@ async function transfer(u: Upload, file: File) {
     if (paused) throw new Error("Upload paused. Click Resume to finish.");
     await api(`/uploads/${u.uploadId}/complete`, "POST");
     show(await api<Upload>(`/uploads/${u.uploadId}`));
-    progress(file.size, file.size, "Upload complete · Pending processing");
-    message("Upload received. Its status is pending processing.");
+    message("Upload received. Processing status will update below.");
   } finally {
     running = false;
     buttons();

@@ -471,3 +471,36 @@ checks. Preserve identities/queue; use fresh uploads for successful processing a
 than weakening10min policy. No automatic v2 before working-v1 owner/fresh-agent review.
 
 Local commit: **FP06b: implement creator multipart uploads and browser subset**.
+
+## 2026-11-08 — FP06c real processing, publication and playback
+
+Only FP06c after **384ff5172f3bfc735c82c00a22c9c04acb840b5b**, primary main sequential sole writer;
+no branches/worktrees/stash/subdelegation/push. [Exact handoff](fp06c-playback.md) and
+[evidence/provenance](evidence/fp06c/README.md). Implemented actual FFmpeg extensions/worker,
+lifecycle consumer/deadline sweep/publication relay, positive ready-only Watch/cache with separate
+totals, browser HLS/details/thumbnail/status and media edge policy. Added only implemented services
+and Valkey to normal startup/stop. Search/indexer/Counter stay stopped; one publication retained.
+
+Fresh actual fixture passes pending→processing→ready with H264/AAC 640×360/1280×720, real VOD
+segments/thumbnail, original/output hashes, marker and atomic publication. Same job/result retains
+outputs and publication; invalid media visibly fails/public404. Signed-out mouse play exceeds five
+seconds,124 decoded frames/0 dropped, seek and206range; unmuted decoded PCM440.085 Hz measured,
+no human listening. Expired staged jobs fail under unchanged deadlines. Local temps clean; remote
+partial/orphan outputs explicitly retained. S06/S07 and independent integrated FP07b remain open.
+
+Own frozen install/server+browser build/seven network-free checks and actual bounded flow pass.
+Scoped AMQP close/drain repair has three real owned-queue probes; only those queues cleaned.
+Harness control/serialization/exchange/scratch queue errors and API-before-UI captures are retained
+honestly. Required first PGlite5s restart timeout397/398 retained; unchanged isolated12/12 and full
+398/50 in22.56s pass. Native E2E36/36 in1.4m first try, web build976ms (existing advisory), final
+owner4300 mouse local-v1 Fit22/27/Upload focus and TinyURL53 Fit12/13 pass; all four full owner
+responses/listing unchanged, zero page errors, E2E DB default-only. No root/test/timeout changes.
+
+Final eleven-container field stack/six volumes/credentials/fixture stay for next unit. Other Compose
+projects/owner4300/4310/4304 watchers/`.jeeves-feedback` preserved. Current source/config/native010,
+frozen inputs/`.jeeves`/generator/templates/pins/locks unchanged; no011 needed. Cumulative68 unchanged
+baseline payloads+historical manifest,39 modified-generated integration,26 new custom files; helper
+repair distinct from custom media work. No feature/savings/template certificate; active cost unknown.
+No paid/cloud/model calls or auth traces/media/secrets/deps/dist/runtime data staged.
+
+Local commit: **FP06c: implement real media processing and public playback**.

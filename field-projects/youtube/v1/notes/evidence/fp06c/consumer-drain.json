@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-08T06:08:51.823Z",
+  "results": [
+    {
+      "case": "graceful-idempotent-drain",
+      "closedBeforeRelease": false,
+      "acknowledged": true
+    },
+    {
+      "case": "terminal-hook-fatal-no-self-await",
+      "fatal": true,
+      "unacknowledgedRequeued": 1,
+      "failedCopies": 0
+    },
+    {
+      "case": "transport-fatal-drains-admitted-before-closed",
+      "onFatal": true,
+      "closedBeforeRelease": false,
+      "unacknowledgedRequeued": 1
+    }
+  ],
+  "ownedQueues": [
+    "fp06c-drain-4f435c4f-551c-4912-b311-30924728f041",
+    "fp06c-drain-82a098f1-6621-4f83-8468-873bfbf55d4f",
+    "fp06c-drain-f0072829-8005-4c01-9372-7e166d47dbf5"
+  ],
+  "cleanup": "deleted only owned synthetic queues"
+}

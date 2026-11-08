@@ -1,0 +1,37 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check .
+Checked 409 files in 220ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+packages/board typecheck$ tsc -p .
+packages/providers typecheck$ tsc -p .
+packages/board typecheck: Done
+packages/spec typecheck$ tsc -p .
+packages/providers typecheck: Done
+packages/spec typecheck: Done
+apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+apps/server typecheck$ tsc -p .
+apps/web typecheck: Done
+apps/server typecheck: Done
+$ vitest run
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  50 passed (50)
+      Tests  398 passed (398)
+   Start at  00:14:16
+   Duration  22.56s (tests 70%, import 14%, transform 11%, environment 4%)
+
+  Transform  |generator| transforming modules took 2.65s · 40% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+  Transform  |web| transforming modules took 4.60s · 27% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+  Transform  |spec| transforming modules took 4.53s · 29% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

@@ -1,0 +1,58 @@
+{
+  "master.m3u8": {
+    "status": 200,
+    "headers": {
+      "Server": "nginx/1.28.3",
+      "Date": "Sun, 08 Nov 2026 06:12:20 GMT",
+      "Content-Type": "application/vnd.apple.mpegurl",
+      "Content-Length": "194",
+      "Connection": "close",
+      "last-modified": "Sun, 08 Nov 2026 06:04:49 GMT",
+      "etag": "\"ab8b73121cb72a46f98866ece0864574\"",
+      "x-amz-meta-sha256": "dbdf1ac5ec114beb65ac7a8968affb3aa73f9fd4d8822359d46fb13040be6d20",
+      "Cache-Control": "public, max-age=60",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  "720/segment00000.ts": {
+    "status": 200,
+    "headers": {
+      "Server": "nginx/1.28.3",
+      "Date": "Sun, 08 Nov 2026 06:12:20 GMT",
+      "Content-Type": "video/mp2t",
+      "Content-Length": "1785248",
+      "Connection": "close",
+      "last-modified": "Sun, 08 Nov 2026 06:04:49 GMT",
+      "etag": "\"582b3a163c989e45e49329e2594f7cec\"",
+      "x-amz-meta-sha256": "f2bdc90de647130a863df693c65ffea1adbf34881b33a6e1e8f27b3ef36927ea",
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  "thumbnail.jpg": {
+    "status": 200,
+    "headers": {
+      "Server": "nginx/1.28.3",
+      "Date": "Sun, 08 Nov 2026 06:12:20 GMT",
+      "Content-Type": "image/jpeg",
+      "Content-Length": "68896",
+      "Connection": "close",
+      "last-modified": "Sun, 08 Nov 2026 06:04:49 GMT",
+      "etag": "\"eaa48fa40619d70cdf0c1526cb157cc8\"",
+      "x-amz-meta-sha256": "bd429e5cf14eb25ce757441cea194e2a5d11b6ffba74892ac3a8a5fbd4ac099f",
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Accept-Ranges": "bytes"
+    }
+  },
+  "does-not-exist.ts": {
+    "status": 404,
+    "headers": {
+      "Server": "nginx/1.28.3",
+      "Date": "Sun, 08 Nov 2026 06:12:20 GMT",
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Length": "120",
+      "Connection": "close",
+      "access-control-allow-origin": "*"
+    }
+  }
+}

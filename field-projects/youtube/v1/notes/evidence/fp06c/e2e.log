@@ -1,0 +1,66 @@
+$ pnpm db:up && playwright test
+$ docker compose up -d --wait
+ Container jeeves-postgres-1 Running
+ Container jeeves-postgres-1 Waiting
+ Container jeeves-postgres-1 Healthy
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:1780733) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1780807) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:1781116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 36 tests using 6 workers
+
+(node:1781342) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1781343) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1781366) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1781348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1781367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1781344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › apps/web/e2e/blueprint-chat.spec.ts:4:1 › serves the read-only blueprint (8.4s)
+  ✓   5 [chromium] › apps/web/e2e/blueprint-chat.spec.ts:72:1 › adds a tile through chat with the lane commands (9.8s)
+  ✓   3 [chromium] › apps/web/e2e/canvas.spec.ts:13:1 › shows the TinyURL study on the lane canvas (10.1s)
+  ✓   6 [chromium] › apps/web/e2e/blueprint-chat.spec.ts:41:1 › applies a chat turn from the scripted model as one edit (10.1s)
+  ✓   4 [chromium] › apps/web/e2e/blueprint-chat.spec.ts:52:1 › shows pattern lookup and unsupported obligations without changing the design (10.5s)
+  ✓   2 [chromium] › apps/web/e2e/blueprint-chat.spec.ts:90:1 › saves a warned proposal with readable review details and one mouse Undo (10.6s)
+  ✓   7 [chromium] › apps/web/e2e/canvas.spec.ts:45:1 › New project offers the marketplace study (8.8s)
+  ✓   9 [chromium] › apps/web/e2e/canvas.spec.ts:171:1 › shows each store's writer and readers, from its owner (8.5s)
+  ✓   8 [chromium] › apps/web/e2e/canvas.spec.ts:85:1 › New project offers the YouTube study (13.1s)
+  ✓  10 [chromium] › apps/web/e2e/design-scope.spec.ts:3:1 › previews an explicit scope upgrade, retains blocked requirements on reload and undoes the boundary (13.3s)
+  ✓  11 [chromium] › apps/web/e2e/diagram-export.spec.ts:101:1 › PNG contains full YouTube routes after mouse focus, pan, zoom and dark mode without changing state (17.3s)
+  ✓  12 [chromium] › apps/web/e2e/diagram-export.spec.ts:135:1 › owner projection is explicit; stale revisions, missing fonts and cancelled captures refuse downloads (17.6s)
+  ✓  14 [chromium] › apps/web/e2e/edit-history.spec.ts:37:1 › the Type list switches a tile's kind to its presets and two languages (11.2s)
+  ✓  13 [chromium] › apps/web/e2e/edit-history.spec.ts:8:1 › autosaves a module setting, undoes and redoes it, and keeps it after reload (13.6s)
+  ✓  16 [chromium] › apps/web/e2e/foundation.spec.ts:47:1 › foundation view actions preserve complete semantics and exact operation selection reaches chat history (9.7s)
+  ✓  19 [chromium] › apps/web/e2e/generation.spec.ts:134:1 › normal TinyURL source reports unsupported and keeps the mouse canvas usable (9.4s)
+  ✓  15 [chromium] › apps/web/e2e/foundation.spec.ts:4:1 › new project preselects the complete foundation, reloads it and undoes the seed in one step (16.9s)
+  ✓  17 [chromium] › apps/web/e2e/foundation.spec.ts:96:1 › explicit authority stays primary while preserved legacy inference remains editable and undoable (13.5s)
+  ✓  20 [chromium] › apps/web/e2e/operations.spec.ts:5:1 › declares a named operation on the canonical API, previews precise clears and restores it with one Undo (22.0s)
+  ✓  24 [chromium] › apps/web/e2e/relationship-focus.spec.ts:3:1 › focus traces named YouTube relationships without changing the design (12.0s)
+  ✓  23 [chromium] › apps/web/e2e/readiness.spec.ts:4:1 › the mouse report separates complete contracts from missing implementation/evidence and targets one canonical operation (13.4s)
+  ✓  18 [chromium] › apps/web/e2e/generation.spec.ts:16:1 › mouse previews and downloads the actual partial scaffold; stale source and project switch cannot download (27.3s)
+  ✓  21 [chromium] › apps/web/e2e/operations.spec.ts:69:1 › edits and clears an unresolved exact verifier, then previews an entry move and undoes it once (22.3s)
+  ✓  22 [chromium] › apps/web/e2e/ownership.spec.ts:4:1 › declares one owner, preserves canonical resource focus, refuses excess access and undoes exact removal (21.5s)
+  ✓  25 [chromium] › apps/web/e2e/relationship-focus.spec.ts:77:1 › a shared stem asks which relationship the mouse intends (8.3s)
+  ✓  27 [chromium] › apps/web/e2e/remove.spec.ts:3:1 › the user's line to an action has no X, and Delete leaves it (8.9s)
+  ✓  26 [chromium] › apps/web/e2e/relationship-focus.spec.ts:115:1 › removing the focus anchor follows the surviving tile and Undo restores the route (10.5s)
+  ✓  28 [chromium] › apps/web/e2e/remove.spec.ts:30:1 › removes a tile with its X, restitches its links and undoes (9.1s)
+  ✓  31 [chromium] › apps/web/e2e/spawn.spec.ts:41:1 › greys the types a side can't add, with the reason (8.1s)
+  ✓  30 [chromium] › apps/web/e2e/spawn.spec.ts:21:1 › pulls a + tab onto the fan to add a tile (8.7s)
+  ✓  32 [chromium] › apps/web/e2e/spawn.spec.ts:66:1 › a + released on a tile changes nothing (8.9s)
+  ✓  34 [chromium] › apps/web/e2e/spawn.spec.ts:108:1 › attaches to a queue asynchronously, the pair's default (8.3s)
+  ✓  33 [chromium] › apps/web/e2e/spawn.spec.ts:82:1 › attaches a store to a service, backwards, then undoes it (9.3s)
+  ✓  36 [chromium] › apps/web/e2e/spawn.spec.ts:191:1 › builds both actions from a blank design (8.0s)
+  ✓  29 [chromium] › apps/web/e2e/resolve.spec.ts:5:1 › declares public resolve by mouse, retains exact policy refs after reload and removes/undoes its cache bindings (22.1s)
+  ✓  35 [chromium] › apps/web/e2e/spawn.spec.ts:128:1 › the user's + offers its actions; an action attaches a tile as its entry (9.3s)
+
+  36 passed (1.4m)

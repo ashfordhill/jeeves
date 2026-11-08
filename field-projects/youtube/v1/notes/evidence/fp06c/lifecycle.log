@@ -1,0 +1,10 @@
+completion-handler-1  | {"videoId":"f96198cf-1c7d-41ff-ae36-3eac1a9af476","eventId":"dc31d858-9665-5800-9d9c-c413dc4127a4","outcome":"terminal"}
+completion-handler-1  | {"videoId":"f96198cf-1c7d-41ff-ae36-3eac1a9af476","eventId":"80f102e0-5208-5314-bbfe-4941d25d390a","outcome":"terminal"}
+completion-handler-1  | {"videoId":"1fe2c0fc-8034-4ea5-b0c2-c9c11b596774","eventId":"30b71b4c-a64e-5535-b762-f9bc0f385b57","outcome":"terminal"}
+completion-handler-1  | {"videoId":"1fe2c0fc-8034-4ea5-b0c2-c9c11b596774","eventId":"ebbb6e12-e633-5d4c-9dc0-78feb5df52c9","outcome":"terminal"}
+completion-handler-1  | {"videoId":"fdbbc43f-78a0-4be2-9910-a383de70acf6","eventId":"da566847-3b24-5841-827c-432c45aafb91","outcome":"started"}
+completion-handler-1  | {"videoId":"fdbbc43f-78a0-4be2-9910-a383de70acf6","eventId":"ae6db6ea-0824-5814-a410-0efaf4eaeaaf","outcome":"ready"}
+completion-handler-1  | {"videoId":"fdbbc43f-78a0-4be2-9910-a383de70acf6","eventId":"ae6db6ea-0824-5814-a410-0efaf4eaeaaf","outcome":"duplicate","previous":"ready"}
+completion-handler-1  | {"videoId":"fdbbc43f-78a0-4be2-9910-a383de70acf6","eventId":"ae6db6ea-0824-5814-a410-0efaf4eaeaaf","outcome":"duplicate","previous":"ready"}
+completion-handler-1  | {"videoId":"c922e399-2095-4253-a109-cf4950d1c76c","eventId":"732c0f98-39de-520a-a307-60f0a26ba001","outcome":"started"}
+completion-handler-1  | {"videoId":"c922e399-2095-4253-a109-cf4950d1c76c","eventId":"467b256e-b4b6-57ca-a562-a8542e3a164e","outcome":"failed"}

@@ -205,3 +205,150 @@ test("multipart inventory requires exact acknowledged parts and safe file bounds
   ])
     assert.equal(key in publicRow, false);
 });
+
+test("ready cache coalesces fills, never stores misses or totals, and falls back on cache errors", async () => {
+  const { readyReader } = await import("../dist/state/watch.js");
+  const videoId = randomUUID(),
+    prefix = resultPrefix(videoId, randomUUID(), randomUUID()),
+    values = new Map();
+  let queries = 0,
+    row = null;
+  const pool = {
+    query: async () => {
+      queries++;
+      await new Promise((r) => setImmediate(r));
+      return { rows: row ? [row] : [] };
+    },
+  };
+  const writes = [];
+  const cache = {
+    get: async (k) => values.get(k) ?? null,
+    set: async (k, v, options) => {
+      writes.push({ k, v: JSON.parse(v), options });
+      values.set(k, v);
+    },
+  };
+  const read = readyReader(pool, cache);
+  assert.deepEqual(await Promise.all([read(videoId), read(videoId)]), [null, null]);
+  assert.equal(queries, 1);
+  assert.equal(writes.length, 0);
+  row = {
+    video_id: videoId,
+    title: "Actual ready",
+    description: "",
+    channel: "creator",
+    duration_seconds: 20,
+    manifest: prefix + "master.m3u8",
+    thumbnail: prefix + "thumbnail.jpg",
+    published_at: new Date(),
+    publication_version: 1,
+  };
+  assert.equal((await read(videoId)).title, "Actual ready");
+  assert.equal(queries, 2);
+  assert.equal((await read(videoId)).title, "Actual ready");
+  assert.equal(queries, 2);
+  assert.deepEqual(writes[0].options, { EX: 3600 });
+  assert.equal("views" in writes[0].v, false);
+  const failedCache = {
+    get: async () => {
+      throw Error("offline");
+    },
+    set: async () => {
+      throw Error("offline");
+    },
+  };
+  assert.equal((await readyReader(pool, failedCache)(videoId)).videoId, videoId);
+});
+
+test("canceled subprocess is force-terminated and awaited before cleanup", async () => {
+  const { run } = await import("../dist/lib/media.js"),
+    fs = await import("node:fs/promises"),
+    os = await import("node:os"),
+    path = await import("node:path");
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "youtube-process-check-")),
+    pidPath = path.join(dir, "pid"),
+    abort = new AbortController();
+  try {
+    const work = run(
+      process.execPath,
+      [
+        "-e",
+        'const fs=require("node:fs");process.on("SIGTERM",()=>{});fs.writeFileSync(process.argv[1],String(process.pid));setInterval(()=>{},1000)',
+        pidPath,
+      ],
+      abort.signal,
+      5000,
+    );
+    let pid;
+    for (let i = 0; i < 100; i++) {
+      try {
+        pid = Number(await fs.readFile(pidPath, "utf8"));
+        break;
+      } catch {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+    }
+    assert.ok(pid);
+    abort.abort();
+    await assert.rejects(work);
+    assert.throws(
+      () => process.kill(pid, 0),
+      (e) => e.code === "ESRCH",
+    );
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("packager accepts a one-segment short VOD and binds its marker inventory", async () => {
+  const { handle, bindMarker } = await import("../dist/extensions/transcoder-packager.js"),
+    fs = await import("node:fs/promises"),
+    os = await import("node:os"),
+    path = await import("node:path");
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "youtube-package-check-"));
+  const videoId = randomUUID(),
+    jobId = randomUUID(),
+    attemptId = randomUUID(),
+    job = {
+      schemaVersion: 1,
+      type: "VideoProcessingRequested",
+      eventId: logicalEventId(jobId, attemptId, "VideoProcessingRequested"),
+      occurredAt: new Date().toISOString(),
+      videoId,
+      jobId,
+      attemptId,
+      originalKey: `originals/${videoId}/${randomUUID()}/source.mp4`,
+      expectedSize: 1,
+      expectedSha256: "a".repeat(64),
+    };
+  try {
+    for (const height of [360, 720]) {
+      await fs.mkdir(path.join(dir, String(height)));
+      await fs.writeFile(
+        path.join(dir, String(height), "index.m3u8"),
+        "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXTINF:1,\nsegment00000.ts\n#EXT-X-ENDLIST\n",
+      );
+      await fs.writeFile(path.join(dir, String(height), "segment00000.ts"), "segment");
+    }
+    await fs.writeFile(path.join(dir, "thumbnail.jpg"), "thumbnail");
+    const marker = await handle(dir, job, 1);
+    assert.equal(marker.inventory.length, 6);
+    assert.throws(() => bindMarker({ ...marker, originalSha256: "b".repeat(64) }, job));
+    assert.throws(() =>
+      bindMarker(
+        {
+          ...marker,
+          inventory: marker.inventory.map((i, n) => (n === 0 ? { ...i, path: "../escape.ts" } : i)),
+        },
+        job,
+      ),
+    );
+    await fs.writeFile(
+      path.join(dir, "360", "index.m3u8"),
+      "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n../escape.ts\n#EXT-X-ENDLIST\n",
+    );
+    await assert.rejects(handle(dir, job, 1));
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});

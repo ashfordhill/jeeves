@@ -1,0 +1,285 @@
+{
+  "checkedAt": "2026-11-08T06:11:37.800745+00:00",
+  "videos": [
+    {
+      "video_id": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+      "title": "FP06b real multipart orchid",
+      "state": "failed",
+      "state_version": 3,
+      "job_id": "70e28948-1872-4cb3-97bd-11e5bdfbe025",
+      "attempt_id": "b9536b60-bd0e-4cba-8389-74bbd1fdc6a8",
+      "queued_at": "2026-11-08T05:39:08.88975+00:00",
+      "started_at": null,
+      "deadline_at": "2026-11-08T05:49:08.88975+00:00",
+      "failure_code": "QUEUE_DEADLINE",
+      "failure_message": "Processing did not start before the deadline.",
+      "media": null,
+      "publication_version": null,
+      "published_at": null
+    },
+    {
+      "video_id": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+      "title": "FP06b refresh resume orchid",
+      "state": "failed",
+      "state_version": 3,
+      "job_id": "14d205b3-752b-4574-a1f3-31fde2aba8a2",
+      "attempt_id": "26ad35f1-38f1-4aa4-b661-08525f5c48b1",
+      "queued_at": "2026-11-08T05:39:10.392253+00:00",
+      "started_at": null,
+      "deadline_at": "2026-11-08T05:49:10.392253+00:00",
+      "failure_code": "QUEUE_DEADLINE",
+      "failure_message": "Processing did not start before the deadline.",
+      "media": null,
+      "publication_version": null,
+      "published_at": null
+    },
+    {
+      "video_id": "56815172-d561-4a8b-bf57-f4bb5f9f4063",
+      "title": "FP06b abort orchid",
+      "state": "aborted",
+      "state_version": 2,
+      "job_id": null,
+      "attempt_id": null,
+      "queued_at": null,
+      "started_at": null,
+      "deadline_at": null,
+      "failure_code": null,
+      "failure_message": null,
+      "media": null,
+      "publication_version": null,
+      "published_at": null
+    },
+    {
+      "video_id": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "state": "ready",
+      "state_version": 4,
+      "job_id": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attempt_id": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "queued_at": "2026-11-08T06:04:45.461601+00:00",
+      "started_at": "2026-11-08T06:04:46.041007+00:00",
+      "deadline_at": "2026-11-08T06:34:46.041007+00:00",
+      "failure_code": null,
+      "failure_message": null,
+      "media": {
+        "marker": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/_complete.json",
+        "prefix": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/",
+        "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+        "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+        "renditions": [
+          {
+            "width": 640,
+            "height": 360,
+            "playlist": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/index.m3u8",
+            "audioCodec": "aac",
+            "videoCodec": "h264"
+          },
+          {
+            "width": 1280,
+            "height": 720,
+            "playlist": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/index.m3u8",
+            "audioCodec": "aac",
+            "videoCodec": "h264"
+          }
+        ],
+        "durationSeconds": 20
+      },
+      "publication_version": 1,
+      "published_at": "2026-11-08T06:04:49.243+00:00"
+    },
+    {
+      "video_id": "c922e399-2095-4253-a109-cf4950d1c76c",
+      "title": "FP06c invalid heliotrope",
+      "state": "failed",
+      "state_version": 4,
+      "job_id": "c4ac0970-ad1e-4ac7-8c27-8fc73941e5f7",
+      "attempt_id": "27decf0a-d07d-4989-a67b-bd578f565f5c",
+      "queued_at": "2026-11-08T06:06:54.136993+00:00",
+      "started_at": "2026-11-08T06:06:54.552362+00:00",
+      "deadline_at": "2026-11-08T06:36:54.552362+00:00",
+      "failure_code": "INVALID_MEDIA",
+      "failure_message": "Media does not meet the supported format.",
+      "media": null,
+      "publication_version": null,
+      "published_at": null
+    }
+  ],
+  "inbox": [
+    {
+      "event_id": "dc31d858-9665-5800-9d9c-c413dc4127a4",
+      "video_id": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+      "job_id": "70e28948-1872-4cb3-97bd-11e5bdfbe025",
+      "attempt_id": "b9536b60-bd0e-4cba-8389-74bbd1fdc6a8",
+      "outcome": "terminal",
+      "handled_at": "2026-11-08T06:03:23.396434+00:00"
+    },
+    {
+      "event_id": "80f102e0-5208-5314-bbfe-4941d25d390a",
+      "video_id": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+      "job_id": "70e28948-1872-4cb3-97bd-11e5bdfbe025",
+      "attempt_id": "b9536b60-bd0e-4cba-8389-74bbd1fdc6a8",
+      "outcome": "terminal",
+      "handled_at": "2026-11-08T06:03:26.729518+00:00"
+    },
+    {
+      "event_id": "30b71b4c-a64e-5535-b762-f9bc0f385b57",
+      "video_id": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+      "job_id": "14d205b3-752b-4574-a1f3-31fde2aba8a2",
+      "attempt_id": "26ad35f1-38f1-4aa4-b661-08525f5c48b1",
+      "outcome": "terminal",
+      "handled_at": "2026-11-08T06:03:26.733881+00:00"
+    },
+    {
+      "event_id": "ebbb6e12-e633-5d4c-9dc0-78feb5df52c9",
+      "video_id": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+      "job_id": "14d205b3-752b-4574-a1f3-31fde2aba8a2",
+      "attempt_id": "26ad35f1-38f1-4aa4-b661-08525f5c48b1",
+      "outcome": "terminal",
+      "handled_at": "2026-11-08T06:03:29.982844+00:00"
+    },
+    {
+      "event_id": "da566847-3b24-5841-827c-432c45aafb91",
+      "video_id": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "job_id": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attempt_id": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "outcome": "started",
+      "handled_at": "2026-11-08T06:04:46.041412+00:00"
+    },
+    {
+      "event_id": "ae6db6ea-0824-5814-a410-0efaf4eaeaaf",
+      "video_id": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "job_id": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "attempt_id": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+      "outcome": "ready",
+      "handled_at": "2026-11-08T06:04:49.246522+00:00"
+    },
+    {
+      "event_id": "732c0f98-39de-520a-a307-60f0a26ba001",
+      "video_id": "c922e399-2095-4253-a109-cf4950d1c76c",
+      "job_id": "c4ac0970-ad1e-4ac7-8c27-8fc73941e5f7",
+      "attempt_id": "27decf0a-d07d-4989-a67b-bd578f565f5c",
+      "outcome": "started",
+      "handled_at": "2026-11-08T06:06:54.552652+00:00"
+    },
+    {
+      "event_id": "467b256e-b4b6-57ca-a562-a8542e3a164e",
+      "video_id": "c922e399-2095-4253-a109-cf4950d1c76c",
+      "job_id": "c4ac0970-ad1e-4ac7-8c27-8fc73941e5f7",
+      "attempt_id": "27decf0a-d07d-4989-a67b-bd578f565f5c",
+      "outcome": "failed",
+      "handled_at": "2026-11-08T06:06:54.657122+00:00"
+    }
+  ],
+  "outbox": [
+    {
+      "event_id": "d188019c-9f7a-5a45-aa16-3a132a34c319",
+      "destination": "upload-jobs",
+      "intent_key": "job:70e28948-1872-4cb3-97bd-11e5bdfbe025",
+      "payload": {
+        "type": "VideoProcessingRequested",
+        "jobId": "70e28948-1872-4cb3-97bd-11e5bdfbe025",
+        "eventId": "d188019c-9f7a-5a45-aa16-3a132a34c319",
+        "videoId": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+        "attemptId": "b9536b60-bd0e-4cba-8389-74bbd1fdc6a8",
+        "occurredAt": "2026-11-08T05:39:08.888Z",
+        "originalKey": "originals/f96198cf-1c7d-41ff-ae36-3eac1a9af476/19e4dfe6-b26c-4200-bf85-6ce8ce4cf124/source.mp4",
+        "expectedSize": 15584953,
+        "schemaVersion": 1,
+        "expectedSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "created_at": "2026-11-08T05:39:08.890471+00:00",
+      "sent_at": "2026-11-08T05:39:09.462515+00:00",
+      "attempts": 1,
+      "next_attempt_at": "2026-11-08T05:39:08.890471+00:00"
+    },
+    {
+      "event_id": "661a7319-cd55-5f29-a0b3-c2cd5d3c4830",
+      "destination": "upload-jobs",
+      "intent_key": "job:14d205b3-752b-4574-a1f3-31fde2aba8a2",
+      "payload": {
+        "type": "VideoProcessingRequested",
+        "jobId": "14d205b3-752b-4574-a1f3-31fde2aba8a2",
+        "eventId": "661a7319-cd55-5f29-a0b3-c2cd5d3c4830",
+        "videoId": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+        "attemptId": "26ad35f1-38f1-4aa4-b661-08525f5c48b1",
+        "occurredAt": "2026-11-08T05:39:10.391Z",
+        "originalKey": "originals/1fe2c0fc-8034-4ea5-b0c2-c9c11b596774/5cd4edbb-9143-4bd7-8ebb-80a151b2a929/source.mp4",
+        "expectedSize": 15584953,
+        "schemaVersion": 1,
+        "expectedSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "created_at": "2026-11-08T05:39:10.393101+00:00",
+      "sent_at": "2026-11-08T05:39:10.473689+00:00",
+      "attempts": 1,
+      "next_attempt_at": "2026-11-08T05:39:10.393101+00:00"
+    },
+    {
+      "event_id": "546f75c9-77a4-58d5-8d54-8bb55b0ef29a",
+      "destination": "upload-jobs",
+      "intent_key": "job:c6efa967-96cf-4be2-811d-6a397f7cfb21",
+      "payload": {
+        "type": "VideoProcessingRequested",
+        "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+        "eventId": "546f75c9-77a4-58d5-8d54-8bb55b0ef29a",
+        "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+        "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+        "occurredAt": "2026-11-08T06:04:45.459Z",
+        "originalKey": "originals/fdbbc43f-78a0-4be2-9910-a383de70acf6/803dd497-b3a6-4e96-a1b8-529e391e3da2/source.mp4",
+        "expectedSize": 15584953,
+        "schemaVersion": 1,
+        "expectedSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "created_at": "2026-11-08T06:04:45.462486+00:00",
+      "sent_at": "2026-11-08T06:04:46.037293+00:00",
+      "attempts": 1,
+      "next_attempt_at": "2026-11-08T06:04:45.462486+00:00"
+    },
+    {
+      "event_id": "14e332ba-7deb-58a3-aecd-121dc846a902",
+      "destination": "publication-events",
+      "intent_key": "publication:fdbbc43f-78a0-4be2-9910-a383de70acf6:1",
+      "payload": {
+        "type": "VideoPublished",
+        "state": "ready",
+        "title": "FP06c heliotrope public fixture",
+        "channel": "creator",
+        "eventId": "14e332ba-7deb-58a3-aecd-121dc846a902",
+        "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+        "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+        "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+        "occurredAt": "2026-11-08T06:04:49.243Z",
+        "visibility": "public",
+        "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+        "publishedAt": "2026-11-08T06:04:49.243Z",
+        "schemaVersion": 1,
+        "durationSeconds": 20,
+        "publicationVersion": 1
+      },
+      "created_at": "2026-11-08T06:04:49.246111+00:00",
+      "sent_at": "2026-11-08T06:04:50.179171+00:00",
+      "attempts": 1,
+      "next_attempt_at": "2026-11-08T06:04:49.246111+00:00"
+    },
+    {
+      "event_id": "74439521-d537-56b2-8db8-42147fde2a9e",
+      "destination": "upload-jobs",
+      "intent_key": "job:c4ac0970-ad1e-4ac7-8c27-8fc73941e5f7",
+      "payload": {
+        "type": "VideoProcessingRequested",
+        "jobId": "c4ac0970-ad1e-4ac7-8c27-8fc73941e5f7",
+        "eventId": "74439521-d537-56b2-8db8-42147fde2a9e",
+        "videoId": "c922e399-2095-4253-a109-cf4950d1c76c",
+        "attemptId": "27decf0a-d07d-4989-a67b-bd578f565f5c",
+        "occurredAt": "2026-11-08T06:06:54.136Z",
+        "originalKey": "originals/c922e399-2095-4253-a109-cf4950d1c76c/335299c8-bdef-4457-82c8-35b79176ebf4/source.mp4",
+        "expectedSize": 59,
+        "schemaVersion": 1,
+        "expectedSha256": "0b9a5684008f4c022fa6bc5b896a8e66fb2e441f9033f7bc81ae3a15746c6273"
+      },
+      "created_at": "2026-11-08T06:06:54.137599+00:00",
+      "sent_at": "2026-11-08T06:06:54.548068+00:00",
+      "attempts": 1,
+      "next_attempt_at": "2026-11-08T06:06:54.137599+00:00"
+    }
+  ]
+}

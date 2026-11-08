@@ -152,7 +152,20 @@ if (!state) {
   save();
 }
 if (command === "stop") {
-  compose("stop", "edge", "upload", "identity", "objects", "broker", "postgres", "search-index");
+  compose(
+    "stop",
+    "edge",
+    "watch",
+    "upload",
+    "transcoder",
+    "completion-handler",
+    "cache",
+    "identity",
+    "objects",
+    "broker",
+    "postgres",
+    "search-index",
+  );
   process.exit(0);
 }
 if (state.pending === "garage-bootstrap")
@@ -195,9 +208,19 @@ function step(name, run, singleUse = false) {
   state.pending = null;
   save();
 }
-step("build", () => compose("build", "upload", "edge"));
+step("build", () => compose("build", "upload", "transcoder", "edge"));
 step("providers", () => {
-  compose("up", "-d", "--wait", "postgres", "broker", "objects", "identity", "search-index");
+  compose(
+    "up",
+    "-d",
+    "--wait",
+    "postgres",
+    "broker",
+    "objects",
+    "identity",
+    "search-index",
+    "cache",
+  );
   state.volumes = recordVolumes();
 });
 step(
@@ -211,10 +234,12 @@ step(
 step("migrations", () => compose("run", "--rm", "--no-deps", "migrate"));
 step("broker-assertions", () => compose("run", "--rm", "--no-deps", "broker-init"));
 step("search-assertions", () => compose("run", "--rm", "--no-deps", "search-init"));
-step("implemented-app", () => compose("up", "-d", "--wait", "upload", "edge"));
+step("implemented-app", () =>
+  compose("up", "-d", "--wait", "upload", "completion-handler", "transcoder", "watch", "edge"),
+);
 if (!state.done.includes("initialized")) state.done.push("initialized");
 state.volumes = recordVolumes();
 save();
 console.log(
-  `Upload subset ready at http://127.0.0.1:4400 (Compose ${project}). Processing, Watch, Search and Counts consumers remain stopped.`,
+  `Processing and playback ready at http://127.0.0.1:4400 (Compose ${project}). Search/indexer and Counts consumers remain stopped.`,
 );

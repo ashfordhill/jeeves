@@ -1,0 +1,389 @@
+{
+  "checkedAt": "2026-11-08T06:06:43.912Z",
+  "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+  "job": {
+    "type": "VideoProcessingRequested",
+    "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+    "eventId": "546f75c9-77a4-58d5-8d54-8bb55b0ef29a",
+    "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+    "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+    "occurredAt": "2026-11-08T06:04:45.459Z",
+    "originalKey": "originals/fdbbc43f-78a0-4be2-9910-a383de70acf6/803dd497-b3a6-4e96-a1b8-529e391e3da2/source.mp4",
+    "expectedSize": 15584953,
+    "schemaVersion": 1,
+    "expectedSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+  },
+  "original": {
+    "size": 15584953,
+    "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+  },
+  "marker": {
+    "schemaVersion": 1,
+    "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+    "jobId": "c6efa967-96cf-4be2-811d-6a397f7cfb21",
+    "attemptId": "649849ac-f0c4-4ff9-b8e1-219d78d08351",
+    "originalKey": "originals/fdbbc43f-78a0-4be2-9910-a383de70acf6/803dd497-b3a6-4e96-a1b8-529e391e3da2/source.mp4",
+    "originalSize": 15584953,
+    "originalSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+    "result": {
+      "prefix": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/",
+      "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "marker": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/_complete.json",
+      "durationSeconds": 20,
+      "renditions": [
+        {
+          "height": 360,
+          "width": 640,
+          "playlist": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/index.m3u8",
+          "videoCodec": "h264",
+          "audioCodec": "aac"
+        },
+        {
+          "height": 720,
+          "width": 1280,
+          "playlist": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/index.m3u8",
+          "videoCodec": "h264",
+          "audioCodec": "aac"
+        }
+      ]
+    },
+    "inventory": [
+      {
+        "path": "360/segment00000.ts",
+        "size": 631868,
+        "sha256": "e279ff7bfc3ac479d89d6f05b304b601ab62a5c310949e18834dc56586417bb7",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00001.ts",
+        "size": 616828,
+        "sha256": "01eadcdbc628416dbc4af81fec46d137cf3147b8bf191d260f3205b23fdb29a7",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00002.ts",
+        "size": 586184,
+        "sha256": "6c923a401f91d9f926c6e30642aa40d89fb316958c9e1114d8da063dff06b36a",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00003.ts",
+        "size": 597840,
+        "sha256": "422fe46c52aebeff0fd0a0d70380553f360ee726d6b9320d48e4c348ebe1b4ae",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00004.ts",
+        "size": 610248,
+        "sha256": "8ed65ac5071d2d68863a4f9cf07bb787aa6f2a802682a1fa5a8b068d3c272b1b",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/index.m3u8",
+        "size": 311,
+        "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+        "contentType": "application/vnd.apple.mpegurl"
+      },
+      {
+        "path": "720/segment00000.ts",
+        "size": 1785248,
+        "sha256": "f2bdc90de647130a863df693c65ffea1adbf34881b33a6e1e8f27b3ef36927ea",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00001.ts",
+        "size": 1656468,
+        "sha256": "ea38984acfa0ed997f6c7e5519adbde6ad98aac24241d7aabd870482a0236195",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00002.ts",
+        "size": 1640864,
+        "sha256": "2811d0d238d85f183693a48a1a38a39ba4de0bff7fd6f56b910e1df95017a728",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00003.ts",
+        "size": 1639924,
+        "sha256": "cd0e99205dcc2e1f28ae875b36507753132f9e7d13445b79265b98300bf4fb0b",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00004.ts",
+        "size": 1631276,
+        "sha256": "8c3206f2eb9c34b43f9fd607bd62c6ed10ffaea25524333e1de847adc43414be",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/index.m3u8",
+        "size": 311,
+        "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+        "contentType": "application/vnd.apple.mpegurl"
+      },
+      {
+        "path": "thumbnail.jpg",
+        "size": 68896,
+        "sha256": "bd429e5cf14eb25ce757441cea194e2a5d11b6ffba74892ac3a8a5fbd4ac099f",
+        "contentType": "image/jpeg"
+      },
+      {
+        "path": "master.m3u8",
+        "size": 194,
+        "sha256": "dbdf1ac5ec114beb65ac7a8968affb3aa73f9fd4d8822359d46fb13040be6d20",
+        "contentType": "application/vnd.apple.mpegurl"
+      }
+    ]
+  },
+  "playlists": {
+    "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/index.m3u8": "#EXTM3U\n#EXT-X-VERSION:6\n#EXT-X-TARGETDURATION:4\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXTINF:4.000000,\nsegment00000.ts\n#EXTINF:4.000000,\nsegment00001.ts\n#EXTINF:4.000000,\nsegment00002.ts\n#EXTINF:4.000000,\nsegment00003.ts\n#EXTINF:4.000000,\nsegment00004.ts\n#EXT-X-ENDLIST\n",
+    "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/index.m3u8": "#EXTM3U\n#EXT-X-VERSION:6\n#EXT-X-TARGETDURATION:4\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXTINF:4.000000,\nsegment00000.ts\n#EXTINF:4.000000,\nsegment00001.ts\n#EXTINF:4.000000,\nsegment00002.ts\n#EXTINF:4.000000,\nsegment00003.ts\n#EXTINF:4.000000,\nsegment00004.ts\n#EXT-X-ENDLIST\n",
+    "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8": "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1250000,RESOLUTION=640x360\n360/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=3500000,RESOLUTION=1280x720\n720/index.m3u8\n"
+  },
+  "before": [
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/index.m3u8",
+      "size": 311,
+      "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+      "etag": "\"d02b159834abd121e5211f00f5335508\"",
+      "lastModified": "2026-11-08T06:04:49.218Z",
+      "contentType": "application/vnd.apple.mpegurl"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00000.ts",
+      "size": 631868,
+      "sha256": "e279ff7bfc3ac479d89d6f05b304b601ab62a5c310949e18834dc56586417bb7",
+      "etag": "\"2d0a7d5fd46864bc62724f29300baf2a\"",
+      "lastModified": "2026-11-08T06:04:49.108Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00001.ts",
+      "size": 616828,
+      "sha256": "01eadcdbc628416dbc4af81fec46d137cf3147b8bf191d260f3205b23fdb29a7",
+      "etag": "\"2884a8175c33e3a369f886b95a3e96b4\"",
+      "lastModified": "2026-11-08T06:04:49.118Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00002.ts",
+      "size": 586184,
+      "sha256": "6c923a401f91d9f926c6e30642aa40d89fb316958c9e1114d8da063dff06b36a",
+      "etag": "\"51c2dc64d280e9ab1f0b44251300200b\"",
+      "lastModified": "2026-11-08T06:04:49.126Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00003.ts",
+      "size": 597840,
+      "sha256": "422fe46c52aebeff0fd0a0d70380553f360ee726d6b9320d48e4c348ebe1b4ae",
+      "etag": "\"762adabc76a47c5e0e02e857fd33b0e2\"",
+      "lastModified": "2026-11-08T06:04:49.134Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00004.ts",
+      "size": 610248,
+      "sha256": "8ed65ac5071d2d68863a4f9cf07bb787aa6f2a802682a1fa5a8b068d3c272b1b",
+      "etag": "\"18257f783e62114ca09ed3d3ddfa1f7f\"",
+      "lastModified": "2026-11-08T06:04:49.142Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/index.m3u8",
+      "size": 311,
+      "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+      "etag": "\"d02b159834abd121e5211f00f5335508\"",
+      "lastModified": "2026-11-08T06:04:49.220Z",
+      "contentType": "application/vnd.apple.mpegurl"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00000.ts",
+      "size": 1785248,
+      "sha256": "f2bdc90de647130a863df693c65ffea1adbf34881b33a6e1e8f27b3ef36927ea",
+      "etag": "\"582b3a163c989e45e49329e2594f7cec\"",
+      "lastModified": "2026-11-08T06:04:49.153Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00001.ts",
+      "size": 1656468,
+      "sha256": "ea38984acfa0ed997f6c7e5519adbde6ad98aac24241d7aabd870482a0236195",
+      "etag": "\"7bef09fa832cde5841516bbf4a1b9ded\"",
+      "lastModified": "2026-11-08T06:04:49.166Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00002.ts",
+      "size": 1640864,
+      "sha256": "2811d0d238d85f183693a48a1a38a39ba4de0bff7fd6f56b910e1df95017a728",
+      "etag": "\"f709b54dbe206fd51b9160bb505ea2e2\"",
+      "lastModified": "2026-11-08T06:04:49.178Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00003.ts",
+      "size": 1639924,
+      "sha256": "cd0e99205dcc2e1f28ae875b36507753132f9e7d13445b79265b98300bf4fb0b",
+      "etag": "\"da46c13b2387f9c1098ec6caf6a4407c\"",
+      "lastModified": "2026-11-08T06:04:49.191Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00004.ts",
+      "size": 1631276,
+      "sha256": "8c3206f2eb9c34b43f9fd607bd62c6ed10ffaea25524333e1de847adc43414be",
+      "etag": "\"a9387f793aa498c3aafb8dd7b4c9daac\"",
+      "lastModified": "2026-11-08T06:04:49.206Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/_complete.json",
+      "size": 3534,
+      "sha256": "3759510d680222c3c45708412e940bb054b96a5597c55c890f6848e6a446b934",
+      "etag": "\"717d698d626acec603a534fac82e56de\"",
+      "lastModified": "2026-11-08T06:04:49.226Z",
+      "contentType": "application/json"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "size": 194,
+      "sha256": "dbdf1ac5ec114beb65ac7a8968affb3aa73f9fd4d8822359d46fb13040be6d20",
+      "etag": "\"ab8b73121cb72a46f98866ece0864574\"",
+      "lastModified": "2026-11-08T06:04:49.225Z",
+      "contentType": "application/vnd.apple.mpegurl"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "size": 68896,
+      "sha256": "bd429e5cf14eb25ce757441cea194e2a5d11b6ffba74892ac3a8a5fbd4ac099f",
+      "etag": "\"eaa48fa40619d70cdf0c1526cb157cc8\"",
+      "lastModified": "2026-11-08T06:04:49.222Z",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "after": [
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/index.m3u8",
+      "size": 311,
+      "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+      "etag": "\"d02b159834abd121e5211f00f5335508\"",
+      "lastModified": "2026-11-08T06:04:49.218Z",
+      "contentType": "application/vnd.apple.mpegurl"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00000.ts",
+      "size": 631868,
+      "sha256": "e279ff7bfc3ac479d89d6f05b304b601ab62a5c310949e18834dc56586417bb7",
+      "etag": "\"2d0a7d5fd46864bc62724f29300baf2a\"",
+      "lastModified": "2026-11-08T06:04:49.108Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00001.ts",
+      "size": 616828,
+      "sha256": "01eadcdbc628416dbc4af81fec46d137cf3147b8bf191d260f3205b23fdb29a7",
+      "etag": "\"2884a8175c33e3a369f886b95a3e96b4\"",
+      "lastModified": "2026-11-08T06:04:49.118Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00002.ts",
+      "size": 586184,
+      "sha256": "6c923a401f91d9f926c6e30642aa40d89fb316958c9e1114d8da063dff06b36a",
+      "etag": "\"51c2dc64d280e9ab1f0b44251300200b\"",
+      "lastModified": "2026-11-08T06:04:49.126Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00003.ts",
+      "size": 597840,
+      "sha256": "422fe46c52aebeff0fd0a0d70380553f360ee726d6b9320d48e4c348ebe1b4ae",
+      "etag": "\"762adabc76a47c5e0e02e857fd33b0e2\"",
+      "lastModified": "2026-11-08T06:04:49.134Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/360/segment00004.ts",
+      "size": 610248,
+      "sha256": "8ed65ac5071d2d68863a4f9cf07bb787aa6f2a802682a1fa5a8b068d3c272b1b",
+      "etag": "\"18257f783e62114ca09ed3d3ddfa1f7f\"",
+      "lastModified": "2026-11-08T06:04:49.142Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/index.m3u8",
+      "size": 311,
+      "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+      "etag": "\"d02b159834abd121e5211f00f5335508\"",
+      "lastModified": "2026-11-08T06:04:49.220Z",
+      "contentType": "application/vnd.apple.mpegurl"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00000.ts",
+      "size": 1785248,
+      "sha256": "f2bdc90de647130a863df693c65ffea1adbf34881b33a6e1e8f27b3ef36927ea",
+      "etag": "\"582b3a163c989e45e49329e2594f7cec\"",
+      "lastModified": "2026-11-08T06:04:49.153Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00001.ts",
+      "size": 1656468,
+      "sha256": "ea38984acfa0ed997f6c7e5519adbde6ad98aac24241d7aabd870482a0236195",
+      "etag": "\"7bef09fa832cde5841516bbf4a1b9ded\"",
+      "lastModified": "2026-11-08T06:04:49.166Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00002.ts",
+      "size": 1640864,
+      "sha256": "2811d0d238d85f183693a48a1a38a39ba4de0bff7fd6f56b910e1df95017a728",
+      "etag": "\"f709b54dbe206fd51b9160bb505ea2e2\"",
+      "lastModified": "2026-11-08T06:04:49.178Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00003.ts",
+      "size": 1639924,
+      "sha256": "cd0e99205dcc2e1f28ae875b36507753132f9e7d13445b79265b98300bf4fb0b",
+      "etag": "\"da46c13b2387f9c1098ec6caf6a4407c\"",
+      "lastModified": "2026-11-08T06:04:49.191Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/720/segment00004.ts",
+      "size": 1631276,
+      "sha256": "8c3206f2eb9c34b43f9fd607bd62c6ed10ffaea25524333e1de847adc43414be",
+      "etag": "\"a9387f793aa498c3aafb8dd7b4c9daac\"",
+      "lastModified": "2026-11-08T06:04:49.206Z",
+      "contentType": "video/mp2t"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/_complete.json",
+      "size": 3534,
+      "sha256": "3759510d680222c3c45708412e940bb054b96a5597c55c890f6848e6a446b934",
+      "etag": "\"717d698d626acec603a534fac82e56de\"",
+      "lastModified": "2026-11-08T06:04:49.226Z",
+      "contentType": "application/json"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "size": 194,
+      "sha256": "dbdf1ac5ec114beb65ac7a8968affb3aa73f9fd4d8822359d46fb13040be6d20",
+      "etag": "\"ab8b73121cb72a46f98866ece0864574\"",
+      "lastModified": "2026-11-08T06:04:49.225Z",
+      "contentType": "application/vnd.apple.mpegurl"
+    },
+    {
+      "key": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "size": 68896,
+      "sha256": "bd429e5cf14eb25ce757441cea194e2a5d11b6ffba74892ac3a8a5fbd4ac099f",
+      "etag": "\"eaa48fa40619d70cdf0c1526cb157cc8\"",
+      "lastModified": "2026-11-08T06:04:49.222Z",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "duplicateJobAndResultConfirmed": true,
+  "outputsUnchanged": true
+}

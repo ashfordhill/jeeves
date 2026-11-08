@@ -98,3 +98,16 @@ G02/G05/G07 and the remaining public UI still require later working processing/s
 G08's local limits remain. No blanket closure of G01–G08 or template/coverage/savings credit follows.
 No current source/config intent changed from native010 and historical generated005 inputs remain
 immutable. Six business extensions and the unfinished public/worker entries still refuse startup.
+
+## FP06c processing/playback observations
+
+[FP06c](evidence/fp06c/README.md) now implements real CPU H.264/AAC 360p/720p HLS, thumbnails,
+job-bound marker inventory, strict result handling, lifecycle inbox/CAS/deadline/publication relay,
+ready-only Watch/cache and public browser playback. G01/G03/G07 have bounded actual processing,
+duplicate/no-rewrite, invalid-media and public playback evidence; G02's committed publication is
+retained for the real indexer in FP07a. G04 now includes public Watch/details/thumbnail/errors;
+search UI and G05 counts still remain. No blanket gap closure or generated-template credit follows.
+S04 passes; S05 has five-second decoded video, unmuted decoded 440 Hz PCM, mouse seek and range
+requests, with no human listening observation. The fixed-deadline staged jobs correctly fail.
+Remote partial/orphan objects remain a documented limit; local temp cleanup is unconditional.
+G08's local security/provider/scale limits and independent integrated FP07b acceptance remain.
