@@ -652,3 +652,14 @@ identity. The two product questions are answered; local adapter details remain b
   updated the active field plan, repository boundary and current documentation; added concrete
   capture/provenance requirements and sequential Sol/xhigh unit dispatch. Image export, the actual
   database selection change, baseline snapshots and generation remain implementation work.
+
+
+- FP00, local commit titled **FP00: export the full diagram as PNG**: added **Export diagram → PNG**
+  and the exact-image capture-details download. The existing tile/line renderers use the current
+  settled layout; current owner expansion is explicit, every projected relationship renders and
+  focus/selection/editing UI are omitted. Capture preserves saved design/history and interactive
+  view, checks saved source/fonts/layout and refuses stale/failed/oversize captures. Mouse PNGs,
+  studio screenshots and bounded regression evidence are in
+  [FP00 evidence](plans/reliable-foundations/evidence/fp00/README.md). Original owner YouTube/TinyURL
+  sources remain unchanged. FP01's original/PostgreSQL/baseline snapshots, database change,
+  generator, field app, benchmark and owner review remain open; no earlier entry/image was edited.

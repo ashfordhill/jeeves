@@ -33,6 +33,7 @@ import {
   IconArrowBackUp,
   IconArrowForwardUp,
   IconArrowRight,
+  IconDownload,
   IconFocusCentered,
   IconHandStop,
   IconLayoutSidebarRight,
@@ -62,6 +63,7 @@ import { ReadinessReport } from "../studio/ReadinessReport.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
+import { ExportDiagram } from "./ExportDiagram.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { ownerNodeId, projectOwnerGraph } from "./ownerProjection.ts";
@@ -106,6 +108,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [pick, setPick] = useState<BoardSelection>(() => startsSelected(graph));
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
+  const [exportOpen, setExportOpen] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
   const [operationsOpen, setOperationsOpen] = useState(false);
   const [ownershipOpen, setOwnershipOpen] = useState(false);
@@ -293,6 +296,14 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   return (
     <div className="studio-workspace">
+      {exportOpen ? (
+        <ExportDiagram
+          board={board}
+          expandedOwners={expandedOwners}
+          fallbackOwners={projection.fallbackOwners}
+          onClose={() => setExportOpen(false)}
+        />
+      ) : null}
       {operationsOpen ? (
         <OperationsForm
           projectId={projectId}
@@ -426,6 +437,19 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           </button>
           <button type="button" title="Fit" aria-label="Fit" onClick={() => board.current?.fit()}>
             <IconFocusCentered size={19} />
+          </button>
+          <button
+            type="button"
+            className="diagram-export-trigger"
+            title={
+              hasDraft || failed || historyBusy
+                ? "Finish saving edits before exporting"
+                : "Export diagram"
+            }
+            disabled={hasDraft || failed || historyBusy}
+            onClick={() => setExportOpen(true)}
+          >
+            <IconDownload size={18} /> Export diagram
           </button>
         </div>
         {notice ? (

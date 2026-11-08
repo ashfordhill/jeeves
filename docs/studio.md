@@ -80,6 +80,35 @@ operation. Focus, selection and both fit controls change no saved design, revisi
 If the focus tile disappears, the view follows the removal's surviving selection when available,
 or shows all relationships.
 
+## Diagram PNG export
+
+Click **Export diagram** in the canvas toolbar, then **PNG**. The download contains the full
+saved diagram, including offscreen tiles, their existing labels/icons, all projected routes,
+crossing gaps and arrowheads. It uses the same HTML faces, SVG lines and settled layout as the
+canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
+are not part of the image; existing two-line tile names keep their canvas presentation.
+
+The image keeps the current expanded/collapsed logical-owner projection. Expand an owner's
+roles on the canvas before exporting to include their individual faces. Focus filters, dimming,
+selection, editing controls and the interactive camera are omitted. Export changes no saved
+design, revision, history, camera, focus, selection or owner expansion.
+
+Finish saving inspector edits before opening export. Capture checks the complete saved source
+before and after rendering, waits for layout animation and bundled fonts, and refuses a stale
+project, failed/missing routes or labels, font failure or capture timeout. Closing the dialog or
+switching projects cancels the pending download. Images over 40 megapixels or 16,384 pixels on
+one side are refused, without shrinking them or silently clipping content. PNG export is checked
+in Chromium; different browser/font/renderer versions are not promised identical pixels.
+
+After downloading, **Download capture details** saves JSON for that exact PNG: project/revision,
+source hash and its encoding, image hash/dimensions, owner expansion, tile/line identities and
+resolved positions/routes/chip bounds. It includes the renderer version, browser and Git identity
+at build/startup when available; unavailable identity is `null`. Development/HMR captures require
+an accompanying Git tree/commit audit. The details file is view provenance, not an editable design
+or blueprint. Keep those source files separately and verify their source hash, following the
+[field-version snapshot convention](plans/reliable-foundations/youtube-field-project-plan.md#diagram-images-and-visual-history).
+No automatic version archive or generator is implemented by image export.
+
 ## Layout and navigation
 
 The layout is automatic and never stored: ELK layered, left to right, with automation-illustrator's

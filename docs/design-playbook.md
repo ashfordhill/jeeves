@@ -1010,3 +1010,17 @@ renderer changes can alter the picture. Record these capture inputs and retain e
 Image export must not mutate the project or the user's camera, focus and selection, and a focus
 filter must not silently omit relationships from a purported full-diagram export. Treat images
 as review evidence alongside the machine-readable source, not as substitute generator contracts.
+
+
+## 2026-11-07 diagram export implementation lesson
+
+Freeze the live resolved board rather than rerunning layout for a snapshot: previous positions
+are stability hints, so equal source alone need not reproduce placement. A full logical view can
+preserve owner collapse if it says so explicitly and retains every projected relationship. Keep
+focus and editing chrome out of the capture without changing the user's interactive view.
+
+Inspect the downloaded raster itself. SVG route DOM can exist while rasterization loses every
+stroke: deep SVG cloning must retain the board's CSS variables and usable SVG viewport extents.
+Font embedding and light-theme overrides also need to survive serialization and dark root styles.
+A small route-ink regression plus source/view checks addresses this observed failure without
+turning experimental diagram capture into broad pixel certification.

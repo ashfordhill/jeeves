@@ -4,7 +4,8 @@ Owner direction, 2026-11-07. This is the active plan for generation work in the 
 It supersedes the separate-repository, TinyURL-first sequence and broad template certification
 before the first field project. Build a working YouTube v1, review it with a fresh agent, improve
 Jeeves, then generate a fresh v2 and possibly v3. Marketplace and TinyURL follow when the owner is
-satisfied. No generator, field application or benchmark result exists yet.
+satisfied. FP00 implements diagram PNG export; no generator, field application or benchmark result exists
+yet. FP01 is the next assigned unit.
 
 ## Scope and decisions
 
@@ -88,11 +89,20 @@ Never silently regenerate over edits. Preserve v1 while creating v2.
 
 ## Diagram images and visual history
 
-Add a mouse-operated **Export diagram → PNG** action before freezing v1. There is currently no
-diagram-image export. The board combines HTML tile faces and SVG relationships; the server's
-existing SVG rasterizer handles chat attachments, not a complete diagram. Reuse the actual canvas
-composition and settled layout so the export does not become a competing diagram renderer.
-PNG is the first deliverable; vector export can follow if useful.
+FP00 provides the mouse-operated **Export diagram → PNG** action before freezing v1. It uses
+the existing board's HTML tile and SVG relationship renderers with a frozen resolved layout;
+no layout rerun or alternate diagram drawing is involved. The server's SVG rasterizer remains
+for chat attachments. See [usage and capture limits](../../studio.md#diagram-png-export) and
+[FP00 evidence](evidence/fp00/README.md). PNG is implemented; vector export remains optional.
+
+The exported full logical view preserves the canvas's current expanded/collapsed owner
+projection, explicitly recorded in capture details. Expand roles first when the snapshot should
+show individual responsibilities. All projected relationships render even during focus. The
+secondary capture-details download records exact PNG/source hashes and resolved layout/view
+context; FP01 must still archive the editable source, blueprint and external renderer Git/tree
+audit. Development identity is recorded at server startup and cannot attest later HMR changes.
+The 2× light capture refuses missing/failed layout/fonts, stale source and oversize images rather
+than silently clipping or shrinking. No version archive service is implied.
 
 Export the full diagram at a readable scale, including offscreen tiles, labels, icons, routes
 and arrowheads. Omit editing controls, selection highlights and transient focus filters. Record
@@ -144,10 +154,11 @@ link to the generator input hashes. Keep capture timestamps and image provenance
 deterministic generated-source hashing; freeze image bytes as explicit inputs when bundling
 them. Do not claim pixel-identical renders across different fonts, browsers or renderer versions.
 
-FP00 verifies the mouse download opens as a readable complete PNG for YouTube and TinyURL,
-including exports after pan/zoom/focus; export must not mutate the project or interactive view.
-FP01 then establishes the actual archived source and PostgreSQL baseline. This is bounded export
-and provenance work, not a new image-certification suite.
+FP00's checks cover readable actual mouse PNG downloads for YouTube and TinyURL, including
+pan/zoom/focus, owner projection and saved-state/view preservation. Its bounded regression checks
+cover route ink, stale source, font failure and cancellation. FP01 still establishes the actual
+archived source and PostgreSQL baseline. This is bounded export and provenance work, not a new
+image-certification suite.
 
 ## Useful partial output and truthful claims
 
@@ -261,7 +272,7 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 
 | Unit | Deliverable and exit |
 | --- | --- |
-| FP00: diagram image export | Mouse PNG export of the real full canvas; readable labels/routes, stable capture and no saved-state or view mutation. Document usage and the snapshot convention. |
+| FP00: diagram image export (implemented) | Mouse PNG export of the real full canvas; readable labels/routes, stable capture and no saved-state or view mutation. Document usage and the snapshot convention. |
 | FP01: baseline and mappings | Archive original saved YouTube, change its database selection to approved PostgreSQL, archive the result and make the v1 copy. Select local adapters, freeze minimal-UI smoke scenarios and supported-template/gap mappings. |
 | FP02: experimental generator | Finite assembly, provenance, partial-output reporting, safe file ownership and deterministic export; strict readiness semantics preserved. |
 | FP03: first templates and Jeeves export | Useful v1 template output plus mouse generation/download; prove independent build. No heavy template certification. |

@@ -1,0 +1,88 @@
+.diagram-export-options p {
+  line-height: 1.5;
+}
+.diagram-export-options button {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--cream);
+  font: inherit;
+  cursor: pointer;
+}
+.diagram-export-options button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.diagram-export-options [role="alert"] {
+  color: var(--minus);
+}
+.studio-tools .diagram-export-trigger {
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+.diagram-capture-host {
+  position: fixed;
+  top: 0;
+  left: -100000px;
+  pointer-events: none;
+  font-family: "Nunito Variable", Nunito, system-ui, sans-serif;
+  font-weight: 600;
+}
+/* Explicit light capture tokens win over the studio's current root theme. */
+:root .diagram-capture-host .board.board-snapshot {
+  --paper: #e8f4fa;
+  --cream: #f7fcfe;
+  --ink: #071c28;
+  --ink-soft: #123a50;
+  --line: #123a50;
+  --minus: #b23a30;
+  --yellow: #e8c14a;
+  --board-paper: #e8f4fa;
+  --board-line: #123a50;
+  --board-ink: #071c28;
+  --board-tile: #f7fcfe;
+  --board-shadow: rgba(7, 28, 40, 0.16);
+  --actor-fill: #cfe8f2;
+  --figure-ink: #122836;
+}
+.diagram-capture-host .board.board-snapshot [data-family] {
+  --type-color: #637687;
+}
+.diagram-capture-host .board.board-snapshot [data-family="api"] {
+  --type-color: #2676bd;
+}
+.diagram-capture-host .board.board-snapshot [data-family="client"] {
+  --type-color: #8053b7;
+}
+.diagram-capture-host .board.board-snapshot [data-family="endpoint"] {
+  --type-color: #087e80;
+}
+.diagram-capture-host .board.board-snapshot [data-family="domain"] {
+  --type-color: #5a60b6;
+}
+.diagram-capture-host .board.board-snapshot [data-family="data"] {
+  --type-color: #a36b10;
+}
+.diagram-capture-host .board.board-snapshot [data-family="worker"] {
+  --type-color: #b05c20;
+}
+.diagram-capture-host .board.board-snapshot [data-family="messaging"] {
+  --type-color: #b44d78;
+}
+.diagram-capture-host .board.board-snapshot [data-family="system"] {
+  --type-color: #337787;
+}
+.diagram-capture-host [data-export-omit] {
+  display: none;
+}
+/* React Flow uses overflow from zero-sized SVG wrappers in its live viewport. An SVG image
+   document clips those wrappers: give the existing artwork an explicit full capture viewport. */
+.board-snapshot .react-flow__edges,
+.board-snapshot .react-flow__edges > svg {
+  width: 100%;
+  height: 100%;
+}

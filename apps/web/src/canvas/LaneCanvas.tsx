@@ -130,6 +130,7 @@ export function LaneCanvas({
                   ) : null}
                   <button
                     type="button"
+                    data-export-omit
                     onClick={(event) => {
                       event.stopPropagation();
                       onExpandOwner?.(ownerOf(node.id)?.id ?? "");

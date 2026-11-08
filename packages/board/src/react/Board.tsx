@@ -126,7 +126,17 @@ export type BoardSelection = { tile?: string; line?: string };
  */
 export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
 export type BoardMode = "select" | "hand";
-export type BoardHandle = { fit: (lines?: readonly string[]) => void };
+/** A frozen full view, independent of camera, selection and focus. */
+export type BoardSnapshot = {
+  tiles: readonly TileSpec[];
+  lines: readonly LineSpec[];
+  layout: BoardLayout;
+};
+export type BoardHandle = {
+  fit: (lines?: readonly string[]) => void;
+  /** Null while arranging/animating; throws on layout failure. Never changes the live board. */
+  snapshot: () => BoardSnapshot | null;
+};
 
 export type BoardProps = {
   tiles: readonly TileSpec[];
@@ -267,6 +277,48 @@ function fitZoom(pane: Pane, shown: BoardLayout | null, sizes: Record<string, Si
   return layoutBoundsAreUsable(box) ? viewportToFitRect(pane, box).zoom : MIN_ZOOM;
 }
 
+/** Both the live board and frozen export use exactly the same line ordering/artwork. */
+function lineEdges(
+  lines: readonly LineSpec[],
+  layout: BoardLayout,
+  selected: BoardSelection = {},
+  visibleLines?: readonly string[],
+  placed: (id: string) => Point | undefined = (id) => layout.positions[id],
+): BoardLineEdge[] {
+  /* Draw order at crossings: dashed under solid; the selected tile's lines over the rest, and the
+     selected line on top. */
+  const linked = (l: LineSpec) =>
+    selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile);
+  const rank = (l: LineSpec) =>
+    (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
+  const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
+  const visible = (id: string) => !visibleLines || visibleLines.includes(id);
+  const routes = Object.fromEntries(Object.entries(layout.routes).filter(([id]) => visible(id)));
+  return ordered.map((l, i) => ({
+    id: l.id,
+    source: l.source,
+    target: l.target,
+    type: "line",
+    hidden: !visible(l.id) || !placed(l.source) || !placed(l.target),
+    selected: selected.line === l.id,
+    ...(l.label ? { ariaLabel: l.label } : {}),
+    data: {
+      dashed: l.dashed,
+      ...(l.directed ? { directed: true } : {}),
+      ...(linked(l) ? { linked: true } : {}),
+      ...(l.label ? { label: l.label } : {}),
+      ...(l.chip ? { chip: l.chip.content } : {}),
+      ...(l.removable === false ? { fixed: true } : {}),
+      bridges: crossingBridges(
+        routes[l.id] ?? [],
+        ordered
+          .slice(0, i)
+          .flatMap((line) => (routes[line.id] ? [routes[line.id] as Point[]] : [])),
+      ),
+    },
+  }));
+}
+
 function Inner({
   tiles,
   lines,
@@ -389,6 +441,12 @@ function Inner({
   useImperativeHandle(
     handle,
     () => ({
+      snapshot() {
+        if (error) throw new Error("The diagram layout failed. Reload and try exporting again.");
+        // Animated frames carry the target key too: object identity detects actual settlement.
+        if (phase !== "ready" || !layout || shown !== layout || covering) return null;
+        return { tiles: [...tiles], lines: [...lines], layout: structuredClone(layout) };
+      },
       fit(lineIds) {
         const pane = paneOf(hostRef.current);
         const current = shownRef.current;
@@ -422,7 +480,7 @@ function Inner({
         void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
       },
     }),
-    [rf, lines],
+    [rf, lines, tiles, layout, shown, phase, error, covering],
   );
 
   /* The board changed size (a rail opened or closed, the window resized): a fitted camera refits
@@ -621,40 +679,13 @@ function Inner({
     };
   });
 
-  /* Draw order at crossings: dashed under solid; the selected tile's lines over the rest, and the
-     selected line on top. */
-  const linked = (l: LineSpec) =>
-    selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile);
-  const rank = (l: LineSpec) =>
-    (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
-  const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
-  const visible = (id: string) => !visibleLines || visibleLines.includes(id);
   const routes = Object.fromEntries(
-    Object.entries(shown?.routes ?? {}).filter(([id]) => visible(id)),
+    Object.entries(shown?.routes ?? {}).filter(
+      ([id]) => !visibleLines || visibleLines.includes(id),
+    ),
   );
-  const edges: BoardLineEdge[] = ordered.map((l, i) => ({
-    id: l.id,
-    source: l.source,
-    target: l.target,
-    type: "line",
-    hidden: !visible(l.id) || !placed(l.source) || !placed(l.target),
-    selected: selected.line === l.id,
-    ...(l.label ? { ariaLabel: l.label } : {}),
-    data: {
-      dashed: l.dashed,
-      ...(l.directed ? { directed: true } : {}),
-      ...(linked(l) ? { linked: true } : {}),
-      ...(l.label ? { label: l.label } : {}),
-      ...(l.chip ? { chip: l.chip.content } : {}),
-      ...(l.removable === false ? { fixed: true } : {}),
-      bridges: crossingBridges(
-        routes[l.id] ?? [],
-        ordered
-          .slice(0, i)
-          .flatMap((line) => (routes[line.id] ? [routes[line.id] as Point[]] : [])),
-      ),
-    },
-  }));
+  const visible = (id: string) => !visibleLines || visibleLines.includes(id);
+  const edges = shown ? lineEdges(lines, shown, selected, visibleLines, placed) : [];
 
   const context = useMemo(
     () => ({
@@ -813,5 +844,55 @@ export function Board({ ref, ...props }: BoardProps) {
     <ReactFlowProvider>
       <Inner {...props} handle={ref} />
     </ReactFlowProvider>
+  );
+}
+
+/**
+ * A full-size frozen board using the live Tile and BoardLine renderers and resolved routes.
+ * No engine, camera effects, selection, focus or editing chrome participates in this surface.
+ * The caller supplies its own capture theme and a rectangle including the desired margin.
+ */
+export function BoardSnapshotView({ snapshot, bounds }: { snapshot: BoardSnapshot; bounds: Rect }) {
+  const { tiles, lines, layout } = snapshot;
+  const nodes: TileNode[] = tiles.map((tile) => ({
+    id: tile.id,
+    type: "tile",
+    position: layout.positions[tile.id] ?? { x: 0, y: 0 },
+    data: { shape: tile.shape, content: tile.content },
+    handles: [
+      { type: "target", position: Position.Left, x: 0, y: tile.h / 2, width: 0, height: 0 },
+      { type: "source", position: Position.Right, x: tile.w, y: tile.h / 2, width: 0, height: 0 },
+    ],
+    width: tile.w,
+    height: tile.h,
+    measured: { width: tile.w, height: tile.h },
+    style: { width: tile.w, height: tile.h },
+    ariaLabel: tile.label,
+  }));
+  return (
+    <div className="board board-snapshot" style={{ width: bounds.w, height: bounds.h }}>
+      <ReactFlowProvider>
+        <BoardContext.Provider value={{ layout, selectLine: () => {} }}>
+          <ReactFlow<TileNode, BoardLineEdge>
+            nodes={nodes}
+            edges={lineEdges(lines, layout)}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            defaultViewport={{ x: -bounds.x, y: -bounds.y, zoom: 1 }}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            nodesFocusable={false}
+            edgesFocusable={false}
+            panOnDrag={false}
+            zoomOnScroll={false}
+            zoomOnPinch={false}
+            zoomOnDoubleClick={false}
+            preventScrolling={false}
+            proOptions={{ hideAttribution: true }}
+          />
+        </BoardContext.Provider>
+      </ReactFlowProvider>
+    </div>
   );
 }

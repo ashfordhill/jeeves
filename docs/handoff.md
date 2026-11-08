@@ -4871,3 +4871,44 @@ database update. Keep `.jeeves-feedback/` untouched; do not push. Record actual 
 and export limits rather than presenting this plan as completed functionality.
 
 Local commit: **Plan diagram snapshots and settle YouTube v1 choices**.
+
+## 2026-11-07 — FP00: real full-diagram PNG export
+
+FP00 only after `4669546`, primary main, one writer/no delegation. Added mouse **Export diagram →
+PNG** and exact-image capture-details JSON. Board snapshot/view reuses the existing tile and SVG
+line renderers with detached settled layout; no ELK rerun or interactive camera mutation. Export
+retains current owner expansion, draws every projected relationship despite focus, removes
+selection/editing controls and uses embedded Nunito/light paper at 2× scale. Saved source is
+checked before/after; pending layout waits, stale source/font/render/timeout/oversize failures
+refuse clearly. Closing/switching disposes capture. No settings/schema/readiness, generator,
+field folders or owner YouTube database changes. Studio guide/active plan and append-only
+feedback/playbook now describe FP00 implementation and FP01's remaining archive work.
+
+Required Node 24.21.0 checks passed sequentially: `pnpm check` **385 tests / 47 files**, lint/all
+typechecks; **34 native E2Es (1.1m)**; web build **906ms** (existing chunk advisory). First full
+check hit existing server hook/restart timeouts; unchanged rerun passed. Missing-Git production
+build also passed with explicit null renderer identity. Five bounded unit additions and two
+export E2Es cover bounds/routes, settled snapshot, PNG ink/hash/dimensions, owner projection,
+source mismatch, font failure and cancelled stalled capture/project switch. Source steady
+during full E2E; final lint/diff pass. Failed raster/theme and test-script attempts with their
+corrections are retained in [evidence](plans/reliable-foundations/evidence/fp00/README.md).
+
+Actual 1280×800 owner mouse: YouTube r1 **21 tiles/25 lines, 3008×2752 PNG**; TinyURL r53
+**12/13, 2752×1472**. Both downloaded PNGs inspected with labels/icons/routes/arrowheads/full
+bounds; hashes identical after mouse focus/Fit-focus/pan/zoom/dark mode. Every export preserves
+exact camera/selection/focus/layout; full saved design/history/blueprint responses and owner
+listing remain unchanged (53/1/1), zero final browser errors. Temporary chooser-created
+foundation exports **6 collapsed/7 expanded tiles, 7 lines**, explicit metadata; deleted 204.
+E2E DB returns to its original default-only listing. No own listeners/settings or paid/live chat;
+owner 4300/4310 remain. `.jeeves-feedback/` preserved.
+
+FP01 next: archive original source/blueprint/PNG before the approved PostgreSQL edit, capture
+again, then make the named v1 copy. Use `*-capture.json` for resolved layout/view and sorted-JSON
+source/image SHA256; retain an external renderer Git/tree audit. Dev identity is sampled at
+startup and cannot attest later HMR changes; current evidence explicitly records dirty parent
+4669546 plus file hashes. Missing Git yields null, never a false clean identity. PNG is checked
+in Chromium, bounded at 40MP/16,384px; existing two-line labels stay as drawn, current owner
+projection is deliberate. Vector export, automatic archive, generator and field-app work remain
+open. These are export checks, not acceptance of underlying YouTube architecture/runtime.
+
+Local commit: **FP00: export the full diagram as PNG**.

@@ -1,9 +1,16 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ElkNode } from "elkjs/lib/elk-api.js";
+import { createRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLayoutEngine, type ElkLike } from "../layout/engine.ts";
-import { Board, type BoardProps, type LineSpec, type TileSpec } from "./Board.tsx";
+import {
+  Board,
+  type BoardHandle,
+  type BoardProps,
+  type LineSpec,
+  type TileSpec,
+} from "./Board.tsx";
 import { fanCenters } from "./fan.ts";
 import type { FanItem, TabSpec } from "./TileChrome.tsx";
 
@@ -132,6 +139,49 @@ describe("Board", () => {
     expect(onSelectTile).toHaveBeenCalledWith("redirect");
     fireEvent.click(screen.getByRole("button", { name: "Download" }));
     expect(onSelectLine).toHaveBeenCalledWith("entry");
+  });
+
+  it("waits for layout then snapshots all routes independently of focus and selection", async () => {
+    const ref = createRef<BoardHandle>();
+    let finish: (() => void) | undefined;
+    const engine = createLayoutEngine(
+      {
+        layout: async (graph) => {
+          await new Promise<void>((resolve) => {
+            finish = resolve;
+          });
+          return fakeElk.layout(graph);
+        },
+      },
+      { debounceMs: 0 },
+    );
+    render(
+      <Board
+        ref={ref}
+        tiles={tiles}
+        lines={lines}
+        engine={engine}
+        selected={{ line: "publish" }}
+        visibleLines={["publish"]}
+        emphasizedTiles={["events"]}
+        onSelectTile={() => {}}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        mode="select"
+      />,
+    );
+    expect(ref.current?.snapshot()).toBeNull();
+    await waitFor(() => expect(finish).toBeTypeOf("function"));
+    await act(async () => {
+      finish?.();
+    });
+    await waitFor(() => expect(ref.current?.snapshot()).toBeTruthy());
+    const first = ref.current?.snapshot();
+    expect(first?.lines.map((line) => line.id)).toEqual(["entry", "publish"]);
+    expect(first?.tiles).toHaveLength(3);
+    if (!first) throw new Error("Missing snapshot");
+    first.layout.positions.actor = { x: -500, y: -500 };
+    expect(ref.current?.snapshot()?.layout.positions.actor).not.toEqual({ x: -500, y: -500 });
   });
 
   it("keeps a directed line's hit band and mouse removal", async () => {
