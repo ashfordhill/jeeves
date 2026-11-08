@@ -4,9 +4,9 @@ This is the allowlist of everything the studio lets you configure. A field that 
 here is not exposed. Add one only for a demonstrated design need, with its schema, form field,
 validation and blueprint output together; do not add controls because a cloud provider or an old
 model has a property. The source of truth is
-[`studio-model.ts`](../packages/spec/src/studio-model.ts),
-[`studio-components.ts`](../packages/spec/src/studio-components.ts) and the field descriptors in
-[`studio-definitions.ts`](../packages/spec/src/studio-definitions.ts).
+[`studio-model.ts`](../jeeves/packages/spec/src/studio-model.ts),
+[`studio-components.ts`](../jeeves/packages/spec/src/studio-components.ts) and the field descriptors in
+[`studio-definitions.ts`](../jeeves/packages/spec/src/studio-definitions.ts).
 
 ## Rules
 
@@ -221,7 +221,7 @@ plus a topic does not mean SQS); only the named products above carry a product i
 | --- | --- | --- |
 | Action | `planned.label`, 1–60 characters | Default from the endpoint kinds: Calls, Reads & writes, Publishes, Consumes, Uses. |
 | Protocol | Unspecified, HTTPS, HTTP, gRPC, WebSocket, SSE, SQL, Redis, Messaging, Native binding | — |
-| Interaction | Request / response, Asynchronous, Streaming | Queue links are Asynchronous. Asynchronous dashes the line and is accepted only where the [link table](../CATALOG.md#lanes-and-links) has an async mode; Streaming counts as a request. |
+| Interaction | Request / response, Asynchronous, Streaming | Queue links are Asynchronous. Asynchronous dashes the line and is accepted only where the [link table](../jeeves/CATALOG.md#lanes-and-links) has an async mode; Streaming counts as a request. |
 | Security / `planned.security` | Service identity, User identity, Public, Private network | Intent only. |
 | Timeout / `settings.timeoutMs?` | 1–300000 | HTTP, HTTPS or gRPC request/response only. |
 | Retry / `settings.retry` | `mode` unspecified / none / fixed; fixed adds `attempts` 1–10 and `delayMs` 1–60000 | Same protocols. Attempts are additional attempts. |
@@ -263,7 +263,7 @@ entry. An entry has no settings form; its inspector's lane row sets `lane` (movi
 lane's action). Its ID shares the design's ID space, its element must exist, and removing the
 element removes the entry. Every tile must be reachable from the user through an action and an
 entry; which kinds may be entries, and the other lane rules validation enforces, are in the
-[catalog](../CATALOG.md#lanes-and-links). A design stored with an entry in `both` lanes
+[catalog](../jeeves/CATALOG.md#lanes-and-links). A design stored with an entry in `both` lanes
 (possible for a while) loads with that entry in `download`.
 
 ## Components

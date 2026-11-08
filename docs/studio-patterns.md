@@ -1,6 +1,6 @@
 # Reviewed chat patterns
 
-The local catalog in [studio-patterns.ts](../packages/spec/src/studio-patterns.ts) supplies reviewed
+The local catalog in [studio-patterns.ts](../jeeves/packages/spec/src/studio-patterns.ts) supplies reviewed
 design guidance to the actual chat tool loop. Catalog and record versions are **1.0.0**. There
 are four records; runtime lookup uses no network, embeddings or external documents.
 

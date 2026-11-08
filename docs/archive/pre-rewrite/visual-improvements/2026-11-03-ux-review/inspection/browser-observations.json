@@ -1,0 +1,5 @@
+{
+  "url": "http://127.0.0.1:4300/?project=684f5790-df6b-4447-91d1-668cf7e1cc87&level=components&container=api",
+  "blocked": [],
+  "inspection": "Read-only review; all non-read requests blocked; no saves attempted."
+}

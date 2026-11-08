@@ -31,7 +31,7 @@ history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 ## Source
 
 - Schema: `designBlueprintSchema` in
-  [`packages/spec/src/studio-blueprint.ts`](../packages/spec/src/studio-blueprint.ts).
+  [`jeeves/packages/spec/src/studio-blueprint.ts`](../jeeves/packages/spec/src/studio-blueprint.ts).
 - JSON Schema (draft 2020-12): `designBlueprintJsonSchema()`.
 - Projection: `designBlueprint(design, projectName)`, pure and deterministic; every list is sorted
   by identity.

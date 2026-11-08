@@ -1,6 +1,6 @@
 packages:
-  - apps/*
-  - packages/*
+  - jeeves/apps/*
+  - jeeves/packages/*
   - jeeves-generator
 
 # esbuild (via tsx and drizzle-kit) needs its postinstall to fetch the platform binary.

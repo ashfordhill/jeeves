@@ -54,3 +54,7 @@ a self-referential frozen manifest. Later real
 generator/template versions, output hashes, build results and source provenance belong to their
 own checkpoints. The actual strict report remains `generationEligible: false`, template
 availability `none` and runtime verification `none`.
+
+[Source-line benchmark](../../../docs/field-projects/source-loc.md): v1 production `src/` contains
+159 retained template lines and 2,715 post-template lines (5.53% template share), excluding
+tests/configuration/infrastructure and the separate browser folder.

@@ -1,0 +1,275 @@
+{
+  "readmeRemoteCommit": "3ae6aff5fb65ecc1cd0c8fa901e00ec12d72bfc0",
+  "readmeSha256": "fff82208153bd7c5b1a05c856abb383a57f1353d65ecbd03e827664715440841",
+  "archiveSourceCommit": "8f35bd08b33273dd63220fc918959347d80f0120",
+  "deletionCommit": "b44844a31b06a1e74f18f7ecdf318314c67df54b",
+  "readmeCompatibilityImages": [
+    ".docs/c4-flow.svg",
+    ".docs/chat-assistant.png",
+    ".docs/component-library.png",
+    ".docs/mattermost-c1.png",
+    ".docs/mattermost-c2.png",
+    ".docs/mattermost-c3.png",
+    ".docs/mvp-flow.gif"
+  ],
+  "files": [
+    {
+      "originalPath": ".docs/c4-flow.excalidraw",
+      "recoveredPath": "docs/archive/pre-rewrite/c4-flow.excalidraw",
+      "gitBlob": "7923955dd2256fe473e467b455c71d85a9ee7e24",
+      "sha256": "a46309df008a66da1db8bc9dc35d6dc73c9d6f892e0691a45fc17fe88149d022"
+    },
+    {
+      "originalPath": ".docs/c4-flow.png",
+      "recoveredPath": "docs/archive/pre-rewrite/c4-flow.png",
+      "gitBlob": "b6e0a9b261be467b4431be00575d6280fbd121b8",
+      "sha256": "7eabe4c07327cb06d159d8d5df286138cb4eb0d3a4ba6b115de89ec13d16faeb"
+    },
+    {
+      "originalPath": ".docs/c4-flow.svg",
+      "recoveredPath": "docs/archive/pre-rewrite/c4-flow.svg",
+      "gitBlob": "b9b94c989107630f355b0be0fa749847e43427bf",
+      "sha256": "9f6f89af335b09e75c23c988676f83b59b47557eec1292df382e7ee5c79e677e"
+    },
+    {
+      "originalPath": ".docs/chat-assistant.png",
+      "recoveredPath": "docs/archive/pre-rewrite/chat-assistant.png",
+      "gitBlob": "876f952d0352283cabc871f72f83caea99e7fdc0",
+      "sha256": "b706e6aa7b0ce7afa64ecaa91db62b8c249315000fd05e98ebf450740bb2afde"
+    },
+    {
+      "originalPath": ".docs/component-library.png",
+      "recoveredPath": "docs/archive/pre-rewrite/component-library.png",
+      "gitBlob": "70011663b19409dc6f2dc5b9093715831082c98b",
+      "sha256": "d39b0389d9cffbf7bbdd2d36254eabcc5ae30d555e2bb5e9c62c8ec105c80c87"
+    },
+    {
+      "originalPath": ".docs/mattermost-c1.png",
+      "recoveredPath": "docs/archive/pre-rewrite/mattermost-c1.png",
+      "gitBlob": "0b89c08f89cf5eba245ee96db292e8199fd9c210",
+      "sha256": "73cae94b8ad4f6230335e988921dfa32ffce373c8d0c561cca3625fbddf34259"
+    },
+    {
+      "originalPath": ".docs/mattermost-c2.png",
+      "recoveredPath": "docs/archive/pre-rewrite/mattermost-c2.png",
+      "gitBlob": "f8cc36f9e933e2f2547614b8ed5b54b703708846",
+      "sha256": "34e1566a6c6c3f7db9de0b4ab64cc121b15cd2930906664d5b5f59bb5ea5a482"
+    },
+    {
+      "originalPath": ".docs/mattermost-c3.png",
+      "recoveredPath": "docs/archive/pre-rewrite/mattermost-c3.png",
+      "gitBlob": "4fa8185d5058491be8bddbf1cc6a59f428c82ffb",
+      "sha256": "038c8f81bef7da051de08ec9b261e412566612b436624fdf35e16c631626ab65"
+    },
+    {
+      "originalPath": ".docs/mvp-flow.gif",
+      "recoveredPath": "docs/archive/pre-rewrite/mvp-flow.gif",
+      "gitBlob": "4d3c44c32f5cc71728a5ea2bc1ab64a2541e79f6",
+      "sha256": "e9824a5bf25822fba3a8beab0e350e33634256202513ee5c36f9a768ec14ecbd"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/.gitattributes",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/.gitattributes",
+      "gitBlob": "f861bb9644d01565a0a68d9d986ee086fcc8bc49",
+      "sha256": "34eaf971b8a07e92f99fe1f0d0eaf69e3d2094a9b4a36ccf80f3e1c1537412f8"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md",
+      "gitBlob": "ec27a5d53e2a79f39e5c7db68c898e08e10651a7",
+      "sha256": "e6d0c3376d1e07f2dc631b6e3503433347f63165baa0056ac59c27c7abb0bcfe"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/DECISIONS-ROUND-1.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/DECISIONS-ROUND-1.md",
+      "gitBlob": "66a3602cfd9767fdda4b053bdd85ff9c14fe9df6",
+      "sha256": "f840892423e0b5e555d4388d55002307575f17c0ab9e3dd4193fe2a2632308a8"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/QUESTIONS.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/QUESTIONS.md",
+      "gitBlob": "5cbace6630723fc45b6b10b04b32f5d63580d994",
+      "sha256": "fc1fd4c58fe9ad51b81a3619f5eb9990e78bca1513e90f45357e2c56a77b80c8"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/REVIEW.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/REVIEW.md",
+      "gitBlob": "802de79265ffe21f942213d1bf1bf44335f1be6d",
+      "sha256": "eb2b08a6d91319e2c2c6258907c9d674284be7e8fec55907975455f9f4d29d41"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/inspection/PzufI5UjUN.gif-sheet.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/inspection/PzufI5UjUN.gif-sheet.png",
+      "gitBlob": "3e59737f6b8904cd755eec140131590f6c3188cd",
+      "sha256": "affc793629399547cd45a47bcc1f2472629cc25fffa71f3f0c6d6787ee136cdc"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/inspection/browser-observations.json",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/inspection/browser-observations.json",
+      "gitBlob": "a6f1168ce4f8a9d11af16d6df93baff35a667b2f",
+      "sha256": "776e2a8a7cf8786c79bfd8ce1f73756cd83d72050be8152c7b29f8267401b662"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/inspection/chrome_FlmBak2gUQ.gif-sheet.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/inspection/chrome_FlmBak2gUQ.gif-sheet.png",
+      "gitBlob": "7b91a53c2effd79dddc375b1a268ef9c185a7767",
+      "sha256": "9b734cc11b8cd6fe9483d6f2f21d0e3d3ba7eeb0ddd9ff45192688d7abfcc502"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/inspection/chrome_PjQUjhqJA5.gif-sheet.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/inspection/chrome_PjQUjhqJA5.gif-sheet.png",
+      "gitBlob": "e48103f8638081354696cd09b4d5d80a31271a3a",
+      "sha256": "9f1f07a4a74a00c827a9316c761acbbc2d31a9a56efe81aa6f7e41c21f1ece04"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/inspection/current-c3.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/inspection/current-c3.png",
+      "gitBlob": "f8e243859c8e7da4b072142b03536d0bcf3b085b",
+      "sha256": "eff5f119beef83b10b54230ce8fb15e23d906b762fa61b40b48b28b3004d1302"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/inspection/current-config.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/inspection/current-config.png",
+      "gitBlob": "39eab23600c9e46ab6b43d117d6672d59ecf19a6",
+      "sha256": "0cf20fa0cf9738e5ddc61fca32461b841fcea27a2e229090674dfe5c10e7b04c"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/source-manifest.json",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/source-manifest.json",
+      "gitBlob": "66173a92de20f5d8b1f7bf4aca73da2c9a5024d0",
+      "sha256": "42be3589f01837bffdf4d81fb04051fd30260a970df48fff38297c6dba10b35f"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/PzufI5UjUN.gif",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/PzufI5UjUN.gif",
+      "gitBlob": "6fbfb7c66a5343af94a194bcdc3dd0af0f68278b",
+      "sha256": "2bf0fdb80bd600c017a69479b259850bdc4d2381ebf2c59346c27d0eb45652ec"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/UX-Feedback.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/UX-Feedback.md",
+      "gitBlob": "c7a4b1c582a5911a02a0be322d1f664bf46ac671",
+      "sha256": "8cf88d7957c1b0b19f4e94cb7c6c03b3705fd72f3582f3ea584d7f01e4894654"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-1.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-1.md",
+      "gitBlob": "fa570be1223606eb68a48fb3394578e2c317c095",
+      "sha256": "4d9ae5d516e3849283522cc042f6ede1a5c4599088d5b30b2f06d541559ca8ea"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-2.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-2.md",
+      "gitBlob": "f094615a753487beaac6e7bc3bbe55bb6540b6fb",
+      "sha256": "17d5d244256b64a7d2024dfdda8a4010f0e912c8cd8a93ce20feb374123d51d1"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.excalidraw",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.excalidraw",
+      "gitBlob": "3bb05960081fc9d829060686e2089d27539391a3",
+      "sha256": "a2e6bdf1f8cbb60210ef53e692d595d5199a72fb5a220ab113a1d8ef444645d6"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.png",
+      "gitBlob": "4c01319e2f64235cdfb88a559a9d05f9d0df9cfe",
+      "sha256": "de84ee3837011018e6e32a948dfbc30d8596a2aefa51e1a30f03df41fb840e00"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.svg",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.svg",
+      "gitBlob": "e0258a9d7ddf2d344283f91d49284f82517bc65a",
+      "sha256": "535bb2a91391676735c7ec39cb1fb3a53440a3ae4e416c6802d23bbf3b10c979"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-1.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/image-1.png",
+      "gitBlob": "407e3de78e6f8349b4a7868afdd14304732d94ee",
+      "sha256": "5ff8c3aa9a489819444d4fd7dc39e27e48e50ada70c9766dff5070b0ae0da570"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-2.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/image-2.png",
+      "gitBlob": "b2df7338690bbbd904bfd4da936dc7705bc44278",
+      "sha256": "02407aa8c9107dace1a7c1a2790469518e6e8f0bb28e1f04f758830dddedb79a"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/archive/image.png",
+      "gitBlob": "e8ab45d2353c959dcf584e031881bb9b1a9cc082",
+      "sha256": "85213caec2f6e687a0ff78dce2cc551bbca47bdd45f26e748fdd3aa2201433ef"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_FlmBak2gUQ.gif",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/chrome_FlmBak2gUQ.gif",
+      "gitBlob": "712354b316dfd029f3450930fcee84f0fa458a5c",
+      "sha256": "b492fb40e26f888c1736936dac607450fea784333a267abe7156c9ab772065fe"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_PjQUjhqJA5.gif",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/chrome_PjQUjhqJA5.gif",
+      "gitBlob": "8093e3d02bfba8ead8e99f0cbc1400e288527458",
+      "sha256": "ad72d2ca03dd538c36918c1d84207b480c337b2ab519eaba00e6347410799914"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-1.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-1.png",
+      "gitBlob": "cbd7f56aadfd11f39325454a58b4724762af2013",
+      "sha256": "bb933ee460b82e8c0fd39b78072e3697d25178be7ee6dd0d8213c96b4f4266da"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-2.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-2.png",
+      "gitBlob": "094436b57d7bb58ad10ec5f64420d43ce250d7db",
+      "sha256": "a6c546b86dc98ad5d5075783747a27fc4086df568dacc2d4d32b1dce4d8a0bd4"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-3.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-3.png",
+      "gitBlob": "42f778be5a21c9dee791651a94b21cc7127bba04",
+      "sha256": "a36339ef0e418a1b3b3c683cfa36eccc1f8846852dad8909628f7f0d1c801d1c"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-4.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-4.png",
+      "gitBlob": "552ce812780ee982dbc81088018137c549056e00",
+      "sha256": "f9173fa138a80605ee4f265bf2612af8ceebf934d3c0184694c01015374f43b2"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-5.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-5.png",
+      "gitBlob": "ac93c3b2e4e2551c3490ade662dbdbdb82c42b61",
+      "sha256": "4ccc6f80744c000a0239638ad10ab7a5ec2aa33b42b252ea48c95b74ebd0da70"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-6.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-6.png",
+      "gitBlob": "e905012e90099df3473377248ab5a0123757747a",
+      "sha256": "7d3f8fcb9a39adf42bf338e04e098ee6f61a8bd3ca71c34f765c848639ad284f"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-7.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image-7.png",
+      "gitBlob": "b91087d34eafa92d805cbbf0d6f65c594a973d31",
+      "sha256": "fd7df906af2ebc9e3871dda9d2a861302439b171e25c483f1db6093439905931"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/image.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/image.png",
+      "gitBlob": "5a5081748c5c94a945de8bad4ae2a3243a9c6c64",
+      "sha256": "f53d114175b02eeedaa1ec2c3b7dc6fd03c917510385af423f1065c5cd87dc61"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/2026-11-03-ux-review/sources/uses-tenant-product-apis.png",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/2026-11-03-ux-review/sources/uses-tenant-product-apis.png",
+      "gitBlob": "5a5081748c5c94a945de8bad4ae2a3243a9c6c64",
+      "sha256": "f53d114175b02eeedaa1ec2c3b7dc6fd03c917510385af423f1065c5cd87dc61"
+    },
+    {
+      "originalPath": ".docs/visual-improvements/README.md",
+      "recoveredPath": "docs/archive/pre-rewrite/visual-improvements/README.md",
+      "gitBlob": "8fb1faa609a1f637fb14a1c6aed5053a31d2e6c0",
+      "sha256": "ede738d256c412b4c07d0b3e31ff205791794e3714524f5b708834433da6b04b"
+    }
+  ]
+}

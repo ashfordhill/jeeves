@@ -48,7 +48,7 @@ unsupported capability edit. Both arms get the same task, seed, response/time bu
 Held-out means a fixed variation outside the three pattern examples, not an unseen training set
 or a statistical generalization claim. No prompt tuning or result-based case selection occurs.
 
-`apps/server/src/eval/cases.ts` versions prompts, seeds, protected identities and reasonable
+`jeeves/apps/server/src/eval/cases.ts` versions prompts, seeds, protected identities and reasonable
 alternatives; `fixtures/synthetic.json` contains hand-authored canonical replies/commands.
 `fixtures/rf00.json` preserves the RF00 instructions and six canonical tools from `4e2cd15`,
 captured at `30f1c9b` (that source file was unchanged). The RF00 arm is deliberately a

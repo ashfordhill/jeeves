@@ -6,13 +6,15 @@
   "exports": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc -p .",
-    "export:new": "tsx src/cli.ts"
+    "export:new": "tsx src/cli.ts",
+    "benchmark:source": "tsx src/source-loc-cli.ts"
   },
   "dependencies": {
     "@jeeves/spec": "workspace:*",
     "zod": "4.5.4"
   },
   "devDependencies": {
-    "tsx": "4.23.15"
+    "tsx": "4.23.15",
+    "rolldown": "1.2.15"
   }
 }

@@ -1,106 +1,57 @@
 # Jeeves
 
-Jeeves is a local architecture design studio for web-based systems. You draw a system on one lane
-canvas: the user starts a download lane and an upload lane, and every service, API, database,
-cache, queue, storage or external tile hangs off them, laid out automatically with no islands and
-no cycles. You configure each tile from a finite catalog of settings and provider choices, and
-talk to a chat assistant that edits the same design with the same rules. Every design is exposed
-as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). The [experimental generator foundation](jeeves-generator/README.md) assembles deterministic
-in-memory bundles for the frozen YouTube local-v1 profile. FP03a adds 19 real experimental local
-template families, a new-directory CLI exporter and independently built service/worker scaffolding.
-The canvas now previews/downloads the exact frozen local-v1 source as an experimental partial
-project ZIP; other saved sources refuse clearly. Business behavior is explicitly unfinished. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
-keeps the generator and experimental templates in `jeeves-generator/`, exports standalone
-applications and measures improvements across working v1/v2 field projects before heavy
-certification. [YouTube v1's frozen inputs and numbered images](field-projects/youtube/v1/README.md)
-retain the original owner diagram, approved PostgreSQL update and a separate local copy.
-The inspector, blueprint v3 and chat share a [snapshot compatibility report](docs/studio-readiness.md):
-structural validity, exact contracts, implementation availability and exact-output evidence stay
-separate. Product artifacts remain unavailable and runtime evidence remains none.
+Jeeves is a web-application architecture studio intended to help Software Engineers design & generate software using [C4 modeling](https://www.visual-paradigm.com/guide/what-is-the-c4-model-a-comprehensive-guide-to-visualizing-software-architecture/)-inspired diagramming. This is intended to provide a balance between human design and AI-generated code, reducing the amount of non-deterministic code generation for better maintability.
 
-The intention is to **reduce the amount of non-deterministic code and behaviour** when designing
-the foundations of web-based software systems. By keeping a diagram-based source of truth, we can
-reduce the amount of unpredictable "slop", whether introduced by humans or coding agents. This
-helps when designing new systems at a high level with LLMs, which often produce high-quality
-looking output that only looks right at first glance. AI is better suited to well-defined small
-to medium tasks with a clearly defined outcome.
+- Targets TypeScript code generation
 
-- [The studio](docs/studio.md): the lane canvas, layout, creating and removing tiles, the lane
-  rules, the inspector, history, chat, the TinyURL, marketplace and YouTube studies and the current limits.
-- [Studio settings](docs/studio-settings.md): every configurable field and its values.
-- [Studio blueprint](docs/studio-blueprint.md): the code-generation boundary.
-- [Catalog](CATALOG.md): tile kinds and types, the lane link table, components, providers.
-- [Architecture review and foundations plan](docs/plans/reliable-foundations/review.md):
-  the three studies, design-chat guidance and the completed contract work.
-- [YouTube field projects](docs/plans/reliable-foundations/youtube-field-project-plan.md):
-  the current generation plan, generated/custom checkpoints, benchmark and improvement trail.
-- [Architecture overview](PLAN.md): apps, packages, data model and how they fit.
-- [C4 notes](docs/c4-modeling.md) and [Docker](docs/docker.md).
+<p align="center"><img src=".docs/c4-flow.svg" width="600"/></p>
 
-## Run it
+1. At C2 and C3, software engineers would diagram a new system by connecting & configuring Jeeves components
 
-With Docker only (web app, API and PostgreSQL in one image; see [docs/docker.md](docs/docker.md)):
+2. At C4(a), the architecture design would generate into templated solutions that utilize a common testing framework and pattern to support black box and stress testing, i.e. - pieces of reliable code to work with.
+
+3. At C4(b), features not provided at the template levels, or generated C2/C3 components that include stubs would be written via humans/agents. Ideally C4(b) bugs would be created much more frequently than C4(a) bugs.
+
+The intention is to **reduce the amount of non-deterministic code/behavior** when designing the foundations of [web-based] software systems.
+
+By maintaining a diagram-based source of truth, we can reduce the amount of unpredictable 'slop', whether that is introduced by humans or coding agents. This can be useful when designing new systems at a high level via LLMs, which can often times lead to high-quality looking slop that sort of looks right at first glance. AI is better suited to well-defined small to medium scoped tasks where the outcome is clearly defined.
+
+![](.docs/mvp-flow.gif)
+
+## Mattermost example
 
 ```sh
-docker run -d --name jeeves -p 127.0.0.1:4300:4300 -v jeeves-data:/data ghcr.io/ashfordhill/jeeves:latest
+docker pull ghcr.io/ashfordhill/jeeves:latest
+docker run --rm --name jeeves -p 4300:4300 ghcr.io/ashfordhill/jeeves:latest
 ```
 
-From the checkout (Node 24, pnpm 12.16.1, Docker for Postgres):
+Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 
-```sh
-pnpm install
-pnpm dev        # Postgres via compose.yaml, then the API (4310) and the web app (4300)
-```
+### C1
+<p align="center"><img src=".docs/mattermost-c1.png" width="600"/></p>
 
-Open http://127.0.0.1:4300. A fresh database opens on an editable copy of the narrow TinyURL foundation study (schema v3).
-The extended TinyURL study remains a separate design-only choice; saved projects are preserved.
-Database migrations run on server start.
+### C2
+<p align="center"><img src=".docs/mattermost-c2.png" width="600"/></p>
 
-Chat needs a model provider, chosen in **Settings**: the OpenAI API (`OPENAI_API_KEY` in the
-environment, or `openai.apiKey` in `~/.jeeves/config.json`) or Codex using its own login
-(`codex login`). The chosen provider and model are saved in the same file (`JEEVES_HOME`
-overrides the directory). Keys never leave the server process and never belong in the
-repository. The studio works without a provider.
+### C3
+<p align="center"><img src=".docs/mattermost-c3.png" width="600"/></p>
 
-OpenAI tools use an [audited strict wire schema](docs/chat-tool-schemas.md) that preserves existing
-command defaults. Codex's outer structured answer leaves inner argument strings unconstrained;
-the server validates every provider's commands.
+## Planned Features
 
-[Versioned chat evaluations](docs/chat-evals.md) replay offline and provide an explicitly opted-in
-live comparison with recorded limits, public evidence and independent review. See the
-[RF06 results](docs/evals/rf06/README.md) for the blocked Mini run and separate Codex fallback.
+- A chat helper on the side to help guide C2 and C3 design decisions
 
-## Test
+  - <p align="center"><img src=".docs/chat-assistant.png" width="300"/></p>
 
-```sh
-pnpm check             # Biome lint, type checks, unit tests (no Docker, Postgres or network)
-pnpm test:e2e          # Playwright smoke set: starts Postgres and its own servers on 4301/4311
-pnpm test:e2e:docker   # the same inside the Playwright image, when Chromium's libraries are missing
-pnpm --filter @jeeves/web build
-```
+- A library of pre-tested C2 and C3 components to mix, configure and connect together
 
-E2E tests use their own `jeeves_e2e` database, a throwaway settings directory and a scripted
-chat model (`fixtures/chat/e2e-script.json`), so they never touch your projects or call a
-provider. `pnpm format` applies Biome's fixes. The exact independent field-project path
-`field-projects/youtube/v1/app` is outside root Biome/workspace checks; its handoffs must run
-its own frozen-lockfile install and TypeScript build, plus applicable field checks. Frozen
-input/diagram JSON remains excluded to preserve downloaded bytes. CI ([ci.yml](.github/workflows/ci.yml)) runs
-`pnpm check`, the web build and `pnpm test:e2e` on every push to `main`.
+  - <p align="center"><img src=".docs/component-library.png" width="300"/></p>
 
-## Ports
 
-| What | Port |
-| --- | --- |
-| Web dev server (`pnpm dev`) | 4300 |
-| API server (`pnpm dev`) | 4310 |
-| Web / API during Playwright | 4301 / 4311 |
-| Postgres (Docker, `compose.yaml`) | 54329 |
+- Configurable options within C2 and C3 components to indicate expected load at certain bottlenecks (keep design MVP level, enterprise level or flexible enough to change later on?)
 
-Everything binds to `127.0.0.1`. Jeeves is a local, single-user application without accounts.
+- Deployment target configurations (cloud or local, containerization, Kubernetes)
 
-## Notes
-
-### AI methods
+## AI methods
 
 - I have access to about 70k of GPT tokens through a friend, which enables me to plan on Astra 6 max without worrying about cost, at least until December 31st. It still always falls short of executing very large goals and needs hammering.
   - Code generation handled by **Sol 6.1** (`codex CLI`) and **DeepSeek v4.1 Flash 1017** (`opencode`) and **Opus 5.5** (`claude CLI`), though sometimes I will use Fable or Astra for a bit of code generation out of curiosity. So far I don't think it's worth the higher cost; leave as planning models.
@@ -108,12 +59,12 @@ Everything binds to `127.0.0.1`. Jeeves is a local, single-user application with
 - Feeding images of diagrams of my intent is definitely still a very effective way of getting better output.
 
 - Frontier models not capable of giving me decent starting points from scratch
-  - This something I want to solve with Jeeves; if I can diagram my system, it helps me find issues in my own design. If I can trust the foundation of my design (if I'm trusting the Jeeves component library), then I would say that's a way better
+  - This something I want to solve with Jeeves; if I can diagram my system, it helps me find issues in my own design. If I can trust the foundation of my design (if I'm trusting the Jeeves component library), then I would say that's a way better 
   - Using existing solutions as a starting point (Excalidraw, automation-illustrator) is always more useful than just a long essay of descriptions. I do this at work a lot when creating new projects that are similar to existing projects. It helps a lot!
 
 - For UI-based work, I tell the agent to stop fussing about unit and Playwright tests until the future. For the most part, even economic LLMs generate decent code that I'll manually evaluate from a UI/UX POV. Agents seem to spend an awful lot of time generating unit tests that don't provide a lot of value but end up eating into tokens and time. I don't need a unit test to confirm a button is clicking - I'm gonna assume the LLM can take care of a simple task like that. I also have grown to really despise unit testing getting spammed everywhere.
 
-### Challenges
+## Challenges
 
 - My own limited system architecture knowledge. Ideally I would have decades of experience under my belt and be able to tell whether a design is 'good' from peeking at the diagrams, but I'm not there. Leaning on AI judgement more than I'd like to for some of this. Hoping to learn through this.
 
@@ -123,8 +74,10 @@ Everything binds to `127.0.0.1`. Jeeves is a local, single-user application with
 
 - Jeeves is a really large scope project, though once the foundation is decent, extending the C2 and C3 component libraries with new pieces should hopefully not be too bad
 
-### UI/UX of generated apps
+## UI/UX of generated apps
 
-C4 modelling doesn't cover UI design; `'How does the page look? Where does the video player go? What are the page routes?'` It's still alright to vibe-code this for the most part, but getting a custom 'feel' of your own proprietary app requires a lot of prompt massaging since AI-generated web applications kind of all look the same after a while.
+C4 modelling doesn't cover UI design; `'How does the page look? Where does the video player go? What are the page routes?'` It's still alright to vibe-code this for the most part, but getting a custom 'feel' of your own proprietary app requires a lot of prompt massaging since AI-generated web applications kind of all look the same after a while. 
 
 You *could* have an additional studio alongside Jeeves for that but I think there are existing solutions and I think maintaining such an editor would be very labor intensive. UI can be painful.
+
+

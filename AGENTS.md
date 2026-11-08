@@ -1,13 +1,18 @@
 # Agents working on Jeeves
 
 Jeeves is an architecture design studio with chat and a read-only blueprint API (see
-[README](README.md) and [PLAN](PLAN.md)). The owner selected same-repository generation through
+[studio README](jeeves/README.md) and [PLAN](jeeves/PLAN.md)). The owner selected same-repository generation through
 the [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md).
 Keep studio, `jeeves-generator/` and independently runnable field apps separate. Templates start
 experimental; heavy certification is deferred while field projects inform their design.
 That deferral does not remove the existing Jeeves regression checks below.
 
 ## How work happens
+
+- **The root `README.md` is owner-maintained. Agents must never edit it during implementation,
+  cleanup or documentation updates.** Put agent-maintained guidance in `docs/` or project-level
+  READMEs. Preserve its referenced images and historical owner feedback; do not delete them as
+  stale documentation.
 
 - Work one assigned unit at a time, on `main` in the primary checkout
   (`/home/ash/github/jeeves`). Do not create branches or worktrees, use `git stash`, or delegate to
@@ -21,15 +26,17 @@ That deferral does not remove the existing Jeeves regression checks below.
   unrelated work (for example the untracked `.jeeves-feedback/`). Push only when asked.
 - **Owner feedback is a paper trail.** When the owner sends feedback with images (screenshots,
   marked-up diagrams, sketches), save each image in `docs/human-feedback/` and add an entry to
-  [HUMAN_FEEDBACK](docs/HUMAN_FEEDBACK.md): the date, the images, the owner's points, the
-  questions and answers, and the decision. A unit that resolves an entry appends what changed,
-  the commits and what is still open to that entry's Resolution. Never rewrite earlier sections.
+  [HUMAN_FEEDBACK](docs/HUMAN_FEEDBACK.md): date/image links, **Problem · Decision · Resolution**,
+  normally 3–5 short lines. Include Q&A only when it changes a decision. Link detailed plans,
+  test results and handoffs instead of repeating them. Resolution updates name the commit and
+  remaining issue briefly. Preserve earlier records/images; archive verbose history intact when
+  the owner requests condensation.
 - **Design lessons go in the [design playbook](docs/design-playbook.md)**: when
   a study, research or an owner review shows how a kind of system should be designed, or what
   looks wrong on the canvas, add it there. Read it before designing a study.
 - Keep docs current with the code: [studio guide](docs/studio.md),
   [studio settings](docs/studio-settings.md), [blueprint](docs/studio-blueprint.md) and
-  [CATALOG](CATALOG.md) when kinds, lane rules, settings, components or providers change.
+  [CATALOG](jeeves/CATALOG.md) when kinds, lane rules, settings, components or providers change.
   Describe what exists; history lives in Git.
 
 ## Verification
@@ -43,7 +50,7 @@ Before handing off:
    renders on the lane canvas, and the changed behaviour works by mouse.
 
 Unit tests must not need Docker, Postgres or network access (the server uses PGlite). E2E tests
-live in `apps/web/e2e/`, use the `jeeves_e2e` database and a scripted chat model, and delete the
+live in `jeeves/apps/web/e2e/`, use the `jeeves_e2e` database and a scripted chat model, and delete the
 projects they create. Agents may create, change and delete projects in the owner's `jeeves`
 database when their work calls for it.
 
@@ -53,7 +60,7 @@ database when their work calls for it.
   TypeScript source directly (`"exports": "./src/index.ts"`); there is no build step for internal
   packages.
 - Relative imports include the `.ts`/`.tsx` extension.
-- `packages/board` imports no Jeeves code.
+- `jeeves/packages/board` imports no Jeeves code.
 - Biome does lint and formatting: `pnpm format` fixes, `pnpm lint` checks. Don't add ESLint or
   Prettier.
 - Pin dependency versions exactly. Prefer versions automation-pitch already uses; otherwise pick a

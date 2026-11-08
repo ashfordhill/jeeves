@@ -3,9 +3,9 @@
 NC03/NC04 add declarative Create link and Resolve link contracts plus one positive-cache policy. There is no HTTP runtime, auth verifier, adapter,
 generator, template manifest or runtime evidence. Existing studies and saved projects are never upgraded by reading them.
 
-The immutable local records are [Create](../packages/spec/src/operation-catalog.json),
-[Resolve](../packages/spec/src/resolve-operation-catalog.json) and
-[Positive cache](../packages/spec/src/cache-policy-catalog.json), each at `1.0.0`. The NC03 Create
+The immutable local records are [Create](../jeeves/packages/spec/src/operation-catalog.json),
+[Resolve](../jeeves/packages/spec/src/resolve-operation-catalog.json) and
+[Positive cache](../jeeves/packages/spec/src/cache-policy-catalog.json), each at `1.0.0`. The NC03 Create
 record and all of its hashes remain unchanged. Records contain actual JSON Schemas and finite behavior.
 Every exact reference is `{id, version, sha256}`: bounded exact SemVer (40 characters maximum,
 no leading zeroes), lowercase SHA256, no ranges or latest fallback. Hashes cover recursively

@@ -5368,3 +5368,27 @@ No renderer redesign/011, generic DSL/tile/template adoption, certification/ente
 savings claim.
 
 Local commit: **FP07b: verify independent v1 and prepare owner review**.
+
+
+## 2026-11-08 — Workspace cleanup and source benchmark
+
+Moved the studio into `jeeves/` and shared configs into `tooling/`; root pnpm commands,
+Docker/CI and fixture paths follow the move. [Layout](repository-layout.md).
+Added the committed-source LOC benchmark: v1 **159 retained template / 2,715 post-template
+LOC (5.53%)**. Tests/configuration and code outside `src/` are excluded. [Method/report](field-projects/source-loc.md).
+Restored the root README from remote `3ae6aff` and recovered 43 historical files with original
+hashes. Subsequent owner README/media edits remain unstaged. Feedback shrank from 695 to 70
+lines; its complete archive is preserved. AGENTS protects the README and requires concise feedback.
+
+Checks: frozen install; `pnpm check` **402 tests/51 files**; **36 E2Es**; web build; Docker
+build/start/restart and 108-file generator assembly; mouse YouTube Fit/focus and TinyURL Fit.
+Initial parallel runs hit startup/browser timeouts; capped Vitest at four workers and Playwright
+at three, retaining all assertions/timeouts. Final suites pass. Failed-run traces/logs remain in
+`/tmp/jeeves-workspace-update/`; three leftover test projects were removed from `jeeves_e2e` only.
+Restored originals retain their historical whitespace; other staged files pass the whitespace check.
+
+Studio 4300/4304 and API 4310 run from the new paths. All owner project responses are unchanged;
+YouTube 4400 remains healthy (14 services). `.jeeves-feedback/` and owner edits are untouched.
+Next remains FP08 owner review; this unit starts no v2 work.
+
+Local commit: **Organize workspace and record source LOC baseline**.

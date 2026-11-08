@@ -1,0 +1,123 @@
+{
+  "$schema": "../node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "root": "."
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/pnpm-lock.yaml",
+      "!.jeeves-feedback",
+      "!field-projects/youtube/v1/diagrams/**/*.json",
+      "!field-projects/youtube/v1/inputs/**/*.json",
+      "!field-projects/youtube/v1/app",
+      "!docs/archive/pre-rewrite"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "linter": {
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["jeeves/packages/board/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@jeeves/**"],
+                    "message": "packages/board imports no Jeeves code."
+                  },
+                  {
+                    "group": ["**/apps/**"],
+                    "message": "packages/board imports no Jeeves code."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["jeeves/packages/board/src/graph/**", "!**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@jeeves/**"],
+                    "message": "packages/board imports no Jeeves code."
+                  },
+                  {
+                    "group": ["**/apps/**"],
+                    "message": "packages/board imports no Jeeves code."
+                  },
+                  {
+                    "group": ["*", "../**", "!./*"],
+                    "message": "The board graph imports nothing outside src/graph."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["jeeves/packages/spec/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@jeeves/board": "The spec runs on the server too: import @jeeves/board/graph, never the board root (React, React Flow, CSS)."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -185,11 +185,27 @@ importers:
         specifier: 5.0.0
         version: 5.0.0(@types/node@24.19.2)(jsdom@29.1.1(@noble/hashes@2.0.1))(vite@8.2.2(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
 
-  apps/server:
+  jeeves-generator:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../jeeves/packages/spec
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+    devDependencies:
+      rolldown:
+        specifier: 1.2.15
+        version: 1.2.15
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
+
+  jeeves/apps/server:
     dependencies:
       '@jeeves/generator':
         specifier: workspace:*
-        version: link:../../jeeves-generator
+        version: link:../../../jeeves-generator
       '@jeeves/providers':
         specifier: workspace:*
         version: link:../../packages/providers
@@ -228,7 +244,7 @@ importers:
         specifier: 0.31.11
         version: 0.31.11
 
-  apps/web:
+  jeeves/apps/web:
     dependencies:
       '@fontsource-variable/nunito':
         specifier: 5.3.0
@@ -286,20 +302,7 @@ importers:
         specifier: 8.2.2
         version: 8.2.2(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
 
-  jeeves-generator:
-    dependencies:
-      '@jeeves/spec':
-        specifier: workspace:*
-        version: link:../packages/spec
-      zod:
-        specifier: 4.5.4
-        version: 4.5.4
-    devDependencies:
-      tsx:
-        specifier: 4.23.15
-        version: 4.23.15
-
-  packages/board:
+  jeeves/packages/board:
     dependencies:
       elkjs:
         specifier: 0.12.0
@@ -319,7 +322,7 @@ importers:
         version: 12.11.6(patch_hash=f509d2c694a5d84d74789aff295d0eaf98a87f1913451a89f282cd2a03ea8d21)(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       jsdom:
         specifier: 29.1.1
-        version: 29.1.1
+        version: 29.1.1(@noble/hashes@2.0.1)
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -327,7 +330,7 @@ importers:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
 
-  packages/providers:
+  jeeves/packages/providers:
     dependencies:
       '@openai/codex-sdk':
         specifier: 0.162.1
@@ -339,7 +342,7 @@ importers:
         specifier: 4.5.4
         version: 4.5.4
 
-  packages/spec:
+  jeeves/packages/spec:
     dependencies:
       '@jeeves/board':
         specifier: workspace:*
@@ -2796,8 +2799,6 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@exodus/bytes@1.16.0': {}
-
   '@exodus/bytes@1.16.0(@noble/hashes@2.0.1)':
     optionalDependencies:
       '@noble/hashes': 2.0.1
@@ -3299,13 +3300,6 @@ snapshots:
       d3-selection: 3.0.0
       d3-transition: 3.0.1(d3-selection@3.0.0)
 
-  data-urls@7.0.0:
-    dependencies:
-      whatwg-mimetype: 5.0.0
-      whatwg-url: 16.0.1
-    transitivePeerDependencies:
-      - '@noble/hashes'
-
   data-urls@7.0.0(@noble/hashes@2.0.1):
     dependencies:
       whatwg-mimetype: 5.0.0
@@ -3507,12 +3501,6 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  html-encoding-sniffer@6.0.0:
-    dependencies:
-      '@exodus/bytes': 1.16.0
-    transitivePeerDependencies:
-      - '@noble/hashes'
-
   html-encoding-sniffer@6.0.0(@noble/hashes@2.0.1):
     dependencies:
       '@exodus/bytes': 1.16.0(@noble/hashes@2.0.1)
@@ -3526,32 +3514,6 @@ snapshots:
   is-potential-custom-element-name@1.0.1: {}
 
   js-tokens@4.0.0: {}
-
-  jsdom@29.1.1:
-    dependencies:
-      '@asamuzakjp/css-color': 5.1.11
-      '@asamuzakjp/dom-selector': 7.1.1
-      '@bramus/specificity': 2.4.3
-      '@csstools/css-syntax-patches-for-csstree': 1.1.15(css-tree@3.2.1)
-      '@exodus/bytes': 1.16.0
-      css-tree: 3.2.1
-      data-urls: 7.0.0
-      decimal.js: 10.6.0
-      html-encoding-sniffer: 6.0.0
-      is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.5.3
-      parse5: 8.0.1
-      saxes: 6.0.0
-      symbol-tree: 3.2.4
-      tough-cookie: 6.0.2
-      undici: 7.30.1
-      w3c-xmlserializer: 5.0.0
-      webidl-conversions: 8.0.1
-      whatwg-mimetype: 5.0.0
-      whatwg-url: 16.0.1
-      xml-name-validator: 5.0.0
-    transitivePeerDependencies:
-      - '@noble/hashes'
 
   jsdom@29.1.1(@noble/hashes@2.0.1):
     dependencies:
@@ -4022,14 +3984,6 @@ snapshots:
   webidl-conversions@8.0.1: {}
 
   whatwg-mimetype@5.0.0: {}
-
-  whatwg-url@16.0.1:
-    dependencies:
-      '@exodus/bytes': 1.16.0
-      tr46: 6.0.0
-      webidl-conversions: 8.0.1
-    transitivePeerDependencies:
-      - '@noble/hashes'
 
   whatwg-url@16.0.1(@noble/hashes@2.0.1):
     dependencies:

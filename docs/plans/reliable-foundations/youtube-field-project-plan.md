@@ -77,7 +77,7 @@ authorized.
 | --- | --- |
 | jeeves-generator/ | Generator workspace package: deterministic assembly, finite input mapping, manifest and export. |
 | jeeves-generator/templates/ | Versioned source templates and supported configuration; initially experimental. |
-| apps/server/ and apps/web/ | Existing Jeeves API and mouse-operated generation/export flow. |
+| jeeves/apps/server/ and jeeves/apps/web/ | Existing Jeeves API and mouse-operated generation/export flow. |
 | field-projects/youtube/v1/inputs/ | Exact generation inputs: design/blueprint, local bindings, input hashes and a diagram snapshot reference. |
 | field-projects/youtube/v1/diagrams/ | Numbered immutable diagram images, editable source, view metadata and change index. |
 | field-projects/youtube/v1/app/ | Actual generated application, then completion through explicit custom commits. |
@@ -94,7 +94,7 @@ FP03b supplies guarded mouse preview/download of the unchanged real bundle; FP04
 Add `jeeves-generator` explicitly to pnpm workspace
 discovery when implementing its package; put reusable backend code there with a thin Jeeves API
 entry point. A separate running generator service is not necessary for the first local export.
-Keep field apps outside the studio's apps/* and packages/* workspace discovery.
+Keep field apps outside the studio's jeeves/apps/* and jeeves/packages/* workspace discovery.
 The exact `field-projects/youtube/v1/app` path is also outside root Biome; its independent
 frozen-lockfile install, TypeScript build and applicable field checks are required at handoff.
 Exported lockfiles/imports/build files must stand alone, without checkout paths or
@@ -250,8 +250,10 @@ and dependencies rather than attributing every improvement to generation.
 | Visual evolution | Numbered source-linked diagram images and UI screenshots, with the reason and outcome of each architecture or presentation change. |
 | Working result | The same smoke scenarios, observed defects and limitations for each finished version. |
 
-Behavior coverage and remaining effort are the primary comparison. Source-line counts are only
-secondary, with explicit counting rules excluding dependencies, lockfiles and empty scaffolding.
+Behavior coverage and remaining effort are the primary comparison. The owner also requested a repeatable
+[source-line composition benchmark](../../field-projects/source-loc.md): production `src/` code,
+excluding configuration, infrastructure and tests. Stubs count as source lines, with no functional
+credit; source share and effort/behavior measures stay distinct.
 Do not claim a generated percentage before measuring baseline and completed output. Reusing v1
 custom code is useful but stays reused custom work unless an actual versioned template now emits
 it. Copying a completed application into v2 does not demonstrate better generation.

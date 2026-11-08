@@ -72,6 +72,6 @@ it through the supported Packages REST API. See
 For a local build from the checkout:
 
 ```sh
-docker build -t jeeves:local .
+docker build -f jeeves/Dockerfile -t jeeves:local .
 docker run -d --name jeeves-local --stop-timeout 30 -p 127.0.0.1:4302:4300 -v jeeves-local-data:/data jeeves:local
 ```

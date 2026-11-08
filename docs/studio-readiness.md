@@ -71,7 +71,7 @@ the old exact composition's evidence. Future unrelated catalog additions do not 
 profile's frozen definition or its explicit contract list.
 
 The immutable first resolved profile record is
-[`tinyurl-readiness-profile.json`](../packages/spec/src/tinyurl-readiness-profile.json).
+[`tinyurl-readiness-profile.json`](../jeeves/packages/spec/src/tinyurl-readiness-profile.json).
 Its fixed digest is independently recomputed in tests. It extends the existing ID/version scope
 reference with a content identity; selecting a known profile alone implements nothing.
 

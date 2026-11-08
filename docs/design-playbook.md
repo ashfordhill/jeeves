@@ -15,7 +15,7 @@ The goal behind every rule is "Why this matters" in the
 - **Diagram level.** Algorithms, retries, hashing, DAG scheduling and cleanup jobs are module
   purposes or the developer's work after generation, not tiles.
 
-The canvas's own rules are in [CATALOG](../CATALOG.md#lanes-and-links); this page assumes them. The
+The canvas's own rules are in [CATALOG](../jeeves/CATALOG.md#lanes-and-links); this page assumes them. The
 ones that shape every pattern below:
 
 - The user reaches only its actions, and an action reaches only a service, an API or the CDN. **A

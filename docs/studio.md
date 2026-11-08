@@ -124,7 +124,7 @@ forks keep their rows and columns when the design changes, and changes animate f
 first layout already follows these rules, so the first edit moves only what it changes. The canvas
 writes no layout.
 
-The **lane bands** (`laneBands` in the spec decides them; `layoutBands` in `packages/board` draws
+The **lane bands** (`laneBands` in the spec decides them; `layoutBands` in `jeeves/packages/board` draws
 them):
 
 - Every tile is in one band: **download** when only the Consume action reaches it, **upload** when
@@ -144,7 +144,7 @@ them):
   moves a bus in the gap before a shared tile when two lanes' lines would otherwise run together
   for more than 32px.
 
-**Stores beside their users** (`endColumns` and `routeReturns` in `packages/board`). A store (on
+**Stores beside their users** (`endColumns` and `routeReturns` in `jeeves/packages/board`). A store (on
 the board, any tile with links in and none out) sits next to the tiles that use it, so a tile's
 links to its stores are short branches, not long lines beside the pipeline it also feeds:
 
@@ -171,7 +171,7 @@ links to its stores are short branches, not long lines beside the pipeline it al
   lines came to 10,656px against 9,120px with the stores in the last column), and a store that
   adds a row to its band pushes every band below it down.
 
-On the grid (`alignLayout` in `packages/board`, run on every layout):
+On the grid (`alignLayout` in `jeeves/packages/board`, run on every layout):
 
 - Every port sits on a grid line, and the paper's dots mark the grid's crossings. A tile's top-left
   corner sits on a dot; the user, 160px tall, has its centre on a grid line instead.
@@ -238,7 +238,7 @@ the red X on its top edge ([Removing](#removing)). There are two kinds of tab:
   tab (an existing tile becomes its entry: any application or CDN with no entry yet). It has no
   left `+`: nothing goes before an action.
 
-Every new link takes its pair's default mode from the [link table](../CATALOG.md#lanes-and-links):
+Every new link takes its pair's default mode from the [link table](../jeeves/CATALOG.md#lanes-and-links):
 asynchronous (a dashed line) to and from a queue, a request (a solid line) otherwise. Where the
 table allows both, the line inspector's Interaction field switches it.
 
@@ -270,7 +270,7 @@ and the pull stays open until you let go.
 Each add or attach is one batch and one undo step.
 
 Every tile must hang off the user through an action, with no cycles, links the
-[link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 4 entries
+[link table](../jeeves/CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 4 entries
 per action; a tile has one entry at most, and a lane one action. An edit that breaks one of these
 rules is refused with a notice and changes nothing, whether it comes from the canvas, the
 inspector, chat or the API.
@@ -281,7 +281,7 @@ Optional shortcuts: V selects, H pans, Escape cancels a pull. Every action works
 
 The selected tile has a red **X** centred on its top edge (faint until the pointer is on it); the
 user has none. The X removes the tile and links each tile before it to each tile after it, wherever
-the [link table](../CATALOG.md#lanes-and-links) allows, unless the first already reaches the
+the [link table](../jeeves/CATALOG.md#lanes-and-links) allows, unless the first already reaches the
 second another way. A restitched link is asynchronous when either link it replaces was, and a lane
 entry passes on to its action. Removing Click events in TinyURL links the Redirect service to the
 Analytics worker directly, asynchronously.
@@ -491,7 +491,7 @@ Actions, tiles and links change only through the lane commands: `addAction`, `re
 adds with its default name if the lane has none, or before a tile), `linkTiles`, `removeTile`,
 `removeLink`, `changeKind` and `setEntryLane` (moves an entry to the other lane's action). The
 instructions say what an action is in two sentences. A new link's mode is optional: left out, it is the pair's default
-from the [link table](../CATALOG.md#lanes-and-links) (async for queue links, sync otherwise),
+from the [link table](../jeeves/CATALOG.md#lanes-and-links) (async for queue links, sync otherwise),
 and the instructions' copy of that table is generated from it. So chat, like the mouse,
 can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
 command changes nothing and comes back in the same plain words as the canvas notice ("URL cache
@@ -584,7 +584,7 @@ behavior. These checks establish design intent, not runtime authorization.
 
 ## The TinyURL study
 
-The extended design-only study, `studio-tinyurl@3.2.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
+The extended design-only study, `studio-tinyurl@3.2.0` ([factory](../jeeves/packages/spec/src/studio-examples/tinyurl.ts)),
 is a read-heavy URL shortener built from four published designs and one open-source shortener:
 
 - HelloInterview, [Design Bit.ly](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly)
@@ -634,7 +634,7 @@ clicks reaching the service: ByteByteGo's 301-versus-302 discussion and HelloInt
 trade explicitly, and Grokking answers 302 with `Cache-Control: no-store` so every click counts.
 Dub shows how it is done in practice: its redirect runs as code on every request (Next.js
 Middleware), reads link data from Redis, answers 302 and records the click after responding
-(`apps/web/lib/middleware/link.ts`); only its static pages get CDN cache headers. So Open link
+(`apps/web/lib/middleware/link.ts` in Dub); only its static pages get CDN cache headers. So Open link
 reaches the Redirect service directly. Running the redirect near users is a setting of the
 Redirect service (Execution **Managed**, Host **Cloudflare Workers**), not a CDN tile.
 
@@ -646,7 +646,7 @@ action, Consume or Produce); only new copies are v3.2.
 
 ## The marketplace study
 
-`studio-marketplace@1.3.0` ([factory](../packages/spec/src/studio-examples/marketplace.ts)) is a
+`studio-marketplace@1.3.0` ([factory](../jeeves/packages/spec/src/studio-examples/marketplace.ts)) is a
 multi-seller marketplace with Etsy's core functionality, designed as clean microservices rather
 than copied from Etsy. Its core flows, and the tiles that carry them:
 
@@ -778,7 +778,7 @@ components, with nothing omitted and no findings.
 
 ## The YouTube study
 
-`studio-youtube@2.1.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
+`studio-youtube@2.1.0` ([factory](../jeeves/packages/spec/src/studio-examples/youtube.ts)) is a
 video-sharing site with YouTube's core functionality, designed as clean microservices rather than
 copied from YouTube. Version 2 follows Alex Xu's "Design YouTube" (ByteByteGo), mapped to Jeeves
 tiles and templates, after the owner's review of 1.2 (the

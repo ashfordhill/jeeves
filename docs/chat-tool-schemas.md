@@ -98,7 +98,7 @@ historical evidence, not a claimed NC01 improvement.
 Old RF06 as-run records remain immutable. Their first replay request now intentionally differs
 because caller context adds explicit schema/persistent scope, the current prompt adds its rules
 and the current tool map adds the narrow tool. The separately versioned
-`apps/server/src/chat/fixtures/nc01-scope-v1.json` freezes the new scripted scope arguments;
+`jeeves/apps/server/src/chat/fixtures/nc01-scope-v1.json` freezes the new scripted scope arguments;
 network-free synthetic RF06 cases still replay deterministically under the current code.
 
 
@@ -146,7 +146,7 @@ The actual emitted strict tool array is **69,051 UTF-8 bytes**, versus retained 
 (+7,555). On the same default schema2 TinyURL, rendered instructions are **13,886** versus
 **12,512** (+1,374), caller context **16,293** versus **15,928** (+365). These are measured bytes,
 not tokens, price, speed or model-quality evidence. A separately versioned
-`packages/spec/src/fixtures/nc03-create-v1.json` drives current scripted regression: five real
+`jeeves/packages/spec/src/fixtures/nc03-create-v1.json` drives current scripted regression: five real
 ChatService responses, two accepted repair passes, refused third apply, permitted lookup/preview
 and one turn Undo. Mocked transport verifies exact tagged refs, nullable values and canonical
 history; no live/paid call or Mini/live strict acceptance is claimed.
