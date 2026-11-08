@@ -468,3 +468,95 @@ deliver the same stable event ID again; consumers commit their receipt/effect be
 YV2-05. This is at least once, with no distributed transaction, reconnect or exactly-once claim.
 [Offline/standalone/actual SQL-broker evidence](../evidence/youtube-v2/yv2-06-durability.md).
 Next owner: **YV2-07 only**, generic owned-upload persistence/hooks.
+
+## YV2-07 — owned upload persistence and application hooks
+
+`loadLocalV2Registry` registers `local.upload-state`, an implemented **dependency emitter**.
+Actual normalized `owned-multipart` selections emit `src/runtime/owned-upload.ts` and
+`src/runtime/upload-sql.ts`, with their exact selection pointers. There is no
+`provides.templates`/preset, S3 operation, HTTP route, service or installed multipart consumer;
+YV2-08 owns that engine. Application/feature/mapping gaps remain required and unfinished.
+No v2 field app exists. Runtime assets are captured local-v2 sources; the dependency-free
+`upload-sql.ts` is shared directly with the generator, with no mutable v1 reads.
+
+Generator exports from `src/v2/upload-state.ts` / `src/index.ts`:
+
+- `ownedUploadSchema(relation: SqlRelation) -> string`: separately quoted schema/table,
+  private schema/public revocation, generic upload table and bounded-sweep indexes. It has
+  **no application foreign key, video table, title, channel or implicit runtime grant**.
+- `ownedUploadPersistence({resource,host,relation,migrationId,sourcePaths}) -> V2LocalContribution`:
+  a trusted compiled recipe's actual migration plus explicit runtime login and schema-qualified
+  SELECT/INSERT/UPDATE table grant. The foundation remains sole migration/shared-file writer
+  and validates canonical source/store/host/authority/access. This dependency alone contributes
+  no migration/login/grant; the consuming recipe binds them with this helper through `local`.
+  Application metadata, lifecycle and outbox tables/grants are separate contributions. No DELETE,
+  schema CREATE or setup-owner credential is required by the repository.
+
+Emitted `owned-upload.ts` exports `createOwnedUploads<M,R>(binding,hooks) ->
+OwnedUploadRepository<M,R>`, plus `UploadBinding`, `UploadPrincipal`, `UploadFile`,
+`UploadRecord<M,R>`, `UploadHooks<M,R>`, `VerifiedOriginal`, `UploadState`, `UploadPhase`,
+`UploadFailure`, `UploadTerminal`, `BeginUploadCompletion<M,R>` and `UploadCompletion<R>`.
+
+`UploadBinding` is `{schema,table,originalKey({assetId,uploadId,file})}`. The key constructor is
+trusted compiled code, never saved-source/client input. Reservation generates new UUID asset
+and upload identities on the server every time; no idempotent-start feature is introduced.
+UUID lookup inputs normalize to lowercase; principal subjects remain exact case-sensitive text.
+Original keys are unique bounded 1024-byte values. `UploadFile` retains fileName, size,
+contentType, lastModified and lowercase SHA256; generic bounds preserve 1 byte–256 MiB transport,
+safe filename and integer limits. Application validation owns accepted content/metadata, such
+as MP4 or PDF; generic SQL does not require a video MIME type.
+
+`UploadRecord` exposes camelCase identities/owner/key/provider ID, file/typed metadata,
+createdAt/updatedAt/expiresAt/dbNow, stable completeResponse/originalEtag, failureCode and
+cleanupNeeded. Transport `state` is uploading/completed/failed/aborted/expired; `phase` is
+initiating/active/completing/closed. These are separate from YV2-09's pending/processing/ready
+application lifecycle. PostgreSQL `clock_timestamp()` owns the fixed 24-hour expiry, 1-minute
+interrupted-initiation age and all transition times; no client clock extends a resume window.
+
+Every repository operation takes the active branded YV2-06 `Tx`; no private pool or hidden
+transaction boundary exists. SQL/codec/hook failures poison that scope even if a caller catches
+the rejection. `UploadPrincipal` is `Pick<VerifiedPrincipal,"subject">` for owner lookups and
+stored-owner reconciliation. `reserve` receives the full **already verified** principal so its
+application validator can use verified claims; identity verification and creator authorization
+remain caller responsibilities. No owner, asset ID, provider ID or key is read from client input.
+
+| Repository method (after `tx`) | Actual behavior |
+| --- | --- |
+| `reserve(principal,input)` | Validates application input/file/metadata, inserts initiating upload, awaits reservation hook; returns durable record. |
+| `owned(uploadId,principal,lock=false)` / `recent(principal)` | Exact owner match or null; optional row lock; recent records bounded to 50. Foreign owner gets no record. |
+| `saveProvider(uploadId,principal,providerId)` | Locked initiating→active; rejects unknown/conflicting/expired state; retains provider identity durably. |
+| `beginComplete(uploadId,principal)` | Locked active/completing→completing; stable replay wins; due uploads expire through the terminal hook. |
+| `complete(uploadId,principal,original)` | Locked completing→completed after key/size/SHA/ETag checks; awaits hook, validates/stores response in the same transaction. Returns completed/duplicate with response, or unknown/conflict/expired/mismatch. |
+| `close(uploadId,principal,"aborted"\|"expired")` / `fail(uploadId,principal,code)` | Terminal state + cleanup flag + terminal hook commit together; due close prefers expired, early expiry returns not-due. Failure codes are INITIATION_FAILED/UPLOAD_MISMATCH. Closed states refuse new completion. |
+| `reopenIncomplete(uploadId,principal)` | Reopens only unexpired uploading/completing to active after incomplete provider inventory. |
+| `cleanup()` / `interrupted()` / `clearCleanup(uploadId)` | **Privileged internal sweeper APIs**, not client routes. Up to 50 due/flagged records, or completing/old-initiating records; cleanup flag clears only when closed. No provider deletion is performed. |
+
+`UploadHooks` requires synchronous `validate(input,verifiedPrincipal) -> {file,metadata}`,
+`metadata(unknown) -> M`, `response(unknown) -> R`, and awaited
+`reserve(tx,upload)`, `complete(tx,upload,verifiedOriginal) -> R`,
+`closed(tx,upload,terminal)`. Explicit no-op callbacks support applications needing no additional
+SQL effect. Metadata and response must be non-null JSON data; dates/classes/undefined/nonfinite
+values refuse. Codecs validate normalized JSON snapshots on write/read and must round-trip
+stably. A bad response rolls back the completion effect and intent, not just response storage.
+Hook records are detached snapshots. Complete/closed hooks see the **pretransition** upload
+under the held row lock and share exactly the caller's Tx, so YV2-09 can commit pending+job
+outbox intent or abort/expiry/failure lifecycle changes without forking this core. They must
+await SQL effects; network effects are never atomic with SQL. Reservation sees the inserted
+initiating record with DB expiry, allowing an adapter to insert its related metadata atomically.
+
+For YouTube, map `upload.assetId` to its existing `videoId` in the narrow adapter; bind
+`originals/<assetId>/<uploadId>/source.mp4` through `originalKey`, validate title/description
+and verified channel in the application hook, and persist the video/lifecycle relationship in
+later recipe SQL. The generic table needs none of those fields or relationships. Completion
+hook creates the job/attempt IDs once in the committed transaction and returns the existing
+pending HTTP response; replay returns that saved response before any hook or expiry check,
+even when the later application lifecycle has progressed.
+
+Provider initiation/completion remain separate network phases. A SQL failure after provider
+success leaves initiating/completing state for bounded reconciliation; it must not be silently
+reset or represented as atomic. YV2-08 must validate real provider parts/Head metadata against
+the durable asset/upload/key/size/SHA identity before constructing `VerifiedOriginal`.
+Its SHA is the expected source fingerprint, not proof that Head hashed the bytes. Transport
+mismatch returns a finite outcome; its caller chooses the existing terminal failure path.
+[Focused offline/standalone evidence and limits](../evidence/youtube-v2/yv2-07-upload-state.md).
+Next owner: **YV2-08 only**, generic signed multipart engine and HTTP factory.

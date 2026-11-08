@@ -5626,3 +5626,38 @@ remain unfinished. Preserve YV2-16 edge boundary, root README, local-v1/v1 sourc
 owner resources, `.jeeves-feedback` dirt and e2e-docker mode. No field v2 app or push.
 
 Local commit: **YV2-06: extract transactional delivery and receipt modules**.
+
+## 2026-11-08 — YV2-07: owned upload persistence and hooks
+
+`local.upload-state` emits generic `owned-upload.ts` / `upload-sql.ts` dependencies with
+server-generated asset/upload UUIDs, exact verified-owner queries, file fingerprint/provider
+phases, DB-clock 24-hour expiry, bounded reconciliation/cleanup and stable completion replay.
+`ownedUploadSchema` / `ownedUploadPersistence` provide video-independent migration and explicit
+runtime login/SELECT/INSERT/UPDATE grants through the existing foundation. No application FK,
+title/channel, S3 operation, route, service or installed multipart support is assumed.
+[Actual API](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-07--owned-upload-persistence-and-application-hooks)
+records the typed metadata/reservation/completion/terminal callbacks on YV2-06's caller Tx.
+Caught hook/codec failures still poison the transaction; pending state+intent or terminal
+lifecycle updates can commit with upload state in YV2-09. Hooks see detached pretransition
+snapshots under the row lock. `assetId` maps to `videoId` only in the later product adapter.
+
+Four focused offline PGlite cases; final `pnpm check` **430 tests/59 files, 40.08s** plus
+lint/types; **36 native E2Es, 2.7m**; web build **5.36s** (existing chunk advisory).
+Initial overlapping check/E2E work caused one existing undo/redo 5-second timeout; the isolated
+final check passes unchanged assertions/timeouts. Two deterministic **43-file** scratch exports
+pass own frozen install/untouched build and a typed PDF/document metadata/job adapter build.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-07-upload-state.md),
+logs `/tmp/jeeves-yv2-07/{check-final,e2e,web-build,export-verified,install-verified,build-verified,build-adapter-verified}.log`.
+No provider scratch stack/runtime/secret/port/volume was created; all fourteen v1 services remain
+healthy. No normal UI changed; browser E2Es retain TinyURL lane/mouse/generation coverage.
+
+Frozen v1's **108-path/hash list** is identical, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-08 only**: actual signed multipart engine/HTTP factory and provider smoke using this
+repository; `VerifiedOriginal` must come from real provider inventory/Head identity validation.
+Provider/SQL uncertainty is preserved; no new idempotent-start or atomic network claim exists.
+YV2-09 uses required complete/closed hooks for application lifecycle, without editing upload core.
+Preserve YV2-16 edge boundary, root README, local-v1/v1 source/input/runtime/fixtures, owner
+resources, `.jeeves-feedback` dirt and e2e-docker mode. No v2 field app or push.
+
+Local commit: **YV2-07: extract owned upload persistence and hooks**.
