@@ -4,6 +4,12 @@
 by this document. The owner requested unchanged basic functionality, more useful generated
 backend code, and a studio whose normal controls earn their place through generation.
 
+**Follow-up:** the owner answered all three questions and emphasized cross-project reuse.
+The [v2 build plan](youtube-v2-plan.md) now supersedes the provisional unit list below.
+Video templates are in scope; v2 must improve on 5.53%, while 60% is a long-run field-project
+target; normal controls require both an implemented consumer and a useful user decision.
+Internal generation metadata stays out of normal authoring. No implementation has started.
+
 ## Findings
 
 The largest opportunity is to generate working upload/lifecycle and media behavior, rather

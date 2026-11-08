@@ -5426,3 +5426,22 @@ Next: owner answers template breadth, 60% target versus gate, and template-backe
 then finalize bounded sequential assignments. No automatic v2 execution from this review.
 
 Local commit: **Review YouTube v2 extraction and studio controls**.
+
+## 2026-11-08 — YouTube v2 sequential build plan
+
+Owner settled reusable video/generic templates, v2 share above 5.53% with 60% an eventual
+cross-project target, and only necessary template-backed configuration. [Plan](plans/reliable-foundations/youtube-v2-plan.md),
+[shared contract](plans/reliable-foundations/youtube-v2/contracts-and-controls.md) and
+[23 assignments](plans/reliable-foundations/youtube-v2/assignments.md) give each fresh sequential
+agent its own reads/work/checks/exclusions/commit. Require product-attachment reuse without
+YouTube search/counts, hidden internal metadata, unchanged v1 functionality and an untouched
+generated baseline before completion. Recorded decisions in feedback/playbook/AGENTS and linked
+the active field plan. No implementation, saved-source/runtime changes, delegation or push.
+
+Checks: plan links/23 ordered and fully structured assignments; `pnpm check` 402 tests/51 files
+in 21.23s plus lint/types; 36 native E2Es in 1.3m; web build 1.19s (existing size advisory).
+Mouse YouTube Fit/Upload and TinyURL Fit, no page errors; all 5 owner design responses unchanged.
+Logs `/tmp/jeeves-youtube-v2-plan-*.log`. Root README and unrelated feedback/e2e-docker changes
+preserved. Next assigned implementation unit: **YV2-01 only**; this planning unit starts none.
+
+Local commit: **Plan reusable YouTube v2 templates and sequential execution**.

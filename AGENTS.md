@@ -69,6 +69,12 @@ database when their work calls for it.
 - The server binds to `127.0.0.1` only. Never put API keys in the repo.
 - Settings are a finite allowlist ([studio settings](docs/studio-settings.md)): add a field only
   with its schema, form, validation and blueprint output together.
+- A normal configuration control must affect an implemented template and represent a necessary
+  user decision. Keep internal generation metadata/defaults out of diagrams and forms; do not create
+  an Advanced dumping ground. Mouse, chat and generation must share supported choices.
+- Prefer generic template mechanisms and reusable feature packs across field projects and other
+  apps. Keep product policy in narrow adapters. For YouTube v2, follow the assigned unit in the
+  [build plan](docs/plans/reliable-foundations/youtube-v2-plan.md); do not execute later units.
 - Keep design intent, template availability and verification evidence distinct.
 - Field-project LOC benchmarks measure **backend code only**. Exclude all UI/frontend code,
   including UI under `src/`, until the owner expands the measure after adding a UI builder.

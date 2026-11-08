@@ -1124,3 +1124,18 @@ on tile faces and above every settings form. Keep committed-publication ordering
 access; simplify presentation separately. A collapse action that immediately falls back to
 expanded roles should not remain an apparently effective action. Preserve canonical graph
 identity rather than splitting owners to satisfy a view.
+
+## 2026-11-08 owner decision: reuse and necessary controls
+
+The owner accepted generic foundations plus video templates: a product page, social app or
+existing service may need video without becoming YouTube. The [v2 plan](plans/reliable-foundations/youtube-v2-plan.md)
+requires the same implementations to support a small attachment composition without YouTube
+search/count dependencies. Keep product associations, eligibility and other business policy in
+narrow adapters. Other use cases motivate an interface; they do not justify building those
+products or a universal workflow language now.
+
+A normal control must both affect an implemented template and express a useful user decision.
+Necessary internal schemas/identities/grants/policies stay in typed source/template data;
+their existence does not justify displaying or configuring them. Do not move removed clutter
+into an Advanced editor. The 60% template-share goal is eventual across field projects; v2 must
+improve on its actual v1 backend baseline of 5.53% without padding or changing scope.

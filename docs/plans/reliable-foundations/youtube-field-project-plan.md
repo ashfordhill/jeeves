@@ -15,8 +15,12 @@ against commit `02ac280da62616e9c7aad7f88457dcb72084cb25`. FP06a adds the
 [custom owned-state foundation](../../../field-projects/youtube/v1/notes/fp06a-foundation.md) and
 native008–010 schema3 ownership/publication corrections. FP06b–FP07a complete the custom core;
 FP07b now supplies the [independent integrated results and review pack](../../../field-projects/youtube/v1/notes/review-pack.md).
-S01–S04/S06–S08 pass bounded flows; S05 retains its human-listening limitation. Next is FP08
-owner/fresh-agent review. No automatic v2 or measured effort-saving claim is supported.
+S01–S04/S06–S08 pass bounded flows; S05 retains its human-listening limitation. FP08's
+[fresh review](youtube-v2-review.md) and owner decisions now supply the
+[v2 build plan](youtube-v2-plan.md), with bounded sequential assignments. The owner selected
+generic and reusable video templates, a v2 backend share above 5.53% (60% is an eventual
+cross-project target), and only necessary template-backed normal controls. Implementation has
+not started in the planning unit. No measured effort-saving claim is supported.
 
 ## Scope and decisions
 

@@ -80,3 +80,9 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Problem:** only 5.53% of v1 backend source remains templated; role explanations and unrelated configuration obscure useful studio controls.
 - **Decision:** review reusable backend behavior and generation-relevant UI before a sequential v2 build plan; preserve basic functionality and the owner README.
 - **Resolution:** [Review](plans/reliable-foundations/youtube-v2-review.md) identifies upload/lifecycle/media candidates and concrete inspector issues. Template breadth, 60% acceptance policy and normal-inspector scope await owner answers; no v2 implementation started.
+
+## 2026-11-08 — V2 scope, reuse and normal controls settled
+
+- **Problem:** v2 needs useful extraction without becoming a YouTube-only template or adding more editor clutter.
+- **Decision:** include generic and reusable video templates; support attachments in other applications. V2 must exceed 5.53%; 60% is an eventual cross-project target. Show a control only when implemented and useful for the user to configure; hide internal metadata.
+- **Resolution:** [Build plan](plans/reliable-foundations/youtube-v2-plan.md) defines 23 bounded sequential assignments and a separate reuse proof. Planning is complete; implementation begins with YV2-01 when assigned.
