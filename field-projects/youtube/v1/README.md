@@ -1,7 +1,9 @@
 # YouTube v1: frozen starting point
 
-FP01 freezes the saved diagram and a finite local mapping. **No generator, templates, application
-output or measured functional coverage exists yet.** The next unit is FP02. The real untouched
+FP01 freezes the saved diagram and a finite local mapping. FP02 adds the
+[experimental generator foundation](../../../jeeves-generator/README.md), pinned to these exact
+inputs, with deterministic in-memory bundles and explicit partial reports. **No application
+templates, app output or measured functional coverage exist yet.** The next unit is FP03. The real untouched
 generator output must be committed in FP04 before the custom implementation plan or application
 code. Review working v1 with the owner before deciding on v2.
 
@@ -26,8 +28,8 @@ Runtime images, dependencies, fixture videos, data and secrets are not committed
 under `diagrams/` and `inputs/` is excluded from Biome formatting so exact downloaded bytes and
 recorded hashes survive; this does not exclude future field application code from checks.
 
-Later edits append numbered snapshots and work-log entries; never replace this baseline. Record
-FP01's containing commit in the next unit, avoiding a self-referential manifest. Later real
+Later edits append numbered snapshots and work-log entries; never replace this baseline. The appended [FP02 work-log entry](notes/work-log.md) records FP01's containing commit, avoiding
+a self-referential frozen manifest. Later real
 generator/template versions, output hashes, build results and source provenance belong to their
 own checkpoints. The actual strict report remains `generationEligible: false`, template
 availability `none` and runtime verification `none`.

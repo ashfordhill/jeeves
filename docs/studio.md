@@ -2,7 +2,9 @@
 
 The studio is the **Design** tab: the lane canvas of one project, a chat rail on the left and an
 inspector on the right. Everything in it is design intent. Nothing is provisioned, deployed or
-generated; a future code generator reads the [blueprint](studio-blueprint.md). Field values are
+generated in the studio. The [experimental generator foundation](../jeeves-generator/README.md)
+currently exposes a frozen local-v1 in-memory assembly API, with no application templates or
+mouse generation/export. It reads the [blueprint](studio-blueprint.md). Field values are
 listed in [studio settings](studio-settings.md).
 
 Open **Compatibility report** in the inspector to see four separate results for the saved

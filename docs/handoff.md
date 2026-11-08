@@ -4960,3 +4960,39 @@ idempotence and browser-interface gaps visible; original-storage reader already 
 working v1 with owner before deciding on v2; NC07–NC13/heavy certification stay deferred.
 
 Local commit: **FP01: freeze YouTube v1 source and local mappings**.
+
+## 2026-11-07 — FP02: finite experimental generator foundation
+
+FP02 only after FP01 **`acbc716c90245aeb398391f30f7800f988294cb4`**, now recorded in a new
+[field work-log entry](../field-projects/youtube/v1/notes/work-log.md). Primary main, one writer,
+no subdelegation. Frozen inputs/images/history untouched. Added explicit
+[`@jeeves/generator`](../jeeves-generator/README.md) workspace **0.1.0-experimental.1**, no new
+resolved dependency versions. Single reviewed frozen local-v1 profile checks strict schema and
+structural validity, source/blueprint projection/hash, exact ID/definition/settings/owner/host/link
+mappings, pins and optional real source-linked image. No name/prose behavior inference.
+
+Deterministic in-memory bundles include frozen inputs, per-file hash/ownership/source/template
+provenance and separate partial setting/gap/unsupported reports. Every declared setting/local
+policy gets a path/status; 25 frozen overrides, seven extensions and G01–G08 stay visible.
+Strict readiness/spec/API/UI untouched. Trusted local template hooks support one shared project
+owner plus finite selector families; **default registry empty, no application templates/app output**.
+Portable paths and collisions refuse; pure write preflight creates or retains exact bytes and
+refuses differing destinations. No physical writer/archive/browser generation or merge engine.
+
+Required Node24.21.0 checks passed sequentially: `pnpm check` **393 tests / 48 files** (eight new
+network-free generator boundary tests), **34 native E2Es (1.1m)** with source steady, web build
+**959ms** (existing advisory). Frozen-lockfile install passes; lockfile adds only the new importer.
+[Evidence](../field-projects/youtube/v1/notes/evidence/fp02/README.md) includes logs, failed focused
+fixture/type corrections and inspected 1280×800 mouse screenshot. Owner4300 TinyURL12/13,
+Fit/legend, zero errors; all four design/history responses and listing unchanged. E2E DB equals
+its original default-only state. No own servers/projects/field containers/secrets/live chat;
+owner4300/4310, other Compose projects and `.jeeves-feedback/` preserved.
+
+Next FP03 adds actual reusable templates/registry and mouse archive export, includes exact image
+bytes and independently builds output. Root hooks do not implicitly register proposed family
+availability. Physical writers need exclusive creation/symlink refusal; no runtime credit from
+configuration, emitted-byte decisions or the diagnostic JSON test renderer. FFmpeg apt closure
+remains open. FP04 then commits untouched output before FP05 custom planning; S01–S08 all unrun,
+no coverage/effort saving claim, no automatic v2. No schema constraint changed the agreed scope.
+
+Local commit: **FP02: add the finite experimental generator foundation**.

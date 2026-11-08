@@ -1,0 +1,14 @@
+{
+  "name": "@jeeves/generator",
+  "private": true,
+  "version": "0.1.0-experimental.1",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@jeeves/spec": "workspace:*",
+    "zod": "4.5.4"
+  }
+}

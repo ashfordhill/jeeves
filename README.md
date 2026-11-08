@@ -5,8 +5,9 @@ canvas: the user starts a download lane and an upload lane, and every service, A
 cache, queue, storage or external tile hangs off them, laid out automatically with no islands and
 no cycles. You configure each tile from a finite catalog of settings and provider choices, and
 talk to a chat assistant that edits the same design with the same rules. Every design is exposed
-as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). Code generation is not
-implemented yet. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
+as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). The [experimental generator foundation](jeeves-generator/README.md) assembles deterministic
+in-memory bundles for the frozen YouTube local-v1 profile. Application templates and mouse
+generation/export remain FP03 work; no runnable application is generated yet. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
 keeps the generator and experimental templates in `jeeves-generator/`, exports standalone
 applications and measures improvements across working v1/v2 field projects before heavy
 certification. [YouTube v1's frozen inputs and numbered images](field-projects/youtube/v1/README.md)

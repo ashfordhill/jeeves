@@ -11,7 +11,7 @@ apps/web (React studio) ──/api──▶ apps/server (Fastify) ──▶ Post
         └──── @jeeves/spec ◀───────────┤   (schemas, operations, validation, lanes, blueprint)
                                        └──▶ @jeeves/providers ──▶ OpenAI API / Codex (chat only)
 
-GET /projects/:id/blueprint ──▶ future code generator (separate service, not in this repo)
+Frozen design/blueprint + local bindings ──▶ jeeves-generator (experimental in-memory assembly)
 ```
 
 ## Repository layout
@@ -22,6 +22,7 @@ GET /projects/:id/blueprint ──▶ future code generator (separate service, n
 | `apps/server` | Fastify 5 with Zod type providers, Drizzle ORM on `pg`, migrations in `drizzle/`. `routes/` (projects, chat, settings), `design/service.ts` (projects, revisions, history, layout, blueprint), `chat/` (turn loop, tools, files, model wiring), `settings.ts` (provider keys and the chosen model). |
 | `packages/spec` | The design format and every pure function over it (no I/O). |
 | `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap, one for every tile or per tile) and edits (add after, insert before, link, plan and apply a removal with restitching, remove a link, the tile to select after a removal). The root export adds the layout core: ELK layered left to right with stability hints, in horizontal bands when tiles carry one (`layoutBands`: an end tile several tiles use beside them, `endColumns`; each band alone, stacked, then routed in one pass with the bands' lines kept apart, `meetAtPorts`; lines that come back routed as U's, `routeReturns`), then put on the 32px grid (`alignLayout`), a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; a fitted camera refits when the board changes size, a user's pan or zoom is kept, and a picked tile that lands out of view is panned in; select and hand modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band; the selected line and the selected tile's lines in the selection colour, drawn on top; a selected line's red X, on a stretch no other line shares when it has one, and none on a line the caller marks not removable), `TileChrome` (the selected tile's pull tabs and their rubber band: a create tab (`+`) opens an icon fan kept on the board (`placeFan`), whose items keep their slots and may be disabled with a reason, and a picked tile docks at the next slot; an attach tab (a link icon) has no fan and dims the board around its drop targets; the red X), a caller's panel at the board's bottom centre (`hud`, with marked tiles), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The web app's lane canvas mounts it. |
+| `jeeves-generator` | Explicit `@jeeves/generator` workspace: frozen local-v1 validation, deterministic in-memory assembly, provenance/partial reports and safe export preflight. No application templates or studio export yet; see [package API](jeeves-generator/README.md). |
 | `packages/providers` | A provider-neutral model interface with OpenAI Responses and Codex adapters and a scripted fake. |
 | `apps/web/e2e`, `fixtures/chat` | The Playwright smoke set and its scripted chat model. |
 | `docker/`, `Dockerfile`, `compose.yaml` | The single-container image (nginx, API, Postgres 17) and the dev/E2E Postgres. |
@@ -200,8 +201,8 @@ The web app reaches these under `/api` (Vite proxy in development, nginx in the 
 The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
 [execution units](docs/plans/lane-grid/execution-units.md), then
 [polish units](docs/plans/lane-grid/polish-units.md) PL01–PL02) is complete; the build plan's §7
-lists what was left for later. Code generation will be
-a separate service that reads the blueprint.
+lists what was left for later. Experimental generation lives in the same-repository
+`jeeves-generator/` package; it reads frozen design/blueprint inputs separately from the studio.
 
 The [design polish units](docs/plans/design-polish/units.md) DP01–DP10 are done:
 
@@ -276,13 +277,15 @@ upload/transcode/playback/search/basic counts with automatic public publication 
 from Jeeves. The owner selected a minimal browser interface and PostgreSQL, approving the diagram
 change before v1. FP00 implements mouse PNG export; FP01 preserves the original and changed
 diagrams and [freezes the local v1 input baseline](field-projects/youtube/v1/README.md).
-FP02 implements the experimental generator next. Every intentional diagram or presentation
+FP02 supplies the [experimental generator foundation](jeeves-generator/README.md): one frozen
+local-v1 profile, deterministic in-memory bundles, partial reports and safe file preflight. FP03
+adds real templates and mouse export. Every intentional diagram or presentation
 change during a field version retains a new source-linked snapshot; UI changes also retain
 studio screenshots.
 
 Heavy template certification is deferred while designs iterate. Use lightweight build/start/flow
 checks and experimental labels; strict readiness does not certify partial scaffolds. Track reusable
 diagram/template/operation/tile candidates, actual custom effort, generated repairs and investment
-in Jeeves. No generator or field application exists yet. NC07–NC13 are reference briefs, not
+in Jeeves. No application templates or field application exist yet. NC07–NC13 are reference briefs, not
 mandatory pre-v1 work; the older [TinyURL proof plan](docs/plans/reliable-foundations/backend-first-proof-plan.md)
 remains a later verification reference.

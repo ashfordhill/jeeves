@@ -4,9 +4,9 @@ Owner direction, 2026-11-07. This is the active plan for generation work in the 
 It supersedes the separate-repository, TinyURL-first sequence and broad template certification
 before the first field project. Build a working YouTube v1, review it with a fresh agent, improve
 Jeeves, then generate a fresh v2 and possibly v3. Marketplace and TinyURL follow when the owner is
-satisfied. FP00 implements diagram PNG export; no generator, field application or benchmark result exists
-yet. FP01 freezes the [actual v1 source, images and local mapping](../../../field-projects/youtube/v1/README.md);
-FP02 is the next assigned unit.
+satisfied. FP00 implements diagram PNG export; FP02 provides the experimental generator foundation, with
+no installed application templates, field application or benchmark result yet. FP01 freezes the [actual v1 source, images and local mapping](../../../field-projects/youtube/v1/README.md);
+FP03 adds the first actual templates and Jeeves export next.
 
 ## Scope and decisions
 
@@ -75,7 +75,10 @@ authorized.
 | field-projects/youtube/v2/ | A fresh later experiment with its own baseline and comparison. |
 | docs/field-projects/ | Cross-version benchmark definitions and reusable-improvement decision log. |
 
-FP01 creates the v1 input/diagram/note directories; the generator and application remain planned.
+FP01 creates the v1 input/diagram/note directories. FP02 adds the explicit
+[`@jeeves/generator` workspace](../../../jeeves-generator/README.md), one frozen local-v1 input
+profile, deterministic in-memory bundles, provenance/partial reports and safe write preflight.
+It installs no application templates and writes no application.
 Add `jeeves-generator` explicitly to pnpm workspace
 discovery when implementing its package; put reusable backend code there with a thin Jeeves API
 entry point. A separate running generator service is not necessary for the first local export.
@@ -277,8 +280,8 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | Unit | Deliverable and exit |
 | --- | --- |
 | FP00: diagram image export (implemented) | Mouse PNG export of the real full canvas; readable labels/routes, stable capture and no saved-state or view mutation. Document usage and the snapshot convention. |
-| FP01: baseline and mappings (implemented) | Five immutable source/image snapshots retain original owner, approved PostgreSQL and the named local v1 copy. Exact local pins, canonical finite mapping/gaps, S01–S08 scenarios and decision ledger are frozen; no generator/templates/runtime exist yet. |
-| FP02: experimental generator | Finite assembly, provenance, partial-output reporting, safe file ownership and deterministic export; strict readiness semantics preserved. |
+| FP01: baseline and mappings (implemented) | Five immutable source/image snapshots retain original owner, approved PostgreSQL and the named local v1 copy. Exact local pins, canonical finite mapping/gaps, S01–S08 scenarios and decision ledger are frozen; no templates/runtime are supplied by this freeze. |
+| FP02: experimental generator (implemented) | Frozen local-v1 validation, deterministic in-memory assembly, provenance/setting/gap reports and conservative file-write preflight. No application templates, physical writer or archive/browser export; strict readiness unchanged. |
 | FP03: first templates and Jeeves export | Useful v1 template output plus mouse generation/download; prove independent build. No heavy template certification. |
 | FP04: generated v1 checkpoint | Run the real generator and commit untouched output and provenance as its own unit. |
 | FP05: custom completion plan | Use the committed output's actual gaps to write the implementation plan, work log and benchmark baseline before custom coding. |

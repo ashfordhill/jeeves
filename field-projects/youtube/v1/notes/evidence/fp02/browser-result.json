@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-11-08T03:25:19.638Z",
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "webPort": 4300,
+  "apiPort": 4310,
+  "project": {
+    "id": "41bbd268-9244-47cc-be63-66c5e61d116c",
+    "name": "TinyURL · studio study"
+  },
+  "tiles": 12,
+  "lines": 13,
+  "mouseChecks": ["TinyURL Fit", "Relationship legend open and close"],
+  "sourceAndHistoryUnchanged": true,
+  "listingUnchanged": true,
+  "checkedProjectCount": 4,
+  "errors": []
+}

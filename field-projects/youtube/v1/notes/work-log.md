@@ -50,3 +50,48 @@ lockfile/dependency/scaffold line counts as working behavior.
 Later generator versions and template identities are currently **none**. Generated baseline
 commit and final custom range are **not yet present**. No app files exist to classify. Stable
 scope is `youtube-core-v1`, S01–S08; added scope gets a separate ledger entry/result column.
+
+## 2026-11-07 — FP02 finite experimental generator foundation
+
+Baseline input-freeze commit: **`acbc716c90245aeb398391f30f7800f988294cb4`** (FP01), after
+FP00 `a98bf708d4f70083e7ed4293eaa561561c67694d`. Frozen design/blueprint/bindings/pins/manifest
+and all diagram snapshots remain unchanged. Coordinator-assigned sequential Sol/xhigh unit,
+primary `main`, no subdelegation/branch/worktree/stash/push. Node24.21.0/pnpm12.16.1. Actual
+agent tokens/cost/active duration are unavailable and are not estimated. This unit is generator
+and experiment investment; it supplies no custom field-application work.
+
+Added explicit `@jeeves/generator` workspace version **0.1.0-experimental.1**, with no new resolved
+dependency versions. The only profile is frozen **youtube-local-v1@1.0.0**/snapshot005. Strict
+source/blueprint projection, canonical IDs/definitions/settings/owners/links, exact input hashes
+and optional real image hash are validated before trusted local hooks run. In-memory assembly
+records source/pins/generator/template identity, per-file hashes/ownership and full partial
+setting/gap/extension reports. All 25 unsupported overrides and G01–G08 remain explicit;
+S01–S08 stay **not run**. Strict readiness remains unchanged/ineligible/unavailable/unverified.
+A pure conservative write preflight refuses differing destinations and preserves custom files;
+there is no physical writer, archive, browser export or merge/regeneration engine.
+
+Production registry is empty: **zero installed application templates, zero field app output**.
+The tiny JSON diagnostic renderer exists only in boundary tests and gets no functional credit.
+No `app/` directory was created; no generated baseline/coverage/share/effort saving is claimed.
+No algorithm, schema, lifecycle owner or new resource grant was inferred from names or prose.
+No studio source/project mutation or runtime/provider change was needed.
+
+[Evidence](evidence/fp02/README.md): sequential required `pnpm check` **393 tests / 48 files**,
+**34 native E2Es (1.1m)**, web build **959ms** (existing chunk advisory); frozen-lockfile install
+and final lint/diff checks pass. Source stayed steady throughout E2E. Owner4300 mouse regression
+shows TinyURL12/13, Fit/legend, zero errors and equal saved design/history/listing for all four
+projects. E2E database listing returns to the original default-only state. No own listeners,
+field containers/videos/secrets or paid/live chat were created. `.jeeves-feedback/` preserved.
+Early focused type/fixture issues and reverted unrelated lockfile pruning are recorded in evidence.
+
+Next FP03: real versioned reusable templates under `jeeves-generator/templates/`, trusted registry,
+mouse generation/archive download through Jeeves, exact diagram-byte inclusion and independent
+build. `local.project` can own shared Compose/project files once; family hooks receive explicit
+selector targets, and setting decisions must cite actual emitted files. Availability must trace
+the actual registrations; the root hook does not silently make proposed family IDs available.
+Then FP04 commits untouched real output before FP05 plans G01–G08 completion. Physical export
+must refuse symlinks/use exclusive creation; preflight alone does not secure filesystem races.
+FFmpeg apt snapshot/transitive closure and all field smoke remain FP03/later work. Record this
+FP02 unit's containing commit in a subsequent entry, avoiding self-reference. No automatic v2.
+
+Local commit: **FP02: add the finite experimental generator foundation**.
