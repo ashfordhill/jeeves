@@ -13,5 +13,6 @@ export * from "./v2/durability.ts";
 export * from "./v2/input.ts";
 export * from "./v2/local-contract.ts";
 export * from "./v2/multipart.ts";
+export * from "./v2/positive-cache.ts";
 export * from "./v2/registry.ts";
 export * from "./v2/upload-state.ts";

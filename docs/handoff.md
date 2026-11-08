@@ -5820,3 +5820,40 @@ exact pinned FFmpeg and verify ffmpeg/ffprobe before readiness, and wire signals
 contribute these media storage bindings twice. Remote reuse checks SHA metadata; only the probe
 independently hashes remote outputs. Preserve owner resources/frozen v1. Local commit:
 **YV2-11: generate storage-backed media job runner**.
+
+## 2026-11-08 — YV2-12: immutable positive-cache read dependency
+
+`local.positive-cache` emits `src/runtime/{positive-cache,valkey}.ts` and
+`src/features/positive-cache-bindings.ts`; generator `positiveCacheReadAccess` contributes only
+an exact runtime login and SELECT on a trusted explicitly contributed view. Default output
+grants no SQL access. [Actual interfaces/gaps](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-12--immutable-positive-cache-read-dependency).
+`createPositiveReader` takes key/codec/identity+eligibility/authoritative loader, required emitted
+TTL and optional expiry/cache. Per-key single-flight, cache fallback, no negative/L1/totals,
+150ms phases, absolute atomic PXAT clamp, subsecond fill skip and post-fill expiry recheck.
+`createValkeyCache` uses normalized endpoint/secret, connect500ms/command150ms, queue32,
+no offline queue/reconnect and destructive timeout/owned close. Cache tile TTL remains the sole
+authority; unequal reader mirror refuses. No normal controls, pins, product SQL or HTTP added.
+
+Seven focused offline cases pass; `pnpm check` **451 tests/64 files,29.20s**, lint/types;
+**36 native E2Es,1.3m**; web build **1.52s** (existing advisory). Two final deterministic
+**31-file** exports with renamed manual-api/manual-db/manual-cache and TTL7200 pass own frozen
+install/untouched build, then typed PDF/manual adapter compile and offline execution using
+the same emitted reader/client interfaces and actual normalized TTL. No assertion/timeout
+weakened. No real provider matrix needed/run; no strict TinyURL Resolve completeness claimed.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-12-positive-cache.md);
+logs/harness `/tmp/jeeves-yv2-12/{focused,check,e2e,web-build,export-final,install-final,build-final,build-adapter-final,manual-smoke-final,cleanup}.log`
+and `export-summary.json`/`cleanup-summary.json`. Owned scratch exports/deps/builds removed;
+no provider/port/volume/image/secret created. All14 retained v1 services healthy; no UI changed
+and TinyURL lane/mouse/history/generation coverage passes.
+
+Frozen v1 **108 paths/hashes** unchanged, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`;
+fixture15584953 bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9.
+Root README including owner Future Benchmarks, feedback dirt/e2e-docker mode and v1 assets
+preserved. No field v2 app, branch/worktree/stash or push.
+
+Next **YV2-13 only**: reusable receipt counter. The cache remains a dependency, with explicit
+`positive-cache-application-bindings`; YV2-15/16 must supply actual immutable ready-only view,
+identity/codec/key/loader and Watch service using emitted TTL/cache client, plus client close.
+No source-bound cache consumer is installed yet. Preserve owner/frozen resources. Local commit:
+**YV2-12: extract positive cache read template**.

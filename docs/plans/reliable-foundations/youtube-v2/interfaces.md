@@ -875,3 +875,74 @@ readiness file is installed by emitting this library. **YV2-16 must verify the p
 ffprobe runtime before marking a process ready**, install the exact image/service, bind actual
 codecs/publishers/consumer retry policy, and wire process signals to the owned close lifecycle.
 Non-video apps still require no FFmpeg. [Real provider and regression evidence](../evidence/youtube-v2/yv2-11-media-worker.md).
+
+## YV2-12 — immutable positive-cache read dependency
+
+`createLocalPositiveCache(sourcePaths)` in `jeeves-generator/src/v2/positive-cache.ts`, registered
+as **`local.positive-cache`**, emits only for selected `positive-cache-read` responsibilities:
+
+- `src/runtime/positive-cache.ts`: `PositiveCache`, `PositiveReadAdapter<I,R>`,
+  `createPositiveReader<I,R>({adapter,ttlSeconds,cache?})` → `(input:I)=>Promise<R|null>`.
+- `src/runtime/valkey.ts`: `ValkeyBinding`,
+  `createValkeyCache({binding,credential?})` → `Promise<PositiveCache & {close():void}>`.
+- `src/features/positive-cache-bindings.ts`: `positiveCacheBindings[selectionId]` with exact
+  normalized `{host,source:{resource},cache:{resource,hostname,port,secret},ttlSeconds}`. Cache
+  hostname/secret match the foundation's `cache-<canonical-resource>` service/credential; port6379
+  is internal. No copied runtime password appears in source. The caller passes this cache binding
+  to `createValkeyCache` and its TTL to `createPositiveReader`.
+
+**The cache tile `ttlSeconds` remains the sole TTL authority.** The existing resolver still
+requires the traced `cache-reader.l2TtlSeconds` mirror, if present, to agree; conflict refuses
+before rendering. The reader has no TTL default or independent normal setting. Fresh exports
+with a renamed host/source/cache and TTL7200 compile and execute through this exact binding.
+No new editor control, algorithm/policy selection or provider pin was introduced.
+
+`PositiveReadAdapter` supplies `key(input)`, `codec.parse(unknown)`,
+`eligible(record,input)`, authoritative `load(input):Promise<unknown|null>` and optional
+`expiresAt(record):number|null` (absolute UTC milliseconds). The adapter owns canonical input,
+immutable eligibility, complete public-record shape and **requested identity binding** on both
+cache and loader output. Its key must include every input affecting loader or eligibility
+semantics: same-key requests share one result. Schema validation does not authenticate cache
+contents; a trusted isolated namespace remains an application/runtime assumption. Never pass
+private status, not-ready state or mutable totals as eligible records.
+
+The core coalesces the entire read/fill per key within one reader instance; it removes the
+promise after success, absence or failure and retains no L1 value. A valid eligible hit avoids
+the primary. Corrupt JSON/codec, wrong identity, ineligible/expired hit or failed cache falls
+back once to the authoritative loader. Null/ineligible primary results return null without
+writing; malformed primary data and primary errors propagate. This is not negative caching.
+An expired cached record triggers primary reload; an expired loaded record returns null.
+The application owns distinguishing expired/not-ready/unknown HTTP outcomes.
+
+Every cache read/fill phase is capped at150ms. A stalled phase disables cache use in that
+reader, preventing repeated requests from accumulating hung injected cache calls. Ordinary
+fill errors preserve a successful primary read. The real Valkey client independently bounds
+commands at150ms and startup at500ms, destroys its connection on failure/deadline, has queue32,
+`disableOfflineQueue:true` and `reconnectStrategy:false`. Connection failure returns an
+unavailable optional cache, allowing primary fallback. `close()` is idempotent and destroys
+the socket; later service constructors must own that close. Endpoint and credential come
+from the explicit normalized binding, never labels or a hardcoded cache service.
+
+Fills atomically `SET` value with absolute `PXAT=min(fill wall-clock+ttlSeconds*1000,
+record-expiry)`; omit the second limit for null/no expiry. No upward rounding is performed.
+Skip writes when remaining life is below1000ms, while returning a still-live record. Recheck
+record expiry after optional fill, including failed fill, so expiry crossed during fill
+returns null. This does not provide synchronized clocks, propagated total/primary budgets,
+global primary admission, expired410 tombstones, HTTP response policy or the complete strict
+TinyURL Resolve contract. Injected cache adapters own cancellation/late completion; the real
+client destroys its socket, and delayed writes cannot extend the absolute expiry.
+
+Generator export **`positiveCacheReadAccess({resource,host,view:{schema,name},sourcePaths})`**
+returns a narrow YV2-04 contribution: exact SQL runtime login plus SELECT on that trusted
+explicit view, with no private-table grant, migration or product SQL. The owning recipe must
+separately contribute the actual view definition. Foundation permission/boundary validation
+still applies, including explicit declared published reads; a role/view label confers nothing.
+Default emission contributes no SQL login or view. Existing foundation service `cache:[resource]`
+wiring mounts the exact cache secret once the later real service exists.
+
+No `provides.templates` is claimed: required gap **`positive-cache-application-bindings`**
+retains actual loader/codec/key/eligibility, ready-only public view/login and service construction.
+YV2-15/16 own the actual public-video projection and Watch constructor, including using the
+emitted TTL/client and reading totals separately. No YouTube adapter, SQL view, HTTP route,
+mutable invalidation, L1, negative/HTTP caching or standalone application is installed here.
+[Focused/export/regression evidence](../evidence/youtube-v2/yv2-12-positive-cache.md).

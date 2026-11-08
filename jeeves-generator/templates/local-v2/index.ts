@@ -6,6 +6,7 @@ import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
 import { createLocalMediaWorker } from "../../src/v2/media-worker.ts";
 import { createLocalMultipart } from "../../src/v2/multipart.ts";
+import { createLocalPositiveCache } from "../../src/v2/positive-cache.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
 import { createLocalUploadState } from "../../src/v2/upload-state.ts";
@@ -92,6 +93,7 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     createLocalAssetLifecycle(distinct),
     createLocalVideoHls(distinct),
     mediaWorker,
+    createLocalPositiveCache(distinct),
     ...features,
   ]);
 }
