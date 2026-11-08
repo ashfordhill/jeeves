@@ -131,3 +131,25 @@ documents the host map-count/memory requirements and local configurations; the a
 setup must report a prerequisite instead of silently changing host settings. The current host
 has `vm.max_map_count=1048576`; no sysctl was changed. Schema/query/publication correctness remains
 custom work. Full production security and a search cluster are outside this local binding.
+
+## FP03a observed build and startup, 2026-11-07
+
+The deferred FFmpeg OS closure above is now fixed in real template source using Debian and
+Debian-security snapshots `20261024T000000Z`. Exact frozen FFmpeg version/deb SHA and all 288
+resolved OS package versions are checked during Docker build; no frozen input was edited.
+The standalone exact package/lockfile installs and builds outside Jeeves. See
+[actual-output evidence](evidence/fp03a/README.md) for build logs, actual versions and per-file hashes.
+
+All 14 local containers started healthy from fresh setup. Bounded probes observed browser signed
+part PUT/CORS/readable ETag using the public Host, internal control and transcoder-original reads,
+private-original403/public-edge200/range206, PG default-reader grants, Valkey basics, broker confirm/
+manual-ack bounded failure, an empty OpenSearch 1-shard/0-replica index and real Keycloak PKCE/token/
+JWT integration. Garage CORS setup temporarily grants owner and revokes it before runtime;
+scoped credential files are readable to container UIDs behind a private0700 host runtime parent.
+
+These are foundation/helper observations, not complete S01–S08 scenarios. HTTP business routes
+return501, workers fail into bounded failed queues, and no real media encoding/application
+lifecycle/publication/search/count/UI policy is implemented. G01–G08 and strict readiness remain
+unchanged. Independent fanout publication ordering is not repaired, and upload/transcoder receive
+no metadata/counts grants. Later field handoffs require independent build and applicable checks;
+heavy provider/fault/performance/template certification remains deferred.

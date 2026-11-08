@@ -1,0 +1,24 @@
+events {}
+http {
+  include /etc/nginx/mime.types;
+  resolver 127.0.0.11 valid=10s;
+  proxy_cache_path /var/cache/nginx/media levels=1:2 keys_zone=media:10m max_size=512m inactive=1h;
+  server {
+    listen 8080;
+    root /usr/share/nginx/html;
+    location = /healthz { return 200 'edge shell running'; }
+    location /api/watch/ { set $backend watch:3000; rewrite ^/api/watch/(.*)$ /$1 break; proxy_pass http://$backend; }
+    location /api/search/ { set $backend search:3000; rewrite ^/api/search/(.*)$ /$1 break; proxy_pass http://$backend; }
+    location /api/upload/ { set $backend upload:3000; rewrite ^/api/upload/(.*)$ /$1 break; proxy_pass http://$backend; }
+    location /media/ {
+      set $backend objects:3902;
+      rewrite ^/media/(.*)$ /$1 break;
+      proxy_pass http://$backend;
+      proxy_set_header Host youtube-v1-transcoded.web.garage.localhost;
+      proxy_cache media;
+      proxy_cache_key $uri;
+      proxy_cache_valid 200 1m;
+      # Custom publication must use completed immutable paths. No thumbnail resize is supplied.
+    }
+  }
+}

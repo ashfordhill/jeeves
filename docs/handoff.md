@@ -4996,3 +4996,38 @@ remains open. FP04 then commits untouched output before FP05 custom planning; S0
 no coverage/effort saving claim, no automatic v2. No schema constraint changed the agreed scope.
 
 Local commit: **FP02: add the finite experimental generator foundation**.
+
+## 2026-11-07 — FP03a: real local templates and independent output build
+
+FP03a only after **`e68627afa718e9c6e9aad63d44f6fcb73e338e5d`**, primary main/sole writer,
+no subdelegation/branch/worktree/stash/push. Generator **0.1.0-experimental.2** adds trusted frozen
+input/PNG loader, explicit **19-family** real local registry and exclusive new-directory CLI.
+Templates **0.1.0-experimental.1** hash actual source/assets/standalone locks. Shared project owns
+build/Compose/setup; families own selected shells/clients/resources/seven failing generated
+extensions. [API](../jeeves-generator/README.md), [evidence](../field-projects/youtube/v1/notes/evidence/fp03a/README.md).
+Frozen inputs/images/history/spec/readiness unchanged; no field `app/`, UI/API export or custom
+algorithms. Report242 paths:20 emitted/169 configuration-only/28 custom/25 unsupported/0 untreated.
+
+Actual scratch output **108 files**, repeated bytes equal; independent frozen install/TS/Docker
+build/config pass. Exact FFmpeg deb +288 OS package versions close deferred apt snapshot detail
+at 20261024T000000Z; pins unchanged, no bit-identical image claim. All 14 containers healthy;
+bounded real browser S3/CORS and OIDC PKCE/JWT, PG reader grants, cache, broker terminal failure,
+empty search index and edge/range probes pass. Business HTTP501/workers fail explicitly; no
+S01–S08 credit or G01–G08 completion. No upload/transcoder metadata grants or publication-order fix.
+Exact-v1 `app` now outside root Biome/workspaces; later app handoffs require its own frozen install/
+TS build and field checks. This later choice is appended to the ledger, preserving FP01 history.
+
+Final required checks sequential: **pnpm check395 tests/49 files**, **34 E2Es1.2m** source steady,
+web build **891ms** (existing advisory). Two earlier existing5s PGlite timeout runs and isolated
+pass retained, no timeout/test change. Final owner 4300 TinyURL mouse12/13, Fit/legend/zero errors;
+all 4 saved designs/history/listing unchanged, E2E DB restored. All owned containers/6 volumes/network/
+3 named images/runtime secrets removed; other4Compose projects, owner 4300/4310 and `.jeeves-feedback/`
+preserved. No secret/token/capability in retained evidence; no paid/live calls.
+
+Next **FP03b** uses `loadYoutubeLocalInput()`, `localV1Templates`, `assembleExperimental` for
+mouse archive/download; package generator source/assets and exact inputs/005PNG in Jeeves Docker
+and exclude future runtime secrets from outer build context. **FP04** commits actual untouched
+output before **FP05** plans custom work. Full provenance/investment/failed attempts in appended
+[field work log](../field-projects/youtube/v1/notes/work-log.md); no savings claim or automatic v2.
+
+Local commit: **FP03a: add real local templates and independent build**.

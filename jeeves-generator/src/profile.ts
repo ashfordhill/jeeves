@@ -3,7 +3,7 @@ import { freeze } from "./json.ts";
 /** Deliberately one frozen local experiment, not a general provider or workflow registry. */
 export const generatorIdentity = freeze({
   id: "jeeves-generator",
-  version: "0.1.0-experimental.1",
+  version: "0.1.0-experimental.2",
 } as const);
 
 export const youtubeLocalProfile = freeze({

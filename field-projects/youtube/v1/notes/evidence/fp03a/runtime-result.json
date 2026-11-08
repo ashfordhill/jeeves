@@ -1,0 +1,170 @@
+{
+  "versions": {
+    "node": "v24.21.0",
+    "postgres": "postgres (PostgreSQL) 17.11",
+    "valkey": "Valkey server v=8.1.10 sha=00000000:1 malloc=jemalloc-5.3.0 bits=64 build=fd3b186b1408478b",
+    "rabbitmq": "4.4.0",
+    "keycloak": "Keycloak 26.8.1\nJVM: 21.0.13 (Red Hat, Inc. OpenJDK 64-Bit Server VM 21.0.13+9-LTS)\nOS: Linux 6.6.87.2-microsoft-standard-WSL2 amd64",
+    "garage": "garage v2.4.1 [features: bundled-libs, consul-discovery, fjall, journald, k2v, kubernetes-discovery, lmdb, metrics, sqlite, syslog, telemetry-otlp]",
+    "nginx": "nginx version: nginx/1.28.3",
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers\nbuilt with gcc 12 (Debian 12.2.0-14+deb12u1)\nconfiguration: --prefix=/usr --extra-version=0+deb12u1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --disable-sndio --enable-libjxl --enable-pocketsphinx --enable-librsvg --enable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared\nlibavutil      57. 28.100 / 57. 28.100\nlibavcodec     59. 37.100 / 59. 37.100\nlibavformat    59. 27.100 / 59. 27.100\nlibavdevice    59.  7.100 / 59.  7.100\nlibavfilter     8. 44.100 /  8. 44.100\nlibswscale      6.  7.100 /  6.  7.100\nlibswresample   4.  7.100 /  4.  7.100\nlibpostproc    56.  6.100 / 56.  6.100"
+  },
+  "osClosureMatches": true,
+  "osPackageCount": 288,
+  "containers": [
+    {
+      "name": "jeeves-fp03a-broker-1",
+      "image": "rabbitmq:4.4.0-management-alpine@sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267",
+      "imageId": "sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "15671/tcp": null,
+        "15672/tcp": null,
+        "15691/tcp": null,
+        "15692/tcp": null,
+        "25672/tcp": null,
+        "4369/tcp": null,
+        "5671/tcp": null,
+        "5672/tcp": null
+      }
+    },
+    {
+      "name": "jeeves-fp03a-cache-1",
+      "image": "valkey/valkey:8.1.10-alpine@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "imageId": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "6379/tcp": null
+      }
+    },
+    {
+      "name": "jeeves-fp03a-completion-handler-1",
+      "image": "jeeves-fp03a-app",
+      "imageId": "sha256:18ffae7e039981e6d0b99e1ad24b886418697ea5d043b385f4600ae585cd8c21",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    },
+    {
+      "name": "jeeves-fp03a-edge-1",
+      "image": "nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236",
+      "imageId": "sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "80/tcp": null,
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "4400"
+          }
+        ]
+      }
+    },
+    {
+      "name": "jeeves-fp03a-identity-1",
+      "image": "quay.io/keycloak/keycloak:26.8.1@sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332",
+      "imageId": "sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "4401"
+          }
+        ],
+        "8443/tcp": null,
+        "9000/tcp": null
+      }
+    },
+    {
+      "name": "jeeves-fp03a-objects-1",
+      "image": "dxflrs/garage:v2.4.1@sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020",
+      "imageId": "sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "3900/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "4402"
+          }
+        ]
+      }
+    },
+    {
+      "name": "jeeves-fp03a-postgres-1",
+      "image": "postgres:17.11-alpine3.23@sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f",
+      "imageId": "sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "5432/tcp": null
+      }
+    },
+    {
+      "name": "jeeves-fp03a-search-1",
+      "image": "jeeves-fp03a-app",
+      "imageId": "sha256:18ffae7e039981e6d0b99e1ad24b886418697ea5d043b385f4600ae585cd8c21",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    },
+    {
+      "name": "jeeves-fp03a-search-index-1",
+      "image": "opensearchproject/opensearch:3.9.0@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+      "imageId": "sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+      "status": "running",
+      "health": "healthy",
+      "ports": {
+        "9200/tcp": null,
+        "9300/tcp": null,
+        "9600/tcp": null,
+        "9650/tcp": null
+      }
+    },
+    {
+      "name": "jeeves-fp03a-search-indexer-1",
+      "image": "jeeves-fp03a-app",
+      "imageId": "sha256:18ffae7e039981e6d0b99e1ad24b886418697ea5d043b385f4600ae585cd8c21",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    },
+    {
+      "name": "jeeves-fp03a-transcoder-1",
+      "image": "jeeves-fp03a-transcoder",
+      "imageId": "sha256:9e97846ea96c2e7cec91c6fb36af1315923bcfabc355aec8ef3e7f538a5de649",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    },
+    {
+      "name": "jeeves-fp03a-upload-1",
+      "image": "jeeves-fp03a-app",
+      "imageId": "sha256:18ffae7e039981e6d0b99e1ad24b886418697ea5d043b385f4600ae585cd8c21",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    },
+    {
+      "name": "jeeves-fp03a-view-counter-1",
+      "image": "jeeves-fp03a-app",
+      "imageId": "sha256:18ffae7e039981e6d0b99e1ad24b886418697ea5d043b385f4600ae585cd8c21",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    },
+    {
+      "name": "jeeves-fp03a-watch-1",
+      "image": "jeeves-fp03a-app",
+      "imageId": "sha256:18ffae7e039981e6d0b99e1ad24b886418697ea5d043b385f4600ae585cd8c21",
+      "status": "running",
+      "health": "healthy",
+      "ports": {}
+    }
+  ]
+}

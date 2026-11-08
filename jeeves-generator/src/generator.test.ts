@@ -83,7 +83,7 @@ describe("finite experimental assembly boundary", () => {
       second = assembleExperimental(input);
     expect(signatures(first)).toEqual(signatures(second));
     expect(input).toEqual(before);
-    expect(first.manifest.generator.version).toBe("0.1.0-experimental.1");
+    expect(first.manifest.generator.version).toBe("0.1.0-experimental.2");
     expect(first.manifest.profile.baselineCommit).toBe("acbc716c90245aeb398391f30f7800f988294cb4");
     expect(first.manifest.templates).toEqual([]);
     expect(first.report.mappings).toHaveLength(38);

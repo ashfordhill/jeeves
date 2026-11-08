@@ -22,7 +22,7 @@ Frozen design/blueprint + local bindings ──▶ jeeves-generator (experimenta
 | `apps/server` | Fastify 5 with Zod type providers, Drizzle ORM on `pg`, migrations in `drizzle/`. `routes/` (projects, chat, settings), `design/service.ts` (projects, revisions, history, layout, blueprint), `chat/` (turn loop, tools, files, model wiring), `settings.ts` (provider keys and the chosen model). |
 | `packages/spec` | The design format and every pure function over it (no I/O). |
 | `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap, one for every tile or per tile) and edits (add after, insert before, link, plan and apply a removal with restitching, remove a link, the tile to select after a removal). The root export adds the layout core: ELK layered left to right with stability hints, in horizontal bands when tiles carry one (`layoutBands`: an end tile several tiles use beside them, `endColumns`; each band alone, stacked, then routed in one pass with the bands' lines kept apart, `meetAtPorts`; lines that come back routed as U's, `routeReturns`), then put on the 32px grid (`alignLayout`), a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; a fitted camera refits when the board changes size, a user's pan or zoom is kept, and a picked tile that lands out of view is panned in; select and hand modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band; the selected line and the selected tile's lines in the selection colour, drawn on top; a selected line's red X, on a stretch no other line shares when it has one, and none on a line the caller marks not removable), `TileChrome` (the selected tile's pull tabs and their rubber band: a create tab (`+`) opens an icon fan kept on the board (`placeFan`), whose items keep their slots and may be disabled with a reason, and a picked tile docks at the next slot; an attach tab (a link icon) has no fan and dims the board around its drop targets; the red X), a caller's panel at the board's bottom centre (`hud`, with marked tiles), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The web app's lane canvas mounts it. |
-| `jeeves-generator` | Explicit `@jeeves/generator` workspace: frozen local-v1 validation, deterministic in-memory assembly, provenance/partial reports and safe export preflight. No application templates or studio export yet; see [package API](jeeves-generator/README.md). |
+| `jeeves-generator` | Explicit `@jeeves/generator` workspace: frozen local-v1 validation, deterministic in-memory assembly, provenance/partial reports and safe export preflight. 19 experimental local template families and a new-directory exporter; mouse studio export remains FP03b; see [package API](jeeves-generator/README.md). |
 | `packages/providers` | A provider-neutral model interface with OpenAI Responses and Codex adapters and a scripted fake. |
 | `apps/web/e2e`, `fixtures/chat` | The Playwright smoke set and its scripted chat model. |
 | `docker/`, `Dockerfile`, `compose.yaml` | The single-container image (nginx, API, Postgres 17) and the dev/E2E Postgres. |
@@ -278,14 +278,16 @@ from Jeeves. The owner selected a minimal browser interface and PostgreSQL, appr
 change before v1. FP00 implements mouse PNG export; FP01 preserves the original and changed
 diagrams and [freezes the local v1 input baseline](field-projects/youtube/v1/README.md).
 FP02 supplies the [experimental generator foundation](jeeves-generator/README.md): one frozen
-local-v1 profile, deterministic in-memory bundles, partial reports and safe file preflight. FP03
-adds real templates and mouse export. Every intentional diagram or presentation
+local-v1 profile, deterministic in-memory bundles, partial reports and safe file preflight. FP03a
+adds 19 real experimental local template families, standalone exact locks and independent actual
+output build/startup evidence. FP03b adds mouse export. Every intentional diagram or presentation
 change during a field version retains a new source-linked snapshot; UI changes also retain
 studio screenshots.
 
 Heavy template certification is deferred while designs iterate. Use lightweight build/start/flow
 checks and experimental labels; strict readiness does not certify partial scaffolds. Track reusable
 diagram/template/operation/tile candidates, actual custom effort, generated repairs and investment
-in Jeeves. No application templates or field application exist yet. NC07–NC13 are reference briefs, not
+in Jeeves. The actual field app remains uncommitted until FP04 and business scenarios remain
+unmeasured; template availability is experimental, with G01–G08 explicit custom work. NC07–NC13 are reference briefs, not
 mandatory pre-v1 work; the older [TinyURL proof plan](docs/plans/reliable-foundations/backend-first-proof-plan.md)
 remains a later verification reference.

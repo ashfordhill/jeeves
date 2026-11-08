@@ -6,8 +6,9 @@ cache, queue, storage or external tile hangs off them, laid out automatically wi
 no cycles. You configure each tile from a finite catalog of settings and provider choices, and
 talk to a chat assistant that edits the same design with the same rules. Every design is exposed
 as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). The [experimental generator foundation](jeeves-generator/README.md) assembles deterministic
-in-memory bundles for the frozen YouTube local-v1 profile. Application templates and mouse
-generation/export remain FP03 work; no runnable application is generated yet. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
+in-memory bundles for the frozen YouTube local-v1 profile. FP03a adds 19 real experimental local
+template families, a new-directory CLI exporter and independently built service/worker scaffolding.
+Mouse generation/download remains FP03b; business behavior is explicitly unfinished. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
 keeps the generator and experimental templates in `jeeves-generator/`, exports standalone
 applications and measures improvements across working v1/v2 field projects before heavy
 certification. [YouTube v1's frozen inputs and numbered images](field-projects/youtube/v1/README.md)
@@ -79,7 +80,10 @@ pnpm --filter @jeeves/web build
 
 E2E tests use their own `jeeves_e2e` database, a throwaway settings directory and a scripted
 chat model (`fixtures/chat/e2e-script.json`), so they never touch your projects or call a
-provider. `pnpm format` applies Biome's fixes. CI ([ci.yml](.github/workflows/ci.yml)) runs
+provider. `pnpm format` applies Biome's fixes. The exact independent field-project path
+`field-projects/youtube/v1/app` is outside root Biome/workspace checks; its handoffs must run
+its own frozen-lockfile install and TypeScript build, plus applicable field checks. Frozen
+input/diagram JSON remains excluded to preserve downloaded bytes. CI ([ci.yml](.github/workflows/ci.yml)) runs
 `pnpm check`, the web build and `pnpm test:e2e` on every push to `main`.
 
 ## Ports

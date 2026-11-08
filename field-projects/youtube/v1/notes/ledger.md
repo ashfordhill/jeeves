@@ -34,3 +34,20 @@ For each later adoption/rejection append: observed problem, source/code/smoke re
 representation, applicability/exclusions, implementation commit, investment in Jeeves, remaining
 custom cost and stable-scope v2 result. Preserve rejected approaches. Curating a documentation
 lesson alone does not change actual chat guidance or prove assistant/model quality.
+
+## 2026-11-07 — FP03a observed foundations and independent boundary
+
+- **D10 (deferred build detail resolved):** use Debian and Debian-security snapshot
+  `20261024T000000Z` for exact frozen FFmpeg `7:5.1.9-0+deb12u1`; lock/check all 288 OS package
+  versions and the frozen deb SHA in template source. [Actual builds](evidence/fp03a/README.md)
+  pass; no input pin was replaced or image reproducibility/certification claimed.
+- **D11 (independent field tooling boundary):** exclude exactly `field-projects/youtube/v1/app`
+  from root Biome, as it is already outside root workspaces. Preserve untouched generated files
+  and immutable `.jeeves` snapshots. This supersedes FP01's initial no-app-exclusion choice;
+  future field handoffs run their own frozen install/TypeScript build and applicable field checks.
+  Existing Jeeves studio/generator checks remain mandatory. No formatter dependency was added.
+- **D12 (observed local compatibility):** bounded actual generated-output probes establish
+  basic pinned-client/resource interoperability, public/internal Host and issuer wiring,
+  scoped UID-readable secrets and readable nginx mounts. [Results](evidence/fp03a/provider-result.json)
+  are separate from application S01–S08, all still unrun; G01–G08 remain custom and no functional
+  coverage or effort saving is inferred. Empty index/realm/bucket/client setup is foundation output.

@@ -1,0 +1,11 @@
+{
+  "ownedProject": "jeeves-fp03a",
+  "containers": 0,
+  "volumes": 0,
+  "networks": 0,
+  "scratchImageTags": 0,
+  "runtimeSecretDirectories": 0,
+  "otherRunningProjects": ["jeeves", "jeeves-fieldwork-demo", "qrwty", "qrwty-5174"],
+  "runtimeSecretsFoundInSourceOrEvidence": false,
+  "sourceInputsAndSnapshotsChanged": false
+}

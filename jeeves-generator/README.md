@@ -1,10 +1,10 @@
 # Experimental generator foundation
 
-FP02 provides `@jeeves/generator`, a Node/TypeScript workspace package exporting source directly.
+FP03a provides `@jeeves/generator`, a Node/TypeScript workspace package exporting source directly.
 It assembles deterministic **in-memory file bundles** through trusted local template code.
-There are **no installed application templates**, archive/HTTP/browser export, physical file
-writer or generated field application yet. FP03 supplies actual templates and the Jeeves export
-flow; FP04 commits the real untouched output before custom implementation.
+The explicit `localV1Templates` registry installs **19 experimental local template families** and
+a conservative new-directory exporter. There is no archive/HTTP/browser flow yet (FP03b), and no
+field application is committed (FP04). G01–G08 custom implementation follows the actual baseline.
 
 Only the frozen `youtube-local-v1@1.0.0` profile is accepted: source schema2, blueprint3,
 snapshot005, source hash `7d1874a1…7979cc93`, project revision3. This is deliberately a finite
@@ -17,14 +17,15 @@ are copied without modification and receive no credit from this experimental pat
 
 `validateExperimentalInput(input)` validates and freezes the exact inputs.
 `assembleExperimental(input, registry = [])` returns `{ files, manifest, report }`.
-Each file has a portable relative `path` and `Uint8Array` bytes. The registry defaults empty;
-that result contains input snapshots and diagnostic metadata only, not a runnable application.
+Each file has a portable relative `path` and `Uint8Array` bytes. The registry defaults empty for diagnostic callers. Pass `localV1Templates` to emit standalone
+TypeScript HTTP/worker shells, clients, local resource setup, containers and exact dependency/OS
+locks. This partial output is not a working YouTube application.
 
 ```ts
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
-  assembleExperimental, type ExperimentalInput, youtubeLocalProfile,
+  assembleExperimental, localV1Templates, type ExperimentalInput, youtubeLocalProfile,
 } from "@jeeves/generator";
 
 // Run from the Jeeves checkout; the generator itself does not read these files.
@@ -33,8 +34,8 @@ const artifacts = Object.fromEntries(await Promise.all(
   Object.keys(youtubeLocalProfile.artifacts).map(async (name) =>
     [name, await readFile(join(inputDirectory, name), "utf8")]),
 )) as ExperimentalInput["artifacts"];
-const bundle = assembleExperimental({ profileId: "youtube-local-v1", artifacts });
-// bundle.files contains diagnostics/input snapshots only with the empty registry.
+const bundle = assembleExperimental({ profileId: "youtube-local-v1", artifacts }, localV1Templates);
+// bundle.files contains real partial application scaffolding and provenance.
 // Optional diagramPng must contain the exact snapshot005 PNG bytes.
 
 ```
@@ -60,7 +61,8 @@ no input-selected executable code or remote loading is supported. `local.project
 Compose/project files once with all contributing source paths; family templates receive only
 their exact selector targets. Helpers can share implementation without a fragment merge DSL.
 `local.project` does not implicitly mark the proposed family templates installed: the report
-lists actual family registrations separately. FP03 must make real availability traceable.
+lists actual family registrations separately. The local registry fingerprints the actual source
+and embedded assets, including standalone locks; see [templates](templates/README.md).
 
 Each template file declares `generated-scaffold` or `generated-extension` ownership and exact
 contributing design JSON pointers. Initial extension files are still generated output, not
@@ -91,12 +93,25 @@ Trusted registry code is responsible for honest template-source fingerprints and
 `planFileWrites(bundle.files, existingFiles = [])` is a pure preflight returning `create` and
 `unchanged`. Exact existing bytes are retained; any differing destination refuses with
 `EXISTING_OUTPUT_CHANGED`. Unrelated custom files are neither removed nor returned for overwrite.
-It does not merge, regenerate edited output or write to disk. A later physical exporter must
-refuse symlinks, use exclusive file creation and handle concurrent changes; the preflight alone
-cannot secure filesystem races. Exporting to a new empty directory is the intended first flow.
+It does not merge, regenerate edited output or write to disk. `exportNewDirectory(files, path)`
+creates a new private root with exclusive file creation, refuses existing destinations/ancestor
+symlinks, and creates readable non-secret subdirectories for container bind mounts. It never
+deletes partial output on failure. Its parent must be trusted against concurrent hostile rename;
+Node cannot make that attack safe with portable filesystem APIs. Runtime secrets remain private.
 
-The diagnostic renderer in the boundary tests emits one JSON file only. It supplies no upload,
+`loadYoutubeLocalInput()` loads the trusted exact frozen artifacts and real source-linked PNG.
+Production server packaging must ship `jeeves-generator/` (including source/assets) and the five
+`field-projects/youtube/v1/inputs/` files plus `diagrams/005-local-intent-aligned/diagram.png` at
+their repository-relative locations. FP03b can call the same loader/assembler API.
+
+`pnpm --filter @jeeves/generator export:new /absolute/new-directory` is a physical CLI export.
+It does not create the field baseline in this checkout. Follow the emitted README to build/run.
+
+The diagnostic renderer in the original boundary tests emits one JSON file only. It supplies no upload,
 transcode, search, playback, auth, count or Docker behavior and is not in the production registry.
 Heavy template certification stays deferred. Existing Jeeves checks plus network-free generator
 boundary tests cover determinism, identity/setting correspondence, provenance, collisions and
-preservation of edits. Field runtime scenarios remain separate and unmeasured.
+preservation of edits. New network-free checks cover real-registry determinism, image/provenance, honest reports and
+exclusive/symlink-refusing export. The independent build and bounded startup evidence lives in
+[field FP03a evidence](../field-projects/youtube/v1/notes/evidence/fp03a/README.md). Field business
+scenarios remain separate and unmeasured; no functional credit comes from placeholder handlers.

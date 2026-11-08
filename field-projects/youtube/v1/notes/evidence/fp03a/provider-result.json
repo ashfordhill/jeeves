@@ -1,0 +1,48 @@
+{
+  "scope": "Bounded infrastructure/helper integration only; S01–S08 business scenarios not run",
+  "checks": {
+    "http": {
+      "root": 200,
+      "businessRoute": 501
+    },
+    "storage": {
+      "browserSignedPartPut": 200,
+      "etagExposed": true,
+      "listPartsAndComplete": true,
+      "transcoderOriginalRead": true,
+      "anonymousOriginal": 403,
+      "publicWebsiteViaEdge": 200,
+      "range": 206,
+      "bytes": 30,
+      "applicationUploadLifecycle": "unimplemented",
+      "mediaEncoding": "not exercised"
+    },
+    "postgres": {
+      "ownerCreateAndInsert": true,
+      "defaultReaderSelect": true,
+      "readerInsertDenied": true
+    },
+    "cache": {
+      "setGetDelete": true,
+      "cacheAside": "unimplemented"
+    },
+    "broker": {
+      "durableQueuesPresent": 4,
+      "publisherConfirm": true,
+      "unimplementedHandlerTerminalAttempt": 4,
+      "applicationEffects": "none"
+    },
+    "search": {
+      "version": "3.9.0",
+      "shards": 1,
+      "replicas": 0,
+      "businessQuery": "unimplemented"
+    },
+    "oidc": {
+      "realRealmPkceS256": true,
+      "browserCorsTokenExchange": true,
+      "internalJwksPublicIssuerAudienceExpiryRole": true,
+      "applicationSignInUi": "unimplemented"
+    }
+  }
+}

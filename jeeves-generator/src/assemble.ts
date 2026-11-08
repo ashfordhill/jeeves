@@ -115,7 +115,7 @@ const identity = (template: ExperimentalTemplate) => ({
 });
 
 /** Trusted local templates only; there is no plugin loading or input-selected executable code.
- * FP02 installs no templates. The default result is a diagnostic partial bundle, not an app.
+ * The default empty registry remains a diagnostic partial bundle, not an app.
  */
 export function assembleExperimental(
   inputValue: ExperimentalInput,
@@ -330,7 +330,7 @@ export function assembleExperimental(
         : "No installed templates; this foundation alone emits no runnable application.",
       "Template renderers are trusted local code; their version/source fingerprints must change when code changes.",
       "Runtime secrets/data are provisioned later; none are generated here.",
-      "No archive, filesystem writer, merge engine or browser generation flow is implemented here.",
+      "Assembly is in memory. A separate exporter can create a new directory; no merge/regeneration or browser generation flow is supplied by assembly.",
     ],
   });
   add(
