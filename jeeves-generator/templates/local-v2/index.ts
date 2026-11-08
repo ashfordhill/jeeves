@@ -2,6 +2,7 @@ import { readdirSync } from "node:fs";
 import { sameContractRef } from "@jeeves/spec";
 import { jsonFile } from "../../src/json.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
+import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
 
 const root = new URL("../../../", import.meta.url);
@@ -13,7 +14,7 @@ function sourcePaths(path: string): string[] {
     );
 }
 
-/** Runtime foundation only. Features explicitly register their own emitted implementation. */
+/** Foundation and dependency libraries. Features register their own application implementation. */
 export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
   // Snapshot registration metadata before the foundation captures its contribution callbacks.
   const features = featureValues.map((feature) => ({
@@ -75,6 +76,7 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
   return createV2Registry(captureV2Sources(root, distinct), [
     diagnostic,
     createLocalFoundation(distinct, features),
+    createLocalRuntimePrimitives(distinct),
     ...features,
   ]);
 }

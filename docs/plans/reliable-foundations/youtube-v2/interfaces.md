@@ -330,3 +330,77 @@ Integration boundary for **YV2-16**: the foundation currently permits one direct
 service slot. YouTube needs three internal APIs behind its single pinned nginx edge, plus static
 browser/public media routing. Extend the finite service/edge composition in that assigned unit;
 do not add public API ports or editor configuration to bypass the boundary.
+
+## YV2-05 — reusable HTTP, identity and transport clients
+
+`loadLocalV2Registry` additionally registers `local.primitives` (`implemented`, dependency on
+`generationRuntime.ref`). It emits actual dependency libraries, with exact selected declaration
+pointers, through the same registry/assembler. It declares **no** `provides.templates` or preset:
+none of the upload/lifecycle/video/cache/counter/search business implementations or their controls
+become installed. No services, credentials, mapping, tables or application hooks are contributed.
+Missing selected implementations/application services/mappings remain explicit required gaps.
+
+Generated modules below belong to `local.primitives`; source assets are the corresponding
+`templates/local-v2/assets/src/runtime/<name>.ts.template`. Field SDK imports compile only in the
+standalone emitted package, with the unchanged YV2-04 exact package/lock. The emitter omits
+unselected responsibilities: HTTP when a selection consumes `host.requestTimeoutMs`, identity
+when a normalized principal binding exists, and SQL/object/search/messaging by the actual bound
+resource kind. `src/runtime/local.ts` remains foundation-owned and is reused, never duplicated.
+
+- `admission.ts`: `HttpSettings {requestTimeoutMs,concurrencyLimit}`, safe public
+  `HttpError(statusCode,code,message)`, `createAdmission(settings) -> {open,stop,run,drain}`.
+  The response deadline never releases the slot before the admitted promise settles.
+- `http.ts`: reexports `HttpError`/`HttpSettings`; `HttpRoutes.route({method,url,handler})`;
+  `createHttpService({id,settings,configure,initialize}) -> {inject,start({host,port}),close}`.
+  Configure completes before listen; only awaited route handlers are exposed, not lifecycle/plugin
+  hooks outside the budget. All auth/JWKS/dependency/effect work must be awaited inside those
+  handlers. `initialize` is required and awaited before listening/readiness. `/healthz` returns
+  uninitialized503/ready200/draining503; all responses are no-store. Unknown routes return404;
+  arbitrary provider errors expose only finite safe messages. Start is single-use; close is
+  idempotent, stops admission, closes HTTP and drains work before caller closes dependencies.
+- `identity.ts`: `IdentityBinding {issuer,audience,jwksUrl,algorithms,jwksTimeoutMs}`;
+  `createPrincipalVerifier(binding,keySet?: JWTVerifyGetKey) -> verify(token)` returns
+  `VerifiedPrincipal {subject,claims}`. It verifies signature, explicit issuer/audience/algorithm,
+  exp and nonempty bounded sub. Optional JOSE key adapter supports an existing/offline service.
+  No role, username, browser client, realm prefix or business authorization policy is inferred.
+  Later local adapters use foundation-supplied OIDC issuer/JWKS; explicit API audience and creator
+  policy/setup remain the YouTube adapter/composition's responsibility, not a guessed helper default.
+- `delivery.ts`: `Delivery {messageId,headers,deliveryCount,redelivered}`, `MessageHandler`,
+  `NonRetryable(code)`, `ConsumerHooks {onTerminal?,onFatal?}`, `DeliveryBinding
+  {queue,failedQueue,retryLimit}`, `validateDeliveryBinding`, `DeliveryMessage<Receipt>`,
+  `DeliveryTransport<Receipt> {cancel,republish,ack,close}` and
+  `createDeliveryRunner(options) -> {accept,close,closed,fatal}`. It awaits the effect before ack;
+  failures await terminal hook when applicable, then confirmed retry/failed publication, then ack.
+  Retry limit counts additional attempts; metadata uses `x-delivery-attempt`, terminal codes use
+  `x-terminal-code`. Invalid attempt metadata exhausts the bounded retry policy. Cancel precedes
+  admitted-task drain, channel close, connection close. Terminal/confirm failure initiates fatal
+  closure without awaiting its own task; no ack follows failed terminal work/confirmation.
+- `amqp.ts`: reexports `Delivery`, `MessageHandler`, `ConsumerHooks`, `NonRetryable`;
+  `BrokerBinding {hostname,port,username,passwordSecret,heartbeatSeconds,confirmTimeoutMs,
+  credential?}`; `createPublisher(binding,{exchange,routingKey},hooks?)` returns
+  `{publish(body,messageId),close,closed}`; `createConsumer(binding,{queue,failedQueue,concurrency,
+  retryLimit,handle,onTerminal?,onFatal?})` returns `{close,closed}`. Publisher confirms are bounded
+  and pending confirms drain before channel/connection close. Consumer prefetch is explicit;
+  invalid delivery/concurrency bindings refuse before allocating a connection/credential read.
+  Both `closed` promises resolve `{fatal:boolean}` after drain. `onFatal` is a notification:
+  application orchestration owns signals/exit policy and must never await its own drain inside
+  delivery/terminal work. There is no reconnect/exactly-once guarantee.
+- `postgres.ts`: `createPostgres({hostname,port,login,poolSize,statementTimeoutMs,
+  connectionTimeoutMs,credential?}) -> pg.Pool`. `login` takes exact `{database,user,secret}`
+  from foundation `infra/local.json` login entries. Their `host` identifies the application host,
+  so the network `hostname` is separate. Reuse `local.ts`'s `quoteSqlIdentifier` for later trusted
+  schema/relation descriptors; this unit adds no transactions/domain SQL.
+- `objects.ts`: `createObjects({endpoint,region,credentialSecret,credential?}) -> S3Client`;
+  `signPart(client,{bucket,key,uploadId,partNumber,expiresInSeconds})`. Private credential JSON
+  uses the actual foundation-generated storage secret. Pass distinct control/signing endpoints;
+  the caller owns ownership, upload phases, part/size constraints and signed-URL policy.
+- `search.ts`: `createSearch({endpoint,requestTimeoutMs}) -> Client`, retries disabled;
+  no default index/mapping/query. SQL/object/broker credential readers default to the actual
+  emitted `readSecret`, with optional explicit adapters for an existing service.
+
+Resource names/logins/secret identities/queue topology come from the YV2-04 plan and contributions,
+not source-ID prefix conventions. For local messaging, use the plan's exact exchange/queue and
+its asserted `<queue>.failed` destination; the generic clients also accept unrelated explicit
+bindings. No helper contains YouTube contracts, resource IDs, audience or product constants.
+[Bounded actual evidence and limits](../evidence/youtube-v2/yv2-05-primitives.md).
+Next owner: **YV2-06 only**, generic transactional outbox/inbox/receipts.

@@ -5564,3 +5564,33 @@ public media; current direct HTTP slot permits one service. Preserve root README
 v1 app/inputs/runtime, owner resources, `.jeeves-feedback` dirt and e2e-docker mode. No push.
 
 Local commit: **YV2-04: emit standalone local runtime and access foundation**.
+
+## 2026-11-08 — YV2-05: reusable HTTP, identity and messaging runtime
+
+`local.primitives` emits eight selected dependency libraries from captured `.ts.template` assets:
+HTTP/admission, explicit verified principal, confirmed AMQP/delivery and SQL/object/search clients.
+[Actual APIs/paths](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-05--reusable-http-identity-and-transport-clients).
+Route-only configure keeps awaited auth/JWKS/effects inside admission/deadline; timed-out work
+retains its slot until settlement and close drains before dependencies. Messaging preserves
+metadata, awaited effect/terminal+confirm-before-ack, bounded retry, fatal notification and ordered
+idempotent close without self-await. Invalid consumer bindings refuse before network/credentials.
+Clients reuse actual foundation secret/SQL utilities and accept explicit endpoints/bindings/adapters.
+No YouTube constants/contracts, guessed login/audience, feature attestations, services or shells.
+
+Final `pnpm check`: **423 tests/57 files, 44.94s** plus lint/types; **36 native E2Es, 2.3m**;
+web build **1.28s** (existing chunk advisory). Four small offline boundary cases; two deterministic
+35-file fresh exports pass own frozen install/build. Actual loopback HTTP/JWKS timeout/admission/
+drain and isolated pinned RabbitMQ publish/retry/terminal/fatal probes passed. [Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-05-primitives.md),
+logs `/tmp/jeeves-yv2-05/{check-final,e2e,web-build,export-verified,install-verified,build-verified,http-verified,broker,cleanup}.log`.
+Scoped all-profile cleanup removed `jeeves-yv2-05-primitives` container/volume/network and private
+runtime; no scratch image existed, ports45230–33 released. All fourteen v1 services remain healthy.
+No normal studio UI changed; native browser tests retain TinyURL lane/mouse/generation coverage.
+
+Frozen v1's 108-path/hash list remains identical, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-06 only**: generic SQL outbox/inbox/receipts. Required business/template/service/mapping
+hooks remain unfinished; issuer/JWKS use foundation wiring, API audience/creator policy belong to
+later adapters/composition. Keep YV2-16's finite edge boundary. No v2 field app, v1/runtime/input,
+root README, pins/locks, owner resources, `.jeeves-feedback` or e2e-docker mode changes. No push.
+
+Local commit: **YV2-05: extract reusable HTTP and messaging runtime**.
