@@ -3,6 +3,7 @@ import { sameContractRef } from "@jeeves/spec";
 import { jsonFile } from "../../src/json.ts";
 import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
+import { createLocalMultipart } from "../../src/v2/multipart.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
 import { createLocalUploadState } from "../../src/v2/upload-state.ts";
@@ -75,12 +76,14 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     }),
   };
   const distinct = [...new Set(paths)];
+  const multipart = createLocalMultipart(distinct);
   return createV2Registry(captureV2Sources(root, distinct), [
     diagnostic,
-    createLocalFoundation(distinct, features),
+    createLocalFoundation(distinct, [multipart, ...features]),
     createLocalRuntimePrimitives(distinct),
     createLocalDurability(distinct),
     createLocalUploadState(distinct),
+    multipart,
     ...features,
   ]);
 }

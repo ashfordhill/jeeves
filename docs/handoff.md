@@ -5661,3 +5661,44 @@ Preserve YV2-16 edge boundary, root README, local-v1/v1 source/input/runtime/fix
 resources, `.jeeves-feedback` dirt and e2e-docker mode. No v2 field app or push.
 
 Local commit: **YV2-07: extract owned upload persistence and hooks**.
+
+## 2026-11-08 — YV2-08: owned signed multipart transfers
+
+`local.multipart` emits real generic `multipart.ts`, `multipart-objects.ts` and
+`multipart-http.ts` dependencies: create/sign/ListParts/complete/Head/abort, exact owner/part/
+fingerprint checks, resume/status, stable completion replay and bounded single-flight cleanup.
+[Actual factories, mounts and fixed limits](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-08--owned-signed-multipart-transport-and-http-mounts).
+Uses YV2-07 repository/hooks on the caller's YV2-06 Tx. Content/metadata/verified principal,
+namespace/identity metadata and HTTP paths/status/body/error mapping are explicit adapters.
+Cleanup scans only a trusted prefix/key recognizer; Head validates declared fingerprint metadata,
+not object-byte hashing. SQL/provider uncertainty remains visible. Selected storage key/CORS is
+contributed through the foundation with bootstrap-only owner access, no extra application login.
+No lifecycle/service/complete source-bound multipart template or normal control is installed;
+required compiled recipe/principal/content/completion/service gaps stay honest until YV2-15/16.
+
+Three new focused offline cases; final isolated `pnpm check` **433 tests/60 files, 45.87s** plus
+lint/types; **36 native E2Es, 2.2m**; web build **1.58s** (existing chunk advisory). Initial root
+check under four live scratch providers put new PGlite startup over its existing 5-second budget;
+scoped provider shutdown yields a full pass with unchanged tests/assertions/timeouts/fixtures.
+Two deterministic **44-file** fresh exports pass own frozen install/untouched build and typed
+PDF/document adapter build. Real isolated HTTP/Postgres/Garage probe passes 5,242,997 exact bytes+
+downloaded SHA, real Head identity/fingerprint, signed PUT+CORS, resume/incomplete, uncertain
+completion reconciliation, stable replay/+1 intent, abort and five foreign-owner operations.
+Verified principal awaits inside admission; runtime SQL lacks CREATE and S3 lacks CORS owner.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-08-multipart.md); logs
+`/tmp/jeeves-yv2-08/{check-final,e2e,web-build,export-verified,install-verified,build-verified,build-adapter-verified,first-run,probe,cleanup}.log`.
+Scratch project **jeeves-yv2-08-multipart**: four containers, three volumes, one network/app image
+and private runtime removed with exact-project cleanup; ports **45250–45252** free and all
+fourteen v1 services healthy. Probe harness-only bodyless JSON/CORS-read assumptions were fixed;
+its exact earlier sessions were aborted without resetting SQL/provider data. No secrets/URLs logged.
+No normal UI changed; browser coverage retains TinyURL lane/mouse/history/generation behavior.
+
+Frozen v1's **108-path/hash list** is identical, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-09 only**: asset lifecycle with required complete/closed hooks; keep transport state
+separate and compose pending/job intent in the hook transaction. YV2-16 owns actual installed
+consumer/service bindings, scheduling/draining sweep work and the finite HTTP edge. Preserve
+root README, local-v1/v1 source/input/runtime/fixture, pins/locks, owner resources,
+`.jeeves-feedback` dirt and e2e-docker mode. No field v2 app or push.
+
+Local commit: **YV2-08: generate owned signed multipart transfers**.

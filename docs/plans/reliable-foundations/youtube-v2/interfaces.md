@@ -560,3 +560,81 @@ Its SHA is the expected source fingerprint, not proof that Head hashed the bytes
 mismatch returns a finite outcome; its caller chooses the existing terminal failure path.
 [Focused offline/standalone evidence and limits](../evidence/youtube-v2/yv2-07-upload-state.md).
 Next owner: **YV2-08 only**, generic signed multipart engine and HTTP factory.
+
+## YV2-08 — Owned signed multipart transport and HTTP mounts
+
+`local.multipart` emits `src/runtime/{multipart,multipart-objects,multipart-http}.ts` for an
+owned-multipart selection. It contributes that selection's object read/write credential and
+signed-PUT CORS through the foundation, which configures the selected HTTP origin and revokes
+its temporary storage-owner permission. It creates no SQL login, application service or job
+publisher. Use YV2-07's `ownedUploadPersistence` for the bound repository and application SQL.
+Do not contribute the same host/resource storage binding a second time in a recipe.
+
+`multipart.ts` exports `createOwnedMultipart<M,R>({repository,transaction,objects})`,
+`OwnedMultipart<M,R>`, `UploadTransaction`, `MultipartObjects<M,R>`, `MultipartCursor`,
+`UploadPart`, `MultipartError`, `validateParts`, `uploadView`, `PART_SIZE`,
+`MAX_UPLOAD_SIZE` and `SIGNED_URL_SECONDS`. `repository` is YV2-07's
+`OwnedUploadRepository<M,R>` with its required validation/codecs/reservation/completion/closed
+hooks; `transaction` is `<T>((tx: Tx) => Promise<T>) => Promise<T>` using the actual branded
+YV2-06 Tx, normally `effect => transaction(pool,effect)`. No second transaction helper exists.
+
+| Engine method | Actual contract |
+| --- | --- |
+| `start(verifiedPrincipal,input)` | Repository validates content/metadata and reserves server identities; creates provider upload, stores provider ID, returns uploadId/assetId/uploading/partSize/partCount/expiresAt. Initiation failure closes with INITIATION_FAILED and attempts provider abort; unknown outcomes remain reconcilable. No idempotent-start guarantee. |
+| `list(principal)` | Up to 50 owner records as uploadId/assetId/metadata/state/createdAt/failureCode summaries. |
+| `status(uploadId,principal)` | Checks DB expiry, reconciles completing records, returns public transport snapshot and actual sorted ListParts inventory for active records. Missing active inventory fails with UPLOAD_MISMATCH. |
+| `sign(uploadId,principal,partNumber)` | Owned active upload only; integer part number within exact count; returns URL and expiresAt. Never accepts a client key/provider ID. |
+| `complete(uploadId,principal)` | Validates actual exact part numbers/count/sizes/ETags, begins durable completing phase, completes provider inventory, checks Head identity/size/declared SHA metadata and nonempty ETag, then calls the repository completion hook in SQL. Stored response replays without a new hook/provider effect. Missing consumed inventory is recoverable only in completing phase; mismatch is terminal. |
+| `abort(uploadId,principal)` | Commits terminal callback/state first, aborts known provider upload, clears cleanup flag; aborted/expired completion refuses. Failed provider cleanup retains the flag. |
+| `sweep()` | Explicit single-flight bounded reconciliation/cleanup call, no implicit timer. Up to 50 due/flagged records, 50 interrupted records and one <=50-entry orphan inventory page per call. Aborts only recognized namespace keys older than 24 hours. Retains pagination cursor for the next call; failures defer remaining work. Call/await periodically (v1 uses 30 seconds), and await outstanding work before closing clients. |
+
+The public status snapshot has uploadId, assetId, typed metadata, transport state/phase,
+file fingerprint, ISO createdAt/expiresAt, failureCode, partSize/partCount and parts. It excludes
+owner subject, object key, provider ID and private completion response. It has no application
+pending/processing/ready state. YouTube status/list enrichment belongs to YV2-15/16.
+
+`createMultipartObjects<M,R>({control,signing,bucket,prefix,ownsKey,metadata})` in
+`multipart-objects.ts` implements the real S3 operations through injected YV2-05 clients.
+`metadata` explicitly names four distinct lower-case provider metadata keys:
+`{assetId,uploadId,sha256,expectedSize}`. YouTube can bind `assetId:"video-id"` while a document
+adapter binds `assetId:"asset-id"`; generic transport imports neither product contract.
+`prefix` must be nonempty; `ownsKey(key)` recognizes only the caller's canonical original keys,
+and every operation checks both. Orphan ListMultipartUploads scans that prefix only. The caller
+owns/destroys both clients and can give signing a different public endpoint. The adapter's
+`missing(error)` recognizes NoSuchUpload/NotFound/NoSuchKey; other failures propagate safely.
+The injectable `MultipartObjects` interface also permits offline transport probes without an SDK.
+
+Fixed current policy: **5 MiB** parts, **1 byte–256 MiB** files, **900 seconds** per signed URL,
+repository DB-clock **24-hour** resume window, **4-second** provider calls, at most three ListParts
+pages/52 inventory entries and one 50-entry orphan page per sweep. Resume exposes the original
+fileName/size/contentType/lastModified/SHA fingerprint and actual acknowledged parts; the reused
+browser must compare its selected file as in v1. No tus or new content/media validation exists.
+Head validates identity and the declared source SHA metadata; it does **not** hash provider bytes.
+The YV2-11 runner still owns downloaded-byte hash validation before processing. Provider and SQL
+are separate effects; uncertain completion retains completing state, and already completed objects
+are not deleted by multipart abort/orphan cleanup. No distributed atomicity is claimed.
+
+`createMultipartHttpHandlers<M,R>({multipart,principal,response?,error?})` in
+`multipart-http.ts` returns `{handlers,mount}`. `principal(request)` is awaited inside each
+admitted handler and must return a verified principal with product authorization applied.
+`response` optionally maps each typed operation result plus principal to an awaited application
+body; `error(MultipartError)` can bind existing product wording/status through HttpError.
+Default public transport refusals use safe HttpError codes with no provider details.
+Engine error codes: UPLOAD_NOT_FOUND(404), UPLOAD_CLOSED(410), UPLOAD_CONFLICT/
+UPLOAD_MISMATCH/INCOMPLETE_PARTS/PARTS_LIMIT(409), PART_NUMBER(400), INITIATION_FAILED(503).
+The HTTP boundary also refuses malformed UUIDs with UPLOAD_ID(400).
+
+`mount(routes: HttpRoutes,mounts)` requires exactly one explicit mount for each operation:
+start(POST), list(GET), status(GET), sign(POST), complete(POST), abort(POST). Each mount is
+`{operation,method,url,statusCode?}`; identity routes use `:uploadId`, signing also uses
+`:partNumber`. Paths have no product defaults. Mount during YV2-05 createHttpService.configure;
+all auth, content validation, SQL and provider work is awaited within admission/drain. A separate
+product `/me` route and API/browser response compatibility remain YV2-15 responsibilities.
+
+The engine is implemented dependency output, **not yet a completely installed source-bound
+ownedMultipart template**: compiled principal/content/metadata/namespace/repository/hooks,
+HTTP settings/service constructor and lifecycle/job wiring remain required recipe gaps. The
+report retains `multipart-application-bindings` and `applicationComplete:false`; no normal studio
+control or lifecycle installation is attested. YV2-09 can bind complete/closed without editing
+transport; YV2-16 must install actual consumers once these application bindings exist.
+[Offline, standalone and real provider evidence](../evidence/youtube-v2/yv2-08-multipart.md).

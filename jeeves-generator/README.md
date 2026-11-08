@@ -186,6 +186,12 @@ Feature/preset implementations remain unfinished; no handlers, domain tables or 
 are started. `diagnostics/generation.json` and required report gaps retain that distinction.
 No v2 studio preview or browser controls are wired yet.
 
+Selected owned uploads also emit the actual generic signed multipart engine, S3 adapter and
+explicit HTTP handler factory. `local.multipart` contributes only selected storage read/write
+access and signed-PUT CORS; application principal/content/metadata/transaction hooks, namespaces
+and service mounts remain required compiled-recipe gaps. No complete multipart application or
+lifecycle support is installed yet. See the [transport API and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-08--owned-signed-multipart-transport-and-http-mounts).
+
 Trusted feature registration can pass `V2Emitter[]` to `loadLocalV2Registry(features)`.
 `V2Emitter.local(context)` returns the finite `V2LocalContribution` hooks for migrations,
 runtime logins, schema-qualified views/relation grants, topic subscribers, storage access/CORS,
