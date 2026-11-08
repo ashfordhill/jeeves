@@ -68,3 +68,9 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Problem:** feedback history repeats implementation and testing detail at excessive length.
 - **Decision:** use this short format; link detailed records instead of copying them.
 - **Resolution:** condensed the main log; preserved the complete earlier text in the [archive](HUMAN_FEEDBACK.archive-2026-11-08.md). Future entries follow the same rule.
+
+## 2026-11-08 — Backend-only LOC benchmark
+
+- **Problem:** frontend work should not dilute a benchmark for Jeeves' backend generation.
+- **Decision:** exclude all UI code, including frontend `src/`, until Jeeves has a UI builder and the owner expands the measure.
+- **Resolution:** method v2 requires a backend/UI scope and refuses unclassified source; YouTube v1 remains 159 / 2,715 LOC (5.53%). [Method/report](field-projects/source-loc.md) · [Implementation record](handoff.md#2026-11-08--backend-scope-for-loc-benchmarks).

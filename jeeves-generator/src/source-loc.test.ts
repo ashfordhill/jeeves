@@ -85,6 +85,7 @@ describe("source LOC benchmark", () => {
       const files = {
         "src/main.ts": "const a = 1;\nconst b = 2;\n",
         "src/removed.ts": "export const removed = 1;\n",
+        "src/ui/view.ts": "export const view = 'original UI';\n",
       };
       for (const [path, source] of Object.entries(files)) put(`app/${path}`, source);
       put(
@@ -100,10 +101,17 @@ describe("source LOC benchmark", () => {
       put("app/src/main.ts", "  const a = 1; // unchanged\nconst b = 3;\n");
       put("app/src/new.ts", "export const custom = 1;\n");
       put("app/src/main.test.ts", "throw Error('excluded');\n");
+      put("app/src/ui/view.ts", "export const view = 'custom UI';\n");
+      put("app/frontend/src/main.ts", "document.title = 'UI in src';\n");
       rmSync(join(root, "app/src/removed.ts"));
       const completed = commit();
       put("app/src/main.ts", "not valid TypeScript in working tree");
-      const report = sourceLocReport(root, "app", baseline, completed);
+      const scope = {
+        version: 1,
+        backendPaths: ["src"],
+        uiPaths: ["src/ui", "frontend"],
+      };
+      const report = sourceLocReport(root, "app", baseline, completed, scope);
       expect(report.totals).toEqual({
         includedFiles: 3,
         baselineLoc: 3,
@@ -113,7 +121,16 @@ describe("source LOC benchmark", () => {
         removedOrReplacedTemplateLoc: 2,
         templatePercent: 33.33,
       });
-      expect(() => sourceLocReport(root, "app", completed, completed)).toThrow(
+      expect(report.excluded).toContainEqual({ path: "src/ui/view.ts", reason: "ui-source" });
+      expect(report.excluded).toContainEqual({ path: "frontend/src/main.ts", reason: "ui-source" });
+      expect(() =>
+        sourceLocReport(root, "app", baseline, completed, { ...scope, uiPaths: ["src/ui"] }),
+      ).toThrow("Unclassified source: frontend/src/main.ts");
+      expect(() => sourceLocReport(root, "app", baseline, completed, undefined)).toThrow();
+      expect(() =>
+        sourceLocReport(root, "app", baseline, completed, { ...scope, backendPaths: ["../src"] }),
+      ).toThrow();
+      expect(() => sourceLocReport(root, "app", completed, completed, scope)).toThrow(
         "Baseline source does not match",
       );
     } finally {

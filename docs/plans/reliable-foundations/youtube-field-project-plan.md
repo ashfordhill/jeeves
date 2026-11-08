@@ -251,8 +251,10 @@ and dependencies rather than attributing every improvement to generation.
 | Working result | The same smoke scenarios, observed defects and limitations for each finished version. |
 
 Behavior coverage and remaining effort are the primary comparison. The owner also requested a repeatable
-[source-line composition benchmark](../../field-projects/source-loc.md): production `src/` code,
-excluding configuration, infrastructure and tests. Stubs count as source lines, with no functional
+[source-line composition benchmark](../../field-projects/source-loc.md): backend production `src/` code,
+excluding all UI/frontend code, configuration, infrastructure and tests. Use an explicit backend/UI
+scope per version; UI stays excluded until Jeeves has a UI builder and the owner expands this measure.
+Stubs count as source lines, with no functional
 credit; source share and effort/behavior measures stay distinct.
 Do not claim a generated percentage before measuring baseline and completed output. Reusing v1
 custom code is useful but stays reused custom work unless an actual versioned template now emits

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "backendPaths": [
+    "src/clients",
+    "src/contracts",
+    "src/extensions",
+    "src/lib",
+    "src/services",
+    "src/state",
+    "src/workers"
+  ],
+  "uiPaths": ["browser"]
+}

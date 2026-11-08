@@ -55,6 +55,7 @@ generator/template versions, output hashes, build results and source provenance 
 own checkpoints. The actual strict report remains `generationEligible: false`, template
 availability `none` and runtime verification `none`.
 
-[Source-line benchmark](../../../docs/field-projects/source-loc.md): v1 production `src/` contains
+[Backend source-line benchmark](../../../docs/field-projects/source-loc.md): v1 backend `src/` contains
 159 retained template lines and 2,715 post-template lines (5.53% template share), excluding
-tests/configuration/infrastructure and the separate browser folder.
+all UI/frontend code, tests/configuration/infrastructure. The method-v2 scope makes UI exclusion
+explicit; v1's original totals are unchanged.

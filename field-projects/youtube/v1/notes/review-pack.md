@@ -50,9 +50,10 @@ not call Jeeves, cloud services or a model.
 ## Benchmark and provenance
 
 The owner subsequently added a [source-line composition benchmark](../../../../docs/field-projects/source-loc.md):
-**159 retained template LOC (5.53%) / 2,715 post-template LOC**, in 2,874 production `src/` lines.
-[Per-file result](benchmarks/source-loc-v1.json) excludes tests, configuration/infrastructure and the
-separate `browser/` folder. This source-share metric supplements the behavior evidence below.
+**159 retained template LOC (5.53%) / 2,715 post-template LOC**, in 2,874 backend `src/` lines.
+[Per-file result](benchmarks/source-loc-v2.json) uses an explicit backend/UI scope and excludes all
+UI/frontend code, tests and configuration/infrastructure. The original counts are unchanged;
+this source-share metric supplements the behavior evidence below.
 
 Compare against untouched FP04 **02ac280da62616e9c7aad7f88457dcb72084cb25**, not a regenerated
 or retrospectively fixed baseline. Its107 hashed payloads plus manifest have manifest SHA256

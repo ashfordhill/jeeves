@@ -70,6 +70,9 @@ database when their work calls for it.
 - Settings are a finite allowlist ([studio settings](docs/studio-settings.md)): add a field only
   with its schema, form, validation and blueprint output together.
 - Keep design intent, template availability and verification evidence distinct.
+- Field-project LOC benchmarks measure **backend code only**. Exclude all UI/frontend code,
+  including UI under `src/`, until the owner expands the measure after adding a UI builder.
+  Record a reviewed backend/UI scope with each report; follow [the method](docs/field-projects/source-loc.md).
 
 ## Ports
 

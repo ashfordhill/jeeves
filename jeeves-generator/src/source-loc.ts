@@ -3,7 +3,22 @@ import { createHash } from "node:crypto";
 import { parseSync } from "rolldown/utils";
 import { z } from "zod";
 
-export const SOURCE_LOC_VERSION = "source-loc-v1";
+export const SOURCE_LOC_VERSION = "source-loc-v2";
+
+const relativePath = z
+  .string()
+  .regex(/^[\w.-]+(?:\/[\w.-]+)*$/)
+  .refine(
+    (path) => !path.split("/").some((part) => part === "." || part === ".."),
+    "Scope paths must be relative to the application without dot segments.",
+  );
+const backendScopeSchema = z.strictObject({
+  version: z.literal(1),
+  backendPaths: z.array(relativePath).min(1),
+  uiPaths: z.array(relativePath),
+});
+const matchesPath = (path: string, roots: readonly string[]) =>
+  roots.some((root) => path === root || path.startsWith(`${root}/`));
 
 /** Explicit scope: production JS/TS under any src directory, excluding configuration and tests. */
 export function exclusionReason(path: string): string | null {
@@ -75,7 +90,14 @@ type FileSourceLoc = {
   removedOrReplacedTemplateLoc: number;
 };
 
-export function sourceLocReport(repo: string, app: string, baselineRef: string, finalRef: string) {
+export function sourceLocReport(
+  repo: string,
+  app: string,
+  baselineRef: string,
+  finalRef: string,
+  scopeInput: unknown,
+) {
+  const scope = backendScopeSchema.parse(scopeInput);
   if (!/^[\w.-]+(?:\/[\w.-]+)*$/.test(app) || app.split("/").some((p) => p === ".." || p === "."))
     throw new Error("Supply an application directory relative to the repository root.");
   const git = (...args: string[]) =>
@@ -107,11 +129,15 @@ export function sourceLocReport(repo: string, app: string, baselineRef: string, 
   const included: FileSourceLoc[] = [];
   const excluded = [];
   for (const path of [...new Set([...baseline.keys(), ...final.keys()])].sort()) {
-    const reason = exclusionReason(path);
+    // UI exclusions win even inside a backend directory or outside src/. Names such as
+    // "clients" can mean backend service adapters, so classify by reviewed paths, not guesses.
+    const reason = matchesPath(path, scope.uiPaths) ? "ui-source" : exclusionReason(path);
     if (reason) {
       excluded.push({ path, reason });
       continue;
     }
+    if (!matchesPath(path, scope.backendPaths))
+      throw new Error(`Unclassified source: ${path}. Declare it in backendPaths or uiPaths.`);
     const read = (files: ReturnType<typeof tree>) => {
       const entry = files.get(path);
       if (!entry) return "";
@@ -155,9 +181,11 @@ export function sourceLocReport(repo: string, app: string, baselineRef: string, 
     baselineCommit,
     finalCommit,
     baselineManifestSha256: sha256(manifestText),
+    scope,
+    scopeSha256: sha256(JSON.stringify(scope)),
     rules: {
       scope:
-        "Production JS/TS in src directories; tests, fixtures, configuration, declarations and build/vendor output excluded.",
+        "Backend production JS/TS in src directories, classified by an explicit scope. UI is excluded regardless of location; unclassified eligible source refuses the report. Tests, fixtures, configuration, declarations and build/vendor output excluded.",
       lines:
         "Physical nonblank lines after parsed comments are removed; indentation ignored, other code and wrapping preserved.",
       attribution:

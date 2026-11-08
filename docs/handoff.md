@@ -5392,3 +5392,19 @@ YouTube 4400 remains healthy (14 services). `.jeeves-feedback/` and owner edits 
 Next remains FP08 owner review; this unit starts no v2 work.
 
 Local commit: **Organize workspace and record source LOC baseline**.
+
+
+## 2026-11-08 — Backend scope for LOC benchmarks
+
+The owner clarified that UI must be excluded until Jeeves has a UI builder. Method
+`source-loc-v2` requires reviewed backend/UI paths, gives UI exclusions precedence and refuses
+unclassified eligible source. Reports embed the scope and hash. The v1 backend scope and new
+report preserve the original report; all 45 included files and totals remain identical:
+**159 template / 2,715 post-template LOC (5.53%)**. Updated the method, plan and agent guidance.
+
+Checks: actual CLI/report comparison; scope/hash validation; offline cases for UI inside `src/`,
+UI overriding a backend directory, and missing/invalid/unclassified scope; `pnpm check`
+**402 tests**, **36 E2Es**, web build and studio mouse check. Owner designs/README/media and
+`.jeeves-feedback/` are unchanged. Future versions must review their backend/UI scope explicitly.
+
+Local commit: **Scope LOC benchmarks to backend code**.
