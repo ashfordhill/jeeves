@@ -13,6 +13,8 @@ export * from "./findings.ts";
 export * from "./generation.ts";
 export * from "./generation-catalog.ts";
 export * from "./generation-command.ts";
+export * from "./generation-resolver.ts";
+export * from "./generation-support.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";
 export * from "./operation-contracts.ts";

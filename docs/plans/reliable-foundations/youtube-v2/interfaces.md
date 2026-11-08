@@ -95,3 +95,83 @@ absent-generation subjects and frozen v1 output identities remain unchanged.
 The small offline fixture `fixtures/yv2-selections.ts` attaches all variants to read-only native010
 source. It is test material, not the future v2 snapshot or an export input. No generator, renderer,
 forms, preset attachment implementation or field app exists yet. Next owner: **YV2-02**.
+
+## YV2-02 — semantic normalization and installed control support
+
+Public exports from `@jeeves/spec`:
+
+- `generationCapabilities`, `GenerationCapability`, `GenerationResourceRequirement`,
+  `GenerationSettingRule`, `GenerationSupportedValues`, `GenerationValue` in
+  `generation-support.ts`: finite per-template host/role/store/access/channel/mode requirements
+  and setting authorities, supported values, internal defaults, consumer responsibilities and
+  optional necessary-user-choice rationale. These are semantic descriptors, not another provider
+  registry or installed code. Fixed alternatives/policies never become normal controls.
+- `GenerationInstalledSupport` is supplied explicitly by the trusted host. It has optional exact
+  `runtime`, optional exact `presets`, and `templates: GenerationInstalledTemplate[]`. Each template
+  has exact `ref` plus `consumers: {input, consumer, outputPaths}[]`. Paths are actual safe relative
+  generated outputs; each input is unique per installed template. The assembler owns executable
+  code/asset fingerprints. A host must attest real wiring, never register a future placeholder.
+- `resolveGeneration(design, installed = {templates: []})` returns a recursively frozen
+  `{model, findings, settings, complete}` without modifying source or installation data.
+  `NormalizedGeneration` / `NormalizedGenerationSelection` contain canonical target/host/owner,
+  role provenance, exact template/policies, strict bindings, finite consumed `inputs`, canonical
+  resources and local identities, least required access plus declared grant/boundary provenance,
+  queue direction and optional verified JWT/Keycloak identity binding. Unknown exact selections
+  remain findings and cannot become normalized executable selections. Structural contradictions
+  return no model. Missing/unsupported/uninstalled choices may retain a partial diagnostic model;
+  **only `complete: true` has no semantic/support blockers**. This does not prove application hook
+  completion, emitted build/runtime correctness or strict TinyURL readiness. Those remain host/
+  assembler/module evidence responsibilities.
+- `GenerationSettingDecision` gives each input's actual source paths/value, supported values,
+  consumer, host-attested output paths, explicit source/descriptor-default/missing origin,
+  supported/fixed/unsupported/missing status, optional
+  `userNeed` and `normalControl`. A normal control requires both necessary choice and actual
+  installed consumer/runtime support; absence of a consumer cannot be satisfied by copying a value
+  into JSON. No v2 host installs code by default in this unit. Binding and fixed-policy responsibility
+  also require consumer attestations: input `binding`, consumer equal to `binding.kind`; each
+  policy uses input `policy.<policy-ref.id>` with the same consumer. Setting input/consumer keys
+  are the exact values in `generationCapabilities[kind].settings`.
+
+Cache tile `ttlSeconds` is the single TTL source; traced cache-reader `l2TtlSeconds`, when present,
+asserts equality. Worker tile `concurrency` is authoritative; traced consumer concurrency asserts
+equality. Conflicts refuse, and absent authoritative values require explicit source edits.
+Media concurrency is fixed at one. Batch size one, linger zero and bounded retry counts
+(media3/lifecycle10/counter5/projection5) are internal descriptor defaults, not normal choices.
+Descriptor defaults have no invented document source paths.
+Other existing source values are consumed only through declared rules; unconsumed selected
+settings have precise unsupported findings. Nothing is cleared or filled into saved source.
+
+Stores require explicit role grants and dependency access, correct source/projection semantics
+and deliberate cross-authority published reads. Cache projection source must equal the reader's
+bound source. Queues require explicit publish/consume direction and work-queue/topic mode; they
+use canonical channel bindings rather than fabricated store grants. Native010's queue→consumer,
+publisher→queue, same-authority Upload/lifecycle roles and guard-without-Identity-edge remain.
+The selected preset requires its explicitly listed templates; normalization never attaches them.
+
+The one direct YV2-01 amendment is a demonstrated relational contradiction: `generationFindings`
+now refuses a YouTube upload adapter whose lifecycle references a different owned-upload selection,
+even if each individual selection is valid. Atomic source commands therefore refuse it too.
+No binding fields or template identities changed.
+
+The fixed local runtime requires SQL/Redis/Messaging/HTTP and private-network transport for bound
+resources. Inherited HTTPS/Service identity promises stay explicit unsupported findings at their
+original connection paths; the later v2 seed may correct those intentionally. The required Identity
+service-language field cannot express a vendor product. `model.localAdapterTreatments` preserves
+its exact declared TS/Go value and source path as `unsupported-intent`, with actual vendor
+`keycloak` and an explicit finite OIDC substitution reason. This record is nonfatal and must remain
+visible in generated provenance/support reports; it never claims a TS/Go Identity implementation.
+Identity execution/provider/exposure/replica settings are checked; other intent stays unsupported.
+
+`generationLocalIdentity(id)` validates the existing 63-character canonical slug, preserves it as
+`local`, and replaces hyphens with underscores as `sql`. This is injective because source IDs
+cannot contain underscores; no truncation/prefix/label inference occurs. SQL renderers must quote
+this validated identifier, including possible SQL keywords, and separately validate any composed
+identifier/path or provider-specific limit they introduce. Selection IDs retain their own namespace;
+future emitters must not conflate selection and element paths.
+
+Four offline boundary cases cover complete trusted-host normalization, setting edits/conflicts,
+unknown/catalog-only/missing-consumer support, provider/language/local intent, unknown definitions
+and Identity settings, endpoints/grants/channel modes/cross-selection/extra-binding refusal, labels,
+immutability and safe identity/output paths. These are test-host attestations, not installed runtime
+features. No renderer, executable template, forms, broad registry or field output exists yet.
+Next owner: **YV2-03 only**.

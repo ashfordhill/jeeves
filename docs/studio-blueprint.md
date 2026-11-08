@@ -90,6 +90,10 @@ and `null` removes the optional field. Existing absent-generation source, bluepr
 v1 output bytes remain unchanged. Present generation also changes the strict TinyURL subject
 hash and blocks that finite composition; experimental selections supply no readiness credit.
 
+A host may separately call the pure `resolveGeneration` API with exact installed consumer/output
+identities; blueprint source findings remain conservative and install no implementations.
+Normalized semantic support is separate from strict readiness and runtime verification.
+
 V3 projects detached ownership rows as well as detached settings/scope/operations: changing the
 returned object cannot change source declarations. Validator finding paths always address the
 source document's row order, even where exported collections sort by identity. Do not use numeric

@@ -409,3 +409,12 @@ still bound by a surviving selection refuses until explicitly detached or replac
 batch. Undo/Redo restore full declarations. Blueprint v3 preserves them; v2 refuses the exact
 unsupported paths. Template resolution, installed support and later mouse/chat choices are
 separate work. [Actual source interfaces](plans/reliable-foundations/youtube-v2/interfaces.md).
+
+Pure v2 support resolution now lives in `@jeeves/spec`'s `resolveGeneration` and
+`generationCapabilities`. It records finite consumers/source paths, providers/languages, required
+roles/grants/channels and fixed policies. Cache tile TTL and worker concurrency are authoritative;
+existing duplicate component values must agree. Only a necessary user choice with a real host-installed
+consumer/output can qualify as a normal control. The current editor is unchanged; this unit installs
+no v2 runtime implementation or controls. Unsupported historical intent stays preserved and reported.
+The [interface record](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-02--semantic-normalization-and-installed-control-support)
+also explains the explicit local Keycloak substitution and transport-intent gaps.

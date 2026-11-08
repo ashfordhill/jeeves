@@ -5471,3 +5471,35 @@ or app yet. No v1/generator/root README/runtime/input changes. Owner `.jeeves-fe
 e2e-docker mode and services/resources preserved. Sequential main; no delegation/branch/stash/push.
 
 Local commit: **YV2-01: add typed template selections to design source**.
+
+## 2026-11-08 — YV2-02: binding normalization and supported controls
+
+Added pure `resolveGeneration` and finite immutable `generationCapabilities` in spec.
+The model validates canonical bindings, host definitions/roles, source/projection authority,
+explicit grants/dependency access, queue direction/mode and related selection consistency.
+Cache tile TTL and worker concurrency are authoritative; contradictory component mirrors refuse.
+Supported values/defaults, exact setting/permission source paths, typed fixed policies and actual
+consumer/output responsibility share one model. Normal controls need both necessary user choice
+and a host-installed real consumer. Catalog presence installs nothing. [APIs](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-02--semantic-normalization-and-installed-control-support).
+
+Native010 topology is preserved. Local transport mismatches remain precise unsupported findings;
+Identity's required service-language metadata becomes an explicit nonfatal unsupported-intent →
+Keycloak record, never a claimed TS/Go implementation. Identity vendor settings are checked.
+One direct source-validation amendment refuses a YouTube upload/lifecycle pairing referencing
+another owned-upload. No binding schema/ref changes, executable templates, forms, field output or
+v1/runtime/input changes. Safe local/SQL identity derivation is injective; future SQL emitters quote
+validated identifiers and validate any composed names separately.
+
+Four offline boundary cases; final `pnpm check` **411 tests/54 files, 23.12s** plus lint/types;
+**36 native E2Es, 1.4m**; web build **1.09s** (existing chunk-size advisory). Frozen assembler still
+emits **108 files** with byte-identical manifest SHA
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Logs `/tmp/jeeves-yv2-02-{check-final,e2e,build,v1}.log`. Pure spec changes add no normal UI;
+existing browser E2Es cover TinyURL lane rendering/mouse actions; no separate manual check needed.
+
+Next **YV2-03 only**: separate assembler/registry/manifest/export. No runtime implementation is
+installed yet; `complete` means semantic/installed support, not emitted build/hook/runtime evidence
+or strict readiness. Preserve owner services/resources, root README, `.jeeves-feedback` dirt and
+existing e2e-docker mode. Sequential main; no delegation/branch/worktree/stash/push.
+
+Local commit: **YV2-02: resolve template bindings and supported controls**.

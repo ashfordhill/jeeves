@@ -298,6 +298,19 @@ export function generationFindings(design: DesignDocument): Finding[] {
           `Bound channel must declare ${channel} use.`,
         );
     }
+    if (selection.binding.kind === "youtube-upload") {
+      const binding = selection.binding;
+      const lifecycle = model.selections.find((entry) => entry.id === binding.lifecycle);
+      if (
+        lifecycle?.binding.kind === "asset-lifecycle" &&
+        lifecycle.binding.upload !== binding.upload
+      )
+        row(
+          "CONFIG_INVALID",
+          ["binding", "lifecycle"],
+          "YouTube upload lifecycle must reference the adapter's chosen owned-upload selection.",
+        );
+    }
     for (const ref of refs.selections) {
       const selected = model.selections.find((entry) => entry.id === ref.selection);
       if (!selected)
