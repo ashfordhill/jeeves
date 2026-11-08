@@ -1,0 +1,42 @@
+{
+  "clients": [
+    {
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "clientId": "youtube-v1-web",
+      "directAccessGrantsEnabled": false,
+      "protocolMappers": [
+        {
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "included.custom.audience": "youtube-v1-api"
+          },
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper"
+        }
+      ],
+      "publicClient": true,
+      "redirectUris": [
+        "http://127.0.0.1:4400/*"
+      ],
+      "standardFlowEnabled": true,
+      "webOrigins": [
+        "http://127.0.0.1:4400"
+      ]
+    }
+  ],
+  "enabled": true,
+  "realm": "youtube-v1",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "creator"
+      }
+    ]
+  },
+  "sslRequired": "none"
+}

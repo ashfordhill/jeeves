@@ -1,0 +1,7 @@
+{
+  "exchange": "completion-events",
+  "queues": [
+    "completion-handler",
+    "search-indexer"
+  ]
+}

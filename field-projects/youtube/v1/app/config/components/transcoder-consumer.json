@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "concurrency": 1,
+    "kind": "event-consumer",
+    "retryLimit": 3
+  },
+  "id": "transcoder-consumer",
+  "sourcePath": "/architecture/studio/components/11"
+}

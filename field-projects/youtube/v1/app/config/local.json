@@ -1,0 +1,22 @@
+{
+  "applicationDatabaseIsolation": "one PostgreSQL instance; separate logical databases and users for metadata, counts and Keycloak; owner write/read-only grants",
+  "broker": "one RabbitMQ node; persistent messages, publisher confirms, manual acknowledgements after side effects",
+  "garageWebsiteHost": "youtube-v1-transcoded.web.garage.localhost",
+  "hostPublishing": "loopback only; infrastructure ports internal except identity/S3 browser endpoints; optional management ports must remain loopback",
+  "internalS3Endpoint": "http://objects:3900",
+  "oidcApiAudience": "youtube-v1-api",
+  "oidcCreatorRole": "creator",
+  "oidcFlow": "authorization-code + PKCE S256; no browser secret",
+  "oidcInternalJwksUrl": "http://identity:8080/realms/youtube-v1/protocol/openid-connect/certs",
+  "oidcPublicClientId": "youtube-v1-web",
+  "originalsBucket": "youtube-v1-originals",
+  "publicMediaPrefix": "/media/",
+  "publicOidcIssuer": "http://127.0.0.1:4401/realms/youtube-v1",
+  "publicS3Endpoint": "http://127.0.0.1:4402",
+  "publicWebOrigin": "http://127.0.0.1:4400",
+  "s3Addressing": "path-style; separate internal control client and public presigning client; preserve signed host",
+  "s3Region": "garage",
+  "secrets": "generated/provisioned locally at setup; never part of source hashes or committed .env",
+  "topicSemantics": "fanout exchange with a durable queue per subscriber; no historical replay, ordering between subscribers, or partitioned-log semantics",
+  "transcodedBucket": "youtube-v1-transcoded"
+}

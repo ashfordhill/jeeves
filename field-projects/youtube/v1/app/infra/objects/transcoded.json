@@ -1,0 +1,6 @@
+{
+  "access": "public",
+  "bucket": "youtube-v1-transcoded",
+  "endpoint": "http://objects:3900",
+  "website": true
+}

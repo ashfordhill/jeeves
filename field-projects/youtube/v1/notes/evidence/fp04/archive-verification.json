@@ -1,0 +1,60 @@
+{
+  "reader": "Python standard-library zipfile, independent of generator archive writer",
+  "verifiedBeforeAnyExtraction": true,
+  "archives": [
+    {
+      "archive": "mouse-download.zip",
+      "sha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "archiveBytes": 946247,
+      "files": 108,
+      "payloadBytes": 931999,
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "manifestBytes": 80362,
+      "hashedPayloads": 107,
+      "hashedPayloadBytes": 851637,
+      "everyPayloadByteEqualsActualAssembler": true,
+      "everyManifestHashMatches": true,
+      "allCrcsVerified": true,
+      "portableRegularPathsOnly": true,
+      "symlinksExecutablesEncryptionDuplicatesTraversalRefused": true,
+      "dotfilesIncluded": true,
+      "frozenInputAndDiagramBytesEqual": true
+    },
+    {
+      "archive": "mouse-repeat.zip",
+      "sha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "archiveBytes": 946247,
+      "files": 108,
+      "payloadBytes": 931999,
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "manifestBytes": 80362,
+      "hashedPayloads": 107,
+      "hashedPayloadBytes": 851637,
+      "everyPayloadByteEqualsActualAssembler": true,
+      "everyManifestHashMatches": true,
+      "allCrcsVerified": true,
+      "portableRegularPathsOnly": true,
+      "symlinksExecutablesEncryptionDuplicatesTraversalRefused": true,
+      "dotfilesIncluded": true,
+      "frozenInputAndDiagramBytesEqual": true
+    }
+  ],
+  "extractions": [
+    {
+      "path": "/home/ash/github/jeeves/field-projects/youtube/v1/app",
+      "files": 108,
+      "allBytesVerifiedAfterExtraction": true,
+      "directoryMode": "0755",
+      "fileMode": "0644",
+      "exclusiveCreation": true
+    },
+    {
+      "path": "/tmp/jeeves-fp04/independent-app",
+      "files": 108,
+      "allBytesVerifiedAfterExtraction": true,
+      "directoryMode": "0755",
+      "fileMode": "0644",
+      "exclusiveCreation": true
+    }
+  ]
+}

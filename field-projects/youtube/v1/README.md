@@ -1,4 +1,4 @@
-# YouTube v1: frozen starting point
+# YouTube v1: untouched generated baseline
 
 FP01 freezes the saved diagram and a finite local mapping. FP02 adds the
 [experimental generator foundation](../../../jeeves-generator/README.md), pinned to these exact
@@ -6,10 +6,11 @@ inputs, with deterministic in-memory bundles and explicit partial reports. FP03a
 **19 real experimental template families and an independent scratch build** of actual output;
 [evidence](notes/evidence/fp03a/README.md) distinguishes infrastructure checks from business gaps.
 FP03b adds guarded mouse preview/ZIP download of that same real output, including frozen inputs
-and PNG; exact-source checks refuse other designs and preserve strict readiness. No field app is
-committed or measured functional coverage claimed. The real untouched
-generator output must be committed in FP04 before the custom implementation plan or application
-code. Review working v1 with the owner before deciding on v2.
+and PNG; exact-source checks refuse other designs and preserve strict readiness. FP04 retains the
+actual untouched mouse-downloaded output in [app/](app/), with [baseline provenance and observable
+limits](notes/baseline.md) and [independent build evidence](notes/evidence/fp04/README.md).
+Custom completion planning is FP05; no application scenario or measured functional coverage is
+claimed. Review working v1 with the owner before deciding on v2.
 
 - [Diagram history](diagrams/index.md): original owner, approved PostgreSQL, separate v1 copy and
   each intentional local edit, with real mouse PNG downloads and 1280×800 studio screenshots.
@@ -27,7 +28,7 @@ The retained studio project is **YouTube · field v1 · local Docker**,
 in one revision-checked API operation; its other fields, source/schema identity and history were
 preserved. TinyURL revision 53 and Marketplace revision 1 remain unchanged.
 
-This folder is outside Jeeves workspace discovery. There is deliberately no `app/` directory.
+The field app is outside Jeeves workspace discovery and builds with its own package/lockfile.
 Runtime images, dependencies, fixture videos, data and secrets are not committed. Frozen JSON
 under `diagrams/` and `inputs/` is excluded from Biome formatting so exact downloaded bytes and
 recorded hashes survive. FP03a adds an exact `app/` exclusion from root Biome because the field

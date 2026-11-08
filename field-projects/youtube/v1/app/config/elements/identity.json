@@ -1,0 +1,13 @@
+{
+  "declared": {
+    "execution": "docker",
+    "exposure": "public",
+    "kind": "identity",
+    "language": "typescript",
+    "maxReplicas": 1,
+    "minReplicas": 1,
+    "provider": "oidc"
+  },
+  "id": "identity",
+  "sourcePath": "/architecture/studio/elements/10"
+}

@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "batchSize": 100,
+    "concurrency": 4,
+    "kind": "event-consumer",
+    "retryLimit": 5
+  },
+  "id": "indexer-consumer",
+  "sourcePath": "/architecture/studio/components/18"
+}

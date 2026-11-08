@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "kind": "data-access",
+    "poolSize": 50,
+    "readRouting": "primary",
+    "statementTimeoutMs": 500
+  },
+  "id": "watch-details",
+  "sourcePath": "/architecture/studio/components/1"
+}

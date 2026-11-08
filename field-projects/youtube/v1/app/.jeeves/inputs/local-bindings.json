@@ -1,0 +1,1502 @@
+{
+  "format": "youtube-v1-local-bindings-proposal-v1",
+  "status": "proposed finite mapping for FP02/FP03; zero available templates or functional coverage",
+  "sourceSnapshot": "../diagrams/005-local-intent-aligned",
+  "sourceCanonicalSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+  "sourceSchemaVersion": 2,
+  "blueprintVersion": 3,
+  "selectionRules": [
+    "Match canonical element/component/connection IDs plus exact definition versions and required settings",
+    "Never infer algorithms, endpoint schemas, resource ownership or template selection from labels, descriptions or module prose",
+    "Refuse source hash/ID/definition mismatches; report every unknown meaningful setting",
+    "Report all explicit overrides and named custom gaps; preserve strict readiness separately",
+    "Template IDs here are proposals, not registry entries or claims of availability"
+  ],
+  "runtimePins": "runtime-pins.json",
+  "elements": [
+    {
+      "elementId": "watch",
+      "sourcePath": "/architecture/studio/elements/0",
+      "definition": {
+        "id": "studio-service",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "service",
+        "language": "typescript",
+        "exposure": "public",
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "requestTimeoutMs": 1000,
+        "concurrencyLimit": 2000,
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.http-shell",
+      "templateVersion": null,
+      "runtime": "node",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Watch handlers and counts publication remain custom"
+    },
+    {
+      "elementId": "metadata-cache",
+      "sourcePath": "/architecture/studio/elements/1",
+      "definition": {
+        "id": "studio-cache",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "cache",
+        "engine": "redis-compatible",
+        "provider": "self-hosted",
+        "ttlSeconds": 3600,
+        "topology": "standalone",
+        "eviction": "lru"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "watch"
+      },
+      "proposedTemplateId": "local.redis-compatible",
+      "templateVersion": null,
+      "runtime": "valkey",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Standalone GET/SET cache; cache-aside behavior remains custom"
+    },
+    {
+      "elementId": "metadata-db",
+      "sourcePath": "/architecture/studio/elements/2",
+      "definition": {
+        "id": "studio-database",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "database",
+        "engine": "postgresql",
+        "provider": "self-hosted",
+        "readReplicas": 0
+      },
+      "owner": {
+        "kind": "element",
+        "id": "completion-handler"
+      },
+      "proposedTemplateId": "local.postgresql",
+      "templateVersion": null,
+      "runtime": "postgresql",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Logical metadata database owned by completion-handler; no application tables yet"
+    },
+    {
+      "elementId": "view-counts",
+      "sourcePath": "/architecture/studio/elements/3",
+      "definition": {
+        "id": "studio-database",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "database",
+        "engine": "postgresql",
+        "provider": "self-hosted",
+        "readReplicas": 0
+      },
+      "owner": {
+        "kind": "element",
+        "id": "view-counter"
+      },
+      "proposedTemplateId": "local.postgresql",
+      "templateVersion": null,
+      "runtime": "postgresql",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Separate logical counts database owned by view-counter; no application tables yet"
+    },
+    {
+      "elementId": "view-events",
+      "sourcePath": "/architecture/studio/elements/4",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "queue",
+        "mode": "topic",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "watch"
+      },
+      "proposedTemplateId": "local.amqp-fanout",
+      "templateVersion": null,
+      "runtime": "rabbitmq",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "One durable queue for view-counter; no sharding/replay claim"
+    },
+    {
+      "elementId": "view-counter",
+      "sourcePath": "/architecture/studio/elements/5",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 8,
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.worker-shell",
+      "templateVersion": null,
+      "runtime": "node",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Event receipts, batching, transactional count increments remain custom"
+    },
+    {
+      "elementId": "search",
+      "sourcePath": "/architecture/studio/elements/6",
+      "definition": {
+        "id": "studio-service",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "service",
+        "language": "typescript",
+        "exposure": "public",
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "requestTimeoutMs": 1000,
+        "concurrencyLimit": 1000,
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.http-shell",
+      "templateVersion": null,
+      "runtime": "node",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Search query and public-only responses remain custom"
+    },
+    {
+      "elementId": "search-index",
+      "sourcePath": "/architecture/studio/elements/7",
+      "definition": {
+        "id": "studio-search",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "search",
+        "engine": "opensearch",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "search-indexer"
+      },
+      "proposedTemplateId": "local.opensearch",
+      "templateVersion": null,
+      "runtime": "opensearch",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Single-node resource; index schema/projection remains custom"
+    },
+    {
+      "elementId": "video-cdn",
+      "sourcePath": "/architecture/studio/elements/8",
+      "definition": {
+        "id": "studio-cdn",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "cdn",
+        "provider": "external",
+        "origin": "transcoded",
+        "imageResizing": "disabled"
+      },
+      "owner": null,
+      "proposedTemplateId": "local.edge-proxy",
+      "templateVersion": null,
+      "runtime": "nginx",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Local proxy/cache substitute; no global distribution or resizing"
+    },
+    {
+      "elementId": "transcoded",
+      "sourcePath": "/architecture/studio/elements/9",
+      "definition": {
+        "id": "studio-object-store",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "object-store",
+        "provider": "self-hosted",
+        "access": "public"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "transcoder"
+      },
+      "proposedTemplateId": "local.s3-bucket",
+      "templateVersion": null,
+      "runtime": "garage",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Public website bucket through local edge; transcoder write"
+    },
+    {
+      "elementId": "identity",
+      "sourcePath": "/architecture/studio/elements/10",
+      "definition": {
+        "id": "studio-identity",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "identity",
+        "language": "typescript",
+        "exposure": "public",
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "provider": "oidc",
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "local.oidc",
+      "templateVersion": null,
+      "runtime": "keycloak",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "OIDC container/config; source language cannot be honored by this vendor adapter"
+    },
+    {
+      "elementId": "upload",
+      "sourcePath": "/architecture/studio/elements/11",
+      "definition": {
+        "id": "studio-uploads",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "uploads",
+        "language": "typescript",
+        "exposure": "public",
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "requestTimeoutMs": 5000,
+        "concurrencyLimit": 500,
+        "transfer": "signed-url",
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.signed-multipart-shell",
+      "templateVersion": null,
+      "runtime": "node",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "JWT creator checks, multipart ownership/resume/completion and job publication remain custom"
+    },
+    {
+      "elementId": "originals",
+      "sourcePath": "/architecture/studio/elements/12",
+      "definition": {
+        "id": "studio-object-store",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "object-store",
+        "provider": "self-hosted",
+        "access": "private"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "upload"
+      },
+      "proposedTemplateId": "local.s3-bucket",
+      "templateVersion": null,
+      "runtime": "garage",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Private bucket; upload write, transcoder read"
+    },
+    {
+      "elementId": "upload-queue",
+      "sourcePath": "/architecture/studio/elements/13",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "queue",
+        "mode": "work-queue",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "upload"
+      },
+      "proposedTemplateId": "local.amqp-work-queue",
+      "templateVersion": null,
+      "runtime": "rabbitmq",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Durable single queue; no log replay/partitions/retention claim"
+    },
+    {
+      "elementId": "transcoder",
+      "sourcePath": "/architecture/studio/elements/14",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 1,
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.ffmpeg-worker-shell",
+      "templateVersion": null,
+      "runtime": "node+ffmpeg",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Real encode, packaging, thumbnails, idempotence and failure state remain custom"
+    },
+    {
+      "elementId": "completion-events",
+      "sourcePath": "/architecture/studio/elements/15",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "queue",
+        "mode": "topic",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "transcoder"
+      },
+      "proposedTemplateId": "local.amqp-fanout",
+      "templateVersion": null,
+      "runtime": "rabbitmq",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "One durable queue per handler/indexer subscription; no ordering between subscribers"
+    },
+    {
+      "elementId": "completion-handler",
+      "sourcePath": "/architecture/studio/elements/16",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 4,
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.worker-shell",
+      "templateVersion": null,
+      "runtime": "node",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Playable metadata publication and idempotence remain custom"
+    },
+    {
+      "elementId": "search-indexer",
+      "sourcePath": "/architecture/studio/elements/17",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0"
+      },
+      "requiredSettings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 4,
+        "minReplicas": 1,
+        "maxReplicas": 1,
+        "execution": "docker"
+      },
+      "owner": null,
+      "proposedTemplateId": "typescript.worker-shell",
+      "templateVersion": null,
+      "runtime": "node",
+      "availability": "not implemented",
+      "functionalCoverage": "unmeasured; no output exists",
+      "gap": "Committed-publication ordering and index projection remain custom"
+    }
+  ],
+  "components": [
+    {
+      "componentId": "watch-cache-reader",
+      "hostId": "watch",
+      "sourcePath": "/architecture/studio/components/0",
+      "requiredSettings": {
+        "kind": "cache-reader",
+        "pattern": "cache-aside",
+        "l2TtlSeconds": 3600,
+        "stampede": "single-flight"
+      },
+      "proposedTemplateId": "typescript.cache-client-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "details-cache-redis",
+          "from": "watch-cache-reader",
+          "to": {
+            "kind": "element",
+            "id": "metadata-cache",
+            "via": "watch-cache"
+          }
+        },
+        {
+          "id": "details-cache-miss",
+          "from": "watch-cache-reader",
+          "to": {
+            "kind": "component",
+            "id": "watch-details"
+          },
+          "label": "Loads on miss"
+        }
+      ]
+    },
+    {
+      "componentId": "watch-details",
+      "hostId": "watch",
+      "sourcePath": "/architecture/studio/components/1",
+      "requiredSettings": {
+        "kind": "data-access",
+        "poolSize": 50,
+        "readRouting": "primary",
+        "statementTimeoutMs": 500
+      },
+      "proposedTemplateId": "typescript.pg-client-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "details-reader-db",
+          "from": "watch-details",
+          "to": {
+            "kind": "element",
+            "id": "metadata-db",
+            "via": "watch-metadata"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "watch-counts",
+      "hostId": "watch",
+      "sourcePath": "/architecture/studio/components/2",
+      "requiredSettings": {
+        "kind": "data-access",
+        "poolSize": 20,
+        "readRouting": "primary",
+        "statementTimeoutMs": 500
+      },
+      "proposedTemplateId": "typescript.pg-client-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "count-reader-db",
+          "from": "watch-counts",
+          "to": {
+            "kind": "element",
+            "id": "view-counts",
+            "via": "watch-counts-read"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "watch-views",
+      "hostId": "watch",
+      "sourcePath": "/architecture/studio/components/3",
+      "requiredSettings": {
+        "kind": "event-publisher",
+        "batchSize": 500,
+        "lingerMs": 50,
+        "outbox": "disabled"
+      },
+      "proposedTemplateId": "typescript.amqp-publisher-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "view-publisher-events",
+          "from": "watch-views",
+          "to": {
+            "kind": "element",
+            "id": "view-events",
+            "via": "watch-views-publish"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "counter-consumer",
+      "hostId": "view-counter",
+      "sourcePath": "/architecture/studio/components/4",
+      "requiredSettings": {
+        "kind": "event-consumer",
+        "concurrency": 8,
+        "batchSize": 1000,
+        "retryLimit": 5
+      },
+      "proposedTemplateId": "typescript.amqp-consumer-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "view-consumer-events",
+          "from": "counter-consumer",
+          "to": {
+            "kind": "element",
+            "id": "view-events",
+            "via": "views-counter"
+          }
+        },
+        {
+          "id": "view-consumer-sum",
+          "from": "counter-consumer",
+          "to": {
+            "kind": "component",
+            "id": "counter-sum"
+          },
+          "label": "Hands batch"
+        }
+      ]
+    },
+    {
+      "componentId": "counter-sum",
+      "hostId": "view-counter",
+      "sourcePath": "/architecture/studio/components/5",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "view-sum-writer",
+          "from": "counter-sum",
+          "to": {
+            "kind": "component",
+            "id": "counter-writer"
+          },
+          "label": "Writes sums"
+        }
+      ]
+    },
+    {
+      "componentId": "counter-writer",
+      "hostId": "view-counter",
+      "sourcePath": "/architecture/studio/components/6",
+      "requiredSettings": {
+        "kind": "data-access",
+        "poolSize": 10,
+        "readRouting": "primary",
+        "statementTimeoutMs": 2000
+      },
+      "proposedTemplateId": "typescript.pg-client-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "count-writer-db",
+          "from": "counter-writer",
+          "to": {
+            "kind": "element",
+            "id": "view-counts",
+            "via": "counter-write"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "search-query",
+      "hostId": "search",
+      "sourcePath": "/architecture/studio/components/7",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "video-search-index",
+          "from": "search-query",
+          "to": {
+            "kind": "element",
+            "id": "search-index",
+            "via": "search-read"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "upload-auth",
+      "hostId": "upload",
+      "sourcePath": "/architecture/studio/components/8",
+      "requiredSettings": {
+        "kind": "auth-guard",
+        "credential": "jwt"
+      },
+      "proposedTemplateId": "typescript.jwt-guard-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "creator-check-multipart",
+          "from": "upload-auth",
+          "to": {
+            "kind": "component",
+            "id": "upload-multipart"
+          },
+          "label": "Allows creator"
+        }
+      ]
+    },
+    {
+      "componentId": "upload-multipart",
+      "hostId": "upload",
+      "sourcePath": "/architecture/studio/components/9",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "multipart-originals",
+          "from": "upload-multipart",
+          "to": {
+            "kind": "element",
+            "id": "originals",
+            "via": "upload-originals"
+          }
+        },
+        {
+          "id": "multipart-jobs",
+          "from": "upload-multipart",
+          "to": {
+            "kind": "component",
+            "id": "upload-jobs"
+          },
+          "label": "On completion"
+        }
+      ]
+    },
+    {
+      "componentId": "upload-jobs",
+      "hostId": "upload",
+      "sourcePath": "/architecture/studio/components/10",
+      "requiredSettings": {
+        "kind": "event-publisher",
+        "outbox": "disabled"
+      },
+      "proposedTemplateId": "typescript.amqp-publisher-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "job-publisher-queue",
+          "from": "upload-jobs",
+          "to": {
+            "kind": "element",
+            "id": "upload-queue",
+            "via": "upload-publish"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "transcoder-consumer",
+      "hostId": "transcoder",
+      "sourcePath": "/architecture/studio/components/11",
+      "requiredSettings": {
+        "kind": "event-consumer",
+        "concurrency": 1,
+        "retryLimit": 3
+      },
+      "proposedTemplateId": "typescript.amqp-consumer-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "job-consumer-queue",
+          "from": "transcoder-consumer",
+          "to": {
+            "kind": "element",
+            "id": "upload-queue",
+            "via": "jobs-transcoder"
+          }
+        },
+        {
+          "id": "job-consumer-encoder",
+          "from": "transcoder-consumer",
+          "to": {
+            "kind": "component",
+            "id": "transcoder-encoder"
+          },
+          "label": "Hands job"
+        }
+      ]
+    },
+    {
+      "componentId": "transcoder-encoder",
+      "hostId": "transcoder",
+      "sourcePath": "/architecture/studio/components/12",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "encoder-originals",
+          "from": "transcoder-encoder",
+          "to": {
+            "kind": "element",
+            "id": "originals",
+            "via": "transcoder-read"
+          }
+        },
+        {
+          "id": "encoder-packager",
+          "from": "transcoder-encoder",
+          "to": {
+            "kind": "component",
+            "id": "transcoder-packager"
+          },
+          "label": "Hands segments"
+        },
+        {
+          "id": "encoder-thumbnails",
+          "from": "transcoder-encoder",
+          "to": {
+            "kind": "component",
+            "id": "transcoder-thumbnails"
+          },
+          "label": "Hands frames"
+        }
+      ]
+    },
+    {
+      "componentId": "transcoder-packager",
+      "hostId": "transcoder",
+      "sourcePath": "/architecture/studio/components/13",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "packager-transcoded",
+          "from": "transcoder-packager",
+          "to": {
+            "kind": "element",
+            "id": "transcoded",
+            "via": "transcoder-write"
+          }
+        },
+        {
+          "id": "packager-done",
+          "from": "transcoder-packager",
+          "to": {
+            "kind": "component",
+            "id": "transcoder-done"
+          },
+          "label": "Hands playlist"
+        }
+      ]
+    },
+    {
+      "componentId": "transcoder-thumbnails",
+      "hostId": "transcoder",
+      "sourcePath": "/architecture/studio/components/14",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "thumbnails-transcoded",
+          "from": "transcoder-thumbnails",
+          "to": {
+            "kind": "element",
+            "id": "transcoded",
+            "via": "transcoder-write"
+          }
+        },
+        {
+          "id": "thumbnails-done",
+          "from": "transcoder-thumbnails",
+          "to": {
+            "kind": "component",
+            "id": "transcoder-done"
+          },
+          "label": "Hands thumbnails"
+        }
+      ]
+    },
+    {
+      "componentId": "transcoder-done",
+      "hostId": "transcoder",
+      "sourcePath": "/architecture/studio/components/15",
+      "requiredSettings": {
+        "kind": "event-publisher",
+        "outbox": "disabled"
+      },
+      "proposedTemplateId": "typescript.amqp-publisher-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "done-events",
+          "from": "transcoder-done",
+          "to": {
+            "kind": "element",
+            "id": "completion-events",
+            "via": "transcoder-publish"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "handler-consumer",
+      "hostId": "completion-handler",
+      "sourcePath": "/architecture/studio/components/16",
+      "requiredSettings": {
+        "kind": "event-consumer",
+        "concurrency": 4,
+        "retryLimit": 10
+      },
+      "proposedTemplateId": "typescript.amqp-consumer-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "handler-consumer-events",
+          "from": "handler-consumer",
+          "to": {
+            "kind": "element",
+            "id": "completion-events",
+            "via": "completions-handler"
+          }
+        },
+        {
+          "id": "handler-consumer-writer",
+          "from": "handler-consumer",
+          "to": {
+            "kind": "component",
+            "id": "handler-writer"
+          },
+          "label": "Records video"
+        }
+      ]
+    },
+    {
+      "componentId": "handler-writer",
+      "hostId": "completion-handler",
+      "sourcePath": "/architecture/studio/components/17",
+      "requiredSettings": {
+        "kind": "data-access",
+        "poolSize": 10,
+        "readRouting": "primary",
+        "statementTimeoutMs": 2000
+      },
+      "proposedTemplateId": "typescript.pg-client-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "video-writer-db",
+          "from": "handler-writer",
+          "to": {
+            "kind": "element",
+            "id": "metadata-db",
+            "via": "handler-metadata"
+          }
+        }
+      ]
+    },
+    {
+      "componentId": "indexer-consumer",
+      "hostId": "search-indexer",
+      "sourcePath": "/architecture/studio/components/18",
+      "requiredSettings": {
+        "kind": "event-consumer",
+        "concurrency": 4,
+        "batchSize": 100,
+        "retryLimit": 5
+      },
+      "proposedTemplateId": "typescript.amqp-consumer-config",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "indexer-consumer-events",
+          "from": "indexer-consumer",
+          "to": {
+            "kind": "element",
+            "id": "completion-events",
+            "via": "completions-indexer"
+          }
+        },
+        {
+          "id": "indexer-consumer-writer",
+          "from": "indexer-consumer",
+          "to": {
+            "kind": "component",
+            "id": "indexer-writer"
+          },
+          "label": "Hands video"
+        }
+      ]
+    },
+    {
+      "componentId": "indexer-writer",
+      "hostId": "search-indexer",
+      "sourcePath": "/architecture/studio/components/19",
+      "requiredSettings": {
+        "kind": "custom"
+      },
+      "proposedTemplateId": "explicit-custom-extension",
+      "templateVersion": null,
+      "availability": "not implemented",
+      "behavior": "custom until a real versioned template demonstrably emits it",
+      "links": [
+        {
+          "id": "index-writer-search",
+          "from": "indexer-writer",
+          "to": {
+            "kind": "element",
+            "id": "search-index",
+            "via": "indexer-write"
+          }
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "connectionId": "watch-cache",
+      "fromId": "watch",
+      "toId": "metadata-cache",
+      "sourcePath": "/connections/0",
+      "declaredProtocol": "Redis",
+      "declaredSecurity": "Service identity",
+      "localResource": "valkey",
+      "access": "read-write-cache-fill",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "watch-metadata",
+      "fromId": "watch",
+      "toId": "metadata-db",
+      "sourcePath": "/connections/1",
+      "declaredProtocol": "SQL",
+      "declaredSecurity": "Service identity",
+      "localResource": "postgresql.metadata",
+      "access": "read-primary",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "watch-counts-read",
+      "fromId": "watch",
+      "toId": "view-counts",
+      "sourcePath": "/connections/2",
+      "declaredProtocol": "SQL",
+      "declaredSecurity": "Service identity",
+      "localResource": "postgresql.counts",
+      "access": "read-primary",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "watch-views-publish",
+      "fromId": "watch",
+      "toId": "view-events",
+      "sourcePath": "/connections/3",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.view-events",
+      "access": "publish",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "views-counter",
+      "fromId": "view-events",
+      "toId": "view-counter",
+      "sourcePath": "/connections/4",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.view-counter",
+      "access": "consume",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "counter-write",
+      "fromId": "view-counter",
+      "toId": "view-counts",
+      "sourcePath": "/connections/5",
+      "declaredProtocol": "SQL",
+      "declaredSecurity": "Service identity",
+      "localResource": "postgresql.counts",
+      "access": "write-owner",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "search-read",
+      "fromId": "search",
+      "toId": "search-index",
+      "sourcePath": "/connections/6",
+      "declaredProtocol": "HTTPS",
+      "declaredSecurity": "Service identity",
+      "localResource": "opensearch.videos",
+      "access": "read",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "cdn-transcoded",
+      "fromId": "video-cdn",
+      "toId": "transcoded",
+      "sourcePath": "/connections/7",
+      "declaredProtocol": "HTTPS",
+      "declaredSecurity": "Service identity",
+      "localResource": "garage.transcoded.website",
+      "access": "public-read",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "upload-publish",
+      "fromId": "upload",
+      "toId": "upload-queue",
+      "sourcePath": "/connections/8",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.upload-jobs",
+      "access": "publish",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "upload-originals",
+      "fromId": "upload",
+      "toId": "originals",
+      "sourcePath": "/connections/9",
+      "declaredProtocol": "HTTPS",
+      "declaredSecurity": "Service identity",
+      "localResource": "garage.originals.s3",
+      "access": "multipart-owner",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "jobs-transcoder",
+      "fromId": "upload-queue",
+      "toId": "transcoder",
+      "sourcePath": "/connections/10",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.upload-jobs",
+      "access": "consume",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "transcoder-read",
+      "fromId": "transcoder",
+      "toId": "originals",
+      "sourcePath": "/connections/11",
+      "declaredProtocol": "HTTPS",
+      "declaredSecurity": "Service identity",
+      "localResource": "garage.originals.s3",
+      "access": "read",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "transcoder-write",
+      "fromId": "transcoder",
+      "toId": "transcoded",
+      "sourcePath": "/connections/12",
+      "declaredProtocol": "HTTPS",
+      "declaredSecurity": "Service identity",
+      "localResource": "garage.transcoded.s3",
+      "access": "write-owner",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "transcoder-publish",
+      "fromId": "transcoder",
+      "toId": "completion-events",
+      "sourcePath": "/connections/13",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.completion-events",
+      "access": "publish",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "completions-handler",
+      "fromId": "completion-events",
+      "toId": "completion-handler",
+      "sourcePath": "/connections/14",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.completion-handler",
+      "access": "consume",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "completions-indexer",
+      "fromId": "completion-events",
+      "toId": "search-indexer",
+      "sourcePath": "/connections/15",
+      "declaredProtocol": "Messaging",
+      "declaredSecurity": "Service identity",
+      "localResource": "amqp.search-indexer",
+      "access": "consume",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "handler-metadata",
+      "fromId": "completion-handler",
+      "toId": "metadata-db",
+      "sourcePath": "/connections/16",
+      "declaredProtocol": "SQL",
+      "declaredSecurity": "Service identity",
+      "localResource": "postgresql.metadata",
+      "access": "write-owner",
+      "proposedOnly": true
+    },
+    {
+      "connectionId": "indexer-write",
+      "fromId": "search-indexer",
+      "toId": "search-index",
+      "sourcePath": "/connections/17",
+      "declaredProtocol": "HTTPS",
+      "declaredSecurity": "Service identity",
+      "localResource": "opensearch.videos",
+      "access": "write-owner",
+      "proposedOnly": true
+    }
+  ],
+  "explicitUnsupportedIntent": [
+    {
+      "target": {
+        "connectionId": "watch-cache"
+      },
+      "sourcePath": "/connections/0/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "watch-metadata"
+      },
+      "sourcePath": "/connections/1/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "watch-counts-read"
+      },
+      "sourcePath": "/connections/2/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "watch-views-publish"
+      },
+      "sourcePath": "/connections/3/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "views-counter"
+      },
+      "sourcePath": "/connections/4/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "counter-write"
+      },
+      "sourcePath": "/connections/5/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "search-read"
+      },
+      "sourcePath": "/connections/6/planned/protocol",
+      "declared": "HTTPS",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Plain HTTP on isolated Compose network / loopback; no HTTPS/TLS implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "search-read"
+      },
+      "sourcePath": "/connections/6/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "cdn-transcoded"
+      },
+      "sourcePath": "/connections/7/planned/protocol",
+      "declared": "HTTPS",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Plain HTTP on isolated Compose network / loopback; no HTTPS/TLS implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "cdn-transcoded"
+      },
+      "sourcePath": "/connections/7/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "upload-publish"
+      },
+      "sourcePath": "/connections/8/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "upload-originals"
+      },
+      "sourcePath": "/connections/9/planned/protocol",
+      "declared": "HTTPS",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Plain HTTP on isolated Compose network / loopback; no HTTPS/TLS implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "upload-originals"
+      },
+      "sourcePath": "/connections/9/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "jobs-transcoder"
+      },
+      "sourcePath": "/connections/10/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "transcoder-read"
+      },
+      "sourcePath": "/connections/11/planned/protocol",
+      "declared": "HTTPS",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Plain HTTP on isolated Compose network / loopback; no HTTPS/TLS implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "transcoder-read"
+      },
+      "sourcePath": "/connections/11/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "transcoder-write"
+      },
+      "sourcePath": "/connections/12/planned/protocol",
+      "declared": "HTTPS",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Plain HTTP on isolated Compose network / loopback; no HTTPS/TLS implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "transcoder-write"
+      },
+      "sourcePath": "/connections/12/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "transcoder-publish"
+      },
+      "sourcePath": "/connections/13/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "completions-handler"
+      },
+      "sourcePath": "/connections/14/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "completions-indexer"
+      },
+      "sourcePath": "/connections/15/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "handler-metadata"
+      },
+      "sourcePath": "/connections/16/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "indexer-write"
+      },
+      "sourcePath": "/connections/17/planned/protocol",
+      "declared": "HTTPS",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Plain HTTP on isolated Compose network / loopback; no HTTPS/TLS implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "connectionId": "indexer-write"
+      },
+      "sourcePath": "/connections/17/planned/security",
+      "declared": "Service identity",
+      "classification": "explicit local override; declared intent unsupported",
+      "localBinding": "Dedicated local resource credentials where supported; no mTLS/workload/service identity implementation claimed",
+      "generatorMustReport": true
+    },
+    {
+      "target": {
+        "elementId": "identity"
+      },
+      "sourcePath": "/architecture/studio/elements/10/settings/language",
+      "declared": "typescript",
+      "classification": "explicit vendor substitution; declared language unsupported",
+      "localBinding": "Keycloak vendor runtime; Java, not generated TypeScript identity server",
+      "generatorMustReport": true
+    }
+  ],
+  "localConfig": {
+    "publicWebOrigin": "http://127.0.0.1:4400",
+    "publicOidcIssuer": "http://127.0.0.1:4401/realms/youtube-v1",
+    "oidcInternalJwksUrl": "http://identity:8080/realms/youtube-v1/protocol/openid-connect/certs",
+    "oidcPublicClientId": "youtube-v1-web",
+    "oidcApiAudience": "youtube-v1-api",
+    "oidcCreatorRole": "creator",
+    "oidcFlow": "authorization-code + PKCE S256; no browser secret",
+    "publicS3Endpoint": "http://127.0.0.1:4402",
+    "internalS3Endpoint": "http://objects:3900",
+    "s3Region": "garage",
+    "s3Addressing": "path-style; separate internal control client and public presigning client; preserve signed host",
+    "originalsBucket": "youtube-v1-originals",
+    "transcodedBucket": "youtube-v1-transcoded",
+    "publicMediaPrefix": "/media/",
+    "garageWebsiteHost": "youtube-v1-transcoded.web.garage.localhost",
+    "broker": "one RabbitMQ node; persistent messages, publisher confirms, manual acknowledgements after side effects",
+    "topicSemantics": "fanout exchange with a durable queue per subscriber; no historical replay, ordering between subscribers, or partitioned-log semantics",
+    "applicationDatabaseIsolation": "one PostgreSQL instance; separate logical databases and users for metadata, counts and Keycloak; owner write/read-only grants",
+    "secrets": "generated/provisioned locally at setup; never part of source hashes or committed .env",
+    "hostPublishing": "loopback only; infrastructure ports internal except identity/S3 browser endpoints; optional management ports must remain loopback"
+  },
+  "customGapReferences": "../notes/mapping-and-gaps.md",
+  "immutableInputs": "design.json and blueprint.json are exact snapshot005 bytes; do not format/rewrite"
+}

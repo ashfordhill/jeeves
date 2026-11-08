@@ -1,0 +1,143 @@
+{
+  "generator": {
+    "id": "jeeves-generator",
+    "version": "0.1.0-experimental.2"
+  },
+  "profile": {
+    "id": "youtube-local-v1",
+    "version": "1.0.0",
+    "baselineCommit": "acbc716c90245aeb398391f30f7800f988294cb4",
+    "projectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "revision": 3,
+    "sourceSchemaVersion": 2,
+    "blueprintVersion": 3,
+    "sourceSnapshot": "field-projects/youtube/v1/diagrams/005-local-intent-aligned",
+    "sourceCanonicalSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+    "diagram": {
+      "sha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9",
+      "rendererCommit": "a98bf708d4f70083e7ed4293eaa561561c67694d"
+    },
+    "artifacts": {
+      "manifest.json": {
+        "sha256": "c82bc4f77ba138fdb4fd4d5d3778a76a873bbfc960d52f074c7b2846907783af"
+      },
+      "design.json": {
+        "sha256": "7ea79f431f89352814320d385591ae1e84cf8e63129e93d8fb649c6b2716045c",
+        "bytes": 35922
+      },
+      "blueprint.json": {
+        "sha256": "041facff14d88c045e788f75fa6a7868f872cc37e0e9d9d5641c6fcce81d7e64",
+        "bytes": 61453
+      },
+      "local-bindings.json": {
+        "sha256": "4e91a9a4edfce4385e67d4e696af8a61ac127c9682a22b0e691b0464c7d0e5d2",
+        "bytes": 48968
+      },
+      "runtime-pins.json": {
+        "sha256": "66c5474e9e93d81dc5eb8dcb63289559491d57c80383c941e41c239e97f894fb",
+        "bytes": 11451
+      }
+    }
+  },
+  "templates": [
+    {
+      "id": "explicit-custom-extension",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "79ef3bc11cb0375ac6dbac1dbe914aa38bc44464ac50a785dd7958b7deda6578"
+    },
+    {
+      "id": "local.amqp-fanout",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "ea6e8f18f69ad28e4f6c8bd7a64da0493f7ea498eeefdcb84c59753d9bce41c6"
+    },
+    {
+      "id": "local.amqp-work-queue",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "1672f253c10954c53a94355bb75e9c323e33146eddd95ca12c64631124d7c0df"
+    },
+    {
+      "id": "local.edge-proxy",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "cb1fe564e118a5ffb1e56e17d4da02285623c8c7449739bb0e6a983b863a5ae8"
+    },
+    {
+      "id": "local.oidc",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "a5c28cf361dc083e7cc47c74d2326bdff25317499cf533876a25c8664adabf61"
+    },
+    {
+      "id": "local.opensearch",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "363a0bb6b1c32647e274e6155c31637bf8ad39eecbd9d84f69b18740b9b2cfc0"
+    },
+    {
+      "id": "local.postgresql",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "732ddc3c2bb23fb7422f7dcfa3af3f14cd578cd509e31395d784c8d58fa72977"
+    },
+    {
+      "id": "local.project",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "2be86b585d7692088db2e4107ae6c64b7f271998f0c1e627be20c153bcd24927"
+    },
+    {
+      "id": "local.redis-compatible",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "f164060dc5e9fbbf26bab9bc7836dacbcf123c27e1bc6f27c7a158c60d13e498"
+    },
+    {
+      "id": "local.s3-bucket",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "4bfc934b24dbbad9b44187821cdd1c9d3438f9adf8cd7bec6713c0acea29eef6"
+    },
+    {
+      "id": "typescript.amqp-consumer-config",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "2de7bd2e3a2e75daab21ae40c176f1c425b9d2446bcc480f68f3299ab553b98d"
+    },
+    {
+      "id": "typescript.amqp-publisher-config",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "a371dc1ab59fb6b49905c8c629405e9279cd7625c1eb68434ddcae463b367f60"
+    },
+    {
+      "id": "typescript.cache-client-config",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "1ab40074050f112171448db7b87ec09d943ebbb9c5db61ae29226496a78f0269"
+    },
+    {
+      "id": "typescript.ffmpeg-worker-shell",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "4f9ecbd70b1c82ce0d87d8ce995c834c2dfa60d6686fb260d5b91a8329e8cf64"
+    },
+    {
+      "id": "typescript.http-shell",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "db098c377faf3cb7293acc6ffda965f316d70d61849d88a8345d1bbceb61b5a0"
+    },
+    {
+      "id": "typescript.jwt-guard-config",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "5d5b6cbc2d0d72e13066499f950471a71681d6b91ac6b8df53f19d2b858c63fa"
+    },
+    {
+      "id": "typescript.pg-client-config",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "0ab875a4df9e8cdc316fa87469470e80ddef69fc4f1cc1d0e269e5d8297d72cd"
+    },
+    {
+      "id": "typescript.signed-multipart-shell",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "c0798ecbd91e1f9225b18bba15e78b4d232f5d76a168b7dff94ebe8a898caa93"
+    },
+    {
+      "id": "typescript.worker-shell",
+      "version": "0.1.0-experimental.1",
+      "sourceSha256": "829d32d38b3c9aec8af1ac7d7fb97f2d8a76b8bd1330dd69d690083fd82aa421"
+    }
+  ],
+  "files": 108,
+  "payloadBytes": 931999,
+  "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+  "repeatedAssemblyByteEqual": true
+}

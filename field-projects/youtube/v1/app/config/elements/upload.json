@@ -1,0 +1,15 @@
+{
+  "declared": {
+    "concurrencyLimit": 500,
+    "execution": "docker",
+    "exposure": "public",
+    "kind": "uploads",
+    "language": "typescript",
+    "maxReplicas": 1,
+    "minReplicas": 1,
+    "requestTimeoutMs": 5000,
+    "transfer": "signed-url"
+  },
+  "id": "upload",
+  "sourcePath": "/architecture/studio/elements/11"
+}

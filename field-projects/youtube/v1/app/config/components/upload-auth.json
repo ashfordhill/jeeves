@@ -1,0 +1,8 @@
+{
+  "declared": {
+    "credential": "jwt",
+    "kind": "auth-guard"
+  },
+  "id": "upload-auth",
+  "sourcePath": "/architecture/studio/components/8"
+}

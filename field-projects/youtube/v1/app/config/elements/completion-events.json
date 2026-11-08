@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "kind": "queue",
+    "mode": "topic",
+    "provider": "self-hosted"
+  },
+  "id": "completion-events",
+  "sourcePath": "/architecture/studio/elements/15"
+}

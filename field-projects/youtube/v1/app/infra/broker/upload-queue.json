@@ -1,0 +1,6 @@
+{
+  "exchange": null,
+  "queues": [
+    "upload-jobs"
+  ]
+}

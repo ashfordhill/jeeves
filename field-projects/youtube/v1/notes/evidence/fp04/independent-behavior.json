@@ -1,0 +1,50 @@
+{
+  "note": "Bounded failure observation only; no S01-S08 acceptance run or real business completion.",
+  "node": "v24.21.0",
+  "typescript": "7.0.2",
+  "typescriptResolvedUnderIndependentProject": "/tmp/jeeves-fp04/independent-app/node_modules/.pnpm/typescript@7.0.2/node_modules/typescript",
+  "extensions": [
+    {
+      "file": "src/extensions/counter-sum.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement counter-sum; generated scaffold has no business handler."
+    },
+    {
+      "file": "src/extensions/indexer-writer.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement indexer-writer; generated scaffold has no business handler."
+    },
+    {
+      "file": "src/extensions/search-query.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement search-query; generated scaffold has no business handler."
+    },
+    {
+      "file": "src/extensions/transcoder-encoder.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement transcoder-encoder; generated scaffold has no business handler."
+    },
+    {
+      "file": "src/extensions/transcoder-packager.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement transcoder-packager; generated scaffold has no business handler."
+    },
+    {
+      "file": "src/extensions/transcoder-thumbnails.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement transcoder-thumbnails; generated scaffold has no business handler."
+    },
+    {
+      "file": "src/extensions/upload-multipart.ts",
+      "error": "CUSTOM_IMPLEMENTATION_REQUIRED",
+      "statusCode": 501,
+      "message": "Implement upload-multipart; generated scaffold has no business handler."
+    }
+  ]
+}

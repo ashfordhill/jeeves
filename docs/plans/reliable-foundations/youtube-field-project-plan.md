@@ -6,8 +6,11 @@ before the first field project. Build a working YouTube v1, review it with a fre
 Jeeves, then generate a fresh v2 and possibly v3. Marketplace and TinyURL follow when the owner is
 satisfied. FP00 implements diagram PNG export; FP02 provides the experimental generator foundation. FP03a now adds 19 real experimental local
 template families and a new-directory CLI, with actual standalone build/bounded startup evidence;
-no field app or business benchmark result is committed yet. FP01 freezes the [actual v1 source, images and local mapping](../../../field-projects/youtube/v1/README.md);
-FP03b now adds guarded Jeeves mouse preview/ZIP download for the exact frozen saved source.
+business benchmark results remain unmeasured. FP01 freezes the [actual v1 source, images and local mapping](../../../field-projects/youtube/v1/README.md);
+FP03b adds guarded Jeeves mouse preview/ZIP download for the exact frozen saved source. FP04
+retains the [actual untouched generated baseline](../../../field-projects/youtube/v1/notes/baseline.md),
+independently installed and built both in this repository and outside the checkout. Custom planning
+is next in FP05; no application scenario is complete.
 
 ## Scope and decisions
 
@@ -81,7 +84,7 @@ FP01 creates the v1 input/diagram/note directories. FP02 adds the explicit
 profile, deterministic in-memory bundles, provenance/partial reports and safe write preflight.
 FP03a adds the explicit real local registry, standalone package/locks, physical new-directory
 export and [bounded independent build/startup evidence](../../../field-projects/youtube/v1/notes/evidence/fp03a/README.md).
-FP03b supplies guarded mouse preview/download of the unchanged real bundle; FP04 writes the untouched field baseline.
+FP03b supplies guarded mouse preview/download of the unchanged real bundle; FP04 retains the untouched field baseline.
 Add `jeeves-generator` explicitly to pnpm workspace
 discovery when implementing its package; put reusable backend code there with a thin Jeeves API
 entry point. A separate running generator service is not necessary for the first local export.
@@ -289,7 +292,7 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | FP02: experimental generator (implemented) | Frozen local-v1 validation, deterministic in-memory assembly, provenance/setting/gap reports and conservative file-write preflight. No application templates, physical writer or archive/browser export; strict readiness unchanged. |
 | FP03a: first real templates (implemented) | Versioned local families emit useful standalone shells/clients/resources/containers and exact dependency/OS locks. Real scratch export builds and bounded provider/helper probes pass; business scenarios remain unrun. |
 | FP03b: Jeeves export (implemented) | Guarded mouse preview/download of the same in-memory bundle as a bounded deterministic ZIP, including frozen input/image/template provenance. Trusted profile/template assets ship in Jeeves Docker; only exact saved-source matches export. No strict eligibility credit or heavy template certification. |
-| FP04: generated v1 checkpoint | Run the real generator and commit untouched output and provenance as its own unit. |
+| FP04: generated v1 checkpoint (implemented) | Actual Jeeves mouse ZIP retained untouched in v1/app with exact archive/payload/input/image provenance; frozen installs and TypeScript builds pass in-repo and in a fresh independent extraction. Business scenarios remain incomplete/unrun. |
 | FP05: custom completion plan | Use the committed output's actual gaps to write the implementation plan, work log and benchmark baseline before custom coding. |
 | FP06: upload/process/playback | Complete the custom path and necessary correctness fixes through smaller assigned units, logging provenance, effort and diagram gaps; demonstrate real encoding/playback. |
 | FP07: search/counts and usable v1 | Complete agreed core/interface, run lightweight walkthrough and prepare results/limitations for review. |

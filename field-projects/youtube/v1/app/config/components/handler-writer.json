@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "kind": "data-access",
+    "poolSize": 10,
+    "readRouting": "primary",
+    "statementTimeoutMs": 2000
+  },
+  "id": "handler-writer",
+  "sourcePath": "/architecture/studio/components/17"
+}

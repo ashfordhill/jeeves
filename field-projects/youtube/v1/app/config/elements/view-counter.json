@@ -1,0 +1,12 @@
+{
+  "declared": {
+    "concurrency": 8,
+    "execution": "docker",
+    "kind": "worker",
+    "language": "typescript",
+    "maxReplicas": 1,
+    "minReplicas": 1
+  },
+  "id": "view-counter",
+  "sourcePath": "/architecture/studio/elements/5"
+}

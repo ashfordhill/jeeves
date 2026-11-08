@@ -1,0 +1,8 @@
+{
+  "declared": {
+    "kind": "event-publisher",
+    "outbox": "disabled"
+  },
+  "id": "upload-jobs",
+  "sourcePath": "/architecture/studio/components/10"
+}

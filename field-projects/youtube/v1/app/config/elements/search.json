@@ -1,0 +1,14 @@
+{
+  "declared": {
+    "concurrencyLimit": 1000,
+    "execution": "docker",
+    "exposure": "public",
+    "kind": "service",
+    "language": "typescript",
+    "maxReplicas": 1,
+    "minReplicas": 1,
+    "requestTimeoutMs": 1000
+  },
+  "id": "search",
+  "sourcePath": "/architecture/studio/elements/6"
+}

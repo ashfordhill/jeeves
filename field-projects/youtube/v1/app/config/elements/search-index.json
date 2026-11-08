@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "engine": "opensearch",
+    "kind": "search",
+    "provider": "self-hosted"
+  },
+  "id": "search-index",
+  "sourcePath": "/architecture/studio/elements/7"
+}

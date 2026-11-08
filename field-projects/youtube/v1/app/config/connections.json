@@ -1,0 +1,200 @@
+[
+  {
+    "access": "read-write-cache-fill",
+    "connectionId": "watch-cache",
+    "declaredProtocol": "Redis",
+    "declaredSecurity": "Service identity",
+    "fromId": "watch",
+    "localResource": "valkey",
+    "proposedOnly": true,
+    "sourcePath": "/connections/0",
+    "toId": "metadata-cache"
+  },
+  {
+    "access": "read-primary",
+    "connectionId": "watch-metadata",
+    "declaredProtocol": "SQL",
+    "declaredSecurity": "Service identity",
+    "fromId": "watch",
+    "localResource": "postgresql.metadata",
+    "proposedOnly": true,
+    "sourcePath": "/connections/1",
+    "toId": "metadata-db"
+  },
+  {
+    "access": "read-primary",
+    "connectionId": "watch-counts-read",
+    "declaredProtocol": "SQL",
+    "declaredSecurity": "Service identity",
+    "fromId": "watch",
+    "localResource": "postgresql.counts",
+    "proposedOnly": true,
+    "sourcePath": "/connections/2",
+    "toId": "view-counts"
+  },
+  {
+    "access": "publish",
+    "connectionId": "watch-views-publish",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "watch",
+    "localResource": "amqp.view-events",
+    "proposedOnly": true,
+    "sourcePath": "/connections/3",
+    "toId": "view-events"
+  },
+  {
+    "access": "consume",
+    "connectionId": "views-counter",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "view-events",
+    "localResource": "amqp.view-counter",
+    "proposedOnly": true,
+    "sourcePath": "/connections/4",
+    "toId": "view-counter"
+  },
+  {
+    "access": "write-owner",
+    "connectionId": "counter-write",
+    "declaredProtocol": "SQL",
+    "declaredSecurity": "Service identity",
+    "fromId": "view-counter",
+    "localResource": "postgresql.counts",
+    "proposedOnly": true,
+    "sourcePath": "/connections/5",
+    "toId": "view-counts"
+  },
+  {
+    "access": "read",
+    "connectionId": "search-read",
+    "declaredProtocol": "HTTPS",
+    "declaredSecurity": "Service identity",
+    "fromId": "search",
+    "localResource": "opensearch.videos",
+    "proposedOnly": true,
+    "sourcePath": "/connections/6",
+    "toId": "search-index"
+  },
+  {
+    "access": "public-read",
+    "connectionId": "cdn-transcoded",
+    "declaredProtocol": "HTTPS",
+    "declaredSecurity": "Service identity",
+    "fromId": "video-cdn",
+    "localResource": "garage.transcoded.website",
+    "proposedOnly": true,
+    "sourcePath": "/connections/7",
+    "toId": "transcoded"
+  },
+  {
+    "access": "publish",
+    "connectionId": "upload-publish",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "upload",
+    "localResource": "amqp.upload-jobs",
+    "proposedOnly": true,
+    "sourcePath": "/connections/8",
+    "toId": "upload-queue"
+  },
+  {
+    "access": "multipart-owner",
+    "connectionId": "upload-originals",
+    "declaredProtocol": "HTTPS",
+    "declaredSecurity": "Service identity",
+    "fromId": "upload",
+    "localResource": "garage.originals.s3",
+    "proposedOnly": true,
+    "sourcePath": "/connections/9",
+    "toId": "originals"
+  },
+  {
+    "access": "consume",
+    "connectionId": "jobs-transcoder",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "upload-queue",
+    "localResource": "amqp.upload-jobs",
+    "proposedOnly": true,
+    "sourcePath": "/connections/10",
+    "toId": "transcoder"
+  },
+  {
+    "access": "read",
+    "connectionId": "transcoder-read",
+    "declaredProtocol": "HTTPS",
+    "declaredSecurity": "Service identity",
+    "fromId": "transcoder",
+    "localResource": "garage.originals.s3",
+    "proposedOnly": true,
+    "sourcePath": "/connections/11",
+    "toId": "originals"
+  },
+  {
+    "access": "write-owner",
+    "connectionId": "transcoder-write",
+    "declaredProtocol": "HTTPS",
+    "declaredSecurity": "Service identity",
+    "fromId": "transcoder",
+    "localResource": "garage.transcoded.s3",
+    "proposedOnly": true,
+    "sourcePath": "/connections/12",
+    "toId": "transcoded"
+  },
+  {
+    "access": "publish",
+    "connectionId": "transcoder-publish",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "transcoder",
+    "localResource": "amqp.completion-events",
+    "proposedOnly": true,
+    "sourcePath": "/connections/13",
+    "toId": "completion-events"
+  },
+  {
+    "access": "consume",
+    "connectionId": "completions-handler",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "completion-events",
+    "localResource": "amqp.completion-handler",
+    "proposedOnly": true,
+    "sourcePath": "/connections/14",
+    "toId": "completion-handler"
+  },
+  {
+    "access": "consume",
+    "connectionId": "completions-indexer",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "fromId": "completion-events",
+    "localResource": "amqp.search-indexer",
+    "proposedOnly": true,
+    "sourcePath": "/connections/15",
+    "toId": "search-indexer"
+  },
+  {
+    "access": "write-owner",
+    "connectionId": "handler-metadata",
+    "declaredProtocol": "SQL",
+    "declaredSecurity": "Service identity",
+    "fromId": "completion-handler",
+    "localResource": "postgresql.metadata",
+    "proposedOnly": true,
+    "sourcePath": "/connections/16",
+    "toId": "metadata-db"
+  },
+  {
+    "access": "write-owner",
+    "connectionId": "indexer-write",
+    "declaredProtocol": "HTTPS",
+    "declaredSecurity": "Service identity",
+    "fromId": "search-indexer",
+    "localResource": "opensearch.videos",
+    "proposedOnly": true,
+    "sourcePath": "/connections/17",
+    "toId": "search-index"
+  }
+]

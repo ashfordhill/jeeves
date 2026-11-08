@@ -1,0 +1,8 @@
+{
+  "declared": {
+    "kind": "event-publisher",
+    "outbox": "disabled"
+  },
+  "id": "transcoder-done",
+  "sourcePath": "/architecture/studio/components/15"
+}

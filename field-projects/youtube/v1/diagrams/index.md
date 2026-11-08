@@ -80,3 +80,10 @@ and full PNG remain unchanged. This second capture uses newly restarted owned 43
 and a [final source audit](007-generation-draft-guard/renderer-audit.json) over the corrected code.
 006 remains the first real presentation record, not a silently replaced capture. Both 007 ZIP
 and PNG match the previously verified bytes; the profile continues to reference 005.
+
+## FP04 baseline provenance
+
+FP03b commit **`aedbd606342c5a369142b10cf127fc7130d50671`** contains006/007 above. FP04 retains
+actual mouse-downloaded [untouched generated output](../app/) with [baseline provenance](../notes/baseline.md).
+Saved source/revision3 and view are unchanged, so005 remains the generation image;006/007 retain
+presentation history. No new architecture snapshot or historical image/source edit in FP04.

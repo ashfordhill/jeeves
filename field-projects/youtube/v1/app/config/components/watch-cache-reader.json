@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "kind": "cache-reader",
+    "l2TtlSeconds": 3600,
+    "pattern": "cache-aside",
+    "stampede": "single-flight"
+  },
+  "id": "watch-cache-reader",
+  "sourcePath": "/architecture/studio/components/0"
+}

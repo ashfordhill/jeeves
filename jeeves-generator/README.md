@@ -4,7 +4,8 @@ FP03a provides `@jeeves/generator`, a Node/TypeScript workspace package exportin
 It assembles deterministic **in-memory file bundles** through trusted local template code.
 The explicit `localV1Templates` registry installs **19 experimental local template families** and
 a conservative new-directory exporter. Jeeves now offers a guarded experimental preview/ZIP
-download (FP03b). No field application is committed (FP04). G01–G08 custom implementation follows the actual baseline.
+download (FP03b). FP04 retains the actual untouched [field baseline](../field-projects/youtube/v1/notes/baseline.md).
+G01–G08 custom planning and implementation follow that checkpoint.
 
 Only the frozen `youtube-local-v1@1.0.0` profile is accepted: source schema2, blueprint3,
 snapshot005, source hash `7d1874a1…7979cc93`, project revision 3. This is deliberately a finite

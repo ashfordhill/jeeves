@@ -1,0 +1,12 @@
+{
+  "declared": {
+    "concurrency": 1,
+    "execution": "docker",
+    "kind": "worker",
+    "language": "typescript",
+    "maxReplicas": 1,
+    "minReplicas": 1
+  },
+  "id": "transcoder",
+  "sourcePath": "/architecture/studio/elements/14"
+}

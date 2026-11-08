@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "kind": "queue",
+    "mode": "work-queue",
+    "provider": "self-hosted"
+  },
+  "id": "upload-queue",
+  "sourcePath": "/architecture/studio/elements/13"
+}

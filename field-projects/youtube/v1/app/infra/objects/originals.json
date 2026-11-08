@@ -1,0 +1,6 @@
+{
+  "access": "private",
+  "bucket": "youtube-v1-originals",
+  "endpoint": "http://objects:3900",
+  "website": false
+}

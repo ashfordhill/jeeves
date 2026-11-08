@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "concurrency": 4,
+    "kind": "event-consumer",
+    "retryLimit": 10
+  },
+  "id": "handler-consumer",
+  "sourcePath": "/architecture/studio/components/16"
+}

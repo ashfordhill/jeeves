@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "access": "private",
+    "kind": "object-store",
+    "provider": "self-hosted"
+  },
+  "id": "originals",
+  "sourcePath": "/architecture/studio/elements/12"
+}

@@ -240,3 +240,55 @@ failed ERR_MODULE_NOT_FOUND. A byte-preserving touch of watched main.ts restarte
 watcher's child; no watcher was killed/replaced. Owner 4310/4300 health and actual proxy preview/
 download are restored and full four-project state equality is rechecked. Capture 4302/4312 remain
 stopped. Docs distinguish eager template-file startup failures from in-request input/PNG/assembly 503.
+
+## 2026-11-07 — FP04 actual untouched generated baseline
+
+Unit base FP03b **`aedbd606342c5a369142b10cf127fc7130d50671`** (also contains006/007 UI snapshots).
+Coordinator-assigned sequential Sol/xhigh unit, sole writer on primary main; no delegation,
+branch/worktree/stash/push. This is generated-baseline/provenance verification investment;
+custom completion has not begun. Active time, turns/tokens/cost and savings are unmeasured.
+
+Used existing healthy owner4300/API4310, retained local-v1 project `293b4a2d-e25b-4a5b-83da-b27de7876f02`
+saved revision3, actual mouse **Generate project → Preview scaffold → Download project ZIP**.
+Two download clicks match exactly; final mouse check repeats after required regressions.
+Independent Python ZIP reader checks every CRC/path and exact payload bytes against two repeated
+current assembler runs plus every manifest hash before extracting only into NEW `app/` and fresh
+`/tmp/jeeves-fp04/independent-app/`. Exclusive creation refuses overwrite/symlink/arbitrary paths;
+nonsecret roots/subdirectories0755 and files0644 are readable for later container mounts.
+
+Actual output108 files/931,999 payload bytes. ZIP946,247 bytes SHA
+`c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86`; final manifest80,362 bytes SHA
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`;107 hashed payloads851,637 bytes.
+Generator0.1.0-experimental.2,19 families0.1.0-experimental.1, profileyoutube-local-v1@1.0.0;
+exact template hashes/runtime pins/input hashes in untouched output and [baseline](baseline.md).
+Source canonicalSHA `7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93`;
+005PNG SHA `23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9`,3008×2752.
+Architecture/view unchanged; reference005 plus006/007, no duplicate snapshot or historical rewrite.
+
+Node24.21.0/pnpm12.16.1 `pnpm install --frozen-lockfile` and `pnpm build` pass sequentially in BOTH
+locations, each with own109 packages/TypeScript7.0.2. Exact108 payloads/application locks unchanged
+post-build; no workspace/Jeeves/escaping relative imports or parent compiler. Root lock unchanged.
+Seven compiled extensions independently reject CUSTOM_IMPLEMENTATION_REQUIRED/501; source and
+existing FP03a HTTP/provider evidence establish shell limits. No new field Docker/setup/secrets,
+media or S01–S08 acceptance run. [Scenario-level baseline](baseline.md) gives no complete feature
+credit for configuration/empty shells; G01–G08/seven extensions/all25 unsupported paths stay open.
+Strict report false/none/none and immutable `.jeeves` bytes remain. No functional percentage or
+savings claim. No code/format/repair/lock regeneration under app, template change or FP05 plan.
+
+Required Jeeves checks sequential: `pnpm check` all lint/typechecks,398 tests/50 files (19.79s);
+`pnpm test:e2e`36 native cases (1.2m), scripted model/source steady; web build990ms (existing advisory).
+All pass first attempt. [Evidence](evidence/fp04/README.md) retains commands/logs, byte/path/build
+audits and scratch diagnostic failures: omitted pnpm PATH, wrong expected extension error code
+and read-only assumed-path misses. Corrections affect only scratch commands/probes, no payload.
+
+Final owner mouse: preview/two equal ZIPs, YouTube21/25; TinyURL53 Fit12/13, zero console/page errors.
+Complete four project/design/history/layout/blueprint responses and listing equal throughout;
+E2E DB returns to original default-only list. Owner4300/4310 original watchers stay healthy, no
+new listeners or field containers; E2E listeners stop normally. Other Compose projects and
+`.jeeves-feedback/` preserved. No dependencies/dist/ZIP/videos/runtime data/secrets staged,
+paid/live/cloud calls or global prune. Historical input/diagram/source/template bytes audited.
+
+Next FP05 records FP04's actual containing commit as immutable comparison anchor, then plans
+custom completion from this output and G01–G08. Working-v1 owner review still precedes any v2.
+
+Local commit: **FP04: commit untouched generated YouTube v1 baseline**.

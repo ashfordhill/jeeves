@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "engine": "postgresql",
+    "kind": "database",
+    "provider": "self-hosted",
+    "readReplicas": 0
+  },
+  "id": "metadata-db",
+  "sourcePath": "/architecture/studio/elements/2"
+}

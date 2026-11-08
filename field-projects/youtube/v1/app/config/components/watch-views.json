@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "batchSize": 500,
+    "kind": "event-publisher",
+    "lingerMs": 50,
+    "outbox": "disabled"
+  },
+  "id": "watch-views",
+  "sourcePath": "/architecture/studio/components/3"
+}

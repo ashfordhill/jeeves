@@ -1,0 +1,10 @@
+{
+  "declared": {
+    "imageResizing": "disabled",
+    "kind": "cdn",
+    "origin": "transcoded",
+    "provider": "external"
+  },
+  "id": "video-cdn",
+  "sourcePath": "/architecture/studio/elements/8"
+}

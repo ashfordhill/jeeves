@@ -1,0 +1,35 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "commands": ["pnpm install --frozen-lockfile", "pnpm build"],
+  "locations": [
+    {
+      "path": "/home/ash/github/jeeves/field-projects/youtube/v1/app",
+      "all108SourceFilesUnchangedAfterFrozenInstallAndBuild": true,
+      "ownNodeModules": "/home/ash/github/jeeves/field-projects/youtube/v1/app/node_modules",
+      "ownTypescript": "/home/ash/github/jeeves/field-projects/youtube/v1/app/node_modules/.pnpm/typescript@7.0.2/node_modules/typescript",
+      "noWorkspaceOrJeevesImports": true,
+      "allRelativeImportsStayInsideProject": true,
+      "lockfileSha256": "c37b660e00f7575436c71834fc61e104681c8097bc326c7d11b89b35337138bf"
+    },
+    {
+      "path": "/tmp/jeeves-fp04/independent-app",
+      "all108SourceFilesUnchangedAfterFrozenInstallAndBuild": true,
+      "ownNodeModules": "/tmp/jeeves-fp04/independent-app/node_modules",
+      "ownTypescript": "/tmp/jeeves-fp04/independent-app/node_modules/.pnpm/typescript@7.0.2/node_modules/typescript",
+      "noWorkspaceOrJeevesImports": true,
+      "allRelativeImportsStayInsideProject": true,
+      "lockfileSha256": "c37b660e00f7575436c71834fc61e104681c8097bc326c7d11b89b35337138bf"
+    }
+  ],
+  "rootLockfileUnchanged": true,
+  "rootLockfileSha256": "2b769e7f39fa244c500dbda9c5a9fc7a949dc3bf2e87fd5194f4be6d21bfa60f",
+  "baseCommit": "aedbd606342c5a369142b10cf127fc7130d50671",
+  "protectedSourceTemplateInputAndDiagramFilesUnchanged": 435,
+  "historicalEntryPrefixesPreserved": [
+    "docs/handoff.md",
+    "field-projects/youtube/v1/notes/work-log.md",
+    "field-projects/youtube/v1/notes/ledger.md",
+    "field-projects/youtube/v1/diagrams/index.md"
+  ]
+}

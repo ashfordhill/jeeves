@@ -1,0 +1,12 @@
+{
+  "declared": {
+    "engine": "redis-compatible",
+    "eviction": "lru",
+    "kind": "cache",
+    "provider": "self-hosted",
+    "topology": "standalone",
+    "ttlSeconds": 3600
+  },
+  "id": "metadata-cache",
+  "sourcePath": "/architecture/studio/elements/1"
+}

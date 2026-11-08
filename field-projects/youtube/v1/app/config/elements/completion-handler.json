@@ -1,0 +1,12 @@
+{
+  "declared": {
+    "concurrency": 4,
+    "execution": "docker",
+    "kind": "worker",
+    "language": "typescript",
+    "maxReplicas": 1,
+    "minReplicas": 1
+  },
+  "id": "completion-handler",
+  "sourcePath": "/architecture/studio/elements/16"
+}

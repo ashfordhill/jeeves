@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "access": "public",
+    "kind": "object-store",
+    "provider": "self-hosted"
+  },
+  "id": "transcoded",
+  "sourcePath": "/architecture/studio/elements/9"
+}
