@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-11-08T06:47:31.352Z",
+  "receipts": [
+    {
+      "video_id": "c8917d15-5662-4b4f-a324-bcf4c22a14f6",
+      "event_id": "b5db7053-765e-4203-967d-b974e3c8e64a",
+      "accepted_at": "2026-11-08T06:45:35.388Z"
+    },
+    {
+      "video_id": "c8917d15-5662-4b4f-a324-bcf4c22a14f6",
+      "event_id": "f87019d8-99ac-4706-bdf2-e20e191efa5a",
+      "accepted_at": "2026-11-08T06:45:50.716Z"
+    }
+  ],
+  "totals": [
+    {
+      "video_id": "c8917d15-5662-4b4f-a324-bcf4c22a14f6",
+      "views": "2"
+    }
+  ]
+}

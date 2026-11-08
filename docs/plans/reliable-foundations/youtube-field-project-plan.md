@@ -13,7 +13,10 @@ independently installed and built both in this repository and outside the checko
 the [concrete custom completion plan](../../../field-projects/youtube/v1/notes/implementation-plan.md)
 against commit `02ac280da62616e9c7aad7f88457dcb72084cb25`. FP06a adds the
 [custom owned-state foundation](../../../field-projects/youtube/v1/notes/fp06a-foundation.md) and
-native008–010 schema3 ownership/publication corrections; no application scenario is complete yet.
+native008–010 schema3 ownership/publication corrections. FP06b–FP07a complete the custom core;
+FP07b now supplies the [independent integrated results and review pack](../../../field-projects/youtube/v1/notes/review-pack.md).
+S01–S04/S06–S08 pass bounded flows; S05 retains its human-listening limitation. Next is FP08
+owner/fresh-agent review. No automatic v2 or measured effort-saving claim is supported.
 
 ## Scope and decisions
 
@@ -298,10 +301,10 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | FP04: generated v1 checkpoint (implemented) | Actual Jeeves mouse ZIP retained untouched in v1/app with exact archive/payload/input/image provenance; frozen installs and TypeScript builds pass in-repo and in a fresh independent extraction. Business scenarios remain incomplete/unrun. |
 | FP05: custom completion plan (implemented) | [Concrete contracts, file hooks and assigned units](../../../field-projects/youtube/v1/notes/implementation-plan.md) from the untouched FP04 commit: shared Video authority, explicit grants, committed publication, finite lifecycle, real media/browser and frozen-scope acceptance. Planning only; no custom app code or scenario closure. |
 | FP06a: authority/state foundation (implemented) | [Custom foundation and exact FP06b interfaces](../../../field-projects/youtube/v1/notes/fp06a-foundation.md): native008–010/schema3 revision6, owned migrations/private SQL/public views/runtime grants, finite contracts/transitions/inbox/outbox and HTTP/AMQP integration. Bounded real SQL/broker probes pass; application consumers remain unstarted and S01–S08 incomplete. |
-| FP06b: creator/multipart/uploader | Real PKCE/creator controls, private multipart/resume/abort/status and plain browser build. S01 staged setup, S02–S03 evidence; unfinished workers stay stopped. |
-| FP06c: processing/publication/playback | Real FFmpeg ladder/thumbnail, lifecycle results/deadlines, committed ready/publication, Watch cache and HLS interface. S04–S05 evidence. |
-| FP07a: search/counts/core UI | Committed OpenSearch projection/query, duplicate-safe counts and actual-played event policy; S06–S07 and complete minimal interface. |
-| FP07b: independent working-v1 walkthrough | Outside-checkout S01–S08, finite failures and normal restart persistence, bounded repairs, provenance/benchmark and owner review pack; leave owner stack usable at4400–4402. |
+| FP06b: creator/multipart/uploader (implemented) | Real PKCE/creator controls, private multipart/resume/abort/status and plain browser build. S01 staged setup, S02–S03 evidence; unfinished workers stay stopped. |
+| FP06c: processing/publication/playback (implemented) | Real FFmpeg ladder/thumbnail, lifecycle results/deadlines, committed ready/publication, Watch cache and HLS interface. S04–S05 evidence. |
+| FP07a: search/counts/core UI (implemented) | Committed OpenSearch projection/query, duplicate-safe counts and actual-played event policy; S06–S07 and complete minimal interface. |
+| FP07b: independent working-v1 walkthrough (implemented) | [Independent results](../../../field-projects/youtube/v1/notes/evidence/fp07b/README.md), normal restart persistence, [provenance/benchmark and owner review pack](../../../field-projects/youtube/v1/notes/review-pack.md); S05 human listening remains open. Scratch removed; owner14services/sixvolumes retained4400–4402. |
 | FP08: owner review and next iteration | Owner reviews with a fresh agent; choose evidence-backed Jeeves changes and the v2 comparison. Do not automatically start v2 before that review. |
 
 The owner requested fresh Sol agents at xhigh for implementation. Coordinate sequential units
@@ -309,3 +312,16 @@ with one writer on main; each agent reads the latest handoff, completes only its
 runs the applicable checks and makes one local commit. Split oversized units further.
 The review trail must connect diagram → generated baseline → custom plan/diff → working result
 → lesson → Jeeves improvement → fresh v2.
+
+
+## FP07b current checkpoint — 2026-11-08
+
+The custom v1 is independently runnable and ready for FP08 owner/fresh-agent review. Bounded
+S01–S04/S06–S08 pass; S05 remains partial because no human listened to the fixture, despite actual
+decoded video/unmuted PCM/seek evidence. Earlier unit rows describe their original checkpoints;
+[current integrated evidence](../../../field-projects/youtube/v1/notes/evidence/fp07b/README.md)
+supersedes their pending status without rewriting historical records. Native010/schema3/r6 stays
+current custom intent; the frozen005 experimental profile still refuses it. A preserve/regenerate
+strategy remains a future review item before claiming diagram-to-app iteration across custom
+edits. No generic DSL/template adoption, production/capacity certificate, 60% effort-saving claim
+or automatic v2 follows. Owner walkthrough and H01–H09 observations are linked in the review pack.

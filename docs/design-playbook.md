@@ -1079,3 +1079,27 @@ must not hide fresh totals. A test harness also needs observable timing: Chromiu
 freeze command did not suspend active-media callbacks; a measured main-thread block did.
 [Bounded evidence and limitations](../field-projects/youtube/v1/notes/evidence/fp07a/README.md)
 support these app-specific lessons, without promoting a general template or capacity claim.
+
+## 2026-11-08 independent field walkthrough and regeneration boundary
+
+Run the final tracked field app outside the checkout with its own frozen dependencies and a
+fresh named runtime before calling the local flow independent. Browser operator tooling can
+come from the repository if that boundary is explicit; the application must not depend on the
+studio/server. Prove normal restart with unchanged credential and volume identities and retained
+ready/search/count data. Isolate resource cleanup by exact project and include application
+profiles: default-profile Compose down can leave profile containers behind.
+
+Map a successful processing fact through authoritative lifecycle commit to a public projection;
+review that flow separately from transport arrows. Shared orthogonal trunks, long return paths
+and small fitted text can obscure read/write direction even when the topology is correct. A
+focused operation view or concise relationship labels may help; new service tiles/renderer work
+need an observed design reason. [FP07b review](../field-projects/youtube/v1/notes/review-pack.md)
+keeps these candidates separate from shipped changes.
+
+A deterministic frozen-profile export and a separately completed custom app prove different
+things. Generated-helper edits, owned extensions, migrations and custom files need an explicit
+preserve/regenerate/conflict strategy before diagram-to-app repeatability across iterations can
+be claimed. Classify baseline foundations, custom business implementations, integration and
+helper repairs separately. File counts and completed-scenario counts do not measure effort saved.
+Retain failed harness assumptions; decoded PCM is not human listening, and a controlled hidden
+signal is not an actual OS background-tab observation.

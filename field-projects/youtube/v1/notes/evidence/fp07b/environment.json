@@ -1,0 +1,16 @@
+{
+  "os": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "arch": "x86_64",
+  "node": "v24.21.0",
+  "pnpm": "12.16.1",
+  "docker": "29.9.1 / 29.9.1",
+  "compose": "5.6.0",
+  "playwright": "1.63.0",
+  "typescript": "7.0.2",
+  "vmMaxMapCount": "1048576",
+  "independentSourceFiles": 137,
+  "fixtureSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+  "fixtureBytes": 15584953,
+  "runtimeProject": "jeeves-fp07b-review",
+  "operatorTooling": "Root Playwright is operator tooling only; app install/build/runtime independent, no Jeeves/cloud/model calls."
+}

@@ -5320,3 +5320,51 @@ normal restart/restore and owner review pack; precise copy/stop/scratch-cleanup/
 in linked handoff. Preserve no-human-audio and remote-orphan limitations. No automatic v2.
 
 Local commit: **FP07a: implement committed public search and playback counts**.
+
+## 2026-11-08 — FP07b: independent v1 walkthrough and owner review pack
+
+Only FP07b after **9cd622f3bf1db14d8687b0ab88a0da6afb7c0ebe**, main, sequential sole Sol/xhigh
+writer. No branch/worktree/stash/delegation/push. [Integrated results/replay](../field-projects/youtube/v1/notes/evidence/fp07b/README.md),
+[owner walkthrough/fresh-agent checklist](../field-projects/youtube/v1/notes/review-pack.md),
+[137-file provenance](../field-projects/youtube/v1/notes/evidence/fp07b/provenance.json).
+Current READMEs/plan/status updated; H01–H09 observations, playbook lessons and gap review appended.
+No executable app/root/generator/template/config/source/diagram/pin/lock changes. App README only:
+results/demo/limits and all-profile retained `down` correction. Native010/schema3/r6 remains;
+frozen005 cannot emit customr6. Safe custom preservation/regeneration remains a review proposal.
+
+Outside tracked copy passed own frozen install/build/10 network-free checks and fresh Docker
+first-run with all14 services in **jeeves-fp07b-review**. Bounded S01–S04/S06–S08 pass: creator/logout,
+3 real parts/streamed original SHA/private ownership, part1 pause/refresh/same-ID resume of2,3,
+separate abort410, actual360/720 H264/AAC HLS/JPEG, search676ms after ready, cumulative2s play event
++1 visible5.348s after confirm/same-page and same-ID repeat0/new session+1, finite errors/original403.
+**S05 partial: no human listening**, despite signed-out8.009s/219 decoded frames/unmuted440.085Hz
+PCM/mouse seek. Normal restart preserved count2/Watch/search/login and6 volume/credential identities.
+Wrong-wording search harness failure retained; corrected continuation reused rows without product
+repair. Default-profile cleanup left app resources; scoped all-profile cleanup removed all scratch
+containers/volumes/network and3 owned image tags. No global prune/reset; pinned FFmpeg retained.
+
+Owner **jeeves-youtube-v1 all14 healthy/same6 volumes** restored **http://127.0.0.1:4400/**.
+Normal `pnpm start`/`pnpm stop` in app; creator password locally
+`field-projects/youtube/v1/app/.runtime/secrets/creator_password` (username `creator`). Same secrets/
+setup/fixture SHA16587281…68aebf9/15,584,953B/mtime and identical ready/search/counts**3/0** before/after.
+FP07a demo **fdd51924-5a94-4e45-be02-a77b3c82d1a7** (`marigoldquartz`), older FP06c ready
+**fdbbc43f-78a0-4be2-9910-a383de70acf6**; invalid/elapsed jobs/orphans preserved. Scratch IDs removed.
+Other Compose projects, owner4300/4310/4304 watchers and `.jeeves-feedback` preserved. No secrets,
+media, auth traces, signed URLs, deps/dist/runtime data staged. Root Playwright was operator only.
+
+Required sequential checks after Docker, first try: **398 tests/50 files22.74s +lint/types**,
+**36 native E2Es1.4m**, **web build999ms** (existing advisory). Actual4300 mouse current v1 Fit22/27,
+Upload focus and TinyURL53 Fit12/13; all four complete project responses/listing preserved,0 page
+errors. E2E DB matches prior default-only. Final field mouse search/Watch/thumbnail/polling/count3,
+0 events; screenshots/native010 inspected. All137 current hashes match final provenance. No timeout
+or test edits.61 unchanged payloads+manifest/46 modified-generated/29 new custom is byte accounting,
+not coverage/savings. Business implementations, helper repairs/reuse and studio/generator investment
+are separate; active effort/tokens/cost/savings unknown.
+
+Next **FP08 owner/fresh-agent review**, no automatic v2. Human listening/direct OS background-tab
+proof remain open; remote orphans/public guessed partial keys remain; Watch/search ready is boundary.
+Review fitted text/shared trunks/read-write/long returns and focused flow/relationship label candidates.
+No renderer redesign/011, generic DSL/tile/template adoption, certification/enterprise/capacity or60%
+savings claim.
+
+Local commit: **FP07b: verify independent v1 and prepare owner review**.

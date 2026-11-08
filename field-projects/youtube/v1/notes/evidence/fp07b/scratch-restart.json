@@ -1,0 +1,107 @@
+{
+  "project": "jeeves-fp07b-review",
+  "sameCredentials": true,
+  "sameVolumeIdentities": true,
+  "volumes": [
+    {
+      "name": "jeeves-fp07b-review_broker-data",
+      "createdAt": "2026-11-08T00:42:42-06:00",
+      "driver": "local",
+      "project": "jeeves-fp07b-review",
+      "volume": "broker-data"
+    },
+    {
+      "name": "jeeves-fp07b-review_cache-data",
+      "createdAt": "2026-11-08T00:42:42-06:00",
+      "driver": "local",
+      "project": "jeeves-fp07b-review",
+      "volume": "cache-data"
+    },
+    {
+      "name": "jeeves-fp07b-review_edge-cache",
+      "createdAt": "2026-11-08T00:43:41-06:00",
+      "driver": "local",
+      "project": "jeeves-fp07b-review",
+      "volume": "edge-cache"
+    },
+    {
+      "name": "jeeves-fp07b-review_objects-data",
+      "createdAt": "2026-11-08T00:42:42-06:00",
+      "driver": "local",
+      "project": "jeeves-fp07b-review",
+      "volume": "objects-data"
+    },
+    {
+      "name": "jeeves-fp07b-review_postgres-data",
+      "createdAt": "2026-11-08T00:42:42-06:00",
+      "driver": "local",
+      "project": "jeeves-fp07b-review",
+      "volume": "postgres-data"
+    },
+    {
+      "name": "jeeves-fp07b-review_search-data",
+      "createdAt": "2026-11-08T00:42:42-06:00",
+      "driver": "local",
+      "project": "jeeves-fp07b-review",
+      "volume": "search-data"
+    }
+  ],
+  "services": [
+    {
+      "service": "broker",
+      "health": "healthy"
+    },
+    {
+      "service": "cache",
+      "health": "healthy"
+    },
+    {
+      "service": "completion-handler",
+      "health": "healthy"
+    },
+    {
+      "service": "edge",
+      "health": "healthy"
+    },
+    {
+      "service": "identity",
+      "health": "healthy"
+    },
+    {
+      "service": "objects",
+      "health": "healthy"
+    },
+    {
+      "service": "postgres",
+      "health": "healthy"
+    },
+    {
+      "service": "search",
+      "health": "healthy"
+    },
+    {
+      "service": "search-index",
+      "health": "healthy"
+    },
+    {
+      "service": "search-indexer",
+      "health": "healthy"
+    },
+    {
+      "service": "transcoder",
+      "health": "healthy"
+    },
+    {
+      "service": "upload",
+      "health": "healthy"
+    },
+    {
+      "service": "view-counter",
+      "health": "healthy"
+    },
+    {
+      "service": "watch",
+      "health": "healthy"
+    }
+  ]
+}

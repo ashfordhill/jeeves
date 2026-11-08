@@ -1,0 +1,47 @@
+{
+  "ready": {
+    "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+    "title": "FP07a marigoldquartz public fixture",
+    "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+    "channel": "creator",
+    "durationSeconds": 20,
+    "manifest": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+    "thumbnail": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+    "publishedAt": "2026-11-08T06:28:28.089Z",
+    "publicationVersion": 1,
+    "manifestUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+    "thumbnailUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+    "views": "3"
+  },
+  "oldReady": {
+    "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+    "title": "FP06c heliotrope public fixture",
+    "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+    "channel": "creator",
+    "durationSeconds": 20,
+    "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+    "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+    "publishedAt": "2026-11-08T06:04:49.243Z",
+    "publicationVersion": 1,
+    "manifestUrl": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+    "thumbnailUrl": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+    "views": "0"
+  },
+  "search": {
+    "q": "marigoldquartz",
+    "page": 1,
+    "pageSize": 20,
+    "total": 1,
+    "hits": [
+      {
+        "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+        "title": "FP07a marigoldquartz public fixture",
+        "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "publishedAt": "2026-11-08T06:28:28.089Z",
+        "thumbnailUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg"
+      }
+    ]
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "project": "jeeves-youtube-v1",
+  "sameCredentialIdentities": true,
+  "sameVolumeIdentities": true,
+  "volumes": [
+    {
+      "name": "jeeves-youtube-v1_broker-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "broker-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_cache-data",
+      "createdAt": "2026-11-08T00:03:04-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "cache-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_edge-cache",
+      "createdAt": "2026-11-07T23:36:52-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "edge-cache"
+    },
+    {
+      "name": "jeeves-youtube-v1_objects-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "objects-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_postgres-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "postgres-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_search-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "search-data"
+    }
+  ],
+  "fixture": {
+    "bytes": 15584953,
+    "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+    "mtimeNs": 1794116246303589521
+  },
+  "retainedPublicBeforeAfterEqual": true,
+  "public": {
+    "ready": {
+      "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+      "title": "FP07a marigoldquartz public fixture",
+      "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+      "thumbnail": "videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:28:28.089Z",
+      "publicationVersion": 1,
+      "manifestUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/master.m3u8",
+      "thumbnailUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg",
+      "views": "3"
+    },
+    "oldReady": {
+      "videoId": "fdbbc43f-78a0-4be2-9910-a383de70acf6",
+      "title": "FP06c heliotrope public fixture",
+      "description": "Synthetic 440 Hz tone and real CPU encoded test pattern. heliotrope-description",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "thumbnail": "videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:04:49.243Z",
+      "publicationVersion": 1,
+      "manifestUrl": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/master.m3u8",
+      "thumbnailUrl": "/media/videos/fdbbc43f-78a0-4be2-9910-a383de70acf6/c6efa967-96cf-4be2-811d-6a397f7cfb21/649849ac-f0c4-4ff9-b8e1-219d78d08351/thumbnail.jpg",
+      "views": "0"
+    },
+    "search": {
+      "q": "marigoldquartz",
+      "page": 1,
+      "pageSize": 20,
+      "total": 1,
+      "hits": [
+        {
+          "videoId": "fdd51924-5a94-4e45-be02-a77b3c82d1a7",
+          "title": "FP07a marigoldquartz public fixture",
+          "description": "saffroncobalt description search; real encoded fixture for publication and counts.",
+          "channel": "creator",
+          "durationSeconds": 20,
+          "publishedAt": "2026-11-08T06:28:28.089Z",
+          "thumbnailUrl": "/media/videos/fdd51924-5a94-4e45-be02-a77b3c82d1a7/9ae1a513-6251-4171-950a-afd2fc06d486/74cb8286-72a3-4549-9a6a-350bf336410b/thumbnail.jpg"
+        }
+      ]
+    }
+  },
+  "services": [
+    {
+      "service": "broker",
+      "health": "healthy"
+    },
+    {
+      "service": "cache",
+      "health": "healthy"
+    },
+    {
+      "service": "completion-handler",
+      "health": "healthy"
+    },
+    {
+      "service": "edge",
+      "health": "healthy"
+    },
+    {
+      "service": "identity",
+      "health": "healthy"
+    },
+    {
+      "service": "objects",
+      "health": "healthy"
+    },
+    {
+      "service": "postgres",
+      "health": "healthy"
+    },
+    {
+      "service": "search",
+      "health": "healthy"
+    },
+    {
+      "service": "search-index",
+      "health": "healthy"
+    },
+    {
+      "service": "search-indexer",
+      "health": "healthy"
+    },
+    {
+      "service": "transcoder",
+      "health": "healthy"
+    },
+    {
+      "service": "upload",
+      "health": "healthy"
+    },
+    {
+      "service": "view-counter",
+      "health": "healthy"
+    },
+    {
+      "service": "watch",
+      "health": "healthy"
+    }
+  ],
+  "otherComposeProjectsUnchanged": true
+}

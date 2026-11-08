@@ -553,3 +553,54 @@ never bootstrap/reset its state; clean only separately named scratch runtime, th
 verify retained ready/search/count3. Keep no-human-listening and remote orphan limitations explicit.
 
 Local commit: **FP07a: implement committed public search and playback counts**.
+
+## 2026-11-08 — FP07b independent integrated walkthrough and review pack
+
+Only FP07b after **9cd622f3bf1db14d8687b0ab88a0da6afb7c0ebe**, primary main sequential sole
+Sol/xhigh writer, prior accepted code/docs/runtime/fixture/harnesses available. No branch/worktree/
+stash/delegation/push. [Integrated results/replay](evidence/fp07b/README.md), [owner/fresh review pack](review-pack.md)
+and [final per-file provenance](evidence/fp07b/provenance.json). Updated current field/app README and
+reliable-foundations status; appended H01–H09 concrete observations/proposals, design lessons and
+current gap reconciliation. No executable app/root/generator/template/source/diagram/pin/lock changes.
+Only app README changed, including observed all-profile `down` documentation correction; all137
+current app hashes match provenance, final executable/config/assets equal the independent copy.
+Native010/schema3/r6 retained and visually inspected; no duplicate011 for Fit/focus. Frozen005
+profile still refuses customr6; safe preserve/regenerate/conflict strategy remains FP08 review work.
+
+Tracked137-source copy outside checkout installed frozen dependencies, built server/browser and
+passed10network-free checks. Fresh **jeeves-fp07b-review** first-run all14services/six volumes;
+fixture copied only after initialization with exact retained bytes/mtime. Integrated mouse plus
+observable probes pass S01–S04/S06–S08: provider logout/fresh login,3realparts/private ownership/
+actual streamed originals SHA, pause part1/refresh/reselect sameID/missing2,3 resume/separateabort410,
+actual360/720H264AAC/HLS/JPEG/status/publication, title/description/channel search676ms afterready,
+finite invalidtoken/oversize/nonconforming/invalidmedia/anonymousoriginal403. S05 partial: signed-out
+playtime8.009s/219decodedframes/unmuted440.085HzPCM/mouseseek, **no human listening**. Count0reads →1
+visible5.348s afterconfirm, samepage/sameIDrepeat0, newsession→2; safe receipts/totals retained.
+Normal stop/start preserves count2/search/Watch/login/same6volume+credential identities.
+
+Retained first harness timeout on wrong search-status wording with source/JSON/PNG; corrected
+selector/public continuation reused actual rows, no product repair/reset/re-encode. Initial default-
+profile down left application-profile containers/edge-cache/network; exact scratch all-profile down
+completed cleanup,0scratchcontainers/volumes/networks and3scratchtags removed; pinnedFFmpeg stays.
+Owner normal stop/start preserves **jeeves-youtube-v1** all14healthy/6volumes/credentials/setup/media,
+ready/search/counts**3/0**, exact fixture15,584,953B/SHA16587281…68aebf9/mtime; otherComposeprojects
+unchanged. Creator password path `app/.runtime/secrets/creator_password` (username`creator`), URL
+**http://127.0.0.1:4400/**. Scratch IDs removed; use retained FP07a/FP06c demo URLs in review pack.
+No media/secrets/authtraces/signedURLs/deps/dist/runtime data staged. Root Playwright is operator
+only; app own install/build/runtime independent of Jeeves. No paid/cloud/model/provider campaign.
+
+Required checks sequential after Docker/source steady, all first try: **pnpm check398tests/50files
+22.74s**, **36native E2Es1.4m**, **web build999ms** (existing advisory). Actual4300 mouse localv1
+Fit22/27/Uploadfocus +TinyURL53 Fit12/13, allfourcompleteprojectresponses/listing unchanged,
+0pageerrors; E2EDB matches prior default-only. Final ownerfield mouse search/Watch/thumbnail/count3
+polling0viewevents. Screenshots inspected. No test/root timeout changes or extra successful reruns.
+
+Cumulative61unchangedbaselinepayloads+manifest/46modified-generated/29newcustomappfiles is byte
+accounting, not coverage/effort savings. Seven business implementations are custom; planned
+integration/helperrepairs/reusedcustomorigins/externalpins and studio/generatorinvestment separate.
+Active effort/tokens/cost/savings unknown. H01–H09 proposals only; no newgenericDSL/tile/template/
+heavycertification/enterprisecapacity/60%savings claim. Humanlistening, actualOSbackground-tab proof,
+remote orphanretention/publicguessedpartialkeys and fullcanvas/read-write/return-path readability
+remain explicit. Next **FP08 owner/fresh-agent review**, no automaticv2.
+
+Local commit: **FP07b: verify independent v1 and prepare owner review**.

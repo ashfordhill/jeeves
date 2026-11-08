@@ -193,3 +193,40 @@ All core14 services now run through retained normal start/stop;6volumes/credenti
 original demo stay. FP07b independent integrated walkthrough remains; frozen inputs/config/native010/
 app`.jeeves`/generator/templates/pins unchanged. Audio/no-human-listening and remote orphan limits
 stay explicit. No additional source decision/snapshot011 or automatic v2 follows from this unit.
+
+## 2026-11-08 — FP07b integrated observations and review proposals
+
+This entry supplies the current outcome alongside historical hypotheses; earlier entries keep
+their original checkpoint wording. [Independent integrated results](evidence/fp07b/README.md)
+exercise all core services, with S05 human listening still open. No product repair or generic
+abstraction is introduced in FP07b. [Review pack](review-pack.md) and per-file provenance separate
+field completion from Jeeves/generator investment. Active time/tokens/cost/savings remain unknown.
+
+| ID | Concrete observed implementation / evidence | Another plausible use, boundaries and decision |
+| --- | --- | --- |
+| H01 | `app/src/extensions/upload-multipart.ts`, `state/video.ts`, `browser/main.ts`; actual3PUT/ListParts/hash, part1-refresh/resume2,3 and abort410 in FP07b | Document/image ingestion with large files. Candidate owned upload operation/module and provider-specific template. Same-file fingerprint/24h/5MiB/S3 capabilities are explicit; no arbitrary fault/cross-device/instant revocation promise. Proposal only. |
+| H02 | `state/video.ts`, metadata migration001, `workers/completion-handler.ts`, status routes; observed pending→processing→ready and invalid→failed | Report/import/build status. One authority/shared roles, fixed deadlines, terminal policy and domain transitions must remain explicit; no generic state-machine DSL, crash certification or new independent owner adopted. |
+| H03 | `lib/outbox.ts`, `clients/handler-publications.ts`, `workers/search-indexer.ts`, native008–010; pending/invalid exclusion and actual ready→search676ms | Catalog/listing search projections. Candidate commit/publication operation and view. SQL outbox is not SQL+S3 atomicity; version/public eligibility and migration policy remain application choices. Proposal only. |
+| H04 | `contracts/v1.ts`, `state/{transaction,counts,video}.ts`, packager marker, `browser/playback-policy.ts`; FP06c job/result no-rewrite plus FP07a and FP07b event repeat0/new-session+1 | Export jobs/activity totals. Candidate receipt/idempotency guidance/module at a named durable boundary. Broker confirms do not supply exactly once or fraud protection; external effects need their own policy. Proposal only. |
+| H05 | `inputs/local-bindings.json`, unchanged runtime pins, actual independent Compose/Keycloak4401/S3public4402; source still declares unsupported HTTPS/service identity/language paths | Another local field deployment. Keep exact adapter override report separate from source intent; provider versions and helper checks cannot certify cloud parity, mTLS or arbitrary provider substitutions. Existing finite report is useful; no universal provider schema adopted. |
+| H06 | Paired source/native005 and010 + snapshot metadata; FP07b actual studio mouse/current design equality | Any resource-settings change. Retain image/source/inspector as evidence practice. A PNG cannot reveal all settings or establish executable behavior; no need to overload tile faces. Already observed practice, no new template claim. |
+| H07 | Original004→005 SQL routing prose correction;010 short role name and FP07b drawing/code reconciliation | Any structured setting paired with assistant prose. Candidate focused context consistency checklist/eval. Documentation alone does not change runtime chat guidance or prove model quality. No live-model evaluation performed. |
+| H08 | `extensions/transcoder-{encoder,packager,thumbnails}.ts`, `lib/media.ts`, actual argv/ffprobe/segments/JPEG in FP07b | Training/course-video processing. Video-specific fixed CPU template candidate only; H264/AAC landscape720–1080p/1–600s/two renditions and single worker remain bounds. No GPU/DAG/arbitrary-codec/atomic ACL or remote-cleanup promise. |
+| H09 | `browser/{auth,main,search,watch,playback-policy}.ts`, `scripts/build-browser.mjs`, edge assets; mouse provider logout/upload/resume/search/watch/counts | Minimal reports/catalog UI. Candidate browser entry/client-server binding and bounded starter. PKCE, token storage, media policy and product UX are custom choices; current lane diagram does not model or generate this browser. No framework or generic UI DSL adopted. |
+
+- **D31 (independent observation):** tracked app sources were installed/built/first-run outside the
+  checkout as jeeves-fp07b-review with fresh credentials/six volumes/all14services. Integrated mouse
+  and observable probes, normal restart/unchanged identities and scoped cleanup passed. Owner stack
+  was normally stopped and restored, retaining demo counts3/0 and exact fixture. No product repair.
+- **D32 (honest failures/bounds):** an incorrect harness search-status string timed out on a valid
+  result; source/JSON/PNG retained and public continuation reused existing rows. Default-profile
+  Compose down left application containers/edge-cache; inspection caught it and exact-project
+  `--profile '*' down --volumes` completed cleanup. No global prune/reset/deadline weakening. Human
+  listening, actual OS tab hiding and remote orphan cleanup remain unproved/limited as stated.
+- **D33 (regeneration review boundary):** exact frozen005 deterministic export plus separately
+  completed customr6 app is the present proof. The frozen profile still refusesr6. Review preservation,
+  ownership/conflict/refusal and migration strategy for generated-helper edits/custom integrations
+  before a future claim of diagram-driven safe regeneration. No feature or widened profile here.
+- **D34 (FP08 handoff):** owner/fresh-agent review decides diagram flow/relationship label readability
+  and any H01–H09 adoption, then whether/how to compare v2. No automatic v2, new generic tile/DSL,
+  production/template certificate or measured60% savings follows from working v1.

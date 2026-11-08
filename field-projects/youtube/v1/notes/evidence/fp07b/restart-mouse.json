@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-11-08T06:47:31.176Z",
+  "details": {
+    "status": 200,
+    "body": {
+      "videoId": "c8917d15-5662-4b4f-a324-bcf4c22a14f6",
+      "title": "FP07b tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/c8917d15-5662-4b4f-a324-bcf4c22a14f6/dea527b4-f65a-4d1d-bd45-71d98e5f595f/d412aa0f-ed6b-4137-8766-e8c783eecb22/master.m3u8",
+      "thumbnail": "videos/c8917d15-5662-4b4f-a324-bcf4c22a14f6/dea527b4-f65a-4d1d-bd45-71d98e5f595f/d412aa0f-ed6b-4137-8766-e8c783eecb22/thumbnail.jpg",
+      "publishedAt": "2026-11-08T06:44:31.210Z",
+      "publicationVersion": 1,
+      "manifestUrl": "/media/videos/c8917d15-5662-4b4f-a324-bcf4c22a14f6/dea527b4-f65a-4d1d-bd45-71d98e5f595f/d412aa0f-ed6b-4137-8766-e8c783eecb22/master.m3u8",
+      "thumbnailUrl": "/media/videos/c8917d15-5662-4b4f-a324-bcf4c22a14f6/dea527b4-f65a-4d1d-bd45-71d98e5f595f/d412aa0f-ed6b-4137-8766-e8c783eecb22/thumbnail.jpg",
+      "views": "2"
+    }
+  },
+  "search": {
+    "status": 200,
+    "body": {
+      "q": "tourmalineazure",
+      "page": 1,
+      "pageSize": 20,
+      "total": 1,
+      "hits": [
+        {
+          "videoId": "c8917d15-5662-4b4f-a324-bcf4c22a14f6",
+          "title": "FP07b tourmalineazure public fixture",
+          "description": "zirconcerulean description of real encoded synthetic media",
+          "channel": "creator",
+          "durationSeconds": 20,
+          "publishedAt": "2026-11-08T06:44:31.210Z",
+          "thumbnailUrl": "/media/videos/c8917d15-5662-4b4f-a324-bcf4c22a14f6/dea527b4-f65a-4d1d-bd45-71d98e5f595f/d412aa0f-ed6b-4137-8766-e8c783eecb22/thumbnail.jpg"
+        }
+      ]
+    }
+  },
+  "playback": {
+    "time": 0.690472,
+    "paused": true,
+    "decoded": 21
+  },
+  "mouseSearchWatchLogin": true,
+  "viewsBefore": "2",
+  "viewsAfter": "2",
+  "pageErrors": []
+}

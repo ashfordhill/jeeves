@@ -1,4 +1,4 @@
-# YouTube v1: custom implementation in progress
+# YouTube v1: working custom local app, ready for owner review
 
 FP01 freezes the saved diagram and a finite local mapping. FP02 adds the
 [experimental generator foundation](../../../jeeves-generator/README.md), pinned to these exact
@@ -15,10 +15,14 @@ Video authority, private SQL/views, runtime grants, finite contracts/transitions
 transport integration, with [bounded SQL/broker evidence](notes/evidence/fp06a/README.md). FP06b
 adds actual [creator/multipart/resume/abort uploads](notes/fp06b-upload.md). FP06c adds real CPU
 encoding, lifecycle publication and [public HLS playback](notes/fp06c-playback.md), with
-[bounded media/browser evidence](notes/evidence/fp06c/README.md). S02/S03 upload and S04 processing
-have actual evidence; S05 has decoded video/PCM/mouse evidence with no human listening observation.
-Next are FP07a search/counts and FP07b independent integrated walkthrough. Review working v1
-with the owner before deciding on v2.
+[bounded media/browser evidence](notes/evidence/fp06c/README.md). FP07a adds [committed-public search and playback counts](notes/fp07a-search-counts.md).
+FP07b completes the [independent integrated walkthrough](notes/evidence/fp07b/README.md) and
+[owner/fresh-agent review pack](notes/review-pack.md). S01–S04 and S06–S08 pass bounded independent
+flows; S05 has decoded video/unmuted 440 Hz PCM/mouse seek evidence but **no human listening**.
+The retained owner app runs fourteen services at **http://127.0.0.1:4400/**; see [start/stop and
+credential paths](app/README.md). Next is **FP08 owner/fresh-agent review**, with no automatic v2.
+The generated baseline supplied useful foundations and zero complete frozen scenarios; custom
+completion is not retroactively generated or measured effort savings.
 
 - [Diagram history](diagrams/index.md): original owner, approved PostgreSQL, separate v1 copy and
   each intentional local edit, with real mouse PNG downloads and 1280×800 studio screenshots.

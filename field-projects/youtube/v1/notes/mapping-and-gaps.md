@@ -125,3 +125,16 @@ Independent integrated all-service S01–S08 outside-checkout evidence remains F
 S05 no-human-listening and remote orphan-output limitations retained. Source/native010 intent and
 frozen inputs remain unchanged. See exact safe event/video IDs, failed harness assumption and file
 accounting; no tidy reset, feature percentage, effort saving or automatic v2 decision is inferred.
+
+## FP07b current bounded completion/review status
+
+[Independent integrated evidence](evidence/fp07b/README.md) now exercises the final app outside the
+checkout: G01 lifecycle/status, G02 committed public search, G03 identities/receipt boundaries,
+G04 minimal browser/PKCE, G05 basic2s counts, G06 real owned multipart/resume/abort and G07 real
+media all have observed bounded flows. S01–S04/S06–S08 pass; S05 remains partial without human
+listening. G08 local security/provider/capacity overrides remain limits, not resolved by success.
+Remote partial/orphan outputs and guessed public partial keys stay explicit. No exhaustive fault,
+crash, expiry24h, background OS tab or production guarantee follows. Source/native010 models
+owners/resources/publication but not all API/data/lifecycle/browser policy. The exact005 generator
+cannot emit current customr6. FP08 reviews the [provenance, remaining design gaps and safe future
+regeneration boundary](review-pack.md), without retrospective template credit or automatic v2.
