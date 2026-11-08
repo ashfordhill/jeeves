@@ -5857,3 +5857,43 @@ Next **YV2-13 only**: reusable receipt counter. The cache remains a dependency, 
 identity/codec/key/loader and Watch service using emitted TTL/cache client, plus client close.
 No source-bound cache consumer is installed yet. Preserve owner/frozen resources. Local commit:
 **YV2-12: extract positive cache read template**.
+
+## 2026-11-08 — YV2-13: generic receipt-based event counts
+
+`local.event-counter` emits `src/runtime/{counter-sql,event-counter,counter-worker}.ts`; explicit
+`eventCounterPersistence`/`eventCounterReadAccess` contribute actual private tables, public totals
+view and narrow runtime grants through the foundation. [Actual APIs/ownership/gaps](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-13--receipt-based-event-counts).
+Receipt+one increment share YV2-06 transaction; per aggregate+event dedup, stable meaningful
+identity without regenerated timestamps, case-sensitive text keys and exact transport-ID binding.
+Wire decoder runs once; receipts revalidate a separate internal envelope. Consumer awaits commit
+before ack, delegates finite malformed/retry/fatal/drain behavior to YV2-05, owns its consumer;
+caller owns SQL pool. Fresh string totals remain outside metadata cache. No qualifier/product
+schema/service, arbitrary amount/analytics/score policy, normal field or provider/pin change.
+
+Three focused offline cases; `pnpm check` **454 tests/65 files,29.93s**, lint/types;
+**36 native E2Es,1.3m**; web build **1.57s** (existing advisory). Two deterministic **42-file**
+renamed exports pass own frozen install/untouched build, then typed nested non-video notice
+adapter build through identical emitted interfaces. Real scoped generated migrations/runtime
+logins and RabbitMQ consumer confirm duplicate/timestamp drift once, another event again,
+same ID in another aggregate, case-sensitive keys, public view totals while private reads/
+view writes/CREATE denied, malformed finite failed queue and normal drain. No checks weakened.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-13-event-counter.md); logs/harness
+`/tmp/jeeves-yv2-13/{focused-final,check,e2e,web-build,export,install,build,build-adapter,migrate,probe,cleanup,cleanup-files}.log`,
+`{export-summary,probe-summary,resources,cleanup-summary}.json`.
+
+Scratch **jeeves-yv2-13-counts** PostgreSQL/broker,2 volumes and network removed by scoped
+`down --volumes --remove-orphans`; **45270–45274** free. No image created/removed; retained
+FFmpeg and all14 healthy v1 services preserved. Own exports/dependencies/builds/private runtime
+removed before root checks. Frozen v1 **108 paths/hashes** unchanged, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`;
+fixture15584953 bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9.
+Root README/owner Future Benchmarks,feedback dirt/Zone.Identifier variants and e2e-docker mode
+preserved. No v2 field app,branch,worktree,stash or push; no UI changed/TinyURL mouse checks pass.
+
+Next **YV2-14 only** owns search projection/query. Required `event-counter-application-bindings`
+remains: YV2-15/16 must install actual ViewPlayed qualifier/codec, Watch fresh-count mapping,
+SQL/service/runtime/readiness/signals. **Canonicalize video UUID aggregate/event and transport
+IDs at that adapter boundary** before generic case-sensitive text keys. Supply exact explicit
+counter tables/view/grants and bound YV2-05 consumer; keep public reader away from receipts/
+private login, and end caller pool after consumer drain. Local commit:
+**YV2-13: generate generic receipt-based event counts**.

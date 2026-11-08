@@ -946,3 +946,76 @@ YV2-15/16 own the actual public-video projection and Watch constructor, includin
 emitted TTL/client and reading totals separately. No YouTube adapter, SQL view, HTTP route,
 mutable invalidation, L1, negative/HTTP caching or standalone application is installed here.
 [Focused/export/regression evidence](../evidence/youtube-v2/yv2-12-positive-cache.md).
+
+## YV2-13 — receipt-based event counts
+
+`createLocalEventCounter(sourcePaths)` in `jeeves-generator/src/v2/event-counter.ts`, registered
+as **`local.event-counter`**, emits selected `event-counter` dependencies:
+
+- `src/runtime/counter-sql.ts`: `CounterTables {receipts:SqlRelation,totals:SqlRelation}`,
+  `validateCounterTables`, `counterSchema(tables,publicView)` and `counterTotalsSelect(tables)`.
+  Uses the existing YV2-06 receipt schema; totals are `{aggregate_key:text,total:bigint>=0}`.
+  Schema SQL creates private tables and the explicitly named public schema; the foundation
+  creates the contributed view selecting **only aggregate_key,total**. Private/view identities
+  must differ; all SQL identifiers use the existing strict quoted relation boundary.
+- `src/runtime/event-counter.ts`: `CounterAdapter<Event>`, `CounterEvent`,
+  `createEventCounter<Event>(tables,adapter)` → `{parse,record}` and
+  `createTotalReader<Input>({pool,view,key})` → `(input)=>Promise<string>`.
+- `src/runtime/counter-worker.ts`: `CounterConsumer` and
+  `startCounterWorker({pool,counter,openConsumer})` → `Promise<{close,closed}>`.
+
+`CounterAdapter` supplies `event(rawWire,messageId?)`, `aggregateKey(event)`, `eventId(event)`
+and required `identity(event)`. **The caller qualifies the event** before publication; the core
+knows no video readiness, page session, playback time, score/amount or analytics policy. The wire
+codec runs once. `parse` snapshots a JSON-compatible internal `CounterEvent` containing the
+validated aggregate key, event ID and stable semantic identity. Receipt revalidation uses this
+separate internal envelope, never the application's wire codec on an already normalized event.
+Adapter identity includes every meaningful event field and excludes regenerated transport times
+unused by the effect (e.g. acceptedAt/occurredAt). The receipt identity always also includes the
+aggregate and event IDs. Conflicting stable identity refuses through the existing receipt helper.
+
+Generic YV2-06 text identities remain **case-sensitive**, bounded1–512 and control-free; there
+is no UUID/video normalization in the core. When supplied, the transport message ID must exactly
+match the derived event ID, even if a wire adapter forgets that check. **YV2-15 must canonicalize
+video UUIDs before constructing text aggregate/receipt keys and canonical transport IDs**. This
+preserves SQL UUID identity semantics while leaving unrelated case-sensitive keys unchanged.
+
+`record(tx,event)` accepts the parsed internal event, calls YV2-06 `createReceipts.withEffect`
+and adds exactly one with a SQL upsert in that **same active transaction**. It returns `true`
+for a newly applied receipt and `false` for a duplicate. Deduplication is **per aggregate+event**,
+preserving v1's `(video_id,event_id)` scope; the same event ID may count in another aggregate.
+There is no arbitrary increment amount or second transaction/durability implementation. The
+caller awaits YV2-06 `transaction` commit before returning to the delivery runner for ack.
+
+The worker requires a message ID and JSON body≤64KiB. Malformed envelopes/identity/codecs become
+existing `NonRetryable("MALFORMED_MESSAGE")`; other failures use the actual YV2-05 consumer's
+bounded retries and confirmed failed queue. Bind `openConsumer(handle)` to `createConsumer`
+with explicit broker, queue, failedQueue, concurrency and retryLimit. The factory owns that
+opened consumer and exposes its `closed` result; `close()` calls its drain once and is idempotent.
+The **caller owns the pool**, ending it only after worker close. Failed consumer startup cleanup,
+fatal notification, terminal handling and cancellation/drain remain YV2-05 responsibilities;
+no separate retry loop, reconnect or process signal/readiness implementation is installed.
+
+`createTotalReader` uses only the explicitly bound view and read pool, validates the adapter's
+canonical key, returns the current bigint as a decimal string or `"0"` when absent, and retains
+no cache. The public reader needs **no private table credential**. Mutable totals remain outside
+the positive metadata cache.
+
+Exported generator helpers (also from generator `src/index.ts`):
+
+- `eventCounterPersistence({resource,writerHost,tables,publicView,migrationId,sourcePaths})`
+  contributes one ordered migration, the actual narrow totals view, exact writer login and
+  SELECT/INSERT/UPDATE on the two private tables. No owner credential or DELETE grant.
+- `eventCounterReadAccess({resource,host,publicView,sourcePaths})` contributes only an exact
+  runtime login and SELECT on that explicitly contributed view. It invents no view or permission.
+- `counterSchema`, `counterTotalsSelect`, `CounterTables` reuse the emitted SQL implementation.
+
+The dependency emitter contributes the **actual normalized event consuming host/resource** to
+foundation broker topology, including the topic subscriber and failed queue. Explicit compiled
+recipes contribute persistence/read helpers; default dependency emission grants no SQL access.
+Foundation ownership, published-read, resource/login and view validation remain authoritative;
+private/public names are internal recipe bindings, never normal editor fields. No service or
+`provides.templates` attestation is installed. Required gap **`event-counter-application-bindings`**
+remains until YV2-15/16 binds the real ViewPlayed/Watch qualifier and canonical IDs, tables/public
+view, runtime constructors/credentials, retry/drain/signals and source-bound complete service.
+[Focused/standalone/real-provider evidence](../evidence/youtube-v2/yv2-13-event-counter.md).

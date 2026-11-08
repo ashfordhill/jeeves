@@ -10,6 +10,7 @@ export * from "./profile.ts";
 export * from "./v2/assemble.ts";
 export * from "./v2/asset-lifecycle.ts";
 export * from "./v2/durability.ts";
+export * from "./v2/event-counter.ts";
 export * from "./v2/input.ts";
 export * from "./v2/local-contract.ts";
 export * from "./v2/multipart.ts";
