@@ -107,3 +107,101 @@ test("HTTP config precedes listen; deadline retains actual admission until work 
   assert.equal((await service.app.inject("/bounded")).statusCode, 200);
   await service.close();
 });
+
+test("HTTP shutdown awaits admitted work even after its response deadline", async () => {
+  let release;
+  const gate = new Promise((r) => {
+    release = r;
+  });
+  const service = await createHttpService(
+    "drain",
+    { requestTimeoutMs: 10, concurrencyLimit: 1 },
+    (app) => {
+      app.get("/write", async () => {
+        await gate;
+        return { done: true };
+      });
+    },
+  );
+  assert.equal((await service.app.inject("/write")).statusCode, 503);
+  let closed = false;
+  const closing = service.close().then(() => {
+    closed = true;
+  });
+  await new Promise((r) => setImmediate(r));
+  assert.equal(closed, false);
+  release();
+  await closing;
+  assert.equal(closed, true);
+});
+
+test("multipart inventory requires exact acknowledged parts and safe file bounds", async () => {
+  const { PART_SIZE, validateParts, parseUpload, uploadView } = await import(
+    "../dist/extensions/upload-multipart.js"
+  );
+  const size = PART_SIZE * 2 + 17;
+  const parts = [PART_SIZE, PART_SIZE, 17].map((size, i) => ({
+    partNumber: i + 1,
+    size,
+    etag: `etag-${i}`,
+  }));
+  assert.doesNotThrow(() => validateParts(parts, size));
+  for (const bad of [
+    parts.slice(1),
+    [...parts, parts[2]],
+    parts.map((p, i) => (i === 1 ? { ...p, size: 1 } : p)),
+    parts.map((p) => ({ ...p, etag: "" })),
+    parts.map((p) => ({ ...p, partNumber: p.partNumber + 1 })),
+  ])
+    assert.throws(
+      () => validateParts(bad, size),
+      (e) => e.statusCode === 409,
+    );
+  const input = {
+    fileName: "fixture.mp4",
+    contentType: "video/mp4",
+    size,
+    lastModified: 0,
+    sha256: "a".repeat(64),
+    title: "  A video  ",
+    description: "",
+  };
+  assert.equal(parseUpload(input).title, "A video");
+  assert.throws(
+    () => parseUpload({ ...input, size: 256 * 1024 * 1024 + 1 }),
+    (e) => e.statusCode === 413,
+  );
+  assert.throws(
+    () => parseUpload({ ...input, contentType: "text/plain" }),
+    (e) => e.statusCode === 422,
+  );
+  assert.throws(
+    () => parseUpload({ ...input, originalKey: "arbitrary" }),
+    (e) => e.statusCode === 400,
+  );
+  const publicRow = uploadView({
+    ...Object.fromEntries(
+      [
+        "provider_upload_id",
+        "original_key",
+        "creator_sub",
+        "expected_sha256",
+        "cleanup_needed",
+        "media",
+        "complete_response",
+      ].map((k) => [k, "private"]),
+    ),
+    size: String(size),
+    last_modified: "0",
+  });
+  for (const key of [
+    "provider_upload_id",
+    "original_key",
+    "creator_sub",
+    "expected_sha256",
+    "cleanup_needed",
+    "media",
+    "complete_response",
+  ])
+    assert.equal(key in publicRow, false);
+});

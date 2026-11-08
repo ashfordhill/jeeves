@@ -93,7 +93,7 @@
           "condition": "service_healthy"
         }
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "profiles": [
         "setup"
@@ -156,7 +156,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "secrets": [
         "broker_password",
@@ -179,18 +179,25 @@
         ],
         "timeout": "5s"
       },
-      "image": "nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-edge",
       "ports": [
         "127.0.0.1:4400:8080"
       ],
       "volumes": [
-        "./infra/edge/nginx.conf:/etc/nginx/nginx.conf:ro",
-        "./public:/usr/share/nginx/html:ro",
         "edge-cache:/var/cache/nginx"
       ],
       "profiles": [
         "application"
-      ]
+      ],
+      "build": {
+        "context": ".",
+        "target": "edge"
+      },
+      "depends_on": {
+        "upload": {
+          "condition": "service_healthy"
+        }
+      }
     },
     "identity": {
       "command": [
@@ -312,7 +319,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "secrets": [],
       "profiles": [
@@ -377,7 +384,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "secrets": [
         "broker_password"
@@ -400,7 +407,7 @@
           "condition": "service_healthy"
         }
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "profiles": [
         "setup"
@@ -415,7 +422,7 @@
         "node",
         "scripts/storage-config.mjs"
       ],
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "profiles": [
         "setup"
@@ -457,7 +464,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-transcoder",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-transcoder",
       "init": true,
       "secrets": [
         "broker_password",
@@ -479,7 +486,17 @@
         "node",
         "dist/services/upload.js"
       ],
-      "depends_on": {},
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "objects": {
+          "condition": "service_healthy"
+        },
+        "identity": {
+          "condition": "service_healthy"
+        }
+      },
       "environment": {
         "OIDC_ISSUER": "http://127.0.0.1:4401/realms/youtube-v1",
         "PUBLIC_S3_ENDPOINT": "http://127.0.0.1:4402"
@@ -496,7 +513,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "secrets": [
         "broker_password",
@@ -540,7 +557,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "secrets": [
         "broker_password",
@@ -576,7 +593,7 @@
         ],
         "timeout": "5s"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "secrets": [
         "broker_password",
@@ -593,7 +610,7 @@
         "context": ".",
         "target": "app"
       },
-      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "image": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}-app",
       "init": true,
       "profiles": [
         "setup"
@@ -624,5 +641,6 @@
     "objects-data": {},
     "postgres-data": {},
     "search-data": {}
-  }
+  },
+  "name": "${COMPOSE_PROJECT_NAME:-jeeves-youtube-v1}"
 }

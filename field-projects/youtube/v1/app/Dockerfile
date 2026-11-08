@@ -3,10 +3,12 @@ WORKDIR /app
 RUN npm install --global pnpm@12.16.1
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.browser.json ./
+COPY browser ./browser
+COPY public ./public
 COPY src ./src
-RUN pnpm build
 COPY scripts ./scripts
+RUN pnpm build
 COPY infra ./infra
 CMD ["node", "dist/services/watch.js"]
 
@@ -28,3 +30,7 @@ FROM ffmpeg AS transcoder
 WORKDIR /app
 COPY --from=app /app /app
 CMD ["node", "dist/workers/transcoder.js"]
+
+FROM nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236 AS edge
+COPY infra/edge/nginx.conf /etc/nginx/nginx.conf
+COPY --from=app /app/dist-public /usr/share/nginx/html

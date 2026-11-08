@@ -49,6 +49,7 @@ const values = Object.fromEntries(
     "cache_password",
     "broker_password",
     "creator_password",
+    "other_creator_password",
     "identity_admin",
     "garage_rpc",
   ].map((name) => [name, randomBytes(32).toString("hex")]),
@@ -97,6 +98,12 @@ realm.users = [
     firstName: "Local",
     lastName: "Creator",
     credentials: [{ type: "password", value: values.creator_password, temporary: false }],
+    realmRoles: ["creator"],
+  },
+  {
+    username: "other-creator", enabled: true, email: "other-creator@localhost.test",
+    emailVerified: true, firstName: "Other", lastName: "Creator",
+    credentials: [{ type: "password", value: values.other_creator_password, temporary: false }],
     realmRoles: ["creator"],
   },
 ];

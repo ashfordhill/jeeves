@@ -24,6 +24,7 @@ export async function createHttpService(
   const app = Fastify({ logger: false, bodyLimit: 65536 });
   let ready = false,
     active = 0;
+  const pending = new Set<Promise<unknown>>();
   app.addHook("onRoute", (route) => {
     if (route.url === "/healthz") return;
     const original = route.handler;
@@ -36,7 +37,9 @@ export async function createHttpService(
         .then(() => original.call(this, req, reply))
         .finally(() => {
           active--;
+          pending.delete(work);
         });
+      pending.add(work);
       try {
         return await Promise.race([
           work,
@@ -64,7 +67,7 @@ export async function createHttpService(
     return { service: id, application: ready ? "ready" : "uninitialized" };
   });
   app.setErrorHandler((error: Error & { statusCode?: number; code?: string }, _req, reply) => {
-    const status = error.statusCode ?? 500;
+    const status = error.statusCode ?? 503;
     reply
       .header("Cache-Control", "no-store")
       .code(status)
@@ -102,6 +105,7 @@ export async function createHttpService(
     async close() {
       ready = false;
       await app.close();
+      await Promise.allSettled([...pending]);
     },
   };
 }

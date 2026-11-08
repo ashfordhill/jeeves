@@ -119,3 +119,28 @@ hypotheses until working flows and another applicable use justify a shared templ
 continue as evidence/source consistency practices. No generic lifecycle/contract framework, heavy
 certification, coverage percentage, time/token savings or automatic v2 decision follows from this
 foundation. The modified-generated/new-custom file accounting is [explicit](evidence/fp06a/provenance.json).
+
+## 2026-11-07 — FP06b implemented creator/multipart/browser subset
+
+- **D22 (observed upload authority):** owner-scoped JWT controls inside awaited route budgets,
+  fixed fingerprint/key/expiry, authoritative ListParts and exact-size complete, stable pending/job/
+  outbox and confirmed relay now work with three real parts. Cross-creator404 and anonymous401,
+  refresh/reselect missing-parts-only resume and abort410 are observed; independent object streams
+  match the frozen fixture SHA/size. Browser SHA and multipart ETag stay distinct from byte proof.
+- **D23 (bounded browser/runtime):** plain DOM TypeScript/installed pinned hls asset and baked edge
+  assets; actual public-client PKCE one-use state/nonce, trusted /me and provider logout. Tracked
+  first-run/restart retains secrets/project/volume identities and refuses ambiguous bootstrap replay.
+  Normal subset restart preserves two pending/one aborted record. Own outside-copy builds pass;
+  independent final runtime/all-service S01 stays FP07b. Consumers remain stopped; fixed elapsed
+  ten-minute queued deadlines require fresh FP06c uploads, not policy weakening.
+- **D24 (measured boundary, no promoted abstraction):** [provenance](evidence/fp06b/provenance.json)
+  distinguishes custom extension/browser/operator work from generated integration and scoped HTTP/
+  publisher shutdown repairs. H01/H02/H04/H09 now have app-specific code and bounded observations;
+  document/image import remains another plausible upload use, but provider/media/creator policy and
+  browser cost are still concrete custom work. No shared framework/template adoption, functional
+  percentage, observed effort/token saving or automatic v2 decision. Active cost/time remain unknown.
+
+[Evidence](evidence/fp06b/README.md) records the Docker COPY-order repair, pre-flow busy-state/
+volume-guard corrections, evidence-format lint failure and retained35/36 E2E setup timeout followed
+by unchanged isolated/pass36/36. Existing Jeeves checks were kept; no timeout weakening, provider
+campaign or source diagram change. Current schema3/r6/native010 and all historical artifacts stay.

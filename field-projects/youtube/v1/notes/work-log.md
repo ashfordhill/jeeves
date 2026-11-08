@@ -410,3 +410,64 @@ percentage. All G01–G08 remain integration gaps and S01–S08 incomplete. Next
 creator/upload/browser/first-run subset; working-v1 review still precedes v2.
 
 Local commit: **FP06a: add custom YouTube ownership and durable state foundation**.
+
+## 2026-11-07 — FP06b creator, real multipart and minimal uploader
+
+Only FP06b after FP06a **65f3a33b5a16418f8ae414628def67c7da8bab77**, immutable baseline
+**02ac280da62616e9c7aad7f88457dcb72084cb25**. Fresh sequential Sol/xhigh sole writer, primary main;
+no delegation/branch/worktree/stash/push. Prior generated/custom source and scripts available;
+active time/turns/tokens/cost/savings unknown. [Evidence](evidence/fp06b/README.md) and
+[exact next-unit/runtime handoff](fp06b-upload.md).
+
+Implemented verified creator JWT routes, real private S3 multipart/status/list/sign/complete/
+abort, bounded expiry/cleanup/interrupted-phase/orphan reconciliation and only Upload's job relay.
+Exact keys/fingerprints/parts come from owned SQL/ListParts, never client ETags/keys/provider IDs.
+All auth/JWKS/dependencies inside awaited admission/deadline handlers. Plain DOM browser supplies
+PKCE S256/one-use state+nonce/trusted identity, session tokens/expiry/provider logout and real file/
+text/progress/recent/resume/abort/status mouse controls. Separate own TypeScript browser build,
+pinned hls asset seam, baked nginx edge assets and safe tracked first-run/restart. New second local
+creator and logout allowlist; no secrets in Git. Finite unavailable/invalid-token/oversize/input
+errors. No processing/public playback/search/count handlers or premature lifecycle sweep.
+
+Actual frozen-recipe pinned-FFmpeg fixture15,584,953B/SHA16587281…68aebf9 retained ignored with
+version/config/ffprobe/log. S02 actual3PUT sizes/ETags/ListParts, stable complete IDs, anonymous401/
+foreign404 and independently streamed object SHA/size pass. S03 actual first-part pause/refresh/
+reselect same-ID resume sends only2,3; separate partial mouse abort prevents complete410, provider
+multiparts0. Visible invalid-token/oversize/nonconforming errors and anonymous originals403.
+Staged in-repo S01 identity/provider logout/startup only; own outside-copy frozen build/checks and
+Docker edge build pass, no outside-copy runtime/all-services S01 claim. Six extensions/public
+workers still unfinished; S04–S08 final and blanket G01–G08 closure remain open.
+
+Scoped helper repairs separately: HTTP close drains admitted late work/default unavailable503;
+publisher exposes fatal closed and safe cleanup. Added2 meaningful network-free checks to existing2.
+Initial Docker COPY-order error fixed/resumed without replay/reset; coordinator caught transfer's
+unprotected recent fetch and absent persistent-volume identity guard before browser/restart flows.
+One scratch doc edit had wrong cwd, corrected without product effect. Normal stop/start preserves
+all credentials/5volumes/two pending+one aborted records. Final seven-container jeeves-youtube-v1
+stays healthy4400–4402, fixture/FFmpeg image/secrets kept; dedicated independent scratch image
+removed, no scratch runtime started. Other four Compose projects/owner4300/4310/4304/feedback kept.
+
+Required checks sequential/source steady, Docker build/cleanup finished: initial evidence JSON
+format lint failure corrected, full **398 tests/50 files22.87s** plus lint/types. Initial E2E35/36
+existing create-study menu timeout30s before feature steps; unchanged isolated3.4s/6.4s then full
+**36/36 in1.4m**. No root code/test/timeout changes. **Web build971ms**, existing advisory. Actual
+mouse current-v1(schema3/r6) Fit22/27 + Upload focus, TinyURL53 Fit12/13, retained field login/status/
+refresh/logout and all four full owner responses/listing unchanged, zero page errors. E2E DB
+default-only. No paid/live/cloud/model calls, raw auth traces, media/credentials/deps/build/runtime
+in Git. Current config/implementation-source, .jeeves, all inputs/snapshots001–010/generator/templates/
+pins/locks unchanged; no source/presentation decision required011. Cumulative provenance74 unchanged
+generated payloads+manifest,33 modified-generated integration,23 new custom files; no coverage/savings
+or retroactive template feature claim.
+
+Final screenshot review found closed pending upload selection displaying0/3parts; preserved the
+initial screenshot and corrected show() to distinguish completed transfer100% (including a later
+failed job with jobId) from active inventory and aborted/expired/initiation failure. Own/independent
+4/4 checks and browser/edge builds repeated, scoped mouse selection/refresh/reload100% and aborted
+terminal text/0% pass. Corrected captures retained; root sources/tests stay unchanged.
+
+Next FP06c implements real FFmpeg/lifecycle/Watch/HLS only; index/count consumers wait FP07a. Both
+real durable job deadlines05:49:08.889/05:49:10.392 UTC2026-11-08 elapsed during intentional stage
+checks. Preserve identities/queue; use fresh uploads for successful processing acceptance rather
+than weakening10min policy. No automatic v2 before working-v1 owner/fresh-agent review.
+
+Local commit: **FP06b: implement creator multipart uploads and browser subset**.

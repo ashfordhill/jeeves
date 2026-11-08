@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-11-08T05:39:59.611Z",
+  "records": [
+    {
+      "video_id": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+      "state": "pending",
+      "job_id": "70e28948-1872-4cb3-97bd-11e5bdfbe025",
+      "attempt_id": "b9536b60-bd0e-4cba-8389-74bbd1fdc6a8",
+      "queued_at": "2026-11-08T05:39:08.889Z",
+      "deadline_at": "2026-11-08T05:49:08.889Z",
+      "expected_size": "15584953",
+      "expected_sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "upload_id": "19e4dfe6-b26c-4200-bf85-6ce8ce4cf124",
+      "original_etag": "\"346805d5f3163911cfc48fa462669d69-3\"",
+      "event_id": "d188019c-9f7a-5a45-aa16-3a132a34c319",
+      "sent_at": "2026-11-08T05:39:09.462Z",
+      "attempts": 1,
+      "actualSize": 15584953,
+      "actualSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "shaVerified": true
+    },
+    {
+      "video_id": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+      "state": "pending",
+      "job_id": "14d205b3-752b-4574-a1f3-31fde2aba8a2",
+      "attempt_id": "26ad35f1-38f1-4aa4-b661-08525f5c48b1",
+      "queued_at": "2026-11-08T05:39:10.392Z",
+      "deadline_at": "2026-11-08T05:49:10.392Z",
+      "expected_size": "15584953",
+      "expected_sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "upload_id": "5cd4edbb-9143-4bd7-8ebb-80a151b2a929",
+      "original_etag": "\"346805d5f3163911cfc48fa462669d69-3\"",
+      "event_id": "661a7319-cd55-5f29-a0b3-c2cd5d3c4830",
+      "sent_at": "2026-11-08T05:39:10.473Z",
+      "attempts": 1,
+      "actualSize": 15584953,
+      "actualSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "shaVerified": true
+    }
+  ],
+  "remainingProviderMultiparts": 0,
+  "states": [
+    {
+      "state": "aborted",
+      "count": 1
+    },
+    {
+      "state": "pending",
+      "count": 2
+    }
+  ]
+}

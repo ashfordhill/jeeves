@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-11-08T05:50:28.635Z",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "studio": {
+    "port": 4300,
+    "localV1": {
+      "tiles": 22,
+      "lines": 27,
+      "schema": 3,
+      "revision": 6
+    },
+    "uploadMouseFocus": true,
+    "tinyurl": {
+      "revision": 53,
+      "tiles": 12,
+      "lines": 13,
+      "mouseFit": true
+    },
+    "allFourCompleteResponsesAndListingPreserved": true
+  },
+  "field": {
+    "port": 4400,
+    "mouseLogin": true,
+    "mouseStatusAndRefresh": true,
+    "retainedPending": 2,
+    "retainedAborted": 1,
+    "mouseProviderLogout": true,
+    "anonymousOriginalStatus": 403,
+    "progressCorrection": {
+      "checkedAt": "2026-11-08T05:54:08.041Z",
+      "mouseSelectCompleted": true,
+      "afterRefresh": 100,
+      "afterReloadReselect": 100,
+      "abortedValue": 0,
+      "abortedText": "Upload aborted",
+      "providerLogout": true,
+      "errors": []
+    }
+  },
+  "errors": []
+}

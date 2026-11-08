@@ -85,3 +85,16 @@ No G01–G08 implementation plan/code is supplied in FP01. These are observable 
 and mapping boundaries. FP05 must plan from the **actual committed untouched output**; necessary
 corrections are allowed and must be classified as diagram changes, template repairs or custom
 application decisions. NC07–NC13 and new abstract video contracts remain deferred.
+
+## FP06b staged upload observations
+
+[FP06b](evidence/fp06b/README.md) now implements creator JWT/PKCE identity, scoped durable real S3
+multipart control, browser progress/reselect/resume/abort/status, confirmed job relay and safe
+tracked first-run/restart. G04/G06 have actual bounded upload evidence, not only configuration:
+S02 and S03 pass; S01 is staged in-repo subset startup plus separate independent builds, with
+final outside-runtime/all-service acceptance deferred to FP07b. G01/G03's pending/job identity
+boundary is exercised by stable repeats and one durable intent/queued message per completed file.
+G02/G05/G07 and the remaining public UI still require later working processing/search/count flows;
+G08's local limits remain. No blanket closure of G01–G08 or template/coverage/savings credit follows.
+No current source/config intent changed from native010 and historical generated005 inputs remain
+immutable. Six business extensions and the unfinished public/worker entries still refuse startup.

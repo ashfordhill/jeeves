@@ -2,7 +2,8 @@
   "clients": [
     {
       "attributes": {
-        "pkce.code.challenge.method": "S256"
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://127.0.0.1:4400/"
       },
       "clientId": "youtube-v1-web",
       "directAccessGrantsEnabled": false,
@@ -20,7 +21,7 @@
       ],
       "publicClient": true,
       "redirectUris": [
-        "http://127.0.0.1:4400/*"
+        "http://127.0.0.1:4400/"
       ],
       "standardFlowEnabled": true,
       "webOrigins": [

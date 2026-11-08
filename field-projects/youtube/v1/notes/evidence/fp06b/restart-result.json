@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-11-08T05:44:20.572300+00:00",
+  "commands": ["pnpm stop", "pnpm start"],
+  "project": "jeeves-youtube-v1",
+  "initialized": [
+    "secrets",
+    "build",
+    "providers",
+    "garage-bootstrap",
+    "migrations",
+    "broker-assertions",
+    "search-assertions",
+    "implemented-app",
+    "initialized"
+  ],
+  "pendingStep": null,
+  "credentialFileCount": 20,
+  "sameCredentialHashesAccepted": true,
+  "volumeIdentitiesAccepted": true,
+  "volumes": [
+    {
+      "name": "jeeves-youtube-v1_broker-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "broker-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_edge-cache",
+      "createdAt": "2026-11-07T23:36:52-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "edge-cache"
+    },
+    {
+      "name": "jeeves-youtube-v1_objects-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "objects-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_postgres-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "postgres-data"
+    },
+    {
+      "name": "jeeves-youtube-v1_search-data",
+      "createdAt": "2026-11-07T23:35:51-06:00",
+      "driver": "local",
+      "project": "jeeves-youtube-v1",
+      "volume": "search-data"
+    }
+  ],
+  "providerBootstrapReplayed": false,
+  "sourceRebuilt": true,
+  "stagedServices": ["postgres", "broker", "objects", "identity", "search-index", "upload", "edge"],
+  "note": "Normal restart of in-repo implemented subset only. Outside-checkout source frozen install/build/Docker edge build separately passed; independent runtime startup/all-service S01 remains FP07b."
+}

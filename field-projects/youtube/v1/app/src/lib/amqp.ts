@@ -29,9 +29,20 @@ export async function publisher(exchange: string, routingKey: string) {
   const connection = await broker(),
     channel = await connection.createConfirmChannel();
   channel.on("error", () => console.error("AMQP publisher channel unavailable"));
+  let closing = false;
+  let finishClosed!: (result: { fatal: boolean }) => void;
+  const closed = new Promise<{ fatal: boolean }>((resolve) => {
+    finishClosed = resolve;
+  });
+  const lost = () => {
+    if (!closing) finishClosed({ fatal: true });
+  };
+  channel.once("close", lost);
+  connection.once("close", lost);
   return {
     connection,
     channel,
+    closed,
     async publish(body: Uint8Array, messageId: string) {
       await confirmed((done) =>
         channel.publish(
@@ -44,8 +55,10 @@ export async function publisher(exchange: string, routingKey: string) {
       );
     },
     async close() {
-      await channel.close();
-      await connection.close();
+      closing = true;
+      await channel.close().catch(() => {});
+      await connection.close().catch(() => {});
+      finishClosed({ fatal: false });
     },
   };
 }

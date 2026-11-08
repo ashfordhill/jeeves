@@ -313,6 +313,23 @@ export async function clearCleanup(tx: Tx, uploadId: string) {
     [uuid.parse(uploadId)],
   );
 }
+// Bounded reconciliation of SQL/provider gaps; this does not sweep pending processing jobs.
+export async function interruptedUploads(tx: Tx) {
+  return (
+    await tx.query<{ upload_id: string; creator_sub: string }>(
+      `SELECT u.upload_id,v.creator_sub FROM video_private.uploads u JOIN video_private.videos v USING(video_id)
+     WHERE v.state='uploading' AND (u.phase='completing' OR (u.phase='initiating' AND v.created_at<clock_timestamp()-interval '1 minute'))
+     ORDER BY v.created_at LIMIT 50`,
+    )
+  ).rows;
+}
+export async function reopenIncomplete(tx: Tx, uploadId: string, sub: string) {
+  const r = await ownedUpload(tx, uploadId, sub, true);
+  if (r?.state === "uploading" && r.phase === "completing" && r.expires_at > r.db_now)
+    await tx.query(`UPDATE video_private.uploads SET phase='active' WHERE upload_id=$1`, [
+      uploadId,
+    ]);
+}
 export async function applyProcessing(tx: Tx, input: ProcessingEvent) {
   const e = processingEvent.parse(input); // poison messages are rejected before receipts; known stale/unknown identities get safe receipts.
   const row = (

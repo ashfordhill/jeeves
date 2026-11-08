@@ -5192,3 +5192,54 @@ four other Compose projects and `.jeeves-feedback/` preserved. No live/paid/clou
 credentials/runtime/dependencies/build data staged. No automatic v2 before working-v1 owner review.
 
 Local commit: **FP06a: add custom YouTube ownership and durable state foundation**.
+
+## 2026-11-07 — FP06b: creator, real multipart and minimal browser uploader
+
+Only FP06b after **65f3a33b5a16418f8ae414628def67c7da8bab77**, primary main sole writer, no
+branch/worktree/stash/delegation/push. [Next-unit/runtime interfaces](../field-projects/youtube/v1/notes/fp06b-upload.md)
+and [evidence/provenance](../field-projects/youtube/v1/notes/evidence/fp06b/README.md). Verified creator
+JWT inside awaited route budgets; scoped real multipart/ListParts/exact sizes/complete+Head,
+SQL pending/job/outbox/stable repeats, dedicated confirmed relay, resume/abort/status/cleanup.
+Plain own-TS DOM browser adds PKCE S256/one-use state+nonce/trusted /me/session tokens/provider
+logout, real uploader/progress/recent/resume/abort; baked exact-nginx edge assets. Tracked first-run
+versus restart preserves credentials/project/volume identities, refuses ambiguous bootstrap replay.
+Scoped helper repairs drain late admitted HTTP work/default503 and expose fatal publisher closure.
+No processing/lifecycle/Watch/search/count consumer or premature lifecycle sweep starts.
+
+Actual frozen-recipe pinned-FFmpeg fixture **15,584,953B/SHA16587281…68aebf9** retained ignored at
+`app/.runtime/media/youtube-v1-fixture.mp4`; version/config/ffprobe/log and3realPUT sizes/ETags/ListParts
+retained. S02 upload + S03 bounded first-part pause/refresh/reselect/same-ID missing2,3 resume and
+separate partial abort/complete410 pass. Anonymous401/foreign404, finite invalid JWT/oversize/non-MP4,
+actual streamed completed originals hash/size and private-original403 pass. Staged S01 is in-repo
+subset startup/identity/provider logout, with separate outside-copy own frozen build/4checks/Docker
+edge build; final independent runtime/all-service S01 and S04–S08 remain later work. Normal stop/
+start retains two pending/one aborted. **Both queued job deadlines05:49:08.889/05:49:10.392 UTCNov8
+elapsed during intentional staging**; preserve queue/IDs, use fresh FP06c uploads, never weaken10min.
+
+Final **jeeves-youtube-v1** seven-container stack stays healthy **http://127.0.0.1:4400/** (Identity4401,
+S3 signing4402), five volumes, runtime/fixture/FFmpeg image retained. Read creator password locally
+from `app/.runtime/secrets/creator_password` (`creator`); other creator password separate. Start/
+stop instructions in [app README](../field-projects/youtube/v1/app/README.md). Only independent
+scratch build image removed; no scratch runtime started. Other four Compose projects, owner4300/
+4310/4304 watchers and `.jeeves-feedback/` preserved. All current config/implementation-source,
+`.jeeves`, inputs,001–010 native snapshots, pins/locks/generator/templates unchanged; saved local
+v1 remains schema3/r6/native010 and frozen005 profile deliberately refuses it. No new source/
+presentation decision or011, generic framework, provider campaign or feature/savings certificate.
+Cumulative74 baseline payloads+manifest unchanged,33 planned integration mods,23 new custom files;
+custom business extension work and helper repairs are distinct. Active effort/tokens/cost unknown.
+
+Required checks after Docker build/cleanup/source steady: evidence JSON lint-format failure fixed,
+full **398/50 in22.87s** plus types/lint. First E2E35/36 existing project-menu setup timeout30s;
+unchanged exact test alone3.4s/6.4s and full **36/36 in1.4m**; no root/test/timeout edits. **Web build
+971ms**, existing advisory. Actual mouse current-v1 Fit22/27 + Upload focus and TinyURL53 Fit12/13,
+all four complete owner responses/listing preserved, zero page errors; E2E DB default-only. Final
+screenshot review caught pending selection showing0/3 after multipart closure; initial image kept,
+state-aware100% completion/explicit abort display fixed, own/independent4checks/browser+edge builds
+and scoped selection/refresh/reload/abort mouse recapture pass. Root sources/tests remain unchanged.
+No paid/live/cloud calls or credentials/media/auth traces/deps/build/runtime data staged.
+
+Next **FP06c only**: real FFmpeg worker/extensions, lifecycle/inbox/publication relay/fixed deadlines,
+ready-only Watch/cache and browser HLS; Search/indexer/count remain stopped until FP07a. Fixture and
+actual foundation/client interfaces are ready. No automatic v2 before working-v1 owner/fresh review.
+
+Local commit: **FP06b: implement creator multipart uploads and browser subset**.

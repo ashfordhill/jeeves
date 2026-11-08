@@ -1,0 +1,290 @@
+{
+  "startedAt": "2026-11-08T05:39:06.625Z",
+  "browser": "153.0.8010.12",
+  "puts": [
+    {
+      "label": "S02",
+      "partNumber": 1,
+      "size": 5242880,
+      "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+      "status": 200
+    },
+    {
+      "label": "S02",
+      "partNumber": 2,
+      "size": 5242880,
+      "etag": "\"8b07cb8adaef2a76957b89cf6a759510\"",
+      "status": 200
+    },
+    {
+      "label": "S02",
+      "partNumber": 3,
+      "size": 5099193,
+      "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\"",
+      "status": 200
+    },
+    {
+      "label": "S03-before",
+      "partNumber": 1,
+      "size": 5242880,
+      "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+      "status": 200
+    },
+    {
+      "label": "S03-resumed",
+      "partNumber": 2,
+      "etag": "\"8b07cb8adaef2a76957b89cf6a759510\"",
+      "status": 200
+    },
+    {
+      "label": "S03-resumed",
+      "partNumber": 3,
+      "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\"",
+      "status": 200
+    },
+    {
+      "label": "abort-before",
+      "partNumber": 1,
+      "size": 5242880,
+      "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "scenarios": {
+    "S01": {
+      "identity": {
+        "sub": "31fc6bfe-bfc5-4db1-a779-bdebf1aac603",
+        "channel": "creator"
+      },
+      "providerSignOut": true
+    },
+    "S02": {
+      "status": {
+        "uploadId": "19e4dfe6-b26c-4200-bf85-6ce8ce4cf124",
+        "videoId": "f96198cf-1c7d-41ff-ae36-3eac1a9af476",
+        "title": "FP06b real multipart orchid",
+        "description": "Synthetic tone and test pattern. fp06b-orchid upload evidence.",
+        "state": "pending",
+        "phase": "closed",
+        "expiresAt": "2026-11-09T05:39:08.157Z",
+        "createdAt": "2026-11-08T05:39:08.157Z",
+        "queuedAt": "2026-11-08T05:39:08.889Z",
+        "deadlineAt": "2026-11-08T05:49:08.889Z",
+        "jobId": "70e28948-1872-4cb3-97bd-11e5bdfbe025",
+        "attemptId": "b9536b60-bd0e-4cba-8389-74bbd1fdc6a8",
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": []
+      },
+      "listedBeforeComplete": [
+        {
+          "partNumber": 1,
+          "size": 5242880,
+          "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+        },
+        {
+          "partNumber": 2,
+          "size": 5242880,
+          "etag": "\"8b07cb8adaef2a76957b89cf6a759510\""
+        },
+        {
+          "partNumber": 3,
+          "size": 5099193,
+          "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\""
+        }
+      ],
+      "anonymous": {
+        "start": 401,
+        "sign": 401,
+        "complete": 401
+      },
+      "otherCreator": {
+        "identity": {
+          "sub": "7b9f2d63-c8e2-4734-aed6-333fcb87307c",
+          "channel": "other-creator"
+        },
+        "status": 404,
+        "sign": 404,
+        "complete": 404,
+        "abort": 404
+      }
+    },
+    "S03": {
+      "interrupted": {
+        "uploadId": "5cd4edbb-9143-4bd7-8ebb-80a151b2a929",
+        "videoId": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+        "title": "FP06b refresh resume orchid",
+        "description": "Synthetic tone and test pattern. fp06b-orchid upload evidence.",
+        "state": "uploading",
+        "phase": "active",
+        "expiresAt": "2026-11-09T05:39:09.682Z",
+        "createdAt": "2026-11-08T05:39:09.682Z",
+        "queuedAt": null,
+        "deadlineAt": null,
+        "jobId": null,
+        "attemptId": null,
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": [
+          {
+            "partNumber": 1,
+            "size": 5242880,
+            "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+          }
+        ]
+      },
+      "refreshed": {
+        "uploadId": "5cd4edbb-9143-4bd7-8ebb-80a151b2a929",
+        "videoId": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+        "title": "FP06b refresh resume orchid",
+        "description": "Synthetic tone and test pattern. fp06b-orchid upload evidence.",
+        "state": "uploading",
+        "phase": "active",
+        "expiresAt": "2026-11-09T05:39:09.682Z",
+        "createdAt": "2026-11-08T05:39:09.682Z",
+        "queuedAt": null,
+        "deadlineAt": null,
+        "jobId": null,
+        "attemptId": null,
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": [
+          {
+            "partNumber": 1,
+            "size": 5242880,
+            "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+          }
+        ]
+      },
+      "resumed": {
+        "uploadId": "5cd4edbb-9143-4bd7-8ebb-80a151b2a929",
+        "videoId": "1fe2c0fc-8034-4ea5-b0c2-c9c11b596774",
+        "title": "FP06b refresh resume orchid",
+        "description": "Synthetic tone and test pattern. fp06b-orchid upload evidence.",
+        "state": "pending",
+        "phase": "closed",
+        "expiresAt": "2026-11-09T05:39:09.682Z",
+        "createdAt": "2026-11-08T05:39:09.682Z",
+        "queuedAt": "2026-11-08T05:39:10.392Z",
+        "deadlineAt": "2026-11-08T05:49:10.392Z",
+        "jobId": "14d205b3-752b-4574-a1f3-31fde2aba8a2",
+        "attemptId": "26ad35f1-38f1-4aa4-b661-08525f5c48b1",
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": []
+      },
+      "aborted": {
+        "unfinished": {
+          "uploadId": "d2c52469-916e-4428-9f56-4be397735dd6",
+          "videoId": "56815172-d561-4a8b-bf57-f4bb5f9f4063",
+          "title": "FP06b abort orchid",
+          "description": "Synthetic tone and test pattern. fp06b-orchid upload evidence.",
+          "state": "uploading",
+          "phase": "active",
+          "expiresAt": "2026-11-09T05:39:10.582Z",
+          "createdAt": "2026-11-08T05:39:10.582Z",
+          "queuedAt": null,
+          "deadlineAt": null,
+          "jobId": null,
+          "attemptId": null,
+          "failure": null,
+          "file": {
+            "fileName": "youtube-v1-fixture.mp4",
+            "size": 15584953,
+            "contentType": "video/mp4",
+            "lastModified": 1794116246303,
+            "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+          },
+          "partSize": 5242880,
+          "partCount": 3,
+          "parts": [
+            {
+              "partNumber": 1,
+              "size": 5242880,
+              "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+            }
+          ]
+        },
+        "aborted": {
+          "uploadId": "d2c52469-916e-4428-9f56-4be397735dd6",
+          "videoId": "56815172-d561-4a8b-bf57-f4bb5f9f4063",
+          "title": "FP06b abort orchid",
+          "description": "Synthetic tone and test pattern. fp06b-orchid upload evidence.",
+          "state": "aborted",
+          "phase": "closed",
+          "expiresAt": "2026-11-09T05:39:10.582Z",
+          "createdAt": "2026-11-08T05:39:10.582Z",
+          "queuedAt": null,
+          "deadlineAt": null,
+          "jobId": null,
+          "attemptId": null,
+          "failure": null,
+          "file": {
+            "fileName": "youtube-v1-fixture.mp4",
+            "size": 15584953,
+            "contentType": "video/mp4",
+            "lastModified": 1794116246303,
+            "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+          },
+          "partSize": 5242880,
+          "partCount": 3,
+          "parts": []
+        },
+        "completeStatus": 410
+      }
+    },
+    "errors": {
+      "invalidTokenVisible": true,
+      "oversizeVisible": true,
+      "unsupportedVisible": true,
+      "oversized": {
+        "status": 413,
+        "body": {
+          "error": "FILE_SIZE",
+          "message": "Choose a file between 1 byte and 256 MiB."
+        }
+      },
+      "unsupported": {
+        "status": 422,
+        "body": {
+          "error": "UNSUPPORTED_FILE",
+          "message": "Choose an MP4 video (H.264/AAC, landscape 720p–1080p, 1–600 seconds)."
+        }
+      }
+    }
+  },
+  "finishedAt": "2026-11-08T05:39:11.608Z"
+}

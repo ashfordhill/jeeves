@@ -187,3 +187,23 @@ FP06b creates the final **jeeves-youtube-v1** runtime and implements its safe fi
 tracking, providers/bootstrap/search assertions and normal restart path before starting only its
 implemented upload/browser subset. Do not start lifecycle sweeps/processing/indexer/counter yet.
 No secret rotation, volume reset or full-provider certification campaign is implied by this unit.
+
+## FP06b retained creator/upload subset
+
+Final **jeeves-youtube-v1** now runs seven healthy containers at loopback4400–4402: Upload/edge
+plus PostgreSQL, RabbitMQ, Garage, Keycloak and OpenSearch. `app/` owns plain-browser and Node
+builds; edge copies built assets into its exact nginx stage, without a host public bind mount.
+[Commands](../app/README.md) separate tracked `pnpm first-run` from normal `pnpm stop`/`pnpm start`;
+credential/volume identities and completed steps are retained and checked, ambiguous bootstrap
+replay refused. Two local creators are provisioned with ignored passwords. Real PKCE/sign-out,
+creator-scoped multipart/resume/abort and durable job publication are demonstrated in
+[FP06b evidence](evidence/fp06b/README.md). Own outside-copy frozen build/Docker build passes;
+independent runtime startup and final all-services S01 remain FP07b.
+
+The retained actual frozen-recipe fixture is15,584,953 bytes, SHA25616587281…68aebf9, in ignored
+`app/.runtime/media/`. Both completed originals stream to that same checksum/size. Two queued
+real jobs remain unconsumed; their fixed deadlines05:49:08.889/05:49:10.392 UTC2026-11-08 elapsed
+during staged work. Use fresh uploads in FP06c rather than extending deadlines. No Transcoder,
+lifecycle sweep, Watch, Search/indexer, cache or counter starts here. No S04+ or final all-service
+readiness credit. Exact IDs/credentials-file locations and next interfaces are in
+[the next-unit handoff](fp06b-upload.md). All other runtimes/watchers stay preserved.

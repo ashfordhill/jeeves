@@ -1,0 +1,14 @@
+$ pnpm build && node --test checks/foundation.test.mjs
+$ tsc -p tsconfig.json && node scripts/build-browser.mjs
+✔ bounded destination envelopes bind stable identity and result paths (9.175895ms)
+✔ HTTP config precedes listen; deadline retains actual admission until work settles (84.343201ms)
+✔ HTTP shutdown awaits admitted work even after its response deadline (13.455882ms)
+✔ multipart inventory requires exact acknowledged parts and safe file bounds (60.893306ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 343.455463
