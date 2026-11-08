@@ -1,6 +1,7 @@
 import { readdirSync } from "node:fs";
 import { sameContractRef } from "@jeeves/spec";
 import { jsonFile } from "../../src/json.ts";
+import { createLocalAssetLifecycle } from "../../src/v2/asset-lifecycle.ts";
 import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
 import { createLocalMultipart } from "../../src/v2/multipart.ts";
@@ -84,6 +85,7 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     createLocalDurability(distinct),
     createLocalUploadState(distinct),
     multipart,
+    createLocalAssetLifecycle(distinct),
     ...features,
   ]);
 }

@@ -5702,3 +5702,38 @@ root README, local-v1/v1 source/input/runtime/fixture, pins/locks, owner resourc
 `.jeeves-feedback` dirt and e2e-docker mode. No field v2 app or push.
 
 Local commit: **YV2-08: generate owned signed multipart transfers**.
+
+## 2026-11-08 — YV2-09: fixed asset lifecycle and committed publication hooks
+
+`local.asset-lifecycle` emits `asset-sql.ts`, `asset-lifecycle.ts` and `asset-worker.ts` generic
+runtime dependencies. [Actual APIs and hookup gaps](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-09--fixed-asset-lifecycle-and-committed-publication-hooks).
+`createAssetLifecycle` composes YV2-07 reserve/complete/closed hooks with YV2-06 branded Tx,
+outbox and receipt effects: pending+one job intent, ready+optional publication intent+receipt,
+version CAS, stale/terminal refusal and fixed DB deadlines. Queue10m/processing30m, sweep50/30s;
+repeated start never extends a running job, and matching pending success remains accepted.
+Wire adapters retain original envelopes; receipt identity omits only occurredAt. Typed metadata/
+job/result/failure/publication codecs contain product policy. SQL-only processing/deadline failure
+callback is optional; upload terminal failures synchronize through closed hooks. No search/count
+requirement, YouTube metadata/namespace, media SQL secret or new editor control was added.
+`assetLifecyclePersistence` contributes explicit same-authority migration/logins/grants; private
+`assetReadySelect` defines the committed source contract, leaving actual public fields/grants to
+YV2-15/16. No installed application/feature/service is claimed; required recipe gaps stay visible.
+
+Five focused offline PGlite cases pass against actual emitted modules. Final `pnpm check`:
+**438 tests/61 files, 32.71s**, lint/types (existing Biome info); **36 native E2Es, 1.6m**; web
+build **1.30s** (existing chunk advisory). Two final deterministic **47-file** scratch exports
+pass own frozen install/untouched build and typed non-YouTube PDF/document adapter build, with
+and without publication. No assertion/timeout/pin changed. [Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-09-lifecycle.md);
+logs `/tmp/jeeves-yv2-09/{check-final,e2e,web-build,focused-final,export-final,install-final,build-final,build-adapter-final}.log`.
+No provider stack/runtime secret/media/port/volume was created; scratch source/build artifacts
+remain under that /tmp directory. All fourteen retained v1 services are healthy. No UI changed;
+E2Es retain TinyURL lane/mouse/history/generation coverage.
+
+Frozen v1's **108-path/hash list** is unchanged, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-10 only**: fixed reusable media engine. Keep actual application codecs/public views/
+HTTP and service composition for YV2-15/16, including finite nginx edge and scheduled/drained
+sweep work. Preserve root README, local-v1/v1 app/input/runtime/fixture, owner resources,
+`.jeeves-feedback` dirt and e2e-docker mode. No field v2 app, branches/worktrees/stash or push.
+
+Local commit: **YV2-09: generate asset lifecycle and committed publication hooks**.

@@ -638,3 +638,87 @@ report retains `multipart-application-bindings` and `applicationComplete:false`;
 control or lifecycle installation is attested. YV2-09 can bind complete/closed without editing
 transport; YV2-16 must install actual consumers once these application bindings exist.
 [Offline, standalone and real provider evidence](../evidence/youtube-v2/yv2-08-multipart.md).
+
+## YV2-09 — fixed asset lifecycle and committed publication hooks
+
+`local.asset-lifecycle` is an implemented **dependency emitter** for normalized
+`asset-lifecycle` selections. It emits `src/runtime/{asset-sql,asset-lifecycle,asset-worker}.ts`.
+It installs no source-bound feature, service, SQL credential, timer or application public view.
+Required `asset-lifecycle-application-bindings` and `applicationComplete:false` remain until
+YV2-15/16 binds codecs, identities, hooks, persistence, consumer/publisher and service constructors.
+There is no YouTube metadata, event namespace, search/count dependency or media-worker SQL access.
+
+Generator exports from `src/v2/asset-lifecycle.ts` / `src/index.ts`:
+
+- `assetLifecycleSchema(SqlRelation)` emits a private generic asset table with uploading/pending/
+  processing/ready/failed/aborted/expired state, version CAS, upload/job/attempt UUIDs, JSON metadata/
+  result, timestamps and fixed-deadline sweep index. No FK to a particular application is assumed.
+- `assetReadySelect(SqlRelation)` defines the authoritative **committed-ready source contract**:
+  `asset_id,job_id,attempt_id,state_version,metadata,result,ready_at,publication_version`, filtered
+  by `state='ready'`. It creates no view/grant. Metadata can be private: a later compiled adapter
+  must select its actual public fields into its public view, not expose this source as an HTTP body.
+- `assetLifecyclePersistence({resource,uploadHost,lifecycleHost,relation,receipts,outbox,
+  migrationId,sourcePaths})` contributes the asset/receipt/outbox migration and exact runtime logins/
+  grants through the existing foundation. Upload gets asset SELECT/INSERT/UPDATE and outbox
+  SELECT/INSERT/UPDATE; lifecycle gets asset SELECT/UPDATE, receipt SELECT/INSERT/UPDATE and outbox
+  SELECT/INSERT/UPDATE. Same-host bindings merge safely. Canonical store/access/authority validation
+  remains in the foundation. No media/reader login or implicit public projection is contributed.
+  Bind YV2-07 `ownedUploadPersistence` separately; YV2-08 already contributes selected object/CORS
+  access, so do not duplicate that storage contribution.
+
+`asset-lifecycle.ts` exports `createAssetLifecycle<M,R,Response,Job,Publication=never>`,
+`AssetLifecycleBinding`, `AssetLifecycleHooks`, `AssetJobIdentity`, `AssetCompletion`,
+`AssetEvent<R>`, `ProcessingKind`, `AssetState`, `AssetOutcome`, `AssetRecord<M,R>`,
+`CommittedReadyAsset<M,R>`, `assetUuid` and `assetEventId`.
+
+Binding is `{relation,receipts,receiptScope,outbox,jobsDestination,identities}`. Identities are
+trusted compiled `request(job)`, `result(job,kind)` and optional `publication(assetId)` constructors.
+`assetUuid` normalizes domain UUIDs before keys; generic durable text/event IDs remain exact and
+case-sensitive. `assetEventId(namespace,...parts)` is an optional stable hashed UUID constructor,
+with an explicit namespace and no product default. Later event adapters can bind existing v1 IDs.
+
+Hooks require `metadata`, `event`, `result`, `failure`, `job:{codec,construct}` and `response`.
+`event(rawWire)` validates/maps the application's finite envelope to `AssetEvent<unknown>`:
+asset/job/attempt IDs, eventId, occurredAt and kind started/succeeded/failed (result or failure code).
+Core checks IDs and transport messageId, validates result with the normalized job identity, and
+limits JSON to 64 KiB. Result/metadata codecs must be stable non-null JSON snapshots; the result
+codec owns its finite fields and job-bound paths. Failure codec accepts bounded application labels;
+it adds no states or retry policy. Optional `failed(tx,asset)` runs after an actual job failure,
+including fixed deadlines; upload terminal callbacks do not invoke it. Optional `publication:{destination,codec,construct}` decides the
+application's ready/public projection. Both constructors and failure hooks are SQL-only, awaited
+on the caller's branded YV2-06 Tx; caught failures still poison rollback.
+
+| Returned API | Contract |
+| --- | --- |
+| `uploadHooks.reserve(tx,upload)` | Insert uploading metadata in the upload reservation transaction. |
+| `uploadHooks.complete(tx,upload,verifiedOriginal)` | Under the upload row lock, lock related asset; generate job/attempt once, CAS uploading→pending, set DB queue deadline, await job constructor, enqueue one job intent and return `response(AssetCompletion)`. YV2-07 validates/stores this stable response; replay bypasses hooks even after lifecycle progresses. |
+| `uploadHooks.closed(tx,upload,terminal)` | CAS uploading→aborted/expired/failed with upload terminal state in the same Tx. Initiation/fingerprint failure codes synchronize here without editing upload core. |
+| `parse(rawWire,messageId?)` | Validate/map the wire event. Original wire must be retained for `apply`, not replaced by this normalized result. |
+| `apply(tx,rawWire,messageId?)` | Existing receipt-with-effect returns `{applied,result:{outcome}}`; records unknown/stale/terminal outcomes, checks DB deadline before effect, rejects unrelated job/attempt and terminal transitions. Matching success accepts pending or processing. Ready/result/version + optional publication intent + receipt commit together. |
+| `get(tx,assetId)` | Internal typed lifecycle record; no owner/public authorization is implied. Application status enrichment owns those boundaries. |
+| `sweep(tx)` | Fail at most 50 overdue pending/processing rows, ordered and locked with SKIP LOCKED. No upload/provider cleanup or hidden scheduling. |
+| `jobs` / optional `publications` | Actual YV2-06 outbox bindings for the application's confirmed relay. |
+
+Queue deadline remains **10 minutes**, processing deadline **30 minutes**, using PostgreSQL
+`clock_timestamp()`, enforced by `apply` even before any sweep. First start changes pending to
+processing; a repeated start never changes an already processing deadline. There is one job/
+attempt, no retry/reprocessing workflow. Receipt identity retains all validated effect fields and
+omits **only** occurredAt, allowing regenerated transport timestamps; a changed result/failure/
+asset/job/attempt conflicts. Ready never publishes from failed/stale/late/terminal results.
+`CommittedReadyAsset` is the transaction-bound publication constructor input; it is durable only
+after commit, and contains state/version, metadata/result, normalized job identity, readyAt and
+publicationVersion1. Constructor code can read ready on the same Tx; a throw rolls back ready,
+intent and receipt together. Optional publication can be absent for an attachment composition.
+Broker effects remain at least once through the existing outbox, not SQL/network atomicity.
+
+`asset-worker.ts` exports `startAssetLifecycleWorker<Publication>`, `LifecycleConsumer`,
+`LifecyclePublisher` and `LifecycleWorkerRepository`. Bind the actual YV2-05 consumer with
+`openConsumer(handle)` and optional `{outbox,openPublisher}`. It sweeps before admission, validates
+bounded JSON/message identity (malformed messages use `NonRetryable`), awaits transaction commit
+before handler resolution, and schedules one single-flight sweep every **30 seconds**. It starts
+and drains the existing optional publication relay. `close()` is idempotent, stops the timer,
+drains the consumer and sweep, then attempts relay/publisher close even if another close fails;
+`closed` reports fatal transport/teardown failure. The worker owns opened transports; the caller
+owns/ends its SQL pool. No service starts until a later compiled recipe calls this factory.
+[Focused offline, standalone and regression evidence](../evidence/youtube-v2/yv2-09-lifecycle.md).
+Next owner: **YV2-10 only**, reusable fixed video-to-HLS engine.

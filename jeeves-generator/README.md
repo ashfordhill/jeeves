@@ -190,7 +190,13 @@ Selected owned uploads also emit the actual generic signed multipart engine, S3 
 explicit HTTP handler factory. `local.multipart` contributes only selected storage read/write
 access and signed-PUT CORS; application principal/content/metadata/transaction hooks, namespaces
 and service mounts remain required compiled-recipe gaps. No complete multipart application or
-lifecycle support is installed yet. See the [transport API and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-08--owned-signed-multipart-transport-and-http-mounts).
+lifecycle application is installed yet. See the [transport API and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-08--owned-signed-multipart-transport-and-http-mounts).
+
+Selected asset lifecycle also emits the fixed generic lifecycle repository, upload completion/
+terminal hooks and worker factory. It reuses transaction/outbox/receipts, enforces fixed DB
+queue/processing deadlines and supports optional transaction-bound publication. Metadata/result/
+event codecs, public view and actual service wiring remain compiled-recipe gaps. See the
+[lifecycle API and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-09--fixed-asset-lifecycle-and-committed-publication-hooks).
 
 Trusted feature registration can pass `V2Emitter[]` to `loadLocalV2Registry(features)`.
 `V2Emitter.local(context)` returns the finite `V2LocalContribution` hooks for migrations,

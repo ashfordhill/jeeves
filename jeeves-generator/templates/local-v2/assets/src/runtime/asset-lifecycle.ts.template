@@ -1,0 +1,469 @@
+import { createHash, randomUUID } from "node:crypto";
+import {
+  durableIdentity,
+  qualifiedRelation,
+  type OutboxTable,
+  type SqlRelation,
+} from "./durable-sql.ts";
+import { createOutbox, type PayloadCodec } from "./outbox.ts";
+import type { UploadHooks, UploadTerminal, VerifiedOriginal } from "./owned-upload.ts";
+import { createReceipts } from "./receipts.ts";
+import { abortTransaction, assertTransaction, type Tx } from "./transaction.ts";
+
+export type AssetState =
+  | "uploading"
+  | "pending"
+  | "processing"
+  | "ready"
+  | "failed"
+  | "aborted"
+  | "expired";
+export type ProcessingKind = "started" | "succeeded" | "failed";
+export interface AssetJobIdentity {
+  assetId: string;
+  jobId: string;
+  attemptId: string;
+}
+export interface AssetCompletion extends AssetJobIdentity {
+  uploadId: string;
+  state: "pending";
+}
+export type AssetEvent<Result> = AssetJobIdentity & {
+  eventId: string;
+  occurredAt: string;
+} & (
+    | { kind: "started" }
+    | { kind: "succeeded"; result: Result }
+    | { kind: "failed"; code: string }
+  );
+export type AssetOutcome = "started" | "ready" | "failed" | "stale" | "terminal" | "unknown";
+export interface AssetRecord<Metadata, Result> {
+  assetId: string;
+  uploadId: string;
+  metadata: Metadata;
+  state: AssetState;
+  stateVersion: number;
+  jobId: string | null;
+  attemptId: string | null;
+  result: Result | null;
+  createdAt: Date;
+  updatedAt: Date;
+  queuedAt: Date | null;
+  startedAt: Date | null;
+  deadlineAt: Date | null;
+  readyAt: Date | null;
+  publicationVersion: 1 | null;
+  failureCode: string | null;
+  dbNow: Date;
+}
+/** Transaction-bound constructor input. It becomes committed only when the caller Tx commits.
+ * Application adapters own public fields/visibility and the SQL ready-view projection. */
+export interface CommittedReadyAsset<M, R> extends AssetJobIdentity {
+  state: "ready";
+  stateVersion: number;
+  metadata: M;
+  result: R;
+  readyAt: string;
+  publicationVersion: 1;
+}
+export interface AssetLifecycleBinding {
+  relation: SqlRelation;
+  receipts: SqlRelation;
+  receiptScope: string;
+  outbox: OutboxTable;
+  jobsDestination: string;
+  identities: {
+    request(identity: AssetJobIdentity): string;
+    result(identity: AssetJobIdentity, kind: ProcessingKind): string;
+    publication?(assetId: string): string;
+  };
+}
+export interface AssetLifecycleHooks<M, R, Response, Job, Publication> {
+  metadata(input: unknown): M;
+  /** Parse/map the finite application envelope, rejecting unknown fields/types. Core then checks
+   * identities/deadlines. Result validation receives the normalized job identity. */
+  event(input: unknown): AssetEvent<unknown>;
+  result(input: unknown, identity: AssetJobIdentity): R;
+  /** Bounded application failure labels only; this cannot add states or retry policies. */
+  failure(input: unknown): string;
+  /** Optional SQL-only effect for processing/deadline failures only. Upload terminal
+   * transitions are handled by uploadHooks.closed and do not invoke this callback. */
+  failed?(tx: Tx, asset: AssetRecord<M, R>): Promise<void>;
+  job: {
+    codec: PayloadCodec<Job>;
+    construct(
+      tx: Tx,
+      input: AssetJobIdentity & {
+        uploadId: string;
+        metadata: M;
+        original: VerifiedOriginal;
+        occurredAt: string;
+        eventId: string;
+      },
+    ): Promise<unknown>;
+  };
+  response(input: AssetCompletion): Response;
+  publication?: {
+    destination: string;
+    codec: PayloadCodec<Publication>;
+    construct(tx: Tx, ready: CommittedReadyAsset<M, R>, eventId: string): Promise<unknown>;
+  };
+}
+
+export function assetUuid(value: string): string {
+  if (
+    typeof value !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+  )
+    throw new Error("Invalid asset/job identity");
+  return value.toLowerCase();
+}
+/** Namespace is explicitly application-bound; text parts retain case. Normalize domain UUIDs
+ * with assetUuid before using them here. Narrow adapters may preserve existing event IDs. */
+export function assetEventId(namespace: string, ...parts: string[]): string {
+  const hash = createHash("sha256")
+    .update(JSON.stringify([durableIdentity(namespace), ...parts.map(durableIdentity)]))
+    .digest();
+  hash[6] = (hash[6]! & 15) | 0x50;
+  hash[8] = (hash[8]! & 63) | 0x80;
+  const hex = hash.subarray(0, 16).toString("hex");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+function identity(value: AssetJobIdentity): AssetJobIdentity {
+  return {
+    assetId: assetUuid(value.assetId),
+    jobId: assetUuid(value.jobId),
+    attemptId: assetUuid(value.attemptId),
+  };
+}
+function json(value: unknown): string {
+  function check(v: unknown): void {
+    if (
+      v === null ||
+      typeof v === "string" ||
+      typeof v === "boolean" ||
+      (typeof v === "number" && Number.isFinite(v))
+    )
+      return;
+    if (Array.isArray(v)) {
+      for (const item of v) check(item);
+      return;
+    }
+    if (
+      typeof v === "object" &&
+      v !== null &&
+      (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null)
+    ) {
+      for (const item of Object.values(v)) check(item);
+      return;
+    }
+    throw new Error("Asset codec must return JSON data");
+  }
+  check(value);
+  const serialized = JSON.stringify(value);
+  if (value === null || serialized === undefined || Buffer.byteLength(serialized) > 65536)
+    throw new Error("Asset JSON exceeds bounds or is null");
+  return serialized;
+}
+function snapshot<T>(codec: (input: unknown) => T, input: unknown): T {
+  const serialized = json(codec(JSON.parse(json(input))));
+  const normalized = codec(JSON.parse(serialized));
+  if (json(normalized) !== serialized) throw new Error("Unstable asset codec");
+  return normalized;
+}
+async function atomic<T>(tx: Tx, effect: () => Promise<T>): Promise<T> {
+  assertTransaction(tx);
+  try {
+    return await effect();
+  } catch (error) {
+    return abortTransaction(tx, error);
+  }
+}
+function requireTransition(result: { rowCount: number | null }): void {
+  if (result.rowCount !== 1) throw new Error("Conditional asset transition refused");
+}
+interface StoredAsset {
+  [column: string]: unknown;
+  asset_id: string;
+  upload_id: string;
+  metadata: unknown;
+  state: AssetState;
+  state_version: number;
+  job_id: string | null;
+  attempt_id: string | null;
+  result: unknown;
+  created_at: Date;
+  updated_at: Date;
+  queued_at: Date | null;
+  started_at: Date | null;
+  deadline_at: Date | null;
+  ready_at: Date | null;
+  publication_version: 1 | null;
+  failure_code: string | null;
+  db_now: Date;
+}
+
+/** Fixed one-job/one-attempt lifecycle; all SQL/constructors share the caller's branded Tx.
+ * Never call network effects from constructors: only outbox intent is committed here. */
+export function createAssetLifecycle<M, R, Response, Job, Publication = never>(
+  binding: AssetLifecycleBinding,
+  hooks: AssetLifecycleHooks<M, R, Response, Job, Publication>,
+) {
+  const table = qualifiedRelation(binding.relation),
+    scopeKey = durableIdentity(binding.receiptScope);
+  const jobs = createOutbox(binding.outbox, binding.jobsDestination, hooks.job.codec);
+  const publication = hooks.publication;
+  if (publication && !binding.identities.publication)
+    throw new Error("Publication identity binding required");
+  const publications = publication
+    ? createOutbox(binding.outbox, publication.destination, publication.codec)
+    : undefined;
+  function parse(input: unknown, messageId?: string): AssetEvent<R> {
+    const raw = hooks.event(JSON.parse(json(input))),
+      id = identity(raw);
+    const eventId = durableIdentity(raw.eventId);
+    if (
+      eventId !== durableIdentity(binding.identities.result(id, raw.kind)) ||
+      (messageId !== undefined && eventId !== messageId)
+    )
+      throw new Error("Unbound processing event identity");
+    if (
+      typeof raw.occurredAt !== "string" ||
+      raw.occurredAt.length > 40 ||
+      !/^\d{4}-\d{2}-\d{2}T.+(?:Z|[+-]\d{2}:\d{2})$/.test(raw.occurredAt) ||
+      !Number.isFinite(Date.parse(raw.occurredAt))
+    )
+      throw new Error("Invalid processing timestamp");
+    const base = { ...id, eventId, occurredAt: raw.occurredAt };
+    if (raw.kind === "started") return { ...base, kind: raw.kind };
+    if (raw.kind === "succeeded")
+      return {
+        ...base,
+        kind: raw.kind,
+        result: snapshot((v) => hooks.result(v, id), raw.result),
+      };
+    if (raw.kind !== "failed") throw new Error("Invalid processing kind");
+    const code = hooks.failure(raw.code);
+    if (typeof code !== "string" || !/^[A-Z][A-Z0-9_]{0,79}$/.test(code))
+      throw new Error("Invalid processing failure");
+    return { ...base, kind: raw.kind, code };
+  }
+  function decode(row: StoredAsset): AssetRecord<M, R> {
+    return {
+      assetId: row.asset_id,
+      uploadId: row.upload_id,
+      metadata: snapshot(hooks.metadata, row.metadata),
+      state: row.state,
+      stateVersion: row.state_version,
+      jobId: row.job_id,
+      attemptId: row.attempt_id,
+      result:
+        row.result === null
+          ? null
+          : snapshot(
+              (v) =>
+                hooks.result(
+                  v,
+                  identity({
+                    assetId: row.asset_id,
+                    jobId: row.job_id!,
+                    attemptId: row.attempt_id!,
+                  }),
+                ),
+              row.result,
+            ),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      queuedAt: row.queued_at,
+      startedAt: row.started_at,
+      deadlineAt: row.deadline_at,
+      readyAt: row.ready_at,
+      publicationVersion: row.publication_version,
+      failureCode: row.failure_code,
+      dbNow: row.db_now,
+    };
+  }
+  async function get(tx: Tx, assetId: string, lock = false) {
+    const result = await tx.query<StoredAsset>(
+      `SELECT *,clock_timestamp() AS db_now FROM ${table} WHERE asset_id=$1 ${lock ? "FOR UPDATE" : ""}`,
+      [assetUuid(assetId)],
+    );
+    return result.rows[0] ? decode(result.rows[0]) : null;
+  }
+  async function fail(tx: Tx, row: AssetRecord<M, R>, code: string) {
+    const result = await tx.query<StoredAsset>(
+      `UPDATE ${table} SET state='failed',state_version=state_version+1,failure_code=$3,updated_at=clock_timestamp() WHERE asset_id=$1 AND state_version=$2 AND state IN ('pending','processing') RETURNING *,clock_timestamp() AS db_now`,
+      [row.assetId, row.stateVersion, code],
+    );
+    requireTransition(result);
+    await hooks.failed?.(tx, decode(result.rows[0]!));
+  }
+  const receipts = createReceipts(binding.receipts, {
+    payload: (input: unknown, eventId: string) => parse(input, eventId),
+    // All effect-relevant validated fields are retained. Only regenerated transport time differs.
+    identity: (event: AssetEvent<R>) => {
+      const { occurredAt: _transportTime, ...stable } = event;
+      return stable;
+    },
+    result: (input: unknown): { outcome: AssetOutcome } => {
+      const outcome = (input as { outcome: AssetOutcome })?.outcome;
+      if (!["started", "ready", "failed", "stale", "terminal", "unknown"].includes(outcome))
+        throw new Error("Invalid asset receipt outcome");
+      return { outcome };
+    },
+  });
+  const uploadHooks: Pick<UploadHooks<M, Response>, "reserve" | "complete" | "closed"> = {
+    reserve: (tx, upload) =>
+      atomic(tx, async () => {
+        await tx.query(
+          `INSERT INTO ${table}(asset_id,upload_id,metadata) VALUES($1,$2,$3::jsonb)`,
+          [
+            assetUuid(upload.assetId),
+            assetUuid(upload.uploadId),
+            json(snapshot(hooks.metadata, upload.metadata)),
+          ],
+        );
+      }),
+    complete: (tx, upload, original) =>
+      atomic(tx, async () => {
+        const row = await get(tx, upload.assetId, true);
+        if (!row || row.uploadId !== assetUuid(upload.uploadId) || row.state !== "uploading")
+          throw new Error("Asset completion refused");
+        const id = {
+          assetId: row.assetId,
+          jobId: randomUUID(),
+          attemptId: randomUUID(),
+        };
+        requireTransition(
+          await tx.query(
+            `UPDATE ${table} SET state='pending',state_version=state_version+1,job_id=$3,attempt_id=$4,queued_at=clock_timestamp(),deadline_at=clock_timestamp()+interval '10 minutes',updated_at=clock_timestamp() WHERE asset_id=$1 AND state_version=$2 AND state='uploading'`,
+            [row.assetId, row.stateVersion, id.jobId, id.attemptId],
+          ),
+        );
+        const eventId = durableIdentity(binding.identities.request(id));
+        const payload = await hooks.job.construct(tx, {
+          ...id,
+          uploadId: row.uploadId,
+          metadata: structuredClone(row.metadata),
+          original: { ...original },
+          occurredAt: row.dbNow.toISOString(),
+          eventId,
+        });
+        await jobs.enqueue(tx, {
+          eventId,
+          intentKey: `job:${id.jobId}`,
+          payload,
+        });
+        return hooks.response({
+          ...id,
+          uploadId: row.uploadId,
+          state: "pending",
+        });
+      }),
+    closed: (tx, upload, terminal: UploadTerminal) =>
+      atomic(tx, async () => {
+        const row = await get(tx, upload.assetId, true);
+        if (!row || row.uploadId !== assetUuid(upload.uploadId) || row.state !== "uploading")
+          throw new Error("Asset terminal transition refused");
+        requireTransition(
+          await tx.query(
+            `UPDATE ${table} SET state=$3,state_version=state_version+1,failure_code=$4,updated_at=clock_timestamp() WHERE asset_id=$1 AND state_version=$2 AND state='uploading'`,
+            [
+              row.assetId,
+              row.stateVersion,
+              terminal.state,
+              terminal.state === "failed" ? terminal.code : null,
+            ],
+          ),
+        );
+      }),
+  };
+  return {
+    jobs,
+    publications,
+    uploadHooks,
+    parse,
+    get: (tx: Tx, assetId: string) => atomic(tx, () => get(tx, assetId)),
+    apply: (tx: Tx, input: unknown, messageId?: string) =>
+      atomic(tx, async () => {
+        const event = parse(input, messageId);
+        return receipts.withEffect(
+          tx,
+          { scopeKey, eventId: event.eventId, payload: input },
+          async (tx, e) => {
+            const row = await get(tx, e.assetId, true);
+            if (!row) return { outcome: "unknown" as const };
+            // Enforce DB time before accepting any result, even if no sweeper has run.
+            if (
+              (row.state === "pending" || row.state === "processing") &&
+              row.deadlineAt !== null &&
+              row.deadlineAt <= row.dbNow
+            ) {
+              await fail(
+                tx,
+                row,
+                row.state === "pending" ? "QUEUE_DEADLINE" : "PROCESSING_DEADLINE",
+              );
+              return { outcome: "terminal" as const };
+            }
+            if (row.jobId !== e.jobId || row.attemptId !== e.attemptId)
+              return { outcome: "stale" as const };
+            if (row.state !== "pending" && row.state !== "processing")
+              return { outcome: "terminal" as const };
+            if (e.kind === "started") {
+              // A repeated start (including distinct transport delivery) never extends a running job.
+              if (row.state === "pending")
+                requireTransition(
+                  await tx.query(
+                    `UPDATE ${table} SET state='processing',state_version=state_version+1,started_at=clock_timestamp(),deadline_at=clock_timestamp()+interval '30 minutes',updated_at=clock_timestamp() WHERE asset_id=$1 AND state_version=$2 AND state='pending'`,
+                    [row.assetId, row.stateVersion],
+                  ),
+                );
+              return { outcome: "started" as const };
+            }
+            if (e.kind === "failed") {
+              await fail(tx, row, e.code);
+              return { outcome: "failed" as const };
+            }
+            // Matching success is accepted directly from pending as in v1.
+            const ready: CommittedReadyAsset<M, R> = {
+              ...identity(e),
+              state: "ready",
+              stateVersion: row.stateVersion + 1,
+              metadata: structuredClone(row.metadata),
+              result: e.result,
+              readyAt: row.dbNow.toISOString(),
+              publicationVersion: 1,
+            };
+            requireTransition(
+              await tx.query(
+                `UPDATE ${table} SET state='ready',state_version=state_version+1,result=$3::jsonb,ready_at=$4,publication_version=1,updated_at=clock_timestamp() WHERE asset_id=$1 AND state_version=$2 AND state IN ('pending','processing')`,
+                [row.assetId, row.stateVersion, json(e.result), ready.readyAt],
+              ),
+            );
+            if (publication && publications) {
+              const eventId = durableIdentity(binding.identities.publication!(row.assetId));
+              const payload = await publication.construct(tx, structuredClone(ready), eventId);
+              await publications.enqueue(tx, {
+                eventId,
+                intentKey: `publication:${row.assetId}:1`,
+                payload,
+              });
+            }
+            return { outcome: "ready" as const };
+          },
+        );
+      }),
+    sweep: (tx: Tx) =>
+      atomic(tx, async () => {
+        const rows = await tx.query<StoredAsset>(
+          `SELECT *,clock_timestamp() AS db_now FROM ${table} WHERE state IN ('pending','processing') AND deadline_at<=clock_timestamp() ORDER BY deadline_at,asset_id LIMIT 50 FOR UPDATE SKIP LOCKED`,
+        );
+        for (const stored of rows.rows) {
+          const row = decode(stored);
+          await fail(tx, row, row.state === "pending" ? "QUEUE_DEADLINE" : "PROCESSING_DEADLINE");
+        }
+        return rows.rowCount ?? 0;
+      }),
+  };
+}
