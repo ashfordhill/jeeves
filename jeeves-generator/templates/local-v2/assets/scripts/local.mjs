@@ -4,6 +4,14 @@ import { capture, hash, output, plan } from "./common.mjs";
 import { setup } from "./setup.mjs";
 
 const command = process.argv[2];
+if (
+  command !== "stop" &&
+  plan.application.length &&
+  !JSON.parse(readFileSync(".jeeves/report.json", "utf8")).applicationComplete
+)
+  throw new Error(
+    "Required source/application bindings remain incomplete; inspect .jeeves/report.json before startup.",
+  );
 if (!["first-run", "start", "stop"].includes(command))
   throw new Error("Use first-run, start or stop.");
 const project = process.env.COMPOSE_PROJECT_NAME;
@@ -165,7 +173,7 @@ if (!state) {
     done: ["secrets"],
     pending: null,
     volumes: [],
-    secrets: credentialHashes([...plan.secrets]),
+    secrets: credentialHashes(plan.secrets.filter((name) => !plan.generatedSecrets.includes(name))),
   };
   save();
 }
@@ -224,7 +232,10 @@ if (plan.objects.length)
   );
 for (const name of ["setup-broker", "setup-search"])
   if (setupServices.includes(name)) step(name, () => output("run", "--rm", "--no-deps", name));
-if (plan.application.length) step("application", () => output("up", "-d", ...plan.application));
+if (plan.application.length)
+  step("application", () =>
+    output("up", "-d", "--wait", "--wait-timeout", "150", ...plan.application),
+  );
 if (!state.done.includes("initialized")) state.done.push("initialized");
 state.volumes = ownedVolumes();
 save();

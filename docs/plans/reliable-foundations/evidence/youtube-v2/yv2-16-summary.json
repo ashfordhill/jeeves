@@ -1,0 +1,215 @@
+{
+  "export": {
+    "deterministic": true,
+    "files": 93,
+    "manifestSha256": "017f246b54abc21b05cc8fc7e9a14dea6604594f75af7bf96dcee442b258fcd7",
+    "outputSha256": "98e4ac50552471318fb595b3d7747d799dd3bd04fd43b96a92f2c5fdf6fa67dd",
+    "businessSourceAssetsUnchangedSinceRealSmoke": 56,
+    "normalizedSettingsUnchangedSinceRealSmoke": true
+  },
+  "probe": {
+    "creatorVerified": true,
+    "uploadReplay": true,
+    "fixtureBytes": 15584953,
+    "fixtureSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+    "parts": 3,
+    "pending404": true,
+    "completed": "pending",
+    "videoId": "eb7cd20f-0095-4d96-8473-0612d8bf78c9",
+    "status": "ready",
+    "ready": true,
+    "manifest200": true,
+    "thumbnail200": true,
+    "renditions": [360, 720],
+    "searchTotal": 1,
+    "duplicateViewTotal": "1"
+  },
+  "restart": {
+    "credentialsPreserved": true,
+    "volumesPreserved": true,
+    "compositionPreserved": true,
+    "readyPreserved": true,
+    "total": "1",
+    "searchTotal": 1
+  },
+  "cleanup": {
+    "containers": [],
+    "volumes": [],
+    "networks": [],
+    "images": [],
+    "removedExportsRuntimeSecretsDependenciesBuilds": true
+  },
+  "v1": {
+    "frozenExportPaths": 108,
+    "changed": [],
+    "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+    "fixtureBytes": 15584953,
+    "fixtureSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+    "retainedFfmpegImage": "sha256:1792f4e0fb15896196cf9e3ba3d32ab2804ec27f4f7ab04c62ce050a102d8585"
+  },
+  "watchSql": {
+    "publicRows": "1",
+    "privateDenied": "42501",
+    "statementTimeout": "500ms",
+    "poolMaximum": 50
+  },
+  "committedOutboxes": [
+    {
+      "destination": "jobs",
+      "confirmed": true,
+      "count": "1"
+    },
+    {
+      "destination": "publication",
+      "confirmed": true,
+      "count": "1"
+    }
+  ],
+  "mediaBinaries": {
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 5.1.9-0+deb12u1 Copyright (c) 2007-2026 the FFmpeg developers"
+  },
+  "application": [
+    {
+      "name": "jeeves-yv2-16-compose-app-edge-1",
+      "health": "healthy",
+      "mounts": ["/etc/nginx/nginx.conf", "/usr/share/nginx/html"],
+      "image": "sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-upload-1",
+      "health": "healthy",
+      "mounts": [
+        "/run/secrets/broker-password",
+        "/run/secrets/s3-upload",
+        "/run/secrets/sql-metadata-db--upload"
+      ],
+      "image": "sha256:a7ff2566da534fc8f255ddec5db500b7391ce7b079f94a601222b8006f238434"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-watch-1",
+      "health": "healthy",
+      "mounts": [
+        "/run/secrets/broker-password",
+        "/run/secrets/cache-metadata-cache",
+        "/run/secrets/sql-metadata-db--watch",
+        "/run/secrets/sql-view-counts--watch"
+      ],
+      "image": "sha256:a7ff2566da534fc8f255ddec5db500b7391ce7b079f94a601222b8006f238434"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-search-indexer-1",
+      "health": "healthy",
+      "mounts": ["/run/secrets/broker-password"],
+      "image": "sha256:a7ff2566da534fc8f255ddec5db500b7391ce7b079f94a601222b8006f238434"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-search-1",
+      "health": "healthy",
+      "mounts": [],
+      "image": "sha256:a7ff2566da534fc8f255ddec5db500b7391ce7b079f94a601222b8006f238434"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-view-counter-1",
+      "health": "healthy",
+      "mounts": ["/run/secrets/broker-password", "/run/secrets/sql-view-counts--view-counter"],
+      "image": "sha256:a7ff2566da534fc8f255ddec5db500b7391ce7b079f94a601222b8006f238434"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-completion-handler-1",
+      "health": "healthy",
+      "mounts": [
+        "/run/secrets/broker-password",
+        "/run/secrets/sql-metadata-db--completion-handler"
+      ],
+      "image": "sha256:a7ff2566da534fc8f255ddec5db500b7391ce7b079f94a601222b8006f238434"
+    },
+    {
+      "name": "jeeves-yv2-16-compose-app-transcoder-1",
+      "health": "healthy",
+      "mounts": ["/run/secrets/broker-password", "/run/secrets/s3-transcoder"],
+      "image": "sha256:c50d4515d795c8d50538f4aa7f09f09bfeae78b79342c8f2674dc4eadcb2eae0"
+    }
+  ],
+  "normalDrain": [
+    {
+      "name": "/jeeves-yv2-16-compose-app-edge-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-upload-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-watch-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-search-indexer-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-search-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-view-counter-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-completion-handler-1",
+      "exit": 0
+    },
+    {
+      "name": "/jeeves-yv2-16-compose-app-transcoder-1",
+      "exit": 0
+    }
+  ],
+  "base": {
+    "registry": "default loadLocalV2Registry()",
+    "prefix": "catalog",
+    "templates": ["owned-multipart", "asset-lifecycle", "video-hls"],
+    "resources": [
+      "catalog-completion-events",
+      "catalog-metadata-db",
+      "catalog-originals",
+      "catalog-transcoded",
+      "catalog-upload-queue"
+    ],
+    "application": [],
+    "logins": [],
+    "ownFrozenInstallAndBuild": true,
+    "requiredCustomHooks": true
+  },
+  "checks": {
+    "check": {
+      "files": 68,
+      "tests": 463,
+      "seconds": 40.55
+    },
+    "e2e": {
+      "nativeChromium": true,
+      "tests": 36,
+      "minutes": 1.4
+    },
+    "webBuild": {
+      "passed": true,
+      "seconds": 1.02,
+      "advisory": "existing chunk size warning"
+    }
+  },
+  "roleSetup": {
+    "youtube": {
+      "roles": [
+        {
+          "name": "creator"
+        }
+      ],
+      "providerKeysNotPlaceholderCreated": true
+    },
+    "base": {
+      "roles": [],
+      "providerKeysNotPlaceholderCreated": true
+    }
+  }
+}

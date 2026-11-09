@@ -1083,3 +1083,9 @@ refuse; close/switch disposes pending work. The dialog footer keeps both mouse a
 at 1280×800. Nothing changes the design, revision, history, layout, focus, camera or preferences.
 Extract into a new directory and follow README; secrets/data are provisioned later. ZIP details
 and API/error limits are documented in the generator guide.
+
+The local-v2 generator now has a complete source-bound YouTube backend recipe and an explicit
+base-video attachment command. These are source/generator APIs; supported mouse/chat attachment
+and saved-source preview wiring are later units. The base pack requires product codecs/routes/
+services and has no discovery/counting dependency. The YouTube recipe's static browser slot is
+ready for the existing browser to be attached separately. [Actual interfaces and limits](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).

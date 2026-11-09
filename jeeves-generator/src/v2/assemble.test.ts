@@ -10,7 +10,7 @@ import {
   generationSourceFixture,
 } from "../../../jeeves/packages/spec/src/fixtures/yv2-selections.ts";
 import { localV1Templates } from "../../templates/local-v1/index.ts";
-import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
+import { loadLocalV2Dependencies as loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { assembleExperimental } from "../assemble.ts";
 import { exportNewDirectory } from "../export.ts";
 import { planFileWrites } from "../files.ts";

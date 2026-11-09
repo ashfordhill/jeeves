@@ -2,6 +2,7 @@ import { readdirSync } from "node:fs";
 import { sameContractRef } from "@jeeves/spec";
 import { jsonFile } from "../../src/json.ts";
 import { createLocalAssetLifecycle } from "../../src/v2/asset-lifecycle.ts";
+import { createLocalComposition } from "../../src/v2/composition.ts";
 import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalEventCounter } from "../../src/v2/event-counter.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
@@ -25,9 +26,25 @@ function sourcePaths(path: string): string[] {
 }
 
 /** Foundation and dependency libraries. Features register their own application implementation. */
-export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
+export function loadLocalV2Registry(
+  featureValues: readonly V2Emitter[] = [],
+  options: { applications?: boolean } = {},
+) {
   // Snapshot registration metadata before the foundation captures its contribution callbacks.
-  const features = featureValues.map((feature) => ({
+  const features = [
+    ...(options.applications === false
+      ? []
+      : [
+          createLocalComposition([
+            ...new Set([
+              ...sourcePaths("jeeves-generator/src/v2"),
+              ...sourcePaths("jeeves-generator/templates/local-v2"),
+              ...sourcePaths("jeeves/packages/spec/src"),
+            ]),
+          ]),
+        ]),
+    ...featureValues,
+  ].map((feature) => ({
     ...feature,
     sourcePaths: [...feature.sourcePaths],
     provides: structuredClone(feature.provides),
@@ -104,4 +121,10 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     createLocalYouTubeAdapters(distinct),
     ...features,
   ]);
+}
+
+/** Dependency-only host for focused library consumers and custom compiled recipes. It never
+ * claims the default YouTube application recipe. */
+export function loadLocalV2Dependencies(features: readonly V2Emitter[] = []) {
+  return loadLocalV2Registry(features, { applications: false });
 }

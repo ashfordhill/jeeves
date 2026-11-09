@@ -5987,3 +5987,42 @@ attested yet. Use `youtubeReadySelect` for foundation-owned CREATE VIEW, not bot
 standalone `youtubeReadyView`. Generic `assetEventId` and public `createTotalReader` were moved
 without algorithm changes and retain their old reexports; lifecycle raw-wire validation/API is
 unchanged. Local commit: **YV2-15: bind YouTube behavior to reusable feature modules**.
+
+## 2026-11-08 — YV2-16: reusable video attachment and complete YouTube backend
+
+`buildGenerationPresetCommand` explicitly materializes graph/modules/generation/ownership in one
+batch; prefixed base video preserves existing design intent and selects only upload/lifecycle/HLS.
+Default `loadLocalV2Registry()` installs `local.video-composition`: exact connected refs/authority,
+SQL/migrations/public views/grants, actual seven business processes and finite three-API/static/
+media edge. Generic bound constructors and video-only FFmpeg/ffprobe readiness stay separate from
+YouTube adapters; creator roles come only from the trusted YouTube recipe. Base exports keep
+required product/service hooks, zero SQL logins/app services and no search/count resources.
+[Actual APIs/settings/output/support](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).
+
+Final deterministic **93-file** exports pass own frozen install/untouched build; default-registry
+prefixed base does too. Exact final manifest017f246b54abc21b05cc8fc7e9a14dea6604594f75af7bf96dcee442b258fcd7
+clean first-run/real Keycloak PKCE + signed multipart + CPU360p/720p + committed-ready Watch/search1/
+duplicate count1 pass with all14 generated containers healthy. Media/indexer have no SQL mount;
+Watch private SELECT42501/public view/pool50/timeout500ms and confirmed outboxes observed. Normal
+restart preserves credentials/volumes/composition/video/search/count; all app drains exit0.
+Necessary setup fix excludes provider-generated keys from placeholders/initial hashes, then hashes
+their real values after bootstrap/owner revocation. Existing algorithms/providers/pins unchanged.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-16-composition.md),
+[sanitized results](plans/reliable-foundations/evidence/youtube-v2/yv2-16-summary.json).
+
+Post-cleanup `pnpm check`: lint/types, **463 tests/68 files,40.55s**; **36 native E2Es,1.4m**;
+web build **1.02s** (existing advisory). TinyURL lane/mouse/history/generation coverage passes;
+no studio UI changed. Logs/harness `/tmp/jeeves-yv2-16/` (`check-final.log`, `e2e-final.log`,
+`web-build.log`, `*-proven-final.log`, `restart-final.log`, `*-summary.json`). No weakened checks.
+Exact scratch jeeves-yv2-16-compose containers/5volumes/network/2labelled images and all owned
+exports/runtime/secrets/deps/builds removed; ports45300–45304 free. Fresh frozen-v1 export matches
+108 hashes; historical manifest5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f,
+fixture15584953/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9 and retained
+FFmpeg unchanged; all14 v1 services healthy. Owner README/Future Benchmarks, feedback/Unicode
+Zone.Identifier deletions/colon variants and e2e-docker mode preserved. No branch/worktree/stash/
+push or final v2 app. Commit: **YV2-16: compose video feature and YouTube local preset**.
+
+Next **YV2-17 only** wires supported source choices/controls to mouse and chat using the actual
+constructors/commands above. Base product hooks remain custom; YV2-20 owns alternate consumer
+proof,21 the untouched field baseline,22 the existing browser. Static notice is an explicit browser
+slot, not that browser; deterministic report runtimeVerification stays none/strict readiness separate.

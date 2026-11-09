@@ -12,7 +12,11 @@ export function setup() {
   const write = (name, value, mode = 0o644) =>
     writeFileSync(`.runtime/secrets/${name}`, value, { mode, flag: "wx" });
   for (const name of plan.secrets.filter(
-    (name) => !name.endsWith(".toml") && !name.endsWith(".env") && !name.endsWith(".json"),
+    (name) =>
+      !plan.generatedSecrets.includes(name) &&
+      !name.endsWith(".toml") &&
+      !name.endsWith(".env") &&
+      !name.endsWith(".json"),
   )) {
     values[name] = randomBytes(32).toString("hex");
     write(name, values[name]);
@@ -50,6 +54,7 @@ index = "index.html"
         realm: identity.id,
         enabled: true,
         registrationAllowed: false,
+        roles: { realm: identity.roles.map((name) => ({ name })) },
         sslRequired: "none",
         clients: [
           {
@@ -59,6 +64,18 @@ index = "index.html"
             directAccessGrantsEnabled: false,
             redirectUris: [`${origin}/`],
             webOrigins: [origin],
+            protocolMappers: [
+              {
+                name: "browser-audience",
+                protocol: "openid-connect",
+                protocolMapper: "oidc-audience-mapper",
+                config: {
+                  "included.client.audience": `${identity.id}-web`,
+                  "id.token.claim": "false",
+                  "access.token.claim": "true",
+                },
+              },
+            ],
             attributes: {
               "pkce.code.challenge.method": "S256",
               "post.logout.redirect.uris": `${origin}/`,

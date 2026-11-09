@@ -8,7 +8,7 @@ import {
   generationSelectionsFixture,
   generationSourceFixture,
 } from "../../../jeeves/packages/spec/src/fixtures/yv2-selections.ts";
-import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
+import { loadLocalV2Dependencies as loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
 import { outboxSchema } from "./durability.ts";
 import { ownedUploadPersistence, ownedUploadSchema } from "./upload-state.ts";

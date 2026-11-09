@@ -204,3 +204,8 @@ payloads, including `.jeeves/manifest.json`, `.jeeves/report.json` and source-li
 Selected-project provenance is separate from the frozen archive origin. See the
 [generator API](../jeeves-generator/README.md#jeeves-preview-and-zip-download) for exact requests,
 limits and errors. This adds no fields or eligibility credit to strict blueprint/report contracts.
+
+The explicit YV2-16 preset command can materialize generation, graph/modules and ownership in
+one operation batch. Blueprint reads still materialize nothing; v3 preserves those exact source
+choices and v2 refuses their semantic loss. Local generator installation/runtime evidence remain
+separate from this read-only representation and strict readiness.

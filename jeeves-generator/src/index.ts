@@ -1,5 +1,5 @@
 export { localV1Templates } from "../templates/local-v1/index.ts";
-export { loadLocalV2Registry } from "../templates/local-v2/index.ts";
+export { loadLocalV2Dependencies, loadLocalV2Registry } from "../templates/local-v2/index.ts";
 export * from "./assemble.ts";
 export * from "./export.ts";
 export * from "./files.ts";
@@ -9,6 +9,7 @@ export * from "./local.ts";
 export * from "./profile.ts";
 export * from "./v2/assemble.ts";
 export * from "./v2/asset-lifecycle.ts";
+export * from "./v2/composition.ts";
 export * from "./v2/durability.ts";
 export * from "./v2/event-counter.ts";
 export * from "./v2/input.ts";

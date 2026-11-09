@@ -31,6 +31,8 @@ export type V2LocalContribution = {
       >
     >;
   }[];
+  /** Application authorization vocabulary belongs to its compiled adapter, not the vendor. */
+  identityRoles?: readonly { element: string; roles: readonly string[] }[];
   services?: readonly {
     host: string;
     command: readonly string[];
@@ -42,6 +44,11 @@ export type V2LocalContribution = {
     storage?: readonly string[];
     broker?: boolean;
     cache?: readonly string[];
+    target?: "app" | "media";
+    environment?: Readonly<Record<string, string>>;
+    readiness?: boolean;
   }[];
+  /** Finite three-API browser edge, never a source-defined routing language. */
+  youtubeEdge?: { upload: string; watch: string; search: string; outputs: string };
 };
 export type V2LocalContributor = (context: V2RenderContext) => V2LocalContribution | undefined;

@@ -49,6 +49,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
   const files: BundleFile[] = [],
     records: Record[] = [];
   const gaps: (V2Gap & { emitter: string })[] = [];
+  const resolved: { emitter: string; id: string }[] = [];
   for (const emitter of registry.emitters) {
     const rendered = emitter.render(
       freeze({
@@ -65,6 +66,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
         },
       }),
     );
+    resolved.push(...(rendered.resolves ?? []));
     for (const file of rendered.files) {
       if (file.path.toLowerCase() === ".jeeves" || file.path.toLowerCase().startsWith(metadata))
         refuse("RESERVED_OUTPUT_PATH", file.path, "The assembler owns provenance output.");
@@ -124,6 +126,16 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
       });
   }
   assertDistinctPaths(files.map((file) => file.path));
+  for (const hook of resolved) {
+    const index = gaps.findIndex((gap) => gap.emitter === hook.emitter && gap.id === hook.id);
+    if (index < 0)
+      refuse(
+        "INVALID_RESOLVED_HOOK",
+        hook.id,
+        "A recipe must satisfy an actual emitted dependency hook.",
+      );
+    gaps.splice(index, 1);
+  }
   // Installed claims must name actual output, owned by this implementation or explicitly
   // composed by a single file owner on its behalf. Advertising a path does not establish support.
   const verifyOutputs = (emitter: string, outputPaths: readonly string[]) => {

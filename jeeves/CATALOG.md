@@ -471,3 +471,14 @@ ownership rows. Trusted suite format v2 additionally pins hash-resolved executab
 case names alone identify no code. Frozen operation/cache/profile records are unchanged. See the
 [independent review](../docs/plans/reliable-foundations/nc14-review.md) and the separate
 [future backend plan](../docs/plans/reliable-foundations/backend-first-proof-plan.md).
+
+### Experimental local-v2 video composition
+
+The generator's `local.video-composition` installs bound constructors for the finite generation
+catalog and a connected local YouTube backend recipe. Explicit `buildGenerationPresetCommand`
+batches materialize either the base video graph/modules/ownership or YouTube core. Base video
+selects upload/lifecycle/HLS only and retains required product/service hooks; no stub app starts.
+The complete YouTube recipe supplies real seven-process construction, SQL/public views/grants,
+provider setup, finite browser/media edge and pinned FFmpeg/ffprobe readiness. Normal editor
+selection UI is separate work; strict operation/template verification remains unavailable.
+[Concrete APIs, consumers and evidence](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).

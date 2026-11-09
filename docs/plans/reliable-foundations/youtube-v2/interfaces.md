@@ -1214,3 +1214,81 @@ bindings, actual readiness, finite edge routes/static/media, pinned FFmpeg/ffpro
 before readiness, and transport/client/pool/signal/drain ownership. No services or final field
 app are supplied by this unit. [Focused/standalone/HTTP evidence and limits](../evidence/youtube-v2/yv2-15-adapters.md);
 [separate backend adapter LOC](../evidence/youtube-v2/yv2-15-adapter-loc.json).
+
+## YV2-16 — video attachment and complete YouTube local recipe
+
+`@jeeves/spec.buildGenerationPresetCommand(design,{preset:"video"|"youtube",prefix?})`
+returns one explicit operation batch. It materializes graph, C3 modules, exact generation refs,
+owners, roles, grants and dependencies; callers apply the entire batch as one history change.
+The compiled `generation-preset-source.json` is a captured creation seed, independent of v1 at
+runtime. Creation explicitly selects supported local HTTP/private-network intent. Existing source
+is never normalized on read/render; its unsupported HTTPS/service-identity declarations remain
+preserved and diagnosed. A prefix remaps canonical refs, never labels. Existing unrelated graph,
+settings, scope and ownership are retained; collisions/existing presets refuse for explicit review.
+
+The **video** attachment adds nine tiles/four roles and only owned-multipart, asset-lifecycle and
+video-hls selections. It omits the publication module/channel, ready cache, search and counts.
+It supplies reusable dependency libraries and bound resource constructors, **not a complete base
+application**: metadata/result/wire/response codecs, verified principal, product routes/namespaces,
+SQL contributions and service hooks remain required custom work. No stub service starts, no SQL
+login is invented, and its report stays application-incomplete. YV2-20 owns alternate-product proof.
+
+`loadLocalV2Registry()` now includes `local.video-composition`; the source-bound **youtube-core**
+recipe requires one explicit connected selection per responsibility and seven distinct hosts.
+It checks upload/lifecycle refs, shared Video authority/store, actual original/job/result/publication
+resources, Watch ready/count/event refs and Search index refs. Names/prefixes select no work.
+`loadLocalV2Dependencies(features?)` is the explicit library/custom-recipe host, without the
+YouTube recipe or complete-template claims; predecessor focused tests retain their original
+assertions against that host. Both functions and `youtubeComposition`/`videoRelations` are exported.
+
+Generated composition paths:
+
+- `src/features/application-bindings.ts`: normalized exact selected IDs, resources and authoritative
+  inputs; base output excludes count/public-read relation defaults.
+- `src/features/local-bindings.ts`: foundation-owned exact contributed SQL logins, with no secrets.
+- `src/features/service-resources.ts`: `selected(kind,id?)`, `input`, `resource`, `httpSettings` and
+  only selected-resource `pool`, `publisher`, `consumer`, `objects` constructors. Custom recipes
+  can use these without importing YouTube policy; pools require explicit contributed logins.
+- `src/runtime/process.ts`: `runProcess`, `ProcessScope`, `periodic`; owns startup readiness,
+  SIGINT/SIGTERM/fatal shutdown and reverse dependency drain. Register clients/pools before users.
+- `src/features/video-runtime.ts`: `verifyVideoRuntime()` verifies actual **ffmpeg and ffprobe**
+  version 5.1.9-0+deb12u1 before opening media consumers/advertising process readiness.
+- `src/services/youtube.ts`: actual Upload/Watch/Search HTTP and lifecycle/media/counter/indexer
+  constructors; explicit process argument selects one of the seven responsibilities.
+- `infra/edge/nginx.conf`, `public/index.html`: finite three API prefixes, static browser slot and
+  public-output media proxy only. Internal exposure removes that API's external route. The static
+  notice is an explicit browser hook; existing browser reuse remains YV2-22.
+
+Foundation composes each migration/view/grant/service once. Upload and lifecycle share explicit
+private asset tables/receipt/outbox permissions; Watch gets only the nine-column ready view and
+separate public totals view. Media/indexer have no SQL login or mount. S3 bindings are contributed
+once by existing transport/worker emitters; no second storage binding exists. Setup owners/admin
+remain setup-only. `youtubeReadySelect` is the foundation's sole ready view definition.
+
+Actual settings consumption: HTTP deadline/admission through `httpSettings` → `createHttpService`;
+SQL pool size/statement timeout through `pool` → `createPostgres`; primary routing uses the explicit
+primary endpoint; worker concurrency/retry through `consumer` → existing `createConsumer`; cache
+TTL through `createYouTubeReadyReader` (the tile/mirror remains its sole authority); query request
+deadline through `createSearch`. Fixed batches/linger/outbox/provider/execution/language/replica/
+transfer/media policies correspond to existing finite constructors and foundation topology, not
+ignored alternative choices. Exposure affects actual loopback routing. No new settings/provider/pin.
+
+The Docker `media` stage retains the exact v1 Node base, Debian snapshot, FFmpeg package hash and
+complete `ffmpeg-os.lock`; generated builds read only captured v2 assets. One media service/prefetch1.
+The optional trusted `V2LocalContribution.identityRoles[{element,roles}]` names an actual selected
+identity and one bounded application role vocabulary. The foundation invents no product role; only
+the YouTube recipe contributes creator. Base creation uses generic system/principal labels.
+
+Application readiness is written only after actual initialization. HTTP admission stops before
+client/pool close; workers drain consumers, relay/publishers, then caller pools/clients. Compose
+allows the existing bounded media deadline to drain (21m; other application processes 6m).
+First-run waits for application health and refuses required report gaps. Storage-generated keys
+are excluded from placeholder creation/initial credential hashes, then their real hashes join
+strict restart validation after bootstrap/owner revocation; restart never rotates credentials.
+
+Installed template consumer claims name actual bound constructor output as well as binding inputs;
+complete YouTube preset claims name its runnable entrypoint. Library dependency hooks are resolved
+by an explicit validated recipe using `V2Emitter.render().resolves[{emitter,id}]`; nonexistent hook
+resolution refuses. Partial source still has required hooks and no application readiness. Runtime
+verification remains `none` in the deterministic report: observed smoke evidence is recorded
+separately, not promoted into strict TinyURL certification. [Evidence/limits](../evidence/youtube-v2/yv2-16-composition.md).

@@ -57,6 +57,8 @@ export type V2Emitter = {
   render(context: V2RenderContext): {
     files: readonly V2TemplateFile[];
     gaps?: readonly V2Gap[];
+    /** Compiled application recipe may satisfy named dependency hooks after validation. */
+    resolves?: readonly { emitter: string; id: string }[];
   };
 };
 export type V2EmitterIdentity = {

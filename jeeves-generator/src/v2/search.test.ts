@@ -12,7 +12,7 @@ import {
   publicVideoMapping,
 } from "../../templates/local-v2/assets/src/features/public-video.ts";
 import { defineSearchDocument } from "../../templates/local-v2/assets/src/runtime/search-contract.ts";
-import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
+import { loadLocalV2Dependencies as loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
 import type { V2Emitter } from "./registry.ts";
 import { searchProjectionMapping } from "./search.ts";

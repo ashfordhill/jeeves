@@ -250,6 +250,21 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   };
   const setupSecrets: string[] = [];
   const databases: Database[] = [];
+  const identityRoles = contributions.flatMap(({ value }) => value.identityRoles ?? []);
+  for (const declaration of identityRoles) {
+    if (
+      !identityIds.has(declaration.element) ||
+      identityRoles.filter((row) => row.element === declaration.element).length !== 1 ||
+      declaration.roles.length > 32 ||
+      new Set(declaration.roles).size !== declaration.roles.length
+    )
+      refuse(
+        "INVALID_LOCAL_CONTRIBUTION",
+        declaration.element,
+        "Declare one bounded role vocabulary for an actually selected identity.",
+      );
+    for (const role of declaration.roles) generationLocalIdentity(role);
+  }
   const identity = [...identityIds].sort().map((id) => ({
     id,
     service: `identity-${id}`,
@@ -259,6 +274,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     ownerSecret: `identity-owner-${id}`,
     secret: `identity-${id}`,
     admin: `identity-admin-${id}`,
+    roles: [...(identityRoles.find((row) => row.element === id)?.roles ?? [])],
   }));
   for (const r of byKind("database"))
     databases.push({
@@ -615,6 +631,14 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           : `${r.kind}-${id}`;
   };
   const application: string[] = [];
+  const edges = contributions.flatMap(({ value }) =>
+    value.youtubeEdge ? [value.youtubeEdge] : [],
+  );
+  if (edges.length > 1)
+    refuse("INVALID_LOCAL_CONTRIBUTION", "/generation", "One finite browser edge is supported.");
+  const edge = edges[0];
+  const publicHttp = (host: string) =>
+    model.selections.some((s) => s.host === host && s.inputs["host.exposure"] === "public");
   let httpHost: string | undefined;
   for (const { value } of contributions)
     for (const service of value.services ?? []) {
@@ -679,7 +703,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           "Service identity must match its normalized verified principal binding.",
         );
       if (service.http) {
-        if (httpHost)
+        if (httpHost && !edge)
           refuse(
             "LOCAL_IDENTITY_LIMIT",
             service.host,
@@ -691,12 +715,26 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         ...app("status"),
         profiles: ["application"],
         command: [...service.command],
+        ...(service.target === "media" && {
+          image: `${composeVariable("COMPOSE_PROJECT_NAME")}-media`,
+          build: { context: ".", target: "media" },
+        }),
         secrets: [...new Set(credentials)],
-        ...(identityBinding && {
-          environment: {
+        environment: {
+          ...service.environment,
+          ...(identityBinding && {
             OIDC_ISSUER: `http://127.0.0.1:${composeVariable("LOCAL_IDENTITY_PORT")}/realms/${identityBinding.id}`,
             OIDC_JWKS_URL: `http://${identityBinding.service}:8080/realms/${identityBinding.id}/protocol/openid-connect/certs`,
-          },
+          }),
+        },
+        ...(service.readiness && {
+          stop_grace_period: service.target === "media" ? "21m" : "6m",
+          healthcheck: health([
+            "CMD",
+            "node",
+            "-e",
+            "process.exit(require('node:fs').existsSync('/tmp/application-ready')?0:1)",
+          ]),
         }),
         depends_on: {
           ...(identityBinding && { [identityBinding.service]: { condition: "service_healthy" } }),
@@ -707,10 +745,64 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
             }),
           ),
         },
-        ...(service.http && { ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:3000`] }),
+        ...(service.http &&
+          !edge &&
+          publicHttp(service.host) && {
+            ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:3000`],
+          }),
       };
       application.push(name);
     }
+  if (edge) {
+    const apis = [edge.upload, edge.watch, edge.search];
+    if (new Set(apis).size !== 3 || apis.some((host) => !services[`app-${host}`]))
+      refuse(
+        "INVALID_LOCAL_CONTRIBUTION",
+        "/generation",
+        "Edge requires three actual distinct API services.",
+      );
+    const output = required(edge.outputs, "object-store");
+    if (!output.public)
+      refuse(
+        "INVALID_LOCAL_CONTRIBUTION",
+        edge.outputs,
+        "Media edge requires selected public outputs.",
+      );
+    services["app-edge"] = {
+      image: pins.nginx,
+      profiles: ["application"],
+      ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:8080`],
+      volumes: [
+        "./infra/edge/nginx.conf:/etc/nginx/nginx.conf:ro",
+        "./public:/usr/share/nginx/html:ro",
+      ],
+      depends_on: Object.fromEntries(
+        apis.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
+      ),
+      healthcheck: health([
+        "CMD",
+        "wget",
+        "-q",
+        "-O",
+        "/dev/null",
+        "http://127.0.0.1:8080/healthz",
+      ]),
+    };
+    application.push("app-edge");
+    files.push(
+      file(
+        "infra/edge/nginx.conf",
+        `events {}\nhttp {\n include /etc/nginx/mime.types;\n server {\n listen 8080;\n root /usr/share/nginx/html;\n location = /healthz { return 200 'ready'; }\n${publicHttp(edge.upload) ? ` location /api/upload/ { proxy_pass http://app-${edge.upload}:3000/; }` : " location /api/upload/ { return 404; }"}\n${publicHttp(edge.watch) ? ` location /api/watch/ { proxy_pass http://app-${edge.watch}:3000/; }` : " location /api/watch/ { return 404; }"}\n${publicHttp(edge.search) ? ` location /api/search/ { proxy_pass http://app-${edge.search}:3000/; }` : " location /api/search/ { return 404; }"}\n location /media/ { proxy_pass http://local-objects:3902/; proxy_set_header Host ${edge.outputs}.web.garage.localhost; add_header Cache-Control 'public, max-age=31536000, immutable'; }\n location / { try_files $uri $uri/ /index.html; }\n }\n}\n`,
+        contributions.filter((c) => c.value.youtubeEdge).map((c) => c.emitter),
+      ),
+    );
+    files.push(
+      file(
+        "public/index.html",
+        "<!doctype html><meta charset=utf-8><title>Generated video backend</title><p>Video backend is running. Connect the existing browser through /api/upload/, /api/watch/ and /api/search/.</p>\n",
+      ),
+    );
+  }
   const providerServices = Object.keys(services)
     .filter((name) => !name.startsWith("setup-") && !name.startsWith("app-"))
     .sort();
@@ -745,9 +837,17 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       jsonFile(plan),
       contributions
         .filter((c) =>
-          Object.entries(c.value).some(([key, value]) => key !== "sourcePaths" && value.length),
+          Object.entries(c.value).some(
+            ([key, value]) =>
+              key !== "sourcePaths" && (Array.isArray(value) ? value.length : !!value),
+          ),
         )
         .map((c) => c.emitter),
+    ),
+    file(
+      "src/features/local-bindings.ts",
+      `// Foundation-owned exact contributed runtime logins.\nexport const localLogins: {resource:string;host:string;database:string;user:string;secret:string}[] = ${jsonFile(logins).trim()};\n`,
+      contributors.map((c) => c.emitter),
     ),
     file(
       "compose.yaml",
@@ -775,6 +875,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     ".gitignore",
     ".dockerignore",
     "Dockerfile",
+    "ffmpeg-os.lock",
     "src/runtime/local.ts",
     "scripts/status.mjs",
     "scripts/setup.mjs",
