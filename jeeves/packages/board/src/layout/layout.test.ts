@@ -5,7 +5,15 @@ import ELK from "elkjs/lib/elk.bundled.js";
 import { describe, expect, it, vi } from "vitest";
 import { alignLayout } from "./align.ts";
 import { BAND_OPTIONS, bandColumns, endColumns, ROUTE_OPTIONS, usesBands } from "./bands.ts";
-import { buildElkGraph, graphKey, type LayoutInput, usedOptionIds } from "./elkGraph.ts";
+import noPortsGolden from "./elkGraph.golden.json" with { type: "json" };
+import {
+  buildElkGraph,
+  graphKey,
+  type LayoutInput,
+  type LayoutLine,
+  portOffset,
+  usedOptionIds,
+} from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import { createLayoutEngine, LayoutSuperseded } from "./engine.ts";
 import { bandClashes, JUNCTION_PX, meetAtPorts } from "./junctions.ts";
@@ -516,6 +524,167 @@ describe("layout engine", () => {
     await expect(superseded).rejects.toBeInstanceOf(LayoutSuperseded);
     expect((await latest).key).toBe(engine.keyFor(tinyUrl));
     expect(layout).toHaveBeenCalledTimes(2);
+  });
+});
+
+/**
+ * Named ports: the 256×160 hub's three out ports at 64/96/128 go to three tiles, and the sink
+ * takes two of them at named in ports (32 and 160) and the third at its default port (96). The
+ * start's line into the hub enters at the hub's named port 32. Half of 160 is off the grid, so
+ * only the hub's top on the grid puts its ports on grid lines.
+ */
+const ported: LayoutInput = {
+  tiles: [
+    { id: "start", w: 128, h: 128 },
+    {
+      id: "hub",
+      w: 256,
+      h: 160,
+      ports: [
+        { id: "head", side: "in", y: 32 },
+        { id: "first", side: "out", y: 64 },
+        { id: "second", side: "out", y: 96 },
+        { id: "third", side: "out", y: 128 },
+      ],
+    },
+    { id: "a", w: 128, h: 128 },
+    { id: "b", w: 128, h: 128 },
+    { id: "c", w: 128, h: 128 },
+    {
+      id: "sink",
+      w: 128,
+      h: 192,
+      ports: [
+        { id: "top", side: "in", y: 32 },
+        { id: "bottom", side: "in", y: 160 },
+      ],
+    },
+  ],
+  lines: [
+    { id: "start-hub", source: "start", target: "hub", targetPort: "head" },
+    { id: "hub-a", source: "hub", target: "a", sourcePort: "first" },
+    { id: "hub-b", source: "hub", target: "b", sourcePort: "second" },
+    { id: "hub-c", source: "hub", target: "c", sourcePort: "third" },
+    { id: "a-sink", source: "a", target: "sink", targetPort: "top" },
+    { id: "b-sink", source: "b", target: "sink" },
+    { id: "c-sink", source: "c", target: "sink", targetPort: "bottom" },
+  ],
+};
+
+/** A line's two ends where its ports are: named, or mid-height. */
+function ends(input: LayoutInput, layout: BoardLayout, line: LayoutLine): [Point, Point] {
+  const [s, t] = [rect(input, layout, line.source), rect(input, layout, line.target)];
+  const tile = (id: string) => input.tiles.find((x) => x.id === id);
+  return [
+    { x: s.x + s.w, y: s.y + portOffset(tile(line.source), line.sourcePort) },
+    { x: t.x, y: t.y + portOffset(tile(line.target), line.targetPort) },
+  ];
+}
+
+describe("named ports", () => {
+  it("give a board without them the ELK graph and key it had before ports", () => {
+    // Golden from the commit before ports: a user with a chip, a fork, a merge, bands, and the
+    // same board with shown positions (one new tile hinted beside its source).
+    const input: LayoutInput = {
+      tiles: [
+        { id: "user", w: 128, h: 160 },
+        { id: "api", w: 128, h: 128, band: 0 },
+        { id: "db", w: 128, h: 128, band: 0 },
+        { id: "events", w: 128, h: 96, band: 1 },
+        { id: "worker", w: 128, h: 128, band: 1 },
+      ],
+      lines: [
+        { id: "user-api", source: "user", target: "api", chip: { w: 32, h: 32 } },
+        { id: "api-db", source: "api", target: "db", band: 0 },
+        { id: "api-events", source: "api", target: "events", band: 1 },
+        { id: "events-worker", source: "events", target: "worker", band: 1 },
+        { id: "worker-db", source: "worker", target: "db", band: 1 },
+      ],
+    };
+    const shown = {
+      user: { x: 32, y: 48 },
+      api: { x: 224, y: 64 },
+      db: { x: 416, y: 64 },
+      events: { x: 416, y: 224 },
+    };
+    expect(
+      JSON.stringify({
+        key: graphKey(input),
+        first: buildElkGraph(input),
+        shown: buildElkGraph(input, shown),
+      }),
+    ).toBe(JSON.stringify(noPortsGolden));
+    // An empty port list is no ports; a port's height is part of the key.
+    const empty = { ...input, tiles: input.tiles.map((t) => ({ ...t, ports: [] })) };
+    expect(graphKey(empty)).toBe(graphKey(input));
+    const moved = structuredClone(ported);
+    const first = moved.tiles[1]?.ports?.[1];
+    if (first) first.y = 32;
+    expect(graphKey(moved)).not.toBe(graphKey(ported));
+  });
+
+  it("start and end each line at its port, on the grid, orthogonal and clear of every tile", async () => {
+    const layout = await createLayoutEngine(elk, { debounceMs: 0 }).request(ported);
+    const rects = ported.tiles.map((t) => rect(ported, layout, t.id));
+    for (const [i, a] of rects.entries()) {
+      expect(a.x % GRID, `${ported.tiles[i]?.id} x`).toBe(0);
+      for (const b of rects.slice(i + 1)) expect(intersects(a, b)).toBe(false);
+    }
+    for (const line of ported.lines) {
+      const route = layout.routes[line.id] ?? [];
+      const [from, to] = ends(ported, layout, line);
+      expect(route.at(0), `${line.id} start`).toEqual(from);
+      expect(route.at(-1), `${line.id} end`).toEqual(to);
+      expect(from.y % GRID, `${line.id} source port`).toBe(0);
+      expect(to.y % GRID, `${line.id} target port`).toBe(0);
+      // The last run enters the port level from the left, so the arrowhead sits on it.
+      const before = route.at(-2) as Point;
+      expect(before.y === to.y && before.x < to.x, `${line.id} arrives level`).toBe(true);
+      for (const [j, a] of route.slice(0, -1).entries()) {
+        const b = route[j + 1] as Point;
+        expect(a.x === b.x || a.y === b.y, `${line.id} has a diagonal`).toBe(true);
+        const run = {
+          x: Math.min(a.x, b.x),
+          y: Math.min(a.y, b.y),
+          w: Math.abs(b.x - a.x),
+          h: Math.abs(b.y - a.y),
+        };
+        for (const r of rects) {
+          const through =
+            run.x < r.x + r.w && run.x + run.w > r.x && run.y < r.y + r.h && run.y + run.h > r.y;
+          expect(through, `${line.id} through a tile at ${r.x},${r.y}`).toBe(false);
+        }
+      }
+    }
+    // The hub follows the start's default port with its named one, so that line is straight.
+    expect(layout.routes["start-hub"]).toHaveLength(2);
+    // Laid out again from what was shown, nothing moves.
+    expect(
+      await createLayoutEngine(elk, { debounceMs: 0 }).request(ported, layout.positions),
+    ).toEqual(layout);
+  });
+
+  it("reject a port name that is unknown or on the wrong side, a port off the grid, and bands", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const request = (input: LayoutInput) =>
+      createLayoutEngine(elk, { debounceMs: 0 }).request(input);
+    const withLine = (line: Partial<LayoutLine>) => ({
+      ...ported,
+      lines: ported.lines.map((l) => (l.id === "hub-a" ? { ...l, ...line } : l)),
+    });
+    await expect(request(withLine({ sourcePort: "missing" }))).rejects.toThrow(
+      "Line hub-a names port missing, which is not an out port of hub.",
+    );
+    await expect(request(withLine({ sourcePort: "head" }))).rejects.toThrow(
+      "not an out port of hub",
+    );
+    await expect(request(withLine({ targetPort: "first" }))).rejects.toThrow("not an in port of a");
+    const offGrid = structuredClone(ported);
+    offGrid.tiles[5] = { id: "sink", w: 128, h: 192, ports: [{ id: "top", side: "in", y: 48 }] };
+    await expect(request(offGrid)).rejects.toThrow("must be a multiple of 32");
+    const banded = { ...ported, tiles: ported.tiles.map((t) => ({ ...t, band: 0 })) };
+    await expect(request(banded)).rejects.toThrow("A banded layout does not take named ports yet.");
+    vi.restoreAllMocks();
   });
 });
 

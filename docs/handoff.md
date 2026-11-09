@@ -6565,3 +6565,109 @@ For UI04: nothing here touches the board or layout. For UI07/UI08:
 - LaneCanvas still receives `selected={selection}` (structurally a `BoardSelection`). UI08's row
   highlight can read `selection.module` from the same object.
 - Cards carry `data-module=<id>`.
+
+## 2026-11-09 — UI04: board ports at fixed heights
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md), the board can now attach a line to a
+named port at a fixed height on a tile. No caller uses ports yet, so Jeeves looks the same.
+
+The API is documented in the file headers of `layout/elkGraph.ts`, `align.ts`, `bands.ts`,
+`engine.ts` and `react/Board.tsx`:
+
+- `TilePort = { id; side: "in" | "out"; y }`, where `y` is measured from the tile's top. It must
+  be a multiple of 32 strictly between 0 and `h`, and the ID must be unique on its tile.
+- `LayoutTile.ports` and `TileSpec.ports` list a tile's named ports.
+- `LayoutLine` and `LineSpec` take `sourcePort` (an `out` port of the source) and `targetPort` (an
+  `in` port of the target). A line without one uses the default mid-height port.
+- Helpers: `namedPortId` (`<tile>__port:<id>`), `lineSourcePortId`, `lineTargetPortId`,
+  `portOffset`, `usesNamedPorts` and `checkPorts`.
+
+**Invalid ports throw.** An unknown, wrong-side or duplicate port, or one off the grid, makes
+`checkPorts` throw. A silent fallback would draw the line at the wrong row. The engine rejects
+that request like an ELK error (logged once), so the board keeps its previous layout and sets
+`data-layout-error`.
+
+Other changes:
+
+- `elkTile` emits the tile's named ports after its default ones. `buildElkGraph` checks the ports
+  and wires each edge to its own port.
+- `graphKey` appends ports only when a tile or line has some, so keys without ports are unchanged.
+- `alignLayout` anchors a tile with named ports at its top rather than its centre, so those ports
+  sit on grid lines even when `h / 2` is off the grid (a 160px tile, for example). Straightening
+  compares each line's actual ports, and routes end at them.
+- `Board.tsx` adds one React Flow handle per named port (`id` = the port ID, `top` = `y`) after
+  the default handles, in `Tile` and in `BoardSnapshotView`. Edges get `sourceHandle` and
+  `targetHandle`. `snapshot()` carries the ports.
+- `BoardLine` and the arrowheads needed no change, because they already follow the routed ends.
+- **Banded pipeline:** `layoutBands` rejects any named port with "A banded layout does not take
+  named ports yet."
+
+**Identity gate.** Before editing, at `e72c293`, I recorded the full results for the four studies
+and `field-projects/youtube/v2/inputs/design.json`, using real ELK through `createLayoutEngine`
+and `laneLayoutInput(laneGraph(design))`. For each input I recorded:
+
+- the banded `BoardLayout`;
+- a relayout using the shown positions as hints;
+- a flat layout and a flat relayout without bands;
+- `graphKey`;
+- three `buildElkGraph` outputs (banded, stable and flat);
+- every ELK input graph.
+
+After the changes, all five files were **byte-identical**. The scratch files are outside the
+repository. `elkGraph.golden.json`, generated at `e72c293`, pins `buildElkGraph` and `graphKey`
+for a port-free input.
+
+**Tests.** Four new tests:
+
+- `layout.test.ts` "named ports":
+  - the golden;
+  - an empty port list gives the same key, and a moved port changes the key;
+  - a real-ELK flat board: a 256×160 hub whose out ports at 64/96/128 lead to three tiles, and a
+    sink with named in ports at 32/160 plus a default line. Every line starts and ends at its
+    port, on the grid, orthogonal and through no tile, and its last run enters level. Default
+    lines stay at mid-height, and a relayout is unchanged;
+  - unknown, wrong-side, off-grid and banded inputs are rejected.
+- `board.test.tsx`: with real ELK, the drawn paths and arrow tips are at the ports, the handles
+  are at their heights, and the snapshot carries the ports.
+
+**Checks.**
+
+- `pnpm check` exited 0: **474 tests in 71 files**.
+- **41 native E2E tests passed (1.6m).**
+- The web build passed, with the existing chunk-size advisory.
+- I ran a scripted Chromium mouse check at 1440×900 on the running dev app, using my own TinyURL
+  extended (11 tiles, 12 lines) and YouTube (21 tiles, 25 lines) projects:
+  - every drawn tile transform and line path matched the `e72c293` layout exactly;
+  - clicking a tile and a line selected them;
+  - Fit gave 0.56 and 0.38 with both rails open;
+  - there were no page or console errors.
+
+  I deleted both projects, and the owner's six project revisions are unchanged.
+
+**For UI05.** Remove the guard in `layoutBands` (`bands.ts` 395–397). These places still assume
+the mid-height or default port:
+
+- `bands.ts`:
+  - `layoutBand`, lines 248–259:
+    - `elkTile(t)` now also emits a tile's named ports;
+    - the edges use `outPortId(l.source)` and `inPortId(end(l))`.
+  - `port()` at line 268: track wants and per-column tile keys use `h / 2`.
+  - `placeLoose`, lines 348–363: centres on `h / 2`.
+  - `portIds`, line 378: per-band IDs are derived from the default IDs. Keep them for default
+    ports only.
+  - `layoutBands`:
+    - line 436: `elkTile(t, ins.all, outs.all)`;
+    - line 440: `portY` at `h / 2` for the track section's start and end;
+    - lines 444–445: the edge ports.
+- `junctions.ts`:
+  - `sharedPort`, line 32: `mid()` uses `h / 2`.
+  - `meetAtPorts`, lines 187–191: `entering` groups lines by target tile, not by port.
+- `returns.ts`:
+  - `bestU`, line 98: `ys` and `yt` use `h / 2`.
+  - `routeReturns`, lines 291–300: the `shortest` estimate uses `h / 2`.
+  - `judge`, lines 194–195: `fromSource` and `intoTarget` compare tiles, not ports.
+- `branches.ts` has no direct assumption, but it scores with `bandClashes`.
+
+`alignLayout` already handles named ports in both of the band pipeline's align passes. A tile
+with named ports keeps its default port on the grid only when `h / 2` is a multiple of 32. UI06's
+containers should therefore use their header port, not the default port, as the plan already says.

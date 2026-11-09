@@ -7,20 +7,47 @@
 // in as plain sizes, and a line's chip is an icon box with no text; there are no stored
 // positions, so a tile without a previous position is hinted beside its first placed source, and
 // the first layout already uses the stability layering (see `STABILITY_OPTIONS`); lines that meet
-// in a gap run 32px apart, on the grid; tiles and lines may carry a band (`bands.ts`).
+// in a gap run 32px apart, on the grid; tiles and lines may carry a band (`bands.ts`); a tile may
+// have named ports at fixed heights (below).
+//
+// Ports. Every tile has a default port on each side at mid-height: `in` on its left (west) edge,
+// `out` on its right (east) edge. A tile may also list named ports, `{ id, side, y }`, with `y`
+// measured from its top: a multiple of `GRID` strictly between 0 and its height, and ids unique on
+// the tile. A line with `sourcePort` leaves its source at that `out` port, one with `targetPort`
+// enters its target at that `in` port; without them it uses the default port. Lines on one port
+// share it as they share a default port (ELK bundles them). A name that is not a port of the right
+// side on the right tile, or a port off the grid, throws (`checkPorts`): it is the caller's bug,
+// and a quiet fallback to mid-height would draw the line at the wrong row. The engine rejects that
+// request, so the board keeps its previous layout. A tile with named ports has its top on the grid
+// (`alignLayout`), so its named ports are on grid lines; its default port is on one only when its
+// half-height is a multiple of `GRID`. Inputs without named ports give exactly the graph and key
+// they gave before ports existed. Only the flat layout takes named ports so far: `layoutBands`
+// refuses them.
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { BRANCH_GAP, dockHint, GRID, type Point, type Size, TILE_GAP } from "./metrics.ts";
 
+/** A named port on one side of a tile, `y` px below its top (see the top of this file). */
+export type TilePort = { id: string; side: "in" | "out"; y: number };
 /**
  * A tile. `band` stacks it in a horizontal strip: every tile of a lower band sits above every
- * tile of a higher one (`bands.ts`).
+ * tile of a higher one (`bands.ts`). `ports` are its named ports, beside the default ones.
  */
-export type LayoutTile = { id: string; band?: number } & Size;
+export type LayoutTile = { id: string; band?: number; ports?: readonly TilePort[] } & Size;
 /**
  * A link between two tiles. `chip` is a box drawn on the line, which ELK keeps clear. `band` keeps
  * it apart from lines of other bands: they share no run, except the 32px next to a port both use.
+ * `sourcePort` names an `out` port of the source, `targetPort` an `in` port of the target; each
+ * defaults to that side's mid-height port.
  */
-export type LayoutLine = { id: string; source: string; target: string; chip?: Size; band?: number };
+export type LayoutLine = {
+  id: string;
+  source: string;
+  target: string;
+  chip?: Size;
+  band?: number;
+  sourcePort?: string;
+  targetPort?: string;
+};
 export type LayoutInput = { tiles: LayoutTile[]; lines: LayoutLine[] };
 /** Tile id → top-left: the previously displayed positions plus hints for new tiles. */
 export type PositionMap = Record<string, Point>;
@@ -104,30 +131,104 @@ export function chipId(lineId: string): string {
   return `${lineId}__chip`;
 }
 
-/** One ELK child: a tile with fixed ports at mid-height, `inPorts` west and `outPorts` east. */
+/** The ELK id of a tile's named port. */
+export function namedPortId(tileId: string, port: string): string {
+  return `${tileId}__port:${port}`;
+}
+
+/** The ELK port a line leaves from: its named `sourcePort`, else its source's default out port. */
+export function lineSourcePortId(line: LayoutLine): string {
+  return line.sourcePort === undefined
+    ? outPortId(line.source)
+    : namedPortId(line.source, line.sourcePort);
+}
+
+/** The ELK port a line enters: its named `targetPort`, else its target's default in port. */
+export function lineTargetPortId(line: LayoutLine): string {
+  return line.targetPort === undefined
+    ? inPortId(line.target)
+    : namedPortId(line.target, line.targetPort);
+}
+
+/** Whether any tile has a named port or any line names one. */
+export function usesNamedPorts(input: LayoutInput): boolean {
+  return (
+    input.tiles.some((t) => (t.ports?.length ?? 0) > 0) ||
+    input.lines.some((l) => l.sourcePort !== undefined || l.targetPort !== undefined)
+  );
+}
+
+/**
+ * How far below its tile's top a line's end sits: the named port's `y`, else mid-height. Assumes
+ * `checkPorts` passed.
+ */
+export function portOffset(tile: LayoutTile | undefined, port: string | undefined): number {
+  if (port === undefined) return (tile?.h ?? 0) / 2;
+  return tile?.ports?.find((p) => p.id === port)?.y ?? (tile?.h ?? 0) / 2;
+}
+
+/**
+ * Throws when a named port is off the grid, outside its tile's side or repeated on its tile, or
+ * when a line names a port its tile does not have on that side (see the top of this file).
+ */
+export function checkPorts(input: LayoutInput): void {
+  const ports = new Map<string, Map<string, TilePort>>();
+  for (const t of input.tiles) {
+    const own = new Map<string, TilePort>();
+    for (const p of t.ports ?? []) {
+      if (own.has(p.id)) throw new Error(`Tile ${t.id} has two ports named ${p.id}.`);
+      if (!Number.isInteger(p.y / GRID) || p.y <= 0 || p.y >= t.h) {
+        throw new Error(
+          `Port ${p.id} of tile ${t.id} is at y ${p.y}; it must be a multiple of ${GRID} between 0 and ${t.h}.`,
+        );
+      }
+      own.set(p.id, p);
+    }
+    ports.set(t.id, own);
+  }
+  const check = (line: LayoutLine, tile: string, port: string | undefined, side: "in" | "out") => {
+    if (port === undefined) return;
+    if (ports.get(tile)?.get(port)?.side === side) return;
+    throw new Error(`Line ${line.id} names port ${port}, which is not an ${side} port of ${tile}.`);
+  };
+  for (const line of input.lines) {
+    check(line, line.source, line.sourcePort, "out");
+    check(line, line.target, line.targetPort, "in");
+  }
+}
+
+/**
+ * One ELK child: a tile with fixed ports, `inPorts` west and `outPorts` east at mid-height, then
+ * its named ports on their side at their own height.
+ */
 export function elkTile(
   t: LayoutTile,
   inPorts: readonly string[] = [inPortId(t.id)],
   outPorts: readonly string[] = [outPortId(t.id)],
 ): ElkNode {
+  const named = (side: TilePort["side"]) =>
+    (t.ports ?? [])
+      .filter((p) => p.side === side)
+      .map((p) => ({ id: namedPortId(t.id, p.id), y: p.y }));
+  const mid = (ids: readonly string[]) => ids.map((id) => ({ id, y: t.h / 2 }));
   return {
     id: t.id,
     width: t.w,
     height: t.h,
     layoutOptions: { ...NODE_OPTIONS },
     ports: [
-      ...inPorts.map((id) => ({
+      ...[...mid(inPorts), ...named("in")].map(({ id, y }) => ({
         id,
         x: 0,
-        y: t.h / 2,
+        y,
         width: 0,
         height: 0,
         layoutOptions: { ...PORT_OPTIONS_IN },
       })),
-      ...outPorts.map((id) => ({
+      ...[...mid(outPorts), ...named("out")].map(({ id, y }) => ({
         id,
         x: t.w,
-        y: t.h / 2,
+        y,
         width: 0,
         height: 0,
         layoutOptions: { ...PORT_OPTIONS_OUT },
@@ -176,10 +277,12 @@ export function byHint(a: string, b: string, hints: Map<string, Point>): number 
 }
 
 /**
- * Flat root graph: one child per tile with fixed west/east ports at mid-height, one edge per
- * line, and one inline centre label per line with a chip.
+ * Flat root graph: one child per tile with fixed west/east ports at mid-height plus its named
+ * ports, one edge per line between its ports, and one inline centre label per line with a chip.
+ * Throws as `checkPorts` does.
  */
 export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNode {
+  checkPorts(input);
   const hints = stabilityHints(input, previous);
   const tiles = hints ? [...input.tiles].sort((a, b) => byHint(a.id, b.id, hints)) : input.tiles;
   const lines = hints
@@ -192,8 +295,8 @@ export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNo
   const edges: ElkExtendedEdge[] = lines.map((line) => {
     const edge: ElkExtendedEdge = {
       id: line.id,
-      sources: [outPortId(line.source)],
-      targets: [inPortId(line.target)],
+      sources: [lineSourcePortId(line)],
+      targets: [lineTargetPortId(line)],
     };
     const chip = line.chip;
     if (chip && chip.w > 0 && chip.h > 0) {
@@ -219,19 +322,22 @@ export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNo
 }
 
 /**
- * Cache key for one graph: tile ids, sizes and bands, line endpoints, chip sizes and bands, in
- * input order (ELK follows model order). Not names, kinds or dashes, which do not move anything.
+ * Cache key for one graph: tile ids, sizes, bands and named ports, line endpoints, chip sizes,
+ * bands and port names, in input order (ELK follows model order). Not names, kinds or dashes,
+ * which do not move anything. Ports add to an entry only when it has some, so a board without
+ * named ports keeps the key it had before they existed.
  */
 export function graphKey(input: LayoutInput): string {
   return JSON.stringify([
-    input.tiles.map((t) => [t.id, t.w, t.h, t.band ?? null]),
-    input.lines.map((l) => [
-      l.id,
-      l.source,
-      l.target,
-      l.chip?.w ?? 0,
-      l.chip?.h ?? 0,
-      l.band ?? null,
-    ]),
+    input.tiles.map((t) => {
+      const key = [t.id, t.w, t.h, t.band ?? null];
+      return t.ports?.length ? [...key, t.ports.map((p) => [p.id, p.side, p.y])] : key;
+    }),
+    input.lines.map((l) => {
+      const key = [l.id, l.source, l.target, l.chip?.w ?? 0, l.chip?.h ?? 0, l.band ?? null];
+      return l.sourcePort === undefined && l.targetPort === undefined
+        ? key
+        : [...key, l.sourcePort ?? null, l.targetPort ?? null];
+    }),
   ]);
 }

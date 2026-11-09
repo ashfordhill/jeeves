@@ -12,6 +12,13 @@
 // selected tile, and a selected line, show a red X; a caller's panel (`hud`, a confirmation)
 // sits at the bottom centre of the board.
 //
+// Ports: a tile's `ports` are named ports at fixed heights beside its default mid-height ones, and
+// a line's `sourcePort`/`targetPort` name the ones it uses (`elkGraph.ts` has the rules). Each
+// becomes a React Flow handle with the port's id at its height, after the default handle (which an
+// edge without a handle id takes), so a line's fallback route before ELK lands starts and ends at
+// its ports too; the drawn line and its arrowhead follow the routed ends. Snapshots carry them.
+// Only the flat layout takes named ports so far (`layoutBands` refuses them).
+//
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
 // on each tile face, line chip and fan item. In hand mode tiles and lines let the pointer
@@ -41,7 +48,7 @@ import {
   useState,
 } from "react";
 import { ANIMATE_MS } from "../layout/animate.ts";
-import type { LayoutInput } from "../layout/elkGraph.ts";
+import type { LayoutInput, TilePort } from "../layout/elkGraph.ts";
 import type { BoardLayout } from "../layout/elkLayout.ts";
 import type { LayoutEngine } from "../layout/engine.ts";
 import {
@@ -98,6 +105,8 @@ export type TileSpec = {
   content: ReactNode;
   /** Its band: lower bands are laid out above higher ones (`layoutBands`). */
   band?: number;
+  /** Named ports at fixed heights, beside the default mid-height ones (`elkGraph.ts`). */
+  ports?: readonly TilePort[];
 };
 
 export type LineSpec = {
@@ -117,6 +126,10 @@ export type LineSpec = {
   removable?: boolean;
   /** Its band: it shares no run with lines of other bands, except next to a port (`meetAtPorts`). */
   band?: number;
+  /** The source's `out` port it leaves from; default: mid-height. */
+  sourcePort?: string;
+  /** The target's `in` port it enters; default: mid-height. */
+  targetPort?: string;
 };
 
 export type BoardSelection = { tile?: string; line?: string };
@@ -178,8 +191,27 @@ export type BoardProps = {
   ref?: Ref<BoardHandle>;
 };
 
-type TileData = { shape: TileShape; content: ReactNode; chrome?: ReactNode };
+type TileData = {
+  shape: TileShape;
+  content: ReactNode;
+  chrome?: ReactNode;
+  ports?: readonly TilePort[];
+};
 type TileNode = Node<TileData, "tile">;
+
+/** A named port's handle at its height; the default handles stay first, at mid-height. */
+function PortHandle({ port }: { port: TilePort }) {
+  const target = port.side === "in";
+  return (
+    <Handle
+      id={port.id}
+      type={target ? "target" : "source"}
+      position={target ? Position.Left : Position.Right}
+      isConnectable={false}
+      style={{ top: port.y }}
+    />
+  );
+}
 
 function Tile({ data, selected }: NodeProps<TileNode>) {
   return (
@@ -188,10 +220,36 @@ function Tile({ data, selected }: NodeProps<TileNode>) {
         <Handle type="target" position={Position.Left} isConnectable={false} />
         {data.content}
         <Handle type="source" position={Position.Right} isConnectable={false} />
+        {data.ports?.map((port) => (
+          <PortHandle key={`${port.side}:${port.id}`} port={port} />
+        ))}
       </div>
       {data.chrome}
     </div>
   );
+}
+
+type TileHandle = NonNullable<TileNode["handles"]>[number];
+
+/**
+ * A tile's handles before React Flow measures it (and in tests, where it never does): the default
+ * ones at mid-height, then one per named port.
+ */
+function tileHandles(t: Pick<TileSpec, "w" | "h" | "ports">): TileHandle[] {
+  const handle = (side: TilePort["side"], y: number, id?: string): TileHandle => ({
+    ...(id !== undefined && { id }),
+    type: side === "in" ? "target" : "source",
+    position: side === "in" ? Position.Left : Position.Right,
+    x: side === "in" ? 0 : t.w,
+    y,
+    width: 0,
+    height: 0,
+  });
+  return [
+    handle("in", t.h / 2),
+    handle("out", t.h / 2),
+    ...(t.ports ?? []).map((p) => handle(p.side, p.y, p.id)),
+  ];
 }
 
 /** A picked tile waiting to appear: where it docks, worked out once it is in `tiles`. */
@@ -248,6 +306,7 @@ function layoutInput(tiles: readonly TileSpec[], lines: readonly LineSpec[]): La
       w: t.w,
       h: t.h,
       ...(t.band !== undefined && { band: t.band }),
+      ...(t.ports?.length ? { ports: t.ports } : {}),
     })),
     lines: lines.map((l) => ({
       id: l.id,
@@ -255,6 +314,8 @@ function layoutInput(tiles: readonly TileSpec[], lines: readonly LineSpec[]): La
       target: l.target,
       ...(l.chip ? { chip: { w: l.chip.w, h: l.chip.h } } : {}),
       ...(l.band !== undefined && { band: l.band }),
+      ...(l.sourcePort !== undefined && { sourcePort: l.sourcePort }),
+      ...(l.targetPort !== undefined && { targetPort: l.targetPort }),
     })),
   };
 }
@@ -292,6 +353,8 @@ function lineEdges(
     id: l.id,
     source: l.source,
     target: l.target,
+    ...(l.sourcePort !== undefined && { sourceHandle: l.sourcePort }),
+    ...(l.targetPort !== undefined && { targetHandle: l.targetPort }),
     type: "line",
     hidden: !placed(l.source) || !placed(l.target),
     selected: selected.line === l.id,
@@ -631,6 +694,7 @@ function Inner({
         shape: t.shape,
         content: t.content,
         ...(t.id === chromeTile ? { chrome } : {}),
+        ...(t.ports?.length ? { ports: t.ports } : {}),
       },
       draggable: false,
       connectable: false,
@@ -640,10 +704,7 @@ function Inner({
       height: t.h,
       measured: { width: t.w, height: t.h },
       // Lines know their ends before React Flow measures the tile (and in tests, where it never does).
-      handles: [
-        { type: "target", position: Position.Left, x: 0, y: t.h / 2, width: 0, height: 0 },
-        { type: "source", position: Position.Right, x: t.w, y: t.h / 2, width: 0, height: 0 },
-      ],
+      handles: tileHandles(t),
       ariaLabel: t.label,
       style: { width: t.w, height: t.h, ...(hand ? { pointerEvents: "none" } : {}) },
     };
@@ -823,11 +884,12 @@ export function BoardSnapshotView({ snapshot, bounds }: { snapshot: BoardSnapsho
     id: tile.id,
     type: "tile",
     position: layout.positions[tile.id] ?? { x: 0, y: 0 },
-    data: { shape: tile.shape, content: tile.content },
-    handles: [
-      { type: "target", position: Position.Left, x: 0, y: tile.h / 2, width: 0, height: 0 },
-      { type: "source", position: Position.Right, x: tile.w, y: tile.h / 2, width: 0, height: 0 },
-    ],
+    data: {
+      shape: tile.shape,
+      content: tile.content,
+      ...(tile.ports?.length ? { ports: tile.ports } : {}),
+    },
+    handles: tileHandles(tile),
     width: tile.w,
     height: tile.h,
     measured: { width: tile.w, height: tile.h },

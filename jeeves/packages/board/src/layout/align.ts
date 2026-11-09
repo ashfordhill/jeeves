@@ -6,21 +6,24 @@
 //
 // Jeeves addition; automation-illustrator has the same gap.
 //
-// 1. Ports on grid lines: every tile's centre (its ports' y) is on the grid, so a tile whose
-//    half-height is a multiple of 32 also has its top-left on it. x snaps to the grid too.
+// 1. Ports on grid lines: every tile's anchor is on the grid. The anchor is its centre (its
+//    default ports' y), so a tile whose half-height is a multiple of 32 also has its top-left on
+//    it; a tile with named ports (`elkGraph.ts`) is anchored at its top instead, so its named
+//    ports, multiples of 32 below the top, are on grid lines too. x snaps to the grid.
 // 2. Near-straight lines become straight: a tile whose input port is within 16px of a
-//    predecessor's output port takes that predecessor's row. Several qualify: a line ELK already
-//    drew straight first, then input order.
+//    predecessor's output port takes that predecessor's row, so the two ports are level. Several
+//    qualify: a line ELK already drew straight first, then input order. Each line counts at its
+//    own ports, named or default.
 // 3. Columns keep their order and gaps: tiles in one column keep their top-to-bottom order with
 //    at least `BRANCH_GAP` between them; a tile that would come closer is pushed down, which
 //    pushes the tiles below it. When the tile above only snapped to its nearest grid line (it
 //    follows no predecessor) and the line above is still within 16px of ELK's row, that tile
 //    moves up instead.
 // 4. Routes follow the tiles: a route's first horizontal run takes its source port's y, its last
-//    run its target port's y; vertical segments keep their x. A straight route whose ends now
-//    differ gets a bend on a grid column between the tiles. Chips move with their run. Bounds grow
-//    if needed.
-import type { LayoutInput, LayoutTile } from "./elkGraph.ts";
+//    run its target port's y (each the line's named port, else mid-height); vertical segments
+//    keep their x. A straight route whose ends now differ gets a bend on a grid column between the
+//    tiles. Chips move with their run. Bounds grow if needed.
+import { type LayoutInput, type LayoutTile, portOffset } from "./elkGraph.ts";
 import type { BoardLayout } from "./elkLayout.ts";
 import { BRANCH_GAP, GRID, type Point, type Rect, snapToGrid } from "./metrics.ts";
 
@@ -84,56 +87,81 @@ function bendColumn(from: number, to: number, avoid: readonly Rect[]): number {
   return best ?? Math.round(mid);
 }
 
+/** Where a tile's grid line runs, from its top: mid-height, or its top when it has named ports. */
+function anchorOf(tile: LayoutTile | undefined): number {
+  return tile?.ports?.length ? 0 : (tile?.h ?? 0) / 2;
+}
+
 export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayout {
   const raw = layout.positions;
   const sizes = new Map(input.tiles.map((t) => [t.id, t]));
-  const rawCentre = (id: string) => (raw[id]?.y ?? 0) + (sizes.get(id)?.h ?? 0) / 2;
+  const rawAnchor = (id: string) => (raw[id]?.y ?? 0) + anchorOf(sizes.get(id));
+  /* A line's end as ELK left it: the tile's raw top plus the port's offset. */
+  const rawPort = (id: string, port: string | undefined) =>
+    (raw[id]?.y ?? 0) + portOffset(sizes.get(id), port);
   const incoming = new Map<string, LayoutInput["lines"]>();
   for (const line of input.lines) {
     incoming.set(line.target, [...(incoming.get(line.target) ?? []), line]);
   }
 
-  // Tiles: column by column, so every predecessor is placed before the tiles it links to.
-  const centres = new Map<string, number>();
+  // Tiles: column by column, so every predecessor is placed before the tiles it links to. A tile's
+  // `anchor` is its top plus `anchorOf`, the y that sits on the grid.
+  const anchors = new Map<string, number>();
+  /* A placed line end: the tile's aligned top plus the port's offset. */
+  const portY = (id: string, port: string | undefined) =>
+    (anchors.get(id) as number) - anchorOf(sizes.get(id)) + portOffset(sizes.get(id), port);
   const positions: Record<string, Point> = { ...raw };
   for (const column of columns(input.tiles, raw)) {
     column.sort((a, b) => (raw[a.id]?.y ?? 0) - (raw[b.id]?.y ?? 0) || (a.id < b.id ? -1 : 1));
     /* Placed tiles of this column, top to bottom. A `free` tile only snapped to the nearest grid
        line (it follows no predecessor), so it may move one step either way within 16px. */
-    const placed: { tile: LayoutTile; centre: number; free: boolean }[] = [];
+    const placed: { tile: LayoutTile; anchor: number; free: boolean }[] = [];
     const floorAbove = (i: number) => {
       const above = placed[i - 1];
-      return above ? above.centre + above.tile.h / 2 + BRANCH_GAP : layout.bounds.y + GRID;
+      return above
+        ? above.anchor + (above.tile.h - anchorOf(above.tile)) + BRANCH_GAP
+        : layout.bounds.y + GRID;
     };
     for (const tile of column) {
-      const at = rawCentre(tile.id);
+      const at = rawAnchor(tile.id);
       const near = (incoming.get(tile.id) ?? [])
-        .filter((l) => centres.has(l.source) && Math.abs(rawCentre(l.source) - at) <= STRAIGHTEN_PX)
+        .filter(
+          (l) =>
+            anchors.has(l.source) &&
+            Math.abs(rawPort(l.source, l.sourcePort) - rawPort(tile.id, l.targetPort)) <=
+              STRAIGHTEN_PX,
+        )
         .sort(
           (a, b) =>
             Number(isStraight(layout.routes[b.id])) - Number(isStraight(layout.routes[a.id])),
         );
-      let centre = near[0] ? (centres.get(near[0].source) as number) : snapToGrid(at);
+      const follow = near[0];
+      // Following a predecessor puts this line's target port level with its source port.
+      let anchor = follow
+        ? portY(follow.source, follow.sourcePort) -
+          portOffset(tile, follow.targetPort) +
+          anchorOf(tile)
+        : snapToGrid(at);
       const floor = floorAbove(placed.length);
-      if (centre - tile.h / 2 < floor) {
+      if (anchor - anchorOf(tile) < floor) {
         // Lift a free tile above (rounded the other way) rather than push this one off its row.
         const above = placed[placed.length - 1];
-        const lift = ceilToGrid(floor - (centre - tile.h / 2));
+        const lift = ceilToGrid(floor - (anchor - anchorOf(tile)));
         if (
           above?.free &&
-          rawCentre(above.tile.id) - (above.centre - lift) <= STRAIGHTEN_PX &&
-          above.centre - lift - above.tile.h / 2 >= floorAbove(placed.length - 1)
+          rawAnchor(above.tile.id) - (above.anchor - lift) <= STRAIGHTEN_PX &&
+          above.anchor - lift - anchorOf(above.tile) >= floorAbove(placed.length - 1)
         ) {
-          above.centre -= lift;
+          above.anchor -= lift;
         } else {
-          centre = ceilToGrid(floor + tile.h / 2);
+          anchor = ceilToGrid(floor + anchorOf(tile));
         }
       }
-      placed.push({ tile, centre, free: !near[0] });
+      placed.push({ tile, anchor, free: !follow });
     }
-    for (const { tile, centre } of placed) {
-      centres.set(tile.id, centre);
-      positions[tile.id] = { x: snapToGrid(raw[tile.id]?.x ?? 0), y: centre - tile.h / 2 };
+    for (const { tile, anchor } of placed) {
+      anchors.set(tile.id, anchor);
+      positions[tile.id] = { x: snapToGrid(raw[tile.id]?.x ?? 0), y: anchor - anchorOf(tile) };
     }
   }
 
@@ -145,13 +173,13 @@ export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayou
     const source = positions[line.source];
     const target = positions[line.target];
     const sourceTile = sizes.get(line.source);
-    const placed = centres.has(line.source) && centres.has(line.target);
+    const placed = anchors.has(line.source) && anchors.has(line.target);
     if (!route || route.length < 2 || !source || !target || !sourceTile || !placed) {
       if (route) routes[line.id] = route;
       continue;
     }
-    const sy = centres.get(line.source) as number;
-    const ty = centres.get(line.target) as number;
+    const sy = portY(line.source, line.sourcePort);
+    const ty = portY(line.target, line.targetPort);
     const sx = source.x + sourceTile.w;
     const tx = target.x;
     const last = route.length - 1;

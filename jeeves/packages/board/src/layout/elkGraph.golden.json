@@ -1,0 +1,343 @@
+{
+  "key": "[[[\"user\",128,160,null],[\"api\",128,128,0],[\"db\",128,128,0],[\"events\",128,96,1],[\"worker\",128,128,1]],[[\"user-api\",\"user\",\"api\",32,32,null],[\"api-db\",\"api\",\"db\",0,0,0],[\"api-events\",\"api\",\"events\",0,0,1],[\"events-worker\",\"events\",\"worker\",0,0,1],[\"worker-db\",\"worker\",\"db\",0,0,1]]]",
+  "first": {
+    "id": "root",
+    "layoutOptions": {
+      "elk.algorithm": "layered",
+      "elk.direction": "RIGHT",
+      "elk.edgeRouting": "ORTHOGONAL",
+      "elk.padding": "[top=32,left=32,bottom=32,right=32]",
+      "elk.spacing.nodeNode": "32",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "64",
+      "elk.layered.spacing.edgeNodeBetweenLayers": "32",
+      "elk.layered.spacing.edgeEdgeBetweenLayers": "32",
+      "elk.spacing.edgeNode": "16",
+      "elk.spacing.edgeEdge": "16",
+      "elk.spacing.edgeLabel": "8",
+      "elk.edgeLabels.placement": "CENTER",
+      "elk.layered.layering.strategy": "LONGEST_PATH_SOURCE",
+      "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+      "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+      "elk.layered.thoroughness": "10",
+      "elk.layered.mergeEdges": "true",
+      "elk.separateConnectedComponents": "false",
+      "elk.layered.wrapping.strategy": "OFF",
+      "elk.aspectRatio": "1.6",
+      "elk.layered.crossingMinimization.forceNodeModelOrder": "true"
+    },
+    "children": [
+      {
+        "id": "user",
+        "width": 128,
+        "height": 160,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "user__in",
+            "x": 0,
+            "y": 80,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "user__out",
+            "x": 128,
+            "y": 80,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "api",
+        "width": 128,
+        "height": 128,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "api__in",
+            "x": 0,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "api__out",
+            "x": 128,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "db",
+        "width": 128,
+        "height": 128,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "db__in",
+            "x": 0,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "db__out",
+            "x": 128,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "events",
+        "width": 128,
+        "height": 96,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "events__in",
+            "x": 0,
+            "y": 48,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "events__out",
+            "x": 128,
+            "y": 48,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "worker",
+        "width": 128,
+        "height": 128,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "worker__in",
+            "x": 0,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "worker__out",
+            "x": 128,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "id": "user-api",
+        "sources": ["user__out"],
+        "targets": ["api__in"],
+        "labels": [
+          {
+            "id": "user-api__chip",
+            "text": "user-api__chip",
+            "width": 32,
+            "height": 32,
+            "layoutOptions": { "elk.edgeLabels.inline": "true" }
+          }
+        ]
+      },
+      { "id": "api-db", "sources": ["api__out"], "targets": ["db__in"] },
+      { "id": "api-events", "sources": ["api__out"], "targets": ["events__in"] },
+      { "id": "events-worker", "sources": ["events__out"], "targets": ["worker__in"] },
+      { "id": "worker-db", "sources": ["worker__out"], "targets": ["db__in"] }
+    ]
+  },
+  "shown": {
+    "id": "root",
+    "layoutOptions": {
+      "elk.algorithm": "layered",
+      "elk.direction": "RIGHT",
+      "elk.edgeRouting": "ORTHOGONAL",
+      "elk.padding": "[top=32,left=32,bottom=32,right=32]",
+      "elk.spacing.nodeNode": "32",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "64",
+      "elk.layered.spacing.edgeNodeBetweenLayers": "32",
+      "elk.layered.spacing.edgeEdgeBetweenLayers": "32",
+      "elk.spacing.edgeNode": "16",
+      "elk.spacing.edgeEdge": "16",
+      "elk.spacing.edgeLabel": "8",
+      "elk.edgeLabels.placement": "CENTER",
+      "elk.layered.layering.strategy": "LONGEST_PATH_SOURCE",
+      "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+      "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+      "elk.layered.thoroughness": "10",
+      "elk.layered.mergeEdges": "true",
+      "elk.separateConnectedComponents": "false",
+      "elk.layered.wrapping.strategy": "OFF",
+      "elk.aspectRatio": "1.6",
+      "elk.layered.crossingMinimization.forceNodeModelOrder": "true"
+    },
+    "children": [
+      {
+        "id": "user",
+        "width": 128,
+        "height": 160,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "user__in",
+            "x": 0,
+            "y": 80,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "user__out",
+            "x": 128,
+            "y": 80,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "api",
+        "width": 128,
+        "height": 128,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "api__in",
+            "x": 0,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "api__out",
+            "x": 128,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "db",
+        "width": 128,
+        "height": 128,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "db__in",
+            "x": 0,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "db__out",
+            "x": 128,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "events",
+        "width": 128,
+        "height": 96,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "events__in",
+            "x": 0,
+            "y": 48,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "events__out",
+            "x": 128,
+            "y": 48,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      },
+      {
+        "id": "worker",
+        "width": 128,
+        "height": 128,
+        "layoutOptions": { "elk.portConstraints": "FIXED_POS" },
+        "ports": [
+          {
+            "id": "worker__in",
+            "x": 0,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "WEST" }
+          },
+          {
+            "id": "worker__out",
+            "x": 128,
+            "y": 64,
+            "width": 0,
+            "height": 0,
+            "layoutOptions": { "elk.port.side": "EAST" }
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "id": "user-api",
+        "sources": ["user__out"],
+        "targets": ["api__in"],
+        "labels": [
+          {
+            "id": "user-api__chip",
+            "text": "user-api__chip",
+            "width": 32,
+            "height": 32,
+            "layoutOptions": { "elk.edgeLabels.inline": "true" }
+          }
+        ]
+      },
+      { "id": "api-db", "sources": ["api__out"], "targets": ["db__in"] },
+      { "id": "worker-db", "sources": ["worker__out"], "targets": ["db__in"] },
+      { "id": "api-events", "sources": ["api__out"], "targets": ["events__in"] },
+      { "id": "events-worker", "sources": ["events__out"], "targets": ["worker__in"] }
+    ]
+  }
+}

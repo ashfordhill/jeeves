@@ -11,6 +11,8 @@
 // - Every ELK result is put on the grid (`alignLayout`) before it is cached.
 // - A board with bands (`usesBands`) is laid out by `layoutBands`, which calls ELK once per band
 //   and once more to route.
+// - An input `checkPorts` refuses (a line naming a missing or wrong-side port), or a banded one
+//   with named ports, rejects like an ELK error.
 //
 // Changes from automation-illustrator: one request channel instead of one per lane, no
 // orientation, and a superseded request that was queued for the next microtask no longer runs.
@@ -70,9 +72,13 @@ export function createLayoutEngine(
 
   function lay(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {
     if (usesBands(input)) return layoutBands(elk, key, input, previous);
-    return elk
-      .layout(buildElkGraph(input, previous))
-      .then((laidOut) => alignLayout(toBoardLayout(key, laidOut), input));
+    let graph: ElkNode;
+    try {
+      graph = buildElkGraph(input, previous);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    return elk.layout(graph).then((laidOut) => alignLayout(toBoardLayout(key, laidOut), input));
   }
 
   function run(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {

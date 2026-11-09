@@ -23,6 +23,10 @@
 // 5. `alignLayout` as for any layout, then `meetAtPorts`, then the lines that come back are routed
 //    as U's (`routeReturns`). ELK draws a line that comes back as a staircase through the columns
 //    it passes, and longer (measured on the studies, SD03).
+//
+// Named ports (`elkGraph.ts`) are not supported here yet: `layoutBands` rejects an input with any,
+// so the engine keeps the previous layout and the board flags a layout error. This file,
+// `junctions.ts`, `returns.ts` and `branches.ts` still take every line end at mid-height.
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { alignLayout } from "./align.ts";
 import { separateBranches } from "./branches.ts";
@@ -37,6 +41,7 @@ import {
   type PositionMap,
   ROOT_OPTIONS,
   stabilityHints,
+  usesNamedPorts,
 } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import type { ElkLike } from "./engine.ts";
@@ -377,13 +382,19 @@ function portIds(lines: readonly LayoutLine[], end: "source" | "target") {
   return { id, all };
 }
 
-/** The board laid out in bands (see the top of this file). `usesBands(input)` must hold. */
+/**
+ * The board laid out in bands (see the top of this file). `usesBands(input)` must hold. Rejects an
+ * input with named ports.
+ */
 export async function layoutBands(
   elk: ElkLike,
   key: string,
   input: LayoutInput,
   previous?: PositionMap,
 ): Promise<BoardLayout> {
+  if (usesNamedPorts(input)) {
+    throw new Error("A banded layout does not take named ports yet.");
+  }
   const column = endColumns(input, bandColumns(input) ?? new Map<string, number>());
   const col = (id: string) => column.get(id) ?? 0;
   const hints = stabilityHints(input, previous);

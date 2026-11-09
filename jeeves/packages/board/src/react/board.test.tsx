@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import ELK from "elkjs/lib/elk.bundled.js";
 import type { ElkNode } from "elkjs/lib/elk-api.js";
 import { createRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -212,6 +213,107 @@ describe("Board", () => {
     rerender(board({ line: "publish" }));
     fireEvent.click(await screen.findByRole("button", { name: "Remove line" }));
     expect(onRemoveLine).toHaveBeenCalledWith("publish");
+  });
+
+  it("draws lines and arrowheads at named ports, with handles there, and snapshots the ports", async () => {
+    const ref = createRef<BoardHandle>();
+    const hub: TileSpec = {
+      ...tile("hub", "Hub", 160),
+      w: 256,
+      ports: [
+        { id: "head", side: "in", y: 32 },
+        { id: "first", side: "out", y: 64 },
+        { id: "second", side: "out", y: 96 },
+        { id: "third", side: "out", y: 128 },
+      ],
+    };
+    const ported: LineSpec[] = [
+      {
+        id: "in",
+        source: "start",
+        target: "hub",
+        targetPort: "head",
+        dashed: false,
+        directed: true,
+      },
+      ...["first", "second", "third"].map((port, i) => ({
+        id: port,
+        source: "hub",
+        target: `t${i}`,
+        sourcePort: port,
+        dashed: false,
+        directed: true,
+      })),
+    ];
+    const { container } = render(
+      <Board
+        ref={ref}
+        tiles={[tile("start", "Start"), hub, tile("t0", "T0"), tile("t1", "T1"), tile("t2", "T2")]}
+        lines={ported}
+        engine={createLayoutEngine(new ELK(), { debounceMs: 0 })}
+        selected={{}}
+        onSelectTile={() => {}}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        mode="select"
+      />,
+    );
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const at = (name: string) => {
+      const [x = 0, y = 0] = (
+        screen.getByRole("group", { name }).style.transform.match(/-?\d+/g) ?? []
+      ).map(Number);
+      return { x, y };
+    };
+    const points = (d: string | null | undefined) => {
+      const n = (d ?? "").match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
+      return n.flatMap((x, i) => (i % 2 ? [] : [{ x, y: n[i + 1] }]));
+    };
+    const drawn = (id: string) => {
+      const edge = container.querySelector(`.react-flow__edge[data-id="${id}"]`);
+      return {
+        line: points(edge?.querySelector(".react-flow__edge-path")?.getAttribute("d")),
+        arrow: points(edge?.querySelector(".board-line-arrow")?.getAttribute("d")),
+      };
+    };
+    const [start, h] = [at("Start"), at("Hub")];
+    // Into the hub's named in port: from the start's default port, arrowhead tip at the port.
+    const into = drawn("in");
+    expect(into.line.at(0)).toEqual({ x: start.x + 128, y: start.y + 64 });
+    expect(into.line.at(-1)).toEqual({ x: h.x, y: h.y + 32 });
+    expect(into.arrow[1]).toEqual({ x: h.x, y: h.y + 32 });
+    // Out of its three out ports, each to its target's default port.
+    for (const [i, port] of ["first", "second", "third"].entries()) {
+      const target = at(`T${i}`);
+      const { line, arrow } = drawn(port);
+      expect(line.at(0), port).toEqual({ x: h.x + 256, y: h.y + 64 + 32 * i });
+      expect(line.at(-1), port).toEqual({ x: target.x, y: target.y + 64 });
+      expect(arrow[1], port).toEqual({ x: target.x, y: target.y + 64 });
+    }
+    // Each named port has its own handle at its height; the default ones stay at mid-height.
+    const handles = [
+      ...container.querySelectorAll<HTMLElement>(
+        '.react-flow__node[data-id="hub"] .react-flow__handle',
+      ),
+    ].map((el) => `${el.dataset.handleid ?? "default"} ${el.style.top || "mid"}`);
+    expect(handles).toEqual([
+      "default mid",
+      "default mid",
+      "head 32px",
+      "first 64px",
+      "second 96px",
+      "third 128px",
+    ]);
+    const snapshot = ref.current?.snapshot();
+    expect(snapshot?.tiles.find((t) => t.id === "hub")?.ports).toEqual(hub.ports);
+    expect(snapshot?.lines.map((l) => l.sourcePort ?? l.targetPort)).toEqual([
+      "head",
+      "first",
+      "second",
+      "third",
+    ]);
   });
 
   it("greys a disabled fan item in its own slot, shows its reason and never picks it", async () => {
