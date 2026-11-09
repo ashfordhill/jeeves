@@ -1374,3 +1374,42 @@ workspace dependency links, approved frozen v1 inputs/PNG, and runtime-readable 
 (the lock is fingerprinted by v2). No field app/runtime/media/secrets enter the image. Bounded normal
 production startup and real API dispatch reproduce both actual v2 and exact v1 ZIPs; no generated
 provider runtime/fault matrix was repeated. [Evidence and limits](../evidence/youtube-v2/yv2-19-generation.md).
+
+## YV2-20 — product attachment consumer and frozen field input
+
+`jeeves-generator/examples/product-attachment/recipe.ts.createProductAttachmentExample()` is an
+explicit trusted `V2Emitter`, passed to **default** `loadLocalV2Registry([example])`. Its exporter
+uses the same `buildGenerationPresetCommand(...,{preset:"video",prefix:"fitting"})` and canonical
+assembler/exporter. No saved label/ID installs code. The base pack without that contributor keeps
+required hooks and no runnable app; no new source schema, preset or normal control was added.
+
+It contributes exact `attachment_private.{transfers,attachments,delivery_receipts,job_intents}`
+through existing owned-upload/lifecycle persistence helpers, two runtime logins and three process
+hooks. Generated extension paths are `src/examples/{product-bindings,product,attachment-service}.ts`.
+The adapter owns only productId/caption codecs, completion/job/result envelopes and attachment/
+rendition namespaces. Shared generic/video runtime modules are emitted unchanged. Internal
+`prove` consumes the retained fixture through signed multipart and existing transaction/outbox/
+media/result/receipt hooks; `inspect <asset-id>` only checks the ready association/actual HLS.
+The proof principal is operator-supplied; no authentication, public HTTP API, catalog or browser
+is implemented. Media has only S3/broker credentials, no SQL login. Search/count/YouTube source,
+resources/processes/credentials are absent. The fixed dependency envelope retains its existing pins.
+
+Necessary packaging correction: foundation emits `scripts/search-init.mjs` only for a selected
+search mapping. Full YouTube output retains it. Necessary example-only correction: Garage website
+inspection uses node:http so its explicit virtual-host header reaches the provider; Node fetch
+ignored that Host override. Retained ready media was re-read, with no second encode/provider loop.
+Example target's `"media" as const` preserves the typed contribution; root TypeScript now includes
+`examples/`. Neither correction changes a generic mechanism or YouTube wire contract.
+
+`source-loc-v2` scope accepts optional `configurationPaths`, using the existing
+configuration-or-build exclusion in both totals after UI precedence. The v2 review lists only four
+pure-data binding files; mixed executable files remain backend. Parser/LCS/method version and
+absent-option v1 CLI bytes remain unchanged. Root Biome excludes v2 app and archived input/diagram
+JSON; existing explicit workspace/test roots already omit field apps.
+
+Frozen canonical input, exact93 output hashes, normalized model, actual registry source/asset
+hashes, template/implementation identities and concrete YV2-21 CLI command live in
+`field-projects/youtube/v2/inputs/`. The kept studio project/source/native/normal snapshots are in
+`v2/diagrams/001-frozen-generation/`. No `v2/app` exists; browser reuse, independent restart and
+final retained-template percentage remain YV2-22/23. Deterministic runtimeVerification:none and
+strictReadiness:not-assessed remain honest. [Actual proof/checks/limits](../evidence/youtube-v2/yv2-20-reuse-and-freeze.md).

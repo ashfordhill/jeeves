@@ -16,6 +16,7 @@ const backendScopeSchema = z.strictObject({
   version: z.literal(1),
   backendPaths: z.array(relativePath).min(1),
   uiPaths: z.array(relativePath),
+  configurationPaths: z.array(relativePath).optional(),
 });
 const matchesPath = (path: string, roots: readonly string[]) =>
   roots.some((root) => path === root || path.startsWith(`${root}/`));
@@ -131,7 +132,11 @@ export function sourceLocReport(
   for (const path of [...new Set([...baseline.keys(), ...final.keys()])].sort()) {
     // UI exclusions win even inside a backend directory or outside src/. Names such as
     // "clients" can mean backend service adapters, so classify by reviewed paths, not guesses.
-    const reason = matchesPath(path, scope.uiPaths) ? "ui-source" : exclusionReason(path);
+    const reason = matchesPath(path, scope.uiPaths)
+      ? "ui-source"
+      : matchesPath(path, scope.configurationPaths ?? [])
+        ? "configuration-or-build"
+        : exclusionReason(path);
     if (reason) {
       excluded.push({ path, reason });
       continue;

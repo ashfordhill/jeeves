@@ -22,7 +22,9 @@ configuration/settings/environment files, declarations, dependencies/vendor outp
 Docker/Compose, scripts, manifests, SQL migrations, docs and other folders are outside this metric.
 Each run requires a reviewed scope file listing app-relative `backendPaths` and `uiPaths`
 (directories or individual files). UI exclusions take precedence, including within a backend
-directory. Eligible source outside both lists stops the report for classification, so new frontend
+directory. Optional `configurationPaths` excludes reviewed dedicated configuration files whose
+names do not match the existing config/settings/env convention; it uses the same
+`configuration-or-build` reason. Omitting it preserves historical scope/report identities. Eligible source outside both lists stops the report for classification, so new frontend
 or backend folders cannot silently alter the percentage. Prefer dedicated backend directories;
 review shared folders and explicitly exclude their UI files. The report embeds the scope and its
 JSON-content hash. Commit the scope alongside each version's report.

@@ -1,0 +1,175 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "unit": "YV2-20",
+  "project": {
+    "id": "2c7c8b08-4633-4a97-8794-672a777f1d3a",
+    "url": "http://127.0.0.1:4300/?project=2c7c8b08-4633-4a97-8794-672a777f1d3a",
+    "revision": 2,
+    "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "nativeSha256": "387236b77470967e8a9be67dd630b0e1fd192ca36b968a005c1b996deb026fd3",
+    "viewports": [
+      [
+        1280,
+        800
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "canonicalTiles": 19,
+    "mouseAttachment": true,
+    "mouseTTL3601": true,
+    "tinyurlMouse": true,
+    "ownerProjectsUnchanged": true,
+    "errors": []
+  },
+  "source": {
+    "designSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+    "schemaVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "f0adefb5d7feb961bf9eb320a72ccc99184f8681",
+    "trackedTreeDirtyAtBuild": true,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "image": {
+    "filename": "YouTube-field-v2-local-Docker-r2.png",
+    "sha256": "387236b77470967e8a9be67dd630b0e1fd192ca36b968a005c1b996deb026fd3",
+    "width": 3840,
+    "height": 2400,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 1200
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "canonical process tiles",
+    "owners": [
+      {
+        "id": "video",
+        "name": "Video",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "media",
+        "name": "Media",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "watch-owner",
+        "name": "Watch",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "discovery",
+        "name": "Discovery",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "counts",
+        "name": "Counts",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "identity-owner",
+        "name": "Identity",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      }
+    ]
+  },
+  "counts": {
+    "canonicalElements": 19,
+    "canonicalConnections": 20,
+    "renderedTiles": 22,
+    "renderedLines": 27
+  },
+  "studioViewports": [
+    [
+      1280,
+      800
+    ],
+    [
+      1440,
+      900
+    ]
+  ],
+  "notes": "Native PNG captures the actual settled board. Studio overview screenshots were captured after reload and Fit; layout stability hints may differ. Same canonical saved source, no visual-equality claim. Fitted labels remain small; select/inspect for detail. No owner-source changes.",
+  "files": {
+    "design-response.json": {
+      "bytes": 59119,
+      "sha256": "d4fc9d11f0f941a893f49a4502af61cd060587df27cbdaeec5e34c1098099322"
+    },
+    "blueprint.json": {
+      "bytes": 157002,
+      "sha256": "abe3e6aa3b162323fad5645a7991ad2fa34deef5e336ddb0b7c43cc9471f1c17"
+    },
+    "capture.json": {
+      "bytes": 23742,
+      "sha256": "70d988981640213fdd21bdfd80a1784e1135f3472bb33d932d7404e03de488e4"
+    },
+    "diagram.png": {
+      "bytes": 417688,
+      "sha256": "387236b77470967e8a9be67dd630b0e1fd192ca36b968a005c1b996deb026fd3"
+    },
+    "source-download.json": {
+      "bytes": 48851,
+      "sha256": "6c062b52a141422e1dace87d358c505cd4bd296bed2044b7987e70a687b6abfa"
+    },
+    "studio-1280.png": {
+      "bytes": 103734,
+      "sha256": "872e7c5a643713b2668d5efeeb3f4567ef9aefeeada9f891a5ebbb62234649eb"
+    },
+    "studio-1440.png": {
+      "bytes": 120254,
+      "sha256": "0908e1d5d19d4dd1af85fa1d985bfdf3ea2c3666d3d379d94cf21dd7a0b0a406"
+    },
+    "design.json": {
+      "bytes": 30016,
+      "sha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b"
+    },
+    "layout.json": {
+      "bytes": 45,
+      "sha256": "682755cb488bad90fb2d2693753dff70df57c36914c651238499d06f70c82522"
+    },
+    "generation-support.json": {
+      "bytes": 37298,
+      "sha256": "b015fd79476e1fc46aa5974701ead365e7eda8fdf62371dc5e6f076b3c661736"
+    },
+    "project.json": {
+      "bytes": 232,
+      "sha256": "2ae299bc1b9fb2f39eee4c75265b82ef037748a37acf1b242bf1fda6ea3f2d3d"
+    },
+    "renderer-audit.json": {
+      "bytes": 22133,
+      "sha256": "87ced04f370ce680a625349168380d755acd043ff77ab7cba2b6fee4edc96e6b"
+    }
+  },
+  "externalRendererAudit": "renderer-audit.json"
+}

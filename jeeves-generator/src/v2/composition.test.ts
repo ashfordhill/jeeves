@@ -6,6 +6,7 @@ import {
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { tinyurlStudioExample } from "../../../jeeves/packages/spec/src/studio-examples/tinyurl.ts";
+import { createProductAttachmentExample } from "../../examples/product-attachment/recipe.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
 
@@ -98,6 +99,26 @@ describe("compiled video and YouTube composition", () => {
       ),
     ).toBe(false);
     expect(() => attach(design, "video", "catalog")).toThrow();
+  });
+  it("composes the product attachment through the default registry without YouTube/search/count dependencies", () => {
+    const design = attach(empty(), "video", "fitting");
+    const productRegistry = loadLocalV2Registry([createProductAttachmentExample()]);
+    const bundle = assembleV2({ designJson: JSON.stringify(design) }, productRegistry);
+    expect(bundle.report.applicationComplete).toBe(true);
+    expect(bundle.report.gaps).toEqual([]);
+    const plan = JSON.parse(read(bundle, "infra/local.json"));
+    expect(plan.application).toHaveLength(3);
+    expect(plan.search).toEqual([]);
+    expect(plan.identity[0].roles).toEqual([]);
+    expect(plan.logins).toHaveLength(2);
+    expect(plan.logins.every((l: { resource: string }) => l.resource.startsWith("fitting-"))).toBe(
+      true,
+    );
+    expect(bundle.files.some((f) => /youtube|counter|search/.test(f.path))).toBe(false);
+    expect(read(bundle, "src/examples/product.ts")).toContain("productId");
+    expect(read(bundle, "src/examples/product-bindings.ts")).toContain("attachment_private");
+    for (const file of bundle.files.filter((f) => f.path.startsWith("src/")))
+      expect(new TextDecoder().decode(file.bytes)).not.toMatch(/from ["'][^"']*youtube/);
   });
   it("refuses disconnected saved bindings and preserves unsupported historic protocol intent", () => {
     const design = attach();

@@ -6122,3 +6122,47 @@ Local commit: **YV2-19: generate v2 projects from selected saved source**.
 Next **YV2-20 only**: alternate reuse proof/final preflight and diagram/input snapshot. Existing
 base video required product/service hooks, browser slot, runtimeVerification:none and strict
 TinyURL gaps remain honest; no backend provider/fault matrix or work20–23 executed here.
+
+## 2026-11-08 — YV2-20: reusable attachment proof and frozen v2 inputs
+
+Default-registry trusted product example binds the same owned-upload/lifecycle/media/durability
+engines to fitting-* authority/resources/services, attachment-private SQL and productId/caption.
+One real3-part retained fixture transfer/CPU360p+720p/result path commits ready:1 sent job intent,
+2 receipts, stable completion replay. Final example node:http read passes against retained media
+after Node fetch ignored Host; no second encode/provider run. Final62-file deterministic exports
+pass own frozen install/untouched build;28 runtime files identical to full YouTube. No emitted
+YouTube/search/count imports/resources/services/credentials; base hooks remain honest. Necessary
+foundation fix omits unselected search-init; example target literal fixed under root TypeScript.
+[Interfaces](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-20--product-attachment-consumer-and-frozen-field-input).
+
+One final93-file frozen-source YouTube backend preflight passes realPKCE/3PUT/replay/pending404/
+CPUHLS/readyWatch/manifest+thumb200/search1/duplicatecount1;all14healthy. Deterministic repeat and
+post-typefix fresh export match exact93 pins. Kept separate studio project
+**2c7c8b08-4633-4a97-8794-672a777f1d3a**,r2,4300/?project=thatID; native/source/1280+1440 studio
+snapshots and exactcanonical input archived under `field-projects/youtube/v2/`. SourceSHA
+**e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b**, registry
+**6d0a8916c90be61c10736dc58cac91a0f9deaabeefeadc5ec077b7d997b4086f**, manifest
+**1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc**. Concrete21 command and
+all input/template/registry/output hashes: `v2/inputs/freeze.json`. No `v2/app` exists.
+
+Reviewed backend/UI scope excludes all browser UI and only4 exact pure-data binding files via
+optional configurationPaths. Same source-loc-v2/parser/LCS; absent-option v1 CLI bytes identical,
+historical report content/files unchanged. No numericalv2share claim before23. Root discovery
+already omits fieldapps; Biome now excludes v2app/input/diagramJSON. [Evidence/sanitized results](plans/reliable-foundations/evidence/youtube-v2/yv2-20-reuse-and-freeze.md).
+
+Final post-cleanup `pnpm check` explicitly awaited exit0:lint/types,**467tests/70files31.41s**;
+then **37native E2Es1.3m**, webbuild **847ms** (existing advisory). TinyURL lane/mouse and installed
+attachment/TTL3601/native-source snapshots pass,errors0, prior ownerprojects unchanged. Own exact
+7+14containers/3+5volumes/2networks/4imagetags and exports/deps/build/runtime/secrets removed before
+checks; originalimages+volumes unchanged,14v1healthy,FFmpeg1792f4e…/fixture15584953/SHA1658728…
+preserved. Fresh v1 all108pathhashes/manifest50987079… unchanged. OwnerREADME/feedbackdirt/Unicode
+deletions/colonvariants/e2e-docker mode preserved. No push/branch/worktree/stash. Logs `/tmp/jeeves-yv2-20/`.
+Local commit: **YV2-20: verify template reuse and freeze v2 inputs**.
+
+Next **YV2-21 only**: run the exact frozen-input CLI in `v2/notes/README.md` into the new `v2/app`,
+verify all93 pins and own frozen install/untouched build, commit generated baseline before custom
+work. No further template implementation or provider loops. Final runtime reservedonly:
+**jeeves-youtube-v2 /45400,45401,45402 /v2/app/.runtime**, neverstarted; recheck availability before22.
+Keep this v2 studio project. Browser/S01–S08 mouse completion belongs22; independent restart and
+final backend retained-template report strictly>5.53% belong23. Runtime:none/strict:not-assessed
+and local public-output limitations remain explicit.

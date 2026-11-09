@@ -1,0 +1,164 @@
+import { z } from "zod";
+import {
+  assetEventId,
+  createAssetLifecycle,
+  type AssetCompletion,
+} from "../runtime/asset-lifecycle.ts";
+import {
+  bindVideoResult,
+  videoHlsJob,
+  videoHlsResult,
+  type VideoHlsResult,
+} from "../runtime/video-result.ts";
+import { createOwnedUploads } from "../runtime/owned-upload.ts";
+import {
+  createOwnedMultipart,
+  type MultipartObjects,
+  type UploadTransaction,
+} from "../runtime/multipart.ts";
+import { productRelations as r } from "./product-bindings.ts";
+
+const uuid = z.uuid().transform((v) => v.toLowerCase());
+const metadata = z.strictObject({ productId: uuid, caption: z.string().min(1).max(160) });
+const completion = z.strictObject({
+  assetId: uuid,
+  uploadId: uuid,
+  jobId: uuid,
+  attemptId: uuid,
+  state: z.literal("pending"),
+});
+export const originalKey = (assetId: string, uploadId: string) =>
+  `attachments/${assetId}/${uploadId}/source.mp4`;
+export const resultPrefix = (id: { assetId: string; jobId: string; attemptId: string }) =>
+  `renditions/${id.assetId}/${id.jobId}/${id.attemptId}/`;
+const identities = {
+  request: (id: { assetId: string; jobId: string; attemptId: string }) =>
+    assetEventId("attachment-job", id.jobId, id.attemptId),
+  result: (id: { assetId: string; jobId: string; attemptId: string }, kind: string) =>
+    assetEventId(`attachment-${kind}`, id.jobId, id.attemptId),
+};
+const jobSchema = z.strictObject({
+  eventId: z.string(),
+  occurredAt: z.iso.datetime(),
+  ...videoHlsJob.shape,
+});
+type Job = z.infer<typeof jobSchema>;
+const eventSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("started"),
+    assetId: uuid,
+    jobId: uuid,
+    attemptId: uuid,
+    eventId: z.string(),
+    occurredAt: z.iso.datetime(),
+  }),
+  z.strictObject({
+    kind: z.literal("succeeded"),
+    assetId: uuid,
+    jobId: uuid,
+    attemptId: uuid,
+    eventId: z.string(),
+    occurredAt: z.iso.datetime(),
+    result: videoHlsResult,
+  }),
+  z.strictObject({
+    kind: z.literal("failed"),
+    assetId: uuid,
+    jobId: uuid,
+    attemptId: uuid,
+    eventId: z.string(),
+    occurredAt: z.iso.datetime(),
+    code: z.enum(["INVALID_MEDIA", "PROCESSING_FAILED"]),
+  }),
+]);
+function job(raw: unknown, messageId?: string): Job {
+  const value = jobSchema.parse(raw);
+  if (
+    value.eventId !== identities.request(value) ||
+    (messageId !== undefined && messageId !== value.eventId) ||
+    value.resultPrefix !== resultPrefix(value) ||
+    !value.source.key.startsWith(`attachments/${value.assetId}/`)
+  )
+    throw Error("Unbound attachment job");
+  return value;
+}
+export const productMediaCodecs = {
+  job,
+  video: (j: Job) =>
+    videoHlsJob.parse({
+      assetId: j.assetId,
+      jobId: j.jobId,
+      attemptId: j.attemptId,
+      source: j.source,
+      resultPrefix: j.resultPrefix,
+    }),
+  result: (raw: unknown, j: Job) => bindVideoResult(raw, resultPrefix(j)),
+  eventId: identities.result,
+  event: (
+    j: Job,
+    event: (
+      | { kind: "started" }
+      | { kind: "succeeded"; result: VideoHlsResult }
+      | { kind: "failed"; code: "INVALID_MEDIA" | "PROCESSING_FAILED" }
+    ) & { eventId: string; occurredAt: string },
+  ) => eventSchema.parse({ assetId: j.assetId, jobId: j.jobId, attemptId: j.attemptId, ...event }),
+};
+export function productLifecycle() {
+  return createAssetLifecycle<z.infer<typeof metadata>, VideoHlsResult, AssetCompletion, Job>(
+    {
+      relation: r.assets,
+      receipts: r.receipts,
+      receiptScope: "attachment-encoding",
+      outbox: { ...r.outbox, destinations: [...r.outbox.destinations] },
+      jobsDestination: "encode",
+      identities,
+    },
+    {
+      metadata: (raw) => metadata.parse(raw),
+      event: (raw) => eventSchema.parse(raw),
+      result: (raw, id) => bindVideoResult(raw, resultPrefix(id)),
+      failure: (raw) => z.enum(["INVALID_MEDIA", "PROCESSING_FAILED"]).parse(raw),
+      response: (raw) => completion.parse(raw),
+      job: {
+        codec: job,
+        async construct(_tx, i) {
+          return job({
+            assetId: i.assetId,
+            jobId: i.jobId,
+            attemptId: i.attemptId,
+            eventId: i.eventId,
+            occurredAt: i.occurredAt,
+            source: { key: i.original.key, size: i.original.size, sha256: i.original.sha256 },
+            resultPrefix: resultPrefix(i),
+          });
+        },
+      },
+    },
+  );
+}
+export function productMultipart(options: {
+  transaction: UploadTransaction;
+  objects: MultipartObjects<z.infer<typeof metadata>, AssetCompletion>;
+}) {
+  const lifecycle = productLifecycle();
+  const request = z.strictObject({
+    file: z.strictObject({
+      fileName: z.string().regex(/\.mp4$/i),
+      size: z.int().min(1).max(268435456),
+      contentType: z.literal("video/mp4"),
+      lastModified: z.int().nonnegative(),
+      sha256: z.string().regex(/^[a-f0-9]{64}$/),
+    }),
+    metadata,
+  });
+  const repository = createOwnedUploads(
+    { ...r.uploads, originalKey: ({ assetId, uploadId }) => originalKey(assetId, uploadId) },
+    {
+      validate: (raw) => request.parse(raw),
+      metadata: (raw) => metadata.parse(raw),
+      response: (raw) => completion.parse(raw),
+      ...lifecycle.uploadHooks,
+    },
+  );
+  return { lifecycle, multipart: createOwnedMultipart({ repository, ...options }) };
+}

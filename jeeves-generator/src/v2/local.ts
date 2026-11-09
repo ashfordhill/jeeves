@@ -884,7 +884,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     "scripts/broker-init.mjs",
     "scripts/bootstrap.mjs",
     "scripts/storage-config.mjs",
-    "scripts/search-init.mjs",
+    ...(search.length ? ["scripts/search-init.mjs"] : []),
     "scripts/common.mjs",
   ])
     files.push(file(path, context.asset(`${assets}${path}`)));

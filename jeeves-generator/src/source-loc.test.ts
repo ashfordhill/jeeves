@@ -121,6 +121,19 @@ describe("source LOC benchmark", () => {
         removedOrReplacedTemplateLoc: 2,
         templatePercent: 33.33,
       });
+      expect(report).toEqual(sourceLocReport(root, "app", baseline, completed, { ...scope }));
+      const configured = sourceLocReport(root, "app", baseline, completed, {
+        ...scope,
+        configurationPaths: ["src/new.ts", "src/ui"],
+      });
+      expect(configured.excluded).toContainEqual({
+        path: "src/new.ts",
+        reason: "configuration-or-build",
+      });
+      expect(configured.excluded).toContainEqual({ path: "src/ui/view.ts", reason: "ui-source" });
+      expect(configured.included.some((file) => file.path === "src/new.ts")).toBe(false);
+      expect(configured.scopeSha256).not.toBe(report.scopeSha256);
+      expect(report.scope).toEqual(scope);
       expect(report.excluded).toContainEqual({ path: "src/ui/view.ts", reason: "ui-source" });
       expect(report.excluded).toContainEqual({ path: "frontend/src/main.ts", reason: "ui-source" });
       expect(() =>

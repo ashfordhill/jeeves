@@ -1,0 +1,264 @@
+{
+  "generator": {
+    "id": "jeeves-v2",
+    "version": "0.1.0-experimental.1"
+  },
+  "runtime": {
+    "id": "local-runtime",
+    "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+    "version": "0.1.0"
+  },
+  "preset": {
+    "id": "youtube-core",
+    "sha256": "d4c66f03133f8f27de09e94b879b5f731dba42c988ef6dddb04a91da25718ad5",
+    "version": "0.1.0"
+  },
+  "templates": [
+    {
+      "ref": {
+        "id": "owned-multipart",
+        "sha256": "c5c035bbf4f6a75edb612506f8d26aca03e90df528647f999362a97142e3b2c7",
+        "version": "0.1.0"
+      },
+      "selection": "owned-upload"
+    },
+    {
+      "ref": {
+        "id": "asset-lifecycle",
+        "sha256": "01f968341b295c089bc200a0528559d5d4522fcf0dd76fbcd7929340c5d0d186",
+        "version": "0.1.0"
+      },
+      "selection": "lifecycle"
+    },
+    {
+      "ref": {
+        "id": "video-hls",
+        "sha256": "4af9b570774b6d4c590806b3fd66fe0492dc18651d73c464544f26a78340acdb",
+        "version": "0.1.0"
+      },
+      "selection": "hls"
+    },
+    {
+      "ref": {
+        "id": "positive-cache-read",
+        "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c",
+        "version": "0.1.0"
+      },
+      "selection": "ready-reader"
+    },
+    {
+      "ref": {
+        "id": "event-counter",
+        "sha256": "ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635",
+        "version": "0.1.0"
+      },
+      "selection": "counter"
+    },
+    {
+      "ref": {
+        "id": "search-projection",
+        "sha256": "5e81e6a9752692577618d092e301b79aa6131679605e8cccf409cf26d2616ae3",
+        "version": "0.1.0"
+      },
+      "selection": "projection"
+    },
+    {
+      "ref": {
+        "id": "search-query",
+        "sha256": "013de6d4c984a46be6ee1b26ad43ce240b42cd9fe96dbe086f72749e63abb624",
+        "version": "0.1.0"
+      },
+      "selection": "query"
+    },
+    {
+      "ref": {
+        "id": "youtube-upload",
+        "sha256": "6af0ec7de3d2c6b9571d2a09e8b04db65b86fde110d3717fc7df57a873915ddb",
+        "version": "0.1.0"
+      },
+      "selection": "upload-api"
+    },
+    {
+      "ref": {
+        "id": "youtube-watch",
+        "sha256": "4f1ce70fef43c19310fa49377ee47698df6134cbf81d78fab076508df3c062bb",
+        "version": "0.1.0"
+      },
+      "selection": "watch-api"
+    },
+    {
+      "ref": {
+        "id": "youtube-search",
+        "sha256": "6b8073708255beba56cf3e81d217d011204b0a1d8820a9cab4993009f20ecb1e",
+        "version": "0.1.0"
+      },
+      "selection": "search-api"
+    }
+  ],
+  "implementations": [
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.asset-identity",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.asset-lifecycle",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [],
+      "id": "local.diagnostic",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.durability",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.event-counter",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [],
+      "id": "local.foundation",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.media-worker",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.multipart",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.positive-cache",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.primitives",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.search-projection-query",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.upload-state",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [],
+      "id": "local.video-composition",
+      "sourceSha256": "82cf85ecf53da409391c979cb4b7a6d0a83af9dc1c54a1bfbe23fc281468f4fc",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.video-hls",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    },
+    {
+      "dependencies": [
+        {
+          "id": "local-runtime",
+          "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+          "version": "0.1.0"
+        }
+      ],
+      "id": "local.youtube-adapters",
+      "sourceSha256": "334d6999d8b835de021323de384255a5b2e5bcc55e9a91a71709e0a05246eb69",
+      "version": "0.1.0-experimental.1"
+    }
+  ],
+  "dependencyLockSha256": "c37b660e00f7575436c71834fc61e104681c8097bc326c7d11b89b35337138bf",
+  "ffmpegOsLockSha256": "8ec109b1f0d8354d937debaa4f62b387c78d178c6236adc639c8e6183476382d"
+}

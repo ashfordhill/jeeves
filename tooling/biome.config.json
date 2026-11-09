@@ -14,6 +14,9 @@
       "!field-projects/youtube/v1/diagrams/**/*.json",
       "!field-projects/youtube/v1/inputs/**/*.json",
       "!field-projects/youtube/v1/app",
+      "!field-projects/youtube/v2/diagrams/**/*.json",
+      "!field-projects/youtube/v2/inputs/**/*.json",
+      "!field-projects/youtube/v2/app",
       "!docs/archive/pre-rewrite"
     ]
   },

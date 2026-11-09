@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "backendPaths": ["src/runtime", "src/features", "src/adapters", "src/services"],
+  "uiPaths": ["browser"],
+  "configurationPaths": [
+    "src/features/application-bindings.ts",
+    "src/features/local-bindings.ts",
+    "src/features/positive-cache-bindings.ts",
+    "src/features/search-bindings.ts"
+  ]
+}

@@ -1,0 +1,1239 @@
+{
+  "runtime": {
+    "id": "local-runtime",
+    "version": "0.1.0",
+    "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+  },
+  "presets": [
+    {
+      "id": "video-feature",
+      "version": "0.1.0",
+      "sha256": "43d6a466112af41457881e22754a7a809577ca755af9376c4eabb1fea2956833"
+    },
+    {
+      "id": "youtube-core",
+      "version": "0.1.0",
+      "sha256": "d4c66f03133f8f27de09e94b879b5f731dba42c988ef6dddb04a91da25718ad5"
+    }
+  ],
+  "templates": [
+    {
+      "ref": {
+        "id": "owned-multipart",
+        "version": "0.1.0",
+        "sha256": "c5c035bbf4f6a75edb612506f8d26aca03e90df528647f999362a97142e3b2c7"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "owned-multipart",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.owned-multipart-policy",
+          "consumer": "owned-multipart",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.requestTimeoutMs",
+          "consumer": "http-service.requestTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrencyLimit",
+          "consumer": "http-service.concurrencyLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.exposure",
+          "consumer": "local-project.exposure",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.transfer",
+          "consumer": "owned-multipart.transfer",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.provider",
+          "consumer": "local-database.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.engine",
+          "consumer": "local-database.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.readReplicas",
+          "consumer": "local-database.readReplicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.poolSize",
+          "consumer": "sql-client.poolSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.statementTimeoutMs",
+          "consumer": "sql-client.statementTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.readRouting",
+          "consumer": "sql-client.readRouting",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "objects.provider",
+          "consumer": "local-object-store.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "objects.access",
+          "consumer": "local-object-store.access",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.batchSize",
+          "consumer": "amqp-publish.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.lingerMs",
+          "consumer": "amqp-publish.lingerMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.outbox",
+          "consumer": "amqp-publish.outbox",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "asset-lifecycle",
+        "version": "0.1.0",
+        "sha256": "01f968341b295c089bc200a0528559d5d4522fcf0dd76fbcd7929340c5d0d186"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "asset-lifecycle",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.asset-lifecycle-policy",
+          "consumer": "asset-lifecycle",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrency",
+          "consumer": "amqp-consume.concurrency",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.provider",
+          "consumer": "local-database.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.engine",
+          "consumer": "local-database.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.readReplicas",
+          "consumer": "local-database.readReplicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.poolSize",
+          "consumer": "sql-client.poolSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.statementTimeoutMs",
+          "consumer": "sql-client.statementTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.readRouting",
+          "consumer": "sql-client.readRouting",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.batchSize",
+          "consumer": "amqp-consume.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.retryLimit",
+          "consumer": "amqp-consume.retryLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "publication.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "publication.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "publication.batchSize",
+          "consumer": "amqp-publish.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "publication.lingerMs",
+          "consumer": "amqp-publish.lingerMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "publication.outbox",
+          "consumer": "amqp-publish.outbox",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "video-hls",
+        "version": "0.1.0",
+        "sha256": "4af9b570774b6d4c590806b3fd66fe0492dc18651d73c464544f26a78340acdb"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "video-hls",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.video-hls-policy",
+          "consumer": "video-hls",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrency",
+          "consumer": "amqp-consume.concurrency",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "originals.provider",
+          "consumer": "local-object-store.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "originals.access",
+          "consumer": "local-object-store.access",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "outputs.provider",
+          "consumer": "local-object-store.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "outputs.access",
+          "consumer": "local-object-store.access",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.batchSize",
+          "consumer": "amqp-consume.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "jobs.retryLimit",
+          "consumer": "amqp-consume.retryLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.batchSize",
+          "consumer": "amqp-publish.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.lingerMs",
+          "consumer": "amqp-publish.lingerMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "results.outbox",
+          "consumer": "amqp-publish.outbox",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "positive-cache-read",
+        "version": "0.1.0",
+        "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "positive-cache-read",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.positive-cache-policy",
+          "consumer": "positive-cache-read",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.requestTimeoutMs",
+          "consumer": "http-service.requestTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrencyLimit",
+          "consumer": "http-service.concurrencyLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.exposure",
+          "consumer": "local-project.exposure",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "source.provider",
+          "consumer": "local-database.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "source.engine",
+          "consumer": "local-database.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "source.readReplicas",
+          "consumer": "local-database.readReplicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "source.poolSize",
+          "consumer": "sql-client.poolSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "source.statementTimeoutMs",
+          "consumer": "sql-client.statementTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "source.readRouting",
+          "consumer": "sql-client.readRouting",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "cache.provider",
+          "consumer": "local-cache.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "cache.engine",
+          "consumer": "local-cache.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "cache.topology",
+          "consumer": "local-cache.topology",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "cache.eviction",
+          "consumer": "local-cache.eviction",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "cache.ttlSeconds",
+          "consumer": "positive-cache-reader.ttlSeconds",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "event-counter",
+        "version": "0.1.0",
+        "sha256": "ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "event-counter",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.event-counter-policy",
+          "consumer": "event-counter",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrency",
+          "consumer": "amqp-consume.concurrency",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.provider",
+          "consumer": "local-database.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.engine",
+          "consumer": "local-database.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.readReplicas",
+          "consumer": "local-database.readReplicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.poolSize",
+          "consumer": "sql-client.poolSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.statementTimeoutMs",
+          "consumer": "sql-client.statementTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "state.readRouting",
+          "consumer": "sql-client.readRouting",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.batchSize",
+          "consumer": "amqp-consume.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.retryLimit",
+          "consumer": "amqp-consume.retryLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "search-projection",
+        "version": "0.1.0",
+        "sha256": "5e81e6a9752692577618d092e301b79aa6131679605e8cccf409cf26d2616ae3"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "search-projection",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrency",
+          "consumer": "amqp-consume.concurrency",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "index.provider",
+          "consumer": "local-search.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "index.engine",
+          "consumer": "local-search.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.batchSize",
+          "consumer": "amqp-consume.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.retryLimit",
+          "consumer": "amqp-consume.retryLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "search-query",
+        "version": "0.1.0",
+        "sha256": "013de6d4c984a46be6ee1b26ad43ce240b42cd9fe96dbe086f72749e63abb624"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "search-query",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.execution",
+          "consumer": "local-project.execution",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.language",
+          "consumer": "typescript-service.language",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.minReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.maxReplicas",
+          "consumer": "local-project.replicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.requestTimeoutMs",
+          "consumer": "http-service.requestTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.concurrencyLimit",
+          "consumer": "http-service.concurrencyLimit",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "host.exposure",
+          "consumer": "local-project.exposure",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "index.provider",
+          "consumer": "local-search.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "index.engine",
+          "consumer": "local-search.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "youtube-upload",
+        "version": "0.1.0",
+        "sha256": "6af0ec7de3d2c6b9571d2a09e8b04db65b86fde110d3717fc7df57a873915ddb"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "youtube-upload",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.public-video-policy",
+          "consumer": "youtube-upload",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "youtube-watch",
+        "version": "0.1.0",
+        "sha256": "4f1ce70fef43c19310fa49377ee47698df6134cbf81d78fab076508df3c062bb"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "youtube-watch",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.public-video-policy",
+          "consumer": "youtube-watch",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "counts.provider",
+          "consumer": "local-database.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "counts.engine",
+          "consumer": "local-database.engine",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "counts.readReplicas",
+          "consumer": "local-database.readReplicas",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "counts.poolSize",
+          "consumer": "sql-client.poolSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "counts.statementTimeoutMs",
+          "consumer": "sql-client.statementTimeoutMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "counts.readRouting",
+          "consumer": "sql-client.readRouting",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.provider",
+          "consumer": "local-queue.provider",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.mode",
+          "consumer": "local-queue.mode",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.batchSize",
+          "consumer": "amqp-publish.batchSize",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.lingerMs",
+          "consumer": "amqp-publish.lingerMs",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "events.outbox",
+          "consumer": "amqp-publish.outbox",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "ref": {
+        "id": "youtube-search",
+        "version": "0.1.0",
+        "sha256": "6b8073708255beba56cf3e81d217d011204b0a1d8820a9cab4993009f20ecb1e"
+      },
+      "consumers": [
+        {
+          "input": "binding",
+          "consumer": "youtube-search",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        },
+        {
+          "input": "policy.public-video-policy",
+          "consumer": "youtube-search",
+          "outputPaths": [
+            "src/features/application-bindings.ts",
+            "src/features/service-resources.ts"
+          ]
+        }
+      ]
+    }
+  ]
+}

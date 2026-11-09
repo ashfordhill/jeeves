@@ -1,0 +1,556 @@
+{
+  "format": "jeeves-renderer-source-audit-v1",
+  "captureStartupMetadata": {
+    "appVersion": "0.1.0",
+    "commit": "f0adefb5d7feb961bf9eb320a72ccc99184f8681",
+    "trackedTreeDirtyAtBuild": true,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "repositoryHeadAtCapture": "6de10b7f9cd78c7e371276092dd27e5c1c85fac2",
+  "relevantTrackedSourceDiff": [],
+  "note": "Existing dev server was not restarted. Compile-time startup Git marker is historical; current UI source arrived through HMR. These hashes audit current on-disk renderer source, not a claim that startup metadata was freshly built. This unit changes no renderer/browser implementation. Native source/image hashes and actual capture are independently retained.",
+  "sources": [
+    {
+      "path": "jeeves/apps/web/package.json",
+      "sha256": "e55e7b7ecb3d67d5e434c1a08edbafa238f01fb0e83b6bb336cdcdb44ffa2859"
+    },
+    {
+      "path": "jeeves/apps/web/src/App.test.tsx",
+      "sha256": "9417cb2bd9aa57dbad3dac892210ab542e2415bfb428229e3c88bf3301b9c168"
+    },
+    {
+      "path": "jeeves/apps/web/src/App.tsx",
+      "sha256": "49f74f24eca80b933cd3e4f1ac79450c3e12a287c0e8723544ac3bc5c03ade14"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/ExportDiagram.tsx",
+      "sha256": "508dcac51adc21886a21b34f53e070cc2bae3a5630ab6a1831914535392a8de4"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/GenerateProject.tsx",
+      "sha256": "dbc0e8277a2b94a04dfef6f473957b677c5ac7a478967065cf8eb0b042bcb5a9"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/LaneCanvas.tsx",
+      "sha256": "a0e22ebfe827422500eb4cf53735061d6fc534a4f69fa96080ab302ea30497ec"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/LaneIcon.tsx",
+      "sha256": "d9a443f46dbdd4124a55700eb5df6c68a0abe5de19aa202594401671fefd62fc"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/LegacyGenerationDetails.tsx",
+      "sha256": "b81dd02e64b91c000e793a836d30113cd73e09520abceebb06287d822232eae8"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/LineLegend.tsx",
+      "sha256": "a619d351c25c9a42d5eb4244199ad30bffdaddb12b619bbc8a75933a3873c7cf"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/RailResize.tsx",
+      "sha256": "cc7a50e69d9beec140593ac18a901b689ace45ca3d08cff84cfe3745bf055cad"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/RelationshipFocus.tsx",
+      "sha256": "fd64c8b17d5e45a16788a1d537d4b608b8345385f826a3e836fa1bc39b10448b"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/SourceDiagnostics.tsx",
+      "sha256": "0eba65296e655547578044d8b5d900b84fb1150eb33eb9d05c39b720b174954f"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/TileInspector.tsx",
+      "sha256": "ca5ac940b0ecbe4eb2b2bd9b3b53c93a286c451e9cb715b219e96b05232bd49f"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/V2GenerationDetails.tsx",
+      "sha256": "c2f5d5d3b5b13049a067cee093fb944738dd22f4b9da88a5f4e60fb2790c50f1"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/Warnings.tsx",
+      "sha256": "fd65dbea87e1219ed8f083038b3363699fcff83d85bb1503624853e30fabfd8d"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/Workspace.tsx",
+      "sha256": "5d37554b299830788b60ed8f38be63b5c71faacb71f12a456a854c46ba1ddd92"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/canvas.css",
+      "sha256": "604358395ab741f2bedc9c3e860395ee744fcb0d3f858fb6bd06935df6d7fb1f"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/capturePng.tsx",
+      "sha256": "1310c32e2853c10fc29db968c5f1fd23a2ba056f0d324bd794728946c0483fbb"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/creation.tsx",
+      "sha256": "7a4f07a4632c7d43b50eb62261ee3e718ea2b2b3b8f239c94328b817e659e541"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/diagram-export.css",
+      "sha256": "6234add31c4a6e597b0e1efe1e6d22a758c094de3f54baf75f8f0035a9f9f11c"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/diagramCapture.test.ts",
+      "sha256": "175e65fd7ae80be8e71c26e56a6eb8e5a88cde02c2e4ce939e189a9497e7e730"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/diagramCapture.ts",
+      "sha256": "0e7f6548813219c15c7db58612ff0815b31cf1bb3104405ecf274d2d85baf1f9"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/elk.ts",
+      "sha256": "402f8528f02409d021a5e2dd85bf59177fb0062ad92b6c49d1c73ee8e2464151"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/generation.css",
+      "sha256": "e41662524e2071284d0ce955eea00af319301244bc186e3271d6f49e20835ed5"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/laneLayout.test.ts",
+      "sha256": "33363cb920e8d6b0951b5731302c377317b1d4e7f5c10188cb08cd634529055d"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/laneLayout.ts",
+      "sha256": "16a451d48144b7d1a3d166bb005b485bad62ca46f80140de1987edfe2a31ba33"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/ownerProjection.test.ts",
+      "sha256": "8fe5c19e15976ec6325fbb8f7e09a335d9eb99bbe47bfd2318f3251e92582476"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/ownerProjection.ts",
+      "sha256": "9a9e3808f02cc9fbd664c53a35f342f1369267376d06c4e5f8b315b176939feb"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/removal.tsx",
+      "sha256": "baabbf42c195cdab4e089ed511a83381f540812f17be2caf540b867dac3ae1a8"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/tiles/ActionTile.tsx",
+      "sha256": "b0f0cbe4d2ed383a4695cdd92feb15d900d872e6457e058ee8c03a39c8c0b602"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/tiles/ActorTile.tsx",
+      "sha256": "3e8a5cad54553c7ba24ee19d34cf934c9a699a533ed203b2271646c3ae082366"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/tiles/HumanFigure.tsx",
+      "sha256": "30f47b072971a766f31a676b958dc4ec20d856e8511b4b35189d0f9562438f99"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/tiles/Tile.tsx",
+      "sha256": "7ef2dffe60c233d1058f2017b12d9ddf26f21ddf3a5a6ca6e0a92557b3b4e7f4"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/tiles/human-figure.svg",
+      "sha256": "e69742a695c855fc6ef5c35f226c5561d5e5c55f39236b4d6ae92af9e9e1f3af"
+    },
+    {
+      "path": "jeeves/apps/web/src/canvas/tiles/svgInner.ts",
+      "sha256": "93b7ba96ea47879b52ed5cdc2a2f6b4641da8e70f8a35b332bb749628f7d98f1"
+    },
+    {
+      "path": "jeeves/apps/web/src/chat/ChatPanel.tsx",
+      "sha256": "48f3a4f47646cd7d0a2e207131ee85a8c8a7036d9e917dcedfdebf973e614d25"
+    },
+    {
+      "path": "jeeves/apps/web/src/chat/store.test.ts",
+      "sha256": "343c7a6189ccd126807b687934508840fbc4a25d8f344bc4daddcf9d02c6c22c"
+    },
+    {
+      "path": "jeeves/apps/web/src/chat/store.ts",
+      "sha256": "06385613017e507734a2f0e52f8cfeaceb19fd5b934f5e544404c357c8f3dcd5"
+    },
+    {
+      "path": "jeeves/apps/web/src/components/ConfigurationDialog.tsx",
+      "sha256": "aea7f433105a158208c152de3cf1501a0cf274cd37a296a30f8b376cf4a4615b"
+    },
+    {
+      "path": "jeeves/apps/web/src/components/configuration-dialog.css",
+      "sha256": "8cb31c674f02446e742efca1c8f095b475fe575572d8d0569b8b4890bd8e3b6d"
+    },
+    {
+      "path": "jeeves/apps/web/src/main.tsx",
+      "sha256": "84414a76e51513fa10c589e6e1f1e4e56aea52c1f455a3f34212757eb8d38c64"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/DesignView.tsx",
+      "sha256": "3c10c1f5f8b49fc6cf860027f4ce2e8665386fe6f56b9060ad69f54a9c6194f9"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/ProjectBrowser.tsx",
+      "sha256": "3d5152a217cc27eb16bb4904c4c969b7858a8c6f5f2e98a038183fc33d2a98a6"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/ProjectChooser.tsx",
+      "sha256": "17bee24e03ca935785f79b156bae3eca6800d77c005bdeabe4f36549e0ed5989"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/ProjectMenu.tsx",
+      "sha256": "6b6dbe2b6b32ffc78e207ba441dcada38ede84b89ebb8caca4369f59a0086f0b"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/api.ts",
+      "sha256": "51235c2e8e5d845b649bf4f2fb25a878af665ff5c91fe2805c22d5876de67fa4"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/create-example.test.ts",
+      "sha256": "961c4cb8050194e2b4a6867455f40be0bc4d0081618a00ff7b6b7d20ef509a47"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/create-example.ts",
+      "sha256": "8e2d7c39c2ac21a3a717f66b207408c25f0b278251b390ce28ce03613c8de28d"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/design-view.css",
+      "sha256": "60c43fa23a0d1783f9850e06b1ab81f2b164cac96567b80c2b80a1a40240a878"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/form-drafts.ts",
+      "sha256": "ee95ed8b68e4ab1e1b5370a8bb227b105473ddc0f9b8b3ff9bc9fa76c043f26c"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/generation-api.ts",
+      "sha256": "9ca14c5b6fdcfa38e669ca84658148f41ce526d7e5b4077fc4c3e3384f09af99"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/project-chooser.css",
+      "sha256": "1192f193ecaca71a3a4bd0cb724b8c23473cf337981b1d73d006fc68485f386b"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/store.test.ts",
+      "sha256": "09fe3f3c2ebbb0c37bcfb0c4a0e46b38b442dba7e204a2e8bf6fcd9199e9b933"
+    },
+    {
+      "path": "jeeves/apps/web/src/project/store.ts",
+      "sha256": "064e375f671b1b7502a1c11ecba8ab71abe130030779e7743578ff06f06319e0"
+    },
+    {
+      "path": "jeeves/apps/web/src/settings/SettingsView.tsx",
+      "sha256": "d6a52712150ae832cdb8a8c74caf73a2919a3a4915866898a0c075a5b69c98e5"
+    },
+    {
+      "path": "jeeves/apps/web/src/settings/settings.css",
+      "sha256": "e4af084016c419fa763b891b1b850a25c908079bc5b4ba8f1dce1d067e449d80"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/StatusBadge.tsx",
+      "sha256": "7a0e869c6ceb05f4dcf1dc75762fedab2d51b1498e27be7ec329f3efe8c1f1a6"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/StatusBar.tsx",
+      "sha256": "7b4e1920ef21775cef9a81f24f53bd41a80977da6eb7f09c58708ceb39f67a47"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/ViewTabs.tsx",
+      "sha256": "b72b50a8840b43e71a9e1e3bdf8f36d79fe925eb5ef434405a1be9f8497d44e1"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/useColorScheme.ts",
+      "sha256": "7024fc970f994713365843843253f18dbf83fdb62e5fefeb1dfc821106c54d42"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/useHashView.ts",
+      "sha256": "d78a62ff4a413cbb7dbe7c5d9d229ef8658b06dd1ddaa611f52aee447ca5ffd3"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/useServerHealth.ts",
+      "sha256": "80b5cb7482932770e58431deed76b56501c03dd2be1c526227f1dcd939bd26ac"
+    },
+    {
+      "path": "jeeves/apps/web/src/shell/views.ts",
+      "sha256": "db87bcffc142ac33cb669ba5eb7857d0e55f9201e284fe321db3f04c0d1fece2"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/ActionForm.tsx",
+      "sha256": "c16c2416eee27ee4ec0724d3107c7812db5a9a01e9562b6b06e923316127c1c2"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/ConnectionForm.tsx",
+      "sha256": "2eeb01e12b99aa71d6848d3f0f93477065d63c2a2f1df3cecbb9d446c72156b6"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/DesignScopeForm.tsx",
+      "sha256": "e4d463b057b1afa5919868c715969331105aa78ab2583b181a5c0dff827b4ebf"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/DraftFeedback.tsx",
+      "sha256": "205b75fa324cd5003466338baec97d8bac7544b92b3cb99a41d366dc06490054"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/InspectorForm.tsx",
+      "sha256": "3cfd34dfeceb61cf0f2839c3650f0f6596e0f05ede7f55e8a2ba7037c3711fae"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/OperationChanges.tsx",
+      "sha256": "f7212b9d8942769835dde1d70f68e9260c2fb9dd974912bd603847fa3acf9165"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/OperationsForm.tsx",
+      "sha256": "c3ac77dce87b4d166155f401094bee926a185abeb66a2d1725f29963580327a2"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/OperationsSummary.tsx",
+      "sha256": "87c54386296e4433761d0553cbe7b9cecd51850178494bc0418893c0e3dca731"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/OwnershipChanges.tsx",
+      "sha256": "63e9a6ae0ea48278025f5e92540baafac438b589c745c149a598c6c17284f918"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/OwnershipForm.tsx",
+      "sha256": "365f181e5c081b37519c0c6654c1a89ac3c98125cda4c49d1d1f7fa0eee955cb"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/OwnershipSummary.tsx",
+      "sha256": "85d8b434063bbb82151f391355e5f6d6b6d48badf7ad26c8ece60217eb716327"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/PresetAttachment.tsx",
+      "sha256": "69533d688eb7a6342be55558a141185edc35c9d1db1deac776ceff0d6d51e7a9"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/ReadinessReport.tsx",
+      "sha256": "683e47fd088a215b8fcf630f85fc5ea0ed54dfa42ed487c59110e9b589893305"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/ResolveFields.tsx",
+      "sha256": "9fb20d5d222fa5327e9f641caa2b84b8dc1eaf563837a5c0745e629c8e5ce775"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/StudioIcon.tsx",
+      "sha256": "5436b565d71557a7a90361a1ab27c79ded021b2f58a6d04888447aab34515702"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/actions.ts",
+      "sha256": "0dbfa471a714628ad15a5325bd356f9c9844902aaa185b08eb876a2a5bb504c4"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/component-drafts.ts",
+      "sha256": "7fbf34d6d2bad8769b1aaec1519810c5876070825dd4c52784cee66f15398350"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/connection-drafts.ts",
+      "sha256": "350bb9f6ebc374d60dae994b5b742a3a40abe6cc6186ac76eb2acb307e4c168a"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/design-scope.css",
+      "sha256": "c17699c7e04192b4342762bfc9b9eaf8af067e71e08f9c5bd01b675ac86e24ab"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/generation-support.ts",
+      "sha256": "a7390bcf562b5fe0050a66659ad37f872522c43d19fd20d3c3f8b4e315bced56"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/inspector-drafts.ts",
+      "sha256": "6924cbedd3f4ffaebd8ae095a286d4c2f886f4ea9ff2ad4358008862060b8919"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/ownership.css",
+      "sha256": "456fc1a823f6827506dfb9bc796321ab150127d6be0428b265169da2fc6b8336"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/preferences.ts",
+      "sha256": "9b3de57df1cd1fdfa0db6318a02985dcfb124660f96ac9a0ccaa79c72f059ff7"
+    },
+    {
+      "path": "jeeves/apps/web/src/studio/studio.css",
+      "sha256": "7ae6b6803c67b9ef0d5558edc60d4069fe7fc424aff2b429d5ac93b56c50fde0"
+    },
+    {
+      "path": "jeeves/apps/web/src/test-api.ts",
+      "sha256": "0463ab7ba6223efbfa6a6fca2181f6b28840fb479912f0a4dbbde7e9457943d3"
+    },
+    {
+      "path": "jeeves/apps/web/src/theme/mantineTheme.ts",
+      "sha256": "b55149e33e15bf4373cf7ed704bab2cadc99ef75072fe12f0c878115180b6727"
+    },
+    {
+      "path": "jeeves/apps/web/src/theme/tokens.css",
+      "sha256": "96a0d56940812f922d0057bc01e8704cbfe7f6f2432d1c2317435cbb6b8d3939"
+    },
+    {
+      "path": "jeeves/apps/web/src/vite-env.d.ts",
+      "sha256": "a88461e4e5213f194499fb6392d8338a813189a575101342bfdbab74e1e427c7"
+    },
+    {
+      "path": "jeeves/apps/web/src/vitest.setup.ts",
+      "sha256": "d7fc0ed854e248824268fe175d0eebb71c3ca9b728fd1f928d36b4f5b2483917"
+    },
+    {
+      "path": "jeeves/apps/web/vite.config.ts",
+      "sha256": "a74cde7253f24fedf9bc71f3e79d1f88b805fe1555172c57c91f5731f7a96b22"
+    },
+    {
+      "path": "jeeves/packages/board/src/graph/check.ts",
+      "sha256": "45921cd9c4c213a147d99ad81170e9e20fc03f50d05fb8309a44723744a0d2da"
+    },
+    {
+      "path": "jeeves/packages/board/src/graph/edit.ts",
+      "sha256": "adfa9007a3308dd80131d15e86265dcd7211156b64e7e7bee389c7d666ee7bbc"
+    },
+    {
+      "path": "jeeves/packages/board/src/graph/graph.test.ts",
+      "sha256": "8db3a80b9cef2d6e66982fd4c7bf91dc081f86c25caee35ed1078470a8836f77"
+    },
+    {
+      "path": "jeeves/packages/board/src/graph/index.ts",
+      "sha256": "aa41c849b09495bbbad6ab861b128c2631b90232838d41d94ad3fbe2b9c33dba"
+    },
+    {
+      "path": "jeeves/packages/board/src/graph/reach.ts",
+      "sha256": "302e32efc09611cb1339ef73e4ae481eae96faf85a792ef79db800b11b804b85"
+    },
+    {
+      "path": "jeeves/packages/board/src/graph/types.ts",
+      "sha256": "c8e70e02165bc4014afe3e0cb3ba9ae31dcb78f5c2e5113e3334061f90c0cef5"
+    },
+    {
+      "path": "jeeves/packages/board/src/index.ts",
+      "sha256": "f7b2a4ff769d4733885ebb5b95ca1bd036f4516987ec19548801e5c4142e1dc9"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/align.ts",
+      "sha256": "888e13aed9d473f174e617947621bd87cc3fdf4d9007d49c45093616cab56648"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/animate.ts",
+      "sha256": "058bc59b291e8b69d3928732374cc3547090204d3da08b3231f603897a5a4830"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/bands.ts",
+      "sha256": "30259d42bea1378f926cdc55bffc24a925a4e5ffd8ba4d04c99cd7ddcc2b3de5"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/branches.test.ts",
+      "sha256": "b4db89c88c74685fe5388745862000940f771d57dd467d9a5d394d2c3d76f9e9"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/branches.ts",
+      "sha256": "5693672af100a1f2419d910a7a71b94e1fa29f8a1c5ad87703da6c31eb56c7ae"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/elkGraph.ts",
+      "sha256": "e24f6d95093f44793d35cf7d9e1d1192ea22f547560aee80ae43302dff540103"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/elkLayout.ts",
+      "sha256": "9c2efab7aaaafc3ed0796ba8e80b7189187c0dcc823db6d8a31ada634bb8b2ec"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/engine.ts",
+      "sha256": "6e63ce47591e3108d047988ec5f135ba1de4ffbf862febe9b99e06b3788278ca"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/index.ts",
+      "sha256": "6d897fa61d27aa52b4ecd655d3a262e342325eb35a3fa090efcf28d485505b66"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/junctions.ts",
+      "sha256": "a4e520b4c434131e9d11a6ab309b9ddb357f6bb4bbfeed0296aea061e68de73c"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/layout.test.ts",
+      "sha256": "6c23735f894bab1c022f12c366bff7564706bdb936e86c84848e6f209a570443"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/metrics.ts",
+      "sha256": "65f3971d169420bbef1113eb9a2d946cb2ae4c52d39e47a770e26b611ebe396f"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/polyline.ts",
+      "sha256": "9c54b63b6e536ec959362b6ef95c733ad04eaaa2ffa4182da1e0057056b30eaa"
+    },
+    {
+      "path": "jeeves/packages/board/src/layout/returns.ts",
+      "sha256": "9f25b99d08401fad82900fad20a58ada22b4105f7328528fffb504750a61aed7"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/Board.tsx",
+      "sha256": "0447007f3d0a3e618c42dfffcb7601e82ba19c58417afc7d60c49eb7d96f54dc"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/BoardLine.tsx",
+      "sha256": "84d5d90f0b8cf0606faa1bdb4f3a0b322b41df1668656d50f0e8ac9d0b51326d"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/LinkGlyph.tsx",
+      "sha256": "b7a7707f19ce63ef91e2f6f4fa610bcaf912221c2a06b72884834842c3192595"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/RemoveButton.tsx",
+      "sha256": "2eefa6027c4d64dfb00d23aaf968a440834b49ac1930b99749fa2be035c2f7eb"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/TileChrome.tsx",
+      "sha256": "bdbbad3b5fe19e829d5e24d26c70ebe1a77f0f9611590dac909b7db913f18a96"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/board.css",
+      "sha256": "ba938c4e21aeac48a2fdf0426ae74724d32a8f5d5d4b1d9aeb90292130010c5b"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/board.test.tsx",
+      "sha256": "941bf20483b44383c6629a4282f3d11ac6089f3497651590c0fcc5d68f060ff8"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/camera.test.ts",
+      "sha256": "c8ce2c2ad2e1c3ce62c3719c9fecc56f7b09bd9e0dc5ebc6e4c02c16d87468a0"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/camera.ts",
+      "sha256": "38fdb19e7cd67fb45b03fdc75c27f2b2d4bc7df955b14c84fa013bc0c272998a"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/context.ts",
+      "sha256": "bffc7b2a75f876c15d75f284da7c862448d621c83f1b2dd43f5c774811def29c"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/css.d.ts",
+      "sha256": "4edd5ded4c6c0456a64a141a7116dd0225c6f89d1a37fea4cfc21051d8fb068c"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/directionArrow.test.ts",
+      "sha256": "e704c425f186aaaff3290aa428da6e28e6fdddc22039c7259404c3f5893826a4"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/directionArrow.ts",
+      "sha256": "584dac9d11f878829c853cc6748940d6610e512b00f5a35f3a955cb79a092426"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/fan.test.ts",
+      "sha256": "94b83895eb5bd6d60e83928d8a91d34451b4bad4a7e8e9137377f9366b14079e"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/fan.ts",
+      "sha256": "4a558e059caaa211d9f845e21b6d20c0601e6676d3b73ca1f8994bb22a31690a"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/index.ts",
+      "sha256": "72f86142e43273dba635b1ac4433a0ae98343fb3f09754d00df757353e3dac17"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/lineGeometry.test.ts",
+      "sha256": "d31ca8f2267781c3cc87f502735419afebea42f609f9a19e9eed317fcc70912d"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/lineGeometry.ts",
+      "sha256": "0ef414b1f2ce0ad9bbfa06d812dc5dfe3404ca77450d1a34e25c9e914c0529d4"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/overlay.ts",
+      "sha256": "9521e52d077a12c62c12a57b39aecc37a6cca871ff3a253665708c8c2fbb5018"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/useAnimatedLayout.ts",
+      "sha256": "ad2515309be132beb13cc9596a7b30050674f1da0ddab2a229adf72db70a074a"
+    },
+    {
+      "path": "jeeves/packages/board/src/react/useBoardLayout.ts",
+      "sha256": "79646719b511d78d143f5ea567e7052d4fff8c46b493b6c38f0059881fc49a05"
+    }
+  ]
+}

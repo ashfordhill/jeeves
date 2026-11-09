@@ -1,0 +1,317 @@
+{
+  "format": "jeeves-yv2-20-freeze-proof-v1",
+  "youtube": {
+    "input": {
+      "normalizedInputSha256": "03f0e523e6bcc303e89e4465fe7163d4ca886feafd9a75d3ea23d53d7d671ec0",
+      "sourceCanonicalSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+      "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b"
+    },
+    "registrySha256": "6d0a8916c90be61c10736dc58cac91a0f9deaabeefeadc5ec077b7d997b4086f",
+    "manifestSha256": "1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc",
+    "reportSha256": "e56c904f3e21eed4300d77483554df672bd7f5c41c10ca44b3602a8e598e6d57",
+    "outputFiles": 93,
+    "outputInventorySha256": "ed6eab9609fd59b4148b72ddd25e4481770ab88bff826eebaf7cdbc93195c938",
+    "deterministicRepeat": true,
+    "emittedBytesUnchangedAfterInstallBuildAndPreflight": true,
+    "watchTtlSeconds": 3601,
+    "preflight": {
+      "creatorVerified": true,
+      "uploadReplay": true,
+      "fixtureBytes": 15584953,
+      "fixtureSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "parts": 3,
+      "pending404": true,
+      "completed": "pending",
+      "videoId": "8748bfa7-ffb7-4822-a4b1-44b5947acb6d",
+      "status": "ready",
+      "ready": true,
+      "manifest200": true,
+      "thumbnail200": true,
+      "renditions": [360, 720],
+      "searchTotal": 1,
+      "duplicateViewTotal": "1"
+    },
+    "defaultSignatureRecheckedAfterExampleTypeAnnotation": true
+  },
+  "alternate": {
+    "input": {
+      "normalizedInputSha256": "80af5ed9289428ff81f3bfabe84b4de1e52506c1a5877228dbc97b1a7065c34d",
+      "sourceCanonicalSha256": "f8f77198f4213b91fbf2973dd386fee5286399225383532851426201aacf2e2e",
+      "sourceSha256": "f8f77198f4213b91fbf2973dd386fee5286399225383532851426201aacf2e2e"
+    },
+    "registrySha256": "46109b0976938568040ad324f30da102e16e1e4b6734128ab6869bde38007201",
+    "manifestSha256": "348ec1f8d8cdf1cb88776b45390f18063d6d4efd79338496e38c136ef36eae80",
+    "outputFiles": 62,
+    "outputInventorySha256": "8d997654fc69a7e5d0200ae35f76fc9a8fafe45f6d05900d8fa5ed894de93228",
+    "deterministicRepeat": true,
+    "finalEmittedBytesUnchangedAfterFrozenInstallBuild": true,
+    "sharedIdenticalRuntimeFiles": [
+      "src/runtime/admission.ts",
+      "src/runtime/amqp.ts",
+      "src/runtime/asset-identity.ts",
+      "src/runtime/asset-lifecycle.ts",
+      "src/runtime/asset-sql.ts",
+      "src/runtime/asset-worker.ts",
+      "src/runtime/delivery.ts",
+      "src/runtime/durable-sql.ts",
+      "src/runtime/event-identity.ts",
+      "src/runtime/http.ts",
+      "src/runtime/identity.ts",
+      "src/runtime/local.ts",
+      "src/runtime/media-objects.ts",
+      "src/runtime/media-process.ts",
+      "src/runtime/media-worker.ts",
+      "src/runtime/multipart-http.ts",
+      "src/runtime/multipart-objects.ts",
+      "src/runtime/multipart.ts",
+      "src/runtime/objects.ts",
+      "src/runtime/outbox.ts",
+      "src/runtime/owned-upload.ts",
+      "src/runtime/postgres.ts",
+      "src/runtime/process.ts",
+      "src/runtime/receipts.ts",
+      "src/runtime/transaction.ts",
+      "src/runtime/upload-sql.ts",
+      "src/runtime/video-hls.ts",
+      "src/runtime/video-result.ts"
+    ],
+    "noYoutubeSearchCounterPathsOrImports": true,
+    "application": [
+      "app-fitting-completion-handler",
+      "app-fitting-transcoder",
+      "app-fitting-upload"
+    ],
+    "resources": [
+      {
+        "id": "fitting-completion-events",
+        "kind": "queue"
+      },
+      {
+        "id": "fitting-metadata-db",
+        "kind": "database"
+      },
+      {
+        "id": "fitting-originals",
+        "kind": "object-store"
+      },
+      {
+        "id": "fitting-transcoded",
+        "kind": "object-store"
+      },
+      {
+        "id": "fitting-upload-queue",
+        "kind": "queue"
+      }
+    ],
+    "runtimeLoginCount": 2,
+    "secretNames": [
+      "broker-password",
+      "fitting-identity.env",
+      "fitting-identity.realm.json",
+      "garage-rpc",
+      "garage.toml",
+      "identity-admin-fitting-identity",
+      "identity-fitting-identity",
+      "identity-owner-fitting-identity",
+      "owner-fitting-metadata-db",
+      "postgres-admin",
+      "s3-fitting-transcoder",
+      "s3-fitting-upload",
+      "sql-fitting-metadata-db--fitting-completion-handler",
+      "sql-fitting-metadata-db--fitting-upload"
+    ],
+    "durability": {
+      "uploads": [
+        {
+          "state": "completed",
+          "phase": "closed",
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+          "size": 15584953,
+          "response": {
+            "jobId": "3c4d8a23-5edf-4e40-ae74-0340bad087ed",
+            "state": "pending",
+            "assetId": "5961b862-383a-4404-895a-dce3938cfaba",
+            "uploadId": "7704430a-11f1-42ec-b450-a89f6c8121fa",
+            "attemptId": "13967eda-118b-4307-a20b-433a41579cd0"
+          }
+        }
+      ],
+      "assets": [
+        {
+          "assetId": "5961b862-383a-4404-895a-dce3938cfaba",
+          "state": "ready",
+          "metadata": {
+            "caption": "Product fitting demonstration",
+            "productId": "01fcbcb2-55ab-463d-8a54-d9dc743ec8ff"
+          },
+          "result": {
+            "marker": "renditions/5961b862-383a-4404-895a-dce3938cfaba/3c4d8a23-5edf-4e40-ae74-0340bad087ed/13967eda-118b-4307-a20b-433a41579cd0/_complete.json",
+            "prefix": "renditions/5961b862-383a-4404-895a-dce3938cfaba/3c4d8a23-5edf-4e40-ae74-0340bad087ed/13967eda-118b-4307-a20b-433a41579cd0/",
+            "manifest": "renditions/5961b862-383a-4404-895a-dce3938cfaba/3c4d8a23-5edf-4e40-ae74-0340bad087ed/13967eda-118b-4307-a20b-433a41579cd0/master.m3u8",
+            "thumbnail": "renditions/5961b862-383a-4404-895a-dce3938cfaba/3c4d8a23-5edf-4e40-ae74-0340bad087ed/13967eda-118b-4307-a20b-433a41579cd0/thumbnail.jpg",
+            "renditions": [
+              {
+                "width": 640,
+                "height": 360,
+                "playlist": "renditions/5961b862-383a-4404-895a-dce3938cfaba/3c4d8a23-5edf-4e40-ae74-0340bad087ed/13967eda-118b-4307-a20b-433a41579cd0/360/index.m3u8",
+                "audioCodec": "aac",
+                "videoCodec": "h264"
+              },
+              {
+                "width": 1280,
+                "height": 720,
+                "playlist": "renditions/5961b862-383a-4404-895a-dce3938cfaba/3c4d8a23-5edf-4e40-ae74-0340bad087ed/13967eda-118b-4307-a20b-433a41579cd0/720/index.m3u8",
+                "audioCodec": "aac",
+                "videoCodec": "h264"
+              }
+            ],
+            "durationSeconds": 20
+          }
+        }
+      ],
+      "outbox": [
+        {
+          "destination": "encode",
+          "sent": true
+        }
+      ],
+      "receiptCount": 2
+    },
+    "affectedRead": {
+      "affectedResultRead": true,
+      "assetId": "5961b862-383a-4404-895a-dce3938cfaba",
+      "metadata": {
+        "productId": "01fcbcb2-55ab-463d-8a54-d9dc743ec8ff",
+        "caption": "Product fitting demonstration"
+      },
+      "state": "ready",
+      "realHls": true
+    },
+    "limit": "One real transfer/encode; initial example fetch Host issue corrected by node:http. Only retained ready-result read rerun using final compiled consumer. Final formatting and export harness changes received fresh deterministic exports/frozen install/build, no additional provider/media runs.",
+    "previousRuntimeProofRegistrySha256": "2fe05c4a03befd7a1683ef22f535afea2b3800e1ec76ad1d0c133114d0ac5ad2",
+    "typeOnlyFinalPinChange": "Narrowed target media as const for V2LocalContributor after examples joined root typecheck. All generated src bytes identical to preceding frozen build. No provider/media rerun."
+  },
+  "legacy": {
+    "files": 108,
+    "allFrozenPathHashesUnchanged": true,
+    "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+    "fixtureBytes": 15584953,
+    "fixtureSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+  },
+  "scopeParity": {
+    "absentOptionCliBytesIdentical": true,
+    "historicalReportContentIdentical": true,
+    "historicalFileUntouched": true,
+    "cliBytes": 26598,
+    "scopeSha256": "6909c78ec6740e6f41d7f959a70dad579b9cc120e49ae8c12ec2730abcef99fc"
+  },
+  "snapshot": {
+    "id": "2c7c8b08-4633-4a97-8794-672a777f1d3a",
+    "url": "http://127.0.0.1:4300/?project=2c7c8b08-4633-4a97-8794-672a777f1d3a",
+    "revision": 2,
+    "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "nativeSha256": "387236b77470967e8a9be67dd630b0e1fd192ca36b968a005c1b996deb026fd3",
+    "viewports": [[1280, 800], [1440, 900]],
+    "canonicalTiles": 19,
+    "mouseAttachment": true,
+    "mouseTTL3601": true,
+    "tinyurlMouse": true,
+    "ownerProjectsUnchanged": true,
+    "errors": []
+  },
+  "resources": {
+    "alternate": {
+      "project": "jeeves-yv2-20-attachment",
+      "ports": [45320, 45321, 45322],
+      "export": "/tmp/jeeves-yv2-20/attachment",
+      "runtime": "/tmp/jeeves-yv2-20/attachment/.runtime"
+    },
+    "youtube": {
+      "project": "jeeves-yv2-20-preflight",
+      "ports": [45330, 45331, 45332],
+      "export": "/tmp/jeeves-yv2-20/youtube",
+      "runtime": "/tmp/jeeves-yv2-20/youtube/.runtime"
+    },
+    "finalReservedOnly": {
+      "project": "jeeves-youtube-v2",
+      "ports": [45400, 45401, 45402],
+      "runtime": "field-projects/youtube/v2/app/.runtime",
+      "started": false
+    },
+    "freeChecked": [
+      45320, 45321, 45322, 45323, 45324, 45330, 45331, 45332, 45333, 45334, 45400, 45401, 45402
+    ]
+  },
+  "cleanup": {
+    "alternate": {
+      "containersRemoved": 7,
+      "volumesRemoved": 3,
+      "removedImageTags": ["jeeves-yv2-20-attachment-app", "jeeves-yv2-20-attachment-media"],
+      "remainingExactProjectContainers": 0,
+      "remainingExactProjectVolumes": 0,
+      "cleanupLog": "cleanup-alternate.log"
+    },
+    "youtube": {
+      "containersRemoved": 14,
+      "volumesRemoved": 5,
+      "removedImageTags": ["jeeves-yv2-20-preflight-app", "jeeves-yv2-20-preflight-media"],
+      "remainingExactProjectContainers": 0,
+      "remainingExactProjectVolumes": 0,
+      "cleanupLog": "cleanup-youtube.log"
+    },
+    "scratchExportsDependenciesBuildsRuntimeRemoved": true,
+    "allAllocatedPortsFree": true,
+    "finalRuntimeNeverStarted": true,
+    "rootReadmeAndOwnerScriptAndFixtureBytesPreserved": true,
+    "allBeforeImageTagsAndIdsIdentical": true,
+    "allBeforeVolumeNamesIdentical": true,
+    "v1HealthyServices": "jeeves-youtube-v1-watch-1 Up 20 hours (healthy)\njeeves-youtube-v1-upload-1 Up 20 hours (healthy)\njeeves-youtube-v1-view-counter-1 Up 20 hours (healthy)\njeeves-youtube-v1-completion-handler-1 Up 20 hours (healthy)\njeeves-youtube-v1-transcoder-1 Up 20 hours (healthy)\njeeves-youtube-v1-search-indexer-1 Up 20 hours (healthy)\njeeves-youtube-v1-search-1 Up 20 hours (healthy)\njeeves-youtube-v1-edge-1 Up 20 hours (healthy)\njeeves-youtube-v1-cache-1 Up 20 hours (healthy)\njeeves-youtube-v1-identity-1 Up 20 hours (healthy)\njeeves-youtube-v1-postgres-1 Up 20 hours (healthy)\njeeves-youtube-v1-broker-1 Up 20 hours (healthy)\njeeves-youtube-v1-search-index-1 Up 20 hours (healthy)\njeeves-youtube-v1-objects-1 Up 20 hours (healthy)\n",
+    "retainedFfmpegImage": "sha256:1792f4e0fb15896196cf9e3ba3d32ab2804ec27f4f7ab04c62ce050a102d8585",
+    "v1VolumeNames": [
+      "c41e02416f6d471a58cf12e8ee002ba665a80eb4a79f245ee9a4eda47dffb21b",
+      "jeeves-fieldwork-demo_inventory-db-data",
+      "jeeves-youtube-v1_broker-data",
+      "jeeves-youtube-v1_cache-data",
+      "jeeves-youtube-v1_edge-cache",
+      "jeeves-youtube-v1_objects-data",
+      "jeeves-youtube-v1_postgres-data",
+      "jeeves-youtube-v1_search-data",
+      "jeeves_jeeves-pg",
+      "qrwty-5174_qrwty-db-data",
+      "qrwty_qrwty-db-data",
+      "reading-list_reading-db-data",
+      "shorty_links-db-data"
+    ],
+    "noGlobalPrune": true
+  },
+  "checks": {
+    "postCleanupCheck": {
+      "exitCode": 0,
+      "tests": 467,
+      "files": 70,
+      "durationSeconds": 31.41,
+      "lint": true,
+      "typecheck": true,
+      "log": "/tmp/jeeves-yv2-20/check-final.log",
+      "explicitlyAwaitedBeforeE2E": true
+    },
+    "nativeE2E": {
+      "exitCode": 0,
+      "tests": 37,
+      "duration": "1.3m",
+      "log": "/tmp/jeeves-yv2-20/e2e-final.log"
+    },
+    "webBuild": {
+      "exitCode": 0,
+      "durationMs": 847,
+      "log": "/tmp/jeeves-yv2-20/web-build.log"
+    },
+    "browser": {
+      "tinyurlLaneMouse": true,
+      "installedAttachmentMouse": true,
+      "ttlSpinner3601Mouse": true,
+      "nativeSourceStudioSnapshot": true,
+      "pageErrors": 0
+    }
+  }
+}

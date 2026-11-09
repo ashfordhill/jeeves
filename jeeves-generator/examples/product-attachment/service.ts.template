@@ -1,0 +1,201 @@
+import { get } from "node:http";
+import { readFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import {
+  selected,
+  resource,
+  pool,
+  publisher,
+  consumer,
+  objects,
+} from "../features/service-resources.ts";
+import { verifyVideoRuntime } from "../features/video-runtime.ts";
+import { runProcess, periodic } from "../runtime/process.ts";
+import { transaction, type Tx } from "../runtime/transaction.ts";
+import { startRelay } from "../runtime/outbox.ts";
+import { startAssetLifecycleWorker } from "../runtime/asset-worker.ts";
+import { startMediaWorker } from "../runtime/media-worker.ts";
+import { createMediaObjects } from "../runtime/media-objects.ts";
+import { createMultipartObjects } from "../runtime/multipart-objects.ts";
+import { productMultipart, productLifecycle, productMediaCodecs, resultPrefix } from "./product.ts";
+
+async function readHls(manifest: string, bucket: string) {
+  const playlist = await new Promise<string>((resolve, reject) => {
+    get(
+      `http://local-objects:3902/${manifest}`,
+      { headers: { Host: `${bucket}.web.garage.localhost` } },
+      (response) => {
+        let body = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          body += chunk;
+        });
+        response.on("end", () =>
+          response.statusCode === 200
+            ? resolve(body)
+            : reject(Error("Attachment manifest unavailable")),
+        );
+        response.on("error", reject);
+      },
+    ).on("error", reject);
+  });
+  if (!playlist.includes("360/index.m3u8") || !playlist.includes("720/index.m3u8"))
+    throw Error("Real attachment HLS missing");
+}
+await runProcess(async (scope) => {
+  try {
+    const role = process.argv[2];
+    if (role === "upload" || role === "prove" || role === "inspect") {
+      const s = selected("owned-multipart"),
+        db = pool(scope, s, "state"),
+        client = objects(s);
+      scope.own(() => client.destroy());
+      const { lifecycle, multipart } = productMultipart({
+        transaction: <T>(effect: (tx: Tx) => Promise<T>) => transaction(db, effect),
+        objects: createMultipartObjects({
+          control: client,
+          signing: client,
+          bucket: resource(s, "objects"),
+          prefix: "attachments/",
+          ownsKey: (key) => /^attachments\/[a-f0-9-]+\/[a-f0-9-]+\/source\.mp4$/.test(key),
+          metadata: {
+            assetId: "asset-id",
+            uploadId: "transfer-id",
+            sha256: "sha256",
+            expectedSize: "source-size",
+          },
+        }),
+      });
+      const pub = await publisher(s, "jobs", scope);
+      scope.own(() => pub.close());
+      scope.transport(pub);
+      const relay = startRelay(lifecycle.jobs, db, pub);
+      scope.own(() => relay.close());
+      await multipart.sweep();
+      if (role === "inspect") {
+        const ready = await transaction(db, (tx) => lifecycle.get(tx, process.argv[3]!));
+        if (ready?.state !== "ready" || !ready.result) throw Error("Attachment not ready");
+        await readHls(ready.result.manifest, resource(selected("video-hls"), "outputs"));
+        console.log(
+          JSON.stringify({
+            affectedResultRead: true,
+            assetId: ready.assetId,
+            metadata: ready.metadata,
+            state: ready.state,
+            realHls: true,
+          }),
+        );
+        process.kill(process.pid, "SIGTERM");
+        return;
+      }
+      if (role === "prove") {
+        const fixture = await readFile("/fixture.mp4"),
+          sha256 = createHash("sha256").update(fixture).digest("hex");
+        const principal = {
+          subject: "attachment-proof-owner",
+          issuer: "compiled-example",
+          audience: ["proof"],
+          claims: {},
+        };
+        const metadata = { productId: randomUUID(), caption: "Product fitting demonstration" };
+        const started = await multipart.start(principal, {
+          file: {
+            fileName: "fitting.mp4",
+            contentType: "video/mp4",
+            size: fixture.length,
+            lastModified: 1,
+            sha256,
+          },
+          metadata,
+        });
+        for (let part = 1; part <= Math.ceil(fixture.length / (5 * 1024 * 1024)); part++) {
+          const signed = await multipart.sign(started.uploadId, principal, part);
+          const response = await fetch(signed.url, {
+            method: "PUT",
+            body: fixture.subarray((part - 1) * 5 * 1024 * 1024, part * 5 * 1024 * 1024),
+          });
+          if (!response.ok) throw Error("Attachment part PUT failed");
+        }
+        const completed = await multipart.complete(started.uploadId, principal);
+        if (
+          JSON.stringify(completed) !==
+          JSON.stringify(await multipart.complete(started.uploadId, principal))
+        )
+          throw Error("Completion replay changed");
+        let ready;
+        const deadline = Date.now() + 120000;
+        while (Date.now() < deadline) {
+          ready = await transaction(db, (tx) => lifecycle.get(tx, completed.assetId));
+          if (ready?.state === "ready") break;
+          if (ready?.state === "failed") throw Error(`Attachment failed ${ready.failureCode}`);
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        if (
+          ready?.state !== "ready" ||
+          ready.metadata.productId !== metadata.productId ||
+          !ready.result
+        )
+          throw Error("Association not ready");
+        const output = resource(selected("video-hls"), "outputs");
+        await readHls(ready.result.manifest, output);
+        console.log(
+          JSON.stringify({
+            productId: metadata.productId,
+            assetId: completed.assetId,
+            fixtureBytes: fixture.length,
+            fixtureSha256: sha256,
+            parts: Math.ceil(fixture.length / (5 * 1024 * 1024)),
+            completionReplay: true,
+            state: ready.state,
+            associationRetained: true,
+            realHls: true,
+            manifest: ready.result.manifest,
+          }),
+        );
+        process.kill(process.pid, "SIGTERM");
+        return;
+      }
+      periodic(scope, () => multipart.sweep(), 30000);
+    } else if (role === "lifecycle") {
+      const s = selected("asset-lifecycle"),
+        db = pool(scope, s, "state");
+      const worker = await startAssetLifecycleWorker({
+        pool: db,
+        lifecycle: productLifecycle(),
+        openConsumer: (handle) => consumer(s, "results", handle, { onFatal: scope.fail }),
+      });
+      scope.own(() => worker.close());
+      scope.transport(worker);
+    } else if (role === "media") {
+      await verifyVideoRuntime();
+      const s = selected("video-hls"),
+        source = objects(s),
+        results = objects(s);
+      const worker = await startMediaWorker({
+        codecs: productMediaCodecs,
+        objects: createMediaObjects({
+          source: {
+            client: source,
+            bucket: resource(s, "originals"),
+            owns: (j) => j.source.key.startsWith(`attachments/${j.assetId}/`),
+          },
+          results: {
+            client: results,
+            bucket: resource(s, "outputs"),
+            owns: (j) => j.resultPrefix === resultPrefix(j),
+          },
+          sha256Metadata: "sha256",
+        }),
+        openPublisher: () => publisher(s, "results", scope),
+        openConsumer: ({ handle, ...hooks }) => consumer(s, "jobs", handle, hooks),
+        onFatal: scope.fail,
+      });
+      scope.own(() => worker.close());
+      scope.transport(worker);
+    } else throw Error("Unknown example role");
+    scope.ready();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Example failed");
+    throw error;
+  }
+});

@@ -1,0 +1,60 @@
+{
+  "format": "jeeves-youtube-v2-frozen-inputs-v1",
+  "unit": "YV2-20",
+  "project": {
+    "id": "2c7c8b08-4633-4a97-8794-672a777f1d3a",
+    "url": "http://127.0.0.1:4300/?project=2c7c8b08-4633-4a97-8794-672a777f1d3a",
+    "revision": 2,
+    "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "nativeSha256": "387236b77470967e8a9be67dd630b0e1fd192ca36b968a005c1b996deb026fd3",
+    "viewports": [
+      [
+        1280,
+        800
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "canonicalTiles": 19,
+    "mouseAttachment": true,
+    "mouseTTL3601": true,
+    "tinyurlMouse": true,
+    "ownerProjectsUnchanged": true,
+    "errors": []
+  },
+  "input": {
+    "normalizedInputSha256": "03f0e523e6bcc303e89e4465fe7163d4ca886feafd9a75d3ea23d53d7d671ec0",
+    "sourceCanonicalSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b"
+  },
+  "sourceFile": "field-projects/youtube/v2/inputs/design.json",
+  "sourceEncoding": "Exact server-canonical UTF-8 JSON; recursively sorted keys, arrays preserved, no trailing newline. Do not reserialize.",
+  "registrySha256": "6d0a8916c90be61c10736dc58cac91a0f9deaabeefeadc5ec077b7d997b4086f",
+  "manifestSha256": "1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc",
+  "reportSha256": "e56c904f3e21eed4300d77483554df672bd7f5c41c10ca44b3602a8e598e6d57",
+  "normalizedFileSha256": "19d900c8bea6bfde107eee0aa7d6a21f3bfb676fade59ef62ff0fe8365df4e62",
+  "outputFiles": 93,
+  "outputInventorySha256": "ed6eab9609fd59b4148b72ddd25e4481770ab88bff826eebaf7cdbc93195c938",
+  "outputInventoryHashEncoding": "SHA256 of UTF-8 JSON with recursively sorted keys, compact separators, files sorted by path; records path/sha256/bytes include manifest.",
+  "generationCommand": "pnpm --filter @jeeves/generator export:v2 /home/ash/github/jeeves/field-projects/youtube/v2/inputs/design.json /home/ash/github/jeeves/field-projects/youtube/v2/app",
+  "buildCommands": [
+    "pnpm install --frozen-lockfile --ignore-scripts",
+    "pnpm build"
+  ],
+  "finalRuntime": {
+    "project": "jeeves-youtube-v2",
+    "ports": [
+      45400,
+      45401,
+      45402
+    ],
+    "runtime": "field-projects/youtube/v2/app/.runtime",
+    "started": false
+  },
+  "applicationComplete": true,
+  "runtimeVerification": "none",
+  "strictReadiness": "not-assessed",
+  "nextUnit": "YV2-21 only: export untouched new app directory, verify all93 hashes, commit generated output before any custom completion."
+}

@@ -1155,3 +1155,16 @@ exact source downloads and native capture hashes preserved that distinction at b
 and 1440×900; mouse TTL/HTTP/SQL/worker edits stayed usable. This proves the reviewed controls
 and snapshots, not owner acceptance or strict runtime certification.
 [Evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-18-clarity.md).
+
+## 2026-11-08 compiled consumer reuse evidence
+
+Exercise shared mechanisms through an unrelated small consumer with its own resource authority,
+SQL relations, namespaces and metadata codecs. A renamed full application does not establish that
+boundary. In YV2-20, the same upload/job outbox/media/result receipt engines produced a ready product
+attachment without YouTube/search/count source or runtime grants. Keep product association and
+wire mapping in the narrow compiled adapter; preserve the unbound base pack's required hooks.
+
+Keep a proof runner's transport failure separate from the mechanism it already exercised. The
+attachment's transfer/encode/ready commit passed before Node fetch ignored an explicit website
+Host header. Correcting the adapter and re-reading the retained result was enough to verify that
+failure; repeating an unchanged provider/media run would add no evidence. [Bounded evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-20-reuse-and-freeze.md).
