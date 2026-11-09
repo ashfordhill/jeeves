@@ -47,7 +47,24 @@ export function createLocalSearch(sourcePaths: readonly string[]): V2Emitter {
       const selections = model.selections.filter((s) =>
         ["search-projection", "search-query"].includes(s.binding.kind),
       );
-      if (!selections.length) return { files: [] };
+      const publicPaths = model.selections
+        .filter((s) => s.binding.kind.startsWith("youtube-"))
+        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
+      if (!selections.length)
+        return {
+          files: publicPaths.length
+            ? [
+                {
+                  path: "src/runtime/search-contract.ts",
+                  content: asset(
+                    "jeeves-generator/templates/local-v2/assets/src/runtime/search-contract.ts",
+                  ),
+                  ownership: "generated-scaffold" as const,
+                  sourcePaths: publicPaths,
+                },
+              ]
+            : [],
+        };
       const paths = selections.map(
         (s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`,
       );
@@ -100,26 +117,6 @@ export function createLocalSearch(sourcePaths: readonly string[]): V2Emitter {
             ownership: "generated-scaffold" as const,
             sourcePaths: paths,
           },
-          ...(model.selections.some((s) => s.binding.kind === "youtube-search")
-            ? [
-                {
-                  path: "src/features/public-video.ts",
-                  content: asset(
-                    "jeeves-generator/templates/local-v2/assets/src/features/public-video.ts",
-                  ),
-                  ownership: "generated-scaffold" as const,
-                  sourcePaths: paths,
-                },
-                {
-                  path: "src/features/public-video-search.ts",
-                  content: asset(
-                    "jeeves-generator/templates/local-v2/assets/src/features/public-video-search.ts.template",
-                  ),
-                  ownership: "generated-scaffold" as const,
-                  sourcePaths: paths,
-                },
-              ]
-            : []),
         ],
         gaps: [
           {

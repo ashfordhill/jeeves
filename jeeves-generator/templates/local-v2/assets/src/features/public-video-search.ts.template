@@ -8,7 +8,7 @@ export {
   type PublicVideoRecord,
 } from "./public-video.ts";
 
-export const publicVideoQueryPreset = {
+export const publicVideoQueryPreset: SearchQueryPreset = {
   query: ({ q }) => ({
     bool: {
       filter: [{ term: { state: "ready" } }, { term: { visibility: "public" } }],
@@ -24,4 +24,4 @@ export const publicVideoQueryPreset = {
     },
   }),
   sort: [{ _score: "desc" }, { publishedAt: "desc" }, { videoId: "asc" }],
-} satisfies SearchQueryPreset;
+};

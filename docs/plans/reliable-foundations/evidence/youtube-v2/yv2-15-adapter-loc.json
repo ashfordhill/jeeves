@@ -1,0 +1,80 @@
+{
+  "method": "source-loc-v2 codeLines; physical nonblank parsed-comment-free lines",
+  "scope": {
+    "version": 1,
+    "backendPaths": ["src/adapters", "src/features", "src/runtime"],
+    "uiPaths": []
+  },
+  "review": "Every emitted src path is backend dependency/adapter code; no browser/frontend source is emitted. This bounded report separately inventories product adapters and shared public-video features; it is not a whole-app template-retention benchmark.",
+  "adapterLoc": 785,
+  "adapters": [
+    {
+      "path": "src/adapters/youtube-contract.ts",
+      "loc": 90,
+      "sha256": "7e52a592be62b6981b10a1d7e7f67878e0e106a189c947ecea4c5f722c0a5955"
+    },
+    {
+      "path": "src/adapters/youtube-counter.ts",
+      "loc": 23,
+      "sha256": "0fd9e22ce49c276840306e668596cab1b8a01265d9fbf99c68ffc0e308d1eded"
+    },
+    {
+      "path": "src/adapters/youtube-events.ts",
+      "loc": 128,
+      "sha256": "93c9a79b81b296442a19ad9cc67129329e23b710ec06c8cb15eb7bfdf5b13497"
+    },
+    {
+      "path": "src/adapters/youtube-lifecycle.ts",
+      "loc": 106,
+      "sha256": "0d730f546f310f828eb62321dc44d30a69e12d0bb363bac94972d2470c3be410"
+    },
+    {
+      "path": "src/adapters/youtube-objects.ts",
+      "loc": 25,
+      "sha256": "9d8bce7a67b73ca046f81d6fc6d7dd463ba7db79d3067cc43134b741133addfa"
+    },
+    {
+      "path": "src/adapters/youtube-projection.ts",
+      "loc": 34,
+      "sha256": "c4e46aaf7479c702890cd313a634439e8f52277508ab09adb843d25152076362"
+    },
+    {
+      "path": "src/adapters/youtube-public-sql.ts",
+      "loc": 15,
+      "sha256": "e31c8dca3b0692baf27715fb81ca76cc9ba017d1c82ec66445975298e7ca316d"
+    },
+    {
+      "path": "src/adapters/youtube-search.ts",
+      "loc": 54,
+      "sha256": "1427b3442077a15ec33547ead68d96e741d17546cb15ea5cb9610829ab3884b5"
+    },
+    {
+      "path": "src/adapters/youtube-upload.ts",
+      "loc": 199,
+      "sha256": "fdd69e066a84c2c653e35af4e018e6e35b69bb0c59eac0c4ccf8ba772df3f129"
+    },
+    {
+      "path": "src/adapters/youtube-watch.ts",
+      "loc": 111,
+      "sha256": "cf176a3b77179d51145f5c150c0a9c17b4021fd95326d91846bc49710512027b"
+    }
+  ],
+  "sharedPublicFeatureLoc": 95,
+  "sharedPublicFeatures": [
+    {
+      "path": "src/features/public-video.ts",
+      "loc": 50,
+      "sha256": "66a807fea023befc985d408c81a5baa4f5f485c4cfde99ed2faaefaa43adda80"
+    },
+    {
+      "path": "src/features/public-video-search.ts",
+      "loc": 26,
+      "sha256": "b7d15d92401bb57a6d2bab1be2bf7f1927fb95631d38c435956421258fe4183c"
+    },
+    {
+      "path": "src/features/video-paths.ts",
+      "loc": 19,
+      "sha256": "afcbbfafd92dac3e3bc1950f1814b22055cd7aa02205ad9f62d9e65d2e570d38"
+    }
+  ]
+}

@@ -1119,3 +1119,98 @@ readiness and signals. Actual mappings/services are compiled recipe contribution
 mapping/weight/version/internal-ID fields. No broad Marketplace schema/search, prefix matching,
 recommendations or private database access was added.
 [Focused/standalone/committed-event evidence](../evidence/youtube-v2/yv2-14-search.md).
+
+## YV2-15 — YouTube contracts and browser API adapters
+
+`createLocalYouTubeAdapters(sourcePaths)` (`src/v2/youtube.ts`, registered by the local-v2
+registry) emits **contract libraries only**. It has no `provides.templates`/preset attestation,
+service, implicit login/grant or normal editor control. `youtube-service-composition` and prior
+application-binding gaps remain required. The full fixture emits 80 files deterministically;
+YV2-16 must install the actual compiled resource/service recipe before claiming support.
+
+Actual output/API (all production backend, with explicit `local.youtube-adapters` ownership):
+
+| Path under `src/` | Exported interface and responsibility |
+| --- | --- |
+| `features/video-paths.ts` | `videoUuid`, `originalKey`, `originalIdentity`, `resultPrefix`, `publicPaths`; canonical lowercase UUIDs and exact original/result namespaces |
+| `features/public-video.ts` | Existing `publicVideoRecord`, `PublicVideoRecord`, `publicVideoDocumentSchema`, `PublicVideoDocument`, `publicVideoMapping`, `publicVideoDocument`, now shared by all selected YouTube adapters |
+| `features/public-video-search.ts` | Existing unchanged finite `publicVideoQueryPreset` and public-schema reexports; emitted for `youtube-search` |
+| `adapters/youtube-contract.ts` | `creator`, `videoMetadata`/`VideoMetadata`, `newUpload`, `completionResponse`/`CompletionResponse`, `viewPlayed`/`ViewPlayed`, `videoPublished`/`VideoPublished`, `publishedCodec`, `wireEvent`, `logicalEventId`, `publicationEventId`, `failure`, `failureMessages`, `sha256`, `timestamp` |
+| `adapters/youtube-events.ts` | `processingRequested`/`ProcessingRequested`, `requestedCodec`, `processingEvent`, `videoEventIdentities`, `youtubeMediaCodecs`; publication codec/type and stable-ID reexports |
+| `adapters/youtube-lifecycle.ts` | `createYouTubeLifecycle({binding,publicationDestination})`, `YouTubeLifecycle`; delegates to actual `createAssetLifecycle`, binds metadata/result/event/job/completion/publication codecs and stable IDs |
+| `adapters/youtube-upload.ts` | `creatorIdentity`, `createCreatorPrincipal(verify)`, `validateYouTubeUpload`, `createYouTubeUpload({binding,lifecycle,transaction,objects})`, `YouTubeMultipart`, `mountYouTubeUpload(routes,{multipart,lifecycle,transaction,principal})` |
+| `adapters/youtube-objects.ts` | `createYouTubeMultipartObjects({control,signing,bucket})`; existing S3 factory with explicit original namespace and `video-id`, `upload-id`, `sha256`, `expected-size` metadata names |
+| `adapters/youtube-public-sql.ts` | `youtubeReadySelect(assets)`, `youtubeReadyView(assets,view)`; actual SQL over `assetReadySelect`, trusted `SqlRelation` inputs only; also exported from generator `src/index.ts` |
+| `adapters/youtube-watch.ts` | `createYouTubeReadyReader({pool,view,ttlSeconds,cache?})`, `createYouTubeTotalReader({pool,view})`, `mountYouTubeWatch(routes,{read,total,publisher})` |
+| `adapters/youtube-counter.ts` | `createYouTubeViewCounter(tables)`; actual generic receipt counter with canonical `ViewPlayed` qualifier/identity; emitted with Watch + counter selections |
+| `adapters/youtube-projection.ts` | `createYouTubeSearchProjection({client,binding})`; actual generic projection of strict committed `VideoPublished`; emitted with a selected projection + YouTube adapter |
+| `adapters/youtube-search.ts` | `createYouTubeSearch({client,binding})`, `mountYouTubeSearch(routes,search)`; actual generic bounded query plus browser hits/media URL mapping |
+
+The YouTube boundary maps generic `assetId` to wire/browser `videoId`; generic lifecycle,
+transport, cache, counter and query algorithms are reused. Creator access requires the verified
+principal's `realm_access.roles` to contain `creator`; channel is trimmed preferred username or
+subject, bounded to 200. Input accepts only the existing file fingerprint/title/description, with
+5 MiB parts/256 MiB maximum/MP4 policy retained by the underlying transport and product validator.
+Neither owner subject nor object/provider identity is client-selectable or exposed in responses.
+
+Original keys must equal `originals/<video UUID>/<upload UUID>/source.mp4`; completion checks
+both IDs against its authoritative upload. Result codec delegates to `bindVideoResult` with
+`videos/<video UUID>/<job UUID>/<attempt UUID>/`. The shared public record now validates the
+same exact paired `master.m3u8` and `thumbnail.jpg` paths, including valid nested UUIDs; private,
+extra and pending fields are rejected. Publication construction uses the committed-ready
+lifecycle hook/result, never a provider result delivered directly to Search/Watch. Stable IDs
+retain v1's **`youtube-v1` hash namespace**, independent of new deployment/realm/bucket names.
+Publication ID is `logicalEventId(videoId,"publication","1")`; processing IDs use canonical
+job/attempt plus unchanged message type. UUID input/envelope/transport/document/aggregate IDs
+are normalized consistently before generic case-sensitive text keys. Object keys remain exact,
+canonical namespace strings rather than case-folding arbitrary storage keys.
+
+All public metadata validators are the actual shared YV2-14 record/document schema, strengthened
+in place; Watch does not duplicate it. Search mapping/query bytes and fixed OR/full-word semantics
+are unchanged. Public projection strips only the validated event envelope fields, then parses
+the exact public document. Search and counter each decode raw wire once and revalidate their
+separate normalized envelope through the existing generic factory. YV2-09 lifecycle deliberately
+continues its existing pure repeated validation of **raw** wire (not normalized input); its
+API, receipt/deadline/transition/outbox algorithms are unchanged.
+
+Two small dependency seams were separated without changing their algorithms:
+
+- `assetEventId` moved verbatim to `src/runtime/event-identity.ts`, retaining its lifecycle
+  reexport. Public wire codecs can use the mechanism without importing lifecycle persistence.
+- `createTotalReader` moved to `src/runtime/counter-read.ts`, retaining its event-counter
+  reexport. Watch can read public totals without loading receipt/writer modules. These shared
+  dependencies, public schema contract and result codec emit when their actual consumers need
+  them; they create no unselected process or credential. `publicVideoQueryPreset` now has an
+  explicit `SearchQueryPreset` annotation: the previous `satisfies` inference failed when first
+  passed to the actual query constructor. Its runtime query/sort object is unchanged.
+
+Public SQL has exactly `video_id,title,description,channel,duration_seconds,manifest,thumbnail,
+published_at,publication_version`, from committed `state='ready'`. It contains no private owner,
+fingerprint, upload/provider, failure/job fields or totals. In a foundation recipe use
+`youtubeReadySelect` in the foundation's **sole** `views` contribution and create/revoke its
+public schema through a migration; `youtubeReadyView` is the standalone SQL helper (do not also
+ask the foundation to CREATE that same view). YV2-16 owns actual bound resources/logins/grants.
+
+Internal mounts preserve the browser API (the `/api/{upload,watch,search}` edge prefixes remain
+YV2-16 routing work): Upload `GET /me`, `POST /uploads` 201, `GET /uploads`,
+`GET /uploads/:uploadId`, `POST /uploads/:uploadId/parts/:partNumber`,
+`POST /uploads/:uploadId/complete` 202 and `POST /uploads/:uploadId/abort`. Start/list/status
+map asset ID to video ID; status/list enrich from the actual lifecycle, preserving top-level
+metadata, phase/file/parts, queued/deadline/job/attempt and safe failure fields. Watch
+`GET /videos/:videoId` returns ready metadata, `/media/<key>` URLs and a **fresh string** total;
+`POST /videos/:videoId/views` accepts only `{eventId:UUID}`, rejects not-ready with 404 and
+awaits the supplied confirmed publisher before 202 `{eventId,accepted:true,acceptedAt,
+publicationVersion:1}`. Search `GET /videos` returns `{q,page,pageSize:20,total,hits}` with
+exact browser hit fields and thumbnail URL. Typed injected clients must implement real confirms;
+these route adapters do not open/own transports themselves.
+
+Ready cache keys retain `ready-video:v1:<canonical ID>`. Pass the emitted cache binding's
+`ttlSeconds` explicitly; no adapter default. The reader uses actual positive-cache single-flight,
+positive eligibility/codec and public-view loader. Null/private/pending records and totals are
+never cached; counts use their separate public-view pool on every details request.
+
+YV2-16 still owns complete source-bound feature/preset/services, SQL/grants/settings/client
+bindings, actual readiness, finite edge routes/static/media, pinned FFmpeg/ffprobe verification
+before readiness, and transport/client/pool/signal/drain ownership. No services or final field
+app are supplied by this unit. [Focused/standalone/HTTP evidence and limits](../evidence/youtube-v2/yv2-15-adapters.md);
+[separate backend adapter LOC](../evidence/youtube-v2/yv2-15-adapter-loc.json).

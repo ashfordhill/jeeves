@@ -13,20 +13,30 @@ export function createLocalAssetIdentity(sourcePaths: readonly string[]): V2Emit
     dependencies: [generationRuntime.ref],
     render: ({ model, asset }) => {
       const paths = model.selections
-        .filter((s) => ["asset-lifecycle", "video-hls"].includes(s.binding.kind))
+        .filter(
+          (s) =>
+            ["asset-lifecycle", "video-hls"].includes(s.binding.kind) ||
+            s.binding.kind.startsWith("youtube-"),
+        )
         .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
       return {
         files: paths.length
           ? [
-              {
-                path: "src/runtime/asset-identity.ts",
-                content: asset(
-                  "jeeves-generator/templates/local-v2/assets/src/runtime/asset-identity.ts.template",
-                ),
-                ownership: "generated-scaffold" as const,
-                sourcePaths: paths,
-              },
-            ]
+              "asset-identity",
+              ...(model.selections.some(
+                (s) =>
+                  s.binding.kind === "asset-lifecycle" || s.binding.kind.startsWith("youtube-"),
+              )
+                ? ["event-identity"]
+                : []),
+            ].map((name) => ({
+              path: `src/runtime/${name}.ts`,
+              content: asset(
+                `jeeves-generator/templates/local-v2/assets/src/runtime/${name}.ts.template`,
+              ),
+              ownership: "generated-scaffold" as const,
+              sourcePaths: paths,
+            }))
           : [],
       };
     },
@@ -46,15 +56,21 @@ export function createLocalVideoHls(sourcePaths: readonly string[]): V2Emitter {
       const paths = model.selections
         .filter((s) => s.binding.kind === "video-hls")
         .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
-      if (!paths.length) return { files: [] };
+      const uploadPaths = model.selections
+        .filter((s) => s.binding.kind === "youtube-upload")
+        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
+      if (!paths.length && !uploadPaths.length) return { files: [] };
       return {
-        files: ["media-process", "video-result", "video-hls"].map((name) => ({
+        files: (paths.length
+          ? ["media-process", "video-result", "video-hls"]
+          : ["video-result"]
+        ).map((name) => ({
           path: `src/runtime/${name}.ts`,
           content: asset(
             `jeeves-generator/templates/local-v2/assets/src/runtime/${name}.ts.template`,
           ),
           ownership: "generated-scaffold" as const,
-          sourcePaths: paths,
+          sourcePaths: [...paths, ...uploadPaths],
         })),
         gaps: [
           {
@@ -63,7 +79,7 @@ export function createLocalVideoHls(sourcePaths: readonly string[]): V2Emitter {
             required: true,
             description:
               "Bind authoritative job/result/event codecs, source/result namespaces, confirmed queue transports, pinned FFmpeg runtime and the single media service in a compiled recipe. Engine/runner libraries and access contributions alone install no worker.",
-            sourcePaths: paths,
+            sourcePaths: [...paths, ...uploadPaths],
           },
         ],
       };

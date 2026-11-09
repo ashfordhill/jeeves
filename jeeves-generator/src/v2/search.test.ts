@@ -49,8 +49,10 @@ const video = {
   description: "Complete words",
   channel: "Lessons",
   durationSeconds: 3,
-  manifest: "owned/master.m3u8",
-  thumbnail: "owned/thumbnail.jpg",
+  manifest:
+    "videos/a47cc800-ffed-4ec1-9080-9c55f466cf31/679acead-ab14-443e-9ec9-97e293f7d454/cf76c96e-dd5e-46f1-8361-28c46b5417a3/master.m3u8",
+  thumbnail:
+    "videos/a47cc800-ffed-4ec1-9080-9c55f466cf31/679acead-ab14-443e-9ec9-97e293f7d454/cf76c96e-dd5e-46f1-8361-28c46b5417a3/thumbnail.jpg",
   publishedAt: "2026-11-08T12:00:00Z",
   visibility: "public",
   state: "ready",

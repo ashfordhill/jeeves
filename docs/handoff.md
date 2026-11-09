@@ -5944,3 +5944,46 @@ manifest/thumbnail strings alone do not establish ownership. Required `search-ap
 remains until actual compiled consumers/mappings/services15/16 install; default emission grants
 no SQL or product mapping, and no template attestation is claimed.16 still owns complete pack/
 service/runtime readiness, finite edge and pinned FFmpeg/ffprobe readiness before process ready.
+
+## 2026-11-08 — YV2-15: YouTube product contracts and existing browser API
+
+`local.youtube-adapters` emits strict metadata/creator/upload/processing/publication/ViewPlayed
+codecs, authoritative original/result paths and stable v1 wire IDs; canonical UUIDs bridge generic
+asset IDs to product video IDs before case-sensitive counter/search keys. Actual prior factories
+compose Upload lifecycle/status mapping, ready-only public SQL/cache, fresh totals, confirm-gated
+view acceptance and unchanged Upload/Watch/Search route/status/response shapes/media URLs.
+Shared public-video validators/mapping are reused, strengthened for paired asset/job/attempt
+paths and owned once by the adapter emitter. No UI/control/provider/pin or lifecycle algorithm
+change. [Actual APIs/seams/gaps](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-15--youtube-contracts-and-browser-api-adapters).
+
+Three focused offline cases; final `pnpm check` **460 tests/67 files, 30.43s**, lint/types;
+**36 native E2Es, 1.3m**; web build **888ms** (existing advisory). Two final deterministic
+**80-file** fresh exports pass own frozen install/untouched build. Compiled HTTP + pinned scratch
+RabbitMQ confirms RS256 creator/ownership errors, stable upload replay, pending404/ready public
+reads, actual confirms before view202, duplicate count1, fresh totals outside cache, failed
+publisher503 and Search/browser shapes. PGlite public role reads the nine-column view; private
+SELECT42501 and explicitly false INSERT privilege verified (view writes separately fail55000).
+Object/media/Search probe doubles are explicit; runtime probe precedes final title-codec reuse,
+which received focused tests and final untouched build. Backend adapter inventory: **785 LOC/10
+files**, shared public features **95 LOC/3 files**; no final template-share claim.
+[Evidence/LOC/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-15-adapters.md).
+Logs/scripts: `/tmp/jeeves-yv2-15/{focused-final,check-final,e2e,web-build,export,install,build,
+probe,cleanup}.log`, `{export-summary,probe-summary,adapter-loc,resources,cleanup-summary}.json`.
+
+Exact scratch **jeeves-yv2-15-contract** broker/one volume/network removed; ports **45290–45293**
+free. Own exports/dependencies/builds/producer DB/secrets removed before root checks; no image
+built/removed. All 14 retained v1 services healthy; retained FFmpeg unchanged. Frozen v1 **108
+paths/hashes** unchanged, manifest5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f;
+fixture15584953 bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9.
+Root README/owner Future Benchmarks, feedback dirt/Unicode deletion/colon variants and e2e-docker
+mode preserved. No v2 field app, branch/worktree/stash/push. No studio UI changed; native TinyURL
+lane/mouse/history/generation checks pass.
+
+Next **YV2-16 only**: install source-bound video feature/YouTube preset and complete services,
+actual SQL/views/grants/resource/settings/client bindings, finite nginx/static/media routes,
+pinned FFmpeg+ffprobe readiness before ready, signals and ordered drain. Required application
+and `youtube-service-composition` gaps remain honest; no selected template/preset support is
+attested yet. Use `youtubeReadySelect` for foundation-owned CREATE VIEW, not both that and the
+standalone `youtubeReadyView`. Generic `assetEventId` and public `createTotalReader` were moved
+without algorithm changes and retain their old reexports; lifecycle raw-wire validation/API is
+unchanged. Local commit: **YV2-15: bind YouTube behavior to reusable feature modules**.

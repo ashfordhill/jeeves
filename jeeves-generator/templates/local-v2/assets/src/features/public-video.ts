@@ -1,20 +1,29 @@
 import { z } from "zod";
 import { defineSearchDocument, type SearchMapping } from "../runtime/search-contract.ts";
+import { publicPaths, videoUuid } from "./video-paths.ts";
 
-// Public metadata only. Wire-event identity, storage namespace binding and HTTP URLs are
-// application-adapter concerns, not this finite query preset or the generic search runtime.
-export const publicVideoRecord = z.strictObject({
-  videoId: z.uuid(),
-  publicationVersion: z.literal(1),
-  title: z.string().min(1).max(200),
-  description: z.string().max(5000),
-  channel: z.string().min(1).max(200),
-  durationSeconds: z.number().finite().min(1).max(600),
-  manifest: z.string().min(1).max(250),
-  thumbnail: z.string().min(1).max(250),
-  publishedAt: z.iso.datetime({ offset: true }),
-});
-export const publicVideoDocumentSchema = publicVideoRecord.extend({
+// Shared public metadata: canonical UUID and exact paired asset/job/attempt paths.
+// Wire-event identity and HTTP URLs remain product-adapter concerns.
+export const publicVideoRecord = z
+  .strictObject({
+    videoId: videoUuid,
+    publicationVersion: z.literal(1),
+    title: z.string().min(1).max(200),
+    description: z.string().max(5000),
+    channel: z.string().min(1).max(200),
+    durationSeconds: z.number().finite().min(1).max(600),
+    manifest: z.string().min(1).max(250),
+    thumbnail: z.string().min(1).max(250),
+    publishedAt: z.iso.datetime({ offset: true }),
+  })
+  .superRefine((video, ctx) => {
+    try {
+      publicPaths(video);
+    } catch {
+      ctx.addIssue({ code: "custom", message: "Unbound public video paths" });
+    }
+  });
+export const publicVideoDocumentSchema = publicVideoRecord.safeExtend({
   visibility: z.literal("public"),
   state: z.literal("ready"),
 });

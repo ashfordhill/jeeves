@@ -18,3 +18,4 @@ export * from "./v2/positive-cache.ts";
 export * from "./v2/registry.ts";
 export * from "./v2/search.ts";
 export * from "./v2/upload-state.ts";
+export * from "./v2/youtube.ts";
