@@ -6166,3 +6166,34 @@ work. No further template implementation or provider loops. Final runtime reserv
 Keep this v2 studio project. Browser/S01–S08 mouse completion belongs22; independent restart and
 final backend retained-template report strictly>5.53% belong23. Runtime:none/strict:not-assessed
 and local public-output limitations remain explicit.
+
+## 2026-11-08 — YV2-21: untouched generated YouTube v2 baseline
+
+Confirmed `v2/app` absent, then ran the exact frozen-input `export:v2` command from YV2-20
+`13bc6f83737253998fb224472d0590c39d05eb23`. Actual **93 files / 4,243,495 bytes** match every
+frozen path/hash/byte count, including manifest **1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc**
+and inventory **ed6eab9609fd59b4148b72ddd25e4481770ab88bff826eebaf7cdbc93195c938**.
+Exact canonical embedded source, all92 manifest payloads,156 registry sources,10 templates/
+15 implementations and locks verified. No emitted file edited/formatted/repaired or browser added.
+Own `pnpm install --frozen-lockfile --ignore-scripts` and untouched `pnpm build` exit0 with own
+TypeScript7.0.2;13 exact pins/229 imports have no checkout/workspace dependency. Only ignored
+node_modules/dist created, then removed before checks; all93 hashes still match.
+[Command, full identities, checks/build logs and limits](plans/reliable-foundations/evidence/youtube-v2/yv2-21-untouched-baseline.md).
+
+Final post-cleanup `pnpm check` explicitly awaited exit0:lint/types,**467tests/70files31.17s**;
+then **37native E2Es1.3m**, webbuild **979ms** (existing advisories). TinyURL lane/mouse and
+saved-source generation browser coverage pass; no studio UI change or weakened checks.
+Optional diff-check flags only frozen generated Dockerfile31 blank EOF; pinned bytes retained.
+All748 protected file hashes/modes match; v1 historical manifest50987079…/fixture15584953bytes
+SHA1658728…/retainedFFmpeg1792f4e…/14healthy services/sixvolumes preserved. Root README/owner
+FutureBenchmarks, feedbackdirt/Unicode deletions/colonvariants/e2e-docker mode unchanged.
+No provider/runtime/media run or new Docker resources; no branch/worktree/stash/push.
+Logs/verifier `/tmp/jeeves-yv2-21/`. Local commit:
+**YV2-21: commit untouched generated YouTube v2**.
+
+Stop here. Next **YV2-22 only** records this actual baseline commit hash and reuses the existing
+browser/custom completion separately. Keep v2 studio project2c7c8b08-4633-4a97-8794-672a777f1d3a r2.
+Final runtime still unstarted/reservedjeeves-youtube-v2 HTTP45400/identity45401/objects45402/private
+app/.runtime; recheck before first start. Prior exact-byte20 backend/alternate proof is retained,
+not repeated. Report runtime:none/strict:not-assessed; browser/S01–S08 remain22, independent
+restart/final backend retained-template report remain23. No v2 percentage or new certification.

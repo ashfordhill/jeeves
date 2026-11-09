@@ -1,0 +1,1 @@
+CREATE SCHEMA IF NOT EXISTS "asset_public"; REVOKE ALL ON SCHEMA "asset_public" FROM PUBLIC;
