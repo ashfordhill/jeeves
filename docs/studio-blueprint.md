@@ -1,10 +1,10 @@
 # Studio blueprint
 
 The blueprint is the part of a design that a code generator reads. The
-[experimental generator foundation](../jeeves-generator/README.md) validates frozen design/blueprint
-inputs and assembles in-memory bundles for one local YouTube profile using 19 experimental
-template families. The canvas offers a separately labeled partial preview/ZIP download for the
-exact saved source; other designs refuse without substituting the frozen baseline. The active
+[experimental generator foundation](../jeeves-generator/README.md) validates saved explicit v2 generation source and assembles in-memory bundles from installed
+implementations. It also retains the exact frozen local-v1 profile and its 19 experimental
+template families. The canvas previews/downloads the selected source; unsupported designs refuse
+without substituting a frozen baseline. The active
 [field-project plan](plans/reliable-foundations/youtube-field-project-plan.md) keeps the package
 separate from the studio; its partial report grants no strict readiness or runtime credit. The studio writes
 through operations; the blueprint is derived on every request and is never stored or edited.
@@ -19,7 +19,7 @@ They neither filter this endpoint nor change the design revision: the blueprint 
 every saved relationship.
 
 ```text
-studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (experimental partial preview/ZIP; exact frozen profile only)
+studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (selected-source v2 or exact frozen-v1 preview/ZIP)
 ```
 
 ## Installed feature authoring
@@ -34,7 +34,8 @@ Blueprint v3 retains all original settings, custom requirements and generation d
 including unsupported preserved values hidden by the normal editor. Its generation resolver
 still diagnoses unsupported transport/identity intent. New local connection creation explicitly
 uses HTTP/Private network where applicable. Catalog presence or successful attachment is not
-runtime verification. Saved-source v2 preview/ZIP routing remains separate work.
+runtime verification. The experimental preview/ZIP route assembles this exact saved source
+through the same executing registry, independently of strict TinyURL eligibility.
 
 ## Endpoint
 
@@ -207,17 +208,21 @@ reuses these findings and checks declared finite Create/Resolve signatures and p
 change blueprint version 2 or certify application completeness, template support or runtime
 behavior. A worker's outgoing call/publication/store dependency only expresses topology.
 
-## Separate partial export API
+## Separate experimental export API
 
 `POST /projects/:id/experimental-generation/preview` and `/download` are read-only-to-project
-operations over the exact saved revision/source hash. They use the trusted frozen profile,
-real local registry and image, with no arbitrary input code or host output paths. Preview's full
-partial report retains strict readiness, all 25 unsupported paths and G01–G08. Download requires
-the preview archive hash and returns a bounded deterministic stored ZIP of unchanged assembler
-payloads, including `.jeeves/manifest.json`, `.jeeves/report.json` and source-linked diagram.
-Selected-project provenance is separate from the frozen archive origin. See the
-[generator API](../jeeves-generator/README.md#jeeves-preview-and-zip-download) for exact requests,
-limits and errors. This adds no fields or eligibility credit to strict blueprint/report contracts.
+operations over the exact saved revision/source hash. `profileId: selected-source-v2` resolves
+explicit selections/settings against the actual executing registry and assembles canonical saved
+source, including `.jeeves/inputs/design.json`. Preview returns the full support report and exact
+input/registry/archive identities. Required custom hooks keep base-video exports partial; complete
+backend support does not establish runtime or strict TinyURL evidence. Unknown/unsupported source
+refuses. `profileId: youtube-local-v1` still requires the exact frozen profile and retains every
+payload byte, diagram, report and historical origin. No name-based dispatch or substitution occurs.
+
+Download requires the preview archive hash, reassembles, rechecks the saved source and returns a
+bounded deterministic stored ZIP. See the [generator API](../jeeves-generator/README.md#jeeves-preview-and-zip-download)
+for requests, limits and errors. This adds no fields or eligibility credit to strict blueprint/report
+contracts. Native diagram/source diagnostics remain a separate export path.
 
 The explicit YV2-16 preset command can materialize generation, graph/modules and ownership in
 one operation batch. Blueprint reads still materialize nothing; v3 preserves those exact source

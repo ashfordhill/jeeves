@@ -21,10 +21,14 @@ RUN apk add --no-cache bash ca-certificates font-dejavu nginx \
 COPY --from=production-dependencies /app/node_modules ./node_modules
 COPY --from=production-dependencies /app/jeeves/apps/server ./jeeves/apps/server
 COPY --from=production-dependencies /app/jeeves/packages ./jeeves/packages
-COPY --from=production-dependencies --chown=node:node /app/jeeves-generator ./jeeves-generator
+# Trusted generator implementations/assets only; no field app or runtime is packaged.
+COPY --from=production-dependencies /app/jeeves-generator/node_modules ./jeeves-generator/node_modules
+COPY --from=production-dependencies --chown=node:node /app/jeeves-generator/package.json ./jeeves-generator/package.json
+COPY --from=production-dependencies --chown=node:node /app/jeeves-generator/src ./jeeves-generator/src
+COPY --from=production-dependencies --chown=node:node /app/jeeves-generator/templates ./jeeves-generator/templates
 COPY --chown=node:node field-projects/youtube/v1/inputs/*.json ./field-projects/youtube/v1/inputs/
 COPY --chown=node:node field-projects/youtube/v1/diagrams/005-local-intent-aligned/diagram.png ./field-projects/youtube/v1/diagrams/005-local-intent-aligned/diagram.png
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY --chown=node:node package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY patches ./patches
 COPY tooling/tsconfig.base.json ./tooling/tsconfig.base.json
 COPY --from=build /app/jeeves/apps/web/dist ./jeeves/apps/web/dist

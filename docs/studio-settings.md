@@ -431,6 +431,11 @@ also explains the explicit local Keycloak substitution and transport-intent gaps
 
 YV2-16 adds explicit `buildGenerationPresetCommand` source batches for base video attachment and
 the complete local YouTube backend. Defaults appear only through that command; reads preserve
-historic intent. The generator supplies actual bound consumers, while normal mouse/chat controls
-remain the next UI unit. Base video retains required product/service hooks and adds no search or
+historic intent. The generator supplies actual bound consumers; normal mouse/chat controls share the executing
+registry and authoring command. Base video retains required product/service hooks and adds no search or
 counts. [Current composition and consumed settings](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).
+
+Generation preview and ZIP use these same installed consumer contracts. The dialog shows exact
+selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse
+export instead of becoming an honored JSON-only setting. Partial product hooks and experimental
+backend support remain separate from strict readiness and runtime evidence. See [export](studio.md#experimental-project-export).

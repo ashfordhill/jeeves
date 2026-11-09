@@ -490,5 +490,7 @@ batches materialize either the base video graph/modules/ownership or YouTube cor
 selects upload/lifecycle/HLS only and retains required product/service hooks; no stub app starts.
 The complete YouTube recipe supplies real seven-process construction, SQL/public views/grants,
 provider setup, finite browser/media edge and pinned FFmpeg/ffprobe readiness. Normal editor
-selection UI is separate work; strict operation/template verification remains unavailable.
+selection uses installed supported presets and useful settings shared with chat. Generate project
+previews/downloads canonical saved v2 source with actual consumer/custom-hook reports, retaining
+exact-v1 dispatch separately; strict operation/template verification remains unavailable.
 [Concrete APIs, consumers and evidence](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).

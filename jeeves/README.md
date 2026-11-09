@@ -34,3 +34,9 @@ docker build -f jeeves/Dockerfile -t jeeves-local .
 See the [studio guide](../docs/studio.md), [settings](../docs/studio-settings.md),
 [catalog](CATALOG.md), [plan](PLAN.md), and [Docker guide](../docs/docker.md).
 The root README belongs to the owner; agent-maintained instructions belong here or in `docs/`.
+
+**Generate project** previews/downloads the selected saved local-v2 design using the installed
+registry, including actual support/custom-hook details and deterministic provenance. Exact frozen
+local-v1 export remains separate and byte-preserving. Experimental backend export has no strict
+TinyURL/runtime certification; the base video pack still requires product/service hooks. The image
+packages trusted generator source/assets and production dependency links, never field app/runtime.

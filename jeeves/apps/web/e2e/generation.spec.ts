@@ -175,3 +175,85 @@ test("normal TinyURL source reports unsupported and keeps the mouse canvas usabl
     await page.request.delete(`/api/projects/${id}`);
   }
 });
+
+test("mouse exports the selected supported v2 source and rejects changed ZIP bytes", async ({
+  page,
+}) => {
+  const id = await createStudy(page, "E2E v2 selected source generation", "blank");
+  try {
+    await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
+    await tile(page, "User").click();
+    await page.getByLabel("Feature preset", { exact: true }).selectOption("youtube");
+    await page.getByRole("button", { name: "Preview attachment", exact: true }).click();
+    await page.getByRole("button", { name: "Attach feature", exact: true }).click();
+    await ready(page);
+    await expect(page.getByRole("button", { name: "Generate project", exact: true })).toBeEnabled();
+    await expect
+      .poll(
+        async () =>
+          (await (await page.request.get(`/api/projects/${id}/design`)).json()).design.elements
+            .length,
+      )
+      .toBe(19);
+    const before = await (await page.request.get(`/api/projects/${id}/design`)).json();
+    await page.getByRole("button", { name: "Generate project", exact: true }).click();
+    const result = page.waitForResponse((response) =>
+      response.url().endsWith("/experimental-generation/preview"),
+    );
+    await page.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    const preview = await (await result).json();
+    expect(preview.mode).toBe("selected-source-v2");
+    expect(preview.selectedSource.canonicalSha256).toBe(
+      createHash("sha256").update(canonical(before.design)).digest("hex"),
+    );
+    await expect(page.getByText("Selected backend assembled", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Support & custom gaps · 0 required", { exact: true }),
+    ).toBeVisible();
+    let downloads = 0;
+    page.on("download", () => downloads++);
+    await page.route("**/experimental-generation/download", async (route) => {
+      const response = await route.fetch();
+      const bytes = Buffer.from(await response.body());
+      bytes[bytes.length - 1] = (bytes[bytes.length - 1] ?? 0) ^ 1;
+      await route.fulfill({ response, body: bytes });
+    });
+    await page.getByRole("button", { name: "Download project ZIP", exact: true }).click();
+    await expect(page.getByRole("alert")).toContainText("archive differs from preview");
+    expect(downloads).toBe(0);
+    await expect(
+      page.getByRole("button", { name: "Download project ZIP", exact: true }),
+    ).toBeDisabled();
+    await page.unroute("**/experimental-generation/download");
+    await page.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Download project ZIP", exact: true }),
+    ).toBeEnabled();
+    const event = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download project ZIP", exact: true }).click();
+    const download = await event,
+      path = await download.path();
+    if (!path) throw new Error("Missing selected ZIP");
+    expect(download.suggestedFilename()).toBe("jeeves-local-v2-experimental.zip");
+    expect(
+      createHash("sha256")
+        .update(await readFile(path))
+        .digest("hex"),
+    ).toBe(preview.archive.sha256);
+    expect(await (await page.request.get(`/api/projects/${id}/design`)).json()).toEqual(before);
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+});
+
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_key, item) =>
+    item && typeof item === "object" && !Array.isArray(item)
+      ? Object.fromEntries(
+          Object.keys(item)
+            .sort()
+            .map((key) => [key, item[key]]),
+        )
+      : item,
+  );
+}

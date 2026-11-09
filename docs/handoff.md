@@ -6087,3 +6087,38 @@ Next **YV2-19 only** owns selected saved-source v2 preview/ZIP dispatch. `Export
 `onDiagnostics`; native captures record canonical process view. Complete YouTube backend unchanged;
 base video custom hooks remain required, deterministic runtimeVerification:none and strict TinyURL
 blockers remain honest. No standalone app build required for this presentation-only unit.
+
+## 2026-11-08 — YV2-19: selected saved-source preview and ZIP
+
+Generate explicitly dispatches canonical saved v2 source through the same cached actual registry
+as authoring, or exact frozen-v1 assembly; no name/preset/source substitution. Unsupported refs,
+bindings/settings refuse. V2 preview shows actual consumers/custom gaps and source/registry/ZIP
+identities; required base-video hooks stay partial. Existing draft/history/source/archive/cancel/
+browser-hash guards remain; strict TinyURL readiness/runtime evidence stay separate. Docker keeps
+trusted generator source/assets plus production workspace links and readable fingerprinted root
+lock; no field app/runtime. [Interfaces](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-19--selected-saved-source-preview-and-deterministic-zip).
+
+Final post-cleanup `pnpm check` explicitly exited0: lint/types, **466 tests/70 files,32.03s**;
+then **37 native E2Es,1.4m**; web build **871ms** (existing advisories). New browser case waits for
+saved attachment before its source snapshot; no assertion/pin/timeout weakening. Live own Jeeves
+45310/45311 mouse TinyURL, supported YouTube attachment, native TTL3600→3601, preview/download,
+repeat-identical ZIP, stale/actually saved unknown refusal pass; final1280/1440 dialogs, errors0.
+Actual93-file mouse ZIP extracted outside checkout passes own frozen install/untouched build;
+all emitted bytes remain unchanged, canonical input and all payload hashes match, real Watch TTL
+consumer receives3601. Manifest4819963221d7fef684bf7f949000f971e0fc993762345e1b185d17e4fd4ab305.
+Normal production image/start/API smoke reproduces the same v2 ZIP and exact108-file v1 ZIP,
+actual installed support/real v2 assets, with only six approved field inputs/PNG.
+[Evidence/screenshots/sanitized hashes/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-19-generation.md).
+
+Before root checks, exact own image/container/volume/database/settings/exports/deps/build removed;
+ports45310–45314 free. Fresh frozen-v1 all108 path hashes and historical manifest5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f match;
+fixture15584953bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9,
+retained FFmpeg/all14 healthy v1 services/six volumes preserved. Root README/owner FutureBenchmarks,
+feedback/Unicode deletions/colon variants and e2e-docker mode preserved. V1 app/inputs/local-v1
+assets clean. No provider/pin change, branch/worktree/stash/push or finalv2app. Logs/harnesses:
+`/tmp/jeeves-yv2-19/{check-final,e2e-final,web-build,browser,package-smoke,install,extracted-build}.log`.
+Local commit: **YV2-19: generate v2 projects from selected saved source**.
+
+Next **YV2-20 only**: alternate reuse proof/final preflight and diagram/input snapshot. Existing
+base video required product/service hooks, browser slot, runtimeVerification:none and strict
+TinyURL gaps remain honest; no backend provider/fault matrix or work20–23 executed here.

@@ -125,25 +125,33 @@ scenarios remain separate and unmeasured; no functional credit comes from placeh
 
 ## Jeeves preview and ZIP download
 
-The canvas **Generate project → Preview scaffold → Download project ZIP** flow uses the explicit
-real registry. Only exact canonical saved source (including revision 3) matching snapshot005 is
-accepted. Another source is refused; the old frozen app is never silently substituted. An exact
-source copy can export, with selected-project identity shown separately from the frozen origin.
-The ZIP retains the original frozen provenance unchanged. No strict readiness is upgraded.
+The canvas **Generate project → Preview scaffold → Download project ZIP** flow dispatches explicitly:
+
+- `profileId: selected-source-v2`: canonical saved schema3 source with explicit generation, resolved
+  against the cached executing `loadLocalV2Registry()`. Supported edits reach actual generated
+  consumers. Preview returns `mode: selected-source-v2`, full support/custom-hook report, exact
+  input/runtime/preset/template/registry identities and archive hashes. Required hooks remain partial;
+  complete selected backend assembly grants no runtime or strict TinyURL certification.
+- `profileId: youtube-local-v1`: only the exact canonical frozen snapshot005 source (including
+  revision 3). Preview returns `mode: legacy-exact-v1`; the original 108-file payload/provenance is
+  unchanged. Selected-project identity is separate from the frozen origin.
+
+Missing/unknown/uninstalled refs, invalid bindings and unsupported settings refuse v2 export.
+No label or project name selects code; failed source checks never substitute an old archive.
 
 Read-only POST routes under `/projects/:id/experimental-generation/preview` and `/download`
 accept `{ profileId, baseRevision, sourceSha256 }`; download additionally requires the preview's
 `archiveSha256`. Bodies are strict; no output directory, artifact upload or executable selection
-is accepted. Preview returns the full partial report plus summary counts, versions, source and
+is accepted. Preview returns its mode-specific full report plus versions, source and
 archive hashes. Both recheck the saved source after assembly; stale source/archive returns 409,
 unsupported profile/source returns 422, missing project 404, malformed request 400, and
-input/PNG or assembly failures inside a request return 503. Templates load eagerly at API module
-startup: missing/unreadable template files can prevent startup and must be repaired before the
-routes become available. All responses use `Cache-Control: no-store`.
+input/PNG or assembly failures inside a request return 503. Legacy templates load eagerly; v2 assets are captured when the shared executing registry first
+loads. Missing trusted assets must be repaired before generation is available. All responses use `Cache-Control: no-store`.
 
 The server wraps the unchanged assembler files in a deterministic stored ZIP (`zip-store-v1`):
 stable ASCII path ordering, 1980-01-01 dates, no extras/comments, no symlink/executable entries,
-maximum 256 files, 8 MiB per file and 16 MiB archive. Dotfiles and the exact diagram PNG are included.
+maximum 256 files, 8 MiB per file and 16 MiB archive. Dotfiles are included; legacy output also retains the exact frozen diagram PNG. V2 inputs contain
+the complete canonical selected source, without a fabricated diagram snapshot.
 Extract into a new directory; run scripts through `bash` as the emitted README describes.
 The same inputs/template versions yield the same payload and ZIP bytes. Download checks the
 preview archive hash and the browser checks it again before saving. Project switch/close cancels

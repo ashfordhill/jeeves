@@ -1,7 +1,8 @@
 import { ApiError } from "./api.ts";
 
 export type GenerationSource = { profileId: string; baseRevision: number; sourceSha256: string };
-export type GenerationPreview = {
+export type LegacyGenerationPreview = {
+  mode: "legacy-exact-v1";
   status: "experimental-partial";
   selectedSource: {
     projectId: string;
@@ -36,6 +37,38 @@ export type GenerationPreview = {
     scenarios: { id: string; status: string }[];
   };
 };
+
+type ContractRef = { id: string; version: string; sha256: string };
+export type V2GenerationPreview = {
+  mode: "selected-source-v2";
+  status: "experimental-complete" | "experimental-partial";
+  selectedSource: Omit<LegacyGenerationPreview["selectedSource"], "matchesFrozenProfile"> & {
+    matchesFrozenProfile: false;
+  };
+  generator: LegacyGenerationPreview["generator"];
+  archive: LegacyGenerationPreview["archive"];
+  runtime: ContractRef;
+  preset?: ContractRef;
+  registry: { sha256: string };
+  input: { sourceSha256: string; sourceCanonicalSha256: string; normalizedInputSha256: string };
+  templates: { selection: string; ref: ContractRef }[];
+  report: {
+    semanticComplete: boolean;
+    applicationComplete: boolean;
+    runtimeVerification: "none";
+    strictReadiness: "not-assessed";
+    selections: {
+      selection: string;
+      status: "implemented" | "unfinished" | "unsupported";
+      consumers: { input: string; consumer: string; outputPaths: string[] }[];
+    }[];
+    gaps: { emitter: string; id: string; status: string; description: string; required: boolean }[];
+    findings: { code: string; message: string }[];
+    settings: { input: string; implementationStatus: string }[];
+    localAdapterTreatments: { sourcePath: (string | number)[]; actual: string; reason: string }[];
+  };
+};
+export type GenerationPreview = LegacyGenerationPreview | V2GenerationPreview;
 
 async function call(
   id: string,

@@ -1341,3 +1341,36 @@ read-only `OwnershipSummary`/`OperationsSummary`, scope/full source and unchange
 tile/edge or owner/operation chat reference. No server API, generation contract, template or output
 changed. This path supplies no editable Advanced menu. Generation preview/ZIP remains YV2-19.
 [Source-linked normal/native snapshots and checks](../evidence/youtube-v2/yv2-18-clarity.md).
+
+## YV2-19 — selected saved-source preview and deterministic ZIP
+
+`POST /projects/:id/experimental-generation/{preview,download}` keeps the strict body
+`{profileId,baseRevision,sourceSha256}` (download also `archiveSha256`). Explicit
+`selected-source-v2` resolves the actual saved design against
+`executingGenerationRegistry().installed`, refuses incomplete semantic support, then calls
+`assembleV2({designJson:canonicalJson(savedDesign)}, registry)`. The same cached default registry
+supplies `GET /generation-support` and authoring. Names never dispatch code. Explicit
+`youtube-local-v1` retains its exact whole-source check and unchanged assembler/payload bytes.
+No fallback occurs between modes. Both share the existing bounded deterministic `scaffoldArchive`,
+post-assembly source reread, archive conflict and response provenance headers.
+
+V2 preview returns `mode:selected-source-v2`, complete/partial experimental status, selected source,
+exact generator/runtime/preset/template refs, input/registry identities, archive metadata and full
+actual support report. Legacy adds `mode:legacy-exact-v1` without changing its old fields.
+`GenerateProject` chooses v2 only from explicit source generation; separate
+`V2GenerationDetails`/`LegacyGenerationDetails` render consumers, required hooks and strict/runtime
+limitations. Invalid/dirty drafts, history flight, saved/source conflicts, project-switch cancellation
+and browser archive hash checks remain. Source diagnostics/native diagram exports remain separate.
+
+ZIP v2 output is the existing 93-file selected backend, including canonical saved source in
+`.jeeves/inputs/design.json`, normalized model/report/manifest, actual services/features/runtime,
+SQL/resource/setup/edge and standalone locks. No fake PNG or source substitution is added.
+Base video remains application-incomplete with typed product/service hooks and no unfinished
+application services. Complete backend assembly grants no browser completion, strict TinyURL
+readiness or runtime evidence; deterministic reports keep `runtimeVerification:none`.
+
+The studio Dockerfile explicitly retains trusted generator package/src/templates and production
+workspace dependency links, approved frozen v1 inputs/PNG, and runtime-readable root manifests/lock
+(the lock is fingerprinted by v2). No field app/runtime/media/secrets enter the image. Bounded normal
+production startup and real API dispatch reproduce both actual v2 and exact v1 ZIPs; no generated
+provider runtime/fault matrix was repeated. [Evidence and limits](../evidence/youtube-v2/yv2-19-generation.md).

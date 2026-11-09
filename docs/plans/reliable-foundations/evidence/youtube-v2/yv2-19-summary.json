@@ -1,0 +1,124 @@
+{
+  "mouse": {
+    "project": "941b8dec-92a9-44d9-939c-8a29c8d0c30f",
+    "tinyurl": "8e0beaa5-585d-4f8b-99cc-ad0937c3b9c3",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "mouseAttachment": true,
+    "mouseNativeTTL3601": true,
+    "savedSourceHash": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "files": 93,
+    "archiveSha256": "f2b86225e4936d144f593bae1f9f8250896731370dead91c7f326d9d40f0c522",
+    "manifestSha256": "4819963221d7fef684bf7f949000f971e0fc993762345e1b185d17e4fd4ab305",
+    "repeatArchiveEqual": true,
+    "staleSourceRefused": true,
+    "unknownSourceRefused": true,
+    "errors": [],
+    "finalViewports": [[1280, 800], [1440, 900]],
+    "strictRuntimeLimitsVisible": true,
+    "finalErrors": []
+  },
+  "zip": {
+    "allManifestPayloadHashesMatch": true,
+    "savedCanonicalInputExact": true,
+    "files": 93,
+    "repeatZipBytesExact": true,
+    "changedTTLActualBinding": 3601,
+    "actualWatchTTLConsumer": true,
+    "ownLockfile": "pnpm-lock.yaml",
+    "extractedOutsideCheckout": "/tmp/jeeves-yv2-19/app",
+    "allEmittedFilesUntouchedAfterInstallAndBuild": true,
+    "frozenInstallExit": 0,
+    "untouchedBuildExit": 0
+  },
+  "production": {
+    "productionHealth": {
+      "status": "ok",
+      "database": "ok",
+      "version": "0.1.0"
+    },
+    "installedSupportMatchesActualRegistry": true,
+    "v2": {
+      "files": 93,
+      "mode": "selected-source-v2",
+      "archiveSha256": "f2b86225e4936d144f593bae1f9f8250896731370dead91c7f326d9d40f0c522",
+      "manifestSha256": "4819963221d7fef684bf7f949000f971e0fc993762345e1b185d17e4fd4ab305",
+      "actualZipEqualsOutsideImage": true,
+      "registrySha256": "4768dbf55c0e5aedf8c9e4eb7971371aa6e24b811356b9eb95f06a53d6b544ac"
+    },
+    "v1": {
+      "files": 108,
+      "mode": "legacy-exact-v1",
+      "archiveSha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "actualZipEqualsOutsideImage": true
+    }
+  },
+  "productionClosure": {
+    "approvedFieldFiles": [
+      "/app/field-projects/youtube/v1/diagrams/005-local-intent-aligned/diagram.png",
+      "/app/field-projects/youtube/v1/inputs/blueprint.json",
+      "/app/field-projects/youtube/v1/inputs/design.json",
+      "/app/field-projects/youtube/v1/inputs/local-bindings.json",
+      "/app/field-projects/youtube/v1/inputs/manifest.json",
+      "/app/field-projects/youtube/v1/inputs/runtime-pins.json"
+    ],
+    "rootLockReadable": true,
+    "realV2AssetsReadable": true
+  },
+  "legacy": {
+    "files": 108,
+    "allFrozenPathHashesUnchanged": true,
+    "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+    "fixtureBytes": 15584953,
+    "fixtureSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+  },
+  "cleanup": {
+    "ownImageRemoved": "59921699368bc00c21e86db3f65e232e79b0b9c6d0679985a499b865f927eac6",
+    "noRemainingLabelledImages": true,
+    "ownContainerAndVolumeRemoved": true,
+    "scratchDatabaseDropped": true,
+    "scratchExportsDependenciesBuildsSettingsRemoved": true,
+    "ports45310to45314Free": true,
+    "ownerReadmeAndScriptModeUnchanged": true,
+    "all14V1ServicesHealthy": true,
+    "retainedFFmpegImageUnchanged": true,
+    "fixtureUnchanged": true,
+    "retainedV1Volumes": 6
+  },
+  "checks": {
+    "pnpmCheck": {
+      "exitCode": 0,
+      "tests": 466,
+      "files": 70,
+      "testSeconds": 32.03,
+      "afterScratchCleanup": true,
+      "awaitedBeforeE2E": true
+    },
+    "nativeE2E": {
+      "exitCode": 0,
+      "cases": 37,
+      "duration": "1.4m"
+    },
+    "webBuild": {
+      "exitCode": 0,
+      "durationMs": 871
+    }
+  },
+  "visuals": [
+    {
+      "path": "yv2-19-preview-1280.png",
+      "sha256": "67d7667edac7efe2501d3bc9994c4b4450d82d51c94ca1306e6f8c9707be6317"
+    },
+    {
+      "path": "yv2-19-preview-1440.png",
+      "sha256": "f342fadf46c6ca747e2c8a310a570bff32c16516ac066520f61864949efa9382"
+    },
+    {
+      "path": "yv2-19-tinyurl-mouse.png",
+      "sha256": "d8a8b30f14cb7e9758368353b1194e5f722d577c508e40f1dd1171d1d432343f"
+    }
+  ]
+}

@@ -3,15 +3,15 @@
 The studio is the **Design** tab: the lane canvas of one project, a chat rail on the left and an
 inspector on the right. Designs describe intent; the studio does not provision or deploy them.
 The [experimental generator](../jeeves-generator/README.md) supplies a separate mouse-operated
-partial scaffold preview/ZIP export for the exact frozen YouTube local-v1 source, using 19 real
-experimental template families. It reads the [blueprint](studio-blueprint.md). Field values are
+preview/ZIP export for supported selected local-v2 source, plus unchanged exact frozen YouTube
+local-v1 export. It reads saved source and the [blueprint](studio-blueprint.md). Field values are
 listed in [studio settings](studio-settings.md).
 
 Normal editor and chat controls share `buildSupportedAuthoringCommand` and the actual default
 registry reported by `GET /generation-support`. Catalog membership alone enables no control.
 Custom requested behavior can be recorded as an unresolved requirement; it supplies no template.
-Saved-source v2 preview/ZIP dispatch is a separate pending unit; this attachment workflow does not
-change the existing frozen-v1 export route.
+Generate uses that same executing registry. Attachment does not certify runtime behavior or
+strict TinyURL readiness.
 
 Open **Export diagram → Source & diagnostics → Compatibility report** to see four separate results for the saved
 snapshot: design validity, exact contracts, implementation availability and exact output evidence.
@@ -995,17 +995,19 @@ experimental YouTube support does not certify these contracts. [Contract details
 
 ## Experimental project export
 
-Use **Generate project** in the canvas toolbar, then **Preview scaffold**. Only frozen YouTube
-local v1 snapshot005, saved revision 3 and its exact canonical source are accepted. Select the
-retained **YouTube · field v1 · local Docker** project. A different normal study, owner YouTube,
-or changed source receives an actionable unsupported-source error. An exact saved-source copy
-can export; details identify its selected project separately from the archive's frozen origin.
+Use **Generate project** in the canvas toolbar, then **Preview scaffold**. Explicit schema3
+`generation` selects local-v2 assembly from the current saved source and the actual installed
+registry. Missing/unsupported refs, bindings or settings refuse export; names never select code.
+The dialog shows support findings before preview, then actual emitted consumer paths, required
+custom hooks, settings, source/registry/archive/manifest hashes and strict/runtime limitations.
+The full report stays in `.jeeves/report.json`. Complete backend assembly is experimental;
+its browser slot is custom UI and the export has no runtime verification or strict certification.
+The base video pack stays partial with required product/service hooks and no unfinished app starts.
 
-Preview summarizes 108 real files / 19 experimental families and includes mouse-opened details for
-foundations, G01–G08/custom work, all 25 unsupported paths/local substitutions, versions, hashes and
-strict compatibility. The full report stays in `.jeeves/report.json`. This is a partial scaffold,
-not a working YouTube app or certified output: S01–S08 remain unrun and functional coverage is
-unmeasured. Local substitutions do not promise cloud, TLS, security or scale equivalence.
+Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
+export. An exact saved-source copy retains the original frozen archive provenance and bytes:
+108 files / 19 experimental families, G01–G08/custom work and 25 unsupported paths. Other studies
+or changed legacy designs refuse; the server never substitutes another source or older ZIP.
 
 **Download project ZIP** reassembles and checks the preview identity, rechecks the saved source,
 and verifies the actual response hash before the browser saves it. Finish any draft or history
@@ -1016,7 +1018,7 @@ Extract into a new directory and follow README; secrets/data are provisioned lat
 and API/error limits are documented in the generator guide.
 
 The local-v2 generator now has a complete source-bound YouTube backend recipe and an explicit
-base-video attachment command. These are source/generator APIs; supported mouse/chat attachment
-and saved-source preview wiring are later units. The base pack requires product codecs/routes/
+base-video attachment command. Mouse and chat can attach these through the system General inspector; Generate previews and
+exports the selected saved source. The base pack requires product codecs/routes/
 services and has no discovery/counting dependency. The YouTube recipe's static browser slot is
 ready for the existing browser to be attached separately. [Actual interfaces and limits](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).
