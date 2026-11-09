@@ -342,11 +342,11 @@ for an application tile, **Modules**; empty ones are hidden.
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
 - Select the user (or clear selection) to open the system inspector. **Add a supported feature**
-  offers **Owned upload + video processing** and **YouTube local backend** when this server's actual
-  registry installs them. **Preview attachment → Attach feature** shows the tiles/modules to add,
+  offers **Owned upload + video processing** when the server installs its reusable consumers.
+  **Preview attachment → Attach feature** shows the tiles/modules to add,
   retains existing declarations and explicitly upgrades schema2 if needed. It saves the graph,
-  bindings and ownership in one Undo step. The video feature needs custom product/service hooks;
-  the YouTube preset supplies the experimental backend, with a separate browser slot.
+  bindings and ownership in one Undo step. Product codecs, routes and service composition remain
+  custom work. Historical YouTube declarations stay readable without installing product code.
 - An action: its lane icon and name, then **Name** (the word on its tile, at most 24 characters;
   it autosaves like a tile's name), its **Lane** (read-only) and its **Entries**, each a button
   that selects that tile.
@@ -997,12 +997,13 @@ experimental YouTube support does not certify these contracts. [Contract details
 
 Use **Generate project** in the canvas toolbar, then **Preview scaffold**. Explicit schema3
 `generation` selects local-v2 assembly from the current saved source and the actual installed
-registry. Missing/unsupported refs, bindings or settings refuse export; names never select code.
+registry. Unknown refs, invalid bindings and unsupported settings refuse export; names never select
+code. Known declarations without implementations export as explicit custom gaps.
 The dialog shows support findings before preview, then actual emitted consumer paths, required
 custom hooks, settings, source/registry/archive/manifest hashes and strict/runtime limitations.
-The full report stays in `.jeeves/report.json`. Complete backend assembly is experimental;
-its browser slot is custom UI and the export has no runtime verification or strict certification.
-The base video pack stays partial with required product/service hooks and no unfinished app starts.
+The full report stays in `.jeeves/report.json`. The default export is partial: reusable modules
+are generated before product-specific completion. It has no runtime verification or strict
+certification, and no unfinished application processes start.
 
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:
@@ -1017,8 +1018,8 @@ at 1280×800. Nothing changes the design, revision, history, layout, focus, came
 Extract into a new directory and follow README; secrets/data are provisioned later. ZIP details
 and API/error limits are documented in the generator guide.
 
-The local-v2 generator now has a complete source-bound YouTube backend recipe and an explicit
-base-video attachment command. Mouse and chat can attach these through the system General inspector; Generate previews and
-exports the selected saved source. The base pack requires product codecs/routes/
-services and has no discovery/counting dependency. The YouTube recipe's static browser slot is
-ready for the existing browser to be attached separately. [Actual interfaces and limits](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).
+The local-v2 generator emits reusable mechanisms and the video feature. YouTube-specific
+adapters, public schemas, service construction and edge composition are removed from active
+generation. The retained v2 design exports generic upload/lifecycle/HLS/cache/search/count
+modules with required custom gaps; the historical field application remains independently
+runnable. [Corrected baseline and count](plans/reliable-foundations/youtube-v2-generic-baseline.md).

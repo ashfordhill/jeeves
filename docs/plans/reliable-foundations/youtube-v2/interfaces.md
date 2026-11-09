@@ -1413,3 +1413,25 @@ hashes, template/implementation identities and concrete YV2-21 CLI command live 
 `v2/diagrams/001-frozen-generation/`. No `v2/app` exists; browser reuse, independent restart and
 final retained-template percentage remain YV2-22/23. Deterministic runtimeVerification:none and
 strictReadiness:not-assessed remain honest. [Actual proof/checks/limits](../evidence/youtube-v2/yv2-20-reuse-and-freeze.md).
+
+## 2026-11-08 — owner correction: reusable baseline before product implementation
+
+This supersedes the earlier installed YouTube recipe described above. `loadLocalV2Registry()`
+now advertises only the `video` preset and seven generic/video template capabilities. The
+YouTube emitter, adapters, public record/search schema, service entry point, product SQL/grants/
+identity roles/search mapping and three-API edge recipe are removed from active local-v2.
+`createLocalComposition()` emits selected-resource constructors and generic binding data only;
+`positiveReader<I,R>(selection, adapter, cache?)` consumes the selected TTL while the caller supplies
+its own record policy. Product and process hooks remain required custom work. The retained field
+application and legacy v1 exporter are unchanged.
+
+Known historical YouTube declarations still parse and resolve as unfinished. New
+`@jeeves/spec.generationExportBlockers(design, installed)` permits only exact known-but-uninstalled
+preset/template findings as partial-export gaps. Unknown identities, a missing runtime, invalid
+bindings and unsupported settings still block studio generation. `resolveGeneration` continues
+to report those missing product implementations and `semanticComplete:false`; the export does
+not strip selections or claim a complete app. Mouse/chat attachment offers only installed presets.
+
+[Fresh baseline, count and reproducible artifacts](../youtube-v2-generic-baseline.md): 4,325 backend
+LOC, with 4,317 lines matching existing v2 and 1,139 product lines outside the reusable export.
+The 79.12% overlap is retrospective, not a newly observed agent-completion experiment.

@@ -7,10 +7,10 @@ the source is [`studio-definitions.ts`](packages/spec/src/studio-definitions.ts)
 
 ## Installed features and controls
 
-The system inspector offers previewed attachment of the reusable video feature or local YouTube
-backend when `GET /generation-support` reports their actual installed consumers. The former keeps
-required custom product/service hooks; the latter composes the experimental backend and a browser
-slot. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL
+The system inspector offers previewed attachment of the reusable video feature when
+`GET /generation-support` reports its installed consumers. Product codecs, routes, projections
+and service composition remain custom work after generation. Historical YouTube declarations
+remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL
 and bound SQL pool/statement limits. Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
@@ -484,13 +484,11 @@ case names alone identify no code. Frozen operation/cache/profile records are un
 
 ### Experimental local-v2 video composition
 
-The generator's `local.video-composition` installs bound constructors for the finite generation
-catalog and a connected local YouTube backend recipe. Explicit `buildGenerationPresetCommand`
-batches materialize either the base video graph/modules/ownership or YouTube core. Base video
-selects upload/lifecycle/HLS only and retains required product/service hooks; no stub app starts.
-The complete YouTube recipe supplies real seven-process construction, SQL/public views/grants,
-provider setup, finite browser/media edge and pinned FFmpeg/ffprobe readiness. Normal editor
-selection uses installed supported presets and useful settings shared with chat. Generate project
-previews/downloads canonical saved v2 source with actual consumer/custom-hook reports, retaining
-exact-v1 dispatch separately; strict operation/template verification remains unavailable.
-[Concrete APIs, consumers and evidence](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).
+`local.video-composition` installs bound constructors for seven reusable generation templates.
+Base video selects upload/lifecycle/HLS and requires custom product/service hooks. YouTube
+adapters, public-video policy, service entry point and browser edge are no longer templates.
+The same historical v2 design can export its reusable modules with explicit custom gaps. Normal
+mouse/chat attachment offers video only; existing generic settings remain editable. Unknown refs,
+invalid bindings and unsupported settings still refuse export. Exact-v1 compatibility and strict
+readiness semantics remain separate.
+[Corrected generation boundary and count](../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md).

@@ -1,5 +1,9 @@
 # YouTube v2: generated source, actual reuse and developer visibility
 
+Follow-up: the owner clarified that product implementation must follow generation, while the
+existing exclusions are intentional. The historical 100% result below is therefore not a valid
+reusable-baseline score. [Corrected generic export and count](youtube-v2-generic-baseline.md).
+
 2026-11-08. Owner-requested review of completed v2 at `05abb67`, before any developer-mode
 implementation. The application, templates, frozen inputs and historical benchmark are unchanged.
 

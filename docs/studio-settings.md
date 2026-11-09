@@ -7,8 +7,9 @@ controls. Reading, selecting, renaming or reloading a design never removes unsup
 ## Normal feature configuration
 
 Select the user to open the system's existing General inspector. Feature preset selection offers
-owned upload/video processing or the complete local YouTube backend, with an explicit attachment
-preview and one atomic save/Undo. Video retains required custom product/service hooks. Local
+owned upload/video processing, with an explicit attachment preview and one atomic save/Undo.
+Product implementation remains custom work after generation. Historical YouTube selections
+remain readable and export reusable modules with explicit gaps; they install no product code. Local
 Docker, TypeScript, exact providers, codecs, renditions, deadlines and event policy are fixed.
 
 | Normal control | Actual selected consumer | Bound |
@@ -429,11 +430,11 @@ no v2 runtime implementation or controls. Unsupported historical intent stays pr
 The [interface record](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-02--semantic-normalization-and-installed-control-support)
 also explains the explicit local Keycloak substitution and transport-intent gaps.
 
-YV2-16 adds explicit `buildGenerationPresetCommand` source batches for base video attachment and
-the complete local YouTube backend. Defaults appear only through that command; reads preserve
-historic intent. The generator supplies actual bound consumers; normal mouse/chat controls share the executing
-registry and authoring command. Base video retains required product/service hooks and adds no search or
-counts. [Current composition and consumed settings](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-16--video-attachment-and-complete-youtube-local-recipe).
+Normal mouse/chat attachment installs the reusable video feature. Historical YouTube source
+batches remain readable; the active generator no longer implements their product policies.
+Generic cache, SQL and worker settings still reach generated constructors; required codecs,
+routes, projections and application processes remain custom work. Base video adds no search
+or counts. [Current boundary](plans/reliable-foundations/youtube-v2-generic-baseline.md).
 
 Generation preview and ZIP use these same installed consumer contracts. The dialog shows exact
 selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse

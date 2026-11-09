@@ -1,40 +1,21 @@
-import { existsSync, readFileSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
-import { posix } from "node:path";
 import { designSchema } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
   generationSelectionsFixture,
   generationSourceFixture,
 } from "../../../jeeves/packages/spec/src/fixtures/yv2-selections.ts";
-import {
-  publicVideoDocument,
-  publicVideoMapping,
-} from "../../templates/local-v2/assets/src/features/public-video.ts";
+import { historicalYouTubeModule as moduleUrl } from "./fixtures/historical-youtube.ts";
+
+const { publicVideoDocument, publicVideoMapping } = await import(
+  moduleUrl("features/public-video")
+);
+
 import { defineSearchDocument } from "../../templates/local-v2/assets/src/runtime/search-contract.ts";
 import { loadLocalV2Dependencies as loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
 import type { V2Emitter } from "./registry.ts";
 import { searchProjectionMapping } from "./search.ts";
 
-const urls = new Map<string, string>();
-function moduleUrl(name: string): string {
-  const cached = urls.get(name);
-  if (cached) return cached;
-  const base = new URL(`../../templates/local-v2/assets/src/${name}.ts`, import.meta.url);
-  const code = stripTypeScriptTypes(
-    readFileSync(existsSync(base) ? base : new URL(`${base}.template`), "utf8"),
-  )
-    .replace(
-      /from "(\.\.?\/.+)\.ts"/g,
-      (_match, dependency: string) =>
-        `from "${moduleUrl(posix.normalize(`${posix.dirname(name)}/${dependency}`))}"`,
-    )
-    .replace('from "zod"', `from "${import.meta.resolve("zod")}"`);
-  const url = `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
-  urls.set(name, url);
-  return url;
-}
 const { createSearchProjection } = await import(moduleUrl("runtime/search-projection"));
 const { assertSearchIndex } = await import(moduleUrl("runtime/search-schema"));
 const { createSearchQuery, parseSearchInput } = await import(moduleUrl("runtime/search-query"));

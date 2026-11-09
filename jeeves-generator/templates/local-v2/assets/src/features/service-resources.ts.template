@@ -15,6 +15,9 @@ import {
 } from "../runtime/amqp.ts";
 // @broker-import-end
 import type { ProcessScope } from "../runtime/process.ts";
+// @cache-import-start
+import { createPositiveReader, type PositiveReadAdapter, type PositiveCache } from "../runtime/positive-cache.ts";
+// @cache-import-end
 export type ServiceBinding = {
 	id: string;
 	kind: string;
@@ -118,3 +121,13 @@ export function httpSettings(s: ServiceBinding) {
 		concurrencyLimit: input(s, "host.concurrencyLimit"),
 	};
 }
+// @cache-start
+/** Product completion supplies the record codec, eligibility and authoritative loader. */
+export function positiveReader<I, R>(
+  s: ServiceBinding,
+  adapter: PositiveReadAdapter<I, R>,
+  cache?: PositiveCache,
+) {
+  return createPositiveReader({ adapter, cache, ttlSeconds: input(s, "cache.ttlSeconds") });
+}
+// @cache-end

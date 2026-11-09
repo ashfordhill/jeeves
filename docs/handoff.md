@@ -6310,3 +6310,36 @@ Local commit: **Review YouTube v2 provenance, reuse and developer visibility**. 
 
 Next work is an owner-selected implementation unit; this review does not start a new field
 version, change the historical scope, or claim broader reuse, effort savings or certification.
+
+## 2026-11-08 — owner correction: reusable baseline before YouTube implementation
+
+Removed the active local-v2 YouTube adapter/schema assets, service entry point, emitter and
+product recipe (SQL/grants/roles/search/edge wiring). Seven generic/video capabilities remain;
+normal mouse/chat attachment offers video only. Historical product declarations stay readable
+and export as explicit missing implementations/custom gaps. Unknown refs, missing runtime,
+invalid bindings and unsupported settings still block studio export. Product behavior regressions
+now consume the retained field-app adapters against current generic engines; no field app edits.
+
+Re-exported the exact frozen e118… design twice: all **72 files** matched. Recorded the full
+export and per-file count in [new artifacts](../field-projects/youtube/v2/notes/benchmarks/README.md).
+**4,325 backend LOC /42 files**, with the original scope/parser/exclusions unchanged. Retrospective
+overlap with existing086 completion is **4,317 /5,456 =79.12%**; **1,139** product lines are outside
+the new export. Eight new lines provide a generic TTL-consuming cache constructor after removal
+of the product entry point. This is not a newly observed agent-completion experiment. The prior
+100% report, original pins/baseline, inputs, app and legacy v1 exporter remain intact.
+[Cause, current boundary and reproduction](plans/reliable-foundations/youtube-v2-generic-baseline.md).
+
+`pnpm check` exited0: lint/types and **468 tests/70 files,34.56s**; **37 native E2Es,1.5m**;
+web build **1.03s** (existing size advisory). Generic and alternate attachment exports passed
+frozen install and build; all final emitted source/package/build bytes match that checked payload.
+An unrelated compiled cache adapter exercised TTL3601, one loader call and cache hit. Live studio
+preview/download matched the recorded manifest, showed9 custom gaps/3 unfinished product
+selections, and preserved all6 existing designs. TinyURL lane/Fit/select passed, no page errors;
+own project deleted, screenshots inspected. Protected tracked bytes/modes checked with no mismatch,
+including owner README/feedback dirt and e2e-docker mode. Logs/harness/images:
+`/tmp/jeeves-yv2-generic.kLxRTO/`; [sanitized verification](../field-projects/youtube/v2/notes/benchmarks/generic-verification.json).
+
+Studio/catalog/method guidance and design lesson updated. Local commit:
+**Separate reusable v2 generation from YouTube product code and recount baseline**. No push.
+Future completed-app measurement must freeze generic output first and record product work after;
+developer mode remains a separate proposed unit. No app rebuild or provider/media campaign here.

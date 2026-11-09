@@ -14,7 +14,6 @@ import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2
 import { createLocalSearch } from "../../src/v2/search.ts";
 import { createLocalUploadState } from "../../src/v2/upload-state.ts";
 import { createLocalAssetIdentity, createLocalVideoHls } from "../../src/v2/video-hls.ts";
-import { createLocalYouTubeAdapters } from "../../src/v2/youtube.ts";
 
 const root = new URL("../../../", import.meta.url);
 function sourcePaths(path: string): string[] {
@@ -118,13 +117,12 @@ export function loadLocalV2Registry(
     createLocalPositiveCache(distinct),
     eventCounter,
     search,
-    createLocalYouTubeAdapters(distinct),
     ...features,
   ]);
 }
 
 /** Dependency-only host for focused library consumers and custom compiled recipes. It never
- * claims the default YouTube application recipe. */
+ * claims installed application composition. */
 export function loadLocalV2Dependencies(features: readonly V2Emitter[] = []) {
   return loadLocalV2Registry(features, { applications: false });
 }

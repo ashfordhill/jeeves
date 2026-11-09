@@ -47,24 +47,7 @@ export function createLocalSearch(sourcePaths: readonly string[]): V2Emitter {
       const selections = model.selections.filter((s) =>
         ["search-projection", "search-query"].includes(s.binding.kind),
       );
-      const publicPaths = model.selections
-        .filter((s) => s.binding.kind.startsWith("youtube-"))
-        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
-      if (!selections.length)
-        return {
-          files: publicPaths.length
-            ? [
-                {
-                  path: "src/runtime/search-contract.ts",
-                  content: asset(
-                    "jeeves-generator/templates/local-v2/assets/src/runtime/search-contract.ts",
-                  ),
-                  ownership: "generated-scaffold" as const,
-                  sourcePaths: publicPaths,
-                },
-              ]
-            : [],
-        };
+      if (!selections.length) return { files: [] };
       const paths = selections.map(
         (s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`,
       );

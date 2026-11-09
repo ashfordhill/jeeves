@@ -1,0 +1,94 @@
+{
+  "purpose": "Validation of the corrected reusable baseline; no new completed field application or runtime/provider verification.",
+  "export": {
+    "files": 72,
+    "repeatMatches": true,
+    "builtPayloadMatches": true,
+    "archiveSha256": "c197b374f37c375349e69799497f906f67fff7f83a8a586991bd2af0032dd9ae",
+    "archiveBytes": 144426,
+    "manifestSha256": "098355e2f11372a3493499bd6cb60d3e74b8a08740c8364751d12de671c04971",
+    "registrySha256": "5e111615b7c4144ca7deea4be865be656dc55458efaf5619deb21a8cf6690990",
+    "generatedBackendLoc": 4325,
+    "existingCompletion": {
+      "commit": "08699b2dc631709bff12fb25914e0d2681b6b535",
+      "backendLoc": 5456,
+      "matchingCompletedBackendLoc": 4317,
+      "completionOnlyLoc": 1139,
+      "generatedOnlyLoc": 8,
+      "overlapPercent": 79.12
+    }
+  },
+  "checks": {
+    "pnpm check": {
+      "exitCode": 0,
+      "testFiles": 70,
+      "tests": 468,
+      "seconds": 34.56
+    },
+    "pnpm test:e2e": {
+      "exitCode": 0,
+      "tests": 37,
+      "durationReported": "1.5m",
+      "browser": "native Chromium"
+    },
+    "pnpm --filter @jeeves/web build": {
+      "exitCode": 0,
+      "seconds": 1.03,
+      "advisory": "Existing chunk-size advisory"
+    },
+    "freshGenericExport": {
+      "frozenInstallExitCode": 0,
+      "buildExitCode": 0
+    },
+    "alternateProductAttachmentExport": {
+      "frozenInstallExitCode": 0,
+      "buildExitCode": 0
+    },
+    "compiledCacheConstructor": {
+      "passed": true,
+      "recordShape": "manual/revision",
+      "loaderCalls": 1,
+      "secondRead": "cache hit",
+      "ttlSeconds": 3601
+    }
+  },
+  "browser": {
+    "genericPreview": {
+      "files": 72,
+      "applicationComplete": false,
+      "requiredGaps": 9,
+      "unfinishedSelections": 3,
+      "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+      "manifestSha256": "098355e2f11372a3493499bd6cb60d3e74b8a08740c8364751d12de671c04971",
+      "archiveSha256": "a7a67b82fc3f0e091e687a641b9060a578cbc6ccd5714ed6890b22be8950d910",
+      "downloadVerified": true
+    },
+    "tinyurl": {
+      "tiles": 11,
+      "lines": 12,
+      "selected": "Inspector\nRedirect service\n\nRedirect\n\nGeneral\nConnections\nModules\nName\nPurpose\nFocus relationships"
+    },
+    "existingProjectsUnchanged": true,
+    "existingProjects": 6,
+    "ownProjectDeleted": true,
+    "pageErrors": []
+  },
+  "preservation": {
+    "protectedTrackedFiles": 1905,
+    "hashAndModeMismatches": [],
+    "fieldAppEdited": false,
+    "frozenInputEdited": false,
+    "oldReportEdited": false,
+    "scopeOrParserEdited": false
+  },
+  "logs": {
+    "check.log": "103635e3cf094d0c7d84c7064aaa6c902df4409f5950d4e42041be155eb313f2",
+    "e2e.log": "04f943f3cd9c088b158f042397bb6664e1bc4bf879650bc69c292368ea1aee67",
+    "web-build.log": "d53504f76d6d0a1f5c59a5c168f3887fbb132b69372aafe5ea3340b288568e0f",
+    "install-generic.log": "7909954f02b709b9cef9263cc5520afcb6c0e0504d060d8618a95d6cbad1c489",
+    "build-generic.log": "29c5ee0f6b0b20dbb259b99d01276198c3d28190090706394608d4deda6d2c0b",
+    "install-attachment.log": "800c75259ef6653e58e6ca31604ad10053cfb0d354521af1f742d112ef6bcf8e",
+    "build-attachment.log": "29c5ee0f6b0b20dbb259b99d01276198c3d28190090706394608d4deda6d2c0b",
+    "browser.log": "31bec59e5e421071098eecf54a6f2de427bd8a42a2f525de08af3b2a7083c546"
+  }
+}

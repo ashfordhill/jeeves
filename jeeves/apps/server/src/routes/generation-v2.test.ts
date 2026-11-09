@@ -53,8 +53,8 @@ it("exports actual saved v2 consumers deterministically, preserves partial hooks
           canonicalSha256: source(saved.state.design).sourceSha256,
         },
         report: {
-          semanticComplete: true,
-          applicationComplete: preset === "youtube",
+          semanticComplete: preset === "video",
+          applicationComplete: false,
           runtimeVerification: "none",
           strictReadiness: "not-assessed",
         },
@@ -106,7 +106,7 @@ it("exports actual saved v2 consumers deterministically, preserves partial hooks
       const output = (path: string) =>
         new TextDecoder().decode(updatedBundle.files.find((file) => file.path === path)?.bytes);
       expect(output("src/features/application-bindings.ts")).toContain('"cache.ttlSeconds":420');
-      expect(output("src/services/youtube.ts")).toContain(
+      expect(output("src/features/service-resources.ts")).toContain(
         'ttlSeconds: input(s, "cache.ttlSeconds")',
       );
       const spy = vi.spyOn(DesignService.prototype, "getDesign");

@@ -8,7 +8,7 @@ import {
   sha256,
   youtubeLocalProfile,
 } from "@jeeves/generator";
-import { resolveGeneration } from "@jeeves/spec";
+import { generationExportBlockers } from "@jeeves/spec";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import type { DesignService } from "../design/service.ts";
@@ -70,13 +70,13 @@ export const generationRoutes: FastifyPluginAsyncZod<{ service: DesignService }>
         try {
           const registry = legacy ? undefined : executingGenerationRegistry();
           if (registry) {
-            const resolution = resolveGeneration(current.design, registry.installed);
-            if (!resolution.complete)
+            const findings = generationExportBlockers(current.design, registry.installed);
+            if (findings.length)
               return reply.code(422).send({
                 code: "UNSUPPORTED_SOURCE",
                 message:
                   "The selected saved source has missing or unsupported generation bindings/settings. Review the findings; no older output was exported.",
-                findings: resolution.findings,
+                findings,
               });
           }
           const bundle = registry

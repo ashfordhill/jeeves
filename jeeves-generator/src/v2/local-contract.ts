@@ -48,7 +48,5 @@ export type V2LocalContribution = {
     environment?: Readonly<Record<string, string>>;
     readiness?: boolean;
   }[];
-  /** Finite three-API browser edge, never a source-defined routing language. */
-  youtubeEdge?: { upload: string; watch: string; search: string; outputs: string };
 };
 export type V2LocalContributor = (context: V2RenderContext) => V2LocalContribution | undefined;

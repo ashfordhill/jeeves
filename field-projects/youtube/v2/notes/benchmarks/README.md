@@ -1,5 +1,19 @@
 # Actual v2 backend source composition
 
+**Owner correction:** the historical baseline below included YouTube-specific implementation,
+so 100% is not the intended reusable-generation score. The existing counting scope is correct.
+See the [fresh generic export and count](../../../../../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md)
+for the same saved design after removing product implementations from active v2 generation.
+Historical commits, scope and JSON reports below are preserved.
+
+The corrected export has **4,325 reusable backend LOC across 42 files**. Retrospective overlap
+with existing v2 is **4,317 / 5,456 = 79.12%**, leaving **1,139 product LOC** outside the baseline.
+Eight new lines keep TTL binding in a generic cache constructor after removing the product entry
+point. [Per-file result](generic-source-loc.json), [exact export](generic-export.tar.gz),
+[recount tool](count-generic.ts). This is not a newly observed application-completion run.
+
+## Historical file-retention result
+
 **5,456 retained template LOC / 5,456 completed backend LOC = 100%.** Post-template backend
 LOC **0**; removed/replaced template LOC **0**; **56** included files. This exceeds the v2
 criterion **strictly greater than 5.53%**. The eventual 60% cross-project target was never an

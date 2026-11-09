@@ -1,10 +1,11 @@
 import { assembleV2, loadLocalV2Dependencies, loadLocalV2Registry } from "@jeeves/generator";
 import {
   applyOperations,
+  buildGenerationPresetCommand,
   buildSupportedAuthoringCommand,
   emptyDesign,
+  generationExportBlockers,
   normalSettingFields,
-  resolveGeneration,
   studioArchitectureExample,
   supportedGenerationPresets,
 } from "@jeeves/spec";
@@ -12,6 +13,15 @@ import { describe, expect, it } from "vitest";
 import { Workspace } from "./tools.ts";
 
 const registry = loadLocalV2Registry();
+const historical = () => {
+  const base = emptyDesign();
+  const result = applyOperations(
+    base,
+    buildGenerationPresetCommand(base, { preset: "youtube" }).ops,
+  );
+  if (!result.ok) throw Error();
+  return result.design;
+};
 const apply = (
   design: ReturnType<typeof emptyDesign>,
   command: Parameters<typeof buildSupportedAuthoringCommand>[1],
@@ -34,11 +44,16 @@ const run = (workspace: Workspace, commands: unknown[]) =>
 describe("installed feature authoring", () => {
   it("shares atomic attachment and authoritative TTL editing with chat and actual generated constructors", () => {
     const base = emptyDesign();
-    const attach = { type: "attachGenerationPreset" as const, preset: "youtube" as const };
-    const design = apply(base, attach);
-    const chat = new Workspace(base);
-    expect(run(chat, [attach]).ok).toBe(true);
-    expect(chat.working).toEqual(design);
+    const attach = { type: "attachGenerationPreset" as const, preset: "video" as const };
+    const attached = apply(base, attach);
+    const attachmentChat = new Workspace(base);
+    expect(run(attachmentChat, [attach]).ok).toBe(true);
+    expect(attachmentChat.working).toEqual(attached);
+    expect(
+      run(new Workspace(base), [{ type: "attachGenerationPreset", preset: "youtube" }]).ok,
+    ).toBe(false);
+    const design = historical();
+    const chat = new Workspace(design);
     const row = design.architecture?.studio?.elements.find(
       (row) => row.element === "metadata-cache",
     );
@@ -56,7 +71,7 @@ describe("installed feature authoring", () => {
     const changed = apply(design, edit);
     expect(run(chat, [edit]).ok).toBe(true);
     expect(chat.working).toEqual(changed);
-    expect(resolveGeneration(changed, registry.installed).findings).toEqual([]);
+    expect(generationExportBlockers(changed, registry.installed)).toEqual([]);
     expect(
       changed.architecture?.studio?.components?.find(
         (component) => component.settings.kind === "cache-reader",
@@ -70,9 +85,9 @@ describe("installed feature authoring", () => {
       );
     expect(output(before)).not.toBe(output(after));
     expect(output(after)).toContain('"cache.ttlSeconds":420');
-    expect(after.report.applicationComplete).toBe(true);
+    expect(after.report.applicationComplete).toBe(false);
     const consumer = new TextDecoder().decode(
-      after.files.find((file) => file.path === "src/services/youtube.ts")?.bytes,
+      after.files.find((file) => file.path === "src/features/service-resources.ts")?.bytes,
     );
     expect(consumer).toContain('ttlSeconds: input(s, "cache.ttlSeconds")');
   });
@@ -84,7 +99,7 @@ describe("installed feature authoring", () => {
       { ok: false, error: expect.stringContaining("not installed") },
     );
     expect(uninstalled.pending).toEqual([]);
-    const design = apply(base, { type: "attachGenerationPreset", preset: "youtube" });
+    const design = historical();
     const row = design.architecture?.studio?.elements.find((row) => row.element === "upload");
     if (row?.settings.kind !== "uploads") throw new Error();
     const chat = new Workspace(design);

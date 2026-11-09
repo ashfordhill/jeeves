@@ -25,7 +25,7 @@ studio (operations) ──▶ design document ──▶ designBlueprint() ──
 ## Installed feature authoring
 
 Normal mouse and chat actions use `buildSupportedAuthoringCommand` with the executing registry
-reported by `GET /generation-support`. `attachGenerationPreset` (video or youtube) delegates to
+reported by `GET /generation-support`. Normal `attachGenerationPreset` selects video and delegates to
 `buildGenerationPresetCommand`: graph, modules, generation and ownership save in one batch. A
 legacy source upgrade is explicit in the mouse preview. Useful supported settings reuse existing
 source fields; TTL and concurrency mirrors update atomically. No parsing/reload migration occurs.
@@ -214,9 +214,10 @@ behavior. A worker's outgoing call/publication/store dependency only expresses t
 operations over the exact saved revision/source hash. `profileId: selected-source-v2` resolves
 explicit selections/settings against the actual executing registry and assembles canonical saved
 source, including `.jeeves/inputs/design.json`. Preview returns the full support report and exact
-input/registry/archive identities. Required custom hooks keep base-video exports partial; complete
-backend support does not establish runtime or strict TinyURL evidence. Unknown/unsupported source
-refuses. `profileId: youtube-local-v1` still requires the exact frozen profile and retains every
+input/registry/archive identities. Known uninstalled declarations remain explicit custom gaps in
+partial exports; YouTube product policy is not generated. Unknown refs, invalid bindings and
+unsupported settings still refuse. Neither partial export nor implementation support establishes
+runtime or strict TinyURL evidence. `profileId: youtube-local-v1` still requires the exact frozen profile and retains every
 payload byte, diagram, report and historical origin. No name-based dispatch or substitution occurs.
 
 Download requires the preview archive hash, reassembles, rechecks the saved source and returns a

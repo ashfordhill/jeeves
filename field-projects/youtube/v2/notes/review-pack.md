@@ -1,5 +1,11 @@
 # YouTube v2 owner review pack
 
+**Benchmark correction:** the historical 100% baseline included YouTube product implementation.
+It does not represent the owner's intended reusable-template baseline. The
+[generic replay](../../../../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md)
+counts the same diagram after removing that implementation from active generation, with the
+same backend-only exclusions. The retained application and historical evidence below are intact.
+
 The retained app works at <http://127.0.0.1:45400/>. A separate exact tracked copy of completion
 `08699b2dc631709bff12fb25914e0d2681b6b535` independently installed, built, ran the bounded frozen S01–S08 flow and retained data
 through normal stop/start. The actual backend measurement is **5,456 / 5,456 LOC = 100% retained

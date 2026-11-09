@@ -1,7 +1,12 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { type DesignDocument, studioStudySeedOperations } from "@jeeves/spec";
+import {
+  buildGenerationPresetCommand,
+  type DesignDocument,
+  studioStudySeedOperations,
+} from "@jeeves/spec";
+import { commitSource } from "./source.ts";
 import { createStudy, expect, ready, test, tile } from "./studio.ts";
 
 const frozen = JSON.parse(
@@ -182,11 +187,11 @@ test("mouse exports the selected supported v2 source and rejects changed ZIP byt
   const id = await createStudy(page, "E2E v2 selected source generation", "blank");
   try {
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
-    await tile(page, "User").click();
-    await page.getByLabel("Feature preset", { exact: true }).selectOption("youtube");
-    await page.getByRole("button", { name: "Preview attachment", exact: true }).click();
-    await page.getByRole("button", { name: "Attach feature", exact: true }).click();
-    await ready(page);
+    // Saved historical product declarations are preserved, but only reusable implementations
+    // are exported. Product code is required custom work, not an installed normal preset.
+    await commitSource(page, (source) =>
+      buildGenerationPresetCommand(source, { preset: "youtube" }),
+    );
     await expect(page.getByRole("button", { name: "Generate project", exact: true })).toBeEnabled();
     await expect
       .poll(
@@ -203,12 +208,18 @@ test("mouse exports the selected supported v2 source and rejects changed ZIP byt
     await page.getByRole("button", { name: "Preview scaffold", exact: true }).click();
     const preview = await (await result).json();
     expect(preview.mode).toBe("selected-source-v2");
+    expect(preview.report.applicationComplete).toBe(false);
+    expect(
+      preview.report.selections.filter((s: { status: string }) => s.status === "unfinished"),
+    ).toHaveLength(3);
     expect(preview.selectedSource.canonicalSha256).toBe(
       createHash("sha256").update(canonical(before.design)).digest("hex"),
     );
-    await expect(page.getByText("Selected backend assembled", { exact: true })).toBeVisible();
     await expect(
-      page.getByText("Support & custom gaps · 0 required", { exact: true }),
+      page.getByText("Partial assembly · custom work required", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Support & custom gaps · 9 required", { exact: true }),
     ).toBeVisible();
     let downloads = 0;
     page.on("download", () => downloads++);

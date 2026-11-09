@@ -1,5 +1,11 @@
 # YouTube v2 build plan
 
+Historical execution plan. The owner subsequently clarified that product-specific code belongs
+after the generated baseline. YV2-15/16 below placed YouTube implementation before YV2-21 and
+caused the misleading 100% credit. Do not repeat that ordering. The
+[generic replay](youtube-v2-generic-baseline.md) removes those implementations from active v2
+generation while preserving the historical application and the counting scope.
+
 Owner decisions: 2026-11-08. Based on the [completed review](youtube-v2-review.md), commit
 `5a700c2`. This document settles the planning questions and replaces that review's provisional
 unit list. It is the execution specification for future assignments; this planning unit does

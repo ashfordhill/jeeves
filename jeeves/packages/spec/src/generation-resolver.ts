@@ -749,3 +749,39 @@ export function resolveGeneration(
     complete: !!model && findings.length === 0 && normalized.length > 0,
   });
 }
+
+/** Known declarations without an installed implementation remain explicit custom work in a
+ * partial export. Unknown refs, invalid bindings and unsupported settings still block export. */
+export function generationExportBlockers(
+  design: DesignDocument,
+  installed: GenerationInstalledSupport,
+) {
+  const generation = designGeneration(design);
+  return resolveGeneration(design, installed).findings.filter((entry) => {
+    const path = entry.target.path;
+    if (entry.code !== "NEEDS_TEMPLATE" || !generation || !path) return true;
+    if (path.length === 2 && path[0] === "generation" && path[1] === "preset") {
+      const ref = generation.preset;
+      return (
+        !ref ||
+        !knownGenerationPreset(ref) ||
+        !!installed.presets?.some((installedRef) => sameContractRef(installedRef, ref))
+      );
+    }
+    if (
+      path.length === 4 &&
+      path[0] === "generation" &&
+      path[1] === "selections" &&
+      typeof path[2] === "number" &&
+      path[3] === "template"
+    ) {
+      const ref = generation.selections[path[2]]?.template;
+      return (
+        !ref ||
+        !knownGenerationTemplate(ref) ||
+        installed.templates.some((template) => sameContractRef(template.ref, ref))
+      );
+    }
+    return true;
+  });
+}

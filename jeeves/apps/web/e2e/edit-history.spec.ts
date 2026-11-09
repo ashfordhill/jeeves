@@ -1,8 +1,10 @@
+import { buildGenerationPresetCommand } from "@jeeves/spec";
+import { commitSource } from "./source.ts";
 import { createStudy, design, expect, ready, test, tile } from "./studio.ts";
 
 async function attach(page: Parameters<typeof createStudy>[0]) {
   await tile(page, "User").click();
-  await page.getByLabel("Feature preset", { exact: true }).selectOption("youtube");
+  await page.getByLabel("Feature preset", { exact: true }).selectOption("video");
   await page.getByRole("button", { name: "Preview attachment", exact: true }).click();
   await expect(page.locator(".studio-inspector").getByRole("status")).toContainText(
     "One Undo step",
@@ -14,12 +16,13 @@ async function attach(page: Parameters<typeof createStudy>[0]) {
 test("attaches the installed preset atomically and autosaves useful TTL/pool controls through Undo, Redo and reload", async ({
   page,
 }) => {
-  const id = await createStudy(page, "E2E supported YouTube", "blank");
+  const id = await createStudy(page, "E2E reusable feature and historical controls", "blank");
   try {
     const inspector = page.locator(".studio-inspector");
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
     await attach(page);
-    await expect.poll(async () => (await design(page, id)).elements.length).toBe(19);
+    await expect(page.locator('.studio-inspector option[value="youtube"]')).toHaveCount(0);
+    await expect.poll(async () => (await design(page, id)).elements.length).toBe(9);
     const attached = await design(page, id);
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect.poll(async () => (await design(page, id)).elements.length).toBe(0);
@@ -27,6 +30,13 @@ test("attaches the installed preset atomically and autosaves useful TTL/pool con
     await expect
       .poll(async () => ({ ...(await design(page, id)), revision: 0 }))
       .toEqual({ ...attached, revision: 0 });
+    // Product implementations are no longer an installed attachment. Preserve the historical
+    // design explicitly, then exercise its still-supported generic cache and SQL controls.
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect.poll(async () => (await design(page, id)).elements.length).toBe(0);
+    await commitSource(page, (source) =>
+      buildGenerationPresetCommand(source, { preset: "youtube" }),
+    );
     await tile(page, "Metadata cache").click();
     await inspector.getByRole("tab", { name: "Options", exact: true }).click();
     const ttl = inspector.getByLabel("TTL", { exact: true });

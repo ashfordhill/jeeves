@@ -2,7 +2,9 @@ import {
   applyOperations,
   buildGenerationPresetCommand,
   designSchema,
+  generationExportBlockers,
   resolveGeneration,
+  supportedGenerationPresets,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { tinyurlStudioExample } from "../../../jeeves/packages/spec/src/studio-examples/tinyurl.ts";
@@ -27,39 +29,38 @@ function required<T>(value: T | null | undefined): T {
 const registry = loadLocalV2Registry();
 const read = (bundle: ReturnType<typeof assembleV2>, path: string) =>
   new TextDecoder().decode(bundle.files.find((f) => f.path === path)?.bytes);
-describe("compiled video and YouTube composition", () => {
-  it("materializes one atomic complete local recipe and consumes selected settings in real processes", () => {
+describe("reusable composition before product completion", () => {
+  it("exports reusable mechanisms from a saved product design and leaves every product implementation custom", () => {
     const design = attach();
-    expect(resolveGeneration(design, registry.installed).findings).toEqual([]);
+    const before = structuredClone(design);
+    expect(generationExportBlockers(design, registry.installed)).toEqual([]);
+    expect(resolveGeneration(design, registry.installed).findings).toHaveLength(4);
+    expect(supportedGenerationPresets(registry.installed)).toEqual(["video"]);
+    expect(registry.installed.templates).toHaveLength(7);
     const a = assembleV2({ designJson: JSON.stringify(design) }, registry);
-    expect(a.report.applicationComplete).toBe(true);
-    expect(a.report.gaps).toEqual([]);
-    const plan = JSON.parse(read(a, "infra/local.json")),
-      compose = JSON.parse(read(a, "compose.yaml"));
-    expect(plan.application).toHaveLength(8);
-    expect(plan.identity[0].roles).toEqual(["creator"]);
-    expect(compose.services["app-transcoder"].build.target).toBe("media");
-    expect(compose.services["app-transcoder"].secrets).toEqual([
-      "s3-transcoder",
-      "broker-password",
-    ]);
-    expect(compose.services["app-search-indexer"].secrets).toEqual(["broker-password"]);
-    expect(compose.services["app-watch"].secrets).toEqual([
-      "sql-metadata-db--watch",
-      "sql-view-counts--watch",
-      "cache-metadata-cache",
-      "broker-password",
-    ]);
+    expect(design).toEqual(before);
+    expect(a.report.applicationComplete).toBe(false);
+    expect(a.report.selections.filter((s) => s.status === "unfinished")).toHaveLength(3);
+    expect(a.report.gaps.filter((g) => g.required)).toHaveLength(9);
+    const plan = JSON.parse(read(a, "infra/local.json"));
+    expect(plan.application).toEqual([]);
+    expect(plan.identity[0].roles).toEqual([]);
+    expect(plan.search).toEqual([]);
     expect(
-      plan.grants
-        .filter((g: { host: string }) => g.host === "watch")
-        .every(
-          (g: { kind: string; privileges: string[] }) =>
-            g.kind === "view" && g.privileges.join() === "SELECT",
-        ),
-    ).toBe(true);
-    expect(read(a, "infra/edge/nginx.conf")).toContain("/api/upload/");
+      a.files.some((f) =>
+        /src\/(adapters|services)\/|public-video|video-paths|infra\/edge/.test(f.path),
+      ),
+    ).toBe(false);
+    expect(
+      registry.sources.some(
+        (s) =>
+          /youtube|public-video|video-paths/.test(s.path) && s.path.startsWith("jeeves-generator/"),
+      ),
+    ).toBe(false);
     expect(read(a, "src/features/video-runtime.ts")).toContain('["ffmpeg", "ffprobe"]');
+    expect(read(a, "src/features/service-resources.ts")).toContain(
+      'ttlSeconds: input(s, "cache.ttlSeconds")',
+    );
     const changed = structuredClone(design);
     const studio = required(changed.architecture?.studio);
     const tile = required(studio.elements.find((e) => e.element === "metadata-cache"));
@@ -135,5 +136,27 @@ describe("compiled video and YouTube composition", () => {
     const bundle = assembleV2({ designJson: JSON.stringify(historic) }, registry);
     expect(bundle.report.applicationComplete).toBe(false);
     expect(connection.planned.security).toBe("Service identity");
+  });
+  it("keeps unknown identities and a missing runtime blocked while allowing known custom gaps", () => {
+    const design = attach();
+    if (design.schemaVersion !== 3 || !design.generation?.preset) throw Error();
+    expect(
+      generationExportBlockers(design, { ...registry.installed, runtime: undefined }),
+    ).toContainEqual(expect.objectContaining({ target: { path: ["generation", "runtime"] } }));
+    design.generation.preset.sha256 = "0".repeat(64);
+    expect(generationExportBlockers(design, registry.installed)).toContainEqual(
+      expect.objectContaining({ target: { path: ["generation", "preset"] } }),
+    );
+    const unknown = attach();
+    if (unknown.schemaVersion !== 3 || !unknown.generation) throw Error();
+    const index = unknown.generation.selections.findIndex(
+      (selection) => selection.binding.kind === "youtube-watch",
+    );
+    required(unknown.generation.selections[index]).template.sha256 = "0".repeat(64);
+    expect(generationExportBlockers(unknown, registry.installed)).toContainEqual(
+      expect.objectContaining({
+        target: { path: ["generation", "selections", index, "template"] },
+      }),
+    );
   });
 });

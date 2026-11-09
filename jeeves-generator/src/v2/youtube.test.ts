@@ -1,7 +1,3 @@
-import { existsSync, readFileSync } from "node:fs";
-import { createRequire, stripTypeScriptTypes } from "node:module";
-import { posix } from "node:path";
-import { pathToFileURL } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
 import { designSchema } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
@@ -15,33 +11,11 @@ import { assembleV2 } from "./assemble.ts";
 import { assetLifecycleSchema } from "./asset-lifecycle.ts";
 import { outboxSchema, receiptSchema } from "./durability.ts";
 import { counterSchema, counterTotalsSelect } from "./event-counter.ts";
+import { historicalYouTubeModule as moduleUrl } from "./fixtures/historical-youtube.ts";
 import { ownedUploadSchema } from "./upload-state.ts";
-import { youtubeReadyView } from "./youtube.ts";
 
-// Exact emitted code; SDK-free routes/state use injected dependencies. The HTTP runtime uses
-// the repository's existing Fastify pin; no Docker, network or generated installation required.
-const requireServer = createRequire(
-  new URL("../../../jeeves/apps/server/package.json", import.meta.url),
-);
-const urls = new Map<string, string>();
-function moduleUrl(name: string): string {
-  const previous = urls.get(name);
-  if (previous) return previous;
-  const base = new URL(`../../templates/local-v2/assets/src/${name}.ts`, import.meta.url);
-  const code = stripTypeScriptTypes(
-    readFileSync(existsSync(base) ? base : new URL(`${base}.template`), "utf8"),
-  )
-    .replace(
-      /from "(\.\.?\/.+)\.ts"/g,
-      (_match, dep: string) =>
-        `from "${moduleUrl(posix.normalize(`${posix.dirname(name)}/${dep}`))}"`,
-    )
-    .replace('from "zod"', `from "${import.meta.resolve("zod")}"`)
-    .replace('from "fastify"', `from "${pathToFileURL(requireServer.resolve("fastify")).href}"`);
-  const url = `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
-  urls.set(name, url);
-  return url;
-}
+const { youtubeReadyView } = await import(moduleUrl("adapters/youtube-public-sql"));
+
 const contract = await import(moduleUrl("adapters/youtube-contract"));
 const events = await import(moduleUrl("adapters/youtube-events"));
 const upload = await import(moduleUrl("adapters/youtube-upload"));
@@ -127,7 +101,7 @@ function routes() {
   };
 }
 
-describe("YouTube product adapters", () => {
+describe("retained field-app product adapters against generic mechanisms", () => {
   it("canonicalizes identities and validates authoritative paths/stable wire policy using shared public schemas", () => {
     const requested = {
       schemaVersion: 1,
@@ -506,7 +480,7 @@ describe("YouTube product adapters", () => {
     }
   });
 
-  it("owns adapter assets once, emits deterministic partial contracts and keeps complete application support uninstalled", () => {
+  it("exports deterministic generic dependencies without the field application product code", () => {
     const design = designSchema.parse({
       ...generationSourceFixture(),
       generation: generationSelectionsFixture(),
@@ -517,17 +491,14 @@ describe("YouTube product adapters", () => {
     const signature = (bundle: typeof first) =>
       bundle.files.map((file) => [file.path, sha256(file.bytes)]);
     expect(signature(first)).toEqual(signature(second));
-    const records = first.manifest.files.filter((f) => f.path.startsWith("src/adapters/"));
-    expect(records.length).toBe(10);
     expect(
-      records.every((f) => typeof f.owner !== "string" && f.owner.id === "local.youtube-adapters"),
-    ).toBe(true);
-    expect(
-      first.manifest.files.filter((f) => f.path === "src/features/public-video.ts"),
-    ).toHaveLength(1);
+      first.manifest.files.some((f) =>
+        /src\/adapters\/|public-video|video-paths|src\/services\//.test(f.path),
+      ),
+    ).toBe(false);
     expect(first.report.applicationComplete).toBe(false);
     expect(
-      first.report.gaps.some((g) => g.id === "youtube-service-composition" && g.required),
+      first.report.gaps.some((g) => g.id === "application-implementations" && g.required),
     ).toBe(true);
     expect(registry.installed.templates).toEqual([]);
   });

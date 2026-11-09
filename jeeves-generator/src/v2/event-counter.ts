@@ -96,24 +96,7 @@ export function createLocalEventCounter(sourcePaths: readonly string[]): V2Emitt
       const paths = model.selections
         .filter((s) => s.binding.kind === "event-counter")
         .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
-      const watchPaths = model.selections
-        .filter((s) => s.binding.kind === "youtube-watch")
-        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
-      if (!paths.length)
-        return {
-          files: watchPaths.length
-            ? [
-                {
-                  path: "src/runtime/counter-read.ts",
-                  content: asset(
-                    "jeeves-generator/templates/local-v2/assets/src/runtime/counter-read.ts.template",
-                  ),
-                  ownership: "generated-scaffold" as const,
-                  sourcePaths: watchPaths,
-                },
-              ]
-            : [],
-        };
+      if (!paths.length) return { files: [] };
       return {
         files: ["counter-sql", "counter-read", "event-counter", "counter-worker"].map((name) => ({
           path: `src/runtime/${name}.ts`,

@@ -1,0 +1,782 @@
+{
+  "purpose": "Fresh generic-only export count; retrospective overlap with existing v2, not newly observed post-generation completion work.",
+  "method": "source-loc-v2",
+  "parser": "rolldown@1.2.15",
+  "scope": {
+    "version": 1,
+    "backendPaths": ["src/runtime", "src/features", "src/adapters", "src/services"],
+    "uiPaths": ["browser"],
+    "configurationPaths": [
+      "src/features/application-bindings.ts",
+      "src/features/local-bindings.ts",
+      "src/features/positive-cache-bindings.ts",
+      "src/features/search-bindings.ts"
+    ]
+  },
+  "scopeFileSha256": "7bd0adb5fcc4999cbf2fe5239c7949aa850d0b3f9ff629ad1131c3e23b0ec0d6",
+  "input": {
+    "normalizedInputSha256": "03f0e523e6bcc303e89e4465fe7163d4ca886feafd9a75d3ea23d53d7d671ec0",
+    "sourceCanonicalSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+    "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b"
+  },
+  "manifestSha256": "098355e2f11372a3493499bd6cb60d3e74b8a08740c8364751d12de671c04971",
+  "registrySha256": "5e111615b7c4144ca7deea4be865be656dc55458efaf5619deb21a8cf6690990",
+  "exportFiles": 72,
+  "includedFiles": 42,
+  "generatedBackendLoc": 4325,
+  "applicationComplete": false,
+  "requiredCustomGaps": [
+    {
+      "description": "Bind metadata/result/event/job/response codecs, stable event identities, upload hooks, optional committed publication/public projection, explicit SQL contributions and worker/service construction in a compiled recipe. Dependency output alone installs no application.",
+      "emitter": "local.asset-lifecycle",
+      "id": "asset-lifecycle-application-bindings",
+      "required": true,
+      "sourcePaths": ["/generation/selections/1"],
+      "status": "unfinished"
+    },
+    {
+      "description": "Feature implementations and required application hooks remain unfinished; selected providers alone are not a working application.",
+      "emitter": "local.diagnostic",
+      "id": "application-implementations",
+      "required": true,
+      "sourcePaths": ["/generation"],
+      "status": "unfinished"
+    },
+    {
+      "description": "Bind an actual qualifying event codec/stable identity, explicit counter tables/public view/runtime access, and construct the counter consumer and fresh totals reader in compiled services. Dependency output alone installs no application.",
+      "emitter": "local.event-counter",
+      "id": "event-counter-application-bindings",
+      "required": true,
+      "sourcePaths": ["/generation/selections/4"],
+      "status": "unfinished"
+    },
+    {
+      "description": "No runnable feature/application hooks are contributed for selected hosts: upload, completion-handler, transcoder, watch, view-counter, search-indexer, search. Providers alone are not a working app.",
+      "emitter": "local.foundation",
+      "id": "application-services",
+      "required": true,
+      "sourcePaths": [
+        "/architecture/studio/components/8/settings/credential",
+        "/architecture/studio/elements/1/settings/engine",
+        "/architecture/studio/elements/1/settings/eviction",
+        "/architecture/studio/elements/1/settings/provider",
+        "/architecture/studio/elements/1/settings/topology",
+        "/architecture/studio/elements/10/settings/provider",
+        "/architecture/studio/elements/12/settings/access",
+        "/architecture/studio/elements/12/settings/provider",
+        "/architecture/studio/elements/13/settings/mode",
+        "/architecture/studio/elements/13/settings/provider",
+        "/architecture/studio/elements/15/settings/mode",
+        "/architecture/studio/elements/15/settings/provider",
+        "/architecture/studio/elements/18/settings/mode",
+        "/architecture/studio/elements/18/settings/provider",
+        "/architecture/studio/elements/2/settings/engine",
+        "/architecture/studio/elements/2/settings/provider",
+        "/architecture/studio/elements/2/settings/readReplicas",
+        "/architecture/studio/elements/3/settings/engine",
+        "/architecture/studio/elements/3/settings/provider",
+        "/architecture/studio/elements/3/settings/readReplicas",
+        "/architecture/studio/elements/4/settings/mode",
+        "/architecture/studio/elements/4/settings/provider",
+        "/architecture/studio/elements/7/settings/engine",
+        "/architecture/studio/elements/7/settings/provider",
+        "/architecture/studio/elements/9/settings/access",
+        "/architecture/studio/elements/9/settings/provider",
+        "/generation",
+        "/generation/selections/0",
+        "/generation/selections/0/binding/identity",
+        "/generation/selections/0/binding/jobs",
+        "/generation/selections/0/binding/objects",
+        "/generation/selections/0/binding/state",
+        "/generation/selections/1",
+        "/generation/selections/1/binding/publication",
+        "/generation/selections/1/binding/results",
+        "/generation/selections/1/binding/state",
+        "/generation/selections/2",
+        "/generation/selections/2/binding/jobs",
+        "/generation/selections/2/binding/originals",
+        "/generation/selections/2/binding/outputs",
+        "/generation/selections/2/binding/results",
+        "/generation/selections/3",
+        "/generation/selections/3/binding/cache",
+        "/generation/selections/3/binding/source",
+        "/generation/selections/4",
+        "/generation/selections/4/binding/events",
+        "/generation/selections/4/binding/state",
+        "/generation/selections/5",
+        "/generation/selections/5/binding/events",
+        "/generation/selections/5/binding/index",
+        "/generation/selections/6",
+        "/generation/selections/6/binding/index",
+        "/generation/selections/7",
+        "/generation/selections/8",
+        "/generation/selections/8/binding/counts",
+        "/generation/selections/8/binding/events",
+        "/generation/selections/9",
+        "/ownership/dependencies/0",
+        "/ownership/dependencies/1",
+        "/ownership/dependencies/10",
+        "/ownership/dependencies/2",
+        "/ownership/dependencies/3",
+        "/ownership/dependencies/4",
+        "/ownership/dependencies/5",
+        "/ownership/dependencies/6",
+        "/ownership/dependencies/7",
+        "/ownership/dependencies/8",
+        "/ownership/dependencies/9",
+        "/ownership/grants/0",
+        "/ownership/grants/1",
+        "/ownership/grants/10",
+        "/ownership/grants/2",
+        "/ownership/grants/3",
+        "/ownership/grants/4",
+        "/ownership/grants/5",
+        "/ownership/grants/6",
+        "/ownership/grants/7",
+        "/ownership/grants/8",
+        "/ownership/grants/9",
+        "/ownership/resources/0",
+        "/ownership/resources/1",
+        "/ownership/resources/2",
+        "/ownership/resources/3",
+        "/ownership/resources/4",
+        "/ownership/resources/5",
+        "/ownership/roles/0",
+        "/ownership/roles/1",
+        "/ownership/roles/2",
+        "/ownership/roles/3",
+        "/ownership/roles/4",
+        "/ownership/roles/5",
+        "/ownership/roles/6"
+      ],
+      "status": "unfinished"
+    },
+    {
+      "description": "Selected search providers have no contributed versioned feature mapping/query implementation.",
+      "emitter": "local.foundation",
+      "id": "search-mappings",
+      "required": true,
+      "sourcePaths": [
+        "/architecture/studio/components/8/settings/credential",
+        "/architecture/studio/elements/1/settings/engine",
+        "/architecture/studio/elements/1/settings/eviction",
+        "/architecture/studio/elements/1/settings/provider",
+        "/architecture/studio/elements/1/settings/topology",
+        "/architecture/studio/elements/10/settings/provider",
+        "/architecture/studio/elements/12/settings/access",
+        "/architecture/studio/elements/12/settings/provider",
+        "/architecture/studio/elements/13/settings/mode",
+        "/architecture/studio/elements/13/settings/provider",
+        "/architecture/studio/elements/15/settings/mode",
+        "/architecture/studio/elements/15/settings/provider",
+        "/architecture/studio/elements/18/settings/mode",
+        "/architecture/studio/elements/18/settings/provider",
+        "/architecture/studio/elements/2/settings/engine",
+        "/architecture/studio/elements/2/settings/provider",
+        "/architecture/studio/elements/2/settings/readReplicas",
+        "/architecture/studio/elements/3/settings/engine",
+        "/architecture/studio/elements/3/settings/provider",
+        "/architecture/studio/elements/3/settings/readReplicas",
+        "/architecture/studio/elements/4/settings/mode",
+        "/architecture/studio/elements/4/settings/provider",
+        "/architecture/studio/elements/7/settings/engine",
+        "/architecture/studio/elements/7/settings/provider",
+        "/architecture/studio/elements/9/settings/access",
+        "/architecture/studio/elements/9/settings/provider",
+        "/generation",
+        "/generation/selections/0",
+        "/generation/selections/0/binding/identity",
+        "/generation/selections/0/binding/jobs",
+        "/generation/selections/0/binding/objects",
+        "/generation/selections/0/binding/state",
+        "/generation/selections/1",
+        "/generation/selections/1/binding/publication",
+        "/generation/selections/1/binding/results",
+        "/generation/selections/1/binding/state",
+        "/generation/selections/2",
+        "/generation/selections/2/binding/jobs",
+        "/generation/selections/2/binding/originals",
+        "/generation/selections/2/binding/outputs",
+        "/generation/selections/2/binding/results",
+        "/generation/selections/3",
+        "/generation/selections/3/binding/cache",
+        "/generation/selections/3/binding/source",
+        "/generation/selections/4",
+        "/generation/selections/4/binding/events",
+        "/generation/selections/4/binding/state",
+        "/generation/selections/5",
+        "/generation/selections/5/binding/events",
+        "/generation/selections/5/binding/index",
+        "/generation/selections/6",
+        "/generation/selections/6/binding/index",
+        "/generation/selections/7",
+        "/generation/selections/8",
+        "/generation/selections/8/binding/counts",
+        "/generation/selections/8/binding/events",
+        "/generation/selections/9",
+        "/ownership/dependencies/0",
+        "/ownership/dependencies/1",
+        "/ownership/dependencies/10",
+        "/ownership/dependencies/2",
+        "/ownership/dependencies/3",
+        "/ownership/dependencies/4",
+        "/ownership/dependencies/5",
+        "/ownership/dependencies/6",
+        "/ownership/dependencies/7",
+        "/ownership/dependencies/8",
+        "/ownership/dependencies/9",
+        "/ownership/grants/0",
+        "/ownership/grants/1",
+        "/ownership/grants/10",
+        "/ownership/grants/2",
+        "/ownership/grants/3",
+        "/ownership/grants/4",
+        "/ownership/grants/5",
+        "/ownership/grants/6",
+        "/ownership/grants/7",
+        "/ownership/grants/8",
+        "/ownership/grants/9",
+        "/ownership/resources/0",
+        "/ownership/resources/1",
+        "/ownership/resources/2",
+        "/ownership/resources/3",
+        "/ownership/resources/4",
+        "/ownership/resources/5",
+        "/ownership/roles/0",
+        "/ownership/roles/1",
+        "/ownership/roles/2",
+        "/ownership/roles/3",
+        "/ownership/roles/4",
+        "/ownership/roles/5",
+        "/ownership/roles/6"
+      ],
+      "status": "unfinished"
+    },
+    {
+      "description": "Bind verified principal, content/metadata codecs, transaction/repository/completion hooks, object namespace/identity metadata and explicit HTTP/service mounts in a compiled recipe. Transport libraries and storage access alone do not install an application.",
+      "emitter": "local.multipart",
+      "id": "multipart-application-bindings",
+      "required": true,
+      "sourcePaths": ["/generation/selections/0"],
+      "status": "unfinished"
+    },
+    {
+      "description": "Bind an immutable public-record codec, requested identity/eligibility, key and authoritative loader; contribute an explicit ready-only view/login and construct the reader with emitted TTL and actual cache client in the service. Dependency output alone installs no application.",
+      "emitter": "local.positive-cache",
+      "id": "positive-cache-application-bindings",
+      "required": true,
+      "sourcePaths": ["/generation/selections/3"],
+      "status": "unfinished"
+    },
+    {
+      "description": "Bind a committed public event codec, document ID/version, explicit contributed mapping and compiled query preset; construct actual bound indexer/query services with readiness, client/consumer drain and HTTP mapping. Dependencies alone install no application.",
+      "emitter": "local.search-projection-query",
+      "id": "search-application-bindings",
+      "required": true,
+      "sourcePaths": ["/generation/selections/5", "/generation/selections/6"],
+      "status": "unfinished"
+    },
+    {
+      "description": "Bind authoritative job/result/event codecs, source/result namespaces, confirmed queue transports, pinned FFmpeg runtime and the single media service in a compiled recipe. Engine/runner libraries and access contributions alone install no worker.",
+      "emitter": "local.video-hls",
+      "id": "video-hls-worker-bindings",
+      "required": true,
+      "sourcePaths": ["/generation/selections/2"],
+      "status": "unfinished"
+    }
+  ],
+  "existingCompletion": {
+    "commit": "08699b2dc631709bff12fb25914e0d2681b6b535",
+    "backendLoc": 5456,
+    "matchingCompletedBackendLoc": 4317,
+    "completionOnlyLoc": 1139,
+    "generatedOnlyLoc": 8,
+    "overlapPercent": 79.12,
+    "filesAbsentFromGenericExport": [
+      {
+        "path": "src/adapters/youtube-contract.ts",
+        "loc": 90,
+        "sha256": "7e52a592be62b6981b10a1d7e7f67878e0e106a189c947ecea4c5f722c0a5955"
+      },
+      {
+        "path": "src/adapters/youtube-counter.ts",
+        "loc": 23,
+        "sha256": "0fd9e22ce49c276840306e668596cab1b8a01265d9fbf99c68ffc0e308d1eded"
+      },
+      {
+        "path": "src/adapters/youtube-events.ts",
+        "loc": 128,
+        "sha256": "93c9a79b81b296442a19ad9cc67129329e23b710ec06c8cb15eb7bfdf5b13497"
+      },
+      {
+        "path": "src/adapters/youtube-lifecycle.ts",
+        "loc": 106,
+        "sha256": "0d730f546f310f828eb62321dc44d30a69e12d0bb363bac94972d2470c3be410"
+      },
+      {
+        "path": "src/adapters/youtube-objects.ts",
+        "loc": 25,
+        "sha256": "9d8bce7a67b73ca046f81d6fc6d7dd463ba7db79d3067cc43134b741133addfa"
+      },
+      {
+        "path": "src/adapters/youtube-projection.ts",
+        "loc": 34,
+        "sha256": "c4e46aaf7479c702890cd313a634439e8f52277508ab09adb843d25152076362"
+      },
+      {
+        "path": "src/adapters/youtube-public-sql.ts",
+        "loc": 15,
+        "sha256": "e31c8dca3b0692baf27715fb81ca76cc9ba017d1c82ec66445975298e7ca316d"
+      },
+      {
+        "path": "src/adapters/youtube-search.ts",
+        "loc": 54,
+        "sha256": "1427b3442077a15ec33547ead68d96e741d17546cb15ea5cb9610829ab3884b5"
+      },
+      {
+        "path": "src/adapters/youtube-upload.ts",
+        "loc": 199,
+        "sha256": "fdd69e066a84c2c653e35af4e018e6e35b69bb0c59eac0c4ccf8ba772df3f129"
+      },
+      {
+        "path": "src/adapters/youtube-watch.ts",
+        "loc": 111,
+        "sha256": "cf176a3b77179d51145f5c150c0a9c17b4021fd95326d91846bc49710512027b"
+      },
+      {
+        "path": "src/features/public-video-search.ts",
+        "loc": 26,
+        "sha256": "b7d15d92401bb57a6d2bab1be2bf7f1927fb95631d38c435956421258fe4183c"
+      },
+      {
+        "path": "src/features/public-video.ts",
+        "loc": 50,
+        "sha256": "66a807fea023befc985d408c81a5baa4f5f485c4cfde99ed2faaefaa43adda80"
+      },
+      {
+        "path": "src/features/video-paths.ts",
+        "loc": 19,
+        "sha256": "afcbbfafd92dac3e3bc1950f1814b22055cd7aa02205ad9f62d9e65d2e570d38"
+      },
+      {
+        "path": "src/services/youtube.ts",
+        "loc": 259,
+        "sha256": "98292a9b08094147f17cf4606a8c3a8f806c3e7e4378028bf34a134b9f85d184"
+      }
+    ]
+  },
+  "included": [
+    {
+      "path": "src/features/service-resources.ts",
+      "sha256": "6573315e3ee6ef55a4aab6159674fd681a21d7d2a23b6e78c9511e44dc96b3c7",
+      "generatedLoc": 115,
+      "matchesCompletedLoc": 107,
+      "byteIdenticalToCompleted": false
+    },
+    {
+      "path": "src/features/video-runtime.ts",
+      "sha256": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "generatedLoc": 12,
+      "matchesCompletedLoc": 12,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/admission.ts",
+      "sha256": "17de7157d83777e7281d8fe9b3069fed58597e35df6d37eacf959cca641b9f06",
+      "generatedLoc": 74,
+      "matchesCompletedLoc": 74,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/amqp.ts",
+      "sha256": "7eb50d512b44b9f470858b11bfc5ea6f3b3b96ae5519653a138c45a027df5e6f",
+      "generatedLoc": 215,
+      "matchesCompletedLoc": 215,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/asset-identity.ts",
+      "sha256": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "generatedLoc": 13,
+      "matchesCompletedLoc": 13,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/asset-lifecycle.ts",
+      "sha256": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "generatedLoc": 432,
+      "matchesCompletedLoc": 432,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/asset-sql.ts",
+      "sha256": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "generatedLoc": 26,
+      "matchesCompletedLoc": 26,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/asset-worker.ts",
+      "sha256": "130da3f91b95305a489200c1d7d2df5d73ec6405f973c4cd6cd03df6b4c9501e",
+      "generatedLoc": 99,
+      "matchesCompletedLoc": 99,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/counter-read.ts",
+      "sha256": "03bed78d624b6127efed58859082912005077c649a32da289d7a954999f042a9",
+      "generatedLoc": 19,
+      "matchesCompletedLoc": 19,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/counter-sql.ts",
+      "sha256": "ab930a9c59478d8e8b9316711d049e8dcdb31ad9e73a0734b2acb137efdbf2ed",
+      "generatedLoc": 30,
+      "matchesCompletedLoc": 30,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/counter-worker.ts",
+      "sha256": "ee18019f80fa8461296d8e389277a32fac61a582f646d6d9720d2d4e85997a36",
+      "generatedLoc": 34,
+      "matchesCompletedLoc": 34,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/delivery.ts",
+      "sha256": "be8caf4550978f6e779f811d953a914fb516b803247d46b8b81bcb0eda795f45",
+      "generatedLoc": 144,
+      "matchesCompletedLoc": 144,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/durable-sql.ts",
+      "sha256": "cc132555e522603e7f5c9dbe5906efbbb76c6bfbf70d6af536ecea652f518e0f",
+      "generatedLoc": 59,
+      "matchesCompletedLoc": 59,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/event-counter.ts",
+      "sha256": "40be1d8d6c77139ce7acb998d789e1451dbbcc2e7a11fd16aa0282dfec1bc418",
+      "generatedLoc": 63,
+      "matchesCompletedLoc": 63,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/event-identity.ts",
+      "sha256": "3de66a89c65728bf404831c60bb81e00cc71693b0cd23555f71462eaf9140eda",
+      "generatedLoc": 11,
+      "matchesCompletedLoc": 11,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/http.ts",
+      "sha256": "076c89c45d1fbb4157e619fe98d4be2aac7ca3072f305ffd351239c7f27fccba",
+      "generatedLoc": 85,
+      "matchesCompletedLoc": 85,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/identity.ts",
+      "sha256": "ce012fad6b404d7482048886c640f9b4c24e6b3b68e8bac96b869a44599a4db7",
+      "generatedLoc": 43,
+      "matchesCompletedLoc": 43,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/local.ts",
+      "sha256": "53429e097013bbf7dad6e581bf523f3035ec358652b9738d62f0b5a6ac310165",
+      "generatedLoc": 10,
+      "matchesCompletedLoc": 10,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/media-objects.ts",
+      "sha256": "76276ecafe97097bc0ae2d4035e35d03d9aa7e606da50b79f7483a879e31c6cf",
+      "generatedLoc": 143,
+      "matchesCompletedLoc": 143,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/media-process.ts",
+      "sha256": "2d6b9291ac69ba058a485b41b8b07f57b10c451f3e9daaa0fc6c27aee9854a66",
+      "generatedLoc": 130,
+      "matchesCompletedLoc": 130,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/media-worker.ts",
+      "sha256": "c96dce64a7d72d185a638cf19b9e1ebbf7741ffcd922e59bfa420c4e613acbb3",
+      "generatedLoc": 307,
+      "matchesCompletedLoc": 307,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/multipart-http.ts",
+      "sha256": "95b8dadb6c24f46d084b726ec49f04c204474618e3f85b7a1c2646e14b79b906",
+      "generatedLoc": 94,
+      "matchesCompletedLoc": 94,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/multipart-objects.ts",
+      "sha256": "84864780ce18eb04f9fd3a8fa9bf47e0ba3b2bc18a7ba33b9e5d00df642b7bee",
+      "generatedLoc": 137,
+      "matchesCompletedLoc": 137,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/multipart.ts",
+      "sha256": "a71722e79c7f43755431d4ddb4a3cb3968282f313fd781d424bf5acebe0a8dcb",
+      "generatedLoc": 324,
+      "matchesCompletedLoc": 324,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/objects.ts",
+      "sha256": "fd65101b6bfd87fbd9cb808e7ac690f50e706775f2078ecf313a3073659b4d84",
+      "generatedLoc": 56,
+      "matchesCompletedLoc": 56,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/outbox.ts",
+      "sha256": "e10002f66ac537c8bae682c842eaddc09050075df81c7691d110e5dee5db9a62",
+      "generatedLoc": 125,
+      "matchesCompletedLoc": 125,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/owned-upload.ts",
+      "sha256": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+      "generatedLoc": 423,
+      "matchesCompletedLoc": 423,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/positive-cache.ts",
+      "sha256": "670facbdb1a8a5e57811954a360b82748ff37feea57613e0f49ae4c4c1649009",
+      "generatedLoc": 83,
+      "matchesCompletedLoc": 83,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/postgres.ts",
+      "sha256": "8bbe9e0df36bafa1f73a1bb0abd36aa30fcfd93cde3d1815ae5234840faae7fc",
+      "generatedLoc": 22,
+      "matchesCompletedLoc": 22,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/process.ts",
+      "sha256": "690332f6d1020005ac6ff48c5bf396492682f15178bfeaaae32de53608ab2784",
+      "generatedLoc": 95,
+      "matchesCompletedLoc": 95,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/receipts.ts",
+      "sha256": "4f311edcc8ecfb11a3287e9f1445470b10eda26bebd96a51bb5128e25bf50a93",
+      "generatedLoc": 58,
+      "matchesCompletedLoc": 58,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/search-contract.ts",
+      "sha256": "9d522d94420fa3b47516d546ec5e76cf4e3fffe703b356e26df4ae3c884888ce",
+      "generatedLoc": 80,
+      "matchesCompletedLoc": 80,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/search-indexer.ts",
+      "sha256": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+      "generatedLoc": 32,
+      "matchesCompletedLoc": 32,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/search-projection.ts",
+      "sha256": "2a0e9e053a59ea422e682828ff643cadcbf9baf484b225ef72e1362de70e923f",
+      "generatedLoc": 68,
+      "matchesCompletedLoc": 68,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/search-query.ts",
+      "sha256": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "generatedLoc": 75,
+      "matchesCompletedLoc": 75,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/search-schema.ts",
+      "sha256": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "generatedLoc": 30,
+      "matchesCompletedLoc": 30,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/search.ts",
+      "sha256": "f7a2c6d3adda941fa455efb4871f75b5359174dce1c604965fd3521500369239",
+      "generatedLoc": 8,
+      "matchesCompletedLoc": 8,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/transaction.ts",
+      "sha256": "35983e944e65a8ce388eab4b3883fa884c461d7e42240d57bfefcb41a19e15d2",
+      "generatedLoc": 58,
+      "matchesCompletedLoc": 58,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/upload-sql.ts",
+      "sha256": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+      "generatedLoc": 34,
+      "matchesCompletedLoc": 34,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/valkey.ts",
+      "sha256": "aff536762903bd9816d91348a0d7f22f041f664cdcf3808399b2744349e67d99",
+      "generatedLoc": 57,
+      "matchesCompletedLoc": 57,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/video-hls.ts",
+      "sha256": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "generatedLoc": 263,
+      "matchesCompletedLoc": 263,
+      "byteIdenticalToCompleted": true
+    },
+    {
+      "path": "src/runtime/video-result.ts",
+      "sha256": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "generatedLoc": 139,
+      "matchesCompletedLoc": 139,
+      "byteIdenticalToCompleted": true
+    }
+  ],
+  "excluded": [
+    {
+      "path": ".dockerignore",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".gitignore",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/inputs/design.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/normalized.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/report.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "Dockerfile",
+      "reason": "outside-src"
+    },
+    {
+      "path": "README.md",
+      "reason": "outside-src"
+    },
+    {
+      "path": "compose.yaml",
+      "reason": "outside-src"
+    },
+    {
+      "path": "diagnostics/generation.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "ffmpeg-os.lock",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/local.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/identity/000-foundation.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/metadata-db/000-foundation.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/view-counts/000-foundation.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "package.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/bootstrap.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/broker-init.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/common.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/local.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/migrate.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/setup.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/status.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/storage-config.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "src/features/application-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "src/features/local-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "src/features/positive-cache-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "src/features/search-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "tsconfig.json",
+      "reason": "outside-src"
+    }
+  ]
+}

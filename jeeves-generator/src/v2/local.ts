@@ -631,12 +631,6 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           : `${r.kind}-${id}`;
   };
   const application: string[] = [];
-  const edges = contributions.flatMap(({ value }) =>
-    value.youtubeEdge ? [value.youtubeEdge] : [],
-  );
-  if (edges.length > 1)
-    refuse("INVALID_LOCAL_CONTRIBUTION", "/generation", "One finite browser edge is supported.");
-  const edge = edges[0];
   const publicHttp = (host: string) =>
     model.selections.some((s) => s.host === host && s.inputs["host.exposure"] === "public");
   let httpHost: string | undefined;
@@ -703,7 +697,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           "Service identity must match its normalized verified principal binding.",
         );
       if (service.http) {
-        if (httpHost && !edge)
+        if (httpHost)
           refuse(
             "LOCAL_IDENTITY_LIMIT",
             service.host,
@@ -746,63 +740,12 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           ),
         },
         ...(service.http &&
-          !edge &&
           publicHttp(service.host) && {
             ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:3000`],
           }),
       };
       application.push(name);
     }
-  if (edge) {
-    const apis = [edge.upload, edge.watch, edge.search];
-    if (new Set(apis).size !== 3 || apis.some((host) => !services[`app-${host}`]))
-      refuse(
-        "INVALID_LOCAL_CONTRIBUTION",
-        "/generation",
-        "Edge requires three actual distinct API services.",
-      );
-    const output = required(edge.outputs, "object-store");
-    if (!output.public)
-      refuse(
-        "INVALID_LOCAL_CONTRIBUTION",
-        edge.outputs,
-        "Media edge requires selected public outputs.",
-      );
-    services["app-edge"] = {
-      image: pins.nginx,
-      profiles: ["application"],
-      ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:8080`],
-      volumes: [
-        "./infra/edge/nginx.conf:/etc/nginx/nginx.conf:ro",
-        "./public:/usr/share/nginx/html:ro",
-      ],
-      depends_on: Object.fromEntries(
-        apis.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
-      ),
-      healthcheck: health([
-        "CMD",
-        "wget",
-        "-q",
-        "-O",
-        "/dev/null",
-        "http://127.0.0.1:8080/healthz",
-      ]),
-    };
-    application.push("app-edge");
-    files.push(
-      file(
-        "infra/edge/nginx.conf",
-        `events {}\nhttp {\n include /etc/nginx/mime.types;\n server {\n listen 8080;\n root /usr/share/nginx/html;\n location = /healthz { return 200 'ready'; }\n${publicHttp(edge.upload) ? ` location /api/upload/ { proxy_pass http://app-${edge.upload}:3000/; }` : " location /api/upload/ { return 404; }"}\n${publicHttp(edge.watch) ? ` location /api/watch/ { proxy_pass http://app-${edge.watch}:3000/; }` : " location /api/watch/ { return 404; }"}\n${publicHttp(edge.search) ? ` location /api/search/ { proxy_pass http://app-${edge.search}:3000/; }` : " location /api/search/ { return 404; }"}\n location /media/ { proxy_pass http://local-objects:3902/; proxy_set_header Host ${edge.outputs}.web.garage.localhost; add_header Cache-Control 'public, max-age=31536000, immutable'; }\n location / { try_files $uri $uri/ /index.html; }\n }\n}\n`,
-        contributions.filter((c) => c.value.youtubeEdge).map((c) => c.emitter),
-      ),
-    );
-    files.push(
-      file(
-        "public/index.html",
-        "<!doctype html><meta charset=utf-8><title>Generated video backend</title><p>Video backend is running. Connect the existing browser through /api/upload/, /api/watch/ and /api/search/.</p>\n",
-      ),
-    );
-  }
   const providerServices = Object.keys(services)
     .filter((name) => !name.startsWith("setup-") && !name.startsWith("app-"))
     .sort();

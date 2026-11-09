@@ -136,7 +136,11 @@ The canvas **Generate project → Preview scaffold → Download project ZIP** fl
   revision 3). Preview returns `mode: legacy-exact-v1`; the original 108-file payload/provenance is
   unchanged. Selected-project identity is separate from the frozen origin.
 
-Missing/unknown/uninstalled refs, invalid bindings and unsupported settings refuse v2 export.
+Unknown refs, invalid bindings and unsupported settings refuse v2 export. Known uninstalled
+template/preset declarations remain explicit custom gaps in a partial export; catalog presence
+does not implement them. The active registry emits reusable mechanisms, not YouTube product
+adapters, public-video schemas or an application recipe. Normal authoring offers the video
+feature only. [Corrected boundary and measurement](../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md).
 No label or project name selects code; failed source checks never substitute an old archive.
 
 Read-only POST routes under `/projects/:id/experimental-generation/preview` and `/download`

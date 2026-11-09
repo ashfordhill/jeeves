@@ -26,21 +26,15 @@ export function createLocalDurability(sourcePaths: readonly string[]): V2Emitter
           ["owned-multipart", "asset-lifecycle", "event-counter"].includes(s.binding.kind),
         )
         .map((s) => `/${s.sourcePath.map((part) => pointerPart(String(part))).join("/")}`);
-      const productPaths = model.selections
-        .filter((s) => s.binding.kind.startsWith("youtube-"))
-        .map((s) => `/${s.sourcePath.map((part) => pointerPart(String(part))).join("/")}`);
-      if (!paths.length && !productPaths.length) return { files: [] };
+      if (!paths.length) return { files: [] };
       return {
-        files: (paths.length
-          ? ["transaction", "durable-sql", "outbox", "receipts"]
-          : ["durable-sql"]
-        ).map((name) => ({
+        files: ["transaction", "durable-sql", "outbox", "receipts"].map((name) => ({
           path: `src/runtime/${name}.ts`,
           content: asset(
             `jeeves-generator/templates/local-v2/assets/src/runtime/${name}.ts${name === "durable-sql" ? "" : ".template"}`,
           ),
           ownership: "generated-scaffold" as const,
-          sourcePaths: [...paths, ...productPaths],
+          sourcePaths: paths,
         })),
       };
     },

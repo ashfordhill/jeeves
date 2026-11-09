@@ -1193,3 +1193,18 @@ work, transaction commit, message delivery and downstream visibility; show unkno
 Keep it off by default, read-only and bounded. Prefer shared diagnostic hooks over per-product
 instrumentation, and preserve business behavior if diagnostics fail. This is a proposal from
 the review, not an implemented diagnostics feature.
+
+## 2026-11-08 reusable baseline precedes application completion
+
+For the owner's field-project measure, generate and freeze reusable mechanisms/domain features
+before implementing product policy, API adapters and service wiring. A template containing one
+finished product does not establish reusable credit merely because it emits that code. Keep
+Docker, edge configuration, UI and tests excluded as requested; the correction is baseline
+eligibility, not a broader denominator. The v2 plan scheduled YouTube implementation before the
+baseline and therefore measured unchanged product code as generated.
+
+Preserve historical reports when correcting this ordering. Re-export the same saved diagram with
+product implementations removed, record exact output/manifest hashes, and label comparison with
+an already-completed app as retrospective. Do not call it newly observed post-generation work.
+Known historical product declarations can remain readable as explicit custom gaps without being
+offered as installed features. [Correction and evidence](plans/reliable-foundations/youtube-v2-generic-baseline.md).

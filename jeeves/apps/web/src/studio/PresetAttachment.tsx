@@ -75,7 +75,7 @@ export function PresetAttachment({
         >
           {presets.map((value) => (
             <option key={value} value={value}>
-              {value === "video" ? "Owned upload + video processing" : "YouTube local backend"}
+              {value === "video" ? "Owned upload + video processing" : "Historical YouTube design"}
             </option>
           ))}
         </select>
@@ -83,7 +83,7 @@ export function PresetAttachment({
       <p className="studio-field-help">
         {preset === "video"
           ? "Reusable upload and CPU HLS processing. Your application supplies product codecs and service hooks; this remains a partial application."
-          : "Upload, processing, Watch, search and counts. Local Docker + TypeScript; the browser is supplied separately."}
+          : "Historical product declarations require custom implementation after generation."}
       </p>
       <button type="button" onClick={review}>
         Preview attachment
