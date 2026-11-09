@@ -2,7 +2,6 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
-  declaredAccessLabels,
   normalSettingFields,
   type StudioComponentDefinition,
   type StudioComponentField,
@@ -17,11 +16,19 @@ import {
   studioFieldGroups,
   studioPerformanceFields,
   studioProviderChoices,
-  studioStoreAccess,
-  studioStoreAccessLabels,
   validateStudio,
 } from "@jeeves/spec";
-import { type ReactNode, useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  type ComponentProps,
+  type ReactNode,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   type DraftSpec,
   type DraftValues,
@@ -44,6 +51,7 @@ import {
   ownerChoices,
 } from "./inspector-drafts.ts";
 import { PresetAttachment } from "./PresetAttachment.tsx";
+import { StudioIcon } from "./StudioIcon.tsx";
 
 const canonical = studioDefinitions.service.fields.filter((field) => field.control === "text");
 
@@ -76,6 +84,35 @@ function selectChange(
 type InspectorField = StudioElementField | StudioPerformanceField | StudioComponentField;
 type Choice = { value: string; label: string };
 
+/**
+ * The system's, a tile's and a module's description all read as Description here. The
+ * definitions keep their "Purpose" label because chat's `describeStudioDefinition` returns those
+ * fields verbatim, and this view must not change chat tool text.
+ */
+const descriptions = new Set(["element.description", "component.description"]);
+
+/**
+ * The description box: 6 rows, growing with its text to half the rail's height, then scrolling.
+ * Dragging its corner sets the height by hand, and the box stops growing until it is reopened.
+ */
+function DescriptionBox({ value, ...props }: ComponentProps<"textarea"> & { value: string }) {
+  const box = useRef<HTMLTextAreaElement>(null);
+  const fitted = useRef<string>(undefined);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refit whenever the text changes
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (!element || (fitted.current !== undefined && element.style.height !== fitted.current))
+      return;
+    element.style.height = "";
+    const rows = element.offsetHeight;
+    const border = element.offsetHeight - element.clientHeight;
+    const rail = element.closest(".studio-rail")?.clientHeight ?? Number.POSITIVE_INFINITY;
+    element.style.height = `${Math.max(rows, Math.min(element.scrollHeight + border, rail / 2))}px`;
+    fitted.current = element.style.height;
+  }, [value]);
+  return <textarea ref={box} rows={6} value={value} {...props} />;
+}
+
 /** One autosaving control. Text/integer edits debounce; selects commit through `onSelect`. */
 function DraftField({
   idPrefix,
@@ -83,6 +120,7 @@ function DraftField({
   draft,
   references,
   help,
+  className,
   onSelect,
 }: {
   idPrefix: string;
@@ -90,6 +128,7 @@ function DraftField({
   draft: FormDraft;
   references: readonly Choice[];
   help?: boolean;
+  className?: string;
   onSelect: (value: string) => void;
 }) {
   const value = draft.values[field.path];
@@ -107,14 +146,14 @@ function DraftField({
   const empty = field.path.startsWith("settings.") && optional;
   const change = (next: unknown) =>
     formDrafts.change(draft.key, { [field.path]: empty && next === "" ? undefined : next });
+  const description = descriptions.has(field.path);
   return (
-    <div className="studio-form-field">
-      <label htmlFor={inputId}>{field.label}</label>
+    <div className={className ? `studio-form-field ${className}` : "studio-form-field"}>
+      <label htmlFor={inputId}>{description ? "Description" : field.label}</label>
       {field.control === "text" ? (
-        field.path === "element.description" || field.path === "component.description" ? (
-          <textarea
+        description ? (
+          <DescriptionBox
             {...common}
-            rows={3}
             value={String(value ?? "")}
             onChange={(event) => change(event.currentTarget.value)}
           />
@@ -453,34 +492,28 @@ function ComponentDraftForm({
   );
 }
 
-/** The inspector's sections: the field groups, and Modules for an application tile. */
-export type InspectorTab = StudioFieldGroup | "Modules";
-
 /**
- * The inspector for a tile's element, or for the system when `element` is undefined: General,
- * Options and Connections, and Modules when `modules` is given. The open tab is the caller's when
- * it passes `tab` and `onTab`.
+ * The inspector for a tile's element, or for the system when `element` is undefined: one page
+ * with the header (icon, Name, kind), Description, Options when it has fields, and the Modules
+ * slot when `modules` is given. A tile's `warnings` sit in its header; the system's follow its
+ * Description, before Add a supported feature.
  */
 export function TargetInspector({
   projectId,
   element,
   label,
   design,
-  onConnection,
+  warnings,
   modules,
-  tab,
-  onTab,
 }: {
   projectId: string;
   element?: string;
   /** The system's name when the design has no architecture yet. */
   label: string;
   design: DesignDocument;
-  onConnection: (id: string) => void;
-  /** The Modules tab's content. */
+  warnings?: ReactNode;
+  /** The Modules section's content. */
   modules?: ReactNode;
-  tab?: InspectorTab;
-  onTab?: (tab: InspectorTab) => void;
 }) {
   const target = useMemo<InspectorTarget>(
     () => (element ? { kind: "element", id: element } : { kind: "system" }),
@@ -492,83 +525,56 @@ export function TargetInspector({
   );
   if (!spec) return null;
   return (
-    <TargetForm
-      spec={spec}
-      design={design}
-      target={target}
-      onConnection={onConnection}
-      modules={modules}
-      tab={tab}
-      onTab={onTab}
-    />
+    <TargetForm spec={spec} design={design} target={target} warnings={warnings} modules={modules} />
   );
 }
-
-/** The system's description reads as its goal. */
-const systemFields = canonical.map((field) =>
-  field.path === "element.description" ? { ...field, label: "Goal" } : field,
-);
 
 function TargetForm({
   spec,
   design,
   target: ref,
-  onConnection,
+  warnings,
   modules,
-  tab,
-  onTab,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
   target: InspectorTarget;
-  onConnection: (id: string) => void;
+  warnings?: ReactNode;
   modules?: ReactNode;
-  tab?: InspectorTab;
-  onTab?: (tab: InspectorTab) => void;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
   useEffect(() => () => formDrafts.leave(entry.key), [entry.key]);
-  const tabId = useId();
-  const [ownTab, setOwnTab] = useState<InspectorTab>("General");
-  const selectedTab = tab ?? ownTab;
-  const setSelectedTab = onTab ?? setOwnTab;
+  const idPrefix = useId();
   const installed = useGenerationSupport();
   const settings = draftSettings(entry.values) as StudioSettings;
   const definition = settings.kind ? studioDefinitions[settings.kind] : undefined;
-  const groups: { group: InspectorTab; fields: InspectorField[] }[] = definition
-    ? studioFieldGroups(settings).map((item) => ({
-        group: item.group,
-        // Provider choices are narrowed per engine, so they widen to plain string choices here.
-        fields: [...item.fields] as unknown as InspectorField[],
-      }))
-    : [{ group: "General", fields: ref.kind === "system" ? systemFields : canonical }];
   const controls =
     ref.kind === "element" ? normalSettingFields(design, installed, { element: ref.id }) : [];
   const editable = (field: InspectorField) =>
     !field.path.startsWith("settings.") ||
     controls.some((control) => `settings.${control.sourcePaths[0]?.at(-1)}` === field.path);
-  for (const group of groups)
-    group.fields = group.fields.filter((field) => field.path !== "owner" && editable(field));
-  // Only installed, useful performance controls join Options.
+  const fields = (
+    definition
+      ? // Provider choices are narrowed per engine, so they widen to plain string choices here.
+        (studioFieldGroups(settings).flatMap((item) => item.fields) as unknown as InspectorField[])
+      : canonical
+  ).filter((field) => field.path !== "owner" && editable(field));
+  const name = fields.find((field) => field.path === "element.name");
+  const description = fields.find((field) => field.path === "element.description");
+  // Options: the kind's installed, useful settings (today only its Options group has any), then
+  // its installed performance controls.
   const performance = definition ? studioPerformanceFields[settings.kind].filter(editable) : [];
-  if (performance.length) {
-    const options = groups.find((group) => group.group === "Options");
-    if (options) options.fields = [...options.fields, ...performance];
-    else groups.splice(1, 0, { group: "Options", fields: [...performance] });
-  }
-  for (let i = groups.length - 1; i >= 0; i--) if (!groups[i]?.fields.length) groups.splice(i, 1);
+  const options = [
+    ...fields.filter((field) => field !== name && field !== description),
+    ...performance,
+  ];
   const connections =
     ref.kind === "element"
       ? design.connections.filter(
           (item) => item.from.element === ref.id || item.to.element === ref.id,
         )
       : [];
-  if (connections.length && !groups.some((group) => group.group === "Connections"))
-    groups.push({ group: "Connections", fields: [] });
-  if (modules) groups.push({ group: "Modules", fields: [] });
-  const active = groups.some((group) => group.group === selectedTab) ? selectedTab : "General";
-  const current = groups.find((group) => group.group === active) ?? { fields: canonical };
   const applications = design.elements.filter(
     (item) =>
       containerClassification(item).kind === "Application" &&
@@ -595,6 +601,27 @@ function TargetForm({
         label: `${design.elements.find((element) => element.id === item.to.element)?.name} · ${item.planned.label} (${item.planned.protocol})`,
       }));
   };
+  const draftField = (field: InspectorField, className?: string) => (
+    <DraftField
+      key={field.path}
+      idPrefix={idPrefix}
+      field={field}
+      draft={entry}
+      className={className}
+      references={optionsFor(field)}
+      help={performance.includes(field as StudioPerformanceField)}
+      onSelect={(value) =>
+        formDrafts.change(
+          entry.key,
+          field.control === "select" && !("optional" in field && field.optional)
+            ? selectChange(definition?.fields ?? [], entry.values, field.path, value)
+            : { [field.path]: value || undefined },
+          true,
+        )
+      }
+    />
+  );
+  const kind = ref.kind === "system" ? "System" : definition?.name;
   return (
     <form
       className="studio-inspector-form"
@@ -604,91 +631,41 @@ function TargetForm({
         void formDrafts.flush(entry.key);
       }}
     >
-      {groups.length > 1 ? (
-        <div className="studio-inspector-tabs" role="tablist" aria-label="Inspector sections">
-          {groups.map(({ group }) => (
-            <button
-              type="button"
-              role="tab"
-              key={group}
-              id={`${tabId}-${group}-tab`}
-              aria-selected={active === group}
-              aria-controls={`${tabId}-${group}`}
-              onClick={() => {
-                void formDrafts.flush(entry.key);
-                setSelectedTab(group);
-              }}
-            >
-              {group}
-            </button>
-          ))}
+      <header className="lane-inspector-header">
+        <div className="lane-inspector-title" data-family={definition?.visual.color ?? "generic"}>
+          {ref.kind === "element" ? (
+            <span className="lane-inspector-icon">
+              <StudioIcon name={definition?.visual.icon} size={22} />
+            </span>
+          ) : null}
+          {name ? draftField(name, "lane-inspector-name") : null}
         </div>
-      ) : null}
-      <div
-        role="tabpanel"
-        id={`${tabId}-${active}`}
-        aria-label={groups.length === 1 ? active : undefined}
-        aria-labelledby={groups.length > 1 ? `${tabId}-${active}-tab` : undefined}
-      >
-        {ref.kind === "system" ? (
+        {kind ? <p className="lane-inspector-kind">{kind}</p> : null}
+        {ref.kind === "element" ? warnings : null}
+      </header>
+      {description ? draftField(description) : null}
+      {ref.kind === "system" ? (
+        <>
+          {warnings}
           <PresetAttachment projectId={spec.projectId} design={design} />
-        ) : null}
-        {current.fields.map((field) => {
-          const input = (
-            <DraftField
-              key={field.path}
-              idPrefix={tabId}
-              field={field}
-              draft={entry}
-              references={optionsFor(field)}
-              help={performance.includes(field as StudioPerformanceField)}
-              onSelect={(value) =>
-                formDrafts.change(
-                  entry.key,
-                  field.control === "select" && !("optional" in field && field.optional)
-                    ? selectChange(definition?.fields ?? [], entry.values, field.path, value)
-                    : { [field.path]: value || undefined },
-                  true,
-                )
-              }
-            />
-          );
-          return input;
-        })}
-        {active === "Connections" && connections.length ? (
-          <div className="studio-dependencies">
-            {connections.map((item) => {
-              const from = design.elements.find(
-                (element) => element.id === item.from.element,
-              )?.name;
-              const to = design.elements.find((element) => element.id === item.to.element)?.name;
-              const protocol = item.planned.protocol;
-              const access = studioStoreAccess(design, item.id);
-              const declared =
-                design.schemaVersion === 3
-                  ? design.ownership?.dependencies.find((row) => row.connection === item.id)?.access
-                  : undefined;
-              return (
-                <div className="studio-dependency-row" key={item.id}>
-                  <button type="button" onClick={() => onConnection(item.id)}>
-                    {from} → {to}
-                    <span>
-                      {item.planned.label}
-                      {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
-                      {declared
-                        ? ` · Declared request: ${declaredAccessLabels[declared]}`
-                        : access
-                          ? ` · ${design.schemaVersion === 3 ? "Legacy inferred: " : ""}${studioStoreAccessLabels[access]}`
-                          : ""}
-                    </span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-        {active === "Modules" ? modules : null}
-      </div>
+        </>
+      ) : null}
+      {options.length ? (
+        <section aria-labelledby={`${idPrefix}-options`}>
+          <h3 id={`${idPrefix}-options`} className="lane-inspector-section">
+            Options
+          </h3>
+          {options.map((field) => draftField(field))}
+        </section>
+      ) : null}
+      {modules ? (
+        <section aria-labelledby={`${idPrefix}-modules`}>
+          <h3 id={`${idPrefix}-modules`} className="lane-inspector-section">
+            Modules
+          </h3>
+          {modules}
+        </section>
+      ) : null}
     </form>
   );
 }

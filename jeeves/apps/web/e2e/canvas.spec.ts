@@ -186,8 +186,9 @@ test("preserves inferred access in source and blueprint without exposing ineffec
   await tile(page, "URL database").click();
   await expect(inspector.getByLabel("Owner", { exact: true })).toHaveCount(0);
   expect(studioStoreAccess(before, "redirect-db")).toBe("read");
-  await inspector.getByRole("tab", { name: "Connections", exact: true }).click();
-  await inspector.getByRole("button", { name: /^Redirect service → URL database/ }).click();
+  // The tile lists no connections in words; its relationships are the drawn lines.
+  await expect(inspector.getByRole("button", { name: /→/ })).toHaveCount(0);
+  await clickLine(page, "redirect-db");
   await expect(inspector.locator(".lane-connection-label")).toHaveText(
     "Reads links on a cache miss",
   );

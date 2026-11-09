@@ -1,62 +1,46 @@
-// Tile names and installed useful settings; bound modules open their existing inspector.
+// A tile's one-page inspector (`TargetInspector`) with its preserved or preset-bound modules at
+// the bottom; a module opens its existing inspector, and Back returns to the tile.
 import type { BoardSelection } from "@jeeves/board";
 import {
   type DesignDocument,
-  moduleKinds,
   type StudioComponent,
-  type StudioKind,
   studioComponentDefinitions,
   studioComponentVisuals,
-  studioDefinitions,
   studioWarnings,
 } from "@jeeves/spec";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { ComponentForm, type InspectorTab, TargetInspector } from "../studio/InspectorForm.tsx";
+import { ComponentForm, TargetInspector } from "../studio/InspectorForm.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import { WarningList } from "./Warnings.tsx";
 
-const kindOf = (design: DesignDocument, id: string): StudioKind | undefined =>
-  design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
-
-/** Preserved or preset-bound modules; a click opens one. */
+/** A tile's modules; a click opens one. */
 function ModuleList({
-  design,
-  host,
+  modules,
   onOpen,
 }: {
-  design: DesignDocument;
-  host: string;
-  onOpen: (id: string, created?: boolean) => void;
+  modules: readonly StudioComponent[];
+  onOpen: (id: string) => void;
 }) {
-  const modules = (design.architecture?.studio?.components ?? []).filter(
-    (item) => item.host === host,
-  );
   return (
-    <div className="lane-modules">
-      {modules.length ? (
-        <ul className="lane-module-list" aria-label="Modules">
-          {modules.map((item) => {
-            const visual = studioComponentVisuals[item.settings.kind];
-            return (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  data-family={visual.color}
-                  title={studioComponentDefinitions[item.settings.kind].name}
-                  onClick={() => onOpen(item.id)}
-                >
-                  <StudioIcon name={visual.icon} size={18} />
-                  <span>{item.name}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="studio-field-help">No modules yet.</p>
-      )}
-    </div>
+    <ul className="lane-module-list" aria-label="Modules">
+      {modules.map((item) => {
+        const visual = studioComponentVisuals[item.settings.kind];
+        return (
+          <li key={item.id}>
+            <button
+              type="button"
+              data-family={visual.color}
+              title={studioComponentDefinitions[item.settings.kind].name}
+              onClick={() => onOpen(item.id)}
+            >
+              <StudioIcon name={visual.icon} size={18} />
+              <span>{item.name}</span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -120,7 +104,6 @@ export function TileInspector({
   name: string;
   onSelect: (next: BoardSelection) => void;
 }) {
-  const [tab, setTab] = useState<InspectorTab>("General");
   const [open, setOpen] = useState<string>();
   const [focusName, setFocusName] = useState<string>();
   const module = open
@@ -152,28 +135,20 @@ export function TileInspector({
         onSelect={onSelect}
       />
     );
-  const kind = kindOf(design, id);
-  const definition = kind ? studioDefinitions[kind] : undefined;
-  const application = moduleKinds(design, id).length > 0;
+  const modules = (design.architecture?.studio?.components ?? []).filter(
+    (item) => item.host === id,
+  );
   return (
     <div className="studio-selection-summary">
-      <h2 className="lane-inspector-title" data-family={definition?.visual.color ?? "generic"}>
-        <StudioIcon name={definition?.visual.icon} size={22} />
-        {name}
-      </h2>
-      {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
-      <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
       <TargetInspector
         projectId={projectId}
         element={id}
         label={name}
         design={design}
-        onConnection={(line) => onSelect({ line })}
-        tab={tab}
-        onTab={setTab}
-        modules={
-          application ? <ModuleList design={design} host={id} onOpen={openModule} /> : undefined
+        warnings={
+          <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
         }
+        modules={modules.length ? <ModuleList modules={modules} onOpen={openModule} /> : undefined}
       />
     </div>
   );

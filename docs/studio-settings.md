@@ -6,8 +6,9 @@ controls. Reading, selecting, renaming or reloading a design never removes unsup
 
 ## Normal feature configuration
 
-Select the user to open the system's existing General inspector. Feature preset selection offers
-owned upload/video processing, with an explicit attachment preview and one atomic save/Undo.
+Select the user to open the system inspector; **Add a supported feature** follows its Description
+and warnings. Feature preset selection offers owned upload/video processing, with an explicit
+attachment preview and one atomic save/Undo.
 Product implementation remains custom work after generation. Historical YouTube selections
 remain readable and export reusable modules with explicit gaps; they install no product code. Local
 Docker, TypeScript, exact providers, codecs, renditions, deadlines and event policy are fixed.
@@ -298,8 +299,8 @@ entry; which kinds may be entries, and the other lane rules validation enforces,
 Components are `architecture.studio.components[]` (`id`, `host`, `name`, optional `description`,
 `settings`) and `componentConnections[]` (`id`, `from`, `to: {kind: component, id} | {kind:
 element, id, via}`, optional `label`). In the studio they are a tile's modules, edited in its
-inspector: a new one starts with the defaults below and its kind's name, and Purpose is its
-`description`.
+inspector: a new one starts with the defaults below and its kind's name, and **Description** is
+its `description`.
 
 | Kind | Settings (default first) |
 | --- | --- |

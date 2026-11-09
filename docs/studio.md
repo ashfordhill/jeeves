@@ -317,32 +317,44 @@ Optional shortcuts: Delete or Backspace does what the selected tile's or line's 
 
 ## Inspector
 
-The inspector shows the selection. Its sections are **General**, **Options**, **Connections** and,
-for an application tile, **Modules**; empty ones are hidden.
+The inspector shows the selection. A tile or the system is one scrolling page with no tabs, in
+this order:
 
-- A tile shows its icon, name and kind. General edits its name and purpose. Options shows only
-  useful settings with actual installed template consumers: HTTP deadline/admission, adjustable
-  worker concurrency, cache TTL, SQL pool size and statement timeout when selected by a feature.
-  Empty groups are hidden. Fixed local Docker/TypeScript, provider, media and internal policies
-  have no controls. Historical unsupported settings remain in source and diagnostics unchanged.
+1. A header: the kind icon, the **Name** (the page's title, edited in place; it is printed only
+   there), the kind and the tile's [warnings](#warnings).
+2. **Description**, the same word for the system, tiles and modules. The box starts at 6 rows,
+   grows with its text to half the rail's height, then scrolls; dragging its corner sets the
+   height by hand.
+3. **Options**, only when the tile has useful settings with actual installed template consumers:
+   HTTP deadline/admission, adjustable worker concurrency, cache TTL, SQL pool size and statement
+   timeout when selected by a feature. Fixed local Docker/TypeScript, provider, media and internal
+   policies have no controls. Historical unsupported settings remain in source and diagnostics
+   unchanged.
+4. **Modules**, only when the tile has modules.
+
+The page lists no connections: the drawn lines are the relationships, and selecting one shows its
+details.
+
 - Ownership, grants and legacy inferred writers remain in source and read-only diagnostics.
   Normal forms do not require a permission matrix or duplicate writer edit. See
   [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
-- **Modules** lists preserved or preset-bound modules. A module opens its name/purpose, useful
-  supported settings and traced connections. Arbitrary module creation/linking and kind switching
-  are unavailable in normal authoring; changing a name does not normalize historical settings.
+- **Modules** lists preserved or preset-bound modules. A module opens its name, Description,
+  useful supported settings and traced connections, with Back to its tile. Arbitrary module
+  creation/linking and kind switching are unavailable in normal authoring; changing a name does
+  not normalize historical settings.
 - A line shows endpoints, its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
-- Select the user (or clear selection) to open the system inspector. **Add a supported feature**
-  offers **Owned upload + video processing** when the server installs its reusable consumers.
-  **Preview attachment → Attach feature** shows the tiles/modules to add,
-  retains existing declarations and explicitly upgrades schema2 if needed. It saves the graph,
-  bindings and ownership in one Undo step. Product codecs, routes and service composition remain
+- Select the user (or clear selection) to open the system inspector: its Name, Description, the
+  list of every [warning](#warnings) (each with a button that selects its tile or action), then
+  **Add a supported feature**. It offers **Owned upload + video processing** when the server
+  installs its reusable consumers. **Preview attachment → Attach feature** shows the
+  tiles/modules to add, retains existing declarations and explicitly upgrades schema2 if needed.
+  It saves the graph, bindings and ownership in one Undo step. Product codecs, routes and service composition remain
   custom work. Historical YouTube declarations stay readable without installing product code.
-- An action: its lane icon and name, then **Name** (the word on its tile, at most 24 characters;
-  it autosaves like a tile's name), its **Lane** (read-only) and its **Entries**, each a button
-  that selects that tile.
+- An action: its lane icon and name, then its warnings, **Name** (the word on its tile, at most 24
+  characters; it autosaves like a tile's name) and its **Lane** (read-only). Its entries are the
+  lines drawn from it; an action with none has a warning.
 - A lane entry (its line): its action, then the **lane row**: download and upload as icons (the
   name is the tooltip), the current one filled yellow. Clicking the other moves the entry to that
   lane's action; when that lane has no action, or its action already has 4 entries, it is faded
@@ -350,13 +362,11 @@ for an application tile, **Modules**; empty ones are hidden.
   "Watch already has 4 entries; the most is 4."). Below, the action and the tile it reaches, each
   a button that selects it.
 - The user's line to an action: the action, and the user and the action as buttons.
-- The user, or nothing: the system's Name and Goal, below the list of every
-  [warning](#warnings), each with a button that selects its tile or action.
 
 A tile or action with a warning lists it, in yellow, below its kind.
 
-Valid text autosaves after 500ms or on blur; selects commit at once. Selecting, switching tabs and
-navigating flush pending valid edits; invalid unsent drafts are discarded. A rejected write stays
+Valid text autosaves after 500ms or on blur; selects commit at once. Selecting, opening a module
+and navigating flush pending valid edits; invalid unsent drafts are discarded. A rejected write stays
 visible with Retry/Discard. A revision conflict adopts the fresh design with "Changed elsewhere;
 reopen to edit."
 
@@ -395,8 +405,8 @@ them. The three studies have none. The rules live in `studio-warnings.ts`.
 
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
 batch (an autosaved edit, an action's rename, a kind or lane switch, adding, linking, unlinking or
-removing a module) or chat turn is one step; a new edit ends the redo chain. Selecting, switching tabs, opening a module,
-panning, zooming and Fit add none. The history survives reloads.
+removing a module) or chat turn is one step; a new edit ends the redo chain. Selecting, opening a
+module, panning, zooming and Fit add none. The history survives reloads.
 
 ## Profile and requirements
 
@@ -943,8 +953,7 @@ and all twenty components, with nothing omitted and no findings.
   service's write of Original videos). Lines of different lanes meet only in the last 32px before
   a shared tile. Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch opens a chooser; when every stretch
-  of a selected line is shared, its X sits at its middle, on the bus. The tile's Connections list
-  selects a particular relationship directly by its row.
+  of a selected line is shared, its X sits at its middle, on the bus.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &

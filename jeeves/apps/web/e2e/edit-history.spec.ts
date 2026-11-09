@@ -38,7 +38,9 @@ test("attaches the installed preset atomically and autosaves useful TTL/pool con
       buildGenerationPresetCommand(source, { preset: "youtube" }),
     );
     await tile(page, "Metadata cache").click();
-    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
+    // One page: the cache's Options follow its Description without a tab.
+    await expect(inspector.getByRole("tablist")).toHaveCount(0);
+    await expect(inspector.getByRole("heading", { name: "Options", exact: true })).toBeVisible();
     const ttl = inspector.getByLabel("TTL", { exact: true });
     await expect(ttl).toHaveValue("3600");
     await ttl.fill("420");
@@ -62,7 +64,19 @@ test("attaches the installed preset atomically and autosaves useful TTL/pool con
     await ready(page);
     expect(await values()).toEqual({ ttl: 420, mirror: 420 });
     await tile(page, "Watch API").click();
-    await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
+    // One page in the sketch's order: Name, Description, Options, then Modules.
+    expect(
+      await inspector
+        .locator("form label, form h3")
+        .evaluateAll((nodes) => nodes.map((node) => node.textContent)),
+    ).toEqual([
+      "Name",
+      "Description",
+      "Options",
+      "Request timeout",
+      "Concurrency limit",
+      "Modules",
+    ]);
     await inspector.getByRole("button", { name: "Details reader", exact: true }).click();
     await inspector.getByRole("tab", { name: "Options", exact: true }).click();
     await inspector.getByLabel("Pool size", { exact: true }).fill("60");
@@ -90,7 +104,6 @@ test("legacy unsupported settings stay hidden and unchanged while names/history 
   await tile(page, "Shorten service").click();
   await expect(inspector.getByRole("group", { name: "Type", exact: true })).toHaveCount(0);
   await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
-  await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
   await inspector.getByRole("button", { name: "Link writer", exact: true }).click();
   await expect(inspector.getByRole("tab", { name: "Options", exact: true })).toHaveCount(0);
   await expect(inspector.getByLabel("Pool size", { exact: true })).toHaveCount(0);

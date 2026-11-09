@@ -150,7 +150,7 @@ test("removing a selected tile traces its surviving neighbour and Undo restores 
     .click();
   await expect(tile(page, "Click events")).toHaveCount(0);
   await expect(tile(page, "Redirect service")).toHaveClass(/selected/);
-  await expect(page.locator(".studio-inspector .lane-inspector-title")).toHaveText(
+  await expect(page.locator(".studio-inspector").getByLabel("Name", { exact: true })).toHaveValue(
     "Redirect service",
   );
   const redirect = await touching(page, "Redirect service");

@@ -446,16 +446,7 @@ function Inspector({
   const edge = selection.line ? graph.edges.find((item) => item.id === selection.line) : undefined;
   const action = selection.tile ? laneActionOf(selection.tile) : undefined;
   if (action)
-    return (
-      <ActionInspector
-        projectId={project.id}
-        design={design}
-        graph={graph}
-        lane={action}
-        name={name}
-        onSelect={onSelect}
-      />
-    );
+    return <ActionInspector projectId={project.id} design={design} lane={action} name={name} />;
   if (selection.tile && selection.tile !== LANE_ACTOR)
     return (
       <TileInspector
@@ -531,14 +522,11 @@ function Inspector({
   }
   return (
     <div className="studio-selection-summary">
-      <h2>{design.architecture?.system.name ?? project.name}</h2>
-      <p className="lane-inspector-kind">System</p>
-      <WarningList warnings={studioWarnings(design)} name={name} onSelect={onSelect} />
       <TargetInspector
         projectId={project.id}
         label={project.name}
         design={design}
-        onConnection={(line) => onSelect({ line })}
+        warnings={<WarningList warnings={studioWarnings(design)} name={name} onSelect={onSelect} />}
       />
     </div>
   );
@@ -586,26 +574,21 @@ function EntryPath({
 }
 
 /**
- * A lane action: its name (the word on its tile), its lane (fixed) and its entries, each a
- * button that selects the tile.
+ * A lane action: its name (the word on its tile), its lane (fixed) and its warnings. Its entries
+ * are the lines drawn from it; an action with none is flagged by a warning.
  */
 function ActionInspector({
   projectId,
   design,
-  graph,
   lane,
   name,
-  onSelect,
 }: {
   projectId: string;
   design: DesignDocument;
-  graph: LaneGraph;
   lane: StudioLane;
   name: (id: string) => string;
-  onSelect: (next: BoardSelection) => void;
 }) {
   const node = laneActionNode(lane);
-  const entries = graph.edges.filter((edge) => edge.source === node);
   return (
     <div className="studio-selection-summary">
       <h2 className="lane-inspector-title">
@@ -625,29 +608,6 @@ function ActionInspector({
           {laneNames[lane]}
         </dd>
       </dl>
-      <h3 className="lane-inspector-section">Entries</h3>
-      {entries.length ? (
-        <ul className="lane-action-entries">
-          {entries.map((edge) => {
-            const kind = graph.nodes.find((item) => item.id === edge.target)?.kind;
-            const visual = kind ? studioDefinitions[kind].visual : undefined;
-            return (
-              <li key={edge.id}>
-                <button
-                  type="button"
-                  data-family={visual?.color ?? "generic"}
-                  onClick={() => onSelect({ tile: edge.target })}
-                >
-                  <StudioIcon name={visual?.icon} size={18} />
-                  {name(edge.target)}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="lane-inspector-kind">None yet. Pull its + onto a Service or an API.</p>
-      )}
     </div>
   );
 }

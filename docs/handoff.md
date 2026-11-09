@@ -6411,3 +6411,78 @@ For UI02: the inspector rail now ends with the operation/owner chat status. I ke
 lets the page scroll; UI02 may revisit it. The tile Connections tab and ActionInspector's
 Entries list are untouched, and `studio.md` still describes the Connections list; both are
 UI02's to remove. Historical evidence and capture JSONs that mention focus are left as history.
+
+## 2026-11-09 — UI02: one-page inspector with Description
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md) (R2, R3, R5), `TargetForm` lost its tab
+strip, tab panel and Connections list. A tile or the system is now one page: a header (kind icon,
+the Name input styled as the title, kind, the tile's warnings), Description, Options only when it
+has fields, then the Modules slot only when the tile has modules. The Name keeps its
+`-element.name` id suffix, so new-tile focus still works, and the name is printed once. The system
+page is Name, Description, its warnings with their select buttons, then **Add a supported
+feature**. `ActionInspector` lost its Entries list (and its `graph`/`onSelect` props).
+`TargetInspector` lost `onConnection`, `tab` and `onTab`, and `InspectorTab` is gone. Options is
+built from the same `normalSettingFields`, `studioPerformanceFields` and editable filter. A scratch
+scan of the four studies and the v2 design found editable settings only in Options and performance,
+so the fields shown are exactly today's.
+
+"Goal" and "Purpose" now read **Description** in the web only. Chat's `describeStudioDefinition`
+returns the definitions' `fields` verbatim, and the plan forbids changing chat tool text, so the
+spec labels stay "Purpose". The blueprint and `__snapshots__` don't contain these labels. The relabel
+and the growing box live in the shared `DraftField`, so module descriptions get both too.
+`DescriptionBox` starts at 6 rows, grows with its text to half the `.studio-rail` height, then
+scrolls. Once the corner is dragged, the box stops growing until it is reopened. Limits,
+validation and the 500ms autosave are unchanged. RF02's `.studio-inspector >
+.studio-selection-summary` rule still scrolls the page; nothing needed changing there.
+
+Tests: a new `inspector.spec.ts` checks the following:
+
+- there is no tablist;
+- the name appears once;
+- Description is used, and Purpose and Goal are not;
+- the page order for a tile, a bare tile and the system (with a warning);
+- there are no connection rows and no Entries;
+- the description grows, stops at half the rail, scrolls and shrinks back on Undo;
+- the description and title autosave, and Undo restores them.
+
+`edit-history.spec.ts` checks the order Name, Description, Options, Modules on Watch API instead of
+clicking tabs. `canvas.spec.ts` selects `redirect-db` by its line, and
+`relationship-tracing.spec.ts` reads the title from the Name field. Docs: `studio.md` (Inspector,
+History, Limits), `studio-settings.md`, and a playbook lesson. Evidence: four screenshots in
+`plans/ui-overhaul/evidence/ui02/`. The before/after Watch API shots come from an own project
+with the historical YouTube preset, because study tiles have no Options.
+
+Checks: `pnpm check` exited 0: lint/types and **468 tests/70 files**. **39 native E2Es passed
+(1.5m)**. The web build passed (existing chunk-size advisory). For the mouse check I ran the dev
+app at 1440×900 and 1280×800 with my own TinyURL extended project (11 tiles, 12 lines) and my own
+preset project:
+
+- There was no tablist on any tile or on the system.
+- The description autosaved, grew from 137 to 177px, and Undo restored it.
+- A corner drag resized the box from 137 to 260px, and it held while I typed.
+- The title rename and the Request timeout field (1500) autosaved, and Undo restored both.
+- Hover, invalid and dark-mode states looked right.
+- There were no page errors.
+
+I deleted both projects, and the owner's six project revisions are unchanged.
+
+Deviation: on the coordinator's instruction, the module form keeps its tabs until UI03, so the
+plan's "module inspector has no tablist" check is UI03's to add.
+
+For UI03:
+
+- The Modules slot is `ModuleList` (`ul.lane-module-list`, labelled Modules). `TileInspector`
+  passes it, and `TargetForm` wraps it in a section with an `h3.lane-inspector-section`.
+- `ComponentForm` is untouched: tabs, Connections, Unlink, the retry note, and
+  `onConnection`/`onComponent`.
+- `ModuleInspector` still has its own h2. UI03 can reuse `.lane-inspector-header`,
+  `.lane-inspector-title`, `.lane-inspector-icon` and `DraftField`'s `className` with
+  `lane-inspector-name`.
+- The open module is still `useState` in `TileInspector`. Back remounts the tile page at its top.
+- Leftovers:
+  - the `created`/`focusName` new-module focus effect;
+  - unreferenced `.lane-module-add/-menu/-kind/-icon` and `.lane-store-access` CSS;
+  - `.studio-dependencies`/`.studio-dependency-row`, used only by `ComponentForm`. Keep
+    `.studio-inspector-tabs`, because the Operations and Ownership forms use it.
+- `studio.md` Limits still mentions linking modules.
+- For UI09: the system's "Add a supported feature" fieldset still uses browser-default styling.

@@ -1238,3 +1238,16 @@ Nothing is hidden or dimmed, so the reader never has to find a control to get th
 back: the highlight ends when the selection ends, and clicking empty paper restores the plain
 view. A filter that outlasts the selection that made it leaves the reader looking for a way back
 (the owner found focus hard to turn off); tie emphasis to the current selection instead.
+
+## 2026-11-09 UI02: one inspector page, with the name as its title
+
+The tile and system inspectors are one scrolling page in the owner's sketch order: a header (kind
+icon, Name, kind, the tile's warnings), Description, Options only when it has fields, then
+Modules only when there are any. Without tabs, nothing waits behind a label the reader has to
+guess, and the rail's empty space holds the fields. The Name is an input styled as the title, so
+the name appears once and edits in place; a heading above a Name field said the same thing twice.
+Leave out a section that would be empty instead of printing "none". The description box grows
+with its text to half the rail and then scrolls, so a long description reads without dragging
+and still leaves room for Options and Modules. A word shown to the reader may differ from a
+definition's label when that label is also chat tool text: the page says Description, while chat's
+`describeStudioDefinition` keeps "Purpose" unchanged.
