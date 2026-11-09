@@ -1,0 +1,581 @@
+{
+  "marker": {
+    "schemaVersion": 1,
+    "assetId": "9abde227-6abb-4ee0-817e-3d94d90911ea",
+    "jobId": "269cbb38-556b-4f5f-823f-81df45a24906",
+    "attemptId": "fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f",
+    "source": {
+      "key": "originals/9abde227-6abb-4ee0-817e-3d94d90911ea/6049cf49-d684-4fba-8905-e7c8508090ca/source.mp4",
+      "size": 15584953,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+    },
+    "result": {
+      "prefix": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/",
+      "manifest": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/master.m3u8",
+      "thumbnail": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/thumbnail.jpg",
+      "marker": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/_complete.json",
+      "durationSeconds": 20,
+      "renditions": [
+        {
+          "height": 360,
+          "width": 640,
+          "playlist": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/index.m3u8",
+          "videoCodec": "h264",
+          "audioCodec": "aac"
+        },
+        {
+          "height": 720,
+          "width": 1280,
+          "playlist": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/index.m3u8",
+          "videoCodec": "h264",
+          "audioCodec": "aac"
+        }
+      ]
+    },
+    "inventory": [
+      {
+        "path": "360/segment00000.ts",
+        "size": 635252,
+        "sha256": "67c84aa4b7fb63c41d3ceb4b1e52e264fc12fc7e6083dce61660e87ef92c4a40",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00001.ts",
+        "size": 619272,
+        "sha256": "12e7c2768bfe0d2bb53ce61ea6a6dedf667bfccb39557e4409a24197406b66f3",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00002.ts",
+        "size": 585620,
+        "sha256": "370f6254ed80bfe463f785adc95b6d35d6ba8dec1a9af5815cf8735b7cf43449",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00003.ts",
+        "size": 599720,
+        "sha256": "193ce4bdbf9d0c8093ff7a764f5805895f847ae1c1b70fb1f9043b31af3b5eaf",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/segment00004.ts",
+        "size": 610248,
+        "sha256": "5766b3f4b3ab464a9a3a63e68a1bc7d52019802b68e64592e133a4cc7278f288",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "360/index.m3u8",
+        "size": 311,
+        "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+        "contentType": "application/vnd.apple.mpegurl"
+      },
+      {
+        "path": "720/segment00000.ts",
+        "size": 1786752,
+        "sha256": "b2a21152bcf865c16735f2bd4178c22dc5e0f1a84a93879882ee43bd4fc72e69",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00001.ts",
+        "size": 1654588,
+        "sha256": "359d83e51c71ba36c71525ab1c3935b091a4d9c95e55146c289e787405172a6e",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00002.ts",
+        "size": 1638796,
+        "sha256": "b0f2cbc2df63126758f8cd07c3fef59c748d4750ef1aae7ef5b8c9c6ab3d0c84",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00003.ts",
+        "size": 1641428,
+        "sha256": "a3dbf1eba018384f5b1ebe440185d704283d30de27971e887f900a761cc1fb5d",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/segment00004.ts",
+        "size": 1632404,
+        "sha256": "5dc7aadd709d4d78f6b0a3c353ade1d8b6cdfdb4b666fd237b6eba9c6e63a303",
+        "contentType": "video/mp2t"
+      },
+      {
+        "path": "720/index.m3u8",
+        "size": 311,
+        "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+        "contentType": "application/vnd.apple.mpegurl"
+      },
+      {
+        "path": "thumbnail.jpg",
+        "size": 68896,
+        "sha256": "bd429e5cf14eb25ce757441cea194e2a5d11b6ffba74892ac3a8a5fbd4ac099f",
+        "contentType": "image/jpeg"
+      },
+      {
+        "path": "master.m3u8",
+        "size": 194,
+        "sha256": "dbdf1ac5ec114beb65ac7a8968affb3aa73f9fd4d8822359d46fb13040be6d20",
+        "contentType": "application/vnd.apple.mpegurl"
+      }
+    ]
+  },
+  "objects": [
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/index.m3u8",
+      "size": 311,
+      "etag": "\"d02b159834abd121e5211f00f5335508\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/segment00000.ts",
+      "size": 635252,
+      "etag": "\"dd2c5d70e11d89d59e3ad26cd9fa749e\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/segment00001.ts",
+      "size": 619272,
+      "etag": "\"aa8317e1e81c108712057da9dbfe9ddd\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/segment00002.ts",
+      "size": 585620,
+      "etag": "\"36502b581303759016c4d835056535c6\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/segment00003.ts",
+      "size": 599720,
+      "etag": "\"1a30ee3b169d0e5187932377a3ee1057\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/360/segment00004.ts",
+      "size": 610248,
+      "etag": "\"28930b396f751cfd10c8dfa98ba4af26\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/index.m3u8",
+      "size": 311,
+      "etag": "\"d02b159834abd121e5211f00f5335508\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/segment00000.ts",
+      "size": 1786752,
+      "etag": "\"c8d59c4189515fe2585a7f5d58a4da18\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/segment00001.ts",
+      "size": 1654588,
+      "etag": "\"1fc04128b98643a9e31f7c9d78e83f4d\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/segment00002.ts",
+      "size": 1638796,
+      "etag": "\"1bc2052dad0bb5031ca4db85c1a5d02b\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/segment00003.ts",
+      "size": 1641428,
+      "etag": "\"ea3386db64345868ebc5afe2c98a0d7f\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/720/segment00004.ts",
+      "size": 1632404,
+      "etag": "\"5a664ed5a7a870fb14ca138049ef8396\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/_complete.json",
+      "size": 3521,
+      "etag": "\"f514e4601852101d2267f318db333d89\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/master.m3u8",
+      "size": 194,
+      "etag": "\"ab8b73121cb72a46f98866ece0864574\""
+    },
+    {
+      "key": "videos/9abde227-6abb-4ee0-817e-3d94d90911ea/269cbb38-556b-4f5f-823f-81df45a24906/fe9fa60c-3f9e-43cb-a41c-2ba12b017f6f/thumbnail.jpg",
+      "size": 68896,
+      "etag": "\"eaa48fa40619d70cdf0c1526cb157cc8\""
+    }
+  ],
+  "files": [
+    {
+      "path": "360/segment00000.ts",
+      "size": 635252,
+      "sha256": "67c84aa4b7fb63c41d3ceb4b1e52e264fc12fc7e6083dce61660e87ef92c4a40",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "360/segment00001.ts",
+      "size": 619272,
+      "sha256": "12e7c2768bfe0d2bb53ce61ea6a6dedf667bfccb39557e4409a24197406b66f3",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "360/segment00002.ts",
+      "size": 585620,
+      "sha256": "370f6254ed80bfe463f785adc95b6d35d6ba8dec1a9af5815cf8735b7cf43449",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "360/segment00003.ts",
+      "size": 599720,
+      "sha256": "193ce4bdbf9d0c8093ff7a764f5805895f847ae1c1b70fb1f9043b31af3b5eaf",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "360/segment00004.ts",
+      "size": 610248,
+      "sha256": "5766b3f4b3ab464a9a3a63e68a1bc7d52019802b68e64592e133a4cc7278f288",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "360/index.m3u8",
+      "size": 311,
+      "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+      "contentType": "application/vnd.apple.mpegurl",
+      "playlist": "#EXTM3U\n#EXT-X-VERSION:6\n#EXT-X-TARGETDURATION:4\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXTINF:4.000000,\nsegment00000.ts\n#EXTINF:4.000000,\nsegment00001.ts\n#EXTINF:4.000000,\nsegment00002.ts\n#EXTINF:4.000000,\nsegment00003.ts\n#EXTINF:4.000000,\nsegment00004.ts\n#EXT-X-ENDLIST\n"
+    },
+    {
+      "path": "720/segment00000.ts",
+      "size": 1786752,
+      "sha256": "b2a21152bcf865c16735f2bd4178c22dc5e0f1a84a93879882ee43bd4fc72e69",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "720/segment00001.ts",
+      "size": 1654588,
+      "sha256": "359d83e51c71ba36c71525ab1c3935b091a4d9c95e55146c289e787405172a6e",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "720/segment00002.ts",
+      "size": 1638796,
+      "sha256": "b0f2cbc2df63126758f8cd07c3fef59c748d4750ef1aae7ef5b8c9c6ab3d0c84",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "720/segment00003.ts",
+      "size": 1641428,
+      "sha256": "a3dbf1eba018384f5b1ebe440185d704283d30de27971e887f900a761cc1fb5d",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "720/segment00004.ts",
+      "size": 1632404,
+      "sha256": "5dc7aadd709d4d78f6b0a3c353ade1d8b6cdfdb4b666fd237b6eba9c6e63a303",
+      "contentType": "video/mp2t"
+    },
+    {
+      "path": "720/index.m3u8",
+      "size": 311,
+      "sha256": "49080b657b90c2e88544602a63269c89cbffcdfe471ac27d9ff7cb3efb4ed5c0",
+      "contentType": "application/vnd.apple.mpegurl",
+      "playlist": "#EXTM3U\n#EXT-X-VERSION:6\n#EXT-X-TARGETDURATION:4\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXTINF:4.000000,\nsegment00000.ts\n#EXTINF:4.000000,\nsegment00001.ts\n#EXTINF:4.000000,\nsegment00002.ts\n#EXTINF:4.000000,\nsegment00003.ts\n#EXTINF:4.000000,\nsegment00004.ts\n#EXT-X-ENDLIST\n"
+    },
+    {
+      "path": "thumbnail.jpg",
+      "size": 68896,
+      "sha256": "bd429e5cf14eb25ce757441cea194e2a5d11b6ffba74892ac3a8a5fbd4ac099f",
+      "contentType": "image/jpeg"
+    },
+    {
+      "path": "master.m3u8",
+      "size": 194,
+      "sha256": "dbdf1ac5ec114beb65ac7a8968affb3aa73f9fd4d8822359d46fb13040be6d20",
+      "contentType": "application/vnd.apple.mpegurl",
+      "playlist": "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1250000,RESOLUTION=640x360\n360/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=3500000,RESOLUTION=1280x720\n720/index.m3u8\n"
+    }
+  ],
+  "probes": {
+    "360/index.m3u8": {
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+          "profile": "High",
+          "codec_type": "video",
+          "codec_tag_string": "[27][0][0][0]",
+          "codec_tag": "0x001b",
+          "width": 640,
+          "height": 360,
+          "coded_width": 640,
+          "coded_height": 360,
+          "closed_captions": 0,
+          "film_grain": 0,
+          "has_b_frames": 2,
+          "sample_aspect_ratio": "1:1",
+          "display_aspect_ratio": "16:9",
+          "pix_fmt": "yuv420p",
+          "level": 30,
+          "chroma_location": "left",
+          "refs": 1,
+          "is_avc": "false",
+          "nal_length_size": "0",
+          "r_frame_rate": "24/1",
+          "avg_frame_rate": "24/1",
+          "time_base": "1/90000",
+          "start_pts": 133500,
+          "start_time": "1.483333",
+          "bits_per_raw_sample": "8",
+          "extradata_size": 37,
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "variant_bitrate": "0"
+          }
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_long_name": "AAC (Advanced Audio Coding)",
+          "profile": "LC",
+          "codec_type": "audio",
+          "codec_tag_string": "[15][0][0][0]",
+          "codec_tag": "0x000f",
+          "sample_fmt": "fltp",
+          "sample_rate": "48000",
+          "channels": 2,
+          "channel_layout": "stereo",
+          "bits_per_sample": 0,
+          "r_frame_rate": "0/0",
+          "avg_frame_rate": "0/0",
+          "time_base": "1/90000",
+          "start_pts": 131580,
+          "start_time": "1.462000",
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "variant_bitrate": "0"
+          }
+        }
+      ],
+      "format": {
+        "filename": "/tmp/yv2-22-media-JpqDZV/360/index.m3u8",
+        "nb_streams": 2,
+        "nb_programs": 1,
+        "format_name": "hls",
+        "format_long_name": "Apple HTTP Live Streaming",
+        "start_time": "1.462000",
+        "duration": "20.000000",
+        "size": "311",
+        "bit_rate": "124",
+        "probe_score": 100
+      }
+    },
+    "720/index.m3u8": {
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+          "profile": "High",
+          "codec_type": "video",
+          "codec_tag_string": "[27][0][0][0]",
+          "codec_tag": "0x001b",
+          "width": 1280,
+          "height": 720,
+          "coded_width": 1280,
+          "coded_height": 720,
+          "closed_captions": 0,
+          "film_grain": 0,
+          "has_b_frames": 2,
+          "sample_aspect_ratio": "1:1",
+          "display_aspect_ratio": "16:9",
+          "pix_fmt": "yuv420p",
+          "level": 31,
+          "chroma_location": "left",
+          "refs": 1,
+          "is_avc": "false",
+          "nal_length_size": "0",
+          "r_frame_rate": "24/1",
+          "avg_frame_rate": "24/1",
+          "time_base": "1/90000",
+          "start_pts": 133500,
+          "start_time": "1.483333",
+          "bits_per_raw_sample": "8",
+          "extradata_size": 37,
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "variant_bitrate": "0"
+          }
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_long_name": "AAC (Advanced Audio Coding)",
+          "profile": "LC",
+          "codec_type": "audio",
+          "codec_tag_string": "[15][0][0][0]",
+          "codec_tag": "0x000f",
+          "sample_fmt": "fltp",
+          "sample_rate": "48000",
+          "channels": 2,
+          "channel_layout": "stereo",
+          "bits_per_sample": 0,
+          "r_frame_rate": "0/0",
+          "avg_frame_rate": "0/0",
+          "time_base": "1/90000",
+          "start_pts": 131580,
+          "start_time": "1.462000",
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "variant_bitrate": "0"
+          }
+        }
+      ],
+      "format": {
+        "filename": "/tmp/yv2-22-media-JpqDZV/720/index.m3u8",
+        "nb_streams": 2,
+        "nb_programs": 1,
+        "format_name": "hls",
+        "format_long_name": "Apple HTTP Live Streaming",
+        "start_time": "1.462000",
+        "duration": "20.000000",
+        "size": "311",
+        "bit_rate": "124",
+        "probe_score": 100
+      }
+    },
+    "thumbnail.jpg": {
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "mjpeg",
+          "codec_long_name": "Motion JPEG",
+          "profile": "Baseline",
+          "codec_type": "video",
+          "codec_tag_string": "[0][0][0][0]",
+          "codec_tag": "0x0000",
+          "width": 1280,
+          "height": 720,
+          "coded_width": 1280,
+          "coded_height": 720,
+          "closed_captions": 0,
+          "film_grain": 0,
+          "has_b_frames": 0,
+          "sample_aspect_ratio": "1:1",
+          "display_aspect_ratio": "16:9",
+          "pix_fmt": "yuvj420p",
+          "level": -99,
+          "color_range": "pc",
+          "color_space": "bt470bg",
+          "chroma_location": "center",
+          "refs": 1,
+          "r_frame_rate": "25/1",
+          "avg_frame_rate": "25/1",
+          "time_base": "1/25",
+          "start_pts": 0,
+          "start_time": "0.000000",
+          "duration_ts": 1,
+          "duration": "0.040000",
+          "bits_per_raw_sample": "8",
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          }
+        }
+      ],
+      "format": {
+        "filename": "/tmp/yv2-22-media-JpqDZV/thumbnail.jpg",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "format_name": "image2",
+        "format_long_name": "image2 sequence",
+        "start_time": "0.000000",
+        "duration": "0.040000",
+        "size": "68896",
+        "bit_rate": "13779200",
+        "probe_score": 50
+      }
+    }
+  },
+  "ffmpegVersion": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "liveEncoderArgvRetained": false,
+  "encoderSource": "src/runtime/video-hls.ts (unchanged generated source)",
+  "successfulEncoderStderrRetained": false
+}

@@ -3,10 +3,12 @@ WORKDIR /app
 RUN npm install --global pnpm@12.16.1
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.browser.json ./
+COPY browser ./browser
+COPY public ./public
+COPY scripts ./scripts
 COPY src ./src
 RUN pnpm build
-COPY scripts ./scripts
 COPY infra ./infra
 CMD ["node", "scripts/status.mjs"]
 

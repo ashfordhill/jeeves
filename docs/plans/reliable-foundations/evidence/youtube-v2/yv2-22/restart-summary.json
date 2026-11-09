@@ -1,0 +1,11 @@
+{
+  "credentialsUnchanged": true,
+  "volumesUnchanged": true,
+  "retainedVolumes": 5,
+  "healthyServices": 14,
+  "mouseSearchWatchCreatorLogin": true,
+  "retainedCount": "2",
+  "imageIdEqualityNotClaimed": true,
+  "auxiliaryFullSnapshotEqualityFailedOnRebuiltAppImageIdsOnly": true,
+  "temporaryOversizeAndUnsupportedFilesRemoved": true
+}

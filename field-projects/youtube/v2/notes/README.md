@@ -1,7 +1,9 @@
 # YouTube v2 frozen generation inputs
 
 YV2-20 freezes the final generator investment before the untouched YV2-21 application commit.
-There is intentionally no `v2/app` yet. Keep the separate studio project for owner review:
+The frozen generation step preceded the untouched `v2/app` baseline and custom completion.
+See [baseline](baseline.md), [current runtime](runtime.md) and [walkthrough](scenarios.md).
+Keep the separate studio project for owner review:
 [YouTube · field v2 · local Docker](http://127.0.0.1:4300/?project=2c7c8b08-4633-4a97-8794-672a777f1d3a),
 project `2c7c8b08-4633-4a97-8794-672a777f1d3a`, saved revision **2**. Earlier owner projects were
 unchanged. [Snapshot](../diagrams/001-frozen-generation/README.md) retains native/source/studio views.
@@ -32,7 +34,7 @@ Use the generated project's own `pnpm install --frozen-lockfile --ignore-scripts
 `pnpm build`. Commit that output before any YV2-22 custom browser/completion work. Root tooling
 excludes the field app; root checks do not build it or authorize formatting its baseline.
 
-Reserved for YV2-22/23, **not started by YV2-20**: Compose `jeeves-youtube-v2`, loopback HTTP45400,
+Reserved by YV2-20 and now retained by YV2-22 ([runtime record](runtime.md)): Compose `jeeves-youtube-v2`, loopback HTTP45400,
 identity45401, objects45402, private `app/.runtime` (0700). Recheck availability immediately before
 first start; preserve these values, credentials and volumes across normal restart. Scratch
 preflight used different project names/ports and was completely removed.

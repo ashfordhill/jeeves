@@ -1,0 +1,15 @@
+{
+  "users": [
+    {
+      "username": "creator",
+      "passwordPath": ".runtime/secrets/creator_password",
+      "subject": "96d51ab4-c9e3-4d10-ad53-20a8599142cb"
+    },
+    {
+      "username": "other-creator",
+      "passwordPath": ".runtime/secrets/other_creator_password",
+      "subject": "df0f1db1-84f3-4a06-9d0b-275e93984a78"
+    }
+  ],
+  "fixtureBytes": 15584953
+}

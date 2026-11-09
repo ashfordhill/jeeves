@@ -6197,3 +6197,46 @@ Final runtime still unstarted/reservedjeeves-youtube-v2 HTTP45400/identity45401/
 app/.runtime; recheck before first start. Prior exact-byte20 backend/alternate proof is retained,
 not repeated. Report runtime:none/strict:not-assessed; browser/S01–S08 remain22, independent
 restart/final backend retained-template report remain23. No v2 percentage or new certification.
+
+## 2026-11-08 — YV2-22: reused browser on the generated YouTube backend
+
+Prior untouched baseline **695addeb3ac4a77c3a6fbfd2f68d901fced3619f**: all 93 Git blobs independently
+match frozen pins. Reused v1's five browser files/presentation as **custom UI**, plus own DOM build,
+public runtime identity binding and edge integration. No backend `src/` edit/custom adapter/repair,
+no template/frozen input/studio project change. Four `.jeeves` files remain exact, manifest
+1f49c930…/inventory ed6eab96…; runtime:none/strict:not-assessed kept as historical generation facts.
+[Per-file categories, origins, actual comparisons and evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-22-completion.md).
+
+Retained **jeeves-youtube-v2**, HTTP45400/identity45401/objects45402, private `v2/app/.runtime`0700,
+14 healthy services / five volumes. Browser issuer/client/callback derive from the same allocation
+and generated identity binding (identity / identity-web); fresh runs can select other ports without
+app source edits. Own frozen install/actual backend+frontend build and Docker first-run pass; eight
+compiled/presentation/HLS assets match host and Docker by hash. Account passwords only private0600;
+[owner access and normal start/stop](../field-projects/youtube/v2/notes/runtime.md).
+
+One exact retained 15,584,953 B fixture flow: mouse signin/out, part1 pause, refresh/reselect/resume
+only2/3, stable completion, pending→processing→ready, separate abort410, anonymous401/foreign404,
+invalid-media failure/no public hit. Read-only original checksum matches, actual 15 output objects /
+14 inventory hashes, 20 s H264/AAC360p+720p/JPEG. Signed-out title/description/channel search1423ms,
+Watch219 decoded/0 dropped frames, mouse seek; count0→1 visible1764ms, duplicate/same-page remains1,
+new session2; actual two receipts and uncached fresh totals. Normal stop/start preserves credentials,
+all five volume identities/media/database/index/count2; mouse retained Watch/search/login pass.
+S01 outside-checkout copy remains23; **S05 human listening unobserved**. S04 successful live FFmpeg
+argv/stderr were not retained by generated process; exact source argv and actual output proof are
+separate. No unnecessary encoding/provider repeat. Operator note-write cwd error and auxiliary image
+ID equality assumption are recorded honestly; no product/backend failure resulted.
+
+After temporary failure-file/config/TinyURL-project/browser cleanup, final stack **kept**:
+`pnpm check` explicitly awaited exit0, **467 tests /70 files,34.91s**; then **37 native E2Es,1.5m**;
+web build **875ms** (existing advisory). Actual TinyURL lane/Fit/select mouse pass. All748 protected
+owner/v1 file hashes/modes match;108 frozen v1 hashes/historical manifest50987079…/fixture/mtime/
+FFmpeg1792f4e…/14 healthy services/six volumes preserved. Root owner README/feedback/Unicode deletions/
+colon variants/e2e-docker mode unchanged. No branch/worktree/stash/push. Sources/docs/evidence only;
+ignored runtime/dependencies/serving assets remain for owner restart. Logs `/tmp/jeeves-yv2-22/`.
+Local commit: **YV2-22: complete YouTube v2 with reused browser**.
+
+Stop after22. Next **YV2-23 only** independently copies/builds/runs/restarts on its own project/ports,
+reviews unchanged backend/UI scope and pins this completion commit in source-loc-v2. No numerical
+v2 share claimed here; strictly>5.53 acceptance and eventual60 target unchanged. Keep final45400–02
+stack, credentials, five volumes, ready demo9abde227-6abb-4ee0-817e-3d94d90911ea/count2, and frozen
+studio project2c7c8b08-4633-4a97-8794-672a777f1d3a/r2. No later unit executed.

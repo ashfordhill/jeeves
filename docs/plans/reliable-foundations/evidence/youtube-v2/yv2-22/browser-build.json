@@ -1,0 +1,14 @@
+{
+  "ownFrozenLockUnchanged": true,
+  "hostDockerAssetsMatch": {
+    "auth.js": "c4318ba33d15ecff793dc768d089a66cec5276940f672ed66836b61d7751e603",
+    "main.js": "7f2f12213bf56488d5401cc31878dcf8caea678b4b747079c77b0a0a47017153",
+    "playback-policy.js": "84519ba66a54053da7f5c48326db330b1235763077b665262629b8f36543709b",
+    "search.js": "76982147ac48da1572669d540ee9b4490af89f00920be9b61e7cabd61bdc86dd",
+    "watch.js": "454321e8f9e9b77214eeee95846607a66b9238e1738f3e32a3eeb86ce7f7bf2e",
+    "index.html": "adb68f104efd407cf67f027ed46e366221a21c9ba8b252fca19b11007dfeaf3e",
+    "style.css": "4d1d5205c617634f50a24a3097d1e038aad753214248810c836a142af739ff88",
+    "hls.min.js": "a12e7ee1cd64a69dcdb314157e45dafcba705bfb0b1440b7935cb265d374423e"
+  },
+  "runtimeConfigurationSeparate": true
+}

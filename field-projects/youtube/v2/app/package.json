@@ -23,7 +23,7 @@
   "packageManager": "pnpm@12.16.1",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/build-browser.mjs",
     "first-run": "node scripts/local.mjs first-run",
     "start": "node scripts/local.mjs start",
     "stop": "node scripts/local.mjs stop"

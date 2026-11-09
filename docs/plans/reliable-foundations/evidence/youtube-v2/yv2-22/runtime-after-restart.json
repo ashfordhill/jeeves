@@ -1,0 +1,153 @@
+{
+  "credentialSetSha256": "5bc17f9525010978fba06a4e64de81baacd48033e9f8b3cf2487583763e52c3e",
+  "credentialFiles": 21,
+  "privateParentModes": [
+    [
+      ".runtime",
+      448
+    ],
+    [
+      ".runtime/secrets",
+      448
+    ]
+  ],
+  "reviewPasswordModes": [
+    [
+      "creator_password",
+      384
+    ],
+    [
+      "other_creator_password",
+      384
+    ]
+  ],
+  "volumes": [
+    {
+      "Name": "jeeves-youtube-v2_broker-data",
+      "CreatedAt": "2026-11-08T20:47:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "43a12e61c9cd047190d210965388b226dcea5720c544fedd867458623ba39b08",
+        "com.docker.compose.project": "jeeves-youtube-v2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "broker-data"
+      }
+    },
+    {
+      "Name": "jeeves-youtube-v2_cache-metadata-cache",
+      "CreatedAt": "2026-11-08T20:47:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "876b641e0b8271e6305da4841ddc239d11fe0bff5b142131a2d4c3c8ff79803c",
+        "com.docker.compose.project": "jeeves-youtube-v2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "cache-metadata-cache"
+      }
+    },
+    {
+      "Name": "jeeves-youtube-v2_objects-data",
+      "CreatedAt": "2026-11-08T20:47:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "bf39f3e8a08f37f731da4c8eaefc0acb34751be96baf5161174625f763968e62",
+        "com.docker.compose.project": "jeeves-youtube-v2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "objects-data"
+      }
+    },
+    {
+      "Name": "jeeves-youtube-v2_postgres-data",
+      "CreatedAt": "2026-11-08T20:47:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "eb4f3d83fb541e1655d340c8457f1da22725f7e4d42367e44791172c722c27bb",
+        "com.docker.compose.project": "jeeves-youtube-v2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      }
+    },
+    {
+      "Name": "jeeves-youtube-v2_search-search-index",
+      "CreatedAt": "2026-11-08T20:47:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "6edeefc8502e69d98f73d8a007d7905eda89a2cd81fc30da708b82a3e07c7ed3",
+        "com.docker.compose.project": "jeeves-youtube-v2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "search-search-index"
+      }
+    }
+  ],
+  "services": [
+    {
+      "service": "app-completion-handler",
+      "health": "healthy",
+      "imageId": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0"
+    },
+    {
+      "service": "app-edge",
+      "health": "healthy",
+      "imageId": "sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236"
+    },
+    {
+      "service": "app-search",
+      "health": "healthy",
+      "imageId": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0"
+    },
+    {
+      "service": "app-search-indexer",
+      "health": "healthy",
+      "imageId": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0"
+    },
+    {
+      "service": "app-transcoder",
+      "health": "healthy",
+      "imageId": "sha256:1f0e3d1b59b1bae060a87f080a6a1c7d40aafd6f1f3bfa68044ee784ebffc949"
+    },
+    {
+      "service": "app-upload",
+      "health": "healthy",
+      "imageId": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0"
+    },
+    {
+      "service": "app-view-counter",
+      "health": "healthy",
+      "imageId": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0"
+    },
+    {
+      "service": "app-watch",
+      "health": "healthy",
+      "imageId": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0"
+    },
+    {
+      "service": "cache-metadata-cache",
+      "health": "healthy",
+      "imageId": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507"
+    },
+    {
+      "service": "identity-identity",
+      "health": "healthy",
+      "imageId": "sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332"
+    },
+    {
+      "service": "local-broker",
+      "health": "healthy",
+      "imageId": "sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267"
+    },
+    {
+      "service": "local-objects",
+      "health": "healthy",
+      "imageId": "sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020"
+    },
+    {
+      "service": "local-postgres",
+      "health": "healthy",
+      "imageId": "sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f"
+    },
+    {
+      "service": "search-search-index",
+      "health": "healthy",
+      "imageId": "sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e"
+    }
+  ]
+}

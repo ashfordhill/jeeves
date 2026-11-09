@@ -1,0 +1,23 @@
+{
+  "phase": "before-custom",
+  "files": 93,
+  "payloadBytes": 4243495,
+  "manifestPayloads": 92,
+  "manifestPayloadBytes": 1076935,
+  "sourceSha256": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+  "registrySha256": "6d0a8916c90be61c10736dc58cac91a0f9deaabeefeadc5ec077b7d997b4086f",
+  "registrySourceFilesVerified": 156,
+  "manifestSha256": "1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc",
+  "reportSha256": "e56c904f3e21eed4300d77483554df672bd7f5c41c10ca44b3602a8e598e6d57",
+  "outputInventorySha256": "ed6eab9609fd59b4148b72ddd25e4481770ab88bff826eebaf7cdbc93195c938",
+  "templates": 10,
+  "implementations": 15,
+  "dependencyPins": 13,
+  "importsInspected": 229,
+  "applicationComplete": true,
+  "runtimeVerification": "none",
+  "strictReadiness": "not-assessed",
+  "noPayloadChanges": true,
+  "noCheckoutImportsOrDependencies": true,
+  "noRuntimeSecretsOrMedia": true
+}

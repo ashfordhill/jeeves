@@ -1,9 +1,47 @@
-# Generated local v2 foundation
+# YouTube v2 local field app
 
-Experimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.
+The untouched generated backend is commit `695addeb3ac4a77c3a6fbfd2f68d901fced3619f`.
+YV2-22 reuses the v1 browser as custom UI and adds build/runtime integration. Historical
+`.jeeves` output remains unchanged; its runtimeVerification:none and strictReadiness:not-assessed
+are generation-time facts. Actual observations and provenance live in `../notes/`.
 
-Node 24.21.0 and pnpm 12.16.1. Run `pnpm install --frozen-lockfile --ignore-scripts` then `pnpm build`. Set a unique `COMPOSE_PROJECT_NAME` and three distinct free loopback ports: `LOCAL_HTTP_PORT`, `LOCAL_IDENTITY_PORT`, `LOCAL_OBJECT_PORT`. Run `pnpm first-run` once, `pnpm stop` to stop all profiles and `pnpm start` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.
+Use Node **24.21.0**, pnpm **12.16.1**, Docker with Compose, and this directory's frozen lock:
 
-Migration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.
+```sh
+pnpm install --frozen-lockfile --ignore-scripts
+pnpm build
+export COMPOSE_PROJECT_NAME=my-unique-youtube-v2
+export LOCAL_HTTP_PORT=45500 LOCAL_IDENTITY_PORT=45501 LOCAL_OBJECT_PORT=45502
+pnpm first-run
+```
 
-Cleanup only an owned disposable export: `docker compose --profile '*' down --volumes --remove-orphans` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.
+Choose a new project and three free loopback ports together before first-run. Never use those
+example values against existing resources. The retained owner stack is `jeeves-youtube-v2` on
+45400/45401/45402, with private `.runtime`0700 and five volumes. Preserve it. For its normal restart,
+use exactly that project/port allocation with `pnpm stop` and `pnpm start`; keep credentials and
+volumes. First-run initializes a genuinely new runtime only; interrupted single-use storage
+bootstrap requires inspection, not blind replay. Normal start rebuilds server/browser and checks
+the recorded runtime identities. Dependencies must remain installed from this app's own lock.
+
+Open `http://127.0.0.1:<LOCAL_HTTP_PORT>/`. Public search/Watch need no login. For uploads, an
+administrator provisions a local Keycloak user with realm role `creator` (no signup UI). The
+identity console is at `http://127.0.0.1:<LOCAL_IDENTITY_PORT>/`; admin username is `admin`, password
+is read locally from `.runtime/secrets/identity-admin-identity`. Realm is the generated `identity`,
+public PKCE client and backend audience `identity-web`, exact callback is the selected HTTP
+origin plus `/`. Runtime public config derives from these same bindings and ports; copy/start
+with different free ports without editing sources. No independent realm/client override is offered.
+Do not put passwords/tokens into logs or source. A frozen review operator harness is linked from
+`../notes/scenarios.md`; it provisions two review users privately without adding an app feature.
+
+Retained owner username `creator` uses `.runtime/secrets/creator_password`; `other-creator` uses
+`other_creator_password` (0600). The retained fixture is `.runtime/media/youtube-v1-fixture.mp4`.
+Its title/description, upload controls, pause/reselect/resume, abort, status, public search and
+standard HLS player are the reused v1 interface. Read `../notes/runtime.md` for the ready demo.
+
+Migration owners/admin are setup-only. Media/indexer have no SQL credential; originals are private.
+This local HTTP/single-instance demo has no production-security, HA, arbitrary-codec, fraud, crash-
+recovery or template certification claim. Public output keys can expose guessed partial/orphan
+objects; Watch/search return only committed ready records. Human listening remains unobserved.
+
+Only an explicitly disposable owned copy may be removed using its recorded project/ports and
+`docker compose --profile '*' down --volumes --remove-orphans`. Never clean the retained runtime.

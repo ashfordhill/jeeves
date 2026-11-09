@@ -1,5 +1,7 @@
 import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
+import { execFileSync } from "node:child_process";
+import { writeBrowserConfiguration } from "./browser-config.mjs";
 import { capture, hash, output, plan } from "./common.mjs";
 import { setup } from "./setup.mjs";
 
@@ -198,7 +200,11 @@ const setupServices = ["setup-migrate", "setup-broker", "setup-search", "setup-s
   (name) => Object.hasOwn(JSON.parse(readFileSync("compose.yaml", "utf8")).services, name),
 );
 const buildServices = [...setupServices, ...plan.application];
-if (buildServices.length) step("build", () => output("build", ...buildServices));
+if (buildServices.length) step("build", () => {
+  execFileSync("pnpm", ["build"], { stdio: "inherit" });
+  writeBrowserConfiguration(plan, ports);
+  output("build", ...buildServices);
+});
 if (plan.providers.length)
   step("providers", () => {
     // Keycloak depends on the setup-created private DB. Start SQL first, migrate, then Identity.
