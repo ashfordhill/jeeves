@@ -6343,3 +6343,28 @@ Studio/catalog/method guidance and design lesson updated. Local commit:
 **Separate reusable v2 generation from YouTube product code and recount baseline**. No push.
 Future completed-app measurement must freeze generic output first and record product work after;
 developer mode remains a separate proposed unit. No app rebuild or provider/media campaign here.
+
+## 2026-11-08 — UI overhaul plan from owner feedback
+
+This was planning only; no code changed. I saved the owner's three images in
+`docs/human-feedback/`, added the HUMAN_FEEDBACK entry and a playbook lesson, and wrote the
+[UI overhaul plan](plans/ui-overhaul/units.md). It has ten sequential units, each for one fresh
+agent:
+
+- UI01–UI03: remove focus; build the one-page inspector with Description; add module cards with
+  Back.
+- UI04–UI05: add board ports at fixed heights, keeping existing layouts byte-identical.
+- UI06–UI08: add the Detailed projection, then the toggle and container tiles, then interactive
+  modules.
+- UI09: readability measurements.
+- UI10: independent review.
+
+The plan's Decisions table lists the defaults the owner can change before UI01.
+
+The plan is based on the current inspector, workspace, focus, board and module-link code, and on
+the module data. The TinyURL extended, Marketplace and YouTube studies have 9, 16 and 20 modules.
+The v2 design has 22, and its Video lifecycle worker links match the owner's sketch exactly. For
+those counts I ran a scratch script outside the repo.
+
+The checks were not run. Only docs and images changed, and another session was committing
+generator work (`8813523`) during planning. Next: UI01 only.

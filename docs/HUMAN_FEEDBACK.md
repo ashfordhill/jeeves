@@ -98,3 +98,11 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Problem:** need a working independent deliverable and a fair improvement over v1's 5.53% backend template share.
 - **Decision:** compare the actual untouched baseline/completion with the frozen backend/UI scope; retain reused UI and independent functional limits separately.
 - **Resolution:** `YV2-23: verify independent v2 and compare backend template share` records 5,456 / 5,456 backend LOC (100%), independent run/restart and scoped cleanup. [Owner pack](../field-projects/youtube/v2/notes/review-pack.md) · [actual evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-23-independent.md). Human listening and successful live encoder argv/stderr evidence remain open; no automatic further version.
+
+## 2026-11-08 — Modules on the canvas and a one-page inspector
+
+[Module sketch](human-feedback/2026-11-08-module-detail-sketch.png) · [Current inspector](human-feedback/2026-11-08-inspector-current.png) · [Inspector sketch](human-feedback/2026-11-08-inspector-sketch.png)
+
+- **Problem:** modules are hidden behind an inspector tab. Tabs, connection lists that repeat the arrows and a hard-to-exit Focus relationships mode clutter the inspector, and the Goal box is small.
+- **Decision:** an Overview/Detailed canvas toggle that shows each module and its own attachments. A one-page inspector: name, Description, Options, then module cards you open and leave with Back. Remove Focus relationships and the connection lists. "Goal" and "Purpose" become Description.
+- **Resolution:** planned as UI01–UI10 in the [UI overhaul plan](plans/ui-overhaul/units.md), with defaults the owner can change before UI01. Nothing is implemented yet.

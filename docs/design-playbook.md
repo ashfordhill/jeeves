@@ -1208,3 +1208,19 @@ product implementations removed, record exact output/manifest hashes, and label 
 an already-completed app as retrospective. Do not call it newly observed post-generation work.
 Known historical product declarations can remain readable as explicit custom gaps without being
 offered as installed features. [Correction and evidence](plans/reliable-foundations/youtube-v2-generic-baseline.md).
+
+## 2026-11-08 owner review: show modules where their arrows attach
+
+The owner sketched YouTube v2's Video lifecycle worker as a container of its modules:
+
+- Processing consumer, fed by Processing events;
+- Lifecycle writer, writing to the Metadata database;
+- Publication outbox publisher, writing to the Metadata database and publishing to Publication
+  events.
+
+The saved module links already record exactly these attachments, so a view-only Detailed mode can
+draw them without changing the design. Inspector lists that repeat the arrows in words (Connections
+tabs, focus lists) make the reader do more work and go stale when the drawing changes. Keep the
+detail on the selected line instead. A mode the reader must remember to leave, such as Focus
+relationships, is worse than a highlight that ends when the selection ends. Avoid tabs when the
+rail has room for one page. [Plan](plans/ui-overhaul/units.md).
