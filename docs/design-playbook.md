@@ -1176,3 +1176,20 @@ and port allocation as provider setup and backend validation. In YV2-23 the exac
 ran on fresh ports45410–45412, signed in with real PKCE and restarted with retained credentials/data
 without source edits. Public binding serialization stayed separate from backend authentication
 policy. [Independent evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-23-independent.md).
+
+## 2026-11-08 generated provenance and runtime visibility
+
+Report generated provenance separately from generic reuse. A complete product recipe can emit
+all measured backend source while including product-specific policy; scripts, SQL and edge
+integration may sit outside that measure. Demonstrate reuse with changed metadata, resource
+bindings and a second consumer, and state what that consumer still requires. The
+[completed v2 review](plans/reliable-foundations/youtube-v2-provenance-review.md) confirms exact
+generation while identifying 1,139 explicitly YouTube-specific measured lines and custom
+integration outside the denominator.
+
+An optional developer view should report observed backend facts, with component and operation
+identities, instead of inferring execution from a browser request or drawing. Separate attempted
+work, transaction commit, message delivery and downstream visibility; show unknown states honestly.
+Keep it off by default, read-only and bounded. Prefer shared diagnostic hooks over per-product
+instrumentation, and preserve business behavior if diagnostics fail. This is a proposal from
+the review, not an implemented diagnostics feature.

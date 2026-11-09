@@ -11,6 +11,11 @@ not retained.** No complete-certification or all-criteria-pass claim follows.
 [actual backend report and attribution](benchmarks/README.md) · [completion](../../../../docs/plans/reliable-foundations/evidence/youtube-v2/yv2-22-completion.md) ·
 [frozen scenarios](../../v1/notes/scenarios.md) · [current observations](scenarios.md).
 
+[Owner-requested provenance/reuse review](../../../../docs/plans/reliable-foundations/youtube-v2-provenance-review.md)
+reproduces the 100% source result, separates reusable mechanisms from generated YouTube policy
+and custom integration, and proposes an off-by-default developer view. No developer mode is
+implemented by that review.
+
 ## Retained owner walkthrough
 
 1. Open the app signed out. Search the full title keyword `tourmalineazure`, description keyword

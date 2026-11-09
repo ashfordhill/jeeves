@@ -6285,3 +6285,28 @@ delegation/push/global prune. Local commit: **YV2-23: verify independent v2 and 
 
 Stop after23. No automatic further field version or certification. Owner usability review and
 human listening remain owner observations; no further runtime/provider campaign is pending.
+
+## 2026-11-08 — owner review: v2 provenance, reuse and developer visibility
+
+[Review](plans/reliable-foundations/youtube-v2-provenance-review.md) reproduces the actual
+5,456/5,456 retained backend LOC report, all 93 fresh export/baseline/frozen pins and all 60
+unchanged current backend source files. Fresh alternate export shares 28 identical runtime
+files and contains no YouTube/search/count modules. Separates 880 adapter + 259 YouTube service
+LOC from reusable mechanisms, and custom browser/startup/Nginx integration from the metric.
+Documents the generated wiring and limited current observability; proposes reusable diagnostics
+and an off-by-default field-app developer view. No app/template/input/benchmark change or
+developer-mode implementation. Added a review-pack link and design lessons.
+
+`pnpm check` exited 0: lint/types, **467 tests/70 files, 36.58s**; then **37 native E2Es, 1.5m**;
+web build **1.03s** (existing chunk-size advisory). Live 1440×900 mouse search/Watch and TinyURL
+lane/Fit/select pass, zero page errors, six pre-existing project designs unchanged and own
+TinyURL project deleted. First browser harness stopped on an overly exact required-label match;
+using the existing helper's label matcher passed without app changes. Screenshots inspected.
+No upload/encode/playback event or owner-stack restart; retained v1/v2 services remain healthy.
+Protected tracked bytes/modes, including root README, feedback dirt and e2e-docker mode, match
+the pre-review inventory. Fresh scratch exports removed; logs/harness/screenshots under
+`/tmp/jeeves-yv2-audit.9cIc07/`; [committed summary](plans/reliable-foundations/evidence/youtube-v2/provenance-review.json).
+Local commit: **Review YouTube v2 provenance, reuse and developer visibility**. No push.
+
+Next work is an owner-selected implementation unit; this review does not start a new field
+version, change the historical scope, or claim broader reuse, effort savings or certification.

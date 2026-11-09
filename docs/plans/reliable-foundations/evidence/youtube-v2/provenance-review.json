@@ -1,0 +1,104 @@
+{
+  "reportIdentical": true,
+  "freshFiles": 93,
+  "baselineMismatches": [],
+  "currentSrcIdentical": true,
+  "sourceFiles": 60,
+  "sharedRuntimePaths": [
+    "src/runtime/admission.ts",
+    "src/runtime/amqp.ts",
+    "src/runtime/asset-identity.ts",
+    "src/runtime/asset-lifecycle.ts",
+    "src/runtime/asset-sql.ts",
+    "src/runtime/asset-worker.ts",
+    "src/runtime/delivery.ts",
+    "src/runtime/durable-sql.ts",
+    "src/runtime/event-identity.ts",
+    "src/runtime/http.ts",
+    "src/runtime/identity.ts",
+    "src/runtime/local.ts",
+    "src/runtime/media-objects.ts",
+    "src/runtime/media-process.ts",
+    "src/runtime/media-worker.ts",
+    "src/runtime/multipart-http.ts",
+    "src/runtime/multipart-objects.ts",
+    "src/runtime/multipart.ts",
+    "src/runtime/objects.ts",
+    "src/runtime/outbox.ts",
+    "src/runtime/owned-upload.ts",
+    "src/runtime/postgres.ts",
+    "src/runtime/process.ts",
+    "src/runtime/receipts.ts",
+    "src/runtime/transaction.ts",
+    "src/runtime/upload-sql.ts",
+    "src/runtime/video-hls.ts",
+    "src/runtime/video-result.ts"
+  ],
+  "modifiedGeneratedPaths": [
+    ".dockerignore",
+    ".gitignore",
+    "Dockerfile",
+    "README.md",
+    "compose.yaml",
+    "infra/edge/nginx.conf",
+    "package.json",
+    "public/index.html",
+    "scripts/local.mjs"
+  ],
+  "frozenPinsMatch": 93,
+  "totals": {
+    "includedFiles": 56,
+    "baselineLoc": 5456,
+    "finalLoc": 5456,
+    "retainedTemplateLoc": 5456,
+    "postTemplateLoc": 0,
+    "removedOrReplacedTemplateLoc": 0,
+    "templatePercent": 100
+  },
+  "baselineCommit": "695addeb3ac4a77c3a6fbfd2f68d901fced3619f",
+  "completionCommit": "08699b2dc631709bff12fb25914e0d2681b6b535",
+  "manifestSha256": "1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc",
+  "productAdapterLoc": 880,
+  "youtubeEntrypointLoc": 259,
+  "explicitProductLoc": 1139,
+  "explicitProductPercent": 20.88,
+  "alternateExportFiles": 62,
+  "alternateForbiddenModules": [],
+  "browser": {
+    "search": "1 results \u00b7 Page 1",
+    "watch": {
+      "title": "YV2-22 tourmalineazure public fixture",
+      "status": "Public video ready. Click Play.",
+      "views": "3 views"
+    },
+    "developerControlCount": 0,
+    "tinyurl": {
+      "tiles": 11,
+      "lines": 12,
+      "selected": "Inspector\nRedirect service\n\nRedirect\n\nGeneral\nConnections\nModules\nName\nPurpose\nFocus relationships"
+    },
+    "existingProjectsUnchanged": true,
+    "existingProjects": 6,
+    "ownProjectDeleted": true,
+    "pageErrors": []
+  },
+  "verification": {
+    "pnpmCheck": {
+      "exitCode": 0,
+      "tests": 467,
+      "testFiles": 70,
+      "seconds": 36.58
+    },
+    "pnpmTestE2e": {
+      "exitCode": 0,
+      "tests": 37,
+      "duration": "1.5m"
+    },
+    "webBuild": {
+      "exitCode": 0,
+      "seconds": 1.03,
+      "advisory": "existing chunk-size warning"
+    },
+    "scope": "Documentation review; no new provider/media or application build campaign."
+  }
+}
