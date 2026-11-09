@@ -41,4 +41,5 @@ export * from "./studio-review.ts";
 export * from "./studio-tiles.ts";
 export * from "./studio-validation.ts";
 export * from "./studio-warnings.ts";
+export * from "./supported-authoring.ts";
 export * from "./validate.ts";

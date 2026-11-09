@@ -1,103 +1,105 @@
-import type { Page } from "@playwright/test";
-import { design, expect, moveOnto, pull, ready, test, tile } from "./studio.ts";
+import { createStudy, design, expect, ready, test, tile } from "./studio.ts";
 
-const poolSize = async (page: Page, id: string) =>
-  (await design(page, id)).architecture.studio.components.find((c) => c.name === "Link writer")
-    ?.settings.poolSize;
-
-test("autosaves a module setting, undoes and redoes it, and keeps it after reload", async ({
-  page,
-  tinyurl: id,
-}) => {
-  const inspector = page.locator(".studio-inspector");
-  const pool = inspector.getByLabel("Pool size", { exact: true });
-  const open = async () => {
-    await tile(page, "Shorten service").click();
-    await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
-    await inspector.getByRole("button", { name: "Link writer", exact: true }).click();
-    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-  };
-  await open();
-  await expect(pool).toHaveValue("20");
-  await pool.fill("32");
-  await expect.poll(() => poolSize(page, id)).toBe(32);
-
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect.poll(() => poolSize(page, id)).toBe(20);
-  await page.getByRole("button", { name: "Redo", exact: true }).click();
-  await expect.poll(() => poolSize(page, id)).toBe(32);
-
-  await page.reload();
+async function attach(page: Parameters<typeof createStudy>[0]) {
+  await tile(page, "User").click();
+  await page.getByLabel("Feature preset", { exact: true }).selectOption("youtube");
+  await page.getByRole("button", { name: "Preview attachment", exact: true }).click();
+  await expect(page.locator(".studio-inspector").getByRole("status")).toContainText(
+    "One Undo step",
+  );
+  await page.getByRole("button", { name: "Attach feature", exact: true }).click();
   await ready(page);
-  expect(new URL(page.url()).searchParams.get("project")).toBe(id);
-  await open();
-  await expect(pool).toHaveValue("32");
+}
+
+test("attaches the installed preset atomically and autosaves useful TTL/pool controls through Undo, Redo and reload", async ({
+  page,
+}) => {
+  const id = await createStudy(page, "E2E supported YouTube", "blank");
+  try {
+    const inspector = page.locator(".studio-inspector");
+    await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
+    await attach(page);
+    await expect.poll(async () => (await design(page, id)).elements.length).toBe(19);
+    const attached = await design(page, id);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect.poll(async () => (await design(page, id)).elements.length).toBe(0);
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect
+      .poll(async () => ({ ...(await design(page, id)), revision: 0 }))
+      .toEqual({ ...attached, revision: 0 });
+    await tile(page, "Metadata cache").click();
+    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
+    const ttl = inspector.getByLabel("TTL", { exact: true });
+    await expect(ttl).toHaveValue("3600");
+    await ttl.fill("420");
+    await ttl.blur();
+    const values = async () => {
+      const saved = await design(page, id);
+      return {
+        ttl: saved.architecture.studio.elements.find((row) => row.element === "metadata-cache")
+          ?.settings.ttlSeconds,
+        mirror: saved.architecture.studio.components.find(
+          (row) => row.settings.kind === "cache-reader",
+        )?.settings.l2TtlSeconds,
+      };
+    };
+    await expect.poll(values).toEqual({ ttl: 420, mirror: 420 });
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect.poll(values).toEqual({ ttl: 3600, mirror: 3600 });
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect.poll(values).toEqual({ ttl: 420, mirror: 420 });
+    await page.reload();
+    await ready(page);
+    expect(await values()).toEqual({ ttl: 420, mirror: 420 });
+    await tile(page, "Watch API").click();
+    await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
+    await inspector.getByRole("button", { name: "Details reader", exact: true }).click();
+    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
+    await inspector.getByLabel("Pool size", { exact: true }).fill("60");
+    await expect
+      .poll(
+        async () =>
+          (await design(page, id)).architecture.studio.components.find(
+            (row) => row.name === "Details reader",
+          )?.settings.poolSize,
+      )
+      .toBe(60);
+    await expect(inspector.getByLabel("Read routing", { exact: true })).toHaveCount(0);
+    await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
 });
 
-test("the Type list switches a tile's kind to its presets and two languages", async ({
+test("legacy unsupported settings stay hidden and unchanged while names/history remain usable", async ({
   page,
   tinyurl: id,
 }) => {
+  const before = await design(page, id);
   const inspector = page.locator(".studio-inspector");
-  const types = inspector.getByRole("group", { name: "Type", exact: true });
-  const settings = async (element: string) =>
-    (await design(page, id)).architecture.studio.elements.find((b) => b.element === element)
-      ?.settings;
-
   await tile(page, "Shorten service").click();
-  // Each kind of the Service type by name; the current one pressed.
-  await expect(types.getByRole("button")).toHaveText([
-    "Microservice",
-    "Worker service",
-    "Redirect",
-    "Identity",
-    "Notifications",
-    "Billing",
-    "Uploads",
-  ]);
-  await expect(types.getByRole("button", { name: "Microservice" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await types.getByRole("button", { name: "Billing" }).click();
-  await expect
-    .poll(() => settings("shorten"))
-    .toMatchObject({
-      kind: "billing",
-      provider: "stripe",
-      language: "typescript",
-    });
-  await expect(types.getByRole("button", { name: "Billing" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(inspector.getByLabel("Language", { exact: true }).locator("option")).toHaveText([
-    "TypeScript",
-    "Go",
-  ]);
-  await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-  await expect(inspector.getByLabel("Payment provider", { exact: true })).toHaveValue("stripe");
-
-  // An API tile from the Shorten action's `+` starts as a Gateway; switch it to CDN and back.
-  await tile(page, "Shorten").click();
-  await pull(page, "Shorten", "Add after");
-  await moveOnto(
-    page,
-    page.locator(".board-pull").getByRole("button", { name: "API", exact: true }),
-  );
-  await page.mouse.up();
-  await ready(page);
-  await expect(types.getByRole("button", { name: "Gateway" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await types.getByRole("button", { name: "CDN" }).click();
-  await expect.poll(() => settings("api")).toMatchObject({ kind: "cdn", provider: "cloudflare" });
-  await types.getByRole("button", { name: "Gateway" }).click();
-  await expect.poll(() => settings("api")).toMatchObject({ kind: "gateway", provider: "traefik" });
-  expect(await settings("api")).not.toHaveProperty("language");
-  await inspector.getByRole("tab", { name: "General", exact: true }).click();
+  await expect(inspector.getByRole("group", { name: "Type", exact: true })).toHaveCount(0);
   await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
-  await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-  await expect(inspector.getByLabel("Gateway product", { exact: true })).toHaveValue("traefik");
+  await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
+  await inspector.getByRole("button", { name: "Link writer", exact: true }).click();
+  await expect(inspector.getByRole("tab", { name: "Options", exact: true })).toHaveCount(0);
+  await expect(inspector.getByLabel("Pool size", { exact: true })).toHaveCount(0);
+  await inspector.getByLabel("Name", { exact: true }).fill("Preserved writer");
+  await expect
+    .poll(
+      async () =>
+        (await design(page, id)).architecture.studio.components.find(
+          (row) => row.name === "Preserved writer",
+        )?.settings,
+    )
+    .toEqual(
+      before.architecture.studio.components.find((row) => row.name === "Link writer")?.settings,
+    );
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect
+    .poll(async () => ({ ...(await design(page, id)), revision: 0 }))
+    .toEqual({ ...before, revision: 0 });
+  await page.reload();
+  await ready(page);
+  expect({ ...(await design(page, id)), revision: 0 }).toEqual({ ...before, revision: 0 });
 });

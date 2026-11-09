@@ -7,6 +7,12 @@ partial scaffold preview/ZIP export for the exact frozen YouTube local-v1 source
 experimental template families. It reads the [blueprint](studio-blueprint.md). Field values are
 listed in [studio settings](studio-settings.md).
 
+Normal editor and chat controls share `buildSupportedAuthoringCommand` and the actual default
+registry reported by `GET /generation-support`. Catalog membership alone enables no control.
+Custom requested behavior can be recorded as an unresolved requirement; it supplies no template.
+Saved-source v2 preview/ZIP dispatch is a separate pending unit; this attachment workflow does not
+change the existing frozen-v1 export route.
+
 Open **Compatibility report** in the inspector to see four separate results for the saved
 snapshot: design validity, exact contracts, implementation availability and exact output evidence.
 Expand a blocker list and use its mouse buttons to select the exact role/resource, relationship,
@@ -316,52 +322,25 @@ Optional shortcuts: Delete or Backspace does what the selected tile's or line's 
 The inspector shows the selection. Its sections are **General**, **Options**, **Connections** and,
 for an application tile, **Modules**; empty ones are hidden.
 
-- A tile: its icon, name and kind, then the **Type** list when its tile type has more than one
-  kind: each kind's icon and name in two columns, the current one filled yellow (Service:
-  Microservice, Worker service, Redirect, Identity, Notifications, Billing, Uploads; API: Gateway
-  or CDN; Database: Database or Search index). The pointer on a kind shows its one-line
-  description.
-  Clicking another switches the tile to it. The tile keeps its name, purpose, links and modules;
-  its settings start over from the new kind's defaults, which are preconfigured: Billing starts
-  with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs
-  (its **Transfer**: [studio settings](studio-settings.md#uploads)), Gateway with Traefik and CDN
-  with Cloudflare (the other choices stay selectable). A kind the lane rules refuse is faded
-  and its tooltip says why ("Shorten service can't become a worker. An action reaches a service
-  (not a worker), an API or the CDN."; "Link reader in Redirect service can't use a search index;
-  remove its link to URL database first.").
-- A store (database, search index, cache, storage) shows **Owner** and **Other readers** below the
-  Type list. Access is inferred: links from the owner (including owning package members) count as
-  writes; other links count as reads. The model cannot distinguish an owner's individual read
-  from a write. Changing **Owner** changes that inference
-  ([one writer per store](studio-settings.md#relationships)).
-- **Language** offers the kind's two languages, its default first: TypeScript or Go, and Go or
-  TypeScript for Redirect. Gateway and CDN are products, not code, and have no Language
-  ([studio settings](studio-settings.md#languages)).
-- A provider chosen on a kind is that service's integration: Billing with Stripe needs no
-  External tile for Stripe. Add an External tile only for a third party no kind covers.
-- General, Options and Connections: name and purpose, the kind's settings (a CDN's **Image
-  resizing**: Unspecified, Disabled or On request), provider choices and
-  optional performance intent (replicas, autoscale signal, request timeout, concurrency limit;
-  read replicas and partition key for databases; topology and eviction for caches; partitions for
-  queues; redirect caching for the CDN). An empty input or **Unspecified** removes an optional
-  value. Connections lists the tile's links, a link into a store marked "Writes (owner)" or
-  "Reads"; clicking one selects that line.
-- **Modules** (services and the gateway, not the CDN or resources): the tile's modules, each with
-  its kind's icon and its name. The dashed **`+`** below opens the ten module kinds as icons
-  (names in the tooltips); picking one adds a module named after its kind ("Data access", then
-  "Data access 2") with that kind's defaults, opens it and selects its name for renaming.
-- A module: a way back to its tile (the arrow and the tile's name), its icon, name and kind, the
-  typical product, its readiness ("A cache reader needs a cache connection."), then General (name,
-  purpose and **Remove module**), Options (its settings) and Connections: its links (a link
-  through a connection selects that line, a link to another module opens it; **Unlink** removes
-  it) and **Link to**, the tiles its tile links to whose kind it may use, through that link (an
-  event publisher reaches a queue only through a publish link, a consumer only through a consume
-  link).
-- A line: its endpoints and saved action label, interaction (solid or dashed), arrow convention,
-  and **Access (inferred)** ("Writes (owner)" or "Reads") for a store link. Then Action, Protocol,
-  Interaction, Security, and timeout/retry where the protocol allows. The label is editable prose;
-  it does not override access. Switching Interaction between Request / response and Asynchronous
-  changes the dash where the link table allows both, independently of upstream links.
+- A tile shows its icon, name and kind. General edits its name and purpose. Options shows only
+  useful settings with actual installed template consumers: HTTP deadline/admission, adjustable
+  worker concurrency, cache TTL, SQL pool size and statement timeout when selected by a feature.
+  Empty groups are hidden. Fixed local Docker/TypeScript, provider, media and internal policies
+  have no controls. Historical unsupported settings remain in source and diagnostics unchanged.
+- A store still shows its inferred owner/readers; explicit authority remains separate. See
+  [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
+- **Modules** lists preserved or preset-bound modules. A module opens its name/purpose, useful
+  supported settings and traced connections. Arbitrary module creation/linking and kind switching
+  are unavailable in normal authoring; changing a name does not normalize historical settings.
+- A line shows endpoints, its saved action, interaction and inferred access. Only its action label
+  is normally editable. Transport/security/retry declarations remain in source; new local links
+  use HTTP where applicable and Private network explicitly.
+- Select the user (or clear selection) to open the system inspector. **Add a supported feature**
+  offers **Owned upload + video processing** and **YouTube local backend** when this server's actual
+  registry installs them. **Preview attachment → Attach feature** shows the tiles/modules to add,
+  retains existing declarations and explicitly upgrades schema2 if needed. It saves the graph,
+  bindings and ownership in one Undo step. The video feature needs custom product/service hooks;
+  the YouTube preset supplies the experimental backend, with a separate browser slot.
 - An action: its lane icon and name, then **Name** (the word on its tile, at most 24 characters;
   it autosaves like a tile's name), its **Lane** (read-only) and its **Entries**, each a button
   that selects that tile.
@@ -1056,8 +1035,8 @@ NC04 adds **Resolve link · v1** in that same form: select **Operation**, a cano
 primary-read and cache read-and-fill connections, then the pinned positive-cache policy. Its
 expanded contract shows 307 Location, 400 invalid, 404 unknown, 410 expired and 503 failure/overload,
 with no-store on every outcome. Exact policy refs can be inspected, edited or cleared; unknowns
-remain unresolved. Existing TinyURL replica/L1/negative-cache/302/TTL settings must be edited
-explicitly before a compatible declaration saves. Named previews explain refusals and cleanup;
+remain unresolved. Existing TinyURL replica/L1/negative-cache/302/TTL settings remain preserved source intent.
+Explicit source work is needed before incompatible declarations can become compatible. Named previews explain refusals and cleanup;
 reload and one Undo preserve complete refs. An API with several operations shows their count;
 inspector details select each binding separately for chat. The view adds no service/deployment,
 port or reversed data-return arrow. [Finite behavior and runtime limits](studio-contracts.md).

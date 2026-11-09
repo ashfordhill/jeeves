@@ -1,18 +1,62 @@
+import {
+  applyOperations,
+  buildStudioCommand,
+  type DesignDocument,
+  designSchema,
+  type StudioCommand,
+} from "@jeeves/spec";
 import type { Page } from "@playwright/test";
 import { expect, ready, tile } from "./studio.ts";
 
-/** Explicitly align the existing finite timeout; declaring a contract never rewrites it. */
-export async function alignCreateTimeout(page: Page, owned = true) {
-  const owner = tile(page, "Links · logical owner");
+/** Historical source setup, independent of normal editable template support. Contract
+ * declaration below must still validate this exact source and must never rewrite it. */
+async function seedLegacySettings(
+  page: Page,
+  commands: (design: DesignDocument) => StudioCommand[],
+) {
+  const id = new URL(page.url()).searchParams.get("project");
+  if (!id) throw new Error("Missing project");
+  const state = await (await page.request.get(`/api/projects/${id}/design`)).json();
+  let design = designSchema.parse(state.design);
+  const ops = [];
+  for (const command of commands(design)) {
+    const batch = buildStudioCommand(design, command);
+    const result = applyOperations(design, batch.ops);
+    if (!result.ok) throw new Error(JSON.stringify(result.errors));
+    design = result.design;
+    ops.push(...batch.ops);
+  }
+  const saved = await page.request.post(`/api/projects/${id}/operations`, {
+    data: { baseRevision: state.design.revision, source: "canvas", ops },
+  });
+  expect(saved.ok()).toBe(true);
+  expect((await saved.json()).design).toEqual({ ...design, revision: state.design.revision + 1 });
+  await page.reload();
+  await ready(page);
+}
+async function openLegacyRole(page: Page, name: string, owned: boolean) {
   if (owned) {
+    const owner = tile(page, "Links · logical owner");
     await expect(owner).toBeVisible();
     await owner.getByRole("button", { name: "Expand roles", exact: true }).click();
   }
   await ready(page);
-  await tile(page, "Shorten service").click();
-  await page.getByRole("tab", { name: "Options", exact: true }).click();
-  await page.getByLabel("Request timeout", { exact: true }).fill("10000");
-  await page.getByRole("tab", { name: "General", exact: true }).click();
+  await tile(page, name).click();
+}
+export async function alignCreateTimeout(page: Page, owned = true) {
+  await seedLegacySettings(page, (design) => {
+    const row = design.architecture?.studio?.elements.find((row) => row.element === "shorten");
+    if (row?.settings.kind !== "service") throw new Error("Missing create service");
+    return [
+      {
+        type: "edit",
+        element: row.element,
+        settings: { ...row.settings, requestTimeoutMs: 10000 },
+      },
+    ];
+  });
+  await openLegacyRole(page, "Shorten service", owned);
+  await expect(page.getByLabel("Request timeout", { exact: true })).toHaveCount(0);
 }
 export async function declareCreate(page: Page) {
   await page.getByRole("button", { name: "Operation contracts", exact: true }).click();
@@ -33,47 +77,55 @@ export async function declareCreate(page: Page) {
   await ready(page);
 }
 
-/** Explicit mouse edits align legacy typed intent; contract declarations never migrate it. */
+/** Explicit historical source alignment. These policies stay unavailable in normal forms. */
 export async function alignResolveSettings(page: Page, owned = true) {
-  await ready(page);
-  const inspector = page.locator(".studio-inspector");
-  const owner = tile(page, "Links · logical owner");
-  if (owned) {
-    await expect(owner).toBeVisible();
-    await owner.getByRole("button", { name: "Expand roles", exact: true }).click();
-  }
-  await ready(page);
-  await tile(page, "Redirect service").click();
-  await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-  await inspector.getByLabel("Request timeout", { exact: true }).fill("1200");
-  await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
-  const module = async (name: string) => {
-    await inspector.getByRole("button", { name, exact: true }).click();
-    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-  };
-  const back = async () => {
-    await inspector.getByRole("button", { name: "Back to Redirect service", exact: true }).click();
-    await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
-  };
-  await module("Link reader");
-  await inspector.getByLabel("Read routing", { exact: true }).selectOption("primary");
-  await back();
-  await module("Cache reader");
-  // Clear the TTL before size because the finite module requires size when TTL is present.
-  for (const label of ["L1 TTL", "L1 in-process size", "Negative caching TTL"])
-    await inspector.getByLabel(label, { exact: true }).fill("");
-  await inspector.getByLabel("Shared cache TTL", { exact: true }).fill("300");
-  await inspector.getByLabel("Stampede protection", { exact: true }).selectOption("none");
-  await back();
-  await module("Redirect responder");
-  await inspector.getByLabel("Status", { exact: true }).selectOption("307");
-  await back();
-  await tile(page, "URL cache").click();
-  await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-  await inspector.getByLabel("TTL", { exact: true }).fill("300");
-  await inspector.getByRole("tab", { name: "General", exact: true }).click();
-  await tile(page, "Redirect service").click();
-  await inspector.getByRole("tab", { name: "General", exact: true }).click();
+  await seedLegacySettings(page, (design) => {
+    const studio = design.architecture?.studio;
+    const redirect = studio?.elements.find((row) => row.element === "redirect");
+    const cache = studio?.elements.find((row) => row.element === "url-cache");
+    if (redirect?.settings.kind !== "redirect" || cache?.settings.kind !== "cache")
+      throw new Error("Missing legacy resources");
+    const commands: StudioCommand[] = [
+      {
+        type: "edit",
+        element: redirect.element,
+        settings: { ...redirect.settings, requestTimeoutMs: 1200 },
+      },
+      { type: "edit", element: cache.element, settings: { ...cache.settings, ttlSeconds: 300 } },
+    ];
+    for (const component of studio?.components ?? []) {
+      if (component.host !== "redirect") continue;
+      const settings = component.settings;
+      if (settings.kind === "data-access")
+        commands.push({
+          type: "editComponent",
+          component: component.id,
+          settings: { ...settings, readRouting: "primary" },
+        });
+      if (settings.kind === "cache-reader") {
+        const {
+          l1TtlSeconds: _ttl,
+          l1MaxEntries: _size,
+          negativeTtlSeconds: _negative,
+          ...kept
+        } = settings;
+        commands.push({
+          type: "editComponent",
+          component: component.id,
+          settings: { ...kept, l2TtlSeconds: 300, stampede: "none" },
+        });
+      }
+      if (settings.kind === "redirect-responder")
+        commands.push({
+          type: "editComponent",
+          component: component.id,
+          settings: { ...settings, status: "307" },
+        });
+    }
+    return commands;
+  });
+  await openLegacyRole(page, "Redirect service", owned);
+  await expect(page.getByLabel("Request timeout", { exact: true })).toHaveCount(0);
 }
 export async function declareResolve(page: Page) {
   await page.getByRole("button", { name: "Operation contracts", exact: true }).click();

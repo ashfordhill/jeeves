@@ -1,0 +1,23 @@
+Inspector
+Compatibility report
+Explicit authority: Watch
+
+Projection of Metadata database · population/freshness unspecified
+
+Watch API · Read & write
+
+Ownership & access
+
+Design intent only. Inspect operation declarations separately; runtime authorization is unavailable.
+
+Operation contracts
+Focus relationships
+Metadata cache
+
+Cache
+
+General
+Options
+Connections
+TTL
+seconds

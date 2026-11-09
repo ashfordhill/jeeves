@@ -1,9 +1,19 @@
 # Jeeves catalog
 
-What a design can contain. Every entry is design vocabulary: none has a template, runtime or
-verification behind it. Exact fields and values are in [studio settings](../docs/studio-settings.md);
+What a design can contain. Tile/module kinds are design vocabulary. Runtime support comes only
+from selected feature bindings and the actual installed registry; a kind alone claims none. Exact fields and values are in [studio settings](../docs/studio-settings.md);
 the source is [`studio-definitions.ts`](packages/spec/src/studio-definitions.ts) and
 [`studio-components.ts`](packages/spec/src/studio-components.ts).
+
+## Installed features and controls
+
+The system inspector offers previewed attachment of the reusable video feature or local YouTube
+backend when `GET /generation-support` reports their actual installed consumers. The former keeps
+required custom product/service hooks; the latter composes the experimental backend and a browser
+slot. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL
+and bound SQL pool/statement limits. Fixed policies/providers/language and unsupported alternatives
+stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
+unchanged on read. Source-schema tables below do not imply editable or executable support.
 
 ## C1 context
 
@@ -36,7 +46,7 @@ Sixteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 
 A new database, cache, storage or queue tile is owned by the application it is added next to.
 
-Each coded kind offers two languages, default first: Microservice, Worker service, Identity,
+The historical source schema accepts two languages per coded kind, default first: Microservice, Worker service, Identity,
 Notifications, Billing and Uploads TypeScript or Go; Redirect Go or TypeScript. Gateway and CDN are
 products, not code, and have no language (`studioKindLanguages`, [studio
 settings](../docs/studio-settings.md#languages)).
@@ -49,8 +59,8 @@ covers.** The chat instructions say the same.
 
 The lane canvas groups kinds into seven tile types, offered as icons in a pulled `+` tab's fan
 (always all seven; the ones the link table refuses there are greyed, with the reason). The first
-kind is the default and the others are variants, switched by the Type list in the tile's
-inspector (`changeKind`).
+kind is the default and the others remain source variants. The normal inspector has no kind
+switcher; supported feature attachment supplies its required kinds atomically.
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
@@ -133,7 +143,7 @@ entry kinds (`studioEntryKinds`) are the action rows' targets. A link given with
 pair's default: async for queue links, sync otherwise (`studioDefaultLinkMode`;
 `studioLinkDefaults(source, target, mode?)`). `studioLinkRefusal` gives the reason a pair or mode
 is refused, in plain words ("A cache can't link onward.", "Publishing to a queue is asynchronous,
-not a request."). Switching an existing link's mode is the line inspector's Interaction field.
+not a request."). Existing link modes remain preserved source intent; normal line authoring edits only the label.
 
 The table records design intent only. No template-support state is kept: a future code generator
 will mark the tiles and links it has no template for (a badge and a blueprint finding) and never
@@ -220,7 +230,7 @@ drop runs that option's `linkTiles`. Both leave out `link`, so the pair's defaul
 tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
 `alsoRemove`), an action's X runs `removeAction` and a line's X runs `removeLink`
 ([removing](../docs/studio.md#removing)); the user's line to an action has no X. The inspector's
-Type list runs `changeKind`, an action's Name runs `renameAction`
+normal authoring omits kind replacement; an action's Name runs `renameAction`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
 reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
@@ -251,12 +261,11 @@ Icons: `studioComponentVisuals` in [`studio-modules.ts`](packages/spec/src/studi
 | `external-call` | External call | `world` | Any API |
 | `custom` | Custom | `puzzle` | none: project-specific logic described by a one-line purpose |
 
-Browser apps host only auth guard, external call and custom components. The inspector adds a
-module with `createComponent` (`moduleKinds` lists the kinds the tile may hold; `newModuleIdentity`
-names it after its kind, numbered within the tile, with an ID such as `shorten-data-access`),
-links it with `connectComponent` to one of `moduleLinkChoices` (the tiles its host links to whose
-kind it may use, through that link), unlinks it with `disconnectComponent` and removes it with
-`removeComponent`.
+Browser apps accept only auth guard, external call and custom components in the source schema.
+Normal module lists show preserved or preset-bound modules and edit names plus installed useful
+settings. Feature attachment creates bound modules atomically; normal mouse/chat commands refuse
+arbitrary `createComponent`/`connectComponent`. Low-level source operations remain available for
+explicit custom imports and diagnostics.
 
 ## Settings
 

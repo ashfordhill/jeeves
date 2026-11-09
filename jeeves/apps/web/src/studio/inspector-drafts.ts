@@ -1,5 +1,4 @@
 import {
-  buildStudioCommand,
   containerClassification,
   type DesignDocument,
   resolveStudioDefinition,
@@ -9,6 +8,7 @@ import {
   studioSettingsSchema,
 } from "@jeeves/spec";
 import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
+import { buildEditorCommand } from "./generation-support.ts";
 
 /** What the tile inspector edits: an element, or the system (the actor and no selection). */
 export type InspectorTarget = { kind: "system" } | { kind: "element"; id: string };
@@ -154,14 +154,14 @@ export function inspectorSpec(
         }),
       };
       if (ref.kind === "system")
-        return buildStudioCommand(current, {
+        return buildEditorCommand(current, {
           type: "editSystem",
           ...(!current.architecture && { name: label }),
           ...text,
         }).ops;
       if (!binding)
-        return buildStudioCommand(current, { type: "edit", element: ref.id, ...text }).ops;
-      return buildStudioCommand(current, {
+        return buildEditorCommand(current, { type: "edit", element: ref.id, ...text }).ops;
+      return buildEditorCommand(current, {
         type: "edit",
         element: ref.id,
         ...text,

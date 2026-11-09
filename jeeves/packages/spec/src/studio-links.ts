@@ -85,8 +85,8 @@ export type StudioLinkRule = {
   connection?: StudioLinkConnection;
 };
 
-const calls: StudioLinkConnection = { kind: "calls", label: "Calls", protocol: "HTTPS" };
-const uses: StudioLinkConnection = { kind: "depends-on", label: "Uses", protocol: "HTTPS" };
+const calls: StudioLinkConnection = { kind: "calls", label: "Calls", protocol: "HTTP" };
+const uses: StudioLinkConnection = { kind: "depends-on", label: "Uses", protocol: "HTTP" };
 const sync = { modes: ["sync"], defaultMode: "sync" } as const;
 const async = { modes: ["async"], defaultMode: "async" } as const;
 const either = { modes: ["sync", "async"], defaultMode: "sync" } as const;
@@ -289,7 +289,7 @@ export function studioLinkDefaults(
         label,
         protocol,
         interaction: chosen === "async" ? "Asynchronous" : "Request / response",
-        security: "Service identity",
+        security: "Private network",
       },
       settings: { ...settings },
     },

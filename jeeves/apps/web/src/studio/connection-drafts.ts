@@ -1,5 +1,4 @@
 import {
-  buildStudioCommand,
   type DesignDocument,
   studioAccessSchema,
   studioAllowsRequestPolicies,
@@ -9,6 +8,7 @@ import {
   studioProtocolSchema,
 } from "@jeeves/spec";
 import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
+import { buildEditorCommand } from "./generation-support.ts";
 
 export function connectionSettings(values: DraftValues) {
   const mode = values["settings.retry.mode"];
@@ -122,7 +122,7 @@ export function connectionSpec(
           .filter((path) => path.startsWith("planned."))
           .map((path) => [path.slice(8), values[path]]),
       );
-      return buildStudioCommand(current, {
+      return buildEditorCommand(current, {
         type: "editConnection",
         connection: id,
         ...(Object.keys(planned).length && { planned }),

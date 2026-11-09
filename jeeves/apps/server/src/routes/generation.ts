@@ -11,6 +11,7 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import type { DesignService } from "../design/service.ts";
 import { scaffoldArchive } from "../generation/archive.ts";
+import { installedGenerationSupport } from "../generation/support.ts";
 import { notFound } from "./projects.ts";
 
 const params = z.strictObject({ id: z.uuid() });
@@ -26,6 +27,10 @@ export const generationRoutes: FastifyPluginAsyncZod<{ service: DesignService }>
   app,
   { service },
 ) => {
+  app.get("/generation-support", async (_req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return installedGenerationSupport();
+  });
   for (const action of ["preview", "download"] as const) {
     app.post(
       `/projects/:id/experimental-generation/${action}`,

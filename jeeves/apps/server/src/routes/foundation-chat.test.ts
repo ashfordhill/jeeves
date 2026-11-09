@@ -1,5 +1,7 @@
 import { createFakeProvider, type ModelRequest } from "@jeeves/providers";
 import {
+  applyOperations,
+  buildStudioCommand,
   type DesignDocument,
   designBlueprintV3,
   designReadiness,
@@ -93,7 +95,7 @@ function construction(design: DesignDocument): StudioCommand[] {
     ),
   ];
 }
-it("independently builds the actual mouse slice through ChatService, exactly matching semantic blueprint/contracts/report and one Undo", async () => {
+it("preserves historical mouse source while ChatService declares exact contracts/report in one Undo", async () => {
   const expected = designSchema.parse(mouseEvidence);
   if (expected.schemaVersion !== 3) throw new Error();
   const database = await openTestDb(),
@@ -102,18 +104,10 @@ it("independently builds the actual mouse slice through ChatService, exactly mat
   const configure = (name: string, value: object) =>
     ["preview", "apply"].map((action) => ({
       name,
-      arguments: { baseRevision: 0, action, upgrade: true, ...value },
+      arguments: { baseRevision: 1, action, upgrade: true, ...value },
     }));
   const requests: ModelRequest[] = [];
   const steps = [
-    {
-      toolCalls: [
-        {
-          name: "applyStudioCommands",
-          arguments: { baseRevision: 0, commands: construction(expected) },
-        },
-      ],
-    },
     { toolCalls: configure("configureDesignScope", { scope: expected.scope }) },
     { toolCalls: configure("configureOwnership", { ownership: expected.ownership }) },
     { toolCalls: configure("configureOperations", { operations: expected.operations }) },
@@ -134,11 +128,23 @@ it("independently builds the actual mouse slice through ChatService, exactly mat
   try {
     const project = await service.createProject("NC06 scripted construction"),
       chat = new ChatService(database.db, service, () => ({ provider, model: "offline-script" }));
+    let historical = emptyDesign();
+    const sourceOps = [];
+    for (const command of construction(expected)) {
+      const batch = buildStudioCommand(historical, command);
+      const result = applyOperations(historical, batch.ops);
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      historical = result.design;
+      sourceOps.push(...batch.ops);
+    }
+    expect(
+      (await service.edit(project.id, { baseRevision: 0, ops: sourceOps, source: "canvas" })).ok,
+    ).toBe(true);
     const started = await chat.start(project.id, {
       message: "Build the narrow TinyURL foundation with the explicit chosen canonical identities.",
       fileIds: [],
       selection: [],
-      baseRevision: 0,
+      baseRevision: 1,
     });
     if (!started.ok) throw new Error(started.message);
     const turn = await started.run(() => {}),
@@ -147,7 +153,7 @@ it("independently builds the actual mouse slice through ChatService, exactly mat
     expect(turn.error).toBeNull();
     expect(turn.activity.filter((x) => !x.ok)).toEqual([]);
     if (!state) throw new Error();
-    expect(state.design.revision).toBe(1);
+    expect(state.design.revision).toBe(2);
     expect(designBlueprintV3({ ...state.design, revision: 0 })).toEqual(
       designBlueprintV3({ ...expected, revision: 0 }),
     );
@@ -156,14 +162,21 @@ it("independently builds the actual mouse slice through ChatService, exactly mat
     expect(state.design.operations).toEqual(expected.operations);
     expect(state.design.ownership).toEqual(expected.ownership);
     expect(state.design.scope).toEqual(expected.scope);
-    expect(requests).toHaveLength(6);
+    expect(requests).toHaveLength(5);
     const undo = await app.inject({
       method: "POST",
       url: `/projects/${project.id}/undo`,
-      payload: { baseRevision: 1 },
+      payload: { baseRevision: 2 },
     });
-    expect(undo.json().design).toEqual({ ...emptyDesign(), revision: 2 });
-    expect(undo.json().history.canUndo).toBe(false);
+    expect(undo.json().design).toEqual({ ...historical, revision: 3 });
+    expect(undo.json().history.canUndo).toBe(true);
+    const undoSource = await app.inject({
+      method: "POST",
+      url: `/projects/${project.id}/undo`,
+      payload: { baseRevision: 3 },
+    });
+    expect(undoSource.json().design).toEqual({ ...emptyDesign(), revision: 4 });
+    expect(undoSource.json().history.canUndo).toBe(false);
   } finally {
     await app.close();
     await database.close();

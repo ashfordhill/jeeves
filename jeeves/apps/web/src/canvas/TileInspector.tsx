@@ -1,34 +1,20 @@
-// A tile's inspector: its icon, name and kind; the Type list (each kind of its tile type with its
-// icon and name, the current one highlighted; a click is `changeKind`, a kind the rules refuse is
-// disabled with the reason as its tooltip); then
-// General, Options, Connections and, for an application, Modules. Modules are a list with a `+`
-// icon menu (`createComponent`); a module opens its own form, with a way back to the tile. Each
-// change is one batch and one undo step. Modules are never drawn on the canvas.
+// Tile names and installed useful settings; bound modules open their existing inspector.
 import type { BoardSelection } from "@jeeves/board";
 import {
-  applyOperations,
-  buildStudioCommand,
-  createStudioComponentSettings,
   type DesignDocument,
   designOwnership,
   moduleKinds,
-  newModuleIdentity,
   type StudioComponent,
-  type StudioComponentKind,
   type StudioKind,
   studioComponentDefinitions,
   studioComponentVisuals,
   studioDefinitions,
   studioLinkRole,
   studioStoreAccess,
-  studioTileDefinitions,
   studioWarnings,
-  tileTypeOf,
 } from "@jeeves/spec";
-import { Menu } from "@mantine/core";
-import { IconArrowLeft, IconPlus } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
-import { commitAction } from "../studio/actions.ts";
+import { IconArrowLeft } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { ComponentForm, type InspectorTab, TargetInspector } from "../studio/InspectorForm.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import { WarningList } from "./Warnings.tsx";
@@ -69,83 +55,12 @@ function StoreAccess({ design, store }: { design: DesignDocument; store: string 
   );
 }
 
-/** Why switching this tile to `kind` is refused (the command's words, or apply's), if it is. */
-function changeKindRefusal(
-  design: DesignDocument,
-  element: string,
-  kind: StudioKind,
-): string | undefined {
-  try {
-    const ops = buildStudioCommand(design, { type: "changeKind", element, kind }).ops;
-    const result = applyOperations(design, ops, { baseRevision: design.revision });
-    return result.ok ? undefined : (result.errors[0]?.message ?? "This change is not allowed.");
-  } catch (error) {
-    return error instanceof Error ? error.message : String(error);
-  }
-}
-
-/** The Type list: each kind of the tile's type by icon and name. Hidden for a one-kind type. */
-function TypeList({
-  projectId,
-  design,
-  element,
-}: {
-  projectId: string;
-  design: DesignDocument;
-  element: string;
-}) {
-  const choices = useMemo(() => {
-    const current = kindOf(design, element);
-    const type = current && tileTypeOf(current);
-    if (!current || !type) return [];
-    return studioTileDefinitions[type].kinds.map((kind) => ({
-      kind,
-      current: kind === current,
-      refusal: kind === current ? undefined : changeKindRefusal(design, element, kind),
-    }));
-  }, [design, element]);
-  if (choices.length < 2) return null;
-  return (
-    <fieldset className="lane-kinds" aria-label="Type">
-      <legend>Type</legend>
-      {choices.map(({ kind, current, refusal }) => {
-        const definition = studioDefinitions[kind];
-        return (
-          <button
-            key={kind}
-            type="button"
-            className="lane-kind"
-            data-family={definition.visual.color}
-            aria-pressed={current}
-            title={refusal ?? definition.description}
-            disabled={!!refusal}
-            onClick={() => {
-              if (current) return;
-              void commitAction(
-                projectId,
-                (latest) => buildStudioCommand(latest, { type: "changeKind", element, kind }).ops,
-              );
-            }}
-          >
-            <span className="lane-kind-icon">
-              <StudioIcon name={definition.visual.icon} size={18} />
-            </span>
-            <span className="lane-kind-name">{definition.name}</span>
-          </button>
-        );
-      })}
-    </fieldset>
-  );
-}
-
-/** The host's modules (icon and name; a click opens one) and the `+` icon menu of kinds. */
+/** Preserved or preset-bound modules; a click opens one. */
 function ModuleList({
-  projectId,
   design,
   host,
   onOpen,
 }: {
-  projectId: string;
   design: DesignDocument;
   host: string;
   onOpen: (id: string, created?: boolean) => void;
@@ -153,19 +68,6 @@ function ModuleList({
   const modules = (design.architecture?.studio?.components ?? []).filter(
     (item) => item.host === host,
   );
-  const add = (kind: StudioComponentKind) => {
-    const created = newModuleIdentity(design, host, kind);
-    void commitAction(
-      projectId,
-      (latest) =>
-        buildStudioCommand(latest, {
-          type: "createComponent",
-          component: { ...created, host, settings: createStudioComponentSettings(kind) },
-        }).ops,
-    ).then((ok) => {
-      if (ok) onOpen(created.id, true);
-    });
-  };
   return (
     <div className="lane-modules">
       {modules.length ? (
@@ -190,37 +92,6 @@ function ModuleList({
       ) : (
         <p className="studio-field-help">No modules yet.</p>
       )}
-      <Menu position="bottom-start" shadow="md">
-        <Menu.Target>
-          <button
-            type="button"
-            className="lane-module-add"
-            aria-label="Add module"
-            title="Add module"
-          >
-            <IconPlus size={18} aria-hidden />
-          </button>
-        </Menu.Target>
-        <Menu.Dropdown className="lane-module-menu">
-          {moduleKinds(design, host).map((kind) => {
-            const name = studioComponentDefinitions[kind].name;
-            const visual = studioComponentVisuals[kind];
-            return (
-              <Menu.Item
-                key={kind}
-                className="lane-module-kind"
-                aria-label={name}
-                title={name}
-                onClick={() => add(kind)}
-              >
-                <span className="lane-module-icon" data-family={visual.color}>
-                  <StudioIcon name={visual.icon} size={22} />
-                </span>
-              </Menu.Item>
-            );
-          })}
-        </Menu.Dropdown>
-      </Menu>
     </div>
   );
 }
@@ -352,7 +223,6 @@ export function TileInspector({
         </p>
       ) : null}
       <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
-      <TypeList projectId={projectId} design={design} element={id} />
       {!declaredStore ? storeAccess : null}
       <TargetInspector
         projectId={projectId}
@@ -364,9 +234,7 @@ export function TileInspector({
         onTab={setTab}
         legacyAccess={declaredStore ? storeAccess : undefined}
         modules={
-          application ? (
-            <ModuleList projectId={projectId} design={design} host={id} onOpen={openModule} />
-          ) : undefined
+          application ? <ModuleList design={design} host={id} onOpen={openModule} /> : undefined
         }
       />
     </div>

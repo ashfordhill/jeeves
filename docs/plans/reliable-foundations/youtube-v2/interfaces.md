@@ -1292,3 +1292,36 @@ by an explicit validated recipe using `V2Emitter.render().resolves[{emitter,id}]
 resolution refuses. Partial source still has required hooks and no application readiness. Runtime
 verification remains `none` in the deterministic report: observed smoke evidence is recorded
 separately, not promoted into strict TinyURL certification. [Evidence/limits](../evidence/youtube-v2/yv2-16-composition.md).
+
+## YV2-17 — Installed feature authoring through mouse and chat
+
+- `@jeeves/spec` exports `supportedAuthoringCommandSchema`, `SupportedAuthoringCommand`,
+  `buildSupportedAuthoringCommand(design, command, installed)`, `supportedGenerationPresets`,
+  `normalGenerationControls` and `normalSettingFields`. Normal settings require the resolver's
+  installed consumer/output responsibility and `userNeed`; only the first source path is editable.
+  Cache TTL and adjustable worker concurrency mirrors update in the same `setStudio` batch.
+- `attachGenerationPreset` accepts `preset: video | youtube` and optional explicit prefix, checks
+  actual installed support and delegates to YV2-16's atomic graph/module/ownership/generation
+  command. The system General inspector previews the addition and any schema2 upgrade before
+  attachment. It chooses a free prefix without exposing internal identities. Chat's existing
+  `applyStudioCommands` accepts the same command and normal setting changes.
+- `GET /generation-support` (web proxy `/api/generation-support`) returns `GenerationInstalledSupport`
+  with `Cache-Control: no-store`, from cached actual `loadLocalV2Registry()`. It is neither an
+  independent hard-coded registry nor the dependency-only test host. Failed support lookup exposes
+  no template settings. Inspector drafts, component drafts and connection-label drafts share the
+  normal command builder; arbitrary kind/module/link policy authoring is unavailable there.
+- Normal useful fields reuse existing HTTP timeout/admission, adjustable worker concurrency,
+  cache TTL and traced SQL pool/statement timeout fields. Fixed Docker/TypeScript/providers,
+  fixed media concurrency, retry/outbox/cache policy, languages/tus/cloud alternatives, internal
+  IDs/versions/schemas/mappings/grants have no normal controls. Broader historical source schemas
+  and low-level commands remain available for explicit source import/diagnostics. Reading and
+  renaming retains old source. New local link defaults explicitly use HTTP/Private network where
+  applicable; historical HTTPS/service-identity intent is retained and diagnosed by the resolver.
+- Changed TTL is emitted in `src/features/application-bindings.ts`; the actual Watch constructor
+  in `src/services/youtube.ts` passes `input(s, "cache.ttlSeconds")` to `createYouTubeReadyReader`.
+  No template algorithm/provider changed. Base video still requires typed product/service hooks;
+  normal attachment and successful build grant no strict readiness/runtime evidence. YV2-18 owns
+  remaining ownership/operation/presentation clutter; YV2-19 owns v2 saved-source preview/ZIP.
+- [Evidence and snapshots](../evidence/youtube-v2/yv2-17-authoring.md). Historical source/wire,
+  foundation contracts/history and evaluator validation remain covered; unsupported settings are
+  seeded explicitly as historical source rather than through normal chat configuration.

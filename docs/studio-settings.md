@@ -1,12 +1,39 @@
 # Studio settings
 
-This is the allowlist of everything the studio lets you configure. A field that is not listed
-here is not exposed. Add one only for a demonstrated design need, with its schema, form field,
-validation and blueprint output together; do not add controls because a cloud provider or an old
-model has a property. The source of truth is
-[`studio-model.ts`](../jeeves/packages/spec/src/studio-model.ts),
-[`studio-components.ts`](../jeeves/packages/spec/src/studio-components.ts) and the field descriptors in
-[`studio-definitions.ts`](../jeeves/packages/spec/src/studio-definitions.ts).
+The normal editor exposes only useful settings with actual consumers in the executing installed
+registry. The broader tables below document the preserved source schema, not a menu of supported
+controls. Reading, selecting, renaming or reloading a design never removes unsupported intent.
+
+## Normal feature configuration
+
+Select the user to open the system's existing General inspector. Feature preset selection offers
+owned upload/video processing or the complete local YouTube backend, with an explicit attachment
+preview and one atomic save/Undo. Video retains required custom product/service hooks. Local
+Docker, TypeScript, exact providers, codecs, renditions, deadlines and event policy are fixed.
+
+| Normal control | Actual selected consumer | Bound |
+| --- | --- | --- |
+| Request timeout | HTTP service deadline | 1–300000 ms |
+| Concurrency limit | HTTP admission | 1–100000 |
+| Worker concurrency | AMQP handler admission, except fixed media worker | 1–1024 |
+| TTL | Positive cache reader | 1–604800 seconds |
+| Pool size | Traced SQL client | 1–1000 |
+| Statement timeout | Traced SQL client | 1–300000 ms |
+
+Controls additionally require an authoritative saved source field and the installed template's
+matching consumer/output paths. TTL is edited on the cache tile; its traced reader mirror changes
+in the same atomic command. Worker concurrency mirrors behave the same way. A mirror has no second
+editor. SQL settings are edited on their bound data-access module. Normal controls never expose
+weights/mappings, IDs, exact versions, grants, arbitrary config, L1/negative caching, Go/tus/cloud
+alternatives, provider choices or media internals. Historical modules remain inspectable and
+renameable; arbitrary module/kind replacement requires explicit custom source work.
+
+`buildSupportedAuthoringCommand`, `normalSettingFields` and `supportedGenerationPresets` in
+[`supported-authoring.ts`](../jeeves/packages/spec/src/supported-authoring.ts) drive mouse/chat.
+`GET /generation-support` reports the actual server registry; failure means no editable template
+settings. Unsupported chat changes refuse without modifying source. Explicit custom requirements
+remain visible unresolved generation gaps. The low-level source schemas/commands below remain
+available for imports and diagnostics.
 
 ## Rules
 
@@ -90,7 +117,7 @@ named Catalog or Orders without gaining a business-rule form.
 
 ### Languages
 
-Each coded kind offers two languages, its default first; any other value is refused (`Choose
+The historical source schema accepts two languages per coded kind, its default first; any other value is refused (`Choose
 TypeScript or Go; this kind offers no other language.`). Gateway and CDN are products, not code,
 and have no language; the browser app has none either.
 
@@ -107,12 +134,12 @@ and have no language; the browser app has none either.
 
 A stored design whose language is outside its kind's pair (including the old `unspecified`,
 `javascript`, `python`, `java`, `csharp` and `rust`) reads with the kind's default, and a stored
-gateway's language is dropped. Commands and the inspector still refuse such values.
+gateway's language is dropped. Low-level source commands still refuse such values. Normal forms expose no language choice.
 
 ### Defaults
 
 A new tile and `changeKind` start from the kind's defaults (`createStudioSettings`). The
-preconfigured kinds name their usual provider; every other choice stays selectable:
+preconfigured kinds name their usual provider; other source values remain preservable:
 
 | Kind | Field | Starts as |
 | --- | --- | --- |

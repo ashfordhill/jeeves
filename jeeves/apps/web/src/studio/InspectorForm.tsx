@@ -3,7 +3,7 @@ import {
   containerClassification,
   type DesignDocument,
   declaredAccessLabels,
-  moduleLinkChoices,
+  normalSettingFields,
   type StudioComponentDefinition,
   type StudioComponentField,
   type StudioComponentSettings,
@@ -36,6 +36,7 @@ import {
   componentSpec,
   deadLetterChoices,
 } from "./component-drafts.ts";
+import { useGenerationSupport } from "./generation-support.ts";
 import {
   draftSettings,
   type InspectorTarget,
@@ -43,6 +44,7 @@ import {
   originChoices,
   ownerChoices,
 } from "./inspector-drafts.ts";
+import { PresetAttachment } from "./PresetAttachment.tsx";
 
 const canonical = studioDefinitions.service.fields.filter((field) => field.control === "text");
 
@@ -267,6 +269,7 @@ function ComponentDraftForm({
       ),
     [design, index],
   );
+  const installed = useGenerationSupport();
   const component = studio?.components?.[index];
   if (!component) return null;
   const definition = studioComponentDefinitions[
@@ -285,9 +288,14 @@ function ComponentDraftForm({
   const otherGaps = findings.filter(
     (item) => !requirements.some((requirement) => requirement.reason === item.message),
   );
-  const general = definition.fields.filter((field) => field.group === "General");
+  const controls = normalSettingFields(design, installed, { component: id });
+  const editable = (field: StudioComponentField) =>
+    !field.path.startsWith("settings.") ||
+    controls.some((control) => `settings.${control.sourcePaths[0]?.at(-1)}` === field.path);
+  const general = definition.fields.filter((field) => field.group === "General" && editable(field));
   const options = definition.fields.filter(
-    (field) => field.group === "Options" && componentFieldApplies(field, settings),
+    (field) =>
+      field.group === "Options" && componentFieldApplies(field, settings) && editable(field),
   );
   const groups: { group: StudioFieldGroup; fields: readonly StudioComponentField[] }[] = [
     { group: "General", fields: general },
@@ -307,28 +315,6 @@ function ComponentDraftForm({
     );
     setRemoving(false);
     if (removed) onRemoved?.();
-  };
-  // Link to: the tiles the host links to whose kind this module may use, through that link.
-  const linkChoices = moduleLinkChoices(design, id);
-  const linkTo = (value: string) => {
-    const choice = linkChoices.find((item) => `${item.element}>${item.via}` === value);
-    if (!choice) return;
-    void commitAction(
-      spec.projectId,
-      (latest) =>
-        buildStudioCommand(latest, {
-          type: "connectComponent",
-          links: [
-            {
-              link: {
-                id: choice.id,
-                from: id,
-                to: { kind: "element", id: choice.element, via: choice.via },
-              },
-            },
-          ],
-        }).ops,
-    );
   };
   return (
     <form
@@ -473,36 +459,10 @@ function ComponentDraftForm({
                 </div>
               );
             })}
-            {linkChoices.length ? (
-              <div className="studio-form-field">
-                <label htmlFor={`${tabId}-link-to`}>Link to</label>
-                <select
-                  id={`${tabId}-link-to`}
-                  value=""
-                  onChange={(event) => linkTo(event.currentTarget.value)}
-                >
-                  <option value="">Choose a tile</option>
-                  {linkChoices.map((choice) => {
-                    const via = design.connections.find((item) => item.id === choice.via);
-                    return (
-                      <option
-                        key={`${choice.element}>${choice.via}`}
-                        value={`${choice.element}>${choice.via}`}
-                      >
-                        {name(choice.element)}
-                        {via?.planned?.label ? ` · ${via.planned.label}` : ""}
-                      </option>
-                    );
-                  })}
-                </select>
-                <small className="studio-field-help">
-                  Through {name(component.host)}'s own link to that tile.
-                </small>
-              </div>
-            ) : null}
             {component.settings.kind === "external-call" ? (
               <p className="studio-field-help">
-                Timeout and retries belong to the traced connection; open it to edit them.
+                Timeout and retry declarations remain preserved on the traced connection. They have
+                no normal editable consumer.
               </p>
             ) : null}
           </div>
@@ -598,6 +558,7 @@ function TargetForm({
   const [ownTab, setOwnTab] = useState<InspectorTab>("General");
   const selectedTab = tab ?? ownTab;
   const setSelectedTab = onTab ?? setOwnTab;
+  const installed = useGenerationSupport();
   const settings = draftSettings(entry.values) as StudioSettings;
   const definition = settings.kind ? studioDefinitions[settings.kind] : undefined;
   const groups: { group: InspectorTab; fields: InspectorField[] }[] = definition
@@ -607,13 +568,20 @@ function TargetForm({
         fields: [...item.fields] as unknown as InspectorField[],
       }))
     : [{ group: "General", fields: ref.kind === "system" ? systemFields : canonical }];
-  // Service and resource performance intent joins Options (after the definition fields).
-  const performance = definition ? studioPerformanceFields[settings.kind] : [];
+  const controls =
+    ref.kind === "element" ? normalSettingFields(design, installed, { element: ref.id }) : [];
+  const editable = (field: InspectorField) =>
+    !field.path.startsWith("settings.") ||
+    controls.some((control) => `settings.${control.sourcePaths[0]?.at(-1)}` === field.path);
+  for (const group of groups) group.fields = group.fields.filter(editable);
+  // Only installed, useful performance controls join Options.
+  const performance = definition ? studioPerformanceFields[settings.kind].filter(editable) : [];
   if (performance.length) {
     const options = groups.find((group) => group.group === "Options");
     if (options) options.fields = [...options.fields, ...performance];
     else groups.splice(1, 0, { group: "Options", fields: [...performance] });
   }
+  for (let i = groups.length - 1; i >= 0; i--) if (!groups[i]?.fields.length) groups.splice(i, 1);
   const connections =
     ref.kind === "element"
       ? design.connections.filter(
@@ -686,6 +654,9 @@ function TargetForm({
         aria-label={groups.length === 1 ? active : undefined}
         aria-labelledby={groups.length > 1 ? `${tabId}-${active}-tab` : undefined}
       >
+        {ref.kind === "system" ? (
+          <PresetAttachment projectId={spec.projectId} design={design} />
+        ) : null}
         {current.fields.map((field) => {
           const legacyWriter = field.path === "owner" && design.schemaVersion === 3;
           const input = (

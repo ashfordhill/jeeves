@@ -6026,3 +6026,33 @@ Next **YV2-17 only** wires supported source choices/controls to mouse and chat u
 constructors/commands above. Base product hooks remain custom; YV2-20 owns alternate consumer
 proof,21 the untouched field baseline,22 the existing browser. Static notice is an explicit browser
 slot, not that browser; deterministic report runtimeVerification stays none/strict readiness separate.
+
+## 2026-11-08 — YV2-17: installed feature configuration through mouse and chat
+
+Normal authoring now shares `buildSupportedAuthoringCommand` and actual installed support from
+`GET /generation-support`. System General previews video/YouTube attachment, graph/modules/
+ownership/generation and explicit upgrade in one Undo step. Forms show useful installed HTTP,
+worker, cache TTL and SQL controls only; authoritative TTL/concurrency mirrors update atomically.
+Hidden alternatives/raw module creation refuse in chat; legacy source remains readable, renameable
+and exportable. New links explicitly use local HTTP/Private network; historical intent is retained.
+[APIs/gaps](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-17--installed-feature-authoring-through-mouse-and-chat).
+
+Final `pnpm check`: lint/types, **465tests/69files,31.20s**; then **36native E2Es,1.3m**;
+web build **1.68s** (existing advisories). Historical nested source, exact contracts and Undo tests
+remain; unsupported fixture setup uses explicit source commands. Live4300 Chromium1440×900 mouse
+TinyURL selection, preset attach19tiles, native TTL spinner3600→3601/mirror3601, Undo/reload3600,
+zeroerrors; ownprojects deleted. [Evidence/snapshots](plans/reliable-foundations/evidence/youtube-v2/yv2-17-authoring.md).
+
+Final deterministic **93-file** complete export passes own frozen install/untouched build; TTL420
+reaches actual Watch constructor. Manifest2193f1dc7ffa1b3038d46a2817f2bf413880c0a7e42599a2ce1598bfb9a7648f.
+All108frozen v1 hashes/manifest and15584953-byte fixture match; retained FFmpeg unchanged/all14v1
+containers healthy, v1app clean. Own export/deps/build removed before root checks; no Docker/port
+allocation. Logs/harnesses `/tmp/jeeves-yv2-17/{check-final,e2e-final,web-build,browser,export-final,
+install-final,build-final}.log` and summary JSONs. Owner README/feedback dirt/Unicode deletions/colon
+variants/e2e-docker mode preserved. No branch/worktree/stash/push/finalv2app. Local commit:
+**YV2-17: align editor and chat with installed template support**.
+
+Next **YV2-18 only** owns remaining owner/role/operation/requirements/presentation clutter and
+normal viewport review. This unit hides unsupported configuration/type/module alternatives; existing
+ownership/strict-operation diagnostic authoring remains for18. YV2-19 still owns saved-source v2
+preview/ZIP dispatch. Base video product/service hooks remain custom; no new runtime/strict proof.

@@ -22,6 +22,20 @@ every saved relationship.
 studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (experimental partial preview/ZIP; exact frozen profile only)
 ```
 
+## Installed feature authoring
+
+Normal mouse and chat actions use `buildSupportedAuthoringCommand` with the executing registry
+reported by `GET /generation-support`. `attachGenerationPreset` (video or youtube) delegates to
+`buildGenerationPresetCommand`: graph, modules, generation and ownership save in one batch. A
+legacy source upgrade is explicit in the mouse preview. Useful supported settings reuse existing
+source fields; TTL and concurrency mirrors update atomically. No parsing/reload migration occurs.
+
+Blueprint v3 retains all original settings, custom requirements and generation declarations,
+including unsupported preserved values hidden by the normal editor. Its generation resolver
+still diagnoses unsupported transport/identity intent. New local connection creation explicitly
+uses HTTP/Private network where applicable. Catalog presence or successful attachment is not
+runtime verification. Saved-source v2 preview/ZIP routing remains separate work.
+
 ## Endpoint
 
 `GET /projects/:id/blueprint` returns the blueprint JSON with `Cache-Control: no-store`: 404 for an

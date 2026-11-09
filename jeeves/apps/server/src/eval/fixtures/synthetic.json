@@ -226,17 +226,11 @@
     "tinyurl-response-cache-repair": {
       "commands": [
         {
-          "type": "edit",
-          "element": "edge",
-          "settings": {
-            "kind": "cdn",
-            "provider": "cloudflare",
-            "origin": "redirect",
-            "cacheRedirects": "disabled"
-          }
+          "type": "removeTile",
+          "tile": "edge"
         }
       ],
-      "reply": "Redirect-response caching is disabled as design intent; lookup caching and analytics reader remain. Unresolved implementation obligations: redirect analytics loss/duplication and delivery scope, cache freshness and access. No runtime verification exists."
+      "reply": "Removed the redirect-response cache path as a topology repair; lookup caching and analytics reader remain. Unresolved implementation obligations: redirect analytics loss/duplication and delivery scope, cache freshness and access. No runtime verification exists."
     },
     "tinyurl-unsupported-edit": {
       "commands": [],

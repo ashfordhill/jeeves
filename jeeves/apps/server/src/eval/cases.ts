@@ -1,5 +1,7 @@
 /** Synthetic cases fixed before the paired live run. Names are role hints, never behavior proof. */
 import {
+  applyOperations,
+  buildStudioCommand,
   type DesignDocument,
   emptyDesign,
   type StudioCommand,
@@ -96,8 +98,9 @@ function tinySeed(edge: boolean) {
       description: "Keep the owner custom creation service.",
     },
   ]);
-  if (edge)
-    seed = commands(seed, [
+  if (edge) {
+    // Historical custom source is an explicit seed, never a normal chat configuration.
+    const legacyCommands: StudioCommand[] = [
       {
         type: "addTile",
         side: "after",
@@ -116,7 +119,13 @@ function tinySeed(edge: boolean) {
           cacheRedirects: "enabled",
         },
       },
-    ]);
+    ];
+    for (const command of legacyCommands) {
+      const result = applyOperations(seed, buildStudioCommand(seed, command).ops);
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      seed = result.design;
+    }
+  }
   return seed;
 }
 const lifecycle = { id: "durable-attempt", terms: ["pending", "failed", "attempt"] };
@@ -209,7 +218,7 @@ export const cases: EvalCase[] = [
       { id: "freshness-and-access", terms: ["freshness", "cache"] },
     ],
     alternatives:
-      "Removing the CDN or cacheRedirects disabled is supported intent. Edge analytics would require an unsupported explicit contract and does not meet this fixture's every-redirect-at-publisher requirement.",
+      "Removing the CDN is a supported topology repair; custom cacheRedirects settings have no installed editable consumer. Edge analytics would require an unsupported explicit contract and does not meet this fixture's every-redirect-at-publisher requirement.",
   },
   {
     id: "tinyurl-unsupported-edit",

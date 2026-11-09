@@ -11,7 +11,7 @@ import {
   buildDesignScopeCommand,
   buildOperationsCommand,
   buildOwnershipCommand,
-  buildStudioCommand,
+  buildSupportedAuthoringCommand,
   contractRecords,
   type DesignDocument,
   type DesignScope,
@@ -24,6 +24,7 @@ import {
   emptyReviewScope,
   exactContractRefSchema,
   type Finding,
+  type GenerationInstalledSupport,
   generationFindings,
   isDesignWarning,
   LANE_ACTOR,
@@ -31,6 +32,7 @@ import {
   laneGraph,
   laneLimits,
   listStudioPatterns,
+  normalGenerationControls,
   type OperationInput,
   operationContractFindings,
   operationRecords,
@@ -69,6 +71,8 @@ import {
   studioTileDefinitions,
   studioTileTypes,
   studioWarningSentence,
+  supportedAuthoringCommandSchema,
+  supportedGenerationPresets,
   tileTypeOf,
   tinyurlDesignScope,
   unresolvedDesignScope,
@@ -76,6 +80,7 @@ import {
 } from "@jeeves/spec";
 import { z } from "zod";
 import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
+import { installedGenerationSupport } from "../generation/support.ts";
 
 const roleWords: Record<StudioLinkRole, string> = {
   user: "user",
@@ -101,7 +106,9 @@ export function linkRuleText(rule: StudioLinkRule): string {
 const linkTable = `Link table (source -> target: modes; a pair not listed is refused). An application is a Service or API kind other than the CDN; a store is a database, search index, cache or storage. ${studioLinkRules.map(linkRuleText).join(" ")}`;
 const actionWords = `${studioActionDefaults.download} (download) or ${studioActionDefaults.upload} (upload)`;
 
-export const INSTRUCTIONS = `You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.
+export const INSTRUCTIONS = `Normal configuration is limited to getDesign.editableSettings from the executing installed registry. Use attachGenerationPreset (preset video or youtube, optional free prefix) through applyStudioCommands to atomically attach bound modules, graph and ownership. Video requires custom host product/service hooks; YouTube has the complete experimental local backend. Never offer Go, cloud/tus, custom FFmpeg, L1/negative caching or internal policies as supported choices. Existing source values are preserved intent, not availability. An explicitly requested custom behavior must be recorded in configureDesignScope.customRequirements as an unresolved generation gap; never invent a template or silently rewrite historical settings.
+
+You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.
 
 The lane canvas:
 - One actor, the user (a mobile and desktop user), is always there. It is not a tile; you never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post).
@@ -117,7 +124,7 @@ The lane canvas:
 
 Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
 
-readReadiness returns the same snapshot report as the inspector and blueprint v3: design validity, exact contract completeness, implementation availability and exact generated-output evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Product has no real artifact/evidence registry, generated output or runner. The report is read-only and does not replace a fresh reviewDesign before staged edits commit.
+readReadiness returns the same snapshot report as the inspector and blueprint v3: design validity, exact contract completeness, implementation availability and exact generated-output evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Strict readiness has no real artifact/evidence registry or verified runner. Experimental installed feature support is reported separately by getDesign and grants no strict readiness credit. The report is read-only and does not replace a fresh reviewDesign before staged edits commit.
 
 Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before building or substantially restructuring a design, use listStudioPatterns to discover applicability and describeStudioPattern to retrieve the relevant records. Select only patterns that fit the person's use case: cache-aside lookup, durable background job, publication-to-search, pending-order/payment coordination. For an upload/processing/publication flow retrieve both the job and publication records. A trivial rename does not need retrieval. Retrieval alone does not establish that a pattern applies; state the chosen scope and assumptions. Read each record's support limitations and implementation obligations before proposing commands. Examples marked commands are topology-only starting points, not complete applications; examples marked obligation describe unsupported lifecycle contracts and must not be converted into fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. Preserve the intended logical owner and explain the missing contract precisely. Pattern guidance, represented design intent, template availability and runtime verification are separate: these patterns supply no runtime templates or verification. Do not claim tests of this tool loop prove model design quality.
 
@@ -137,9 +144,9 @@ Commands (applyStudioCommands, with getDesign's baseRevision):
 - setEntryLane: moves an entry to the other lane's action ("download" or "upload"), within its cap.
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.
-- changeKind: switches a tile to another kind of its tile type, as the inspector's Type list does; its settings start from that kind's defaults.
-- edit (a tile's name, purpose, settings or owner), editSystem (the system name and goal), editConnection (a link's label, protocol, interaction, security and settings). Settings are complete values, not patches.
-- createComponent, editComponent, connectComponent, disconnectComponent, removeComponent: modules inside an application tile. A module reaches other tiles only through its tile's own links.
+- attachGenerationPreset: previews through the mouse or stages through chat an installed video/youtube feature, including its bound kinds, modules and resources. changeKind is retained source vocabulary and refuses in normal authoring.
+- edit (a tile's name, purpose, useful supported settings or preserved owner), editSystem (the system name and goal), editConnection (a link's label only). Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.
+- editComponent changes a module's name, purpose or useful supported settings; disconnectComponent/removeComponent remove source intent. createComponent/connectComponent are retained source vocabulary and refuse in normal authoring: attach an installed feature for bound modules.
 IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
 
 Several commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.
@@ -176,7 +183,7 @@ const schemas = {
   }),
   applyStudioCommands: z.strictObject({
     baseRevision: z.int().nonnegative(),
-    commands: z.array(studioCommandSchema).min(1).max(50),
+    commands: z.array(supportedAuthoringCommandSchema).min(1).max(50),
   }),
   validateDesign: z.strictObject({}),
   readReadiness: z.strictObject({}),
@@ -197,7 +204,7 @@ const descriptions: Record<ToolName, string> = {
   listStudioDefinitions:
     "List the tile types with their kinds, the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
   describeStudioDefinition:
-    "Read a kind's exact settings JSON Schema, defaults, inspector fields and implementation obligations.",
+    "Read a kind's diagnostic source schema and historical defaults. These are preserved design intent, not editable choices; getDesign.editableSettings supplies actual normal controls.",
   listStudioPatterns:
     "List the four reviewed design patterns, versions and applicability. Discover relevant records before building or substantial restructuring; retrieval does not establish applicability or runtime support.",
   describeStudioPattern:
@@ -209,7 +216,7 @@ const descriptions: Record<ToolName, string> = {
   configureOwnership:
     "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Declarations only: operation bindings are separate and runtime authorization is unavailable. Foreign writes refuse, foreign reads need a deliberate published-read contract; co-deployment grants nothing.",
   applyStudioCommands:
-    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
+    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   readReadiness:
     "Read the same snapshot compatibility report as the mouse and blueprint v3: full structural validity, exact contract completeness, implementation availability and exact-output runtime evidence separately. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
@@ -418,7 +425,10 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
     findings: findings.filter((item) => !isDesignWarning(item)),
     /** Designs that look wrong but are allowed; resolve the ones this turn caused. */
     warnings: findings.filter(isDesignWarning).map((item) => item.message),
-    availability: "Studio definitions describe design intent only.",
+    installedPresets: supportedGenerationPresets(installedGenerationSupport()),
+    editableSettings: normalGenerationControls(design, installedGenerationSupport()),
+    availability:
+      "Only editableSettings are normal controls. Other source settings are preserved intent; exact-output runtime verification remains separate.",
   };
 }
 
@@ -440,7 +450,11 @@ function unknownCommand(args: unknown): string | undefined {
   const commands = args && typeof args === "object" && "commands" in args ? args.commands : [];
   for (const command of Array.isArray(commands) ? commands : []) {
     const type = command && typeof command === "object" && "type" in command && command.type;
-    if (typeof type === "string" && !commandTypes.includes(type))
+    if (
+      typeof type === "string" &&
+      !commandTypes.includes(type) &&
+      type !== "attachGenerationPreset"
+    )
       return `There is no "${type}" command. The commands are ${commandTypes.join(", ")}. Actions, tiles and links are added and removed only with addAction, removeAction, addTile, linkTiles, removeTile and removeLink, which keep every tile on a lane.`;
   }
   return undefined;
@@ -475,6 +489,7 @@ export class Workspace {
     /** The committed design the pending edits apply to. */
     public base: DesignDocument,
     public working: DesignDocument = base,
+    public installed: GenerationInstalledSupport = installedGenerationSupport(),
   ) {}
 
   /** Starts over from a newer committed design, dropping pending edits. */
@@ -541,6 +556,8 @@ export class Workspace {
         this.log(tool, true, "Read the studio design");
         return {
           ...designSummary(this.working, validateDesign(this.working)),
+          installedPresets: supportedGenerationPresets(this.installed),
+          editableSettings: normalGenerationControls(this.working, this.installed),
           baseRevision: this.base.revision,
         };
       case "describeOperation": {
@@ -804,7 +821,7 @@ export class Workspace {
       // In a call with several commands, say which one was refused.
       const which = commands.length > 1 ? `Command ${index + 1} (${command.type}): ` : "";
       try {
-        const batch = buildStudioCommand(working, command);
+        const batch = buildSupportedAuthoringCommand(working, command, this.installed);
         const result = applyOperations(working, batch.ops);
         if (!result.ok) return refused(which + result.errors.map((item) => item.message).join(" "));
         working = result.design;

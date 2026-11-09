@@ -3,7 +3,6 @@
  * draft identity is project + component + kind, edits become one `editComponent` command.
  */
 import {
-  buildStudioCommand,
   type DesignDocument,
   type StudioComponent,
   type StudioComponentDefinition,
@@ -14,6 +13,7 @@ import {
 } from "@jeeves/spec";
 import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
 import { endpointKind } from "./actions.ts";
+import { buildEditorCommand } from "./generation-support.ts";
 import { draftSettings } from "./inspector-drafts.ts";
 
 export const findComponent = (design: DesignDocument, id: string) =>
@@ -107,7 +107,7 @@ export function componentSpec(
       return errors;
     },
     build(current: DesignDocument, values: DraftValues, paths: readonly string[]) {
-      return buildStudioCommand(current, {
+      return buildEditorCommand(current, {
         type: "editComponent",
         component: id,
         ...(paths.includes("component.name") && {

@@ -1,8 +1,10 @@
 /** Real tool schemas + mocked Responses transport + the authoritative Workspace command path. */
 import { createOpenAIProvider, type ModelItem, toOpenAIInput } from "@jeeves/providers";
 import {
+  applyOperations,
   buildOperationsCommand,
   buildOwnershipCommand,
+  buildStudioCommand,
   createLinkOperation,
   designBlueprintV3,
   emptyDesign,
@@ -10,6 +12,7 @@ import {
   ownershipSchema,
   positiveCachePolicy,
   studioArchitectureExample,
+  studioCommandSchema,
   tinyurlDesignScope,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
@@ -390,14 +393,23 @@ describe("strict OpenAI studio tools", () => {
     expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(args);
     const workspace = new Workspace(emptyDesign());
     const [result] = execute(workspace, response.toolCalls);
-    expect(result).toMatchObject({ ok: true });
-    const canonical = new Workspace(emptyDesign());
-    expect(JSON.parse(canonical.run("applyStudioCommands", JSON.stringify(args)))).toMatchObject({
-      ok: true,
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("editable consumer"),
     });
-    expect(workspace.working).toEqual(canonical.working);
-    expect(workspace.pending).toEqual(canonical.pending);
-    expect(workspace.working.architecture?.studio).toMatchObject({
+    expect(workspace.working).toEqual(emptyDesign());
+    expect(workspace.pending).toEqual([]);
+    // Wire round-trip still preserves historical nested source, independently of normal authoring.
+    let historical = emptyDesign();
+    for (const command of args.commands) {
+      const applied = applyOperations(
+        historical,
+        buildStudioCommand(historical, studioCommandSchema.parse(command)).ops,
+      );
+      if (!applied.ok) throw new Error(JSON.stringify(applied.errors));
+      historical = applied.design;
+    }
+    expect(historical.architecture?.studio).toMatchObject({
       actions: [{ lane: "upload", name: "Produce" }],
       elements: expect.arrayContaining([
         expect.objectContaining({

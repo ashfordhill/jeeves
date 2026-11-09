@@ -70,8 +70,12 @@ test("New project offers the marketplace study", async ({ page }) => {
 
     const inspector = page.locator(".studio-inspector");
     await tile(page, "Image CDN").click();
-    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-    await expect(inspector.getByLabel("Image resizing", { exact: true })).toHaveValue("on-request");
+    await expect(inspector.getByLabel("Image resizing", { exact: true })).toHaveCount(0);
+    expect(
+      (await design(page, id)).architecture.studio.elements.find(
+        (row) => row.element === "image-cdn",
+      )?.settings.imageResizing,
+    ).toBe("on-request");
     await tile(page, "Catalog database").click();
     await expect(inspector.locator(".lane-store-access")).toHaveText(
       "OwnerShop serviceOther readersPayments",
@@ -126,13 +130,11 @@ test("New project offers the YouTube study", async ({ page }) => {
     await expect(access).toHaveText("OwnerWatch APIOther readersnobody else");
     // The Upload service is an Uploads service; its bytes travel by signed URLs.
     await tile(page, "Upload service").click();
-    await expect(
-      inspector.getByRole("group", { name: "Type", exact: true }).getByRole("button", {
-        name: "Uploads",
-      }),
-    ).toHaveAttribute("aria-pressed", "true");
-    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-    await expect(inspector.getByLabel("Transfer", { exact: true })).toHaveValue("signed-url");
+    await expect(inspector.getByLabel("Transfer", { exact: true })).toHaveCount(0);
+    expect(
+      (await design(page, id)).architecture.studio.elements.find((row) => row.element === "upload")
+        ?.settings.transfer,
+    ).toBe("signed-url");
 
     // Select actual routes by mouse, including a returning store read. View-only interaction
     // must preserve the exact blueprint; removing and undoing the return still work by mouse.

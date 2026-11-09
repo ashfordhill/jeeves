@@ -121,7 +121,7 @@ describe("link rules", () => {
         label: "Reads & writes",
         protocol: "SQL",
         interaction: "Request / response",
-        security: "Service identity",
+        security: "Private network",
       },
       settings: {},
     });
@@ -130,7 +130,7 @@ describe("link rules", () => {
     expect(link("cdn", "redirect", "sync")).toMatchObject({ kind: "calls" });
     expect(link("service", "worker", "async")).toMatchObject({
       kind: "calls",
-      planned: { interaction: "Asynchronous", protocol: "HTTPS" },
+      planned: { interaction: "Asynchronous", protocol: "HTTP" },
     });
     expect(link("redirect", "queue", "async")).toMatchObject({
       planned: { label: "Publishes", protocol: "Messaging", interaction: "Asynchronous" },

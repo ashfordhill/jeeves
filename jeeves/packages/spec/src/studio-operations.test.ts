@@ -84,7 +84,7 @@ describe("buildStudioCommand", () => {
     expect(edited.ops).toEqual(["updatePlannedConnection", "setStudio"]);
     expect(
       edited.design.connections.find((c) => c.id === "shorten-stats-api")?.planned,
-    ).toMatchObject({ label: "Seeds counters", protocol: "HTTPS" });
+    ).toMatchObject({ label: "Seeds counters", protocol: "HTTP" });
     expect(
       studio(edited.design).connections.find((b) => b.connection === "shorten-stats-api")?.settings,
     ).toEqual({ timeoutMs: 500 });
