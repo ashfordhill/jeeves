@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 3,
+  "revision": 1,
+  "architecture": {
+    "studio": {
+      "version": 1,
+      "origin": {
+        "example": {
+          "id": "studio-tinyurl-foundation",
+          "version": "1.0.0"
+        },
+        "goalManifestSha256": "aee038eef733d00c58513c298d9bc9078f7887e75318531ca9f8a1b3fbafd713"
+      },
+      "elements": [
+        {
+          "element": "create-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 10000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "resolve-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 1200,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "links-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted",
+            "readReplicas": 0
+          }
+        },
+        {
+          "element": "links-cache",
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "redis-compatible",
+            "provider": "self-hosted",
+            "ttlSeconds": 300
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "create-store",
+          "settings": {}
+        },
+        {
+          "connection": "resolve-store",
+          "settings": {}
+        },
+        {
+          "connection": "resolve-cache",
+          "settings": {}
+        }
+      ],
+      "entries": [
+        {
+          "id": "resolve-entry",
+          "lane": "download",
+          "element": "resolve-api"
+        },
+        {
+          "id": "create-entry",
+          "lane": "upload",
+          "element": "create-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Follow"
+        },
+        {
+          "lane": "upload",
+          "name": "Create"
+        }
+      ]
+    },
+    "system": {
+      "name": "TinyURL foundation",
+      "description": "One Links owner: authenticated Create commits immutable destinations to PostgreSQL; public Follow resolves from a positive cache or the authoritative primary. Optional expiry. Excludes analytics, destination changes, disable management, reputation, quotas and custom slugs."
+    },
+    "nodes": [],
+    "relationships": []
+  },
+  "elements": [
+    {
+      "id": "create-api",
+      "name": "Create link",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Authenticated create; durable commit and retained-result reconciliation."
+    },
+    {
+      "id": "resolve-api",
+      "name": "Resolve link",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Public lookup; primary fallback, expiry checks and no-store redirects."
+    },
+    {
+      "id": "links-db",
+      "name": "Links database",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "Links owns the authoritative immutable records and retained create results."
+    },
+    {
+      "id": "links-cache",
+      "name": "Links cache",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "Links-owned positive projection; 300s cap clamped to remaining expiry. No negative entries."
+    }
+  ],
+  "connections": [
+    {
+      "id": "create-store",
+      "kind": "depends-on",
+      "from": {
+        "element": "create-api"
+      },
+      "to": {
+        "element": "links-db"
+      },
+      "planned": {
+        "label": "Create and reconcile",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Service identity"
+      }
+    },
+    {
+      "id": "resolve-store",
+      "kind": "depends-on",
+      "from": {
+        "element": "resolve-api"
+      },
+      "to": {
+        "element": "links-db"
+      },
+      "planned": {
+        "label": "Read primary on miss or outage",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Service identity"
+      }
+    },
+    {
+      "id": "resolve-cache",
+      "kind": "depends-on",
+      "from": {
+        "element": "resolve-api"
+      },
+      "to": {
+        "element": "links-cache"
+      },
+      "planned": {
+        "label": "Read and fill positive records",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Service identity"
+      }
+    }
+  ],
+  "scope": {
+    "profile": {
+      "id": "tinyurl-create-resolve",
+      "version": "1.0.0"
+    },
+    "requirements": [
+      {
+        "feature": "immutable-http-targets",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "authenticated-create",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "public-resolve",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "optional-expiry",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "custom-slugs",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "mutable-destinations",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "disable-management",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "reputation-enforcement",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "quotas",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "exact-analytics",
+        "disposition": "excluded",
+        "criticality": "required"
+      }
+    ],
+    "customRequirements": []
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "links",
+        "name": "Links"
+      }
+    ],
+    "roles": [
+      {
+        "element": "create-api",
+        "owner": "links",
+        "kind": "api",
+        "deployable": "links-runtime"
+      },
+      {
+        "element": "resolve-api",
+        "owner": "links",
+        "kind": "api",
+        "deployable": "links-runtime"
+      }
+    ],
+    "resources": [
+      {
+        "element": "links-db",
+        "authority": "links",
+        "kind": "source"
+      },
+      {
+        "element": "links-cache",
+        "authority": "links",
+        "kind": "projection",
+        "source": "links-db"
+      }
+    ],
+    "grants": [
+      {
+        "role": "create-api",
+        "resource": "links-db",
+        "access": "read-write"
+      },
+      {
+        "role": "resolve-api",
+        "resource": "links-db",
+        "access": "read"
+      },
+      {
+        "role": "resolve-api",
+        "resource": "links-cache",
+        "access": "read-write"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "create-store",
+        "access": "read-write"
+      },
+      {
+        "connection": "resolve-store",
+        "access": "read"
+      },
+      {
+        "connection": "resolve-cache",
+        "access": "read-write"
+      }
+    ]
+  },
+  "operations": {
+    "receivers": [
+      {
+        "id": "create-link",
+        "role": "create-api",
+        "implementation": {
+          "operation": {
+            "id": "links-create",
+            "version": "1.0.0",
+            "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+          },
+          "request": {
+            "id": "links-create-request",
+            "version": "1.0.0",
+            "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80"
+          },
+          "success": {
+            "id": "links-create-success",
+            "version": "1.0.0",
+            "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4"
+          },
+          "errors": {
+            "id": "links-create-errors",
+            "version": "1.0.0",
+            "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c"
+          },
+          "auth": "verified-principal",
+          "idempotency": "principal-operation-key",
+          "timeoutMs": 10000
+        },
+        "binding": {
+          "kind": "create-link",
+          "storeConnection": "create-store",
+          "successRetentionHours": 24,
+          "authVerifier": null
+        }
+      },
+      {
+        "id": "resolve-link",
+        "role": "resolve-api",
+        "implementation": {
+          "operation": {
+            "id": "links-resolve",
+            "version": "1.0.0",
+            "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+          },
+          "request": {
+            "id": "links-resolve-request",
+            "version": "1.0.0",
+            "sha256": "2a3427d0d9a10c747225225a8727093beec5d3e9a1a46e4789f87f83722afe63"
+          },
+          "success": {
+            "id": "links-resolve-success",
+            "version": "1.0.0",
+            "sha256": "5a78b078aea1bd8a0d7dc58658f2ac3174cc2f7144f74abb848a40a573c48ab0"
+          },
+          "errors": {
+            "id": "links-resolve-errors",
+            "version": "1.0.0",
+            "sha256": "44be0369ab407aadfa05d5771fdd756f747a791357e48ab34339e1bbda3c50a1"
+          },
+          "auth": "public",
+          "idempotency": "none",
+          "timeoutMs": 1200
+        },
+        "binding": {
+          "kind": "resolve-link",
+          "storeConnection": "resolve-store",
+          "cacheConnection": "resolve-cache",
+          "cachePolicy": {
+            "id": "links-positive-cache",
+            "version": "1.0.0",
+            "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a"
+          }
+        }
+      }
+    ],
+    "calls": [
+      {
+        "id": "create-call",
+        "caller": {
+          "kind": "entry",
+          "entry": "create-entry",
+          "lane": "upload",
+          "element": "create-api"
+        },
+        "receiverBinding": "create-link",
+        "receiverRole": "create-api",
+        "expects": {
+          "operation": {
+            "id": "links-create",
+            "version": "1.0.0",
+            "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+          },
+          "request": {
+            "id": "links-create-request",
+            "version": "1.0.0",
+            "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80"
+          },
+          "success": {
+            "id": "links-create-success",
+            "version": "1.0.0",
+            "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4"
+          },
+          "errors": {
+            "id": "links-create-errors",
+            "version": "1.0.0",
+            "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c"
+          },
+          "auth": "verified-principal",
+          "idempotency": "principal-operation-key",
+          "timeoutMs": 10000
+        }
+      },
+      {
+        "id": "resolve-call",
+        "caller": {
+          "kind": "entry",
+          "entry": "resolve-entry",
+          "lane": "download",
+          "element": "resolve-api"
+        },
+        "receiverBinding": "resolve-link",
+        "receiverRole": "resolve-api",
+        "expects": {
+          "operation": {
+            "id": "links-resolve",
+            "version": "1.0.0",
+            "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+          },
+          "request": {
+            "id": "links-resolve-request",
+            "version": "1.0.0",
+            "sha256": "2a3427d0d9a10c747225225a8727093beec5d3e9a1a46e4789f87f83722afe63"
+          },
+          "success": {
+            "id": "links-resolve-success",
+            "version": "1.0.0",
+            "sha256": "5a78b078aea1bd8a0d7dc58658f2ac3174cc2f7144f74abb848a40a573c48ab0"
+          },
+          "errors": {
+            "id": "links-resolve-errors",
+            "version": "1.0.0",
+            "sha256": "44be0369ab407aadfa05d5771fdd756f747a791357e48ab34339e1bbda3c50a1"
+          },
+          "auth": "public",
+          "idempotency": "none",
+          "timeoutMs": 1200
+        }
+      }
+    ]
+  }
+}

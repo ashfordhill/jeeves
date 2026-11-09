@@ -132,10 +132,8 @@ at all (an open owner question).
 **One writer per store.** A link into a store (database, search index, cache, object storage)
 writes when it comes from the store's owner and reads otherwise (`studioStoreAccess(design,
 connection)`: `"write" | "read"`, or `undefined` for a link that doesn't end at a store). It is
-derived from the owner, never stored; changing the owner changes who writes. The line inspector
-shows "Writes (owner)" or "Reads" as inferred access, the store's inspector lists its owner and
-other readers, chat's
-`getDesign` gives each such link its `access`, and the blueprint gives the connection `access`.
+derived from the owner, never stored; changing source ownership changes who writes. Full source
+diagnostics retain the legacy owner. Chat `getDesign` and the blueprint retain each link's `access`.
 Owning package members also count as writers. The model cannot distinguish an owner's
 individual read from a write; the saved action label does not change this inference. Queue links
 keep publish and consume. The
@@ -386,7 +384,7 @@ can carry included/excluded, required/advisory intent; required incompatible beh
 saveable with a blocker. Up to eight targeted custom requirements are always unresolved.
 Unknown exact profile references remain unresolved without substitution.
 
-The mouse **Profile & requirements** form and narrow chat `configureDesignScope` tool use
+Explicit source commands and narrow chat `configureDesignScope` use
 `previewDesignScope` / `buildDesignScopeCommand`. Preview then explicit upgrade preserves
 schema-v2 projects; one Undo crosses the version boundary. Scope-only chat changes invalidate
 review and count toward its existing two repair batches. RF04 review scope remains turn-only.
@@ -405,15 +403,19 @@ or projection classification; projections name a different declared source and r
 for population/freshness/failure. Role grants and actual store-connection requests independently
 select `read`, `write` or `read-write`. Co-deployment and package membership grant nothing.
 
-`previewOwnership` / `buildOwnershipCommand` back the inspector's **Ownership & access** form and
+`previewOwnership` / `buildOwnershipCommand` back explicit source commands and the
 narrow `configureOwnership` chat tool; preview is pure, apply is atomic/revision protected and one
 Undo. Contradictory grants and foreign writes refuse; foreign reads need deliberate published-read
 intent or an owned projection. Missing declarations stay saveable/unresolved. The marker does not
 implement a published contract or runtime ACL. Complete removal/transfer previews preserve unrelated
 custom requirements; surviving projections cannot silently lose their source.
 
-The canvas projects one owner card by default, expands canonical roles by mouse, keeps every edge
-ID and falls back to roles for unsafe collapsed graphs. View-only grouping changes no contracts.
+The canvas shows canonical process tiles directly, without owner cards, role/deployable subtitles,
+expansion/collapse actions or fallback narration. The existing lane layout receives the canonical
+graph; view interaction changes no contracts. **Export diagram → Source & diagnostics** retains
+read-only ownership/access, operations, scope and exact source JSON download; normal forms contain
+only identity and useful installed settings. Diagnostic buttons retain exact owner/operation chat
+selection. Removal previews and Undo still preserve declarations.
 V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new
 row with an exact path. Generic tiles supply no capability, template or runtime verification.
 Exact Create/Resolve operation bindings refine these grants; other operations remain unspecified. Existing presets are unchanged.
@@ -433,7 +435,7 @@ The fixed behavior declares verified-principal create, HTTP(S) normalization, op
 replay for 24 hours and explicit errors under one 10-second deadline. Unknown exact refs are
 retained/unresolved; known contradictions refuse. [Contract details](../docs/studio-contracts.md).
 `describeOperation` retrieves this exact record; `configureOperations` previews/applies the same
-bounded declarations as the mouse. Optional v3 `operations` exports completely; default v2
+bounded source declarations. Optional v3 `operations` exports completely; default v2
 refuses each nonempty row. Auth verifiers/templates/runtime evidence remain unavailable. Resolve
 and cache/expiry lookup policy are declared separately by NC04. No presets or owner designs are migrated.
 
@@ -450,14 +452,13 @@ Create's durable success. Positive cache caps 300s and clamps every write to rec
 immediate overload refusal and no L1/negative/retries/HTTP response cache. These are finite
 contract choices, not runtime verification. Settings/modules/CDN contradictions refuse rather
 than migrate. Selected-profile namespace agreement is checked; arbitrary independent namespaces
-remain legal. Unknown exact refs and incomplete declarations stay unresolved. The existing form,
-chat lookup/configure, preview/history, compact API count and blueprint share these declarations.
+remain legal. Unknown exact refs and incomplete declarations stay unresolved. Source commands, chat lookup/configure, preview/history and blueprint share these declarations.
 No preset, saved project, provider adapter, template or backend runtime is added.
 
 ### Exact snapshot compatibility report (NC05)
 
 `design-readiness.ts` uses full structural validation, exact profile/contract completeness and
-independent whole-design coverage. The inspector disclosure, blueprint v3 `readiness` and
+independent whole-design coverage. The read-only **Export diagram → Source & diagnostics** report, blueprint v3 `readiness` and
 `readReadiness {}` share it; initial chat context carries a compact status/count/hash summary.
 `readiness-subject.ts` exposes the canonical semantic subject with all source settings, grants,
 bindings, deployables and names/prose, excluding only revision/origin and external layout/UI.
@@ -474,8 +475,8 @@ none. [Report fields, hash rules and trust limits](../docs/studio-readiness.md).
 
 NC14 checks Create's actual source dependency for synchronous SQL/native intent and an internal
 service boundary; known contradictions refuse, unspecified protocol stays unresolved, and unknown
-operation refs acquire no Create semantics. The inspector makes declared API/worker roles and
-resource access primary while preserving legacy inference/editor disclosures. V3 exports detached
+operation refs acquire no Create semantics. Source diagnostics preserve declared API/worker roles, resource access and legacy inference
+without presenting them as normal generation controls. V3 exports detached
 ownership rows. Trusted suite format v2 additionally pins hash-resolved executable-bundle bytes;
 case names alone identify no code. Frozen operation/cache/profile records are unchanged. See the
 [independent review](../docs/plans/reliable-foundations/nc14-review.md) and the separate

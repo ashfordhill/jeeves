@@ -1,0 +1,11 @@
+Inspector
+Create link
+
+Microservice
+
+General
+Connections
+Modules
+Name
+Purpose
+Focus relationships

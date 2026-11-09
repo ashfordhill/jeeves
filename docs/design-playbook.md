@@ -1139,3 +1139,19 @@ Necessary internal schemas/identities/grants/policies stay in typed source/templ
 their existence does not justify displaying or configuring them. Do not move removed clutter
 into an Advanced editor. The 60% template-share goal is eventual across field projects; v2 must
 improve on its actual v1 backend baseline of 5.53% without padding or changing scope.
+
+## 2026-11-08 process-first authoring and read-only source diagnostics
+
+The YV2-18 normal-viewport review found that the selected cache's TTL followed an owner banner,
+strict report, authority/grant narration, manual ownership/operation actions and focus control.
+The same useful field now follows its name/kind/tabs directly. Canonical service/worker tiles
+also retain recognizable icons and names when an owner has one role or cannot safely collapse.
+Do not replace a process with an owner card merely because ownership data exists.
+
+Keep internal permission/deployment facts and strict source reports in explicit read-only export
+diagnostics. Removing normal forms must preserve every source declaration, validation refusal,
+precise removal preview and Undo/reload behavior. In this review, whole-document comparisons,
+exact source downloads and native capture hashes preserved that distinction at both 1280×800
+and 1440×900; mouse TTL/HTTP/SQL/worker edits stayed usable. This proves the reviewed controls
+and snapshots, not owner acceptance or strict runtime certification.
+[Evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-18-clarity.md).

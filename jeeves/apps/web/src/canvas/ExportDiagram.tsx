@@ -26,13 +26,11 @@ function download(blob: Blob, filename: string) {
 
 export function ExportDiagram({
   board,
-  expandedOwners,
-  fallbackOwners,
+  onDiagnostics,
   onClose,
 }: {
   board: { current: BoardHandle | null };
-  expandedOwners: readonly string[];
-  fallbackOwners: readonly string[];
+  onDiagnostics: () => void;
   onClose: () => void;
 }) {
   const loaded = useProject((state) => state.loaded);
@@ -51,8 +49,6 @@ export function ExportDiagram({
     setDetails(undefined);
     const { design, project } = loaded;
     const source = captureJson(design);
-    const requestedExpansion = [...expandedOwners];
-    const requestedFallback = [...fallbackOwners];
     const assertCurrent = () => {
       signal.throwIfAborted();
       const state = useProject.getState();
@@ -125,12 +121,12 @@ export function ExportDiagram({
             relationships: "all projected relationships; focus omitted",
             selection: "omitted",
             camera: "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
-            ownerExpansion: "current canvas projection",
+            ownerExpansion: "canonical process tiles",
             owners: designOwnership(design).owners.map((owner) => ({
               id: owner.id,
               name: owner.name,
-              requestedExpanded: requestedExpansion.includes(owner.id),
-              fallbackExpanded: requestedFallback.includes(owner.id),
+              requestedExpanded: false,
+              fallbackExpanded: false,
               rendered: snapshot.tiles.some((tile) => tile.id === ownerNodeId(owner.id))
                 ? "collapsed"
                 : "roles",
@@ -175,10 +171,11 @@ export function ExportDiagram({
       <div className="diagram-export-options">
         <p>
           Export the full saved diagram as a light PNG at 2× scale, including offscreen tiles and
-          all relationships in the current expanded/collapsed view. Focus and selection are omitted.
-          Your current owner expansion is kept; expand roles on the canvas first to include their
-          individual faces.
+          all relationships. Focus and selection are omitted.
         </p>
+        <button type="button" disabled={busy} onClick={onDiagnostics}>
+          Source & diagnostics
+        </button>
         <button type="button" disabled={busy} onClick={() => void exportPng()}>
           {busy ? "Preparing PNG…" : "PNG"}
         </button>

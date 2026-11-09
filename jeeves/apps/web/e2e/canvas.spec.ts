@@ -1,3 +1,5 @@
+import { buildStudioCommand, studioStoreAccess } from "@jeeves/spec";
+import { commitSource, openDiagnostics, savedSource } from "./source.ts";
 import {
   clickLine,
   createStudy,
@@ -77,9 +79,11 @@ test("New project offers the marketplace study", async ({ page }) => {
       )?.settings.imageResizing,
     ).toBe("on-request");
     await tile(page, "Catalog database").click();
-    await expect(inspector.locator(".lane-store-access")).toHaveText(
-      "OwnerShop serviceOther readersPayments",
-    );
+    await expect(inspector.getByLabel("Owner", { exact: true })).toHaveCount(0);
+    const source = await savedSource(page);
+    expect(
+      source.architecture?.studio?.elements.find((row) => row.element === "catalog-db")?.owner,
+    ).toEqual({ kind: "element", id: "shop" });
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }
@@ -118,16 +122,19 @@ test("New project offers the YouTube study", async ({ page }) => {
     // One writer per store: the Upload service, the Completion handler, the Search indexer and
     // the Watch API (its own cache).
     const inspector = page.locator(".studio-inspector");
-    const access = inspector.locator(".lane-store-access");
-    await tile(page, "Original videos").click();
-    await expect(access).toHaveText("OwnerUpload serviceOther readersTranscoder");
-    await expect(inspector).toContainText("Owner reads are not distinguished");
-    await tile(page, "Metadata database").click();
-    await expect(access).toHaveText("OwnerCompletion handlerOther readersWatch API");
-    await tile(page, "Search index").click();
-    await expect(access).toHaveText("OwnerSearch indexerOther readersSearch API");
+    const source = await savedSource(page);
+    for (const [store, owner] of [
+      ["originals", "upload"],
+      ["metadata-db", "completion-handler"],
+      ["search-index", "search-indexer"],
+      ["metadata-cache", "watch"],
+    ]) {
+      expect(
+        source.architecture?.studio?.elements.find((row) => row.element === store)?.owner,
+      ).toEqual({ kind: "element", id: owner });
+    }
     await tile(page, "Metadata cache").click();
-    await expect(access).toHaveText("OwnerWatch APIOther readersnobody else");
+    await expect(inspector.locator(".lane-store-access")).toHaveCount(0);
     // The Upload service is an Uploads service; its bytes travel by signed URLs.
     await tile(page, "Upload service").click();
     await expect(inspector.getByLabel("Transfer", { exact: true })).toHaveCount(0);
@@ -144,7 +151,7 @@ test("New project offers the YouTube study", async ({ page }) => {
     await expect(
       inspector.getByRole("definition").filter({ hasText: "Request / response (solid)" }),
     ).toHaveCount(1);
-    await expect(inspector.locator('[data-access="read"]')).toHaveText("Reads");
+    expect(studioStoreAccess(await savedSource(page), "transcoder-read")).toBe("read");
     const read = page.locator('.react-flow__edge[data-id="transcoder-read"]');
     await expect(read.locator(".react-flow__edge-path")).not.toHaveClass(/is-dashed/);
     await expect(read.locator(".board-line-arrow")).toHaveCount(1);
@@ -163,32 +170,47 @@ test("New project offers the YouTube study", async ({ page }) => {
     await expect(inspector).toContainText("Channel → consumer");
     await clickLine(page, "counter-write");
     await expect(inspector).toContainText("Request / response (solid)");
-    await expect(inspector.locator('[data-access="write"]')).toHaveText("Writes (owner)");
+    expect(studioStoreAccess(await savedSource(page), "counter-write")).toBe("write");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }
   expect(errors).toEqual([]);
 });
 
-test("shows each store's writer and readers, from its owner", async ({ page, tinyurl: id }) => {
+test("preserves inferred access in source and blueprint without exposing ineffective writer controls", async ({
+  page,
+  tinyurl: id,
+}) => {
   const inspector = page.locator(".studio-inspector");
-  const access = inspector.locator(".lane-store-access");
+  const before = await savedSource(page);
   await tile(page, "URL database").click();
-  await expect(access).toHaveText("OwnerShorten serviceOther readersRedirect service");
+  await expect(inspector.getByLabel("Owner", { exact: true })).toHaveCount(0);
+  expect(studioStoreAccess(before, "redirect-db")).toBe("read");
   await inspector.getByRole("tab", { name: "Connections", exact: true }).click();
   await inspector.getByRole("button", { name: /^Redirect service → URL database/ }).click();
-  await expect(inspector.locator('[data-access="read"]')).toHaveText("Reads");
-
-  // Changing the owner changes who writes.
-  await tile(page, "URL database").click();
-  await inspector.getByRole("tab", { name: "General", exact: true }).click();
-  await inspector
-    .getByLabel("Owner", { exact: true })
-    .selectOption({ label: "Redirect service · Application" });
-  await expect(access).toHaveText("OwnerRedirect serviceOther readersShorten service");
-  const res = await page.request.get(`/api/projects/${id}/blueprint`);
-  const blueprint = await res.json();
+  await expect(inspector.locator(".lane-connection-label")).toHaveText(
+    "Reads links on a cache miss",
+  );
+  expect(await savedSource(page)).toEqual(before);
+  await commitSource(page, (design) =>
+    buildStudioCommand(design, {
+      type: "edit",
+      element: "url-db",
+      owner: { kind: "element", id: "redirect" },
+    }),
+  );
+  const changed = await savedSource(page);
+  expect(studioStoreAccess(changed, "redirect-db")).toBe("write");
+  const diagnostic = await openDiagnostics(page);
+  await diagnostic.getByText("Full saved source", { exact: true }).click();
+  await expect(diagnostic).toContainText('"id": "redirect"');
+  await page.getByRole("button", { name: "Close source & diagnostics", exact: true }).click();
+  const blueprint = await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
   const of = (link: string) =>
     blueprint.connections.find((c: { id: string }) => c.id === link)?.access;
   expect([of("redirect-db"), of("shorten-db")]).toEqual(["write", "read"]);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect
+    .poll(async () => ({ ...(await savedSource(page)), revision: 0 }))
+    .toEqual({ ...before, revision: 0 });
 });

@@ -25,8 +25,6 @@ import {
   studioActionDefaults,
   studioDefinitions,
   studioLanes,
-  studioStoreAccess,
-  studioStoreAccessLabels,
   studioWarnings,
 } from "@jeeves/spec";
 import {
@@ -50,16 +48,10 @@ import { canRedo, canUndo, useProject } from "../project/store.ts";
 import { ActionForm } from "../studio/ActionForm.tsx";
 import { commitAction } from "../studio/actions.ts";
 import { ConnectionForm } from "../studio/ConnectionForm.tsx";
-import { DesignScopeForm } from "../studio/DesignScopeForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
 import { OperationChanges } from "../studio/OperationChanges.tsx";
-import { OperationsForm } from "../studio/OperationsForm.tsx";
-import { OperationsSummary } from "../studio/OperationsSummary.tsx";
-import { OwnershipForm } from "../studio/OwnershipForm.tsx";
-import { OwnershipSummary } from "../studio/OwnershipSummary.tsx";
 import { useStudioPreferences } from "../studio/preferences.ts";
-import { ReadinessReport } from "../studio/ReadinessReport.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
@@ -67,10 +59,10 @@ import { ExportDiagram } from "./ExportDiagram.tsx";
 import { GenerateProject } from "./GenerateProject.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
-import { ownerNodeId, projectOwnerGraph } from "./ownerProjection.ts";
 import { RailResize } from "./RailResize.tsx";
 import { RelationshipFocus } from "./RelationshipFocus.tsx";
 import { useLaneRemoval } from "./removal.tsx";
+import { SourceDiagnostics } from "./SourceDiagnostics.tsx";
 import { TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
 
@@ -115,17 +107,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [focusName, setFocusName] = useState<string>();
   const [exportOpen, setExportOpen] = useState(false);
   const [generationOpen, setGenerationOpen] = useState(false);
-  const [scopeOpen, setScopeOpen] = useState(false);
-  const [operationsOpen, setOperationsOpen] = useState(false);
-  const [ownershipOpen, setOwnershipOpen] = useState(false);
-  const [expandedOwners, setExpandedOwners] = useState<string[]>([]);
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [operationPick, setOperationPick] = useState<string>();
   const [ownerPick, setOwnerPick] = useState<string>();
   const ownership = designOwnership(loaded.design);
-  const projection = useMemo(
-    () => projectOwnerGraph(loaded.design, graph, expandedOwners),
-    [loaded.design, graph, expandedOwners],
-  );
   const selectedOperation = designOperations(loaded.design).receivers.find(
     (x) => x.id === operationPick,
   );
@@ -206,17 +191,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       void formDrafts.flushProject(projectId, true);
     setOperationPick(undefined);
     setOwnerPick(undefined);
-    const roles = ownership.roles.filter(
-      (role) =>
-        role.element === next.tile ||
-        (next.line &&
-          graph.edges.some(
-            (edge) =>
-              edge.id === next.line &&
-              (edge.source === role.element || edge.target === role.element),
-          )),
-    );
-    setExpandedOwners((current) => [...new Set([...current, ...roles.map((role) => role.owner)])]);
     setPick(next);
     if (anchor && next.tile) setFocusTile(next.tile);
     if (anchor && next.line) {
@@ -258,9 +232,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   const header = (
     <div className="studio-header-actions lane-header-actions">
-      <button type="button" title="Profile & requirements" onClick={() => setScopeOpen(true)}>
-        Profile & requirements
-      </button>
       <button
         type="button"
         title="Undo"
@@ -306,30 +277,36 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       {exportOpen ? (
         <ExportDiagram
           board={board}
-          expandedOwners={expandedOwners}
-          fallbackOwners={projection.fallbackOwners}
+          onDiagnostics={() => {
+            setExportOpen(false);
+            setDiagnosticsOpen(true);
+          }}
           onClose={() => setExportOpen(false)}
         />
       ) : null}
-      {operationsOpen ? (
-        <OperationsForm
-          projectId={projectId}
+      {diagnosticsOpen ? (
+        <SourceDiagnostics
           design={loaded.design}
-          onClose={() => setOperationsOpen(false)}
-        />
-      ) : null}
-      {ownershipOpen ? (
-        <OwnershipForm
-          projectId={projectId}
-          design={loaded.design}
-          onClose={() => setOwnershipOpen(false)}
-        />
-      ) : null}
-      {scopeOpen ? (
-        <DesignScopeForm
-          projectId={projectId}
-          design={loaded.design}
-          onClose={() => setScopeOpen(false)}
+          projectName={loaded.project.name}
+          selectedOperation={selectedOperation?.id}
+          onClose={() => setDiagnosticsOpen(false)}
+          onTarget={(target) => {
+            setDiagnosticsOpen(false);
+            if (target.operation) {
+              const receiver = designOperations(loaded.design).receivers.find(
+                (item) => item.id === target.operation,
+              );
+              if (receiver) {
+                select({ tile: receiver.role });
+                setOperationPick(receiver.id);
+              }
+            } else if (target.owner) {
+              select({});
+              setOwnerPick(target.owner);
+              setFocusTile(undefined);
+            } else if (target.connection) select({ line: target.connection });
+            else if (target.element) select({ tile: target.element });
+          }}
         />
       ) : null}
       {headerHost ? createPortal(header, headerHost) : null}
@@ -359,55 +336,17 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         <LaneCanvas
           ref={board}
           design={loaded.design}
-          graph={projection.graph}
-          canonicalGraph={graph}
-          onExpandOwner={(id) => {
-            setExpandedOwners((current) => [...new Set([...current, id])]);
-            setOwnerPick(id);
-          }}
-          selected={selectedOwner ? { tile: ownerNodeId(selectedOwner.id) } : selection}
+          graph={graph}
+          selected={selection}
           mode={mode}
-          onSelectTile={(tile) => {
-            const owner = ownership.owners.find((x) => ownerNodeId(x.id) === tile);
-            if (owner) {
-              void formDrafts.flushProject(projectId, true);
-              setOperationPick(undefined);
-              setOwnerPick(owner.id);
-              setPick({});
-              setFocusTile(undefined);
-              setPreferences((current) => ({ ...current, inspectorOpen: true }));
-            } else select({ tile });
-          }}
+          onSelectTile={(tile) => select({ tile })}
           onSelectLine={(line) => select({ line })}
           onClear={() => select({})}
-          creation={{
-            ...creation,
-            onDropRefused: (tile, tab, target) => {
-              const owner = ownership.owners.find((x) => ownerNodeId(x.id) === target);
-              if (owner) {
-                setExpandedOwners((current) => [...new Set([...current, owner.id])]);
-                useProject.getState().setNotice({
-                  tone: "error",
-                  message: `${owner.name} contains canonical roles. Its roles are now expanded; attach to the intended role.`,
-                });
-              } else creation.onDropRefused?.(tile, tab, target);
-            },
-          }}
-          removal={{
-            ...removal,
-            removable: (id) => !id.startsWith("@owner:") && (removal.removable?.(id) ?? true),
-          }}
+          creation={creation}
+          removal={removal}
           visibleLines={visibleLines}
-          emphasizedTiles={emphasizedTiles?.map((id) => projection.roleToView.get(id) ?? id)}
+          emphasizedTiles={emphasizedTiles}
         />
-        {projection.fallbackOwners.length ? (
-          <p className="lane-owner-fallback" role="status">
-            {projection.fallbackOwners
-              .map((id) => ownership.owners.find((x) => x.id === id)?.name ?? id)
-              .join(", ")}
-            : roles expanded to preserve relationship direction. One logical owner is retained.
-          </p>
-        ) : null}
         {anchor ? (
           <section className="lane-focus-status" aria-label="Relationship focus">
             <span>
@@ -509,53 +448,20 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 <IconX size={17} />
               </button>
             </div>
-            <ReadinessReport
-              design={loaded.design}
-              onTarget={(target) => {
-                if (target.operation) {
-                  const receiver = designOperations(loaded.design).receivers.find(
-                    (item) => item.id === target.operation,
-                  );
-                  if (receiver) {
-                    select({ tile: receiver.role });
-                    setOperationPick(receiver.id);
-                  }
-                } else if (target.owner) {
-                  select({});
-                  setOwnerPick(target.owner);
-                  setFocusTile(undefined);
-                } else if (target.connection) select({ line: target.connection });
-                else if (target.element) select({ tile: target.element });
-              }}
+            <Inspector
+              key={selection.tile ?? selection.line ?? LANE_ACTOR}
+              loaded={loaded}
+              graph={graph}
+              selection={selection}
+              onSelect={select}
             />
-            <OwnershipSummary
-              design={loaded.design}
-              element={selection.tile}
-              connection={selection.line}
-              ownerId={selectedOwner?.id}
-              expanded={[...expandedOwners, ...projection.fallbackOwners]}
-              onConfigure={() => setOwnershipOpen(true)}
-              onExpand={(id) => setExpandedOwners((current) => [...new Set([...current, id])])}
-              onCollapse={(id) => {
-                setExpandedOwners((current) => current.filter((x) => x !== id));
-                setPick({});
-                setOwnerPick(id);
-                setFocusTile(undefined);
-              }}
-              onRole={(id) => select({ tile: id })}
-            />
-            <OperationsSummary
-              design={loaded.design}
-              element={selection.tile}
-              connection={selection.line}
-              ownerId={selectedOwner?.id}
-              selectedBinding={selectedOperation?.id}
-              onConfigure={(id) => {
-                if (id) setOperationPick(id);
-                setOperationsOpen(true);
-              }}
-            />
-            {!selectedOwner && (anchor || selection.tile) ? (
+            {selectedOperation || selectedOwner ? (
+              <p className="studio-field-help" role="status">
+                Selected {selectedOperation ? "operation" : "logical owner"} for chat ·{" "}
+                {selectedOperation?.id ?? selectedOwner?.id}
+              </p>
+            ) : null}
+            {anchor || selection.tile ? (
               <RelationshipFocus
                 design={loaded.design}
                 graph={graph}
@@ -565,15 +471,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 onFocus={() => setFocusTile(selection.tile)}
                 onSelect={select}
                 onRemove={(id) => removal.onRemoveLine?.(id)}
-              />
-            ) : null}
-            {!selectedOwner ? (
-              <Inspector
-                key={selection.tile ?? selection.line ?? LANE_ACTOR}
-                loaded={loaded}
-                graph={graph}
-                selection={selection}
-                onSelect={select}
               />
             ) : null}
           </aside>
@@ -657,23 +554,6 @@ function Inspector({
       />
     );
   if (edge) {
-    const access = studioStoreAccess(design, edge.id);
-    const declared = designOwnership(design).dependencies.some(
-      (item) => item.connection === edge.id,
-    );
-    const legacyAccess = access ? (
-      <>
-        <dl className="lane-facts" aria-label="Inferred relationship access">
-          <dt>{design.schemaVersion === 3 ? "Legacy inferred access" : "Access (inferred)"}</dt>
-          <dd data-access={access}>{studioStoreAccessLabels[access]}</dd>
-        </dl>
-        <p className="studio-field-help">
-          {design.schemaVersion === 3
-            ? "Preserved legacy inference follows the studio writer setting; it declares no grant or dependency request."
-            : "Access follows ownership. Owner reads are not distinguished from writes."}
-        </p>
-      </>
-    ) : null;
     const connection = design.connections.find((item) => item.id === edge.id);
     const channelUse = design.architecture?.studio?.connections.find(
       (item) => item.connection === edge.id,
@@ -699,14 +579,6 @@ function Inspector({
                   : "Caller → target"}
           </dd>
         </dl>
-        {legacyAccess && declared ? (
-          <details className="studio-legacy-access">
-            <summary>Legacy inferred relationship access</summary>
-            {legacyAccess}
-          </details>
-        ) : (
-          legacyAccess
-        )}
         <ConnectionForm projectId={project.id} connection={edge.id} design={design} />
       </div>
     );

@@ -1,4 +1,9 @@
-import { DEFAULT_STUDIO_EXAMPLE_ID, studioArchitectureExample } from "@jeeves/spec";
+import {
+  buildStudioCommand,
+  DEFAULT_STUDIO_EXAMPLE_ID,
+  studioArchitectureExample,
+} from "@jeeves/spec";
+import { commitSource, openDiagnostics, selectOperation } from "./source.ts";
 import { createStudy, expect, lines, ready, test, tile, tiles } from "./studio.ts";
 
 test("new project preselects the complete foundation, reloads it and undoes the seed in one step", async ({
@@ -10,10 +15,11 @@ test("new project preselects the complete foundation, reloads it and undoes the 
     const initial = await state(),
       source = studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID).design;
     expect(initial.design).toEqual({ ...source, revision: 1 });
-    await expect(tiles(page)).toHaveCount(6);
+    await expect(tiles(page)).toHaveCount(7);
     await expect(lines(page)).toHaveCount(7);
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
-    await expect(tile(page, "Links · logical owner")).toContainText("2 declared operations");
+    await expect(tile(page, "Create link")).toBeVisible();
+    await expect(tile(page, "Resolve link")).toBeVisible();
     await page.reload();
     await ready(page);
     expect(await state()).toEqual(initial);
@@ -55,7 +61,6 @@ test("foundation view actions preserve complete semantics and exact operation se
     const before = await state(),
       full = await bp();
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
-    await page.getByRole("button", { name: "Expand roles", exact: true }).click();
     await ready(page);
     await expect(tiles(page)).toHaveCount(7);
     await tile(page, "Resolve link").click();
@@ -63,11 +68,7 @@ test("foundation view actions preserve complete semantics and exact operation se
     await page.getByRole("button", { name: "Fit focus", exact: true }).click();
     await page.getByRole("button", { name: "Show all", exact: true }).click();
     await tile(page, "Resolve link").click();
-    await page.getByRole("button", { name: "Details & bindings", exact: true }).click();
-    await page
-      .getByRole("dialog", { name: "Operation contracts" })
-      .getByRole("button", { name: "Cancel", exact: true })
-      .click();
+    await selectOperation(page, "resolve-link");
     await expect(
       page.getByText("Selected operation for chat · resolve-link", { exact: true }),
     ).toBeVisible();
@@ -93,7 +94,7 @@ test("foundation view actions preserve complete semantics and exact operation se
   }
 });
 
-test("explicit authority stays primary while preserved legacy inference remains editable and undoable", async ({
+test("explicit authority and legacy inference remain in source diagnostics and source edits stay undoable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -104,18 +105,20 @@ test("explicit authority stays primary while preserved legacy inference remains 
     const before = await state();
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
     await tile(page, "Links database").click();
-    const explicit = page.getByLabel("Declared ownership and access"),
-      legacy = page.locator(".studio-legacy-access");
-    await expect(explicit).toContainText("Explicit authority: Links");
-    await expect(explicit).toContainText("Create link · Read & write");
-    await expect(legacy).not.toHaveAttribute("open");
-    await expect(page.getByLabel("Legacy inferred writer", { exact: true })).toBeHidden();
-    await legacy.locator("> summary").click();
-    await expect(legacy).toContainText("Legacy inferred writer");
-    await expect(legacy).toContainText("no owner yet");
-    await page
-      .getByLabel("Legacy inferred writer", { exact: true })
-      .selectOption("element:resolve-api");
+    await expect(page.getByLabel("Legacy inferred writer", { exact: true })).toHaveCount(0);
+    const diagnostic = await openDiagnostics(page);
+    await diagnostic.getByText(/^Ownership & access ·/).click();
+    await expect(diagnostic.locator(".ownership-summary").first()).toContainText(
+      '"authority": "links"',
+    );
+    await page.getByRole("button", { name: "Close source & diagnostics", exact: true }).click();
+    await commitSource(page, (design) =>
+      buildStudioCommand(design, {
+        type: "edit",
+        element: "links-db",
+        owner: { kind: "element", id: "resolve-api" },
+      }),
+    );
     await expect
       .poll(
         async () =>
@@ -126,7 +129,6 @@ test("explicit authority stays primary while preserved legacy inference remains 
       .toEqual({ kind: "element", id: "resolve-api" });
     expect((await state()).ownership).toEqual(before.ownership);
     expect((await state()).operations).toEqual(before.operations);
-    await expect(explicit).toContainText("Create link · Read & write");
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect
@@ -134,13 +136,12 @@ test("explicit authority stays primary while preserved legacy inference remains 
       .toEqual({ ...before, revision: 0 });
     await page.reload();
     await ready(page);
-    await page.getByRole("button", { name: "Expand roles", exact: true }).click();
-    await ready(page);
     await tile(page, "Create link").click();
-    await expect(page.locator(".lane-inspector-kind")).toHaveText("API role");
+    await expect(page.locator(".lane-inspector-kind")).toHaveText("Microservice");
+    await expect(page.locator(".studio-inspector")).not.toContainText("deployable");
     await expect(
-      page.getByText(/Tile kind: Microservice · deployable intent: links-runtime/),
-    ).toBeVisible();
+      page.getByRole("button", { name: "Operation contracts", exact: true }),
+    ).toHaveCount(0);
     expect({ ...(await state()), revision: 0 }).toEqual({ ...before, revision: 0 });
   } finally {
     await page.request.delete(`/api/projects/${id}`);

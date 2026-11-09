@@ -6056,3 +6056,34 @@ Next **YV2-18 only** owns remaining owner/role/operation/requirements/presentati
 normal viewport review. This unit hides unsupported configuration/type/module alternatives; existing
 ownership/strict-operation diagnostic authoring remains for18. YV2-19 still owns saved-source v2
 preview/ZIP dispatch. Base video product/service hooks remain custom; no new runtime/strict proof.
+
+## 2026-11-08 — YV2-18: process tiles and useful settings first
+
+Normal canvas renders canonical process/resource tiles; name/kind/useful settings precede focus.
+Owner cards, role/deployable/operation subtitles, fallback banner, collapse actions and manual
+ownership/operation/requirements forms removed from normal authoring. **Export diagram → Source &
+diagnostics** retains exact JSON, read-only declarations, unchanged strict report and exact chat
+targets. Source/commands/validators/history, logical ownership and lane layout rules unchanged.
+[Interfaces](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-18--canonical-process-presentation-and-read-only-diagnostics).
+
+Post-cleanup `pnpm check` explicitly exited0: lint/types, **465tests/69files,30.88s**; then
+**36 native E2Es,1.3m**; web build **919ms** (existing generator/build advisories). Historical form
+E2Es now seed full canonical source with exact save/reload assertions, inspect diagnostics and
+retain excess-access refusal, exact refs, chat/history, precise clears, mouse removal/move/Undo,
+PNG stale/font/cancel/route checks. Live4300 mouse TinyURL+YouTube at **1280×800 and1440×900**:
+selection/focus/PNG/source, name edit, TTL mirror and HTTP/SQL/worker native spinners all pass;
+whole semantic data preserved after each Undo/reload, zero pageerrors. [Before/after normal and
+native/source/studio snapshots, hashes/checks/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-18-clarity.md).
+
+Fresh frozen-v1 assembly matches all108path hashes/manifest5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f;
+fixture15584953bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9,
+retainedFFmpeg unchanged/all14v1 healthy; app/inputs/assets/generator Git-clean. Two own live review
+projects deleted before root checks; no Docker/ports/export/deps/app builds allocated. Owner
+README/FutureBenchmarks, feedback dirt/Unicode deletions/colon variants/e2e-docker mode preserved.
+No branch/worktree/stash/push/finalv2app. Logs/harnesses `/tmp/jeeves-yv2-18/`. Local commit:
+**YV2-18: simplify diagram and inspector authoring**.
+
+Next **YV2-19 only** owns selected saved-source v2 preview/ZIP dispatch. `ExportDiagram` now takes
+`onDiagnostics`; native captures record canonical process view. Complete YouTube backend unchanged;
+base video custom hooks remain required, deterministic runtimeVerification:none and strict TinyURL
+blockers remain honest. No standalone app build required for this presentation-only unit.

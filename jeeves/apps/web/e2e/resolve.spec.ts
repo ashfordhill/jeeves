@@ -1,8 +1,10 @@
+import { positiveCachePolicy } from "@jeeves/spec";
 import { alignResolveSettings, declareResolve } from "./operations.ts";
 import { declareLinks } from "./ownership.ts";
+import { openDiagnostics } from "./source.ts";
 import { expect, ready, test, tile } from "./studio.ts";
 
-test("declares public resolve by mouse, retains exact policy refs after reload and removes/undoes its cache bindings", async ({
+test("preserves public resolve source, retains exact policy refs after reload and removes/undoes its cache bindings", async ({
   page,
   tinyurl: id,
 }) => {
@@ -20,26 +22,14 @@ test("declares public resolve by mouse, retains exact policy refs after reload a
     cacheConnection: "redirect-cache",
     cachePolicy: { id: "links-positive-cache", version: "1.0.0" },
   });
-  await expect(
-    tile(page, "Redirect service").getByText("Resolve link · v1", { exact: true }),
-  ).toBeVisible();
+  await expect(tile(page, "Redirect service")).toBeVisible();
   await page.reload();
   await ready(page);
-  await tile(page, "Links · logical owner")
-    .getByRole("button", { name: "Expand roles", exact: true })
-    .click();
-  await ready(page);
-  await tile(page, "Redirect service").click();
-  await page.getByRole("button", { name: "Details & bindings", exact: true }).click();
-  const form = page.getByRole("dialog", { name: "Operation contracts" });
-  await expect(
-    form.getByLabel("operation-1 pinned positive cache policy", { exact: true }),
-  ).toBeChecked();
-  await form.getByText("Cache policy exact reference · operation-1", { exact: true }).click();
-  await expect(form.getByLabel("operation-1 cache policy id", { exact: true })).toHaveValue(
-    "links-positive-cache",
-  );
-  await form.getByRole("button", { name: "Cancel", exact: true }).click();
+  const dialog = await openDiagnostics(page);
+  await dialog.getByText(/^Operation declarations ·/).click();
+  await expect(dialog.locator(".operation-summary")).toContainText(positiveCachePolicy.ref.sha256);
+  expect((await state()).operations).toEqual(saved.operations);
+  await page.getByRole("button", { name: "Close source & diagnostics", exact: true }).click();
   await tile(page, "URL cache").click();
   await tile(page, "URL cache")
     .getByRole("button", { name: "Remove URL cache", exact: true })

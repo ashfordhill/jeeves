@@ -1,0 +1,323 @@
+{
+  "format": "jeeves-diagram-capture-v1",
+  "capturedAt": "2026-11-09T01:37:25.382Z",
+  "project": {
+    "id": "254a7353-cbb3-4736-966d-f94a4d36d213",
+    "name": "YV2-18 tinyurl review",
+    "revision": 5
+  },
+  "source": {
+    "designSha256": "8a846290f790d5cbf6215152f71b4d619758c73edf88ae3eb64a9c46b822c955",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+    "schemaVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "f0adefb5d7feb961bf9eb320a72ccc99184f8681",
+    "trackedTreeDirtyAtBuild": true,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "image": {
+    "filename": "YV2-18-tinyurl-review-r5.png",
+    "sha256": "ac4fa310f328a7ac19f778797e800b995a75dc4725498f5d749047199d28c689",
+    "width": 1600,
+    "height": 1024,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 800,
+      "h": 512
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "canonical process tiles",
+    "owners": [
+      {
+        "id": "links",
+        "name": "Links",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      }
+    ]
+  },
+  "layout": {
+    "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"resolve-api\",128,128,0],[\"links-db\",128,128,1],[\"links-cache\",128,128,0],[\"create-api\",128,128,2]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"resolve-entry\",\"@download\",\"resolve-api\",0,0,0],[\"create-entry\",\"@upload\",\"create-api\",0,0,2],[\"resolve-store\",\"resolve-api\",\"links-db\",0,0,0],[\"resolve-cache\",\"resolve-api\",\"links-cache\",0,0,0],[\"create-store\",\"create-api\",\"links-db\",0,0,2]]]",
+    "positions": {
+      "@actor": {
+        "x": 32,
+        "y": 176
+      },
+      "@download": {
+        "x": 224,
+        "y": 32
+      },
+      "@upload": {
+        "x": 224,
+        "y": 352
+      },
+      "resolve-api": {
+        "x": 416,
+        "y": 32
+      },
+      "links-db": {
+        "x": 640,
+        "y": 192
+      },
+      "links-cache": {
+        "x": 640,
+        "y": 32
+      },
+      "create-api": {
+        "x": 416,
+        "y": 352
+      }
+    },
+    "routes": {
+      "@actor-download": [
+        {
+          "x": 160,
+          "y": 256
+        },
+        {
+          "x": 192,
+          "y": 256
+        },
+        {
+          "x": 192,
+          "y": 96
+        },
+        {
+          "x": 224,
+          "y": 96
+        }
+      ],
+      "@actor-upload": [
+        {
+          "x": 160,
+          "y": 256
+        },
+        {
+          "x": 192,
+          "y": 256
+        },
+        {
+          "x": 192,
+          "y": 416
+        },
+        {
+          "x": 224,
+          "y": 416
+        }
+      ],
+      "resolve-entry": [
+        {
+          "x": 352,
+          "y": 96
+        },
+        {
+          "x": 416,
+          "y": 96
+        }
+      ],
+      "create-entry": [
+        {
+          "x": 352,
+          "y": 416
+        },
+        {
+          "x": 416,
+          "y": 416
+        }
+      ],
+      "resolve-store": [
+        {
+          "x": 544,
+          "y": 96
+        },
+        {
+          "x": 608,
+          "y": 96
+        },
+        {
+          "x": 608,
+          "y": 256
+        },
+        {
+          "x": 640,
+          "y": 256
+        }
+      ],
+      "resolve-cache": [
+        {
+          "x": 544,
+          "y": 96
+        },
+        {
+          "x": 640,
+          "y": 96
+        }
+      ],
+      "create-store": [
+        {
+          "x": 544,
+          "y": 416
+        },
+        {
+          "x": 576,
+          "y": 416
+        },
+        {
+          "x": 576,
+          "y": 256
+        },
+        {
+          "x": 640,
+          "y": 256
+        }
+      ]
+    },
+    "chips": {},
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 800,
+      "h": 512
+    }
+  },
+  "tiles": [
+    {
+      "id": "@actor",
+      "w": 128,
+      "h": 160,
+      "shape": "rect",
+      "label": "User"
+    },
+    {
+      "id": "@download",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Follow"
+    },
+    {
+      "id": "@upload",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Create"
+    },
+    {
+      "id": "resolve-api",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Resolve link"
+    },
+    {
+      "id": "links-db",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Links database"
+    },
+    {
+      "id": "links-cache",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "Links cache"
+    },
+    {
+      "id": "create-api",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Create link"
+    }
+  ],
+  "lines": [
+    {
+      "id": "@actor-download",
+      "source": "@actor",
+      "target": "@download",
+      "dashed": false,
+      "directed": true,
+      "label": "User to Follow",
+      "removable": false
+    },
+    {
+      "id": "@actor-upload",
+      "source": "@actor",
+      "target": "@upload",
+      "dashed": false,
+      "directed": true,
+      "label": "User to Create",
+      "removable": false
+    },
+    {
+      "id": "resolve-entry",
+      "source": "@download",
+      "target": "resolve-api",
+      "dashed": false,
+      "directed": true,
+      "label": "Follow to Resolve link",
+      "band": 0
+    },
+    {
+      "id": "create-entry",
+      "source": "@upload",
+      "target": "create-api",
+      "dashed": false,
+      "directed": true,
+      "label": "Create to Create link",
+      "band": 2
+    },
+    {
+      "id": "resolve-store",
+      "source": "resolve-api",
+      "target": "links-db",
+      "dashed": false,
+      "directed": true,
+      "label": "Resolve link to Links database",
+      "detail": "Read primary on miss or outage",
+      "band": 0
+    },
+    {
+      "id": "resolve-cache",
+      "source": "resolve-api",
+      "target": "links-cache",
+      "dashed": false,
+      "directed": true,
+      "label": "Resolve link to Links cache",
+      "detail": "Read and fill positive records",
+      "band": 0
+    },
+    {
+      "id": "create-store",
+      "source": "create-api",
+      "target": "links-db",
+      "dashed": false,
+      "directed": true,
+      "label": "Create link to Links database",
+      "detail": "Create and reconcile",
+      "band": 2
+    }
+  ]
+}

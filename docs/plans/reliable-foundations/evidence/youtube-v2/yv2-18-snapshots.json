@@ -1,0 +1,143 @@
+{
+  "unit": "YV2-18",
+  "reason": "Remove repeated ownership/role/deployable narration and declaration-only authoring before useful settings; preserve the entire saved semantic source and strict report.",
+  "beforeRendererCommit": "3c5fe1429067530b6f4c22aaec71444e9cf469b4",
+  "afterRenderer": "YV2-18 implementation recorded in the containing commit; live development HMR metadata names startup Git identity. Owner README/feedback dirt is unrelated and preserved.",
+  "sourceSemanticsBeforeAfterEqualExcludingRevision": true,
+  "nativeSourceAndImageHashesVerified": true,
+  "beforeViewports": {
+    "widths": [1280, 1440],
+    "heights": [800, 900],
+    "source": "*-source-before.json",
+    "studio": "*-studio-before.txt"
+  },
+  "afterViewports": {
+    "widths": [1280, 1440],
+    "heights": [800, 900],
+    "source": "*-source-after.json",
+    "studio": "*-studio-after-<width>.txt"
+  },
+  "native": "*-native.png with *-capture.json resolved layout and source hash",
+  "artifacts": [
+    {
+      "path": "yv2-18-tinyurl-before-1280.png",
+      "bytes": 134300,
+      "sha256": "1850a1d19c39789849da428056407b45d5c6bf27f0bbcc4f20d0fb19c1d4e86e"
+    },
+    {
+      "path": "yv2-18-tinyurl-before-1440.png",
+      "bytes": 151115,
+      "sha256": "61df78713a38ef317a23100f7a6aff96068969b2e2e13bc8f50743267004606b"
+    },
+    {
+      "path": "yv2-18-tinyurl-after-1280.png",
+      "bytes": 101331,
+      "sha256": "63bf4385de8d20712ce4118ff01d9bb27accccbc557d4798ce256fd5de67b123"
+    },
+    {
+      "path": "yv2-18-tinyurl-after-1440.png",
+      "bytes": 112488,
+      "sha256": "3b995a1341f1089c2a8aca3c656bae1fede8162a7519cb368be52903599da5be"
+    },
+    {
+      "path": "yv2-18-tinyurl-source-before.json",
+      "bytes": 12791,
+      "sha256": "5a451bb7734bf26540ddcb20329fa7852516b3deeba78d8ed0a38b3377012eda"
+    },
+    {
+      "path": "yv2-18-tinyurl-source-after.json",
+      "bytes": 12791,
+      "sha256": "cea5f3b2f017d05bff2b5e1d9d19f8cd1328fabcb90f60d8bf6752194432b4cd"
+    },
+    {
+      "path": "yv2-18-tinyurl-native.png",
+      "bytes": 114301,
+      "sha256": "ac4fa310f328a7ac19f778797e800b995a75dc4725498f5d749047199d28c689"
+    },
+    {
+      "path": "yv2-18-tinyurl-capture.json",
+      "bytes": 7057,
+      "sha256": "ba01a7cb30f589fe91aaef87a20d8f4ca5d7d5b9a3b0c04577e3162a9dc3ab97"
+    },
+    {
+      "path": "yv2-18-tinyurl-diagnostics.png",
+      "bytes": 116159,
+      "sha256": "85b06e59d6295c198c898142ec2777de047ec57765760fc68aa2be12661c6a1f"
+    },
+    {
+      "path": "yv2-18-tinyurl-studio-before.txt",
+      "bytes": 730,
+      "sha256": "6444efa6241ff894d24ae8c34408e81a7888af7d890e637ddb95529cd9c4c397"
+    },
+    {
+      "path": "yv2-18-tinyurl-studio-after-1280.txt",
+      "bytes": 97,
+      "sha256": "69ba6a648786f5dd9358d2e6160001aefb20f42243a29eca2e9c7b5b0aa14970"
+    },
+    {
+      "path": "yv2-18-tinyurl-studio-after-1440.txt",
+      "bytes": 97,
+      "sha256": "69ba6a648786f5dd9358d2e6160001aefb20f42243a29eca2e9c7b5b0aa14970"
+    },
+    {
+      "path": "yv2-18-youtube-before-1280.png",
+      "bytes": 138696,
+      "sha256": "e3fbbe7451178b00a9ebce26f873a01bfd6bac5343583d22903cf8a22f936261"
+    },
+    {
+      "path": "yv2-18-youtube-before-1440.png",
+      "bytes": 154270,
+      "sha256": "e1f9ac7b3675bc1af3289c492513e7cb9b26d56ac98b8b243670907a911dd76e"
+    },
+    {
+      "path": "yv2-18-youtube-after-1280.png",
+      "bytes": 109662,
+      "sha256": "6c0bc0562dd6a9fc98b4e55b1eff35b5f15b9f9d6d4a11e8b9bd5fe73ea2b5cd"
+    },
+    {
+      "path": "yv2-18-youtube-after-1440.png",
+      "bytes": 125209,
+      "sha256": "859fda74e837e8b455ac02e08c3adc75e1f86c8f51403b82396034fc2fce13d9"
+    },
+    {
+      "path": "yv2-18-youtube-source-before.json",
+      "bytes": 48851,
+      "sha256": "a544233f9457d0ffdc7e8f3fa3d89059c557252b93aa80ce4da71d66f4340c23"
+    },
+    {
+      "path": "yv2-18-youtube-source-after.json",
+      "bytes": 48852,
+      "sha256": "352ff8a08cd018dda0f70d8584e5bdcda53d84ab1cdc8dde28611f5058c11856"
+    },
+    {
+      "path": "yv2-18-youtube-native.png",
+      "bytes": 434488,
+      "sha256": "29b68d14f26a35aa3c8e87c2662912bd3eba812c620e3bcd933d1400fb7a90b3"
+    },
+    {
+      "path": "yv2-18-youtube-capture.json",
+      "bytes": 23735,
+      "sha256": "d7412495c7543b3c832c5ed7b9752276566b334ba5e7eaf2b985fb0907509c0f"
+    },
+    {
+      "path": "yv2-18-youtube-diagnostics.png",
+      "bytes": 124424,
+      "sha256": "c2c52ed8f5e28258461fdf8c87be183294039b0b0fc145fde7b01e4d492cae23"
+    },
+    {
+      "path": "yv2-18-youtube-studio-before.txt",
+      "bytes": 378,
+      "sha256": "56bfa0d833fc8fde3fee897d1cd1e754abbdc4c1aa68a00eb768235513e6dba7"
+    },
+    {
+      "path": "yv2-18-youtube-studio-after-1280.txt",
+      "bytes": 92,
+      "sha256": "313d1c821206a0e7ad80ac3aea5319fa7b88ef95a093afb730df90e6c64441ec"
+    },
+    {
+      "path": "yv2-18-youtube-studio-after-1440.txt",
+      "bytes": 92,
+      "sha256": "313d1c821206a0e7ad80ac3aea5319fa7b88ef95a093afb730df90e6c64441ec"
+    }
+  ]
+}

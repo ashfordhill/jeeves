@@ -22,13 +22,9 @@ export function Tile({
   kind,
   name,
   warnings,
-  owner,
-  operation,
 }: {
   kind?: StudioKind;
   name: string;
-  owner?: string;
-  operation?: string;
   /** Its design warnings, shown as a mark in the corner. */
   warnings?: readonly string[];
 }) {
@@ -39,8 +35,6 @@ export function Tile({
         <StudioIcon name={visual?.icon} size={40} />
       </span>
       <span className="lane-tile-name">{name}</span>
-      {owner ? <span className="lane-role-owner">{owner} · role</span> : null}
-      {operation ? <span className="lane-operation-label">{operation}</span> : null}
       <WarningMark messages={warnings} />
     </div>
   );

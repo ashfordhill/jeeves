@@ -1,84 +1,44 @@
 import {
   type DesignDocument,
   designOperations,
-  designOwnership,
   findingsForOperationBinding,
-  isCreateOperation,
-  isResolveOperation,
   operationContractFindings,
-  operationDependencyIds,
   operationDisplayName,
+  type ReadinessTarget,
 } from "@jeeves/spec";
 
+/** Read-only inspection does not offer unrelated declaration-only authoring actions. */
 export function OperationsSummary({
   design,
-  element,
-  connection,
-  ownerId,
-  onConfigure,
+  onTarget,
   selectedBinding,
 }: {
   design: DesignDocument;
-  element?: string;
-  connection?: string;
-  ownerId?: string;
-  onConfigure: (binding?: string) => void;
+  onTarget: (target: ReadinessTarget) => void;
   selectedBinding?: string;
 }) {
-  const model = designOperations(design),
-    ownership = designOwnership(design);
-  const receivers = model.receivers.filter(
-    (x) =>
-      x.role === element ||
-      (connection && operationDependencyIds(x).includes(connection)) ||
-      (ownerId && ownership.roles.some((r) => r.element === x.role && r.owner === ownerId)) ||
-      model.calls.some(
-        (c) =>
-          c.receiverBinding === x.id &&
-          c.caller.kind === "connection" &&
-          c.caller.connection === connection,
-      ),
-  );
+  const model = designOperations(design);
   const findings = operationContractFindings(design);
   return (
-    <section
-      className="ownership-summary operation-summary"
-      aria-label="Declared operation responsibilities"
-    >
-      {receivers.map((receiver) => (
-        <details key={receiver.id} open>
-          <summary>{operationDisplayName(receiver.implementation)}</summary>
+    <details className="ownership-summary operation-summary">
+      <summary>Operation declarations · {model.receivers.length} receivers</summary>
+      {model.receivers.map((receiver) => (
+        <section key={receiver.id}>
+          <h3>{operationDisplayName(receiver.implementation)}</h3>
           <p>
-            {design.elements.find((x) => x.id === receiver.role)?.name ?? receiver.role} · same
-            canonical role
-          </p>
-          <p>
-            {isCreateOperation(receiver.implementation) && receiver.binding.kind === "create-link"
-              ? `Authenticated · durable commit · ${receiver.binding.successRetentionHours === null ? "Replay retention unspecified" : "24h replay"}`
-              : isResolveOperation(receiver.implementation)
-                ? "Public · 307 · all-outcome no-store · primary + positive cache"
-                : "Unknown behavior; exact reference retained"}{" "}
-            · {model.calls.filter((x) => x.receiverBinding === receiver.id).length} caller bindings
-          </p>
-          <p className="studio-field-help">
             {findingsForOperationBinding(design, receiver.id, findings).length} unresolved
-            declarations. Template / runtime evidence unavailable.
+            declarations
           </p>
           <button
             type="button"
             aria-pressed={selectedBinding === receiver.id}
-            onClick={() => onConfigure(receiver.id)}
+            onClick={() => onTarget({ operation: receiver.id })}
           >
-            Details & bindings
+            Select operation {receiver.id}
           </button>
-          {selectedBinding === receiver.id ? (
-            <p className="studio-field-help">Selected operation for chat · {receiver.id}</p>
-          ) : null}
-        </details>
+        </section>
       ))}
-      <button type="button" onClick={() => onConfigure()}>
-        Operation contracts
-      </button>
-    </section>
+      <pre>{JSON.stringify(model, null, 2)}</pre>
+    </details>
   );
 }

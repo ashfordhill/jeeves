@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "name": "tinyurl",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "selected": true,
+      "focus": true,
+      "formMouse": true,
+      "entireSourcePreserved": true
+    },
+    {
+      "name": "tinyurl",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "selected": true,
+      "focus": true,
+      "formMouse": true,
+      "entireSourcePreserved": true
+    },
+    {
+      "name": "youtube",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "selected": true,
+      "focus": true,
+      "formMouse": true,
+      "entireSourcePreserved": true
+    },
+    {
+      "name": "youtube",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "selected": true,
+      "focus": true,
+      "formMouse": true,
+      "entireSourcePreserved": true
+    }
+  ],
+  "errors": [],
+  "sourceDownloadsExact": true,
+  "pngAndNativeDetails": true,
+  "strictReadinessStillBlocked": true,
+  "reloadPreservesEntireSemanticData": true
+}

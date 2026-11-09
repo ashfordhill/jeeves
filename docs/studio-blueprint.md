@@ -223,3 +223,13 @@ The explicit YV2-16 preset command can materialize generation, graph/modules and
 one operation batch. Blueprint reads still materialize nothing; v3 preserves those exact source
 choices and v2 refuses their semantic loss. Local generator installation/runtime evidence remain
 separate from this read-only representation and strict readiness.
+
+## Normal authoring and preserved diagnostics
+
+The canvas renders canonical process tiles and the inspector starts with name/kind/useful installed
+settings. Logical-owner projection, role/deployable narration and declaration-only requirements/
+operation/ownership forms are absent from normal authoring. This presentation does not change the
+source or this API: v3 retains every ownership, operation, scope, legacy setting and generation
+selection; v2 still refuses semantic loss. **Export diagram → Source & diagnostics** provides exact
+source JSON, read-only declarations and unchanged strict readiness with precise target selection.
+Experimental generation support and strict TinyURL/runtime evidence remain distinct.

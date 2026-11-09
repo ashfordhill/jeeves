@@ -1,8 +1,17 @@
+import {
+  buildOperationsCommand,
+  cleanOwnershipChange,
+  designOperations,
+  designOwnership,
+  previewOperations,
+  previewOwnership,
+} from "@jeeves/spec";
 import { alignCreateTimeout, declareCreate } from "./operations.ts";
 import { declareLinks } from "./ownership.ts";
+import { commitSource, openDiagnostics, selectOperation } from "./source.ts";
 import { expect, ready, test, tile } from "./studio.ts";
 
-test("declares a named operation on the canonical API, previews precise clears and restores it with one Undo", async ({
+test("preserves a source operation on the canonical API, previews precise clears and restores it with one Undo", async ({
   page,
   tinyurl: id,
 }) => {
@@ -22,13 +31,10 @@ test("declares a named operation on the canonical API, previews precise clears a
     receiverRole: "shorten",
     caller: { entry: "upload-shorten", lane: "upload", element: "shorten" },
   });
-  await expect(
-    tile(page, "Shorten service").getByText("Create link · v1", { exact: true }),
-  ).toBeVisible();
+  await expect(tile(page, "Shorten service")).toBeVisible();
+  await expect(tile(page, "Shorten service")).not.toContainText("role");
   const full = await bp();
-  await page.getByRole("button", { name: "Details & bindings", exact: true }).click();
-  const form = page.getByRole("dialog", { name: "Operation contracts" });
-  await form.getByRole("button", { name: "Cancel", exact: true }).click();
+  await selectOperation(page, "operation-1");
   await expect(page.getByText("Selected operation for chat · operation-1")).toBeVisible();
   expect(await bp()).toEqual(full);
   await page.getByRole("button", { name: "Focus relationships", exact: true }).click();
@@ -36,21 +42,13 @@ test("declares a named operation on the canonical API, previews precise clears a
   expect(await bp()).toEqual(full);
   await page.getByRole("button", { name: "Show all", exact: true }).click();
   await page.getByRole("button", { name: "Fit", exact: true }).click();
-  await page.getByRole("button", { name: "Ownership & access", exact: true }).click();
-  const ownership = page.getByRole("dialog", { name: "Ownership & access" });
-  await ownership.getByRole("button", { name: "Remove owner Links", exact: true }).click();
-  await ownership.getByRole("button", { name: "Preview ownership", exact: true }).click();
-  await expect(ownership.getByText("2 affected operation bindings")).toBeVisible();
-  await expect(
-    ownership.getByText(/Clear Create link · v1 implementation on Shorten service/),
-  ).toBeVisible();
-  await ownership.getByRole("button", { name: "Cancel", exact: true }).click();
+  const removed = structuredClone(designOwnership(saved));
+  removed.owners = [];
+  const preview = previewOwnership(saved, cleanOwnershipChange(saved, removed));
+  expect(preview.operationChanges).toHaveLength(2);
+  expect(preview.operationChanges[0]?.change).toBe("removed");
   expect(await state()).toEqual(saved);
   await page.reload();
-  await ready(page);
-  await tile(page, "Links · logical owner")
-    .getByRole("button", { name: "Expand roles", exact: true })
-    .click();
   await ready(page);
   await tile(page, "Shorten service").click();
   await tile(page, "Shorten service")
@@ -66,7 +64,7 @@ test("declares a named operation on the canonical API, previews precise clears a
     .toEqual({ ...saved, revision: 0 });
 });
 
-test("edits and clears an unresolved exact verifier, then previews an entry move and undoes it once", async ({
+test("preserves and clears an unresolved source verifier, then previews an entry move and undoes it once", async ({
   page,
   tinyurl: id,
 }) => {
@@ -76,49 +74,40 @@ test("edits and clears an unresolved exact verifier, then previews an entry move
   await declareCreate(page);
   const state = async () =>
     (await (await page.request.get(`/api/projects/${id}/design`)).json()).design;
-  const open = async () => {
-    await page.getByRole("button", { name: "Operation contracts", exact: true }).click();
-    return page.getByRole("dialog", { name: "Operation contracts" });
-  };
-  let form = await open();
-  await form.getByText("Auth verifier reference · unavailable", { exact: true }).click();
-  await form
-    .getByRole("button", { name: "Declare unresolved verifier reference operation-1", exact: true })
-    .click();
-  await form.getByLabel("operation-1 verifier id", { exact: true }).fill("future-verifier");
-  await form.getByLabel("operation-1 verifier version", { exact: true }).fill("1.0.0");
-  await form.getByLabel("operation-1 verifier sha256", { exact: true }).fill("f".repeat(64));
-  await form.getByRole("button", { name: "Preview operations", exact: true }).click();
-  await expect(form.getByText(/Runtime auth verifier future-verifier@1.0.0/)).toBeVisible();
-  await form.getByRole("button", { name: "Save operations", exact: true }).click();
-  await expect(form).toBeHidden();
-  await page.reload();
-  await ready(page);
+  await commitSource(page, (design) => {
+    const operations = structuredClone(designOperations(design));
+    const binding = operations.receivers[0]?.binding;
+    if (binding?.kind !== "create-link") throw new Error("Missing create operation");
+    binding.authVerifier = { id: "future-verifier", version: "1.0.0", sha256: "f".repeat(64) };
+    expect(
+      previewOperations(design, operations)
+        .findings.map((row) => row.message)
+        .join(" "),
+    ).toContain("Runtime auth verifier future-verifier@1.0.0");
+    return buildOperationsCommand(design, { operations });
+  });
   expect((await state()).operations.receivers[0].binding.authVerifier).toEqual({
     id: "future-verifier",
     version: "1.0.0",
     sha256: "f".repeat(64),
   });
-  form = await open();
-  await form.getByText("Auth verifier reference · unavailable", { exact: true }).click();
-  await expect(form.getByLabel("operation-1 verifier id", { exact: true })).toHaveValue(
-    "future-verifier",
-  );
-  await form
-    .getByRole("button", { name: "Clear verifier reference operation-1", exact: true })
-    .click();
-  await form.getByRole("button", { name: "Preview operations", exact: true }).click();
-  await form.getByRole("button", { name: "Save operations", exact: true }).click();
-  await expect(form).toBeHidden();
+  const diagnostics = await openDiagnostics(page);
+  await diagnostics.getByText(/^Operation declarations ·/).click();
+  await expect(diagnostics.locator(".operation-summary")).toContainText("future-verifier");
+  await page.getByRole("button", { name: "Close source & diagnostics", exact: true }).click();
+  await commitSource(page, (design) => {
+    const operations = structuredClone(designOperations(design));
+    const binding = operations.receivers[0]?.binding;
+    if (binding?.kind !== "create-link") throw new Error("Missing create operation");
+    binding.authVerifier = null;
+    return buildOperationsCommand(design, { operations });
+  });
   expect((await state()).operations.receivers[0].binding.authVerifier).toBeNull();
   await tile(page, "Stats API").click();
   await tile(page, "Stats API")
     .getByRole("button", { name: "Remove Stats API", exact: true })
     .click();
   await expect(tile(page, "Stats API")).toHaveCount(0);
-  const owner = tile(page, "Links · logical owner");
-  if (await owner.isVisible())
-    await owner.getByRole("button", { name: "Expand roles", exact: true }).click();
   await ready(page);
   await tile(page, "Shorten service").click();
   const before = await state();

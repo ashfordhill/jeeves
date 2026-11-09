@@ -1,6 +1,6 @@
 # Snapshot compatibility report
 
-The inspector's **Compatibility report**, blueprint v3 `readiness` and chat `readReadiness {}`
+**Export diagram → Source & diagnostics → Compatibility report**, blueprint v3 `readiness` and chat `readReadiness {}`
 all call `designReadiness` over the same design snapshot. Reads never upgrade, save, change Undo
 history or mark a staged review complete. The initial chat context carries only statuses, blocker
 counts and the composition hash; the read-only tool returns full detail on demand.

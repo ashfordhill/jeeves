@@ -1,4 +1,5 @@
 import { narrowReadinessSeedOps } from "../../../packages/spec/src/fixtures/nc05-narrow.ts";
+import { openDiagnostics } from "./source.ts";
 import { createStudy, expect, ready, test } from "./studio.ts";
 
 test("the mouse report separates complete contracts from missing implementation/evidence and targets one canonical operation", async ({
@@ -16,8 +17,7 @@ test("the mouse report separates complete contracts from missing implementation/
     await page.reload();
     await ready(page);
     const before = await (await page.request.get(`/api/projects/${id}/blueprint?version=3`)).json();
-    const open = page.getByRole("button", { name: "Open inspector", exact: true });
-    if (await open.isVisible()) await open.click();
+    await openDiagnostics(page);
     await page.getByText("Compatibility report", { exact: true }).click();
     const report = page.locator(".readiness-report");
     await expect(report).toHaveAttribute(

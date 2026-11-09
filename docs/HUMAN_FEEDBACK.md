@@ -86,3 +86,9 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Problem:** v2 needs useful extraction without becoming a YouTube-only template or adding more editor clutter.
 - **Decision:** include generic and reusable video templates; support attachments in other applications. V2 must exceed 5.53%; 60% is an eventual cross-project target. Show a control only when implemented and useful for the user to configure; hide internal metadata.
 - **Resolution:** [Build plan](plans/reliable-foundations/youtube-v2-plan.md) defines 23 bounded sequential assignments and a separate reuse proof. Planning is complete; implementation begins with YV2-01 when assigned.
+
+## 2026-11-08 — V2 inspector clutter resolved for normal authoring
+
+- **Problem:** repeated owner/role/deployable text and unrelated contract forms precede useful controls; owner cards/collapse controls obscure recognizable processes.
+- **Decision:** canonical process tiles and name/kind/settings first; preserve exact declarations and strict reports through read-only source diagnostics at Export.
+- **Resolution:** `YV2-18: simplify diagram and inspector authoring`; [before/after, source/native snapshots and mouse evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-18-clarity.md). Saved-source v2 project preview/ZIP remains YV2-19; owner usability acceptance and strict runtime certification remain separate.

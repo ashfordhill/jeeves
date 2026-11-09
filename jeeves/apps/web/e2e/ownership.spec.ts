@@ -1,7 +1,9 @@
+import { buildOwnershipCommand, designOwnership, previewOwnership } from "@jeeves/spec";
 import { declareLinks } from "./ownership.ts";
+import { openDiagnostics } from "./source.ts";
 import { expect, ready, test, tile, tiles } from "./studio.ts";
 
-test("declares one owner, preserves canonical resource focus, refuses excess access and undoes exact removal", async ({
+test("preserves one source owner, preserves canonical resource focus, refuses excess access and undoes exact removal", async ({
   page,
   tinyurl: id,
 }) => {
@@ -17,10 +19,12 @@ test("declares one owner, preserves canonical resource focus, refuses excess acc
   const saved = await state();
   expect(saved.elements).toEqual(before.elements);
   expect(saved.connections).toEqual(before.connections);
-  await expect(tile(page, "Links · logical owner")).toBeVisible();
-  await expect(tiles(page)).toHaveCount(10);
-  await tile(page, "Links · logical owner").click();
-  await expect(page.getByText("Links · one logical owner", { exact: true })).toBeVisible();
+  await expect(tile(page, "Shorten service")).toBeVisible();
+  await expect(tile(page, "Redirect service")).toBeVisible();
+  await expect(tiles(page)).toHaveCount(11);
+  const diagnostics = await openDiagnostics(page);
+  await diagnostics.getByText(/^Ownership & access ·/).click();
+  await diagnostics.getByRole("button", { name: "Select owner owner-1", exact: true }).click();
   await page.getByRole("button", { name: "Open chat", exact: true }).click();
   await page.getByLabel("Message").fill("Inspect this logical owner selection");
   const sent = page.waitForRequest(
@@ -33,18 +37,23 @@ test("declares one owner, preserves canonical resource focus, refuses excess acc
   ).toBeVisible();
   await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
   expect(await state()).toEqual(saved);
-  await page.getByRole("button", { name: "Ownership & access", exact: true }).click();
-  const form = page.getByRole("dialog", { name: "Ownership & access" });
-  await form.getByRole("tab", { name: "Access", exact: true }).click();
-  await form
-    .getByLabel("Redirect service to URL cache grant", { exact: true })
-    .selectOption("read");
-  await form.getByRole("button", { name: "Preview ownership", exact: true }).click();
-  await expect(form.getByText(/Ownership refused/)).toBeVisible();
-  await expect(form.getByText(/outside its read role grant/)).toBeVisible();
-  await expect(form.getByRole("button", { name: "Save ownership", exact: true })).toBeDisabled();
+  const invalid = structuredClone(designOwnership(saved));
+  invalid.grants = invalid.grants.map((row) =>
+    row.role === "redirect" && row.resource === "url-cache" ? { ...row, access: "read" } : row,
+  );
+  const preview = previewOwnership(saved, invalid);
+  expect(preview.canApply).toBe(false);
+  expect(preview.findings.map((row) => row.message).join(" ")).toContain(
+    "outside its read role grant",
+  );
+  const refused = await page.request.post(`/api/projects/${id}/operations`, {
+    data: {
+      baseRevision: saved.revision,
+      ops: buildOwnershipCommand(saved, { ownership: invalid }).ops,
+    },
+  });
+  expect(refused.ok()).toBe(false);
   expect(await state()).toEqual(saved);
-  await form.getByRole("button", { name: "Cancel", exact: true }).click();
   const full = await bp();
   await tile(page, "URL database").click();
   await page
@@ -52,7 +61,7 @@ test("declares one owner, preserves canonical resource focus, refuses excess acc
     .getByRole("button", { name: "Focus relationships", exact: true })
     .click();
   await page.getByRole("button", { name: "Fit focus", exact: true }).click();
-  await expect(tile(page, "Links · logical owner")).toBeVisible();
+  await expect(tile(page, "Shorten service")).toBeVisible();
   expect(await bp()).toEqual(full);
   await page
     .locator(".lane-relationship-focus")
@@ -86,13 +95,11 @@ test("declares one owner, preserves canonical resource focus, refuses excess acc
   await page.getByRole("button", { name: "Fit", exact: true }).click();
   await page.reload();
   await ready(page);
-  await expect(tile(page, "Links · logical owner")).toBeVisible();
-  await tile(page, "Links · logical owner")
-    .getByRole("button", { name: "Expand roles", exact: true })
-    .click();
-  await ready(page);
   await expect(tile(page, "Shorten service")).toBeVisible();
-  await page.getByRole("button", { name: "Collapse Links", exact: true }).click();
-  await ready(page);
+  await expect(tile(page, "Shorten service")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Expand roles", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Ownership & access", exact: true })).toHaveCount(
+    0,
+  );
   expect({ ...(await bp()), revision: 0 }).toEqual({ ...full, revision: 0 });
 });

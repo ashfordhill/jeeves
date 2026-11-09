@@ -1325,3 +1325,19 @@ separately, not promoted into strict TinyURL certification. [Evidence/limits](..
 - [Evidence and snapshots](../evidence/youtube-v2/yv2-17-authoring.md). Historical source/wire,
   foundation contracts/history and evaluator validation remain covered; unsupported settings are
   seeded explicitly as historical source rather than through normal chat configuration.
+
+## YV2-18 — Canonical process presentation and read-only diagnostics
+
+Normal `Workspace`/`LaneCanvas` render the existing canonical lane graph directly. Ownership
+projection is no longer the authoring view; no logical source/ownership, routing or layout rule
+changed. Tile faces retain icons/names without role/operation/deployable subtitles. The inspector
+starts with name/kind and installed useful fields, followed by focus; module findings remain
+visible after fields. Normal forms omit legacy writer edits and manual ownership/operation/
+requirements declarations. Existing source schemas/commands/validators/history remain intact.
+
+`ExportDiagram.onDiagnostics` opens `SourceDiagnostics` with exact source JSON download,
+read-only `OwnershipSummary`/`OperationsSummary`, scope/full source and unchanged strict
+`ReadinessReport`. `onTarget(ReadinessTarget)` closes diagnostics and selects the exact canonical
+tile/edge or owner/operation chat reference. No server API, generation contract, template or output
+changed. This path supplies no editable Advanced menu. Generation preview/ZIP remains YV2-19.
+[Source-linked normal/native snapshots and checks](../evidence/youtube-v2/yv2-18-clarity.md).

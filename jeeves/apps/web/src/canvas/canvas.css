@@ -715,3 +715,15 @@
   margin: 5px 0 9px;
   font-size: 11px;
 }
+
+.source-diagnostics {
+  display: grid;
+  gap: 16px;
+}
+.source-diagnostics pre {
+  overflow: auto;
+  max-height: 360px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

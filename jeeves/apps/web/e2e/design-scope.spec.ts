@@ -1,6 +1,8 @@
+import { buildDesignScopeCommand, previewDesignScope, tinyurlDesignScope } from "@jeeves/spec";
+import { commitSource, openDiagnostics } from "./source.ts";
 import { expect, ready, test } from "./studio.ts";
 
-test("previews an explicit scope upgrade, retains blocked requirements on reload and undoes the boundary", async ({
+test("retains blocked historical requirements in read-only diagnostics, source export and Undo", async ({
   page,
   tinyurl: id,
 }) => {
@@ -8,32 +10,26 @@ test("previews an explicit scope upgrade, retains blocked requirements on reload
   const state = async () =>
     (await (await page.request.get(`/api/projects/${id}/design`)).json()).design;
   const before = await state();
-  await page.getByRole("button", { name: "Profile & requirements", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Profile & requirements" });
-  await dialog.getByLabel("Behavior profile", { exact: true }).selectOption("tinyurl");
-  await dialog.getByLabel("Custom slugs scope", { exact: true }).selectOption("included");
-  await dialog.getByText("Unresolved custom requirements (0/8)", { exact: true }).click();
-  await dialog.getByRole("button", { name: "Add custom requirement", exact: true }).click();
-  await dialog
-    .getByLabel("Custom requirement 1", { exact: true })
-    .fill("Define tenant destination policy");
-  await dialog.getByLabel("Custom requirement 1 tile", { exact: true }).selectOption("shorten");
-  const upgrade = dialog.getByRole("button", { name: "Upgrade & save requirements", exact: true });
-  await expect(upgrade).toBeDisabled();
-  await dialog.getByRole("button", { name: "Preview requirements", exact: true }).click();
-  await expect(dialog.getByText("Explicit upgrade: schema v2 → v3", { exact: true })).toBeVisible();
-  await expect(dialog.getByText(/This required behavior blocks the narrow profile/)).toBeVisible();
-  expect(await state()).toEqual(before);
-  await upgrade.click();
-  await expect(dialog).toBeHidden();
-  const saved = await state();
-  expect(saved).toMatchObject({
-    schemaVersion: 3,
-    revision: before.revision + 1,
-    scope: {
-      customRequirements: [{ requirement: "Define tenant destination policy", element: "shorten" }],
+  const scope = tinyurlDesignScope();
+  scope.requirements = scope.requirements.map((row) =>
+    row.feature === "custom-slugs" ? { ...row, disposition: "included" } : row,
+  );
+  scope.customRequirements = [
+    {
+      id: "custom-1",
+      requirement: "Define tenant destination policy",
+      criticality: "required",
+      element: "shorten",
     },
-  });
+  ];
+  expect(
+    previewDesignScope(before, scope)
+      .unresolved.map((row) => row.requirement)
+      .join(" "),
+  ).toContain("This required behavior blocks the narrow profile");
+  await commitSource(page, (design) => buildDesignScopeCommand(design, { scope, upgrade: true }));
+  const saved = await state();
+  expect(saved).toMatchObject({ schemaVersion: 3, revision: before.revision + 1, scope });
   expect((await page.request.get(`/api/projects/${id}/blueprint`)).status()).toBe(422);
   const v3 = await (await page.request.get(`/api/projects/${id}/blueprint?version=3`)).json();
   expect(v3).toMatchObject({
@@ -43,12 +39,20 @@ test("previews an explicit scope upgrade, retains blocked requirements on reload
   });
   await page.reload();
   await ready(page);
-  await page.getByRole("button", { name: "Profile & requirements", exact: true }).click();
-  await expect(dialog.getByLabel("Custom slugs scope", { exact: true })).toHaveValue("included");
-  await expect(dialog.getByLabel("Custom requirement 1", { exact: true })).toHaveValue(
-    "Define tenant destination policy",
-  );
-  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Profile & requirements", exact: true }),
+  ).toHaveCount(0);
+  const dialog = await openDiagnostics(page);
+  await dialog.getByText("Profile & requirements", { exact: true }).click();
+  await expect(dialog).toContainText("Define tenant destination policy");
+  await expect(dialog.locator("input, select, textarea")).toHaveCount(0);
+  const download = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Download source JSON", exact: true }).click();
+  const path = await (await download).path();
+  if (!path) throw new Error("Missing source download");
+  const { readFile } = await import("node:fs/promises");
+  expect(JSON.parse(await readFile(path, "utf8"))).toEqual(saved);
+  await page.getByRole("button", { name: "Close source & diagnostics", exact: true }).click();
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect.poll(state).toEqual({ ...before, revision: saved.revision + 1 });
   expect((await page.request.get(`/api/projects/${id}/blueprint`)).ok()).toBe(true);

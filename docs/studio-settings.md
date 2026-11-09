@@ -55,10 +55,10 @@ available for imports and diagnostics.
 
 ## Profile and persistent requirements
 
-The header's **Profile & requirements** form edits top-level `scope` on stored schema v3,
-using `design-scope.ts`. Legacy schema v2 opens with unspecified declarations and changes only
-after **Preview requirements → Upgrade & save requirements**. The upgrade and requirements
-save form one Undo step; existing tiles, settings and inferred ownership do not change.
+Top-level schema-v3 `scope` remains typed source (`design-scope.ts`), visible read-only under
+**Export diagram → Source & diagnostics → Profile & requirements**. Normal authoring has no
+requirements form. Explicit source/chat commands still require an explicit schema2 upgrade and
+save the whole boundary in one Undo step; pure reads change nothing.
 
 | Path | Allowed values / bound |
 | --- | --- |
@@ -76,8 +76,8 @@ profile. Removing the profile preserves its requirement declarations.
 
 Preview shows the exact unresolved contracts and the v3 export boundary. A changed design
 invalidates the preview before save. Profile selection never converts names, labels or modules
-into contracts. Profile selection supplies no ownership/API/message contract, template manifest or runtime. Explicit ownership declarations have their own editor below.
-Chat's `configureDesignScope` shares the mouse command and validation; RF04
+into contracts. Profile selection supplies no ownership/API/message contract, template manifest or runtime. Explicit ownership declarations remain typed source below.
+Chat's `configureDesignScope` uses the canonical source command and validation; RF04
 `declareReviewScope` remains turn-only metadata. See [blueprint](studio-blueprint.md).
 
 The new `studio-tinyurl-foundation@1.0.0` study explicitly stores these scope defaults, complete
@@ -259,10 +259,9 @@ the same edit. A C1 relationship has only its action and endpoints.
 
 **One writer per store.** A link into a database, search index, cache or object storage *writes*
 when it comes from the store's owner (the resource's **Owner**, or a member of the owning package)
-and *reads* otherwise; a store with no owner is only read. This is derived, never stored: the line
-inspector shows "Writes (owner)" or "Reads" as **Access (inferred)**; the store inspector lists
-**Owner** and **Other readers**,
-and the [blueprint](studio-blueprint.md) gives the connection `access: "write" | "read"`.
+and *reads* otherwise; a store with no owner is only read. This is derived, never stored. Full
+source diagnostics retain the legacy owner; the [blueprint](studio-blueprint.md) gives the
+connection `access: "write" | "read"`.
 Changing a store's owner changes who writes. An owner's individual read cannot be distinguished
 from a write by this model; editing the Action label does not override inferred access. Queue
 links keep their channel role (publish or consume) instead. Solid/dashed strokes follow each
@@ -336,10 +335,10 @@ is implemented.
 
 ## Explicit logical ownership and store access (schema v3)
 
-**Ownership & access** in the inspector edits optional top-level `ownership` using `ownership.ts`.
-Absence means unspecified; reading never upgrades or derives declarations. Preview the complete
-change before **Upgrade & save ownership** (v2) or **Save ownership** (v3). The preview switches
-to its report and lists each changed/removed binding and grant. A stale preview cannot save.
+Optional top-level `ownership` uses `ownership.ts` and remains read-only under
+**Export diagram → Source & diagnostics → Ownership & access**. Absence means unspecified;
+reading never upgrades or derives declarations. Supported feature attachment writes its required
+rows atomically. Explicit source/chat commands retain pure previews and atomic validation.
 
 | Field | Finite values / limits |
 | --- | --- |
@@ -356,8 +355,8 @@ boundary or a reader-owned projection. The marker has targeted unresolved publis
 freshness/failure and runtime-authorization findings; it supplies no API bypass or runtime proof.
 Missing legacy declarations/grants remain saveable readiness gaps, never inferred permission.
 
-The form clears dependent grants/requests when an owner, role or authority is removed/transferred
-in its draft, then previews every affected row. Complete chat replacements must explicitly retain
+`cleanOwnershipChange` clears dependent grants/requests for explicit owner/role/authority removals
+or transfers; `previewOwnership` reports every affected row. Complete chat replacements must explicitly retain
 or remove those rows; contradictions refuse. Canonical tile deletion cleans its role/authority,
 grants and removed-edge requests; removing a source used by a surviving projection refuses.
 Relationship removal drops its request and retains the independent role grant. One Undo restores
@@ -365,15 +364,12 @@ all declarations; unrelated persistent custom requirements survive, including mi
 
 The old binding `owner` and connection `access` remain the **legacy inferred writer/access**
 approximation above. They are separate from explicit authority/grants and remain unchanged by
-ownership configuration. Exact operation bindings have their own editor below; runtime authorization remains unavailable.
+feature attachment. Exact operation bindings remain typed source below; strict runtime authorization remains unavailable.
 
-With explicit resource/access declarations, General groups the preserved inferred writer editor
-and legacy reader facts inside **Legacy inferred access & writer**, closed initially. A declared
-dependency similarly puts inferred relationship access in a secondary disclosure; Connections
-rows label declared requests explicitly. Changing a legacy writer edits only that old setting,
-never logical authority, grants or operation intent. Schema2 retains its original Owner/access
-inspector. Declared API/worker tiles show their role kind with underlying tile/deployable intent,
-so a Microservice tile kind does not imply a separate owner or running process.
+Normal forms omit legacy writer/access controls and repeated owner/role/deployable explanations.
+The full saved source download retains legacy inference, explicit authority, grants, dependencies
+and operation intent independently. Connections rows can identify a saved declared request.
+Canonical process tiles do not imply a new logical owner or deployment.
 
 Topology writer warnings use valid declared authority/role/write-grant/dependency facts when
 present, with legacy inferred-writer fallback when resource access declarations are absent. Targeted
@@ -382,37 +378,24 @@ present, with legacy inferred-writer fallback when resource access declarations 
 
 ## Exact operation contracts (schema v3)
 
-**Operation contracts** in the inspector edits the optional top-level `operations` allowlist.
-Choose a finite operation and canonical API role. Create uses its authoritative database read-write
-connection and explicit 24-hour successful-key retention. Resolve uses its source primary read
-and positive-cache read-and-fill connections plus the pinned policy. Both bind existing
-entry/service callers. Receiver/call IDs are separate stable binding identities. There is no
-route/schema/policy editor, auth verifier implementation or arbitrary configuration map. Its
-retained-result lookup and unknown-outcome reconciliation require explicit read-write dependency
-and role grant; old write-only declarations remain unchanged with a targeted missing-read gap.
-The inspector's [Compatibility report](studio-readiness.md) is view-only and adds no setting.
+Optional top-level `operations` is a finite source allowlist, shown read-only in
+**Export diagram → Source & diagnostics → Operation declarations**. Normal generation authoring
+has no declaration-only operation form. Exact receiver/caller refs and unresolved findings remain
+inspectable; **Select operation <id>** selects that precise binding for chat.
 
-Use **Preview operations** before **Save operations** (or explicit **Upgrade & save operations**
-from v2). It shows named changes, exact ref details and targeted unresolved/refused findings.
-The fixed operation and existing receiver/connection timeout promises must agree; edit a legacy
-API timeout explicitly through **Options → Request timeout**. The form never rewrites it.
-Unknown refs remain unresolved and retained. Missing verifier is unavailable independently of
-the known auth requirement. Known contradictory schema/auth/idempotency/deadline or foreign write
-intent refuses atomically. One Undo restores the whole declaration; stale previews refuse.
-
-**Details & bindings** selects one `operation:<binding-id>` for chat, distinct from its parent
-role/owner. Generic configuration does not select one. Removal/transfer previews include exact
-dependent operation clears. See [finite operation contracts](studio-contracts.md) for the complete
-field shapes, hashing, normalization, idempotency, allocation and error semantics. V3 retains all
-rows/findings; default v2 refuses their exact paths. Templates/runtime verification remain none.
-
+`previewOperations` / `buildOperationsCommand` and chat retain explicit upgrades, structural
+refusals, exact contract checks, history and Undo. Fixed operation deadlines must agree with
+existing source settings; unsupported historical intent requires explicit source work. Nothing
+rewrites a preserved timeout, policy or verifier on read. Removal/transfer previews name exact
+clears. V3 retains all rows/findings; default v2 refuses their exact paths. Strict contract template
+availability and runtime verification remain separate from experimental generation support.
 
 The tagged receiver binding is either the unchanged NC03
 `{kind:"create-link",storeConnection,successRetentionHours:null|24,authVerifier:null|exactRef}`
 or NC04 `{kind:"resolve-link",storeConnection,cacheConnection:null|id,cachePolicy:null|exactRef}`.
 Resolve's only known policy is Positive cache · clamp to record expiry v1. Null is unspecified.
-The form selects both canonical connections, declares/clears the pinned policy and exposes its
-exact ID/version/hash for inspection or an unresolved future reference. No numeric policy DSL,
+Source bindings retain both canonical connections and nullable exact policy refs, including
+unknown ID/version/hash values for diagnostics without substitution. No numeric policy DSL,
 route/schema editor or new generic connection settings are added. Resolve's exact deadline is
 1200 ms; Create retains 10000 ms. A shared role can leave the optional global request timeout empty
 to retain each operation deadline. Explicit global/caller deadline conflicts refuse. All-outcome

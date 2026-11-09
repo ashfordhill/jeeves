@@ -13,7 +13,6 @@ import {
   type StudioPerformanceField,
   type StudioSettings,
   studioComponentDefinitions,
-  studioComponentRequirements,
   studioDefinitions,
   studioFieldGroups,
   studioPerformanceFields,
@@ -283,11 +282,6 @@ function ComponentDraftForm({
   const links = (studio?.componentConnections ?? []).filter(
     (link) => link.from === id || (link.to.kind === "component" && link.to.id === id),
   );
-  const requirements = studioComponentRequirements(component.settings);
-  const unmet = new Set(findings.map((item) => item.message));
-  const otherGaps = findings.filter(
-    (item) => !requirements.some((requirement) => requirement.reason === item.message),
-  );
   const controls = normalSettingFields(design, installed, { component: id });
   const editable = (field: StudioComponentField) =>
     !field.path.startsWith("settings.") ||
@@ -325,28 +319,6 @@ function ComponentDraftForm({
         void formDrafts.flush(entry.key);
       }}
     >
-      <dl className="studio-component-meta">
-        <dt>Typical</dt>
-        <dd>
-          {definition.thirdParty.length ? definition.thirdParty.join(", ") : "Generated stub"}
-        </dd>
-      </dl>
-      {requirements.length || otherGaps.length ? (
-        <ul className="studio-readiness" aria-label="Readiness">
-          {requirements.map((requirement) => (
-            <li key={requirement.reason} data-met={!unmet.has(requirement.reason)}>
-              {unmet.has(requirement.reason)
-                ? requirement.reason
-                : `Needs ${requirement.kinds.length > 2 ? "a target" : requirement.kinds.join(" or ")}: connected`}
-            </li>
-          ))}
-          {otherGaps.map((item) => (
-            <li key={item.message} data-met={false}>
-              {item.message}
-            </li>
-          ))}
-        </ul>
-      ) : null}
       {groups.length > 1 ? (
         <div className="studio-inspector-tabs" role="tablist" aria-label="Inspector sections">
           {groups.map(({ group }) => (
@@ -468,6 +440,15 @@ function ComponentDraftForm({
           </div>
         ) : null}
       </div>
+      {findings.length ? (
+        <ul className="studio-readiness" aria-label="Readiness">
+          {findings.map((item) => (
+            <li key={item.message} data-met={false}>
+              {item.message}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </form>
   );
 }
@@ -489,7 +470,6 @@ export function TargetInspector({
   modules,
   tab,
   onTab,
-  legacyAccess,
 }: {
   projectId: string;
   element?: string;
@@ -501,8 +481,6 @@ export function TargetInspector({
   modules?: ReactNode;
   tab?: InspectorTab;
   onTab?: (tab: InspectorTab) => void;
-  /** Preserved inferred facts join their legacy writer editor in one secondary disclosure. */
-  legacyAccess?: ReactNode;
 }) {
   const target = useMemo<InspectorTarget>(
     () => (element ? { kind: "element", id: element } : { kind: "system" }),
@@ -522,7 +500,6 @@ export function TargetInspector({
       modules={modules}
       tab={tab}
       onTab={onTab}
-      legacyAccess={legacyAccess}
     />
   );
 }
@@ -540,7 +517,6 @@ function TargetForm({
   modules,
   tab,
   onTab,
-  legacyAccess,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
@@ -549,7 +525,6 @@ function TargetForm({
   modules?: ReactNode;
   tab?: InspectorTab;
   onTab?: (tab: InspectorTab) => void;
-  legacyAccess?: ReactNode;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
@@ -573,7 +548,8 @@ function TargetForm({
   const editable = (field: InspectorField) =>
     !field.path.startsWith("settings.") ||
     controls.some((control) => `settings.${control.sourcePaths[0]?.at(-1)}` === field.path);
-  for (const group of groups) group.fields = group.fields.filter(editable);
+  for (const group of groups)
+    group.fields = group.fields.filter((field) => field.path !== "owner" && editable(field));
   // Only installed, useful performance controls join Options.
   const performance = definition ? studioPerformanceFields[settings.kind].filter(editable) : [];
   if (performance.length) {
@@ -658,12 +634,11 @@ function TargetForm({
           <PresetAttachment projectId={spec.projectId} design={design} />
         ) : null}
         {current.fields.map((field) => {
-          const legacyWriter = field.path === "owner" && design.schemaVersion === 3;
           const input = (
             <DraftField
               key={field.path}
               idPrefix={tabId}
-              field={legacyWriter ? { ...field, label: "Legacy inferred writer" } : field}
+              field={field}
               draft={entry}
               references={optionsFor(field)}
               help={performance.includes(field as StudioPerformanceField)}
@@ -678,19 +653,7 @@ function TargetForm({
               }
             />
           );
-          return legacyWriter && legacyAccess ? (
-            <details className="studio-legacy-access" key={field.path}>
-              <summary>Legacy inferred access & writer</summary>
-              <p className="studio-field-help">
-                Preserved studio inference. Explicit authority, grants and dependency requests are
-                shown above; this legacy setting declares none of them.
-              </p>
-              {legacyAccess}
-              {input}
-            </details>
-          ) : (
-            input
-          );
+          return input;
         })}
         {active === "Connections" && connections.length ? (
           <div className="studio-dependencies">

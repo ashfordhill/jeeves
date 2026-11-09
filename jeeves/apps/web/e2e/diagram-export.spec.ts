@@ -132,28 +132,24 @@ test("PNG contains full YouTube routes after mouse focus, pan, zoom and dark mod
   }
 });
 
-test("owner projection is explicit; stale revisions, missing fonts and cancelled captures refuse downloads", async ({
+test("canonical process export retains ownership; stale revisions, missing fonts and cancelled captures refuse downloads", async ({
   page,
 }) => {
   const id = await createStudy(page, "E2E PNG owner");
   let switched: string | undefined;
   try {
     const before = await (await page.request.get(`/api/projects/${id}/design`)).json();
-    const collapsed = await exportPng(page);
-    expect(collapsed.details.view.owners[0]).toMatchObject({
-      rendered: "collapsed",
+    const canonical = await exportPng(page);
+    expect(canonical.details.view.owners[0]).toMatchObject({
+      rendered: "roles",
       requestedExpanded: false,
     });
-    expect(collapsed.details.tiles).toHaveLength(6);
-    await page.getByRole("button", { name: "Expand roles", exact: true }).click();
-    // Export while the owner expansion is still arranging/animating.
-    const expanded = await exportPng(page);
-    expect(expanded.details.view.owners[0]).toMatchObject({
-      rendered: "roles",
-      requestedExpanded: true,
-    });
-    expect(expanded.details.tiles).toHaveLength(7);
-    expect(expanded.details.lines).toHaveLength(7);
+    expect(canonical.details.tiles).toHaveLength(7);
+    expect(canonical.details.lines).toHaveLength(7);
+    await tile(page, "Create link").click();
+    const selected = await exportPng(page);
+    expect(selected.details.image.sha256).toBe(canonical.details.image.sha256);
+    expect(selected.details.tiles).toEqual(canonical.details.tiles);
     let downloads = 0;
     page.on("download", () => downloads++);
     const endpoint = `**/api/projects/${id}/design`;

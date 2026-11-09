@@ -13,7 +13,7 @@ Custom requested behavior can be recorded as an unresolved requirement; it suppl
 Saved-source v2 preview/ZIP dispatch is a separate pending unit; this attachment workflow does not
 change the existing frozen-v1 export route.
 
-Open **Compatibility report** in the inspector to see four separate results for the saved
+Open **Export diagram → Source & diagnostics → Compatibility report** to see four separate results for the saved
 snapshot: design validity, exact contracts, implementation availability and exact output evidence.
 Expand a blocker list and use its mouse buttons to select the exact role/resource, relationship,
 owner or operation for chat. Report, selection, focus and Fit never save or upgrade the design.
@@ -61,7 +61,7 @@ future generator's frontend templates) which user flow each service serves.
   arrows point caller → target, including reads, rather than showing the return of data. Messaging
   arrows follow publisher → channel → consumer; direct async calls point sender → receiver. The
   user's line to an action and entry lines are solid. Lines carry no words or chips; select one
-  for its label, interaction, direction and inferred access in the inspector. The small **Request /
+  for its label, interaction and direction in the inspector. Access declarations remain in diagnostics. The small **Request /
   Async** legend at the lower left opens these conventions by mouse and stays at screen size.
 - At a crossing, a small gap separates the routes; shared stems meet at a tile's port. Where
   several routes are equally close to a mouse click, **Choose relationship** lists their
@@ -97,10 +97,15 @@ crossing gaps and arrowheads. It uses the same HTML faces, SVG lines and settled
 canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
-The image keeps the current expanded/collapsed logical-owner projection. Expand an owner's
-roles on the canvas before exporting to include their individual faces. Focus filters, dimming,
-selection, editing controls and the interactive camera are omitted. Export changes no saved
-design, revision, history, camera, focus, selection or owner expansion.
+The image shows canonical process and resource tiles, retaining every relationship identity.
+Focus filters, dimming, selection, editing controls and the interactive camera are omitted.
+Export changes no saved design, revision, history, camera, focus or selection.
+
+**Source & diagnostics** opens read-only ownership/access, operation and scope declarations,
+the strict compatibility report and the full saved source. **Download source JSON** preserves
+the complete document, including historical settings and custom declarations. Diagnostic target
+buttons select an exact owner, operation, tile or relationship for chat without changing source.
+This path supplies no declaration forms or extra settings menu.
 
 Finish saving inspector edits before opening export. Capture checks the complete saved source
 before and after rendering, waits for layout animation and bundled fonts, and refuses a stale
@@ -110,7 +115,7 @@ one side are refused, without shrinking them or silently clipping content. PNG e
 in Chromium; different browser/font/renderer versions are not promised identical pixels.
 
 After downloading, **Download capture details** saves JSON for that exact PNG: project/revision,
-source hash and its encoding, image hash/dimensions, owner expansion, tile/line identities and
+source hash and its encoding, image hash/dimensions, canonical owner view, tile/line identities and
 resolved positions/routes/chip bounds. It includes the renderer version, browser and Git identity
 at build/startup when available; unavailable identity is `null`. Development/HMR captures require
 an accompanying Git tree/commit audit. The details file is view provenance, not an editable design
@@ -327,12 +332,13 @@ for an application tile, **Modules**; empty ones are hidden.
   worker concurrency, cache TTL, SQL pool size and statement timeout when selected by a feature.
   Empty groups are hidden. Fixed local Docker/TypeScript, provider, media and internal policies
   have no controls. Historical unsupported settings remain in source and diagnostics unchanged.
-- A store still shows its inferred owner/readers; explicit authority remains separate. See
+- Ownership, grants and legacy inferred writers remain in source and read-only diagnostics.
+  Normal forms do not require a permission matrix or duplicate writer edit. See
   [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
 - **Modules** lists preserved or preset-bound modules. A module opens its name/purpose, useful
   supported settings and traced connections. Arbitrary module creation/linking and kind switching
   are unavailable in normal authoring; changing a name does not normalize historical settings.
-- A line shows endpoints, its saved action, interaction and inferred access. Only its action label
+- A line shows endpoints, its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
 - Select the user (or clear selection) to open the system inspector. **Add a supported feature**
@@ -401,65 +407,27 @@ panning, zooming and Fit add none. The history survives reloads.
 
 ## Profile and requirements
 
-**Profile & requirements** in the header opens a bounded behavior form. A legacy project starts
-unspecified; merely opening it changes nothing. Select **TinyURL create / resolve · 1.0.0** to
-inspect immutable destinations, authenticated create, public resolve and optional expiry.
-Included/excluded behavior rows and up to eight custom requirements carry required/advisory
-criticality; custom requirements can target a tile and relationship. Required behavior outside
-the narrow profile remains visible as a blocker. Custom behavior always remains unresolved.
-
-Choose **Preview requirements**, inspect the unspecified contracts, then **Upgrade & save
-requirements** for a legacy design or **Save requirements** for v3. One Undo restores the entire
-previous document, including schema v2. Reload/history retain declarations and missing-target
-obligations. Existing projects and study presets are never automatically upgraded. The form
-changes no tile identity, provider or inferred access and claims no template/runtime support.
-The default v2 blueprint refuses scope it cannot represent; explicit v3 retains every declaration.
+**Export diagram → Source & diagnostics → Profile & requirements** shows the saved scope.
+Finite requirements and custom obligations remain preserved, including missing targets and strict
+blockers. Normal authoring has no declaration-only requirements form. Feature attachment supplies
+its versioned source facts explicitly; reading never upgrades a project. Explicit source commands
+and chat `configureDesignScope` retain validation, atomic history and the v3 export boundary.
 See the [allowlist](studio-settings.md#profile-and-persistent-requirements).
-
-Chat reads these saved declarations separately from its turn-only assumptions and can edit them
-with `configureDesignScope`, using the same command, preview and explicit upgrade as the mouse.
-Scope-only edits trigger the same fresh review, atomic commit, conflict protection and one Undo.
-The repair limit counts scope applies, while read-only previews remain available.
 
 ## Logical owners, roles and access
 
-Open **Ownership & access** in the inspector (open the inspector with its header button when
-closed). Declare a logical owner, assign existing application tiles as API/worker roles, declare
-store authority and source/projection intent, then set role grants and each store relationship's
-requested access. **Preview ownership** opens the exact affected-row report before one save.
-The [finite fields and refusal rules](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3)
-keep logical authority, role permission and a dependency's intent separate. Same-owner reads are
-reads; cache read and fill requires read-write. Foreign writes refuse; a published cross-owner
-read remains unresolved until its actual contract exists. Co-deployment grants nothing.
+Canonical service/worker tiles show their names and kinds directly. No logical-owner cards,
+role/deployable subtitles, role-expansion banner or collapse controls precede useful settings.
+This presentation changes no owner, role, resource, grant, dependency or operation declaration.
+The automatic lane layout and canonical connection identities are unchanged.
 
-Declared API/worker tiles identify their role and separately disclose the underlying tile kind
-and deployable intent. For a declared resource, **Legacy inferred access & writer** in General
-keeps the old writer editor and inferred readers collapsed together. Relationship inference is
-also secondary when explicit dependency intent exists. These legacy settings remain editable;
-they never change authority or grant access. Schema2 keeps its existing Owner/access inspector.
-
-A declared owner is one collapsed canvas card by default: its name, role count and **Expand
-roles**. Selecting it shows its canonical role buttons in the inspector. Expansion shows the
-original tiles, each labeled with that same owner. Select a role to edit its original identity;
-**Collapse Links** returns to one owner card. Resources remain distinct. A relationship keeps its
-original edge ID and endpoint names; selecting it expands the endpoint roles before focus or
-removal. Resource focus also works while its owner is collapsed. Attach onto a collapsed card
-expands it and explains that the intended role must be selected. Unsafe self/cyclic grouping
-falls back to role expansion with a visible reason; lane validation remains unchanged.
-
-Collapse, expansion, selection, focus and Fit are views: complete design/blueprint contracts,
-including revision, stay identical. Legacy unowned projects keep their original canvas. Full
-legacy overviews can still need zoom/focus; this is not a readability certification. Owner
-configuration does not migrate saved projects or rewrite study presets.
-
-Owner/role/authority transfer previews each removed grant/request. Canonical tile and relationship
-removal previews affected explicit rows before committing, or refuses a surviving projection's
-missing source. Undo restores the whole edit; custom requirements remain even when targets vanish.
-Chat receives a selected owner as `owner:<slug>`, distinct from canonical role/edge IDs. Rename
-preserves that identity; removed/malformed owner references refuse instead of selecting another
-object. Historical selections remain unchanged. `configureOwnership` uses the same bounded builder and exact preview, with stale revision,
-review and repair limits. Review includes exact ownership changes; accepted turn edits save once.
-These declarations supply no operation capability, runtime template or implemented authorization.
+**Export diagram → Source & diagnostics → Ownership & access** retains exact declarations and
+owner selection for chat. Full source retains legacy inferred writers separately. These are
+read-only diagnostics; supported feature commands materialize required declarations atomically.
+Explicit source/chat commands retain the [finite validation rules](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
+Removal previews still name affected declarations and operation bindings; one Undo restores the
+whole edit. Missing projection sources refuse rather than silently reclassify a store. View,
+selection, focus, Fit and export change no saved semantic data or revision.
 
 ## Chat
 
@@ -533,10 +501,10 @@ a successful edited turn still undoes once. No review claims a runtime template 
 
 `studio-tinyurl-foundation@1.0.0` is the fresh-install default and chooser preselection. It is a
 new study, with a distinct source/goal identity, not an upgrade of existing projects. Create
-(authenticated) and Follow (public) reach one collapsed **Links** owner. **Expand roles** reveals
-canonical **Create link** and **Resolve link** responsibilities, which may share `links-runtime`.
+(authenticated) and Follow (public) reach the canonical **Create link** and **Resolve link**
+process tiles, which retain their shared `links-runtime` declaration.
 The Links database is authoritative PostgreSQL; the Links cache is an owned positive projection.
-Select either resource to inspect its authority, source/projection intent and role grants.
+Inspect authority, source/projection intent and role grants through **Source & diagnostics**.
 
 Create commits immutable HTTP(S) destinations and retained results durably. Resolve reads the
 primary on cache miss/outage, enforces optional expiry, and declares 307/no-store outcomes. Cache
@@ -545,7 +513,7 @@ The existing exact records define deadlines, retries, idempotency and failure be
 these are declarations, with no implemented backend. The report is **valid / complete /
 unavailable / none**; generation remains ineligible because artifacts/verifier are unavailable.
 
-The chooser description and Profile & requirements show the exclusions: analytics, destination
+The chooser description and read-only scope diagnostics show the exclusions: analytics, destination
 changes, disable management, reputation, quotas and custom slugs. Including a required excluded
 feature or a custom obligation blocks the narrow profile. No module prose supplies implementation.
 
@@ -1015,31 +983,15 @@ Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).
 
 ## Named API operation responsibilities
 
-The inspector's **Operation contracts** form declares the finite **Create link · v1** and **Resolve link · v1** operations
-on an existing canonical API role. Its compact card label and expandable inspector responsibility
-refer to that same API, owner and graph relationships. They add no independent service or process.
-**Details & bindings** selects exactly that operation for chat; selecting its parent API/owner
-does not select all operations. Existing caller → target request arrows keep their meaning.
+**Export diagram → Source & diagnostics → Operation declarations** retains exact Create/Resolve
+receiver and caller refs, bindings and unresolved findings. **Select operation <id>** selects that
+binding for chat; selecting its parent tile or another relationship clears the operation selection.
+There are no unrelated TinyURL operation forms or operation subtitles on normal process tiles.
 
-For Create, select a receiver, its authoritative write and existing entry/service callers; preview named
-binding changes and the exact unresolved verifier finding before saving. A legacy design
-requires an explicit v3 upgrade. Existing API/connection timeouts must match the fixed deadline
-and are edited explicitly through ordinary Options. Retention can be declared or left unresolved;
-missing auth runtime/template evidence remains unavailable. Removal/transfer previews name each
-affected binding and one Undo restores the entire change. [Contract details](studio-contracts.md)
-describe the fixed schemas and behavior. No Read counts/Publish view ports, returned-data arrows,
-YouTube contract rewrite, backend or generator is implemented by this first named responsibility.
-
-
-NC04 adds **Resolve link · v1** in that same form: select **Operation**, a canonical receiver,
-primary-read and cache read-and-fill connections, then the pinned positive-cache policy. Its
-expanded contract shows 307 Location, 400 invalid, 404 unknown, 410 expired and 503 failure/overload,
-with no-store on every outcome. Exact policy refs can be inspected, edited or cleared; unknowns
-remain unresolved. Existing TinyURL replica/L1/negative-cache/302/TTL settings remain preserved source intent.
-Explicit source work is needed before incompatible declarations can become compatible. Named previews explain refusals and cleanup;
-reload and one Undo preserve complete refs. An API with several operations shows their count;
-inspector details select each binding separately for chat. The view adds no service/deployment,
-port or reversed data-return arrow. [Finite behavior and runtime limits](studio-contracts.md).
+Source and chat declarations retain their finite validators, explicit schema upgrade, atomic
+history and precise removal/transfer previews. Unsupported historical settings and unknown exact
+refs remain preserved and unresolved. Strict TinyURL implementation/evidence remains unavailable;
+experimental YouTube support does not certify these contracts. [Contract details](studio-contracts.md).
 
 ## Experimental project export
 

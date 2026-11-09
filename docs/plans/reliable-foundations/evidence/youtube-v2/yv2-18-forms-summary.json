@@ -1,0 +1,100 @@
+{
+  "records": [
+    {
+      "name": "tinyurl",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "controls": [
+        {
+          "label": "Name",
+          "renamed": true,
+          "undoEntireSource": true
+        }
+      ]
+    },
+    {
+      "name": "tinyurl",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "controls": [
+        {
+          "label": "Name",
+          "renamed": true,
+          "undoEntireSource": true
+        }
+      ]
+    },
+    {
+      "name": "youtube",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "controls": [
+        {
+          "label": "Request timeout",
+          "from": 1000,
+          "to": 1001,
+          "undoEntireSource": true
+        },
+        {
+          "label": "Pool size",
+          "from": 50,
+          "to": 51,
+          "undoEntireSource": true
+        },
+        {
+          "label": "Statement timeout",
+          "from": 500,
+          "to": 501,
+          "undoEntireSource": true
+        },
+        {
+          "label": "Concurrency",
+          "from": 8,
+          "to": 9,
+          "undoEntireSource": true
+        }
+      ]
+    },
+    {
+      "name": "youtube",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "controls": [
+        {
+          "label": "Request timeout",
+          "from": 1000,
+          "to": 1001,
+          "undoEntireSource": true
+        },
+        {
+          "label": "Pool size",
+          "from": 50,
+          "to": 51,
+          "undoEntireSource": true
+        },
+        {
+          "label": "Statement timeout",
+          "from": 500,
+          "to": 501,
+          "undoEntireSource": true
+        },
+        {
+          "label": "Concurrency",
+          "from": 8,
+          "to": 9,
+          "undoEntireSource": true
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "finalSourcesMatchViewportAndNative": true
+}

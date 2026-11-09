@@ -1,16 +1,22 @@
 import {
   applyOperations,
+  buildOperationsCommand,
   buildStudioCommand,
+  createLinkSignature,
   type DesignDocument,
   designSchema,
+  positiveCachePolicy,
+  previewOperations,
+  resolveLinkSignature,
   type StudioCommand,
 } from "@jeeves/spec";
 import type { Page } from "@playwright/test";
+import { commitSource } from "./source.ts";
 import { expect, ready, tile } from "./studio.ts";
 
 /** Historical source setup, independent of normal editable template support. Contract
  * declaration below must still validate this exact source and must never rewrite it. */
-async function seedLegacySettings(
+export async function seedLegacySettings(
   page: Page,
   commands: (design: DesignDocument) => StudioCommand[],
 ) {
@@ -34,16 +40,7 @@ async function seedLegacySettings(
   await page.reload();
   await ready(page);
 }
-async function openLegacyRole(page: Page, name: string, owned: boolean) {
-  if (owned) {
-    const owner = tile(page, "Links · logical owner");
-    await expect(owner).toBeVisible();
-    await owner.getByRole("button", { name: "Expand roles", exact: true }).click();
-  }
-  await ready(page);
-  await tile(page, name).click();
-}
-export async function alignCreateTimeout(page: Page, owned = true) {
+export async function alignCreateTimeout(page: Page) {
   await seedLegacySettings(page, (design) => {
     const row = design.architecture?.studio?.elements.find((row) => row.element === "shorten");
     if (row?.settings.kind !== "service") throw new Error("Missing create service");
@@ -55,30 +52,15 @@ export async function alignCreateTimeout(page: Page, owned = true) {
       },
     ];
   });
-  await openLegacyRole(page, "Shorten service", owned);
+  await tile(page, "Shorten service").click();
   await expect(page.getByLabel("Request timeout", { exact: true })).toHaveCount(0);
 }
 export async function declareCreate(page: Page) {
-  await page.getByRole("button", { name: "Operation contracts", exact: true }).click();
-  const form = page.getByRole("dialog", { name: "Operation contracts" });
-  await form.getByLabel("Create receiver role", { exact: true }).selectOption("shorten");
-  await form.getByRole("button", { name: "Declare Create link", exact: true }).click();
-  await form.getByRole("tab", { name: "Callers", exact: true }).click();
-  await form.getByRole("button", { name: /^Bind upload entry/ }).click();
-  await form.getByRole("button", { name: "Preview operations", exact: true }).click();
-  await expect(
-    form.getByText("Operation declarations preview · 2 affected bindings"),
-  ).toBeVisible();
-  await expect(
-    form.getByText(/Trusted runtime auth verifier is unspecified and unavailable/),
-  ).toBeVisible();
-  await form.getByRole("button", { name: /^(Upgrade & save operations|Save operations)$/ }).click();
-  await expect(form).toBeHidden();
-  await ready(page);
+  await declareOperation(page, false);
 }
 
 /** Explicit historical source alignment. These policies stay unavailable in normal forms. */
-export async function alignResolveSettings(page: Page, owned = true) {
+export async function alignResolveSettings(page: Page) {
   await seedLegacySettings(page, (design) => {
     const studio = design.architecture?.studio;
     const redirect = studio?.elements.find((row) => row.element === "redirect");
@@ -124,22 +106,61 @@ export async function alignResolveSettings(page: Page, owned = true) {
     }
     return commands;
   });
-  await openLegacyRole(page, "Redirect service", owned);
+  await tile(page, "Redirect service").click();
   await expect(page.getByLabel("Request timeout", { exact: true })).toHaveCount(0);
 }
 export async function declareResolve(page: Page) {
-  await page.getByRole("button", { name: "Operation contracts", exact: true }).click();
-  const form = page.getByRole("dialog", { name: "Operation contracts" });
-  await form.getByLabel("Operation", { exact: true }).selectOption("resolve-link");
-  await form.getByLabel("Resolve receiver role", { exact: true }).selectOption("redirect");
-  await form.getByRole("button", { name: "Declare Resolve link", exact: true }).click();
-  await form.getByRole("tab", { name: "Callers", exact: true }).click();
-  await form.getByRole("button", { name: /^Bind download entry/ }).click();
-  await form.getByRole("button", { name: "Preview operations", exact: true }).click();
-  await expect(
-    form.getByText("Operation declarations preview · 2 affected bindings", { exact: true }),
-  ).toBeVisible();
-  await form.getByRole("button", { name: /^(Upgrade & save operations|Save operations)$/ }).click();
-  await expect(form).toBeHidden();
-  await ready(page);
+  await declareOperation(page, true);
+}
+async function declareOperation(page: Page, resolve: boolean) {
+  await commitSource(page, (design) => {
+    const implementation = resolve ? resolveLinkSignature() : createLinkSignature();
+    const role = resolve ? "redirect" : "shorten";
+    const entry = design.architecture?.studio?.entries?.find((row) => row.element === role);
+    if (!entry) throw new Error("Missing operation entry");
+    const operations = {
+      receivers: [
+        {
+          id: "operation-1",
+          role,
+          implementation,
+          binding: resolve
+            ? {
+                kind: "resolve-link" as const,
+                storeConnection: "redirect-db",
+                cacheConnection: "redirect-cache",
+                cachePolicy: { ...positiveCachePolicy.ref },
+              }
+            : {
+                kind: "create-link" as const,
+                storeConnection: "shorten-db",
+                successRetentionHours: 24 as const,
+                authVerifier: null,
+              },
+        },
+      ],
+      calls: [
+        {
+          id: "call-1",
+          caller: {
+            kind: "entry" as const,
+            entry: entry.id,
+            lane: entry.lane,
+            element: entry.element,
+          },
+          receiverBinding: "operation-1",
+          receiverRole: role,
+          expects: implementation,
+        },
+      ],
+    };
+    const preview = previewOperations(design, operations);
+    expect(preview.changes).toHaveLength(2);
+    if (!resolve)
+      expect(preview.findings.map((row) => row.message).join(" ")).toContain(
+        "Trusted runtime auth verifier",
+      );
+    return buildOperationsCommand(design, { operations, upgrade: true });
+  });
+  await tile(page, resolve ? "Redirect service" : "Shorten service").click();
 }

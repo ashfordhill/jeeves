@@ -1,0 +1,35 @@
+Inspector
+Compatibility report
+Links · one logical owner
+
+API role · Create link · deployable links-runtime
+
+Create link
+Resolve link
+Collapse Links
+Ownership & access
+
+Design intent only. Inspect operation declarations separately; runtime authorization is unavailable.
+
+Create link · v1
+
+Create link · same canonical role
+
+Authenticated · durable commit · 24h replay · 1 caller bindings
+
+1 unresolved declarations. Template / runtime evidence unavailable.
+
+Details & bindings
+Operation contracts
+Focus relationships
+Create link
+
+API role
+
+Tile kind: Microservice · deployable intent: links-runtime. A role is a responsibility within its logical owner; roles may share a process.
+
+General
+Connections
+Modules
+Name
+Purpose

@@ -20,10 +20,10 @@ Its null verifier keeps implementation unavailable; no fixture artifact is shipp
 ## Bindings and editing
 
 Optional schema-v3 `operations` holds at most 50 receiver bindings and 100 calls. Absence remains
-unspecified; reads never add it. `setOperations` requires v3. The mouse **Operation contracts**
-form and chat `configureOperations` use `previewOperations` / `buildOperationsCommand` together.
-A legacy design needs a pure preview and explicit **Upgrade & save operations**. Apply matches
-the exact latest preview/revision; the entire save is one Undo step.
+unspecified; reads never add it. `setOperations` requires v3. Explicit source commands and chat `configureOperations` use `previewOperations` /
+`buildOperationsCommand`. Legacy source needs an explicit upgrade; apply validates the latest
+revision and saves in one Undo step. Normal authoring has no operation form; **Export diagram →
+Source & diagnostics → Operation declarations** shows preserved exact refs read-only.
 
 A receiver has its own stable `id`, canonical `role` element, exact `implementation` signature
 and tagged `binding:{kind:"create-link",storeConnection,successRetentionHours,authVerifier}`.
@@ -59,16 +59,15 @@ Represented connection/receiver timeouts must agree with the fixed deadline. A k
 protocol or asynchronous/channel use contradicts a known HTTP call. Unknown protocol labels, fixed
 retries without same-key/total-deadline propagation, or service/public/network security without
 a declared verified-user propagation path remain targeted gaps. Public reachability alone says
-nothing about whether the user is authenticated. Existing TinyURL's shorter API timeout must be
-edited explicitly through its ordinary **Options → Request timeout** before binding; the
-operation form does not rewrite existing settings.
+nothing about whether the user is authenticated. Historical incompatible timeouts require explicit source work before binding. Reading or
+selecting the design never rewrites existing settings.
 
-**Details & bindings** selects exactly `operation:<binding-id>` for chat (maximum 73 characters,
+Diagnostics **Select operation <id>** selects exactly `operation:<binding-id>` for chat (maximum 73 characters,
 including a 63-character ID), separately from the API/owner and other operations. Generic
 configuration selects no operation. Rename preserves the binding; removed/malformed selections
 refuse at the chat boundary and disappear from live selection. History retains the original ref.
-The attached role label and inspector disclosure are views, add no service/edge, and keep request
-arrows caller → target. The old fitted-overview small-label limitation remains.
+Canonical process tiles retain their original service/edge identities and caller → target arrows.
+Operation and role subtitles do not appear on normal tiles.
 
 Role/owner/authority/grant/dependency removal or transfer previews exact affected operation
 clears. Canonical role/resource/connection deletion and changed entry ID/lane/target clean the
@@ -157,7 +156,7 @@ A receiver keeps its stable ID/role/signature with tagged
 exact policy ref are nullable: null means unspecified, never an inferred no-cache policy. No NC03
 record needs migration. One API/edge may expose both known operations; leave the optional generic
 API timeout unspecified when their exact deadlines differ. An explicitly set API/caller timeout
-must match each bound operation. The form never edits those settings for the person.
+must match each bound operation. No operation read rewrites those settings.
 
 The source is the same logical owner's authoritative **source database**, with explicit read
 request and role grant (read-write may cover read; write alone does not). Misses use a fresh
@@ -200,12 +199,10 @@ the bound source/cache edge and upstream component chain; unrelated same-host mo
 are not assigned operation behavior. Legacy TinyURL's explicit replica, L1/L2/negative cache,
 single-flight and 302 settings are diagnosed without rewriting its study or saved copies.
 
-The mouse selects the operation, source/cache connections and pinned policy in the existing
-**Operation contracts** form, with an exact-reference disclosure that can inspect/edit/clear an
-unknown policy. Chat `describeOperation` reads the same exact operation/policy registry and
-`configureOperations` uses the same complete schema/preview/command. Known records in wrong
-categories refuse; well-formed unknown refs stay retained and unresolved. Multiple operations
-show a compact count on one API and separate names/selections in its inspector. Cache/source/
+Read-only operation diagnostics retain source/cache connections and exact policy references.
+Chat `describeOperation` reads the same exact operation/policy registry and `configureOperations`
+uses the finite schema/preview/command. Known records in wrong categories refuse; unknown refs
+stay retained and unresolved. Diagnostic target buttons select each exact binding. Cache/source/
 role/authority/grant removal or transfer previews exact affected bindings and cleans or refuses
 atomically; entry moves never silently rebind. One Undo restores the whole accepted change.
 
@@ -223,7 +220,7 @@ retention, bounds, adapter, provider or runtime version.
 
 ## Exact snapshot report (NC05)
 
-The existing inspector's **Compatibility report**, blueprint v3 `readiness` and read-only chat
+The read-only source diagnostics **Compatibility report**, blueprint v3 `readiness` and read-only chat
 `readReadiness {}` use the same full snapshot report. Design validity, exact contract completeness,
 implementation availability and exact generated-output evidence are independent. Generation
 eligibility requires the first three, without requiring future output evidence. Legacy/unknown/

@@ -1,0 +1,11 @@
+Inspector
+Metadata cache
+
+Cache
+
+General
+Options
+Connections
+TTL
+seconds
+Focus relationships
