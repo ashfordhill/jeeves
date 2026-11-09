@@ -1,5 +1,9 @@
 # Jeeves
 
+## V2
+
+next, UI improvements needed
+
 ## V1
 
 The C4-Modeling architecture has been a good inspiration and thought tool. However, my intention with generated code templates likely benefits more from simplifying diagram view into 1 diagram per system (or subsystem, I suppose), offering configuration options.
@@ -11,6 +15,8 @@ Additionally, I've extracted the custom grid library logic from my other project
 ### Strategy
 
 I am having frontier models (Astra, Opus 5.5, @ xhigh or max) handle build plans and then spawning off sequential steps to have fresh, cheaper agents execute each segment of the build plan (not in parallel). 
+
+>> When planning, I always push the agent to ask any questions to clarify things with me in any ambiguous or unclear areas, instead of just assuming the best path forward.
 
 There are 3 field projects I would like to work with:
 
@@ -28,6 +34,43 @@ When executing, builder agents will:
 - Adjust diagram and config options on Jeeves as necessary to adjust original diagram 
 - Update possible generated code template options if it seems like a good use case
 - **Not** spend a bunch of time on unit testing Jeeves Generator nor the Templates code; why waste tokens testing a moving target?
+
+#### YouTube V2 (11/9/2026)
+
+Astra max fixed some of the YouTube implementation specific code from the templates and did a recount of LOC. I'm happy with this, for now - though this field project is still missing several features that YouTube has. I don't intend to create a perfect clone since I don't want
+<p align="center"><img src=".docs/youtube-v2/loc-metrics.png" width="400"/></p>
+
+**Ideas**
+
+Making tiles generic - instead of having Jeeves be an 'all-in-one' web app builder, have it be able to focus on specific applications. For instance, a company is not interested in building everything - only implementation around their domain. You could make a JeevesForTumblr, for instance. Or a JeevesForSpotify.
+
+But that would sort of break code generation templates. Not sure if this is worth pursuing.
+
+**Next Steps**
+
+I need to make some Jeeves UI updates so I can see the component/tile structure more easily to get an idea of what reuseable pieces I have and how they connect.
+
+Then I will try another field project.
+
+Then I need to try field project implementations that actually use cloud services and deploy.
+
+Then I need to stress test traffic to make sure these are fairly robust - enough for production. Not just toy projects.
+
+There will be more projects to test. I would like to build personal projects qrwty and dropshipping once my case studies look solid.
+
+Creating UI templates is something I will look into - there are existing tools but I would prefer a custom style. For the copycat projects like YouTube I want to see if I can get an agent to make a UI look like YouTube.
+
+**Future Benchmarks**
+
+I want to test # tokens used:
+
+- To get a YouTube clone via just prompting
+- To get a YouTube clone with Jeeves generations + prompting
+
+I also want to see if there's any benefit as far as being able to use cheaper models.
+
+For less objective benchmarks I'll be making notes of the apps, reviewing their source code and finding bugs, then try to give a quality comparison. Though this is subjective, if there are substantial seeming differences then I think it's a useful metric.
+
 
 #### YouTube V1
 
