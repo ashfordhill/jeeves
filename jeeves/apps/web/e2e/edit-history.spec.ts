@@ -77,9 +77,25 @@ test("attaches the installed preset atomically and autosaves useful TTL/pool con
       "Concurrency limit",
       "Modules",
     ]);
-    await inspector.getByRole("button", { name: "Details reader", exact: true }).click();
-    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
-    await inspector.getByLabel("Pool size", { exact: true }).fill("60");
+    // A module's card opens its own page: Back, Name, Description, Options, then Remove module.
+    await inspector.getByRole("button", { name: "Open Details reader", exact: true }).click();
+    await expect(inspector.getByRole("tablist")).toHaveCount(0);
+    expect(
+      await inspector
+        .locator(".lane-inspector-back, form label, form h3, form button")
+        .evaluateAll((nodes) => nodes.map((node) => node.textContent)),
+    ).toEqual([
+      "Watch API",
+      "Name",
+      "Description",
+      "Options",
+      "Pool size",
+      "Statement timeout",
+      "Remove module",
+    ]);
+    const pool = inspector.getByLabel("Pool size", { exact: true });
+    const poolBefore = await pool.inputValue();
+    await pool.fill("60");
     await expect
       .poll(
         async () =>
@@ -90,6 +106,10 @@ test("attaches the installed preset atomically and autosaves useful TTL/pool con
       .toBe(60);
     await expect(inspector.getByLabel("Read routing", { exact: true })).toHaveCount(0);
     await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(pool).toHaveValue(poolBefore);
+    await inspector.getByRole("button", { name: "Back to Watch API", exact: true }).click();
+    await expect(inspector.getByLabel("Name", { exact: true })).toHaveValue("Watch API");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }
@@ -104,8 +124,8 @@ test("legacy unsupported settings stay hidden and unchanged while names/history 
   await tile(page, "Shorten service").click();
   await expect(inspector.getByRole("group", { name: "Type", exact: true })).toHaveCount(0);
   await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
-  await inspector.getByRole("button", { name: "Link writer", exact: true }).click();
-  await expect(inspector.getByRole("tab", { name: "Options", exact: true })).toHaveCount(0);
+  await inspector.getByRole("button", { name: "Open Link writer", exact: true }).click();
+  await expect(inspector.getByRole("heading", { name: "Options", exact: true })).toHaveCount(0);
   await expect(inspector.getByLabel("Pool size", { exact: true })).toHaveCount(0);
   await inspector.getByLabel("Name", { exact: true }).fill("Preserved writer");
   await expect

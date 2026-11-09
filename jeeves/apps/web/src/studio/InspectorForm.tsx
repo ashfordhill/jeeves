@@ -6,12 +6,11 @@ import {
   type StudioComponentDefinition,
   type StudioComponentField,
   type StudioComponentSettings,
-  type StudioConnectionSettings,
   type StudioElementField,
-  type StudioFieldGroup,
   type StudioPerformanceField,
   type StudioSettings,
   studioComponentDefinitions,
+  studioComponentVisuals,
   studioDefinitions,
   studioFieldGroups,
   studioPerformanceFields,
@@ -227,73 +226,43 @@ function DraftField({
   );
 }
 
-const retryText = (settings?: StudioConnectionSettings) => {
-  const retry = settings?.retry;
-  return [
-    settings?.timeoutMs ? `timeout ${settings.timeoutMs} ms` : "timeout unspecified",
-    !retry || retry.mode === "unspecified"
-      ? "retry unspecified"
-      : retry.mode === "none"
-        ? "no retry"
-        : `${retry.attempts} ${retry.attempts === 1 ? "retry" : "retries"}, ${retry.delayMs} ms apart`,
-  ].join(" · ");
-};
-
 /**
- * A module's (C3 component's) form, opened from its tile's Modules list: readiness, then General
- * (with Remove module), Options and Connections (its links, Unlink, and Link to), autosaving like
- * a tile's.
+ * A module's (C3 component's) page, opened from its tile's Modules cards: one page with a header
+ * (icon, Name, kind, readiness), Description, Options when it has fields, then Remove module,
+ * autosaving like a tile's. Its relationships are the drawn lines, never a list in words.
  */
 export function ComponentForm({
   projectId,
   id,
   design,
-  onConnection,
-  onComponent,
   onRemoved,
 }: {
   projectId: string;
   id: string;
   design: DesignDocument;
-  onConnection: (id: string) => void;
-  onComponent: (id: string) => void;
   /** The module was removed. */
   onRemoved?: () => void;
 }) {
   const spec = useMemo(() => componentSpec(projectId, id, design), [projectId, id, design]);
   if (!spec) return null;
-  return (
-    <ComponentDraftForm
-      spec={spec}
-      id={id}
-      design={design}
-      onConnection={onConnection}
-      onComponent={onComponent}
-      onRemoved={onRemoved}
-    />
-  );
+  return <ComponentDraftForm spec={spec} id={id} design={design} onRemoved={onRemoved} />;
 }
 
 function ComponentDraftForm({
   spec,
   id,
   design,
-  onConnection,
-  onComponent,
   onRemoved,
 }: {
   spec: DraftSpec;
   id: string;
   design: DesignDocument;
-  onConnection: (id: string) => void;
-  onComponent: (id: string) => void;
   onRemoved?: () => void;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
   useEffect(() => () => formDrafts.leave(entry.key), [entry.key]);
-  const tabId = useId();
-  const [selectedTab, setSelectedTab] = useState<StudioFieldGroup>("General");
+  const idPrefix = useId();
   const [removing, setRemoving] = useState(false);
   const studio = design.architecture?.studio;
   const index = studio?.components?.findIndex((item) => item.id === id) ?? -1;
@@ -313,32 +282,38 @@ function ComponentDraftForm({
   const definition = studioComponentDefinitions[
     component.settings.kind
   ] as StudioComponentDefinition;
+  const visual = studioComponentVisuals[component.settings.kind];
   const settings = draftSettings(entry.values) as Partial<StudioComponentSettings>;
-  const name = (elementId: string) =>
-    design.elements.find((item) => item.id === elementId)?.name ?? elementId;
-  const componentName = (componentId: string) =>
-    studio?.components?.find((item) => item.id === componentId)?.name ?? componentId;
-  const links = (studio?.componentConnections ?? []).filter(
-    (link) => link.from === id || (link.to.kind === "component" && link.to.id === id),
-  );
   const controls = normalSettingFields(design, installed, { component: id });
   const editable = (field: StudioComponentField) =>
     !field.path.startsWith("settings.") ||
     controls.some((control) => `settings.${control.sourcePaths[0]?.at(-1)}` === field.path);
-  const general = definition.fields.filter((field) => field.group === "General" && editable(field));
+  const name = definition.fields.find((field) => field.path === "component.name");
+  const description = definition.fields.find((field) => field.path === "component.description");
   const options = definition.fields.filter(
     (field) =>
       field.group === "Options" && componentFieldApplies(field, settings) && editable(field),
   );
-  const groups: { group: StudioFieldGroup; fields: readonly StudioComponentField[] }[] = [
-    { group: "General", fields: general },
-    ...(options.length ? [{ group: "Options" as const, fields: options }] : []),
-    ...(links.length || definition.targets.length
-      ? [{ group: "Connections" as const, fields: [] }]
-      : []),
-  ];
-  const active = groups.some((group) => group.group === selectedTab) ? selectedTab : "General";
-  const current = groups.find((group) => group.group === active) ?? groups[0];
+  const draftField = (field: StudioComponentField, className?: string) => (
+    <DraftField
+      key={field.path}
+      idPrefix={idPrefix}
+      field={field}
+      draft={entry}
+      className={className}
+      help
+      references={field.control === "reference" ? deadLetterChoices(design, component) : []}
+      onSelect={(value) =>
+        formDrafts.change(
+          entry.key,
+          field.control === "select"
+            ? componentSelectChange(definition, entry.values, field.path, value)
+            : { [field.path]: value || undefined },
+          true,
+        )
+      }
+    />
+  );
   const remove = async () => {
     setRemoving(true);
     await formDrafts.flushProject(spec.projectId, true);
@@ -358,136 +333,43 @@ function ComponentDraftForm({
         void formDrafts.flush(entry.key);
       }}
     >
-      {groups.length > 1 ? (
-        <div className="studio-inspector-tabs" role="tablist" aria-label="Inspector sections">
-          {groups.map(({ group }) => (
-            <button
-              type="button"
-              role="tab"
-              key={group}
-              id={`${tabId}-${group}-tab`}
-              aria-selected={active === group}
-              aria-controls={`${tabId}-${group}`}
-              onClick={() => {
-                void formDrafts.flush(entry.key);
-                setSelectedTab(group);
-              }}
-            >
-              {group}
-            </button>
-          ))}
+      <header className="lane-inspector-header">
+        <div className="lane-inspector-title" data-family={visual.color}>
+          <span className="lane-inspector-icon">
+            <StudioIcon name={visual.icon} size={22} />
+          </span>
+          {name ? draftField(name, "lane-inspector-name") : null}
         </div>
+        <p className="lane-inspector-kind">{definition.name}</p>
+        {findings.length ? (
+          <ul className="studio-readiness" aria-label="Readiness">
+            {findings.map((item) => (
+              <li key={item.message} data-met={false}>
+                {item.message}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </header>
+      {description ? draftField(description) : null}
+      {options.length ? (
+        <section aria-labelledby={`${idPrefix}-options`}>
+          <h3 id={`${idPrefix}-options`} className="lane-inspector-section">
+            Options
+          </h3>
+          {options.map((field) => draftField(field))}
+        </section>
       ) : null}
-      <div
-        role="tabpanel"
-        id={`${tabId}-${active}`}
-        aria-label={groups.length === 1 ? active : undefined}
-        aria-labelledby={groups.length > 1 ? `${tabId}-${active}-tab` : undefined}
-      >
-        {current?.fields.map((field) => (
-          <DraftField
-            key={field.path}
-            idPrefix={tabId}
-            field={field}
-            draft={entry}
-            help
-            references={field.control === "reference" ? deadLetterChoices(design, component) : []}
-            onSelect={(value) =>
-              formDrafts.change(
-                entry.key,
-                field.control === "select"
-                  ? componentSelectChange(definition, entry.values, field.path, value)
-                  : { [field.path]: value || undefined },
-                true,
-              )
-            }
-          />
-        ))}
-        {active === "General" ? (
-          <div className="studio-membership">
-            <button
-              type="button"
-              className="studio-danger"
-              disabled={removing}
-              onClick={() => void remove()}
-            >
-              {removing ? "Removing…" : "Remove module"}
-            </button>
-          </div>
-        ) : null}
-        {active === "Connections" ? (
-          <div className="studio-dependencies">
-            {links.length ? null : <p className="studio-field-help">No links yet.</p>}
-            {links.map((link) => {
-              const outgoing = link.from === id;
-              const via =
-                link.to.kind === "element"
-                  ? design.connections.find((item) => item.id === (link.to as { via: string }).via)
-                  : undefined;
-              const binding = via && studio?.connections.find((item) => item.connection === via.id);
-              const other =
-                link.to.kind === "element"
-                  ? name(link.to.id)
-                  : componentName(outgoing ? link.to.id : link.from);
-              const protocol = via ? via.planned.protocol : "In process";
-              return (
-                <div className="studio-dependency-row" key={link.id}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      via
-                        ? onConnection(via.id)
-                        : onComponent(
-                            outgoing && link.to.kind === "component" ? link.to.id : link.from,
-                          )
-                    }
-                  >
-                    {outgoing ? `→ ${other}` : `← ${other}`}
-                    <span>
-                      {link.label ?? via?.planned.label ?? "Uses"}
-                      {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
-                      {component.settings.kind === "external-call" && via
-                        ? ` · ${retryText(binding?.settings)}`
-                        : ""}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Unlink ${other}`}
-                    onClick={() =>
-                      void commitAction(
-                        spec.projectId,
-                        (latest) =>
-                          buildStudioCommand(latest, {
-                            type: "disconnectComponent",
-                            links: [link.id],
-                          }).ops,
-                      )
-                    }
-                  >
-                    Unlink
-                  </button>
-                </div>
-              );
-            })}
-            {component.settings.kind === "external-call" ? (
-              <p className="studio-field-help">
-                Timeout and retry declarations remain preserved on the traced connection. They have
-                no normal editable consumer.
-              </p>
-            ) : null}
-          </div>
-        ) : null}
+      <div className="studio-membership">
+        <button
+          type="button"
+          className="studio-danger"
+          disabled={removing}
+          onClick={() => void remove()}
+        >
+          {removing ? "Removing…" : "Remove module"}
+        </button>
       </div>
-      {findings.length ? (
-        <ul className="studio-readiness" aria-label="Readiness">
-          {findings.map((item) => (
-            <li key={item.message} data-met={false}>
-              {item.message}
-            </li>
-          ))}
-        </ul>
-      ) : null}
     </form>
   );
 }

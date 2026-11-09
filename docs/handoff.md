@@ -6486,3 +6486,82 @@ For UI03:
     `.studio-inspector-tabs`, because the Operations and Ownership forms use it.
 - `studio.md` Limits still mentions linking modules.
 - For UI09: the system's "Add a supported feature" fieldset still uses browser-default styling.
+
+## 2026-11-09 — UI03: module cards with drill-in and Back
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md) (R4, R5), a tile's Modules section is a
+stack of cards (`ModuleCards` in `TileInspector.tsx`, `ul.lane-module-list` labelled Modules). Each
+card is one button named "Open <module>" with the module's icon in its family colour, its name,
+its kind and its description clamped to two lines. A card replaces the tile page with the module
+page: a **Back to <tile>** row (arrow, the tile's icon and name), a header (icon, Name as the
+title, kind, readiness findings), Description (UI02's growing box), Options with the same fields
+and filter as before, then **Remove module**. `ComponentForm` lost its tabs, its Connections list,
+Unlink, the external-call retry note, `retryText` and its `onConnection`/`onComponent` props. No
+inspector has a tablist now; the Operations and Ownership forms still use `.studio-inspector-tabs`.
+Each page is keyed, so a module opens at its top; Back scrolls the Modules section into view and,
+when focus left with the module page, focuses the card just left.
+
+The open module moved from `TileInspector`'s `useState` to the workspace selection
+(`canvas/selection.ts`): `WorkspaceSelection = BoardSelection & { module?: string }`, and
+`liveSelection(design, graph, pick)` keeps `module` only while it exists in `pick.tile` (else the
+tile; a gone tile or line gives `{}`). `Workspace`'s `select(next)` flushes drafts when the tile,
+line or module changes. Canvas clicks, diagnostics and warnings call `select({ tile })` or
+`select({ line })`, so any other selection, a click on the host tile and empty paper close the
+module. Remove module calls `select({ tile })`. A history step that removes the open module shows
+the tile page through `liveSelection`. Undoing that step reopens the module, because `pick` still
+names it; a selected tile already comes back on Redo in the same way. Chat's
+`architectureSelection` is `[module]` while one is open. `chatSelectionReferenceSchema` accepts any
+string up to 63 characters that is not `owner:`/`operation:`, component IDs are design-unique slugs,
+and the server passes the selection into the turn context next to `designSummary`'s modules with
+their IDs. No canvas change; LaneCanvas still gets the selection as a `BoardSelection`.
+
+Removed leftovers: the new-module name-focus effect (no flow creates modules), the unused
+`.lane-module-add/-menu/-kind/-icon` and `.lane-store-access` CSS, and `.studio-dependencies`/
+`.studio-dependency-row`. Docs: `studio.md` (lane canvas modules line, Inspector, History, Limits)
+and a playbook lesson. Evidence: four rail screenshots in `plans/ui-overhaul/evidence/ui03/`.
+
+Tests: `selection.test.ts` (2 unit tests). New `modules.spec.ts` on the YouTube study at
+1280×640 covers:
+
+- the Transcoder's 5 cards, their names, kinds and the two-line clamp;
+- opening Segmenter and encoder: page order, no tablist or tab, no Unlink or link rows, scrollTop 0;
+- name and description autosave, and Undo restores both;
+- Back with Modules in view and the card focused;
+- closing by another tile, a line or empty paper;
+- Remove module, Undo, then Redo removing the open module and Undo reopening it;
+- the design and blueprint unchanged by opening or closing;
+- chat's selection `["transcoder-encoder"]` in the request and history, and `["transcoder"]` after
+  Back.
+
+`edit-history.spec.ts` opens Details reader by its card, checks the page order (Back, Name,
+Description, Options, Pool size, Statement timeout, Remove module), autosaves and undoes the pool
+size, then goes Back. It opens Link writer by its card and checks it has no Options.
+
+Checks: `pnpm check` exited 0: lint/types and **470 tests/71 files**. **41 native E2Es passed
+(1.6m)**. The web build passed (existing chunk-size advisory). The mouse check used scripted
+Chromium on the running dev app at 1440×900 and 1280×800, with my own TinyURL extended and YouTube
+projects:
+
+- TinyURL rendered 11 tiles and 12 lines.
+- Redirect service showed 4 cards and no tablist. Cache reader opened, and Back focused its card
+  with Modules in view.
+- Remove module on Click publisher returned to the tile (3 cards), and Undo restored it (4).
+- Empty paper showed the System page, and another tile closed the module.
+- Both blueprints were unchanged after the Undo steps. Dark mode and hover looked right.
+- There were no page or console errors.
+
+I deleted all my projects, and the owner's six project revisions are unchanged. Compared with the
+owner's inspector sketch, the page reads Name/detail, Description, Options (when present), then
+module cards stacked at the bottom.
+
+For UI04: nothing here touches the board or layout. For UI07/UI08:
+
+- Read the open module as `selection.module` (`WorkspaceSelection` in `canvas/selection.ts`). It
+  is set only together with its host `selection.tile`.
+- To open a module from a canvas row, call `Workspace`'s `select({ tile: host, module })`. That
+  flushes drafts, opens the inspector rail and sets chat's selection.
+- To close it, call `select({ tile: host })`. `TileInspector` then shows the tile page with
+  Modules in view.
+- LaneCanvas still receives `selected={selection}` (structurally a `BoardSelection`). UI08's row
+  highlight can read `selection.module` from the same object.
+- Cards carry `data-module=<id>`.

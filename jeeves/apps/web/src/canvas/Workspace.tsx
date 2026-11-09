@@ -1,10 +1,10 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
 // tabs add tiles and attach them (`creation.tsx`), the red X on a tile or line removes it
-// (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`),
-// an action's name in its own (`ActionInspector`), and an entry's lane in its own
-// (`EntrySummary`).
-import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
+// (`removal.tsx`); settings and modules are edited in the inspector (`TileInspector.tsx`), an
+// action's name in its own (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
+// The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
+import type { BoardHandle, BoardMode } from "@jeeves/board";
 import {
   applyOperations,
   buildStudioCommand,
@@ -62,6 +62,7 @@ import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { SourceDiagnostics } from "./SourceDiagnostics.tsx";
+import { liveSelection, type WorkspaceSelection } from "./selection.ts";
 import { TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
 
@@ -71,13 +72,6 @@ export function Workspace() {
   const loaded = useProject((state) => state.loaded);
   if (!loaded) return null;
   return <ProjectWorkspace key={loaded.project.id} loaded={loaded} />;
-}
-
-/** A selection whose tile or line no longer exists (undo, chat) falls back to none. */
-function liveSelection(graph: LaneGraph, pick: BoardSelection): BoardSelection {
-  if (pick.tile && graph.nodes.some((node) => node.id === pick.tile)) return { tile: pick.tile };
-  if (pick.line && graph.edges.some((edge) => edge.id === pick.line)) return { line: pick.line };
-  return {};
 }
 
 function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
@@ -101,7 +95,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [preferences, setPreferences] = useStudioPreferences(projectId);
   const [mode, setMode] = useState<BoardMode>("select");
   const graph = useMemo(() => laneGraph(loaded.design), [loaded.design]);
-  const [pick, setPick] = useState<BoardSelection>(() => startsSelected(graph));
+  const [pick, setPick] = useState<WorkspaceSelection>(() => startsSelected(graph));
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
   const [exportOpen, setExportOpen] = useState(false);
@@ -115,15 +109,15 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   );
   const selectedOwner = ownership.owners.find((x) => x.id === ownerPick);
   const board = useRef<BoardHandle>(null);
-  const selection = liveSelection(graph, pick);
+  const selection = liveSelection(loaded.design, graph, pick);
 
   useEffect(() => {
     setHeaderHost(document.getElementById("studio-header-controls"));
   }, []);
   useEffect(() => {
-    // Chat messages carry the selected element, connection or entry; the user, its actions and
-    // its lines to them have no design ID.
-    const id = selection.line ?? selection.tile;
+    // Chat messages carry the open module, or the selected element, connection or entry; the
+    // user, its actions and its lines to them have no design ID.
+    const id = selection.module ?? selection.line ?? selection.tile;
     const ids = selectedOperation
       ? [operationSelectionReference(selectedOperation.id)]
       : selectedOwner
@@ -132,7 +126,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           ? [id]
           : [];
     useProject.setState({ architectureSelection: ids });
-  }, [selection.tile, selection.line, selectedOwner, selectedOperation]);
+  }, [selection.tile, selection.line, selection.module, selectedOwner, selectedOperation]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
   useEffect(() => {
     // A new tile opens with its Name field focused, ready to rename.
@@ -167,8 +161,13 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     return () => window.removeEventListener("keydown", shortcut);
   }, []);
 
-  const select = (next: BoardSelection) => {
-    if (next.tile !== selection.tile || next.line !== selection.line)
+  /** Selects a tile (with one of its modules open, or none) or a line, or clears. */
+  const select = (next: WorkspaceSelection) => {
+    if (
+      next.tile !== selection.tile ||
+      next.line !== selection.line ||
+      next.module !== selection.module
+    )
       void formDrafts.flushProject(projectId, true);
     setOperationPick(undefined);
     setOwnerPick(undefined);
@@ -438,8 +437,8 @@ function Inspector({
 }: {
   loaded: Loaded;
   graph: LaneGraph;
-  selection: BoardSelection;
-  onSelect: (next: BoardSelection) => void;
+  selection: WorkspaceSelection;
+  onSelect: (next: WorkspaceSelection) => void;
 }) {
   const { design, project } = loaded;
   const name = (id: string) => laneNodeName(design, graph, id);
@@ -454,7 +453,8 @@ function Inspector({
         design={design}
         id={selection.tile}
         name={name(selection.tile)}
-        onSelect={onSelect}
+        module={selection.module}
+        onModule={(module) => onSelect({ tile: selection.tile, module })}
       />
     );
   const started = edge && edge.source === LANE_ACTOR ? laneActionOf(edge.target) : undefined;
@@ -544,7 +544,7 @@ function EntryPath({
   graph: LaneGraph;
   from: string;
   to: string;
-  onSelect: (next: BoardSelection) => void;
+  onSelect: (next: WorkspaceSelection) => void;
 }) {
   const end = (id: string) => {
     const node = graph.nodes.find((item) => item.id === id);
@@ -632,7 +632,7 @@ function EntrySummary({
   lane: StudioLane;
   name: (id: string) => string;
   graph: LaneGraph;
-  onSelect: (next: BoardSelection) => void;
+  onSelect: (next: WorkspaceSelection) => void;
 }) {
   const [pending, setPending] = useState<{
     lane: StudioLane;

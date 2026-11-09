@@ -288,8 +288,7 @@
   color: var(--ink-soft);
 }
 
-/* A store's writer (its owner) and readers; an action's lane. */
-.lane-store-access,
+/* An action's lane. */
 .lane-facts {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -297,11 +296,9 @@
   margin: 10px 0 0;
   font-size: 12px;
 }
-.lane-store-access dt,
 .lane-facts dt {
   color: var(--ink-soft);
 }
-.lane-store-access dd,
 .lane-facts dd {
   margin: 0;
 }
@@ -483,20 +480,35 @@
   cursor: default;
 }
 
-/* An open module's way back to its tile. */
+/* An open module's way back to its tile: an arrow, the tile's icon and its name. */
 .lane-inspector-back {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  margin: 4px 0 8px;
-  padding: 3px 6px 3px 2px;
+  gap: 6px;
+  max-width: 100%;
+  margin: 0 0 12px -6px;
+  padding: 4px 8px 4px 4px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--ink-soft);
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
+  text-align: left;
   cursor: pointer;
+}
+
+.lane-inspector-back > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lane-inspector-back-icon {
+  display: flex;
+  flex: 0 0 auto;
+  color: var(--type-color, var(--ink));
 }
 
 .lane-inspector-back:hover {
@@ -504,77 +516,67 @@
   background: var(--paper-deep);
 }
 
-/* The Modules section: each module's icon and name, a button that opens it. */
+.lane-inspector-back + .studio-inspector-form {
+  margin-top: 0;
+}
+
+/* The Modules section: a stack of cards (icon, name, kind and a two-line description), each one
+   button that opens its module. */
 .lane-module-list {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.lane-module-list button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.lane-module-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 2px;
   width: 100%;
   border: 1px solid var(--grid-dot);
-  border-radius: 6px;
-  padding: 8px;
+  border-radius: 8px;
+  padding: 10px 12px 10px 10px;
   background: var(--paper);
   color: var(--ink);
   font: inherit;
-  font-size: 13px;
   text-align: left;
   overflow-wrap: anywhere;
   cursor: pointer;
 }
 
-.lane-module-list button > svg {
-  flex: 0 0 auto;
-  color: var(--type-color, var(--ink));
-}
-
-.lane-module-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 36px;
-  border: 2px dashed var(--grid-dot);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--plus);
-  cursor: pointer;
-}
-
-.lane-module-add:hover,
-.lane-module-add[aria-expanded="true"] {
-  border-color: var(--plus);
-}
-
-.lane-module-menu {
-  display: grid;
-  grid-template-columns: repeat(5, 44px);
-  gap: 4px;
-}
-
-/* Mantine's focus holder stays out of the grid. */
-.lane-module-menu > [data-autofocus] {
-  position: absolute;
-}
-
-.lane-module-menu .lane-module-kind {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
+.lane-module-card:hover {
+  border-color: var(--type-color, var(--ink-soft));
 }
 
 .lane-module-icon {
   display: flex;
+  grid-row: span 3;
+  margin-top: 1px;
   color: var(--type-color, var(--ink));
+}
+
+.lane-module-card > strong {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.lane-module-kind {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.lane-module-description {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* A design warning's mark in a tile's top-right corner (inside a pill's curve too); its tooltip

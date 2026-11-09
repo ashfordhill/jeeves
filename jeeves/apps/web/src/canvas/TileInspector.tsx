@@ -1,41 +1,55 @@
-// A tile's one-page inspector (`TargetInspector`) with its preserved or preset-bound modules at
-// the bottom; a module opens its existing inspector, and Back returns to the tile.
-import type { BoardSelection } from "@jeeves/board";
+// A tile's one-page inspector (`TargetInspector`) with its preserved or preset-bound modules as
+// cards at the bottom. A card opens its module's page in place of the tile's; Back returns to the
+// tile with the Modules section in view. Which module is open is the workspace's selection
+// (`selection.ts`), not state of this rail.
 import {
   type DesignDocument,
   type StudioComponent,
   studioComponentDefinitions,
   studioComponentVisuals,
+  studioDefinitions,
   studioWarnings,
 } from "@jeeves/spec";
 import { IconArrowLeft } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { type RefObject, useLayoutEffect, useRef } from "react";
 import { ComponentForm, TargetInspector } from "../studio/InspectorForm.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import { WarningList } from "./Warnings.tsx";
 
-/** A tile's modules; a click opens one. */
-function ModuleList({
+/** A tile's modules as cards: icon, name, kind and a two-line description. A click opens one. */
+function ModuleCards({
   modules,
+  list,
   onOpen,
 }: {
   modules: readonly StudioComponent[];
+  list: RefObject<HTMLUListElement | null>;
   onOpen: (id: string) => void;
 }) {
   return (
-    <ul className="lane-module-list" aria-label="Modules">
+    <ul ref={list} className="lane-module-list" aria-label="Modules">
       {modules.map((item) => {
         const visual = studioComponentVisuals[item.settings.kind];
         return (
           <li key={item.id}>
             <button
               type="button"
+              className="lane-module-card"
+              data-module={item.id}
               data-family={visual.color}
-              title={studioComponentDefinitions[item.settings.kind].name}
+              aria-label={`Open ${item.name}`}
               onClick={() => onOpen(item.id)}
             >
-              <StudioIcon name={visual.icon} size={18} />
-              <span>{item.name}</span>
+              <span className="lane-module-icon">
+                <StudioIcon name={visual.icon} size={20} />
+              </span>
+              <strong>{item.name}</strong>
+              <small className="lane-module-kind">
+                {studioComponentDefinitions[item.settings.kind].name}
+              </small>
+              {item.description ? (
+                <span className="lane-module-description">{item.description}</span>
+              ) : null}
             </button>
           </li>
         );
@@ -44,102 +58,77 @@ function ModuleList({
   );
 }
 
-/** An open module: back to its tile, its icon, name and kind, then its form. */
-function ModuleInspector({
-  projectId,
-  design,
-  module,
-  onBack,
-  onOpen,
-  onSelect,
-}: {
-  projectId: string;
-  design: DesignDocument;
-  module: StudioComponent;
-  onBack: () => void;
-  onOpen: (id: string) => void;
-  onSelect: (next: BoardSelection) => void;
-}) {
-  const host = design.elements.find((item) => item.id === module.host)?.name ?? module.host;
-  const visual = studioComponentVisuals[module.settings.kind];
-  return (
-    <div className="studio-selection-summary">
-      <button
-        type="button"
-        className="lane-inspector-back"
-        aria-label={`Back to ${host}`}
-        title={`Back to ${host}`}
-        onClick={onBack}
-      >
-        <IconArrowLeft size={16} aria-hidden />
-        {host}
-      </button>
-      <h2 className="lane-inspector-title" data-family={visual.color}>
-        <StudioIcon name={visual.icon} size={22} />
-        {module.name}
-      </h2>
-      <p className="lane-inspector-kind">{studioComponentDefinitions[module.settings.kind].name}</p>
-      <ComponentForm
-        projectId={projectId}
-        id={module.id}
-        design={design}
-        onConnection={(line) => onSelect({ line })}
-        onComponent={onOpen}
-        onRemoved={onBack}
-      />
-    </div>
-  );
-}
-
 export function TileInspector({
   projectId,
   design,
   id,
   name,
-  onSelect,
+  module: open,
+  onModule,
 }: {
   projectId: string;
   design: DesignDocument;
   id: string;
   name: string;
-  onSelect: (next: BoardSelection) => void;
+  /** The open module (the workspace's `selection.module`), always one of this tile's. */
+  module?: string;
+  /** Opens one of this tile's modules, or (undefined) returns to the tile. */
+  onModule: (module?: string) => void;
 }) {
-  const [open, setOpen] = useState<string>();
-  const [focusName, setFocusName] = useState<string>();
-  const module = open
-    ? design.architecture?.studio?.components?.find((item) => item.id === open && item.host === id)
-    : undefined;
-  useEffect(() => {
-    // A new module opens with its Name field focused, ready to rename.
-    if (!focusName || focusName !== module?.id) return;
-    const field = document.querySelector<HTMLInputElement>(
-      '.studio-inspector input[id$="-component.name"]',
-    );
-    if (!field) return;
-    field.focus();
-    field.select();
-    setFocusName(undefined);
-  });
-  const openModule = (next: string, created?: boolean) => {
-    setOpen(next);
-    if (created) setFocusName(next);
-  };
-  if (module)
-    return (
-      <ModuleInspector
-        projectId={projectId}
-        design={design}
-        module={module}
-        onBack={() => setOpen(undefined)}
-        onOpen={openModule}
-        onSelect={onSelect}
-      />
-    );
   const modules = (design.architecture?.studio?.components ?? []).filter(
     (item) => item.host === id,
   );
+  const module = open ? modules.find((item) => item.id === open) : undefined;
+  const shown = module?.id;
+  const list = useRef<HTMLUListElement>(null);
+  const left = useRef<string>(undefined);
+  useLayoutEffect(() => {
+    // Back to the tile (by Back, Remove module, an Undo or a click on the tile): its Modules
+    // section comes into view. When focus went with the module page, it moves to the card just
+    // left, if that module is still there.
+    if (shown) {
+      left.current = shown;
+      return;
+    }
+    if (!left.current) return;
+    const card = list.current?.querySelector<HTMLButtonElement>(`[data-module="${left.current}"]`);
+    left.current = undefined;
+    list.current?.closest("section")?.scrollIntoView({ block: "nearest" });
+    if (document.activeElement === document.body) card?.focus({ preventScroll: true });
+  }, [shown]);
+  if (module) {
+    const kind = design.architecture?.studio?.elements.find((item) => item.element === id)?.settings
+      .kind;
+    const visual = kind ? studioDefinitions[kind].visual : undefined;
+    // Each page is its own scroller, so a module opens at its top.
+    return (
+      <div key={module.id} className="studio-selection-summary">
+        <button
+          type="button"
+          className="lane-inspector-back"
+          aria-label={`Back to ${name}`}
+          title={`Back to ${name}`}
+          onClick={() => onModule(undefined)}
+        >
+          <IconArrowLeft size={16} aria-hidden />
+          {visual ? (
+            <span className="lane-inspector-back-icon" data-family={visual.color}>
+              <StudioIcon name={visual.icon} size={16} />
+            </span>
+          ) : null}
+          <span>{name}</span>
+        </button>
+        <ComponentForm
+          projectId={projectId}
+          id={module.id}
+          design={design}
+          onRemoved={() => onModule(undefined)}
+        />
+      </div>
+    );
+  }
   return (
-    <div className="studio-selection-summary">
+    <div key="tile" className="studio-selection-summary">
       <TargetInspector
         projectId={projectId}
         element={id}
@@ -148,7 +137,11 @@ export function TileInspector({
         warnings={
           <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
         }
-        modules={modules.length ? <ModuleList modules={modules} onOpen={openModule} /> : undefined}
+        modules={
+          modules.length ? (
+            <ModuleCards modules={modules} list={list} onOpen={onModule} />
+          ) : undefined
+        }
       />
     </div>
   );

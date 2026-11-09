@@ -1251,3 +1251,16 @@ with its text to half the rail and then scrolls, so a long description reads wit
 and still leaves room for Options and Modules. A word shown to the reader may differ from a
 definition's label when that label is also chat tool text: the page says Description, while chat's
 `describeStudioDefinition` keeps "Purpose" unchanged.
+
+## 2026-11-09 UI03: modules are cards you open and leave with Back
+
+A tile's modules sit at the bottom of its page as a stack of cards: the module's icon in its
+family colour, its name, its kind and two lines of its Description, so the reader can tell the
+modules apart without opening each one. The whole card is one button. Opening it replaces the
+tile page with the module's own page, laid out like the tile's (header, Description, Options) with
+a **Back to <tile>** row above it and **Remove module** last; it lists no links, because the
+drawn lines carry them. Two details make drill-in feel cheap: each page starts at its own top (a
+page that inherits the previous page's scroll opens halfway down), and Back lands on the Modules
+section rather than the top of the tile page, so the reader picks the next card where they left
+off. The open module belongs to the workspace's selection, not to the rail, so any other selection
+closes it and the canvas can show it later.

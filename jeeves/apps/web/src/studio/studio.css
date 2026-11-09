@@ -258,28 +258,6 @@
 .studio-inspector-form {
   margin-top: 16px;
 }
-.studio-dependencies {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.studio-dependencies button {
-  border: 1px solid var(--grid-dot);
-  border-radius: 6px;
-  padding: 8px;
-  background: var(--paper);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  text-align: left;
-  overflow-wrap: anywhere;
-  cursor: pointer;
-}
-.studio-dependencies span {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-}
 .studio-membership {
   display: grid;
   gap: 8px;
@@ -294,14 +272,6 @@
   background: var(--paper);
   color: var(--ink);
   cursor: pointer;
-}
-.studio-dependency-row {
-  display: flex;
-  gap: 5px;
-}
-.studio-dependency-row > button:first-child {
-  flex: 1;
-  min-width: 0;
 }
 .studio-danger {
   color: var(--minus) !important;

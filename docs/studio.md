@@ -72,7 +72,7 @@ future generator's frontend templates) which user flow each service serves.
   a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
   see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
   the same blue, with a red X ([Removing](#removing)).
-  Modules (components) are not drawn; they are listed in their tile's inspector
+  Modules (components) are not drawn; they are cards on their tile's inspector page
   ([Inspector](#inspector)). C1 people, external systems and packages are not shown.
 
 To trace relationships, select: a tile's lines turn blue, and a selected line shows its
@@ -330,7 +330,9 @@ this order:
    timeout when selected by a feature. Fixed local Docker/TypeScript, provider, media and internal
    policies have no controls. Historical unsupported settings remain in source and diagnostics
    unchanged.
-4. **Modules**, only when the tile has modules.
+4. **Modules**, only when the tile has modules: a stack of cards, each one button ("Open
+   <module>") with the module's icon in its family colour, its name, its kind and the first two
+   lines of its Description.
 
 The page lists no connections: the drawn lines are the relationships, and selecting one shows its
 details.
@@ -338,10 +340,18 @@ details.
 - Ownership, grants and legacy inferred writers remain in source and read-only diagnostics.
   Normal forms do not require a permission matrix or duplicate writer edit. See
   [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
-- **Modules** lists preserved or preset-bound modules. A module opens its name, Description,
-  useful supported settings and traced connections, with Back to its tile. Arbitrary module
-  creation/linking and kind switching are unavailable in normal authoring; changing a name does
-  not normalize historical settings.
+- A module's card opens its page in place of the tile's, again one page with no tabs: a **Back
+  to <tile>** row (the tile's icon and name), a header with the module's icon, Name (the title)
+  and kind, and any readiness findings, then Description, **Options** only when it has useful
+  supported settings, and **Remove module** at the bottom. It lists no links: a module's links to
+  other tiles follow its tile's drawn lines. Back returns to the tile page with Modules in view.
+  Selecting another tile or a line, or clicking empty paper, closes the module; so do Remove
+  module and a history step that removes it, which show the tile page. Undoing that step
+  reopens the module, as a selected tile comes back when Redo restores it. While a module is
+  open, chat's selection is the module's ID. The open module is the workspace's selection
+  (`selection.ts`), never saved.
+- Modules are preserved or preset-bound: normal authoring cannot create or link them or switch
+  their kind, and changing a name does not normalize historical settings.
 - A line shows endpoints, its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
@@ -404,9 +414,10 @@ them. The three studies have none. The rules live in `studio-warnings.ts`.
 ## History
 
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
-batch (an autosaved edit, an action's rename, a kind or lane switch, adding, linking, unlinking or
-removing a module) or chat turn is one step; a new edit ends the redo chain. Selecting, opening a
-module, panning, zooming and Fit add none. The history survives reloads.
+batch (an autosaved edit, an action's rename, an entry's lane switch or removing a module) or chat
+turn is one step; a new edit ends the redo chain. Selecting, opening a module or going Back,
+panning, zooming and Fit add none and leave the design and blueprint unchanged. The history
+survives reloads.
 
 ## Profile and requirements
 
@@ -958,8 +969,9 @@ and all twenty components, with nothing omitted and no findings.
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
   writes" until renamed, though it reads.
-- Modules are not drawn. The inspector links a module only to tiles; a link between two modules
-  of the same tile ("Supplies code") is made through chat.
+- Modules are not drawn, and the inspector neither lists nor edits their links: a module's links
+  are preserved, preset-bound or made through chat (including a link between two modules of one
+  tile, "Supplies code").
 - An unload flush is an attempt, not a durability guarantee.
 - Live chat quality with the lane-canvas instructions has not been evaluated; only the scripted
   test model has run. Selecting an action sends chat no identity, so "rename this" with an action
