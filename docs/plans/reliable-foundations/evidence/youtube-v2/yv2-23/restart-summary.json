@@ -1,0 +1,11 @@
+{
+  "normalStopExit": 0,
+  "normalStartExit": 0,
+  "sameCredentials": true,
+  "sameFiveVolumeIdentities": true,
+  "healthyServices": 14,
+  "mouseSearchWatchDecodeLogin": true,
+  "retainedPublicViews": "2",
+  "noBootstrapReplay": true,
+  "noSourceEdit": true
+}

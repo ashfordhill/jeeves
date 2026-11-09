@@ -23,3 +23,13 @@ presentation plus pinned hls.js. Package/lock pins are unchanged.
 YV2-23 owns the independent reviewed report, final commit pin and strictly>5.53 comparison. Keep
 [source-loc-v2](../../../../docs/field-projects/source-loc.md), its parser/LCS, denominator policy,
 and historical v1 evidence unchanged. No UI or newly written template is retroactively credited.
+
+## YV2-23 final independent review
+
+Actual Git-object comparison pins completion `08699b2dc631709bff12fb25914e0d2681b6b535` and the
+same untouched baseline/scope. All 60 backend source files match; all five browser TS files remain
+custom UI, and runtime browser configuration is public-string serialization rather than hidden
+backend policy. No eligible new source is unclassified. Three included SQL-construction helpers
+are used in template rendering, not runtime imports; two remaining unimported descriptors are
+already excluded pure data. This is disclosed, without changing scope or conflating LOC with
+runtime coverage. [Actual report, per-feature accounting and limitations](benchmarks/README.md).

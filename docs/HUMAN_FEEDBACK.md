@@ -92,3 +92,9 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Problem:** repeated owner/role/deployable text and unrelated contract forms precede useful controls; owner cards/collapse controls obscure recognizable processes.
 - **Decision:** canonical process tiles and name/kind/settings first; preserve exact declarations and strict reports through read-only source diagnostics at Export.
 - **Resolution:** `YV2-18: simplify diagram and inspector authoring`; [before/after, source/native snapshots and mouse evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-18-clarity.md). Saved-source v2 project preview/ZIP remains YV2-19; owner usability acceptance and strict runtime certification remain separate.
+
+## 2026-11-08 — V2 independent result and backend comparison
+
+- **Problem:** need a working independent deliverable and a fair improvement over v1's 5.53% backend template share.
+- **Decision:** compare the actual untouched baseline/completion with the frozen backend/UI scope; retain reused UI and independent functional limits separately.
+- **Resolution:** `YV2-23: verify independent v2 and compare backend template share` records 5,456 / 5,456 backend LOC (100%), independent run/restart and scoped cleanup. [Owner pack](../field-projects/youtube/v2/notes/review-pack.md) · [actual evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-23-independent.md). Human listening and successful live encoder argv/stderr evidence remain open; no automatic further version.

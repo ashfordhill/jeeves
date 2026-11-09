@@ -6240,3 +6240,48 @@ reviews unchanged backend/UI scope and pins this completion commit in source-loc
 v2 share claimed here; strictly>5.53 acceptance and eventual60 target unchanged. Keep final45400–02
 stack, credentials, five volumes, ready demo9abde227-6abb-4ee0-817e-3d94d90911ea/count2, and frozen
 studio project2c7c8b08-4633-4a97-8794-672a777f1d3a/r2. No later unit executed.
+
+## 2026-11-08 — YV2-23: independent actual v2 and fair backend comparison
+
+Actual completion **08699b2dc631709bff12fb25914e0d2681b6b535** independently copied from all 102 tracked
+Git blobs outside the checkout. Own frozen install/build and fresh first-run passed on new
+**jeeves-yv2-23-independent /45410–45412**, with 14 healthy services and fresh private credentials.
+One exact fixture flow observed real PKCE, multipart pause/refresh/resume only parts 2+3, stable
+completion, anonymous401/foreign404, abort410, invalid media, CPU HLS360p+720p/JPEG, automatic ready
+publication, public search953ms, decoded playback/mouse seek and duplicate-safe counts0→1→2.
+One normal stop/start retained credentials, all five volume identities/data/media/index/count2,
+14 healthy services and mouse search/Watch/login. No product repair. **Human listening unobserved**;
+successful live FFmpeg argv/stderr absent; source argv and actual output evidence remain distinct.
+[Actual evidence, operator sources and limits](plans/reliable-foundations/evidence/youtube-v2/yv2-23-independent.md).
+
+Unchanged source-loc-v2 compares baseline **695addeb3ac4a77c3a6fbfd2f68d901fced3619f** to actual086:
+**5,456 retained /5,456 final backend LOC =100%; 0 post-template, 0 removed/replaced, 56 files**.
+Strictly>5.53 passes; 60 remains the eventual target. Scope unchanged; all UI/four pure-data files
+excluded from both totals. Three counted SQL constructors are generator-used rather than runtime
+imports, disclosed without changing scope. Per-feature attribution and reused custom UI/integration:
+[benchmark](../field-projects/youtube/v2/notes/benchmarks/README.md),
+[owner pack with access/commands](../field-projects/youtube/v2/notes/review-pack.md).
+Report SHA **fd18d44fdd4a8fabaccb346fdf22d17e3cde6d00bb677bf73c6fbfb83e2f2de4**; raw CLI5dc3ca62…
+differs only in JSON whitespace. Current156-source closure/default registry/frozen93 pins match;
+all60 backend files/four.jeeves files/locks unchanged; historical v1 reports preserved. Share is not
+reliability or effort savings; effort remains unknown.
+
+Before checks, exact all-profile down--volumes--remove-orphans/two own image tags removed. No own
+containers/volumes/network/tags remain; ports free; copied runtime/secrets/media/dependencies/build
+removed after102 source hash checks. Owner v1/v2 retained **14 healthy each /6+5 same volumes**,
+credentials/fixtures/mtime/FFmpeg1792f4e…; all22 pre-existing tag→ID mappings and748 protected file
+hashes/modes/original dirty statuses match. Actual102 completion app bytes and studio project
+2c7c8b08-4633-4a97-8794-672a777f1d3a/r2/exacte118… preserved. Owner45400–02 runtime/demo retained.
+
+Initial lint found eight pre-existing22 evidence JSON formatting errors. Whitespace-only fixes
+preserve parsed content and original086 bytes in an archive with old/new hashes. No app/template/
+input/scope/parser/history change or weakened check. Final `pnpm check` explicitly awaited exit0:
+**467 tests/70 files,33.45s**; then **37 native E2Es,1.4m**, web build **1.24s** (existing advisory).
+TinyURL lane/Fit/select mouse check passed,0 page errors, own project deleted; TinyURL/restart Watch
+images visually inspected. Final evidence Biome check31 files passed without fixes. Logs:
+`/tmp/jeeves-yv2-23/` and committed sanitized gzip evidence. Root README/owner FutureBenchmarks,
+feedback/Unicode deletions/colon variants/e2e-docker mode untouched. No branch/worktree/stash/
+delegation/push/global prune. Local commit: **YV2-23: verify independent v2 and compare backend template share**.
+
+Stop after23. No automatic further field version or certification. Owner usability review and
+human listening remain owner observations; no further runtime/provider campaign is pending.

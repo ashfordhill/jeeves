@@ -1,26 +1,8 @@
 {
   "credentialSetSha256": "5bc17f9525010978fba06a4e64de81baacd48033e9f8b3cf2487583763e52c3e",
   "credentialFiles": 21,
-  "privateParentModes": [
-    [
-      ".runtime",
-      448
-    ],
-    [
-      ".runtime/secrets",
-      448
-    ]
-  ],
-  "reviewPasswordModes": [
-    [
-      "creator_password",
-      384
-    ],
-    [
-      "other_creator_password",
-      384
-    ]
-  ],
+  "privateParentModes": [[".runtime", 448], [".runtime/secrets", 448]],
+  "reviewPasswordModes": [["creator_password", 384], ["other_creator_password", 384]],
   "volumes": [
     {
       "Name": "jeeves-youtube-v2_broker-data",

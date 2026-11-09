@@ -1168,3 +1168,11 @@ Keep a proof runner's transport failure separate from the mechanism it already e
 attachment's transfer/encode/ready commit passed before Node fetch ignored an explicit website
 Host header. Correcting the adapter and re-reading the retained result was enough to verify that
 failure; repeating an unchanged provider/media run would add no evidence. [Bounded evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-20-reuse-and-freeze.md).
+
+## 2026-11-08 standalone browser identity allocation
+
+A copied app must derive the public browser issuer/client/callback from the same generated identity
+and port allocation as provider setup and backend validation. In YV2-23 the exact completed source
+ran on fresh ports45410–45412, signed in with real PKCE and restarted with retained credentials/data
+without source edits. Public binding serialization stayed separate from backend authentication
+policy. [Independent evidence](plans/reliable-foundations/evidence/youtube-v2/yv2-23-independent.md).

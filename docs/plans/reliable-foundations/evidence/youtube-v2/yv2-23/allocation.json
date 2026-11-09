@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-11-09T03:06:08Z",
+  "project": "jeeves-yv2-23-independent",
+  "ports": [45410, 45411, 45412],
+  "app": "/tmp/jeeves-yv2-23/independent-app",
+  "runtime": "/tmp/jeeves-yv2-23/independent-app/.runtime",
+  "portsFree": true,
+  "namespaceFree": true,
+  "sourceFiles": 102,
+  "runtimeCopied": false,
+  "finalOwnerStackUntouched": true
+}

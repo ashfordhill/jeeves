@@ -1,0 +1,17 @@
+{
+  "project": "jeeves-yv2-23-independent",
+  "allProfiles": true,
+  "downVolumesRemoveOrphansExit": 0,
+  "removedExactOwnImageTags": [
+    "jeeves-yv2-23-independent-app:latest",
+    "jeeves-yv2-23-independent-media:latest"
+  ],
+  "remainingOwnContainers": 0,
+  "remainingOwnVolumes": 0,
+  "remainingOwnNetworks": 0,
+  "remainingOwnImageTags": 0,
+  "portsFree": [45410, 45411, 45412],
+  "finalTrackedCopyHashesRechecked": 102,
+  "copiedAppRuntimeCredentialsMediaDependenciesBuildRemoved": true,
+  "globalPruneUsed": false
+}

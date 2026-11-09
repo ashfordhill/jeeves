@@ -1,0 +1,16 @@
+{
+  "key": "ready-video:v1:8d973dc2-be73-42ff-822c-26a0b76a5228",
+  "metadata": {
+    "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+    "publicationVersion": 1,
+    "title": "YV2-23 tourmalineazure public fixture",
+    "description": "zirconcerulean description of real encoded synthetic media",
+    "channel": "creator",
+    "durationSeconds": 20,
+    "manifest": "videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/master.m3u8",
+    "thumbnail": "videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/thumbnail.jpg",
+    "publishedAt": "2026-11-09T03:11:19.851Z"
+  },
+  "ttlSeconds": 3265,
+  "countsAbsentFromMetadataCache": true
+}

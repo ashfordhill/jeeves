@@ -292,9 +292,7 @@
     }
   ],
   "backendScope": "notes/benchmarks/backend-scope.json",
-  "uiScope": [
-    "browser/"
-  ],
+  "uiScope": ["browser/"],
   "noUIUnderSrc": true,
   "benchmarkNotRunUntilYV2_23": true
 }

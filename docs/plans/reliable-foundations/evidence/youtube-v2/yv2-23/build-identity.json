@@ -1,0 +1,18 @@
+{
+  "node": "v24.21.0",
+  "runtimeConfiguration": "window.__LOCAL_VIDEO_CONFIG__ = {\"issuer\":\"http://127.0.0.1:45411/realms/identity\",\"clientId\":\"identity-web\",\"callback\":\"http://127.0.0.1:45410/\"};\n",
+  "files": [
+    {
+      "path": "dist-public/runtime-config.js",
+      "sha256": "d716b0a37bf70a7cbbe4021b761a6e7d9680d01ed50bc31487b90d6b459b5e84"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "c37b660e00f7575436c71834fc61e104681c8097bc326c7d11b89b35337138bf"
+    },
+    {
+      "path": "ffmpeg-os.lock",
+      "sha256": "8ec109b1f0d8354d937debaa4f62b387c78d178c6236adc639c8e6183476382d"
+    }
+  ]
+}

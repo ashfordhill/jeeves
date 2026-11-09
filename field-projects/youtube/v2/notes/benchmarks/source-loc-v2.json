@@ -1,0 +1,783 @@
+{
+  "method": "source-loc-v2",
+  "parser": "rolldown@1.2.15",
+  "app": "field-projects/youtube/v2/app",
+  "baselineCommit": "695addeb3ac4a77c3a6fbfd2f68d901fced3619f",
+  "finalCommit": "08699b2dc631709bff12fb25914e0d2681b6b535",
+  "baselineManifestSha256": "1f49c9301fec3122671190269681adf9423b0d6e6f871873c5f8f6afbf21e9cc",
+  "scope": {
+    "version": 1,
+    "backendPaths": ["src/runtime", "src/features", "src/adapters", "src/services"],
+    "uiPaths": ["browser"],
+    "configurationPaths": [
+      "src/features/application-bindings.ts",
+      "src/features/local-bindings.ts",
+      "src/features/positive-cache-bindings.ts",
+      "src/features/search-bindings.ts"
+    ]
+  },
+  "scopeSha256": "e326c2ea0041620bf43ec23f13942306656223cfc5637713acee89e77d89ef2d",
+  "rules": {
+    "scope": "Backend production JS/TS in src directories, classified by an explicit scope. UI is excluded regardless of location; unclassified eligible source refuses the report. Tests, fixtures, configuration, declarations and build/vendor output excluded.",
+    "lines": "Physical nonblank lines after parsed comments are removed; indentation ignored, other code and wrapping preserved.",
+    "attribution": "Longest ordered matching lines in the same path are retained template lines; other final lines are post-template. New paths are entirely post-template; renames are not inferred.",
+    "interpretation": "Source composition only. Includes boilerplate and stubs; does not measure working behavior, quality, labor saved or agent versus human authorship."
+  },
+  "totals": {
+    "includedFiles": 56,
+    "baselineLoc": 5456,
+    "finalLoc": 5456,
+    "retainedTemplateLoc": 5456,
+    "postTemplateLoc": 0,
+    "removedOrReplacedTemplateLoc": 0,
+    "templatePercent": 100
+  },
+  "included": [
+    {
+      "path": "src/adapters/youtube-contract.ts",
+      "baselineSha256": "7e52a592be62b6981b10a1d7e7f67878e0e106a189c947ecea4c5f722c0a5955",
+      "finalSha256": "7e52a592be62b6981b10a1d7e7f67878e0e106a189c947ecea4c5f722c0a5955",
+      "baselineLoc": 90,
+      "finalLoc": 90,
+      "retainedTemplateLoc": 90,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-counter.ts",
+      "baselineSha256": "0fd9e22ce49c276840306e668596cab1b8a01265d9fbf99c68ffc0e308d1eded",
+      "finalSha256": "0fd9e22ce49c276840306e668596cab1b8a01265d9fbf99c68ffc0e308d1eded",
+      "baselineLoc": 23,
+      "finalLoc": 23,
+      "retainedTemplateLoc": 23,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-events.ts",
+      "baselineSha256": "93c9a79b81b296442a19ad9cc67129329e23b710ec06c8cb15eb7bfdf5b13497",
+      "finalSha256": "93c9a79b81b296442a19ad9cc67129329e23b710ec06c8cb15eb7bfdf5b13497",
+      "baselineLoc": 128,
+      "finalLoc": 128,
+      "retainedTemplateLoc": 128,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-lifecycle.ts",
+      "baselineSha256": "0d730f546f310f828eb62321dc44d30a69e12d0bb363bac94972d2470c3be410",
+      "finalSha256": "0d730f546f310f828eb62321dc44d30a69e12d0bb363bac94972d2470c3be410",
+      "baselineLoc": 106,
+      "finalLoc": 106,
+      "retainedTemplateLoc": 106,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-objects.ts",
+      "baselineSha256": "9d8bce7a67b73ca046f81d6fc6d7dd463ba7db79d3067cc43134b741133addfa",
+      "finalSha256": "9d8bce7a67b73ca046f81d6fc6d7dd463ba7db79d3067cc43134b741133addfa",
+      "baselineLoc": 25,
+      "finalLoc": 25,
+      "retainedTemplateLoc": 25,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-projection.ts",
+      "baselineSha256": "c4e46aaf7479c702890cd313a634439e8f52277508ab09adb843d25152076362",
+      "finalSha256": "c4e46aaf7479c702890cd313a634439e8f52277508ab09adb843d25152076362",
+      "baselineLoc": 34,
+      "finalLoc": 34,
+      "retainedTemplateLoc": 34,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-public-sql.ts",
+      "baselineSha256": "e31c8dca3b0692baf27715fb81ca76cc9ba017d1c82ec66445975298e7ca316d",
+      "finalSha256": "e31c8dca3b0692baf27715fb81ca76cc9ba017d1c82ec66445975298e7ca316d",
+      "baselineLoc": 15,
+      "finalLoc": 15,
+      "retainedTemplateLoc": 15,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-search.ts",
+      "baselineSha256": "1427b3442077a15ec33547ead68d96e741d17546cb15ea5cb9610829ab3884b5",
+      "finalSha256": "1427b3442077a15ec33547ead68d96e741d17546cb15ea5cb9610829ab3884b5",
+      "baselineLoc": 54,
+      "finalLoc": 54,
+      "retainedTemplateLoc": 54,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-upload.ts",
+      "baselineSha256": "fdd69e066a84c2c653e35af4e018e6e35b69bb0c59eac0c4ccf8ba772df3f129",
+      "finalSha256": "fdd69e066a84c2c653e35af4e018e6e35b69bb0c59eac0c4ccf8ba772df3f129",
+      "baselineLoc": 199,
+      "finalLoc": 199,
+      "retainedTemplateLoc": 199,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/adapters/youtube-watch.ts",
+      "baselineSha256": "cf176a3b77179d51145f5c150c0a9c17b4021fd95326d91846bc49710512027b",
+      "finalSha256": "cf176a3b77179d51145f5c150c0a9c17b4021fd95326d91846bc49710512027b",
+      "baselineLoc": 111,
+      "finalLoc": 111,
+      "retainedTemplateLoc": 111,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/features/public-video-search.ts",
+      "baselineSha256": "b7d15d92401bb57a6d2bab1be2bf7f1927fb95631d38c435956421258fe4183c",
+      "finalSha256": "b7d15d92401bb57a6d2bab1be2bf7f1927fb95631d38c435956421258fe4183c",
+      "baselineLoc": 26,
+      "finalLoc": 26,
+      "retainedTemplateLoc": 26,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/features/public-video.ts",
+      "baselineSha256": "66a807fea023befc985d408c81a5baa4f5f485c4cfde99ed2faaefaa43adda80",
+      "finalSha256": "66a807fea023befc985d408c81a5baa4f5f485c4cfde99ed2faaefaa43adda80",
+      "baselineLoc": 50,
+      "finalLoc": 50,
+      "retainedTemplateLoc": 50,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/features/service-resources.ts",
+      "baselineSha256": "9c712c16f3fc4bf328f27426214bc7a2af0a53ee73716cd42e95822dbab79516",
+      "finalSha256": "9c712c16f3fc4bf328f27426214bc7a2af0a53ee73716cd42e95822dbab79516",
+      "baselineLoc": 107,
+      "finalLoc": 107,
+      "retainedTemplateLoc": 107,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/features/video-paths.ts",
+      "baselineSha256": "afcbbfafd92dac3e3bc1950f1814b22055cd7aa02205ad9f62d9e65d2e570d38",
+      "finalSha256": "afcbbfafd92dac3e3bc1950f1814b22055cd7aa02205ad9f62d9e65d2e570d38",
+      "baselineLoc": 19,
+      "finalLoc": 19,
+      "retainedTemplateLoc": 19,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/features/video-runtime.ts",
+      "baselineSha256": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "finalSha256": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "baselineLoc": 12,
+      "finalLoc": 12,
+      "retainedTemplateLoc": 12,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/admission.ts",
+      "baselineSha256": "17de7157d83777e7281d8fe9b3069fed58597e35df6d37eacf959cca641b9f06",
+      "finalSha256": "17de7157d83777e7281d8fe9b3069fed58597e35df6d37eacf959cca641b9f06",
+      "baselineLoc": 74,
+      "finalLoc": 74,
+      "retainedTemplateLoc": 74,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/amqp.ts",
+      "baselineSha256": "7eb50d512b44b9f470858b11bfc5ea6f3b3b96ae5519653a138c45a027df5e6f",
+      "finalSha256": "7eb50d512b44b9f470858b11bfc5ea6f3b3b96ae5519653a138c45a027df5e6f",
+      "baselineLoc": 215,
+      "finalLoc": 215,
+      "retainedTemplateLoc": 215,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/asset-identity.ts",
+      "baselineSha256": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "finalSha256": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "baselineLoc": 13,
+      "finalLoc": 13,
+      "retainedTemplateLoc": 13,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/asset-lifecycle.ts",
+      "baselineSha256": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "finalSha256": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "baselineLoc": 432,
+      "finalLoc": 432,
+      "retainedTemplateLoc": 432,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/asset-sql.ts",
+      "baselineSha256": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "finalSha256": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "baselineLoc": 26,
+      "finalLoc": 26,
+      "retainedTemplateLoc": 26,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/asset-worker.ts",
+      "baselineSha256": "130da3f91b95305a489200c1d7d2df5d73ec6405f973c4cd6cd03df6b4c9501e",
+      "finalSha256": "130da3f91b95305a489200c1d7d2df5d73ec6405f973c4cd6cd03df6b4c9501e",
+      "baselineLoc": 99,
+      "finalLoc": 99,
+      "retainedTemplateLoc": 99,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/counter-read.ts",
+      "baselineSha256": "03bed78d624b6127efed58859082912005077c649a32da289d7a954999f042a9",
+      "finalSha256": "03bed78d624b6127efed58859082912005077c649a32da289d7a954999f042a9",
+      "baselineLoc": 19,
+      "finalLoc": 19,
+      "retainedTemplateLoc": 19,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/counter-sql.ts",
+      "baselineSha256": "ab930a9c59478d8e8b9316711d049e8dcdb31ad9e73a0734b2acb137efdbf2ed",
+      "finalSha256": "ab930a9c59478d8e8b9316711d049e8dcdb31ad9e73a0734b2acb137efdbf2ed",
+      "baselineLoc": 30,
+      "finalLoc": 30,
+      "retainedTemplateLoc": 30,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/counter-worker.ts",
+      "baselineSha256": "ee18019f80fa8461296d8e389277a32fac61a582f646d6d9720d2d4e85997a36",
+      "finalSha256": "ee18019f80fa8461296d8e389277a32fac61a582f646d6d9720d2d4e85997a36",
+      "baselineLoc": 34,
+      "finalLoc": 34,
+      "retainedTemplateLoc": 34,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/delivery.ts",
+      "baselineSha256": "be8caf4550978f6e779f811d953a914fb516b803247d46b8b81bcb0eda795f45",
+      "finalSha256": "be8caf4550978f6e779f811d953a914fb516b803247d46b8b81bcb0eda795f45",
+      "baselineLoc": 144,
+      "finalLoc": 144,
+      "retainedTemplateLoc": 144,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/durable-sql.ts",
+      "baselineSha256": "cc132555e522603e7f5c9dbe5906efbbb76c6bfbf70d6af536ecea652f518e0f",
+      "finalSha256": "cc132555e522603e7f5c9dbe5906efbbb76c6bfbf70d6af536ecea652f518e0f",
+      "baselineLoc": 59,
+      "finalLoc": 59,
+      "retainedTemplateLoc": 59,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/event-counter.ts",
+      "baselineSha256": "40be1d8d6c77139ce7acb998d789e1451dbbcc2e7a11fd16aa0282dfec1bc418",
+      "finalSha256": "40be1d8d6c77139ce7acb998d789e1451dbbcc2e7a11fd16aa0282dfec1bc418",
+      "baselineLoc": 63,
+      "finalLoc": 63,
+      "retainedTemplateLoc": 63,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/event-identity.ts",
+      "baselineSha256": "3de66a89c65728bf404831c60bb81e00cc71693b0cd23555f71462eaf9140eda",
+      "finalSha256": "3de66a89c65728bf404831c60bb81e00cc71693b0cd23555f71462eaf9140eda",
+      "baselineLoc": 11,
+      "finalLoc": 11,
+      "retainedTemplateLoc": 11,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/http.ts",
+      "baselineSha256": "076c89c45d1fbb4157e619fe98d4be2aac7ca3072f305ffd351239c7f27fccba",
+      "finalSha256": "076c89c45d1fbb4157e619fe98d4be2aac7ca3072f305ffd351239c7f27fccba",
+      "baselineLoc": 85,
+      "finalLoc": 85,
+      "retainedTemplateLoc": 85,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/identity.ts",
+      "baselineSha256": "ce012fad6b404d7482048886c640f9b4c24e6b3b68e8bac96b869a44599a4db7",
+      "finalSha256": "ce012fad6b404d7482048886c640f9b4c24e6b3b68e8bac96b869a44599a4db7",
+      "baselineLoc": 43,
+      "finalLoc": 43,
+      "retainedTemplateLoc": 43,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/local.ts",
+      "baselineSha256": "53429e097013bbf7dad6e581bf523f3035ec358652b9738d62f0b5a6ac310165",
+      "finalSha256": "53429e097013bbf7dad6e581bf523f3035ec358652b9738d62f0b5a6ac310165",
+      "baselineLoc": 10,
+      "finalLoc": 10,
+      "retainedTemplateLoc": 10,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/media-objects.ts",
+      "baselineSha256": "76276ecafe97097bc0ae2d4035e35d03d9aa7e606da50b79f7483a879e31c6cf",
+      "finalSha256": "76276ecafe97097bc0ae2d4035e35d03d9aa7e606da50b79f7483a879e31c6cf",
+      "baselineLoc": 143,
+      "finalLoc": 143,
+      "retainedTemplateLoc": 143,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/media-process.ts",
+      "baselineSha256": "2d6b9291ac69ba058a485b41b8b07f57b10c451f3e9daaa0fc6c27aee9854a66",
+      "finalSha256": "2d6b9291ac69ba058a485b41b8b07f57b10c451f3e9daaa0fc6c27aee9854a66",
+      "baselineLoc": 130,
+      "finalLoc": 130,
+      "retainedTemplateLoc": 130,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/media-worker.ts",
+      "baselineSha256": "c96dce64a7d72d185a638cf19b9e1ebbf7741ffcd922e59bfa420c4e613acbb3",
+      "finalSha256": "c96dce64a7d72d185a638cf19b9e1ebbf7741ffcd922e59bfa420c4e613acbb3",
+      "baselineLoc": 307,
+      "finalLoc": 307,
+      "retainedTemplateLoc": 307,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/multipart-http.ts",
+      "baselineSha256": "95b8dadb6c24f46d084b726ec49f04c204474618e3f85b7a1c2646e14b79b906",
+      "finalSha256": "95b8dadb6c24f46d084b726ec49f04c204474618e3f85b7a1c2646e14b79b906",
+      "baselineLoc": 94,
+      "finalLoc": 94,
+      "retainedTemplateLoc": 94,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/multipart-objects.ts",
+      "baselineSha256": "84864780ce18eb04f9fd3a8fa9bf47e0ba3b2bc18a7ba33b9e5d00df642b7bee",
+      "finalSha256": "84864780ce18eb04f9fd3a8fa9bf47e0ba3b2bc18a7ba33b9e5d00df642b7bee",
+      "baselineLoc": 137,
+      "finalLoc": 137,
+      "retainedTemplateLoc": 137,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/multipart.ts",
+      "baselineSha256": "a71722e79c7f43755431d4ddb4a3cb3968282f313fd781d424bf5acebe0a8dcb",
+      "finalSha256": "a71722e79c7f43755431d4ddb4a3cb3968282f313fd781d424bf5acebe0a8dcb",
+      "baselineLoc": 324,
+      "finalLoc": 324,
+      "retainedTemplateLoc": 324,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/objects.ts",
+      "baselineSha256": "fd65101b6bfd87fbd9cb808e7ac690f50e706775f2078ecf313a3073659b4d84",
+      "finalSha256": "fd65101b6bfd87fbd9cb808e7ac690f50e706775f2078ecf313a3073659b4d84",
+      "baselineLoc": 56,
+      "finalLoc": 56,
+      "retainedTemplateLoc": 56,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/outbox.ts",
+      "baselineSha256": "e10002f66ac537c8bae682c842eaddc09050075df81c7691d110e5dee5db9a62",
+      "finalSha256": "e10002f66ac537c8bae682c842eaddc09050075df81c7691d110e5dee5db9a62",
+      "baselineLoc": 125,
+      "finalLoc": 125,
+      "retainedTemplateLoc": 125,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/owned-upload.ts",
+      "baselineSha256": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+      "finalSha256": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+      "baselineLoc": 423,
+      "finalLoc": 423,
+      "retainedTemplateLoc": 423,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/positive-cache.ts",
+      "baselineSha256": "670facbdb1a8a5e57811954a360b82748ff37feea57613e0f49ae4c4c1649009",
+      "finalSha256": "670facbdb1a8a5e57811954a360b82748ff37feea57613e0f49ae4c4c1649009",
+      "baselineLoc": 83,
+      "finalLoc": 83,
+      "retainedTemplateLoc": 83,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/postgres.ts",
+      "baselineSha256": "8bbe9e0df36bafa1f73a1bb0abd36aa30fcfd93cde3d1815ae5234840faae7fc",
+      "finalSha256": "8bbe9e0df36bafa1f73a1bb0abd36aa30fcfd93cde3d1815ae5234840faae7fc",
+      "baselineLoc": 22,
+      "finalLoc": 22,
+      "retainedTemplateLoc": 22,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/process.ts",
+      "baselineSha256": "690332f6d1020005ac6ff48c5bf396492682f15178bfeaaae32de53608ab2784",
+      "finalSha256": "690332f6d1020005ac6ff48c5bf396492682f15178bfeaaae32de53608ab2784",
+      "baselineLoc": 95,
+      "finalLoc": 95,
+      "retainedTemplateLoc": 95,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/receipts.ts",
+      "baselineSha256": "4f311edcc8ecfb11a3287e9f1445470b10eda26bebd96a51bb5128e25bf50a93",
+      "finalSha256": "4f311edcc8ecfb11a3287e9f1445470b10eda26bebd96a51bb5128e25bf50a93",
+      "baselineLoc": 58,
+      "finalLoc": 58,
+      "retainedTemplateLoc": 58,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/search-contract.ts",
+      "baselineSha256": "9d522d94420fa3b47516d546ec5e76cf4e3fffe703b356e26df4ae3c884888ce",
+      "finalSha256": "9d522d94420fa3b47516d546ec5e76cf4e3fffe703b356e26df4ae3c884888ce",
+      "baselineLoc": 80,
+      "finalLoc": 80,
+      "retainedTemplateLoc": 80,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/search-indexer.ts",
+      "baselineSha256": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+      "finalSha256": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+      "baselineLoc": 32,
+      "finalLoc": 32,
+      "retainedTemplateLoc": 32,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/search-projection.ts",
+      "baselineSha256": "2a0e9e053a59ea422e682828ff643cadcbf9baf484b225ef72e1362de70e923f",
+      "finalSha256": "2a0e9e053a59ea422e682828ff643cadcbf9baf484b225ef72e1362de70e923f",
+      "baselineLoc": 68,
+      "finalLoc": 68,
+      "retainedTemplateLoc": 68,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/search-query.ts",
+      "baselineSha256": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "finalSha256": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "baselineLoc": 75,
+      "finalLoc": 75,
+      "retainedTemplateLoc": 75,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/search-schema.ts",
+      "baselineSha256": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "finalSha256": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "baselineLoc": 30,
+      "finalLoc": 30,
+      "retainedTemplateLoc": 30,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/search.ts",
+      "baselineSha256": "f7a2c6d3adda941fa455efb4871f75b5359174dce1c604965fd3521500369239",
+      "finalSha256": "f7a2c6d3adda941fa455efb4871f75b5359174dce1c604965fd3521500369239",
+      "baselineLoc": 8,
+      "finalLoc": 8,
+      "retainedTemplateLoc": 8,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/transaction.ts",
+      "baselineSha256": "35983e944e65a8ce388eab4b3883fa884c461d7e42240d57bfefcb41a19e15d2",
+      "finalSha256": "35983e944e65a8ce388eab4b3883fa884c461d7e42240d57bfefcb41a19e15d2",
+      "baselineLoc": 58,
+      "finalLoc": 58,
+      "retainedTemplateLoc": 58,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/upload-sql.ts",
+      "baselineSha256": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+      "finalSha256": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+      "baselineLoc": 34,
+      "finalLoc": 34,
+      "retainedTemplateLoc": 34,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/valkey.ts",
+      "baselineSha256": "aff536762903bd9816d91348a0d7f22f041f664cdcf3808399b2744349e67d99",
+      "finalSha256": "aff536762903bd9816d91348a0d7f22f041f664cdcf3808399b2744349e67d99",
+      "baselineLoc": 57,
+      "finalLoc": 57,
+      "retainedTemplateLoc": 57,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/video-hls.ts",
+      "baselineSha256": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "finalSha256": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "baselineLoc": 263,
+      "finalLoc": 263,
+      "retainedTemplateLoc": 263,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/runtime/video-result.ts",
+      "baselineSha256": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "finalSha256": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "baselineLoc": 139,
+      "finalLoc": 139,
+      "retainedTemplateLoc": 139,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    },
+    {
+      "path": "src/services/youtube.ts",
+      "baselineSha256": "98292a9b08094147f17cf4606a8c3a8f806c3e7e4378028bf34a134b9f85d184",
+      "finalSha256": "98292a9b08094147f17cf4606a8c3a8f806c3e7e4378028bf34a134b9f85d184",
+      "baselineLoc": 259,
+      "finalLoc": 259,
+      "retainedTemplateLoc": 259,
+      "postTemplateLoc": 0,
+      "removedOrReplacedTemplateLoc": 0
+    }
+  ],
+  "excluded": [
+    {
+      "path": ".dockerignore",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".gitignore",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/inputs/design.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/manifest.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/normalized.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": ".jeeves/report.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "Dockerfile",
+      "reason": "outside-src"
+    },
+    {
+      "path": "README.md",
+      "reason": "outside-src"
+    },
+    {
+      "path": "browser/auth.ts",
+      "reason": "ui-source"
+    },
+    {
+      "path": "browser/main.ts",
+      "reason": "ui-source"
+    },
+    {
+      "path": "browser/playback-policy.ts",
+      "reason": "ui-source"
+    },
+    {
+      "path": "browser/search.ts",
+      "reason": "ui-source"
+    },
+    {
+      "path": "browser/watch.ts",
+      "reason": "ui-source"
+    },
+    {
+      "path": "compose.yaml",
+      "reason": "outside-src"
+    },
+    {
+      "path": "diagnostics/generation.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "ffmpeg-os.lock",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/edge/nginx.conf",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/local.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/identity/000-foundation.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/metadata-db/000-foundation.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/metadata-db/001-uploads.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/metadata-db/002-lifecycle.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/metadata-db/003-ready-schema.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/view-counts/000-foundation.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "infra/postgres/view-counts/001-counts.sql",
+      "reason": "outside-src"
+    },
+    {
+      "path": "package.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "reason": "outside-src"
+    },
+    {
+      "path": "public/index.html",
+      "reason": "outside-src"
+    },
+    {
+      "path": "public/style.css",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/bootstrap.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/broker-init.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/browser-config.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/build-browser.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/common.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/local.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/migrate.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/search-init.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/setup.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/status.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "scripts/storage-config.mjs",
+      "reason": "outside-src"
+    },
+    {
+      "path": "src/features/application-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "src/features/local-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "src/features/positive-cache-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "src/features/search-bindings.ts",
+      "reason": "configuration-or-build"
+    },
+    {
+      "path": "tsconfig.browser.json",
+      "reason": "outside-src"
+    },
+    {
+      "path": "tsconfig.json",
+      "reason": "outside-src"
+    }
+  ]
+}

@@ -26,3 +26,11 @@ No templates, frozen inputs, source snapshot or baseline metadata were regenerat
 All UI remains excluded from both backend LOC totals. YV2-23 must independently copy/build/run,
 review the final scope and compare this exact baseline to the actual YV2-22 completion commit
 using unchanged source-loc-v2/parser/LCS. No numerical v2 template-share claim is made here.
+
+## Pinned completion and final comparison
+
+Actual custom completion is `08699b2dc631709bff12fb25914e0d2681b6b535`. YV2-23 independently verifies
+that exact deliverable without changing any app byte, then measures 5,456 retained / 5,456 completed
+backend LOC (100%), 0 post-template LOC. [Actual report/identities/scope/attribution](benchmarks/README.md),
+[owner review](review-pack.md). UI/integration remain custom; human listening and live successful
+encoder command-log evidence remain open as recorded. The baseline and frozen metadata stay immutable.

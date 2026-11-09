@@ -43,3 +43,7 @@ all14 services healthy; mouse search/Watch decoded retained media and creator lo
 The ready record, invalid-media failure and aborted upload remain. No bootstrap/credential rotation,
 volume reset, media/index/database cleanup or owner v1 stop occurred. Review password files are0600;
 provider-created mount files retain generated permissions under the0700 runtime parent.
+
+YV2-23 independently verified an exact tracked copy on fresh45410–45412 credentials/volumes and
+normal restart, then removed that disposable stack/copy. This retained owner allocation was not
+stopped/reset or used for the independent upload. [Owner walkthrough and final results](review-pack.md).

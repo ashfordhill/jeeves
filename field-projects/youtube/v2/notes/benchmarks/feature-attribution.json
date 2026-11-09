@@ -1,0 +1,147 @@
+{
+  "method": "Each included file assigned once to its frozen manifest owner emitter; shared runtime not double-counted; contributors remain in frozen manifest. Generated code may contain YouTube policy. UI and integration are separate custom work.",
+  "features": {
+    "local.youtube-adapters": {
+      "files": [
+        "src/adapters/youtube-contract.ts",
+        "src/adapters/youtube-counter.ts",
+        "src/adapters/youtube-events.ts",
+        "src/adapters/youtube-lifecycle.ts",
+        "src/adapters/youtube-objects.ts",
+        "src/adapters/youtube-projection.ts",
+        "src/adapters/youtube-public-sql.ts",
+        "src/adapters/youtube-search.ts",
+        "src/adapters/youtube-upload.ts",
+        "src/adapters/youtube-watch.ts",
+        "src/features/public-video-search.ts",
+        "src/features/public-video.ts",
+        "src/features/video-paths.ts"
+      ],
+      "retainedTemplateLoc": 880,
+      "postTemplateLoc": 0,
+      "finalLoc": 880
+    },
+    "local.video-composition": {
+      "files": [
+        "src/features/service-resources.ts",
+        "src/features/video-runtime.ts",
+        "src/runtime/process.ts",
+        "src/services/youtube.ts"
+      ],
+      "retainedTemplateLoc": 473,
+      "postTemplateLoc": 0,
+      "finalLoc": 473
+    },
+    "local.primitives": {
+      "files": [
+        "src/runtime/admission.ts",
+        "src/runtime/amqp.ts",
+        "src/runtime/delivery.ts",
+        "src/runtime/http.ts",
+        "src/runtime/identity.ts",
+        "src/runtime/objects.ts",
+        "src/runtime/postgres.ts",
+        "src/runtime/search.ts"
+      ],
+      "retainedTemplateLoc": 647,
+      "postTemplateLoc": 0,
+      "finalLoc": 647
+    },
+    "local.asset-identity": {
+      "files": ["src/runtime/asset-identity.ts", "src/runtime/event-identity.ts"],
+      "retainedTemplateLoc": 24,
+      "postTemplateLoc": 0,
+      "finalLoc": 24
+    },
+    "local.asset-lifecycle": {
+      "files": [
+        "src/runtime/asset-lifecycle.ts",
+        "src/runtime/asset-sql.ts",
+        "src/runtime/asset-worker.ts"
+      ],
+      "retainedTemplateLoc": 557,
+      "postTemplateLoc": 0,
+      "finalLoc": 557
+    },
+    "local.event-counter": {
+      "files": [
+        "src/runtime/counter-read.ts",
+        "src/runtime/counter-sql.ts",
+        "src/runtime/counter-worker.ts",
+        "src/runtime/event-counter.ts"
+      ],
+      "retainedTemplateLoc": 146,
+      "postTemplateLoc": 0,
+      "finalLoc": 146
+    },
+    "local.durability": {
+      "files": [
+        "src/runtime/durable-sql.ts",
+        "src/runtime/outbox.ts",
+        "src/runtime/receipts.ts",
+        "src/runtime/transaction.ts"
+      ],
+      "retainedTemplateLoc": 300,
+      "postTemplateLoc": 0,
+      "finalLoc": 300
+    },
+    "local.foundation": {
+      "files": ["src/runtime/local.ts"],
+      "retainedTemplateLoc": 10,
+      "postTemplateLoc": 0,
+      "finalLoc": 10
+    },
+    "local.media-worker": {
+      "files": ["src/runtime/media-objects.ts", "src/runtime/media-worker.ts"],
+      "retainedTemplateLoc": 450,
+      "postTemplateLoc": 0,
+      "finalLoc": 450
+    },
+    "local.video-hls": {
+      "files": [
+        "src/runtime/media-process.ts",
+        "src/runtime/video-hls.ts",
+        "src/runtime/video-result.ts"
+      ],
+      "retainedTemplateLoc": 532,
+      "postTemplateLoc": 0,
+      "finalLoc": 532
+    },
+    "local.multipart": {
+      "files": [
+        "src/runtime/multipart-http.ts",
+        "src/runtime/multipart-objects.ts",
+        "src/runtime/multipart.ts"
+      ],
+      "retainedTemplateLoc": 555,
+      "postTemplateLoc": 0,
+      "finalLoc": 555
+    },
+    "local.upload-state": {
+      "files": ["src/runtime/owned-upload.ts", "src/runtime/upload-sql.ts"],
+      "retainedTemplateLoc": 457,
+      "postTemplateLoc": 0,
+      "finalLoc": 457
+    },
+    "local.positive-cache": {
+      "files": ["src/runtime/positive-cache.ts", "src/runtime/valkey.ts"],
+      "retainedTemplateLoc": 140,
+      "postTemplateLoc": 0,
+      "finalLoc": 140
+    },
+    "local.search-projection-query": {
+      "files": [
+        "src/runtime/search-contract.ts",
+        "src/runtime/search-indexer.ts",
+        "src/runtime/search-projection.ts",
+        "src/runtime/search-query.ts",
+        "src/runtime/search-schema.ts"
+      ],
+      "retainedTemplateLoc": 285,
+      "postTemplateLoc": 0,
+      "finalLoc": 285
+    }
+  },
+  "customBackendPaths": [],
+  "generatedBackendRepairPaths": []
+}

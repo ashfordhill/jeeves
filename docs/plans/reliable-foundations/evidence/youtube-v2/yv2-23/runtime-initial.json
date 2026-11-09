@@ -1,0 +1,135 @@
+{
+  "credentialSetSha256": "27a9a49317cafcdab98b7a945d2b10246b60c7be2eafa9a675dc064724908b1f",
+  "credentialFiles": 21,
+  "privateParentModes": [[".runtime", 448], [".runtime/secrets", 448]],
+  "reviewPasswordModes": [["creator_password", 384], ["other_creator_password", 384]],
+  "volumes": [
+    {
+      "Name": "jeeves-yv2-23-independent_broker-data",
+      "CreatedAt": "2026-11-08T21:09:19-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "c533a1b2ead3eeddfd3f07c3965c05be84db92544584b828c729b64beae8c922",
+        "com.docker.compose.project": "jeeves-yv2-23-independent",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "broker-data"
+      }
+    },
+    {
+      "Name": "jeeves-yv2-23-independent_cache-metadata-cache",
+      "CreatedAt": "2026-11-08T21:09:19-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "ef5a4b7ec3e393b131c2d3190fb05c6767c110228e06acb09b48e7c7e9798da7",
+        "com.docker.compose.project": "jeeves-yv2-23-independent",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "cache-metadata-cache"
+      }
+    },
+    {
+      "Name": "jeeves-yv2-23-independent_objects-data",
+      "CreatedAt": "2026-11-08T21:09:19-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "aa79641ac38c12cbac6e5fe5c453a00f6d3dd2d6c6edfe15c14b82b7b5fec893",
+        "com.docker.compose.project": "jeeves-yv2-23-independent",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "objects-data"
+      }
+    },
+    {
+      "Name": "jeeves-yv2-23-independent_postgres-data",
+      "CreatedAt": "2026-11-08T21:09:19-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "7fa8597cd7dc27f54d2506f2e9705ae17affcd403e92d7ac3a0b56bc6f02ecde",
+        "com.docker.compose.project": "jeeves-yv2-23-independent",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      }
+    },
+    {
+      "Name": "jeeves-yv2-23-independent_search-search-index",
+      "CreatedAt": "2026-11-08T21:09:19-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "1ea50b4a6b8c130ec03532142330681ddaa2d9c40e2e594608fac63296654c77",
+        "com.docker.compose.project": "jeeves-yv2-23-independent",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "search-search-index"
+      }
+    }
+  ],
+  "services": [
+    {
+      "service": "app-completion-handler",
+      "health": "healthy",
+      "imageId": "sha256:40ddd30bca2c84e21b69447375b9835ae5bbd228c37ce30107a625aa134b46c2"
+    },
+    {
+      "service": "app-edge",
+      "health": "healthy",
+      "imageId": "sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236"
+    },
+    {
+      "service": "app-search",
+      "health": "healthy",
+      "imageId": "sha256:40ddd30bca2c84e21b69447375b9835ae5bbd228c37ce30107a625aa134b46c2"
+    },
+    {
+      "service": "app-search-indexer",
+      "health": "healthy",
+      "imageId": "sha256:40ddd30bca2c84e21b69447375b9835ae5bbd228c37ce30107a625aa134b46c2"
+    },
+    {
+      "service": "app-transcoder",
+      "health": "healthy",
+      "imageId": "sha256:45d2b12441900af79f791b444c53d1dfe9a26be1f91ab7012c2df55646485fa8"
+    },
+    {
+      "service": "app-upload",
+      "health": "healthy",
+      "imageId": "sha256:40ddd30bca2c84e21b69447375b9835ae5bbd228c37ce30107a625aa134b46c2"
+    },
+    {
+      "service": "app-view-counter",
+      "health": "healthy",
+      "imageId": "sha256:40ddd30bca2c84e21b69447375b9835ae5bbd228c37ce30107a625aa134b46c2"
+    },
+    {
+      "service": "app-watch",
+      "health": "healthy",
+      "imageId": "sha256:40ddd30bca2c84e21b69447375b9835ae5bbd228c37ce30107a625aa134b46c2"
+    },
+    {
+      "service": "cache-metadata-cache",
+      "health": "healthy",
+      "imageId": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507"
+    },
+    {
+      "service": "identity-identity",
+      "health": "healthy",
+      "imageId": "sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332"
+    },
+    {
+      "service": "local-broker",
+      "health": "healthy",
+      "imageId": "sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267"
+    },
+    {
+      "service": "local-objects",
+      "health": "healthy",
+      "imageId": "sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020"
+    },
+    {
+      "service": "local-postgres",
+      "health": "healthy",
+      "imageId": "sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f"
+    },
+    {
+      "service": "search-search-index",
+      "health": "healthy",
+      "imageId": "sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "reason": "First required pnpm check caught eight pre-existing YV2-22 JSON formatting errors. Only whitespace changed; original bytes archived.",
+  "archive": "yv2-22-evidence-before-format.tar.gz",
+  "files": [
+    {
+      "path": "allocation.json",
+      "beforeSha256": "06c886eb7bce70cf457ebc0340feb70dfcbcbc6d24213c8a4caa223aa0bb0ba0",
+      "afterSha256": "8bce5479257a4624270c2161bf422cc3cd514a6c47feb4bb3f65f98386ccd6b4",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "private-original.json",
+      "beforeSha256": "619fdeff69fa51f9cab70c7496a2adaa27faac7f5fe22895010caa95ebac2b4f",
+      "afterSha256": "960ed9be4ba7a3f39bd62940d27d0d57f92f02c1296aaa3e142230a1e5d9727f",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "provenance.json",
+      "beforeSha256": "3832642198f47b09cd41659d8e1b08f8f34970ebc0bc717d51f7359053966b12",
+      "afterSha256": "a92d24d8fd52d110bd432885948b37012b840a818bbeabda16d2384700392705",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "provision.json",
+      "beforeSha256": "351c9ac4359899821832587c059c703029056779cb973ff880246a059ddf438e",
+      "afterSha256": "535eb008be7db61a6c5334a0a7053cce4f443cd8445a6c394b9ca95d86cb258a",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "runtime-after-restart.json",
+      "beforeSha256": "3c5570ed3dde2f271729ef5183a4d218d371918e749371dc49c886243d33abbc",
+      "afterSha256": "aa9889826b1c0ec23bc22457563692becbb846fad49501bb7c39664a040ae64c",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "runtime-before-restart.json",
+      "beforeSha256": "da98ba94b6fc36ec85214467c66eda6b5b3f43a45126337754b154150aa010e7",
+      "afterSha256": "7ed5fdaca25aad81cad1acb8116656ba0d3e1d0d31f2fef89c5109676638a769",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "tinyurl-mouse.json",
+      "beforeSha256": "67d420924bb491881bbde181c6562aac5f8c1d365c24fa91389d60b398ed74f1",
+      "afterSha256": "37ee845cb2435c9debd5ed02626d6cc1dc96cbbd2f699c021f49167cb6ba180b",
+      "parsedContentIdentical": true
+    },
+    {
+      "path": "walkthrough.json",
+      "beforeSha256": "b40776d8501e1d99bb4c5fed68eef4ce82b78c52670b0e94c48fe5d9a96fd0c1",
+      "afterSha256": "e7b01143a9b538f726c0b963597f6d0cf7b04273b47e60faf9a22bd4964eb9b5",
+      "parsedContentIdentical": true
+    }
+  ],
+  "originalCommit": "08699b2dc631709bff12fb25914e0d2681b6b535",
+  "allOriginalHashesMatchCompletionGitBlobs": true
+}

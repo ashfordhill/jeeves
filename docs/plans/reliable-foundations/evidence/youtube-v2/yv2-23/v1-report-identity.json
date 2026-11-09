@@ -1,0 +1,15 @@
+{
+  "historicalReportUnchanged": true,
+  "historicalParsedContentIdentical": true,
+  "historicalReportBytes": 26586,
+  "historicalReportSha256": "c98566716c41405f3128785ccf764c2aa51a6ee98474e8ee237e8e0da3964ab4",
+  "currentCliBytes": 26598,
+  "currentCliSha256": "f984a8fd4fe988b18bc050709cc486dc380f7207bbce6e54e4919852e1d6cd75",
+  "storedFormattingDifference": "Historical uiPaths was Biome-formatted to one line; current CLI JSON.stringify prints that array on multiple lines. Content identical.",
+  "priorYV2_20OldVsNewCliEvidence": {
+    "path": "docs/plans/reliable-foundations/evidence/youtube-v2/yv2-20-reuse-and-freeze.md",
+    "currentCliByteIdenticalToYV2_20ParityOutput": true,
+    "bytes": 26598,
+    "sha256": "f984a8fd4fe988b18bc050709cc486dc380f7207bbce6e54e4919852e1d6cd75"
+  }
+}

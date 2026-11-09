@@ -43,5 +43,6 @@ preflight used different project names/ports and was completely removed.
 proves the backend smoke, not the reused browser or all S01–S08 mouse criteria. The generated static
 page is a browser slot. Runtime verification remains `none` and strict readiness `not-assessed`.
 The reviewed [backend/UI scope](benchmarks/scope-review.md) excludes every UI file; YV2-23 owns the
-actual final retained-template report and the strictly-greater-than-5.53% comparison. No v2
-percentage is claimed here; 60% remains an eventual field-project target.
+actual final retained-template report and the strictly-greater-than-5.53% comparison. The final [actual report](benchmarks/README.md)
+records 5,456 / 5,456 backend LOC (100%); 60% remains an eventual field-project target.
+[Owner review pack](review-pack.md) separates source composition from observed behavior and limits.

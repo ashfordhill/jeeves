@@ -31,3 +31,13 @@ Operator sources are archived as gzip under the linked evidence. `walkthrough.mj
 resumed flow. Provision harness creates admin-managed review accounts with password files0600;
 it is test/operator setup, not a new account-creation feature. Credentials/tokens/signed URLs,
 media bytes, dependencies/builds and private runtime are absent from tracked evidence.
+
+## YV2-23 independent completion
+
+The actual YV2-22 completion commit `08699b2dc631709bff12fb25914e0d2681b6b535` now has a separate
+outside-checkout build/first-run, single bounded S01–S08 walkthrough and normal restart. S01 and
+S08 independence are observed. [Owner pack](review-pack.md) gives the final per-criterion results;
+[actual sanitized evidence](../../../../docs/plans/reliable-foundations/evidence/youtube-v2/yv2-23-independent.md)
+retains the fresh allocation, file inventory, browser/provider/media/restart and cleanup records.
+S05 human listening remains unobserved. S04 encoding is observed; successful live encoder argv/
+stderr remain absent. No earlier observation is retroactively upgraded; no product repair occurred.

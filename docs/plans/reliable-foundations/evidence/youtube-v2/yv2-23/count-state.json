@@ -1,0 +1,20 @@
+{
+  "totals": [
+    {
+      "aggregate_key": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "total": "2"
+    }
+  ],
+  "receipts": [
+    {
+      "scope_key": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "event_id": "6386e8a4-ce09-4dca-9044-66bbc3b14123",
+      "handled_at": "2026-11-09T03:11:33.489Z"
+    },
+    {
+      "scope_key": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "event_id": "780b2b96-0e53-46fd-84a0-819cd3cbbf7c",
+      "handled_at": "2026-11-09T03:11:45.272Z"
+    }
+  ]
+}

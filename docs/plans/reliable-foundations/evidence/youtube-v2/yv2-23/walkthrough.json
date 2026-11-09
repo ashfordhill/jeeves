@@ -1,0 +1,702 @@
+{
+  "startedAt": "2026-11-09T03:11:12.742Z",
+  "browser": "153.0.8010.12",
+  "errors": [],
+  "puts": [
+    {
+      "label": "S03-before",
+      "partNumber": 1,
+      "size": 5242880,
+      "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+      "status": 200
+    },
+    {
+      "label": "S03-resumed",
+      "partNumber": 2,
+      "size": 5242880,
+      "etag": "\"8b07cb8adaef2a76957b89cf6a759510\"",
+      "status": 200
+    },
+    {
+      "label": "S03-resumed",
+      "partNumber": 3,
+      "size": 5099193,
+      "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\"",
+      "status": 200
+    },
+    {
+      "label": "abort",
+      "partNumber": 1,
+      "size": 5242880,
+      "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+      "status": 200
+    },
+    {
+      "label": "invalid",
+      "partNumber": 1,
+      "etag": "\"679007faebcad05c62c40e025542b138\"",
+      "status": 200
+    }
+  ],
+  "states": [
+    {
+      "at": "2026-11-09T03:11:14.976Z",
+      "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+      "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "title": "YV2-23 tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "state": "uploading",
+      "phase": "active",
+      "expiresAt": "2026-11-10T03:11:14.402Z",
+      "createdAt": "2026-11-09T03:11:14.402Z",
+      "queuedAt": null,
+      "deadlineAt": null,
+      "jobId": null,
+      "attemptId": null,
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": [
+        {
+          "partNumber": 1,
+          "size": 5242880,
+          "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+        }
+      ]
+    },
+    {
+      "at": "2026-11-09T03:11:15.485Z",
+      "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+      "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "title": "YV2-23 tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "state": "uploading",
+      "phase": "active",
+      "expiresAt": "2026-11-10T03:11:14.402Z",
+      "createdAt": "2026-11-09T03:11:14.402Z",
+      "queuedAt": null,
+      "deadlineAt": null,
+      "jobId": null,
+      "attemptId": null,
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": [
+        {
+          "partNumber": 1,
+          "size": 5242880,
+          "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+        }
+      ]
+    },
+    {
+      "at": "2026-11-09T03:11:15.794Z",
+      "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+      "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "title": "YV2-23 tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "state": "pending",
+      "phase": "closed",
+      "expiresAt": "2026-11-10T03:11:14.402Z",
+      "createdAt": "2026-11-09T03:11:14.402Z",
+      "queuedAt": "2026-11-09T03:11:15.746Z",
+      "deadlineAt": "2026-11-09T03:21:15.746Z",
+      "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+      "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-09T03:11:16.441Z",
+      "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+      "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "title": "YV2-23 tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "state": "processing",
+      "phase": "closed",
+      "expiresAt": "2026-11-10T03:11:14.402Z",
+      "createdAt": "2026-11-09T03:11:14.402Z",
+      "queuedAt": "2026-11-09T03:11:15.746Z",
+      "deadlineAt": "2026-11-09T03:41:16.344Z",
+      "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+      "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    },
+    {
+      "at": "2026-11-09T03:11:19.910Z",
+      "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+      "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "title": "YV2-23 tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "state": "ready",
+      "phase": "closed",
+      "expiresAt": "2026-11-10T03:11:14.402Z",
+      "createdAt": "2026-11-09T03:11:14.402Z",
+      "queuedAt": "2026-11-09T03:11:15.746Z",
+      "deadlineAt": "2026-11-09T03:41:16.344Z",
+      "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+      "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+      "failure": null,
+      "file": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1794116246303,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+      },
+      "partSize": 5242880,
+      "partCount": 3,
+      "parts": []
+    }
+  ],
+  "queries": [
+    {
+      "q": "tourmalineazure",
+      "titles": ["YV2-23 tourmalineazure public fixture"]
+    },
+    {
+      "q": "zirconcerulean",
+      "titles": ["YV2-23 tourmalineazure public fixture"]
+    },
+    {
+      "q": "creator",
+      "titles": ["YV2-23 tourmalineazure public fixture"]
+    }
+  ],
+  "accepted": [
+    {
+      "observedAt": "2026-11-09T03:11:33.480Z",
+      "status": 202,
+      "eventId": "6386e8a4-ce09-4dca-9044-66bbc3b14123",
+      "accepted": true,
+      "acceptedAt": "2026-11-09T03:11:33.475Z",
+      "publicationVersion": 1
+    },
+    {
+      "observedAt": "2026-11-09T03:11:45.274Z",
+      "status": 202,
+      "eventId": "780b2b96-0e53-46fd-84a0-819cd3cbbf7c",
+      "accepted": true,
+      "acceptedAt": "2026-11-09T03:11:45.269Z",
+      "publicationVersion": 1
+    }
+  ],
+  "media": [
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/master.m3u8",
+      "status": 206,
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/thumbnail.jpg",
+      "status": 200,
+      "type": "image/jpeg"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/360/index.m3u8",
+      "status": 206,
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/360/segment00000.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/index.m3u8",
+      "status": 206,
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/segment00001.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/segment00002.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/segment00003.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/segment00004.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/thumbnail.jpg",
+      "status": 200,
+      "type": "image/jpeg"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/master.m3u8",
+      "status": 206,
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/360/index.m3u8",
+      "status": 206,
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/360/segment00000.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/index.m3u8",
+      "status": 206,
+      "type": "application/vnd.apple.mpegurl"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/segment00001.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    },
+    {
+      "path": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/720/segment00002.ts",
+      "status": 206,
+      "type": "video/mp2t"
+    }
+  ],
+  "scenarios": {
+    "S01": {
+      "identity": {
+        "sub": "25b5b98b-b476-4ccb-8ead-31ccddb18139",
+        "channel": "creator"
+      },
+      "providerLogoutFreshForm": true
+    },
+    "S02": {
+      "listedBeforeComplete": [
+        {
+          "partNumber": 1,
+          "size": 5242880,
+          "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+        },
+        {
+          "partNumber": 2,
+          "size": 5242880,
+          "etag": "\"8b07cb8adaef2a76957b89cf6a759510\""
+        },
+        {
+          "partNumber": 3,
+          "size": 5099193,
+          "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\""
+        }
+      ],
+      "stableRepeats": [
+        {
+          "status": 202,
+          "body": {
+            "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+            "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+            "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+            "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+            "state": "pending"
+          }
+        },
+        {
+          "status": 202,
+          "body": {
+            "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+            "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+            "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+            "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+            "state": "pending"
+          }
+        }
+      ],
+      "anonymous": {
+        "start": 401,
+        "sign": 401,
+        "complete": 401
+      },
+      "otherCreator": {
+        "status": 404,
+        "sign": 404,
+        "complete": 404,
+        "abort": 404
+      }
+    },
+    "S03": {
+      "interrupted": {
+        "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+        "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+        "title": "YV2-23 tourmalineazure public fixture",
+        "description": "zirconcerulean description of real encoded synthetic media",
+        "state": "uploading",
+        "phase": "active",
+        "expiresAt": "2026-11-10T03:11:14.402Z",
+        "createdAt": "2026-11-09T03:11:14.402Z",
+        "queuedAt": null,
+        "deadlineAt": null,
+        "jobId": null,
+        "attemptId": null,
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": [
+          {
+            "partNumber": 1,
+            "size": 5242880,
+            "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+          }
+        ]
+      },
+      "refreshed": {
+        "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+        "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+        "title": "YV2-23 tourmalineazure public fixture",
+        "description": "zirconcerulean description of real encoded synthetic media",
+        "state": "uploading",
+        "phase": "active",
+        "expiresAt": "2026-11-10T03:11:14.402Z",
+        "createdAt": "2026-11-09T03:11:14.402Z",
+        "queuedAt": null,
+        "deadlineAt": null,
+        "jobId": null,
+        "attemptId": null,
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": [
+          {
+            "partNumber": 1,
+            "size": 5242880,
+            "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+          }
+        ]
+      },
+      "resumed": {
+        "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+        "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+        "title": "YV2-23 tourmalineazure public fixture",
+        "description": "zirconcerulean description of real encoded synthetic media",
+        "state": "ready",
+        "phase": "closed",
+        "expiresAt": "2026-11-10T03:11:14.402Z",
+        "createdAt": "2026-11-09T03:11:14.402Z",
+        "queuedAt": "2026-11-09T03:11:15.746Z",
+        "deadlineAt": "2026-11-09T03:41:16.344Z",
+        "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+        "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": []
+      },
+      "aborted": {
+        "uploadId": "c393201b-27f1-419a-8d10-57aeec0cc208",
+        "videoId": "9f41e797-1b97-47a4-9962-4a9e24317b1b",
+        "title": "YV2-23 abort amethystjade",
+        "description": "zirconcerulean description of real encoded synthetic media",
+        "state": "aborted",
+        "phase": "closed",
+        "expiresAt": "2026-11-10T03:11:20.998Z",
+        "createdAt": "2026-11-09T03:11:20.998Z",
+        "queuedAt": null,
+        "deadlineAt": null,
+        "jobId": null,
+        "attemptId": null,
+        "failure": null,
+        "file": {
+          "fileName": "youtube-v1-fixture.mp4",
+          "size": 15584953,
+          "contentType": "video/mp4",
+          "lastModified": 1794116246303,
+          "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+        },
+        "partSize": 5242880,
+        "partCount": 3,
+        "parts": []
+      },
+      "completeAfterAbort": 410
+    },
+    "S08": {
+      "visibleInvalidToken": true,
+      "visibleOversize": true,
+      "visibleNonconforming": true,
+      "oversize": {
+        "status": 413,
+        "body": {
+          "error": "FILE_SIZE",
+          "message": "Choose a file between 1 byte and 256 MiB."
+        }
+      },
+      "nonconforming": {
+        "status": 422,
+        "body": {
+          "error": "UNSUPPORTED_FILE",
+          "message": "Choose an MP4 video (H.264/AAC, landscape 720p–1080p, 1–600 seconds)."
+        }
+      }
+    }
+  },
+  "unfinished": {
+    "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+    "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+    "title": "YV2-23 tourmalineazure public fixture",
+    "description": "zirconcerulean description of real encoded synthetic media",
+    "state": "uploading",
+    "phase": "active",
+    "expiresAt": "2026-11-10T03:11:14.402Z",
+    "createdAt": "2026-11-09T03:11:14.402Z",
+    "queuedAt": null,
+    "deadlineAt": null,
+    "jobId": null,
+    "attemptId": null,
+    "failure": null,
+    "file": {
+      "fileName": "youtube-v1-fixture.mp4",
+      "size": 15584953,
+      "contentType": "video/mp4",
+      "lastModified": 1794116246303,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+    },
+    "partSize": 5242880,
+    "partCount": 3,
+    "parts": [
+      {
+        "partNumber": 1,
+        "size": 5242880,
+        "etag": "\"e427bb2dfe46a881a30ee35141a58952\""
+      }
+    ]
+  },
+  "completion": {
+    "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+    "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+    "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+    "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+    "state": "pending"
+  },
+  "pendingPublic": {
+    "status": 404,
+    "body": {
+      "error": "VIDEO_NOT_READY",
+      "message": "This video is not publicly available."
+    }
+  },
+  "pendingSearch": {
+    "at": "2026-11-09T03:11:15.770Z",
+    "status": 200,
+    "body": {
+      "q": "tourmalineazure",
+      "page": 1,
+      "pageSize": 20,
+      "total": 0,
+      "hits": []
+    }
+  },
+  "ready": {
+    "uploadId": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+    "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+    "title": "YV2-23 tourmalineazure public fixture",
+    "description": "zirconcerulean description of real encoded synthetic media",
+    "state": "ready",
+    "phase": "closed",
+    "expiresAt": "2026-11-10T03:11:14.402Z",
+    "createdAt": "2026-11-09T03:11:14.402Z",
+    "queuedAt": "2026-11-09T03:11:15.746Z",
+    "deadlineAt": "2026-11-09T03:41:16.344Z",
+    "jobId": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+    "attemptId": "8578562a-3e88-4166-8638-3ed1c9f49071",
+    "failure": null,
+    "file": {
+      "fileName": "youtube-v1-fixture.mp4",
+      "size": 15584953,
+      "contentType": "video/mp4",
+      "lastModified": 1794116246303,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9"
+    },
+    "partSize": 5242880,
+    "partCount": 3,
+    "parts": []
+  },
+  "publicReady": {
+    "status": 200,
+    "body": {
+      "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "publicationVersion": 1,
+      "title": "YV2-23 tourmalineazure public fixture",
+      "description": "zirconcerulean description of real encoded synthetic media",
+      "channel": "creator",
+      "durationSeconds": 20,
+      "manifest": "videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/master.m3u8",
+      "thumbnail": "videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/thumbnail.jpg",
+      "publishedAt": "2026-11-09T03:11:19.851Z",
+      "manifestUrl": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/master.m3u8",
+      "thumbnailUrl": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/thumbnail.jpg",
+      "views": "0"
+    }
+  },
+  "firstSearch": {
+    "at": "2026-11-09T03:11:20.804Z",
+    "status": 200,
+    "body": {
+      "q": "tourmalineazure",
+      "page": 1,
+      "pageSize": 20,
+      "total": 1,
+      "hits": [
+        {
+          "videoId": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+          "title": "YV2-23 tourmalineazure public fixture",
+          "description": "zirconcerulean description of real encoded synthetic media",
+          "channel": "creator",
+          "durationSeconds": 20,
+          "publishedAt": "2026-11-09T03:11:19.851Z",
+          "thumbnailUrl": "/media/videos/8d973dc2-be73-42ff-822c-26a0b76a5228/a8664bba-3074-4163-b21a-64eaee2c7e39/8578562a-3e88-4166-8638-3ed1c9f49071/thumbnail.jpg"
+        }
+      ]
+    }
+  },
+  "publicationToSearchMs": 953,
+  "invalid": {
+    "uploadId": "27a730c5-eea6-4869-90f4-9a29e518fed9",
+    "videoId": "7dd11f10-9c1f-4e6f-af93-f5228d0d5f49",
+    "title": "YV2-23 invalid nephelinemint",
+    "description": "zirconcerulean description of real encoded synthetic media",
+    "state": "failed",
+    "phase": "closed",
+    "expiresAt": "2026-11-10T03:11:21.703Z",
+    "createdAt": "2026-11-09T03:11:21.703Z",
+    "queuedAt": "2026-11-09T03:11:21.775Z",
+    "deadlineAt": "2026-11-09T03:41:22.348Z",
+    "jobId": "a3b58c28-f943-43da-8ef4-301d935f2ef8",
+    "attemptId": "cf5b7017-479a-47c6-ad6b-2041b0cf133e",
+    "failure": {
+      "code": "INVALID_MEDIA",
+      "message": "Media does not meet the supported format."
+    },
+    "file": {
+      "fileName": "invalid.mp4",
+      "size": 14,
+      "contentType": "video/mp4",
+      "lastModified": 1794193881640,
+      "sha256": "2274518ea85c5f3d6934edd53c0fc28dbc5e80e8a2c4d6ade94afe8d73743170"
+    },
+    "partSize": 5242880,
+    "partCount": 1,
+    "parts": []
+  },
+  "invalidSearch": {
+    "at": "2026-11-09T03:11:22.687Z",
+    "status": 200,
+    "body": {
+      "q": "nephelinemint",
+      "page": 1,
+      "pageSize": 20,
+      "total": 0,
+      "hits": []
+    }
+  },
+  "invalidPublic": {
+    "status": 404,
+    "body": {
+      "error": "VIDEO_NOT_READY",
+      "message": "This video is not publicly available."
+    }
+  },
+  "fetchOnlyCount": "0",
+  "firstVisible": {
+    "at": "2026-11-09T03:11:35.237Z",
+    "views": "1"
+  },
+  "playback": {
+    "currentTime": 8.013562,
+    "paused": false,
+    "muted": false,
+    "volume": 1,
+    "frames": {
+      "decoded": 218,
+      "dropped": 0
+    },
+    "width": 1280,
+    "height": 720,
+    "audio": {
+      "rms": 0.06245129584053862,
+      "peakHz": 440.0848388671875,
+      "humanListening": false
+    }
+  },
+  "seek": {
+    "before": 8.244044,
+    "after": 15.452538,
+    "byMouse": true
+  },
+  "samePageTotal": "1",
+  "retry": {
+    "status": 202,
+    "body": {
+      "eventId": "6386e8a4-ce09-4dca-9044-66bbc3b14123",
+      "accepted": true,
+      "acceptedAt": "2026-11-09T03:11:40.432Z",
+      "publicationVersion": 1
+    }
+  },
+  "newSession": {
+    "at": "2026-11-09T03:11:46.906Z",
+    "views": "2"
+  },
+  "finishedAt": "2026-11-09T03:11:47.022Z"
+}

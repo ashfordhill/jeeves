@@ -1,0 +1,73 @@
+{
+  "original": {
+    "upload_id": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+    "asset_id": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+    "original_key": "originals/8d973dc2-be73-42ff-822c-26a0b76a5228/48c96e70-fe71-4382-b41d-3dd5a02612e7/source.mp4",
+    "size": "15584953",
+    "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+    "original_etag": "\"346805d5f3163911cfc48fa462669d69-3\"",
+    "actualBytes": 15584953,
+    "actualSha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+    "metadata": {
+      "expected-size": "15584953",
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "upload-id": "48c96e70-fe71-4382-b41d-3dd5a02612e7",
+      "video-id": "8d973dc2-be73-42ff-822c-26a0b76a5228"
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "8d973dc2-be73-42ff-822c-26a0b76a5228",
+      "state": "ready",
+      "job_id": "a8664bba-3074-4163-b21a-64eaee2c7e39",
+      "attempt_id": "8578562a-3e88-4166-8638-3ed1c9f49071",
+      "queued_at": "2026-11-09T03:11:15.746Z",
+      "started_at": "2026-11-09T03:11:16.344Z",
+      "ready_at": "2026-11-09T03:11:19.851Z",
+      "failure_code": null,
+      "publication_version": 1
+    },
+    {
+      "asset_id": "9f41e797-1b97-47a4-9962-4a9e24317b1b",
+      "state": "aborted",
+      "job_id": null,
+      "attempt_id": null,
+      "queued_at": null,
+      "started_at": null,
+      "ready_at": null,
+      "failure_code": null,
+      "publication_version": null
+    },
+    {
+      "asset_id": "7dd11f10-9c1f-4e6f-af93-f5228d0d5f49",
+      "state": "failed",
+      "job_id": "a3b58c28-f943-43da-8ef4-301d935f2ef8",
+      "attempt_id": "cf5b7017-479a-47c6-ad6b-2041b0cf133e",
+      "queued_at": "2026-11-09T03:11:21.775Z",
+      "started_at": "2026-11-09T03:11:22.348Z",
+      "ready_at": null,
+      "failure_code": "INVALID_MEDIA",
+      "publication_version": null
+    }
+  ],
+  "outbox": [
+    {
+      "destination": "jobs",
+      "event_id": "c8a1d4c6-9afd-53fb-b52b-0c23b1be0315",
+      "sent_at": "2026-11-09T03:11:16.317Z",
+      "attempts": 1
+    },
+    {
+      "destination": "publication",
+      "event_id": "e5ad44f8-c310-5b6b-a65d-a48b30c922b4",
+      "sent_at": "2026-11-09T03:11:20.267Z",
+      "attempts": 1
+    },
+    {
+      "destination": "jobs",
+      "event_id": "ae5bc41c-49cd-5fb0-b51b-3803fe7c5098",
+      "sent_at": "2026-11-09T03:11:22.343Z",
+      "attempts": 1
+    }
+  ]
+}

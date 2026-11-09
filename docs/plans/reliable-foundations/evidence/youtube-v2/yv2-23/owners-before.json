@@ -1,0 +1,319 @@
+[
+  {
+    "project": "jeeves-youtube-v1",
+    "credentialSetSha256": "8de2b1886b7e0090687f5f728dca77f383693ac13a421c35b28c56f9d84e94fd",
+    "volumes": [
+      {
+        "Name": "jeeves-youtube-v1_broker-data",
+        "CreatedAt": "2026-11-07T23:35:51-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "151ff5dfbdc8a9b7a95493332f42a79bd3a46c7a1e514b07b812db46b556ee63",
+          "com.docker.compose.project": "jeeves-youtube-v1",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "broker-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v1_cache-data",
+        "CreatedAt": "2026-11-08T00:03:04-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "8dfb4df5e7a0073220449fc865cbea2428c247abb53251bebeffee0c87ed47dd",
+          "com.docker.compose.project": "jeeves-youtube-v1",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v1_edge-cache",
+        "CreatedAt": "2026-11-07T23:36:52-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "3350dce875368d479b1fbf34a1912f801e40e1f69a1eb80d19504dd5d04b0242",
+          "com.docker.compose.project": "jeeves-youtube-v1",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "edge-cache"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v1_objects-data",
+        "CreatedAt": "2026-11-07T23:35:51-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "14548d27d3a5a2e93d2d7565e382ea2b39657ba2440df1aae63f6a3d832d1d9a",
+          "com.docker.compose.project": "jeeves-youtube-v1",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "objects-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v1_postgres-data",
+        "CreatedAt": "2026-11-07T23:35:51-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "7ff4dd944f77a235ba5bb46e073941fd805f36a486708c8dfadffc34eaf0b2e6",
+          "com.docker.compose.project": "jeeves-youtube-v1",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v1_search-data",
+        "CreatedAt": "2026-11-07T23:35:51-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "2f945863b686158cdd38b1dd0aef02abc0bdaca2b469c297e48fe4ee749d7d91",
+          "com.docker.compose.project": "jeeves-youtube-v1",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "search-data"
+        }
+      }
+    ],
+    "services": [
+      {
+        "service": "broker",
+        "health": "healthy",
+        "image": "sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267",
+        "container": "bb9baa036b2e529790374a9483d72194676e05e2087b510a69a6caf563680df6"
+      },
+      {
+        "service": "cache",
+        "health": "healthy",
+        "image": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+        "container": "3d52d78833797fc3b3e104fbab4602ed2834998a1dd749cf2264ee97f0d0c364"
+      },
+      {
+        "service": "completion-handler",
+        "health": "healthy",
+        "image": "sha256:04d7ae68bd1221b43dd6e552f4b0a8e905ebd1b6d9886bf25e771f72b87b77a1",
+        "container": "769ae214b46cb5a47acd3bfd5962885e98a3c67889356672414c89bf67e3d299"
+      },
+      {
+        "service": "edge",
+        "health": "healthy",
+        "image": "sha256:490d939e47a7128c4ab0d641248e162a152bf4816576da4e716c848f1e576d3e",
+        "container": "63a47cac59f901498f13d1806f8690eef6121e7dcf86faaf83596f07d52a0b19"
+      },
+      {
+        "service": "identity",
+        "health": "healthy",
+        "image": "sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332",
+        "container": "c9e5b6ac4158f23d10d3071f343dce6d8acf667024c9783638b459e54ca8b599"
+      },
+      {
+        "service": "objects",
+        "health": "healthy",
+        "image": "sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020",
+        "container": "b79fb27061fbd05888388ffddb3e74c9d73cf210d78e27f3d675d89344146edc"
+      },
+      {
+        "service": "postgres",
+        "health": "healthy",
+        "image": "sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f",
+        "container": "525f6339fe98c2435873a1fb3b8e7d9a468146addc78b8073ca3fce9a2c2b9b4"
+      },
+      {
+        "service": "search",
+        "health": "healthy",
+        "image": "sha256:04d7ae68bd1221b43dd6e552f4b0a8e905ebd1b6d9886bf25e771f72b87b77a1",
+        "container": "713f74a859a54595313a360f09221d7afe62657a7af758e43071674c39ac58ce"
+      },
+      {
+        "service": "search-index",
+        "health": "healthy",
+        "image": "sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+        "container": "78866961e467f3a4ccc058c688cd10a00eedcf4c60000865a37788b55dd1a011"
+      },
+      {
+        "service": "search-indexer",
+        "health": "healthy",
+        "image": "sha256:04d7ae68bd1221b43dd6e552f4b0a8e905ebd1b6d9886bf25e771f72b87b77a1",
+        "container": "6056b39f8f8587cb5a9dda68fd6ee0041282b3f804dda153d1aa675e5fd9f2b4"
+      },
+      {
+        "service": "transcoder",
+        "health": "healthy",
+        "image": "sha256:07cdd4205f921bd477d636af081ffa2ef6d2421f134cca02315a89e868fee7f0",
+        "container": "e90ad80cb0c94881dee8459114818e75f568c40029943be487e843daad714c4e"
+      },
+      {
+        "service": "upload",
+        "health": "healthy",
+        "image": "sha256:04d7ae68bd1221b43dd6e552f4b0a8e905ebd1b6d9886bf25e771f72b87b77a1",
+        "container": "315ffd6ea78fce504c12578354a689721974d88ea4569a455f31e8813a383862"
+      },
+      {
+        "service": "view-counter",
+        "health": "healthy",
+        "image": "sha256:04d7ae68bd1221b43dd6e552f4b0a8e905ebd1b6d9886bf25e771f72b87b77a1",
+        "container": "bf0ee6ee70ccb3da866ae05d849b102dcf48e963831da432ca72d5b900856f9a"
+      },
+      {
+        "service": "watch",
+        "health": "healthy",
+        "image": "sha256:04d7ae68bd1221b43dd6e552f4b0a8e905ebd1b6d9886bf25e771f72b87b77a1",
+        "container": "db167ecfc6476b28aaee1bf824db7b5cb78c616eedb7b6a759538ceb8e1eb206"
+      }
+    ],
+    "fixture": {
+      "bytes": 15584953,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "mtimeNs": 1794116246303589521
+    },
+    "runtimeMode": 448
+  },
+  {
+    "project": "jeeves-youtube-v2",
+    "credentialSetSha256": "5bc17f9525010978fba06a4e64de81baacd48033e9f8b3cf2487583763e52c3e",
+    "volumes": [
+      {
+        "Name": "jeeves-youtube-v2_broker-data",
+        "CreatedAt": "2026-11-08T20:47:52-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "43a12e61c9cd047190d210965388b226dcea5720c544fedd867458623ba39b08",
+          "com.docker.compose.project": "jeeves-youtube-v2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "broker-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v2_cache-metadata-cache",
+        "CreatedAt": "2026-11-08T20:47:52-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "876b641e0b8271e6305da4841ddc239d11fe0bff5b142131a2d4c3c8ff79803c",
+          "com.docker.compose.project": "jeeves-youtube-v2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-metadata-cache"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v2_objects-data",
+        "CreatedAt": "2026-11-08T20:47:52-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "bf39f3e8a08f37f731da4c8eaefc0acb34751be96baf5161174625f763968e62",
+          "com.docker.compose.project": "jeeves-youtube-v2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "objects-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v2_postgres-data",
+        "CreatedAt": "2026-11-08T20:47:52-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "eb4f3d83fb541e1655d340c8457f1da22725f7e4d42367e44791172c722c27bb",
+          "com.docker.compose.project": "jeeves-youtube-v2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      },
+      {
+        "Name": "jeeves-youtube-v2_search-search-index",
+        "CreatedAt": "2026-11-08T20:47:52-06:00",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.config-hash": "6edeefc8502e69d98f73d8a007d7905eda89a2cd81fc30da708b82a3e07c7ed3",
+          "com.docker.compose.project": "jeeves-youtube-v2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "search-search-index"
+        }
+      }
+    ],
+    "services": [
+      {
+        "service": "app-completion-handler",
+        "health": "healthy",
+        "image": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0",
+        "container": "6a08e570bd2ee8c71efc31c433112464756679b42278b0019ee37063b7585a0e"
+      },
+      {
+        "service": "app-edge",
+        "health": "healthy",
+        "image": "sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236",
+        "container": "44b4f8497527191c19a05188b3d32a421b58756b6f27c26a3562b0fb6655596b"
+      },
+      {
+        "service": "app-search",
+        "health": "healthy",
+        "image": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0",
+        "container": "1d8158c2b6f1ed8a6bbb4800fb06ff478113fd16f0396f36535d6cf1ba2f15f4"
+      },
+      {
+        "service": "app-search-indexer",
+        "health": "healthy",
+        "image": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0",
+        "container": "b13f7f42188b7de46b7b8002d677dc332a1468a529483ad420d71d9f2535432e"
+      },
+      {
+        "service": "app-transcoder",
+        "health": "healthy",
+        "image": "sha256:1f0e3d1b59b1bae060a87f080a6a1c7d40aafd6f1f3bfa68044ee784ebffc949",
+        "container": "a4e326b25c51c0e4a5d462569a00822022cc40be7d76c87cc3f47c86030f8af9"
+      },
+      {
+        "service": "app-upload",
+        "health": "healthy",
+        "image": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0",
+        "container": "99a6538db5a1d1139669df31b7100d22c71b99dd0bf65957ee825ee33ab7059b"
+      },
+      {
+        "service": "app-view-counter",
+        "health": "healthy",
+        "image": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0",
+        "container": "22d7ade439c05ce6248a59638dd6fa091b15e28f64e138fb9de7409d0bef0d4b"
+      },
+      {
+        "service": "app-watch",
+        "health": "healthy",
+        "image": "sha256:c7d09bb745e15b42a57aa13e3c1df7d84f23e37df4bb32539a3975d01dc259e0",
+        "container": "1dc6a0dd40302bc7fad2a7cfa58dd0d4a2c94e2b9c2acf37ab47973b07995b7a"
+      },
+      {
+        "service": "cache-metadata-cache",
+        "health": "healthy",
+        "image": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+        "container": "e6a3ce6076dc881ae6a57b01aec7392baf26650bd6782a9ce903ad672b8ad95a"
+      },
+      {
+        "service": "identity-identity",
+        "health": "healthy",
+        "image": "sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332",
+        "container": "9c693f3a7ac3543f24ea27b8d0ae589b25f86e71e6503e8c35eb8ac9fcd8cc58"
+      },
+      {
+        "service": "local-broker",
+        "health": "healthy",
+        "image": "sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267",
+        "container": "b8a0d609292d03df2dd61ecda91ec315c023525960b24077c00189ebdf300f7a"
+      },
+      {
+        "service": "local-objects",
+        "health": "healthy",
+        "image": "sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020",
+        "container": "271ad65cb4fdc5df7b256f7d3670cf915861e1f646fcebd47e344abc6c6ec9fc"
+      },
+      {
+        "service": "local-postgres",
+        "health": "healthy",
+        "image": "sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f",
+        "container": "74650706e71fffb80924f30f2cd6e30b3f1ed333c9318010b0ee0c6467fb9ea5"
+      },
+      {
+        "service": "search-search-index",
+        "health": "healthy",
+        "image": "sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+        "container": "348a01cfd3325802368ae00369eb3db6b63a950bf6bb955b35651a2b0aa23f94"
+      }
+    ],
+    "fixture": {
+      "bytes": 15584953,
+      "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+      "mtimeNs": 1794116246303999000
+    },
+    "runtimeMode": 448
+  }
+]

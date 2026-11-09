@@ -1,11 +1,7 @@
 {
   "recordedAt": "2026-11-09T02:47:28.735015+00:00",
   "project": "jeeves-youtube-v2",
-  "ports": [
-    45400,
-    45401,
-    45402
-  ],
+  "ports": [45400, 45401, 45402],
   "freeCheckBeforeFirstStart": true,
   "noteWriteRetriedAfterCwdError": true,
   "runtime": "field-projects/youtube/v2/app/.runtime"

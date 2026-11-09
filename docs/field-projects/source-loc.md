@@ -63,6 +63,18 @@ is preserved. It already excluded v1's UI because `browser/` was outside `src/`;
 counted files confirmed they are backend code. Method v2 adds explicit classification and leaves
 these totals unchanged. This is a benchmark-method revision, not a YouTube v2 application.
 
+## YouTube v2
+
+The [actual v2 comparison](../../field-projects/youtube/v2/notes/benchmarks/README.md) retains
+**5,456 / 5,456 backend LOC (100%)**, with **0 post-template** and **0 removed/replaced** lines in
+56 included files. It compares untouched `695addeb3ac4a77c3a6fbfd2f68d901fced3619f` with completed
+`08699b2dc631709bff12fb25914e0d2681b6b535`, using the pre-baseline reviewed scope and unchanged
+parser/LCS/method. All UI stays excluded. Reused custom browser and build/runtime/edge integration
+are separately attributed; three included shared SQL constructors are generator-used rather than
+runtime-imported. The report exceeds the strict 5.53% criterion; 60% was an eventual target.
+Independent runtime evidence and remaining criteria are in the [owner review pack](../../field-projects/youtube/v2/notes/review-pack.md).
+This composition result does not establish effort saved, coverage, reliability or certification.
+
 ## Run for the next version
 
 From repository root:
