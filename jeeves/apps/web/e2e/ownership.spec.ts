@@ -1,9 +1,9 @@
 import { buildOwnershipCommand, designOwnership, previewOwnership } from "@jeeves/spec";
 import { declareLinks } from "./ownership.ts";
 import { openDiagnostics } from "./source.ts";
-import { expect, ready, test, tile, tiles } from "./studio.ts";
+import { clickLine, expect, ready, test, tile, tiles } from "./studio.ts";
 
-test("preserves one source owner, preserves canonical resource focus, refuses excess access and undoes exact removal", async ({
+test("preserves one source owner, keeps canonical resource selection, refuses excess access and undoes exact removal", async ({
   page,
   tinyurl: id,
 }) => {
@@ -56,26 +56,17 @@ test("preserves one source owner, preserves canonical resource focus, refuses ex
   expect(await state()).toEqual(saved);
   const full = await bp();
   await tile(page, "URL database").click();
-  await page
-    .locator(".studio-inspector")
-    .getByRole("button", { name: "Focus relationships", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Fit focus", exact: true }).click();
+  await expect(tile(page, "URL database")).toHaveClass(/selected/);
   await expect(tile(page, "Shorten service")).toBeVisible();
   expect(await bp()).toEqual(full);
-  await page
-    .locator(".lane-relationship-focus")
-    .getByRole("button", { name: /Reads links on a cache miss/ })
-    .click();
-  await ready(page);
-  await expect(tile(page, "Redirect service")).toBeVisible();
-  await expect(page.locator('.board .react-flow__edge[data-id="redirect-db"]')).toHaveClass(
-    /selected/,
+  await clickLine(page, "redirect-db");
+  await expect(page.locator(".studio-inspector .lane-connection-label")).toHaveText(
+    "Reads links on a cache miss",
   );
+  await expect(tile(page, "Redirect service")).toBeVisible();
   expect(await bp()).toEqual(full);
   await page
-    .locator(".studio-inspector")
-    .getByRole("button", { name: "Remove relationship", exact: true })
+    .getByRole("button", { name: "Remove Redirect service to URL database", exact: true })
     .click();
   const removal = page.getByRole("dialog", { name: "Remove relationship declarations" });
   await expect(removal).toContainText("dependencies · redirect-db");
@@ -91,7 +82,6 @@ test("preserves one source owner, preserves canonical resource focus, refuses ex
   await expect
     .poll(async () => ({ ...(await state()), revision: 0 }))
     .toEqual({ ...saved, revision: 0 });
-  await page.getByRole("button", { name: "Show all", exact: true }).click();
   await page.getByRole("button", { name: "Fit", exact: true }).click();
   await page.reload();
   await ready(page);

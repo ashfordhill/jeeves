@@ -4,7 +4,7 @@ import {
   studioArchitectureExample,
 } from "@jeeves/spec";
 import { commitSource, openDiagnostics, selectOperation } from "./source.ts";
-import { createStudy, expect, lines, ready, test, tile, tiles } from "./studio.ts";
+import { clickLine, createStudy, expect, lines, ready, test, tile, tiles } from "./studio.ts";
 
 test("new project preselects the complete foundation, reloads it and undoes the seed in one step", async ({
   page,
@@ -64,9 +64,10 @@ test("foundation view actions preserve complete semantics and exact operation se
     await ready(page);
     await expect(tiles(page)).toHaveCount(7);
     await tile(page, "Resolve link").click();
-    await page.getByRole("button", { name: "Focus relationships", exact: true }).click();
-    await page.getByRole("button", { name: "Fit focus", exact: true }).click();
-    await page.getByRole("button", { name: "Show all", exact: true }).click();
+    await clickLine(page, "resolve-cache");
+    await page.getByRole("button", { name: "Fit", exact: true }).click();
+    await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
+    await expect(page.locator(".board .react-flow__edge.selected")).toHaveCount(0);
     await tile(page, "Resolve link").click();
     await selectOperation(page, "resolve-link");
     await expect(

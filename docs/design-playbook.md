@@ -692,6 +692,9 @@ from a write.
 
 ## 2026-11-07 tracing follow-up: relationship focus
 
+Superseded on 2026-11-09: the owner asked for focus to be removed (see the UI01 lesson below).
+The overlap chooser and crossing gaps described here remain.
+
 RF02 keeps relationship identity separate from the view: a tile's incoming/outgoing list names
 endpoints, saved verbs and interactions; choosing a row isolates that exact relationship while
 retaining the tile as the focus anchor. Hidden relationship counts and Show all stay on the
@@ -1224,3 +1227,14 @@ tabs, focus lists) make the reader do more work and go stale when the drawing ch
 detail on the selected line instead. A mode the reader must remember to leave, such as Focus
 relationships, is worse than a highlight that ends when the selection ends. Avoid tabs when the
 rail has room for one page. [Plan](plans/ui-overhaul/units.md).
+
+## 2026-11-09 UI01: trace by selection, not by a focus mode
+
+At the owner's request, Focus relationships is gone: the inspector's button and list, and the
+canvas strip with its counts, Fit focus and Show all. Tracing now uses selection only. A selected
+tile's lines turn blue and are drawn over the rest; a selected line is drawn on top with its
+label in the inspector and its X; **Choose relationship** still resolves overlapping routes.
+Nothing is hidden or dimmed, so the reader never has to find a control to get the full drawing
+back: the highlight ends when the selection ends, and clicking empty paper restores the plain
+view. A filter that outlasts the selection that made it leaves the reader looking for a way back
+(the owner found focus hard to turn off); tie emphasis to the current selection instead.

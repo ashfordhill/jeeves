@@ -16,7 +16,7 @@ strict TinyURL readiness.
 Open **Export diagram → Source & diagnostics → Compatibility report** to see four separate results for the saved
 snapshot: design validity, exact contracts, implementation availability and exact output evidence.
 Expand a blocker list and use its mouse buttons to select the exact role/resource, relationship,
-owner or operation for chat. Report, selection, focus and Fit never save or upgrade the design.
+owner or operation for chat. Report, selection and Fit never save or upgrade the design.
 There is no strict contract-compatible product template/evidence registry; strict availability
 stays unavailable and evidence none. Experimental partial export grants no strict readiness credit.
 The [report guide](studio-readiness.md) explains its exact composition identity and limitations.
@@ -75,19 +75,12 @@ future generator's frontend templates) which user flow each service serves.
   Modules (components) are not drawn; they are listed in their tile's inspector
   ([Inspector](#inspector)). C1 people, external systems and packages are not shown.
 
-Select a tile and click **Focus relationships** in the inspector to show only its incoming and
-outgoing relationships. The list gives each relationship's endpoints, saved verb and Request/Async
-interaction. Clicking a row selects that exact relationship and shows it alone, while keeping the
-tile's list open. **All for this tile** restores its incoming/outgoing view; clicking another tile
-changes the focus anchor. Other tiles stay visible as dimmed context and remain clickable.
-
-The canvas shows the number of relationships shown and hidden. **Fit focus** frames the shown
-routes and their endpoints, including returns; selecting another row keeps the camera stable.
-The ordinary **Fit** button frames the whole design. **Show all** restores every relationship.
-The selected line's X and the focus list's **Remove relationship** use the same removal/Undo
-operation. Focus, selection and both fit controls change no saved design, revision or blueprint.
-If the focus tile disappears, the view follows the removal's surviving selection when available,
-or shows all relationships.
+To trace relationships, select: a tile's lines turn blue, and a selected line shows its
+endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
+stays clickable. The highlight ends when the selection does, so clicking empty paper restores the
+plain view; there is no separate mode to leave. Remove a relationship with the selected line's X.
+When a removed tile had a neighbour, the selection moves to it. **Fit** frames the whole design.
+Selection and Fit change no saved design, revision or blueprint.
 
 ## Diagram PNG export
 
@@ -98,8 +91,8 @@ canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector deta
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
 The image shows canonical process and resource tiles, retaining every relationship identity.
-Focus filters, dimming, selection, editing controls and the interactive camera are omitted.
-Export changes no saved design, revision, history, camera, focus or selection.
+Selection, editing controls and the interactive camera are omitted.
+Export changes no saved design, revision, history, camera or selection.
 
 **Source & diagnostics** opens read-only ownership/access, operation and scope declarations,
 the strict compatibility report and the full saved source. **Download source JSON** preserves
@@ -427,7 +420,7 @@ read-only diagnostics; supported feature commands materialize required declarati
 Explicit source/chat commands retain the [finite validation rules](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
 Removal previews still name affected declarations and operation bindings; one Undo restores the
 whole edit. Missing projection sources refuse rather than silently reclassify a store. View,
-selection, focus, Fit and export change no saved semantic data or revision.
+selection, Fit and export change no saved semantic data or revision.
 
 ## Chat
 
@@ -932,9 +925,8 @@ and all twenty components, with nothing omitted and no findings.
   YouTube's View counter → View counts, the Transcoder's store read/write, and the Completion
   handler's and Search indexer's nested writes. Their solid request strokes and target arrowheads
   distinguish them from asynchronous links; selecting the worker colours its lines, and selecting
-  a line shows its endpoints, label and access. Relationship focus isolates an individual route
-  with its endpoints and verb list. The return geometry still wraps intervening tiles in the full
-  overview; focus does not claim to make that overview unambiguous.
+  a line shows its endpoints, label and access. The return geometry still wraps intervening tiles
+  in the full overview; selection does not make that overview unambiguous.
 - Which column a store with several users takes depends on how many tiles its band has per
   column, so an edit elsewhere in a band can move it, and a store that gains a link out (only a
   board outside Jeeves allows it; Jeeves stores are end tiles) goes back to the column after its
@@ -951,8 +943,8 @@ and all twenty components, with nothing omitted and no findings.
   service's write of Original videos). Lines of different lanes meet only in the last 32px before
   a shared tile. Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch opens a chooser; when every stretch
-  of a selected line is shared, its X sits at its middle, on the bus. Relationship focus and the
-  tile's Connections list select a particular relationship directly by its row.
+  of a selected line is shared, its X sits at its middle, on the bus. The tile's Connections list
+  selects a particular relationship directly by its row.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
@@ -1014,7 +1006,7 @@ or changed legacy designs refuse; the server never substitutes another source or
 and verifies the actual response hash before the browser saves it. Finish any draft or history
 action first. Source changes, stale canvas revisions, failed asset loading and cancelled work
 refuse; close/switch disposes pending work. The dialog footer keeps both mouse actions reachable
-at 1280×800. Nothing changes the design, revision, history, layout, focus, camera or preferences.
+at 1280×800. Nothing changes the design, revision, history, layout, camera or preferences.
 Extract into a new directory and follow README; secrets/data are provisioned later. ZIP details
 and API/error limits are documented in the generator guide.
 

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import type { Download, Page } from "@playwright/test";
-import { createStudy, expect, lines, test, tile } from "./studio.ts";
+import { clickLine, createStudy, expect, lines, test, tile } from "./studio.ts";
 
 type Details = {
   project: { id: string; revision: number };
@@ -98,7 +98,7 @@ const view = (page: Page) =>
     ]),
   }));
 
-test("PNG contains full YouTube routes after mouse focus, pan, zoom and dark mode without changing state", async ({
+test("PNG contains full YouTube routes after mouse selection, pan, zoom and dark mode without changing state", async ({
   page,
 }) => {
   const id = await createStudy(page, "E2E PNG YouTube", "YouTube · studio study");
@@ -108,8 +108,7 @@ test("PNG contains full YouTube routes after mouse focus, pan, zoom and dark mod
     expect(first.details.tiles).toHaveLength(21);
     expect(first.details.lines).toHaveLength(25);
     await tile(page, "Transcoder").click();
-    await page.getByRole("button", { name: "Focus relationships", exact: true }).click();
-    await expect(lines(page)).toHaveCount(4);
+    await clickLine(page, "transcoder-read");
     await page.getByRole("button", { name: "Hand", exact: true }).click();
     const paper = await page.locator(".lane-canvas").boundingBox();
     if (!paper) throw new Error("No paper");
@@ -121,11 +120,14 @@ test("PNG contains full YouTube routes after mouse focus, pan, zoom and dark mod
     await page.mouse.up();
     await page.mouse.wheel(0, -450);
     await page.getByRole("button", { name: "Dark mode", exact: true }).click();
-    const focused = await view(page);
+    const selected = await view(page);
     const second = await exportPng(page);
     expect(second.details.image.sha256).toBe(first.details.image.sha256);
-    expect(await view(page)).toEqual(focused);
-    await expect(lines(page)).toHaveCount(4);
+    expect(await view(page)).toEqual(selected);
+    await expect(lines(page)).toHaveCount(25);
+    await expect(page.locator('.board .react-flow__edge[data-id="transcoder-read"]')).toHaveClass(
+      /selected/,
+    );
     expect(await (await page.request.get(`/api/projects/${id}/design`)).json()).toEqual(before);
   } finally {
     await page.request.delete(`/api/projects/${id}`);

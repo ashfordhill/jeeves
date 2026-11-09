@@ -18,7 +18,7 @@ export function LineLegend() {
       </p>
       <p>Click a line for its label and inferred access.</p>
       <p>Gaps at crossings mean the routes are separate. Shared stems join at a tile's port.</p>
-      <p>Focus a tile's relationships in the inspector, or choose a route when lines overlap.</p>
+      <p>Select a tile to highlight its lines, or choose a route when lines overlap.</p>
     </details>
   );
 }

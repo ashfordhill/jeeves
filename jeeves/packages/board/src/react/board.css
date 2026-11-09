@@ -466,9 +466,6 @@
   outline-offset: 8px;
 }
 
-.board .react-flow__node.is-muted {
-  opacity: 0.22;
-}
 .board-line-chooser {
   position: absolute;
   z-index: 10;

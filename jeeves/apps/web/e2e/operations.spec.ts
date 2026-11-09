@@ -9,7 +9,7 @@ import {
 import { alignCreateTimeout, declareCreate } from "./operations.ts";
 import { declareLinks } from "./ownership.ts";
 import { commitSource, openDiagnostics, selectOperation } from "./source.ts";
-import { expect, ready, test, tile } from "./studio.ts";
+import { clickLine, expect, ready, test, tile } from "./studio.ts";
 
 test("preserves a source operation on the canonical API, previews precise clears and restores it with one Undo", async ({
   page,
@@ -37,11 +37,11 @@ test("preserves a source operation on the canonical API, previews precise clears
   await selectOperation(page, "operation-1");
   await expect(page.getByText("Selected operation for chat · operation-1")).toBeVisible();
   expect(await bp()).toEqual(full);
-  await page.getByRole("button", { name: "Focus relationships", exact: true }).click();
-  await page.getByRole("button", { name: "Fit focus", exact: true }).click();
-  expect(await bp()).toEqual(full);
-  await page.getByRole("button", { name: "Show all", exact: true }).click();
   await page.getByRole("button", { name: "Fit", exact: true }).click();
+  await expect(page.getByText("Selected operation for chat · operation-1")).toBeVisible();
+  await clickLine(page, "upload-shorten");
+  await expect(page.getByText("Selected operation for chat · operation-1")).toHaveCount(0);
+  expect(await bp()).toEqual(full);
   const removed = structuredClone(designOwnership(saved));
   removed.owners = [];
   const preview = previewOwnership(saved, cleanOwnershipChange(saved, removed));
@@ -109,13 +109,8 @@ test("preserves and clears an unresolved source verifier, then previews an entry
     .click();
   await expect(tile(page, "Stats API")).toHaveCount(0);
   await ready(page);
-  await tile(page, "Shorten service").click();
   const before = await state();
-  await page.getByRole("button", { name: "Focus relationships", exact: true }).click();
-  await page
-    .locator(".lane-relationship-focus")
-    .getByRole("button", { name: /Shorten → Shorten service/ })
-    .click();
+  await clickLine(page, "upload-shorten");
   await page.getByRole("button", { name: "Download lane", exact: true }).click();
   const move = page.getByRole("dialog", { name: "Move entry operation bindings" });
   await expect(move).toContainText("clears 1 operation bindings");

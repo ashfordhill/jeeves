@@ -14,9 +14,8 @@ default v2 export deliberately refuses exact scope/ownership/operation loss; req
 `?version=3` for the full study and report. The extended `studio-tinyurl@3.2.0` stays schema2
 with its prior v2 meaning. Creating either study is a single complete seed/history edit.
 
-Canvas relationship focus, hidden/dimmed counts, route selection and Fit focus are view state.
-They neither filter this endpoint nor change the design revision: the blueprint always includes
-every saved relationship.
+Canvas selection, its line highlight and Fit are view state. They neither filter this endpoint
+nor change the design revision: the blueprint always includes every saved relationship.
 
 ```text
 studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (selected-source v2 or exact frozen-v1 preview/ZIP)

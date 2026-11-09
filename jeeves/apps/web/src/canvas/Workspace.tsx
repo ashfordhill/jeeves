@@ -60,7 +60,6 @@ import { GenerateProject } from "./GenerateProject.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { RailResize } from "./RailResize.tsx";
-import { RelationshipFocus } from "./RelationshipFocus.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { SourceDiagnostics } from "./SourceDiagnostics.tsx";
 import { TileInspector } from "./TileInspector.tsx";
@@ -115,26 +114,8 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     (x) => x.id === operationPick,
   );
   const selectedOwner = ownership.owners.find((x) => x.id === ownerPick);
-  const [focusTile, setFocusTile] = useState<string>();
   const board = useRef<BoardHandle>(null);
   const selection = liveSelection(graph, pick);
-  const anchor = graph.nodes.some((node) => node.id === focusTile) ? focusTile : undefined;
-  const focusedEdges = anchor
-    ? graph.edges.filter((edge) => edge.source === anchor || edge.target === anchor)
-    : undefined;
-  const visibleLines = focusedEdges
-    ?.filter((edge) => !selection.line || edge.id === selection.line)
-    .map((edge) => edge.id);
-  const emphasizedTiles = focusedEdges
-    ? [
-        ...new Set([
-          anchor as string,
-          ...focusedEdges
-            .filter((edge) => !selection.line || edge.id === selection.line)
-            .flatMap((edge) => [edge.source, edge.target]),
-        ]),
-      ]
-    : undefined;
 
   useEffect(() => {
     setHeaderHost(document.getElementById("studio-header-controls"));
@@ -192,11 +173,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     setOperationPick(undefined);
     setOwnerPick(undefined);
     setPick(next);
-    if (anchor && next.tile) setFocusTile(next.tile);
-    if (anchor && next.line) {
-      const edge = graph.edges.find((item) => item.id === next.line);
-      if (edge && edge.source !== anchor && edge.target !== anchor) setFocusTile(edge.source);
-    }
     if (next.tile || next.line)
       setPreferences((current) =>
         current.inspectorOpen ? current : { ...current, inspectorOpen: true },
@@ -303,7 +279,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
             } else if (target.owner) {
               select({});
               setOwnerPick(target.owner);
-              setFocusTile(undefined);
             } else if (target.connection) select({ line: target.connection });
             else if (target.element) select({ tile: target.element });
           }}
@@ -344,24 +319,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           onClear={() => select({})}
           creation={creation}
           removal={removal}
-          visibleLines={visibleLines}
-          emphasizedTiles={emphasizedTiles}
         />
-        {anchor ? (
-          <section className="lane-focus-status" aria-label="Relationship focus">
-            <span>
-              <strong>{laneNodeName(loaded.design, graph, anchor)}</strong> ·{" "}
-              {visibleLines?.length ?? 0} shown · {graph.edges.length - (visibleLines?.length ?? 0)}{" "}
-              relationships hidden
-            </span>
-            <button type="button" onClick={() => board.current?.fit(visibleLines)}>
-              Fit focus
-            </button>
-            <button type="button" onClick={() => setFocusTile(undefined)}>
-              Show all
-            </button>
-          </section>
-        ) : null}
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button
             type="button"
@@ -460,18 +418,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 Selected {selectedOperation ? "operation" : "logical owner"} for chat ·{" "}
                 {selectedOperation?.id ?? selectedOwner?.id}
               </p>
-            ) : null}
-            {anchor || selection.tile ? (
-              <RelationshipFocus
-                design={loaded.design}
-                graph={graph}
-                anchor={anchor ?? (selection.tile as string)}
-                active={!!anchor}
-                selection={selection}
-                onFocus={() => setFocusTile(selection.tile)}
-                onSelect={select}
-                onRemove={(id) => removal.onRemoveLine?.(id)}
-              />
             ) : null}
           </aside>
         </>

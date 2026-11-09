@@ -6368,3 +6368,46 @@ those counts I ran a scratch script outside the repo.
 
 The checks were not run. Only docs and images changed, and another session was committing
 generator work (`8813523`) during planning. Next: UI01 only.
+
+## 2026-11-09 — UI01: remove relationship focus
+
+Removed Focus relationships per the [UI overhaul plan](plans/ui-overhaul/units.md) (R6). Deleted
+`RelationshipFocus.tsx` (its list and `relationshipVerb`, which nothing else used), the focus
+state and canvas strip in `Workspace.tsx`, and the `.lane-focus-*`/`.lane-relationship-focus` CSS.
+No caller was left for the board's `visibleLines`/`emphasizedTiles`, so they went too, with
+`.is-muted` and `fit()`'s line argument (only Fit focus used it). Without a filter, `lineEdges`
+draws exactly the old unfiltered output, so the canvas and export are unchanged. The line guide
+now says "Select a tile to highlight its lines…". The export dialog says "Selection is omitted",
+and the capture details' `view.relationships` lost its "; focus omitted" suffix; PNG bytes are
+unaffected.
+
+Tests: `relationship-focus.spec.ts` became `relationship-tracing.spec.ts`. It checks that a
+Transcoder selection highlights exactly its 4 lines, drawn last, with all 25 still drawn; that
+clicked lines show their saved labels; that paper clears every highlight; and that the X plus
+Undo restore the line, the blueprint and the tile positions. It keeps the shared-stem chooser
+test and the tile-removal-then-Undo test. The ownership, operations, foundation and export specs
+now click the line (`clickLine`) instead of a focus row; each keeps its purpose. The board test
+lost its two focus props. Docs: `studio.md` (tracing paragraph, limits, export, report and chat
+mentions), `studio-blueprint.md`, and the playbook (a superseded note on the RF02 section and a
+2026-11-09 lesson). The plan's status line now says UI01 is done.
+
+Checks: `pnpm check` exited 0: lint/types, **468 tests/70 files**. **37 native E2Es passed
+(1.5m)**. Web build passed (existing chunk-size advisory). Mouse check on the running dev app at
+1440×900 and 1280×800, using my own TinyURL extended project:
+
+- 11 tiles and 12 lines render, with no focus controls.
+- Selecting Redirect service highlights its 4 lines; paper clears them and opens the System
+  inspector.
+- A click on `redirect-db` opened Choose relationship; choosing it showed its label and X. The X
+  removed it, and Undo restored it.
+- No page errors.
+
+I deleted the project afterwards; the owner's project revisions are unchanged. Three
+screenshots are in `plans/ui-overhaul/evidence/ui01/`. A source search finds no "Focus
+relationships", "Fit focus", "Show all" or focus board props.
+
+For UI02: the inspector rail now ends with the operation/owner chat status. I kept the RF02 rule
+`.studio-inspector > .studio-selection-summary { flex: 1; min-height: 0 }` (canvas.css), which
+lets the page scroll; UI02 may revisit it. The tile Connections tab and ActionInspector's
+Entries list are untouched, and `studio.md` still describes the Connections list; both are
+UI02's to remove. Historical evidence and capture JSONs that mention focus are left as history.

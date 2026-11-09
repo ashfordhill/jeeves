@@ -118,7 +118,7 @@ export function ExportDiagram({
             embeddedFontCssSha256: capture.fontCssSha256,
           },
           view: {
-            relationships: "all projected relationships; focus omitted",
+            relationships: "all projected relationships",
             selection: "omitted",
             camera: "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
             ownerExpansion: "canonical process tiles",
@@ -171,7 +171,7 @@ export function ExportDiagram({
       <div className="diagram-export-options">
         <p>
           Export the full saved diagram as a light PNG at 2× scale, including offscreen tiles and
-          all relationships. Focus and selection are omitted.
+          all relationships. Selection is omitted.
         </p>
         <button type="button" disabled={busy} onClick={onDiagnostics}>
           Source & diagnostics

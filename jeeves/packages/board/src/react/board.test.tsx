@@ -141,7 +141,7 @@ describe("Board", () => {
     expect(onSelectLine).toHaveBeenCalledWith("entry");
   });
 
-  it("waits for layout then snapshots all routes independently of focus and selection", async () => {
+  it("waits for layout then snapshots all routes independently of selection", async () => {
     const ref = createRef<BoardHandle>();
     let finish: (() => void) | undefined;
     const engine = createLayoutEngine(
@@ -162,8 +162,6 @@ describe("Board", () => {
         lines={lines}
         engine={engine}
         selected={{ line: "publish" }}
-        visibleLines={["publish"]}
-        emphasizedTiles={["events"]}
         onSelectTile={() => {}}
         onSelectLine={() => {}}
         onClear={() => {}}

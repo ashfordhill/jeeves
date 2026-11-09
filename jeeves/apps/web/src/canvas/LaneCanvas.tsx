@@ -50,8 +50,6 @@ export function LaneCanvas({
   creation,
   removal,
   ref,
-  visibleLines,
-  emphasizedTiles,
 }: {
   design: DesignDocument;
   /** `laneGraph(design)`. */
@@ -66,8 +64,6 @@ export function LaneCanvas({
   /** The red X on the selected tile and line, and the removal's confirmation (`useLaneRemoval`). */
   removal?: Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
   ref?: Ref<BoardHandle>;
-  visibleLines?: readonly string[];
-  emphasizedTiles?: readonly string[];
 }) {
   const { tiles, lines } = useMemo(() => {
     const name = (id: string) => laneNodeName(design, graph, id);
@@ -129,8 +125,6 @@ export function LaneCanvas({
         lines={lines}
         engine={layoutEngine}
         selected={selected}
-        visibleLines={visibleLines}
-        emphasizedTiles={emphasizedTiles}
         mode={mode}
         onSelectTile={onSelectTile}
         onSelectLine={onSelectLine}

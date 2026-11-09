@@ -126,14 +126,14 @@ export type BoardSelection = { tile?: string; line?: string };
  */
 export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
 export type BoardMode = "select" | "hand";
-/** A frozen full view, independent of camera, selection and focus. */
+/** A frozen full view, independent of camera and selection. */
 export type BoardSnapshot = {
   tiles: readonly TileSpec[];
   lines: readonly LineSpec[];
   layout: BoardLayout;
 };
 export type BoardHandle = {
-  fit: (lines?: readonly string[]) => void;
+  fit: () => void;
   /** Null while arranging/animating; throws on layout failure. Never changes the live board. */
   snapshot: () => BoardSnapshot | null;
 };
@@ -143,10 +143,6 @@ export type BoardProps = {
   lines: readonly LineSpec[];
   engine: LayoutEngine;
   selected: BoardSelection;
-  /** View-only line filter. Every line still participates in layout. */
-  visibleLines?: readonly string[];
-  /** View-only emphasis: other tiles stay clickable but are dimmed. */
-  emphasizedTiles?: readonly string[];
   onSelectTile: (id: string) => void;
   onSelectLine: (id: string) => void;
   /** A click on empty paper. */
@@ -282,7 +278,6 @@ function lineEdges(
   lines: readonly LineSpec[],
   layout: BoardLayout,
   selected: BoardSelection = {},
-  visibleLines?: readonly string[],
   placed: (id: string) => Point | undefined = (id) => layout.positions[id],
 ): BoardLineEdge[] {
   /* Draw order at crossings: dashed under solid; the selected tile's lines over the rest, and the
@@ -292,14 +287,13 @@ function lineEdges(
   const rank = (l: LineSpec) =>
     (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
   const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
-  const visible = (id: string) => !visibleLines || visibleLines.includes(id);
-  const routes = Object.fromEntries(Object.entries(layout.routes).filter(([id]) => visible(id)));
+  const { routes } = layout;
   return ordered.map((l, i) => ({
     id: l.id,
     source: l.source,
     target: l.target,
     type: "line",
-    hidden: !visible(l.id) || !placed(l.source) || !placed(l.target),
+    hidden: !placed(l.source) || !placed(l.target),
     selected: selected.line === l.id,
     ...(l.label ? { ariaLabel: l.label } : {}),
     data: {
@@ -324,8 +318,6 @@ function Inner({
   lines,
   engine,
   selected,
-  visibleLines,
-  emphasizedTiles,
   onSelectTile,
   onSelectLine,
   onClear,
@@ -447,36 +439,14 @@ function Inner({
         if (phase !== "ready" || !layout || shown !== layout || covering) return null;
         return { tiles: [...tiles], lines: [...lines], layout: structuredClone(layout) };
       },
-      fit(lineIds) {
+      fit() {
         const pane = paneOf(hostRef.current);
         const current = shownRef.current;
-        let box = current ? unionTileBounds(current.positions, sizesRef.current) : undefined;
-        if (current && lineIds?.length) {
-          const focused = lines.filter((line) => lineIds.includes(line.id));
-          const endpoints = new Set(focused.flatMap((line) => [line.source, line.target]));
-          box = unionTileBounds(
-            Object.fromEntries(
-              Object.entries(current.positions).filter(([id]) => endpoints.has(id)),
-            ),
-            sizesRef.current,
-          );
-          if (box)
-            for (const line of focused)
-              for (const point of current.routes[line.id] ?? []) {
-                const x = Math.min(box.x, point.x);
-                const y = Math.min(box.y, point.y);
-                box = {
-                  x,
-                  y,
-                  w: Math.max(box.x + box.w, point.x) - x,
-                  h: Math.max(box.y + box.h, point.y) - y,
-                };
-              }
-        }
+        const box = current ? unionTileBounds(current.positions, sizesRef.current) : undefined;
         if (!pane || !layoutBoundsAreUsable(box)) return;
         const next = viewportToFitRect(pane, box);
         lastZoomRef.current = next.zoom;
-        originRef.current = lineIds ? "user" : "fit";
+        originRef.current = "fit";
         void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
       },
     }),
@@ -665,7 +635,7 @@ function Inner({
       draggable: false,
       connectable: false,
       selected: selected.tile === t.id,
-      className: `nopan${tileClass(t.id)}${emphasizedTiles && !emphasizedTiles.includes(t.id) ? " is-muted" : ""}`,
+      className: `nopan${tileClass(t.id)}`,
       width: t.w,
       height: t.h,
       measured: { width: t.w, height: t.h },
@@ -679,13 +649,8 @@ function Inner({
     };
   });
 
-  const routes = Object.fromEntries(
-    Object.entries(shown?.routes ?? {}).filter(
-      ([id]) => !visibleLines || visibleLines.includes(id),
-    ),
-  );
-  const visible = (id: string) => !visibleLines || visibleLines.includes(id);
-  const edges = shown ? lineEdges(lines, shown, selected, visibleLines, placed) : [];
+  const routes = shown?.routes ?? {};
+  const edges = shown ? lineEdges(lines, shown, selected, placed) : [];
 
   const context = useMemo(
     () => ({
@@ -803,7 +768,7 @@ function Inner({
           style={{ left: lineChoice.x, top: lineChoice.y }}
         >
           <strong>Choose relationship</strong>
-          {lineChoice.ids.filter(visible).map((id) => {
+          {lineChoice.ids.map((id) => {
             const line = lines.find((item) => item.id === id);
             return line ? (
               <button
@@ -849,7 +814,7 @@ export function Board({ ref, ...props }: BoardProps) {
 
 /**
  * A full-size frozen board using the live Tile and BoardLine renderers and resolved routes.
- * No engine, camera effects, selection, focus or editing chrome participates in this surface.
+ * No engine, camera effects, selection or editing chrome participates in this surface.
  * The caller supplies its own capture theme and a rectangle including the desired margin.
  */
 export function BoardSnapshotView({ snapshot, bounds }: { snapshot: BoardSnapshot; bounds: Rect }) {
