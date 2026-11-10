@@ -7225,3 +7225,28 @@ this unit. Neither is staged.
 7. the Generate project button font.
 
 The plan is complete.
+
+## 2026-11-09 — Module authoring plan from owner feedback
+
+This entry is planning only; no code changed. After the UI overhaul (UI01–UI10), the owner
+decided modules are the unit of generated code, and that YouTube v2 must be buildable from
+scratch by mouse.
+
+I wrote the [module authoring plan](plans/module-authoring/units.md) (MA01–MA10). It records the
+owner's decisions and the v2 rebuild's names and descriptions. It also maps what is missing
+today:
+
+- **Tile kinds:** the fan can't create Search index, CDN, Identity or Uploads, and Worker appears
+  only automatically.
+- **Modules:** there is no module creation UI.
+- **Generation:** it is tile-level only, with no stubs.
+- **Declarations:** generation needs ownership declarations that only the preset writes.
+- **Templates:** each of the 7 installed templates spans several modules.
+
+MA01 is a contract-only unit, and the owner must approve it before MA05. I also added a
+HUMAN_FEEDBACK entry.
+
+I ran no checks: only docs changed. The owner's uncommitted `README.md` and `.docs/ui-v2/` are
+untouched. I restarted the owner's dev servers on 4300/4310 at the owner's request.
+
+Next: MA01 only.
