@@ -7,8 +7,8 @@ import {
   laneActionOptions,
   laneEntryRefusal,
   laneLinkRefusal,
-  laneOptions,
   laneRemoveActionRefusal,
+  linkFanOptions,
   newLinkId,
   newTileIdentity,
   planRemoveTile,
@@ -22,7 +22,7 @@ import {
 } from "./studio-lanes.ts";
 import { createStudioSettings, type StudioModel } from "./studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
-import { studioTileTypes } from "./studio-tiles.ts";
+import { studioLinkFanKinds } from "./studio-tiles.ts";
 
 const studioOf = (design: DesignDocument): StudioModel => {
   const studio = design.architecture?.studio;
@@ -196,7 +196,7 @@ describe("actions", () => {
 });
 
 describe("addTile", () => {
-  it("adds after a tile, before a tile and from a lane, with owners and link defaults", () => {
+  it("adds after a tile and from a lane, with owners and link defaults", () => {
     const design = tinyurl();
     const queue = run(design, {
       type: "addTile",
@@ -217,41 +217,6 @@ describe("addTile", () => {
       to: { element: "link-events" },
       planned: { label: "Publishes", interaction: "Asynchronous" },
     });
-
-    // Before an entry tile: the entry moves to the new tile and keeps its ID and lane.
-    const gateway = run(design, {
-      type: "addTile",
-      from: { tile: "shorten" },
-      side: "before",
-      link: "sync",
-      tile: tile("edge", "API gateway", "gateway"),
-      linkId: "edge-shorten",
-    }).design;
-    expect(studioOf(gateway).entries).toEqual([
-      { id: "download-stats-api", lane: "download", element: "stats-api" },
-      { id: "download-redirect", lane: "download", element: "redirect" },
-      { id: "upload-shorten", lane: "upload", element: "edge" },
-    ]);
-    expect(connection(gateway, "edge-shorten")).toMatchObject({ kind: "calls" });
-
-    // Before a tile with two incoming links: both move, keep their IDs and modes, and take the
-    // link table's defaults. Redirect's lookup no longer reaches a database, so it is cleared.
-    const reader = run(design, {
-      type: "addTile",
-      from: { tile: "url-db" },
-      side: "before",
-      link: "sync",
-      tile: tile("link-store", "Link store", "service"),
-      linkId: "store-db",
-    }).design;
-    for (const id of ["shorten-db", "redirect-db"])
-      expect(connection(reader, id)).toMatchObject({
-        kind: "calls",
-        to: { element: "link-store" },
-        planned: { interaction: "Request / response" },
-      });
-    expect(connection(reader, "store-db")).toMatchObject({ kind: "uses-database" });
-    expect(binding(reader, "redirect")?.settings).not.toHaveProperty("lookupStoreConnection");
 
     const media = run(design, {
       type: "addTile",
@@ -312,9 +277,9 @@ describe("addTile", () => {
     expect(add({ from: { tile: "url-cache" } })).toBe(
       "URL cache can't link to Geo lookup. A cache can't link onward.",
     );
-    expect(add({ from: { lane: "download" }, side: "before" })).toBe(
-      "Nothing goes before an action; the user links only to it.",
-    );
+    // Nothing is inserted before a tile or an action any more.
+    for (const from of [{ tile: "url-db" }, { lane: "download" as const }])
+      expect(add({ from, side: "before" as never })).toMatch(/after/);
     expect(add({ from: { lane: "download" }, tile: tile("geo", "Geo worker", "worker") })).toBe(
       "Open link can't link to Geo worker. An action reaches a service (not a worker), an API or the CDN.",
     );
@@ -468,12 +433,13 @@ describe("setEntryLane", () => {
     expect(laneEntryRefusal(full, "download-redirect", "upload")).toBeUndefined();
     // The full action offers nothing to add or connect (every tile that could start a lane
     // already has an entry); the other action still adds.
-    expect(laneOptions(full, { lane: "download" }, "after")[0]).toEqual({
-      type: "service",
+    expect(linkFanOptions(full, { lane: "download" })[0]).toEqual({
+      kind: "service",
+      group: "application",
       refusal: cap,
     });
-    expect(laneOptions(full, { lane: "download" }, "after").some((o) => "kind" in o)).toBe(false);
-    expect(laneOptions(full, { lane: "upload" }, "after").some((o) => "kind" in o)).toBe(true);
+    expect(linkFanOptions(full, { lane: "download" }).some((o) => !o.refusal)).toBe(false);
+    expect(linkFanOptions(full, { lane: "upload" }).some((o) => !o.refusal)).toBe(true);
     expect(connectOptions(full, laneActionNode("download")).some((o) => "link" in o)).toBe(false);
     // The other lane needs an action to move to.
     const linked = run(design, {
@@ -498,25 +464,31 @@ describe("setEntryLane", () => {
 describe("removeTile and removeLink", () => {
   it("restitch: removing a CDN in front of Redirect moves the download entry back to it", () => {
     const design = tinyurl();
-    const fronted = run(design, {
-      type: "addTile",
-      from: { tile: "redirect" },
-      side: "before",
-      tile: tile("cdn", "CDN", "cdn"),
-      linkId: "cdn-redirect",
-    }).design;
-    expect(studioOf(fronted).entries?.[1]).toEqual({
-      id: "download-redirect",
-      lane: "download",
-      element: "cdn",
-    });
+    // A CDN entry in front of Redirect: added from the lane, linked on, and Redirect's own entry
+    // removed.
+    const fronted = [
+      {
+        type: "addTile",
+        from: { lane: "download" },
+        side: "after",
+        tile: tile("cdn", "CDN", "cdn"),
+        linkId: "download-cdn",
+      },
+      { type: "linkTiles", from: { tile: "cdn" }, to: "redirect", linkId: "cdn-redirect" },
+      { type: "removeLink", link: "download-redirect" },
+    ].reduce((current, command) => run(current, command as StudioCommand).design, design);
+    expect(studioOf(fronted).entries?.map((entry) => entry.element)).toEqual([
+      "stats-api",
+      "shorten",
+      "cdn",
+    ]);
     const removed = run(fronted, { type: "removeTile", tile: "cdn" });
     expect(removed.ops).toEqual(["removeElement", "setStudio"]);
-    // The restitched entry gets a free ID: "download-redirect" was the CDN's entry until now.
+    // The restitched entry takes the CDN's entry's place, with a free ID.
     expect(studioOf(removed.design).entries).toEqual([
       { id: "download-stats-api", lane: "download", element: "stats-api" },
-      { id: "download-redirect-2", lane: "download", element: "redirect" },
       { id: "upload-shorten", lane: "upload", element: "shorten" },
+      { id: "download-redirect", lane: "download", element: "redirect" },
     ]);
     expect(connection(removed.design, "cdn-redirect")).toBeUndefined();
 
@@ -629,21 +601,6 @@ describe("modes from the pair", () => {
     expect(connection(worker, "events-indexer")).toMatchObject({
       planned: { label: "Consumes", interaction: "Asynchronous" },
     });
-    // Before the queue, a new service publishes to it; the Shorten service's publish moves to it.
-    const before = run(queue, {
-      type: "addTile",
-      from: { tile: "link-events" },
-      side: "before",
-      tile: tile("relay", "Relay", "service"),
-      linkId: "relay-events",
-    }).design;
-    expect(connection(before, "relay-events")).toMatchObject({
-      planned: { label: "Publishes", interaction: "Asynchronous" },
-    });
-    expect(connection(before, "shorten-events")).toMatchObject({
-      to: { element: "relay" },
-      planned: { label: "Calls", interaction: "Asynchronous" },
-    });
     // Between applications the default is a request; a lane entry is always one.
     const service = run(design, {
       type: "addTile",
@@ -701,90 +658,154 @@ describe("modes from the pair", () => {
   });
 });
 
-describe("lane options", () => {
-  it("always list the seven tile types in order, each with a kind or a reason", () => {
+describe("link fan options", () => {
+  const kinds = (options: ReturnType<typeof linkFanOptions>) =>
+    options.map((option) => (option.refusal ? "-" : option.kind));
+
+  it("always list the fan's eleven kinds in their groups, each allowed or with a reason", () => {
     const design = tinyurl();
-    const sides = [
-      [{ tile: "redirect" }, "after"],
-      [{ tile: "redirect" }, "before"],
-      [{ tile: "url-db" }, "after"],
-      [{ tile: "url-db" }, "before"],
-      [{ tile: "click-events" }, "after"],
-      [{ lane: "download" }, "after"],
-      [{ lane: "upload" }, "before"],
+    const froms = [
+      { tile: "redirect" },
+      { tile: "url-db" },
+      { tile: "click-events" },
+      { lane: "download" },
+      { lane: "upload" },
     ] as const;
-    for (const [from, side] of sides) {
-      const options = laneOptions(design, from, side);
-      expect(options.map((option) => option.type)).toEqual([...studioTileTypes]);
+    for (const from of froms) {
+      const options = linkFanOptions(design, from);
+      expect(options.map((option) => option.kind)).toEqual([...studioLinkFanKinds]);
       for (const option of options)
-        if ("refusal" in option) expect(option.refusal).toMatch(/^[A-Z].*\.$/);
+        if (option.refusal) expect(option.refusal).toMatch(/^[A-Z].*\.$/);
     }
-    // After Redirect service, everything fits.
-    expect(laneOptions(design, { tile: "redirect" }, "after")).toEqual([
-      { type: "service", kind: "service" },
-      { type: "api", kind: "gateway" },
-      { type: "database", kind: "database" },
-      { type: "cache", kind: "cache" },
-      { type: "queue", kind: "queue" },
-      { type: "storage", kind: "object-store" },
-      { type: "external", kind: "external-api" },
-    ]);
-    // Before a database, only applications fit; the reasons name the preferred kind.
-    expect(laneOptions(design, { tile: "url-db" }, "before")).toEqual([
-      { type: "service", kind: "service" },
-      { type: "api", kind: "gateway" },
-      {
-        type: "database",
-        refusal: "A database can't link to URL database. A database can't link onward.",
-      },
-      {
-        type: "cache",
-        refusal: "A cache can't link to URL database. A cache can't link onward.",
-      },
-      {
-        type: "queue",
-        refusal:
-          "A queue can't link to URL database. A queue feeds only an application, not a database.",
-      },
-      {
-        type: "storage",
-        refusal: "Object storage can't link to URL database. Object storage can't link onward.",
-      },
-      {
-        type: "external",
-        refusal:
-          "An external API can't link to URL database. An external API can only call an application, not a database.",
-      },
-    ]);
-    // After a queue: a Service is a worker, consuming asynchronously.
-    expect(laneOptions(design, { tile: "click-events" }, "after").slice(0, 3)).toEqual([
-      { type: "service", kind: "worker" },
-      { type: "api", kind: "gateway" },
-      {
-        type: "database",
-        refusal:
-          "Click events can't link to a database. A queue feeds only an application, not a database.",
-      },
-    ]);
-    expect(laneOptions(design, { lane: "upload" }, "after")[2]).toEqual({
-      type: "database",
-      refusal:
-        "Shorten can't link to a database. An action reaches a service (not a worker), an API or the CDN.",
+    expect(linkFanOptions(design, { tile: "redirect" }).map((o) => `${o.group} ${o.kind}`)).toEqual(
+      [
+        "application service",
+        "application worker",
+        "application uploads",
+        "application identity",
+        "data database",
+        "data search",
+        "data cache",
+        "data object-store",
+        "messaging queue",
+        "edge cdn",
+        "edge external-api",
+      ],
+    );
+    // After a service every kind fits; after a store nothing does.
+    expect(kinds(linkFanOptions(design, { tile: "redirect" }))).toEqual([...studioLinkFanKinds]);
+    expect(linkFanOptions(design, { tile: "url-db" })[0]).toEqual({
+      kind: "service",
+      group: "application",
+      refusal: "URL database can't link to a service. A database can't link onward.",
     });
-    // An action adds a service or an API, never a store, a queue or an external API.
-    expect(
-      laneOptions(design, { lane: "upload" }, "after").map((o) => ("kind" in o ? o.kind : "-")),
-    ).toEqual(["service", "gateway", "-", "-", "-", "-", "-"]);
-    expect(laneOptions(design, { lane: "upload" }, "before")[0]).toEqual({
-      type: "service",
-      refusal: "Nothing goes before an action; the user links only to it.",
-    });
+    expect(kinds(linkFanOptions(design, { tile: "url-db" })).every((k) => k === "-")).toBe(true);
+    // After a queue: a Service and a Worker both consume; stores, the CDN and External don't.
+    const queue = linkFanOptions(design, { tile: "click-events" });
+    expect(kinds(queue)).toEqual([
+      "service",
+      "worker",
+      "uploads",
+      "identity",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+    ]);
+    expect(queue.find((o) => o.kind === "search")?.refusal).toBe(
+      "Click events can't link to a search index. A queue feeds only an application, not a search index.",
+    );
+    // An action's entry is a service (not a worker), Uploads, Identity or the CDN.
+    const entries = linkFanOptions(design, { lane: "upload" });
+    expect(kinds(entries)).toEqual([
+      "service",
+      "-",
+      "uploads",
+      "identity",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "cdn",
+      "-",
+    ]);
+    expect(entries.find((o) => o.kind === "worker")?.refusal).toBe(
+      "Shorten can't link to a worker. An action reaches a service (not a worker), an API or the CDN.",
+    );
     // From a lane with no action, the options are those of its new action.
+    expect(kinds(linkFanOptions(emptyDesign(), { lane: "download" }))).toEqual(kinds(entries));
+    // A full tile refuses every kind with the cap.
+    const busy = run(design, {
+      type: "addTile",
+      from: { tile: "redirect" },
+      side: "after",
+      tile: tile("geo", "Geo lookup", "service"),
+      linkId: "redirect-geo",
+    }).design;
+    expect(new Set(linkFanOptions(busy, { tile: "redirect" }).map((o) => o.refusal))).toEqual(
+      new Set(["Redirect service already has 4 links; the most is 4."]),
+    );
+  });
+
+  it("each offered kind is what addTile adds, and a refused one is refused with the same reason", () => {
+    const design = tinyurl();
+    for (const from of [
+      { tile: "redirect" },
+      { tile: "click-events" },
+      { lane: "upload" },
+    ] as const)
+      for (const option of linkFanOptions(design, from)) {
+        const identity = newTileIdentity(design, option.kind);
+        const command: StudioCommand = {
+          type: "addTile",
+          from,
+          side: "after",
+          tile: { ...identity, kind: option.kind },
+          linkId: newLinkId(design, from, identity.id, [identity.id]),
+        };
+        if (option.refusal) {
+          // The reason names the new tile by its kind; addTile names it by its name.
+          expect(refusal(design, command)).toBe(
+            option.refusal.replace(
+              /^(.*?can't link to )[^.]*\./,
+              (_, head: string) => `${head}${identity.name}.`,
+            ),
+          );
+          continue;
+        }
+        const added = run(design, command).design;
+        expect(binding(added, identity.id)?.settings.kind).toBe(option.kind);
+        expect(added.elements.find((e) => e.id === identity.id)?.name).toBe(identity.name);
+      }
+  });
+
+  it("keep the fan's list for the canvas: addTile still takes every tile kind", () => {
+    const design = tinyurl();
+    // Gateway and the legacy kinds aren't offered, yet existing callers and chat history add them.
+    for (const kind of ["gateway", "billing", "redirect", "notification"] as const) {
+      expect(studioLinkFanKinds).not.toContain(kind);
+      const added = run(design, {
+        type: "addTile",
+        from: { tile: "shorten" },
+        side: "after",
+        tile: tile(`new-${kind}`, `New ${kind}`, kind),
+        linkId: `shorten-new-${kind}`,
+      }).design;
+      expect(binding(added, `new-${kind}`)?.settings.kind).toBe(kind);
+    }
     expect(
-      laneOptions(emptyDesign(), { lane: "download" }, "after").map((o) =>
-        "kind" in o ? o.kind : "-",
-      ),
-    ).toEqual(["service", "gateway", "-", "-", "-", "-", "-"]);
+      refusal(design, {
+        type: "addTile",
+        from: { tile: "shorten" },
+        side: "after",
+        tile: tile("app", "App", "browser"),
+        linkId: "shorten-app",
+      }),
+    ).toBe("Browser apps aren't tiles; the user is the client.");
   });
 });
 
@@ -905,23 +926,30 @@ describe("canvas helpers", () => {
     );
   });
 
-  it("name a new tile after its type and give it and its link free IDs", () => {
+  it("name a new tile after its kind and give it and its link free IDs", () => {
     const design = emptyDesign();
     expect(newTileIdentity(design, "cache")).toEqual({ id: "cache", name: "Cache" });
+    expect(newTileIdentity(design, "worker")).toEqual({
+      id: "worker-service",
+      name: "Worker service",
+    });
     const next = run(design, {
       type: "addTile",
       from: { lane: "download" },
       side: "after",
       link: "sync",
       tile: { ...newTileIdentity(design, "service"), kind: "service" },
-      linkId: newLinkId(design, { lane: "download" }, "service"),
+      linkId: newLinkId(design, { lane: "download" }, "microservice"),
       system: { name: "Shop" },
     }).design;
     expect(studioOf(next).entries).toEqual([
-      { id: "download-service", lane: "download", element: "service" },
+      { id: "download-microservice", lane: "download", element: "microservice" },
     ]);
-    expect(newTileIdentity(next, "service")).toEqual({ id: "service-2", name: "Service 2" });
-    expect(newLinkId(next, { lane: "download" }, "service")).toBe("download-service-2");
+    expect(newTileIdentity(next, "service")).toEqual({
+      id: "microservice-2",
+      name: "Microservice 2",
+    });
+    expect(newLinkId(next, { lane: "download" }, "microservice")).toBe("download-microservice-2");
     expect(
       newLinkId(tinyurl(), { tile: "redirect" }, "click-events", ["redirect-click-events"]),
     ).toBe("redirect-click-events-2");

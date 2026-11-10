@@ -4,7 +4,6 @@ import { checkGraph } from "./check.ts";
 import {
   addAfter,
   applyRemoval,
-  insertBefore,
   link,
   nextTileAfterRemoval,
   planRemoval,
@@ -58,22 +57,6 @@ describe("adding and linking", () => {
     const merged = value(link(forked, "b", "c", { id: "e4" }, rules));
     expect(links(merged)).toEqual(["r>a", "a>b", "a>c~", "b>c"]);
     expect(checkGraph(merged, rules)).toEqual([]);
-  });
-
-  it("inserts before a tile by moving every incoming link onto the new tile", () => {
-    const g = graph(
-      ["r", "a", "b", "m"],
-      [
-        ["e1", "r", "a"],
-        ["e2", "r", "b"],
-        ["e3", "a", "m", true],
-        ["e4", "b", "m"],
-      ],
-    );
-    const inserted = value(insertBefore(g, "m", { id: "p" }, { id: "e5" }, rules));
-    expect(links(inserted)).toEqual(["r>a", "r>b", "a>p~", "b>p", "p>m"]);
-    expect(inserted.edges.map((e) => e.id)).toEqual(["e1", "e2", "e3", "e4", "e5"]);
-    expect(code(insertBefore(g, "r", { id: "p" }, { id: "e5" }, rules))).toBe("root");
   });
 
   it("refuses cycles, duplicates, self-links, refused links and too many links", () => {

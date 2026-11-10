@@ -106,7 +106,7 @@ async function settledBox(target: Locator) {
 }
 
 /**
- * Presses one of the selected tile's pull tabs (by its accessible name, such as "Add after")
+ * Presses one of the selected tile's pull tabs (by its accessible name, such as "Add linked tile")
  * and pulls it past the 36px threshold, so the fan opens. The mouse stays down.
  */
 export async function pull(page: Page, name: string, tab: string, by = { x: 60, y: 12 }) {

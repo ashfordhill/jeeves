@@ -28,7 +28,7 @@ Sixteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 | Kind | Name | Tile type | What it is |
 | --- | --- | --- | --- |
 | `service` | Microservice | Service (default) | One independently deployed application. |
-| `worker` | Worker service | Service | A background application; the default after a queue. |
+| `worker` | Worker service | Service | A background application, typically after a queue. |
 | `redirect` | Redirect | Service | A public redirect service with lookup store and cache shortcuts. |
 | `identity` | Identity | Service | One service integrating an existing identity provider (starts with OIDC). |
 | `notification` | Notifications | Service | One service with email delivery intent (starts with Resend). |
@@ -55,27 +55,38 @@ A provider chosen on a kind is that service's integration, not a separate tile: 
 Stripe needs no External tile for Stripe. **External API tiles are for third parties no kind
 covers.** The chat instructions say the same.
 
-## Tile types (lane canvas)
+## Tile types and the link fan
 
-The lane canvas groups kinds into seven tile types, offered as icons in a pulled `+` tab's fan
-(always all seven; the ones the link table refuses there are greyed, with the reason). The first
-kind is the default and the others remain source variants. The normal inspector has no kind
-switcher; supported feature attachment supplies its required kinds atomically.
+The kinds are grouped into seven tile types. A type gives its tiles their shape, and `changeKind`
+(source vocabulary; the normal inspector has no kind switcher) switches only within one.
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
-| Tile type | Picker icon | Kinds (default first) | Tile shape |
-| --- | --- | --- | --- |
-| Service | `server` | `service`, `worker`, `redirect`, `identity`, `notification`, `billing`, `uploads` | rounded rectangle |
-| API | `api` | `gateway`, `cdn` | rounded rectangle |
-| Database | `database` | `database`, `search` | pill |
-| Cache | `bolt` | `cache` | pill |
-| Queue | `list` | `queue` | pill |
-| Storage | `archive` | `object-store` | pill |
-| External | `plug` | `external-api` | rounded rectangle |
+| Tile type | Kinds | Tile shape |
+| --- | --- | --- |
+| Service | `service`, `worker`, `redirect`, `identity`, `notification`, `billing`, `uploads` | rounded rectangle |
+| API | `gateway`, `cdn` | rounded rectangle |
+| Database | `database`, `search` | pill |
+| Cache | `cache` | pill |
+| Queue | `queue` | pill |
+| Storage | `object-store` | pill |
+| External | `external-api` | rounded rectangle |
 
-A Service spawned after a queue defaults to `worker`. `browser` belongs to no tile type: on the
-lane canvas the user (the actor) is the client. A tile face shows its kind's own icon; every kind
-has a distinct one.
+**The link fan** (`studioLinkFan`) is what a new tile can be on the lane canvas: eleven kinds, the
+module authoring contract's tile fan, in four groups that are the fan's rows, always in the same
+slots. A selected tile's or action's link tab offers all eleven, each with its kind's icon and
+name, greyed with the reason where the link table refuses it.
+
+| Group | Kinds |
+| --- | --- |
+| `application` | `service`, `worker`, `uploads`, `identity` |
+| `data` | `database`, `search`, `cache`, `object-store` |
+| `messaging` | `queue` |
+| `edge` | `cdn`, `external-api` |
+
+Gateway and the older `redirect`, `notification` and `billing` kinds are not offered; tiles of
+those kinds keep working, and `addTile` still accepts them. `browser` belongs to no tile type: on
+the lane canvas the user (the actor) is the client. A tile face shows its kind's own icon; every
+kind has a distinct one.
 
 ## Lanes and links
 
@@ -99,24 +110,24 @@ default mode and the connection a new link gets; a pair with no row is refused. 
 request (solid line); an async link does not wait (dashed line). Style follows each relationship,
 so a worker's store request remains solid after a queue. Target arrowheads mean caller → target
 for requests, including reads, and publisher → channel → consumer for messaging. The connection's
-interaction follows the mode (Request / response or Asynchronous); its security is Service identity.
+interaction follows the mode (Request / response or Asynchronous); its security is Private network.
 
 | Source → target | Modes | Default | Connection |
 | --- | --- | --- | --- |
 | user → action | sync | sync | none (the user's line to its action) |
 | action → `service`, `redirect`, `identity`, `notification`, `billing`, `uploads`, `gateway` | sync | sync | an entry |
 | action → `cdn` | sync | sync | an entry |
-| application → application | sync, async | sync | calls, "Calls", HTTPS |
-| application → `external-api` | sync, async | sync | calls, "Calls", HTTPS |
+| application → application | sync, async | sync | calls, "Calls", HTTP |
+| application → `external-api` | sync, async | sync | calls, "Calls", HTTP |
 | application → `queue` | async | async | depends-on, "Publishes", Messaging, `channelUse: publish` |
 | application → `database` | sync | sync | uses-database, "Reads & writes", SQL |
 | application → `cache` | sync | sync | uses-database, "Reads & writes", Redis |
-| application → `object-store`, `search` | sync | sync | depends-on, "Uses", HTTPS |
-| application → `cdn` | sync | sync | depends-on, "Uses", HTTPS |
+| application → `object-store`, `search` | sync | sync | depends-on, "Uses", HTTP |
+| application → `cdn` | sync | sync | depends-on, "Uses", HTTP |
 | `queue` → application | async | async | depends-on, "Consumes", Messaging, `channelUse: consume` |
-| `external-api` → application | sync, async | sync | calls, "Calls", HTTPS |
-| `cdn` → application | sync | sync | calls, "Calls", HTTPS |
-| `cdn` → `object-store` | sync | sync | depends-on, "Uses", HTTPS |
+| `external-api` → application | sync, async | sync | calls, "Calls", HTTP |
+| `cdn` → application | sync | sync | calls, "Calls", HTTP |
+| `cdn` → `object-store` | sync | sync | depends-on, "Uses", HTTP |
 
 So the user reaches a store or a third party only through a service; stores are end tiles (no row
 has a store as its source); a queue sits between applications; a CDN fronts an application or
@@ -195,7 +206,7 @@ can't link to Geo lookup. A cache can't link onward."):
 | `addAction` | Adds a lane's action (`lane`, optional `name`, default Consume or Produce); refused when the lane has one ("This design already has a Produce action; each lane has one."). `system` starts a new project's system. |
 | `renameAction` | Renames a lane's action (`lane`, `name`). |
 | `removeAction` | Removes a lane's action and its entries, unless that cuts off a tile ("Removing Shorten would cut off Shorten service."). |
-| `addTile` | A new tile after a tile, after a lane's action (an entry; always a request; the action is added with its default name if the lane has none) or before a tile. `link` (the mode) is optional and defaults to the pair's. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
+| `addTile` | A new tile of `tile.kind` after a tile or after a lane's action (an entry; always a request; the action is added with its default name if the lane has none). `side` is always `after`: nothing is inserted before a tile. `link` (the mode) is optional and defaults to the pair's. A new database, cache, storage or queue is owned by the application it is added next to. |
 | `linkTiles` | Links a lane's action or a tile to a tile already on the board (a merge, or a new entry), in `link` mode or the pair's default. From a lane with no action it is refused; onto a tile that already has an entry, in either lane, too ("Redirect service already starts the download lane; a tile has one entry."). |
 | `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay with the action). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
@@ -206,13 +217,11 @@ Pure helpers answer what a tile can do, for the canvas and chat:
 
 - `laneActionOptions(design)` returns the user's two actions, download then upload, each with its
   default name, or the refusal when the design already has it.
-- `laneOptions(design, from, side)` returns all seven tile types in `studioTileTypes` order for one
-  side of a tile (`after` adds on the right, `before` inserts on the left) or a lane's action
-  (only a Service or an API fits there). Each is
-  `{ type, kind }`, the kind an `addTile` would add (the type's default, a worker after a queue,
-  else its first kind the rules accept), or `{ type, refusal }`, the plain-words reason the type's
-  preferred kind is refused ("A queue can't link to URL database. A queue feeds only an
-  application, not a database."). A create links with the pair's default mode.
+- `linkFanOptions(design, from)` returns the link fan's eleven kinds in their slots for a new tile
+  after a tile or a lane's action (only a Microservice, Uploads, Identity or a CDN fits there):
+  each `{ kind, group }`, with `refusal`, the plain-words reason `addTile` would give, where the
+  rules refuse it ("Click events can't link to a search index. A queue feeds only an application,
+  not a search index."). A create links with the pair's default mode.
 - `connectOptions(design, node)` is Connect mode's: every other node on the board (the user, the
   actions, then the tiles, in lane order), each with the `linkTiles` a link from `node` to it
   would run in the pair's default mode, or why not. The link always runs from `node`; a refused
@@ -222,9 +231,9 @@ Pure helpers answer what a tile can do, for the canvas and chat:
 - `laneLinkRefusal(design, from, to, mode?)` gives one pair's refusal, or none.
 
 On the canvas ([studio guide](../docs/studio.md#creating-and-connecting)), the user's one `+` shows
-`laneActionOptions` (a pick runs `addAction`), and a tile's or action's side has a `+` when
-`laneOptions` has a kind for it, and its fan shows all seven types, greyed with the refusal where
-there is none; a pick runs `addTile`. In Connect mode a drag from a node may end on the tiles
+`laneActionOptions` (a pick runs `addAction`), and a tile or action has its link tab when
+`linkFanOptions` allows at least one kind, and its fan shows all eleven, greyed with the refusal
+where there is one; a pick runs `addTile` with that kind. In Connect mode a drag from a node may end on the tiles
 `connectOptions` gives a link for, and a release there runs its `linkTiles`. Both leave out
 `link`, so the pair's default mode applies. A
 tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
@@ -233,8 +242,8 @@ mode a hovered one's) runs `removeLink` ([removing](../docs/studio.md#removing))
 to an action has no X. The inspector's
 normal authoring omits kind replacement; an action's Name runs `renameAction`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
-reason as its tooltip). A new tile is named after its type and
-numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
+reason as its tooltip). A new tile is named after its kind and
+numbered when taken ("Worker service 2", ID `worker-service-2`); a new link's ID is `source-target`, or
 `lane-target` for an entry. Chat sends the same commands, and these are the only commands that
 add or remove tiles and links ([studio guide](../docs/studio.md#chat)).
 

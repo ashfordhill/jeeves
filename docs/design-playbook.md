@@ -1366,3 +1366,16 @@ never reaches the design, history or blueprint. And a mode for one job removes t
 another: in Connect mode tiles show no pull tabs or X, a press-and-drag on a tile links it, a
 click still selects, and the line under the pointer offers its own X, so removing a link needs no
 selection first.
+
+## 2026-11-09 MA04: offer kinds, not types with hidden defaults
+
+The old fan offered seven tile types and picked each type's kind for you: a Service after a queue
+quietly became a worker, and a Worker, Search index, CDN, Identity or Uploads could not be chosen
+at all. The link fan now offers the eleven kinds themselves, each with its own icon and name, so
+what you pick is what appears and no rule has to guess. Eleven icons on one arc grew to a 640px
+sweep, so the fan became a grid on one panel, a row per group (application, data, messaging,
+edge), with every item captioned and greyed in its own slot where the rules refuse it. A panel
+under the items matters: without it the translucent items let the tiles below show through and
+the captions blurred into the diagram. In a narrow canvas the panel moves aside as one block and
+may cover its own tile; rows stay rows and every item stays reachable, which matters more than
+keeping the source in view. Removing insert-before also freed the tile's left side for modules.

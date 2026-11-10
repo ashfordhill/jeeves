@@ -3,7 +3,7 @@ import {
   buildDesignScopeCommand,
   buildStudioCommand,
   emptyDesign,
-  laneOptions,
+  linkFanOptions,
   newLinkId,
   newTileIdentity,
   studioArchitectureExample,
@@ -179,6 +179,13 @@ describe("studio chat tools", () => {
       "storage",
       "external",
     ]);
+    // The kinds a new tile can be, as the canvas's link fan offers them.
+    expect(catalog.linkFan).toEqual([
+      { group: "application", kinds: ["service", "worker", "uploads", "identity"] },
+      { group: "data", kinds: ["database", "search", "cache", "object-store"] },
+      { group: "messaging", kinds: ["queue"] },
+      { group: "edge", kinds: ["cdn", "external-api"] },
+    ]);
     expect(catalog.caps).toEqual({ linksPerTile: 4, entriesPerLane: 4 });
     expect(run(workspace, "describeStudioDefinition", { kind: "cache" }).settingsSchema).toBeTypeOf(
       "object",
@@ -228,21 +235,45 @@ describe("studio chat tools", () => {
 
   it("adds a tile through chat with the same batch as the canvas", () => {
     const base = tinyurl();
-    // What the canvas sends for Redirect's right + released on Cache (canvas/creation.tsx).
+    // What the canvas sends for Redirect's link tab released on Cache (canvas/creation.tsx).
     const from = { tile: "redirect" };
-    const option = laneOptions(base, from, "after").find((o) => o.type === "cache");
+    const option = linkFanOptions(base, from).find((o) => o.kind === "cache");
+    expect(option).toEqual({ kind: "cache", group: "data" });
     const tile = newTileIdentity(base, "cache");
     const canvas = {
       type: "addTile" as const,
       from,
       side: "after" as const,
-      tile: { ...tile, kind: option && "kind" in option ? option.kind : "cache" },
+      tile: { ...tile, kind: "cache" as const },
       linkId: newLinkId(base, from, tile.id, [tile.id]),
     };
     expect(canvas).toEqual(addCache(3).commands[0]);
     const workspace = new Workspace(base);
     expect(run(workspace, "applyStudioCommands", addCache(3))).toMatchObject({ ok: true });
     expect(workspace.pending).toEqual(buildStudioCommand(base, canvas).ops);
+  });
+
+  it("adds a tile by its kind, as the link fan does, and inserts nothing before a tile", () => {
+    const workspace = new Workspace(tinyurl());
+    const add = (command: Record<string, unknown>) =>
+      run(workspace, "applyStudioCommands", { baseRevision: 3, commands: [command] });
+    // A Service after a queue stays a Service; a Worker is its own kind.
+    const after = (id: string, kind: string) => ({
+      type: "addTile",
+      from: { tile: "click-events" },
+      side: "after",
+      tile: { id, name: id, kind },
+      linkId: `click-events-${id}`,
+    });
+    expect(add(after("geo", "service")).ok).toBe(true);
+    expect(add(after("indexer", "worker")).ok).toBe(true);
+    const kinds = new Map(
+      workspace.working.architecture?.studio?.elements.map((e) => [e.element, e.settings.kind]),
+    );
+    expect([kinds.get("geo"), kinds.get("indexer")]).toEqual(["service", "worker"]);
+    const pending = workspace.pending.length;
+    expect(add({ ...addCache(3).commands[0], side: "before" }).ok).toBe(false);
+    expect(workspace.pending).toHaveLength(pending);
   });
 
   it("prepares accepted commands on the working copy without committing them", () => {

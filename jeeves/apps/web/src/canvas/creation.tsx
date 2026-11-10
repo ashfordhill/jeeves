@@ -1,13 +1,14 @@
-// Creation on the lane canvas: the selected tile's pull tabs, from the lane rules. A `+` tab sits
-// on each side that can add at least one tile type (`laneOptions`): the right adds after the tile,
-// the left inserts before it. Its fan always shows all seven types in the same slots, with the
-// ones the rules refuse there greyed and the reason in their tip. A picked type becomes a new tile
-// (`addTile`, named after its type) and is selected. The user has one `+`, whose fan offers its
-// two actions (`laneActionOptions`: Consume and Produce, one greyed when the design already has
-// it); a picked one becomes a new action tile (`addAction`) and is selected. An action has a
-// right `+` (a new entry tile) and no left `+`. A new tile's link takes the pair's default mode.
-// Each create is one batch and one undo step. Linking existing tiles is connect mode's
-// (`connect.ts`).
+// Creation on the lane canvas: the selected tile's pull tabs, from the lane rules. A tile or an
+// action has one link tab on its right, when at least one kind fits after it (`linkFanOptions`).
+// Its grid fan always shows the eleven kinds a new tile can be, a row per group (application,
+// data, messaging, edge) in the same slots, each with its kind's icon and name; the ones the rules
+// refuse there are greyed with the reason in their tip. A picked kind becomes a new tile named
+// after it (`addTile`), linked after the tile (an action's entry), and is selected. Nothing is
+// inserted before a tile: the left side stays free. The user has one `+`, whose fan offers its two
+// actions (`laneActionOptions`: Consume and Produce, one greyed when the design already has it); a
+// picked one becomes a new action tile (`addAction`) and is selected. A new tile's link takes the
+// pair's default mode. Each create is one batch and one undo step. Linking existing tiles is
+// connect mode's (`connect.ts`).
 import type { BoardProps, CreateTab, FanItem, TabSpec } from "@jeeves/board";
 import {
   buildStudioCommand,
@@ -16,28 +17,27 @@ import {
   type LaneActionOption,
   type LaneFrom,
   type LaneGraph,
-  type LaneOption,
-  type LaneSide,
+  type LinkFanOption,
   laneActionNode,
   laneActionOf,
   laneActionOptions,
-  laneOptions,
+  linkFanOptions,
   newLinkId,
   newTileIdentity,
   type StudioLane,
   studioDefinitions,
-  studioTileDefinitions,
 } from "@jeeves/spec";
 import { useMemo } from "react";
 import { commitAction } from "../studio/actions.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import { LaneIcon } from "./LaneIcon.tsx";
+import { tileShape } from "./tiles/Tile.tsx";
 
 type Creation = Pick<BoardProps, "tabs" | "onPick">;
 
-/** What a tab does: create from `from` on `side`, or add one of the user's actions. */
+/** What a tab does: add a linked tile after `from`, or add one of the user's actions. */
 type Tab =
-  | { kind: "create"; from: LaneFrom; side: LaneSide; options: readonly LaneOption[] }
+  | { kind: "link"; from: LaneFrom; options: readonly LinkFanOption[] }
   | { kind: "action"; options: readonly LaneActionOption[] };
 
 /**
@@ -65,21 +65,21 @@ function actionOrder(graph: LaneGraph): CreateTab["order"] {
   return undefined;
 }
 
-/** All seven tile types, in order; a type the rules refuse here is disabled with the reason. */
-function fanItems(options: readonly LaneOption[]): FanItem[] {
-  return options.map((option) => {
-    const type = studioTileDefinitions[option.type];
-    const kind = "kind" in option ? option.kind : type.kinds[0];
+/** The link fan's eleven kinds, by group; one the rules refuse here is disabled with the reason. */
+function kindItems(options: readonly LinkFanOption[]): FanItem[] {
+  return options.map(({ kind, group, refusal }) => {
+    const { name, visual } = studioDefinitions[kind];
     return {
-      id: option.type,
-      label: type.name,
-      shape: type.shape,
+      id: kind,
+      label: name,
+      group,
+      shape: tileShape(kind),
       content: (
-        <span className="lane-fan-icon" data-family={studioDefinitions[kind].visual.color}>
-          <StudioIcon name={type.icon} size={30} />
+        <span className="lane-fan-icon" data-family={visual.color}>
+          <StudioIcon name={visual.icon} size={30} />
         </span>
       ),
-      ...("refusal" in option && { disabled: option.refusal }),
+      ...(refusal && { disabled: refusal }),
     };
   });
 }
@@ -120,24 +120,20 @@ export function useLaneCreation({
     const tabs = new Map<string, Tab>();
     const specs: TabSpec[] = [];
     if (!tile || !graph.nodes.some((node) => node.id === tile)) return { tabs, specs };
-    /** A `+` on this side, when it can add at least one tile type. */
-    const addCreate = (
-      id: string,
-      from: LaneFrom,
-      side: LaneSide,
-      label: string,
-      extra: Pick<CreateTab, "order"> = {},
-    ) => {
-      const options = laneOptions(design, from, side);
-      if (!options.some((option) => "kind" in option)) return;
-      tabs.set(id, { kind: "create", from, side, options });
+    /** The link tab on the right, when at least one kind fits after `from`. */
+    const addLink = (from: LaneFrom, extra: Pick<CreateTab, "order"> = {}) => {
+      const options = linkFanOptions(design, from);
+      if (options.every((option) => option.refusal)) return;
+      tabs.set("add-linked", { kind: "link", from, options });
       specs.push({
-        id,
+        id: "add-linked",
         kind: "create",
-        side,
-        label,
-        title: `${label}: pull onto a type for a new tile`,
-        items: fanItems(options),
+        side: "after",
+        glyph: "link",
+        layout: "grid",
+        label: "Add linked tile",
+        title: "Add linked tile: pull onto a kind for a new tile after this one",
+        items: kindItems(options),
         ...extra,
       });
     };
@@ -156,12 +152,8 @@ export function useLaneCreation({
           order: actionOrder(graph),
         });
       }
-    } else if (lane) {
-      addCreate("add-after", { lane }, "after", "Add after", { order: laneOrder(graph, lane) });
-    } else {
-      addCreate("add-before", { tile }, "before", "Add before");
-      addCreate("add-after", { tile }, "after", "Add after");
-    }
+    } else if (lane) addLink({ lane }, { order: laneOrder(graph, lane) });
+    else addLink({ tile });
     return { tabs, specs };
   }, [design, graph, tile]);
 
@@ -186,23 +178,21 @@ export function useLaneCreation({
         return laneActionNode(lane);
       }
       const option =
-        tab?.kind === "create" ? tab.options.find((each) => each.type === item) : undefined;
-      if (tab?.kind !== "create" || !option || !("kind" in option)) return undefined;
-      const { from, side } = tab;
+        tab?.kind === "link" ? tab.options.find((each) => each.kind === item) : undefined;
+      if (tab?.kind !== "link" || !option || option.refusal) return undefined;
+      const { from } = tab;
+      const { kind } = option;
       // The ID is chosen now, so the board can dock the tile as soon as it arrives.
-      const created = newTileIdentity(design, option.type);
-      const linkId =
-        side === "before" && "tile" in from
-          ? newLinkId(design, { tile: created.id }, from.tile, [created.id])
-          : newLinkId(design, from, created.id, [created.id]);
+      const created = newTileIdentity(design, kind);
+      const linkId = newLinkId(design, from, created.id, [created.id]);
       void commitAction(
         projectId,
         (latest) =>
           buildStudioCommand(latest, {
             type: "addTile",
             from,
-            side,
-            tile: { ...created, kind: option.kind },
+            side: "after",
+            tile: { ...created, kind },
             linkId,
             ...system(latest),
           }).ops,

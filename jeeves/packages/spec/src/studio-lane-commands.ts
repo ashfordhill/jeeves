@@ -5,8 +5,9 @@
  * board edits (`@jeeves/board/graph`) under the lane rules, and a refusal names the rule in plain
  * words with tile and action names. A link without a mode takes its pair's default from the link
  * table. The pure helpers tell the canvas and chat which actions the user can add
- * (`laneActionOptions`), which tile types a tile or action can add on each side (`laneOptions`),
- * where a link from a tile or action may end (`connectOptions`), and what removing a tile strands.
+ * (`laneActionOptions`), which kinds of new tile a tile or action can add and link
+ * (`linkFanOptions`), where a link from a tile or action may end (`connectOptions`), and what
+ * removing a tile strands.
  */
 import {
   addAfter,
@@ -14,7 +15,6 @@ import {
   type BoardEdge,
   checkGraph,
   type GraphViolation,
-  insertBefore,
   link,
   planRemoval,
   type RemovalPlan,
@@ -65,10 +65,10 @@ import { studioComponentTargetKind } from "./studio-modules.ts";
 import type { StudioConnectionCreation } from "./studio-operations.ts";
 import { pruneStudioAfterDelete } from "./studio-prune.ts";
 import {
-  defaultKind,
-  type StudioTileType,
+  type StudioLinkFanGroup,
+  studioLinkFan,
+  studioLinkFanGroups,
   studioTileDefinitions,
-  studioTileTypes,
   tileTypeOf,
 } from "./studio-tiles.ts";
 
@@ -81,9 +81,6 @@ export const laneFromSchema = z.union([
   z.strictObject({ tile: idSchema }),
 ]);
 export type LaneFrom = z.infer<typeof laneFromSchema>;
-/** `after` adds on the right of a tile (host → new); `before` inserts on its left. */
-export const laneSideSchema = z.enum(["after", "before"]);
-export type LaneSide = z.infer<typeof laneSideSchema>;
 const laneLinkSchema = z.enum(["sync", "async"]);
 
 /** The lane commands, part of `studioCommandSchema`. */
@@ -107,15 +104,16 @@ export const laneCommandSchemas = [
   /** Removes the lane's action and its entries, unless that strands a tile. */
   z.strictObject({ type: z.literal("removeAction"), lane: studioLaneSchema }),
   /**
-   * A new tile after a tile or a lane (an entry of its action, which is added with its default
-   * name if the lane has none), or before a tile. A lane is always `after` and `sync`. Without
-   * `link`, the new link takes its pair's default mode (async for queue links, sync otherwise).
-   * `system` creates the system with the first tile of a new project.
+   * A new tile of `tile.kind`, linked after a tile or a lane (an entry of its action, which is
+   * added with its default name if the lane has none). `side` is always `after`: nothing is
+   * inserted before a tile. An entry is always `sync`. Without `link`, the new link takes its
+   * pair's default mode (async for queue links, sync otherwise). `system` creates the system with
+   * the first tile of a new project.
    */
   z.strictObject({
     type: z.literal("addTile"),
     from: laneFromSchema,
-    side: laneSideSchema,
+    side: z.literal("after"),
     link: laneLinkSchema.optional(),
     tile: z.strictObject({
       id: idSchema,
@@ -152,10 +150,11 @@ export const laneCommandSchemas = [
 ] as const;
 export type LaneCommand = z.infer<(typeof laneCommandSchemas)[number]>;
 
-/** A tile type a side offers: the kind it would add, or why it can't, in plain words. */
-export type LaneOption =
-  | { type: StudioTileType; kind: StudioKind }
-  | { type: StudioTileType; refusal: string };
+/**
+ * A kind the link fan offers: its group (the fan's row) and, when the lane rules refuse it here,
+ * why, in plain words.
+ */
+export type LinkFanOption = { kind: StudioKind; group: StudioLinkFanGroup; refusal?: string };
 /**
  * Where a link dragged from a tile or action may end: the `linkTiles` it would run (`from`, `to`
  * and the pair's default mode), or why it can't.
@@ -353,11 +352,12 @@ function removeActionRefusal(view: Lanes, lane: StudioLane): string | undefined 
     : undefined;
 }
 
-/** Why adding `tile` is refused, or `undefined`. `view` must already know the tile. */
+/**
+ * Why adding `tile` after `from` is refused, or `undefined`. `view` must already know the tile.
+ */
 function addTileRefusal(
   view: Lanes,
   from: LaneFrom,
-  side: LaneSide,
   async: boolean,
   tile: Tile,
   linkId: string,
@@ -366,7 +366,6 @@ function addTileRefusal(
   const node = { id: tile.id };
   const edge = { id: linkId, async };
   if ("lane" in from) {
-    if (side === "before") return "Nothing goes before an action; the user links only to it.";
     const action = laneActionNode(from.lane);
     return (
       noAction(view, from.lane) ??
@@ -376,22 +375,10 @@ function addTileRefusal(
   }
   const host = from.tile;
   if (!view.has(host)) return `There is no tile "${host}".`;
-  if (side === "after")
-    return (
-      linkRefusal(view, host, tile.id, async) ??
-      refusalOf(view, addAfter(view.graph, host, node, edge, view.rules))
-    );
-  // The new tile's own link to the host first, then every link into the host, which moves to the
-  // new tile and keeps its mode; an entry stays with its action.
-  const own = linkRefusal(view, tile.id, host, async);
-  if (own) return own;
-  for (const item of view.graph.edges) {
-    if (item.target !== host) continue;
-    const reason = view.rules.refusal(item.source, tile.id, item.async);
-    if (reason)
-      return `${sentence(view.name(item.source))} can't link to ${view.name(tile.id)}. ${reason}`;
-  }
-  return refusalOf(view, insertBefore(view.graph, host, node, edge, view.rules));
+  return (
+    linkRefusal(view, host, tile.id, async) ??
+    refusalOf(view, addAfter(view.graph, host, node, edge, view.rules))
+  );
 }
 
 /**
@@ -484,13 +471,11 @@ function pairMode(view: Lanes, source: string, target: string): StudioLinkMode {
   const to = view.kindOf(target);
   return from && to ? studioDefaultLinkMode(from, to) : "sync";
 }
-/** The new link's ends for an `addTile`: `from` → tile, or tile → host before a tile. */
-const addedLink = (from: LaneFrom, side: LaneSide, tile: string): [string, string] =>
-  "lane" in from
-    ? [laneActionNode(from.lane), tile]
-    : side === "after"
-      ? [from.tile, tile]
-      : [tile, from.tile];
+/** The new link's ends for an `addTile`: `from` → tile. */
+const addedLink = (from: LaneFrom, tile: string): [string, string] => [
+  "lane" in from ? laneActionNode(from.lane) : from.tile,
+  tile,
+];
 const addEntry = (out: Draft, entry: { id: string; lane: StudioLane; element: string }) => {
   out.studio.entries = [...(out.studio.entries ?? []), entry];
 };
@@ -582,8 +567,8 @@ export function buildLaneCommand(
       const { from, tile } = input;
       requireFree(draft, [tile.id, input.linkId]);
       const view = at(tile);
-      const mode = input.link ?? pairMode(view, ...addedLink(from, input.side, tile.id));
-      const why = addTileRefusal(view, from, input.side, mode === "async", tile, input.linkId);
+      const mode = input.link ?? pairMode(view, ...addedLink(from, tile.id));
+      const why = addTileRefusal(view, from, mode === "async", tile, input.linkId);
       if (why) refuse(why);
       if ("lane" in from) {
         addElement(out, tile);
@@ -595,19 +580,7 @@ export function buildLaneCommand(
       const owner = isResource(tile.kind) && isApplication(view.kindOf(host)) ? host : undefined;
       if (tile.kind === "queue" && !owner) refuse("A queue needs an application next to it.");
       addElement(out, tile, owner);
-      if (input.side === "after") {
-        connect(out, linkConnection(view, input.linkId, host, tile.id, mode));
-        break;
-      }
-      // Before: every link into the host now enters the new tile. A moved connection keeps its
-      // ID and mode and takes the link table's defaults for its new target.
-      for (const entry of studio.entries ?? []) if (entry.element === host) entry.element = tile.id;
-      for (const edge of view.graph.edges) {
-        if (edge.target !== host || edge.lane) continue;
-        disconnect(out, edge.id);
-        connect(out, linkConnection(view, edge.id, edge.source, tile.id, modeOf(edge)));
-      }
-      connect(out, linkConnection(view, input.linkId, tile.id, host, mode));
+      connect(out, linkConnection(view, input.linkId, host, tile.id, mode));
       break;
     }
     case "linkTiles": {
@@ -803,47 +776,26 @@ function changeKind(
 }
 
 /**
- * One tile type on this side: the kind it would add (the type's default, where a Service after a
- * queue is a worker, else its first kind the rules accept), or the reason its default is refused.
- * The new link takes its pair's default mode.
+ * Every kind of new tile the link fan offers after a tile or a lane's action, in its slots
+ * (`studioLinkFan`, group by group): each with its group and, when `addTile` would refuse it
+ * here, the plain-words reason. The new link takes its pair's default mode. A new tile is named by
+ * its kind in the reasons: "URL cache can't link to a database. A cache can't link onward."
  */
-function laneOption(
-  at: ReturnType<typeof lanes>,
-  from: LaneFrom,
-  side: LaneSide,
-  type: StudioTileType,
-): LaneOption {
-  const host = "tile" in from ? at().kindOf(from.tile) : undefined;
-  const preferred = defaultKind(type, side === "after" && host ? { after: host } : {});
-  const kinds = [preferred, ...studioTileDefinitions[type].kinds.filter((k) => k !== preferred)];
-  let reason: string | undefined;
-  for (const kind of kinds) {
-    // The new tile is named by its kind in refusals: "URL cache can't link to a queue. …"
-    const tile = { id: "@new", kind, name: noun(kind) };
-    const view = at(tile);
-    const async = pairMode(view, ...addedLink(from, side, tile.id)) === "async";
-    const why = addTileRefusal(view, from, side, async, tile, "@new-link");
-    if (!why) return { type, kind };
-    reason ??= why;
-  }
-  return { type, refusal: reason ?? "Nothing fits here." };
-}
-
-/**
- * All seven tile types on this side of a tile or lane, in `studioTileTypes` order. Each is the
- * kind an `addTile` would add (its link takes the pair's default mode), or the plain-words reason
- * the type's preferred kind is refused.
- */
-export function laneOptions(design: DesignDocument, from: LaneFrom, side: LaneSide): LaneOption[] {
+export function linkFanOptions(design: DesignDocument, from: LaneFrom): LinkFanOption[] {
   const [broken] = laneFindings(design);
-  if (broken)
-    return studioTileTypes.map((type) => ({
-      type,
-      refusal: `Fix the lanes first. ${broken.message}`,
-    }));
   // From a lane with no action, the addTile would add the action first.
-  const at = lanes("lane" in from && side === "after" ? withAction(design, from.lane) : design);
-  return studioTileTypes.map((type) => laneOption(at, from, side, type));
+  const at = lanes("lane" in from ? withAction(design, from.lane) : design);
+  return studioLinkFanGroups.flatMap((group) =>
+    studioLinkFan[group].map((kind) => {
+      const tile = { id: "@new", kind, name: noun(kind) };
+      const view = at(tile);
+      const async = pairMode(view, ...addedLink(from, tile.id)) === "async";
+      const refusal = broken
+        ? `Fix the lanes first. ${broken.message}`
+        : addTileRefusal(view, from, async, tile, "@new-link");
+      return { kind, group, ...(refusal && { refusal }) };
+    }),
+  );
 }
 
 /**
@@ -956,16 +908,16 @@ export function laneEntryRefusal(
 }
 
 /**
- * A name and ID for a new tile of this type: the type's name ("Cache"), then "Cache 2", "Cache 3"…,
- * whichever is free as both a name and an ID ("cache", "cache-2"…).
+ * A name and ID for a new tile of this kind: the kind's name ("Worker service"), then "Worker
+ * service 2"…, whichever is free as both a name and an ID ("worker-service", "worker-service-2"…).
  */
 export function newTileIdentity(
   design: DesignDocument,
-  type: StudioTileType,
+  kind: StudioKind,
 ): { id: string; name: string } {
   const names = new Set(design.elements.map((element) => element.name.toLowerCase()));
   const used = usedIds(design);
-  const base = studioTileDefinitions[type].name;
+  const base = studioDefinitions[kind].name;
   for (let n = 1; ; n += 1) {
     const name = n === 1 ? base : `${base} ${n}`;
     const id = slug(name);

@@ -33,7 +33,13 @@ import {
   studioModelSchema,
 } from "./studio-model.ts";
 import { buildStudioCommand } from "./studio-operations.ts";
-import { defaultKind, studioTileDefinitions, studioTileTypes, tileTypeOf } from "./studio-tiles.ts";
+import {
+  studioLinkFan,
+  studioLinkFanKinds,
+  studioTileDefinitions,
+  studioTileTypes,
+  tileTypeOf,
+} from "./studio-tiles.ts";
 import { validateDesign } from "./validate.ts";
 
 const studioOf = (design: DesignDocument): StudioModel => {
@@ -281,11 +287,12 @@ describe("tile types and entries", () => {
     expect(new Set(icons).size).toBe(icons.length);
     expect(studioDefinitions.cache.visual.icon).toBe("bolt");
 
-    expect(defaultKind("service")).toBe("service");
-    expect(defaultKind("service", { after: "queue" })).toBe("worker");
-    expect(defaultKind("service", { after: "redirect" })).toBe("service");
-    expect(defaultKind("api")).toBe("gateway");
-    expect(defaultKind("storage")).toBe("object-store");
+    // The link fan offers eleven kinds, one slot each, never Gateway, the legacy kinds or Browser.
+    expect(studioLinkFanKinds).toHaveLength(11);
+    expect(new Set(studioLinkFanKinds).size).toBe(11);
+    expect(studioLinkFan.application).toEqual(["service", "worker", "uploads", "identity"]);
+    for (const kind of ["gateway", "redirect", "notification", "billing", "browser"] as const)
+      expect(studioLinkFanKinds).not.toContain(kind);
 
     expect([...studioEntryKinds].sort()).toEqual(
       [

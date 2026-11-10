@@ -9,8 +9,11 @@
 // `+` or a link glyph; a fan item can be disabled (greyed in its slot, its tip gives the reason, a
 // release on it changes nothing); once past the threshold the pull stays open until it ends, so a
 // fan item the board's edge pushed back beside the tab can still be picked; Escape cancels and a
-// cancelled pull springs back. The fan stays inside the board (`placeFan`). The red X shows only
-// when the caller lets the tile go (`remove`). No path tab, tile pickup or insert silhouette.
+// cancelled pull springs back. The fan stays inside the board (`placeFan`). A long list can be a
+// grid fan instead (`layout: "grid"`): a row per item group beside the tab, each item captioned,
+// on one panel kept on the board as a block (`placeGrid`), so it reads over the tiles it covers.
+// The red X shows only when the caller lets the tile go (`remove`). No path tab, tile pickup or
+// insert silhouette.
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -22,7 +25,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import type { DockSide, Size, SlotOrder } from "../layout/metrics.ts";
-import { fanCenters, placeFan } from "./fan.ts";
+import { fanCenters, fanGrid, gridBounds, placeFan, placeGrid } from "./fan.ts";
 import { LinkGlyph } from "./LinkGlyph.tsx";
 import {
   fallbackTileRect,
@@ -36,12 +39,15 @@ import { RemoveButton } from "./RemoveButton.tsx";
 import { prefersReducedMotion } from "./useAnimatedLayout.ts";
 
 export const PULL_THRESHOLD = 36;
+/** A grid fan's panel reaches this far past its cells (6px of the board's 16px margin). */
+const PANEL_PAD = 6;
 export const SPRING_MS = 200;
 
 /**
- * One item of a create tab's fan: an icon, named by `label` (its accessible name and hover tip).
- * A `disabled` item (the reason, in words) is greyed in its usual slot, its tip adds the reason,
- * and releasing on it changes nothing.
+ * One item of a create tab's fan: an icon, named by `label` (its accessible name and hover tip,
+ * and its caption in a grid fan). A `disabled` item (the reason, in words) is greyed in its usual
+ * slot, its tip adds the reason, and releasing on it changes nothing. In a grid fan, items with
+ * the same `group` share a row.
  */
 export type FanItem = {
   id: string;
@@ -49,7 +55,11 @@ export type FanItem = {
   content: ReactNode;
   shape?: "rect" | "pill";
   disabled?: string;
+  group?: string;
 };
+
+/** How a fan lays out its items: on an arc around the tab, or in a grid of rows beside it. */
+export type FanLayout = "arc" | "grid";
 
 /** A tab's mark, and its band's colour: a `+`, or a link glyph. */
 export type TabGlyph = "plus" | "link";
@@ -70,6 +80,8 @@ export type CreateTab = {
   badge?: ReactNode;
   /** Every item, always in the same order, so each sits in the same slot every time. */
   items: readonly FanItem[];
+  /** Default `arc`; `grid` puts each group of items in a row and captions every item. */
+  layout?: FanLayout;
   /** The row a tile picked from this fan takes, next to an existing tile (a lane's last tile). */
   order?: SlotOrder;
 };
@@ -355,16 +367,31 @@ function PullOverlay({
   const origin = underTileOrigin(drag.tile, drag.restY, before);
   const ribbon = taffyRibbon(origin.x, origin.y, drag.x, drag.y);
   const { items } = tab;
+  const grid = tab.layout === "grid";
   // Slots come from the item's place in the whole list, disabled or not, so they never shift.
-  const centers = placeFan(
-    fanCenters(drag.restX, drag.restY, items.length, before),
-    board && { x: board.x, y: board.y, w: board.width, h: board.height },
-  );
+  const box = board && { x: board.x, y: board.y, w: board.width, h: board.height };
+  const centers = grid
+    ? placeGrid(
+        fanGrid(
+          drag.restX,
+          drag.restY,
+          items.map((item) => item.group),
+          before,
+        ),
+        box,
+      )
+    : placeFan(fanCenters(drag.restX, drag.restY, items.length, before), box);
+  const panel = grid && open && centers.length ? gridBounds(centers) : undefined;
   const exit = holeRect(drag.tile, 0);
   const exitMask = `${ids}-exit`;
   const hovered = drag.hover?.item ?? null;
   return (
-    <div className="board-overlay board-pull" data-glyph={glyph} aria-hidden={!open}>
+    <div
+      className="board-overlay board-pull"
+      data-glyph={glyph}
+      data-layout={grid ? "grid" : undefined}
+      aria-hidden={!open}
+    >
       <svg className="board-ribbon" width="100%" height="100%" overflow="visible" aria-hidden>
         <defs>
           <mask id={exitMask} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
@@ -381,6 +408,17 @@ function PullOverlay({
           />
         </g>
       </svg>
+      {panel ? (
+        <div
+          className="board-fan-panel"
+          style={{
+            left: panel.x - PANEL_PAD,
+            top: panel.y - PANEL_PAD,
+            width: panel.w + 2 * PANEL_PAD,
+            height: panel.h + 2 * PANEL_PAD,
+          }}
+        />
+      ) : null}
       {open
         ? items.map((item, i) => {
             const at = centers[i];
@@ -399,6 +437,7 @@ function PullOverlay({
                 style={{ left: at.x, top: at.y }}
               >
                 <span className="board-fan-content">{item.content}</span>
+                {grid ? <span className="board-fan-caption">{item.label}</span> : null}
                 {hovered === item.id ? (
                   <span className="board-fan-tip" data-reason={item.disabled ? true : undefined}>
                     {item.label}

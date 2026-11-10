@@ -195,7 +195,7 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
     await expect(removal).toBeVisible();
     await removal.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(removal).toHaveCount(0);
-    await pull(page, "Transcoder", "Add after");
+    await pull(page, "Transcoder", "Add linked tile");
     await moveOnto(page, page.locator(".board-pull").getByRole("button", { name: "Cache" }));
     await page.mouse.up();
     await ready(page);

@@ -7475,3 +7475,95 @@ forward-only per-node helper; `laneOptions` is unchanged.
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-09 — MA04: link fan with every tile kind
+
+Per the [module authoring plan](plans/module-authoring/units.md) (Owner decisions 2 and 4) and
+contract §7. Docs: `studio.md` (Creating and connecting, Detailed view, Warnings, Chat, Limits),
+`CATALOG.md` (Tile types and the link fan, `addTile`, `linkFanOptions`; the link table now says
+HTTP and Private network, as MA01 found the code does), `studio-settings.md`, `PLAN.md`, a
+playbook lesson, the HUMAN_FEEDBACK resolution and the plan's status.
+
+- **Link tab** (`creation.tsx`): a selected tile or action has one tab on its right, glyph
+  `link`, when at least one kind fits after it. Its fan is a grid of the contract's 11 kinds, a row
+  per group (application: Microservice, Worker service, Uploads, Identity; data: Database, Search
+  index, Cache, Object storage; messaging: Queue or topic; edge: CDN, External API), each with its
+  kind's icon, colour and name (`studioDefinitions[kind]`), greyed with the `addTile` reason where
+  refused. A pick runs `addTile` with that kind; the new tile is named after the kind ("Worker
+  service", ID `worker-service`). The user keeps its `+` action fan (arc). Stores have no tab.
+- **Removed:** the left `+`, `addTile`'s `side: "before"` (now `z.literal("after")`; callers
+  unchanged), `insertBefore` and `retargetIncoming` in `@jeeves/board/graph`, `laneOptions`,
+  `LaneOption`, `LaneSide`/`laneSideSchema`, `defaultKind`, the tile types' picker icons and the
+  unused `api` icon. Kept: the board's `DockSide` and before-side tabs and docking, generic, for
+  MA06's module `+`.
+- **Board** (generic): `CreateTab.layout: "grid"` and `FanItem.group`; `fanGrid` puts each group
+  in a row beside the tab (`FAN_CELL` 104×92, 40px from the tab), `placeGrid` keeps the block on
+  the board, and the overlay draws one panel under the cells (`gridBounds`) and a caption under
+  each item. Without the panel the translucent items let the tiles show through. In a narrow
+  canvas the block moves aside and can cover its own tile; every item stays reachable.
+- **Spec** (`studio-tiles.ts`, `studio-lane-commands.ts`): `studioLinkFan` / `studioLinkFanKinds`
+  and `linkFanOptions(design, from)` → `{ kind, group, refusal? }` in fan order, using the same
+  `addTileRefusal` as the command; `newTileIdentity(design, kind)`.
+- **Queue → Worker default removed.** It lived only in the fan's type → kind choice
+  (`laneOption` via `defaultKind`); every `addTile` caller already passes an explicit `tile.kind`,
+  so no caller's behaviour changes. After a queue the fan now offers both Microservice and Worker
+  service.
+- **Deviation: `addTile` keeps accepting every tile kind.** It already took an explicit
+  `tile.kind`; there was no `type` input, only the fan's types. The contract's 11 kinds are what
+  the mouse offers (`linkFanOptions`) and what chat is told (`listStudioDefinitions.linkFan`, the
+  addTile instruction). Chat is not refused Gateway, Billing, Redirect or Notifications: the frozen
+  chat eval builds and scores a Billing tile (`eval/score.ts:139-143`, `fixtures/synthetic.json`),
+  and tests and chat history add Gateway. Refusing them in `buildSupportedAuthoringCommand` is an
+  owner call.
+- **E2E race fixed** (`inspector.spec.ts`, the system page): it now polls the saved design until
+  `stats-read` is gone at `revision + 1`, waits for the line to leave the canvas, and polls the
+  outline for the exact list.
+
+**Tests.** Spec: `linkFanOptions` (order, groups, reasons after a service, a store, a queue and
+an action, a lane with no action, the cap), every offered kind added by `addTile` with the same
+reason when refused, legacy kinds still accepted, `browser` and `side: "before"` refused; the
+restitch test now builds its CDN entry with `addTile` + `linkTiles` + `removeLink`; the warnings
+test drops its Add-before half. Board: `fanGrid`/`placeGrid` and a grid fan in `Board`
+(slots, captions, panel, disabled item, pick); `insertBefore`'s test removed. Chat: the catalog's
+`linkFan`, a Worker after a queue by its kind, `before` refused. E2E (`spawn.spec.ts`, 6): the link
+tab and its 11 captioned items in 4 rows with no left tab; greyed kinds after a queue with the
+reason; a release on a tile changes nothing; an action's link tab adds an Identity entry, Undo,
+then the Connect-mode entry; the blank-design actions; and **all 11 kinds built by mouse in a
+blank design**, each checked for kind, icon (`svg.tabler-icon-*`), link and selection, then Undo.
+`detailed-view.spec.ts` uses the link tab.
+
+**Checks.**
+
+- `pnpm check` exited 0: **504 tests in 73 files** (lint: only the existing info).
+- **E2E: 52 passed (2.2m)** on the first full run, no failures.
+- The web build passed with the existing chunk-size advisory.
+- Frozen v2: a fresh `export:v2` gives 72 files; 70 are byte-identical to
+  `generic-export.tar.gz`. `.jeeves/manifest.json` and `report.json` differ only in the source
+  inventory of `spec/src/studio-components.ts` (MA02), `studio-lane-commands.ts` and
+  `studio-tiles.ts`, and the hashes derived from them (`sourceSha256`s, `registry.sha256`, the
+  manifest's hash of `report.json`).
+
+**Mouse check** (scripted Chromium on my own API 4334 with scratch database `jeeves_ma04`, now
+dropped, and Vite 4324), at 1440×900 and 1280×800 with both rails open: TinyURL foundation 7 tiles
+and 7 lines, extended 11 and 12. On every extended tile with a tab (7) the open fan had 11 items,
+each wholly on the board, uncovered, no overlaps, captions unclipped; stores and the user (both
+actions present) had none. A Worker service after Redirect service got the CPU icon and the link,
+and Undo restored the design exactly; Open link's tab added an Identity entry. No left tab
+anywhere. A blank design took all 11 kinds by mouse. YouTube Overview PNG at 1440×900:
+`472a4c8c…dc9f`, unchanged; the Transcoder's fan fit too. Dark mode read correctly. No page
+errors, console errors or warnings. Evidence: [ma04](plans/module-authoring/evidence/ma04/).
+
+**For MA05.** Spec exports `studioLinkFan`, `studioLinkFanKinds`, `linkFanOptions`; chat's
+catalog has `linkFan`. Whether chat should refuse the four kinds the fan omits is open (above).
+
+**For MA06.**
+
+- The left side is free: no tile shows a before-side tab. `CreateTab` with `side: "before"`,
+  `layout: "grid"` and `glyph: "plus"` gives a grid ending left of the tab, read left to right,
+  with `FanItem.group` rows. An `onPick` returning `undefined` docks nothing.
+- A grid item shows only its label as a caption; the description and Template / Part / Stub need
+  more (a richer `FanItem` or the tip). 18 kinds in rows of up to 4 make a tall panel
+  (`FAN_CELL.h` per row); check it at 1280×800.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

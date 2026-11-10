@@ -59,16 +59,3 @@ export function dropRedundantNew(
   if (!drop.size) return next;
   return next.filter((e) => !drop.has(e.id));
 }
-
-/**
- * Point every link that enters `hostId` at `newTarget` instead. Returns `edges` itself when
- * nothing enters the host.
- */
-export function retargetIncoming(
-  edges: BoardEdge[],
-  hostId: string,
-  newTarget: string,
-): BoardEdge[] {
-  if (!edges.some((e) => e.target === hostId)) return edges;
-  return edges.map((e) => (e.target === hostId ? { ...e, target: newTarget } : e));
-}

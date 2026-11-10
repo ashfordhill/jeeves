@@ -8,7 +8,7 @@
 // every successor), also for M:N, and a pair that already exists or is already reachable is
 // dropped instead of merged into the existing link.
 import { checkGraph } from "./check.ts";
-import { dropRedundantNew, retargetIncoming, unreachableFrom, wouldCreateCycle } from "./reach.ts";
+import { dropRedundantNew, unreachableFrom, wouldCreateCycle } from "./reach.ts";
 import {
   type BoardEdge,
   type BoardGraph,
@@ -54,26 +54,6 @@ export function addAfter(
   const refused = linkRefusal(grown, hostId, node.id, async, rules);
   if (refused) return refused;
   return checked({ ...grown, edges: [...graph.edges, newEdge(edge, hostId, node.id)] }, rules);
-}
-
-/**
- * Inserts `node` before `hostId`: every link into the host now enters the new tile (keeping its
- * id and mode), then new → host. (`addConnectedNode` with `inbound`.)
- */
-export function insertBefore(
-  graph: BoardGraph,
-  hostId: string,
-  node: BoardNode,
-  edge: NewLink,
-  rules: Rules,
-): Result<BoardGraph> {
-  const valid = requireValid(graph, rules);
-  if (!valid.ok) return valid;
-  const refusal = missing(graph, hostId) ?? taken(graph, node.id, edge.id);
-  if (refusal) return refusal;
-  if (hostId === rules.root) return fail("root", `Nothing can go before the root "${hostId}".`);
-  const edges = [...retargetIncoming(graph.edges, hostId, node.id), newEdge(edge, node.id, hostId)];
-  return checked({ nodes: [...graph.nodes, node], edges }, rules);
 }
 
 /** Links two tiles already on the board, for example a merge. (`connectNodes`.) */

@@ -13,19 +13,40 @@ import {
   tiles,
 } from "./studio.ts";
 
-/** The open fan's items (every tile type, in order). */
+/** The open fan's items (every kind, in its slot). */
 const fan = (page: Page) => page.locator(".board-pull [data-fan-item]");
 const fanItem = (page: Page, name: string) =>
   page.locator(".board-pull").getByRole("button", { name, exact: true });
+const LINK_TAB = "Add linked tile";
+/** The link fan's eleven kinds by row (application, data, messaging, edge), as named in it. */
+const FAN = [
+  ["Microservice", "Worker service", "Uploads", "Identity"],
+  ["Database", "Search index", "Cache", "Object storage"],
+  ["Queue or topic"],
+  ["CDN", "External API"],
+];
 
-test("pulls a + tab onto the fan to add a tile", async ({ page, tinyurl: id }) => {
+test("pulls the link tab onto a kind to add a linked tile", async ({ page, tinyurl: id }) => {
   await tile(page, "Redirect service").click();
-  // A `+` on each side; linking existing tiles is Connect mode's (connect.spec.ts).
-  await expect(tile(page, "Redirect service").locator(".board-tab")).toHaveCount(2);
-  await pull(page, "Redirect service", "Add after");
-  // All seven types; after a service, every one fits.
-  await expect(fan(page)).toHaveCount(7);
+  // One link tab on the right; nothing on the left (linking existing tiles is Connect mode's).
+  const tabs = tile(page, "Redirect service").locator(".board-tab");
+  await expect(tabs).toHaveCount(1);
+  await expect(tabs).toHaveAttribute("data-glyph", "link");
+  await expect(
+    tile(page, "Redirect service").locator('.board-tabs[data-side="before"]'),
+  ).toHaveCount(0);
+  await pull(page, "Redirect service", LINK_TAB);
+  // All eleven kinds, captioned, a row per group in a fixed order; after a service all fit.
+  await expect(fan(page)).toHaveCount(11);
+  await expect(page.locator(".board-pull .board-fan-caption")).toHaveText(FAN.flat());
   await expect(page.locator('.board-pull [aria-disabled="true"]')).toHaveCount(0);
+  const rows = await fan(page).evaluateAll((items) =>
+    items.map((item) => (item as HTMLElement).style.top),
+  );
+  expect(new Set(rows).size).toBe(4);
+  expect(rows.slice(0, 4).every((top) => top === rows[0])).toBe(true);
+  // Every item and its caption is on screen.
+  for (const item of await fan(page).all()) await expect(item).toBeInViewport({ ratio: 1 });
   await moveOnto(page, fanItem(page, "Cache"));
   await page.mouse.up();
 
@@ -39,23 +60,25 @@ test("pulls a + tab onto the fan to add a tile", async ({ page, tinyurl: id }) =
   expect(saved.connections.find((c) => c.to.element === "cache")?.from.element).toBe("redirect");
 });
 
-test("greys the types a side can't add, with the reason", async ({ page, tinyurl: id }) => {
+test("greys the kinds the rules refuse there, with the reason", async ({ page, tinyurl: id }) => {
+  // A store links onward to nothing: no tabs at all, only its X.
   await tile(page, "URL database").click();
-  // A store has no right `+`: only its left `+` shows.
-  await expect(tile(page, "URL database").locator(".board-tab")).toHaveCount(1);
-  await pull(page, "URL database", "Add before", { x: -60, y: 12 });
-  await expect(fan(page)).toHaveCount(7);
-  // Before a database only an application fits (an external API can only call one).
-  for (const name of ["Service", "API"])
+  await expect(tile(page, "URL database").locator(".board-tab")).toHaveCount(0);
+
+  // After a queue only applications fit: a Service and a Worker both consume.
+  await tile(page, "Click events").click();
+  await pull(page, "Click events", LINK_TAB);
+  await expect(fan(page)).toHaveCount(11);
+  for (const name of FAN[0] ?? [])
     await expect(fanItem(page, name)).not.toHaveAttribute("aria-disabled");
-  for (const name of ["Database", "Cache", "Queue", "Storage", "External"])
+  for (const name of [...(FAN[1] ?? []), ...(FAN[2] ?? []), ...(FAN[3] ?? [])])
     await expect(fanItem(page, name)).toHaveAttribute("aria-disabled", "true");
-  await moveOnto(page, fanItem(page, "Queue"));
+  await moveOnto(page, fanItem(page, "Search index"));
   // Its tip gives the name and the reason; releasing there changes nothing.
   const tip = page.locator(".board-fan-tip");
-  await expect(tip).toContainText("Queue");
+  await expect(tip).toContainText("Search index");
   await expect(tip.locator(".board-fan-reason")).toHaveText(
-    "A queue can't link to URL database. A queue feeds only an application, not a database.",
+    "Click events can't link to a search index. A queue feeds only an application, not a search index.",
   );
   await page.mouse.up();
 
@@ -64,14 +87,14 @@ test("greys the types a side can't add, with the reason", async ({ page, tinyurl
   expect((await design(page, id)).revision).toBe(1);
 });
 
-test("a + released on a tile changes nothing", async ({ page, tinyurl: id }) => {
+test("a link tab released on a tile changes nothing", async ({ page, tinyurl: id }) => {
   await tile(page, "Redirect service").click();
-  // The left `+` fans left; Analytics worker, which Redirect could link to, is on the right.
-  await pull(page, "Redirect service", "Add before");
-  await expect(fan(page)).toHaveCount(7);
+  // The fan opens on the right; Open link, on the left, is no target.
+  await pull(page, "Redirect service", LINK_TAB);
+  await expect(fan(page)).toHaveCount(11);
   await expect(page.locator(".board-scrim")).toHaveCount(0);
-  await moveOnto(page, tile(page, "Analytics worker"));
-  await expect(tile(page, "Analytics worker")).not.toHaveClass(/is-drop-target/);
+  await moveOnto(page, tile(page, "Open link"));
+  await expect(tile(page, "Open link")).not.toHaveClass(/is-drop-target/);
   await page.mouse.up();
 
   await expect(fan(page)).toHaveCount(0);
@@ -80,7 +103,7 @@ test("a + released on a tile changes nothing", async ({ page, tinyurl: id }) => 
   expect((await design(page, id)).revision).toBe(1);
 });
 
-test("the user's + offers its actions; an action gains an entry in Connect mode", async ({
+test("an action's link tab adds an entry; a drag in Connect mode adds one too", async ({
   page,
   tinyurl: id,
 }) => {
@@ -89,26 +112,41 @@ test("the user's + offers its actions; an action gains an entry in Connect mode"
   // TinyURL has both actions, so the user's one `+` is gone.
   await expect(tabs("User")).toHaveCount(0);
 
-  // An action has a right `+` and no left `+`.
+  // An action has the link tab on its right and nothing on its left.
   await tile(page, "Open link").click();
-  await expect(tile(page, "Open link").getByRole("button", { name: "Add after" })).toBeVisible();
   await expect(tabs("Open link")).toHaveCount(1);
-  await pull(page, "Open link", "Add after");
-  // An action reaches a service or an API: the stores, the queue and External are greyed.
-  for (const name of ["Service", "API"])
+  await expect(tabs("Open link")).toHaveAttribute("data-glyph", "link");
+  await pull(page, "Open link", LINK_TAB);
+  // An entry is a service (not a worker), Uploads, Identity or the CDN.
+  for (const name of ["Microservice", "Uploads", "Identity", "CDN"])
     await expect(fanItem(page, name)).not.toHaveAttribute("aria-disabled");
-  for (const name of ["Database", "Cache", "Queue", "Storage", "External"])
+  for (const name of FAN.flat().filter(
+    (name) => !["Microservice", "Uploads", "Identity", "CDN"].includes(name),
+  ))
     await expect(fanItem(page, name)).toHaveAttribute("aria-disabled", "true");
-  await moveOnto(page, fanItem(page, "Storage"));
+  await moveOnto(page, fanItem(page, "Object storage"));
   await expect(page.locator(".board-fan-tip .board-fan-reason")).toHaveText(
     "Open link can't link to object storage. An action reaches a service (not a worker), an API or the CDN.",
   );
+  await moveOnto(page, fanItem(page, "Identity"));
   await page.mouse.up();
+  await ready(page);
+  await expect(tile(page, "Identity")).toHaveClass(/selected/);
+  await expect(lines(page)).toHaveCount(13);
+  let saved = await design(page, id);
+  expect(saved.architecture.studio.entries.at(-1)).toEqual({
+    id: "download-identity",
+    lane: "download",
+    element: "identity",
+  });
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(tile(page, "Identity")).toHaveCount(0);
+  await expect(lines(page)).toHaveCount(12);
 
-  // A Service after the Shorten service has no entry: a drag from Shorten makes it one.
+  // A Microservice after the Shorten service has no entry: a drag from Shorten makes it one.
   await tile(page, "Shorten service").click();
-  await pull(page, "Shorten service", "Add after");
-  await moveOnto(page, fanItem(page, "Service"));
+  await pull(page, "Shorten service", LINK_TAB);
+  await moveOnto(page, fanItem(page, "Microservice"));
   await page.mouse.up();
   await ready(page);
   await expect(lines(page)).toHaveCount(13);
@@ -117,7 +155,7 @@ test("the user's + offers its actions; an action gains an entry in Connect mode"
   await page.getByRole("button", { name: "Connect", exact: true }).click();
   await dragOnto(page, tile(page, "Shorten"), tile(page, "Redirect service"));
   // A tile has one entry: Redirect service starts the download lane, so it stays dimmed.
-  await expect(tile(page, "Service")).toHaveClass(/is-drop-target/);
+  await expect(tile(page, "Microservice")).toHaveClass(/is-drop-target/);
   await expect(tile(page, "Redirect service")).not.toHaveClass(/is-drop-target/);
   await page.mouse.up();
   await expect(page.locator(".studio-notice")).toHaveText(
@@ -126,18 +164,19 @@ test("the user's + offers its actions; an action gains an entry in Connect mode"
   await expect(lines(page)).toHaveCount(13);
   await page.getByRole("button", { name: "Dismiss notice" }).click();
 
-  await dragOnto(page, tile(page, "Shorten"), tile(page, "Service"));
+  await dragOnto(page, tile(page, "Shorten"), tile(page, "Microservice"));
   await page.mouse.up();
   await ready(page);
   await expect(lines(page)).toHaveCount(14);
   await expect(tile(page, "Shorten")).toHaveClass(/selected/);
-  const saved = await design(page, id);
-  expect(saved.revision).toBe(3);
+  saved = await design(page, id);
+  // Add, Undo, add, connect.
+  expect(saved.revision).toBe(5);
   expect(saved.architecture.studio.entries.map((e) => `${e.lane} ${e.element}`)).toEqual([
     "download stats-api",
     "download redirect",
     "upload shorten",
-    "upload service",
+    "upload microservice",
   ]);
 });
 
@@ -148,6 +187,7 @@ test("builds both actions from a blank design", async ({ page }) => {
   try {
     // A blank design opens with the user selected and its one `+`.
     await expect(tile(page, "User").locator(".board-tab")).toHaveCount(1);
+    await expect(tile(page, "User").locator(".board-tab")).toHaveAttribute("data-glyph", "plus");
     await pull(page, "User", "Add action");
     await expect(fan(page)).toHaveCount(2);
     await moveOnto(page, fanItem(page, "Consume"));
@@ -171,11 +211,11 @@ test("builds both actions from a blank design", async ({ page }) => {
       page.locator(".studio-inspector").getByRole("list", { name: "Warnings" }),
     ).toHaveText(nothing);
 
-    await pull(page, "Watch", "Add after");
-    await moveOnto(page, fanItem(page, "API"));
+    await pull(page, "Watch", LINK_TAB);
+    await moveOnto(page, fanItem(page, "Microservice"));
     await page.mouse.up();
     await ready(page);
-    await expect(tile(page, "API")).toHaveClass(/selected/);
+    await expect(tile(page, "Microservice")).toHaveClass(/selected/);
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
 
     // The user's `+` greys the action the design already has.
@@ -204,8 +244,79 @@ test("builds both actions from a blank design", async ({ page }) => {
       { lane: "upload", name: "Produce" },
     ]);
     expect(saved.architecture.studio.entries).toEqual([
-      { id: "download-api", lane: "download", element: "api" },
+      { id: "download-microservice", lane: "download", element: "microservice" },
     ]);
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("creates each of the eleven kinds by mouse, with its icon, and Undo removes one", async ({
+  page,
+}) => {
+  test.slow();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await createStudy(page, "E2E Every kind", "blank");
+  try {
+    await pull(page, "User", "Add action");
+    await moveOnto(page, fanItem(page, "Consume"));
+    await page.mouse.up();
+    await ready(page);
+    // Each kind from a tile it may follow: the action's entries, then a service's stores, then
+    // the Uploads service's queue, external API and worker. A tile links to at most four.
+    const plan: [from: string, name: string, kind: string, icon: string][] = [
+      ["Consume", "Microservice", "service", "server"],
+      ["Consume", "Uploads", "uploads", "cloud-upload"],
+      ["Consume", "Identity", "identity", "lock"],
+      ["Consume", "CDN", "cdn", "world"],
+      ["Microservice", "Database", "database", "database"],
+      ["Microservice", "Search index", "search", "search"],
+      ["Microservice", "Cache", "cache", "bolt"],
+      ["Microservice", "Object storage", "object-store", "archive"],
+      ["Uploads", "Queue or topic", "queue", "list"],
+      ["Uploads", "External API", "external-api", "plug"],
+      ["Uploads", "Worker service", "worker", "cpu"],
+    ];
+    for (const [index, [from, name, kind, icon]] of plan.entries()) {
+      await tile(page, from).click();
+      await pull(page, from, LINK_TAB);
+      await moveOnto(page, fanItem(page, name));
+      await page.mouse.up();
+      await ready(page);
+      // The new tile is named after its kind, shows its kind's icon and is selected.
+      const added = tile(page, name);
+      await expect(added).toHaveClass(/selected/);
+      await expect(added.locator(`.lane-tile-icon svg.tabler-icon-${icon}`)).toHaveCount(1);
+      await expect(tiles(page)).toHaveCount(3 + index);
+      const saved = await design(page, id);
+      const element = saved.elements.find((e) => e.name === name)?.id;
+      expect(
+        saved.architecture.studio.elements.find((e) => e.element === element)?.settings.kind,
+      ).toBe(kind);
+      expect(saved.connections.find((c) => c.to.element === element)?.from.element ?? "entry").toBe(
+        from === "Consume" ? "entry" : saved.elements.find((e) => e.name === from)?.id,
+      );
+    }
+    const saved = await design(page, id);
+    expect(saved.architecture.studio.entries.map((e) => e.element)).toEqual([
+      "microservice",
+      "uploads",
+      "identity",
+      "cdn",
+    ]);
+    expect(
+      new Set(saved.architecture.studio.elements.map((e) => e.settings.kind as string)),
+    ).toEqual(new Set(plan.map(([, , kind]) => kind)));
+
+    // Undo takes the last tile and its link back out, in one step.
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(tile(page, "Worker service")).toHaveCount(0);
+    await expect(tiles(page)).toHaveCount(12);
+    await expect
+      .poll(async () => (await design(page, id)).elements.map((e) => e.id))
+      .not.toContain("worker-service");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }

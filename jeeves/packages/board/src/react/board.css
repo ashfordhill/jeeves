@@ -418,7 +418,8 @@
   line-height: 1.3;
 }
 
-/* Fan items: icons only; the name shows under the one the pointer is on. Data tiles are round.
+/* Fan items: icons; the name shows under the one the pointer is on (a grid fan captions each
+   too). Data tiles are round.
    The 60px box is `FAN_ITEM_SIZE` in fan.ts, which keeps the items on the board. A disabled item
    is greyed in its slot, and its tip adds the reason. */
 .board-fan-item {
@@ -471,6 +472,41 @@
 .board-fan-item[aria-disabled="true"] .board-fan-content {
   opacity: 0.4;
   filter: grayscale(1);
+}
+
+/* A grid fan's panel: one surface under its cells, so the items read over the tiles it covers. */
+.board-fan-panel {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid color-mix(in srgb, var(--board-line) 35%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--board-paper) 97%, transparent);
+  box-shadow: 0 8px 24px var(--board-shadow);
+  pointer-events: none;
+}
+
+/* A grid fan captions every item: its name under the box, on a light backing so it reads over
+   the board. The cell is `FAN_CELL` (104 × 92) and the caption line `FAN_CAPTION_H` in fan.ts. */
+.board-fan-caption {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 100px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--board-tile) 88%, transparent);
+  color: var(--board-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.board-fan-item[aria-disabled="true"] .board-fan-caption {
+  color: color-mix(in srgb, var(--board-ink) 45%, transparent);
 }
 
 .board-fan-tip {

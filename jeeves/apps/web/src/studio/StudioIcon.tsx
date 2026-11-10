@@ -1,10 +1,9 @@
 /**
- * Tabler icons named by the kinds' visuals (`visual.icon`), the tile types and the module kinds
+ * Tabler icons named by the kinds' visuals (`visual.icon`) and the module kinds
  * (`studioComponentVisuals`). Unknown names fall back to a box.
  */
 import {
   type Icon,
-  IconApi,
   IconArchive,
   IconArrowsSplit,
   IconBolt,
@@ -30,7 +29,6 @@ import {
 } from "@tabler/icons-react";
 
 const ICONS: Record<string, Icon> = {
-  api: IconApi,
   browser: IconBrowser,
   database: IconDatabase,
   server: IconServer,

@@ -112,8 +112,8 @@ its Overview size and face.
   the click; where only one relationship's lines run together, a click selects it without asking.
   The X removes the whole relationship, with the same refusals and confirmation as in the
   Overview; module links that use it go with it.
-- Containers are tiles: click one's header to select it, and its pull tabs and X work as on any
-  tile. A container's pull tabs sit just outside its frame, beside its rows rather than over them.
+- Containers are tiles: click one's header to select it, and its link tab and X work as on any
+  tile. A container's link tab sits just outside its frame, beside its rows rather than over them.
   In Connect mode a drag from anywhere on a container, a row included, links the container
   ([Connect mode](#connect-mode)).
   A port mark turns blue whenever its line does: the container, the relationship, the tile at the
@@ -314,35 +314,45 @@ rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
 
-In Select mode only the selected tile shows controls: tabs on its sides, for what the lane rules
-allow there, and the red X on its top edge ([Removing](#removing)).
+In Select mode only the selected tile shows controls: a tab on its right, for what the lane rules
+allow there, and the red X on its top edge ([Removing](#removing)). Nothing is inserted before a
+tile, so its left side has no tab.
 
-- **`+`** creates a new tile. The right `+` adds one after the tile. The left `+` inserts one
-  before it: the new tile takes over every link into the tile (and its lane entry) and then links
-  to it. A side has a `+` when at least one tile type fits there, so databases, caches, storage
-  and search indexes have no right `+`.
+- **The link tab** (the link icon) adds a new tile after the tile and links the two. A tile has it
+  when at least one kind fits after it, so databases, caches, storage and search indexes have none.
 - **The user** has one `+`. Its fan offers its two actions, **Consume** (the download icon) and
   **Produce** (the upload icon); one the design already has is greyed ("This design already has a
   Produce action; each lane has one."), and when it has both the `+` is gone. A picked action
   becomes an action tile named Consume or Produce, selected with its Name field ready to type over
   ("Watch"). A project with no tiles opens with the user selected, so its `+` shows.
-- **An action** has a right `+` (a new tile that becomes its entry: a Service or an API; the other
-  types are greyed, "An action reaches a service (not a worker), an API or the CDN."). It has no
-  left `+`: nothing goes before an action.
+- **An action** has the same link tab: a new tile that becomes its entry, a Microservice, Uploads,
+  Identity or a CDN; the other kinds are greyed ("An action reaches a service (not a worker), an
+  API or the CDN.").
 
-Pull a `+` with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
-and the pull stays open until you let go. It opens a fan of all seven tile types around the tab,
-always in the same order and the same places. The name shows under the icon the pointer is on. A
-type the rules refuse on that side is greyed, and its name adds why ("A queue can't link to URL
-database. A queue feeds only an application, not a database."). The fan stays on the canvas, at
-least 16px inside its edges, so it never covers a rail or the header; near an edge its icons line
-up along it, sometimes right beside the tab. **Release on an icon** to add a tile of that type.
-It is named after the type ("Cache", then "Cache 2"), docks at the next slot beside its source
-while the layout animates around it, and is selected with its Name field ready to type over (the
-canvas pans to it if it landed out of view). A Service added after a queue is a worker; a new
-database, cache, storage or queue belongs to the application it is added next to. A `+` never
-links to existing tiles: releasing on a greyed icon or on a tile changes nothing. **Release
-anywhere else**, or press Escape, and the band springs back.
+Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
+and the pull stays open until you let go. The link tab opens a grid of the eleven kinds a new tile
+can be, on one panel beside the tab, each with its kind's icon and name, always in the same
+places, one row per group:
+
+| Row | Kinds |
+| --- | --- |
+| Application | Microservice, Worker service, Uploads, Identity |
+| Data | Database, Search index, Cache, Object storage |
+| Messaging | Queue or topic |
+| Edge | CDN, External API |
+
+A kind the rules refuse after that tile is greyed, and its tip adds why ("Click events can't link
+to a search index. A queue feeds only an application, not a search index."). Gateway and the older
+Redirect, Notifications and Billing kinds are not offered; existing tiles of those kinds keep
+working. The panel stays on the canvas, at least 16px inside its edges, so it never covers a rail
+or the header; where the canvas is narrow it moves aside as one block and can cover its own tile.
+**Release on a kind** to add a tile of it. It is named after the kind ("Worker service", then
+"Worker service 2"), docks at the next slot beside its source while the layout animates around
+it, and is selected with its Name field ready to type over (the canvas pans to it if it landed
+out of view). After a queue both a Microservice and a Worker service consume; a new database,
+cache, storage or queue belongs to the application it is added next to. A tab never links to
+existing tiles: releasing on a greyed kind or on a tile changes nothing. **Release anywhere
+else**, or press Escape, and the band springs back.
 
 ### Connect mode
 
@@ -497,8 +507,7 @@ are not "Fix the lanes first" problems (those are lane errors). The rules are:
 
 - **A store with no writer**: where resource access is declared, no valid authority/role/write
   request/matching grant. Otherwise use the legacy inferred owner: no owner, or an owner that
-  does not link to it, for example after **Add before** the store or removing the owner's
-  link ("URL database has no writer: its owner Shorten service doesn't link to it. Link Shorten
+  does not link to it, for example after removing the owner's link ("URL database has no writer: its owner Shorten service doesn't link to it. Link Shorten
   service to it, or choose another owner.").
 - **A worker's output nobody reads**: a store whose only links come from its owner, a worker
   ("Nothing reads Analytics store: only its owner Analytics worker links to it. Link the service
@@ -574,7 +583,9 @@ async; a link into a store also says whether it writes or reads) and modules, an
 It also sees the findings and, separately, the [warnings](#warnings), in `getDesign` and after
 each accepted command; its instructions list the warnings (generated from the spec) and say to
 resolve the ones its edits caused before it finishes, or say why one stays.
-It lists the seven tile types with their kinds. The selected tile, line or entry is sent with
+It lists the seven tile types with their kinds, and the link fan's eleven kinds for a new tile;
+`addTile` takes the new tile's kind and adds it only after a tile or a lane's action. The selected
+tile, line or entry is sent with
 each message, so "Add a cache after the selected service" works; the user, an action and the
 user's line to it have no design ID, so selecting one sends nothing. It can ask one focused
 question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP, SVG). An
@@ -1026,10 +1037,10 @@ and all twenty components, with nothing omitted and no findings.
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
   scale with the board. With both rails open (TinyURL fits at 0.56 at 1440×900, 0.45 at 1280×800)
-  the tabs are about 22px or 18px, tile names are small, and the fan's seven icons cover nearby
-  tiles (a `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up
-  in a column along it, sometimes over the tile's own tabs. Closing a rail helps; a fitted camera
-  refits by itself.
+  the tabs are about 22px or 18px, tile names are small, and the link fan's panel (about 430 by
+  380px) covers nearby tiles (a tab never drops on them, so nothing is lost). Where the canvas is
+  too narrow for it beside the tab, it moves aside as one block, over the tile's own tab and often
+  the tile itself. Closing a rail helps; a fitted camera refits by itself.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
   marketplace study (seventeen tiles, 1,472px tall) fits at 0.37 at 1440×900 and 0.32 at
   1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
@@ -1080,7 +1091,7 @@ and all twenty components, with nothing omitted and no findings.
 - The inspector neither lists nor edits module links, and the Detailed view draws only those to
   other tiles: a module's links are preserved, preset-bound or made through chat (including a link
   between two modules of one tile, "Supplies code", which no view draws or marks). A selected
-  container's pull tabs sit just outside its frame, over the first 36px of the lines leaving its
+  container's link tab sits just outside its frame, over the first 36px of the lines leaving its
   middle rows, and its red X sits on the header, over the middle of a long name ("Video lifecycle
   worker").
 - In Detailed, two rows of one container that write one store come back to it as separate lines

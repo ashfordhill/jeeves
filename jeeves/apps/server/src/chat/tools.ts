@@ -62,6 +62,8 @@ import {
   studioKindLanguages,
   studioKindSchema,
   studioLimits,
+  studioLinkFan,
+  studioLinkFanGroups,
   studioLinkRules,
   studioPatternCatalogVersion,
   studioPatternIdSchema,
@@ -122,7 +124,7 @@ The lane canvas:
 - Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per action.
 - ${studioWarningSentence}
 
-Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
+Tools: listStudioDefinitions lists the tile types, their kinds, the link fan's kinds for new tiles and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
 
 readReadiness returns the same snapshot report as the inspector and blueprint v3: design validity, exact contract completeness, implementation availability and exact generated-output evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Strict readiness has no real artifact/evidence registry or verified runner. Experimental installed feature support is reported separately by getDesign and grants no strict readiness credit. The report is read-only and does not replace a fresh reviewDesign before staged edits commit.
 
@@ -138,7 +140,7 @@ Persistent profile and requirements: getDesign includes schemaVersion, saved per
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
-- addTile: a new tile after a tile, after a lane's action (from {"lane": "download"} or {"lane": "upload"}, side "after"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue receives that adjacent application as its legacy inferred writer; no logical authority, role or grant is declared automatically. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
+- addTile: a new tile of tile.kind after a tile, or after a lane's action (from {"lane": "download"} or {"lane": "upload"}; the action is added with its default name if the lane has none). side is always "after": nothing is inserted before a tile. For a new tile choose one of listStudioDefinitions.linkFan, the kinds the canvas's link fan offers (Gateway, Redirect, Notifications and Billing are not offered there; existing tiles of those kinds keep working). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue receives that adjacent application as its legacy inferred writer; no logical authority, role or grant is declared automatically. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
 - linkTiles: links a lane's action or a tile to a tile already on the canvas (a merge, or a new entry).
 - link ("sync" or "async") is optional on addTile and linkTiles: leave it out for the pair's default from the link table; give it only to choose the other mode where the table allows both.
 - setEntryLane: moves an entry to the other lane's action ("download" or "upload"), within its cap.
@@ -202,7 +204,7 @@ const descriptions: Record<ToolName, string> = {
   configureOperations:
     "Preview then stage a complete bounded replacement of exact API receiver implementations and entry/service-call expectations. Preserve unrelated rows. Apply must match the latest preview; explicit v3 upgrade for legacy designs. Bind canonical IDs, refine source read/write and cache read-and-fill grants, and retain unknown refs as unresolved. Templates/runtime evidence remain none; Create verifier availability is separate.",
   listStudioDefinitions:
-    "List the tile types with their kinds, the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
+    "List the tile types with their kinds, the link fan's kinds for new tiles (as the canvas offers them), the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
   describeStudioDefinition:
     "Read a kind's diagnostic source schema and historical defaults. These are preserved design intent, not editable choices; getDesign.editableSettings supplies actual normal controls.",
   listStudioPatterns:
@@ -264,8 +266,8 @@ function languagesOf(kind: StudioKind) {
 }
 
 /**
- * The tile types the canvas offers, each with its kinds (the first is the default), each kind's
- * languages and its preset defaults (a new tile or `changeKind` starts with them).
+ * The tile types, each with its kinds, each kind's languages and its preset defaults (a new tile
+ * starts with them); the link fan's kinds for a new tile, by group, as the canvas offers them.
  */
 function catalogSummary() {
   return {
@@ -280,6 +282,7 @@ function catalogSummary() {
         defaults: studioDefinitions[kind].defaults,
       })),
     })),
+    linkFan: studioLinkFanGroups.map((group) => ({ group, kinds: studioLinkFan[group] })),
     modules: studioComponentKinds.map((kind) => {
       const { name, description, targets } = studioComponentDefinitions[kind];
       return { kind, name, description, uses: targets };

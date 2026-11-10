@@ -85,18 +85,25 @@ test("the system page: Name, Description, warnings, then Add a supported feature
   await page
     .getByRole("button", { name: "Remove Stats API to Analytics store", exact: true })
     .click();
+  // The removal is saved before the page is read: its warning comes from the saved design.
+  await expect
+    .poll(async () => {
+      const saved = await design(page, id);
+      return {
+        revision: saved.revision,
+        read: saved.connections.some((c) => c.id === "stats-read"),
+      };
+    })
+    .toEqual({ revision: before.revision + 1, read: false });
+  await expect(page.locator('.board .react-flow__edge[data-id="stats-read"]')).toHaveCount(0);
   await tile(page, "User").click();
   await expect(inspector.getByRole("tablist")).toHaveCount(0);
   await expect(inspector.getByLabel("Name", { exact: true })).toHaveValue("TinyURL");
   await expect(inspector.locator(".lane-inspector-kind")).toHaveText("System");
   await expect(inspector.getByText(/^(Purpose|Goal)$/)).toHaveCount(0);
-  expect(await outline(inspector)).toEqual([
-    "Name",
-    "Description",
-    "Warnings",
-    "Add a supported feature",
-    "Feature preset",
-  ]);
+  await expect
+    .poll(() => outline(inspector))
+    .toEqual(["Name", "Description", "Warnings", "Add a supported feature", "Feature preset"]);
   await inspector.getByRole("button", { name: "Analytics store", exact: true }).click();
   await expect(tile(page, "Analytics store")).toHaveClass(/selected/);
   await page.getByRole("button", { name: "Undo", exact: true }).click();

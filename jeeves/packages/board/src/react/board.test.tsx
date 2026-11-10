@@ -12,7 +12,7 @@ import {
   type LineSpec,
   type TileSpec,
 } from "./Board.tsx";
-import { fanCenters } from "./fan.ts";
+import { fanCenters, fanGrid, placeGrid } from "./fan.ts";
 import type { FanItem, TabSpec } from "./TileChrome.tsx";
 
 /**
@@ -757,6 +757,8 @@ describe("Board", () => {
       { id: "b", at: slots[1], disabled: false },
       { id: "c", at: slots[2], disabled: false },
     ]);
+    // An arc fan has no panel and no captions.
+    expect(document.querySelectorAll(".board-fan-panel, .board-fan-caption")).toHaveLength(0);
     fireEvent.pointerUp(handle, { pointerId: 1, clientX: 600, clientY: 400 });
 
     // Disabling an item keeps every item in its slot.
@@ -787,5 +789,72 @@ describe("Board", () => {
       fireEvent.pointerUp(handle, { pointerId: 1, clientX: 610, clientY: 400 });
     });
     expect(onPick).toHaveBeenCalledWith("redirect", "add", "c");
+  });
+
+  it("lays a grid fan out in a row per group, captions every item and picks from it", async () => {
+    const capture = { setPointerCapture: () => {}, releasePointerCapture: () => {} };
+    Object.assign(HTMLElement.prototype, capture);
+    if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
+    let under: Element | null = null;
+    document.elementFromPoint = () => under;
+    const groups = ["app", "app", "data", "data", "data", "edge"];
+    const items: FanItem[] = groups.map((group, i) => ({
+      id: `k${i}`,
+      label: `Kind ${i}`,
+      content: <span>{i}</span>,
+      group,
+      ...(i === 3 && { disabled: "Kind 3 doesn't fit here." }),
+    }));
+    const onPick = vi.fn<NonNullable<BoardProps["onPick"]>>(() => undefined);
+    render(
+      <div style={{ width: 1200, height: 800 }}>
+        <Board
+          tiles={tiles}
+          lines={lines}
+          engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+          selected={{ tile: "redirect" }}
+          onSelectTile={() => {}}
+          onSelectLine={() => {}}
+          onClear={() => {}}
+          mode="select"
+          tabs={[
+            {
+              id: "link",
+              kind: "create",
+              side: "after",
+              label: "Add linked tile",
+              glyph: "link",
+              layout: "grid",
+              items,
+            },
+          ]}
+          onPick={onPick}
+        />
+      </div>,
+    );
+    const handle = await screen.findByRole("button", { name: "Add linked tile" });
+    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 600, clientY: 400 });
+    const overlay = document.querySelector(".board-pull");
+    expect(overlay?.getAttribute("data-layout")).toBe("grid");
+    // One panel under the cells, so the items read over the tiles they cover.
+    expect(document.querySelectorAll(".board-pull .board-fan-panel")).toHaveLength(1);
+    // Every item in its grid slot, kept on the 1200×800 board, with its name as a caption.
+    const slots = placeGrid(fanGrid(600, 400, groups), { x: 0, y: 0, w: 1200, h: 800 });
+    const fan = [...document.querySelectorAll<HTMLElement>("[data-fan-item]")];
+    expect(fan.map((el) => `${el.style.left},${el.style.top}`)).toEqual(
+      slots.map((p) => `${p.x}px,${p.y}px`),
+    );
+    expect(fan.map((el) => el.querySelector(".board-fan-caption")?.textContent)).toEqual(
+      items.map((item) => item.label),
+    );
+    expect(fan[3]?.getAttribute("aria-disabled")).toBe("true");
+    // Three rows: two, three and one item.
+    expect(new Set(slots.map((p) => p.y)).size).toBe(3);
+    under = document.querySelector('[data-fan-item="k4"]');
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    await act(async () => {
+      fireEvent.pointerUp(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    });
+    expect(onPick).toHaveBeenCalledWith("redirect", "link", "k4");
   });
 });

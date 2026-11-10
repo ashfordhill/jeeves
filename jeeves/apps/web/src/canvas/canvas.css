@@ -344,7 +344,7 @@
   font-size: 15px;
 }
 
-/* A fan item's tile-type icon, in the colour of the kind it adds; an action's in plain ink. */
+/* A link fan item's kind icon, in its kind's colour; an action's in plain ink. */
 .lane-fan-icon {
   display: flex;
   color: var(--type-color);

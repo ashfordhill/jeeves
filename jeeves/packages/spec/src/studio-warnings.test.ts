@@ -3,7 +3,7 @@ import { applyOperations } from "./apply.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import { isDesignWarning, isStructural } from "./findings.ts";
 import { studioArchitectureExample, studioArchitectureExamples } from "./studio-examples/index.ts";
-import { laneOptions } from "./studio-lane-commands.ts";
+import { linkFanOptions } from "./studio-lane-commands.ts";
 import { laneActionNode, laneFindings } from "./studio-lanes.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
 import { validateStudio } from "./studio-validation.ts";
@@ -39,7 +39,7 @@ describe("design warnings", () => {
     }
   });
 
-  it("a store with no writer: Add before the URL database, or remove the owner's link (DP10)", () => {
+  it("a store with no writer: remove the owner's link (DP10)", () => {
     const expected = [
       {
         rule: "store-without-writer",
@@ -48,14 +48,6 @@ describe("design warnings", () => {
           "URL database has no writer: its owner Shorten service doesn't link to it. Link Shorten service to it, or choose another owner.",
       },
     ];
-    const before = run(tinyurl(), {
-      type: "addTile",
-      from: { tile: "url-db" },
-      side: "before",
-      tile: { id: "link-store", name: "Link store", kind: "service" },
-      linkId: "store-db",
-    });
-    expect(warnings(before)).toEqual(expected);
     const unlinked = run(tinyurl(), { type: "removeLink", link: "shorten-db" });
     expect(warnings(unlinked)).toEqual(expected);
     // It is a finding, never a structural error, so the next edit is still accepted.
@@ -135,10 +127,10 @@ describe("design warnings", () => {
         message: "Link events has no consumer: nothing takes its messages. Add a worker after it.",
       },
     ]);
-    // Not a lane error: the lane commands still offer the worker after the queue.
+    // Not a lane error: the link fan still offers the worker after the queue.
     expect(
-      laneOptions(queued, { tile: "link-events" }, "after").find((item) => item.type === "service"),
-    ).toEqual({ type: "service", kind: "worker" });
+      linkFanOptions(queued, { tile: "link-events" }).find((o) => o.kind === "worker"),
+    ).toEqual({ kind: "worker", group: "application" });
     const consumed = run(queued, {
       type: "addTile",
       from: { tile: "link-events" },

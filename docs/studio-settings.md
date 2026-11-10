@@ -114,8 +114,11 @@ References are IDs of existing objects.
 | Gateway product / `S.provider` | `traefik`, `unspecified`, `envoy`, `kong`, `nginx`, `aws-api-gateway`, `external` | Gateway. |
 
 Billing, Redirect, Notifications, Identity and Uploads are kinds of the Service tile, like
-Microservice and Worker service: ordinary service semantics plus the fields above. Gateway is the API tile's
-default kind. Browser app stays in the format but no tile type offers it. A plain service can be
+Microservice and Worker service: ordinary service semantics plus the fields above. Gateway and CDN
+are the API tile's kinds. The canvas's link fan adds only Microservice, Worker service, Uploads,
+Identity, CDN and the data, queue and external kinds ([catalog](../jeeves/CATALOG.md#tile-types-and-the-link-fan));
+existing Billing, Redirect, Notifications and Gateway tiles keep their settings. Browser app stays
+in the format but no tile type offers it. A plain service can be
 named Catalog or Orders without gaining a business-rule form.
 
 ### Languages
