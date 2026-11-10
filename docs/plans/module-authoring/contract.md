@@ -1,6 +1,6 @@
 # Module and generation contract (MA01)
 
-**Status:** draft for the owner's approval, 2026-11-09. MA05 waits for it.
+**Status:** approved by the owner on 2026-11-09, with every default below accepted. MA05 may start.
 **Plan:** [module authoring](units.md) · **Code read at:** `18cda98`.
 
 ## Owner summary
@@ -330,6 +330,9 @@ keeps resolving. It is not re-expressed as modules (question 5).
 | Frozen v2 project and studies | Never edited. Module derivation runs only on module commands. |
 
 ## Open questions for the owner
+
+**Answered 2026-11-09:** the owner accepted every default. The owner wants #6 planned and built
+as its own plan after the MA series finishes.
 
 1. **What "frozen v2 byte-identical" means.** Two provenance files hash the generator's own
    source, so they change with any code change. *Default:* the other 70 files byte-identical;

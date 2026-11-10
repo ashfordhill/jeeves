@@ -7,7 +7,7 @@ awaits the owner's approval; MA05–MA08 below follow it. MA02 is done.
 
 There are ten units, run in order: MA01 → MA10. A coordinator gives each unit to a fresh agent.
 That agent does only its own unit on `main` in the primary checkout, commits it and stops.
-**MA05 must not start until the owner has approved MA01's contract.**
+MA01's contract was approved by the owner on 2026-11-09, with every default accepted, so MA05 may start.
 
 ## Goal
 
@@ -134,7 +134,9 @@ connect mode.
 
 ## Fixed constraints
 
-- **Frozen work stays byte-identical:** YouTube v1/v2 inputs, apps, exports and diagram snapshots;
+- **Frozen work stays byte-identical** (for v2 exports, as contract §8 and approved question 1
+  define: 70 payload files byte-identical, and the two provenance files may differ only in the
+  source inventory): YouTube v1/v2 inputs, apps, exports and diagram snapshots;
   the v1 frozen export; and the Overview layout and export. Existing designs, including ones with
   tile-level selections, stay readable and exportable unchanged.
 - **Shared commands:** mouse, chat and generation use the same supported commands
@@ -516,7 +518,9 @@ These are listed in the [UI overhaul review](../ui-overhaul/review.md):
   and rows readable only from 0.6 zoom;
 - the red X position on containers;
 - YouTube v3;
-- the later revisit of the Marketplace and TinyURL studies.
+- the later revisit of the Marketplace and TinyURL studies;
+- a runnable process per application tile, with provisioning for stubs (contract question 6).
+  The owner wants it planned and built as its own plan after MA10.
 
 ## Coordinator prompt
 
