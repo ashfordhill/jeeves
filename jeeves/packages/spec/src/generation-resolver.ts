@@ -243,13 +243,14 @@ export function resolveGeneration(
     const host = generationHost(selection);
     const hostBinding = element(host);
     const role = ownership.roles.find((entry) => entry.element === host);
-    if (!role)
+    // A capability without a role (the module stub) needs none.
+    if (capability.role && !role)
       report(
         "CONFIG_REQUIRED",
         [...base, "target"],
         "Selected host requires an explicit logical owner and role.",
       );
-    else if (role.kind !== capability.role)
+    else if (capability.role && role && role.kind !== capability.role)
       report(
         "CONFIG_INVALID",
         [...base, "target"],
@@ -575,10 +576,14 @@ export function resolveGeneration(
     };
     capability.settings.forEach(readRule);
     // Report every selected setting with no consumer, rather than copying an arbitrary intent
-    // map into generated JSON. Adapters delegate their host settings to the selected mechanism.
-    const mechanism = !["youtube-upload", "youtube-watch", "youtube-search"].includes(
-      selection.binding.kind,
-    );
+    // map into generated JSON. Adapters delegate their host settings to the selected mechanism; a
+    // module stub reads none of them.
+    const mechanism = ![
+      "youtube-upload",
+      "youtube-watch",
+      "youtube-search",
+      "module-stub",
+    ].includes(selection.binding.kind);
     const audit = (value: object, path: Path, ignored: string[] = []) => {
       for (const key of Object.keys(value))
         if (

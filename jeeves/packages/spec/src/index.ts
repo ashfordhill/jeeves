@@ -18,6 +18,8 @@ export * from "./generation-resolver.ts";
 export * from "./generation-support.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";
+export * from "./module-generation.ts";
+export * from "./module-status.ts";
 export * from "./operation-contracts.ts";
 export * from "./operations.ts";
 export * from "./ownership.ts";

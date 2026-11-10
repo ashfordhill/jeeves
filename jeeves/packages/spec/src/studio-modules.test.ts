@@ -33,7 +33,11 @@ const gaps = (design: DesignDocument, id: string) => {
 describe("modules", () => {
   it("are offered only on applications and get free names and IDs per host", () => {
     const design = tinyurl();
-    expect(moduleKinds(design, "shorten")).toHaveLength(10);
+    // A service takes the ten generic kinds plus Multipart uploads and Search query.
+    expect(moduleKinds(design, "shorten")).toHaveLength(12);
+    expect(moduleKinds(design, "shorten")).toEqual(
+      expect.arrayContaining(["multipart-uploads", "search-query"]),
+    );
     expect(moduleKinds(design, "url-db")).toEqual([]);
     expect(moduleKinds(design, "click-events")).toEqual([]);
     // Neither service has an ID generator yet; the second one on a host is numbered.

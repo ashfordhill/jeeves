@@ -169,6 +169,11 @@ supported selections rather than a frozen whole-document hash. `validateV2Input`
 input bytes and original declarations separately from schema-parsed semantics. Source pointers
 must exist in the original JSON, including when parsing would materialize a default.
 
+Module-level selections (component targets) resolve on the same path. A `module-stub@0.1.0`
+selection, which module commands derive for every module without a complete template, needs no
+role and its host's settings are not audited. No emitter is installed for it yet (MA07), so its
+template is reported as not installed.
+
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
 hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares
 its exact version, dependencies and optional runtime/preset/template consumer responsibilities.

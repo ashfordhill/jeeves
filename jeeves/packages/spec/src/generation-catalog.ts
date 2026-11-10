@@ -101,6 +101,8 @@ export const generationTemplates = freezeRecord({
   "youtube-upload": template("youtube-upload", [generationPolicies.publicVideo.ref]),
   "youtube-watch": template("youtube-watch", [generationPolicies.publicVideo.ref]),
   "youtube-search": template("youtube-search", [generationPolicies.publicVideo.ref]),
+  /** A module's typed stub (module authoring contract, section 6); no role, resources or policy. */
+  "module-stub": template("module-stub", []),
 });
 export type GenerationBindingKind = keyof typeof generationTemplates;
 export const generationTemplateCatalog = freezeRecord(Object.values(generationTemplates));
@@ -117,8 +119,22 @@ export const generationPresets = freezeRecord({
       generationPolicies.videoHls.ref,
     ],
   }),
+  /** Pinned to the ten templates and six policies it was recorded with (sha256 `d4c66f03…`). */
   youtube: record("youtube-core", {
-    templates: generationTemplateCatalog.map((entry) => entry.ref),
+    templates: (
+      [
+        "owned-multipart",
+        "asset-lifecycle",
+        "video-hls",
+        "positive-cache-read",
+        "event-counter",
+        "search-projection",
+        "search-query",
+        "youtube-upload",
+        "youtube-watch",
+        "youtube-search",
+      ] as const
+    ).map((kind) => generationTemplates[kind].ref),
     policies: Object.values(generationPolicies).map((entry) => entry.ref),
   }),
 });

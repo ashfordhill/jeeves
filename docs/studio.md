@@ -574,8 +574,13 @@ and the instructions' copy of that table is generated from it. So chat, like the
 can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
 command changes nothing and comes back in the same plain words as the canvas notice ("URL cache
 can't link to Shorten service. A cache can't link onward."); the turn's activity list shows
-it. Names, descriptions, settings, link details and modules go through `edit`,
-`editSystem`, `editConnection` and the module commands.
+it. Names, descriptions, settings and link details go through `edit`, `editSystem` and
+`editConnection`. Modules are added, connected, disconnected and removed with `addModule`,
+`connectModule`, `disconnectModule` and `removeModule`
+([catalog](../jeeves/CATALOG.md#components-c3)), which derive each module's generation and the
+ownership it needs in the same step. Chat sees each module's status (template, stub, custom or
+refused, with why), and the module kinds with the tiles that hold them, their slots and what they
+generate. The canvas has no module controls yet.
 
 Chat reads the design as the canvas draws it: the actions, each with its lane, name, entries and
 the tiles its lane reaches, then each tile in lane order with its kind, settings, links (sync or

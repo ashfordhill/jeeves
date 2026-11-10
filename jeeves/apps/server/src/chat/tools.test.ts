@@ -6,6 +6,7 @@ import {
   linkFanOptions,
   newLinkId,
   newTileIdentity,
+  type StudioCommand,
   studioArchitectureExample,
   studioLinkRules,
   studioWarningSentence,
@@ -274,6 +275,62 @@ describe("studio chat tools", () => {
     const pending = workspace.pending.length;
     expect(add({ ...addCache(3).commands[0], side: "before" }).ok).toBe(false);
     expect(workspace.pending).toHaveLength(pending);
+  });
+
+  it("adds and connects modules with the canvas's commands and reads their status", () => {
+    const base = tinyurl();
+    const workspace = new Workspace(base);
+    const commands = [
+      { type: "addModule", host: "shorten", kind: "rate-limiter", id: "shorten-limit" },
+      { type: "addModule", host: "redirect", kind: "data-access", id: "redirect-urls" },
+      {
+        type: "connectModule",
+        module: "redirect-urls",
+        slot: "database",
+        target: { tile: "url-db" },
+      },
+    ];
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 3, commands }).ok).toBe(true);
+    // The same batches the mouse sends, one after another.
+    let mouse = base;
+    const ops = commands.flatMap((command) => {
+      const batch = buildStudioCommand(mouse, command as StudioCommand);
+      const result = applyOperations(mouse, batch.ops);
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      mouse = result.design;
+      return batch.ops;
+    });
+    expect(workspace.pending).toEqual(ops);
+    const tiles = run(workspace, "getDesign").tiles as {
+      id: string;
+      modules?: { id: string; status?: string; reason?: string; unconnected?: string[] }[];
+    }[];
+    const shorten = tiles.find((tile) => tile.id === "shorten")?.modules;
+    expect(shorten?.find((module) => module.id === "shorten-limit")).toMatchObject({
+      status: "stub",
+      reason: "Rate limiter has no template; it is generated as a stub.",
+      unconnected: ["store"],
+    });
+    // A kind its tile can't hold, and a slot it doesn't have, are refused in plain words.
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [{ type: "addModule", host: "shorten", kind: "video-encoder" }],
+      }),
+    ).toMatchObject({
+      ok: false,
+      error: "Video encoder can't go in Shorten service; it goes in a worker.",
+    });
+    const catalog = run(workspace, "listStudioDefinitions").modules as {
+      kind: string;
+      hosts: string[];
+      generation: { kind: string };
+    }[];
+    expect(catalog).toHaveLength(18);
+    expect(catalog.find((item) => item.kind === "video-encoder")).toMatchObject({
+      hosts: ["worker"],
+      generation: { kind: "lead", template: "video-hls" },
+    });
   });
 
   it("prepares accepted commands on the working copy without committing them", () => {

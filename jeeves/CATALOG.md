@@ -255,27 +255,82 @@ them.
 
 Components live inside one application and reach other boxes only through an existing C2
 connection. In the studio they are the **modules** of an application tile: listed in its
-inspector, never drawn ([studio guide](../docs/studio.md#inspector)).
-Icons: `studioComponentVisuals` in [`studio-modules.ts`](packages/spec/src/studio-modules.ts).
+inspector and drawn as rows in the Detailed view ([studio guide](../docs/studio.md#inspector)).
+A module is the unit of generated code ([module authoring contract](../docs/plans/module-authoring/contract.md)):
+each kind is a template's **lead**, a **part** of templates, or a **stub**. Icons:
+`studioComponentVisuals` in [`studio-modules.ts`](packages/spec/src/studio-modules.ts); hosts,
+slots and generation: `studioComponentDefinitions` in
+[`studio-components.ts`](packages/spec/src/studio-components.ts).
 
-| Kind | Name | Icon | Typical product |
-| --- | --- | --- | --- |
-| `rate-limiter` | Rate limiter | `shield` | Redis |
-| `cache-reader` | Cache reader | `bolt` | Redis, Memcached |
-| `id-generator` | ID generator | `repeat` | PostgreSQL, Redis |
-| `redirect-responder` | Redirect responder | `route` | CDN |
-| `event-publisher` | Event publisher | `plug-connected` | Kafka, Amazon SQS, Redis Streams |
-| `event-consumer` | Event consumer | `plug` | Kafka, Amazon SQS, Redis Streams |
-| `data-access` | Data access | `database` | PostgreSQL |
-| `auth-guard` | Auth guard | `lock` | Identity service |
-| `external-call` | External call | `world` | Any API |
-| `custom` | Custom | `puzzle` | none: project-specific logic described by a one-line purpose |
+| Kind | Name | Icon | Hosts | Slots: target · use | Generation |
+| --- | --- | --- | --- | --- | --- |
+| `rate-limiter` | Rate limiter | `shield` | any | store: Cache · read & write | Stub |
+| `cache-reader` | Cache reader | `bolt` | any | cache: Cache · read & write; loader: a Data access in its tile | Lead of `positive-cache-read` |
+| `id-generator` | ID generator | `repeat` | any | store: Database or Cache · read & write | Stub |
+| `redirect-responder` | Redirect responder | `route` | any | none: can't connect | Stub |
+| `event-publisher` | Event publisher | `plug-connected` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
+| `event-consumer` | Event consumer | `plug` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
+| `data-access` | Data access | `database` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter` |
+| `auth-guard` | Auth guard | `lock` | any | identity: Identity or External API · verify | Part of `owned-multipart` |
+| `external-call` | External call | `world` | any | target: External API, an application or Identity · request | Stub |
+| `custom` | Custom | `puzzle` | any | uses: any tile, many | Stub |
+| `multipart-uploads` | Multipart uploads | `cloud-upload` | Uploads, Service | objects: Object storage · read & write | Lead of `owned-multipart` |
+| `lifecycle-writer` | Lifecycle writer | `progress-check` | Worker | state: Database · read & write | Lead of `asset-lifecycle` |
+| `video-encoder` | Video encoder | `movie` | Worker | originals: Object storage · read | Lead of `video-hls` |
+| `video-packager` | Video packager | `stack-2` | Worker | outputs: Object storage · write | Part of `video-hls` |
+| `video-thumbnailer` | Video thumbnailer | `photo` | Worker | outputs: Object storage · write | Part of `video-hls` |
+| `event-counter` | Event counter | `sum` | Worker | none: can't connect | Lead of `event-counter` |
+| `index-writer` | Index writer | `list-search` | Worker | index: Search index · write | Lead of `search-projection` |
+| `search-query` | Search query | `search` | Service | index: Search index · read | Lead of `search-query` |
 
-Browser apps accept only auth guard, external call and custom components in the source schema.
-Normal module lists show preserved or preset-bound modules and edit names plus installed useful
-settings. Feature attachment creates bound modules atomically; normal mouse/chat commands refuse
-arbitrary `createComponent`/`connectComponent`. Low-level source operations remain available for
-explicit custom imports and diagnostics.
+- **Hosts:** "any" is a Service, Worker or Uploads tile, and existing Redirect, Notifications
+  and Billing tiles. Identity, Gateway and Browser tiles take no new modules (`moduleKinds`); older
+  source keeps the browser-safe kinds it has.
+- **Slots:** a slot is one use of a tile through the host's link, and its arrow follows that link.
+  Every slot takes one connection except Custom's. The publisher's outbox is needed for jobs and
+  publication, not for results. The Cache reader's **loader** is the one in-process slot.
+  `moduleSlots` lists a module's slots and the links that fill them; `moduleLinkSlot` gives the slot
+  a link fills.
+- **Generation:** a template is selected only by its lead, once every needed part in its tile is
+  connected. Any other module is generated as a typed stub (`module-stub@0.1.0`), including a part
+  outside a complete template. The ten older kinds keep their targets, typical products
+  (`thirdParty`) and `requires` reasons.
+
+Module commands, in [`studio-operations.ts`](packages/spec/src/studio-operations.ts), are shared
+by the mouse and chat through `buildSupportedAuthoringCommand`:
+
+| Command | What it does |
+| --- | --- |
+| `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"` targets `{module}`, a Data access in the same tile. A filled slot must be disconnected first. |
+| `disconnectModule` | Removes one module `link`; the tiles' link stays. |
+| `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
+
+Each command derives, in the same batch and one Undo step, every module's generation
+([`module-generation.ts`](packages/spec/src/module-generation.ts)). This covers the selections,
+the values a template fixes, initial values for its needed settings, and the ownership it needs
+(roles, owners, authority, grants and access). `removeTile` and `removeLink` re-derive once
+module-level selections exist. `createComponent` and `connectComponent` stay refused in normal
+authoring. `disconnectComponent`, `removeComponent` and `editComponent` don't derive.
+
+The whole command is refused, naming the tiles and modules, when:
+
+- a part has two candidates ("Upload API has two Data access modules on databases; Multipart
+  uploads needs one.");
+- a part already serves another template;
+- a tile would hold two templates of one kind, or one both as a tile and through a module;
+- the packager and the thumbnailer write different storage;
+- a host would need two owners, or a derived fact contradicts a kept one.
+
+A kept value the command may not overwrite does not refuse it: the module's status says why.
+
+The pure helpers for the inspector, chat and Generate are:
+
+- `planModules` reads each lead and what it still needs.
+- `moduleConnectOptions(design, module)` gives every tile (and module in its tile) a dragged link
+  may end on, each with the `connectModule` it would run or the refusal.
+- `moduleStatuses` gives each module **Template**, **Stub** (what it still needs), **Custom** (no
+  selection covers it) or **Refused** (why), and its unconnected slots.
 
 ## Settings
 

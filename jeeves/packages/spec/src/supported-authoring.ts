@@ -96,7 +96,7 @@ export function buildSupportedAuthoringCommand(
   }
   if (command.type === "createComponent" || command.type === "connectComponent")
     throw new Error(
-      "Attach an installed feature preset to create its bound modules. Custom modules require explicit custom work and remain a generation gap.",
+      "Add a module with addModule and connect it with connectModule; its generation and ownership are derived in the same step.",
     );
   if (
     command.type === "editConnection" &&

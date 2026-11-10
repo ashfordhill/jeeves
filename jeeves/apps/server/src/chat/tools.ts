@@ -32,6 +32,7 @@ import {
   laneGraph,
   laneLimits,
   listStudioPatterns,
+  moduleStatuses,
   normalGenerationControls,
   type OperationInput,
   operationContractFindings,
@@ -148,7 +149,8 @@ Commands (applyStudioCommands, with getDesign's baseRevision):
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.
 - attachGenerationPreset: previews through the mouse or stages through chat an installed reusable video feature, including its bound kinds, modules and resources. changeKind is retained source vocabulary and refuses in normal authoring.
 - edit (a tile's name, purpose, useful supported settings or preserved owner), editSystem (the system name and goal), editConnection (a link's label only). Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.
-- editComponent changes a module's name, purpose or useful supported settings; disconnectComponent/removeComponent remove source intent. createComponent/connectComponent are retained source vocabulary and refuse in normal authoring: attach an installed feature for bound modules.
+- addModule (host, kind; optional id, name and description) adds a module of a kind listStudioDefinitions.modules allows in that tile (hosts). connectModule (module, slot, target) fills one of its slots: target {"tile": id} through the host's link to that tile (the link the table gives is added when there is none), or {"module": id} for a Cache reader's loader, a Data access in the same tile. disconnectModule (link) removes one module link and keeps the tiles' link; removeModule (module) removes it with its links. Each one derives, in the same step, every module's generation (a template once its lead has every needed part connected in its tile, else a typed stub), the values that template fixes and the ownership it needs, or refuses in plain words. getDesign gives each module's status: template, stub (with what it still needs), custom or refused (with why).
+- editComponent changes a module's name, purpose or useful supported settings; disconnectComponent/removeComponent remove source intent without deriving. createComponent/connectComponent are retained source vocabulary and refuse in normal authoring: use addModule and connectModule.
 IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
 
 Several commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.
@@ -212,13 +214,13 @@ const descriptions: Record<ToolName, string> = {
   describeStudioPattern:
     "Read one reviewed pattern's roles, required relationships, variants, invariant/failure checklist, sources, topology-only example and precise unsupported implementation obligations. No runtime template or verification is supplied.",
   getDesign:
-    "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, the current findings and the design warnings.",
+    "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules (each with its generation status: template, stub, custom or refused, and why), the current findings and the design warnings.",
   configureDesignScope:
     "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
   configureOwnership:
     "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Declarations only: operation bindings are separate and runtime authorization is unavailable. Foreign writes refuse, foreign reads need a deliberate published-read contract; co-deployment grants nothing.",
   applyStudioCommands:
-    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.",
+    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink and setEntryLane; modules through addModule, connectModule, disconnectModule and removeModule. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   readReadiness:
     "Read the same snapshot compatibility report as the mouse and blueprint v3: full structural validity, exact contract completeness, implementation availability and exact-output runtime evidence separately. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
@@ -284,8 +286,9 @@ function catalogSummary() {
     })),
     linkFan: studioLinkFanGroups.map((group) => ({ group, kinds: studioLinkFan[group] })),
     modules: studioComponentKinds.map((kind) => {
-      const { name, description, targets } = studioComponentDefinitions[kind];
-      return { kind, name, description, uses: targets };
+      const { name, description, targets, hosts, slots, generation } =
+        studioComponentDefinitions[kind];
+      return { kind, name, description, uses: targets, hosts, slots, generation };
     }),
     caps,
   };
@@ -325,18 +328,28 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
       ...(explicit ? { declaredAccess: explicit.access } : {}),
     };
   };
+  const statuses = new Map(moduleStatuses(design).map((item) => [item.module, item]));
   const modules = (host: string) =>
     (studio?.components ?? [])
       .filter((item) => item.host === host)
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        ...(item.description && { description: item.description }),
-        settings: item.settings,
-        links: (studio?.componentConnections ?? [])
-          .filter((link) => link.from === item.id)
-          .map(({ id, to }) => ({ id, to })),
-      }));
+      .map((item) => {
+        const status = statuses.get(item.id);
+        return {
+          id: item.id,
+          name: item.name,
+          ...(item.description && { description: item.description }),
+          settings: item.settings,
+          links: (studio?.componentConnections ?? [])
+            .filter((link) => link.from === item.id)
+            .map(({ id, to }) => ({ id, to })),
+          ...(status && {
+            status: status.status,
+            ...(status.template && { template: status.template }),
+            ...(status.reason && { reason: status.reason }),
+            ...(status.unconnected.length && { unconnected: status.unconnected }),
+          }),
+        };
+      });
   return {
     baseRevision: design.revision,
     schemaVersion: design.schemaVersion,

@@ -4,7 +4,7 @@ import type { GenerationResourceKind } from "./generation.ts";
 import { type GenerationBindingKind, generationTemplates } from "./generation-catalog.ts";
 import type { ExactContractRef } from "./operation-records.ts";
 import type { DeclaredAccess } from "./ownership.ts";
-import type { StudioComponentKind } from "./studio-components.ts";
+import { type StudioComponentKind, studioComponentKinds } from "./studio-components.ts";
 import type { StudioKind } from "./studio-model.ts";
 
 export type GenerationValue = string | number;
@@ -37,7 +37,8 @@ export type GenerationResourceRequirement = {
 };
 export type GenerationCapability = {
   template: ExactContractRef;
-  role: "api" | "worker";
+  /** Absent for the module stub, which needs no role. */
+  role?: "api" | "worker";
   hosts: readonly StudioKind[];
   componentTargets: readonly StudioComponentKind[];
   resources: readonly GenerationResourceRequirement[];
@@ -214,6 +215,7 @@ function capability(
   hosts: StudioKind[],
   resources: GenerationResourceRequirement[],
   settings: GenerationSettingRule[],
+  /** The module kinds a component-target selection may name: a template's one lead kind. */
   componentTargets: StudioComponentKind[] = ["custom"],
 ): GenerationCapability {
   const retryLimit = kind === "video-hls" ? 3 : kind === "asset-lifecycle" ? 10 : 5;
@@ -247,6 +249,7 @@ export const generationCapabilities = freezeRecord({
       ...http,
       rule("host.transfer", "host", "transfer", choice("signed-url"), "owned-multipart.transfer"),
     ],
+    ["multipart-uploads"],
   ),
   "asset-lifecycle": capability(
     "asset-lifecycle",
@@ -258,6 +261,7 @@ export const generationCapabilities = freezeRecord({
       queue("publication", "publish", "topic", true),
     ],
     worker("results"),
+    ["lifecycle-writer"],
   ),
   "video-hls": capability(
     "video-hls",
@@ -270,6 +274,7 @@ export const generationCapabilities = freezeRecord({
       queue("results", "publish", "topic"),
     ],
     worker("jobs", true),
+    ["video-encoder"],
   ),
   "positive-cache-read": capability(
     "positive-cache-read",
@@ -277,7 +282,7 @@ export const generationCapabilities = freezeRecord({
     ["service", "redirect"],
     [store("source", "database", "read"), store("cache", "cache", "read-write", "projection")],
     http,
-    ["cache-reader", "custom"],
+    ["cache-reader"],
   ),
   "event-counter": capability(
     "event-counter",
@@ -285,6 +290,7 @@ export const generationCapabilities = freezeRecord({
     ["worker"],
     [store("state", "database", "read-write"), queue("events", "consume", "topic")],
     worker("events"),
+    ["event-counter"],
   ),
   "search-projection": capability(
     "search-projection",
@@ -292,6 +298,7 @@ export const generationCapabilities = freezeRecord({
     ["worker"],
     [store("index", "search", "read-write", "projection"), queue("events", "consume", "topic")],
     worker("events"),
+    ["index-writer"],
   ),
   "search-query": capability(
     "search-query",
@@ -299,6 +306,7 @@ export const generationCapabilities = freezeRecord({
     ["service"],
     [store("index", "search", "read", "projection")],
     http,
+    ["search-query"],
   ),
   "youtube-upload": capability("youtube-upload", "api", ["uploads", "service"], [], []),
   "youtube-watch": capability(
@@ -309,4 +317,12 @@ export const generationCapabilities = freezeRecord({
     [],
   ),
   "youtube-search": capability("youtube-search", "api", ["service"], [], []),
+  "module-stub": capability(
+    "module-stub",
+    undefined,
+    ["service", "worker", "uploads", "redirect", "notification", "billing"],
+    [],
+    [],
+    [...studioComponentKinds],
+  ),
 } satisfies Record<GenerationBindingKind, GenerationCapability>);

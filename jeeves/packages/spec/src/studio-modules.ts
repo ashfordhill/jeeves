@@ -1,12 +1,14 @@
 /**
- * Modules (C3 components) in the inspector of an application tile; they are not drawn. Each
- * component kind's icon, the kinds a tile may hold, a fresh name and ID for a new module, and the
- * tiles a module may use through its host's own links.
+ * Modules (C3 components) of an application tile. Each component kind's icon, the kinds a tile may
+ * hold, a fresh name and ID for a new module, the tiles a module may use through its host's own
+ * links, and the slot each of its links fills.
  */
 import type { DesignDocument } from "./design.ts";
 import {
+  type StudioComponentConnection,
   type StudioComponentKind,
   type StudioComponentTargetKind,
+  type StudioModuleSlot,
   studioComponentDefinitions,
   studioComponentKinds,
 } from "./studio-components.ts";
@@ -28,6 +30,14 @@ export const studioComponentVisuals: Readonly<
   "auth-guard": { icon: "lock", color: "generic" },
   "external-call": { icon: "world", color: "external" },
   custom: { icon: "puzzle", color: "generic" },
+  "multipart-uploads": { icon: "cloud-upload", color: "data" },
+  "lifecycle-writer": { icon: "progress-check", color: "data" },
+  "video-encoder": { icon: "movie", color: "worker" },
+  "video-packager": { icon: "stack-2", color: "worker" },
+  "video-thumbnailer": { icon: "photo", color: "worker" },
+  "event-counter": { icon: "sum", color: "data" },
+  "index-writer": { icon: "list-search", color: "data" },
+  "search-query": { icon: "search", color: "data" },
 };
 
 /** What a module may use a tile of this kind as (validation's target kinds). */
@@ -51,14 +61,16 @@ const kindOf = (design: DesignDocument, id: string): StudioKind | undefined =>
   design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
 
 /**
- * The module kinds a tile may hold, in catalog order: none unless it is an application; a browser
- * app only the client-safe ones.
+ * The module kinds a new module in this tile may be, in catalog order (each kind's `hosts`): the
+ * generic kinds in a Service, Worker or Uploads tile and in existing Redirect, Notifications and
+ * Billing tiles, plus the leads and parts that host's templates allow. Identity, Gateway, Browser
+ * and resources take none.
  */
 export function moduleKinds(design: DesignDocument, host: string): StudioComponentKind[] {
   const kind = kindOf(design, host);
   if (!kind || studioDefinitions[kind].classification.kind !== "Application") return [];
-  return studioComponentKinds.filter(
-    (item) => kind !== "browser" || studioComponentDefinitions[item].browserHost,
+  return studioComponentKinds.filter((item) =>
+    studioComponentDefinitions[item].hosts.includes(kind),
   );
 }
 
@@ -129,4 +141,53 @@ export function moduleLinkChoices(design: DesignDocument, component: string): Mo
     used.add(id);
     return [{ element, via: connection.id, id }];
   });
+}
+
+/**
+ * The slot a module link fills: the in-process slot for a module target, else the first slot whose
+ * targets accept the tile's kind. `undefined` for a link no slot takes (an old link of an older
+ * kind, kept as it was).
+ */
+export function moduleLinkSlot(
+  design: DesignDocument,
+  link: StudioComponentConnection,
+): StudioModuleSlot | undefined {
+  const studio = design.architecture?.studio;
+  const module = studio?.components?.find((item) => item.id === link.from);
+  if (!module) return undefined;
+  const slots = studioComponentDefinitions[module.settings.kind].slots;
+  if (link.to.kind === "component") {
+    const target = studio?.components?.find((item) => item.id === link.to.id);
+    return slots.find((slot) => slot.module !== undefined && slot.module === target?.settings.kind);
+  }
+  const kind = kindOf(design, link.to.id);
+  if (!kind) return undefined;
+  const target = studioComponentTargetKind(kind);
+  return slots.find((slot) => slot.targets.includes(target));
+}
+
+/** A module slot and what fills it: each link's ID and its target tile (or module). */
+export type ModuleSlotState = {
+  slot: StudioModuleSlot;
+  links: { id: string; target: { tile: string } | { module: string } }[];
+};
+
+/**
+ * A module's slots, in catalog order, with the links that fill each one. A kind with no slots
+ * (Redirect responder, Event counter) can't connect; an empty `links` is an unconnected slot.
+ */
+export function moduleSlots(design: DesignDocument, component: string): ModuleSlotState[] {
+  const studio = design.architecture?.studio;
+  const module = studio?.components?.find((item) => item.id === component);
+  if (!module) return [];
+  const links = (studio?.componentConnections ?? []).filter((link) => link.from === component);
+  return studioComponentDefinitions[module.settings.kind].slots.map((slot) => ({
+    slot,
+    links: links
+      .filter((link) => moduleLinkSlot(design, link)?.id === slot.id)
+      .map((link) => ({
+        id: link.id,
+        target: link.to.kind === "component" ? { module: link.to.id } : { tile: link.to.id },
+      })),
+  }));
 }

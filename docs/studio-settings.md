@@ -318,6 +318,30 @@ its `description`.
 | `auth-guard` | `credential` jwt / api-key / session |
 | `external-call` | `circuitBreaker` disabled / enabled; timeout and retry stay on the traced connection |
 | `custom` | none; its `description` is its one-line purpose |
+| `lifecycle-writer` | `poolSize?`; `statementTimeoutMs?` |
+| `multipart-uploads`, `video-encoder`, `video-packager`, `video-thumbnailer`, `event-counter`, `index-writer`, `search-query` | none |
+
+The module commands (`addModule`, `connectModule`, `disconnectModule`, `removeModule`, in the
+[catalog](../jeeves/CATALOG.md#components-c3)) write, in the same batch, the values a selected
+template fixes. They write each one only where the tile or module still holds its creation
+default or `unspecified`:
+
+| Where | Value |
+| --- | --- |
+| Database | PostgreSQL, self-hosted |
+| Cache | Redis-compatible, self-hosted |
+| Search index | OpenSearch, self-hosted |
+| Queue | self-hosted; a work queue for jobs, a topic otherwise |
+| Object storage | self-hosted; private, but public for outputs |
+| Identity, and a service host that is a lane entry | public |
+| Video encoding worker | concurrency 1 |
+| Event publisher | outbox on for jobs and publication, off for results |
+| Cache reader | cache-aside, single-flight (also set when it is added) |
+
+A needed setting with no value gets one: Request timeout 1000 ms, Concurrency limit 1000, Worker
+concurrency 4, Cache TTL 3600 s, Pool size 10 and Statement timeout 2000 ms (on a Data access in
+a template and on a Lifecycle writer). Any other kept value stays, and the module's status is
+**Refused** with the reason. Stub modules get no values.
 
 Rejected outright: a host that is not a studio application (browser apps host only auth guard,
 external call and custom); a component-to-component link across hosts; an element link whose

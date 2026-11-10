@@ -68,8 +68,10 @@ type arrays, formats and other unaudited constructs fail with a tool/schema path
 This is narrower than OpenAI's full supported subset. No constraint is silently discarded, and
 there is no fallback to best-effort tools. New schema constructs require a codec/test update.
 
-The current fourteen tools compile, including RF04 turn scope, NC01 persistent scope, NC02 explicit ownership and NC03 exact operation lookup/binding. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
-values and at most nine nesting levels under the adapter's conservative traversal. The adapter
+The current fourteen tools compile, including RF04 turn scope, NC01 persistent scope, NC02 explicit ownership and NC03 exact operation lookup/binding. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 466 properties, 592 enum
+values and at most nine nesting levels under the adapter's conservative traversal, as measured
+after MA05 added the four module commands (`addModule`, `connectModule`, `disconnectModule`,
+`removeModule`) and eight module kinds. The adapter
 checks emitted schemas, including wrappers, against 5,000 properties, ten nesting levels, 1,000
 enum values, 120,000 characters for names/enum values, and the large-enum string limit.
 

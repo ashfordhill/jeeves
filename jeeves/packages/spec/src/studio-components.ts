@@ -1,10 +1,13 @@
 /**
  * Finite C3 component catalog. A component is a module inside exactly one studio
- * application. Settings are design intent; no template exists for any component yet.
- * Third-party products are the intended implementation; Jeeves code would only wire them.
+ * application. Settings are design intent. Each kind names the tiles it may live in, its slots
+ * (the uses of a tile it can take) and what it generates: the lead of a template, a part of
+ * templates or a stub (the module authoring contract, section 2). Third-party products are the
+ * intended implementation; Jeeves code would only wire them.
  */
 import { z } from "zod";
 import { idSchema } from "./ids.ts";
+import type { StudioKind } from "./studio-model.ts";
 
 export const studioComponentLimits = {
   components: 500,
@@ -41,6 +44,14 @@ export const studioComponentKinds = [
   "auth-guard",
   "external-call",
   "custom",
+  "multipart-uploads",
+  "lifecycle-writer",
+  "video-encoder",
+  "video-packager",
+  "video-thumbnailer",
+  "event-counter",
+  "index-writer",
+  "search-query",
 ] as const;
 export const studioComponentKindSchema = z.enum(studioComponentKinds);
 export type StudioComponentKind = z.infer<typeof studioComponentKindSchema>;
@@ -148,6 +159,29 @@ export const studioExternalCallSettingsSchema = z.strictObject({
 });
 /** The purpose is the component description; the generator later emits an interface and stub. */
 export const studioCustomComponentSettingsSchema = z.strictObject({ kind: z.literal("custom") });
+/** The leads and parts below have no settings of their own except the Lifecycle writer's SQL. */
+export const studioMultipartUploadsSettingsSchema = z.strictObject({
+  kind: z.literal("multipart-uploads"),
+});
+export const studioLifecycleWriterSettingsSchema = z.strictObject({
+  kind: z.literal("lifecycle-writer"),
+  poolSize: bounded(studioComponentLimits.poolSize).optional(),
+  statementTimeoutMs: bounded(studioComponentLimits.statementTimeoutMs).optional(),
+});
+export const studioVideoEncoderSettingsSchema = z.strictObject({
+  kind: z.literal("video-encoder"),
+});
+export const studioVideoPackagerSettingsSchema = z.strictObject({
+  kind: z.literal("video-packager"),
+});
+export const studioVideoThumbnailerSettingsSchema = z.strictObject({
+  kind: z.literal("video-thumbnailer"),
+});
+export const studioEventCounterSettingsSchema = z.strictObject({
+  kind: z.literal("event-counter"),
+});
+export const studioIndexWriterSettingsSchema = z.strictObject({ kind: z.literal("index-writer") });
+export const studioSearchQuerySettingsSchema = z.strictObject({ kind: z.literal("search-query") });
 
 export const studioComponentSettingsSchemas = {
   "rate-limiter": studioRateLimiterSettingsSchema,
@@ -160,6 +194,14 @@ export const studioComponentSettingsSchemas = {
   "auth-guard": studioAuthGuardSettingsSchema,
   "external-call": studioExternalCallSettingsSchema,
   custom: studioCustomComponentSettingsSchema,
+  "multipart-uploads": studioMultipartUploadsSettingsSchema,
+  "lifecycle-writer": studioLifecycleWriterSettingsSchema,
+  "video-encoder": studioVideoEncoderSettingsSchema,
+  "video-packager": studioVideoPackagerSettingsSchema,
+  "video-thumbnailer": studioVideoThumbnailerSettingsSchema,
+  "event-counter": studioEventCounterSettingsSchema,
+  "index-writer": studioIndexWriterSettingsSchema,
+  "search-query": studioSearchQuerySettingsSchema,
 } as const;
 export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
   studioRateLimiterSettingsSchema,
@@ -172,6 +214,14 @@ export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
   studioAuthGuardSettingsSchema,
   studioExternalCallSettingsSchema,
   studioCustomComponentSettingsSchema,
+  studioMultipartUploadsSettingsSchema,
+  studioLifecycleWriterSettingsSchema,
+  studioVideoEncoderSettingsSchema,
+  studioVideoPackagerSettingsSchema,
+  studioVideoThumbnailerSettingsSchema,
+  studioEventCounterSettingsSchema,
+  studioIndexWriterSettingsSchema,
+  studioSearchQuerySettingsSchema,
 ]);
 export type StudioComponentSettings = z.infer<typeof studioComponentSettingsSchema>;
 export type StudioComponentSettingsByKind = {
@@ -198,6 +248,14 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
     "auth-guard": { kind: "auth-guard", credential: "jwt" },
     "external-call": { kind: "external-call", circuitBreaker: "disabled" },
     custom: { kind: "custom" },
+    "multipart-uploads": { kind: "multipart-uploads" },
+    "lifecycle-writer": { kind: "lifecycle-writer" },
+    "video-encoder": { kind: "video-encoder" },
+    "video-packager": { kind: "video-packager" },
+    "video-thumbnailer": { kind: "video-thumbnailer" },
+    "event-counter": { kind: "event-counter" },
+    "index-writer": { kind: "index-writer" },
+    "search-query": { kind: "search-query" },
   };
   return defaults[kind];
 }
@@ -272,6 +330,67 @@ export type StudioComponentField =
       reference: { target: "queue" };
       optional: true;
     });
+/** The installed templates a module can lead or be part of (`generationTemplates` keys). */
+export const studioModuleTemplates = [
+  "owned-multipart",
+  "asset-lifecycle",
+  "video-hls",
+  "positive-cache-read",
+  "event-counter",
+  "search-projection",
+  "search-query",
+] as const;
+export type StudioModuleTemplate = (typeof studioModuleTemplates)[number];
+/** The slot names across the catalog. */
+export const studioModuleSlotIds = [
+  "store",
+  "cache",
+  "loader",
+  "channel",
+  "outbox",
+  "database",
+  "identity",
+  "target",
+  "uses",
+  "objects",
+  "state",
+  "originals",
+  "outputs",
+  "index",
+] as const;
+export const studioModuleSlotIdSchema = z.enum(studioModuleSlotIds);
+export type StudioModuleSlotId = (typeof studioModuleSlotIds)[number];
+/**
+ * One named use of a tile through the host's link (its arrow follows that link), or, for the
+ * Cache reader's loader, of another module in the same tile (`module`, `in-process`). `needed`
+ * means needed for the module's template; an unconnected module is still allowed and is a stub.
+ * A slot takes one connection unless `many`.
+ */
+export type StudioModuleSlot = {
+  id: StudioModuleSlotId;
+  /** Tile kinds it accepts; empty for an in-process slot. */
+  targets: readonly StudioComponentTargetKind[];
+  /** For an in-process slot: the module kind it uses in the same tile. */
+  module?: StudioComponentKind;
+  use:
+    | "read"
+    | "write"
+    | "read-write"
+    | "publish"
+    | "consume"
+    | "verify"
+    | "request"
+    | "in-process"
+    | "uses";
+  need: "needed" | "optional";
+  many?: true;
+};
+/** What a module generates: its template as the lead, a part of these templates, or a stub. */
+export type StudioModuleGeneration =
+  | { kind: "lead"; template: StudioModuleTemplate }
+  | { kind: "part"; templates: readonly StudioModuleTemplate[] }
+  | { kind: "stub" };
+
 export type StudioComponentDefinition<K extends StudioComponentKind = StudioComponentKind> = {
   kind: K;
   name: string;
@@ -280,6 +399,13 @@ export type StudioComponentDefinition<K extends StudioComponentKind = StudioComp
   thirdParty: readonly string[];
   /** Browser apps host only client-safe components. */
   browserHost: boolean;
+  /** Tile kinds a new module of this kind may be added to (Identity, Gateway and Browser: none). */
+  hosts: readonly StudioKind[];
+  /** Video-specific kinds carry "Video" in their names. */
+  scope: "generic" | "video";
+  /** Its uses of tiles (and the loader's of a module), in order; none means it can't connect. */
+  slots: readonly StudioModuleSlot[];
+  generation: StudioModuleGeneration;
   /** Element kinds this component may use through a traced C2 connection. */
   targets: readonly StudioComponentTargetKind[];
   /** Queue links must trace through a C2 connection with this channel role. */
@@ -372,6 +498,35 @@ const general: readonly StudioComponentField[] = [
   },
 ];
 const L = studioComponentLimits;
+/** Existing tiles of the legacy coded kinds keep their modules and offer the generic kinds. */
+const anyHost: readonly StudioKind[] = [
+  "service",
+  "worker",
+  "uploads",
+  "redirect",
+  "notification",
+  "billing",
+];
+const slot = (
+  id: StudioModuleSlotId,
+  targets: readonly StudioComponentTargetKind[],
+  use: StudioModuleSlot["use"],
+  need: StudioModuleSlot["need"] = "needed",
+): StudioModuleSlot => ({ id, targets, use, need });
+const stub = { kind: "stub" } as const;
+const lead = (template: StudioModuleTemplate) => ({ kind: "lead", template }) as const;
+const part = (...templates: StudioModuleTemplate[]) => ({ kind: "part", templates }) as const;
+const allTargets: readonly StudioComponentTargetKind[] = [
+  "application",
+  "identity",
+  "database",
+  "cache",
+  "queue",
+  "search",
+  "object-store",
+  "cdn",
+  "external-api",
+];
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {
     for (const child of Object.values(value)) deepFreeze(child);
@@ -399,6 +554,10 @@ export const studioComponentDefinitions: {
     description: "Rejects requests above a per-key limit.",
     thirdParty: ["Redis"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [slot("store", ["cache"], "read-write", "optional")],
+    generation: stub,
     targets: ["cache"],
     fields: [
       select("algorithm", "Algorithm", rateLimiterAlgorithmSchema.options),
@@ -419,6 +578,13 @@ export const studioComponentDefinitions: {
     description: "Reads from a cache before the database.",
     thirdParty: ["Redis", "Memcached"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [
+      slot("cache", ["cache"], "read-write"),
+      { id: "loader", targets: [], module: "data-access", use: "in-process", need: "needed" },
+    ],
+    generation: lead("positive-cache-read"),
     targets: ["cache"],
     fields: [
       select("pattern", "Pattern", cacheReaderPatternSchema.options),
@@ -434,6 +600,10 @@ export const studioComponentDefinitions: {
     description: "Allocates unique short identifiers.",
     thirdParty: ["PostgreSQL", "Redis"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [slot("store", ["database", "cache"], "read-write", "optional")],
+    generation: stub,
     targets: ["database", "cache"],
     fields: [
       select("strategy", "Strategy", idGeneratorStrategySchema.options),
@@ -447,6 +617,10 @@ export const studioComponentDefinitions: {
     description: "Answers with an HTTP redirect and edge cache headers.",
     thirdParty: ["CDN"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [],
+    generation: stub,
     targets: [],
     fields: [
       select("status", "Status", redirectStatusSchema.options),
@@ -458,6 +632,14 @@ export const studioComponentDefinitions: {
     description: "Publishes events to a queue or topic.",
     thirdParty: ["Kafka", "Amazon SQS", "Redis Streams"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    // The outbox is needed for jobs and publication, not for results.
+    slots: [
+      slot("channel", ["queue"], "publish"),
+      slot("outbox", ["database"], "write", "optional"),
+    ],
+    generation: part("owned-multipart", "asset-lifecycle", "video-hls"),
     targets: ["queue", "database"],
     channelUse: "publish",
     fields: [
@@ -477,6 +659,10 @@ export const studioComponentDefinitions: {
     description: "Consumes events from a queue or topic.",
     thirdParty: ["Kafka", "Amazon SQS", "Redis Streams"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [slot("channel", ["queue"], "consume")],
+    generation: part("asset-lifecycle", "video-hls", "event-counter", "search-projection"),
     targets: ["queue"],
     channelUse: "consume",
     fields: [
@@ -498,6 +684,10 @@ export const studioComponentDefinitions: {
     description: "Reads and writes one database.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [slot("database", ["database"], "read-write")],
+    generation: part("owned-multipart", "positive-cache-read", "event-counter"),
     targets: ["database"],
     fields: [
       integer("poolSize", "Pool size", L.poolSize, "connections"),
@@ -516,6 +706,10 @@ export const studioComponentDefinitions: {
     description: "Verifies caller credentials against an identity provider.",
     thirdParty: ["Identity service"],
     browserHost: true,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [slot("identity", ["identity", "external-api"], "verify")],
+    generation: part("owned-multipart"),
     targets: ["identity", "external-api"],
     fields: [select("credential", "Credential", authCredentialSchema.options)],
   }),
@@ -524,6 +718,10 @@ export const studioComponentDefinitions: {
     description: "Calls another service or external API.",
     thirdParty: ["Any API"],
     browserHost: true,
+    hosts: anyHost,
+    scope: "generic",
+    slots: [slot("target", ["external-api", "application", "identity"], "request", "optional")],
+    generation: stub,
     targets: ["external-api", "application", "identity"],
     fields: [
       select(
@@ -540,17 +738,110 @@ export const studioComponentDefinitions: {
     description: "Your own logic, generated as a stub.",
     thirdParty: [],
     browserHost: true,
-    targets: [
-      "application",
-      "identity",
-      "database",
-      "cache",
-      "queue",
-      "search",
-      "object-store",
-      "cdn",
-      "external-api",
+    hosts: anyHost,
+    scope: "generic",
+    slots: [{ ...slot("uses", allTargets, "uses", "optional"), many: true }],
+    generation: stub,
+    targets: allTargets,
+    fields: [],
+  }),
+  "multipart-uploads": component("multipart-uploads", {
+    name: "Multipart uploads",
+    description: "Uploads large files in resumable parts.",
+    thirdParty: ["S3-compatible storage"],
+    browserHost: false,
+    hosts: ["uploads", "service"],
+    scope: "generic",
+    slots: [slot("objects", ["object-store"], "read-write")],
+    generation: lead("owned-multipart"),
+    targets: ["object-store"],
+    fields: [],
+  }),
+  "lifecycle-writer": component("lifecycle-writer", {
+    name: "Lifecycle writer",
+    description: "Records each upload's processing state.",
+    thirdParty: ["PostgreSQL"],
+    browserHost: false,
+    hosts: ["worker"],
+    scope: "generic",
+    slots: [slot("state", ["database"], "read-write")],
+    generation: lead("asset-lifecycle"),
+    targets: ["database"],
+    fields: [
+      integer("poolSize", "Pool size", L.poolSize, "connections"),
+      integer("statementTimeoutMs", "Statement timeout", L.statementTimeoutMs, "ms"),
     ],
+  }),
+  "video-encoder": component("video-encoder", {
+    name: "Video encoder",
+    description: "Encodes a video into streamable renditions.",
+    thirdParty: ["FFmpeg"],
+    browserHost: false,
+    hosts: ["worker"],
+    scope: "video",
+    slots: [slot("originals", ["object-store"], "read")],
+    generation: lead("video-hls"),
+    targets: ["object-store"],
+    fields: [],
+  }),
+  "video-packager": component("video-packager", {
+    name: "Video packager",
+    description: "Stores a video's stream segments and playlists.",
+    thirdParty: ["FFmpeg"],
+    browserHost: false,
+    hosts: ["worker"],
+    scope: "video",
+    slots: [slot("outputs", ["object-store"], "write")],
+    generation: part("video-hls"),
+    targets: ["object-store"],
+    fields: [],
+  }),
+  "video-thumbnailer": component("video-thumbnailer", {
+    name: "Video thumbnailer",
+    description: "Creates a video's thumbnails.",
+    thirdParty: ["FFmpeg"],
+    browserHost: false,
+    hosts: ["worker"],
+    scope: "video",
+    slots: [slot("outputs", ["object-store"], "write")],
+    generation: part("video-hls"),
+    targets: ["object-store"],
+    fields: [],
+  }),
+  "event-counter": component("event-counter", {
+    name: "Event counter",
+    description: "Counts each event once.",
+    thirdParty: ["PostgreSQL"],
+    browserHost: false,
+    hosts: ["worker"],
+    scope: "generic",
+    slots: [],
+    generation: lead("event-counter"),
+    targets: [],
+    fields: [],
+  }),
+  "index-writer": component("index-writer", {
+    name: "Index writer",
+    description: "Adds records to a search index.",
+    thirdParty: ["OpenSearch"],
+    browserHost: false,
+    hosts: ["worker"],
+    scope: "generic",
+    slots: [slot("index", ["search"], "write")],
+    generation: lead("search-projection"),
+    targets: ["search"],
+    fields: [],
+  }),
+  "search-query": component("search-query", {
+    name: "Search query",
+    description: "Searches one search index.",
+    thirdParty: ["OpenSearch"],
+    browserHost: false,
+    hosts: ["service"],
+    scope: "generic",
+    slots: [slot("index", ["search"], "read")],
+    generation: lead("search-query"),
+    targets: ["search"],
     fields: [],
   }),
 });

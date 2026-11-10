@@ -51,6 +51,8 @@ export const generationBindingSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("youtube-upload"), upload: idSchema, lifecycle: idSchema }),
   z.strictObject({ kind: z.literal("youtube-watch"), reader: idSchema, counts: dep, events: dep }),
   z.strictObject({ kind: z.literal("youtube-search"), query: idSchema }),
+  /** A module with no complete installed template: a typed stub in its host. */
+  z.strictObject({ kind: z.literal("module-stub") }),
 ]);
 export const generationSelectionSchema = z.strictObject({
   id: idSchema,

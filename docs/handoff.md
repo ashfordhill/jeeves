@@ -7567,3 +7567,163 @@ catalog has `linkFan`. Whether chat should refuse the four kinds the fan omits i
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — MA05: module catalog and authoring commands
+
+Per the [module authoring plan](plans/module-authoring/units.md) and the approved
+[contract](plans/module-authoring/contract.md) §2, §4, §5 and §8. Spec and chat only; no canvas
+controls. Docs: `CATALOG.md` (Components), `studio-settings.md` (new kinds, fixed and initial
+values), `studio-blueprint.md`, `chat-tool-schemas.md`, `studio.md` (Chat), the generator README,
+the plan's status and the HUMAN_FEEDBACK resolution.
+
+**Catalog** (`studio-components.ts`, `studio-modules.ts`):
+
+- There are 18 kinds; the 8 new ones are Multipart uploads, Lifecycle writer, Video encoder, Video
+  packager, Video thumbnailer, Event counter, Index writer and Search query.
+- Each definition gains `hosts`, `scope`, `slots` (`{ id, targets, module?, use, need, many? }`)
+  and `generation` (`lead` with a template, `part` with templates, or `stub`).
+- The older ten keep their targets, `thirdParty`, `requires` and settings schemas. Only the
+  Lifecycle writer has settings (`poolSize?`, `statementTimeoutMs?`).
+- `moduleKinds` follows `hosts`. A Service takes 12 kinds, a Worker 16, Uploads 11, and
+  Redirect, Notifications and Billing 10. Identity, Gateway, Browser and resources take none.
+- `StudioIcon` gains `progress-check`, `movie`, `stack-2`, `photo`, `sum` and `list-search`.
+
+**Records:**
+
+- `module-stub@0.1.0` and its binding `{kind: "module-stub"}` are added. Its capability has no
+  role, resources or settings, the module-capable hosts and every kind as `componentTargets`.
+- `youtube-core` is pinned to its 10 templates and 6 policies; its sha256 stays `d4c66f03…`. No
+  existing record changed.
+- Each of the 7 templates' `componentTargets` is now its lead kind; youtube-* keep `custom`.
+
+**Commands** (`studio-operations.ts`): `addModule`, `connectModule`, `disconnectModule` and
+`removeModule`.
+
+- They are in `studioCommandSchema`, so chat uses them through `buildSupportedAuthoringCommand`.
+- A module command on a schema-2 design adds `upgradeDesign`, plus an empty generation for the
+  local runtime when there is none.
+- `removeTile` and `removeLink` re-derive once module-level selections exist.
+
+**Derivation** (`module-generation.ts`): `planModules` is pure; `deriveModuleGeneration` runs
+inside the command's batch and returns `setOwnership` and `setGeneration` after `setStudio`.
+
+- **Selections:** a lead with every needed part gets a template selection with the lead's ID.
+  Parts get none; every other module gets a stub.
+- **Values:** it writes the fixed values only over creation defaults or `unspecified`, and adds
+  the initial values.
+- **Ownership:** writers of a store share an owner, and a read-only projection host joins it.
+  Each owner is named after its group's first host in lane order (`<host>-owner`). It also writes
+  authority (cache from loader, index from outbox), widest grants with `published-read`, and
+  dependencies.
+- **Clean-up:** it removes facts only the previous module-level selections needed, by key.
+- **Refusals:** every refusal in contract §5 is in plain words. A kept value it may not overwrite
+  leaves the module Refused.
+
+**Status** (`module-status.ts`): `moduleStatuses(design)` and `moduleStatus(design, id)` return
+`{ module, host, kind, status, template?, selection?, reason?, unconnected }`.
+
+- **Template** and **Refused** come from the resolver's findings inside the selection's scope; the
+  template's not-installed finding is ignored.
+- **Stub** says what is missing.
+- **Custom** is a module no selection covers.
+- Chat's `getDesign` shows each module's status; `listStudioDefinitions.modules` adds `hosts`,
+  `slots` and `generation`.
+
+**Deviations, all to keep the result correct:**
+
+1. Stub selections skip the role check and the host-setting audit (contract §6, listed for MA07).
+   Otherwise each Watch API stub's audit was blamed on the Cache reader's template.
+2. A module a tile-level selection traces gets no stub of its own (mixed designs: the preset's
+   modules stay Template).
+3. The older component commands (`removeComponent`, `disconnectComponent`) don't derive. The
+   inspector's Remove module still sends `removeComponent`; MA06 should send `removeModule`.
+4. Clean-up is by key. A hand-made fact that a module-level selection once needed is replaced on
+   the next derivation. Contradictions refuse only against facts no module-level selection
+   needed, or that tile-level selections need. Facts named by a kept grant or projection stay.
+5. A search index is a projection only when its outbox database is written by a template, or
+   declared as a source. Otherwise its Index writer stays a stub with the reason, which keeps the
+   ownership valid.
+6. Effect on older studies: a module command on TinyURL extended or the YouTube study derives
+   its Cache reader's cache read, because its loader link exists. Its status is Refused, because
+   the study's links keep Service identity.
+
+**Tests:**
+
+- `module-generation.test.ts` (29 tests):
+  - It builds v2's tiles with the lane commands and its 22 modules with the new commands.
+  - The result is exactly v2's seven bindings and two stubs (View count reader, View publisher).
+  - Its ownership is v2's minus youtube-watch's grant and dependency (owners compared by members).
+  - 20 modules are Template.
+  - The order of connections doesn't matter.
+  - It covers the fixed and initial values, every refusal, clean-up and re-derivation,
+    `removeTile` and `removeLink`, the guard removal refusal, `moduleConnectOptions` and the
+    stub reasons.
+  - Reads write nothing, a mixed design keeps its tile-level facts, and the youtube-core sha256 is
+    pinned.
+  - Frozen v2 resolves to `inputs/normalized.json`.
+- `tools.test.ts` +1: chat sends the canvas's batches, getDesign shows the status, and the
+  catalog lists all 18 kinds.
+- `StudioIcon.test.tsx`: every module icon is drawn.
+
+**Checks:**
+
+- `pnpm check` exited 0: **535 tests in 75 files** (lint: only the existing info).
+- **E2E: 52 passed (2.2m)** on the first run.
+- The web build passed with the existing chunk-size advisory.
+
+**Gates:**
+
+- **Frozen v2:** a fresh `export:v2` gives 72 files; 70 are byte-identical to
+  `generic-export.tar.gz`. `.jeeves/manifest.json` and `report.json` equal it apart from the
+  source inventory and the values derived from it:
+  - 13 spec sources changed since the archive; two of them, `module-generation.ts` and
+    `module-status.ts`, are new;
+  - the `sourceSha256`s and `registry.sha256`;
+  - the manifest's sha256 **and byte size** of `report.json`, which grew by the two new entries.
+- **v1:** byte-identical; `assemble.test.ts` pins its manifest.
+- **YouTube Overview PNG** at 1440×900: `472a4c8c…dc9f`.
+
+**Browser check.** I ran scripted Chromium against my own API on port 4335 (scratch database
+`jeeves_ma05`, now dropped) and Vite on port 4325, at 1440×900 and 1280×800:
+
+- TinyURL foundation: 7 tiles and 7 lines.
+- TinyURL extended: 11 tiles and 12 lines. A card opened Cache reader's page, and Back worked.
+  In Detailed, 9 rows; a row opened Stats reader with one open mark. The design was unchanged
+  (revision 1).
+- YouTube: 21 tiles, 25 lines in the Overview and 26 in Detailed.
+- There were no page errors and no console errors or warnings.
+- All six projects were deleted (204).
+
+**For MA06:**
+
+- Fan items come from `moduleKinds(design, host)`. The label comes from the definition's
+  `generation.kind`: lead → Template, part → Part of a template, stub → Stub. Each item also has
+  its icon, name and description.
+- Dots come from `moduleSlots(design, module)`: no slots means can't connect, and an empty
+  `links` is a hollow dot. `moduleLinkSlot` gives the slot a link fills.
+- A drag uses `moduleConnectOptions(design, module)`: each tile, and each other module in its
+  tile, comes with a `connectModule` command or a refusal. The loader is
+  `{ module: <data access> }`, saved as a component-target link.
+- The module page uses `moduleStatus` (`reason` for Stub and Refused).
+- An X uses `disconnectModule({link})`. A new module's ID comes from `newModuleIdentity`, or the
+  command picks it.
+
+**For MA07:**
+
+- Every module outside a complete template, and not traced by a tile-level selection, has
+  `{id: <module>, target: {kind: "component", component, host}, template: module-stub@0.1.0,
+  binding: {kind: "module-stub"}}`.
+- No emitter provides it yet, so its template reads as not installed.
+- Report rows can come from `moduleStatuses` (status, template, reason, `unconnected`).
+
+**For MA08:**
+
+- Module-level template selections already resolve through the existing path, with no
+  attributed finding in the v2 rebuild.
+- The resolver still reads `state` SQL settings from a `data-access`. Make the Lifecycle writer
+  the source; it already gets Pool size 10 and Statement timeout 2000.
+- `v2Tiles()` and `v2Modules` in `module-generation.test.ts` build the equivalence twin.
+
+Chat's addable tile kinds are unchanged (the Billing eval decision is still pending). The owner's
+uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of `e2e-docker.sh` are
+untouched and unstaged.
