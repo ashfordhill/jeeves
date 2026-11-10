@@ -151,14 +151,17 @@ starts with `Not implemented`, so today's stub text works unchanged.
   - In a loop, the hook logs a line and the template's own delivery handling decides. A codec or
     parse hook is terminal at once (`MALFORMED_MESSAGE`, `asset-worker.ts.template:74-84`). An
     effect hook retries within the template's limit, then gives `RETRY_EXHAUSTED`
-    (`delivery.ts.template:119-146`).
+    (`delivery.ts.template:119-146`). *TP09:* when the hook that failed isn't written, the
+    dead letter now says `NOT_IMPLEMENTED` in both cases, like a stub's; a template's own code
+    (`INVALID_MEDIA`) and its retries are kept.
 - **Gaps:** with the option on, each template's `*-application-bindings` gap becomes a required
   `custom` gap naming its hooks file (`multipart.ts:43-52`, `asset-lifecycle.ts:87-96`,
   `video-hls.ts:62-71`, `positive-cache.ts:85-94`, `event-counter.ts:109-118`,
   `search.ts:104-113`).
 - **What "reaches its handler" means:** no installed template has a path free of product hooks. A
   template's 501 or log names the hook its handler reached. Startup work also proves wiring: the
-  migrations and sweeps, the FFmpeg check, and the subscribed consumers.
+  migrations and sweeps, the FFmpeg check, and the subscribed consumers. *TP09:* each template
+  logs one `started` line listing that work just before its process is ready.
 - **Fallback:** if TP05 or TP06 finds that a mounted template can't be built or started without a
   product value, it becomes a placeholder, and the report says so (the plan's risk rule).
 

@@ -8815,3 +8815,53 @@ with runtime secrets were still in the shared scratchpad (`out-stub`, `out-v2`);
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP09: review tile processes
+
+Per the [tile processes plan](plans/tile-processes/units.md); the last unit. I wrote the
+[review](plans/tile-processes/review.md), updated the plan's status and the HUMAN_FEEDBACK entry,
+and fixed what was small. Evidence: [tp09](plans/tile-processes/evidence/tp09/) (2 screenshots).
+
+- **Decisions 1–6:** all delivered (3 with the contract's stated limits). Checked by mouse at
+  1440×900 and 1280×800 (dot hit area 16.5×11.5 / 16.75×10 px at the fit; edge pan 406 / 335 px,
+  then connects; a renamed Worker and its module re-key, Undo, clash; processes named by the typed
+  names) and in my own Docker run of the stub stack (`jeeves-tp09-stub`, 45490–45492): first-run
+  65.8 s, 10 containers healthy, 8 probes ok; stubs 501, unknown 404; a Visits message in
+  `.failed` as `NOT_IMPLEMENTED`; stop 3.1 s / start 42.4 s kept 10 secrets, 5 volumes, the dead
+  letter.
+- **Invariants:** the off pin passes; frozen v2 72 files, 70 byte-identical, provenance equal
+  without inventory; v1 byte-identical; PNG `472a4c8c…dc9f`; mouse and chat give the same batch or
+  refusal in 12 `setRunnableProcesses` and rename/re-key cases.
+- **Fixes:**
+  - The TP08 e2e failure was a test race: `module-authoring.spec.ts`'s `build` clicked the next
+    tile before the previous commit landed and selected the new tile. Reproduced by holding the
+    commit's response until after the click (old helper: the same timeout; fixed: passes). It now
+    waits for each new tile to be selected. No assertion changed.
+  - `templateHandler` (`tile-loop.ts`) dead-letters a message that reached an unwritten hook as
+    `NOT_IMPLEMENTED` instead of `MALFORMED_MESSAGE`/`RETRY_EXHAUSTED`; a template's own code
+    (`INVALID_MEDIA`) and its retries are kept.
+  - Each mounted or placeholder template logs one `started` line with its checks just before
+    ready (`logStarted` in `tile-process.ts`, `ProcessMount.startup`).
+  - Docs: the generator README (both fixes; the 501 wrapper lives in `tile-http.ts`),
+    `studio-settings.md`, contract §3 notes.
+  - A short v2 smoke (`jeeves-tp09-v2`, 45493–45495) showed all 7 `started` lines and four
+    `NOT_IMPLEMENTED` dead letters; writing the counter's hooks in that scratch export counted
+    views (dedup held) with no scaffold edit.
+
+**Checks.** `pnpm check` exited 0: **634 tests in 89 files** (lint: only the existing info).
+**E2E: 67 passed (4.4 m)** on the first full run. Web build passed (1.43 s, the existing chunk-size
+advisory). Mouse check on my API 4379 (scratch DB `jeeves_tp09`, dropped) and Vite 4369: 9/9,
+TinyURL 7 tiles and 7 lines at both sizes, no page or console errors; all projects deleted. The
+race reproduction leaked one `jeeves_e2e` project, which I deleted.
+
+**Cleanup.** Both projects down with volumes, three image tags removed, scratch exports and
+`.runtime/secrets` deleted. The owner's container IDs, 18 volumes, 9 networks, 31 image rows and
+454xx ports match the record; 42 healthy; both edges 200. No runtime secrets in the repo; every
+export's `.gitignore` and `.dockerignore` cover `.runtime`.
+
+**Next** (ranked in the review): fill hooks past the first in a field project; owner decisions on
+product table grants, starting YouTube v3, HTTP settings on stub-only tiles, and the
+TinyURL/Marketplace rebuild. This plan is finished.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

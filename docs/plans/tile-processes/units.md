@@ -7,7 +7,8 @@ routes with hooks files, stub routes). TP06 is done (consume loops: stub and tem
 queues they consume, `.failed` with a log line). TP07 is done (provisioning for stubs: every store
 a stub links to, `module-clients.ts` with a startup probe each). TP08 is done (acceptance: the stub
 stack and the v2 module design ran healthy in Docker as contract §8 says;
-[evidence](evidence/tp08/README.md)). TP09 has not started.
+[evidence](evidence/tp08/README.md)). TP09 is done: the [review](review.md) found decisions 1–6
+delivered, fixed an e2e race and two template-loop findings, and ranks the follow-ups.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — A runnable process per tile](../../HUMAN_FEEDBACK.md)
 · Follows [module authoring](../module-authoring/units.md) and its [review](../module-authoring/review.md),
 including contract question 6.

@@ -17,6 +17,20 @@ export function notImplementedWhat(error: Error): string {
   return error.message.replace(/^Not implemented:?\s*/, "");
 }
 
+/** A template's one `started` line, logged once its startup has passed and just before the ready
+ * marker: what that startup checked or started. */
+export function logStarted(
+  tile: string,
+  entry: {
+    module: string;
+    template: string;
+    wiring: "mounted" | "placeholder";
+    checks: readonly string[];
+  },
+) {
+  console.log(JSON.stringify({ level: "info", event: "started", tile, ...entry }));
+}
+
 /** One JSON line on stdout, at most once a second per key; the next line carries how many were
  * suppressed. The log never throws. */
 export function createProcessLog(tile: string, level: "warn" | "error", event: string) {

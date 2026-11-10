@@ -181,7 +181,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(loops("view-counter")).toEqual(["view-events--view-counter counter-sum"]);
     expect(loops("search-indexer")).toEqual(["publication-events--search-indexer indexer-writer"]);
     expect(row(v2, "completion-handler").loops[0]?.answers).toBe(
-      '"Not implemented: event for Lifecycle writer" sends the message to completion-events--completion-handler.failed (MALFORMED_MESSAGE) until its hooks are written',
+      '"Not implemented: event for Lifecycle writer" sends the message to completion-events--completion-handler.failed (NOT_IMPLEMENTED) until its hooks are written',
     );
     expect(row(v2, "search-indexer").loops[0]?.answers).toContain(
       "(NOT_IMPLEMENTED) (placeholder)",
@@ -288,6 +288,56 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     );
     for (const tile of ["completion-handler", "transcoder", "view-counter", "search-indexer"])
       expect(text(v2, `src/processes/${tile}.ts`)).toContain("scope.ready();");
+  });
+
+  it("logs what each template's startup ran, once it has passed and just before ready", () => {
+    const started = (tile: string) => {
+      const source = text(v2, `src/processes/${tile}.ts`);
+      const lines = source.split("\n").filter((item) => item.includes("logStarted(config.tile"));
+      expect(source).toMatch(
+        /import \{[^}]*logStarted[^}]*\} from "\.\.\/runtime\/tile-process\.ts";/,
+      );
+      // The last line before the ready marker.
+      expect(source.indexOf(lines.at(-1) ?? "?")).toBeLessThan(source.indexOf("scope.ready();"));
+      expect(source.slice(source.indexOf(lines.at(-1) ?? "?")).split("\n")[1]).toBe(
+        "  scope.ready();",
+      );
+      return lines.map((item) =>
+        JSON.parse(item.trim().slice("logStarted(config.tile, ".length, -2)),
+      );
+    };
+    expect(started("completion-handler")).toEqual([
+      {
+        module: "handler-writer",
+        template: "asset-lifecycle",
+        wiring: "mounted",
+        checks: [
+          "sweep at start",
+          "publication relay started",
+          "subscribed completion-events--completion-handler",
+          "sweep every 30 s",
+        ],
+      },
+    ]);
+    expect(started("transcoder")[0]?.checks).toEqual([
+      "pinned ffmpeg and ffprobe",
+      "results publisher open",
+      "subscribed upload-queue",
+    ]);
+    expect(started("view-counter")[0]?.checks).toEqual([
+      "SELECT 1 on its state login",
+      "subscribed view-events--view-counter",
+    ]);
+    expect(started("search-indexer")).toEqual([
+      {
+        module: "indexer-writer",
+        template: "search-projection",
+        wiring: "placeholder",
+        checks: ["subscribed publication-events--search-indexer"],
+      },
+    ]);
+    // A stub's process logs its probes instead.
+    expect(text(stack, "src/processes/visit-worker.ts")).not.toContain("logStarted");
   });
 
   it("provisions the templates' tables, logins, subscriber and the media image", () => {

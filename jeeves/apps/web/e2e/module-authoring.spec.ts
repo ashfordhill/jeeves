@@ -92,18 +92,24 @@ const WORKER = [
 /** Kinds whose rows can't connect: no dot. */
 const NO_DOT = ["Redirect responder", "Event counter"];
 
-/** A blank project with the user's Consume action and the given tiles, each added by its fan. */
+/**
+ * A blank project with the user's Consume action and the given tiles, each added by its fan. The
+ * new tile is selected only once its commit lands, so each step waits for that: a commit landing
+ * after the next click would move the selection off `from` and hide its tabs.
+ */
 async function build(page: Page, name: string, plan: [from: string, kind: string][]) {
   const id = await createStudy(page, name, "blank");
   await pull(page, "User", "Add action");
   await moveOnto(page, fanItem(page, "Consume"));
   await page.mouse.up();
+  await expect(tile(page, "Consume")).toHaveClass(/selected/);
   await ready(page);
   for (const [from, kind] of plan) {
     await tile(page, from).click();
     await pull(page, from, LINK_TAB);
     await moveOnto(page, fanItem(page, kind));
     await page.mouse.up();
+    await expect(tile(page, kind)).toHaveClass(/selected/);
     await ready(page);
   }
   return id;

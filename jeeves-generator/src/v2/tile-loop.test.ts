@@ -63,7 +63,7 @@ const consumers: Consumer[] = [];
 (globalThis as { tileLoopConsumers?: Consumer[] }).tileLoopConsumers = consumers;
 const loop = await import(moduleUrl("tile-loop"));
 const { NonRetryable } = await import(moduleUrl("delivery"));
-const { NotImplemented } = await import(moduleUrl("tile-process"));
+const { NotImplemented, logStarted } = await import(moduleUrl("tile-process"));
 
 const visits = {
   module: "visit-consumer",
@@ -317,7 +317,7 @@ describe("emitted template loops", () => {
     }
   };
 
-  it("names the hook a message reached, and leaves the template's own decision", async () => {
+  it("names the hook a message reached, and sends it to .failed as NOT_IMPLEMENTED", async () => {
     const log = loop.createLoopLog("completion-handler");
     const hooks = loop.watchHooks(
       {
@@ -335,8 +335,9 @@ describe("emitted template loops", () => {
       "handler-writer",
     );
     const handle = loop.templateHandler(log, lifecycle, template(hooks));
+    // The template's own answer to a failed parse is MALFORMED_MESSAGE; the codec isn't written.
     await expect(handle(Buffer.from("{}"), delivery(1))).rejects.toMatchObject({
-      code: "MALFORMED_MESSAGE",
+      code: "NOT_IMPLEMENTED",
     });
     expect(lines).toEqual([
       {
@@ -347,7 +348,7 @@ describe("emitted template loops", () => {
         what: "event for Lifecycle writer",
         queue: "completion-events--completion-handler",
         messageId: "e1",
-        action: "sent to completion-events--completion-handler.failed (MALFORMED_MESSAGE)",
+        action: "sent to completion-events--completion-handler.failed (NOT_IMPLEMENTED)",
       },
     ]);
     // Values pass through; an async hook outside a message logs at once.
@@ -357,6 +358,90 @@ describe("emitted template loops", () => {
       what: "job.construct for Lifecycle writer",
       action: "thrown",
     });
+  });
+
+  it("dead-letters an unwritten codec as NOT_IMPLEMENTED on the real runner, bad input as MALFORMED_MESSAGE", async () => {
+    const { createConsumer } = await import(moduleUrl("amqp"));
+    const log = loop.createLoopLog("completion-handler");
+    const hooks = loop.watchHooks(
+      {
+        event(input: unknown) {
+          if (input === "bad") throw new Error("not an event");
+          throw new NotImplemented("event for Lifecycle writer");
+        },
+      },
+      log,
+      "handler-writer",
+    );
+    const consumer: Consumer = await createConsumer(
+      {},
+      {
+        ...lifecycle,
+        concurrency: 1,
+        handle: loop.templateHandler(log, lifecycle, async (body: Buffer) => {
+          try {
+            hooks.event(body.toString());
+          } catch {
+            throw new NonRetryable("MALFORMED_MESSAGE");
+          }
+        }),
+      },
+    );
+    consumer.deliver("good");
+    await settled(consumer, "good");
+    consumer.deliver("bad");
+    await settled(consumer, "bad");
+    const dead = (receipt: string, code: string) => ({
+      republish: lifecycle.failedQueue,
+      receipt,
+      headers: { "x-delivery-attempt": 1, "x-terminal-code": code },
+    });
+    expect(consumer.events).toEqual([
+      dead("good", "NOT_IMPLEMENTED"),
+      { ack: "good" },
+      dead("bad", "MALFORMED_MESSAGE"),
+      { ack: "bad" },
+    ]);
+    expect(lines.map((line) => [line.event, line.action])).toEqual([
+      ["not-implemented", `sent to ${lifecycle.failedQueue} (NOT_IMPLEMENTED)`],
+      ["loop-error", `sent to ${lifecycle.failedQueue} (MALFORMED_MESSAGE)`],
+    ]);
+  });
+
+  it("keeps a template's own code and its retries for an unwritten hook", async () => {
+    const log = loop.createLoopLog("transcoder");
+    const unwritten = loop.watchHooks(
+      {
+        async owns() {
+          throw new NotImplemented("source.owns for Video encoder");
+        },
+      },
+      log,
+      "transcoder-encoder",
+    );
+    // A specific code (the media worker's INVALID_MEDIA) is the template's decision.
+    const media = loop.templateHandler(log, lifecycle, async () => {
+      await unwritten.owns().catch(() => {});
+      throw new NonRetryable("INVALID_MEDIA");
+    });
+    await expect(media(Buffer.from("{}"), delivery(1))).rejects.toMatchObject({
+      code: "INVALID_MEDIA",
+    });
+    // An effect hook's failure retries within the template's limit, then ends NOT_IMPLEMENTED.
+    const effect = loop.templateHandler(log, { ...lifecycle, module: "effect" }, async () => {
+      await unwritten.owns();
+    });
+    await expect(effect(Buffer.from("{}"), delivery(3))).rejects.toThrow(
+      "Not implemented: source.owns",
+    );
+    await expect(effect(Buffer.from("{}"), delivery(11))).rejects.toMatchObject({
+      code: "NOT_IMPLEMENTED",
+    });
+    // The exhausted attempt's line, within the same second, was held back.
+    expect(lines.map((line) => [line.module, line.action])).toEqual([
+      ["handler-writer", `sent to ${lifecycle.failedQueue} (INVALID_MEDIA)`],
+      ["effect", "retry 3 of 10"],
+    ]);
   });
 
   it("logs another failure with what the template's limit does next", async () => {
@@ -371,5 +456,29 @@ describe("emitted template loops", () => {
     ]);
     // Rate-limited per module and queue: the exhausted one, a moment later, was held back.
     expect(lines).toHaveLength(1);
+  });
+});
+
+describe("emitted started line", () => {
+  it("logs one info line per template, never rate limited", () => {
+    const entry = {
+      module: "counter-sum",
+      template: "event-counter",
+      wiring: "mounted",
+      checks: ["SELECT 1 on its state login", "subscribed view-events--view-counter"],
+    };
+    logStarted("view-counter", entry);
+    logStarted("view-counter", entry);
+    expect(lines).toEqual([
+      ...Array(2).fill({
+        level: "info",
+        event: "started",
+        tile: "view-counter",
+        module: "counter-sum",
+        template: "event-counter",
+        wiring: "mounted",
+        checks: ["SELECT 1 on its state login", "subscribed view-events--view-counter"],
+      }),
+    ]);
   });
 });

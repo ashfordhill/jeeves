@@ -463,7 +463,8 @@ also explains the explicit local Keycloak substitution and transport-intent gaps
 Normal mouse/chat attachment installs the reusable video feature. Historical YouTube source
 batches remain readable; the active generator no longer implements their product policies.
 Generic cache, SQL and worker settings still reach generated constructors; required codecs,
-routes, projections and application processes remain custom work. Base video adds no search
+routes and projections remain custom work, and so do application processes unless Runnable
+processes is on (below). Base video adds no search
 or counts. [Current boundary](plans/reliable-foundations/youtube-v2-generic-baseline.md).
 
 **Runnable processes** (`generation.processes`, tile process contract §1) is the one export

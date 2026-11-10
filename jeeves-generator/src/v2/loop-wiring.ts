@@ -193,10 +193,19 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
       {
         module: lead.module,
         ...loop,
-        answers: `${notImplementedLoop(`event for ${lead.name}`, loop.failedQueue, "MALFORMED_MESSAGE")} until its hooks are written`,
+        answers: `${notImplementedLoop(`event for ${lead.name}`, loop.failedQueue, "NOT_IMPLEMENTED")} until its hooks are written`,
       },
     ],
     template: { selection: id, template: "asset-lifecycle", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: [
+        "sweep at start",
+        ...(publication ? ["publication relay started"] : []),
+        `subscribed ${loop.queue}`,
+        "sweep every 30 s",
+      ],
+    },
     hooks: {
       members,
       file: hooksFile(process, selection, lead, "asset lifecycle", {
@@ -393,10 +402,14 @@ const videoHls: Builder = (process, selection, lead, _selections, index) => {
       {
         module: lead.module,
         ...loop,
-        answers: `${notImplementedLoop(`job for ${lead.name}`, loop.failedQueue, "MALFORMED_MESSAGE")} until its hooks are written`,
+        answers: `${notImplementedLoop(`job for ${lead.name}`, loop.failedQueue, "NOT_IMPLEMENTED")} until its hooks are written`,
       },
     ],
     template: { selection: id, template: "video-hls", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: ["pinned ffmpeg and ffprobe", "results publisher open", `subscribed ${loop.queue}`],
+    },
     hooks: {
       members: ["job", "video", "result", "eventId", "event", "source.owns", "results.owns"],
       file: hooksFile(process, selection, lead, "video HLS", {
@@ -507,10 +520,14 @@ const eventCounter: Builder = (process, selection, lead, _selections, index) => 
       {
         module: lead.module,
         ...loop,
-        answers: `${notImplementedLoop(`event for ${lead.name}`, loop.failedQueue, "MALFORMED_MESSAGE")} until its hooks are written`,
+        answers: `${notImplementedLoop(`event for ${lead.name}`, loop.failedQueue, "NOT_IMPLEMENTED")} until its hooks are written`,
       },
     ],
     template: { selection: id, template: "event-counter", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: ["SELECT 1 on its state login", `subscribed ${loop.queue}`],
+    },
     hooks: {
       members: ["event", "aggregateKey", "eventId", "identity"],
       file: hooksFile(process, selection, lead, "event counter", {
@@ -570,6 +587,7 @@ const searchProjection: Builder = (_process, selection, lead, _selections, index
       },
     ],
     template: { selection: id, template: "search-projection", level: "placeholder" },
+    startup: { module: lead.module, checks: [`subscribed ${loop.queue}`] },
     service: { ...service(), dependsOn: [events], broker: true },
     local: {},
   };

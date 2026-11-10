@@ -46,6 +46,8 @@ export type ProcessMount = {
   routes: Route[];
   loops: LoopRow[];
   template?: { selection: string; template: string; level: "mounted" | "placeholder" };
+  /** A template's `started` line, logged just before the ready marker: what its startup ran. */
+  startup?: { module: string; checks: string[] };
   hooks?: { file: V2TemplateFile; members: string[] };
   service: {
     dependsOn: string[];
@@ -173,6 +175,7 @@ function positiveCacheRead(
     routes: [{ method: "GET", path: url, answers: notImplementedAnswer(`key for ${lead.name}`) }],
     loops: [],
     template: { selection: id, template: "positive-cache-read", level: "mounted" },
+    startup: { module: lead.module, checks: ["SELECT 1 on its source login"] },
     hooks: {
       members,
       file: hooksFile(process, selection, lead, "cache read", {
@@ -395,6 +398,16 @@ function ownedMultipart(
     })),
     loops: [],
     template: { selection: id, template: "owned-multipart", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: [
+        "jobs publisher open",
+        "outbox relay started",
+        "SELECT 1 on its state login",
+        "sweep at start",
+        "sweep every 30 s",
+      ],
+    },
     hooks: {
       members,
       file: hooksFile(process, selection, lead, "multipart uploads", {
@@ -537,6 +550,7 @@ function searchQuery(
     ],
     loops: [],
     template: { selection: id, template: "search-query", level: "placeholder" },
+    startup: { module: lead.module, checks: ["cluster health"] },
     service: { ...service(), dependsOn: [index] },
     local: {},
   };

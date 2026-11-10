@@ -234,7 +234,10 @@ on the ready marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000
 `GET /healthz` (200 once ready, 503 before and while draining), its module routes, and 404
 elsewhere; any process runs its loops, and a process with nothing to run holds an idle timer.
 Each writes the ready marker through `runProcess` once its loops have subscribed and its HTTP
-service listens, and drains on SIGTERM in reverse: HTTP admission, then loops, then publishers,
+service listens; just before it, each mounted or placeholder template logs one `started` line
+naming what its startup ran (`{"level":"info","event":"started","tile","module","template","wiring",
+"checks"}`, for example `"checks":["sweep at start","publication relay started","subscribed
+completion-events--completion-handler","sweep every 30 s"]`). It drains on SIGTERM in reverse: HTTP admission, then loops, then publishers,
 clients and pools. The foundation accepts process hosts with no selection, closes
 `application-services` for them, and substitutes `scripts/local.mjs`'s startup gate (exactly
 once, or it refuses) so `first-run` and `start` read `report.processes.runnable` instead of
@@ -298,8 +301,11 @@ concurrency.
   `NOT_IMPLEMENTED` until a mapping and an event codec exist.
 
 A mounted template keeps its own limits and handling: a codec or parse hook that throws is
-terminal at once (`MALFORMED_MESSAGE`), other failures retry within its limit (lifecycle 10,
-video 3, counter 5). A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
+terminal at once, other failures retry within its limit (lifecycle 10, video 3, counter 5). A
+message that ends in `.failed` after reaching a hook that isn't written goes there as
+`NOT_IMPLEMENTED`, as a stub's does, rather than the template's generic `MALFORMED_MESSAGE` or
+`RETRY_EXHAUSTED`; a code of the template's own (the media worker's `INVALID_MEDIA`) is kept, and
+so are its retries. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
 and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process
@@ -307,8 +313,8 @@ except a lost broker connection (it drains and exits 1, with no restart). `pnpm 
 each subscription, cuts a retry wait short (the message is republished for its next attempt) and
 settles the message in hand before closing; undelivered messages stay in their queue.
 `src/runtime/tile-loop.ts` holds the loop and its handlers, `tile-http.ts` the 501 wrapper and
-route stubs, and `tile-process.ts` `NotImplemented` and the log. Two loops in one tile on one topic
-share its subscriber queue, so each message reaches one of them.
+route stubs, and `tile-process.ts` `NotImplemented`, the log and the `started` line. Two loops in
+one tile on one topic share its subscriber queue, so each message reaches one of them.
 
 **Provisioning for stubs** (contract §6). With the option on, every store or channel a stub
 links to is provisioned for its tile. The resolver works the facts out as it reads the design:
@@ -371,8 +377,9 @@ results `owns`; the counter's `event`, `aggregateKey`, `eventId` and `identity`.
 the hooks so a loop's log names the hook a message reached. Its `*-application-bindings` gap
 becomes a required `custom` gap naming that file; the search placeholders' gap stays
 `unfinished`. The scaffold
-`src/runtime/tile-process.ts` holds `NotImplemented`, the 501 wrapper and the rate-limited log:
-an error that is a `NotImplemented` or whose message starts with "Not implemented" answers 501
+`src/runtime/tile-process.ts` holds `NotImplemented`, the rate-limited log and the `started`
+line, and `tile-http.ts` the 501 wrapper: an error that is a `NotImplemented` or whose message
+starts with "Not implemented" answers 501
 `{"error":"NOT_IMPLEMENTED","message":"Not implemented: …"}` and logs one JSON line
 (`level`, `event: "not-implemented"`, `tile`, `module`, `what`, `route`, `action`) at most once a
 second per module and hook, the next line carrying a `suppressed` count. An `HttpError` keeps its

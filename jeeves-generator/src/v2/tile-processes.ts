@@ -277,11 +277,25 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   ];
   const routed = mounts.some((mount) => mount.configure.length);
   const setup = mounts.flatMap((mount) => mount.setup);
+  // Each template's `started` line, once everything before the ready marker has passed.
+  const started = mounts.flatMap((mount) =>
+    mount.template && mount.startup
+      ? [
+          `logStarted(config.tile, ${JSON.stringify({
+            module: mount.startup.module,
+            template: mount.template.template,
+            wiring: mount.template.level,
+            checks: mount.startup.checks,
+          })});`,
+        ]
+      : [],
+  );
   const block = (key: "configure" | "initialize") => mounts.flatMap((mount) => mount[key]);
   const imports = importLines([
     ...(http ? [{ from: "../runtime/http.ts", name: "createHttpService" }] : []),
     { from: "../runtime/process.ts", name: "runProcess" },
     ...(routed ? [{ from: "../runtime/tile-process.ts", name: "createNotImplementedLog" }] : []),
+    ...(started.length ? [{ from: "../runtime/tile-process.ts", name: "logStarted" }] : []),
     ...(loops.length ? [{ from: "../runtime/tile-loop.ts", name: "createLoopLog" }] : []),
     ...mounts.flatMap((mount) => mount.imports),
   ]);
@@ -324,6 +338,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
           mounts.flatMap((mount) => mount.started),
           2,
         ),
+        ...indent(started, 2),
         "  scope.ready();",
         "});",
       ]
@@ -338,6 +353,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
               "  const idle = setInterval(() => {}, 2 ** 30);",
               "  scope.own(() => clearInterval(idle));",
             ]),
+        ...indent(started, 2),
         "  scope.ready();",
         "});",
       ];

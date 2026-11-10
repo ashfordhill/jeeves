@@ -192,10 +192,15 @@ export function watchHooks<T extends object>(hooks: T, log: LoopLog, module: str
   };
   return wrap(hooks) as T;
 }
+/** A template's own terminal code (such as INVALID_MEDIA) is kept; MALFORMED_MESSAGE is the
+ * generic answer to any codec or parse failure, including a codec that isn't written. */
+const specific = (error: unknown) =>
+  error instanceof NonRetryable && error.code !== "MALFORMED_MESSAGE";
 /**
  * A mounted template's handler: the template decides what a failure does, with its own retry
  * limit and terminal codes. Each failed message logs one line, naming the hook it reached when
- * that hook is not implemented.
+ * that hook is not implemented. A message that ends in .failed after reaching such a hook goes
+ * there as NOT_IMPLEMENTED, as a stub's does, unless the template gave a code of its own.
  */
 export function templateHandler(
   log: LoopLog,
@@ -207,14 +212,15 @@ export function templateHandler(
     try {
       await reached.run(store, () => handle(body, delivery));
     } catch (error) {
-      const { action } = outcome(loop, error, delivery);
+      const next = outcome(loop, error, delivery);
+      const unwritten = store.what !== undefined && !next.retry && !specific(error);
       if (store.what)
         log.notImplemented({
           module: loop.module,
           what: store.what,
           queue: loop.queue,
           ...messageId(delivery),
-          action,
+          action: unwritten ? `sent to ${loop.failedQueue} (NOT_IMPLEMENTED)` : next.action,
         });
       else
         log.failed({
@@ -223,9 +229,9 @@ export function templateHandler(
           ...messageId(delivery),
           attempt: delivery.deliveryCount,
           error: describe(error),
-          action,
+          action: next.action,
         });
-      throw error;
+      throw unwritten ? new NonRetryable("NOT_IMPLEMENTED") : error;
     }
   };
 }
