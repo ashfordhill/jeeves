@@ -6779,3 +6779,101 @@ rejects.
   gap by 32px, so expect Detailed to be wider than Overview.
 - Lines of one band may still share runs, as in Overview.
 - Measure the two-returns crossing on v2 in your layout smoke. Nothing throws for valid ports.
+
+## 2026-11-09 — UI06: detailed view projection
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md), `jeeves/apps/web/src/canvas/detailedView.ts`
+is a pure projection of the Detailed view. Nothing uses it yet, so Jeeves looks the same, and the
+Overview path (`LaneCanvas`, `laneLayoutInput`) is untouched. The rules are in the file header.
+
+**API for UI07/UI08.** `detailedView(design, graph, name)` with `graph = laneGraph(design)` and
+`name = (id) => laneNodeName(design, graph, id)` (labels use it; passing it in avoids importing
+`LaneCanvas.tsx`). It returns:
+
+- `tiles: LayoutTile[]`: `tiles[i]` is `graph.nodes[i]`, as in `laneLayoutInput`. A container is
+  `CONTAINER.w` 256 × `64 + 32·rows` with its band and `ports`; every other tile is exactly its
+  Overview tile (no ports).
+- `lines: DetailedLine[]`: edge order, an edge's lines together. Each is a `LayoutLine` and a
+  `LineSpec` as is (test-checked): `id`, `source`, `target`, `sourcePort?`, `targetPort?`, `band?`,
+  `dashed`, `directed: true`, `label`, `connection` (the lane edge), `sourceModule?`,
+  `targetModule?`, and `removable: false` on the user's lines. Add only `detail` (the connection's
+  planned label), as Overview does.
+- `containers: Map<tile, { tile, rows }>`, with `DetailedRow = { module, host, name, kind, index,
+  y, in?, out? }`: `y` is the row's centre below the container's top (64, 96, …); `in`/`out` are
+  its port IDs, absent when no line is drawn there.
+- `connectionOf(line)`, `linesOf(connection)`, `rowOf(module)` and `partners(module)` (same-tile
+  module links, both directions, in module order).
+- Constants: `CONTAINER` `{ w: 256, header: 48, row: 32, padding: 16 }`, `HEADER_PORT_Y` 32,
+  `HEADER_IN` `header-in`, `HEADER_OUT` `header-out`, `rowPort(module, side)` `<module>:in|out`,
+  `LINE_SEPARATOR` `/`.
+
+Line IDs: an edge without anchors draws one line whose ID **is the edge ID**, as in Overview. An
+anchored line is `edge/module` or, with anchors on both sides, `edge/sourceModule/targetModule`.
+Header ports exist only when a line uses them, and no line uses a container's default port.
+
+**Tests** (`detailedView.test.ts`, 10). On TinyURL extended, Marketplace, YouTube and the frozen
+v2 `design.json` (imported with `with { type: "json" }` and parsed by `designSchema`, as
+`yv2-selections.ts` does; no copy), they check:
+
+- every module is a row of its host once, in module order, at `64 + 32i`;
+- containers have grid ports inside them with unique IDs, and other tiles equal Overview's;
+- every edge draws ≥1 line in edge order with its dashes and band, and every line maps back;
+- line ends use only container ports of the right side;
+- every module link to a tile is exactly one line end at its row, and rows have ports only for
+  drawn lines;
+- IDs are unique and identical on a second run.
+
+The v2 Video lifecycle worker draws exactly the sketch: 3 rows (256×160) and 4 lines.
+`completions-handler/handler-consumer` runs Processing events → `handler-consumer:in` (dashed).
+`handler-metadata/handler-writer` and `handler-metadata/handler-publications` run from their
+`:out` rows to Metadata database. `handler-publication/handler-publications` runs to Publication
+events. A synthetic TinyURL case checks pairs (two callers × one callee gives 2 lines),
+header ports for an entry and an unused link, a portless row, the user's line and `partners`.
+**Layout smoke:** all four Detailed inputs with real ELK finish with every line end at its port on
+the grid, orthogonal runs, no line through any tile (its own ends included), and an unchanged
+relayout from their own positions.
+
+**Metrics** (real ELK, fresh layout; size is `layout.bounds` with padding; length is `pathLength`;
+crossings are `bandClashes`, which found 0 clashes everywhere):
+
+| Design | View | Lines | Drawn size | Line length | Crossings |
+| --- | --- | ---: | --- | ---: | ---: |
+| TinyURL extended | Overview | 12 | 1024×832 | 2,752 | 0 |
+| | Detailed | 12 | 1280×800 | 3,008 | 1 |
+| Marketplace | Overview | 23 | 1280×1472 | 6,912 | 1 |
+| | Detailed | 25 | 1568×1536 | 8,576 | 4 |
+| YouTube | Overview | 25 | 1504×1376 | 8,864 | 1 |
+| | Detailed | 26 | 1920×1600 | 12,608 | 4 |
+| YouTube v2 | Overview | 27 | 1920×1297 | 10,080 | 3 |
+| | Detailed | 30 | 2528×1441 | 17,536 | 12 |
+
+**Routing limits seen.** UI05's two-returns limit: the transcoder's packager and thumbnails
+rows into Transcoded videos cross each other **twice in v2** and once in the YouTube study. The
+Video lifecycle worker's two Metadata database lines don't cross (one U runs over, one under).
+Upload's two and Marketplace's shop/payments pairs don't cross either. Returns from lower rows
+make long loops round the worker (v2's lifecycle writer U runs above the database row). Readability
+is UI09's to judge. Nothing threw, and no projection change was needed.
+
+**Checks.** `pnpm check` exited 0: **487 tests in 72 files**. **41 native E2Es passed (1.6m).**
+The web build passed with the existing chunk-size advisory. Scripted Chromium on the running dev
+app at 1440×900, with my own TinyURL extended project:
+
+- 11 tiles and 12 lines rendered;
+- clicking Redirect service selected it (inspector title, its lines blue);
+- clicking `redirect-db` selected it;
+- there were no page or console errors.
+
+I deleted the project (204), and the owner's six project revisions are unchanged.
+
+**For UI07.**
+
+- Selection: map a clicked drawn line with `connectionOf` before `onSelectLine`/removal, and
+  highlight `linesOf(selection.line)`. Unanchored lines keep the edge ID, so many IDs need no
+  mapping, but anchored ones do.
+- **Toggling and hints.** The board relays out from the shown positions. Detailed laid out from
+  Overview's positions equals a fresh Detailed for TinyURL, YouTube and v2 but not Marketplace.
+  Overview laid out from Detailed's positions **differs from a fresh Overview for all four**.
+  Switching back normally hits the engine's 32-key cache, but after an edit in Detailed the new
+  Overview key is laid out from Detailed positions. "Same tile positions after switching back"
+  therefore needs per-view hints (or none) on a toggle.
+- Containers use shape `rect`; a row's centre is `row.y`, 32px tall, below a 48px header.
