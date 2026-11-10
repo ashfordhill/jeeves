@@ -22,6 +22,9 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
           modules.set(name, paths);
         }
       };
+      // An HTTP process serves through the shared HTTP service, with or without a template.
+      for (const process of model.processes ?? [])
+        if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)
           add(["admission", "http"], selection.sourcePath);

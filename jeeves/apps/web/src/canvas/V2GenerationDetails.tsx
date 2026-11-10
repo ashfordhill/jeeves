@@ -2,6 +2,7 @@ import type { V2GenerationPreview } from "../project/generation-api.ts";
 
 export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
   const required = data.report.gaps.filter((gap) => gap.required);
+  const processes = data.report.processes;
   return (
     <>
       <p>
@@ -13,8 +14,11 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
         .
         {data.report.applicationComplete
           ? " Installed templates emitted the selected backend, SQL, resource and local setup wiring. The browser slot remains a separate custom UI."
-          : " Required hooks remain incomplete. This ZIP is an extension starting point; unfinished application services do not start."}
+          : processes?.runnable
+            ? " Required hooks remain incomplete. This ZIP is an extension starting point; every application tile still starts as its own process."
+            : " Required hooks remain incomplete. This ZIP is an extension starting point; unfinished application services do not start."}
       </p>
+      {processes ? <GenerationProcesses processes={processes} /> : null}
       <details open>
         <summary>Support & custom gaps · {required.length} required</summary>
         <ul>
@@ -121,5 +125,37 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
         </ul>
       </details>
     </>
+  );
+}
+
+/** Each application tile's process: its service, shape and what it answers. */
+function GenerationProcesses({
+  processes,
+}: {
+  processes: NonNullable<V2GenerationPreview["report"]["processes"]>;
+}) {
+  return (
+    <details open>
+      <summary>
+        Processes · {processes.tiles.length} · {processes.runnable ? "runnable" : "not runnable"}
+      </summary>
+      <ul aria-label="Runnable processes">
+        {processes.tiles.map((row) => {
+          const answers = [
+            ...row.routes.map((route) => `${route.method} ${route.path}`),
+            ...row.loops.map((loop) => `loop on ${loop.queue}`),
+          ];
+          return (
+            <li key={row.tile}>
+              {row.name}{" "}
+              <span className="studio-field-help">
+                {row.service} · {row.shape === "http" ? `HTTP, ${row.exposure}` : "worker"}
+              </span>
+              <p>{answers.length ? answers.join(", ") : "Idle until stopped"}</p>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
   );
 }

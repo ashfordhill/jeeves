@@ -64,6 +64,8 @@ export const generationSchema = z.strictObject({
   version: z.literal(1),
   runtime: exactContractRefSchema,
   preset: exactContractRefSchema.optional(),
+  /** Runnable processes (tile process contract, section 1): absent means off, never `false`. */
+  processes: z.literal(true).optional(),
   selections: z.array(generationSelectionSchema).max(500),
 });
 export type Generation = z.infer<typeof generationSchema>;

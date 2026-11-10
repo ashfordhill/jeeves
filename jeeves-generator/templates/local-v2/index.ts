@@ -13,6 +13,7 @@ import { createLocalPositiveCache } from "../../src/v2/positive-cache.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
 import { createLocalSearch } from "../../src/v2/search.ts";
+import { createLocalTileProcesses } from "../../src/v2/tile-processes.ts";
 import { createLocalUploadState } from "../../src/v2/upload-state.ts";
 import { createLocalAssetIdentity, createLocalVideoHls } from "../../src/v2/video-hls.ts";
 
@@ -41,7 +42,11 @@ export function loadLocalV2Registry(
   const features = [
     ...(options.applications === false
       ? []
-      : [createLocalComposition(closure), createLocalModuleStubs(closure)]),
+      : [
+          createLocalComposition(closure),
+          createLocalModuleStubs(closure),
+          createLocalTileProcesses(closure),
+        ]),
     ...featureValues,
   ].map((feature) => ({
     ...feature,

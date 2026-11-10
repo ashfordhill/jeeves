@@ -23,6 +23,16 @@
 .generation-preview li p {
   margin: 4px 0 0;
 }
+.generation-option {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+.generation-option + .studio-field-help {
+  margin-top: 2px;
+}
 .generation-actions {
   display: flex;
   gap: 12px;

@@ -47,6 +47,27 @@ const providerName = (name: string, min = 1, max = 255) => {
   return name;
 };
 const sort = <T extends { id: string }>(rows: T[]) => rows.sort((a, b) => v2Compare(a.id, b.id));
+/** With Runnable processes on, `first-run` and `start` gate on `report.processes.runnable`
+ * instead of `applicationComplete` (tile process contract, section 2). */
+const processGate = [
+  [
+    '!JSON.parse(readFileSync(".jeeves/report.json", "utf8")).applicationComplete\n',
+    '!JSON.parse(readFileSync(".jeeves/report.json", "utf8")).processes?.runnable\n',
+  ],
+  [
+    '"Required source/application bindings remain incomplete; inspect .jeeves/report.json before startup."',
+    '"Runnable processes are not runnable yet; inspect processes in .jeeves/report.json before startup."',
+  ],
+] as const;
+function gateOnProcesses(bytes: Uint8Array) {
+  let text = new TextDecoder().decode(bytes);
+  for (const [from, to] of processGate) {
+    if (text.split(from).length !== 2)
+      refuse("INVALID_ASSET", "scripts/local.mjs", "The startup gate must appear exactly once.");
+    text = text.replace(from, to);
+  }
+  return text;
+}
 
 /** Project owner composes specific local contributions. Contributors never write shared files. */
 export function createLocalFoundation(
@@ -637,11 +658,16 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   for (const { value } of contributions)
     for (const service of value.services ?? []) {
       generationLocalIdentity(service.host);
-      if (!model.selections.some((s) => s.host === service.host) || !service.command.length)
+      // A process host runs with no selection of its own (an empty tile, tile process contract).
+      if (
+        (!model.selections.some((s) => s.host === service.host) &&
+          !model.processes?.some((p) => p.tile === service.host)) ||
+        !service.command.length
+      )
         refuse(
           "INVALID_LOCAL_CONTRIBUTION",
           service.host,
-          "Runnable service must implement a selected host with an explicit command.",
+          "Runnable service must implement a selected or process host with an explicit command.",
         );
       const name = `app-${service.host}`;
       if (services[name])
@@ -830,10 +856,20 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     ...(search.length ? ["scripts/search-init.mjs"] : []),
     "scripts/common.mjs",
   ])
-    files.push(file(path, context.asset(`${assets}${path}`)));
-  const missingHosts = [...new Set(model.selections.map((s) => s.host))].filter(
-    (host) => !application.includes(`app-${host}`),
-  );
+    files.push(
+      file(
+        path,
+        path === "scripts/local.mjs" && model.processes
+          ? gateOnProcesses(context.asset(`${assets}${path}`))
+          : context.asset(`${assets}${path}`),
+      ),
+    );
+  const missingHosts = [
+    ...new Set([
+      ...model.selections.map((s) => s.host),
+      ...(model.processes ?? []).map((p) => p.tile),
+    ]),
+  ].filter((host) => !application.includes(`app-${host}`));
   if (missingHosts.length)
     gaps.push({
       id: "application-services",
@@ -854,7 +890,11 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   files.push(
     file(
       "README.md",
-      `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n`,
+      `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
+        model.processes
+          ? "\nRunnable processes: each application tile runs as `app-<id>` from `src/processes/<id>.ts`, healthy once its ready marker exists; HTTP processes also answer `GET /healthz` on port 3000 inside the Compose network. `first-run` and `start` start them only while `processes.runnable` in .jeeves/report.json is true; its `processes.tiles` lists each process's routes and loops. No restart policy: a failed process stays exited until `pnpm start`.\n"
+          : ""
+      }`,
     ),
   );
   return { files, gaps };

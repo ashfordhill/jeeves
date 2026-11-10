@@ -15,6 +15,9 @@ remain readable; their product implementations are not installed. Useful normal 
 and SQL pool/statement limits on a bound Data access or a Lifecycle writer. Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
+The one export option is **Runnable processes** (`generation.processes`, Generate project's
+checkbox and chat's `setRunnableProcesses`): every Service, Uploads, Worker, Redirect, Billing and
+Notifications tile then exports as its own process ([export](../docs/studio.md#experimental-project-export)).
 
 ## C1 context
 

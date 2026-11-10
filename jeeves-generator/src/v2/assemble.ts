@@ -10,7 +10,13 @@ import {
   sha256,
 } from "../json.ts";
 import { type V2Input, validateV2Input } from "./input.ts";
-import { type V2EmitterIdentity, type V2Gap, type V2Registry, v2Compare } from "./registry.ts";
+import {
+  type V2EmitterIdentity,
+  type V2Gap,
+  type V2ProcessReport,
+  type V2Registry,
+  v2Compare,
+} from "./registry.ts";
 
 const metadata = ".jeeves/";
 const pointer = (parts: readonly (string | number)[]) =>
@@ -50,6 +56,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
     records: Record[] = [];
   const gaps: (V2Gap & { emitter: string })[] = [];
   const resolved: { emitter: string; id: string }[] = [];
+  const processRows: (V2ProcessReport & { emitter: string })[] = [];
   for (const emitter of registry.emitters) {
     const rendered = emitter.render(
       freeze({
@@ -67,6 +74,13 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
       }),
     );
     resolved.push(...(rendered.resolves ?? []));
+    if (rendered.processes?.length && (!emitter.provides.processes || !model.processes))
+      refuse(
+        "INVALID_PROCESS_REPORT",
+        emitter.id,
+        "Only the installed processes owner reports processes, and only with Runnable processes on.",
+      );
+    processRows.push(...(rendered.processes ?? []).map((row) => ({ ...row, emitter: emitter.id })));
     for (const file of rendered.files) {
       if (file.path.toLowerCase() === ".jeeves" || file.path.toLowerCase().startsWith(metadata))
         refuse("RESERVED_OUTPUT_PATH", file.path, "The assembler owns provenance output.");
@@ -166,6 +180,32 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
       if (model.selections.some((selection) => sameContractRef(selection.template, template.ref)))
         for (const consumer of template.consumers) verifyOutputs(emitter.id, consumer.outputPaths);
   }
+  // Runnable processes (tile process contract, section 1): one row per normalized process, whose
+  // entry point its owner actually emitted.
+  if (processRows.some((row) => !model.processes?.some((process) => process.tile === row.tile)))
+    refuse("INVALID_PROCESS_REPORT", "/generation/processes", "Report only normalized processes.");
+  const processTiles = model.processes?.map((process) => {
+    const rows = processRows.filter((row) => row.tile === process.tile);
+    if (rows.length > 1)
+      refuse("INVALID_PROCESS_REPORT", process.tile, "Report each process exactly once.");
+    const [row] = rows;
+    if (!row) return undefined;
+    if (
+      !records.some(
+        (record) =>
+          record.path === row.entry &&
+          typeof record.owner !== "string" &&
+          record.owner.id === row.emitter,
+      )
+    )
+      refuse(
+        "MISSING_CONSUMER_OUTPUT",
+        row.entry,
+        `${row.emitter} must actually emit the process's entry point.`,
+      );
+    const { emitter: _emitter, ...rest } = row;
+    return rest;
+  });
   const support = generation.selections.map((declaration, index) => {
     const selection = model.selections.find((item) => item.id === declaration.id);
     const emitter = registry.emitters.find((item) =>
@@ -256,6 +296,14 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
         };
       })
     : undefined;
+  // Runnable: no findings, no unsupported gap and a service for every application tile.
+  const processes = processTiles && {
+    runnable:
+      resolution.findings.length === 0 &&
+      !gaps.some((gap) => gap.status === "unsupported" || gap.id === "application-services") &&
+      processTiles.every((row) => row !== undefined),
+    tiles: processTiles.filter((row) => row !== undefined),
+  };
   const report = freeze({
     format: "jeeves-v2-support-v1",
     semanticComplete: resolution.complete,
@@ -283,6 +331,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
     localAdapterTreatments: model.localAdapterTreatments,
     gaps,
     ...(modules && { modules }),
+    ...(processes && { processes }),
   });
   const addMetadata = (path: string, content: string, sourcePaths: string[] = []) => {
     const bytes = new TextEncoder().encode(content);
@@ -311,6 +360,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
     },
     registry: { sha256: registry.sha256, sources: registry.sources },
     runtime: model.runtime,
+    ...(model.processes && { processes: true as const }),
     ...(model.preset && { preset: model.preset }),
     templates: generation.selections.map((selection) => ({
       selection: selection.id,

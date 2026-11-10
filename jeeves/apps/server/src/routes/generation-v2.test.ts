@@ -253,6 +253,29 @@ it("lists each module's status in the preview and exports a stub-only design", a
       ],
     ]);
     expect(await service.getDesign(project.id)).toEqual(current);
+    // With Runnable processes on, the preview lists the tile's process and it can start.
+    const on = await service.edit(project.id, {
+      baseRevision: current.design.revision,
+      source: "api",
+      ops: buildStudioCommand(current.design, { type: "setRunnableProcesses", on: true }).ops,
+    });
+    if (!on.ok) throw new Error(JSON.stringify(on));
+    const processes = await app.inject({
+      method: "POST",
+      url: `/projects/${project.id}/experimental-generation/preview`,
+      payload: {
+        profileId: "selected-source-v2",
+        baseRevision: on.state.design.revision,
+        sourceSha256: sha256(canonicalJson(on.state.design)),
+      },
+    });
+    expect(processes.statusCode).toBe(200);
+    const report = processes.json().report;
+    expect(report.processes).toMatchObject({
+      runnable: true,
+      tiles: [{ tile: "shorten", service: "app-shorten", shape: "http", exposure: "public" }],
+    });
+    expect(report.gaps.map((gap: { id: string }) => gap.id)).not.toContain("application-services");
   } finally {
     await app.close();
     await database.close();

@@ -235,6 +235,14 @@ export function unsupportedBlueprintV2(design: DesignDocument): UnsupportedBluep
                 },
               ]
             : []),
+          ...(design.generation.processes
+            ? [
+                {
+                  path: ["generation", "processes"],
+                  reason: "Runnable processes are unsupported by blueprint v2.",
+                },
+              ]
+            : []),
           ...design.generation.selections.map((_, index) => ({
             path: ["generation", "selections", index],
             reason: "Exact template target and binding are unsupported by blueprint v2.",

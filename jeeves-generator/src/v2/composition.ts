@@ -79,7 +79,17 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
       const selections = model.selections.filter((s) =>
         capabilities.some(([kind]) => kind === s.binding.kind),
       );
-      if (!selections.length) return { files: [] };
+      const processFile = (sourcePaths: string[]) => ({
+        path: "src/runtime/process.ts",
+        content: asset(
+          "jeeves-generator/templates/local-v2/assets/src/runtime/process.ts.template",
+        ),
+        sourcePaths,
+        ownership: "generated-scaffold" as const,
+      });
+      // Runnable processes need the process scope even with no template selected.
+      if (!selections.length)
+        return { files: model.processes?.length ? [processFile(["/generation/processes"])] : [] };
       let constructors = new TextDecoder().decode(
         asset(
           "jeeves-generator/templates/local-v2/assets/src/features/service-resources.ts.template",
@@ -137,10 +147,7 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
                 ),
               ]
             : []),
-          file(
-            "src/runtime/process.ts",
-            asset("jeeves-generator/templates/local-v2/assets/src/runtime/process.ts.template"),
-          ),
+          processFile(["/generation"]),
           file("src/features/service-resources.ts", constructors),
         ],
       };

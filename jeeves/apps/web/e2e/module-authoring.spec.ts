@@ -565,6 +565,72 @@ test("a cache read built by mouse previews its template for the lead and its par
   expect(errors).toEqual([]);
 });
 
+test("Runnable processes is saved by its checkbox: Preview lists the processes, Undo unticks it and a study refuses it", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Runnable processes", [["Consume", "Microservice"]]);
+  let study: string | undefined;
+  const generation = async (project: string) =>
+    (await (await page.request.get(`/api/projects/${project}/design`)).json()).design as {
+      revision: number;
+      generation?: { processes?: true };
+    };
+  try {
+    await tile(page, "Microservice").click();
+    await addModule(page, "Microservice", "Rate limiter");
+    const generate = page.getByRole("button", { name: "Generate project", exact: true });
+    await generate.click();
+    const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
+    const box = dialog.getByRole("checkbox", { name: "Runnable processes" });
+    await expect(box).not.toBeChecked();
+    const before = await generation(id);
+    await box.click();
+    await expect(box).toBeChecked();
+    await expect.poll(async () => (await generation(id)).generation?.processes).toBe(true);
+    expect((await generation(id)).revision).toBe(before.revision + 1);
+    const result = page.waitForResponse((response) =>
+      response.url().endsWith("/experimental-generation/preview"),
+    );
+    await dialog.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    const preview = await (await result).json();
+    expect(preview.report.processes).toMatchObject({
+      runnable: true,
+      tiles: [{ tile: "microservice", service: "app-microservice", shape: "http" }],
+    });
+    await expect(dialog.getByText("Processes · 1 · runnable")).toBeVisible();
+    const rows = dialog
+      .getByRole("list", { name: "Runnable processes", exact: true })
+      .getByRole("listitem");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.nth(0)).toContainText("Microservice app-microservice · HTTP, public");
+    await expect(rows.nth(0)).toContainText("GET /healthz");
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+    // One Undo step unticks it.
+    await undo(page);
+    await expect.poll(async () => (await generation(id)).generation?.processes).toBeUndefined();
+    await generate.click();
+    await expect(box).not.toBeChecked();
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+    // A study isn't built from modules: the box refuses with the reason and saves nothing.
+    study = await createStudy(page, "E2E Runnable processes study");
+    const saved = await generation(study);
+    await generate.click();
+    await box.click();
+    await expect(
+      dialog.getByText("Runnable processes needs a design built from modules.", { exact: true }),
+    ).toBeVisible();
+    await expect(box).not.toBeChecked();
+    expect((await generation(study)).revision).toBe(saved.revision);
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+    if (study) await page.request.delete(`/api/projects/${study}`);
+  }
+  expect(errors).toEqual([]);
+});
+
 test("Generate project lists each module's status and previews its stubs", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));

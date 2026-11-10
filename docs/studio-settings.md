@@ -466,6 +466,19 @@ Generic cache, SQL and worker settings still reach generated constructors; requi
 routes, projections and application processes remain custom work. Base video adds no search
 or counts. [Current boundary](plans/reliable-foundations/youtube-v2-generic-baseline.md).
 
+**Runnable processes** (`generation.processes`, tile process contract §1) is the one export
+option. Its schema is `true` or absent; off removes the key, so off has one form and exports
+exactly as before. Its form is the unticked "Runnable processes" checkbox in Generate project,
+which sends `setRunnableProcesses {on}`, as chat does: one `setGeneration` batch that never
+derives. Validation refuses it on a design not built from modules (a study, frozen v2, tile-level
+templates or a preset: "Runnable processes needs a design built from modules."), on one with no
+module-level selection ("Add a module first.") and where the registry doesn't install processes
+(`GenerationInstalledSupport.processes`); a raw source edit on a tile-level design is a
+`CONFIG_INVALID` finding at `/generation/processes`. Blueprint v3 carries it in `generation`, and
+v2 refuses its path. It adds no `generationPolicies` record and no tile or module setting:
+an HTTP process uses the Request timeout and Concurrency limit a template on its tile consumes,
+else the fixed 1000 ms and 1000, which the report lists with their origin.
+
 Generation preview and ZIP use these same installed consumer contracts. The dialog shows exact
 selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse
 export instead of becoming an honored JSON-only setting. Partial product hooks and experimental

@@ -673,7 +673,9 @@ it. Names, descriptions, settings and link details go through `edit`, `editSyste
 ownership it needs in the same step. A rename through `edit` or `editComponent` re-keys IDs that
 follow their names, as the inspector does ([Names and IDs](#inspector)); the `applyStudioCommands`
 result lists them as `renamed: [{from, to}]`, and later commands in the turn use the new IDs. An
-`addModule` with a name and no ID takes its ID from that name. Chat sees each module's status (template, stub, custom or
+`addModule` with a name and no ID takes its ID from that name. `setRunnableProcesses` turns
+[Runnable processes](#experimental-project-export) on or off, as Generate project's checkbox does,
+with the same refusals; `getDesign` says whether it is on. Chat sees each module's status (template, stub, custom or
 refused, with why), and the module kinds with the tiles that hold them, their slots and what they
 generate. The canvas runs the same commands ([Adding a module](#adding-a-module),
 [Connect mode](#connect-mode)).
@@ -1249,7 +1251,7 @@ The dialog shows support findings before preview, then actual emitted consumer p
 custom hooks, settings, source/registry/archive/manifest hashes and strict/runtime limitations.
 The full report stays in `.jeeves/report.json`. The default export is partial: reusable modules
 are generated before product-specific completion. It has no runtime verification or strict
-certification, and no unfinished application processes start.
+certification, and no unfinished application processes start unless Runnable processes is on.
 
 The dialog's **Modules** list shows every module of the design, before any preview: its name,
 its tile and what it generates, in the module page's words (Template with the template's name,
@@ -1258,6 +1260,20 @@ parts connected exports its installed template exactly as the same template sele
 would, and the lead and its parts read Template. A module without a complete template exports as
 a typed stub under `src/modules/<tile>/`, which throws "Not implemented" until you write it; each
 stub is a required custom gap.
+
+**Runnable processes** is an unticked checkbox in the dialog. Ticking it saves
+`generation.processes: true` in the design (one revision and one Undo step; unticking or Undo
+removes it), with the same `setRunnableProcesses` command chat sends. Only a design built from
+modules can turn it on: a study, frozen v2 or a design with tile-level templates or a preset
+refuses with "Runnable processes needs a design built from modules.", and a design with no
+module-level selection with "Add a module first."; the reason shows under the checkbox and
+nothing is saved. With it on, the export runs every Service, Uploads and Worker tile (and the
+older Redirect, Billing and Notifications kinds) as its own Compose service, `app-<tile id>`,
+including tiles with no modules: an HTTP process answers `/healthz`, a worker stays up idle, and
+both are healthy once ready. Preview's **Processes** list shows each one with its service, shape
+and what it answers, and whether the stack is runnable; `first-run` starts the processes only
+while it is. Templates and stubs are not wired into the processes yet. With it off, the export
+is exactly as before.
 
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:

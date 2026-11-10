@@ -8445,3 +8445,81 @@ alone (`addModule` with `name`). A rename re-derives, so owner IDs follow too (`
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP04: process option and skeleton
+
+Per the [tile processes plan](plans/tile-processes/units.md) (Owner decisions 2 and 6) and
+[contract](plans/tile-processes/contract.md) §1, §2 and §8. Docs: the generator README (Runnable
+processes), `studio.md` (Experimental project export, Chat), `studio-settings.md`,
+`studio-blueprint.md`, `chat-tool-schemas.md`, `CATALOG.md`, the plan's status and the
+HUMAN_FEEDBACK resolution. Evidence: [tp04](plans/tile-processes/evidence/tp04/README.md).
+
+- **Pinned off first.** New fixture `spec/src/fixtures/stub-stack.ts` (contract §8: 4 tiles, 13
+  stubs; module IDs are the names' slugs, so routes read `/modules/redirector`).
+  `moduleAuthored(twin, installed)` and `tileLevelTwin()` moved into `fixtures/v2-modules.ts`.
+  `jeeves-generator/src/v2/processes-off.test.ts` compares frozen v2, the v2 module design with
+  its values and the stub stack against `fixtures/processes-off.json`, written on the unchanged
+  generator: every payload byte, and the two provenance files with their inventory set aside
+  (`fixtures/processes-off.ts`). Both fixture folders are outside the source inventory.
+- **The option.** `generation.processes: z.literal(true).optional()`. `setRunnableProcesses {on}`
+  is one `setGeneration` (never derives). It refuses on `idsPinned` designs ("Runnable processes
+  needs a design built from modules."), without module selections ("Add a module first."), when
+  already in that state, and in `buildSupportedAuthoringCommand` when `installed.processes` is
+  absent (off always allowed). `GenerationInstalledSupport.processes`; the resolver adds
+  `model.processes` only when on (`NormalizedProcess`: tile, name, kind, shape, exposure, HTTP
+  limits with origin, template selections, stub roles loop/route/library), a `NEEDS_TEMPLATE` at
+  `/generation/processes` when not installed and a `CONFIG_INVALID` there on a raw tile-level or
+  preset design. `generationProcessShapes` gives the six kinds (legacy kinds per question 6).
+  Chat's getDesign has `processes`, plus one instruction line; blueprint v2 refuses the path.
+  No `generationPolicies` record.
+- **Emitter** `local.tile-processes` (`src/v2/tile-processes.ts`, in `loadLocalV2Registry`'s
+  application features; `provides.processes`): `src/processes/<id>.ts` with a compiled `config`
+  (HTTP: `createHttpService` on 0.0.0.0:3000, `/healthz` only; worker: idle timer), the ready
+  marker through `runProcess`, drain on SIGTERM; a `local.services` row per tile (`http: false`,
+  `dependsOn: []`, readiness). Its `render` returns `processes` report rows (`V2ProcessReport`).
+- **Foundation/assembler.** Process hosts need no selection; `application-services` counts them;
+  `scripts/local.mjs`'s gate expression and message are substituted exactly once (else refuse) to
+  read `report.processes?.runnable`; README gains a paragraph; composition emits `process.ts`,
+  primitives `http.ts`/`admission.ts` for HTTP processes. The manifest gets `processes: true`
+  beside `runtime`; the report gets `processes: {runnable, tiles}` (runnable = no findings, no
+  unsupported gap, no `application-services` gap, a verified row per tile). All only when on.
+- **Web.** Generate project: an unticked "Runnable processes" checkbox (one help line); a refusal
+  shows under it and nothing is saved; Preview's **Processes · n · runnable** list.
+
+**Deviation:** the refusal covers every `idsPinned` design, so a study (origin) reads "needs a
+design built from modules" rather than "Add a module first."; the contract named only tile-level
+and preset designs. Turning it on twice refuses ("already on").
+
+**Tests.** Spec `runnable-processes.test.ts` (7), generator `tile-processes.test.ts` (8) and
+`processes-off.test.ts` (4), chat `tools.test.ts` +1, preview route +1 case, e2e
+`module-authoring.spec.ts` +1 (tick, Preview lists the process, Undo unticks, study refuses).
+
+**Checks.** `pnpm check` exited 0: **596 tests in 84 files** (lint: only the existing info).
+**E2E: 67 passed (4.3m)** on the first full run (the new test also passed alone, 6.4s). Web build
+passed (1.58s, the existing chunk-size advisory).
+
+**Gates.** Off pin passes. Frozen v2: fresh `export:v2` 72 files, 70 byte-identical to
+`generic-export.tar.gz`; manifest/report equal without their source and emitter inventory. v1
+byte-identical. YouTube Overview PNG `472a4c8c…dc9f`. **Docker:** stub stack with processes on,
+own project `jeeves-tp04-stub`, ports 45440–45442: install 0.5s, build 0.7s, `first-run` 24.5s,
+4/4 `app-*` healthy, `/healthz` 200 on the three HTTP ones (inside the network), `stop` 0.9s (all
+exit 0), `start` 12.1s, 4/4 healthy, 0 restarts. Cleanup: `down --volumes --remove-orphans` and
+the image tag removed; the owner's volumes, networks, tag→ID mappings, container IDs and 28
+healthy v1/v2 containers match the record.
+
+**Mouse check** (scripted Chromium; my API 4374 with scratch DB `jeeves_tp04`, now dropped, and
+Vite 4364): TinyURL 7 tiles and 7 lines at 1440×900 and 1280×800; blank → Consume →
+Microservice → Rate limiter, tick, Preview lists `app-microservice · HTTP, public · GET /healthz`;
+Undo unticks; the TinyURL study refuses with the reason, revision unchanged. No page or console
+errors (the PNG export's own canvas readback warning aside). My first scripted run used a wrong
+fan locator (script bug). All projects deleted; `jeeves_e2e` has no leftovers.
+
+**For TP05/TP06.** Mount in `tile-processes.ts`: add routes/loops to `configure` and the report
+rows (`routes`, `loops`, each with `answers`); `model.processes[].templates` and `.stubs[].role`
+say what to mount. `dependsOn` is empty: add each provider a wired module uses. The transcoder
+still runs the `app` target; switch to `media` when Video HLS is mounted. HTTP processes publish
+no port: TP05's edge owns `LOCAL_HTTP_PORT`. `NotImplemented`/`tile-process.ts` and
+`src/modules/entry.ts` don't exist yet. Stub files are unchanged with the option on.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

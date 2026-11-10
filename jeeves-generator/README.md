@@ -211,6 +211,49 @@ tile-level reports keep their shape. Each row has the module, its name, host, ki
 selection, apart from the shared project and diagnostics), unconnected slots and reason. The
 studio's preview response lists `modules` for every design.
 
+### Runnable processes
+
+The design's `generation.processes: true` (absent means off) turns on a runnable process per
+application tile ([tile process contract](../docs/plans/tile-processes/contract.md) §1–2). The
+resolver adds `model.processes` only when it is on: one row per Service, Uploads, Worker,
+Redirect, Billing and Notifications tile, sorted by ID, including tiles with no modules, with its
+shape (`http` or `worker`), exposure (public for a lane entry or a saved public exposure), HTTP
+limits (a template on the tile that consumes Request timeout and Concurrency limit, else the
+fixed 1000 ms and 1000), its template selections and each stub's role (loop, route or library).
+Without an installed processes owner the option is a `NEEDS_TEMPLATE` finding at
+`/generation/processes`, which refuses studio export; the dependency-only registry never installs
+it.
+
+`local.tile-processes` (`src/v2/tile-processes.ts`), registered by `loadLocalV2Registry`,
+provides `processes`. For each row it writes the scaffold `src/processes/<id>.ts` with its
+compiled `config` and contributes a `local.services` entry: `app-<id>` running
+`node dist/processes/<id>.js`, profile `application`, `init: true`, no restart policy, no
+published port, `depends_on` only on providers it uses (none yet) and a healthcheck on the ready
+marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering `GET /healthz`
+(200 once ready, 503 before and while draining) and 404 elsewhere; a worker holds an idle timer.
+Both write the ready marker through `runProcess` and drain on SIGTERM. The foundation accepts
+process hosts with no selection, closes `application-services` for them, and substitutes
+`scripts/local.mjs`'s startup gate (exactly once, or it refuses) so `first-run` and `start`
+read `report.processes.runnable` instead of `applicationComplete`. Composition and primitives
+also emit `src/runtime/process.ts`, `http.ts` and `admission.ts` when a process needs them.
+Templates and stubs are not mounted into processes yet.
+
+With the option on, the manifest records `"processes": true` beside `runtime`, and the report
+gains `processes`: `runnable` (no findings, no `unsupported` gap and a service for every
+application tile; `applicationComplete` keeps its meaning) and `tiles`, each with its service,
+shape, exposure, entry point, settings with their origin, routes and loops, each with what it
+answers. With it off, nothing changes: `processes-off.test.ts` pins the export of frozen v2, the
+v2 module design with its values and the stub stack (`spec/src/fixtures/stub-stack.ts`) as they
+were before the option existed, every payload byte and the provenance files apart from their
+source and emitter inventory.
+
+To run one, export it into a new directory, then, in it, `pnpm install --frozen-lockfile
+--ignore-scripts` and `pnpm build`; allocate the project and ports as below and run
+`pnpm first-run`. Each `app-*` is healthy once ready; reach an HTTP process from inside the
+network, for example `docker compose --profile '*' exec app-<id> node -e
+"fetch('http://127.0.0.1:3000/healthz').then(r=>r.text()).then(console.log)"`. `pnpm stop`
+drains every process (exit 0) and `pnpm start` brings them back healthy.
+
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
 hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares
 its exact version, dependencies and optional runtime/preset/template consumer responsibilities.
@@ -236,8 +279,8 @@ does not imply emitted build/runtime evidence or strict TinyURL readiness; requi
 
 `loadLocalV2Registry()` installs the **local runtime foundation**, with exact standalone
 package/lock/build files, selected pinned providers and private setup/restart/access wiring.
-Feature/preset implementations remain unfinished; no handlers, domain tables or shell workers
-are started. `diagnostics/generation.json` and required report gaps retain that distinction.
+Feature/preset implementations remain unfinished; no handlers or domain tables are started, and
+no process runs unless [Runnable processes](#runnable-processes) is on. `diagnostics/generation.json` and required report gaps retain that distinction.
 No v2 studio preview or browser controls are wired yet.
 
 Selected owned uploads also emit the actual generic signed multipart engine, S3 adapter and

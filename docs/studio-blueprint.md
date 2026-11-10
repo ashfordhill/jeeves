@@ -100,8 +100,10 @@ each finite/custom requirement and every ownership/operation row cause v2 refusa
 including nonempty ownership with empty scope. Optional ownership is never added on read;
 `setOwnership` / `setOperations` require v3. Optional operations are never added on read. Empty declarations add no meaning.
 
-Optional `generation` is preserved exactly in v3, including unknown well-formed refs. V2 refuses
-`generation.version`, `.runtime`, optional `.preset` and every `.selections[index]`; even an
+Optional `generation` is preserved exactly in v3, including unknown well-formed refs and the
+Runnable processes option, `generation.processes: true` (absent means off; `false` is invalid).
+V2 refuses `generation.version`, `.runtime`, optional `.preset`, optional `.processes` and every
+`.selections[index]`; even an
 explicit empty selection collection carries a runtime identity. `setGeneration` requires v3,
 and `null` removes the optional field. Existing absent-generation source, blueprint and frozen
 v1 output bytes remain unchanged. Present generation also changes the strict TinyURL subject

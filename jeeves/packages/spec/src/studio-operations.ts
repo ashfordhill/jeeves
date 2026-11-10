@@ -49,7 +49,7 @@ import {
   newModuleIdentity,
   studioComponentTargetKind,
 } from "./studio-modules.ts";
-import { planRename, rekeyDesign, rekeyLeftovers } from "./studio-rekey.ts";
+import { idsPinned, planRename, rekeyDesign, rekeyLeftovers } from "./studio-rekey.ts";
 
 const studioName = z.string().trim().min(1).max(studioLimits.name);
 const studioDescription = z.string().trim().max(studioLimits.description);
@@ -174,6 +174,11 @@ export const studioCommandSchema = z.discriminatedUnion("type", [
     components: z.array(idSchema).min(1).max(studioComponentLimits.components),
   }),
   ...moduleCommandSchemas(),
+  /**
+   * Runnable processes for export (tile process contract, section 1): on saves
+   * `generation.processes: true`, off removes it. Only a design built from modules can turn it on.
+   */
+  z.strictObject({ type: z.literal("setRunnableProcesses"), on: z.boolean() }),
 ]);
 export type StudioCommand = z.infer<typeof studioCommandSchema>;
 /** The module authoring commands (contract section 5), part of `studioCommandSchema`. */
@@ -194,6 +199,7 @@ export function buildStudioCommand(
 ): OperationBatchInput {
   const draft = structuredClone(design);
   const input = studioCommandSchema.parse(command);
+  if (input.type === "setRunnableProcesses") return runnableProcessesBatch(design, input.on);
   if (input.type === "editSystem") {
     if (draft.architecture)
       return operationBatchSchema.parse({
@@ -396,6 +402,26 @@ export function buildStudioCommand(
       `Renaming can't update every use of its old ID (${left}), so nothing was changed.`,
     );
   return operationBatchSchema.parse({ baseRevision: design.revision, ops });
+}
+
+/**
+ * One `setGeneration` that turns Runnable processes on or off. It never derives, so it never
+ * changes a module. Studies, frozen v2 and tile-level or preset designs refuse (`idsPinned`).
+ */
+function runnableProcessesBatch(design: DesignDocument, on: boolean): OperationBatchInput {
+  if (on && idsPinned(design))
+    throw new Error("Runnable processes needs a design built from modules.");
+  if (on && !hasModuleSelections(design)) throw new Error("Add a module first.");
+  const generation = designGeneration(design);
+  if (!generation || !!generation.processes === on)
+    throw new Error(`Runnable processes are already ${on ? "on" : "off"}.`);
+  const next = structuredClone(generation);
+  if (on) next.processes = true;
+  else delete next.processes;
+  return operationBatchSchema.parse({
+    baseRevision: design.revision,
+    ops: [{ op: "setGeneration", generation: next }],
+  });
 }
 
 /**

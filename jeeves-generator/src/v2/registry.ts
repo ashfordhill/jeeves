@@ -32,6 +32,25 @@ export type V2TemplateFile = {
   /** One writer composes the complete file. Other emitters never append or overwrite it. */
   contributors?: readonly { emitter: string; sourcePaths: readonly string[] }[];
 };
+/** One process's report row (tile process contract, section 1): its service, shape, entry point
+ * and settings with their origin, and what each route and loop answers. */
+export type V2ProcessReport = {
+  tile: string;
+  name: string;
+  kind: string;
+  service: string;
+  shape: "http" | "worker";
+  exposure?: "public" | "internal";
+  entry: string;
+  settings: readonly {
+    setting: string;
+    value: number;
+    origin: "template" | "fixed";
+    selection?: string;
+  }[];
+  routes: readonly { method: string; path: string; answers: string }[];
+  loops: readonly { queue: string; module: string; answers: string }[];
+};
 export type V2RenderContext = {
   model: NormalizedGeneration;
   settings: readonly GenerationSettingDecision[];
@@ -48,6 +67,8 @@ export type V2Emitter = {
     runtime?: { ref: ExactContractRef; outputPaths: readonly string[] };
     presets?: readonly { ref: ExactContractRef; outputPaths: readonly string[] }[];
     templates?: readonly GenerationInstalledTemplate[];
+    /** Runs a process per application tile: emits `src/processes/<tile>.ts` and its row. */
+    processes?: true;
   };
   /** Real partial modules may emit useful files without attesting complete implementation. */
   status: "implemented" | "partial" | "diagnostic";
@@ -59,6 +80,8 @@ export type V2Emitter = {
     gaps?: readonly V2Gap[];
     /** Compiled application recipe may satisfy named dependency hooks after validation. */
     resolves?: readonly { emitter: string; id: string }[];
+    /** Only the processes owner, one row per normalized process. */
+    processes?: readonly V2ProcessReport[];
   };
 };
 export type V2EmitterIdentity = {
@@ -118,7 +141,10 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
       const provides = structuredClone(emitter.provides ?? {});
       if (
         emitter.status !== "implemented" &&
-        (provides.runtime || provides.presets?.length || provides.templates?.length)
+        (provides.runtime ||
+          provides.presets?.length ||
+          provides.templates?.length ||
+          provides.processes)
       )
         refuse(
           "INVALID_REGISTRY",
@@ -185,10 +211,12 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
       });
     });
   const runtimeOwners = sorted.filter((emitter) => emitter.provides.runtime);
+  const processOwners = sorted.filter((emitter) => emitter.provides.processes);
   const presets = sorted.flatMap((emitter) => emitter.provides.presets ?? []);
   const templates = sorted.flatMap((emitter) => emitter.provides.templates ?? []);
   if (
     runtimeOwners.length > 1 ||
+    processOwners.length > 1 ||
     new Set(presets.map((preset) => preset.ref.id)).size !== presets.length ||
     new Set(templates.map((template) => template.ref.id)).size !== templates.length
   )
@@ -201,6 +229,7 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
     ...(runtimeOwners[0]?.provides.runtime && { runtime: runtimeOwners[0].provides.runtime.ref }),
     presets: presets.map((preset) => preset.ref),
     templates,
+    ...(processOwners.length && { processes: true as const }),
   };
   const descriptor = sorted.map(({ render: _render, identity, provides, status, description }) => ({
     identity,

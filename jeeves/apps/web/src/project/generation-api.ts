@@ -66,6 +66,19 @@ export type V2GenerationPreview = {
     findings: { code: string; message: string }[];
     settings: { input: string; implementationStatus: string }[];
     localAdapterTreatments: { sourcePath: (string | number)[]; actual: string; reason: string }[];
+    /** Only with Runnable processes on: each application tile's process. */
+    processes?: {
+      runnable: boolean;
+      tiles: {
+        tile: string;
+        name: string;
+        service: string;
+        shape: "http" | "worker";
+        exposure?: "public" | "internal";
+        routes: { method: string; path: string }[];
+        loops: { queue: string; module: string }[];
+      }[];
+    };
   };
 };
 export type GenerationPreview = LegacyGenerationPreview | V2GenerationPreview;

@@ -1,15 +1,8 @@
-import {
-  applyOperations,
-  buildSupportedAuthoringCommand,
-  type DesignDocument,
-  designGeneration,
-  moduleStatuses,
-  normalGenerationControls,
-} from "@jeeves/spec";
+import { type DesignDocument, designGeneration, moduleStatuses } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
-  frozenV2Design,
-  v2ModuleDesign,
+  moduleAuthored,
+  tileLevelTwin,
 } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
@@ -39,56 +32,6 @@ const declaredFixed = [
   "state.readRouting",
 ];
 
-/** v2's seven installed selections, without its product templates and preset. */
-function tileLevelTwin() {
-  const design = frozenV2Design();
-  const generation = designGeneration(design);
-  if (!generation) throw Error("v2 has a generation");
-  generation.selections = generation.selections.filter(
-    (item) => !item.binding.kind.startsWith("youtube-"),
-  );
-  delete generation.preset;
-  return design;
-}
-
-/** The module-authored design with v2's useful values, set through the inspector's controls. */
-function moduleAuthored(twin: DesignDocument) {
-  let design = v2ModuleDesign();
-  const studio = twin.architecture?.studio;
-  for (const control of normalGenerationControls(twin, registry.installed)) {
-    const [, , list, index, , key] = control.sourcePaths[0] ?? [];
-    const rows = design.architecture?.studio;
-    const command =
-      list === "elements"
-        ? (() => {
-            const element = studio?.elements[index as number]?.element;
-            const row = rows?.elements.find((item) => item.element === element);
-            if (!element || !row) throw Error(`No tile at ${index}`);
-            return { type: "edit" as const, element, settings: row.settings, key };
-          })()
-        : (() => {
-            const component = studio?.components?.[index as number]?.id;
-            const row = rows?.components?.find((item) => item.id === component);
-            if (!component || !row) throw Error(`No module at ${index}`);
-            return { type: "editComponent" as const, component, settings: row.settings, key };
-          })();
-    const settings = command.settings as Record<string, unknown>;
-    if (settings[String(key)] === control.value) continue;
-    const { key: _, ...edit } = command;
-    const batch = buildSupportedAuthoringCommand(
-      design,
-      { ...edit, settings: { ...settings, [String(key)]: control.value } } as Parameters<
-        typeof buildSupportedAuthoringCommand
-      >[1],
-      registry.installed,
-    );
-    const result = applyOperations(design, batch.ops);
-    if (!result.ok) throw Error(JSON.stringify(result.errors));
-    design = result.design;
-  }
-  return design;
-}
-
 /** The twin's selections named by their leads, in the module-authored design's order. */
 function mapped(twin: DesignDocument, authored: DesignDocument) {
   const design = structuredClone(twin);
@@ -112,7 +55,7 @@ const bindings = (content: string): { head: string; rows: Binding[] } => ({
 
 describe("module-authored v2 and its tile-level twin", () => {
   const twin = tileLevelTwin();
-  const authored = moduleAuthored(twin);
+  const authored = moduleAuthored(twin, registry.installed);
   const tiles = assembleV2({ designJson: JSON.stringify(mapped(twin, authored)) }, registry);
   const modules = assembleV2({ designJson: JSON.stringify(authored) }, registry);
   const payload = (bundle: typeof tiles) =>

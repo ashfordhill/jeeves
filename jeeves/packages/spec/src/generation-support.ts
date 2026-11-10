@@ -54,7 +54,24 @@ export type GenerationInstalledSupport = {
   runtime?: ExactContractRef;
   presets?: readonly ExactContractRef[];
   templates: readonly GenerationInstalledTemplate[];
+  /** The host runs a process per application tile (tile process contract, section 1). */
+  processes?: true;
 };
+/**
+ * The application tile kinds that run as a process with Runnable processes on, and each one's
+ * shape (tile process contract, section 2): every tile that holds modules runs.
+ */
+export const generationProcessShapes = {
+  service: "http",
+  uploads: "http",
+  redirect: "http",
+  billing: "http",
+  worker: "worker",
+  notification: "worker",
+} as const satisfies Partial<Record<StudioKind, "http" | "worker">>;
+export type GenerationProcessKind = keyof typeof generationProcessShapes;
+/** A process's HTTP limits when no template on its tile consumes them: the initial values. */
+export const generationProcessHttpDefaults = { requestTimeoutMs: 1000, concurrencyLimit: 1000 };
 const choice = (...values: GenerationValue[]): GenerationSupportedValues => ({ values });
 const integer = (min: number, max: number): GenerationSupportedValues => ({
   integer: { min, max },

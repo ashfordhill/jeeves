@@ -67,6 +67,8 @@ export function buildSupportedAuthoringCommand(
         ? "Remove a module with removeModule; its tile's generation is derived again in the same step."
         : "Disconnect a module with disconnectModule; its tile's generation is derived again in the same step.",
     );
+  if (command.type === "setRunnableProcesses" && command.on && !installed.processes)
+    throw new Error("Runnable processes aren't installed in this studio's generator.");
   if (
     command.type === "editConnection" &&
     (command.settings || Object.keys(command.planned ?? {}).some((key) => key !== "label"))

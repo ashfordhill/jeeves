@@ -18,10 +18,13 @@ import {
 } from "./generation-catalog.ts";
 import {
   type GenerationInstalledSupport,
+  type GenerationProcessKind,
   type GenerationSettingRule,
   type GenerationSupportedValues,
   type GenerationValue,
   generationCapabilities,
+  generationProcessHttpDefaults,
+  generationProcessShapes,
 } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import { sameContractRef } from "./operation-records.ts";
@@ -123,6 +126,31 @@ export type NormalizedStubModule = {
     }[];
   }[];
 };
+/** An HTTP limit of a process: the tile's value a template on it consumes, else the initial value. */
+export type NormalizedProcessSetting = {
+  value: number;
+  origin: "template" | "fixed";
+  /** The template selection that consumes the tile's value. */
+  selection?: string;
+  sourcePaths: Path[];
+};
+/**
+ * One application tile's process (tile process contract, section 2): `app-<tile>` running
+ * `src/processes/<tile>.ts`. An HTTP process serves `/healthz` and its routes; a worker runs its
+ * loops. It lists the templates selected on its tile and each stub's role (section 4).
+ */
+export type NormalizedProcess = {
+  tile: string;
+  name: string;
+  kind: GenerationProcessKind;
+  shape: "http" | "worker";
+  /** HTTP only: public for a lane entry or a saved public exposure, else internal. */
+  exposure?: "public" | "internal";
+  http?: { requestTimeoutMs: NormalizedProcessSetting; concurrencyLimit: NormalizedProcessSetting };
+  sourcePath: Path;
+  templates: { selection: string; template: GenerationSelection["template"] }[];
+  stubs: { module: string; selection: string; role: "loop" | "route" | "library" }[];
+};
 export type NormalizedGeneration = {
   version: 1;
   runtime: GenerationSelection["template"];
@@ -135,6 +163,8 @@ export type NormalizedGeneration = {
     classification: "unsupported-intent";
     reason: string;
   }[];
+  /** Present only with Runnable processes on: every application tile that runs, by ID. */
+  processes?: NormalizedProcess[];
 };
 const supports = (support: GenerationSupportedValues, value: GenerationValue) =>
   "values" in support
@@ -269,6 +299,21 @@ export function resolveGeneration(
       "NEEDS_TEMPLATE",
       ["generation", "runtime"],
       "Exact local runtime implementation is not installed by the host.",
+    );
+  if (generation.processes && !installed.processes)
+    report(
+      "NEEDS_TEMPLATE",
+      ["generation", "processes"],
+      "Runnable processes are not installed by the host.",
+    );
+  if (
+    generation.processes &&
+    (generation.preset || generation.selections.some((item) => item.target.kind === "element"))
+  )
+    report(
+      "CONFIG_INVALID",
+      ["generation", "processes"],
+      "Runnable processes needs a design built from modules.",
     );
   const preset = generation.preset;
   if (
@@ -909,6 +954,9 @@ export function resolveGeneration(
         ...(generation.preset && { preset: structuredClone(generation.preset) }),
         selections: normalized,
         localAdapterTreatments,
+        ...(generation.processes && {
+          processes: normalizedProcesses(design, normalized, settings),
+        }),
       };
   if (!model) for (const decision of settings) decision.normalControl = false;
   return freezeRecord({
@@ -917,6 +965,85 @@ export function resolveGeneration(
     settings,
     complete: !!model && findings.length === 0 && normalized.length > 0,
   });
+}
+
+/**
+ * Every application tile's process, sorted by ID (tile process contract, sections 2 and 4),
+ * including tiles with no modules. An HTTP limit comes from a template on the tile that consumes
+ * it, else it is the fixed initial value.
+ */
+function normalizedProcesses(
+  design: DesignDocument,
+  selections: readonly NormalizedGenerationSelection[],
+  settings: readonly GenerationSettingDecision[],
+): NormalizedProcess[] {
+  const studio = design.architecture?.studio;
+  const entries = new Set((studio?.entries ?? []).map((entry) => entry.element));
+  const rows: NormalizedProcess[] = [];
+  (studio?.elements ?? []).forEach((binding, index) => {
+    const kind = binding.settings.kind;
+    if (!Object.hasOwn(generationProcessShapes, kind)) return;
+    const processKind = kind as GenerationProcessKind;
+    const shape = generationProcessShapes[processKind];
+    const tile = binding.element;
+    const hosted = selections.filter((item) => item.host === tile);
+    const limit = (setting: "requestTimeoutMs" | "concurrencyLimit"): NormalizedProcessSetting => {
+      const decision = settings.find(
+        (item) =>
+          item.input === `host.${setting}` &&
+          typeof item.value === "number" &&
+          hosted.some((selection) => selection.id === item.selection),
+      );
+      return decision && typeof decision.value === "number"
+        ? {
+            value: decision.value,
+            origin: "template",
+            selection: decision.selection,
+            sourcePaths: structuredClone(decision.sourcePaths),
+          }
+        : { value: generationProcessHttpDefaults[setting], origin: "fixed", sourcePaths: [] };
+    };
+    const saved = "exposure" in binding.settings ? binding.settings.exposure : undefined;
+    rows.push({
+      tile,
+      name: design.elements.find((element) => element.id === tile)?.name ?? tile,
+      kind: processKind,
+      shape,
+      ...(shape === "http" && {
+        exposure: entries.has(tile) || saved === "public" ? "public" : "internal",
+        http: {
+          requestTimeoutMs: limit("requestTimeoutMs"),
+          concurrencyLimit: limit("concurrencyLimit"),
+        },
+      }),
+      sourcePath: ["architecture", "studio", "elements", index],
+      templates: hosted
+        .filter((item) => item.binding.kind !== "module-stub")
+        .map((item) => ({ selection: item.id, template: structuredClone(item.template) })),
+      stubs: hosted.flatMap((item) =>
+        item.module
+          ? [
+              {
+                module: item.module.component,
+                selection: item.id,
+                role: item.module.slots.some((slot) =>
+                  slot.connections.some(
+                    (connection) =>
+                      connection.target.kind === "element" &&
+                      connection.target.channel === "consume",
+                  ),
+                )
+                  ? ("loop" as const)
+                  : shape === "http"
+                    ? ("route" as const)
+                    : ("library" as const),
+              },
+            ]
+          : [],
+      ),
+    });
+  });
+  return rows.sort((a, b) => (a.tile < b.tile ? -1 : a.tile > b.tile ? 1 : 0));
 }
 
 /** Known declarations without an installed implementation remain explicit custom work in a

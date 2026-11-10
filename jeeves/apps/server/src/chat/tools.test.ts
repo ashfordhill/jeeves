@@ -333,6 +333,42 @@ describe("studio chat tools", () => {
     });
   });
 
+  it("turns Runnable processes on with the dialog's command, and refuses it on a study", () => {
+    const study = new Workspace(tinyurl());
+    expect(run(study, "getDesign").processes).toBe(false);
+    expect(
+      run(study, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [{ type: "setRunnableProcesses", on: true }],
+      }),
+    ).toMatchObject({ ok: false, error: "Runnable processes needs a design built from modules." });
+    const workspace = new Workspace(emptyDesign());
+    const commands = [
+      { type: "addAction", lane: "download", name: "Visit", system: { name: "Links" } },
+      {
+        type: "addTile",
+        from: { lane: "download" },
+        side: "after",
+        tile: { id: "api", name: "API", kind: "service" },
+        linkId: "download-api",
+      },
+      { type: "addModule", host: "api", kind: "rate-limiter", name: "Limiter" },
+      { type: "setRunnableProcesses", on: true },
+    ];
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 0, commands }).ok).toBe(true);
+    let mouse = emptyDesign();
+    const ops = commands.flatMap((command) => {
+      const batch = buildStudioCommand(mouse, command as StudioCommand);
+      const result = applyOperations(mouse, batch.ops);
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      mouse = result.design;
+      return batch.ops;
+    });
+    expect(workspace.pending).toEqual(ops);
+    expect(run(workspace, "getDesign").processes).toBe(true);
+    expect(INSTRUCTIONS).toContain("setRunnableProcesses (on: true or false)");
+  });
+
   it("prepares accepted commands on the working copy without committing them", () => {
     const base = tinyurl();
     const workspace = new Workspace(base);

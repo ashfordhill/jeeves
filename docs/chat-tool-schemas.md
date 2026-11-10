@@ -77,6 +77,9 @@ enum values, 120,000 characters for names/enum values, and the large-enum string
 TP03 (IDs follow names) adds no command or argument: a rename is still `edit`/`editComponent`
 with `name`. Only the `applyStudioCommands` result gains `renamed: [{from, to}]` when a rename
 re-keyed IDs; later commands in the turn use the new IDs.
+TP04 adds one command, `setRunnableProcesses` (`on`, a boolean): 2 properties and 1 enum value.
+Measured after it, `applyStudioCommands` has 465 properties and 590 enum values, still at most
+nine nesting levels. `getDesign` gains `processes` (true or false).
 
 These rules follow the official [function-calling strict-mode documentation](https://developers.openai.com/api/docs/guides/function-calling)
 and [Structured Outputs supported schemas](https://developers.openai.com/api/docs/guides/structured-outputs),

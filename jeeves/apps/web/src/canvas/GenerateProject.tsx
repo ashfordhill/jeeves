@@ -10,7 +10,8 @@ import {
   previewGeneration,
 } from "../project/generation-api.ts";
 import { useProject } from "../project/store.ts";
-import { useGenerationSupport } from "../studio/generation-support.ts";
+import { commitAction } from "../studio/actions.ts";
+import { buildEditorCommand, useGenerationSupport } from "../studio/generation-support.ts";
 import { captureJson, sha256 } from "./diagramCapture.ts";
 import { GenerationModules } from "./GenerationModules.tsx";
 import { LegacyGenerationDetails } from "./LegacyGenerationDetails.tsx";
@@ -30,6 +31,7 @@ export function GenerateProject({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState<"preview" | "download">();
   const [error, setError] = useState<string>();
   const [downloaded, setDownloaded] = useState(false);
+  const [processes, setProcesses] = useState<{ busy?: boolean; refusal?: string }>({});
   const active = useRef<AbortController | null>(null);
   useEffect(() => () => active.current?.abort(), []);
   if (!loaded) return null;
@@ -124,6 +126,23 @@ export function GenerateProject({ onClose }: { onClose: () => void }) {
       if (active.current === controller) active.current = null;
     }
   };
+  // Runnable processes is saved in the design: one command, one Undo step (shared with chat).
+  const setRunnable = async (on: boolean) => {
+    const { project, design } = loaded;
+    const command = { type: "setRunnableProcesses", on } as const;
+    try {
+      buildEditorCommand(design, command);
+    } catch (error) {
+      setProcesses({ refusal: error instanceof Error ? error.message : String(error) });
+      return;
+    }
+    setProcesses({ busy: true });
+    const saved = await commitAction(
+      project.id,
+      (current) => buildEditorCommand(current, command).ops,
+    );
+    setProcesses(saved ? {} : { refusal: "Runnable processes weren't saved. Try again." });
+  };
   const data = validPreview?.data;
   const v2 = !!designGeneration(loaded.design);
   const support = v2 ? resolveGeneration(loaded.design, installed) : undefined;
@@ -161,6 +180,19 @@ export function GenerateProject({ onClose }: { onClose: () => void }) {
           Preview checks this canvas against the saved source. No project edits are made.
           Experimental export does not certify strict TinyURL readiness or runtime behavior.
         </p>
+        <label className="generation-option">
+          <input
+            type="checkbox"
+            checked={!!designGeneration(loaded.design)?.processes}
+            disabled={processes.busy || !!busy || !settled}
+            onChange={(event) => void setRunnable(event.target.checked)}
+          />
+          Runnable processes
+        </label>
+        <p className="studio-field-help">
+          Each Service, Uploads and Worker tile runs as its own process in the exported stack.
+        </p>
+        {processes.refusal ? <p role="alert">{processes.refusal}</p> : null}
         <GenerationModules design={loaded.design} />
         {support ? (
           <p>

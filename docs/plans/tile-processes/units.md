@@ -2,7 +2,7 @@
 
 **Status:** planned 2026-11-10 from owner decisions. TP01 is done: the [contract](contract.md)
 revises TP03–TP08 below. TP02 is done (usable connection dots). TP03 is done (IDs follow names).
-TP04–TP09 have not started.
+TP04 is done (the option and the process skeleton). TP05–TP09 have not started.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — A runnable process per tile](../../HUMAN_FEEDBACK.md)
 · Follows [module authoring](../module-authoring/units.md) and its [review](../module-authoring/review.md),
 including contract question 6.

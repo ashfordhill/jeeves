@@ -8,9 +8,15 @@ import frozenV2 from "../../../../../field-projects/youtube/v2/inputs/design.jso
 };
 import { applyOperations } from "../apply.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "../design.ts";
+import { designGeneration } from "../generation.ts";
+import type { GenerationInstalledSupport } from "../generation-support.ts";
 import type { StudioComponentKind, StudioModuleSlotId } from "../studio-components.ts";
 import type { StudioKind } from "../studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "../studio-operations.ts";
+import {
+  buildSupportedAuthoringCommand,
+  normalGenerationControls,
+} from "../supported-authoring.ts";
 
 /** The frozen v2 design, parsed. */
 export const frozenV2Design = () => designSchema.parse(structuredClone(frozenV2));
@@ -148,3 +154,59 @@ export const v2Modules: readonly StudioCommand[] = [
 
 /** v2 authored with modules: its tiles, then its 22 modules connected. */
 export const v2ModuleDesign = () => runStudioCommands(v2Tiles(), v2Modules);
+
+/** v2's seven installed selections, without its product templates and preset. */
+export function tileLevelTwin() {
+  const design = frozenV2Design();
+  const generation = designGeneration(design);
+  if (!generation) throw Error("v2 has a generation");
+  generation.selections = generation.selections.filter(
+    (item) => !item.binding.kind.startsWith("youtube-"),
+  );
+  delete generation.preset;
+  return design;
+}
+
+/**
+ * The module-authored design with v2's useful values (the twin's normal controls), set through
+ * the inspector's controls against `installed`, the executing registry's support.
+ */
+export function moduleAuthored(
+  twin: DesignDocument,
+  installed: GenerationInstalledSupport,
+): DesignDocument {
+  let design = v2ModuleDesign();
+  const studio = twin.architecture?.studio;
+  for (const control of normalGenerationControls(twin, installed)) {
+    const [, , list, index, , key] = control.sourcePaths[0] ?? [];
+    const rows = design.architecture?.studio;
+    const command =
+      list === "elements"
+        ? (() => {
+            const element = studio?.elements[index as number]?.element;
+            const row = rows?.elements.find((item) => item.element === element);
+            if (!element || !row) throw Error(`No tile at ${index}`);
+            return { type: "edit" as const, element, settings: row.settings, key };
+          })()
+        : (() => {
+            const component = studio?.components?.[index as number]?.id;
+            const row = rows?.components?.find((item) => item.id === component);
+            if (!component || !row) throw Error(`No module at ${index}`);
+            return { type: "editComponent" as const, component, settings: row.settings, key };
+          })();
+    const settings = command.settings as Record<string, unknown>;
+    if (settings[String(key)] === control.value) continue;
+    const { key: _, ...edit } = command;
+    const batch = buildSupportedAuthoringCommand(
+      design,
+      { ...edit, settings: { ...settings, [String(key)]: control.value } } as Parameters<
+        typeof buildSupportedAuthoringCommand
+      >[1],
+      installed,
+    );
+    const result = applyOperations(design, batch.ops);
+    if (!result.ok) throw Error(JSON.stringify(result.errors));
+    design = result.design;
+  }
+  return design;
+}
