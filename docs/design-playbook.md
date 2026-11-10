@@ -1434,3 +1434,16 @@ neighbours meet halfway: a press then always takes the nearer handle, never the 
 drag whose end may be off screen needs the canvas to follow it: pan when the drag is held near the
 edge, slowly at first, only as far as there is something to show, and keep the line's end under
 the pointer, so a release lands where the user is looking.
+
+## 2026-11-10 TP03: an identity follows the name the user gave it, until someone chose it
+
+Generated names (processes, folders, SQL schemas, queues) come from IDs, so an ID taken from the
+kind at creation (`worker-service-3`) outlives the name the user typed and leaks into the code.
+Let an ID follow its name while it still has a form the tool made, its creation form or its
+name's slug, and re-key it, with everything it names, in the same step as the rename: one Undo
+step, every reference, derived facts re-derived. Never re-key what a person or a fixed example
+chose (a study, a frozen design, a hand-written ID); there the rename changes only the name. A
+re-key must be complete or not happen: walk the whole document afterwards for the old ID, and
+refuse rather than leave half of it renamed. In an autosaving field, a clash is a field error
+that waits for the next keystroke, not a failed save to retry, and the selection, the open page
+and the field being typed in move to the new ID without remounting.

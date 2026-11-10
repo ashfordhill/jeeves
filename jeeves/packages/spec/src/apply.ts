@@ -10,7 +10,9 @@ import {
 } from "./operation-contracts.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
 import { ownershipFindings } from "./ownership.ts";
+import { usedIds } from "./studio-ids.ts";
 import { pruneStudioAfterDelete } from "./studio-prune.ts";
+import { rekeyDesign } from "./studio-rekey.ts";
 import { validateStudio } from "./studio-validation.ts";
 import { validateDesign } from "./validate.ts";
 
@@ -271,6 +273,19 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
       if (!design.connections.some((c) => c.id === op.id)) throw missing("connection", op.id);
       design.connections = design.connections.filter((c) => c.id !== op.id);
       pruneStudioAfterDelete(design, [], [op.id]);
+      return;
+    }
+    case "rekey": {
+      if (
+        !design.elements.some((item) => item.id === op.from) &&
+        !design.architecture?.studio?.components?.some((item) => item.id === op.from)
+      )
+        throw missing("tile or module", op.from);
+      if (usedIds(design).has(op.to))
+        throw new OpError(
+          finding("DUPLICATE_ID", `ID "${op.to}" is already in use.`, { op: index }),
+        );
+      rekeyDesign(design, op.from, op.to);
       return;
     }
   }

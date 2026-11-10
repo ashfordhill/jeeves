@@ -4,7 +4,7 @@
  * history. All writes share one request chain, so each runs against the revision the previous one
  * produced.
  */
-import type { DesignDocument, Finding, OperationInput } from "@jeeves/spec";
+import type { DesignDocument, Finding, OperationInput, Rekey } from "@jeeves/spec";
 import { create } from "zustand";
 import { ApiError, api, type DesignState, type EditResult, type Project } from "./api.ts";
 import { createExampleProject, DEFAULT_EXAMPLE_ID } from "./create-example.ts";
@@ -19,6 +19,8 @@ type Loaded = {
   design: DesignDocument;
   findings: Finding[];
   history: DesignState["history"];
+  /** The IDs the change that produced this design re-keyed, for the selection to follow. */
+  renamed?: Rekey[];
 };
 
 type ProjectState = {
@@ -115,6 +117,8 @@ export const useProject = create<ProjectState>()((set, get) => {
     const previous = accepted.get(state.projectId);
     if (previous && previous.design.revision > state.design.revision) return;
     accepted.set(state.projectId, state);
+    // Drafts of re-keyed tiles and modules move to their new IDs before anything renders them.
+    if (state.renamed) formDrafts.follow(state.projectId, state.renamed, state.design);
     const loaded = get().loaded;
     if (
       !loaded ||
@@ -129,6 +133,7 @@ export const useProject = create<ProjectState>()((set, get) => {
         design: state.design,
         findings: state.findings,
         history: state.history,
+        renamed: state.renamed,
       },
     });
   };
@@ -245,7 +250,12 @@ export const useProject = create<ProjectState>()((set, get) => {
             adopt(result.state);
             const latest = accepted.get(intent.projectId) ?? result.state;
             outcome = result.ok
-              ? { status: "saved", design: latest.design, written: result.state.design }
+              ? {
+                  status: "saved",
+                  design: latest.design,
+                  written: result.state.design,
+                  ...(result.state.renamed && { renamed: result.state.renamed }),
+                }
               : { status: "conflict", design: latest.design };
             return result.ok;
           }

@@ -77,11 +77,13 @@ export function moduleKinds(design: DesignDocument, host: string): StudioCompone
 /**
  * A name and ID for a new module of this kind in `host`: the kind's name ("Data access"), then
  * "Data access 2"… (free among the host's modules), with an ID such as `shorten-data-access`.
+ * Given a `name`, the ID follows it instead (`shorten-url-reader`), as a rename would re-key it.
  */
 export function newModuleIdentity(
   design: DesignDocument,
   host: string,
   kind: StudioComponentKind,
+  given?: string,
 ): { id: string; name: string } {
   const names = new Set(
     (design.architecture?.studio?.components ?? [])
@@ -92,7 +94,11 @@ export function newModuleIdentity(
   let name = base;
   for (let n = 2; names.has(name.toLowerCase()); n += 1) name = `${base} ${n}`;
   const used = usedIds(design);
-  return { id: freshId(`${host}-${slug(name)}`, (id) => used.has(id)), name };
+  const named = given?.trim() && slug(given) ? given.trim() : undefined;
+  return {
+    id: freshId(`${host}-${slug(named ?? name)}`, (id) => used.has(id)),
+    name: named ?? name,
+  };
 }
 
 export type ModuleLinkChoice = {

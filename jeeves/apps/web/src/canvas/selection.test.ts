@@ -12,7 +12,13 @@ import { describe, expect, it } from "vitest";
 import v2 from "../../../../../field-projects/youtube/v2/inputs/design.json" with { type: "json" };
 import { detailedView } from "./detailedView.ts";
 import { laneNodeName } from "./LaneCanvas.tsx";
-import { canonicalLine, drawnSelection, liveSelection } from "./selection.ts";
+import {
+  canonicalLine,
+  drawnSelection,
+  followKeys,
+  followSelection,
+  liveSelection,
+} from "./selection.ts";
 
 const design = studioArchitectureExample("studio-youtube").design;
 const graph = laneGraph(design);
@@ -49,6 +55,41 @@ describe("liveSelection", () => {
     expect(liveSelection(design, graph, { tile: "gone", module: "transcoder-encoder" })).toEqual(
       {},
     );
+  });
+});
+
+describe("a selection after a rename re-keyed IDs", () => {
+  const renamed = [
+    { from: "worker-service", to: "video-worker" },
+    { from: "worker-service-custom", to: "video-worker-custom" },
+  ];
+  it("moves the tile and its open module to their new IDs; a line keeps its ID", () => {
+    expect(
+      followSelection({ tile: "worker-service", module: "worker-service-custom" }, renamed),
+    ).toEqual({ tile: "video-worker", module: "video-worker-custom" });
+    const line = { line: "upload-worker-service" };
+    expect(followSelection(line, renamed)).toBe(line);
+    const other = { tile: "cache" };
+    expect(followSelection(other, renamed)).toBe(other);
+  });
+
+  it("keeps each page's key on its new ID and gives the old ID a fresh one, both ways", () => {
+    const keys = followKeys({}, renamed, 3);
+    expect(keys).toEqual({
+      "video-worker": "worker-service",
+      "worker-service": "worker-service~3",
+      "video-worker-custom": "worker-service-custom",
+      "worker-service-custom": "worker-service-custom~3",
+    });
+    // Undo moves the IDs back, last first: the page keeps the same key again.
+    const back = followKeys(
+      keys,
+      renamed.toReversed().map(({ from, to }) => ({ from: to, to: from })),
+      4,
+    );
+    expect(back["worker-service"]).toBe("worker-service");
+    expect(back["worker-service-custom"]).toBe("worker-service-custom");
+    expect(back["video-worker"]).toBe("video-worker~4");
   });
 });
 

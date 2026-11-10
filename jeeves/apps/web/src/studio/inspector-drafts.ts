@@ -1,6 +1,7 @@
 import {
   containerClassification,
   type DesignDocument,
+  renameRefusal,
   resolveStudioDefinition,
   type StudioOwner,
   studioLimits,
@@ -116,6 +117,11 @@ export function inspectorSpec(
       if (typeof name !== "string" || !name.trim()) errors["element.name"] = "Enter a name";
       else if (name.length > studioLimits.name && name !== initial["element.name"])
         errors["element.name"] = `Use ${studioLimits.name} characters or fewer`;
+      else if (ref.kind === "element") {
+        // A name whose re-keyed ID is taken waits here, with the reason, until it is free.
+        const refusal = renameRefusal(design, { element: ref.id }, name);
+        if (refusal) errors["element.name"] = refusal;
+      }
       const description = values["element.description"];
       if (
         typeof description !== "string" ||
@@ -145,6 +151,10 @@ export function inspectorSpec(
           errors["settings.origin"] = "Select an application or object store";
       }
       return errors;
+    },
+    follow(renamed, next) {
+      const id = ref.kind === "element" ? renamed.get(ref.id) : undefined;
+      return id ? inspectorSpec(projectId, { kind: "element", id }, label, next) : undefined;
     },
     build(current, values, paths) {
       const text = {

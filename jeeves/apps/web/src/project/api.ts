@@ -7,6 +7,7 @@ import type {
   Finding,
   GenerationInstalledSupport,
   OperationInput,
+  Rekey,
 } from "@jeeves/spec";
 
 export type Project = {
@@ -22,6 +23,8 @@ export type DesignState = {
   findings: Finding[];
   /** `latestEdit` is the operation ID the next undo reverts, if any. */
   history: { canUndo: boolean; canRedo: boolean; latestEdit: number | null };
+  /** The tile and module IDs a change re-keyed (IDs follow names), in order; absent when none. */
+  renamed?: Rekey[];
 };
 
 /** Outcome of `POST /projects/:id/operations`, `/undo`, or `/redo`. */

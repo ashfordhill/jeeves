@@ -567,6 +567,22 @@ details.
 
 A tile or action with a warning lists it, in yellow, below its kind.
 
+**Names and IDs.** A tile's or module's ID follows its name while it still has the form it was
+created with (`worker-service`, `worker-service-2`; `<tile>-data-access`) or its current name's
+slug. Renaming it re-keys the ID: a tile becomes the new name's slug (`video-lifecycle-worker`),
+a module `<tile ID>-<slug>`, and a tile's following modules move to its new ID with it. Every
+reference moves in the same step (links, module links, entries, ownership, generation, operations
+and scope; derivation re-runs), so it is one Undo step, and Undo moves the IDs back. Link IDs never
+change. The re-key happens when the name's autosave commits (after 500ms or on blur), not per
+keystroke; the tile or module stays selected under its new ID, and a field being typed in keeps
+its focus and text. A name whose new ID something else already has waits in the field with the
+reason ("Microservice would take the ID microservice, which Microservice already uses. Choose
+another name.") and saves nothing until it is changed. A name whose slug is no ID (empty, or
+starting with a digit) keeps the ID; a long one is cut to 63 characters. **Pinned:** the studies,
+the frozen v2 project (a study origin), designs with a tile-level template or a feature preset, and
+IDs that follow neither form (hand-chosen, imported, or given to chat's `addTile`/`addModule`) keep
+their IDs; renaming changes only the name.
+
 Valid text autosaves after 500ms or on blur; selects commit at once. Selecting, opening a module
 and navigating flush pending valid edits; invalid unsent drafts are discarded. A rejected write stays
 visible with Retry/Discard. A revision conflict adopts the fresh design with "Changed elsewhere;
@@ -606,7 +622,9 @@ them. The three studies have none. The rules live in `studio-warnings.ts`.
 
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
 batch (an autosaved edit, an action's rename, an entry's lane switch, or adding, connecting,
-disconnecting or removing a module) or chat turn is one step; a new edit ends the redo chain. Selecting, opening a module or going Back,
+disconnecting or removing a module) or chat turn is one step; a new edit ends the redo chain. A
+rename that re-keyed IDs is one step too: Undo and Redo move the IDs back and again, and the
+selection (an open module included) follows them; the server's answer lists them as `renamed`. Selecting, opening a module or going Back,
 switching between Overview and Detailed, opening a fan, hovering, a cancelled drag, panning,
 zooming and Fit add none and leave the design and blueprint unchanged. The history survives reloads.
 
@@ -652,7 +670,10 @@ it. Names, descriptions, settings and link details go through `edit`, `editSyste
 `editConnection`. Modules are added, connected, disconnected and removed with `addModule`,
 `connectModule`, `disconnectModule` and `removeModule`
 ([catalog](../jeeves/CATALOG.md#components-c3)), which derive each module's generation and the
-ownership it needs in the same step. Chat sees each module's status (template, stub, custom or
+ownership it needs in the same step. A rename through `edit` or `editComponent` re-keys IDs that
+follow their names, as the inspector does ([Names and IDs](#inspector)); the `applyStudioCommands`
+result lists them as `renamed: [{from, to}]`, and later commands in the turn use the new IDs. An
+`addModule` with a name and no ID takes its ID from that name. Chat sees each module's status (template, stub, custom or
 refused, with why), and the module kinds with the tiles that hold them, their slots and what they
 generate. The canvas runs the same commands ([Adding a module](#adding-a-module),
 [Connect mode](#connect-mode)).

@@ -8,6 +8,8 @@ import {
   type DesignDocument,
   emptyDesign,
   type OperationInput,
+  type Rekey,
+  renamedIds,
   validateDesign,
 } from "@jeeves/spec";
 
@@ -26,12 +28,14 @@ export function serviceOps(design: DesignDocument, id: string, name = id): Opera
   }).ops;
 }
 
+type Step = { before: DesignDocument; after: DesignDocument; ops?: OperationInput[] };
+
 export function fakeApi() {
   const state = {
     design: emptyDesign() as DesignDocument,
     /** Snapshots before/after each applied edit, and the edits undone (newest last). */
-    done: [] as { before: DesignDocument; after: DesignDocument }[],
-    undone: [] as { before: DesignDocument; after: DesignDocument }[],
+    done: [] as Step[],
+    undone: [] as Step[],
   };
   const project = () => ({
     id: TEST_PROJECT,
@@ -39,7 +43,7 @@ export function fakeApi() {
     revision: state.design.revision,
     updatedAt: "2026-10-28T00:00:00.000Z",
   });
-  const designState = () => ({
+  const designState = (renamed: Rekey[] = []) => ({
     projectId: TEST_PROJECT,
     design: state.design,
     findings: validateDesign(state.design),
@@ -48,6 +52,8 @@ export function fakeApi() {
       canRedo: state.undone.length > 0,
       latestEdit: state.done.length || null,
     },
+    // As the server does: the IDs a change re-keyed (an undo's reversed).
+    ...(renamed.length && { renamed }),
   });
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -74,10 +80,10 @@ export function fakeApi() {
       if (!result.ok) {
         return json({ code: "INVALID_OPERATION", message: "invalid", errors: result.errors }, 422);
       }
-      state.done.push({ before: state.design, after: result.design });
+      state.done.push({ before: state.design, after: result.design, ops: body.ops });
       state.undone = [];
       state.design = result.design;
-      return json({ ...designState(), operationId: state.design.revision });
+      return json({ ...designState(renamedIds(body.ops)), operationId: state.design.revision });
     }
     if (path === `${projectPath}/undo` || path === `${projectPath}/redo`) {
       if (body.baseRevision !== state.design.revision) {
@@ -89,7 +95,13 @@ export function fakeApi() {
       (undo ? state.undone : state.done).push(step);
       const snapshot = undo ? step.before : step.after;
       state.design = { ...snapshot, revision: state.design.revision + 1 };
-      return json({ ...designState(), operationId: state.design.revision });
+      const renamed = renamedIds(step.ops ?? []);
+      return json({
+        ...designState(
+          undo ? renamed.reverse().map(({ from, to }) => ({ from: to, to: from })) : renamed,
+        ),
+        operationId: state.design.revision,
+      });
     }
     return json({ code: "NOT_FOUND", message: `No route ${method} ${path}` }, 404);
   };

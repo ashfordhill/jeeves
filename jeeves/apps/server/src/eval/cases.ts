@@ -162,7 +162,7 @@ export const cases: EvalCase[] = [
       "Repair this video topology: Search indexer currently consumes Processing results directly, before the video owner commits publication. Search must consume a distinct owner-publication feed. Keep durable originals and their worker read, the search projection and Owner export bucket's exact identity/settings/purpose. Keep pending/failed status, duplicate jobs, same-owner completion and publication/read visibility as unresolved obligations wherever the current model cannot encode them." +
       context,
     seed: videoSeed,
-    protectedIds: ["originals", "outputs"],
+    protectedIds: ["originals", "owner-export-bucket"],
     obligations: [
       lifecycle,
       duplicate,
@@ -198,7 +198,7 @@ export const cases: EvalCase[] = [
       "Held-out change: this finite-stock checkout must handle the same payment success delivered twice and then delivered after reservation expiry/cancellation. Preserve Owner stock ledger's exact identity/settings/purpose and all unrelated topology. Record duplicate/unordered notifications, a late-payment recovery decision, reservation expiry and durable reconciliation as unresolved requirements; change topology only if needed." +
       context,
     seed: checkoutSeed,
-    protectedIds: ["inventory", "catalog", "payment-state"],
+    protectedIds: ["owner-stock-ledger", "catalog", "payment-state"],
     obligations: [finite, notification],
     alternatives:
       "A review-only turn is appropriate. Do not create extra independent order owners to evade same-owner return constraints. Late success must not be claimed automatically safe.",

@@ -78,6 +78,64 @@ describe("project store", () => {
     expect(canRedo(useProject.getState())).toBe(false);
   });
 
+  it("follows a rename that re-keys IDs: the draft moves, and Undo moves it back", async () => {
+    const { formDrafts } = await import("./form-drafts.ts");
+    const { inspectorSpec } = await import("../studio/inspector-drafts.ts");
+    await addService("microservice", "Microservice");
+    const spec = inspectorSpec(TEST_PROJECT, { kind: "element", id: "microservice" }, "", design());
+    if (!spec) throw new Error("The service has an inspector");
+    const entry = formDrafts.open(spec, design());
+    // The name commits as the inspector's debounced save does, and re-keys the tile.
+    formDrafts.change(entry.key, { "element.name": "Upload API" });
+    const flight = formDrafts.flush(entry.key);
+    // Typed while the rename is in flight: saved next, under the new ID.
+    formDrafts.change(entry.key, { "element.description": "Takes uploads." });
+    void formDrafts.flush(entry.key);
+    await flight;
+    expect(design().elements).toMatchObject([
+      { id: "upload-api", name: "Upload API", description: "Takes uploads." },
+    ]);
+    expect(design().revision).toBe(3);
+    expect(entry.key).toContain("element:upload-api");
+    expect(entry.paths.size).toBe(0);
+    expect(entry.problem).toBeUndefined();
+    expect(formDrafts.forProject(TEST_PROJECT).filter((item) => item === entry)).toHaveLength(1);
+    // The description's own save re-keyed nothing.
+    expect(loaded().renamed).toBeUndefined();
+    await useProject.getState().undo();
+    await useProject.getState().undo();
+    expect(design().elements.map((item) => item.id)).toEqual(["microservice"]);
+    expect(loaded().renamed).toEqual([{ from: "upload-api", to: "microservice" }]);
+    expect(entry.key).toContain("element:microservice");
+    // The inspector, rendering the restored ID, finds the same draft and reads the old name.
+    const back = inspectorSpec(TEST_PROJECT, { kind: "element", id: "microservice" }, "", design());
+    if (!back) throw new Error("The service has an inspector");
+    expect(formDrafts.open(back, design())).toBe(entry);
+    expect(entry.values["element.name"]).toBe("Microservice");
+  });
+
+  it("holds a name whose re-keyed ID is taken as a field error, and saves once it is free", async () => {
+    const { formDrafts } = await import("./form-drafts.ts");
+    const { inspectorSpec } = await import("../studio/inspector-drafts.ts");
+    await addService("upload", "Upload");
+    await addService("microservice", "Microservice");
+    const spec = inspectorSpec(TEST_PROJECT, { kind: "element", id: "microservice" }, "", design());
+    if (!spec) throw new Error("The service has an inspector");
+    const entry = formDrafts.open(spec, design());
+    // Typing "Upload API" passes "Upload", which another tile's ID already is.
+    formDrafts.change(entry.key, { "element.name": "Upload" });
+    expect(entry.errors["element.name"]).toBe(
+      "Upload would take the ID upload, which Upload already uses. Choose another name.",
+    );
+    await formDrafts.flush(entry.key);
+    expect(design().revision).toBe(2);
+    expect(entry.problem).toBeUndefined();
+    formDrafts.change(entry.key, { "element.name": "Upload API" });
+    expect(entry.errors).toEqual({});
+    await formDrafts.flush(entry.key);
+    expect(design().elements.map((item) => item.id)).toEqual(["upload", "upload-api"]);
+  });
+
   it("drops the redo chain after a new edit", async () => {
     await addService("a");
     await useProject.getState().undo();

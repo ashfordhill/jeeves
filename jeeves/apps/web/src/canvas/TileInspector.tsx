@@ -64,6 +64,7 @@ export function TileInspector({
   id,
   name,
   module: open,
+  moduleKey,
   onModule,
 }: {
   projectId: string;
@@ -72,6 +73,8 @@ export function TileInspector({
   name: string;
   /** The open module (the workspace's `selection.module`), always one of this tile's. */
   module?: string;
+  /** Its page's key, kept when a rename re-keys the module (default: its ID). */
+  moduleKey?: string;
   /** Opens one of this tile's modules, or (undefined) returns to the tile. */
   onModule: (module?: string) => void;
 }) {
@@ -102,7 +105,7 @@ export function TileInspector({
     const visual = kind ? studioDefinitions[kind].visual : undefined;
     // Each page is its own scroller, so a module opens at its top.
     return (
-      <div key={module.id} className="studio-selection-summary">
+      <div key={moduleKey ?? module.id} className="studio-selection-summary">
         <button
           type="button"
           className="lane-inspector-back"

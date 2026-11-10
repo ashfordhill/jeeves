@@ -2,7 +2,7 @@
 // are canonical relationships; the Detailed view maps its drawn lines to and from them, and marks
 // an open module's row and its own drawn lines.
 import type { BoardSelection } from "@jeeves/board";
-import type { DesignDocument, LaneGraph } from "@jeeves/spec";
+import type { DesignDocument, LaneGraph, Rekey } from "@jeeves/spec";
 import type { DetailedView } from "./detailedView.ts";
 
 /**
@@ -32,6 +32,43 @@ export function liveSelection(
   }
   if (pick.line && graph.edges.some((edge) => edge.id === pick.line)) return { line: pick.line };
   return {};
+}
+
+/** The ID `renamed` (in order) moves `id` to. */
+const followId = (id: string, renamed: readonly Rekey[]) =>
+  renamed.reduce((current, item) => (current === item.from ? item.to : current), id);
+
+/**
+ * The selection after a change re-keyed IDs (IDs follow names): the tile and the open module move
+ * to their new IDs; a line keeps its ID (link IDs never change). The same object when nothing
+ * moved.
+ */
+export function followSelection(
+  pick: WorkspaceSelection,
+  renamed: readonly Rekey[],
+): WorkspaceSelection {
+  const tile = pick.tile && followId(pick.tile, renamed);
+  const module = pick.module && followId(pick.module, renamed);
+  if (tile === pick.tile && module === pick.module) return pick;
+  return { ...pick, ...(tile !== undefined && { tile }), ...(module !== undefined && { module }) };
+}
+
+/**
+ * The inspector's page keys after a re-key: a new ID takes its old ID's key, so the page (and the
+ * field being typed in) stays mounted, and the old ID gets a fresh key (`<id>~<revision>`), so a
+ * tile created later with that ID opens its own page. Pure, for React's double renders.
+ */
+export function followKeys(
+  keys: Readonly<Record<string, string>>,
+  renamed: readonly Rekey[],
+  revision: number,
+): Record<string, string> {
+  const next = { ...keys };
+  for (const { from, to } of renamed) {
+    next[to] = next[from] ?? from;
+    next[from] = `${from}~${revision}`;
+  }
+  return next;
 }
 
 /**

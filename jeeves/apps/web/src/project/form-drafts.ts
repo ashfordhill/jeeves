@@ -1,5 +1,9 @@
-/** Target-keyed drafts. Persistence uses the project store's one serialized mutation chain. */
-import type { DesignDocument, OperationInput } from "@jeeves/spec";
+/**
+ * Target-keyed drafts. Persistence uses the project store's one serialized mutation chain. A
+ * change that re-keys a target's ID (IDs follow names) moves its draft to the new ID, values,
+ * flight and timers included, so editing carries on.
+ */
+import type { DesignDocument, OperationInput, Rekey } from "@jeeves/spec";
 
 export type DraftValues = Record<string, unknown>;
 export type DraftErrors = Record<string, string>;
@@ -11,13 +15,15 @@ export type DraftSpec = {
   read(design: DesignDocument): DraftValues | undefined;
   validate(values: DraftValues): DraftErrors;
   build(design: DesignDocument, values: DraftValues, paths: readonly string[]): OperationInput[];
+  /** The spec for the target's new ID, when `renamed` (old → new) re-keyed it; else undefined. */
+  follow?(renamed: ReadonlyMap<string, string>, design: DesignDocument): DraftSpec | undefined;
 };
 export type DraftIntent = {
   projectId: string;
   rebuild(design: DesignDocument): OperationInput[] | undefined;
 };
 export type DraftResult =
-  | { status: "saved"; design: DesignDocument; written?: DesignDocument }
+  | { status: "saved"; design: DesignDocument; written?: DesignDocument; renamed?: Rekey[] }
   | { status: "conflict"; design: DesignDocument }
   | { status: "failed"; message: string };
 export type FormDraft = {
@@ -83,6 +89,30 @@ class FormDrafts {
     this.entries.set(key, entry);
     return entry;
   }
+  /**
+   * Moves the project's drafts whose target `renamed` re-keyed to its new ID (their spec's
+   * `follow`). Values, flight and timers move with the draft. Applying the same renames twice
+   * changes nothing.
+   */
+  follow(projectId: string, renamed: readonly Rekey[], design: DesignDocument) {
+    if (!renamed.length) return;
+    const ids = new Map(renamed.map((item) => [item.from, item.to]));
+    let moved = false;
+    for (const entry of this.forProject(projectId)) {
+      const spec = entry.spec.follow?.(ids, design);
+      if (!spec) continue;
+      const key = draftKey(spec);
+      entry.spec = spec;
+      if (key === entry.key) continue;
+      const stale = this.entries.get(key);
+      if (stale) clearTimeout(stale.timer);
+      this.entries.delete(entry.key);
+      entry.key = key;
+      this.entries.set(key, entry);
+      moved = true;
+    }
+    if (moved) this.emit();
+  }
   /** Clean fields track accepted changes; dirty baselines remain intact for comparison. */
   private sync(entry: FormDraft, design: DesignDocument) {
     if (design.revision < entry.revision || entry.flight) return;
@@ -114,12 +144,16 @@ class FormDrafts {
       !entry.problem &&
       (entry.paths.size || (entry.flight && !same(entry.values, entry.flight.values)))
     )
-      entry.timer = setTimeout(() => void this.flush(key), immediate ? 0 : 500);
+      // The timer holds the draft itself: a rename may move it to another key meanwhile.
+      entry.timer = setTimeout(() => void this.flushEntry(entry), immediate ? 0 : 500);
     this.emit();
   }
   flush(key: string): Promise<void> {
     const entry = this.entries.get(key);
-    if (!entry) return Promise.resolve();
+    return entry ? this.flushEntry(entry) : Promise.resolve();
+  }
+  private flushEntry(entry: FormDraft): Promise<void> {
+    if (this.entries.get(entry.key) !== entry) return Promise.resolve();
     clearTimeout(entry.timer);
     if (entry.flight) {
       entry.flushAgain = true;
@@ -154,9 +188,14 @@ class FormDrafts {
       if (result.status === "failed") {
         entry.problem = { kind: "failed", message: result.message };
       } else {
-        const incoming = spec.read(result.design) ?? {};
+        // A save that re-keyed this target reads it under its new ID (the store usually moved
+        // it already, when it adopted the change).
+        if (result.status === "saved" && result.renamed)
+          this.follow(spec.projectId, result.renamed, result.design);
+        const current = entry.spec;
+        const incoming = current.read(result.design) ?? {};
         const written =
-          result.status === "saved" ? (spec.read(result.written ?? result.design) ?? {}) : {};
+          result.status === "saved" ? (current.read(result.written ?? result.design) ?? {}) : {};
         // A follow-up local edit was based on the flight's values. A newer accepted peer edit
         // of that same field cannot become its baseline merely because the old save completed.
         const changedAgainElsewhere =
@@ -177,12 +216,12 @@ class FormDrafts {
         entry.paths = new Set(
           Object.keys(entry.values).filter((path) => !same(entry.values[path], incoming[path])),
         );
-        entry.errors = spec.validate(entry.values);
+        entry.errors = current.validate(entry.values);
       }
       const again = entry.flushAgain;
       entry.flushAgain = false;
       this.emit();
-      if (again && !entry.problem) return this.flush(key);
+      if (again && !entry.problem) return this.flushEntry(entry);
     });
     entry.flight = { values, promise };
     this.emit();
@@ -211,7 +250,7 @@ class FormDrafts {
     const entry = this.entries.get(key);
     if (entry?.problem?.kind !== "failed") return;
     entry.problem = undefined;
-    void this.flush(key);
+    void this.flushEntry(entry);
   }
   discard(key: string) {
     const entry = this.entries.get(key);

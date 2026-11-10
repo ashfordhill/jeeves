@@ -848,6 +848,8 @@ const toolOutput = (request: ModelRequest) => {
   if (item?.type !== "tool-result") throw new Error("Expected a tool result");
   return JSON.parse(item.output);
 };
+const toolOutputs = (request: ModelRequest) =>
+  request.items.flatMap((item) => (item.type === "tool-result" ? [JSON.parse(item.output)] : []));
 const firstUpload = {
   type: "addTile",
   from: { lane: "upload" },
@@ -880,10 +882,14 @@ describe("proposed-design review in ChatService", () => {
         };
       const review = toolOutput(request);
       if (round === 1) {
+        // The rename re-keyed the new tile's ID to its name; later commands use the new ID.
+        expect(toolOutputs(request)).toContainEqual(
+          expect.objectContaining({ renamed: [{ from: "uploads", to: "video-uploads" }] }),
+        );
         expect(review.changes).toContainEqual(
           expect.objectContaining({
             type: "element",
-            id: "uploads",
+            id: "video-uploads",
             change: "added",
             name: "Video uploads",
           }),
@@ -891,11 +897,19 @@ describe("proposed-design review in ChatService", () => {
         expect(review.findings).toContainEqual(
           expect.objectContaining({
             code: "DESIGN_WARNING",
-            target: { element: "uploads" },
+            target: { element: "video-uploads" },
             introduced: true,
           }),
         );
-        return { toolCalls: [apply(originalStorage)] };
+        return {
+          toolCalls: [
+            apply({
+              ...originalStorage,
+              from: { tile: "video-uploads" },
+              linkId: "video-uploads-originals",
+            }),
+          ],
+        };
       }
       if (round === 2) return { text: "The storage relationship is prepared." };
       expect(review.changes.map((item: { id: string }) => item.id)).toContain("originals");
@@ -920,7 +934,7 @@ describe("proposed-design review in ChatService", () => {
     expect(turn.status).toBe("done");
     expect(fake.requests).toHaveLength(4);
     expect(state.design.revision).toBe(1);
-    expect(state.design.elements.map((item) => item.id)).toEqual(["uploads", "originals"]);
+    expect(state.design.elements.map((item) => item.id)).toEqual(["video-uploads", "originals"]);
     expect(turn.reply).toContain("Saved");
     expect(turn.reply).toContain("one Undo step");
     const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
@@ -944,7 +958,7 @@ describe("proposed-design review in ChatService", () => {
       }
       if (round === 3) return { text: "Finished again." };
       expect(toolOutput(request).changes).toContainEqual(
-        expect.objectContaining({ id: "uploads", name: "Still missing storage" }),
+        expect.objectContaining({ id: "still-missing-storage", name: "Still missing storage" }),
       );
       return { text: "Storage remains unresolved in this scope." };
     });
@@ -953,7 +967,10 @@ describe("proposed-design review in ChatService", () => {
     expect(turn.status).toBe("done");
     expect(h.requests).toHaveLength(5);
     expect(state.findings).toContainEqual(
-      expect.objectContaining({ code: "DESIGN_WARNING", target: { element: "uploads" } }),
+      expect.objectContaining({
+        code: "DESIGN_WARNING",
+        target: { element: "still-missing-storage" },
+      }),
     );
     expect(turn.reply).toContain("Unresolved: 1 design finding");
     expect(turn.activity.filter((item) => item.tool === "reviewDesign")).toHaveLength(2);
@@ -1095,7 +1112,12 @@ describe("proposed-design review in ChatService", () => {
       if (round <= 3)
         return {
           toolCalls: [
-            apply({ type: "edit", element: "uploads", name: `Repair ${round}` }),
+            // Each rename re-keys the tile, so the next one names its new ID.
+            apply({
+              type: "edit",
+              element: round === 1 ? "uploads" : `repair-${round - 1}`,
+              name: `Repair ${round}`,
+            }),
             { name: "reviewDesign", arguments: {} },
           ],
         };

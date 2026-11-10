@@ -48,6 +48,11 @@ export const operationSchema = z.discriminatedUnion("op", [
     security: plannedConnectionSchema.shape.security.unwrap().optional(),
   }),
   z.strictObject({ op: z.literal("disconnect"), id: idSchema }),
+  /**
+   * Changes a tile's or a module's ID to `to`, a free ID, and every reference to it (IDs follow
+   * names: `planRename`). Link IDs are never re-keyed.
+   */
+  z.strictObject({ op: z.literal("rekey"), from: idSchema, to: idSchema }),
 ]);
 export type Operation = z.output<typeof operationSchema>;
 export type OperationInput = z.input<typeof operationSchema>;

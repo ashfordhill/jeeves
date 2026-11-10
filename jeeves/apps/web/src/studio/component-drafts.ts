@@ -4,6 +4,7 @@
  */
 import {
   type DesignDocument,
+  renameRefusal,
   type StudioComponent,
   type StudioComponentDefinition,
   type StudioComponentField,
@@ -88,6 +89,11 @@ export function componentSpec(
       if (typeof name !== "string" || !name.trim()) errors["component.name"] = "Enter a name";
       else if (name.length > studioComponentLimits.name)
         errors["component.name"] = `Use ${studioComponentLimits.name} characters or fewer`;
+      else {
+        // A name whose re-keyed ID is taken waits here, with the reason, until it is free.
+        const refusal = renameRefusal(design, { component: id }, name);
+        if (refusal) errors["component.name"] = refusal;
+      }
       const description = values["component.description"];
       if (typeof description !== "string" || description.length > studioComponentLimits.description)
         errors["component.description"] =
@@ -105,6 +111,10 @@ export function componentSpec(
       )
         errors["settings.deadLetterQueue"] = "Select a queue other than the source queue";
       return errors;
+    },
+    follow(renamed, next) {
+      const to = renamed.get(id);
+      return to ? componentSpec(projectId, to, next) : undefined;
     },
     build(current: DesignDocument, values: DraftValues, paths: readonly string[]) {
       return buildEditorCommand(current, {

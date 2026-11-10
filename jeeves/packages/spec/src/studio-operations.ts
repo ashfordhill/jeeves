@@ -49,6 +49,7 @@ import {
   newModuleIdentity,
   studioComponentTargetKind,
 } from "./studio-modules.ts";
+import { planRename, rekeyDesign, rekeyLeftovers } from "./studio-rekey.ts";
 
 const studioName = z.string().trim().min(1).max(studioLimits.name);
 const studioDescription = z.string().trim().max(studioLimits.description);
@@ -264,8 +265,23 @@ export function buildStudioCommand(
     }
     studio.componentConnections = [...(studio.componentConnections ?? []), item.link];
   };
-  // Module commands derive the module-level generation; removing a tile or a link re-derives it
-  // once it exists. The older component commands never do.
+  // A rename re-keys the IDs that still follow their names, with every reference, before the
+  // command itself runs (tile processes contract, section 7); later steps use the new IDs.
+  const renames =
+    (input.type === "edit" || input.type === "editComponent") && input.name !== undefined
+      ? planRename(
+          design,
+          input.type === "edit" ? { element: input.element } : { component: input.component },
+          input.name,
+        )
+      : [];
+  const moved = (id: string) => renames.find((item) => item.from === id)?.to ?? id;
+  for (const item of renames) {
+    rekeyDesign(draft, item.from, item.to);
+    ops.push({ op: "rekey", ...item });
+  }
+  // Module commands derive the module-level generation; removing a tile or a link, or re-keying
+  // IDs, re-derives it once it exists. The older component commands never do.
   const moduleCommand =
     input.type === "addModule" ||
     input.type === "connectModule" ||
@@ -273,15 +289,17 @@ export function buildStudioCommand(
     input.type === "removeModule";
   const derive =
     moduleCommand ||
-    ((input.type === "removeTile" || input.type === "removeLink") && hasModuleSelections(design));
+    ((input.type === "removeTile" || input.type === "removeLink" || renames.length > 0) &&
+      hasModuleSelections(design));
   if (moduleCommand) upgradeForModules(draft, ops);
   switch (input.type) {
     case "edit": {
-      const item = binding(input.element);
+      const id = moved(input.element);
+      const item = binding(id);
       if (input.name !== undefined || input.description !== undefined)
         ops.push({
           op: "updateElement",
-          id: input.element,
+          id,
           ...(input.name !== undefined && { name: input.name }),
           ...(input.description !== undefined && { description: input.description }),
         });
@@ -312,7 +330,7 @@ export function buildStudioCommand(
       break;
     }
     case "editComponent": {
-      const item = component(input.component);
+      const item = component(moved(input.component));
       if (input.name !== undefined) item.name = input.name;
       if (input.description !== undefined) item.description = input.description;
       if (input.settings) {
@@ -362,9 +380,21 @@ export function buildStudioCommand(
       ops.push(...buildModuleCommand(design, draft, studio, input));
       break;
   }
-  const derived = derive ? deriveModuleGeneration(design, draft) : [];
+  // A re-key derives from the design as its rekey operations leave it, so the facts the previous
+  // selections needed are found under their new IDs.
+  const before = renames.length ? structuredClone(design) : design;
+  for (const item of before === design ? [] : renames) rekeyDesign(before, item.from, item.to);
+  const derived = derive ? deriveModuleGeneration(before, draft) : [];
   ops.push({ op: "setStudio", studio: draft.architecture.studio });
   ops.push(...derived);
+  const [left] = rekeyLeftovers(
+    draft,
+    renames.map((item) => item.from),
+  );
+  if (left)
+    throw new Error(
+      `Renaming can't update every use of its old ID (${left}), so nothing was changed.`,
+    );
   return operationBatchSchema.parse({ baseRevision: design.revision, ops });
 }
 
@@ -439,7 +469,7 @@ function buildModuleCommand(
             ? `${definition.name} can't go in ${name(input.host)}; it goes in ${list(definition.hosts.map(studioKindNoun), "or")}.`
             : `${sentence(name(input.host))} takes no modules.`,
         );
-      const fresh = newModuleIdentity(draft, input.host, input.kind);
+      const fresh = newModuleIdentity(draft, input.host, input.kind, input.name);
       if (input.id !== undefined && usedIds(draft).has(input.id))
         throw new Error(`The ID "${input.id}" is already in use.`);
       const settings = createStudioComponentSettings(input.kind);

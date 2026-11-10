@@ -68,7 +68,12 @@ import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { SourceDiagnostics } from "./SourceDiagnostics.tsx";
-import { liveSelection, type WorkspaceSelection } from "./selection.ts";
+import {
+  followKeys,
+  followSelection,
+  liveSelection,
+  type WorkspaceSelection,
+} from "./selection.ts";
 import { TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
 
@@ -102,6 +107,24 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [mode, setMode] = useState<BoardMode>("select");
   const graph = useMemo(() => laneGraph(loaded.design), [loaded.design]);
   const [pick, setPick] = useState<WorkspaceSelection>(() => startsSelected(graph));
+  // A rename that re-keyed IDs (IDs follow names) moves the selection to the new IDs at once,
+  // before anything renders the old ones. The inspector's pages keep their React keys (`keyOf`),
+  // so a field being typed in keeps its focus and draft.
+  const [followed, setFollowed] = useState(() => ({
+    renamed: loaded.renamed,
+    keys: {} as Readonly<Record<string, string>>,
+  }));
+  if (loaded.renamed !== followed.renamed) {
+    const renamed = loaded.renamed;
+    setFollowed({
+      renamed,
+      keys: renamed?.length
+        ? followKeys(followed.keys, renamed, loaded.design.revision)
+        : followed.keys,
+    });
+    if (renamed?.length) setPick((current) => followSelection(current, renamed));
+  }
+  const keyOf = (id: string) => followed.keys[id] ?? id;
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
   const [exportOpen, setExportOpen] = useState(false);
@@ -456,10 +479,11 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
               </button>
             </div>
             <Inspector
-              key={selection.tile ?? selection.line ?? LANE_ACTOR}
+              key={selection.tile ? keyOf(selection.tile) : (selection.line ?? LANE_ACTOR)}
               loaded={loaded}
               graph={graph}
               selection={selection}
+              moduleKey={selection.module && keyOf(selection.module)}
               onSelect={select}
             />
             {selectedOperation || selectedOwner ? (
@@ -483,11 +507,14 @@ function Inspector({
   loaded,
   graph,
   selection,
+  moduleKey,
   onSelect,
 }: {
   loaded: Loaded;
   graph: LaneGraph;
   selection: WorkspaceSelection;
+  /** The open module's page key, which stays when a rename re-keys the module. */
+  moduleKey?: string;
   onSelect: (next: WorkspaceSelection) => void;
 }) {
   const { design, project } = loaded;
@@ -504,6 +531,7 @@ function Inspector({
         id={selection.tile}
         name={name(selection.tile)}
         module={selection.module}
+        moduleKey={moduleKey}
         onModule={(module) => onSelect({ tile: selection.tile, module })}
       />
     );

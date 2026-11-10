@@ -44,6 +44,8 @@ import {
   previewOperations,
   previewOwnership,
   profileStatus,
+  type Rekey,
+  renamedIds,
   reviewScopeProblem,
   reviewStudioDesign,
   type StudioKind,
@@ -151,6 +153,7 @@ Commands (applyStudioCommands, with getDesign's baseRevision):
 - addModule (host, kind; optional id, name and description) adds a module of a kind listStudioDefinitions.modules allows in that tile (hosts). connectModule (module, slot, target) fills one of its slots: target {"tile": id} through the host's link to that tile (the link the table gives is added when there is none), or {"module": id} for a Cache reader's loader, a Data access in the same tile. disconnectModule (link) removes one module link and keeps the tiles' link; removeModule (module) removes it with its links. Each one derives, in the same step, every module's generation (a template once its lead has every needed part connected in its tile, else a typed stub), the values that template fixes and the ownership it needs, or refuses in plain words. getDesign gives each module's status: template, stub (with what it still needs), custom or refused (with why).
 - editComponent changes a module's name, purpose or useful supported settings; disconnectComponent/removeComponent remove source intent without deriving, so once a module generates code (a template or stub selection exists) they are refused: use disconnectModule/removeModule. createComponent/connectComponent are retained source vocabulary and refuse in normal authoring: use addModule and connectModule.
 IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
+- IDs follow names: renaming (edit or editComponent with name) a tile or module whose ID still follows its kind or its old name re-keys it (a tile to its new name's slug, a module to "<tile id>-<slug>", and a tile's following modules with it). The result's renamed lists each {from, to}; use the new IDs from then on. A clash refuses. Studies, designs with tile-level templates or a preset, and other IDs keep their IDs; only the name changes. Link IDs never change.
 
 Several commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.
 
@@ -822,6 +825,7 @@ export class Workspace {
     }
     let working = this.working;
     const ops: OperationInput[] = [];
+    const renamed: Rekey[] = [];
     const refused = (message: string) => {
       this.log(tool, false, `Refused: ${message}`);
       return { ok: false, error: message, note: "Nothing changed for this call." };
@@ -835,6 +839,7 @@ export class Workspace {
         if (!result.ok) return refused(which + result.errors.map((item) => item.message).join(" "));
         working = result.design;
         ops.push(...batch.ops);
+        renamed.push(...renamedIds(batch.ops));
       } catch (error) {
         return refused(which + (error instanceof Error ? error.message : String(error)));
       }
@@ -851,6 +856,8 @@ export class Workspace {
     return {
       ok: true,
       commands: commands.length,
+      // A rename re-keys IDs that follow their names: later commands use the new IDs.
+      ...(renamed.length && { renamed }),
       findings: findings.filter((item) => !isDesignWarning(item)),
       warnings: findings.filter(isDesignWarning).map((item) => item.message),
       note: "Prepared for one atomic turn commit, not saved yet.",

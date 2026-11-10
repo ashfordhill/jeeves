@@ -9,6 +9,8 @@ import {
   type Finding,
   type LayoutDocument,
   type OperationInput,
+  type Rekey,
+  renamedIds,
   validateDesign,
 } from "@jeeves/spec";
 import { and, asc, desc, eq } from "drizzle-orm";
@@ -33,6 +35,11 @@ export type DesignState = {
   design: DesignDocument;
   findings: Finding[];
   history: History;
+  /**
+   * The tile and module IDs the change re-keyed (IDs follow names), in order, so the canvas
+   * keeps its selection: an edit's, an undo's (reversed) or a redo's. Absent when none.
+   */
+  renamed?: Rekey[];
 };
 
 export type ChangeResult =
@@ -158,7 +165,14 @@ export class DesignService {
           before: current.document,
         },
       );
-      return { ok: true, operationId, state: await this.state(tx, project) };
+      return {
+        ok: true,
+        operationId,
+        state: withRenamed(
+          await this.state(tx, project),
+          renamedIds(input.ops as OperationInput[]),
+        ),
+      };
     });
   }
 
@@ -216,7 +230,12 @@ export class DesignService {
       // Undone edits are always the newest ones, so undo takes the latest applied edit and redo
       // the earliest undone one.
       const [target] = await tx
-        .select({ id: operations.id, before: operations.before, after: operations.after })
+        .select({
+          id: operations.id,
+          ops: operations.ops,
+          before: operations.before,
+          after: operations.after,
+        })
         .from(operations)
         .where(
           and(
@@ -251,7 +270,18 @@ export class DesignService {
         targetId: target.id,
         before: current.document,
       });
-      return { ok: true, operationId, state: await this.state(tx, project) };
+      // Undo moves the edit's re-keyed IDs back, last first; redo moves them again.
+      const renamed = renamedIds(target.ops ?? []);
+      return {
+        ok: true,
+        operationId,
+        state: withRenamed(
+          await this.state(tx, project),
+          kind === "undo"
+            ? renamed.reverse().map(({ from, to }) => ({ from: to, to: from }))
+            : renamed,
+        ),
+      };
     });
   }
 
@@ -339,6 +369,9 @@ export class DesignService {
     };
   }
 }
+
+const withRenamed = (state: DesignState, renamed: Rekey[]): DesignState =>
+  renamed.length ? { ...state, renamed } : state;
 
 async function lockProject(tx: Tx, id: string): Promise<Project | undefined> {
   const [project] = await tx.select().from(projects).where(eq(projects.id, id)).for("update");

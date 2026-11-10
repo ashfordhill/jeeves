@@ -8356,3 +8356,92 @@ selectors in e2e helpers. The edge pan is generic, so any future board drag can 
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP03: ids follow names
+
+Per the [tile processes plan](plans/tile-processes/units.md) (Owner decision 1) and
+[contract](plans/tile-processes/contract.md) §7. Docs: `studio.md` (Inspector: Names and IDs,
+History, Chat), `studio-blueprint.md`, `chat-tool-schemas.md`, `CATALOG.md`, a playbook lesson,
+the plan's status and the HUMAN_FEEDBACK resolution.
+
+- **Spec** (`studio-rekey.ts`): `idsPinned` (study origin, a tile-level selection or a preset),
+  `tileIdFollows`/`moduleIdFollows` (creation form or the current name's slug, each with an
+  optional `-n`, cut like `freshId`), `planRename` (the tile, then its following modules as
+  `<new tile>-<slug(module name)>`; throws "<name> would take the ID <id>, which <user> already
+  uses. Choose another name."), `renameRefusal`, `rekeyDesign` (every reference: endpoints, C1
+  containers, bindings, element owners, `servedBy`/`origin`, group members, entries, modules and
+  their dead-letter queue, module links, scope, ownership, operations, generation targets, bindings
+  and selection IDs; never link IDs) and `rekeyLeftovers` (the completeness walk: every string
+  equal to an old ID outside free text, owner/binding IDs and record refs; a leftover counts when
+  the schema would still parse with another ID in its place, so `settings.kind: "cache"` is not
+  one). An unchanged name, a slug that is no ID, or a non-following ID re-keys nothing.
+- **Operation** `rekey {from, to}` (`operations.ts`, `apply.ts`): refuses an unknown ID or a used
+  one. `buildStudioCommand` plans the rename for `edit`/`editComponent` with `name`, emits one
+  `rekey` per ID before `updateElement`/`setStudio`, re-derives (when module selections exist) from
+  the re-keyed `before`, and refuses if the walk finds a leftover: one batch, one revision.
+- **Also:** `addModule` with a `name` and no `id` takes `<host>-<slug(name)>` (`newModuleIdentity`
+  gained an optional name), so a design built with final names from the start equals a re-keyed
+  one.
+- **Server:** an edit, undo (reversed) or redo answer carries `renamed: [{from, to}]` from the
+  stored ops (`DesignState.renamed`; never on a read). Chat's `applyStudioCommands` result lists
+  `renamed`; its instructions gained one line.
+- **Web:** the store moves form drafts to the new IDs (`formDrafts.follow`, `DraftSpec.follow`)
+  before it adopts the design; timers and re-flushes hold the draft, not its key. The workspace
+  follows the selection (`followSelection`) during render and keeps the inspector's and module
+  page's React keys (`followKeys`), so the page doesn't remount. The re-key happens when the
+  debounced (500ms) or blur commit lands, not per keystroke; a clash is a field error from
+  `renameRefusal` in the draft's `validate`, so autosave waits (no sticky "failed" draft) and
+  continues once the name is free.
+
+**Updated tests (rename now re-keys):** three `chat.test.ts` turns use the new IDs afterwards
+(`video-uploads`, `still-missing-storage`, `repair-n`); the eval seeds' renamed tiles are
+protected under their new IDs (`owner-export-bucket`, `owner-stock-ledger`).
+
+**Tests.** `studio-rekey.test.ts` (11): cascade with links/selections/a hand-chosen module; owner,
+grants, entry and loader follow; equal to the final-ID build (links aside); v2 rebuilt renaming as
+it goes deep-equals v2 built with those final IDs, and `v2Diff` gives the twin's 14 rows; every
+reference kind, checked against the walk on 4 studies, frozen v2, the module design and a
+synthetic design (45 shapes); walk ignores vocabularies, free text and owners and finds a missed
+`relationships.to`; the command refuses it; refusals (tile, link, cascaded module, module);
+pinned (4 studies, frozen v2, selections only, preset only) and non-following v2 IDs; unchanged,
+no-ID and long names; the op's refusals. Server: edit/undo/redo `renamed` and Undo restoring the
+design. Web: `followSelection`/`followKeys`; a draft that re-keys mid-flight keeps the
+description typed meanwhile and moves back on Undo; a clash as a field error. E2E
+`ids-follow-names.spec.ts` (2): a Worker renamed "Video lifecycle worker" becomes
+`video-lifecycle-worker` while the Description keeps focus; clash error; its Data access renamed
+→ `video-lifecycle-worker-state-writer`, row and page follow, Undo restores; tile rename cascades
+and Undoes; a YouTube study tile keeps `transcoder`.
+
+**Checks.** `pnpm check` exited 0: **576 tests in 81 files** (lint: only the existing info).
+**E2E: 66 passed (4.3m)** on the first full run and **66 passed (4.2m)** on a final run after
+formatting and two type fixes in tests (`v2-rebuild.spec.ts` included, now re-keying as it
+renames). The web build passed with the existing chunk-size advisory.
+
+**Gates.** YouTube Overview PNG at 1440×900: `472a4c8c…dc9f`. v1: byte-identical
+(`assemble.test.ts`). Frozen v2: fresh `export:v2`, 72 files, 70 byte-identical to
+`generic-export.tar.gz`; `manifest.json`/`report.json` differ only in emitter sources and hashes,
+`implementations` (`local.module-stubs`), the registry and the report's hash/size. This unit adds
+`studio-rekey.ts` to the inventory and changes `apply.ts`, `operations.ts`, `studio-modules.ts`,
+`studio-operations.ts` and `index.ts`. Processes-off: in-memory exports of frozen v2, the v2
+module design and a stub-only design before and after this unit differ only in those two
+provenance files.
+
+**Mouse check** (scripted Chromium; my API 4373 with scratch DB `jeeves_tp03`, now dropped, and
+Vite 4363): TinyURL 7 tiles and 7 lines at 1440×900 and 1280×800. Blank project at 1440×900:
+Consume → Microservice → Queue or topic → Worker service from fans; the Worker renamed by typing
+→ `video-lifecycle-worker` (still selected); Event consumer and Data access from its `+`, the
+latter renamed "State writer" → `video-lifecycle-worker-state-writer` with its page open; Undo
+→ `…-data-access`, page shows "Data access"; tile renamed "Video worker" → both modules
+`video-worker-…`, Undo restores all; "Microservice" shows the clash error and saves nothing.
+YouTube study: Transcoder renamed "Video transcoder", every tile and module ID unchanged. No page
+errors or console errors or warnings. All five projects deleted (204); `jeeves_e2e` has no
+leftovers. My script's first run typed before the new tile's Name took focus and renamed the
+Queue (a script race, fixed by waiting for focus).
+
+**For TP04:** process and file names can rely on IDs following typed names in module-built
+designs (`app-<id>`, `src/processes/<id>.ts`); pinned designs (frozen v2, studies) keep theirs.
+The stub stack fixture can name tiles directly (addTile needs an explicit id) and modules by name
+alone (`addModule` with `name`). A rename re-derives, so owner IDs follow too (`<host>-owner`).
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

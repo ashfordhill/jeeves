@@ -196,9 +196,11 @@ describe("RF06 deterministic external rubric", () => {
     expect(failures).toContain("structurally-valid");
     expect(failures).toContain("publication-owner-feed");
     const changed = structuredClone(test.seed());
-    const bucket = changed.elements.find((e) => e.id === "outputs");
-    if (bucket) bucket.description = "silently overwritten";
-    expect(failed(test.id, outcome(changed))).toContain("preserve-outputs");
+    // The seed's rename re-keyed Outputs to its new name (IDs follow names).
+    const bucket = changed.elements.find((e) => e.id === "owner-export-bucket");
+    if (!bucket) throw new Error("The seed renames Outputs to Owner export bucket");
+    bucket.description = "silently overwritten";
+    expect(failed(test.id, outcome(changed))).toContain("preserve-owner-export-bucket");
   });
   it("never grades a module or optimistic prose as implemented domain behavior", () => {
     const checkout = testCase("checkout-late-notification-edit");

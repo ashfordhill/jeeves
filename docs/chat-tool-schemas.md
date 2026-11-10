@@ -74,6 +74,9 @@ after MA05 added the four module commands (`addModule`, `connectModule`, `discon
 `removeModule`) and eight module kinds. The adapter
 checks emitted schemas, including wrappers, against 5,000 properties, ten nesting levels, 1,000
 enum values, 120,000 characters for names/enum values, and the large-enum string limit.
+TP03 (IDs follow names) adds no command or argument: a rename is still `edit`/`editComponent`
+with `name`. Only the `applyStudioCommands` result gains `renamed: [{from, to}]` when a rename
+re-keyed IDs; later commands in the turn use the new IDs.
 
 These rules follow the official [function-calling strict-mode documentation](https://developers.openai.com/api/docs/guides/function-calling)
 and [Structured Outputs supported schemas](https://developers.openai.com/api/docs/guides/structured-outputs),

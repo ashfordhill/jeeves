@@ -245,7 +245,11 @@ and an entry's lane row runs `setEntryLane` (a lane either would refuse is disab
 reason as its tooltip). A new tile is named after its kind and
 numbered when taken ("Worker service 2", ID `worker-service-2`); a new link's ID is `source-target`, or
 `lane-target` for an entry. Chat sends the same commands, and these are the only commands that
-add or remove tiles and links ([studio guide](../docs/studio.md#chat)).
+add or remove tiles and links ([studio guide](../docs/studio.md#chat)). IDs follow names: `edit`
+with a new name re-keys a tile ID that still has its creation form or its old name's slug to the
+new name's slug, with its following modules and every reference, in one batch (a `rekey`
+operation per ID); a clash refuses, and studies, designs with tile-level templates or a preset and
+other IDs keep theirs ([names and IDs](../docs/studio.md#inspector)). Link IDs never change.
 
 A **package** groups two or more independent applications; it has no language, provider or
 runtime. Packages stay in the format, but neither the canvas nor chat shows, creates or changes
@@ -303,7 +307,7 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 
 | Command | What it does |
 | --- | --- |
-| `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
+| `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` with a new name re-keys an ID that still follows to `<host>-<slug(name)>`. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
 | `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"` targets `{module}`, a Data access in the same tile. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
