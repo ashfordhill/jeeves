@@ -255,7 +255,9 @@ them.
 
 Components live inside one application and reach other boxes only through an existing C2
 connection. In the studio they are the **modules** of an application tile: listed in its
-inspector and drawn as rows in the Detailed view ([studio guide](../docs/studio.md#inspector)).
+inspector and drawn as rows in the Detailed view ([studio guide](../docs/studio.md#inspector)),
+added with the tile's module `+` ([adding a module](../docs/studio.md#adding-a-module)) and
+connected from a row's dot in Connect mode ([connect mode](../docs/studio.md#connect-mode)).
 A module is the unit of generated code ([module authoring contract](../docs/plans/module-authoring/contract.md)):
 each kind is a template's **lead**, a **part** of templates, or a **stub**. Icons:
 `studioComponentVisuals` in [`studio-modules.ts`](packages/spec/src/studio-modules.ts); hosts,
@@ -331,6 +333,14 @@ The pure helpers for the inspector, chat and Generate are:
   may end on, each with the `connectModule` it would run or the refusal.
 - `moduleStatuses` gives each module **Template**, **Stub** (what it still needs), **Custom** (no
   selection covers it) or **Refused** (why), and its unconnected slots.
+
+On the canvas the module `+` fan offers `moduleKinds`, captioned by what each kind can generate in
+that tile: **Template** for a lead, **Part of a template** for a part, but **Stub** where the
+template doesn't allow the tile's kind (a Cache reader in a Worker); a pick runs `addModule`. A
+row has a dot when its kind has slots, filled when `moduleSlots` has a link; a drag from it may
+end where `moduleConnectOptions` gives a command, and runs it. The X on a module's drawn line or
+on the loader's gutter arrow runs `disconnectModule`, and the module page's Remove module runs
+`removeModule`.
 
 ## Settings
 

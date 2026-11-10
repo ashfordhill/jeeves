@@ -3,6 +3,7 @@ import type { Point } from "../layout/metrics.ts";
 import {
   FAN_CAPTION_H,
   FAN_CELL,
+  FAN_CELL_DETAIL,
   FAN_EDGE_MARGIN,
   FAN_GRID_OFFSET,
   FAN_ITEM_SIZE,
@@ -10,6 +11,7 @@ import {
   FAN_RADIUS,
   fanCenters,
   fanGrid,
+  gridBounds,
   placeFan,
   placeGrid,
 } from "./fan.ts";
@@ -100,5 +102,28 @@ describe("fanGrid", () => {
     // A grid with room stays where it is.
     const middle = fanGrid(300, 350, groups);
     expect(placeGrid(middle, board)).toEqual(middle);
+  });
+
+  it("wraps a long group after `columns`, in cells sized for a detail line", () => {
+    // Four, five and seven items in rows of at most five: rows of 4, 5, 5 and 2.
+    const long = [...Array(4).fill("lead"), ...Array(5).fill("part"), ...Array(7).fill("stub")];
+    const layout = { cell: FAN_CELL_DETAIL, columns: 5 };
+    const cells = fanGrid(0, 0, long, true, layout);
+    const rows = [...new Set(cells.map((p) => p.y))];
+    expect(rows.map((y) => y - (rows[0] ?? 0))).toEqual([0, 1, 2, 3].map((i) => i * 108));
+    const first = -FAN_GRID_OFFSET - 5 * FAN_CELL_DETAIL.w + FAN_CELL_DETAIL.w / 2;
+    expect(cells.map((p) => (p.x - first) / FAN_CELL_DETAIL.w)).toEqual([
+      0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1,
+    ]);
+    // Centred on the tab, captions included; the panel is the cells' box.
+    const box = gridBounds(cells, FAN_CELL_DETAIL);
+    expect(box).toEqual({ x: -FAN_GRID_OFFSET - 600, y: -216, w: 600, h: 432 });
+    // Kept on a board as one block, measured with the same cells.
+    const placed = placeGrid(cells, { x: -700, y: -200, w: 800, h: 500 }, FAN_CELL_DETAIL);
+    const moved = gridBounds(placed, FAN_CELL_DETAIL);
+    expect(moved.y).toBe(-200 + FAN_EDGE_MARGIN);
+    expect(moved.x).toBe(box.x);
+    // Without a limit a group stays on one row, as before.
+    expect(new Set(fanGrid(0, 0, long).map((p) => p.y)).size).toBe(3);
   });
 });

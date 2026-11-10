@@ -74,7 +74,8 @@ future generator's frontend templates) which user flow each service serves.
   the same blue, with a red X ([Removing](#removing)).
   In the Overview, modules (components) are not drawn; they are cards on their tile's inspector
   page ([Inspector](#inspector)). The [Detailed view](#detailed-view) draws them inside their
-  tiles as rows that open them. C1 people, external systems and packages are not shown.
+  tiles as rows that open them and, in Connect mode, connect them. C1 people, external systems
+  and packages are not shown.
 
 To trace relationships, select: a tile's lines turn blue, and a selected line shows its
 endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
@@ -94,16 +95,22 @@ In Detailed, an application tile with at least one module is a **container** (`d
 `tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its family colour and
 the name on one line above a divider, then one framed row per module, 32px apart, in module order.
 A row shows the module's icon in its family colour and its name, cut short with an ellipsis; the
-full name is its tooltip. Lines end at the container's frame; where a row has a drawn line, a
-**port mark** (a short stub in the line's colour) joins the frame to the row on that side, so the
-line visibly reaches its module. A warning mark sits in the header's corner. Every other tile keeps
-its Overview size and face.
+full name is its tooltip. A row whose kind can take a connection has a small **dot** on its right
+edge, hollow until one of its slots is connected, then filled; a row that can't connect
+(Redirect responder, Event counter) has none. Lines end at the container's frame; where a row has
+a drawn line, a **port mark** (a short stub in the line's colour) joins the frame to the row on
+that side, so the line visibly reaches its module. A warning mark sits in the header's corner.
+Every other tile keeps its Overview size and face.
 
 - Each module link to a tile is drawn from (or into) that module's row, in the relationship's own
   direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
   twice (YouTube's Packager and Thumbnailer both write Transcoded videos: 25 relationships, 26
   lines). A relationship no module uses, an entry and the user's line attach at the header.
-  Links between modules of one tile are not drawn.
+- Of the links between modules of one tile, only the **Cache reader's loader** is drawn: a short
+  arrow in the container's left gutter, from the Cache reader's row to the Data access row it
+  loads from on a miss (the rows move right to make room). It turns blue while either module is
+  open. Every other link between modules of one tile stays saved and is neither drawn nor
+  authored, and decides nothing that is generated.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
   the clicked one thicker with the X. A relationship selected elsewhere (diagnostics, chat, Undo)
@@ -112,10 +119,10 @@ its Overview size and face.
   the click; where only one relationship's lines run together, a click selects it without asking.
   The X removes the whole relationship, with the same refusals and confirmation as in the
   Overview; module links that use it go with it.
-- Containers are tiles: click one's header to select it, and its link tab and X work as on any
-  tile. A container's link tab sits just outside its frame, beside its rows rather than over them.
-  In Connect mode a drag from anywhere on a container, a row included, links the container
-  ([Connect mode](#connect-mode)).
+- Containers are tiles: click one's header to select it, and its module `+`, link tab and X work
+  as on any tile. Its tabs sit just outside its frame, beside its rows rather than over them. In
+  Connect mode a drag from a row's dot connects that module, and a drag from anywhere else on a
+  container, a row included, links the container ([Connect mode](#connect-mode)).
   A port mark turns blue whenever its line does: the container, the relationship, the tile at the
   line's other end or the open module selected it. Each row is its module, a button
   named "Open <module> in <tile>": a click selects the tile and opens the module's page in the
@@ -315,8 +322,8 @@ rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 ## Creating and connecting
 
 In Select mode only the selected tile shows controls: a tab on its right, for what the lane rules
-allow there, and the red X on its top edge ([Removing](#removing)). Nothing is inserted before a
-tile, so its left side has no tab.
+allow there, a module `+` on its left when it holds modules, and the red X on its top edge
+([Removing](#removing)). Nothing is inserted before a tile.
 
 - **The link tab** (the link icon) adds a new tile after the tile and links the two. A tile has it
   when at least one kind fits after it, so databases, caches, storage and search indexes have none.
@@ -328,6 +335,9 @@ tile, so its left side has no tab.
 - **An action** has the same link tab: a new tile that becomes its entry, a Microservice, Uploads,
   Identity or a CDN; the other kinds are greyed ("An action reaches a service (not a worker), an
   API or the CDN.").
+- **The module `+`** on the left of a Microservice, Worker service or Uploads tile (and of an
+  older Redirect, Notifications or Billing tile) adds a module to it
+  ([Adding a module](#adding-a-module)).
 
 Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
 and the pull stays open until you let go. The link tab opens a grid of the eleven kinds a new tile
@@ -354,6 +364,30 @@ cache, storage or queue belongs to the application it is added next to. A tab ne
 existing tiles: releasing on a greyed kind or on a tile changes nothing. **Release anywhere
 else**, or press Escape, and the band springs back.
 
+### Adding a module
+
+Pull a tile's module `+` and its grid opens to the left: the module kinds that tile allows
+([catalog](../jeeves/CATALOG.md#components-c3)), each with its icon, its name and what it can
+generate in that tile, a row per answer, five to a row:
+
+| Row | Means | A Microservice's | A Worker service's |
+| --- | --- | --- | --- |
+| **Template** | It leads an installed template once its connections are made | Cache reader, Multipart uploads, Search query | Lifecycle writer, Video encoder, Event counter, Index writer |
+| **Part of a template** | It fills a connection of a template led by another module in the tile | Event publisher, Data access, Auth guard | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
+| **Stub** | It is generated as a typed stub there | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
+
+A kind's tip adds its one-line description ("Data access · Reads and writes one database."). An
+Uploads tile offers 11 kinds, a Microservice 12 and a Worker service 16. The grid is the fan's
+panel, kept on the canvas: a Worker service's four rows fit beside both rails at 1280×800.
+**Release on a kind** to add a module of it, named after the kind ("Data access", then "Data
+access 2"), at the end of the tile's modules (`addModule`). Its page opens in the inspector with
+its Name field ready to type over; the tile stays selected, and in the Detailed view the
+container grows a row. A new module is unconnected, which is allowed: it is generated as a stub
+until its connections are made ([Inspector](#inspector) says what it still needs). On a design
+saved before schema 3 the first module also upgrades it. The module, its generation and the
+ownership it needs are one batch and one undo step. **Release anywhere else**, or press Escape,
+and nothing is added.
+
 ### Connect mode
 
 **Connect** (C) in the toolbar, right after Hand, links tiles already on the canvas. Press on a
@@ -379,6 +413,20 @@ onward.").
   The user's line to an action has no X.
 - In the [Detailed view](#detailed-view) a container is linked from anywhere on it, a row
   included: the link is the tile's, as in the Overview. A click on a row still opens its module.
+- **A row's dot** connects its module instead (`connectModule`). Drag from the dot to a tile:
+  the tiles the module can use stay bright, and a refused one fades with the reason ("Data
+  access can't use Cache; a Data access connects to a database."). The connection fills the
+  slot that takes that tile's kind, through the tiles' existing link, or through a new one the
+  lane rules give when the tiles aren't linked yet. The dot fills.
+- **The Cache reader's loader** is a drag from its dot onto a Data access row in the same tile;
+  that row stays bright with a dashed outline. It is drawn as the gutter arrow.
+- **A module's line under the pointer** shows an X named "Disconnect <module> from <tile>": it
+  removes that module's connection (`disconnectModule`) and leaves the tiles' link and the other
+  modules' lines. A loader arrow under the pointer shows the same X. A line no module draws keeps
+  the X that removes the link. In Select mode a selected line's X still removes its whole
+  relationship.
+- Each connection, and each disconnection, derives the module's generation and ownership in the
+  same batch: one undo step.
 
 Every new link takes its pair's default mode from the [link table](../jeeves/CATALOG.md#lanes-and-links):
 asynchronous (a dashed line) to and from a queue, a request (a solid line) otherwise. Where the
@@ -426,8 +474,9 @@ user); after removing a line, nothing is. The modules, module links and settings
 went are removed with it; a database, cache, storage or queue whose owner went belongs to the
 first application that still links to it. Each removal is one batch and one undo step.
 
-In Connect mode any line under the pointer shows its X ([Connect mode](#connect-mode)); the tile
-X stays a Select mode control.
+In Connect mode any line under the pointer shows its X ([Connect mode](#connect-mode)); on a
+module's line in the Detailed view it disconnects only that module. The tile X stays a Select mode
+control.
 
 Optional shortcuts: in Select mode, Delete or Backspace does what the selected tile's or line's X
 does.
@@ -459,17 +508,28 @@ details.
   [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
 - A module's card, or its row in the [Detailed view](#detailed-view), opens its page in place of
   the tile's, again one page with no tabs: a **Back to <tile>** row (the tile's icon and name), a
-  header with the module's icon, Name (the title) and kind, and any readiness findings, then
-  Description, **Options** only when it has useful supported settings, and **Remove module** at
-  the bottom. It lists no links: a module's links to other tiles follow its tile's drawn lines;
-  in Detailed its row and its own lines are marked. Back returns to the tile page with Modules in
+  header with the module's icon, Name (the title) and kind, then **what it generates**: Template
+  with the template's name ("Template · Cache read"), Stub with what its template still needs
+  ("Needs its loader connected to a Data access in Watch API.") or why it has none, Refused with
+  the reason a kept value blocks it, or Custom when no generation declaration covers it yet (a
+  study's modules before any module command). Then any readiness findings, Description,
+  **Options** only for the settings a template consumes (Pool size and Statement timeout on a
+  Data access in a template), and **Remove module** at the bottom (`removeModule`, which
+  re-derives the tile's generation). It lists no links: a module's links follow its tile's drawn
+  lines and its row's dot; in Detailed its row and its own lines are marked. Back returns to the tile page with Modules in
   view. Selecting another tile or a line, or clicking empty paper, closes the module; so do Remove
   module and a history step that removes it, which show the tile page. Undoing that step
   reopens the module, as a selected tile comes back when Redo restores it. While a module is
   open, chat's selection is the module's ID. The open module is the workspace's selection
   (`selection.ts`), never saved.
-- Modules are preserved or preset-bound: normal authoring cannot create or link them or switch
-  their kind, and changing a name does not normalize historical settings.
+- Modules are added with the tile's [module `+`](#adding-a-module) and connected in
+  [Connect mode](#connect-mode); a module's kind can't change, and changing a name does not
+  normalize historical settings.
+- A module command on a study derives the whole tile's generation. On the TinyURL extended and
+  YouTube studies the Cache reader the study already wires then reads **Refused**, as does its
+  Data access ("Local preset supports Private network; declared Service identity remains
+  unsupported and is preserved."): those links keep Service identity, which the local template
+  can't use. Nothing else changes, and Undo returns the study.
 - A line shows endpoints, its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
@@ -531,10 +591,10 @@ them. The three studies have none. The rules live in `studio-warnings.ts`.
 ## History
 
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
-batch (an autosaved edit, an action's rename, an entry's lane switch or removing a module) or chat
-turn is one step; a new edit ends the redo chain. Selecting, opening a module or going Back,
-switching between Overview and Detailed, panning, zooming and Fit add none and leave the design
-and blueprint unchanged. The history survives reloads.
+batch (an autosaved edit, an action's rename, an entry's lane switch, or adding, connecting,
+disconnecting or removing a module) or chat turn is one step; a new edit ends the redo chain. Selecting, opening a module or going Back,
+switching between Overview and Detailed, opening a fan, hovering, a cancelled drag, panning,
+zooming and Fit add none and leave the design and blueprint unchanged. The history survives reloads.
 
 ## Profile and requirements
 
@@ -580,7 +640,8 @@ it. Names, descriptions, settings and link details go through `edit`, `editSyste
 ([catalog](../jeeves/CATALOG.md#components-c3)), which derive each module's generation and the
 ownership it needs in the same step. Chat sees each module's status (template, stub, custom or
 refused, with why), and the module kinds with the tiles that hold them, their slots and what they
-generate. The canvas has no module controls yet.
+generate. The canvas runs the same commands ([Adding a module](#adding-a-module),
+[Connect mode](#connect-mode)).
 
 Chat reads the design as the canvas draws it: the actions, each with its lane, name, entries and
 the tiles its lane reaches, then each tile in lane order with its kind, settings, links (sync or
@@ -1093,12 +1154,13 @@ and all twenty components, with nothing omitted and no findings.
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
   writes" until renamed, though it reads.
-- The inspector neither lists nor edits module links, and the Detailed view draws only those to
-  other tiles: a module's links are preserved, preset-bound or made through chat (including a link
-  between two modules of one tile, "Supplies code", which no view draws or marks). A selected
-  container's link tab sits just outside its frame, over the first 36px of the lines leaving its
-  middle rows, and its red X sits on the header, over the middle of a long name ("Video lifecycle
-  worker").
+- The inspector neither lists nor edits module links. The Detailed view draws a module's links
+  to other tiles and the Cache reader's loader; other links between two modules of one tile (the
+  studies' "Supplies code") are kept but neither drawn nor authored. Modules connect only in the
+  Detailed view, whose rows read from about 0.6 zoom; the dot's grab area is 28px at 100%. A
+  selected container's link tab sits just outside its frame, over the first 36px of the lines
+  leaving its middle rows, and its red X sits on the header, over the middle of a long name
+  ("Video lifecycle worker").
 - In Detailed, two rows of one container that write one store come back to it as separate lines
   and can cross each other (YouTube's Packager and Thumbnailer into Transcoded videos; twice in the
   v2 field design). A row's line to a store upstream of its tile loops round the container (v2's

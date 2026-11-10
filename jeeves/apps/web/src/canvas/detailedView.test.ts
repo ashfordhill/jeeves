@@ -291,6 +291,55 @@ describe("detailed view projection", () => {
   });
 });
 
+describe("module rows and links in the Detailed view", () => {
+  it("marks which rows can connect and are connected, and draws only the loader in a tile", () => {
+    const design = studioArchitectureExample("studio-tinyurl").design;
+    const studio = design.architecture?.studio;
+    if (!studio?.components) throw new Error("study");
+    // A new, unconnected Custom module in the Shorten service.
+    studio.components.push({
+      id: "shorten-custom",
+      host: "shorten",
+      name: "Custom",
+      settings: { kind: "custom" },
+    });
+    const { view } = project(design);
+    const dot = (module: string) => {
+      const row = view.rowOf(module);
+      return row && [row.connects, row.connected];
+    };
+    // A redirect responder takes no connections; its links to modules fill no slot.
+    expect(dot("redirect-responder")).toEqual([false, false]);
+    expect(dot("redirect-cache-reader")).toEqual([true, true]);
+    expect(dot("redirect-data")).toEqual([true, true]);
+    expect(dot("shorten-custom")).toEqual([true, false]);
+    // Of the in-tile links, only the Cache reader's loader is drawn, as an arrow between rows.
+    expect(view.containers.get("redirect")?.loaders).toEqual([
+      {
+        link: "cache-reader-miss",
+        from: "redirect-cache-reader",
+        to: "redirect-data",
+        label: "Cache reader to Link reader",
+      },
+    ]);
+    for (const container of view.containers.values())
+      if (container.tile !== "redirect") expect(container.loaders, container.tile).toEqual([]);
+    // A module's drawn line names the module link Connect mode's X disconnects; a tile-level line
+    // names none.
+    const line = (id: string) => view.lines.find((item) => item.id === id);
+    expect(line("redirect-cache/redirect-cache-reader")?.disconnect).toEqual({
+      link: "cache-reader-redis",
+      label: "Disconnect Cache reader from URL cache",
+    });
+    const consumed = view.lines.find((item) => item.targetModule && !item.sourceModule);
+    const module = studio.components.find((item) => item.id === consumed?.targetModule);
+    expect(consumed?.disconnect?.label).toBe(
+      `Disconnect ${module?.name} from ${laneNodeName(design, laneGraph(design), consumed?.source ?? "")}`,
+    );
+    expect(line("upload-shorten")?.disconnect).toBeUndefined();
+  });
+});
+
 // Layout smoke: each Detailed input with real ELK, as the canvas lays it out.
 const elk = new ELK();
 const layoutOf = (input: LayoutInput, previous?: Record<string, Point>) =>

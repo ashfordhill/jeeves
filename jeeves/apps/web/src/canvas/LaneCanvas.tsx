@@ -22,6 +22,11 @@
 // `selectedTileLines` and `highlighted`), and only its row is marked. A row's port mark turns
 // blue with its line, whatever selected it. In the Overview an open module only keeps its host
 // selected.
+//
+// In Connect mode a row's dot is a drag source of its own (connect mode's rules take module IDs
+// too), and the X on a module's drawn line or on a loader arrow disconnects that module link
+// (`onDisconnectModule`), leaving the tiles' link; a line no module anchors keeps the tile link's
+// X. In Select mode a drawn line's X removes its whole relationship, as in the Overview.
 import {
   Board,
   type BoardHandle,
@@ -72,6 +77,7 @@ export function LaneCanvas({
   creation,
   removal,
   connect,
+  onDisconnectModule,
   ref,
 }: {
   design: DesignDocument;
@@ -95,6 +101,8 @@ export function LaneCanvas({
   removal?: Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
   /** Connect mode's allowed ends, refusals and new links (`useLaneConnect`). */
   connect?: ConnectRules;
+  /** Connect mode, Detailed view: the X on a module link (its drawn line or loader arrow). */
+  onDisconnectModule?: (link: string) => void;
   ref?: Ref<BoardHandle>;
 }) {
   const { tiles, lines, warnings } = useMemo(() => {
@@ -169,6 +177,7 @@ export function LaneCanvas({
             kind={graph.nodes[i]?.kind}
             name={tile.label}
             rows={container.rows}
+            loaders={container.loaders}
             warnings={warnings.get(tile.id)}
           />
         ),
@@ -194,12 +203,32 @@ export function LaneCanvas({
       ...(drawn?.open !== undefined && { open: drawn.open }),
       lit: drawn?.lit ?? [],
       onOpen: onOpenModule,
+      ...(onDisconnectModule && { onDisconnect: onDisconnectModule }),
     }),
-    [drawn, onOpenModule],
+    [drawn, onOpenModule, onDisconnectModule],
   );
   const canonical = (line: string) =>
     detailed ? canonicalLine(detailed.projection.connectionOf, line) : line;
-  const onRemoveLine = removal?.onRemoveLine;
+  // Connect mode: a module's drawn line names the module link its X disconnects.
+  const unlinks = mode === "connect" && onDisconnectModule !== undefined;
+  const boardLines = useMemo(() => {
+    if (!detailed) return lines;
+    if (!unlinks) return detailed.lines;
+    return detailed.lines.map((line, i) => {
+      const disconnect = detailed.projection.lines[i]?.disconnect;
+      return disconnect ? { ...line, removeLabel: disconnect.label } : line;
+    });
+  }, [detailed, lines, unlinks]);
+  const removeLine = removal?.onRemoveLine;
+  const onRemoveLine =
+    removeLine &&
+    ((line: string) => {
+      const disconnect = unlinks
+        ? detailed?.projection.lines.find((item) => item.id === line)?.disconnect
+        : undefined;
+      if (disconnect) onDisconnectModule?.(disconnect.link);
+      else removeLine(canonical(line));
+    });
 
   return (
     <div className="lane-canvas">
@@ -207,7 +236,7 @@ export function LaneCanvas({
         <Board
           ref={ref}
           tiles={detailed?.tiles ?? tiles}
-          lines={detailed?.lines ?? lines}
+          lines={boardLines}
           engine={layoutEngine}
           selected={drawn?.selected ?? selected}
           mode={mode}
@@ -220,7 +249,7 @@ export function LaneCanvas({
           {...creation}
           {...removal}
           {...connect}
-          {...(onRemoveLine && { onRemoveLine: (line: string) => onRemoveLine(canonical(line)) })}
+          {...(onRemoveLine && { onRemoveLine })}
           view={view}
           {...(drawn && {
             highlighted: drawn.highlighted,

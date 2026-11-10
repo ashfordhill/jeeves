@@ -1,13 +1,13 @@
 // Ported from automation-illustrator src/board/controls/tileOverlay.ts and the geometry helpers of
 // src/board/controls/TileChrome.tsx (0803c4a).
-// Screen-space geometry for the pull and connect overlays: the tile's live rect and corner radius
-// (a scrim hole and the ribbon's exit), where the ribbon starts under the tile face, the ribbon
-// itself, and where a connect drag's line leaves its tile. Holes use the tile's own radius (a
-// pill's 32px), scaled by the zoom.
+// Screen-space geometry for the pull and connect overlays: the live rect and corner radius of a
+// tile, or of an end inside one (a scrim hole and the ribbon's exit), where the ribbon starts
+// under the tile face, the ribbon itself, and where a connect drag's line leaves its tile. Holes
+// use the tile's own radius (a pill's 32px), scaled by the zoom.
 //
 // Changes from automation-illustrator: tiles are found inside one board host; the fallback rect
 // takes the tile size from the caller (there are no Step or Data kinds); horizontal only; the
-// connect line's exit point.
+// connect line's exit point; ends inside tiles.
 import type { Size } from "../layout/metrics.ts";
 
 export type TileRect = { x: number; y: number; w: number; h: number; rx: number };
@@ -29,6 +29,25 @@ export function tileScreenRect(host: HTMLElement | null, id: string): TileRect |
   const b = el.getBoundingClientRect();
   const cssRx = Number.parseFloat(getComputedStyle(el).borderTopLeftRadius);
   const rx = scaleCornerRadius(Number.isFinite(cssRx) ? cssRx : 14, el.offsetWidth, b.width);
+  return { x: b.left, y: b.top, w: b.width, h: b.height, rx };
+}
+
+/**
+ * The end `id` inside a tile of `host` (an element marked `data-board-end`), or with `handle` its
+ * handle (`data-board-end-handle`), in screen pixels, or null when it is not drawn. Its radius is
+ * its own corner's, scaled by the zoom.
+ */
+export function endScreenRect(
+  host: HTMLElement | null,
+  id: string,
+  handle = false,
+): TileRect | null {
+  const end = `.react-flow__node [data-board-end="${CSS.escape(id)}"]`;
+  const el = host?.querySelector(handle ? `${end} [data-board-end-handle]` : end);
+  if (!(el instanceof HTMLElement)) return null;
+  const b = el.getBoundingClientRect();
+  const cssRx = Number.parseFloat(getComputedStyle(el).borderTopLeftRadius);
+  const rx = scaleCornerRadius(Number.isFinite(cssRx) ? cssRx : 0, el.offsetWidth, b.width);
   return { x: b.left, y: b.top, w: b.width, h: b.height, rx };
 }
 

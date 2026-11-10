@@ -12,7 +12,7 @@ import {
   type LineSpec,
   type TileSpec,
 } from "./Board.tsx";
-import { fanCenters, fanGrid, placeGrid } from "./fan.ts";
+import { FAN_CELL_DETAIL, fanCenters, fanGrid, placeGrid } from "./fan.ts";
 import type { FanItem, TabSpec } from "./TileChrome.tsx";
 
 /**
@@ -639,14 +639,124 @@ describe("Board", () => {
     expect(calls).toHaveLength(3);
   });
 
+  it("drags from an end's handle inside a tile and ends on tiles or on ends the rules know", async () => {
+    if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
+    let under: Element | null = null;
+    document.elementFromPoint = () => under;
+    const calls: string[] = [];
+    // Redirect holds two ends: a reader with a handle, and a data row any drag may end on.
+    const withEnds = tiles.map((t) =>
+      t.id === "redirect"
+        ? {
+            ...t,
+            content: (
+              <div>
+                <span data-board-end="reader">
+                  Reader <i data-board-end-handle>o</i>
+                </span>
+                <span data-board-end="data">Data</span>
+                <span data-testid="face">Redirect</span>
+              </div>
+            ),
+          }
+        : t,
+    );
+    const allowed: Record<string, string[]> = { reader: ["events", "data"] };
+    const { container } = render(
+      <div style={{ width: 1200, height: 800 }}>
+        <Board
+          tiles={withEnds}
+          lines={lines}
+          engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+          selected={{}}
+          onSelectTile={() => {}}
+          onSelectLine={() => {}}
+          onClear={() => {}}
+          mode="connect"
+          canConnect={(from, to) => allowed[from]?.includes(to) === true}
+          connectRefusal={(from, to) =>
+            from === "reader" && to === "actor" ? "The reader can't use the user." : undefined
+          }
+          onConnect={(from, to) => calls.push(`connect ${from} ${to}`)}
+          onConnectRefused={(from, to) => calls.push(`refused ${from} ${to}`)}
+        />
+      </div>,
+    );
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const node = (id: string) =>
+      container.querySelector(`.react-flow__node[data-id="${id}"]`) as HTMLElement;
+    const at = (selector: string) => container.querySelector(selector) as HTMLElement;
+    const drag = (from: Element, to: Element | null) => {
+      fireEvent.pointerDown(from, { button: 0, isPrimary: true, clientX: 600, clientY: 400 });
+      under = to;
+      fireEvent.pointerMove(window, { clientX: 700, clientY: 400 });
+    };
+    const release = () => fireEvent.pointerUp(window, { clientX: 700, clientY: 400 });
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+    // From the handle: the drag is the end's. The allowed tile is lit; the allowed end gets its
+    // dashed outline on the overlay.
+    drag(at("[data-board-end-handle]"), node("events"));
+    expect(node("events").className).toContain("is-drop-target is-drop-over");
+    expect(
+      [...document.querySelectorAll(".board-connect-ends rect")].map((r) =>
+        r.getAttribute("data-end"),
+      ),
+    ).toEqual(["data"]);
+    release();
+    expect(calls).toEqual(["connect reader events"]);
+    await settle();
+
+    // Onto an end it may use, in its own tile.
+    drag(at("[data-board-end-handle]"), at('[data-board-end="data"]'));
+    expect(document.querySelector(".board-connect-ends rect")?.hasAttribute("data-over")).toBe(
+      true,
+    );
+    release();
+    expect(calls.at(-1)).toBe("connect reader data");
+    await settle();
+
+    // A tile it is refused is faded with the reason; its own tile is the source, so nothing.
+    drag(at("[data-board-end-handle]"), node("actor"));
+    expect(document.querySelector(".board-connect-tip")?.textContent).toBe(
+      "The reader can't use the user.",
+    );
+    release();
+    expect(calls.at(-1)).toBe("refused reader actor");
+    await settle();
+    drag(at("[data-board-end-handle]"), at('[data-testid="face"]'));
+    expect(document.querySelector(".board-connect-line g")?.hasAttribute("data-refused")).toBe(
+      false,
+    );
+    release();
+    expect(calls).toHaveLength(3);
+    await settle();
+
+    // Anywhere else on the tile the drag is the tile's, and an end the rules don't know for it
+    // is part of its tile: over Events' face it is Events, refused without a reason.
+    drag(at('[data-board-end="data"]'), node("events"));
+    expect(document.querySelectorAll(".board-connect-ends rect")).toHaveLength(0);
+    expect(node("events").className).not.toContain("is-drop-target");
+    release();
+    expect(calls.at(-1)).toBe("refused redirect events");
+  });
+
   it("shows a line's X while the pointer is on it in connect mode, never on a fixed line", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const onRemoveLine = vi.fn();
-    const board = (mode: BoardProps["mode"], fixed = false) => (
+    const board = (mode: BoardProps["mode"], fixed = false, removeLabel?: string) => (
       <Board
         tiles={tiles}
         lines={lines.map((line) =>
-          line.id === "publish" && fixed ? { ...line, removable: false } : line,
+          line.id !== "publish"
+            ? line
+            : fixed
+              ? { ...line, removable: false }
+              : removeLabel
+                ? { ...line, removeLabel }
+                : line,
         )}
         engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
         selected={{}}
@@ -693,6 +803,10 @@ describe("Board", () => {
     rerender(board("connect", true));
     fireEvent.mouseEnter(edge());
     expect(x()).toBeNull();
+    // The caller may name what the X does.
+    rerender(board("connect", false, "Disconnect Publisher from Events"));
+    fireEvent.mouseEnter(edge());
+    expect(screen.getByRole("button", { name: "Disconnect Publisher from Events" })).not.toBeNull();
     vi.useRealTimers();
   });
 
@@ -856,5 +970,76 @@ describe("Board", () => {
       fireEvent.pointerUp(handle, { pointerId: 1, clientX: 700, clientY: 400 });
     });
     expect(onPick).toHaveBeenCalledWith("redirect", "link", "k4");
+  });
+  it("captions grid items with a detail line, tips them with a description, wraps after `columns`", async () => {
+    const capture = { setPointerCapture: () => {}, releasePointerCapture: () => {} };
+    Object.assign(HTMLElement.prototype, capture);
+    if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
+    let under: Element | null = null;
+    document.elementFromPoint = () => under;
+    const groups = ["lead", "part", "part", "part", "stub"];
+    const items: FanItem[] = groups.map((group, i) => ({
+      id: `m${i}`,
+      label: `Module ${i}`,
+      detail: group === "lead" ? "Template" : group === "part" ? "Part of a template" : "Stub",
+      description: `Does thing ${i}.`,
+      content: <span>{i}</span>,
+      group,
+    }));
+    const onPick = vi.fn<NonNullable<BoardProps["onPick"]>>(() => undefined);
+    render(
+      <div style={{ width: 1200, height: 800 }}>
+        <Board
+          tiles={tiles}
+          lines={lines}
+          engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+          selected={{ tile: "redirect" }}
+          onSelectTile={() => {}}
+          onSelectLine={() => {}}
+          onClear={() => {}}
+          mode="select"
+          tabs={[
+            {
+              id: "module",
+              kind: "create",
+              side: "before",
+              label: "Add module",
+              layout: "grid",
+              columns: 2,
+              items,
+            },
+          ]}
+          onPick={onPick}
+        />
+      </div>,
+    );
+    const handle = await screen.findByRole("button", { name: "Add module" });
+    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 600, clientY: 400 });
+    expect(document.querySelector(".board-pull")?.hasAttribute("data-detail")).toBe(true);
+    const slots = placeGrid(
+      fanGrid(600, 400, groups, true, { cell: FAN_CELL_DETAIL, columns: 2 }),
+      { x: 0, y: 0, w: 1200, h: 800 },
+      FAN_CELL_DETAIL,
+    );
+    const fan = [...document.querySelectorAll<HTMLElement>("[data-fan-item]")];
+    expect(fan.map((el) => `${el.style.left},${el.style.top}`)).toEqual(
+      slots.map((p) => `${p.x}px,${p.y}px`),
+    );
+    // Rows: the lead; two parts, then the third wrapped; the stub.
+    expect(new Set(slots.map((p) => p.y)).size).toBe(4);
+    expect(fan.map((el) => el.querySelector(".board-fan-detail")?.textContent)).toEqual(
+      items.map((item) => item.detail),
+    );
+    expect(fan[2]?.querySelector(".board-fan-caption")?.firstChild?.textContent).toBe("Module 2");
+    // The tip under the pointer: its name, then its description.
+    under = document.querySelector('[data-fan-item="m2"]');
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 500, clientY: 400 });
+    const tip = document.querySelector(".board-fan-tip");
+    expect(tip?.hasAttribute("data-wrap")).toBe(true);
+    expect(tip?.querySelector(".board-fan-description")?.textContent).toBe("Does thing 2.");
+    await act(async () => {
+      fireEvent.pointerUp(handle, { pointerId: 1, clientX: 500, clientY: 400 });
+    });
+    expect(onPick).toHaveBeenCalledWith("redirect", "module", "m2");
   });
 });

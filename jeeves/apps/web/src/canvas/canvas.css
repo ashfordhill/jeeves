@@ -117,11 +117,14 @@
 /* Container face (Detailed view): a one-line header above a divider, then one row per module, each
    centred on its port's height (positions come from the projection). A row is a framed box and a
    button that opens its module; a row with a drawn line has a port mark, a stub from the frame to
-   its box on that side, in the line's colour. The open module's row is filled in the selection
-   colour and ringed. */
+   its box on that side, in the line's colour. A row that can connect has a dot on its right edge,
+   hollow until a slot is connected. The open module's row is filled in the selection colour and
+   ringed. The Cache reader's loader is an arrow in the left gutter, which then widens. */
 .lane-container {
-  /* The row box's inset from the frame and its border; the port marks span the inset. */
+  /* The row box's inset from the frame and its border; the port marks span the inset. The left
+     inset widens for loader arrows (set on the face). */
   --row-inset: 10px;
+  --row-inset-left: var(--row-inset);
   --row-border: 1.5px;
   /* The board's line width (LINE_WIDTH in BoardLine.tsx). */
   --port-mark: 2.75px;
@@ -168,7 +171,7 @@
 
 .lane-container-row {
   position: absolute;
-  left: var(--row-inset);
+  left: var(--row-inset-left);
   right: var(--row-inset);
   box-sizing: border-box;
   display: flex;
@@ -189,7 +192,8 @@
   pointer-events: none;
 }
 .lane-container-row[data-ports~="in"]::before {
-  left: calc(-1 * (var(--row-inset) + var(--row-border)));
+  left: calc(-1 * (var(--row-inset-left) + var(--row-border)));
+  width: var(--row-inset-left);
 }
 .lane-container-row[data-ports~="out"]::after {
   right: calc(-1 * (var(--row-inset) + var(--row-border)));
@@ -253,6 +257,101 @@
 
 :root[data-theme="dark"] .lane-container-row[data-mark="open"] {
   --mark-fill: 55%;
+}
+
+/* A row's connection dot, on its right edge: hollow while none of its slots is connected, filled
+   once one is. In Connect mode a drag from it starts at the module; its hit area is wider than the
+   dot, so it can be grabbed at a modest zoom. */
+.lane-container-row-dot {
+  position: absolute;
+  top: 50%;
+  right: calc(-1 * (var(--row-border) + 6px));
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  border: 2.5px solid var(--board-line);
+  border-radius: 50%;
+  background: var(--board-paper);
+  transform: translateY(-50%);
+}
+
+.lane-container-row-dot::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+}
+
+.lane-container-row-dot[data-connected] {
+  background: var(--board-line);
+}
+
+.lane-container-row[data-lit~="out"] .lane-container-row-dot {
+  border-color: var(--board-select);
+}
+
+.lane-container-row[data-lit~="out"] .lane-container-row-dot[data-connected] {
+  background: var(--board-select);
+}
+
+.board[data-mode="connect"] .lane-container-row-dot {
+  cursor: crosshair;
+}
+
+/* The Cache reader's loader: a short arrow in the left gutter, from its row to the Data access
+   row, in the line colour (the selection colour while either module is open, or in Connect mode
+   under the pointer, when its X shows). */
+.lane-container-loader {
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+}
+
+.lane-container-loader svg {
+  display: block;
+  overflow: visible;
+}
+
+.lane-container-loader-line {
+  fill: none;
+  stroke: var(--board-line);
+  stroke-width: 2.75px;
+  stroke-linejoin: miter;
+}
+
+.lane-container-loader-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12px;
+  pointer-events: stroke;
+}
+
+.lane-container-loader[data-lit] .lane-container-loader-line,
+.board[data-mode="connect"]:not([data-connecting])
+  .lane-container-loader:hover
+  .lane-container-loader-line {
+  stroke: var(--board-select);
+}
+
+.lane-container .lane-container-loader-remove {
+  position: absolute;
+  display: none;
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+}
+
+.lane-container-loader-remove svg {
+  width: 14px;
+  height: 14px;
+}
+
+.board[data-mode="connect"]:not([data-connecting])
+  .lane-container-loader:hover
+  .lane-container-loader-remove {
+  display: inline-flex;
 }
 
 /* A selected container's pull tabs sit just outside its frame, beside the rows, not over them. */
@@ -725,6 +824,37 @@
   line-clamp: 2;
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* A module page's status under its kind: a small word (Template in the plus colour, Refused on a
+   yellow wash, Stub and Custom plain), then the template's name or the reason in plain words. */
+.lane-module-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 6px;
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.lane-module-status strong {
+  padding: 0 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.lane-module-status[data-status="template"] strong {
+  color: var(--plus);
+}
+
+.lane-module-status[data-status="refused"] strong {
+  border-color: var(--yellow);
+  background: color-mix(in srgb, var(--yellow) 22%, transparent);
+  color: var(--ink);
 }
 
 /* A design warning's mark in a tile's top-right corner (inside a pill's curve too); its tooltip

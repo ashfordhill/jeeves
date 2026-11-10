@@ -1,7 +1,7 @@
 # Module authoring: modules that generate code, built by mouse
 
 **Status:** planned 2026-11-09 from owner feedback. MA01's [contract](contract.md) is approved;
-MA05–MA08 below follow it. MA02, MA03, MA04 and MA05 are done.
+MA05–MA08 below follow it. MA02, MA03, MA04, MA05 and MA06 are done.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-09 — Modules generate code; build v2 from scratch](../../HUMAN_FEEDBACK.md)
 · Follows the [UI overhaul](../ui-overhaul/units.md) and its [review](../ui-overhaul/review.md).
 

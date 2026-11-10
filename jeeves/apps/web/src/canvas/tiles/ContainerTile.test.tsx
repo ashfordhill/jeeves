@@ -1,7 +1,9 @@
 // A container's rows carry port marks only on the sides their drawn lines use, and a mark is lit
-// (the selection colour) exactly while a line at that port is, whatever selected it.
-import { cleanup, render } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+// (the selection colour) exactly while a line at that port is, whatever selected it. A row that
+// can connect has a dot, filled once connected, as the handle of its board end; the Cache reader's
+// loader is an arrow in the gutter whose X (live canvas only) disconnects it.
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DetailedRow } from "../detailedView.ts";
 import { ContainerTile, ModuleRows } from "./ContainerTile.tsx";
 
@@ -12,6 +14,8 @@ const row = (module: string, index: number, ports: Partial<DetailedRow> = {}): D
   kind: "custom",
   index,
   y: 64 + 32 * index,
+  connects: true,
+  connected: false,
   ...ports,
 });
 const rows = [
@@ -73,5 +77,58 @@ describe("ContainerTile", () => {
       ["in out", null, null],
       [null, null, null],
     ]);
+  });
+  it("gives a row that can connect a dot, filled once connected, and draws the loader arrow", () => {
+    const own = [
+      row("cache", 0, { kind: "cache-reader", connected: true }),
+      row("responder", 1, { kind: "redirect-responder", connects: false }),
+      row("data", 2, { kind: "data-access" }),
+    ];
+    const loaders = [
+      { link: "cache-data", from: "cache", to: "data", label: "Cache reader to Data access" },
+    ];
+    const onDisconnect = vi.fn();
+    const live = render(
+      <ModuleRows value={{ open: "data", lit: [], onOpen: () => {}, onDisconnect }}>
+        <ContainerTile kind="service" name="Watch" rows={own} loaders={loaders} />
+      </ModuleRows>,
+    );
+    const dots = [...live.container.querySelectorAll("li")].map((li) => {
+      const dot = li.querySelector(".lane-container-row-dot");
+      return [
+        li.dataset.boardEnd,
+        dot ? dot.hasAttribute("data-board-end-handle") : null,
+        dot?.hasAttribute("data-connected") ?? null,
+      ];
+    });
+    expect(dots).toEqual([
+      ["cache", true, true],
+      ["responder", null, null],
+      ["data", true, false],
+    ]);
+    // The rows make room in the gutter; the arrow is lit while either module is open.
+    const face = live.container.querySelector<HTMLElement>(".lane-container");
+    expect(face?.style.getPropertyValue("--row-inset-left")).toBe("22px");
+    const arrow = live.container.querySelector<HTMLElement>(".lane-container-loader");
+    expect(arrow?.dataset.link).toBe("cache-data");
+    expect(arrow?.hasAttribute("data-lit")).toBe(true);
+    expect(screen.getByRole("img", { name: "Cache reader to Data access" })).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Disconnect cache from data" }));
+    expect(onDisconnect).toHaveBeenCalledWith("cache-data");
+    cleanup();
+
+    // An export draws the arrow but has no X; no loaders, no gutter.
+    const exported = render(
+      <ContainerTile kind="service" name="Watch" rows={own} loaders={loaders} />,
+    );
+    expect(exported.container.querySelectorAll(".lane-container-loader")).toHaveLength(1);
+    expect(exported.container.querySelector(".lane-container-loader-remove")).toBeNull();
+    cleanup();
+    const plain = render(<ContainerTile kind="service" name="Watch" rows={own} />);
+    expect(
+      plain.container
+        .querySelector<HTMLElement>(".lane-container")
+        ?.style.getPropertyValue("--row-inset-left"),
+    ).toBe("");
   });
 });

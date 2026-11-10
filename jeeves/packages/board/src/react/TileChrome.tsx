@@ -10,8 +10,10 @@
 // release on it changes nothing); once past the threshold the pull stays open until it ends, so a
 // fan item the board's edge pushed back beside the tab can still be picked; Escape cancels and a
 // cancelled pull springs back. The fan stays inside the board (`placeFan`). A long list can be a
-// grid fan instead (`layout: "grid"`): a row per item group beside the tab, each item captioned,
-// on one panel kept on the board as a block (`placeGrid`), so it reads over the tiles it covers.
+// grid fan instead (`layout: "grid"`): a row per item group beside the tab (wrapping after
+// `columns`), each item captioned with its name and, when it has one, a detail line, on one panel
+// kept on the board as a block (`placeGrid`), so it reads over the tiles it covers. An item's tip
+// gives its name, its description and, when disabled, the reason.
 // The red X shows only when the caller lets the tile go (`remove`). No path tab, tile pickup or
 // insert silhouette.
 import {
@@ -25,7 +27,15 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import type { DockSide, Size, SlotOrder } from "../layout/metrics.ts";
-import { fanCenters, fanGrid, gridBounds, placeFan, placeGrid } from "./fan.ts";
+import {
+  FAN_CELL,
+  FAN_CELL_DETAIL,
+  fanCenters,
+  fanGrid,
+  gridBounds,
+  placeFan,
+  placeGrid,
+} from "./fan.ts";
 import { LinkGlyph } from "./LinkGlyph.tsx";
 import {
   fallbackTileRect,
@@ -47,7 +57,8 @@ export const SPRING_MS = 200;
  * One item of a create tab's fan: an icon, named by `label` (its accessible name and hover tip,
  * and its caption in a grid fan). A `disabled` item (the reason, in words) is greyed in its usual
  * slot, its tip adds the reason, and releasing on it changes nothing. In a grid fan, items with
- * the same `group` share a row.
+ * the same `group` share a row, and a `detail` (a few words, such as what the item is) is a
+ * second caption line. A `description` (one sentence) follows the name in its tip.
  */
 export type FanItem = {
   id: string;
@@ -56,6 +67,8 @@ export type FanItem = {
   shape?: "rect" | "pill";
   disabled?: string;
   group?: string;
+  detail?: string;
+  description?: string;
 };
 
 /** How a fan lays out its items: on an arc around the tab, or in a grid of rows beside it. */
@@ -82,6 +95,8 @@ export type CreateTab = {
   items: readonly FanItem[];
   /** Default `arc`; `grid` puts each group of items in a row and captions every item. */
   layout?: FanLayout;
+  /** A grid fan's longest row; a longer group wraps onto the next row. Default: no limit. */
+  columns?: number;
   /** The row a tile picked from this fan takes, next to an existing tile (a lane's last tile). */
   order?: SlotOrder;
 };
@@ -370,6 +385,8 @@ function PullOverlay({
   const grid = tab.layout === "grid";
   // Slots come from the item's place in the whole list, disabled or not, so they never shift.
   const box = board && { x: board.x, y: board.y, w: board.width, h: board.height };
+  const detailed = grid && items.some((item) => item.detail);
+  const cell = detailed ? FAN_CELL_DETAIL : FAN_CELL;
   const centers = grid
     ? placeGrid(
         fanGrid(
@@ -377,11 +394,13 @@ function PullOverlay({
           drag.restY,
           items.map((item) => item.group),
           before,
+          { cell, ...(tab.columns !== undefined && { columns: tab.columns }) },
         ),
         box,
+        cell,
       )
     : placeFan(fanCenters(drag.restX, drag.restY, items.length, before), box);
-  const panel = grid && open && centers.length ? gridBounds(centers) : undefined;
+  const panel = grid && open && centers.length ? gridBounds(centers, cell) : undefined;
   const exit = holeRect(drag.tile, 0);
   const exitMask = `${ids}-exit`;
   const hovered = drag.hover?.item ?? null;
@@ -390,6 +409,7 @@ function PullOverlay({
       className="board-overlay board-pull"
       data-glyph={glyph}
       data-layout={grid ? "grid" : undefined}
+      data-detail={detailed || undefined}
       aria-hidden={!open}
     >
       <svg className="board-ribbon" width="100%" height="100%" overflow="visible" aria-hidden>
@@ -437,10 +457,21 @@ function PullOverlay({
                 style={{ left: at.x, top: at.y }}
               >
                 <span className="board-fan-content">{item.content}</span>
-                {grid ? <span className="board-fan-caption">{item.label}</span> : null}
-                {hovered === item.id ? (
-                  <span className="board-fan-tip" data-reason={item.disabled ? true : undefined}>
+                {grid ? (
+                  <span className="board-fan-caption">
                     {item.label}
+                    {item.detail ? <span className="board-fan-detail">{item.detail}</span> : null}
+                  </span>
+                ) : null}
+                {hovered === item.id ? (
+                  <span
+                    className="board-fan-tip"
+                    data-wrap={item.disabled || item.description ? true : undefined}
+                  >
+                    {item.label}
+                    {item.description ? (
+                      <span className="board-fan-description">{item.description}</span>
+                    ) : null}
                     {item.disabled ? (
                       <span className="board-fan-reason">{item.disabled}</span>
                     ) : null}

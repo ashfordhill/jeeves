@@ -7727,3 +7727,99 @@ inside the command's batch and returns `setOwnership` and `setGeneration` after 
 Chat's addable tile kinds are unchanged (the Billing eval decision is still pending). The owner's
 uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of `e2e-docker.sh` are
 untouched and unstaged.
+
+## 2026-11-10 — MA06: add and connect modules by mouse
+
+Per the [module authoring plan](plans/module-authoring/units.md) (Owner decisions 4 and 5) and
+contract §2, §4 and §5, on MA05's commands. Docs: `studio.md` (Creating and connecting with a new
+Adding a module subsection, Connect mode, Detailed view, Removing, Inspector, History, Chat,
+Limits), `CATALOG.md` (Components), a playbook lesson, the plan's status and the HUMAN_FEEDBACK
+resolution.
+
+- **Module `+`** (`creation.tsx`): a tile with `moduleKinds` has a `+` tab on its left (grid fan,
+  five to a row). Rows are what each kind can generate **in that tile** (`studio/module-status.ts`
+  `moduleGeneration`, from the template capabilities' hosts): Template, Part of a template, Stub.
+  Each item shows its icon, name and that word; its tip adds the one-line description. A pick runs
+  `addModule` (identity from `newModuleIdentity` on the latest design), selects `{tile, module}` and
+  focuses the module's Name. Overview and Detailed.
+- **Module page** (`ComponentForm`): a status line under the kind from `moduleStatus`:
+  "Template · Cache read", Stub/Custom/Refused with the reason (yellow pill for Refused). Options
+  are unchanged (`normalSettingFields`): a Data access in a template shows Pool size and Statement
+  timeout. Remove module now sends `removeModule`.
+- **Detailed** (`detailedView.ts`, `ContainerTile.tsx`): rows carry `connects`/`connected`; a row
+  with slots has a dot on its right edge (hollow, filled once connected); none for Redirect
+  responder and Event counter. Each row is a board end (`data-board-end`), its dot the handle.
+  The Cache reader's loader is projected as `DetailedLoader` and drawn as a gutter arrow (rows'
+  left inset widens to 22px in that container). Anchored lines name the module link they show
+  (`disconnect`).
+- **Connect mode** (`connect.ts`, `LaneCanvas.tsx`): a source that is a module uses
+  `moduleConnectOptions` (cached per source per design); a release runs its `connectModule`, a
+  refusal goes to the notice. In Connect mode a module line's X ("Disconnect Data access from
+  Database") and the loader arrow's X run `disconnectModule`; tile-level lines keep `removeLink`,
+  and Select mode's X still removes the whole relationship.
+- **Board** (generic): ends inside tiles (`data-board-end` / `data-board-end-handle`): a press on a
+  handle drags from the end; the line leaves the handle; the tile holding it counts as the source;
+  a drag ends on an end only when the rules know it, else on its tile; allowed ends get a dashed
+  outline on the overlay (`endScreenRect`). `FanItem.detail`/`description`, `CreateTab.columns`,
+  `FAN_CELL_DETAIL` (120×108) and a `cell` parameter for `fanGrid`/`gridBounds`/`placeGrid`;
+  `LineSpec.removeLabel`; `RemoveButton` exported.
+
+**Deviations.** (1) The `+` also shows on older Redirect, Notifications and Billing tiles, because
+`moduleKinds` (contract §2) offers them the generic kinds and chat can add them. (2) Fan captions
+are per host, not the kind's static label: a Cache reader in a Worker, an Event consumer in a
+Service and an Auth guard in a Worker are **Stub** (their templates don't allow that host;
+MA05's status says the same). (3) The page also shows **Custom** (a study's modules before any
+module command). (4) A line anchored at both ends: its X disconnects the source module's link.
+
+**Refused on studies.** A module command on the YouTube study (or TinyURL extended) turns Details
+cache and its Data access to Refused: "Local preset supports Private network; declared Service
+identity remains unsupported and is preserved." Derivation kept. Presentation: a yellow Refused
+pill plus that sentence on the module page; rows don't change; Undo returns the study. For MA10
+and the owner: the sentence is the resolver's; a plainer one naming the link needs `ModuleStatus`
+to carry the finding's link (spec and chat).
+
+**Tests.** Board: fan wrap/cell test, ends-in-tiles drag test, grid detail/description test, X
+label. Web: `detailedView` dots/loaders/disconnect, `ContainerTile` dots/arrow/X,
+`module-status.test.ts`, `creation.test.tsx`. New `e2e/module-authoring.spec.ts` (5): every fan
+kind added to a Service (Overview, 12) and a Worker (Detailed, 16) with Undo; a dot drag (refused
+Cache with reason, then Database), its line X and two Undo steps; the loader drag, arrow, status
+and arrow X with Undo; view-only actions leave design and blueprint unchanged (no dot on Redirect
+responder); a study tile's Refused. `spawn.spec.ts` expects the left `+`.
+
+**Checks.** `pnpm check` exited 0: **543 tests in 77 files** (lint: only the existing info).
+**E2E: 57 passed (2.6m)**, twice. While writing the new spec it failed twice on test bugs
+(a hovered fan item at viewport ratio 0.9999; an Escape-cancelled pull released on paper clears
+the selection, as before); fixed, it passed alone and in both full runs. The web build passed with
+the existing chunk-size advisory.
+
+**Gates.** Frozen v2: 70 of 72 files byte-identical; `manifest.json`/`report.json` differ only in
+the source inventory (the same 13 spec sources as MA05, `registry.sha256`, the manifest's hash and
+size of `report.json`); no file of this unit is in it. v1: byte-identical (`assemble.test.ts`).
+YouTube Overview PNG at 1440×900: `472a4c8c…dc9f`, also with Connect on.
+
+**Mouse check** (scripted Chromium, my API 4336 with scratch DB `jeeves_ma06`, now dropped, and
+Vite 4326; 1440×900 and 1280×800): TinyURL foundation 7/7, extended 11/12. Blank project: the
+Service's fan had 12 items, none off-screen (panel 612×444 inside a 650×708 board at 1280 with
+both rails); a pick focused the module's Name; dot drags to Cache and Database, the loader drag
+(outlined row), "Template · Cache read"; arrow X → Stub "Needs its loader connected to a Data access
+in Microservice.", Undo; line X kept the tile link, Undo. YouTube: Watch API `+` → Custom, Details
+cache Refused. Dark mode read correctly. No page or console errors. All projects deleted (204);
+one leftover from a timed-out dev run was removed from `jeeves_e2e`. Evidence:
+[ma06](plans/module-authoring/evidence/ma06/).
+
+**For MA07.** `studio/module-status.ts` has `moduleStatusLine` and `moduleTemplateNames` for the
+Generate dialog. Some MA05 stub reasons read oddly ("Needs its cache connected to a cache.").
+
+**For MA08.** The Lifecycle writer's page shows no settings until the resolver reads its `state`
+SQL settings from it (the page follows `normalSettingFields`). Fan captions follow
+`generationCapabilities[...].hosts`. After a Cache read derives, the Database shows the existing
+"has no declared writer" warning (it is only read).
+
+**For MA09.** By mouse: pull the tile's left `+` about 60px left; connect only in Detailed +
+Connect, from a row's dot (pressing elsewhere on a row links the tile); the loader is the Cache
+reader's dot onto the Data access row; X names are "Disconnect <module> from <tile>". A new module
+is named after its kind and its Name is focused, ready to rename. `module-authoring.spec.ts` has
+`build`, `addModule` and `arrowPoint` helpers.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

@@ -404,6 +404,27 @@
   stroke: var(--board-refuse);
 }
 
+/* An allowed end inside a tile (a container's row, say): the tiles' dashed ring, drawn on the
+   overlay because the end is the caller's content. */
+.board-connect-ends {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.board-connect-ends rect {
+  fill: none;
+  stroke: color-mix(in srgb, var(--board-select) 55%, transparent);
+  stroke-width: 3px;
+  stroke-dasharray: 7 5;
+}
+
+.board-connect-ends rect[data-over] {
+  stroke: var(--board-select);
+  stroke-width: 4px;
+}
+
 .board-connect-tip {
   position: absolute;
   transform: translate(14px, 18px);
@@ -509,6 +530,22 @@
   color: color-mix(in srgb, var(--board-ink) 45%, transparent);
 }
 
+/* A caption with a detail line under the name: the wider, taller `FAN_CELL_DETAIL` (120 × 108). */
+.board-pull[data-detail] .board-fan-caption {
+  max-width: 116px;
+  font-size: 11.5px;
+}
+
+.board-fan-detail {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--board-ink) 68%, transparent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
 .board-fan-tip {
   position: absolute;
   top: calc(100% + 7px);
@@ -524,14 +561,16 @@
   white-space: nowrap;
 }
 
-/* A disabled item's tip: the name, then why it can't be added here. */
-.board-fan-tip[data-reason] {
+/* A longer tip: the name, then its description or why it can't be added here. */
+.board-fan-tip[data-wrap] {
+  z-index: 2;
   width: max-content;
   max-width: 240px;
   white-space: normal;
   text-align: center;
 }
 
+.board-fan-description,
 .board-fan-reason {
   display: block;
   margin-top: 2px;

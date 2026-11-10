@@ -28,13 +28,14 @@ const FAN = [
 
 test("pulls the link tab onto a kind to add a linked tile", async ({ page, tinyurl: id }) => {
   await tile(page, "Redirect service").click();
-  // One link tab on the right; nothing on the left (linking existing tiles is Connect mode's).
-  const tabs = tile(page, "Redirect service").locator(".board-tab");
-  await expect(tabs).toHaveCount(1);
-  await expect(tabs).toHaveAttribute("data-glyph", "link");
-  await expect(
-    tile(page, "Redirect service").locator('.board-tabs[data-side="before"]'),
-  ).toHaveCount(0);
+  // One link tab on the right, and on the left only the module `+` (linking existing tiles is
+  // Connect mode's).
+  const side = (which: string) =>
+    tile(page, "Redirect service").locator(`.board-tabs[data-side="${which}"] .board-tab`);
+  await expect(side("after")).toHaveCount(1);
+  await expect(side("after")).toHaveAttribute("data-glyph", "link");
+  await expect(side("before")).toHaveCount(1);
+  await expect(side("before")).toHaveAttribute("aria-label", "Add module");
   await pull(page, "Redirect service", LINK_TAB);
   // All eleven kinds, captioned, a row per group in a fixed order; after a service all fit.
   await expect(fan(page)).toHaveCount(11);

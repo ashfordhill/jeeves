@@ -48,6 +48,8 @@ export type BoardLineData = {
   chip?: ReactNode;
   /** The line can't be removed on its own: no X when selected. */
   fixed?: boolean;
+  /** The X's accessible name; default "Remove <label>". */
+  removeLabel?: string;
   bridges?: Point[][];
 };
 
@@ -169,7 +171,7 @@ export function BoardLine({
         <EdgeLabelRenderer>
           <RemoveButton
             className="board-remove-line"
-            label={`Remove ${data?.label ?? "line"}`}
+            label={data?.removeLabel ?? `Remove ${data?.label ?? "line"}`}
             onRemove={() => removeLine(id)}
             {...(holdHover && releaseHover
               ? { onPointerEnter: () => holdHover(id), onPointerLeave: releaseHover }

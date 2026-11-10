@@ -8,8 +8,9 @@
 // depends only on its index and the count, so a caller that always passes the same items (some
 // disabled) gets the same slots. `placeFan` keeps the items on the board
 // (automation-illustrator's previews never reach a rail). A long list can be a grid instead
-// (`fanGrid`): one row per group beside the tab, each item captioned, on one panel kept on the
-// board as a block (`placeGrid`).
+// (`fanGrid`): one row per group beside the tab (a group wraps after a set number of columns),
+// each item captioned, on one panel kept on the board as a block (`placeGrid`). A caption is the
+// item's name, or its name over a detail line (`FAN_CELL_DETAIL`).
 import type { Point } from "../layout/metrics.ts";
 
 export const FAN_RADIUS = 104;
@@ -99,51 +100,69 @@ export function placeFan(
   return out;
 }
 
-/** A grid fan's cell: an item with its caption under it (board.css `.board-fan-caption`). */
-export const FAN_CELL = { w: 104, h: 92 } as const;
-/** A grid item's caption line, under its 60px box. */
-export const FAN_CAPTION_H = 18;
+/**
+ * A grid fan's cell: an item with its caption under it (board.css `.board-fan-caption`), and the
+ * caption's height under its 60px box.
+ */
+export type FanCell = { readonly w: number; readonly h: number; readonly caption: number };
+/** A cell captioned with the item's name. */
+export const FAN_CELL: FanCell = { w: 104, h: 92, caption: 18 };
+/** A cell captioned with the item's name over one detail line (`.board-fan-detail`). */
+export const FAN_CELL_DETAIL: FanCell = { w: 120, h: 108, caption: 34 };
+/** A grid item's one-line caption, under its 60px box. */
+export const FAN_CAPTION_H = FAN_CELL.caption;
 /** From the tab's resting centre to the grid's near edge. */
 export const FAN_GRID_OFFSET = 40;
+/** How a grid fan lays out its cells: their size, and how many items a row holds before wrapping. */
+export type FanGridLayout = { cell?: FanCell; columns?: number };
 
 /**
  * Centres of a grid fan's items, in their order: one row per group (in the order the groups first
- * appear), its items left to right, so a slot depends only on the item's group and its place in
- * it. The grid starts right of an "after" tab and ends left of a "before" tab, and is centred on
- * the tab's height.
+ * appear), its items left to right, wrapping onto another row after `columns` items, so a slot
+ * depends only on the item's group and its place in it. The grid starts right of an "after" tab
+ * and ends left of a "before" tab, and is centred on the tab's height.
  */
 export function fanGrid(
   restX: number,
   restY: number,
   groups: readonly (string | undefined)[],
   before = false,
+  { cell = FAN_CELL, columns = Number.POSITIVE_INFINITY }: FanGridLayout = {},
 ): Point[] {
-  const rows = [...new Set(groups)];
-  // An item's column is its place among the earlier items of its group.
-  const slots = groups.map((group, i) => ({
-    row: rows.indexOf(group),
-    col: groups.slice(0, i).filter((other) => other === group).length,
-  }));
+  const order = [...new Set(groups)];
+  const sizes = order.map((group) => groups.filter((other) => other === group).length);
+  // Each group starts a row; a group longer than `columns` takes several.
+  const rowsOf = (size: number) => Math.max(1, Math.ceil(size / columns));
+  const firstRow = order.map((_, i) =>
+    sizes.slice(0, i).reduce((rows, size) => rows + rowsOf(size), 0),
+  );
+  const rows = sizes.reduce((total, size) => total + rowsOf(size), 0);
+  // An item's place is its index among the earlier items of its group.
+  const slots = groups.map((group, i) => {
+    const g = order.indexOf(group);
+    const place = groups.slice(0, i).filter((other) => other === group).length;
+    return { row: (firstRow[g] ?? 0) + Math.floor(place / columns), col: place % columns };
+  });
   const cols = Math.max(1, ...slots.map((slot) => slot.col + 1));
-  const width = cols * FAN_CELL.w;
+  const width = cols * cell.w;
   const left = before ? restX - FAN_GRID_OFFSET - width : restX + FAN_GRID_OFFSET;
-  const top = restY - (rows.length * FAN_CELL.h) / 2;
+  const top = restY - (rows * cell.h) / 2;
   return slots.map(({ row, col }) => ({
-    x: left + (col + 0.5) * FAN_CELL.w,
-    y: top + (row + 0.5) * FAN_CELL.h - FAN_CAPTION_H / 2,
+    x: left + (col + 0.5) * cell.w,
+    y: top + (row + 0.5) * cell.h - cell.caption / 2,
   }));
 }
 
 /** The box around a grid fan's cells (each item with its caption). */
-export function gridBounds(centers: readonly Point[]): ScreenBox {
-  const top = (p: Point) => p.y + FAN_CAPTION_H / 2 - FAN_CELL.h / 2;
-  const x = Math.min(...centers.map((p) => p.x)) - FAN_CELL.w / 2;
+export function gridBounds(centers: readonly Point[], cell: FanCell = FAN_CELL): ScreenBox {
+  const top = (p: Point) => p.y + cell.caption / 2 - cell.h / 2;
+  const x = Math.min(...centers.map((p) => p.x)) - cell.w / 2;
   const y = Math.min(...centers.map(top));
   return {
     x,
     y,
-    w: Math.max(...centers.map((p) => p.x)) + FAN_CELL.w / 2 - x,
-    h: Math.max(...centers.map(top)) + FAN_CELL.h - y,
+    w: Math.max(...centers.map((p) => p.x)) + cell.w / 2 - x,
+    h: Math.max(...centers.map(top)) + cell.h - y,
   };
 }
 
@@ -151,9 +170,13 @@ export function gridBounds(centers: readonly Point[]): ScreenBox {
  * Keeps a grid fan on the board as one block: its cells move together, 16px inside the board's
  * edges, so the rows stay rows. A grid larger than the board keeps its top-left corner in.
  */
-export function placeGrid(centers: readonly Point[], board: ScreenBox | undefined): Point[] {
+export function placeGrid(
+  centers: readonly Point[],
+  board: ScreenBox | undefined,
+  cell: FanCell = FAN_CELL,
+): Point[] {
   if (!board || !centers.length) return [...centers];
-  const box = gridBounds(centers);
+  const box = gridBounds(centers, cell);
   const shift = (lo: number, size: number, start: number, length: number) => {
     const from = start + FAN_EDGE_MARGIN;
     const to = start + length - FAN_EDGE_MARGIN;

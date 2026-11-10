@@ -2,6 +2,7 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
+  moduleStatus,
   normalSettingFields,
   type StudioComponentDefinition,
   type StudioComponentField,
@@ -49,6 +50,7 @@ import {
   originChoices,
   ownerChoices,
 } from "./inspector-drafts.ts";
+import { moduleStatusLine } from "./module-status.ts";
 import { PresetAttachment } from "./PresetAttachment.tsx";
 import { StudioIcon } from "./StudioIcon.tsx";
 
@@ -227,9 +229,10 @@ function DraftField({
 }
 
 /**
- * A module's (C3 component's) page, opened from its tile's Modules cards: one page with a header
- * (icon, Name, kind, readiness), Description, Options when it has fields, then Remove module,
- * autosaving like a tile's. Its relationships are the drawn lines, never a list in words.
+ * A module's (C3 component's) page, opened from its tile's Modules cards or its row: one page with
+ * a header (icon, Name, kind, what it generates, readiness), Description, Options when it has
+ * installed, useful settings, then Remove module (`removeModule`, which re-derives the
+ * generation), autosaving like a tile's. Its connections are the drawn lines, never a list.
  */
 export function ComponentForm({
   projectId,
@@ -277,6 +280,7 @@ function ComponentDraftForm({
     [design, index],
   );
   const installed = useGenerationSupport();
+  const status = useMemo(() => moduleStatus(design, id), [design, id]);
   const component = studio?.components?.[index];
   if (!component) return null;
   const definition = studioComponentDefinitions[
@@ -319,7 +323,7 @@ function ComponentDraftForm({
     await formDrafts.flushProject(spec.projectId, true);
     const removed = await commitAction(
       spec.projectId,
-      (latest) => buildStudioCommand(latest, { type: "removeComponent", components: [id] }).ops,
+      (latest) => buildStudioCommand(latest, { type: "removeModule", module: id }).ops,
     );
     setRemoving(false);
     if (removed) onRemoved?.();
@@ -341,6 +345,7 @@ function ComponentDraftForm({
           {name ? draftField(name, "lane-inspector-name") : null}
         </div>
         <p className="lane-inspector-kind">{definition.name}</p>
+        {status ? <ModuleStatusLine status={status} /> : null}
         {findings.length ? (
           <ul className="studio-readiness" aria-label="Readiness">
             {findings.map((item) => (
@@ -371,6 +376,17 @@ function ComponentDraftForm({
         </button>
       </div>
     </form>
+  );
+}
+
+/** What the module generates: Template with its template, or Stub, Custom or Refused and why. */
+function ModuleStatusLine({ status }: { status: NonNullable<ReturnType<typeof moduleStatus>> }) {
+  const { label, detail } = moduleStatusLine(status);
+  return (
+    <p className="lane-module-status" data-status={status.status}>
+      <strong>{label}</strong>
+      {detail ? <span>{detail}</span> : null}
+    </p>
   );
 }
 

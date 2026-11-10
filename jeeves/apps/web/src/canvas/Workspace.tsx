@@ -1,9 +1,11 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Select, Hand, Connect, Fit and Overview | Detailed on the
 // canvas (the mode is view state; the view is a per-project browser preference; the selection
-// carries across both). The selected tile's pull tabs add tiles (`creation.tsx`), connect mode
-// links tiles by dragging (`connect.ts`), the red X on a tile or line removes it
-// (`removal.tsx`); settings and modules are edited in the inspector (`TileInspector.tsx`), an
+// carries across both). The selected tile's pull tabs add tiles and modules (`creation.tsx`; a new
+// one opens with its name focused), connect mode links tiles, and in the Detailed view modules,
+// by dragging (`connect.ts`), the red X on a tile or line removes it (`removal.tsx`; in connect
+// mode a module line's X disconnects that module); settings and modules are edited in the
+// inspector (`TileInspector.tsx`), an
 // action's name in its own (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
 // The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
 import type { BoardHandle, BoardMode } from "@jeeves/board";
@@ -133,10 +135,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   }, [selection.tile, selection.line, selection.module, selectedOwner, selectedOperation]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
   useEffect(() => {
-    // A new tile opens with its Name field focused, ready to rename.
-    if (!focusName || focusName !== selection.tile) return;
+    // A new tile or module opens with its Name field focused, ready to rename.
+    if (!focusName || focusName !== (selection.module ?? selection.tile)) return;
     const field = document.querySelector<HTMLInputElement>(
-      '.studio-inspector :is(input[id$="-element.name"], input[id$="-action.name"])',
+      '.studio-inspector :is(input[id$="-element.name"], input[id$="-action.name"], input[id$="-component.name"])',
     );
     if (!field) return;
     field.focus();
@@ -196,8 +198,12 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       select({ tile });
       setFocusName(tile);
     },
+    onModuleCreated: (tile, module) => {
+      select({ tile, module });
+      setFocusName(module);
+    },
   });
-  const connect = useLaneConnect({ projectId, design: loaded.design });
+  const { disconnectModule, ...connect } = useLaneConnect({ projectId, design: loaded.design });
   const { remove, ...removal } = useLaneRemoval({
     projectId,
     design: loaded.design,
@@ -335,6 +341,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           creation={creation}
           removal={removal}
           connect={connect}
+          onDisconnectModule={disconnectModule}
         />
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button

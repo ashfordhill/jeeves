@@ -14,9 +14,11 @@
 // Modes: in select mode a click selects and the paper pans. In hand mode tiles and lines let the
 // pointer through, so every drag pans and nothing is selected. In connect mode a click still
 // selects, but a drag from a tile draws a new line to another tile (`ConnectDrag.tsx`, with the
-// caller's `canConnect`, `connectRefusal`, `onConnect` and `onConnectRefused`); tiles show no
-// chrome, and a line under the pointer turns the selection colour and shows its red X (on the
-// stretch the selected line's X would take) until the pointer leaves it and its X.
+// caller's `canConnect`, `connectRefusal`, `onConnect` and `onConnectRefused`); a tile's content
+// may mark ends of its own inside it (`data-board-end`, such as a container's rows), dragged from
+// their handles and dropped on where the rules know them. Tiles show no chrome, and a line under
+// the pointer turns the selection colour and shows its red X (on the stretch the selected line's
+// X would take) until the pointer leaves it and its X.
 //
 // Ports: a tile's `ports` are named ports at fixed heights beside its default mid-height ones, and
 // a line's `sourcePort`/`targetPort` name the ones it uses (`elkGraph.ts` has the rules). Each
@@ -147,6 +149,8 @@ export type LineSpec = {
   chip?: Size & { content: ReactNode };
   /** `false`: the selected line shows no X (it goes with a tile). Default true. */
   removable?: boolean;
+  /** The X's accessible name; default "Remove <label>". */
+  removeLabel?: string;
   /** Its band: it shares no run with lines of other bands, except next to a port (`meetAtPorts`). */
   band?: number;
   /** The source's `out` port it leaves from; default: mid-height. */
@@ -422,6 +426,7 @@ function lineEdges(
       ...(l.label ? { label: l.label } : {}),
       ...(l.chip ? { chip: l.chip.content } : {}),
       ...(l.removable === false ? { fixed: true } : {}),
+      ...(l.removeLabel !== undefined && { removeLabel: l.removeLabel }),
       bridges: crossingBridges(
         routes[l.id] ?? [],
         ordered

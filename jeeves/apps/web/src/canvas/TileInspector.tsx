@@ -1,7 +1,7 @@
-// A tile's one-page inspector (`TargetInspector`) with its preserved or preset-bound modules as
-// cards at the bottom. A card opens its module's page in place of the tile's; Back returns to the
-// tile with the Modules section in view. Which module is open is the workspace's selection
-// (`selection.ts`), not state of this rail.
+// A tile's one-page inspector (`TargetInspector`) with its modules as cards at the bottom. A card
+// opens its module's page in place of the tile's (`ComponentForm`: what it generates, its
+// settings, Remove module); Back returns to the tile with the Modules section in view. Which
+// module is open is the workspace's selection (`selection.ts`), not state of this rail.
 import {
   type DesignDocument,
   type StudioComponent,

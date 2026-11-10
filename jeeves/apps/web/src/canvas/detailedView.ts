@@ -20,7 +20,13 @@
 // edge's own ID; with anchors on one side, one line per anchor; on both sides, one per pair, in
 // module order. An anchored line's ID is the edge ID and its module IDs joined by
 // `LINE_SEPARATOR`, which no design ID contains. The user's lines and the entries attach at the
-// tile level. Links between modules of one tile are not drawn.
+// tile level. An anchored line names the module link it shows (`disconnect`: its source module's,
+// else its target module's), which Connect mode's X removes.
+//
+// Rows and in-process links. A row whose kind has slots can take connections (`connects`, a dot
+// at its edge), filled once one of its slots is (`connected`). Of the links between modules of one
+// tile, only the Cache reader's loader is drawn: a short arrow in the container's left gutter
+// (`DetailedLoader`). Every other one stays saved and is neither drawn nor counted.
 //
 // Output order follows `laneLayoutInput`: tiles in node order, lines in edge order (an edge's
 // lines together), so the result is a `LayoutInput` and its lines are `LineSpec`s.
@@ -29,7 +35,10 @@ import {
   type DesignDocument,
   LANE_ACTOR,
   type LaneGraph,
+  moduleLinkSlot,
+  moduleSlots,
   type StudioComponentKind,
+  studioComponentDefinitions,
 } from "@jeeves/spec";
 import { laneLayoutInput } from "./laneLayout.ts";
 
@@ -56,8 +65,26 @@ export type DetailedRow = {
   in?: string;
   /** Its `out` port, when a line leaves this row. */
   out?: string;
+  /** Its kind takes connections (it has slots). */
+  connects: boolean;
+  /** At least one of its slots is connected. */
+  connected: boolean;
 };
-export type DetailedContainer = { tile: string; rows: readonly DetailedRow[] };
+/** The Cache reader's loader inside one container: an arrow from one row to another. */
+export type DetailedLoader = {
+  /** The module link. */
+  link: string;
+  /** The Cache reader. */
+  from: string;
+  /** The Data access it loads from. */
+  to: string;
+  label: string;
+};
+export type DetailedContainer = {
+  tile: string;
+  rows: readonly DetailedRow[];
+  loaders: readonly DetailedLoader[];
+};
 /**
  * A drawn line. `connection` is its canonical lane edge (a connection, an entry or the user's
  * line), whose `dashed` and band it copies; `sourceModule`/`targetModule` are its anchors. It
@@ -72,6 +99,8 @@ export type DetailedLine = Omit<LayoutLine, "chip"> & {
   removable?: false;
   sourceModule?: string;
   targetModule?: string;
+  /** The module link this line shows, and the words for removing it. */
+  disconnect?: { link: string; label: string };
 };
 export type DetailedView = {
   /** One per lane node, in node order: containers resized and with ports, the rest as before. */
@@ -117,18 +146,31 @@ export function detailedView(
       kind: item.settings.kind,
       index: own.length,
       y: rowY(own.length),
+      connects: studioComponentDefinitions[item.settings.kind].slots.length > 0,
+      connected: moduleSlots(design, item.id).some((slot) => slot.links.length > 0),
     };
     own.push(row);
     hosted.set(item.host, own);
     rows.set(item.id, row);
   }
 
-  // Each edge's anchors: the modules that reach a tile through it.
+  // Each edge's anchors: the modules that reach a tile through it, and each one's link there.
+  // The Cache reader's loader is the one link between modules of a tile that is drawn.
   const edges = new Map(graph.edges.map((edge) => [edge.id, edge]));
   const anchors = new Map<string, { source: string[]; target: string[] }>();
+  const linkOf = new Map<string, string>();
+  const loaders = new Map<string, DetailedLoader[]>();
   for (const link of studio?.componentConnections ?? []) {
     const from = modules.get(link.from);
-    if (!from || link.to.kind === "component") continue;
+    if (!from) continue;
+    if (link.to.kind === "component") {
+      const to = modules.get(link.to.id);
+      if (!to || to.host !== from.host || !moduleLinkSlot(design, link)?.module) continue;
+      const own = loaders.get(from.host) ?? [];
+      own.push({ link: link.id, from: from.id, to: to.id, label: `${from.name} to ${to.name}` });
+      loaders.set(from.host, own);
+      continue;
+    }
     const edge = edges.get(link.to.via);
     if (!edge) continue;
     const side =
@@ -141,6 +183,8 @@ export function detailedView(
     const ends = anchors.get(edge.id) ?? { source: [], target: [] };
     if (!ends[side].includes(from.id)) ends[side].push(from.id);
     anchors.set(edge.id, ends);
+    const key = `${edge.id}${LINE_SEPARATOR}${from.id}`;
+    if (!linkOf.has(key)) linkOf.set(key, link.id);
   }
 
   const input = laneLayoutInput(graph);
@@ -171,6 +215,15 @@ export function detailedView(
         s !== undefined ? rowPort(s, "out") : hosted.has(edge.source) ? HEADER_OUT : undefined;
       const targetPort =
         t !== undefined ? rowPort(t, "in") : hosted.has(edge.target) ? HEADER_IN : undefined;
+      // The module link this line shows: its source module's to the target tile, else its target
+      // module's to the source tile.
+      const [module, tile] = s !== undefined ? [s, edge.target] : [t, edge.source];
+      const link =
+        module === undefined ? undefined : linkOf.get(`${edge.id}${LINE_SEPARATOR}${module}`);
+      const disconnect =
+        link === undefined || module === undefined
+          ? undefined
+          : { link, label: `Disconnect ${modules.get(module)?.name} from ${name(tile)}` };
       lines.push({
         id,
         source: edge.source,
@@ -184,6 +237,7 @@ export function detailedView(
         ...(targetPort !== undefined && { targetPort }),
         ...(s !== undefined && { sourceModule: s }),
         ...(t !== undefined && { targetModule: t }),
+        ...(disconnect && { disconnect }),
         ...(edge.source === LANE_ACTOR && { removable: false as const }),
       });
       connectionOf.set(id, edge.id);
@@ -201,7 +255,7 @@ export function detailedView(
   const layoutTiles = input.tiles.map((tile): LayoutTile => {
     const own = hosted.get(tile.id);
     if (!own) return tile;
-    containers.set(tile.id, { tile: tile.id, rows: own });
+    containers.set(tile.id, { tile: tile.id, rows: own, loaders: loaders.get(tile.id) ?? [] });
     const header = (side: TilePort["side"], id: string): TilePort[] =>
       lines.some((line) =>
         side === "in"

@@ -1379,3 +1379,18 @@ under the items matters: without it the translucent items let the tiles below sh
 the captions blurred into the diagram. In a narrow canvas the panel moves aside as one block and
 may cover its own tile; rows stay rows and every item stays reachable, which matters more than
 keeping the source in view. Removing insert-before also freed the tile's left side for modules.
+
+## 2026-11-10 MA06: say what a choice will become where it is made
+
+The module fan could have captioned each kind with its catalog label (a Cache reader "leads a
+template"), but in a Worker that template is not allowed and the module could only ever be a
+stub. A caption is a promise about this tile, so the fan works it out per host: Template, Part of
+a template or Stub, a row each, with the one-line purpose in the tip. The module's page then says
+what it generates now (the template's name, or Stub with what is missing) in one short line, so
+an unconnected module reads as a normal, unfinished state rather than an error. Connections start
+at the thing being connected: a module's dot, not its whole row, so a drag from the rest of the
+row still links the tile and both gestures keep working; a module that can't connect simply has
+no dot. The provisional line leaves the dot the hand is on. Only one link between modules of a
+tile is drawn, the Cache reader's loader, as a short gutter arrow: one visible link that decides
+generation beats several hidden ones that might.
+
