@@ -1,6 +1,6 @@
 // The workspace's selection: the board's tile or line, plus the module open in the inspector. Lines
 // are canonical relationships; the Detailed view maps its drawn lines to and from them, and marks
-// an open module's row, its drawn lines and its in-process partners' rows.
+// an open module's row and its own drawn lines.
 import type { BoardSelection } from "@jeeves/board";
 import type { DesignDocument, LaneGraph } from "@jeeves/spec";
 import type { DetailedView } from "./detailedView.ts";
@@ -56,8 +56,8 @@ export type DrawnSelection = {
    * `selectedTileLines`): not while one of its modules is open, whose lines are `highlighted`.
    */
   selectedTileLines: boolean;
-  /** The open module's row, and the rows of the modules of its tile it links with. */
-  rows?: { open: string; partners: readonly string[] };
+  /** The open module, whose row is marked. */
+  open?: string;
   /**
    * The named ports (a row's `in`/`out`) at the ends of the drawn lines in the selection colour,
    * whatever made them blue, so a row's port mark matches its line.
@@ -71,12 +71,12 @@ export type DrawnSelection = {
  * board's selected line (the one last clicked when it is one of them, else the first) and the
  * rest are highlighted in the selection colour. A tile stays the tile. With one of its modules
  * open, the host stays selected (its chrome too), but only the module's own drawn lines take the
- * selection colour, its row is marked, and so are its in-process partners' rows (`partners`).
- * Whatever makes a drawn line blue (its relationship, its tile, the other end's tile or its open
- * module), the named ports at its ends are `lit`, so the rows' port marks turn blue with it.
+ * selection colour and only its row is marked. Whatever makes a drawn line blue (its
+ * relationship, its tile, the other end's tile or its open module), the named ports at its ends
+ * are `lit`, so the rows' port marks turn blue with it.
  */
 export function drawnSelection(
-  view: Pick<DetailedView, "lines" | "linesOf" | "rowOf" | "partners">,
+  view: Pick<DetailedView, "lines" | "linesOf" | "rowOf">,
   selection: WorkspaceSelection,
   clicked?: string,
 ): DrawnSelection {
@@ -114,7 +114,7 @@ export function drawnSelection(
     selected: { tile },
     highlighted: view.lines.filter(own).map((line) => line.id),
     selectedTileLines: false,
-    rows: { open: module, partners: view.partners(module) },
+    open: module,
     lit: lit(own),
   };
 }

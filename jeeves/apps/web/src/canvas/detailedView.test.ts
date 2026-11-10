@@ -219,7 +219,7 @@ describe("detailed view projection", () => {
     ]);
   });
 
-  it("attaches entries and unused links at the header, pairs both anchors, lists partners", () => {
+  it("attaches entries and unused links at the header and pairs both anchors", () => {
     const design = studioArchitectureExample("studio-tinyurl").design;
     const studio = design.architecture?.studio;
     const template = design.connections.find((c) => c.id === "redirect-db");
@@ -282,18 +282,12 @@ describe("detailed view projection", () => {
     expect(view.rowOf("shorten-data")).toMatchObject({ index: 0, y: 64 });
     expect(view.rowOf("shorten-data")?.in).toBeUndefined();
     expect(view.rowOf("shorten-data")?.out).toBeUndefined();
-    // The user's line keeps no X; in-process links are partners, not lines.
+    // The user's line keeps no X; in-process links are not drawn.
     expect(line("@actor-download")).toMatchObject({
       removable: false,
       connection: "@actor-download",
     });
     expect(view.lines.some((l) => l.id.includes("responder"))).toBe(false);
-    expect(view.partners("redirect-responder")).toEqual([
-      "redirect-cache-reader",
-      "redirect-click-publisher",
-    ]);
-    expect(view.partners("redirect-cache-reader")).toEqual(["redirect-data", "redirect-responder"]);
-    expect(view.partners("redirect-callee")).toEqual([]);
   });
 });
 

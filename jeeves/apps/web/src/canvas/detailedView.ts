@@ -20,7 +20,7 @@
 // edge's own ID; with anchors on one side, one line per anchor; on both sides, one per pair, in
 // module order. An anchored line's ID is the edge ID and its module IDs joined by
 // `LINE_SEPARATOR`, which no design ID contains. The user's lines and the entries attach at the
-// tile level. Links between modules of one tile are not drawn; `partners` lists them.
+// tile level. Links between modules of one tile are not drawn.
 //
 // Output order follows `laneLayoutInput`: tiles in node order, lines in edge order (an edge's
 // lines together), so the result is a `LayoutInput` and its lines are `LineSpec`s.
@@ -84,8 +84,6 @@ export type DetailedView = {
   /** A lane edge's drawn lines, in order. */
   linesOf(connection: string): readonly string[];
   rowOf(module: string): DetailedRow | undefined;
-  /** The modules of the same tile this module links to or is linked from, in module order. */
-  partners(module: string): readonly string[];
 };
 
 const containerHeight = (rows: number) =>
@@ -125,26 +123,12 @@ export function detailedView(
     rows.set(item.id, row);
   }
 
-  // Each edge's anchors, and each module's partners in its own tile.
+  // Each edge's anchors: the modules that reach a tile through it.
   const edges = new Map(graph.edges.map((edge) => [edge.id, edge]));
   const anchors = new Map<string, { source: string[]; target: string[] }>();
-  const linked = new Map<string, Set<string>>();
-  const partner = (a: string, b: string) => {
-    const set = linked.get(a) ?? new Set<string>();
-    set.add(b);
-    linked.set(a, set);
-  };
   for (const link of studio?.componentConnections ?? []) {
     const from = modules.get(link.from);
-    if (!from) continue;
-    if (link.to.kind === "component") {
-      const to = modules.get(link.to.id);
-      if (to && to.host === from.host && to.id !== from.id) {
-        partner(from.id, to.id);
-        partner(to.id, from.id);
-      }
-      continue;
-    }
+    if (!from || link.to.kind === "component") continue;
     const edge = edges.get(link.to.via);
     if (!edge) continue;
     const side =
@@ -249,6 +233,5 @@ export function detailedView(
     connectionOf: (line) => connectionOf.get(line),
     linesOf: (connection) => linesOf.get(connection) ?? [],
     rowOf: (module) => rows.get(module),
-    partners: (module) => [...(linked.get(module) ?? [])].sort(byOrder),
   };
 }

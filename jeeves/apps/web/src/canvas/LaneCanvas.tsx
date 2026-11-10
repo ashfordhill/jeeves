@@ -18,9 +18,9 @@
 // A container's rows are its modules (`ModuleRows`): clicking one opens that module in the
 // inspector (`onOpenModule`). While a module is open its host stays selected, with its pull tabs
 // and X, but only the module's own drawn lines take the selection colour (the board's
-// `selectedTileLines` and `highlighted`); its row is marked, and its in-process partners' rows
-// more lightly. A row's port mark turns blue with its line, whatever selected it. In the
-// Overview an open module only keeps its host selected.
+// `selectedTileLines` and `highlighted`), and only its row is marked. A row's port mark turns
+// blue with its line, whatever selected it. In the Overview an open module only keeps its host
+// selected.
 import {
   Board,
   type BoardHandle,
@@ -186,8 +186,7 @@ export function LaneCanvas({
   );
   const rows = useMemo(
     () => ({
-      ...(drawn?.rows && { open: drawn.rows.open }),
-      partners: drawn?.rows?.partners ?? [],
+      ...(drawn?.open !== undefined && { open: drawn.open }),
       lit: drawn?.lit ?? [],
       onOpen: onOpenModule,
     }),

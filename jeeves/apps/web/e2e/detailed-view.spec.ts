@@ -4,7 +4,7 @@
  * browser preference: toggling changes no design, revision or blueprint. Drawn lines map to their
  * canonical relationships for the inspector, chat and removal, and the Overview, including its
  * export, stays exactly what it was. A row is its module (UI08): clicking it opens the module in
- * the inspector, and an open module marks its row, only its own lines and its partners' rows.
+ * the inspector, and an open module marks only its own row and its own lines.
  */
 import type { Page } from "@playwright/test";
 import { exportPng } from "./export.ts";
@@ -238,7 +238,7 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
   }
 });
 
-/** The marked rows of the canvas's containers: module → "open" or "partner". */
+/** The marked rows of the canvas's containers: module → "open". */
 const marks = (page: Page) =>
   page
     .locator(".board .lane-container-row[data-mark]")
@@ -257,7 +257,7 @@ const TRANSCODER_LINES = [
   ...WRITES,
 ].sort();
 
-test("a module row opens its module and marks its row, its own lines and its partners", async ({
+test("a module row opens its module and marks only its own row and its own lines", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -276,19 +276,15 @@ test("a module row opens its module and marks its row, its own lines and its par
     expect(await marks(page)).toEqual({});
 
     // A row opens its module: the host is selected, with its X, but only the Packager's own line
-    // takes the selection colour (not the Thumbnailer's line of the same relationship), its row
-    // is marked and so are the rows of the modules it links with inside the Transcoder.
+    // takes the selection colour (not the Thumbnailer's line of the same relationship) and only
+    // its row is marked, not those of the modules it links with inside the Transcoder.
     await row(page, "Packager").click();
     await expect(back).toBeVisible();
     await expect(name).toHaveValue("Packager");
     await expect(transcoder).toHaveClass(/selected/);
     await expect(transcoder.getByRole("button", { name: "Remove Transcoder" })).toBeVisible();
     await expect.poll(() => highlighted(page)).toEqual([WRITES[0]]);
-    expect(await marks(page)).toEqual({
-      "transcoder-packager": "open",
-      "transcoder-encoder": "partner",
-      "transcoder-done": "partner",
-    });
+    expect(await marks(page)).toEqual({ "transcoder-packager": "open" });
     await expect(row(page, "Packager")).toHaveAttribute("aria-current", "true");
     await page.getByLabel("Message", { exact: true }).fill("What does this module do?");
     const sent = page.waitForRequest(
@@ -303,18 +299,13 @@ test("a module row opens its module and marks its row, its own lines and its par
       )
       .toBe("done");
 
-    // Another row of the same tile moves the marks.
+    // Another row of the same tile moves the mark.
     await row(page, "Segmenter and encoder").click();
     await expect(name).toHaveValue("Segmenter and encoder");
     await expect.poll(() => highlighted(page)).toEqual(["transcoder-read/transcoder-encoder"]);
-    expect(await marks(page)).toEqual({
-      "transcoder-consumer": "partner",
-      "transcoder-encoder": "open",
-      "transcoder-packager": "partner",
-      "transcoder-thumbnails": "partner",
-    });
+    expect(await marks(page)).toEqual({ "transcoder-encoder": "open" });
 
-    // Back clears the marks; the tile is selected again with all of its lines.
+    // Back clears the mark; the tile is selected again with all of its lines.
     await back.click();
     await expect(back).toHaveCount(0);
     await expect.poll(() => marks(page)).toEqual({});
@@ -324,11 +315,7 @@ test("a module row opens its module and marks its row, its own lines and its par
     // where the Overview keeps only its host selected, with all of its lines.
     await inspector.getByRole("button", { name: "Open Thumbnailer", exact: true }).click();
     await expect.poll(() => highlighted(page)).toEqual([WRITES[1]]);
-    expect(await marks(page)).toEqual({
-      "transcoder-thumbnails": "open",
-      "transcoder-encoder": "partner",
-      "transcoder-done": "partner",
-    });
+    expect(await marks(page)).toEqual({ "transcoder-thumbnails": "open" });
     await show(page, "Overview");
     await expect(back).toBeVisible();
     await expect(transcoder).toHaveClass(/selected/);
@@ -338,11 +325,7 @@ test("a module row opens its module and marks its row, its own lines and its par
     await show(page, "Detailed");
     await expect(back).toBeVisible();
     await expect.poll(() => highlighted(page)).toEqual([WRITES[1]]);
-    expect(await marks(page)).toEqual({
-      "transcoder-thumbnails": "open",
-      "transcoder-encoder": "partner",
-      "transcoder-done": "partner",
-    });
+    expect(await marks(page)).toEqual({ "transcoder-thumbnails": "open" });
 
     // Another tile closes the module, and so does empty paper.
     await tile(page, "Completion events").click();
@@ -354,10 +337,7 @@ test("a module row opens its module and marks its row, its own lines and its par
       inspector.getByRole("button", { name: "Back to Completion handler", exact: true }),
     ).toBeVisible();
     await expect.poll(() => highlighted(page)).toEqual(["handler-metadata/handler-writer"]);
-    expect(await marks(page)).toEqual({
-      "handler-consumer": "partner",
-      "handler-writer": "open",
-    });
+    expect(await marks(page)).toEqual({ "handler-writer": "open" });
     await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
     await expect(inspector.getByRole("button", { name: /^Back to/ })).toHaveCount(0);
     expect(await marks(page)).toEqual({});

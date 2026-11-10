@@ -416,7 +416,7 @@ export const studioComponentDefinitions: {
   }),
   "cache-reader": component("cache-reader", {
     name: "Cache reader",
-    description: "Serves reads from cache tiers before the source of truth.",
+    description: "Reads from a cache before the database.",
     thirdParty: ["Redis", "Memcached"],
     browserHost: false,
     targets: ["cache"],
@@ -495,7 +495,7 @@ export const studioComponentDefinitions: {
   }),
   "data-access": component("data-access", {
     name: "Data access",
-    description: "Reads and writes one database through a connection pool.",
+    description: "Reads and writes one database.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
     targets: ["database"],
@@ -521,7 +521,7 @@ export const studioComponentDefinitions: {
   }),
   "external-call": component("external-call", {
     name: "External call",
-    description: "Calls another service or external system with resilience settings.",
+    description: "Calls another service or external API.",
     thirdParty: ["Any API"],
     browserHost: true,
     targets: ["external-api", "application", "identity"],
@@ -537,7 +537,7 @@ export const studioComponentDefinitions: {
   }),
   custom: component("custom", {
     name: "Custom",
-    description: "Project-specific logic; generation later emits an interface and stub.",
+    description: "Your own logic, generated as a stub.",
     thirdParty: [],
     browserHost: true,
     targets: [

@@ -1,6 +1,6 @@
 // The open module is view state that lives only while its host tile and itself exist, and the
-// Detailed view's drawn lines map to and from canonical relationships; an open module marks its
-// own drawn lines, its row and its in-process partners' rows.
+// Detailed view's drawn lines map to and from canonical relationships; an open module marks only
+// its own drawn lines and its own row.
 import {
   applyOperations,
   buildStudioCommand,
@@ -128,22 +128,23 @@ describe("Detailed view selection", () => {
 });
 
 describe("an open module in the Detailed view", () => {
-  it("keeps its host selected but marks only its own drawn lines, its row and its partners", () => {
+  it("keeps its host selected but marks only its own drawn lines and its own row", () => {
     // The Packager writes Transcoded videos; the Thumbnailer's line of that relationship is not
     // the Packager's, and neither are the Transcoder's other lines.
     expect(drawnSelection(view, { tile: "transcoder", module: "transcoder-packager" })).toEqual({
       selected: { tile: "transcoder" },
       highlighted: ["transcoder-write/transcoder-packager"],
       selectedTileLines: false,
-      rows: { open: "transcoder-packager", partners: ["transcoder-encoder", "transcoder-done"] },
+      open: "transcoder-packager",
       lit: ["transcoder-packager:out"],
     });
-    // A module drawn with no line of its own: its host's lines stay plain, its partners marked.
+    // A module drawn with no line of its own: its host's lines stay plain, and the modules it
+    // links with in its tile are not marked.
     expect(drawnSelection(view, { tile: "view-counter", module: "counter-sum" })).toEqual({
       selected: { tile: "view-counter" },
       highlighted: [],
       selectedTileLines: false,
-      rows: { open: "counter-sum", partners: ["counter-consumer", "counter-writer"] },
+      open: "counter-sum",
       lit: [],
     });
     // Another tile's module is not open there; the tile shows as a plain selected tile.
@@ -163,7 +164,7 @@ describe("an open module in the Detailed view", () => {
       "handler-publication/handler-publications",
     ]);
     expect(open("handler-writer").highlighted).toEqual(["handler-metadata/handler-writer"]);
-    expect(open("handler-writer").rows).toEqual({ open: "handler-writer", partners: [] });
+    expect(open("handler-writer").open).toBe("handler-writer");
     expect(open("handler-writer").lit).toEqual(["handler-writer:out"]);
   });
 

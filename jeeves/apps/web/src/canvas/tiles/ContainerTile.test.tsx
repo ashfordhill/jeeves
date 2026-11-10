@@ -33,16 +33,14 @@ afterEach(cleanup);
 describe("ContainerTile", () => {
   it("marks each row's ports by its drawn lines, and lights the ports of blue lines", () => {
     const own = render(
-      <ModuleRows
-        value={{ open: "writer", partners: ["relay"], lit: ["writer:out"], onOpen: () => {} }}
-      >
+      <ModuleRows value={{ open: "writer", lit: ["writer:out"], onOpen: () => {} }}>
         <ContainerTile kind="worker" name="Worker" rows={rows} />
       </ModuleRows>,
     );
     expect(marks(own.container)).toEqual([
       ["consumer", "in", null, null],
       ["writer", "out", "open", "out"],
-      ["relay", "in out", "partner", null],
+      ["relay", "in out", null, null],
       ["helper", null, null, null],
     ]);
     cleanup();
@@ -52,7 +50,6 @@ describe("ContainerTile", () => {
     const elsewhere = render(
       <ModuleRows
         value={{
-          partners: [],
           lit: ["relay:out", "consumer:in", "helper:out", "other:in"],
           onOpen: () => {},
         }}
@@ -68,7 +65,7 @@ describe("ContainerTile", () => {
     ]);
     cleanup();
 
-    // An export (no live rows) has port marks, but nothing open, partnered or lit.
+    // An export (no live rows) has port marks, but nothing open or lit.
     const exported = render(<ContainerTile kind="worker" name="Worker" rows={rows} />);
     expect(marks(exported.container).map(([, ports, mark, lit]) => [ports, mark, lit])).toEqual([
       ["in", null, null],

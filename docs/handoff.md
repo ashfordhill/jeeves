@@ -7307,3 +7307,77 @@ The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode 
 `e2e-docker.sh` are untouched and unstaged.
 
 Next: owner approval of the contract before MA05. MA02–MA04 may run meanwhile.
+
+## 2026-11-09 — MA02: drop partner marks and tighten kind descriptions
+
+Per the [module authoring plan](plans/module-authoring/units.md) (Owner decisions 8 and 9).
+
+- **Partner marks removed.** Opening a module marks only its own row (`data-mark="open"`) and its
+  own drawn lines. Gone: `DetailedView.partners` and its in-tile link scan (`detailedView.ts`),
+  `DrawnSelection.rows` (now `open?: string`, `selection.ts`), `ModuleRowsState.partners` and the
+  `"partner"` mark (`ContainerTile.tsx`, `LaneCanvas.tsx`), and both `data-mark="partner"` CSS
+  rules. Component-to-component links are still skipped by the projection and stay saved.
+- **`partners` data not kept.** The MA01 draft contract does not need it. Its one in-process link,
+  the Cache reader's loader (§4, question 3), is a directed, slot-specific gutter arrow that MA06
+  will project from the saved component-target link. `partners` was undirected and covered every
+  in-tile link, which §4 says must not be drawn or decide generation. The contract itself says
+  "MA02 may drop `partners`".
+- **Kind descriptions** (`studio-components.ts`): Cache reader "Reads from a cache before the
+  database.", Data access "Reads and writes one database.", External call "Calls another service
+  or external API.", Custom "Your own logic, generated as a stub." No test, fixture, snapshot,
+  chat prompt or doc quoted the old text. They reach only chat's catalog summary (`tools.ts:284`),
+  not the blueprint (which carries a module's own `description` as `purpose`) and not the UI.
+- **Docs:** `studio.md` (Detailed view, Limits), a playbook lesson, a HUMAN_FEEDBACK resolution
+  update and the plan's status line. `CATALOG.md` and `studio-settings.md` quote no kind
+  descriptions, so they are unchanged.
+
+**Frozen v2 export (interim rule, contract question 1).**
+
+- Before editing, a fresh `export:v2` of `field-projects/youtube/v2/inputs/design.json` matched
+  all 72 files of `generic-export.tar.gz`.
+- After the edit, 70 payload files are byte-identical. `.jeeves/manifest.json` and
+  `.jeeves/report.json` differ only in source-inventory values for
+  `jeeves/packages/spec/src/studio-components.ts` (21,728 → 21,623 bytes, its sha256), plus values
+  derived from them:
+  - the emitters' and implementations' `sourceSha256`;
+  - `registry.sha256`, which hashes the sources plus unchanged emitter descriptors;
+  - the manifest's sha256 of `report.json`.
+
+  Nothing else in the export changed. I edited nothing under `field-projects/youtube/v2/`.
+
+**Checks.**
+
+- `pnpm check` exited 0: **497 tests in 73 files**. Lint showed only the existing info in
+  `local-v2/assets/scripts/local.mjs`. The test count is unchanged; the partner assertions were
+  rewritten, not added.
+- **47 native E2Es passed (1.9m)**, including the updated `detailed-view.spec.ts`. Every mark
+  check there now expects only `{ <module>: "open" }`.
+- The web build passed, with the existing chunk-size advisory.
+
+**Mouse check.** I ran scripted Chromium on my own Vite (port 4320) against the owner's API, at
+1440×900 and 1280×800, with my own projects. All six were deleted (204), and the owner's six
+project revisions are unchanged.
+
+- TinyURL foundation: 7 tiles and 7 lines.
+- TinyURL extended: 11 tiles, 12 lines and 4 containers. Its Cache reader, which links in-process
+  with two modules, marked only itself and `redirect-cache/redirect-cache-reader`.
+- YouTube Detailed: 21 tiles, 26 lines and 7 containers.
+  - Segmenter and encoder: only its row was marked, with `aria-current`, plus only
+    `transcoder-read/transcoder-encoder` and its own port mark.
+  - Packager: the mark moved to its row alone.
+  - Back cleared the mark and lit the Transcoder's 5 lines.
+  - The design was unchanged.
+- The YouTube Overview PNG at 1440×900 was `472a4c8c…dc9f`, unchanged.
+- There were no page errors and no console errors or warnings.
+
+Evidence: [ma02](plans/module-authoring/evidence/ma02/) has Segmenter and encoder open, at 1440
+zoomed in and at 1280 at the fit.
+
+**For MA03.**
+
+- `DrawnSelection` now has `open` where it had `rows`, and `ModuleRows` takes `{ open?, lit,
+  onOpen }`.
+- The contract's §4 still cites `canvas/selection.ts:60, 117` for `partners`. I left that draft
+  untouched.
+- The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+  `e2e-docker.sh` are untouched and unstaged.

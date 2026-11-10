@@ -103,7 +103,7 @@ its Overview size and face.
   direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
   twice (YouTube's Packager and Thumbnailer both write Transcoded videos: 25 relationships, 26
   lines). A relationship no module uses, an entry and the user's line attach at the header.
-  Links between modules of one tile are not drawn; an open module marks them instead (below).
+  Links between modules of one tile are not drawn.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
   the clicked one thicker with the X. A relationship selected elsewhere (diagnostics, chat, Undo)
@@ -120,10 +120,9 @@ its Overview size and face.
   inspector, as its card does. A row and a card are the same module: while one is open, from
   either, its row is filled in the selection colour and ringed, its name bold, and only the lines
   drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
-  another module's line of the same relationship); the rows of the modules it links with inside
-  the tile get a blue border and a light blue tint. The tile keeps its pull tabs and X. Back,
-  another tile or line, or empty paper clears the marks; the Overview keeps only the tile
-  selected, with all its lines blue.
+  another module's line of the same relationship). No other row is marked. The tile keeps its pull
+  tabs and X. Back, another tile or line, or empty paper clears the marks; the Overview keeps only
+  the tile selected, with all its lines blue.
   In Hand mode rows let the pointer through, so a drag pans and nothing opens. A row reached by
   keyboard shows a focus outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
@@ -1061,10 +1060,10 @@ and all twenty components, with nothing omitted and no findings.
   writes" until renamed, though it reads.
 - The inspector neither lists nor edits module links, and the Detailed view draws only those to
   other tiles: a module's links are preserved, preset-bound or made through chat (including a link
-  between two modules of one tile, "Supplies code", which no view draws; an open module's row
-  marks its partners). A selected container's pull tabs sit just outside its frame, over the first
-  36px of the lines leaving its middle rows, and its red X sits on the header, over the middle of
-  a long name ("Video lifecycle worker").
+  between two modules of one tile, "Supplies code", which no view draws or marks). A selected
+  container's pull tabs sit just outside its frame, over the first 36px of the lines leaving its
+  middle rows, and its red X sits on the header, over the middle of a long name ("Video lifecycle
+  worker").
 - In Detailed, two rows of one container that write one store come back to it as separate lines
   and can cross each other (YouTube's Packager and Thumbnailer into Transcoded videos; twice in the
   v2 field design). A row's line to a store upstream of its tile loops round the container (v2's

@@ -118,7 +118,7 @@
    centred on its port's height (positions come from the projection). A row is a framed box and a
    button that opens its module; a row with a drawn line has a port mark, a stub from the frame to
    its box on that side, in the line's colour. The open module's row is filled in the selection
-   colour and ringed, its in-process partners' rows get a blue border and a light tint. */
+   colour and ringed. */
 .lane-container {
   /* The row box's inset from the frame and its border; the port marks span the inset. */
   --row-inset: 10px;
@@ -238,8 +238,8 @@
   font-weight: 700;
 }
 
-/* The open module: filled and ringed in the selection colour. Its partners: a blue border and a
-   light tint. The dark paper needs a stronger fill for the open row to read as filled. */
+/* The open module: filled and ringed in the selection colour. The dark paper needs a stronger fill
+   for the open row to read as filled. */
 .lane-container-row[data-mark="open"] {
   --mark-fill: 32%;
   border-color: var(--board-select);
@@ -251,18 +251,8 @@
   font-weight: 800;
 }
 
-.lane-container-row[data-mark="partner"] {
-  --mark-fill: 10%;
-  border-color: var(--board-select);
-  background: color-mix(in srgb, var(--board-select) var(--mark-fill), var(--board-paper));
-  box-shadow: inset 0 0 0 1px var(--board-select);
-}
-
 :root[data-theme="dark"] .lane-container-row[data-mark="open"] {
   --mark-fill: 55%;
-}
-:root[data-theme="dark"] .lane-container-row[data-mark="partner"] {
-  --mark-fill: 18%;
 }
 
 /* A selected container's pull tabs sit just outside its frame, beside the rows, not over them. */

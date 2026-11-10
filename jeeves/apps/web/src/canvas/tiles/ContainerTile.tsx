@@ -7,11 +7,10 @@
 // design warning is a mark in the header's corner, as on `Tile`.
 //
 // Each row is a button ("Open <module> in <host>") that opens its module in the inspector, and
-// marks itself while that module is open (`data-mark="open"`) or links with the open one in this
-// tile (`"partner"`). A port mark takes the selection colour whenever a line at that port does
-// (`data-lit`), whatever selected it. These come from `ModuleRows`, which only the live canvas
-// provides: a diagram export renders the same face in its own root, with no marks, and its rows
-// do nothing. The click stops at the row, as the board's own tile buttons do, so it opens the
+// marks itself while that module is open (`data-mark="open"`); no other row is marked. A port mark
+// takes the selection colour whenever a line at that port does (`data-lit`), whatever selected it.
+// These come from `ModuleRows`, which only the live canvas provides: a diagram export renders the
+// same face in its own root, with no marks, and its rows do nothing. The click stops at the row, as the board's own tile buttons do, so it opens the
 // module instead of selecting the plain tile. In Hand mode the board lets the pointer through the
 // tile and its rows.
 import { type StudioKind, studioComponentVisuals, studioDefinitions } from "@jeeves/spec";
@@ -27,12 +26,11 @@ const FRAME = 3;
 const ROW_BOX = 26;
 
 /**
- * The live canvas's module rows: the open module, its in-process partners, the ports whose lines
- * are in the selection colour (`DrawnSelection.lit`), and how to open one.
+ * The live canvas's module rows: the open module, the ports whose lines are in the selection
+ * colour (`DrawnSelection.lit`), and how to open one.
  */
 export type ModuleRowsState = {
   open?: string;
-  partners: readonly string[];
   lit: readonly string[];
   onOpen: (host: string, module: string) => void;
 };
@@ -65,7 +63,6 @@ export function ContainerTile({
         {rows.map((row) => {
           const module = studioComponentVisuals[row.kind];
           const open = live?.open === row.module;
-          const mark = open ? "open" : live?.partners.includes(row.module) ? "partner" : undefined;
           const ports = [row.in && "in", row.out && "out"].filter(Boolean).join(" ");
           const lit = [
             row.in && live?.lit.includes(row.in) && "in",
@@ -79,7 +76,7 @@ export function ContainerTile({
               className="lane-container-row"
               data-module={row.module}
               data-family={module.color}
-              data-mark={mark}
+              data-mark={open ? "open" : undefined}
               data-ports={ports || undefined}
               data-lit={lit || undefined}
               title={row.name}

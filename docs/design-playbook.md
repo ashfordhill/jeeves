@@ -1340,3 +1340,13 @@ switch and wrapped onto two rows at common window sizes: centred with `left: 50%
 only half the canvas. Give a centred floating bar its own width (`max-content`). The review also
 found that a scripted click can read a line while the layout is still animating after `ready`.
 Positions are final only once they stop moving. [Review](plans/ui-overhaul/review.md).
+
+## 2026-11-09 MA02: a mark shows only what was opened
+
+UI08 gave the rows an open module links with inside its tile (its in-process partners) a lighter
+border. The owner found that confusing: other rows lit up for a reason the canvas never shows,
+since links inside a tile have no arrows. Opening a module now marks only its own row and its own
+drawn lines. A relationship with no drawn form should not appear as a highlight; if one matters,
+draw it first (MA06's Cache reader loader arrow) and let it take the selection with its line. Kind
+descriptions follow the same restraint: one short sentence of purpose ("Reads and writes one
+database."), with no mechanics such as pools, tiers or resilience settings.
