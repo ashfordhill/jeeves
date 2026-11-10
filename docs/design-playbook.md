@@ -1409,3 +1409,17 @@ the effort is typing (74 of 262 gestures are names, descriptions and values), so
 new box needs, the faster a design is rebuilt. An acceptance test that rebuilds a real design end
 to end, then diffs it by name against the original, is worth its length: it caught the fan defect
 and proves equivalence where per-feature tests can only sample.
+
+## 2026-11-10 MA10: a reason says what is, in the reader's words
+
+A status reason is read as advice. "Needs Multipart uploads in its tile." on a View publisher in
+a watch service told the reader to add an upload module that had nothing to do with it; the
+truth was only that no template there uses it, which is a normal state for a stub. Say what is
+("No template in Watch API uses it."), and say "needs" only for what the module itself is
+missing. A refusal or block should name the thing and the value the reader can find on the
+canvas ("The link from Watch API to Metadata database uses Service identity, which its template
+can't use"), and say when there is more than one, rather than pass on a checker's sentence
+about presets and declarations. And every route that changes a derived state must re-derive it:
+two older commands chat could still send removed a module without re-deriving, leaving a
+template selected that the canvas could never produce. Where a command can't derive, normal
+authoring should refuse it and name the one that does.

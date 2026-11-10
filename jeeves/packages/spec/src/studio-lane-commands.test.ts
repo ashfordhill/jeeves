@@ -6,7 +6,6 @@ import {
   connectOptions,
   laneActionOptions,
   laneEntryRefusal,
-  laneLinkRefusal,
   laneRemoveActionRefusal,
   linkFanOptions,
   newLinkId,
@@ -654,7 +653,10 @@ describe("modes from the pair", () => {
     ).toBe(
       "Shorten service can't link to Click events. Publishing to a queue is asynchronous, not a request.",
     );
-    expect(laneLinkRefusal(design, { tile: "shorten" }, "click-events")).toBeUndefined();
+    expect(connectOptions(design, "shorten").find((o) => o.tile === "click-events")).toEqual({
+      tile: "click-events",
+      link: { from: { tile: "shorten" }, to: "click-events", mode: "async" },
+    });
   });
 });
 
@@ -902,26 +904,28 @@ describe("connect options", () => {
 });
 
 describe("canvas helpers", () => {
-  it("say which drops link and why the others don't", () => {
+  it("say which drags link and why the others don't", () => {
     const design = tinyurl();
+    const refusal = (from: string, to: string) => {
+      const option = connectOptions(design, from).find((item) => item.tile === to);
+      return option && "refusal" in option ? option.refusal : undefined;
+    };
     // A merge the canvas offers: Shorten service publishes to Click events.
-    expect(laneLinkRefusal(design, { tile: "shorten" }, "click-events", "async")).toBe(undefined);
-    // A tile has one entry: a lane tab onto the other lane's entry tile is refused too.
-    expect(laneLinkRefusal(design, { lane: "download" }, "shorten", "sync")).toBe(
+    expect(refusal("shorten", "click-events")).toBe(undefined);
+    // A tile has one entry: a drag from a lane's action onto the other lane's entry is refused.
+    expect(refusal(laneActionNode("download"), "shorten")).toBe(
       "Shorten service already starts the upload lane; a tile has one entry.",
     );
-    expect(laneLinkRefusal(design, { lane: "upload" }, "redirect", "sync")).toBe(
+    expect(refusal(laneActionNode("upload"), "redirect")).toBe(
       "Redirect service already starts the download lane; a tile has one entry.",
     );
-    expect(laneLinkRefusal(design, { tile: "analytics" }, "redirect", "sync")).toMatch(/loop/);
+    expect(refusal("analytics", "redirect")).toMatch(/loop/);
     // The user links only to its actions, and nothing links back to it or into an action.
-    expect(laneLinkRefusal(design, { tile: "redirect" }, LANE_ACTOR, "sync")).toBe(
-      "Links don't lead back to the user.",
-    );
-    expect(laneLinkRefusal(design, { tile: LANE_ACTOR }, "redirect", "sync")).toBe(
+    expect(refusal("redirect", LANE_ACTOR)).toBe("Links don't lead back to the user.");
+    expect(refusal(LANE_ACTOR, "redirect")).toBe(
       "The user links only to its actions; add one with the user's +.",
     );
-    expect(laneLinkRefusal(design, { tile: "redirect" }, laneActionNode("upload"))).toBe(
+    expect(refusal("redirect", laneActionNode("upload"))).toBe(
       "Only the user links to Shorten; link Shorten to a tile to give it an entry.",
     );
   });

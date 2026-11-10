@@ -224,7 +224,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         kind: "data-access",
         status: "stub",
         selection: "shorten-links",
-        reason: "Needs Multipart uploads or Cache reader in its tile.",
+        reason: "No template in Shorten service uses it.",
         unconnected: [],
       },
       {

@@ -8091,3 +8091,82 @@ fit, generated names from creation kinds and View publisher's reason are the ope
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — MA10: review module authoring
+
+I did an independent review of the [module authoring plan](plans/module-authoring/units.md)
+(`18cda98`–`63022ff`), by mouse at 1440×900 and 1280×800. I used my own API (4351, scratch
+database `jeeves_ma10`, now dropped) and Vite (4350). The write-up is
+[review.md](plans/module-authoring/review.md).
+
+**Decisions 1–9** are all delivered.
+
+**Kept rebuild.** I opened "YouTube v2 rebuild (MA09)" read-only: API reads, plus the owner's app
+with only Overview | Detailed clicked. It matches the MA09 evidence:
+
+- revision 142;
+- the diff: 163 rows, 0 unexpected and 0 unused;
+- 22 tiles, with 28 lines in the Overview and 31 in Detailed;
+- 21 filled dots and one loader arrow.
+
+All seven owner projects kept their revision and `updatedAt`.
+
+**Gates.**
+
+- **v1:** byte-identical (the `assemble.test.ts` pin).
+- **Frozen v2:** 70 of 72 files are byte-identical. The provenance files differ only in the source
+  and emitter inventory: 4 sources added, 13 changed, the `local.module-stubs` emitter and
+  `registry.sha256`.
+- **Overview PNG:** `472a4c8c…dc9f`.
+- **View-only actions** change neither the design nor the blueprint.
+- **Mouse and chat** send the same batches for the four module commands.
+
+**Fixes.**
+
+1. **Stub reasons** (`module-status.ts`): a part with no lead beside it reads "No template in
+   <tile> uses it." It used to read "Needs Multipart uploads in its tile." / "Needs to be in a
+   worker.".
+2. **Refused reasons** name the kept value and how many more there are: "The link from Watch API to
+   Metadata database uses Service identity, which its template can't use; 9 other saved values
+   can't be used either." This is status text only; the resolver is unchanged.
+3. **Chat's older removals** (`supported-authoring.ts`): `removeComponent` and
+   `disconnectComponent` never derive, so chat could leave a stale template. Removing the Count
+   writer kept the event counter selected. Normal authoring now refuses both once module-level
+   selections exist, naming `removeModule` / `disconnectModule`.
+   - I first made them derive. That broke `generation.test.ts`, which relies on the source-level
+     prune, so I chose the refusal instead.
+   - The new test fails without the fix.
+4. **Dead code:** `laneLinkRefusal` (unused since MA03) is removed; its tests now run on
+   `connectOptions`.
+5. **Docs:** chat's `addTile` no longer says "or before a tile"; the module page's reason
+   examples are current; `CATALOG.md`, `PLAN.md` and chat's instructions are updated; a playbook
+   lesson is added.
+
+**Checks.**
+
+- `pnpm check` exited 0: **557 tests in 80 files** (lint: only the existing info). An earlier run
+  failed on a type narrowing in my rewritten test and on the derive attempt above. Both were fixed
+  before this run.
+- **E2E: 61 passed (4.1m)** on the first full run.
+- The web build passed with the existing chunk-size advisory.
+- My review spec passed 8/8 at both sizes, and the kept-project check 2/2, with no page or console
+  errors.
+- `jeeves_e2e` has no leftover projects.
+- Evidence: 3 screenshots in [ma10](plans/module-authoring/evidence/ma10/).
+
+**For the owner.** These follow-ups are ranked in the review; five need a decision:
+
+- IDs taken from the creation kind;
+- the studies' Refused state;
+- Options appearing only after templates derive;
+- chat's legacy kinds;
+- two pre-plan tiles in the frozen v2 project.
+
+The frozen v2 project is at revision 4. It has extra API and Service tiles, added 2026-11-09 21:05
+CST, before the plan began.
+
+**Next:** the owner's per-tile process plan. The review's "Next" section lists what matters for it.
+The plan is complete.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

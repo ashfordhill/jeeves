@@ -229,7 +229,6 @@ Pure helpers answer what a tile can do, for the canvas and chat:
   direction is never reversed ("URL database can't link to Analytics worker. A database can't
   link onward."). From an action (`laneActionNode(lane)`) a link is an entry. Nothing links onto
   the user or an action, and the user links only to its actions.
-- `laneLinkRefusal(design, from, to, mode?)` gives one pair's refusal, or none.
 
 On the canvas ([studio guide](../docs/studio.md#creating-and-connecting)), the user's one `+` shows
 `laneActionOptions` (a pick runs `addAction`), and a tile or action has its link tab when
@@ -314,7 +313,9 @@ Each command derives, in the same batch and one Undo step, every module's genera
 the values a template fixes, initial values for its needed settings, and the ownership it needs
 (roles, owners, authority, grants and access). `removeTile` and `removeLink` re-derive once
 module-level selections exist. `createComponent` and `connectComponent` stay refused in normal
-authoring. `disconnectComponent`, `removeComponent` and `editComponent` don't derive.
+authoring. `disconnectComponent`, `removeComponent` and `editComponent` don't derive, so once
+module-level selections exist normal authoring (chat) refuses the first two and names
+`disconnectModule` and `removeModule`; the mouse sends only those.
 
 The whole command is refused, naming the tiles and modules, when:
 

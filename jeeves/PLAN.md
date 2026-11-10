@@ -88,11 +88,12 @@ higher-level **studio commands** (`buildStudioCommand` in `studio-operations.ts`
 one rule set. Actions, tiles and links are added and removed only by the **lane commands**
 (`studio-lane-commands.ts`: `addAction`, `renameAction`, `removeAction`, `addTile`, `linkTiles`,
 `removeTile`, `removeLink`, `changeKind`, `setEntryLane`): each is checked with the board edits
-under the lane rules and refused in plain words with tile and action names. The other studio commands edit in place: `edit`, `editSystem`, `editConnection` and the
-module commands (`createComponent`, `editComponent`, `connectComponent`, `disconnectComponent`,
-`removeComponent`). A link's mode is optional and defaults to its pair's. Pure helpers answer
+under the lane rules and refused in plain words with tile and action names. The other studio commands edit in place: `edit`, `editSystem`, `editConnection`, the
+module commands (`addModule`, `connectModule`, `disconnectModule`, `removeModule`, which derive
+each module's generation) and the older component commands (`createComponent`, `editComponent`,
+`connectComponent`, `disconnectComponent`, `removeComponent`). A link's mode is optional and defaults to its pair's. Pure helpers answer
 the canvas and chat: `laneActionOptions` (the user's two actions, or why not), `linkFanOptions`
-(the link fan's eleven kinds after a tile or action, each allowed or with the reason), `connectOptions` (Connect mode's ends from a node, never reversed), `laneLinkRefusal`,
+(the link fan's eleven kinds after a tile or action, each allowed or with the reason), `connectOptions` (Connect mode's ends from a node, never reversed),
 `laneEntryRefusal`, `laneRemoveActionRefusal`, `planRemoveTile`, and `newTileIdentity` and `newLinkId` for fresh names and
 IDs.
 

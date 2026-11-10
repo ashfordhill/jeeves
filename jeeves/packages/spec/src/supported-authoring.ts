@@ -5,6 +5,7 @@ import { canonicalJson } from "./content-hash.ts";
 import type { DesignDocument } from "./design.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
 import type { GenerationInstalledSupport } from "./generation-support.ts";
+import { hasModuleSelections } from "./module-generation.ts";
 import { buildStudioCommand, studioCommandSchema } from "./studio-operations.ts";
 
 /** What the mouse and chat may send: the studio's commands, refused below where unsupported. */
@@ -55,6 +56,16 @@ export function buildSupportedAuthoringCommand(
   if (command.type === "createComponent" || command.type === "connectComponent")
     throw new Error(
       "Add a module with addModule and connect it with connectModule; its generation and ownership are derived in the same step.",
+    );
+  // Once modules generate code, removing one or its link must re-derive, as the mouse does.
+  if (
+    (command.type === "removeComponent" || command.type === "disconnectComponent") &&
+    hasModuleSelections(design)
+  )
+    throw new Error(
+      command.type === "removeComponent"
+        ? "Remove a module with removeModule; its tile's generation is derived again in the same step."
+        : "Disconnect a module with disconnectModule; its tile's generation is derived again in the same step.",
     );
   if (
     command.type === "editConnection" &&

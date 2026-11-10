@@ -19,16 +19,13 @@ import {
   generationReferences,
 } from "./generation.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
-import { generationCapabilities } from "./generation-support.ts";
 import { covers, planModules } from "./module-generation.ts";
 import {
   type StudioComponent,
   type StudioComponentKind,
   type StudioModuleSlotId,
   studioComponentDefinitions,
-  studioModuleTemplates,
 } from "./studio-components.ts";
-import { studioKindNoun } from "./studio-links.ts";
 import { moduleSlots } from "./studio-modules.ts";
 
 export const moduleStatusKinds = ["template", "stub", "custom", "refused"] as const;
@@ -57,18 +54,6 @@ export type ModuleStatus = {
 };
 
 const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-const list = (items: readonly string[], last = "and") =>
-  items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} ${last} ${items.at(-1)}`;
-/** The lead kind of each module template. */
-const leadKinds = new Map(
-  studioModuleTemplates.map((template) => [
-    template,
-    Object.values(studioComponentDefinitions).find(
-      (definition) =>
-        definition.generation.kind === "lead" && definition.generation.template === template,
-    )?.name,
-  ]),
-);
 
 type Path = (string | number)[];
 const within = (path: Path | undefined, prefix: Path) =>
@@ -116,6 +101,40 @@ function selectionScope(
   ];
 }
 
+/**
+ * The kept value a blocking finding points at, in plain words ("The link from Redirect service to
+ * URL cache uses Service identity", "Redirect service's language is go"), or `undefined` for a
+ * finding on anything else.
+ */
+function keptValue(design: DesignDocument, path: Path | undefined): string | undefined {
+  const name = (id: string) => design.elements.find((item) => item.id === id)?.name ?? id;
+  const shown = (raw: unknown) =>
+    typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean"
+      ? String(raw)
+      : undefined;
+  const [area, a, b, c, d, e] = path ?? [];
+  if (area === "connections" && typeof a === "number" && b === "planned" && typeof c === "string") {
+    const connection = design.connections[a];
+    const value = shown((connection?.planned as Record<string, unknown> | undefined)?.[c]);
+    if (!connection || !value) return undefined;
+    return `The link from ${name(connection.from.element)} to ${name(connection.to.element)} uses ${value}`;
+  }
+  if (area !== "architecture" || a !== "studio" || typeof c !== "number") return undefined;
+  if (d !== "settings" || typeof e !== "string") return undefined;
+  const studio = design.architecture?.studio;
+  const holder =
+    b === "elements"
+      ? { name: name(studio?.elements[c]?.element ?? ""), settings: studio?.elements[c]?.settings }
+      : b === "components"
+        ? { name: studio?.components?.[c]?.name, settings: studio?.components?.[c]?.settings }
+        : undefined;
+  if (!holder?.name || !holder.settings) return undefined;
+  const setting = e.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+  const value = shown((holder.settings as Record<string, unknown>)[e]);
+  const owner = holder.name.endsWith("s") ? `${holder.name}'` : `${holder.name}'s`;
+  return `${owner} ${setting} ${value ? `is ${value}` : "is set"}`;
+}
+
 /** Every module's status, in the design's module order. */
 export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
   const studio = design.architecture?.studio;
@@ -131,10 +150,11 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
   const plan = planModules(design);
   const leads = new Map(plan.leads.map((item) => [item.lead.id, item]));
   const findings: readonly Finding[] = moduleLevel ? resolveGeneration(design).findings : [];
+  const nameOf = (id: string) => design.elements.find((item) => item.id === id)?.name ?? id;
   const covering = (module: StudioComponent) =>
     selections.find((item) => item.target.kind === "component" && covers(design, item, module)) ??
     selections.find((item) => item.target.kind === "element" && covers(design, item, module));
-  /** The first finding that blocks a module-level template selection, if any. */
+  /** Why a module-level template selection is blocked, in plain words, if it is. */
   const blocked = (selection: GenerationSelection) => {
     const index = selections.indexOf(selection);
     const members = modules
@@ -142,11 +162,19 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
       .map((item) => item.id);
     const scope = selectionScope(design, selection, index, members);
     const template: Path = ["generation", "selections", index, "template"];
-    return findings.find((item) => {
+    const blocking = findings.filter((item) => {
       const path = item.target.path;
       if (!path || (path.length === template.length && within(path, template))) return false;
       return scope.some((prefix) => within(path, prefix));
-    })?.message;
+    });
+    const [first] = blocking;
+    if (!first) return undefined;
+    const kept = keptValue(design, first.target.path);
+    if (!kept) return first.message;
+    const more = blocking.length - 1;
+    return `${kept}, which its template can't use${
+      more ? `; ${more} other saved value${more > 1 ? "s" : ""} can't be used either` : ""
+    }.`;
   };
   const stubReason = (module: StudioComponent): string => {
     const definition = studioComponentDefinitions[module.settings.kind];
@@ -171,24 +199,8 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
     if (waiting) return `Waits for ${waiting.lead.name}, which needs ${waiting.missing}.`;
     const [other] = beside;
     if (other) return `${sentence(other.lead.name)} doesn't use it.`;
-    // The leads its tile could hold beside it, else the tiles its templates need.
-    const hostKind = studio?.elements.find((item) => item.element === module.host)?.settings.kind;
-    const fits = generation.templates.filter(
-      (template) => !!hostKind && generationCapabilities[template].hosts.includes(hostKind),
-    );
-    if (!fits.length)
-      return `Needs to be in ${list(
-        [
-          ...new Set(
-            generation.templates.flatMap((template) => generationCapabilities[template].hosts),
-          ),
-        ].map(studioKindNoun),
-        "or",
-      )}.`;
-    return `Needs ${list(
-      fits.flatMap((template) => leadKinds.get(template) ?? []),
-      "or",
-    )} in its tile.`;
+    // A part with no lead beside it is a normal stub: say so, not what it could join.
+    return `No template in ${nameOf(module.host)} uses it.`;
   };
   return modules.map((module) => {
     const base = {

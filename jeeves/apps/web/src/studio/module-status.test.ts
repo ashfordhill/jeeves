@@ -53,12 +53,12 @@ describe("moduleStatusLine", () => {
         status: "refused",
         template: "positive-cache-read",
         reason:
-          "Local preset supports Private network; declared Service identity remains unsupported and is preserved.",
+          "The link from Watch API to Metadata database uses Service identity, which its template can't use.",
       }),
     ).toEqual({
       label: "Refused",
       detail:
-        "Local preset supports Private network; declared Service identity remains unsupported and is preserved.",
+        "The link from Watch API to Metadata database uses Service identity, which its template can't use.",
     });
     expect(moduleStatusLine({ ...base, status: "custom" })).toEqual({ label: "Custom" });
   });

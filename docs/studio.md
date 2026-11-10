@@ -510,9 +510,9 @@ details.
   the tile's, again one page with no tabs: a **Back to <tile>** row (the tile's icon and name), a
   header with the module's icon, Name (the title) and kind, then **what it generates**: Template
   with the template's name ("Template · Cache read"), Stub with what its template still needs
-  ("Needs its loader connected to a Data access in Watch API.") or why it has none, Refused with
-  the reason a kept value blocks it, or Custom when no generation declaration covers it yet (a
-  study's modules before any module command). Then any readiness findings, Description,
+  ("Needs a Data access as its loader.") or why it has none ("No template in Watch API uses
+  it."), Refused with the kept value that blocks it, or Custom when no generation declaration
+  covers it yet (a study's modules before any module command). Then any readiness findings, Description,
   **Options** only for the settings a template consumes (Pool size and Statement timeout on a
   Data access in a template, and on a Lifecycle writer, its template's SQL settings), and
   **Remove module** at the bottom (`removeModule`, which
@@ -528,9 +528,10 @@ details.
   normalize historical settings.
 - A module command on a study derives the whole tile's generation. On the TinyURL extended and
   YouTube studies the Cache reader the study already wires then reads **Refused**, as does its
-  Data access ("Local preset supports Private network; declared Service identity remains
-  unsupported and is preserved."): those links keep Service identity, which the local template
-  can't use. Nothing else changes, and Undo returns the study.
+  Data access ("The link from Watch API to Metadata database uses Service identity, which its
+  template can't use; 9 other saved values can't be used either."): the study keeps values no
+  control edits, such as its links' Service identity and its replicas. Nothing else changes,
+  and Undo returns the study.
 - A line shows endpoints, its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
@@ -624,7 +625,7 @@ Chat (left rail, open by default in a fresh project) edits the design with the c
 commands, validation and history: a chat turn is one undo step, however many commands it ran.
 Actions, tiles and links change only through the lane commands: `addAction`, `renameAction` and
 `removeAction` (a lane's action, by lane), `addTile` (after a tile or a lane's action, which it
-adds with its default name if the lane has none, or before a tile), `linkTiles`, `removeTile`,
+adds with its default name if the lane has none), `linkTiles`, `removeTile`,
 `removeLink`, `changeKind` and `setEntryLane` (moves an entry to the other lane's action). The
 instructions say what an action is in two sentences. A new link's mode is optional: left out, it is the pair's default
 from the [link table](../jeeves/CATALOG.md#lanes-and-links) (async for queue links, sync otherwise),

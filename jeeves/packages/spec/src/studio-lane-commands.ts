@@ -871,26 +871,6 @@ export function planRemoveTile(
 }
 
 /**
- * Why linking `from` (a lane or a tile) to the existing tile `to` is refused, in plain words, or
- * `undefined` when a `linkTiles` would be accepted (in `mode`, else the pair's default).
- */
-export function laneLinkRefusal(
-  design: DesignDocument,
-  from: LaneFrom,
-  to: string,
-  mode?: StudioLinkMode,
-): string | undefined {
-  const result = attempt(() => {
-    requireLanes(design);
-    const view = lanes(design)();
-    const chosen =
-      mode ?? pairMode(view, "lane" in from ? laneActionNode(from.lane) : from.tile, to);
-    return linkTilesRefusal(view, from, to, chosen === "async");
-  });
-  return result.ok ? result.value : result.message;
-}
-
-/**
  * Why moving the entry `entry` to `lane`'s action (download or upload) is refused, in plain words,
  * or `undefined` when a `setEntryLane` would be accepted. The entry inspector disables a lane with
  * it and shows the reason.

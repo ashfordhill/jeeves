@@ -257,9 +257,7 @@ test("connects a module from its dot, refuses with the reason, and disconnects b
     await addModule(page, "Microservice", "Data access");
     // Unconnected is allowed: a stub, with what its template still needs.
     await expect(status(page)).toHaveAttribute("data-status", "stub");
-    await expect(status(page)).toContainText(
-      "Needs Multipart uploads or Cache reader in its tile.",
-    );
+    await expect(status(page)).toContainText("No template in Microservice uses it.");
 
     await page.getByRole("button", { name: "Detailed", exact: true }).click();
     await ready(page);

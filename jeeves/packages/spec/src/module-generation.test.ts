@@ -242,7 +242,7 @@ describe("module commands", () => {
     expect(moduleStatus(next, "redirect-cache-reader")).toMatchObject({
       status: "refused",
       reason:
-        "Local preset supports Private network; declared Service identity remains unsupported and is preserved.",
+        "The link from Redirect service to URL database uses Service identity, which its template can't use; 14 other saved values can't be used either.",
     });
     // A design whose modules make no template gets no ownership.
     const marketplace = studioArchitectureExample("studio-marketplace").design;
@@ -657,7 +657,7 @@ describe("module derivation", () => {
       expect(moduleStatus(done, id)).toMatchObject({
         status: "refused",
         template: "event-counter",
-        reason: expect.stringContaining("Unsupported state.engine=mysql"),
+        reason: "View counts' engine is mysql, which its template can't use.",
       });
   });
 
@@ -690,6 +690,33 @@ describe("module derivation", () => {
     const frozen = v2();
     const batch = buildStudioCommand(frozen, { type: "removeLink", link: "upload-state" });
     expect(applyOperations(frozen, batch.ops).ok).toBe(false);
+  });
+
+  it("refuses the older removal commands in normal authoring once modules generate", () => {
+    // They never derive, so they would leave a stale template: chat is pointed at removeModule
+    // and disconnectModule, which the mouse sends. A design with no module-level selections (a
+    // study) keeps them.
+    const supported = (design: DesignDocument, command: StudioCommand) => {
+      try {
+        buildSupportedAuthoringCommand(design, command, { templates: [] });
+        return "accepted";
+      } catch (error) {
+        return (error as Error).message;
+      }
+    };
+    expect(supported(built, { type: "removeComponent", components: ["counter-writer"] })).toBe(
+      "Remove a module with removeModule; its tile's generation is derived again in the same step.",
+    );
+    expect(
+      supported(built, { type: "disconnectComponent", links: ["counter-writer-view-counts"] }),
+    ).toBe(
+      "Disconnect a module with disconnectModule; its tile's generation is derived again in the same step.",
+    );
+    expect(supported(built, { type: "removeModule", module: "counter-writer" })).toBe("accepted");
+    const study = studioArchitectureExample("studio-tinyurl").design;
+    expect(supported(study, { type: "removeComponent", components: ["redirect-responder"] })).toBe(
+      "accepted",
+    );
   });
 });
 
@@ -818,6 +845,7 @@ describe("module status and older designs", () => {
       add("upload", "upload-multipart", "multipart-uploads"),
       add("upload", "upload-limit", "rate-limiter"),
       add("watch", "watch-views", "event-publisher"),
+      add("watch", "watch-consumer", "event-consumer"),
       add("transcoder", "transcoder-cache", "cache-reader"),
     ]);
     const reasons = Object.fromEntries(
@@ -829,7 +857,9 @@ describe("module status and older designs", () => {
     expect(reasons).toEqual({
       "upload-multipart": ["stub", "Needs a connection to object storage.", ["objects"]],
       "upload-limit": ["stub", "Rate limiter has no template.", ["store"]],
-      "watch-views": ["stub", "Needs Multipart uploads in its tile.", ["channel", "outbox"]],
+      // A part no lead beside it uses is a normal stub, never told to add a lead or move.
+      "watch-views": ["stub", "No template in Watch API uses it.", ["channel", "outbox"]],
+      "watch-consumer": ["stub", "No template in Watch API uses it.", ["channel"]],
       "transcoder-cache": [
         "stub",
         "Needs to be in a service or a redirect service.",
