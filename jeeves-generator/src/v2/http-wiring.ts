@@ -5,25 +5,35 @@ import {
   studioComponentDefinitions,
 } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
-import { outboxSchema } from "./durability.ts";
+import { type OutboxTable, outboxSchema } from "./durability.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
 import { moduleEntryName, moduleHooksPath, moduleStubPaths } from "./module-stubs.ts";
 import type { V2TemplateFile } from "./registry.ts";
 import { ownedUploadPersistence } from "./upload-state.ts";
 
-type Lead = NonNullable<NormalizedProcess["templates"][number]["lead"]>;
+export type Lead = NonNullable<NormalizedProcess["templates"][number]["lead"]>;
 type Route = { method: string; path: string; answers: string };
 /** One import binding: a value or a type, from a path relative to `src/processes/`. */
-type Import = { from: string; name: string; type?: true };
+export type Import = { from: string; name: string; type?: true };
+/** One loop a process runs (tile process contract, section 5): the process config's `loops` row
+ * its code reads, and what a message that fails there answers, for the report. */
+export type LoopRow = {
+  module: string;
+  queue: string;
+  failedQueue: string;
+  retryLimit: number;
+  concurrency: number;
+  answers: string;
+};
 
 /**
- * What an HTTP process mounts for one template or stub (tile process contract, sections 3-4):
- * the lines it adds to the process file, the routes it answers, its hooks file and what the
+ * What a process mounts for one template or stub (tile process contract, sections 3-5): the
+ * lines it adds to the process file, the routes and loops it answers, its hooks file and what the
  * foundation must provision for it.
  */
-export type HttpMount = {
+export type ProcessMount = {
   imports: Import[];
-  /** Before the HTTP service is created, inside `runProcess`. */
+  /** Inside `runProcess`, before an HTTP service is created; a worker's whole start. */
   setup: string[];
   /** Inside `configure(routes)`. */
   configure: string[];
@@ -34,6 +44,7 @@ export type HttpMount = {
   /** The process config's `templates` row. */
   config?: [string, unknown];
   routes: Route[];
+  loops: LoopRow[];
   template?: { selection: string; template: string; level: "mounted" | "placeholder" };
   hooks?: { file: V2TemplateFile; members: string[] };
   service: {
@@ -44,42 +55,45 @@ export type HttpMount = {
     broker: boolean;
     identity?: string;
     environment?: Record<string, string>;
+    /** The media image, for a process that runs Video HLS. */
+    target?: "media";
   };
-  local: Pick<V2LocalContribution, "logins" | "migrations" | "grants">;
+  local: Pick<V2LocalContribution, "logins" | "migrations" | "grants" | "views" | "broker">;
 };
 
-const pointer = (path: readonly (string | number)[]) =>
+export const pointer = (path: readonly (string | number)[]) =>
   `/${path.map((part) => pointerPart(String(part))).join("/")}`;
 /** One comment line: names are the user's own text. */
-const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
-const camel = (slug: string) =>
+export const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
+export const camel = (slug: string) =>
   slug.replace(/-([a-z0-9])/g, (_match, next: string) => next.toUpperCase());
-const pascal = (slug: string) => camel(`-${slug}`);
-const text = (value: string) => JSON.stringify(value);
-const service = (): HttpMount["service"] => ({
+export const pascal = (slug: string) => camel(`-${slug}`);
+export const text = (value: string) => JSON.stringify(value);
+export const service = (): ProcessMount["service"] => ({
   dependsOn: [],
   sql: [],
   storage: [],
   cache: [],
   broker: false,
 });
-const resource = (selection: NormalizedGenerationSelection, field: string) => {
+export const resource = (selection: NormalizedGenerationSelection, field: string) => {
   const binding = selection.resources.find((item) => item.field === field);
   if (!binding) refuse("INVALID_LOCAL_CONTRIBUTION", selection.id, `Bind its ${field}.`);
   return binding.identity.local;
 };
 const notImplementedAnswer = (what: string) =>
   `501 ${text(`Not implemented: ${what}`)} until its hooks are written`;
-const resources = "../features/service-resources.ts";
-const tileProcess = "../runtime/tile-process.ts";
+export const resources = "../features/service-resources.ts";
+export const tileProcess = "../runtime/tile-process.ts";
+const tileHttp = "../runtime/tile-http.ts";
 
 /** The hooks file: a factory over the template's generic resources; every member throws. */
-function hooksFile(
+export function hooksFile(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
   template: string,
-  body: { imports: string[]; types: string[]; factory: string[] },
+  body: { imports: string[]; types: string[]; factory: string[]; reached?: string },
 ): V2TemplateFile {
   return {
     path: moduleHooksPath(process.tile, lead.module),
@@ -91,14 +105,14 @@ function hooksFile(
       "",
       ...body.types,
       "",
-      `/** Each hook throws "Not implemented" until written; the first one a route reaches answers 501. */`,
+      `/** Each hook throws "Not implemented" until written; ${body.reached ?? "the first one a route reaches answers 501"}. */`,
       ...body.factory,
     ].join("\n")}\n`,
     ownership: "generated-extension",
     sourcePaths: ["/generation/processes", pointer(selection.sourcePath)],
   };
 }
-const throws = (hook: string, lead: Lead) =>
+export const throws = (hook: string, lead: Lead) =>
   `throw new NotImplemented(${text(`${hook} for ${lead.name}`)});`;
 
 /** Cache reader: the positive reader on its source login and cache, at GET /modules/<lead>/:key. */
@@ -106,7 +120,7 @@ function positiveCacheRead(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
-): HttpMount {
+): ProcessMount {
   const id = selection.id;
   const name = camel(id);
   const hooks = `${camel(lead.module)}Hooks`;
@@ -124,7 +138,7 @@ function positiveCacheRead(
       { from: "../runtime/http.ts", name: "HttpError" },
       { from: "../runtime/positive-cache.ts", name: "createPositiveReader" },
       { from: "../runtime/valkey.ts", name: "createValkeyCache" },
-      { from: tileProcess, name: "notImplementedRoutes" },
+      { from: tileHttp, name: "notImplementedRoutes" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -157,6 +171,7 @@ function positiveCacheRead(
     started: [],
     config: [id, { template: "positive-cache-read", lead: lead.module, route: url }],
     routes: [{ method: "GET", path: url, answers: notImplementedAnswer(`key for ${lead.name}`) }],
+    loops: [],
     template: { selection: id, template: "positive-cache-read", level: "mounted" },
     hooks: {
       members,
@@ -206,12 +221,32 @@ function positiveCacheRead(
   };
 }
 
+/**
+ * The outbox in an upload selection's schema. Multipart enqueues its jobs there; an asset
+ * lifecycle that names this upload shares the schema (one owner) and adds its publication.
+ */
+export function uploadOutbox(
+  upload: string,
+  selections: readonly NormalizedGenerationSelection[],
+): OutboxTable {
+  const publication = selections.some(
+    (s) =>
+      s.binding.kind === "asset-lifecycle" && s.binding.upload === upload && s.binding.publication,
+  );
+  return {
+    schema: generationLocalIdentity(upload).sql,
+    table: "outbox",
+    destinations: ["jobs", ...(publication ? ["publication"] : [])],
+  };
+}
+
 /** Multipart uploads: the engine on its own tables, objects and jobs outbox, with a sweep. */
 function ownedMultipart(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
-): HttpMount {
+  selections: readonly NormalizedGenerationSelection[],
+): ProcessMount {
   const id = selection.id;
   const name = camel(id);
   const hooks = `${camel(lead.module)}Hooks`;
@@ -224,7 +259,7 @@ function ownedMultipart(
   // The generic schema rule: one private schema per template selection, named from its ID.
   const schema = generationLocalIdentity(id).sql;
   const uploads = { schema, table: "uploads" };
-  const outbox = { schema, table: "outbox", destinations: ["jobs"] };
+  const outbox = uploadOutbox(id, selections);
   const persistence = ownedUploadPersistence({
     resource: state,
     host: process.tile,
@@ -275,7 +310,7 @@ function ownedMultipart(
       { from: "../runtime/process.ts", name: "periodic" },
       { from: "../runtime/transaction.ts", name: "transaction" },
       { from: "../runtime/transaction.ts", name: "Tx", type: true },
-      { from: tileProcess, name: "notImplementedRoutes" },
+      { from: tileHttp, name: "notImplementedRoutes" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -358,6 +393,7 @@ function ownedMultipart(
       path: mount.url,
       answers: notImplementedAnswer(`principal for ${lead.name}`),
     })),
+    loops: [],
     template: { selection: id, template: "owned-multipart", level: "mounted" },
     hooks: {
       members,
@@ -453,7 +489,7 @@ function searchQuery(
   _process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
-): HttpMount {
+): ProcessMount {
   const id = selection.id;
   const name = camel(id);
   const index = resource(selection, "index");
@@ -466,7 +502,7 @@ function searchQuery(
       { from: "../features/search-bindings.ts", name: "searchBindings" },
       { from: "../runtime/search.ts", name: "createSearch" },
       { from: tileProcess, name: "NotImplemented" },
-      { from: tileProcess, name: "notImplementedRoutes" },
+      { from: tileHttp, name: "notImplementedRoutes" },
     ],
     setup: [
       `// ${line(lead.name)} (placeholder): the search client; no mapping or query preset exists yet.`,
@@ -499,6 +535,7 @@ function searchQuery(
         answers: `501 ${text(`Not implemented: ${what}`)} (placeholder)`,
       },
     ],
+    loops: [],
     template: { selection: id, template: "search-query", level: "placeholder" },
     service: { ...service(), dependsOn: [index] },
     local: {},
@@ -507,7 +544,12 @@ function searchQuery(
 
 const templates: Record<
   string,
-  (process: NormalizedProcess, selection: NormalizedGenerationSelection, lead: Lead) => HttpMount
+  (
+    process: NormalizedProcess,
+    selection: NormalizedGenerationSelection,
+    lead: Lead,
+    selections: readonly NormalizedGenerationSelection[],
+  ) => ProcessMount
 > = {
   "owned-multipart": ownedMultipart,
   "positive-cache-read": positiveCacheRead,
@@ -519,7 +561,7 @@ const templates: Record<
 function routeStub(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
-): HttpMount {
+): ProcessMount {
   const module = selection.module;
   if (!module) refuse("INVALID_LOCAL_CONTRIBUTION", selection.id, "A route stub needs its module.");
   const id = generationLocalIdentity(module.component).local;
@@ -530,7 +572,7 @@ function routeStub(
   const answers = `501 ${text(`Not implemented: ${module.name}`)} until it is written`;
   return {
     imports: [
-      { from: tileProcess, name: "stubRoutes" },
+      { from: tileHttp, name: "stubRoutes" },
       { from: tileProcess, name: "unprovisioned" },
       { from: from(paths.module), name: entry },
       { from: from(paths.slots), name: `Dependencies as ${dependencies}`, type: true },
@@ -547,6 +589,7 @@ function routeStub(
       { method: "ANY", path: `/modules/${id}`, answers },
       { method: "ANY", path: `/modules/${id}/*`, answers },
     ],
+    loops: [],
     service: service(),
     local: {},
   };
@@ -556,12 +599,12 @@ function routeStub(
 export function httpMounts(
   process: NormalizedProcess,
   selections: readonly NormalizedGenerationSelection[],
-): HttpMount[] {
-  const mounts: HttpMount[] = [];
+): ProcessMount[] {
+  const mounts: ProcessMount[] = [];
   for (const row of process.templates) {
     const selection = selections.find((item) => item.id === row.selection);
     const wire = selection && templates[selection.binding.kind];
-    if (selection && wire && row.lead) mounts.push(wire(process, selection, row.lead));
+    if (selection && wire && row.lead) mounts.push(wire(process, selection, row.lead, selections));
   }
   for (const stub of process.stubs) {
     if (stub.role !== "route") continue;

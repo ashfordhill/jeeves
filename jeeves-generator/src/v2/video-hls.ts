@@ -1,5 +1,6 @@
 import { generationRuntime } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
+import { mountedHooksGap } from "./module-stubs.ts";
 import type { V2Emitter } from "./registry.ts";
 
 /** Shared identity is emitted once, without bringing SQL into a standalone video engine. */
@@ -46,9 +47,10 @@ export function createLocalVideoHls(sourcePaths: readonly string[]): V2Emitter {
     sourcePaths,
     dependencies: [generationRuntime.ref],
     render: ({ model, asset }) => {
-      const paths = model.selections
-        .filter((s) => s.binding.kind === "video-hls")
-        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
+      const selections = model.selections.filter((s) => s.binding.kind === "video-hls");
+      const paths = selections.map(
+        (s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`,
+      );
       if (!paths.length) return { files: [] };
       return {
         files: ["media-process", "video-result", "video-hls"].map((name) => ({
@@ -60,14 +62,19 @@ export function createLocalVideoHls(sourcePaths: readonly string[]): V2Emitter {
           sourcePaths: paths,
         })),
         gaps: [
-          {
-            id: "video-hls-worker-bindings",
-            status: "unfinished" as const,
-            required: true,
-            description:
-              "Bind authoritative job/result/event codecs, source/result namespaces, confirmed queue transports, pinned FFmpeg runtime and the single media service in a compiled recipe. Engine/runner libraries and access contributions alone install no worker.",
-            sourcePaths: paths,
-          },
+          mountedHooksGap(
+            model,
+            selections,
+            {
+              id: "video-hls-worker-bindings",
+              status: "unfinished" as const,
+              required: true,
+              description:
+                "Bind authoritative job/result/event codecs, source/result namespaces, confirmed queue transports, pinned FFmpeg runtime and the single media service in a compiled recipe. Engine/runner libraries and access contributions alone install no worker.",
+              sourcePaths: paths,
+            },
+            "a message that reaches one ends in its queue's .failed",
+          ),
         ],
       };
     },

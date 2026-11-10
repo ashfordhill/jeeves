@@ -224,20 +224,22 @@ Without an installed processes owner the option is a `NEEDS_TEMPLATE` finding at
 `/generation/processes`, which refuses studio export; the dependency-only registry never installs
 it.
 
-`local.tile-processes` (`src/v2/tile-processes.ts`, with `src/v2/http-wiring.ts`), registered by
-`loadLocalV2Registry`, provides `processes`. For each row it writes the scaffold
+`local.tile-processes` (`src/v2/tile-processes.ts`, with `src/v2/http-wiring.ts` and
+`src/v2/loop-wiring.ts`), registered by `loadLocalV2Registry`, provides `processes`. For each row it writes the scaffold
 `src/processes/<id>.ts` with its compiled `config` (settings, listen address, and its `templates`
 and `stubs` tables) and contributes a `local.services` entry: `app-<id>` running
 `node dist/processes/<id>.js`, profile `application`, `init: true`, no restart policy, no
 published port, `depends_on` only on the providers its mounted templates use, and a healthcheck
 on the ready marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering
 `GET /healthz` (200 once ready, 503 before and while draining), its module routes, and 404
-elsewhere; a worker holds an idle timer. Both write the ready marker through `runProcess` and
-drain on SIGTERM. The foundation accepts process hosts with no selection, closes
+elsewhere; any process runs its loops, and a process with nothing to run holds an idle timer.
+Each writes the ready marker through `runProcess` once its loops have subscribed and its HTTP
+service listens, and drains on SIGTERM in reverse: HTTP admission, then loops, then publishers,
+clients and pools. The foundation accepts process hosts with no selection, closes
 `application-services` for them, and substitutes `scripts/local.mjs`'s startup gate (exactly
 once, or it refuses) so `first-run` and `start` read `report.processes.runnable` instead of
 `applicationComplete`. Composition and primitives also emit `src/runtime/process.ts`, `http.ts`
-and `admission.ts` when a process needs them.
+and `admission.ts` when a process needs them, and `amqp.ts` and `delivery.ts` for a loop stub.
 
 **The edge.** When a public HTTP process exists, the processes owner contributes an `edge` row per
 public host and the foundation writes `app-edge`: the nginx pinned in `assets/providers.json`,
@@ -253,9 +255,9 @@ the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a ser
 - A **route stub** (any stub in an HTTP tile that consumes no queue) answers any method on
   `/modules/<module id>` and every path below it. Its `<module>.ts` takes
   `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; the types live in the
-  scaffold `src/modules/entry.ts` (with `ModuleMessage` for loops). Its `Dependencies` are
-  placeholders that answer "Not implemented: <property> for <module> (not provisioned yet)"
-  until stub provisioning (TP07). Loop and library stubs keep their files and aren't wired yet.
+  scaffold `src/modules/entry.ts`. Its `Dependencies` are placeholders that answer "Not
+  implemented: <property> for <module> (not provisioned yet)" until stub provisioning (TP07).
+  Library stubs (a Worker's stubs that consume nothing) keep their files and are only compiled.
 - **Multipart uploads** is mounted on its real libraries: its private schema (named from the
   selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in
   migration `100-<selection>.sql`, granted to its host; S3 control and signing clients; the
@@ -266,12 +268,64 @@ the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a ser
 - **Search query** is a placeholder: `GET /modules/<lead>` answers "Not implemented" for its
   mapping and query preset, which are product data.
 
+**Consume loops** (contract §3–5). A loop consumes a topic's `<topic>--<tile>` subscriber queue
+or a work queue itself, through the shared `createConsumer` and delivery runner (manual ack,
+prefetch equal to its concurrency, `x-delivery-attempt`, and `<queue>.failed` with
+`x-terminal-code`). The report's `loops` rows name each queue, module and what a failure does,
+and the process file's `config.loops` holds each loop's queue, `.failed`, retry limit and
+concurrency.
+
+- A **loop stub** (any stub, in any tile, connected to consume a queue) gets one loop per queue
+  it consumes, one message at a time. Its `<module>.ts` takes `(dependencies, message:
+  ModuleMessage): Promise<void>` (`body`, `messageId`, `headers`, `attempt` from 1, and `source`,
+  the queue). Its `.slots.ts` keeps the slot's descriptor, and the consumed queue's property
+  becomes a comment: it is the input, not a dependency. "Not implemented" is terminal at once
+  (`NOT_IMPLEMENTED`: the message goes to `<queue>.failed` on its first delivery). Any other
+  error is retried 5 times; before retry *n* the handler waits `min(250 ms × 2^(n−1), 10 s)`
+  (7.75 s over the five), then the message ends in `.failed` as `RETRY_EXHAUSTED`.
+- **Asset lifecycle** runs `startAssetLifecycleWorker` on the results subscriber
+  (`<results>--<tile>`, which the processes owner contributes because the template didn't), with
+  its publication relay when bound. Its `assets` and `receipts` tables sit in its upload
+  selection's schema (one owner), beside the uploads table and the one outbox, whose destinations
+  are `jobs` and `publication`; its tile gets a login and grants, and the upload tile `assets`.
+- **Video HLS** runs `startMediaWorker` on its jobs work queue (concurrency 1) after
+  `verifyVideoRuntime()`, with its results publisher and S3 clients; its process uses the `media`
+  image (`target: media`, 21 m stop grace).
+- **Event counter** runs `startCounterWorker` on its events subscriber, on its private schema's
+  `receipts` and `totals` and the public view `<schema>_public.totals`.
+- **Search projection** is a placeholder: a loop on its events subscriber whose every message is
+  `NOT_IMPLEMENTED` until a mapping and an event codec exist.
+
+A mounted template keeps its own limits and handling: a codec or parse hook that throws is
+terminal at once (`MALFORMED_MESSAGE`), other failures retry within its limit (lifecycle 10,
+video 3, counter 5). A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
+`what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
+it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
+and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process
+except a lost broker connection (it drains and exits 1, with no restart). `pnpm stop` cancels
+each subscription, cuts a retry wait short (the message is republished for its next attempt) and
+settles the message in hand before closing; undelivered messages stay in their queue.
+`src/runtime/tile-loop.ts` holds the loop and its handlers, `tile-http.ts` the 501 wrapper and
+route stubs, and `tile-process.ts` `NotImplemented`, the log and `unprovisioned`.
+
+With the option on, the foundation provisions each queue a loop stub consumes, from its link:
+the queue (or topic and the stub tile's subscriber) and both `.failed` queues, with the broker
+credential and `depends_on` for its process. A queue whose saved provider is neither unspecified
+nor self-hosted isn't provisioned and is a required `unsupported` gap
+(`provider-<module>-<queue>`), so the stack is not runnable. Two loops in one tile on one topic
+share its subscriber queue, so each message reaches one of them.
+
 Each mounted lead gets `src/modules/<host>/<lead>.hooks.ts` (a `generated-extension`): one
 factory over the template's generic resources whose every hook throws `NotImplemented("<hook>
 for <lead name>")`. The multipart's are `principal`, `validate`, `metadata`, `response`,
 `reserve`, `complete`, `closed`, `originalKey` and `job`; the cache reader's `key`, `codec`,
-`eligible`, `load` and `expiresAt`. Its `*-application-bindings` gap becomes a required `custom`
-gap naming that file; the search placeholder's gap stays `unfinished`. The scaffold
+`eligible`, `load` and `expiresAt`; the lifecycle's `metadata`, `event`, `result`, `failure`,
+`job.codec`, `job.construct`, `response`, `publication.codec`/`construct` and the three
+`identities`; the video's codecs (`job`, `video`, `result`, `eventId`, `event`) and the source and
+results `owns`; the counter's `event`, `aggregateKey`, `eventId` and `identity`. The process wraps
+the hooks so a loop's log names the hook a message reached. Its `*-application-bindings` gap
+becomes a required `custom` gap naming that file; the search placeholders' gap stays
+`unfinished`. The scaffold
 `src/runtime/tile-process.ts` holds `NotImplemented`, the 501 wrapper and the rate-limited log:
 an error that is a `NotImplemented` or whose message starts with "Not implemented" answers 501
 `{"error":"NOT_IMPLEMENTED","message":"Not implemented: …"}` and logs one JSON line
@@ -296,8 +350,11 @@ To run one, export it into a new directory, then, in it, `pnpm install --frozen-
 `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/`, for example `/api/<id>/healthz` or
 `/api/<id>/modules/<module id>`; reach an internal one from inside the network, for example
 `docker compose --profile '*' exec app-<id> node -e
-"fetch('http://app-<other>:3000/healthz').then(r=>r.text()).then(console.log)"`. `pnpm stop`
-drains every process (exit 0) and `pnpm start` brings them back healthy.
+"fetch('http://app-<other>:3000/healthz').then(r=>r.text()).then(console.log)"`. A loop's log
+lines are in `docker compose --profile '*' logs app-<id>`, and `docker compose --profile '*' exec
+local-broker rabbitmqctl list_queues name messages consumers` shows each queue's consumer and
+what reached `.failed`. `pnpm stop` drains every process (exit 0) and `pnpm start` brings them
+back healthy, with the `.failed` messages kept.
 
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
 hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares

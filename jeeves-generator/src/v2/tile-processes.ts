@@ -1,7 +1,8 @@
 import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
-import { type HttpMount, httpMounts, importLines } from "./http-wiring.ts";
+import { httpMounts, importLines, type ProcessMount } from "./http-wiring.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
+import { loopMounts } from "./loop-wiring.ts";
 import type { V2Emitter, V2ProcessReport, V2RenderContext, V2TemplateFile } from "./registry.ts";
 
 const pointer = (path: readonly (string | number)[]) =>
@@ -9,21 +10,30 @@ const pointer = (path: readonly (string | number)[]) =>
 /** One comment line: names are the user's own text. */
 const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
 const unique = (items: readonly string[]) => [...new Set(items)].sort();
-const tileProcessPath = "src/runtime/tile-process.ts";
-/** What a module's entry point receives (tile process contract, section 4). */
-const moduleEntryPath = "src/modules/entry.ts";
+/** The scaffolds a process imports: "Not implemented" and the log, what a module's entry point
+ * receives (tile process contract, section 4), the HTTP wrappers and the loops (section 5). */
+const scaffolds = {
+  core: ["src/runtime/tile-process.ts", "src/runtime/tile-process.ts.template"],
+  entry: ["src/modules/entry.ts", "src/modules/entry.ts.template"],
+  http: ["src/runtime/tile-http.ts", "src/runtime/tile-http.ts.template"],
+  loop: ["src/runtime/tile-loop.ts", "src/runtime/tile-loop.ts.template"],
+} as const;
 
 /** Where each process's entry point lives and how Compose runs it (tile process contract, §2). */
 export function processPaths(tile: string) {
   return { entry: `src/processes/${tile}.ts`, built: `dist/processes/${tile}.js` };
 }
 
-/** What each process mounts: HTTP processes their templates and route stubs (TP05). */
+/** What each process mounts: an HTTP process its templates and route stubs, and any process its
+ * worker templates and loop stubs. */
 function mountsOf(model: V2RenderContext["model"]) {
   return new Map(
     (model.processes ?? []).map((process) => [
       process.tile,
-      process.shape === "http" ? httpMounts(process, model.selections) : [],
+      [
+        ...(process.shape === "http" ? httpMounts(process, model.selections) : []),
+        ...loopMounts(process, model.selections),
+      ],
     ]),
   );
 }
@@ -40,7 +50,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
     version: "0.1.0-experimental.1",
     status: "implemented",
     description:
-      "A runnable process per application tile: HTTP routes for its templates and stubs, the public edge, ready marker and graceful shutdown.",
+      "A runnable process per application tile: HTTP routes and consume loops for its templates and stubs, the public edge, ready marker and graceful shutdown.",
     sourcePaths,
     provides: { processes: true },
     local: ({ model }) => {
@@ -51,7 +61,9 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
         sourcePaths: ["/generation/processes"],
         migrations: all.flatMap((mount) => mount.local.migrations ?? []),
         logins: all.flatMap((mount) => mount.local.logins ?? []),
+        views: all.flatMap((mount) => mount.local.views ?? []),
         grants: all.flatMap((mount) => mount.local.grants ?? []),
+        broker: all.flatMap((mount) => mount.local.broker ?? []),
         edge: model.processes
           .filter((process) => process.shape === "http" && process.exposure === "public")
           .map((process) => ({ host: process.tile })),
@@ -76,6 +88,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
               cache: unique(wired.flatMap((item) => item.cache)),
             }),
             ...(wired.some((item) => item.broker) && { broker: true }),
+            ...(wired.some((item) => item.target === "media") && { target: "media" as const }),
             ...(identity[0] && { identity: identity[0] }),
             ...(Object.keys(environment).length && { environment }),
             readiness: true,
@@ -88,22 +101,23 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       const processes = model.processes ?? [];
       const mounts = mountsOf(model);
       const all = [...mounts.values()].flat();
+      const http = processes.some((process) => process.shape === "http");
+      const looping = all.some((mount) => mount.loops.length);
       return {
         files: [
           ...processes.map((process) => entryFile(process, mounts.get(process.tile) ?? [])),
           ...all.flatMap((mount) => (mount.hooks ? [mount.hooks.file] : [])),
-          // The 501 wrapper and what an entry point receives, beside the HTTP service.
-          ...(processes.some((process) => process.shape === "http")
-            ? [
-                [tileProcessPath, "src/runtime/tile-process.ts.template"],
-                [moduleEntryPath, "src/modules/entry.ts.template"],
-              ].map(([path = "", source]) => ({
-                path,
-                content: asset(`jeeves-generator/templates/local-v2/assets/${source}`),
-                ownership: "generated-scaffold" as const,
-                sourcePaths: ["/generation/processes"],
-              }))
-            : []),
+          // "Not implemented", the 501 wrapper and the loops, beside the processes that use them.
+          ...[
+            ...(http || looping ? [scaffolds.core, scaffolds.entry] : []),
+            ...(http ? [scaffolds.http] : []),
+            ...(looping ? [scaffolds.loop] : []),
+          ].map(([path, source]) => ({
+            path,
+            content: asset(`jeeves-generator/templates/local-v2/assets/${source}`),
+            ownership: "generated-scaffold" as const,
+            sourcePaths: ["/generation/processes"],
+          })),
         ],
         processes: processes.map((process) => reportRow(process, mounts.get(process.tile) ?? [])),
       };
@@ -126,7 +140,7 @@ function settings(process: NormalizedProcess) {
     : [];
 }
 
-function reportRow(process: NormalizedProcess, mounts: readonly HttpMount[]): V2ProcessReport {
+function reportRow(process: NormalizedProcess, mounts: readonly ProcessMount[]): V2ProcessReport {
   const http = process.shape === "http";
   return {
     tile: process.tile,
@@ -148,7 +162,13 @@ function reportRow(process: NormalizedProcess, mounts: readonly HttpMount[]): V2
           ...mounts.flatMap((mount) => mount.routes),
         ]
       : [],
-    loops: [],
+    loops: mounts.flatMap((mount) =>
+      mount.loops.map((loop) => ({
+        queue: loop.queue,
+        module: loop.module,
+        answers: loop.answers,
+      })),
+    ),
     templates: mounts.flatMap((mount) => (mount.template ? [mount.template] : [])),
     hooks: mounts.flatMap((mount) =>
       mount.hooks && mount.template
@@ -167,7 +187,7 @@ function reportRow(process: NormalizedProcess, mounts: readonly HttpMount[]): V2
 const indent = (lines: readonly string[], depth: number) =>
   lines.map((item) => (item ? `${" ".repeat(depth)}${item}` : item));
 
-function entryFile(process: NormalizedProcess, mounts: readonly HttpMount[]): V2TemplateFile {
+function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]): V2TemplateFile {
   const kind = studioDefinitions[process.kind].name;
   const http = process.shape === "http";
   const templates = Object.fromEntries(
@@ -176,6 +196,8 @@ function entryFile(process: NormalizedProcess, mounts: readonly HttpMount[]): V2
   const stubs = process.stubs
     .filter((stub) => stub.role === "route")
     .map((stub) => ({ module: stub.module, path: `/modules/${stub.module}` }));
+  // What each loop consumes, in the order its code reads `config.loops[n]`.
+  const loops = mounts.flatMap((mount) => mount.loops.map(({ answers: _, ...loop }) => loop));
   const config = {
     tile: process.tile,
     kind: process.kind,
@@ -187,37 +209,44 @@ function entryFile(process: NormalizedProcess, mounts: readonly HttpMount[]): V2
     }),
     ...(Object.keys(templates).length && { templates }),
     ...(stubs.length && { stubs }),
+    ...(loops.length && { loops }),
   };
   const head = [
     `// Generated scaffold: ${line(process.name)} (${kind}) runs as app-${process.tile}, ${http ? "an HTTP process" : "a worker process"}.`,
     "// Export rewrites this file. Write modules in src/modules/; .jeeves/report.json lists what runs.",
   ];
   const routed = mounts.some((mount) => mount.configure.length);
+  const setup = mounts.flatMap((mount) => mount.setup);
   const block = (key: "configure" | "initialize") => mounts.flatMap((mount) => mount[key]);
   const imports = importLines([
-    { from: "../runtime/http.ts", name: "createHttpService" },
+    ...(http ? [{ from: "../runtime/http.ts", name: "createHttpService" }] : []),
     { from: "../runtime/process.ts", name: "runProcess" },
     ...(routed ? [{ from: "../runtime/tile-process.ts", name: "createNotImplementedLog" }] : []),
+    ...(loops.length ? [{ from: "../runtime/tile-loop.ts", name: "createLoopLog" }] : []),
     ...mounts.flatMap((mount) => mount.imports),
   ]);
   const configure = block("configure");
   const initialize = block("initialize");
+  const logs = [
+    ...(routed
+      ? [
+          '  // "Not implemented" answers 501 with one log line per module and hook a second.',
+          "  const log = createNotImplementedLog(config.tile);",
+        ]
+      : []),
+    ...(loops.length
+      ? [
+          '  // Loops subscribe before the process is ready. "Not implemented" sends a message to its',
+          "  // queue's .failed with one log line per module and hook a second; stopping drains them.",
+          "  const loopLog = createLoopLog(config.tile);",
+        ]
+      : []),
+  ];
   const body = http
     ? [
-        ...imports,
-        "",
-        "/** Compiled configuration: nothing is read from disk at runtime. */",
-        `export const config = ${JSON.stringify(config, null, 2)} as const;`,
-        "",
         "await runProcess(async (scope) => {",
-        ...(routed
-          ? ['  // "Not implemented" answers 501 with one log line per module and hook a second.']
-          : []),
-        ...(routed ? ["  const log = createNotImplementedLog(config.tile);"] : []),
-        ...indent(
-          mounts.flatMap((mount) => mount.setup),
-          2,
-        ),
+        ...logs,
+        ...indent(setup, 2),
         "  const service = await createHttpService({",
         "    id: config.tile,",
         "    settings: config.settings,",
@@ -239,21 +268,28 @@ function entryFile(process: NormalizedProcess, mounts: readonly HttpMount[]): V2
         "});",
       ]
     : [
-        'import { runProcess } from "../runtime/process.ts";',
-        "",
-        "/** Compiled configuration: nothing is read from disk at runtime. */",
-        `export const config = ${JSON.stringify(config, null, 2)} as const;`,
-        "",
         "await runProcess(async (scope) => {",
-        "  // An idle worker holds a timer until it is stopped, so the process stays up.",
-        "  const idle = setInterval(() => {}, 2 ** 30);",
-        "  scope.own(() => clearInterval(idle));",
+        ...(setup.length
+          ? [...logs, ...indent(setup, 2)]
+          : [
+              "  // An idle worker holds a timer until it is stopped, so the process stays up.",
+              "  const idle = setInterval(() => {}, 2 ** 30);",
+              "  scope.own(() => clearInterval(idle));",
+            ]),
         "  scope.ready();",
         "});",
       ];
   return {
     path: processPaths(process.tile).entry,
-    content: `${[...head, ...body].join("\n")}\n`,
+    content: `${[
+      ...head,
+      ...imports,
+      "",
+      "/** Compiled configuration: nothing is read from disk at runtime. */",
+      `export const config = ${JSON.stringify(config, null, 2)} as const;`,
+      "",
+      ...body,
+    ].join("\n")}\n`,
     ownership: "generated-scaffold",
     sourcePaths: ["/generation/processes", pointer(process.sourcePath)],
   };

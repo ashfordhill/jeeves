@@ -128,6 +128,27 @@ describe("Runnable processes (tile process contract, section 1)", () => {
       ["visit-writer", "library"],
       ["archiver", "library"],
     ]);
+    // A loop stub carries each queue it consumes: its saved mode and provider, and the link.
+    const consumes = (row: (typeof rows)[number] | undefined, module: string) =>
+      row?.stubs.find((stub) => stub.module === module)?.consumes;
+    expect(consumes(rows[3], "visit-consumer")).toEqual([
+      expect.objectContaining({
+        element: "visits",
+        name: "Visits",
+        mode: "topic",
+        provider: "unspecified",
+      }),
+    ]);
+    expect(consumes(links, "upload-consumer")).toEqual([
+      expect.objectContaining({ element: "uploaded", mode: "work-queue" }),
+    ]);
+    const link = consumes(links, "upload-consumer")?.[0];
+    expect(link?.sourcePath.slice(0, 3)).toEqual([
+      "architecture",
+      "studio",
+      "componentConnections",
+    ]);
+    expect(consumes(links, "link-reader")).toBeUndefined();
   });
 
   it("reads HTTP limits from a template on the tile, and runs empty tiles", () => {

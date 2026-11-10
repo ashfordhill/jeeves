@@ -37,6 +37,33 @@ type Row = {
 };
 const processesOf = (bundle: Bundle) =>
   (bundle.report as { processes?: { runnable: boolean; tiles: Row[] } }).processes;
+/** A Worker with one module that consumes nothing: a library stub, so the process idles. */
+const emptyWorker = () =>
+  runStudioCommands(emptyDesign(), [
+    { type: "addAction", lane: "download", name: "Run", system: { name: "Idle" } },
+    {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      tile: { id: "api", name: "API", kind: "service" },
+      linkId: "download-api",
+    },
+    {
+      type: "addTile",
+      from: { tile: "api" },
+      side: "after",
+      tile: { id: "jobs", name: "Jobs", kind: "queue" },
+      linkId: "api-jobs",
+    },
+    {
+      type: "addTile",
+      from: { tile: "jobs" },
+      side: "after",
+      tile: { id: "idle", name: "Idle", kind: "worker" },
+      linkId: "jobs-idle",
+    },
+    { type: "addModule", host: "idle", kind: "custom", name: "Thing" },
+  ]);
 
 describe("local.tile-processes", () => {
   const off = assemble(stubStackDesign());
@@ -58,8 +85,12 @@ describe("local.tile-processes", () => {
       "src/processes/upload-api.ts",
       "src/processes/visit-worker.ts",
       "src/runtime/admission.ts",
+      "src/runtime/amqp.ts",
+      "src/runtime/delivery.ts",
       "src/runtime/http.ts",
       "src/runtime/process.ts",
+      "src/runtime/tile-http.ts",
+      "src/runtime/tile-loop.ts",
       "src/runtime/tile-process.ts",
     ]);
     expect(paths(off).filter((path) => !paths(bundle).includes(path))).toEqual([]);
@@ -73,10 +104,14 @@ describe("local.tile-processes", () => {
     expect(http).toContain('"port": 3000');
     expect(http).toContain("scope.own(() => service.close());");
     expect(http).toContain("scope.ready();");
+    // A worker runs its loops (loop-wiring.test.ts); one with nothing to run holds a timer.
     const worker = text(bundle, "src/processes/visit-worker.ts");
     expect(worker).not.toContain("createHttpService");
-    expect(worker).toContain("const idle = setInterval(() => {}, 2 ** 30);");
-    expect(worker).toContain("scope.own(() => clearInterval(idle));");
+    expect(worker).toContain("await startModuleLoop(scope, loopLog, config.loops[0], (message) =>");
+    const idle = text(assemble(runStudioCommands(emptyWorker(), [on])), "src/processes/idle.ts");
+    expect(idle).toContain("const idle = setInterval(() => {}, 2 ** 30);");
+    expect(idle).toContain("scope.own(() => clearInterval(idle));");
+    expect(idle).not.toContain("loopLog");
   });
 
   it("composes one healthy-on-marker service per tile, with no restart policy or ports", () => {
@@ -89,23 +124,31 @@ describe("local.tile-processes", () => {
       "app-stats-api",
       "app-upload-api",
       "app-visit-worker",
+      "local-broker",
+      "setup-broker",
     ]);
+    // Only the loops' queues are provisioned yet (TP06): the two tiles with a loop need the broker.
+    const broker = { "local-broker": { condition: "service_healthy" } };
     for (const [name, service] of Object.entries(compose.services)) {
-      if (name === "app-edge") continue;
+      if (name === "app-edge" || !name.startsWith("app-")) continue;
       expect(service.command).toEqual(["node", `dist/processes/${name.slice(4)}.js`]);
       expect(service.profiles).toEqual(["application"]);
       expect(service.init).toBe(true);
-      expect(service.depends_on).toEqual({});
+      expect(service.depends_on).toEqual(
+        ["app-links-api", "app-visit-worker"].includes(name) ? broker : {},
+      );
       expect(service).not.toHaveProperty("restart");
       expect(service).not.toHaveProperty("ports");
       expect((service.healthcheck as { test: string[] }).test.at(-1)).toContain(
         "/tmp/application-ready",
       );
     }
-    // The edge starts with the processes; stubs provision nothing yet, so nothing else runs.
-    expect(JSON.parse(text(bundle, "infra/local.json")).application).toEqual(
-      Object.keys(compose.services),
+    // The edge starts with the processes; the broker is the only provider.
+    const plan = JSON.parse(text(bundle, "infra/local.json"));
+    expect(plan.application).toEqual(
+      Object.keys(compose.services).filter((name) => name.startsWith("app-")),
     );
+    expect(plan.providers).toEqual(["local-broker"]);
     const record = bundle.manifest.files.find((file) => file.path === "compose.yaml");
     expect(record?.contributors.map((item) => item.emitter.id)).toContain("local.tile-processes");
   });

@@ -1447,3 +1447,14 @@ re-key must be complete or not happen: walk the whole document afterwards for th
 refuse rather than leave half of it renamed. In an autosaving field, a clash is a field error
 that waits for the next keystroke, not a failed save to retry, and the selection, the open page
 and the field being typed in move to the new ID without remounting.
+
+## 2026-11-10 TP06: a consumer that isn't written yet must still drain its queue
+
+A runnable stub stack shows whether every tile and its queues are wired before any product code
+exists, so a consumer whose handler is missing must not crash, block or loop. "Not implemented"
+is a terminal answer: send the message to `<queue>.failed` on its first delivery, with the
+reason in a header and one rate-limited log line, and keep consuming. Only real errors earn
+retries, bounded and backed off, so one bad message can't pin a loop. A consumer's queue is its
+input, not a dependency: draw it as the module's one consume link, and give each tile that must
+see every event on a topic its own consumer tile, because consumers of one topic inside one tile
+share that tile's subscriber queue and each event reaches only one of them.

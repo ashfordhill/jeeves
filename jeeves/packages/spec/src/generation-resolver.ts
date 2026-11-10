@@ -154,7 +154,23 @@ export type NormalizedProcess = {
     template: GenerationSelection["template"];
     lead?: { module: string; name: string; kind: StudioComponentKind };
   }[];
-  stubs: { module: string; selection: string; role: "loop" | "route" | "library" }[];
+  stubs: {
+    module: string;
+    selection: string;
+    role: "loop" | "route" | "library";
+    /** A loop stub's queues, one loop each (section 5): the queue tile with its saved mode and
+     * provider, and the module link that consumes it. */
+    consumes?: NormalizedLoopQueue[];
+  }[];
+};
+/** A queue a loop stub consumes, worked out from its links as the resolver reads the design. */
+export type NormalizedLoopQueue = {
+  element: string;
+  name: string;
+  mode: "work-queue" | "topic";
+  provider: string;
+  link: string;
+  sourcePath: Path;
 };
 export type NormalizedGeneration = {
   version: 1;
@@ -1037,27 +1053,37 @@ function normalizedProcesses(
             }),
           };
         }),
-      stubs: hosted.flatMap((item) =>
-        item.module
-          ? [
+      stubs: hosted.flatMap((item) => {
+        if (!item.module) return [];
+        const consumes = item.module.slots.flatMap((slot) =>
+          slot.connections.flatMap(({ link, sourcePath, target }): NormalizedLoopQueue[] => {
+            if (target.kind !== "element" || target.channel !== "consume") return [];
+            const settings = studio?.elements.find(
+              (entry) => entry.element === target.element,
+            )?.settings;
+            if (settings?.kind !== "queue") return [];
+            return [
               {
-                module: item.module.component,
-                selection: item.id,
-                role: item.module.slots.some((slot) =>
-                  slot.connections.some(
-                    (connection) =>
-                      connection.target.kind === "element" &&
-                      connection.target.channel === "consume",
-                  ),
-                )
-                  ? ("loop" as const)
-                  : shape === "http"
-                    ? ("route" as const)
-                    : ("library" as const),
+                element: target.element,
+                name: target.name,
+                mode: settings.mode,
+                provider: settings.provider,
+                link,
+                sourcePath: structuredClone(sourcePath),
               },
-            ]
-          : [],
-      ),
+            ];
+          }),
+        );
+        return [
+          {
+            module: item.module.component,
+            selection: item.id,
+            ...(consumes.length
+              ? { role: "loop" as const, consumes }
+              : { role: shape === "http" ? ("route" as const) : ("library" as const) }),
+          },
+        ];
+      }),
     });
   });
   return rows.sort((a, b) => (a.tile < b.tile ? -1 : a.tile > b.tile ? 1 : 0));

@@ -3,6 +3,7 @@ import { assetLifecycleSchema } from "../../templates/local-v2/assets/src/runtim
 import { pointerPart } from "../json.ts";
 import { type OutboxTable, outboxSchema, receiptSchema, type SqlRelation } from "./durability.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
+import { mountedHooksGap } from "./module-stubs.ts";
 import type { V2Emitter } from "./registry.ts";
 
 export {
@@ -71,9 +72,10 @@ export function createLocalAssetLifecycle(sourcePaths: readonly string[]): V2Emi
     sourcePaths,
     dependencies: [generationRuntime.ref],
     render: ({ model, asset }) => {
-      const paths = model.selections
-        .filter((s) => s.binding.kind === "asset-lifecycle")
-        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
+      const selections = model.selections.filter((s) => s.binding.kind === "asset-lifecycle");
+      const paths = selections.map(
+        (s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`,
+      );
       if (!paths.length) return { files: [] };
       return {
         files: ["asset-sql", "asset-lifecycle", "asset-worker"].map((name) => ({
@@ -85,14 +87,19 @@ export function createLocalAssetLifecycle(sourcePaths: readonly string[]): V2Emi
           sourcePaths: paths,
         })),
         gaps: [
-          {
-            id: "asset-lifecycle-application-bindings",
-            status: "unfinished" as const,
-            required: true,
-            description:
-              "Bind metadata/result/event/job/response codecs, stable event identities, upload hooks, optional committed publication/public projection, explicit SQL contributions and worker/service construction in a compiled recipe. Dependency output alone installs no application.",
-            sourcePaths: paths,
-          },
+          mountedHooksGap(
+            model,
+            selections,
+            {
+              id: "asset-lifecycle-application-bindings",
+              status: "unfinished" as const,
+              required: true,
+              description:
+                "Bind metadata/result/event/job/response codecs, stable event identities, upload hooks, optional committed publication/public projection, explicit SQL contributions and worker/service construction in a compiled recipe. Dependency output alone installs no application.",
+              sourcePaths: paths,
+            },
+            "a message that reaches one ends in its queue's .failed",
+          ),
         ],
       };
     },

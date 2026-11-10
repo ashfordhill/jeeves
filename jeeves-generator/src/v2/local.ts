@@ -1,6 +1,6 @@
 import { generationCapabilities, generationLocalIdentity, generationRuntime } from "@jeeves/spec";
 import { jsonFile, pointerPart, refuse } from "../json.ts";
-import type { V2LocalContribution } from "./local-contract.ts";
+import { stubProvisioned, type V2LocalContribution } from "./local-contract.ts";
 import {
   type V2Emitter,
   type V2Gap,
@@ -225,6 +225,45 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       resourceMap.set(id, resource);
     }
   }
+  // Runnable processes: each queue a loop stub consumes is provisioned for the stub's tile, from
+  // its link (tile process contract, sections 5-6). Nothing is written to ownership.
+  for (const process of model.processes ?? [])
+    for (const stub of process.stubs)
+      for (const queue of stub.consumes ?? []) {
+        if (!stubProvisioned(queue.provider)) {
+          gaps.push({
+            id: `provider-${stub.selection}-${queue.element}`,
+            required: true,
+            status: "unsupported",
+            description: `${queue.name} uses the ${queue.provider} provider; a stub's queue is provisioned locally only when its provider is unspecified or self-hosted.`,
+            sourcePaths: [
+              `/${queue.sourcePath.map((part) => pointerPart(String(part))).join("/")}`,
+            ],
+          });
+          continue;
+        }
+        provenance([queue.sourcePath]);
+        const identity = generationLocalIdentity(queue.element);
+        const id = providerName(identity.local);
+        const existing = resourceMap.get(id);
+        if (existing && (existing.kind !== "queue" || existing.mode !== queue.mode))
+          refuse(
+            "LOCAL_RESOURCE_CONFLICT",
+            id,
+            "A stub's queue disagrees with its selected kind/mode.",
+          );
+        const resource = existing ?? {
+          id,
+          kind: "queue",
+          sql: identity.sql,
+          public: false,
+          mode: queue.mode,
+          users: [],
+        };
+        if (!resource.users.some((u) => u.host === process.tile && u.channel === "consume"))
+          resource.users.push({ host: process.tile, authorized: true, channel: "consume" });
+        resourceMap.set(id, resource);
+      }
   const resources = sort([...resourceMap.values()]);
   const byKind = (kind: string) => resources.filter((r) => r.kind === kind);
   const required = (id: string, kind?: string) => {
@@ -944,7 +983,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes and loops. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), and \`pnpm stop\` drains the loops. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes and loops. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
           : ""
       }`,
     ),

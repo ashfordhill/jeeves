@@ -99,7 +99,12 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       ready,
       'GET /modules/search-query → 501 "Not implemented: search mapping and query preset for Video search" (placeholder)',
     ]);
-    expect(rows(v2).tiles.flatMap((row) => row.templates)).toEqual([
+    // The HTTP processes' templates; the worker templates run loops (loop-wiring.test.ts).
+    expect(
+      rows(v2)
+        .tiles.filter((row) => row.routes.length)
+        .flatMap((row) => row.templates),
+    ).toEqual([
       { selection: "search-query", template: "search-query", level: "placeholder" },
       { selection: "upload-multipart", template: "owned-multipart", level: "mounted" },
       { selection: "watch-cache-reader", template: "positive-cache-read", level: "mounted" },
@@ -112,7 +117,8 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(links).toContain(
       'import type { Dependencies as LinkReaderDependencies } from "../modules/links-api/link-reader.slots.ts";',
     );
-    expect(links).not.toContain("upload-consumer");
+    // Its Upload consumer is a loop, not a route.
+    expect(links).not.toContain('stubRoutes(routes, log, "upload-consumer"');
     expect(
       json(stack, ".jeeves/normalized.json").processes.find(
         (row: { tile: string }) => row.tile === "preview-api",
@@ -260,8 +266,13 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     ])
       expect(upload).toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
     expect(upload).toContain("const upload: UploadHooks<unknown, unknown> = {");
-    // Search query is a placeholder: no hooks file.
-    expect(v2.files.map((file) => file.path).filter((path) => path.endsWith(".hooks.ts"))).toEqual([
+    // Search query is a placeholder: no hooks file. The worker templates' are in
+    // loop-wiring.test.ts.
+    expect(
+      v2.files
+        .map((file) => file.path)
+        .filter((path) => /^src\/modules\/(upload|watch|search)\/.*\.hooks\.ts$/.test(path)),
+    ).toEqual([
       "src/modules/upload/upload-multipart.hooks.ts",
       "src/modules/watch/watch-cache-reader.hooks.ts",
     ]);
@@ -269,7 +280,9 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       bundle.manifest.files.find((file) => file.path === path)?.ownership;
     expect(owned(v2, "src/modules/upload/upload-multipart.hooks.ts")).toBe("generated-extension");
     expect(
-      rows(v2).tiles.flatMap((row) => row.hooks.map((item) => [item.file, item.hooks.length])),
+      rows(v2)
+        .tiles.filter((row) => row.routes.length)
+        .flatMap((row) => row.hooks.map((item) => [item.file, item.hooks.length])),
     ).toEqual([
       ["src/modules/upload/upload-multipart.hooks.ts", 9],
       ["src/modules/watch/watch-cache-reader.hooks.ts", 5],
@@ -311,23 +324,29 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       },
       secrets: ["sql-previews-db--preview-api", "cache-previews-cache"],
     });
-    // Stubs provision nothing yet (TP07).
-    expect(services["app-links-api"].depends_on).toEqual({});
+    // Route stubs provision nothing yet (TP07); Links API's loop needs only the broker (TP06).
+    expect(services["app-links-api"].depends_on).toEqual({
+      "local-broker": { condition: "service_healthy" },
+    });
     // Multipart: its private schema with the uploads table and jobs outbox, granted to its host.
+    // The asset lifecycle shares the schema and the outbox, which also carries its publication.
     const v2Plan = json(v2, "infra/local.json");
     expect(
-      v2Plan.grants.map(
-        (item: { host: string; schema: string; relation: string; privileges: string[] }) =>
-          `${item.host} ${item.schema}.${item.relation} ${item.privileges.join(",")}`,
-      ),
+      v2Plan.grants
+        .filter((item: { host: string }) => item.host === "upload")
+        .map(
+          (item: { host: string; schema: string; relation: string; privileges: string[] }) =>
+            `${item.host} ${item.schema}.${item.relation} ${item.privileges.join(",")}`,
+        ),
     ).toEqual([
+      "upload upload_multipart.assets SELECT,INSERT,UPDATE",
       "upload upload_multipart.uploads SELECT,INSERT,UPDATE",
       "upload upload_multipart.outbox SELECT,INSERT,UPDATE",
     ]);
     const sql = text(v2, "infra/postgres/metadata-db/100-upload-multipart.sql");
     expect(sql).toContain('CREATE TABLE "upload_multipart"."uploads" (');
     expect(sql).toContain('CREATE TABLE "upload_multipart"."outbox" (');
-    expect(sql).toContain("destination IN ('jobs')");
+    expect(sql).toContain("destination IN ('jobs','publication')");
     expect(json(v2, "compose.yaml").services["app-upload"]).toMatchObject({
       depends_on: {
         "identity-identity": { condition: "service_healthy" },
@@ -356,7 +375,8 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         return !before || Buffer.compare(Buffer.from(before.bytes), Buffer.from(file.bytes)) !== 0;
       })
       .map((file) => file.path);
-    // Route stubs only; loop and library stubs, scaffolds and dependencies.ts keep their bytes.
+    // Route and loop stubs (loop-wiring.test.ts); library stubs, other scaffolds and
+    // dependencies.ts keep their bytes.
     expect(changed).toEqual([
       "src/modules/entry.ts",
       "src/modules/links-api/limiter.ts",
@@ -364,10 +384,14 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       "src/modules/links-api/link-reader.ts",
       "src/modules/links-api/redirector.ts",
       "src/modules/links-api/stats-caller.ts",
+      "src/modules/links-api/upload-consumer.slots.ts",
+      "src/modules/links-api/upload-consumer.ts",
       "src/modules/links-api/visit-publisher.ts",
       "src/modules/stats-api/stats-search.ts",
       "src/modules/upload-api/archive-upload.ts",
       "src/modules/upload-api/upload-publisher.ts",
+      "src/modules/visit-worker/visit-consumer.slots.ts",
+      "src/modules/visit-worker/visit-consumer.ts",
     ]);
     expect(text(stack, "src/modules/links-api/redirector.ts")).toBe(
       [

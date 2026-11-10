@@ -565,12 +565,16 @@ test("a cache read built by mouse previews its template for the lead and its par
   expect(errors).toEqual([]);
 });
 
-test("Runnable processes is saved by its checkbox: Preview lists the processes, Undo unticks it and a study refuses it", async ({
+test("Runnable processes is saved by its checkbox: Preview lists the processes and loops, Undo unticks it and a study refuses it", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  const id = await build(page, "E2E Runnable processes", [["Consume", "Microservice"]]);
+  const id = await build(page, "E2E Runnable processes", [
+    ["Consume", "Microservice"],
+    ["Microservice", "Queue or topic"],
+    ["Queue or topic", "Worker service"],
+  ]);
   let study: string | undefined;
   const generation = async (project: string) =>
     (await (await page.request.get(`/api/projects/${project}/design`)).json()).design as {
@@ -580,6 +584,19 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes, 
   try {
     await tile(page, "Microservice").click();
     await addModule(page, "Microservice", "Rate limiter");
+    // A Worker's Event consumer, connected to the queue, runs a loop on it.
+    await tile(page, "Worker service").click();
+    await addModule(page, "Worker service", "Event consumer");
+    await page.getByRole("button", { name: "Detailed", exact: true }).click();
+    await ready(page);
+    await page.keyboard.press("c");
+    await dragOnto(page, dot(page, "worker-service-event-consumer"), tile(page, "Queue or topic"));
+    await page.mouse.up();
+    await expect(dot(page, "worker-service-event-consumer")).toHaveAttribute(
+      "data-connected",
+      "true",
+    );
+    await page.keyboard.press("v");
     const generate = page.getByRole("button", { name: "Generate project", exact: true });
     await generate.click();
     const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
@@ -597,13 +614,23 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes, 
     const preview = await (await result).json();
     expect(preview.report.processes).toMatchObject({
       runnable: true,
-      tiles: [{ tile: "microservice", service: "app-microservice", shape: "http" }],
+      tiles: [
+        { tile: "microservice", service: "app-microservice", shape: "http", loops: [] },
+        {
+          tile: "worker-service",
+          service: "app-worker-service",
+          shape: "worker",
+          loops: [{ queue: "queue-or-topic", module: "worker-service-event-consumer" }],
+        },
+      ],
     });
-    await expect(dialog.getByText("Processes · 1 · runnable")).toBeVisible();
+    await expect(dialog.getByText("Processes · 2 · runnable")).toBeVisible();
     const rows = dialog
       .getByRole("list", { name: "Runnable processes", exact: true })
       .getByRole("listitem");
-    await expect(rows).toHaveCount(1);
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(1)).toContainText("Worker service app-worker-service · worker");
+    await expect(rows.nth(1)).toContainText("loop on queue-or-topic");
     await expect(rows.nth(0)).toContainText(
       "Microservice app-microservice · HTTP, public · at /api/microservice/",
     );

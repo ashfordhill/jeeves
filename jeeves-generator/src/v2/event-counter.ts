@@ -7,6 +7,7 @@ import {
 import { pointerPart } from "../json.ts";
 import type { SqlRelation } from "./durability.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
+import { mountedHooksGap } from "./module-stubs.ts";
 import type { V2Emitter } from "./registry.ts";
 
 export { type CounterTables, counterSchema, counterTotalsSelect };
@@ -93,9 +94,10 @@ export function createLocalEventCounter(sourcePaths: readonly string[]): V2Emitt
       };
     },
     render: ({ model, asset }) => {
-      const paths = model.selections
-        .filter((s) => s.binding.kind === "event-counter")
-        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
+      const selections = model.selections.filter((s) => s.binding.kind === "event-counter");
+      const paths = selections.map(
+        (s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`,
+      );
       if (!paths.length) return { files: [] };
       return {
         files: ["counter-sql", "counter-read", "event-counter", "counter-worker"].map((name) => ({
@@ -107,14 +109,19 @@ export function createLocalEventCounter(sourcePaths: readonly string[]): V2Emitt
           sourcePaths: paths,
         })),
         gaps: [
-          {
-            id: "event-counter-application-bindings",
-            required: true,
-            status: "unfinished" as const,
-            description:
-              "Bind an actual qualifying event codec/stable identity, explicit counter tables/public view/runtime access, and construct the counter consumer and fresh totals reader in compiled services. Dependency output alone installs no application.",
-            sourcePaths: paths,
-          },
+          mountedHooksGap(
+            model,
+            selections,
+            {
+              id: "event-counter-application-bindings",
+              required: true,
+              status: "unfinished" as const,
+              description:
+                "Bind an actual qualifying event codec/stable identity, explicit counter tables/public view/runtime access, and construct the counter consumer and fresh totals reader in compiled services. Dependency output alone installs no application.",
+              sourcePaths: paths,
+            },
+            "a message that reaches one ends in its queue's .failed",
+          ),
         ],
       };
     },

@@ -37,6 +37,7 @@ export function mountedHooksGap(
   model: NormalizedGeneration,
   selections: readonly NormalizedGenerationSelection[],
   gap: V2Gap,
+  answers = "its route answers 501",
 ): V2Gap {
   const files = selections.map((s) =>
     s.target.kind === "component" ? moduleHooksPath(s.host, s.target.component) : undefined,
@@ -46,7 +47,7 @@ export function mountedHooksGap(
     ...gap,
     status: "custom",
     required: true,
-    description: `Write the product hooks in ${files.join(", ")}; until then each throws "Not implemented" and its route answers 501.`,
+    description: `Write the product hooks in ${files.join(", ")}; until then each throws "Not implemented" and ${answers}.`,
   };
 }
 
@@ -87,16 +88,19 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
       ];
       const gaps: V2Gap[] = [];
       // With Runnable processes on, a route stub takes the request its tile's process routes to it
-      // (`src/modules/entry.ts`, written by the processes owner).
-      const routes = new Set(
+      // and a loop stub each message its loops consume (`src/modules/entry.ts`, written by the
+      // processes owner). Library stubs, and every stub with the option off, keep their files.
+      const roles = new Map(
         (model.processes ?? []).flatMap((process) =>
-          process.stubs.filter((stub) => stub.role === "route").map((stub) => stub.module),
+          process.stubs.flatMap((stub) =>
+            stub.role === "library" ? [] : [[stub.module, stub.role] as const],
+          ),
         ),
       );
       for (const selection of selections) {
         const module = selection.module;
         if (module) {
-          files.push(...stubFiles(selection, module, routes.has(module.component)));
+          files.push(...stubFiles(selection, module, roles.get(module.component)));
           gaps.push(stubGap(selection, module));
         }
       }
@@ -187,8 +191,10 @@ export function moduleEntryName(module: string) {
 function stubFiles(
   selection: NormalizedGenerationSelection,
   module: NormalizedStubModule,
-  route: boolean,
+  role: "route" | "loop" | undefined,
 ) {
+  const route = role === "route";
+  const loop = role === "loop";
   const paths = moduleStubPaths(selection.host, module.component);
   const file = (path: string) => path.slice(path.lastIndexOf("/") + 1);
   const kind = kindName(module.kind);
@@ -221,13 +227,20 @@ function stubFiles(
       for (let n = 2; used.has(property); n += 1) property = `${camel(id)}${n}`;
       used.add(property);
       const type = dependencyType(slot, connection);
-      types.add(type);
       const use = linkUse(slot, connection);
       const what =
         target.kind === "component"
           ? `${target.name} (${kindName(target.module)} in this tile)`
           : `${target.name} (${studioDefinitions[target.tile].name}) through ${target.connection}`;
-      members.push(`  // ${slot.id}: ${what}, ${words(use)}`, `  ${property}: ${type};`);
+      // A loop stub's consumed queue is its input, not a dependency (tile process contract, §4).
+      const input = loop && target.kind === "element" && target.channel === "consume";
+      if (!input) types.add(type);
+      members.push(
+        `  // ${slot.id}: ${what}, ${words(use)}`,
+        input
+          ? `  // ${property}: its loop delivers each message to the entry point.`
+          : `  ${property}: ${type};`,
+      );
       descriptors.push(
         `  ${JSON.stringify(
           target.kind === "component"
@@ -274,6 +287,7 @@ function stubFiles(
     `// ${named} in ${line(module.hostName)}: ${line(description)}`,
     "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
     ...(route ? ['import type { ModuleRequest, ModuleResponse } from "../entry.ts";'] : []),
+    ...(loop ? ['import type { ModuleMessage } from "../entry.ts";'] : []),
     `import type { Dependencies } from "./${file(paths.slots)}";`,
     "",
     ...(route
@@ -281,7 +295,12 @@ function stubFiles(
           `/** Answers any method on /modules/${generationLocalIdentity(module.component).local} and every path below it. */`,
           `export async function ${entry}(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {`,
         ]
-      : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
+      : loop
+        ? [
+            '/** Handles each message from the queues it consumes. "Not implemented" sends the message to its queue\'s .failed; any other error is retried. */',
+            `export async function ${entry}(dependencies: Dependencies, message: ModuleMessage): Promise<void> {`,
+          ]
+        : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
     `  throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
     "}",
     "",

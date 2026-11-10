@@ -1,8 +1,3 @@
-import type { FastifyRequest } from "fastify";
-import { HttpError } from "./admission.ts";
-import type { HttpRoutes } from "./http.ts";
-import type { ModuleRequest, ModuleResponse } from "../modules/entry.ts";
-
 /** What a generated hook or a stub throws until it is written. */
 export class NotImplemented extends Error {
   constructor(what: string) {
@@ -17,20 +12,16 @@ export function isNotImplemented(error: unknown): error is Error {
     (error instanceof Error && error.message.startsWith("Not implemented"))
   );
 }
+/** What was not implemented: the error's message without its "Not implemented:" prefix. */
+export function notImplementedWhat(error: Error): string {
+  return error.message.replace(/^Not implemented:?\s*/, "");
+}
 
-export type NotImplementedLog = (entry: {
-  module: string;
-  what: string;
-  action: string;
-  route?: string;
-  queue?: string;
-  messageId?: string;
-}) => void;
-/** One JSON line per module and hook per second; the next line carries how many it suppressed. */
-export function createNotImplementedLog(tile: string): NotImplementedLog {
+/** One JSON line on stdout, at most once a second per key; the next line carries how many were
+ * suppressed. The log never throws. */
+export function createProcessLog(tile: string, level: "warn" | "error", event: string) {
   const seen = new Map<string, { at: number; suppressed: number }>();
-  return (entry) => {
-    const key = `${entry.module}\u0000${entry.what}`;
+  return (key: string, entry: Record<string, unknown>) => {
     const now = Date.now();
     const prior = seen.get(key);
     if (prior && now - prior.at < 1000) {
@@ -41,8 +32,8 @@ export function createNotImplementedLog(tile: string): NotImplementedLog {
     seen.set(key, { at: now, suppressed: 0 });
     console.log(
       JSON.stringify({
-        level: "warn",
-        event: "not-implemented",
+        level,
+        event,
         tile,
         ...entry,
         ...(prior?.suppressed ? { suppressed: prior.suppressed } : {}),
@@ -51,66 +42,18 @@ export function createNotImplementedLog(tile: string): NotImplementedLog {
   };
 }
 
-/** A module's routes: "Not implemented" answers 501 with one rate-limited log line. Any other
- * error keeps the HTTP service's own mapping (an HttpError its status, anything else 503). */
-export function notImplementedRoutes(
-  routes: HttpRoutes,
-  log: NotImplementedLog,
-  module: string,
-): HttpRoutes {
-  return {
-    route({ handler, ...route }) {
-      routes.route({
-        ...route,
-        async handler(request, reply) {
-          try {
-            return await handler.call(this, request, reply);
-          } catch (error) {
-            if (!isNotImplemented(error)) throw error;
-            log({
-              module,
-              what: error.message.replace(/^Not implemented:?\s*/, ""),
-              route: `${request.method} ${route.url}`,
-              action: "answered 501",
-            });
-            throw new HttpError(501, "NOT_IMPLEMENTED", error.message);
-          }
-        },
-      });
-    },
-  };
-}
-
-const anyMethod = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"] as const;
-function moduleRequest(request: FastifyRequest): ModuleRequest {
-  const rest = (request.params as { "*"?: string })["*"];
-  return {
-    method: request.method,
-    path: `/${rest ?? ""}`,
-    query: request.query as ModuleRequest["query"],
-    headers: request.headers,
-    body: request.body,
-  };
-}
-/** A route stub answers any method on /modules/<module> and every path below it. */
-export function stubRoutes(
-  routes: HttpRoutes,
-  log: NotImplementedLog,
-  module: string,
-  entry: (request: ModuleRequest) => Promise<ModuleResponse>,
-): void {
-  const mounted = notImplementedRoutes(routes, log, module);
-  for (const url of [`/modules/${module}`, `/modules/${module}/*`])
-    mounted.route({
-      method: [...anyMethod],
-      url,
-      async handler(request, reply) {
-        const response = await entry(moduleRequest(request));
-        reply.code(response.status ?? 200);
-        for (const [name, value] of Object.entries(response.headers ?? {})) reply.header(name, value);
-        return response.body;
-      },
-    });
+export type NotImplementedLog = (entry: {
+  module: string;
+  what: string;
+  action: string;
+  route?: string;
+  queue?: string;
+  messageId?: string;
+}) => void;
+/** One line per module and hook per second (tile process contract, section 5). */
+export function createNotImplementedLog(tile: string): NotImplementedLog {
+  const log = createProcessLog(tile, "warn", "not-implemented");
+  return (entry) => log(`${entry.module}\u0000${entry.what}`, entry);
 }
 
 /** Until its stores are provisioned, each of a stub's dependencies answers "Not implemented". */

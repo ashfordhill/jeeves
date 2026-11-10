@@ -1270,15 +1270,19 @@ module-level selection with "Add a module first."; the reason shows under the ch
 nothing is saved. With it on, the export runs every Service, Uploads and Worker tile (and the
 older Redirect, Billing and Notifications kinds) as its own Compose service, `app-<tile id>`,
 including tiles with no modules: an HTTP process answers `/healthz` and its module routes, a
-worker stays up idle, and both are healthy once ready. One edge, `app-edge`, publishes each
-public HTTP tile (a lane entry, or saved public) at `/api/<tile id>/`; internal tiles are reached
-only inside the stack. In an HTTP tile, each stub that consumes no queue answers any method on
-`/modules/<module id>` and below, Multipart uploads and Cache reader run their templates with a
-generated `<lead>.hooks.ts`, and Search query is a placeholder; each answers 501 "Not
-implemented" until written. Preview's **Processes** list shows the edge's paths, then each
-process with its service, shape, edge path and routes, and whether the stack is runnable;
-`first-run` starts the processes only while it is. Consumer loops and stub stores come later.
-With it off, the export is exactly as before.
+worker runs its loops (or stays up idle), and both are healthy once ready. One edge, `app-edge`,
+publishes each public HTTP tile (a lane entry, or saved public) at `/api/<tile id>/`; internal
+tiles are reached only inside the stack. In an HTTP tile, each stub that consumes no queue
+answers any method on `/modules/<module id>` and below, Multipart uploads and Cache reader run
+their templates with a generated `<lead>.hooks.ts`, and Search query is a placeholder; each
+answers 501 "Not implemented" until written. In any tile, a stub connected to consume a queue
+runs a loop on it (the queue is provisioned), and the asset lifecycle, Video HLS and event
+counter run their workers with a generated `<lead>.hooks.ts` (the search projection is a
+placeholder loop). A message that reaches "Not implemented" goes to its queue's `.failed` with
+one log line, and the process stays healthy. Preview's **Processes** list shows the edge's
+paths, then each process with its service, shape, edge path, routes and loops ("loop on
+<queue>"), and whether the stack is runnable; `first-run` starts the processes only while it
+is. Stores that stubs use otherwise come later. With it off, the export is exactly as before.
 
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:

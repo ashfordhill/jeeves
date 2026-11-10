@@ -53,3 +53,8 @@ export type V2LocalContribution = {
   }[];
 };
 export type V2LocalContributor = (context: V2RenderContext) => V2LocalContribution | undefined;
+
+/** A stub's store is provisioned locally when its saved provider is unspecified or self-hosted;
+ * any other provider is an `unsupported` gap (tile process contract, section 6). */
+export const stubProvisioned = (provider: string) =>
+  provider === "unspecified" || provider === "self-hosted";

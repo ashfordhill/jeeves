@@ -8601,3 +8601,89 @@ also creates `outbox`, so merge them (one outbox with `jobs` and `publication`).
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP06: consume loops
+
+Per the [tile processes plan](plans/tile-processes/units.md) (Owner decision 4) and
+[contract](plans/tile-processes/contract.md) §3–5. Docs: the generator README (consume loops,
+failed queues, retry policy, provisioning), `studio.md` (Experimental project export), a playbook
+lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[tp06](plans/tile-processes/evidence/tp06/README.md).
+
+- **Resolver:** a loop stub's row in `model.processes[].stubs` gains `consumes` (`NormalizedLoopQueue`:
+  queue element, name, saved mode and provider, link, source path). Only with the option on.
+- **Runtime scaffolds:** `tile-process.ts` is now dependency-free (`NotImplemented`, the generic
+  rate-limited `createProcessLog`, `createNotImplementedLog`, `unprovisioned`); the 501 wrapper and
+  `stubRoutes` moved to `tile-http.ts` (HTTP processes only); new `tile-loop.ts` (any loop):
+  `startModuleLoop` on `createConsumer` and the delivery runner, `moduleHandler` ("Not implemented"
+  → `NonRetryable("NOT_IMPLEMENTED")` with one log line; other errors wait
+  `retryDelay(n) = min(250 ms × 2^(n−1), 10 s)` then rethrow, 5 retries, then `RETRY_EXHAUSTED`;
+  stopping aborts the wait), `createLoopLog` (`not-implemented` and `loop-error` lines),
+  `watchHooks`/`templateHandler` (an AsyncLocalStorage note of the hook a message reached, so a
+  template loop's line names it while the template keeps its own decision).
+- **Wiring** (`src/v2/loop-wiring.ts`, used by `tile-processes.ts` beside `http-wiring.ts`; the
+  mount type is now `ProcessMount` with `loops` rows): loop stubs (one loop per consumed queue,
+  concurrency 1, before the HTTP service so they drain after it); asset lifecycle
+  (`startAssetLifecycleWorker` on the new `<results>--<tile>` subscriber, publication relay, its
+  `assets`/`receipts` in the upload selection's schema, one shared outbox `jobs`+`publication`
+  created by the multipart migration, logins and grants); Video HLS (`startMediaWorker` after
+  `verifyVideoRuntime()`, `target: media`); event counter (`startCounterWorker`, `receipts`,
+  `totals`, view `<schema>_public.totals`); search projection placeholder loop. Hooks files for
+  the three mounted leads; their gaps become `custom` (`mountedHooksGap` takes the answer wording).
+- **Stubs:** a loop stub's `<module>.ts` takes `(dependencies, message: ModuleMessage)`; its
+  `.slots.ts` turns the consumed property into a comment (descriptor kept, `QueueConsumer` import
+  dropped). Off: unchanged bytes.
+- **Provisioning:** the foundation adds each queue a loop stub consumes (provider unspecified or
+  self-hosted, `stubProvisioned` in `local-contract.ts`) as a resource with a consume user for the
+  stub's tile; the processes owner contributes its `broker` subscriber rows (and the lifecycle's).
+  Other providers: required `unsupported` gap `provider-<module>-<queue>`, not runnable.
+  Primitives emit `amqp.ts`/`delivery.ts` for a loop stub. Report rows list `loops`.
+
+**Deviations / clarifications:** (1) Contract §5 says a waiting message "is left unacked"; the
+unchanged delivery runner republishes a failed message even while closing, so a stop that cuts a
+retry wait short republishes it for its next attempt (attempt count +1) before closing;
+undelivered prefetched messages stay unacked. (2) The template hook "logs" through the process's
+`watchHooks` wrapper, not inside the hooks file. (3) A failed message that reached no
+unimplemented hook logs a `loop-error` line (not in the contract). (4) `ModuleMessage.source` is
+the consumed queue's name. (5) Template loops keep their envelope rule: a message without a
+`messageId` is `MALFORMED_MESSAGE` before any hook (logged as `loop-error`). (6) Two loops in one
+tile on one topic share `<topic>--<tile>`, so each message reaches one of them (README limit).
+
+**Tests.** New `tile-loop.test.ts` (7: emitted scaffold on the real delivery runner — terminal,
+rate limit, retry/backoff timings, drain cutting a wait, drain waiting for the message in hand,
+template hook naming) and `loop-wiring.test.ts` (7). Updated `tile-processes.test.ts`,
+`http-wiring.test.ts`, spec `runnable-processes.test.ts` (consumes), e2e `module-authoring.spec.ts`
+(the processes test now connects a Worker's Event consumer by mouse and checks "loop on
+queue-or-topic"; alone: passed, 10.1 s).
+
+**Checks.** `pnpm check` exited 0: **616 tests in 87 files** (lint: only the existing info).
+**E2E: 67 passed (4.3m)** on the first full run. Web build passed (996ms, the existing
+chunk-size advisory). `jeeves_e2e` has no leftover projects.
+
+**Gates.** Off pin passes. Frozen v2: fresh `export:v2` 72 files, 70 byte-identical to
+`generic-export.tar.gz`; manifest/report equal without inventory. v1 byte-identical. YouTube
+Overview PNG `472a4c8c…dc9f`. **Docker** (`jeeves-tp06-loops`, 45460–45462): first-run 47.2 s;
+`visits--visit-worker` and `uploaded` 1 consumer each; one message to Visits and one to Uploaded
+each logged one `not-implemented` line and landed in its `.failed` with `x-terminal-code:
+NOT_IMPLEMENTED`, attempt 1; all healthy 95 s later, 0 restarts, no restart policy; stop 2.1 s
+(all exit 0), start 26.1 s, both dead letters kept and loops resubscribed; a burst after restart
+logged once then `suppressed: 4`. **Optional v2 smoke done** (`jeeves-tp06-v2`, 45463–45465):
+first-run 129.1 s, all 8 `app-*` healthy (transcoder on the media image), each worker queue 1
+consumer; one message each reached `.failed` with the hook named. Cleanup verified against the
+owner's recorded Docker state (volumes, networks, image tags, ports, container IDs; 42 healthy).
+
+**Mouse check** (scripted Chromium; my API 4376 with scratch DB `jeeves_tp06`, now dropped, and
+Vite 4366): TinyURL 7 tiles and 7 lines at both sizes; blank → Consume → Microservice → Queue or
+topic → Worker service, an Event consumer connected to the queue with the Connect tool, Generate
+project, tick, Preview: "Processes · 2 · runnable", "loop on queue-or-topic". No page errors (the
+PNG export's canvas readback warning aside). All projects deleted.
+
+**For TP07.** Route and loop stubs still get `unprovisioned<Deps>(name)` (`routeStub` in
+`http-wiring.ts`, `stubLoops` in `loop-wiring.ts`); replace both with `module-clients.ts`. The
+foundation's stub-queue block in `local.ts` (after the selection loop) and `stubProvisioned` are
+the place to generalize stub provisioning; the resolver's `consumes` covers only consumed queues,
+so publishers (Visit/Upload publisher) and other stores need their own facts. `tile-loop.ts`'s
+`loopBroker` duplicates `service-resources`' `broker` for stub-only designs.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.
