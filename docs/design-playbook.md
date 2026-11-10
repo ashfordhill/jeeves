@@ -1471,3 +1471,16 @@ make "healthy" mean "reached": one bounded startup check per client, with what i
 allows (a write-only bucket key can't list or head the bucket), so a process that is up has
 answered every store it uses with its own credentials, and a wrong grant fails at start, not on
 the first request.
+
+## 2026-11-10 TP08: a running stack proves wiring up to the first unwritten hook
+
+Running every tile of a design built from modules shows that each process starts, reaches its
+stores and answers, but each request or message stops at the first product hook its handler
+reaches: every upload route at `principal`, every cache read at `key`, each worker at its codec.
+Five of 37 hooks were reached; what lies behind them has never run in a process. So read a green
+stack as "wired", not "works": fill hooks in the order a request reaches them and run again after
+each, because each run then reaches one hook further. Make that order visible: name the hook in
+every answer, and give the dead letter the same reason as the log line ("not implemented", not
+"malformed" for a codec nobody has written). Make startup say what it checked, too: stub clients
+log one probe line each, but template processes only said "ready", so their migrations, sweeps,
+FFmpeg check and subscriptions had to be confirmed from the database, the broker and the source.

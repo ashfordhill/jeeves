@@ -8756,3 +8756,62 @@ JVM); every `app-*` exits 0.
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP08: run the rebuild
+
+Per the [tile processes plan](plans/tile-processes/units.md) and [contract](plans/tile-processes/contract.md)
+§8. Acceptance only: no code changed and no defect needed fixing. Docs: the evidence, a playbook
+lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[tp08](plans/tile-processes/evidence/tp08/README.md).
+
+- **Stub stack** (`jeeves-tp08-stub`, 45480–45482): exported with processes on (71 files,
+  runnable); install 0.3 s, build 0.4 s, first-run 63.8 s; edge and 4 `app-*` healthy (also 66 s
+  after the last request), 0 restarts. 43 requests: 34 stub 501s naming the stub (any method and
+  subpath, Stats search inside the network), 404 for internal, unknown and loop paths. One message
+  each to Visits and Uploaded: one `not-implemented` line each, both in `.failed` with
+  `NOT_IMPLEMENTED`, attempt 1. Every resource and all 8 probes as in TP07. Stop 2.9 s, start
+  42.5 s: same 10 secret hashes, 5 volumes, dead letters, answers; a second pair after the restart
+  went the same way.
+- **v2 module design** (`moduleAuthored(tileLevelTwin(), installed)`, `jeeves-tp08-v2`,
+  45483–45485): 98 files, runnable; first-run 113.7 s; 8 `app-*` and 6 providers healthy, 0
+  restarts. Migrations in `d_metadata_db` (3) and `d_view_counts` (2), 1 consumer per queue,
+  FFmpeg verified before ready, sweep and relay seen in Postgres statistics. Upload's six routes
+  501 `principal`, cache read 501 `key`, search query 501 (placeholder), Watch's two stubs 501.
+  Messages to the four worker queues each reached `.failed` with the hook logged
+  (`MALFORMED_MESSAGE` for the three codecs, `NOT_IMPLEMENTED` for the search placeholder). Stop
+  4.5 s, start 62.8 s: same 19 secrets, volumes, dead letters and answers. Per-tile table in the
+  evidence. By mouse, ticking Runnable processes on the replayed design and downloading the ZIP
+  gave the same 98 files, byte for byte.
+- **Off:** the pre-TP04 generator (`git archive 55bf76c` into scratch) and today's both export
+  frozen v2, the v2 module design and the stub stack with processes off alike (72/77/52 files;
+  every payload byte; provenance equal without inventory), and match TP04's off pin. Frozen v2
+  70 of 72 byte-identical to `generic-export.tar.gz`. v1 byte-identical. YouTube Overview PNG
+  `472a4c8c…dc9f`.
+
+**Findings** (none blocks the goal; ranked): (1) a run reaches only the first unwritten hook on
+each path, 5 of 37; (2) template processes log only "Application ready", so their startup work is
+invisible in logs; (3) template dead letters say `MALFORMED_MESSAGE` for an unwritten codec;
+(4) the cache read's source login and stub logins have no table grants, so a written `load` needs
+a scaffold edit; (5) search stays placeholders, and the indexer probes no search client; (6) not
+exercised: broker loss, stub retries in Docker, Identity for stubs; (7) the v2 stack is about
+2.3 GiB at rest.
+
+**Checks.** `pnpm check` exited 0: **630 tests in 89 files** (lint: only the existing info).
+**E2E: 66 passed, 1 failed (4.4 m)** on the full run: `module-authoring.spec.ts:497` timed out in
+its `build` helper waiting for Microservice's "Add linked tile"; **rerun alone it passed (9.1 s)**.
+Its leaked project was deleted from `jeeves_e2e`. Web build passed (1.04 s, the existing
+chunk-size advisory). **Mouse check** (scripted Chromium; my API 4378 with scratch DB
+`jeeves_tp08`, now dropped, and Vite 4368): TinyURL 7 tiles and 7 lines at 1440×900 and
+1280×800; no page or console errors; all projects deleted.
+
+**Cleanup.** Both projects down with volumes, three image tags removed, scratch exports and
+runtime secrets deleted. The owner's container IDs, volumes, networks and image tag/digest lists
+match the record; 42 healthy, both edges 200, only 45400–45402 listen in 454xx.
+
+**For TP09.** Check the hooks past the first one by writing one in a scratch copy (not in the
+generator), and decide with the owner whether template dead letters should say
+`NOT_IMPLEMENTED` and whether template startup should log its checks. TP06's scratch exports
+with runtime secrets were still in the shared scratchpad (`out-stub`, `out-v2`); I left them.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

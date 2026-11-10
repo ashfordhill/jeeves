@@ -1,0 +1,12 @@
+$ COMPOSE_PROJECT_NAME=jeeves-tp08-stub docker compose --profile '*' ps   # after pnpm stop and pnpm start
+SERVICE              STATE     STATUS                        PORTS
+app-edge             running   Up 35 seconds (healthy)       80/tcp, 127.0.0.1:45480->8080/tcp
+app-links-api        running   Up 44 seconds (healthy)       
+app-stats-api        running   Up 45 seconds (healthy)       
+app-upload-api       running   Up 44 seconds (healthy)       
+app-visit-worker     running   Up 44 seconds (healthy)       
+cache-links-cache    running   Up About a minute (healthy)   6379/tcp
+local-broker         running   Up About a minute (healthy)   4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 15691-15692/tcp, 25672/tcp
+local-objects        running   Up About a minute (healthy)   127.0.0.1:45482->3900/tcp
+local-postgres       running   Up About a minute (healthy)   5432/tcp
+search-stats-index   running   Up About a minute (healthy)   9200/tcp, 9300/tcp, 9600/tcp, 9650/tcp
