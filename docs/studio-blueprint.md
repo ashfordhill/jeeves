@@ -24,10 +24,10 @@ studio (operations) ──▶ design document ──▶ designBlueprint() ──
 ## Installed feature authoring
 
 Normal mouse and chat actions use `buildSupportedAuthoringCommand` with the executing registry
-reported by `GET /generation-support`. Normal `attachGenerationPreset` selects video and delegates to
-`buildGenerationPresetCommand`: graph, modules, generation and ownership save in one batch. A
-legacy source upgrade is explicit in the mouse preview. Useful supported settings reuse existing
-source fields; TTL and concurrency mirrors update atomically. No parsing/reload migration occurs.
+reported by `GET /generation-support`. Module commands select templates: modules, generation and
+ownership save in one batch, and a schema-2 design is upgraded in that batch. There is no normal
+preset attachment; `buildGenerationPresetCommand` remains a source fixture for the reuse example
+and tests. Useful supported settings reuse existing source fields; TTL and concurrency mirrors update atomically. No parsing/reload migration occurs.
 
 Blueprint v3 retains all original settings, custom requirements and generation declarations,
 including unsupported preserved values hidden by the normal editor. Its generation resolver
@@ -224,8 +224,8 @@ bounded deterministic stored ZIP. See the [generator API](../jeeves-generator/RE
 for requests, limits and errors. This adds no fields or eligibility credit to strict blueprint/report
 contracts. Native diagram/source diagnostics remain a separate export path.
 
-The explicit YV2-16 preset command can materialize generation, graph/modules and ownership in
-one operation batch. Blueprint reads still materialize nothing; v3 preserves those exact source
+The YV2-16 preset command, now a source fixture only, materializes generation, graph/modules and
+ownership in one operation batch. Blueprint reads still materialize nothing; v3 preserves those exact source
 choices and v2 refuses their semantic loss. Local generator installation/runtime evidence remain
 separate from this read-only representation and strict readiness.
 

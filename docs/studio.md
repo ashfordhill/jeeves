@@ -514,7 +514,8 @@ details.
   the reason a kept value blocks it, or Custom when no generation declaration covers it yet (a
   study's modules before any module command). Then any readiness findings, Description,
   **Options** only for the settings a template consumes (Pool size and Statement timeout on a
-  Data access in a template), and **Remove module** at the bottom (`removeModule`, which
+  Data access in a template, and on a Lifecycle writer, its template's SQL settings), and
+  **Remove module** at the bottom (`removeModule`, which
   re-derives the tile's generation). It lists no links: a module's links follow its tile's drawn
   lines and its row's dot; in Detailed its row and its own lines are marked. Back returns to the tile page with Modules in
   view. Selecting another tile or a line, or clicking empty paper, closes the module; so do Remove
@@ -533,13 +534,10 @@ details.
 - A line shows endpoints, its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
-- Select the user (or clear selection) to open the system inspector: its Name, Description, the
-  list of every [warning](#warnings) (each with a button that selects its tile or action), then
-  **Add a supported feature**. It offers **Owned upload + video processing** when the server
-  installs its reusable consumers. **Preview attachment → Attach feature** shows the
-  tiles/modules to add, retains existing declarations and explicitly upgrades schema2 if needed.
-  It saves the graph, bindings and ownership in one Undo step. Product codecs, routes and service composition remain
-  custom work. Historical YouTube declarations stay readable without installing product code.
+- Select the user (or clear selection) to open the system inspector: its Name, Description, then
+  the list of every [warning](#warnings) (each with a button that selects its tile or action).
+  Templates are reached only through [modules](#adding-a-module); a design that attached the
+  retired video or YouTube feature preset stays readable, editable and exportable.
 - An action: its lane icon and name, then its warnings, **Name** (the word on its tile, at most 24
   characters; it autosaves like a tile's name) and its **Lane** (read-only). Its entries are the
   lines drawn from it; an action with none has a warning.
@@ -614,7 +612,7 @@ The automatic lane layout and canonical connection identities are unchanged.
 
 **Export diagram → Source & diagnostics → Ownership & access** retains exact declarations and
 owner selection for chat. Full source retains legacy inferred writers separately. These are
-read-only diagnostics; supported feature commands materialize required declarations atomically.
+read-only diagnostics; module commands derive the declarations their templates need atomically.
 Explicit source/chat commands retain the [finite validation rules](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
 Removal previews still name affected declarations and operation bindings; one Undo restores the
 whole edit. Missing projection sources refuse rather than silently reclassify a store. View,
@@ -1217,9 +1215,11 @@ certification, and no unfinished application processes start.
 
 The dialog's **Modules** list shows every module of the design, before any preview: its name,
 its tile and what it generates, in the module page's words (Template with the template's name,
-or Stub, Custom or Refused with the reason). Preview returns the same list. A module without a
-complete template exports as a typed stub under `src/modules/<tile>/`, which throws "Not
-implemented" until you write it; each stub is a required custom gap.
+or Stub, Custom or Refused with the reason). Preview returns the same list. A lead with its
+parts connected exports its installed template exactly as the same template selected on its tile
+would, and the lead and its parts read Template. A module without a complete template exports as
+a typed stub under `src/modules/<tile>/`, which throws "Not implemented" until you write it; each
+stub is a required custom gap.
 
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:

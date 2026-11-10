@@ -1,50 +1,15 @@
 /** Normal authoring uses installed consumers. Raw source commands remain available for
  * preserving/importing custom intent; reading a design never rewrites that intent. */
-import { z } from "zod";
+import type { z } from "zod";
 import { canonicalJson } from "./content-hash.ts";
 import type { DesignDocument } from "./design.ts";
-import { generationPresets, generationRuntime } from "./generation-catalog.ts";
-import { buildGenerationPresetCommand } from "./generation-presets.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
-import { type GenerationInstalledSupport, generationCapabilities } from "./generation-support.ts";
-import { idSchema } from "./ids.ts";
-import { sameContractRef } from "./operation-records.ts";
+import type { GenerationInstalledSupport } from "./generation-support.ts";
 import { buildStudioCommand, studioCommandSchema } from "./studio-operations.ts";
 
-export const supportedAuthoringCommandSchema = z.union([
-  studioCommandSchema,
-  z.strictObject({
-    type: z.literal("attachGenerationPreset"),
-    preset: z.enum(["video", "youtube"]),
-    prefix: idSchema.optional(),
-  }),
-]);
+/** What the mouse and chat may send: the studio's commands, refused below where unsupported. */
+export const supportedAuthoringCommandSchema = studioCommandSchema;
 export type SupportedAuthoringCommand = z.infer<typeof supportedAuthoringCommandSchema>;
-
-export function supportedGenerationPresets(installed: GenerationInstalledSupport) {
-  return (["video", "youtube"] as const).filter(
-    (key) =>
-      !!installed.runtime &&
-      sameContractRef(installed.runtime, generationRuntime.ref) &&
-      !!installed.presets?.some((ref) => sameContractRef(ref, generationPresets[key].ref)) &&
-      generationPresets[key].definition.templates.every((ref) =>
-        installed.templates.some(
-          (template) =>
-            sameContractRef(template.ref, ref) &&
-            Object.values(generationCapabilities)
-              .find((capability) => sameContractRef(capability.template, ref))
-              ?.settings.every((rule) =>
-                template.consumers.some(
-                  (consumer) =>
-                    consumer.input === rule.input &&
-                    consumer.consumer === rule.consumer &&
-                    consumer.outputPaths.length > 0,
-                ),
-              ),
-        ),
-      ),
-  );
-}
 
 export function normalGenerationControls(
   design: DesignDocument,
@@ -87,13 +52,6 @@ export function buildSupportedAuthoringCommand(
   installed: GenerationInstalledSupport,
 ) {
   const command = supportedAuthoringCommandSchema.parse(raw);
-  if (command.type === "attachGenerationPreset") {
-    if (!supportedGenerationPresets(installed).includes(command.preset))
-      throw new Error(
-        `The ${command.preset} preset is not installed with its required consumers. No source changed.`,
-      );
-    return buildGenerationPresetCommand(design, command);
-  }
   if (command.type === "createComponent" || command.type === "connectComponent")
     throw new Error(
       "Add a module with addModule and connect it with connectModule; its generation and ownership are derived in the same step.",
@@ -107,7 +65,7 @@ export function buildSupportedAuthoringCommand(
     );
   if (command.type === "changeKind")
     throw new Error(
-      "Kind replacement has no supported normal workflow. Attach a supported feature; custom replacement requires a generation gap.",
+      "Kind replacement has no supported normal workflow; custom replacement requires a generation gap.",
     );
   if ((command.type !== "edit" && command.type !== "editComponent") || !command.settings)
     return buildStudioCommand(design, command);

@@ -1,4 +1,4 @@
-import { assembleV2, loadLocalV2Dependencies, loadLocalV2Registry } from "@jeeves/generator";
+import { assembleV2, loadLocalV2Registry } from "@jeeves/generator";
 import {
   applyOperations,
   buildGenerationPresetCommand,
@@ -7,7 +7,6 @@ import {
   generationExportBlockers,
   normalSettingFields,
   studioArchitectureExample,
-  supportedGenerationPresets,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { Workspace } from "./tools.ts";
@@ -42,16 +41,25 @@ const run = (workspace: Workspace, commands: unknown[]) =>
   );
 
 describe("installed feature authoring", () => {
-  it("shares atomic attachment and authoritative TTL editing with chat and actual generated constructors", () => {
+  it("retires the preset attachment: chat has no such command and its design is unchanged", () => {
     const base = emptyDesign();
-    const attach = { type: "attachGenerationPreset" as const, preset: "video" as const };
-    const attached = apply(base, attach);
-    const attachmentChat = new Workspace(base);
-    expect(run(attachmentChat, [attach]).ok).toBe(true);
-    expect(attachmentChat.working).toEqual(attached);
-    expect(
-      run(new Workspace(base), [{ type: "attachGenerationPreset", preset: "youtube" }]).ok,
-    ).toBe(false);
+    for (const preset of ["video", "youtube"]) {
+      const chat = new Workspace(base);
+      expect(run(chat, [{ type: "attachGenerationPreset", preset }])).toMatchObject({
+        ok: false,
+        error: expect.stringContaining('There is no "attachGenerationPreset" command.'),
+      });
+      expect(chat.pending).toEqual([]);
+    }
+    expect(() =>
+      buildSupportedAuthoringCommand(
+        base,
+        { type: "attachGenerationPreset", preset: "video" } as never,
+        registry.installed,
+      ),
+    ).toThrow();
+  });
+  it("shares authoritative TTL editing with chat and actual generated constructors", () => {
     const design = historical();
     const chat = new Workspace(design);
     const row = design.architecture?.studio?.elements.find(
@@ -91,14 +99,7 @@ describe("installed feature authoring", () => {
     );
     expect(consumer).toContain('ttlSeconds: input(s, "cache.ttlSeconds")');
   });
-  it("fails closed for an uninstalled preset, hidden alternatives, mirror editing and custom modules, preserving historical source", () => {
-    expect(supportedGenerationPresets(loadLocalV2Dependencies().installed)).toEqual([]);
-    const base = emptyDesign();
-    const uninstalled = new Workspace(base, base, { templates: [] });
-    expect(run(uninstalled, [{ type: "attachGenerationPreset", preset: "youtube" }])).toMatchObject(
-      { ok: false, error: expect.stringContaining("not installed") },
-    );
-    expect(uninstalled.pending).toEqual([]);
+  it("fails closed for hidden alternatives, mirror editing and custom modules, preserving historical source", () => {
     const design = historical();
     const row = design.architecture?.studio?.elements.find((row) => row.element === "upload");
     if (row?.settings.kind !== "uploads") throw new Error();

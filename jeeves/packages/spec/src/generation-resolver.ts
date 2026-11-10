@@ -327,15 +327,24 @@ export function resolveGeneration(
     studio?.components?.findIndex((entry) => entry.id === id) ?? -1,
     "settings",
   ];
+  // A module with a module-level selection of its own is never part of another selection.
+  const ownSelection = new Set(
+    generation.selections.flatMap((item) =>
+      item.target.kind === "component" ? [item.target.component] : [],
+    ),
+  );
+  /** The host's modules of `kind` linked through `dependency`; `lead` is the selection's own. */
   const traced = (
     host: string,
     dependency: GenerationDependency | undefined,
     kind: StudioComponent["settings"]["kind"],
+    lead?: StudioComponent,
   ) =>
     (studio?.components ?? []).filter(
       (component) =>
         component.host === host &&
         component.settings.kind === kind &&
+        (component === lead || !ownSelection.has(component.id)) &&
         !!dependency &&
         studio?.componentConnections?.some(
           (link) =>
@@ -597,6 +606,23 @@ export function resolveGeneration(
     }
     const consumedPaths = new Set<string>();
     const remember = (path: Path) => consumedPaths.add(JSON.stringify(path));
+    // A module-level selection's lead is the module source of a field it fills itself (the
+    // Lifecycle writer's state); its other fields read the parts their links trace.
+    const lead =
+      selection.target.kind === "component"
+        ? studio?.components?.find(
+            (entry) =>
+              entry.id ===
+              (selection.target.kind === "component" ? selection.target.component : ""),
+          )
+        : undefined;
+    const moduleSources = (
+      dependency: GenerationDependency | undefined,
+      kind: StudioComponentKind,
+    ) =>
+      lead && traced(host, dependency, lead.settings.kind, lead).includes(lead)
+        ? [lead]
+        : traced(host, dependency, kind, lead);
     const readRule = (rule: GenerationSettingRule) => {
       const dependency = rule.field ? dependencyOf(selection, rule.field) : undefined;
       if (rule.field && !dependency) return;
@@ -618,7 +644,7 @@ export function resolveGeneration(
         ];
       }
       if (rule.source === "component" && rule.component)
-        values = traced(host, dependency, rule.component).map((component) => ({
+        values = moduleSources(dependency, rule.component).map((component) => ({
           value: component.settings[rule.setting as keyof typeof component.settings],
           path: [...componentPath(component.id), rule.setting],
         }));
@@ -640,6 +666,7 @@ export function resolveGeneration(
           host,
           dependencyOf(selection, rule.mirror.field),
           rule.mirror.component,
+          lead,
         )) {
           const mirrorValue =
             component.settings[rule.mirror.setting as keyof typeof component.settings];
@@ -746,7 +773,7 @@ export function resolveGeneration(
         "event-consumer",
         "cache-reader",
       ] as const)
-        for (const component of traced(host, dependency, kind)) {
+        for (const component of traced(host, dependency, kind, lead)) {
           const ignored = kind === "cache-reader" ? ["pattern", "stampede"] : [];
           audit(component.settings, componentPath(component.id), ignored);
           if (kind === "cache-reader" && component.settings.kind === "cache-reader") {

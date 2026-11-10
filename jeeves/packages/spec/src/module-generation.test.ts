@@ -1,34 +1,32 @@
 import { describe, expect, it } from "vitest";
-import frozenV2 from "../../../../field-projects/youtube/v2/inputs/design.json" with {
-  type: "json",
-};
 import { applyOperations } from "./apply.ts";
-import { type DesignDocument, designSchema, emptyDesign } from "./design.ts";
+import type { DesignDocument } from "./design.ts";
+import {
+  addV2Module as add,
+  connectModule as connect,
+  runStudioCommand as run,
+  runStudioCommands as runAll,
+  frozenV2Design as v2,
+  v2Modules,
+  v2Tiles,
+} from "./fixtures/v2-modules.ts";
 import { designGeneration, type GenerationSelection } from "./generation.ts";
 import { generationRuntime, generationTemplates } from "./generation-catalog.ts";
 import { buildGenerationPresetCommand } from "./generation-presets.ts";
+import { resolveGeneration } from "./generation-resolver.ts";
+import { generationCapabilities } from "./generation-support.ts";
 import { planModules } from "./module-generation.ts";
 import { moduleStatus, moduleStatuses } from "./module-status.ts";
 import { designOwnership, type Ownership } from "./ownership.ts";
 import { designBlueprintV3 } from "./studio-blueprint.ts";
-import type { StudioComponentKind, StudioModuleSlotId } from "./studio-components.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
-import type { StudioKind } from "./studio-model.ts";
 import {
   buildStudioCommand,
   moduleConnectOptions,
   type StudioCommand,
 } from "./studio-operations.ts";
-import { buildSupportedAuthoringCommand } from "./supported-authoring.ts";
+import { buildSupportedAuthoringCommand, normalSettingFields } from "./supported-authoring.ts";
 
-function run(design: DesignDocument, command: StudioCommand): DesignDocument {
-  const batch = buildStudioCommand(design, command);
-  const result = applyOperations(design, batch.ops, { baseRevision: batch.baseRevision });
-  if (!result.ok) throw new Error(JSON.stringify(result.errors));
-  return result.design;
-}
-const runAll = (design: DesignDocument, commands: StudioCommand[]) =>
-  commands.reduce((current, command) => run(current, command), design);
 const refusal = (design: DesignDocument, command: StudioCommand) => {
   try {
     buildStudioCommand(design, command);
@@ -37,125 +35,6 @@ const refusal = (design: DesignDocument, command: StudioCommand) => {
   }
   throw new Error(`${command.type} was accepted`);
 };
-
-const v2 = () => designSchema.parse(structuredClone(frozenV2));
-const v2Element = (id: string) => {
-  const design = v2();
-  const element = design.elements.find((item) => item.id === id);
-  const kind = design.architecture?.studio?.elements.find((item) => item.element === id)?.settings
-    .kind;
-  if (!element || !kind) throw new Error(id);
-  return { id, name: element.name, kind: kind as StudioKind };
-};
-const tile = (from: string, id: string, linkId: string): StudioCommand => ({
-  type: "addTile",
-  from:
-    from === "lane:download" || from === "lane:upload"
-      ? { lane: from === "lane:download" ? "download" : "upload" }
-      : { tile: from },
-  side: "after",
-  tile: v2Element(id),
-  linkId,
-});
-const link = (from: string, to: string, linkId: string): StudioCommand => ({
-  type: "linkTiles",
-  from: { tile: from },
-  to,
-  linkId,
-});
-/** A module with v2's name for its ID, or the kind's fresh name. */
-const add = (host: string, id: string, kind: StudioComponentKind): StudioCommand => {
-  const name = v2().architecture?.studio?.components?.find((item) => item.id === id)?.name;
-  return { type: "addModule", host, kind, id, ...(name && { name }) };
-};
-const connect = (
-  module: string,
-  slot: StudioModuleSlotId,
-  target: { tile: string } | { module: string },
-): StudioCommand => ({ type: "connectModule", module, slot, target });
-
-/** v2's tiles and links, built with the lane commands and v2's own IDs. */
-function v2Tiles(): DesignDocument {
-  return runAll(emptyDesign(), [
-    { type: "addAction", lane: "download", name: "Watch", system: { name: "YouTube" } },
-    { type: "addAction", lane: "upload", name: "Publish" },
-    tile("lane:download", "watch", "download-watch"),
-    tile("watch", "metadata-cache", "watch-cache"),
-    tile("watch", "metadata-db", "watch-metadata"),
-    tile("watch", "view-counts", "watch-counts-read"),
-    tile("watch", "view-events", "watch-views-publish"),
-    tile("view-events", "view-counter", "views-counter"),
-    link("view-counter", "view-counts", "counter-write"),
-    tile("lane:download", "search", "download-search"),
-    tile("search", "search-index", "search-read"),
-    tile("lane:download", "video-cdn", "download-video-cdn"),
-    tile("lane:upload", "identity", "upload-identity"),
-    tile("lane:upload", "upload", "upload-service"),
-    link("upload", "metadata-db", "upload-state"),
-    tile("upload", "originals", "upload-originals"),
-    tile("upload", "upload-queue", "upload-publish"),
-    tile("upload-queue", "transcoder", "jobs-transcoder"),
-    link("transcoder", "originals", "transcoder-read"),
-    tile("transcoder", "transcoded", "transcoder-write"),
-    link("video-cdn", "transcoded", "cdn-transcoded"),
-    tile("transcoder", "completion-events", "transcoder-publish"),
-    tile("completion-events", "completion-handler", "completions-handler"),
-    link("completion-handler", "metadata-db", "handler-metadata"),
-    tile("completion-handler", "publication-events", "handler-publication"),
-    tile("publication-events", "search-indexer", "publications-indexer"),
-    link("search-indexer", "search-index", "indexer-write"),
-  ]);
-}
-
-/** v2's 22 modules under the contract's kinds (section 3), added and connected by command. */
-const v2Modules: StudioCommand[] = [
-  add("watch", "watch-cache-reader", "cache-reader"),
-  add("watch", "watch-details", "data-access"),
-  add("watch", "watch-counts", "data-access"),
-  add("watch", "watch-views", "event-publisher"),
-  connect("watch-cache-reader", "cache", { tile: "metadata-cache" }),
-  connect("watch-details", "database", { tile: "metadata-db" }),
-  connect("watch-cache-reader", "loader", { module: "watch-details" }),
-  connect("watch-counts", "database", { tile: "view-counts" }),
-  connect("watch-views", "channel", { tile: "view-events" }),
-  add("view-counter", "counter-consumer", "event-consumer"),
-  add("view-counter", "counter-sum", "event-counter"),
-  add("view-counter", "counter-writer", "data-access"),
-  connect("counter-consumer", "channel", { tile: "view-events" }),
-  connect("counter-writer", "database", { tile: "view-counts" }),
-  add("search", "search-query", "search-query"),
-  connect("search-query", "index", { tile: "search-index" }),
-  add("upload", "upload-auth", "auth-guard"),
-  add("upload", "upload-multipart", "multipart-uploads"),
-  add("upload", "upload-jobs", "event-publisher"),
-  add("upload", "upload-state-writer", "data-access"),
-  connect("upload-auth", "identity", { tile: "identity" }),
-  connect("upload-multipart", "objects", { tile: "originals" }),
-  connect("upload-jobs", "channel", { tile: "upload-queue" }),
-  connect("upload-jobs", "outbox", { tile: "metadata-db" }),
-  connect("upload-state-writer", "database", { tile: "metadata-db" }),
-  add("transcoder", "transcoder-consumer", "event-consumer"),
-  add("transcoder", "transcoder-encoder", "video-encoder"),
-  add("transcoder", "transcoder-packager", "video-packager"),
-  add("transcoder", "transcoder-thumbnails", "video-thumbnailer"),
-  add("transcoder", "transcoder-done", "event-publisher"),
-  connect("transcoder-consumer", "channel", { tile: "upload-queue" }),
-  connect("transcoder-encoder", "originals", { tile: "originals" }),
-  connect("transcoder-packager", "outputs", { tile: "transcoded" }),
-  connect("transcoder-thumbnails", "outputs", { tile: "transcoded" }),
-  connect("transcoder-done", "channel", { tile: "completion-events" }),
-  add("completion-handler", "handler-consumer", "event-consumer"),
-  add("completion-handler", "handler-writer", "lifecycle-writer"),
-  add("completion-handler", "handler-publications", "event-publisher"),
-  connect("handler-consumer", "channel", { tile: "completion-events" }),
-  connect("handler-writer", "state", { tile: "metadata-db" }),
-  connect("handler-publications", "channel", { tile: "publication-events" }),
-  connect("handler-publications", "outbox", { tile: "metadata-db" }),
-  add("search-indexer", "indexer-consumer", "event-consumer"),
-  add("search-indexer", "indexer-writer", "index-writer"),
-  connect("indexer-consumer", "channel", { tile: "publication-events" }),
-  connect("indexer-writer", "index", { tile: "search-index" }),
-];
 
 /** v2's seven installed selections, keyed by host, with v2's upload selection named by its lead. */
 const v2Templates = () =>
@@ -261,6 +140,15 @@ const settingsOf = (design: DesignDocument, id: string) =>
     design.architecture?.studio?.components?.find((item) => item.id === id)?.settings) as
     | Record<string, unknown>
     | undefined;
+/** A tile setting's source path. */
+const settingsPath = (design: DesignDocument, id: string, key: string) => [
+  "architecture",
+  "studio",
+  "elements",
+  design.architecture?.studio?.elements.findIndex((item) => item.element === id) ?? -1,
+  "settings",
+  key,
+];
 const selectionOf = (design: DesignDocument, id: string): GenerationSelection | undefined =>
   designGeneration(design)?.selections.find((item) => item.id === id);
 /** v2's tiles with schema 3 and the given hand-made ownership, before any template. */
@@ -296,8 +184,7 @@ describe("module catalog records", () => {
       );
   });
 
-  it("names each template's lead as its only component target", async () => {
-    const { generationCapabilities } = await import("./generation-support.ts");
+  it("names each template's lead as its only component target", () => {
     expect(
       Object.fromEntries(
         Object.entries(generationCapabilities).map(([kind, item]) => [
@@ -596,6 +483,57 @@ describe("module derivation", () => {
     // A stub reads nothing, and a tile no template binds keeps its own settings.
     expect(fixed("watch-counts")).toEqual({ kind: "data-access", readRouting: "primary" });
     expect(fixed("video-cdn")).toEqual(settingsOf(v2Tiles(), "video-cdn"));
+  });
+
+  it("reads the lifecycle's SQL settings from its Lifecycle writer", () => {
+    const installed = {
+      runtime: generationRuntime.ref,
+      templates: [
+        {
+          ref: generationTemplates["asset-lifecycle"].ref,
+          consumers: generationCapabilities["asset-lifecycle"].settings.map((rule) => ({
+            input: rule.input,
+            consumer: rule.consumer,
+            outputPaths: ["src/features/application-bindings.ts"],
+          })),
+        },
+      ],
+    };
+    const writer = ["architecture", "studio", "components"];
+    const index = built.architecture?.studio?.components?.findIndex(
+      (item) => item.id === "handler-writer",
+    );
+    const sql = resolveGeneration(built, installed).settings.filter(
+      (item) => item.selection === "handler-writer" && item.input.startsWith("state."),
+    );
+    expect(
+      sql
+        .filter((item) => item.sourcePaths.length)
+        .map((item) => [item.input, item.sourcePaths, item.value]),
+    ).toEqual([
+      ["state.provider", [settingsPath(built, "metadata-db", "provider")], "self-hosted"],
+      ["state.engine", [settingsPath(built, "metadata-db", "engine")], "postgresql"],
+      ["state.poolSize", [[...writer, index, "settings", "poolSize"]], 10],
+      ["state.statementTimeoutMs", [[...writer, index, "settings", "statementTimeoutMs"]], 2000],
+    ]);
+    // Its page shows Pool size and Statement timeout; a stub's Data access shows nothing.
+    expect(
+      normalSettingFields(built, installed, { component: "handler-writer" }).map(
+        (item) => item.input,
+      ),
+    ).toEqual(["state.poolSize", "state.statementTimeoutMs"]);
+    expect(normalSettingFields(built, installed, { component: "watch-counts" })).toEqual([]);
+    // A Data access beside it on the same link stays a stub; the lead alone is the source.
+    const beside = runAll(built, [
+      add("completion-handler", "handler-extra", "data-access"),
+      connect("handler-extra", "database", { tile: "metadata-db" }),
+    ]);
+    expect(moduleStatus(beside, "handler-writer")).toMatchObject({ status: "template" });
+    expect(
+      resolveGeneration(beside, installed)
+        .settings.filter((item) => item.input === "state.poolSize")
+        .find((item) => item.selection === "handler-writer")?.sourcePaths,
+    ).toEqual([[...writer, index, "settings", "poolSize"]]);
   });
 
   it("gives the same result whatever order the modules were connected in", () => {

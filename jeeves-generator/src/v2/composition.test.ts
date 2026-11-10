@@ -3,8 +3,8 @@ import {
   buildGenerationPresetCommand,
   designSchema,
   generationExportBlockers,
+  generationPresets,
   resolveGeneration,
-  supportedGenerationPresets,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { tinyurlStudioExample } from "../../../jeeves/packages/spec/src/studio-examples/tinyurl.ts";
@@ -35,7 +35,8 @@ describe("reusable composition before product completion", () => {
     const before = structuredClone(design);
     expect(generationExportBlockers(design, registry.installed)).toEqual([]);
     expect(resolveGeneration(design, registry.installed).findings).toHaveLength(4);
-    expect(supportedGenerationPresets(registry.installed)).toEqual(["video"]);
+    // The video preset stays installed for designs that attached it; nothing attaches it now.
+    expect(registry.installed.presets).toEqual([generationPresets.video.ref]);
     expect(registry.installed.templates).toHaveLength(8);
     const a = assembleV2({ designJson: JSON.stringify(design) }, registry);
     expect(design).toEqual(before);

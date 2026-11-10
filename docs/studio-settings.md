@@ -6,9 +6,9 @@ controls. Reading, selecting, renaming or reloading a design never removes unsup
 
 ## Normal feature configuration
 
-Select the user to open the system inspector; **Add a supported feature** follows its Description
-and warnings. Feature preset selection offers owned upload/video processing, with an explicit
-attachment preview and one atomic save/Undo.
+Installed templates are selected by modules: a lead with its parts connected (contract §3) gets
+its template, and the module command derives its declarations in one atomic save/Undo. There is no
+feature preset to attach; a design that attached one stays readable, editable and exportable.
 Product implementation remains custom work after generation. Historical YouTube selections
 remain readable and export reusable modules with explicit gaps; they install no product code. Local
 Docker, TypeScript, exact providers, codecs, renditions, deadlines and event policy are fixed.
@@ -19,18 +19,19 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 | Concurrency limit | HTTP admission | 1–100000 |
 | Worker concurrency | AMQP handler admission, except fixed media worker | 1–1024 |
 | TTL | Positive cache reader | 1–604800 seconds |
-| Pool size | Traced SQL client | 1–1000 |
-| Statement timeout | Traced SQL client | 1–300000 ms |
+| Pool size | SQL client of a Data access or Lifecycle writer | 1–1000 |
+| Statement timeout | SQL client of a Data access or Lifecycle writer | 1–300000 ms |
 
 Controls additionally require an authoritative saved source field and the installed template's
 matching consumer/output paths. TTL is edited on the cache tile; its traced reader mirror changes
 in the same atomic command. Worker concurrency mirrors behave the same way. A mirror has no second
-editor. SQL settings are edited on their bound data-access module. Normal controls never expose
+editor. SQL settings are edited on the module that reads that database for the template: its
+bound Data access, or the Lifecycle writer, which is its lifecycle template's own SQL source. Normal controls never expose
 weights/mappings, IDs, exact versions, grants, arbitrary config, L1/negative caching, Go/tus/cloud
 alternatives, provider choices or media internals. Historical modules remain inspectable and
 renameable; arbitrary module/kind replacement requires explicit custom source work.
 
-`buildSupportedAuthoringCommand`, `normalSettingFields` and `supportedGenerationPresets` in
+`buildSupportedAuthoringCommand` and `normalSettingFields` in
 [`supported-authoring.ts`](../jeeves/packages/spec/src/supported-authoring.ts) drive mouse/chat.
 `GET /generation-support` reports the actual server registry; failure means no editable template
 settings. Unsupported chat changes refuse without modifying source. Explicit custom requirements

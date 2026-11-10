@@ -7,11 +7,12 @@ the source is [`studio-definitions.ts`](packages/spec/src/studio-definitions.ts)
 
 ## Installed features and controls
 
-The system inspector offers previewed attachment of the reusable video feature when
-`GET /generation-support` reports its installed consumers. Product codecs, routes, projections
-and service composition remain custom work after generation. Historical YouTube declarations
+Installed templates are reached through modules: a template's lead, with its parts connected in
+its tile, selects it (the [module catalog](#components-c3)); there is no feature preset to attach,
+and designs that attached the video feature stay readable and exportable. Product codecs, routes,
+projections and service composition remain custom work after generation. Historical YouTube declarations
 remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL
-and bound SQL pool/statement limits. Fixed policies/providers/language and unsupported alternatives
+and SQL pool/statement limits on a bound Data access or a Lifecycle writer. Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
 

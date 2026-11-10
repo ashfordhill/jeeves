@@ -74,7 +74,7 @@ test("a tile is one page: Name, Description and Modules autosave, grow and undo"
   expect(await outline(inspector)).toEqual(["Name", "Description"]);
 });
 
-test("the system page: Name, Description, warnings, then Add a supported feature; actions list no entries", async ({
+test("the system page: Name, Description, then warnings; actions list no entries", async ({
   page,
   tinyurl: id,
 }) => {
@@ -101,9 +101,7 @@ test("the system page: Name, Description, warnings, then Add a supported feature
   await expect(inspector.getByLabel("Name", { exact: true })).toHaveValue("TinyURL");
   await expect(inspector.locator(".lane-inspector-kind")).toHaveText("System");
   await expect(inspector.getByText(/^(Purpose|Goal)$/)).toHaveCount(0);
-  await expect
-    .poll(() => outline(inspector))
-    .toEqual(["Name", "Description", "Warnings", "Add a supported feature", "Feature preset"]);
+  await expect.poll(() => outline(inspector)).toEqual(["Name", "Description", "Warnings"]);
   await inspector.getByRole("button", { name: "Analytics store", exact: true }).click();
   await expect(tile(page, "Analytics store")).toHaveClass(/selected/);
   await page.getByRole("button", { name: "Undo", exact: true }).click();

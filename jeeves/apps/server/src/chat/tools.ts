@@ -75,7 +75,6 @@ import {
   studioTileTypes,
   studioWarningSentence,
   supportedAuthoringCommandSchema,
-  supportedGenerationPresets,
   tileTypeOf,
   tinyurlDesignScope,
   unresolvedDesignScope,
@@ -109,7 +108,7 @@ export function linkRuleText(rule: StudioLinkRule): string {
 const linkTable = `Link table (source -> target: modes; a pair not listed is refused). An application is a Service or API kind other than the CDN; a store is a database, search index, cache or storage. ${studioLinkRules.map(linkRuleText).join(" ")}`;
 const actionWords = `${studioActionDefaults.download} (download) or ${studioActionDefaults.upload} (upload)`;
 
-export const INSTRUCTIONS = `Normal configuration is limited to getDesign.editableSettings from the executing installed registry. Use attachGenerationPreset (preset video, optional free prefix) through applyStudioCommands to atomically attach bound modules, graph and ownership. Video requires custom host product/service hooks. YouTube product implementation is custom work after generation; historical YouTube declarations remain readable, with explicit custom gaps. Never offer Go, cloud/tus, custom FFmpeg, L1/negative caching or internal policies as supported choices. Existing source values are preserved intent, not availability. An explicitly requested custom behavior must be recorded in configureDesignScope.customRequirements as an unresolved generation gap; never invent a template or silently rewrite historical settings.
+export const INSTRUCTIONS = `Normal configuration is limited to getDesign.editableSettings from the executing installed registry. Installed templates are reached only through modules: addModule and connectModule derive each template, its graph facts and ownership. YouTube product implementation is custom work after generation; historical YouTube and video feature declarations remain readable, with explicit custom gaps. Never offer Go, cloud/tus, custom FFmpeg, L1/negative caching or internal policies as supported choices. Existing source values are preserved intent, not availability. An explicitly requested custom behavior must be recorded in configureDesignScope.customRequirements as an unresolved generation gap; never invent a template or silently rewrite historical settings.
 
 You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.
 
@@ -147,8 +146,8 @@ Commands (applyStudioCommands, with getDesign's baseRevision):
 - setEntryLane: moves an entry to the other lane's action ("download" or "upload"), within its cap.
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.
-- attachGenerationPreset: previews through the mouse or stages through chat an installed reusable video feature, including its bound kinds, modules and resources. changeKind is retained source vocabulary and refuses in normal authoring.
-- edit (a tile's name, purpose, useful supported settings or preserved owner), editSystem (the system name and goal), editConnection (a link's label only). Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.
+- changeKind is retained source vocabulary and refuses in normal authoring.
+- edit (a tile's name, purpose, useful supported settings or preserved owner), editSystem (the system name and goal), editConnection (a link's label only). Settings are complete values, not patches; only getDesign.editableSettings can change. Custom requests remain unresolved requirements.
 - addModule (host, kind; optional id, name and description) adds a module of a kind listStudioDefinitions.modules allows in that tile (hosts). connectModule (module, slot, target) fills one of its slots: target {"tile": id} through the host's link to that tile (the link the table gives is added when there is none), or {"module": id} for a Cache reader's loader, a Data access in the same tile. disconnectModule (link) removes one module link and keeps the tiles' link; removeModule (module) removes it with its links. Each one derives, in the same step, every module's generation (a template once its lead has every needed part connected in its tile, else a typed stub), the values that template fixes and the ownership it needs, or refuses in plain words. getDesign gives each module's status: template, stub (with what it still needs), custom or refused (with why).
 - editComponent changes a module's name, purpose or useful supported settings; disconnectComponent/removeComponent remove source intent without deriving. createComponent/connectComponent are retained source vocabulary and refuse in normal authoring: use addModule and connectModule.
 IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
@@ -220,7 +219,7 @@ const descriptions: Record<ToolName, string> = {
   configureOwnership:
     "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Declarations only: operation bindings are separate and runtime authorization is unavailable. Foreign writes refuse, foreign reads need a deliberate published-read contract; co-deployment grants nothing.",
   applyStudioCommands:
-    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink and setEntryLane; modules through addModule, connectModule, disconnectModule and removeModule. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches; only getDesign.editableSettings can change. attachGenerationPreset uses the same atomic attachment command as the mouse. Unknown/uninstalled presets refuse. Custom requests remain unresolved requirements.",
+    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink and setEntryLane; modules through addModule, connectModule, disconnectModule and removeModule. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches; only getDesign.editableSettings can change. Custom requests remain unresolved requirements.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   readReadiness:
     "Read the same snapshot compatibility report as the mouse and blueprint v3: full structural validity, exact contract completeness, implementation availability and exact-output runtime evidence separately. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
@@ -441,7 +440,6 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
     findings: findings.filter((item) => !isDesignWarning(item)),
     /** Designs that look wrong but are allowed; resolve the ones this turn caused. */
     warnings: findings.filter(isDesignWarning).map((item) => item.message),
-    installedPresets: supportedGenerationPresets(installedGenerationSupport()),
     editableSettings: normalGenerationControls(design, installedGenerationSupport()),
     availability:
       "Only editableSettings are normal controls. Other source settings are preserved intent; exact-output runtime verification remains separate.",
@@ -466,11 +464,7 @@ function unknownCommand(args: unknown): string | undefined {
   const commands = args && typeof args === "object" && "commands" in args ? args.commands : [];
   for (const command of Array.isArray(commands) ? commands : []) {
     const type = command && typeof command === "object" && "type" in command && command.type;
-    if (
-      typeof type === "string" &&
-      !commandTypes.includes(type) &&
-      type !== "attachGenerationPreset"
-    )
+    if (typeof type === "string" && !commandTypes.includes(type))
       return `There is no "${type}" command. The commands are ${commandTypes.join(", ")}. Actions, tiles and links are added and removed only with addAction, removeAction, addTile, linkTiles, removeTile and removeLink, which keep every tile on a lane.`;
   }
   return undefined;
@@ -572,7 +566,6 @@ export class Workspace {
         this.log(tool, true, "Read the studio design");
         return {
           ...designSummary(this.working, validateDesign(this.working)),
-          installedPresets: supportedGenerationPresets(this.installed),
           editableSettings: normalGenerationControls(this.working, this.installed),
           baseRevision: this.base.revision,
         };

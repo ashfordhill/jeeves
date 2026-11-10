@@ -139,8 +139,8 @@ The canvas **Generate project → Preview scaffold → Download project ZIP** fl
 Unknown refs, invalid bindings and unsupported settings refuse v2 export. Known uninstalled
 template/preset declarations remain explicit custom gaps in a partial export; catalog presence
 does not implement them. The active registry emits reusable mechanisms, not YouTube product
-adapters, public-video schemas or an application recipe. Normal authoring offers the video
-feature only. [Corrected boundary and measurement](../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md).
+adapters, public-video schemas or an application recipe. Normal authoring selects templates only
+through modules; the video preset stays installed for designs that attached it. [Corrected boundary and measurement](../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md).
 No label or project name selects code; failed source checks never substitute an old archive.
 
 Read-only POST routes under `/projects/:id/experimental-generation/preview` and `/download`
@@ -169,8 +169,17 @@ supported selections rather than a frozen whole-document hash. `validateV2Input`
 input bytes and original declarations separately from schema-parsed semantics. Source pointers
 must exist in the original JSON, including when parsing would materialize a default.
 
-Module-level selections (component targets) resolve on the same path. A `module-stub@0.1.0`
-selection, which module commands derive for every module without a complete template, needs no
+Module-level selections (component targets) resolve on the same path. A template selection
+targets its lead module (a kind in the capability's `componentTargets`), and its binding comes from
+its parts' links, which the module commands derive. The lead is the module source of a field it
+fills itself: the Lifecycle writer's Pool size and Statement timeout feed its lifecycle's `state`
+SQL inputs. Its other fields read the parts their links trace, as a tile-level selection does; a
+module with a selection of its own is never another selection's part. Each template then emits
+exactly what the same tile-level selection would: `module-templates.test.ts` exports v2 built from
+modules and its tile-level twin (v2's seven installed selections, renamed to their leads), and
+their payloads outside `.jeeves/` and `diagnostics/` match apart from the two stubs' files and the
+fixed values v2 declares explicitly (replicas, read replicas, cache eviction and topology, read
+routing), which only appear as application-binding inputs. A `module-stub@0.1.0` selection, which module commands derive for every module without a complete template, needs no
 role and its host's settings are not audited. It must target a module; the resolver adds that
 module's name, kind and slots, with each link's target, host link and read or write, to its
 normalized row.

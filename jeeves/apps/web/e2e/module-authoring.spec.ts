@@ -496,6 +496,77 @@ test("a module added to a study tile shows its kept Service identity as Refused"
   expect(errors).toEqual([]);
 });
 
+test("a cache read built by mouse previews its template for the lead and its part", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Module template", [
+    ["Consume", "Microservice"],
+    ["Microservice", "Cache"],
+    ["Microservice", "Database"],
+  ]);
+  try {
+    await tile(page, "Microservice").click();
+    await addModule(page, "Microservice", "Cache reader");
+    await addModule(page, "Microservice", "Data access");
+    await page.getByRole("button", { name: "Detailed", exact: true }).click();
+    await ready(page);
+    await page.keyboard.press("c");
+    const reader = "microservice-cache-reader";
+    const data = "microservice-data-access";
+    await dragOnto(page, dot(page, reader), tile(page, "Cache"));
+    await page.mouse.up();
+    await dragOnto(page, dot(page, data), tile(page, "Database"));
+    await page.mouse.up();
+    await dragOnto(page, dot(page, reader), row(page, data));
+    await page.mouse.up();
+    await expect(tile(page, "Microservice").locator(".lane-container-loader")).toHaveCount(1);
+    await ready(page);
+    await page.keyboard.press("v");
+    await page.getByRole("button", { name: "Generate project", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
+    const rows = dialog
+      .getByRole("list", { name: "Generated modules", exact: true })
+      .getByRole("listitem");
+    await expect(rows).toHaveCount(2);
+    for (const [index, name] of ["Cache reader", "Data access"].entries()) {
+      await expect(rows.nth(index)).toContainText(`${name} in Microservice`);
+      await expect(rows.nth(index).locator(".lane-module-status")).toHaveAttribute(
+        "data-status",
+        "template",
+      );
+      await expect(rows.nth(index)).toContainText("Cache read");
+    }
+    const result = page.waitForResponse((response) =>
+      response.url().endsWith("/experimental-generation/preview"),
+    );
+    await dialog.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    const preview = await (await result).json();
+    expect(preview.report.findings).toEqual([]);
+    expect(
+      preview.report.modules.map((item: { module: string; status: string; template: string }) => [
+        item.module,
+        item.status,
+        item.template,
+      ]),
+    ).toEqual([
+      [reader, "template", "positive-cache-read"],
+      [data, "template", "positive-cache-read"],
+    ]);
+    // The lead's template code, and no stub.
+    for (const item of preview.report.modules as { files: string[] }[]) {
+      expect(item.files).toContain("src/runtime/positive-cache.ts");
+      expect(item.files.some((file) => file.startsWith("src/modules/"))).toBe(false);
+    }
+    await expect(dialog.getByText(/^Ready: \d+ files/)).toBeVisible();
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
 test("Generate project lists each module's status and previews its stubs", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));

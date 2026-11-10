@@ -51,7 +51,6 @@ import {
   ownerChoices,
 } from "./inspector-drafts.ts";
 import { moduleStatusLine } from "./module-status.ts";
-import { PresetAttachment } from "./PresetAttachment.tsx";
 import { StudioIcon } from "./StudioIcon.tsx";
 
 const canonical = studioDefinitions.service.fields.filter((field) => field.control === "text");
@@ -394,7 +393,7 @@ function ModuleStatusLine({ status }: { status: NonNullable<ReturnType<typeof mo
  * The inspector for a tile's element, or for the system when `element` is undefined: one page
  * with the header (icon, Name, kind), Description, Options when it has fields, and the Modules
  * slot when `modules` is given. A tile's `warnings` sit in its header; the system's follow its
- * Description, before Add a supported feature.
+ * Description.
  */
 export function TargetInspector({
   projectId,
@@ -542,12 +541,7 @@ function TargetForm({
         {ref.kind === "element" ? warnings : null}
       </header>
       {description ? draftField(description) : null}
-      {ref.kind === "system" ? (
-        <>
-          {warnings}
-          <PresetAttachment projectId={spec.projectId} design={design} />
-        </>
-      ) : null}
+      {ref.kind === "system" ? warnings : null}
       {options.length ? (
         <section aria-labelledby={`${idPrefix}-options`}>
           <h3 id={`${idPrefix}-options`} className="lane-inspector-section">

@@ -7902,3 +7902,111 @@ them under Modules with their reasons, and their files are under `src/modules/<W
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — MA08: template-backed modules
+
+Per the [module authoring plan](plans/module-authoring/units.md) and the approved
+[contract](plans/module-authoring/contract.md) §3, §5 and §8, with question 5 (retire the preset's
+entry points). Docs: the generator README, `studio.md` (system page, module page, Experimental
+project export), `studio-settings.md`, `studio-blueprint.md`, `CATALOG.md` (Installed features and
+controls), the plan's status and the HUMAN_FEEDBACK resolution.
+
+- **Resolver** (`generation-resolver.ts`): a module-level selection's lead is the module source of
+  a field it fills itself, so the Lifecycle writer's Pool size and Statement timeout feed its
+  lifecycle's `state.poolSize`/`state.statementTimeoutMs` (before, they were read only from a Data
+  access, and dropped). Its other fields read the parts their links trace, as before. A module
+  with a module-level selection of its own is never another selection's part (a stub Data access
+  beside the Lifecycle writer on the same link is neither read nor audited). Tile-level designs are
+  unaffected: they have no module-level selections. The Lifecycle writer's page now shows both
+  settings (`normalSettingFields` follows the decisions).
+- **Lead target and binding** already worked from MA05 (`componentTargets`, derivation); no
+  assembler change was needed.
+- **Fixture** `spec/src/fixtures/v2-modules.ts` (excluded from the source inventory):
+  `v2TileCommands`, `v2Tiles`, `v2Modules`, `v2ModuleDesign`, `frozenV2Design`, `addV2Module`,
+  `connectModule`, `runStudioCommand(s)`. `module-generation.test.ts` now imports them.
+- **Retired:** the system page's "Add a supported feature" (`PresetAttachment.tsx`, its use in
+  `InspectorForm.tsx`, the `.studio-feature*` CSS); chat's `attachGenerationPreset`
+  (`supportedAuthoringCommandSchema` is now `studioCommandSchema`; gone from
+  `buildSupportedAuthoringCommand`, the instructions, the `applyStudioCommands` description and
+  `unknownCommand`'s exception); `supportedGenerationPresets` and getDesign's `installedPresets`,
+  which only served those entry points. Kept: `buildGenerationPresetCommand` (product-attachment
+  example, tests), the installed video preset, and historical designs (they open, edit and
+  export). The changeKind refusal no longer says "Attach a supported feature".
+
+**Equivalence test** (`jeeves-generator/src/v2/module-templates.test.ts`, 3 tests):
+
+- Twin: frozen v2 without its three `youtube-*` selections and preset. Mapped as the contract
+  defines: each selection renamed to its lead (`owned-upload` → `upload-multipart`, `lifecycle` →
+  `handler-writer`, `hls` → `transcoder-encoder`, `ready-reader` → `watch-cache-reader`, `counter`
+  → `counter-sum`, `projection` → `indexer-writer`, `query` → `search-query`, and the lifecycle's
+  `upload`), in the module design's order.
+- Module design: `v2ModuleDesign()` plus v2's useful values (7 edits) through
+  `buildSupportedAuthoringCommand`, as the inspector would.
+- Result: both export with no findings; the same 7 templates, hosts and bindings; every file
+  outside `.jeeves/` and `diagnostics/` byte-identical except:
+  - **explained:** 5 extra files for the two stubs (`src/modules/dependencies.ts`,
+    `src/modules/watch/watch-{counts,views}{.ts,.slots.ts}`);
+  - **explained:** `application-bindings.ts` inputs lack the fixed values v2 declares explicitly
+    and new tiles leave to the descriptor (contract §3): `host.minReplicas/maxReplicas`,
+    `*.readReplicas`, `cache.eviction/topology`, and the lifecycle's `state.readRouting` (a
+    Lifecycle writer has no read routing). The test checks each is a `fixed` decision.
+  - Nothing else. Without the resolver change the test fails (`handler-writer/state.poolSize`).
+- Report: 22 module rows, 20 Template, the two stubs; a part lists its lead's template files.
+
+**Checks**
+
+- `pnpm check` exited 0: **553 tests in 79 files** (lint: only the existing info).
+- **E2E: 59 passed (2.7m)** on the first full run. New: `module-authoring.spec.ts` "a cache read
+  built by mouse previews its template for the lead and its part". Updated: `inspector.spec.ts`
+  (system outline is Name, Description, Warnings) and `edit-history.spec.ts` (the historical
+  preset design's TTL/pool controls, set up by source; no mouse attach).
+- The web build passed with the existing chunk-size advisory.
+
+**Gates**
+
+- **v1:** byte-identical (`assemble.test.ts` manifest pin passed).
+- **Frozen v2:** fresh `export:v2`, 72 files; 70 byte-identical to `generic-export.tar.gz`.
+  `manifest.json`/`report.json` equal it once each emitter identity's sources and
+  `sourceSha256`, `registry`, `dependencies` and the report's hash/size are set aside; the only
+  other difference is the added `local.module-stubs` emitter (MA07). This unit's sources in the
+  inventory: `generation-resolver.ts`, `supported-authoring.ts`.
+- **Generator tests** pass (in `pnpm check`).
+- **YouTube Overview PNG** at 1440×900: `472a4c8c…dc9f`.
+
+**Mouse check** (scripted Chromium; my API 4338 with scratch database `jeeves_ma08`, now dropped, and
+Vite 4328; 1440×900 and 1280×800). Evidence: [ma08](plans/module-authoring/evidence/ma08/).
+
+- **TinyURL:** 7 tiles and 7 lines at both sizes. The system page reads Name and Description
+  (with Warnings when there are any), with no "Add a supported feature" and no Feature preset.
+- **Blank project, by mouse:** Consume → Microservice → Cache and Database; Cache reader and Data
+  access from the `+` fan; Detailed + Connect: the two dots, then the loader drag. The Data access
+  page reads "Template · Cache read" with Pool size 10. Generate project lists both modules as
+  Template · Cache read, before and after Preview. Preview gave "Ready: 35 files", no findings, and
+  both report rows `template`/`positive-cache-read`. The footer stays reachable at 1280.
+- **v2 from modules** (sent as commands through the API; the by-mouse rebuild is MA09's): the
+  Lifecycle writer's page reads "Template · Upload lifecycle", then Options with Pool size 10 and
+  Statement timeout 2000. Pool size 12 typed into it saved; Undo returned 10. Preview gave "Ready:
+  77 files", no findings, 20 Template, and View count reader and View publisher as Stub.
+- There were no page errors and no app console errors or warnings. The export check's own canvas
+  readback warning comes from `e2e/export.ts` sampling the PNG; I filtered it.
+- My first two scripted runs failed on my script's own helpers (the fan and toolbar button names),
+  not the app. Their 5 leftover projects were in the scratch database, which I dropped.
+  `jeeves_e2e` has no leftover E2E projects. I didn't use the owner's database.
+
+**For MA09**
+
+- The Lifecycle writer now shows Pool size and Statement timeout; v2's are 10 and 2000 (the
+  initial values), so nothing needs setting there. v2's other useful values differ from the
+  initial ones: Upload API Request timeout 5000 and Concurrency limit 500, Watch API Concurrency
+  limit 2000, Details reader Pool size 50 and Statement timeout 500, Metadata cache TTL 3601,
+  View counter Concurrency 8.
+- `fixtures/v2-modules.ts` has v2's commands; the by-mouse spec can compare its saved design
+  with `v2ModuleDesign()` plus those values. The equivalence test shows what Preview must give.
+- This unit found no missing UI step for the rebuild. "Add a supported feature" is gone, so
+  modules are now the only way to attach a template.
+- Preview's stub reasons for v2 read "View count reader: Details cache doesn't use it." and
+  "View publisher: Needs Multipart uploads in its tile." (MA07's wording). The second one misleads:
+  MA10 should reword it.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.
