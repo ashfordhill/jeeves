@@ -1,6 +1,7 @@
 # Tile processes: every application tile runs
 
-**Status:** planned 2026-11-10 from owner decisions. No unit has started.
+**Status:** planned 2026-11-10 from owner decisions. TP01 is done: the [contract](contract.md)
+revises TP03–TP08 below. TP02–TP09 have not started.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — A runnable process per tile](../../HUMAN_FEEDBACK.md)
 · Follows [module authoring](../module-authoring/units.md) and its [review](../module-authoring/review.md),
 including contract question 6.
@@ -215,14 +216,25 @@ before TP04.
 
 **Goal:** implement TP01 §7 (decision 1).
 
-- **Re-keying:** renaming a tile or module re-keys its ID to the name's slug, with every reference
-  updated in one batch and one Undo step: connections, studio bindings, modules, module links,
-  ownership, generation, operations and entries.
-  - It refuses with a plain reason on a collision, or where the contract says IDs are pinned.
-- **Chat:** the rename tool behaves the same.
+- **Re-keying (contract §7):** renaming a tile or module re-keys an ID that still *follows* (its
+  creation form or its current name's slug). A tile becomes `slug(name)` and a module
+  `<host>-<slug(name)>`. A tile's re-key also re-keys its following modules.
+  - Every reference is updated in one batch and one Undo step: connections, studio bindings and
+    setting references, modules, module links, ownership, generation, operations, scope and entries.
+    Derivation re-runs in the same batch.
+  - Afterwards no string equal to the old ID may remain outside free text; otherwise refuse.
+  - It refuses with a plain reason on a collision, including a cascaded module.
+  - **Pinned:** designs with `architecture.studio.origin` (the studies, frozen v2), designs with a
+    tile-level selection or a preset, and IDs that don't follow. There, the rename changes only the
+    name and never refuses.
+  - Link IDs are not re-keyed.
+- **Chat:** the same command. The `applyStudioCommands` result lists `renamed: [{from, to}]`. The web
+  keeps its selection on the new ID.
 - **Tests**
-  - Unit tests: re-key every reference kind; refusals; Undo.
-  - Old designs and the studies keep their IDs unless renamed.
+  - Unit tests: re-key every reference kind; the cascade; the completeness walk; refusals; Undo.
+  - A re-keyed design equals one built with the final IDs from the start.
+  - Old designs and the studies keep their IDs unless renamed. Pinned designs rename without
+    re-keying.
   - The MA09 diff helper still passes on a rebuild that renames as it goes.
 - **E2E:** add a Worker, rename it "Video lifecycle worker", and its ID becomes
   `video-lifecycle-worker`.
@@ -234,18 +246,33 @@ before TP04.
 **Goal:** with processes on, each application tile becomes a compose service that starts and
 reports healthy. Features and stubs are not wired yet.
 
-- **The option:** add the processes option (TP01 §1), with an unticked "Runnable processes"
-  checkbox in the Generate project dialog. Chat gets the same option, and the manifest and
-  report record it.
-- **The emitter:** a new trusted emitter (for example `local.tile-processes`) contributes
-  `local.services` for each application tile:
-  - an entry point;
-  - config from the environment;
-  - a health endpoint;
-  - graceful shutdown;
-  - a compose service with `depends_on` and a healthcheck.
-
-  The `application-services` gap closes for those hosts. Off, nothing changes.
+- **First, pin off:** before changing the generator, add the stub stack fixture
+  (`spec/src/fixtures/stub-stack.ts`, contract §8). Move `moduleAuthored` into `v2-modules.ts`. Pin
+  the processes-off payloads of frozen v2, the v2 module design with its values and the stub stack
+  in a unit test.
+- **The option (contract §1):**
+  - `generation.processes: true` (absent means off), and the `setRunnableProcesses` command. The
+    unticked "Runnable processes" checkbox in Generate project sends it, and so does chat. It
+    refuses on designs that aren't built from modules.
+  - `GenerationInstalledSupport.processes`, and the resolver's `model.processes`, which exists only
+    when on.
+  - Chat's getDesign, the manifest's `processes: true`, the report's `processes` and `runnable`,
+    and blueprint v2's refusal.
+  - Add no `generationPolicies` record.
+- **The emitter:** a new trusted emitter, `local.tile-processes`, registered in
+  `loadLocalV2Registry`. It contributes `local.services` for every Service, Uploads and Worker tile
+  (and the legacy kinds, open question 6), including empty tiles:
+  - an entry point at `src/processes/<id>.ts`;
+  - compiled config;
+  - `/healthz` on HTTP processes and the ready marker on all of them;
+  - graceful shutdown, with idle workers kept alive;
+  - a compose service with `depends_on`, a healthcheck and no restart policy.
+- **Foundation changes:**
+  - It accepts process hosts that have no selection.
+  - With the option on, `scripts/local.mjs`'s gate reads `report.processes.runnable`.
+  - The existing writers also emit `process.ts`, `http.ts` and `admission.ts` when a process needs
+    them.
+  - The `application-services` gap closes for those hosts. Off, nothing changes.
 - **Gates:**
   - the standard gates;
   - a stub-only design exported with processes on installs, builds, runs `first-run` on your own
@@ -259,15 +286,26 @@ reports healthy. Features and stubs are not wired yet.
 
 **Goal:** implement TP01 §3–4 for Service and Uploads hosts.
 
-- Template HTTP factories are mounted: multipart, positive cache read, search query, and the rest
-  as the contract says.
-- Required product hooks become generated hooks that answer "Not implemented" (HTTP 501).
-- Stubs that answer HTTP get their routes by the contract's rule.
+- **The public edge:** `app-edge` (the pinned nginx), with `/api/<id>/` for public HTTP processes,
+  as a new `edge` contribution.
+- **Templates (contract §3):**
+  - Multipart is mounted with its tables (`ownedUploadPersistence`, the generic schema rule) and a
+    sweep.
+  - The cache read is mounted with a source login.
+  - Search query is a placeholder.
+  - Each lead gets `src/modules/<host>/<lead>.hooks.ts`, whose hooks throw "Not implemented" (HTTP
+    501). Its `*-application-bindings` gap becomes `custom` and names that file.
+- **Stubs (contract §4):**
+  - A route stub answers any method on `/modules/<module id>` and below.
+  - Add `src/modules/entry.ts`, and give route stubs the request signature.
+  - Not implemented gives 501 and a rate-limited log line.
+  - Stub `Dependencies` whose stores aren't provisioned yet answer "Not implemented" until TP07.
 - **Tests**
-  - Generator unit tests for the route table and the hook stubs.
-  - A Docker run of a small design: one Service with a Cache reader, Data access and Search
-    query, plus a stub. Health is OK; the stub route answers 501 "Not implemented"; a template
-    route reaches its handler, and answers 501 only where a product hook is missing.
+  - Generator unit tests for the route table, the edge config, the hooks files, and the stub files
+    with the option on and off.
+  - A Docker run of the stub stack plus a Service with a Cache reader and Data access. Edge health
+    is OK. The stub routes answer 501 "Not implemented", and an unknown route answers 404. The cache
+    route answers 501 naming its `key` hook.
 
 **Commit:** `TP05: http wiring`.
 
@@ -275,14 +313,20 @@ reports healthy. Features and stubs are not wired yet.
 
 **Goal:** implement TP01 §5 (decision 4).
 
-- Workers, and consumer modules in any tile, start consume loops through the reused durable
-  consumer mechanism. They call the template's consumer or the stub.
-- A "Not implemented" error is logged and nacked or retried within bounds. The process stays
-  healthy and never crash-loops.
-- Graceful shutdown drains the loops.
-- **Tests:** unit tests for the retry and nack handling. A Docker run where a message published to
-  a stub consumer's queue is received, logged as "Not implemented" and bounded, while the service
-  stays healthy.
+- **Stub loops (contract §4–§5):**
+  - Consumer stubs in any tile start loops through `createConsumer` and the delivery runner.
+  - Give loop stubs the message signature; a consumed queue is no longer a `Dependencies` property.
+  - "Not implemented" is terminal (`NOT_IMPLEMENTED`) and logged. Other errors retry 5 times with
+    backoff of at most 10 s.
+- **Templates (contract §3):** the asset lifecycle, Video HLS and the event counter are mounted
+  with their tables and hooks files; the search projection is a placeholder.
+- **Provisioning for loops:** the subscriber queues that stub loops consume, and the asset
+  lifecycle's results subscriber, which is missing today.
+- The process stays healthy and never crash-loops. Graceful shutdown drains the loops.
+- **Tests:**
+  - Unit tests for the terminal, retry and backoff handling and for the drain.
+  - A Docker run of the stub stack: a message published to Visits and to Uploaded is received,
+    logged as "Not implemented" and lands in `.failed`, while both processes stay healthy.
 
 **Commit:** `TP06: consume loops`.
 
@@ -291,8 +335,16 @@ reports healthy. Features and stubs are not wired yet.
 **Goal:** implement TP01 §6 (decision 3).
 
 - With processes on, every store or channel a stub connects to is provisioned with the access the
-  contract derives: Postgres schemas and logins, queues and topics, cache, object storage and
-  search indexes.
+  contract works out from its links (§6):
+  - Postgres logins with CONNECT and USAGE, plus `published-read` views from another owner;
+  - the queues it publishes to;
+  - caches;
+  - buckets with per-host keys;
+  - search services.
+- Unspecified providers get the local fixed values, and other saved providers become
+  `unsupported` gaps. Nothing is written to ownership, and Identity isn't provisioned.
+- Add `src/runtime/module-clients.ts`: real clients behind the stub interfaces, with one startup
+  probe each.
 - Off, nothing changes.
 - **Tests**
   - Generator unit tests.
@@ -306,15 +358,17 @@ reports healthy. Features and stubs are not wired yet.
 
 **Goal:** prove the goal on real designs.
 
-- **The stub-only design:** export it with processes on, then `first-run`. Every `app-*` is
+- **The designs, the "healthy" checks and the requests are exactly those in contract §8.**
+- **The stub stack (stub-only):** export it with processes on, then `first-run`. Every `app-*` is
   healthy, stub routes answer 501, a consumer stub logs and survives, and stop and start retain
   state.
-- **The MA09 rebuild:** read it from the owner's database read-only, or rebuild it from the
-  fixture.
+- **The MA09 rebuild:** the v2 module design (`v2ModuleDesign()` with v2's 7 useful values), built
+  from the fixture. Don't read the owner's database.
   - Export it with processes on and run it.
   - Every `app-*` is healthy and every provisioned resource exists.
   - Each of the 7 templates' processes starts. Where a product hook is missing, its routes or
-    loops answer "Not implemented"; where none is missing, they reach their handlers.
+    loops answer "Not implemented", naming the hook its handler reached. The two search templates
+    are placeholders (contract §3).
   - Record per tile and module what runs, what answers 501 and what is still custom.
 - **Off:** with processes off, the same designs export byte-identically to before TP04.
 - **Evidence:** `docs/plans/tile-processes/evidence/tp08/README.md`, with commands, health

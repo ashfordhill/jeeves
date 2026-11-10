@@ -8192,3 +8192,72 @@ I ran no checks: only docs changed. The owner's uncommitted `README.md` and `.do
 untouched.
 
 Next: TP01 only.
+
+## 2026-11-10 — TP01: tile process contract
+
+This unit is docs only; no code changed. I wrote the
+[tile process contract](plans/tile-processes/contract.md), and revised TP03–TP08 and the status
+line in [units.md](plans/tile-processes/units.md). All eight open questions stay within owner
+decisions 1–6.
+
+- **Option:** saved in the design as `generation.processes: true` (absent means off), through one
+  `setRunnableProcesses` command for the dialog and chat. Only designs built from modules can turn
+  it on.
+- **Shape:**
+  - Service and Uploads tiles are HTTP processes, Workers run loops, and the mixed case does both.
+  - Each is `app-<id>` from `src/processes/<id>.ts`, healthy on the ready marker, with no restart
+    policy.
+  - One nginx edge exposes `/api/<id>/` for public tiles.
+- **Wiring:**
+  - Five templates are mounted with generated `<lead>.hooks.ts` files; the two search templates
+    are placeholders.
+  - Stubs are loop, route (`/modules/<module id>`, any method) or library stubs.
+  - "Not implemented" gives 501, or a terminal `NOT_IMPLEMENTED` dead letter with a log line.
+- **Provisioning:** stub stores get the link's access, worked out at read time. Nothing is written
+  to ownership, and Identity isn't provisioned.
+- **IDs:** a rename re-keys IDs that still follow their name or kind, and a clash refuses. Designs
+  with a study origin, a tile-level selection or a preset keep their IDs.
+
+**Unit changes:**
+
+- **TP03:** the "follows" rule, the cascade, a completeness walk, and pinned designs rename without
+  re-keying. This replaces "refuse where pinned".
+- **TP04:**
+  - the stub stack fixture, and pinning off output first;
+  - the schema, command and support flag;
+  - `model.processes`, `report.processes`/`runnable`, and the `local.mjs` gate;
+  - empty tiles also get processes.
+- **TP05:** the edge, multipart and cache read mounted, search query as a placeholder, the hooks
+  files and stub routes.
+- **TP06:** stub and template loops, plus the queues those loops consume.
+- **TP07:** the rest of stub provisioning, `module-clients.ts` and the startup probes.
+- **TP08:** the exact designs and requests from contract §8; the MA09 graph comes from the fixture,
+  not the owner's database.
+
+**Findings for the next units**
+
+- `scripts/local.mjs:7-15` refuses to start any `app-*` while `applicationComplete` is false. With
+  processes on, the gate must read `runnable` instead.
+- No template contributes SQL logins today, so no host can connect to Postgres. The asset lifecycle
+  has no `completion-events` subscriber queue.
+- `process.ts` and `http.ts` are emitted only beside templates.
+- `http.ts`'s error handler turns unknown errors into 503, so "Not implemented" must be mapped to
+  501 before it.
+- `youtube-core` hashes every `generationPolicies` record (`generation-catalog.ts:138`), so don't
+  add one.
+- Lane rules refuse a consumer link that loops back up the lane. The stub stack therefore feeds
+  Links API's consumer from the Upload lane.
+
+**Checks:**
+
+- The generator v2 and related spec tests passed: 22 files, 124 tests.
+- `pnpm check` exited 0: 557 tests in 80 files (lint: only the existing info).
+- I confirmed the cited export behaviour with in-memory `assembleV2` runs of a stub-only design,
+  `v2ModuleDesign()`, frozen v2 and the proposed stub stack (13 stubs, no findings, 52 files).
+  Nothing was exported to disk, and no Docker ran.
+- No e2e or browser checks were run, since this unit is docs only.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.
+
+Next: TP02.
