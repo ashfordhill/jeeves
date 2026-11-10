@@ -74,7 +74,7 @@ future generator's frontend templates) which user flow each service serves.
   the same blue, with a red X ([Removing](#removing)).
   In the Overview, modules (components) are not drawn; they are cards on their tile's inspector
   page ([Inspector](#inspector)). The [Detailed view](#detailed-view) draws them inside their
-  tiles. C1 people, external systems and packages are not shown.
+  tiles as rows that open them. C1 people, external systems and packages are not shown.
 
 To trace relationships, select: a tile's lines turn blue, and a selected line shows its
 endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
@@ -100,15 +100,23 @@ warning mark sits in the header's corner. Every other tile keeps its Overview si
   direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
   twice (YouTube's Packager and Thumbnailer both write Transcoded videos: 25 relationships, 26
   lines). A relationship no module uses, an entry and the user's line attach at the header.
-  Links between modules of one tile are not drawn.
+  Links between modules of one tile are not drawn; an open module marks them instead (below).
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
   the clicked one thicker with the X. A relationship selected elsewhere (diagnostics, chat, Undo)
   shows its drawn lines the same way. **Choose relationship** names the modules ("Packager
   (Transcoder) to Transcoded videos"). The X removes the whole relationship, with the same
   refusals and confirmation as in the Overview; module links that use it go with it.
-- Containers are tiles: click one to select it, and its pull tabs and X work as on any tile.
-  Rows are not clickable yet; a click on one selects its container.
+- Containers are tiles: click one's header to select it, and its pull tabs and X work as on any
+  tile. Each row is its module, a button named "Open <module> in <tile>": a click selects the
+  tile and opens the module's page in the inspector, as its card does. A row and a card are the
+  same module: while one is open, from either, its row is filled in the selection colour and only
+  the lines drawn from or into that row turn blue (not the tile's other lines, nor another
+  module's line of the same relationship); the rows of the modules it links with inside the tile
+  get a blue border. The tile keeps its pull tabs and X. Back, another tile or line, or empty
+  paper clears the marks; the Overview keeps only the tile selected, with all its lines blue.
+  In Hand mode rows let the pointer through, so a drag pans and nothing opens. A row reached by
+  keyboard shows a focus outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
   positions: switching back finds the Overview exactly as it was, and an edit made in Detailed
   lays the Overview out as if it had been made there.
@@ -379,12 +387,13 @@ details.
 - Ownership, grants and legacy inferred writers remain in source and read-only diagnostics.
   Normal forms do not require a permission matrix or duplicate writer edit. See
   [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
-- A module's card opens its page in place of the tile's, again one page with no tabs: a **Back
-  to <tile>** row (the tile's icon and name), a header with the module's icon, Name (the title)
-  and kind, and any readiness findings, then Description, **Options** only when it has useful
-  supported settings, and **Remove module** at the bottom. It lists no links: a module's links to
-  other tiles follow its tile's drawn lines. Back returns to the tile page with Modules in view.
-  Selecting another tile or a line, or clicking empty paper, closes the module; so do Remove
+- A module's card, or its row in the [Detailed view](#detailed-view), opens its page in place of
+  the tile's, again one page with no tabs: a **Back to <tile>** row (the tile's icon and name), a
+  header with the module's icon, Name (the title) and kind, and any readiness findings, then
+  Description, **Options** only when it has useful supported settings, and **Remove module** at
+  the bottom. It lists no links: a module's links to other tiles follow its tile's drawn lines;
+  in Detailed its row and its own lines are marked. Back returns to the tile page with Modules in
+  view. Selecting another tile or a line, or clicking empty paper, closes the module; so do Remove
   module and a history step that removes it, which show the tile page. Undoing that step
   reopens the module, as a selected tile comes back when Redo restores it. While a module is
   open, chat's selection is the module's ID. The open module is the workspace's selection
@@ -1010,7 +1019,9 @@ and all twenty components, with nothing omitted and no findings.
   writes" until renamed, though it reads.
 - The inspector neither lists nor edits module links, and the Detailed view draws only those to
   other tiles: a module's links are preserved, preset-bound or made through chat (including a link
-  between two modules of one tile, "Supplies code", which no view draws).
+  between two modules of one tile, "Supplies code", which no view draws; an open module's row
+  marks its partners). A selected tile's pull tabs sit over the right end of its container's rows,
+  so there a click takes the tab, not the row.
 - In Detailed, two rows of one container that write one store come back to it as separate lines
   and can cross each other (YouTube's Packager and Thumbnailer into Transcoded videos; twice in the
   v2 field design). A row's line to a store upstream of its tile loops round the container (v2's

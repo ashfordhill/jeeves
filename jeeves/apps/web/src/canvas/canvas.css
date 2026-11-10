@@ -115,7 +115,8 @@
 }
 
 /* Container face (Detailed view): a one-line header, then one row per module, each centred on its
-   port's height (positions come from the projection). */
+   port's height (positions come from the projection). A row is a button that opens its module; the
+   open module's row is marked in the selection colour, its in-process partners' rows more lightly. */
 .lane-container {
   position: relative;
   box-sizing: border-box;
@@ -164,12 +165,35 @@
   right: 10px;
   box-sizing: border-box;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 8px;
   border: 1.5px solid color-mix(in srgb, var(--board-line) 30%, transparent);
   border-radius: 7px;
   background: var(--board-paper);
+}
+
+.lane-container-row-button {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lane-container-row:hover {
+  border-color: var(--type-color);
+}
+
+.lane-container .lane-container-row-button:focus-visible {
+  outline: 3px solid var(--board-select);
+  outline-offset: 2px;
 }
 
 .lane-container-row-icon {
@@ -181,6 +205,21 @@
 .lane-container-row-name {
   font-size: 13px;
   font-weight: 700;
+}
+
+/* The open module: filled and ringed in the selection colour. Its partners: only a border. */
+.lane-container-row[data-mark="open"] {
+  border-color: var(--board-select);
+  background: color-mix(in srgb, var(--board-select) 32%, var(--board-paper));
+  box-shadow: 0 0 0 2px var(--board-select);
+}
+
+.lane-container-row[data-mark="open"] .lane-container-row-name {
+  font-weight: 800;
+}
+
+.lane-container-row[data-mark="partner"] {
+  border-color: color-mix(in srgb, var(--board-select) 80%, transparent);
 }
 
 /* Actor face (ActorColumn proportions): figure on the pastel strip, name plate at the bottom. */

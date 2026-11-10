@@ -14,12 +14,17 @@
 // line maps to its connection (`canonicalLine`), and a selected connection shows all of its drawn
 // lines, the clicked one as the board's selected line (`drawnSelection`). The board keeps each
 // view's layout hints apart (`view`).
+//
+// A container's rows are its modules (`ModuleRows`): clicking one opens that module in the
+// inspector (`onOpenModule`). While a module is open its host stays selected, with its pull tabs
+// and X, but only the module's own drawn lines take the selection colour (the board's
+// `selectedTileLines` and `highlighted`); its row is marked, and its in-process partners' rows
+// more lightly. In the Overview an open module only keeps its host selected.
 import {
   Board,
   type BoardHandle,
   type BoardMode,
   type BoardProps,
-  type BoardSelection,
   type LineSpec,
   type TileSpec,
 } from "@jeeves/board";
@@ -36,10 +41,10 @@ import { detailedView } from "./detailedView.ts";
 import { layoutEngine } from "./elk.ts";
 import { LineLegend } from "./LineLegend.tsx";
 import { laneLayoutInput } from "./laneLayout.ts";
-import { canonicalLine, drawnSelection } from "./selection.ts";
+import { canonicalLine, drawnSelection, type WorkspaceSelection } from "./selection.ts";
 import { ActionTile } from "./tiles/ActionTile.tsx";
 import { ACTOR_NAME, ActorTile } from "./tiles/ActorTile.tsx";
-import { ContainerTile } from "./tiles/ContainerTile.tsx";
+import { ContainerTile, ModuleRows } from "./tiles/ContainerTile.tsx";
 import { Tile, tileShape } from "./tiles/Tile.tsx";
 import "./canvas.css";
 
@@ -59,6 +64,7 @@ export function LaneCanvas({
   mode,
   onSelectTile,
   onSelectLine,
+  onOpenModule,
   onClear,
   creation,
   removal,
@@ -68,11 +74,16 @@ export function LaneCanvas({
   /** `laneGraph(design)`. */
   graph: LaneGraph;
   view?: CanvasView;
-  /** A tile, or a canonical relationship (never a Detailed view's drawn line). */
-  selected: BoardSelection;
+  /**
+   * A tile (with its open module, if any), or a canonical relationship (never a Detailed view's
+   * drawn line).
+   */
+  selected: WorkspaceSelection;
   mode: BoardMode;
   onSelectTile: (id: string) => void;
   onSelectLine: (id: string) => void;
+  /** A module's row was clicked (Detailed view): select its host with the module open. */
+  onOpenModule: (host: string, module: string) => void;
   onClear: () => void;
   /** Pull tabs, fans and drops for the selected tile (`useLaneCreation`). */
   creation?: Pick<BoardProps, "tabs" | "canDrop" | "onPick" | "onDrop" | "onDropRefused">;
@@ -167,8 +178,16 @@ export function LaneCanvas({
   // The drawn line last clicked, so it (not its first sibling) shows as the selected line.
   const [clicked, setClicked] = useState<string>();
   const drawn = useMemo(
-    () => (detailed ? drawnSelection(detailed.projection.linesOf, selected, clicked) : undefined),
+    () => (detailed ? drawnSelection(detailed.projection, selected, clicked) : undefined),
     [detailed, selected, clicked],
+  );
+  const rows = useMemo(
+    () => ({
+      ...(drawn?.rows && { open: drawn.rows.open }),
+      partners: drawn?.rows?.partners ?? [],
+      onOpen: onOpenModule,
+    }),
+    [drawn, onOpenModule],
   );
   const canonical = (line: string) =>
     detailed ? canonicalLine(detailed.projection.connectionOf, line) : line;
@@ -176,25 +195,30 @@ export function LaneCanvas({
 
   return (
     <div className="lane-canvas">
-      <Board
-        ref={ref}
-        tiles={detailed?.tiles ?? tiles}
-        lines={detailed?.lines ?? lines}
-        engine={layoutEngine}
-        selected={drawn?.selected ?? selected}
-        mode={mode}
-        onSelectTile={onSelectTile}
-        onSelectLine={(line) => {
-          setClicked(line);
-          onSelectLine(canonical(line));
-        }}
-        onClear={onClear}
-        {...creation}
-        {...removal}
-        {...(onRemoveLine && { onRemoveLine: (line: string) => onRemoveLine(canonical(line)) })}
-        view={view}
-        {...(drawn && { highlighted: drawn.highlighted })}
-      />
+      <ModuleRows value={rows}>
+        <Board
+          ref={ref}
+          tiles={detailed?.tiles ?? tiles}
+          lines={detailed?.lines ?? lines}
+          engine={layoutEngine}
+          selected={drawn?.selected ?? selected}
+          mode={mode}
+          onSelectTile={onSelectTile}
+          onSelectLine={(line) => {
+            setClicked(line);
+            onSelectLine(canonical(line));
+          }}
+          onClear={onClear}
+          {...creation}
+          {...removal}
+          {...(onRemoveLine && { onRemoveLine: (line: string) => onRemoveLine(canonical(line)) })}
+          view={view}
+          {...(drawn && {
+            highlighted: drawn.highlighted,
+            selectedTileLines: drawn.selectedTileLines,
+          })}
+        />
+      </ModuleRows>
       <LineLegend />
     </div>
   );

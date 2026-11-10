@@ -321,6 +321,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           mode={mode}
           onSelectTile={(tile) => select({ tile })}
           onSelectLine={(line) => select({ line })}
+          onOpenModule={(tile, module) => select({ tile, module })}
           onClear={() => select({})}
           creation={creation}
           removal={removal}

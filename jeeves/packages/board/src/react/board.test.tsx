@@ -316,6 +316,45 @@ describe("Board", () => {
     expect(screen.queryByRole("button", { name: /^Remove/ })).toBeNull();
   });
 
+  it("leaves a selected tile's own lines to `highlighted` when asked, keeping its chrome", async () => {
+    const engine = createLayoutEngine(fakeElk, { debounceMs: 0 });
+    const board = (props: Partial<BoardProps>) => (
+      <Board
+        tiles={tiles}
+        lines={lines}
+        engine={engine}
+        selected={{ tile: "redirect" }}
+        onSelectTile={() => {}}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        removable={() => true}
+        onRemoveTile={() => {}}
+        mode="select"
+        {...props}
+      />
+    );
+    const { container, rerender } = render(board({}));
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    // `entry` is solid; `publish` is dashed (a transparent hit path), so read its arrowhead.
+    const ink = (id: string) =>
+      container.querySelector<SVGPathElement>(
+        `.react-flow__edge[data-id="${id}"] ${id === "publish" ? ".board-line-arrow" : ".react-flow__edge-path"}`,
+      )?.style.stroke;
+    // By default every line of the selected tile takes the selection colour.
+    expect([ink("entry"), ink("publish")]).toEqual(["var(--board-select)", "var(--board-select)"]);
+    rerender(board({ selectedTileLines: false, highlighted: ["publish"] }));
+    expect(ink("entry")).toBe("var(--board-line)");
+    expect(ink("publish")).toBe("var(--board-select)");
+    // The tile is still the selected one, with its X; no line is selected.
+    expect(screen.getByRole("group", { name: "Redirect" }).classList).toContain("selected");
+    expect(screen.getByRole("button", { name: "Remove Redirect" })).toBeTruthy();
+    expect(container.querySelector(".react-flow__edge.selected")).toBeNull();
+    rerender(board({ selectedTileLines: false }));
+    expect([ink("entry"), ink("publish")]).toEqual(["var(--board-line)", "var(--board-line)"]);
+  });
+
   it("draws lines and arrowheads at named ports, with handles there, and snapshots the ports", async () => {
     const ref = createRef<BoardHandle>();
     const hub: TileSpec = {

@@ -3,7 +3,8 @@
  * container of its modules, with each module's links from or into its row. It is a per-project
  * browser preference: toggling changes no design, revision or blueprint. Drawn lines map to their
  * canonical relationships for the inspector, chat and removal, and the Overview, including its
- * export, stays exactly what it was.
+ * export, stays exactly what it was. A row is its module (UI08): clicking it opens the module in
+ * the inspector, and an open module marks its row, only its own lines and its partners' rows.
  */
 import type { Page } from "@playwright/test";
 import { exportPng } from "./export.ts";
@@ -237,6 +238,160 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
   }
 });
 
+/** The marked rows of the canvas's containers: module → "open" or "partner". */
+const marks = (page: Page) =>
+  page
+    .locator(".board .lane-container-row[data-mark]")
+    .evaluateAll((rows) =>
+      Object.fromEntries(
+        rows.map((row) => [(row as HTMLElement).dataset.module, (row as HTMLElement).dataset.mark]),
+      ),
+    );
+const row = (page: Page, module: string, host = "Transcoder") =>
+  tile(page, host).getByRole("button", { name: `Open ${module} in ${host}`, exact: true });
+/** The Transcoder's five drawn lines, one per module row. */
+const TRANSCODER_LINES = [
+  "jobs-transcoder/transcoder-consumer",
+  "transcoder-publish/transcoder-done",
+  "transcoder-read/transcoder-encoder",
+  ...WRITES,
+].sort();
+
+test("a module row opens its module and marks its row, its own lines and its partners", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await createStudy(page, "E2E UI08 module rows", "YouTube · studio study");
+  try {
+    const blueprint = async () =>
+      await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
+    const before = { design: await design(page, id), blueprint: await blueprint() };
+    const inspector = page.locator(".studio-inspector");
+    const back = inspector.getByRole("button", { name: "Back to Transcoder", exact: true });
+    const name = inspector.getByLabel("Name", { exact: true });
+    const transcoder = tile(page, "Transcoder");
+    await show(page, "Detailed");
+    await expect(row(page, "Packager")).toBeVisible();
+    expect(await marks(page)).toEqual({});
+
+    // A row opens its module: the host is selected, with its X, but only the Packager's own line
+    // takes the selection colour (not the Thumbnailer's line of the same relationship), its row
+    // is marked and so are the rows of the modules it links with inside the Transcoder.
+    await row(page, "Packager").click();
+    await expect(back).toBeVisible();
+    await expect(name).toHaveValue("Packager");
+    await expect(transcoder).toHaveClass(/selected/);
+    await expect(transcoder.getByRole("button", { name: "Remove Transcoder" })).toBeVisible();
+    await expect.poll(() => highlighted(page)).toEqual([WRITES[0]]);
+    expect(await marks(page)).toEqual({
+      "transcoder-packager": "open",
+      "transcoder-encoder": "partner",
+      "transcoder-done": "partner",
+    });
+    await expect(row(page, "Packager")).toHaveAttribute("aria-current", "true");
+    await page.getByLabel("Message", { exact: true }).fill("What does this module do?");
+    const sent = page.waitForRequest(
+      (r) => r.method() === "POST" && r.url().endsWith(`/projects/${id}/chat`),
+    );
+    await page.getByRole("button", { name: "Send", exact: true }).click();
+    expect((await sent).postDataJSON().selection).toEqual(["transcoder-packager"]);
+    await expect
+      .poll(
+        async () =>
+          (await (await page.request.get(`/api/projects/${id}/chat`)).json()).turns.at(-1)?.status,
+      )
+      .toBe("done");
+
+    // Another row of the same tile moves the marks.
+    await row(page, "Segmenter and encoder").click();
+    await expect(name).toHaveValue("Segmenter and encoder");
+    await expect.poll(() => highlighted(page)).toEqual(["transcoder-read/transcoder-encoder"]);
+    expect(await marks(page)).toEqual({
+      "transcoder-consumer": "partner",
+      "transcoder-encoder": "open",
+      "transcoder-packager": "partner",
+      "transcoder-thumbnails": "partner",
+    });
+
+    // Back clears the marks; the tile is selected again with all of its lines.
+    await back.click();
+    await expect(back).toHaveCount(0);
+    await expect.poll(() => marks(page)).toEqual({});
+    await expect.poll(() => highlighted(page)).toEqual(TRANSCODER_LINES);
+
+    // A card in the inspector opens the same module and marks its row; it stays open across views,
+    // where the Overview keeps only its host selected, with all of its lines.
+    await inspector.getByRole("button", { name: "Open Thumbnailer", exact: true }).click();
+    await expect.poll(() => highlighted(page)).toEqual([WRITES[1]]);
+    expect(await marks(page)).toEqual({
+      "transcoder-thumbnails": "open",
+      "transcoder-encoder": "partner",
+      "transcoder-done": "partner",
+    });
+    await show(page, "Overview");
+    await expect(back).toBeVisible();
+    await expect(transcoder).toHaveClass(/selected/);
+    await expect
+      .poll(() => highlighted(page))
+      .toEqual(["jobs-transcoder", "transcoder-publish", "transcoder-read", "transcoder-write"]);
+    await show(page, "Detailed");
+    await expect(back).toBeVisible();
+    await expect.poll(() => highlighted(page)).toEqual([WRITES[1]]);
+    expect(await marks(page)).toEqual({
+      "transcoder-thumbnails": "open",
+      "transcoder-encoder": "partner",
+      "transcoder-done": "partner",
+    });
+
+    // Another tile closes the module, and so does empty paper.
+    await tile(page, "Completion events").click();
+    await expect(back).toHaveCount(0);
+    await expect(name).toHaveValue("Completion events");
+    expect(await marks(page)).toEqual({});
+    await row(page, "Video writer", "Completion handler").click();
+    await expect(
+      inspector.getByRole("button", { name: "Back to Completion handler", exact: true }),
+    ).toBeVisible();
+    await expect.poll(() => highlighted(page)).toEqual(["handler-metadata/handler-writer"]);
+    expect(await marks(page)).toEqual({
+      "handler-consumer": "partner",
+      "handler-writer": "open",
+    });
+    await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
+    await expect(inspector.getByRole("button", { name: /^Back to/ })).toHaveCount(0);
+    expect(await marks(page)).toEqual({});
+    expect(await highlighted(page)).toEqual([]);
+
+    // In Hand mode a row lets the pointer through: a drag from it pans, and nothing opens.
+    await page.getByRole("button", { name: "Hand", exact: true }).click();
+    const camera = () =>
+      page
+        .locator(".board .react-flow__viewport")
+        .evaluate((el) => (el as HTMLElement).style.transform);
+    const panned = await camera();
+    const box = await row(page, "Packager").boundingBox();
+    if (!box) throw new Error("The Packager row is not drawn.");
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 40, { steps: 8 });
+    await page.mouse.up();
+    await expect.poll(camera).not.toBe(panned);
+    await expect(inspector.getByRole("button", { name: /^Back to/ })).toHaveCount(0);
+    await expect(transcoder).not.toHaveClass(/selected/);
+    expect(await marks(page)).toEqual({});
+    await page.getByRole("button", { name: "Select", exact: true }).click();
+
+    // None of it reached the design, its revision or the blueprint.
+    expect(await design(page, id)).toEqual(before.design);
+    expect(await blueprint()).toEqual(before.blueprint);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+});
+
 test("a Detailed line's X goes through the relationship declarations confirmation", async ({
   page,
   tinyurl: id,
@@ -303,6 +458,13 @@ test("export follows the view: Detailed says so, and the Overview's bytes don't 
     expect(detailed.details.tiles).toHaveLength(21);
     expect(detailed.details.lines).toHaveLength(YOUTUBE_DETAILED_LINES);
     expect(detailed.details.image.sha256).not.toBe(first.details.image.sha256);
+    // An open module's marks are the live canvas's, never the export's.
+    await row(page, "Packager").click();
+    await expect(page.locator('.lane-container-row[data-mark="open"]')).toHaveCount(1);
+    await settled(page);
+    const marked = await exportPng(page);
+    expect(marked.png.equals(detailed.png)).toBe(true);
+    expect({ ...marked.details, capturedAt: "" }).toEqual({ ...detailed.details, capturedAt: "" });
     await show(page, "Overview");
     const again = await exportPng(page);
     expect(again.png.equals(first.png)).toBe(true);

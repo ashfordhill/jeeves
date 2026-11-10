@@ -1291,3 +1291,16 @@ however far (a jump would lose the reader), lets lines that only the new view dr
 moving tiles, and fits last. At the fit, module names are too small to read (YouTube at 0.34,
 v2 at 0.30); the view is for zooming into a part, and the [UI07 handoff](handoff.md) lists what
 still reads badly there.
+
+## 2026-11-09 UI08: an open module shows its own lines, not its tile's
+
+A module's row and its inspector card are one thing, so opening either marks the same place on the
+canvas. Marking the module's row alone was not enough: the host stays selected (its pull tabs and
+X still work), and a selected tile turns all of its lines blue, which hid which ones the module
+uses. The board now keeps the tile selected but leaves its lines plain and colours only the lines
+drawn from or into the module's row, so the Packager shows one line where the Transcoder shows
+five, and not the Thumbnailer's line of the same relationship. Links between modules of one tile
+have no arrows; marking the partners' rows with a lighter border shows them without drawing
+inside a 32px row. The open row needs a fill and bold text, not just a border: a blue border alone
+read the same as its partners' in dark mode. Marks are live view state, so they come from the
+canvas, never from the tile face an export draws.

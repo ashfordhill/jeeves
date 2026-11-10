@@ -24,7 +24,10 @@
 // view stays drawn until the new one is laid out, the move animates however far tiles go
 // (`useAnimatedLayout`), and then the camera fits. `highlighted` lines take the selection colour
 // like the selected tile's own lines (several drawn lines of one selected relationship, say); it
-// is view only and selects nothing. Without either prop the board is a single view, as before.
+// is view only and selects nothing. `selectedTileLines={false}` keeps the selected tile and its
+// chrome but leaves its own lines plain, so `highlighted` alone shows which of them belong to a
+// part of the tile (one row of a container, say). Without these props the board is a single
+// view, as before.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
@@ -206,6 +209,11 @@ export type BoardProps = {
    * View only: it selects nothing and shows no X.
    */
   highlighted?: readonly string[];
+  /**
+   * Whether the selected tile's own lines take the selection colour; default true. False keeps
+   * the tile selected, with its chrome, and leaves the colour to `highlighted`.
+   */
+  selectedTileLines?: boolean;
   ref?: Ref<BoardHandle>;
 };
 
@@ -371,11 +379,14 @@ function lineEdges(
   selected: BoardSelection = {},
   placed: (id: string) => Point | undefined = (id) => layout.positions[id],
   highlighted?: ReadonlySet<string>,
+  tileLines = true,
 ): BoardLineEdge[] {
-  /* Draw order at crossings: dashed under solid; the selected tile's lines and highlighted lines
-     over the rest, and the selected line on top. */
+  /* Draw order at crossings: dashed under solid; the selected tile's lines (unless `tileLines`
+     is false) and highlighted lines over the rest, and the selected line on top. */
   const linked = (l: LineSpec) =>
-    (selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile)) ||
+    (tileLines &&
+      selected.tile !== undefined &&
+      (l.source === selected.tile || l.target === selected.tile)) ||
     highlighted?.has(l.id) === true;
   const rank = (l: LineSpec) =>
     (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
@@ -429,6 +440,7 @@ function Inner({
   hud,
   view = "",
   highlighted,
+  selectedTileLines = true,
   handle,
 }: Omit<BoardProps, "ref"> & { handle?: Ref<BoardHandle> }) {
   const rf = useReactFlow<TileNode, BoardLineEdge>();
@@ -785,7 +797,9 @@ function Inner({
 
   const routes = shown?.routes ?? {};
   const highlight = useMemo(() => new Set(highlighted), [highlighted]);
-  const edges = shown ? lineEdges(drawn.lines, shown, selected, placed, highlight) : [];
+  const edges = shown
+    ? lineEdges(drawn.lines, shown, selected, placed, highlight, selectedTileLines)
+    : [];
 
   const context = useMemo(
     () => ({

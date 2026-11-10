@@ -1,7 +1,9 @@
 // The workspace's selection: the board's tile or line, plus the module open in the inspector. Lines
-// are canonical relationships; the Detailed view maps its drawn lines to and from them.
+// are canonical relationships; the Detailed view maps its drawn lines to and from them, and marks
+// an open module's row, its drawn lines and its in-process partners' rows.
 import type { BoardSelection } from "@jeeves/board";
 import type { DesignDocument, LaneGraph } from "@jeeves/spec";
+import type { DetailedView } from "./detailedView.ts";
 
 /**
  * A tile or a line, as the board selects them, and with a tile, the ID of one of its modules
@@ -43,21 +45,54 @@ export function canonicalLine(
   return connectionOf(line) ?? line;
 }
 
+/** What the Detailed view shows for a workspace selection (`drawnSelection`). */
+export type DrawnSelection = {
+  /** The board's selection: a tile (an open module's host too), or one drawn line. */
+  selected: BoardSelection;
+  /** Drawn lines in the selection colour beside the selected one. */
+  highlighted: readonly string[];
+  /**
+   * Whether the selected tile's own lines take the selection colour (the board's
+   * `selectedTileLines`): not while one of its modules is open, whose lines are `highlighted`.
+   */
+  selectedTileLines: boolean;
+  /** The open module's row, and the rows of the modules of its tile it links with. */
+  rows?: { open: string; partners: readonly string[] };
+};
+
 /**
- * What the board shows for a workspace selection in the Detailed view, where one relationship
- * may be drawn as several lines (`DetailedView.linesOf`): one of them is the board's selected line
- * (the one last clicked when it is one of them, else the first) and the rest are highlighted in
- * the selection colour. A tile stays the tile; the open module is the inspector's.
+ * What the board and the containers show for a workspace selection in the Detailed view, where
+ * one relationship may be drawn as several lines (`DetailedView.linesOf`): one of them is the
+ * board's selected line (the one last clicked when it is one of them, else the first) and the
+ * rest are highlighted in the selection colour. A tile stays the tile. With one of its modules
+ * open, the host stays selected (its chrome too), but only the module's own drawn lines take the
+ * selection colour, its row is marked, and so are its in-process partners' rows (`partners`).
  */
 export function drawnSelection(
-  linesOf: (connection: string) => readonly string[],
-  selection: BoardSelection,
+  view: Pick<DetailedView, "lines" | "linesOf" | "rowOf" | "partners">,
+  selection: WorkspaceSelection,
   clicked?: string,
-): { selected: BoardSelection; highlighted: readonly string[] } {
-  if (!selection.line)
-    return { selected: selection.tile ? { tile: selection.tile } : {}, highlighted: [] };
-  const drawn = linesOf(selection.line);
-  const line =
-    clicked !== undefined && drawn.includes(clicked) ? clicked : (drawn[0] ?? selection.line);
-  return { selected: { line }, highlighted: drawn.filter((id) => id !== line) };
+): DrawnSelection {
+  if (selection.line) {
+    const drawn = view.linesOf(selection.line);
+    const line =
+      clicked !== undefined && drawn.includes(clicked) ? clicked : (drawn[0] ?? selection.line);
+    return {
+      selected: { line },
+      highlighted: drawn.filter((id) => id !== line),
+      selectedTileLines: true,
+    };
+  }
+  const { tile, module } = selection;
+  if (!tile) return { selected: {}, highlighted: [], selectedTileLines: true };
+  if (module === undefined || view.rowOf(module)?.host !== tile)
+    return { selected: { tile }, highlighted: [], selectedTileLines: true };
+  return {
+    selected: { tile },
+    highlighted: view.lines
+      .filter((line) => line.sourceModule === module || line.targetModule === module)
+      .map((line) => line.id),
+    selectedTileLines: false,
+    rows: { open: module, partners: view.partners(module) },
+  };
 }

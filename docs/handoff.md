@@ -6995,3 +6995,97 @@ lines into a database to the right.
   row, so a line's arrowhead stops at the frame, not at the row box.
 - During the 200ms switch, lines new to the view are drawn as right-angle fallbacks between their
   moving tiles; they snap to their routes at the end.
+
+## 2026-11-09 — UI08: interactive modules on the canvas
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md) (R4), a container's row is its module.
+Docs: `studio.md` (Lane canvas, Detailed view, Inspector, Limits) and a playbook lesson.
+
+- **Rows** (`tiles/ContainerTile.tsx`): each `li.lane-container-row[data-module]` holds a
+  `button.lane-container-row-button` named "Open <module> in <host>" (`aria-current` while open,
+  a 3px `--board-select` outline on `:focus-visible`, the family colour on hover). A click stops
+  at the row, as the board's own tile buttons do, and calls `LaneCanvas`'s new `onOpenModule`,
+  which `Workspace` maps to `select({ tile: host, module })`. In Hand mode the board's
+  `pointer-events: none` on tiles lets the pointer through, so a drag pans and nothing opens.
+- **Marks** come from a React context, `ModuleRows` (open module, partners, `onOpen`), provided
+  around the board by `LaneCanvas`. The tile specs don't change when a module opens, and a diagram
+  export (`BoardSnapshotView` in its own root) gets no context, so it shows no marks: the e2e
+  checks the Detailed PNG is byte-identical with and without an open module. `data-mark="open"`
+  fills the row in the selection colour (32%), rings it 2px and bolds the name; `"partner"` is a
+  blue border only.
+- **Highlight sets** (`selection.ts`): `drawnSelection(projection, selection, clicked?)` now
+  takes the projection and the `WorkspaceSelection` and returns `{ selected, highlighted,
+  selectedTileLines, rows? }`. With a module open: the host stays the board's selected tile,
+  `highlighted` is the lines whose `sourceModule`/`targetModule` is the module,
+  `selectedTileLines: false`, and `rows = { open, partners: partners(module) }`. Lines and plain
+  tiles are as in UI07. In the Overview nothing changes: an open module keeps its host selected
+  with all its lines blue.
+- **Board** (generic, documented in `Board.tsx`): `selectedTileLines?: boolean` (default true).
+  False keeps the selected tile, its pull tabs and X, but leaves its own lines plain, so
+  `highlighted` alone colours (and raises) lines. `lineEdges` takes it as a last parameter; the
+  snapshot path uses the default. No layout file changed; `elkGraph.golden.json` passes.
+
+**Tests.** `board.test.tsx` +1: a selected tile's lines are blue by default; with
+`selectedTileLines={false}` only `highlighted` ones are, the tile keeps its `selected` class and
+its X, and no line is selected. `selection.test.ts` +2 (the UI07 cases now also pin
+`selectedTileLines: true`): YouTube's Packager highlights only
+`transcoder-write/transcoder-packager` (not the Thumbnailer's line of that relationship) with
+partners encoder and done; View summer (no drawn line) highlights nothing but marks its two
+partners; another tile's module is not open; v2's Publication outbox publisher highlights both of
+its lines and the Lifecycle writer only `handler-metadata/handler-writer`. `detailed-view.spec.ts`
++1 test on YouTube, by mouse: a Packager row opens its page (Name, Back, host selected with its X),
+only its line blue, its row `open` and encoder/done `partner`, `aria-current`; chat's selection
+`["transcoder-packager"]`; another row moves the marks; Back clears them and all five Transcoder
+lines turn blue; the Thumbnailer card marks its row and line; the Overview keeps the host's four
+lines blue and switching back restores the marks; another tile and empty paper close the module
+(also on the Completion handler's Video writer); in Hand mode a row click opens nothing and a drag
+from it pans; design, revision and blueprint unchanged; no page errors. The UI07 export test now
+also exports Detailed with a module open and gets identical PNG bytes and details.
+
+**Checks.** `pnpm check` exited 0: **494 tests in 72 files** (lint: only the existing info in
+`local-v2/assets/scripts/local.mjs`). **46 native E2Es passed (1.8m).** The first full run had one
+failure in `operations.spec.ts` (`clickLine` on `upload-shorten` right after a tile removal landed
+on paper under load, in the Overview); it passed 3/3 alone and in the full rerun. The web build
+passed with the existing chunk-size advisory.
+
+Mouse check: scripted Chromium at 1440×900 and 1280×800 with my own TinyURL extended, YouTube and
+v2 (`field-projects/youtube/v2/inputs/design.json` through `/operations`) projects, all deleted
+afterwards (204). The owner's six project revisions are unchanged.
+
+- TinyURL rendered 11 tiles and 12 lines in both views (4 containers). Cache reader's row opened it
+  with only `redirect-cache/redirect-cache-reader` blue and its two partners marked.
+- YouTube: as in the e2e, plus dark mode (Segmenter and encoder: the row is filled, only
+  `transcoder-read/transcoder-encoder` is blue, three partners).
+- v2: Lifecycle writer → only `handler-metadata/handler-writer`; outbox publisher → its two
+  lines; no partners (v2 has no in-process links).
+- A Tab from a clicked row focuses the next row with the outline.
+- No page errors, console errors or warnings.
+
+Evidence: `plans/ui-overhaul/evidence/ui08/` (v2 Lifecycle writer open, YouTube Packager open with
+partners, dark mode at 1280, the focus outline).
+
+**Environment notes.**
+
+- A stray `biome format` run from `jeeves/` (no config there) briefly reformatted about 70 files.
+  I restored every file outside this unit with `git checkout` (none had other edits) and reapplied
+  my edits to HEAD copies.
+- The running `pnpm dev` web server on 4300 lost its file watch on `Board.tsx` when the checkout
+  replaced it, and kept serving the HEAD board (all host lines blue with a module open). I checked
+  on my own Vite (port 4320, same API, started with `--force`, which rebuilt the shared
+  `apps/web/node_modules/.vite` deps cache) and stopped it. Restart `pnpm dev` to see UI08 on 4300.
+- Pre-existing, for UI10: after a pan drag in **Hand** mode, the next click is sometimes swallowed
+  (stopped in the window's capture phase, as d3 does after a drag). Clicking Select needed a second
+  click. I reproduced it in the Overview on TinyURL on both servers; a Select-mode pan didn't do it.
+
+**For UI09 (readability seen).**
+
+- At the fit a row is about 66×6px (Segmenter and encoder, 1440×900, both rails). It can be
+  clicked but is a small target; zoom in to use rows.
+- The selected container's pull tabs (+ and attach) sit over the right end of its middle rows
+  (Transcoder's Segmenter and Packager; v2's Lifecycle writer and outbox publisher) and over the
+  start of their lines. The red X sits on the header text.
+- The partner mark (blue border) is quiet in both themes. The open row's fill is clear in light
+  mode and weaker in dark mode, where it relies on the ring and bold name.
+- An open module's line can be a long loop. The Packager's runs up and round to Transcoded videos,
+  and the Lifecycle writer's runs up over the worker to Metadata database. Arrowheads still stop
+  at the frame, 10px from the row box.
