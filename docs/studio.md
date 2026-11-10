@@ -68,8 +68,8 @@ future generator's frontend templates) which user flow each service serves.
   endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
   decide which one is selected.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
-  The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
-  a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
+  In Select mode the selected tile shows its pull tabs
+  ([Creating and connecting](#creating-and-connecting)) and a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
   see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
   the same blue, with a red X ([Removing](#removing)).
   In the Overview, modules (components) are not drawn; they are cards on their tile's inspector
@@ -114,6 +114,8 @@ its Overview size and face.
   Overview; module links that use it go with it.
 - Containers are tiles: click one's header to select it, and its pull tabs and X work as on any
   tile. A container's pull tabs sit just outside its frame, beside its rows rather than over them.
+  In Connect mode a drag from anywhere on a container, a row included, links the container
+  ([Connect mode](#connect-mode)).
   A port mark turns blue whenever its line does: the container, the relationship, the tile at the
   line's other end or the open module selected it. Each row is its module, a button
   named "Open <module> in <tile>": a click selects the tile and opens the module's page in the
@@ -284,8 +286,11 @@ On the grid (`alignLayout` in `jeeves/packages/board`, run on every layout):
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected),
-**Fit** and **Overview | Detailed** ([Detailed view](#detailed-view)). The canvas fits when it
-opens; Fit refits, and never zooms in past 100%. The camera follows the canvas:
+**Connect** (C, a link icon; a drag from a tile links it to another,
+[Connect mode](#connect-mode)), **Fit** and **Overview | Detailed**
+([Detailed view](#detailed-view)). Escape returns to Select. The mode is view state: it is never
+saved, has no history and changes no design, revision or blueprint. The canvas fits when it opens;
+Fit refits, and never zooms in past 100%. The camera follows the canvas:
 
 - While the camera is fitted (since the canvas opened, or since Fit), it refits at once whenever
   the canvas changes size: a rail opens or closes (selecting opens the inspector), a rail is
@@ -293,7 +298,7 @@ opens; Fit refits, and never zooms in past 100%. The camera follows the canvas:
 - Once you pan or zoom, the camera is yours: rails opening and closing leave it alone until you
   click Fit or switch views; a view switch always fits.
 - A new tile that lands outside the view is brought in: the canvas pans just enough to show it,
-  with room for its tabs, at the same zoom. Attaches and chat edits don't move the camera.
+  with room for its tabs, at the same zoom. New links and chat edits don't move the camera.
 
 The extended TinyURL study fits at these zooms, which the canvas takes by itself as the rails open and close:
 
@@ -309,57 +314,66 @@ rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
 
-Only the selected tile shows controls: tabs on its sides, for what the lane rules allow there, and
-the red X on its top edge ([Removing](#removing)). There are two kinds of tab:
+In Select mode only the selected tile shows controls: tabs on its sides, for what the lane rules
+allow there, and the red X on its top edge ([Removing](#removing)).
 
 - **`+`** creates a new tile. The right `+` adds one after the tile. The left `+` inserts one
   before it: the new tile takes over every link into the tile (and its lane entry) and then links
   to it. A side has a `+` when at least one tile type fits there, so databases, caches, storage
   and search indexes have no right `+`.
-- **The link tab** (a chain-link icon) attaches the tile to a tile already on the canvas, in either
-  direction. It sits on the right, below the `+`, or alone where there is no `+`, and shows
-  whenever the tile can attach to at least one other tile.
-- **The user** has one `+` and no link tab. Its fan offers its two actions, **Consume** (the
-  download icon) and **Produce** (the upload icon); one the design already has is greyed ("This
-  design already has a Produce action; each lane has one."), and when it has both the `+` is gone.
-  A picked action becomes an action tile named Consume or Produce, selected with its Name field
-  ready to type over ("Watch"). A project with no tiles opens with the user selected, so its `+`
-  shows.
+- **The user** has one `+`. Its fan offers its two actions, **Consume** (the download icon) and
+  **Produce** (the upload icon); one the design already has is greyed ("This design already has a
+  Produce action; each lane has one."), and when it has both the `+` is gone. A picked action
+  becomes an action tile named Consume or Produce, selected with its Name field ready to type over
+  ("Watch"). A project with no tiles opens with the user selected, so its `+` shows.
 - **An action** has a right `+` (a new tile that becomes its entry: a Service or an API; the other
-  types are greyed, "An action reaches a service (not a worker), an API or the CDN.") and a link
-  tab (an existing tile becomes its entry: any application or CDN with no entry yet). It has no
+  types are greyed, "An action reaches a service (not a worker), an API or the CDN."). It has no
   left `+`: nothing goes before an action.
+
+Pull a `+` with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
+and the pull stays open until you let go. It opens a fan of all seven tile types around the tab,
+always in the same order and the same places. The name shows under the icon the pointer is on. A
+type the rules refuse on that side is greyed, and its name adds why ("A queue can't link to URL
+database. A queue feeds only an application, not a database."). The fan stays on the canvas, at
+least 16px inside its edges, so it never covers a rail or the header; near an edge its icons line
+up along it, sometimes right beside the tab. **Release on an icon** to add a tile of that type.
+It is named after the type ("Cache", then "Cache 2"), docks at the next slot beside its source
+while the layout animates around it, and is selected with its Name field ready to type over (the
+canvas pans to it if it landed out of view). A Service added after a queue is a worker; a new
+database, cache, storage or queue belongs to the application it is added next to. A `+` never
+links to existing tiles: releasing on a greyed icon or on a tile changes nothing. **Release
+anywhere else**, or press Escape, and the band springs back.
+
+### Connect mode
+
+**Connect** (C) in the toolbar, right after Hand, links tiles already on the canvas. Press on a
+tile and drag: a line follows the pointer from the tile, with its arrowhead at the pointer. The
+board dims, and the tiles the lane rules allow at its end stay bright with a dashed outline,
+which thickens on the one under the pointer. Over a refused tile the line turns red and a tip by
+the pointer says why ("Analytics store can't link to Redirect service. A database can't link
+onward.").
+
+- **Release on an allowed tile** to link the two. **The drag's direction is the arrow's**: the
+  line runs from the tile you pressed to the tile you released on, so a service drags to its
+  store, and a store dragged to a service is refused, never reversed. From an action, the tile
+  becomes that action's entry ("Redirect service already starts the download lane; a tile has
+  one entry." where it can't). Nothing links onto the user or an action, and the user links only
+  to its actions (its `+` adds them).
+- **Release on a refused tile** and the notice gives the same reason; nothing changes. Release
+  on paper or on the tile itself, or press Escape during the drag, and nothing happens.
+- A press without a drag is a click: it selects, so the inspector works in Connect mode. Tiles
+  show no pull tabs or X there, and the paper still pans.
+- **A line under the pointer** turns the selection blue, is drawn over the rest, and shows its
+  red X where a selected line's X would sit; the pointer can move from the line onto it. The X
+  removes the line as in [Removing](#removing), with the same refusals, confirmation and Undo.
+  The user's line to an action has no X.
+- In the [Detailed view](#detailed-view) a container is linked from anywhere on it, a row
+  included: the link is the tile's, as in the Overview. A click on a row still opens its module.
 
 Every new link takes its pair's default mode from the [link table](../jeeves/CATALOG.md#lanes-and-links):
 asynchronous (a dashed line) to and from a queue, a request (a solid line) otherwise. Where the
-table allows both, the line inspector's Interaction field switches it.
-
-Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
-and the pull stays open until you let go.
-
-- **A `+`** opens a fan of all seven tile types around the tab, always in the same order and the
-  same places. The name shows under the icon the pointer is on. A type the rules refuse on that
-  side is greyed, and its name adds why ("A queue can't link to URL database. A queue feeds only
-  an application, not a database."). The fan stays on the canvas, at least 16px inside its edges,
-  so it never covers a rail or the header; near an edge its icons line up along it, sometimes right
-  beside the tab. **Release on an icon** to add a tile of that type. It is named after the type
-  ("Cache", then "Cache 2"), docks at the next slot beside its source while the layout animates
-  around it, and is selected with its Name field ready to type over (the canvas pans to it if it
-  landed out of view). A Service added after a queue is a worker; a new database, cache, storage
-  or queue belongs to the application it is added next to. A `+` never links to existing tiles:
-  the board doesn't dim, and releasing on a greyed icon or on a tile changes nothing.
-- **A link tab** opens no fan. The board dims, and the tiles it can attach to stay bright with a
-  dashed outline, which thickens on the one under the pointer. **Release on one** to link the two:
-  from the selected tile to it when the rules allow that, else from it to the selected tile.
-  Attaching Analytics store to Redirect service makes Redirect service → Analytics store, since a
-  store links onward to nothing. From an action's link tab, the tile becomes that action's entry.
-  The tile you pulled from stays selected, so its next fork or merge starts at once. A dimmed tile
-  can't be attached: releasing on it changes nothing, and the notice says why ("Redirect service
-  already starts the download lane; a tile has one entry."). Nothing attaches onto the user or an
-  action; an entry starts only from its action's own tab.
-- **Release anywhere else**, or press Escape, and the band springs back.
-
-Each add or attach is one batch and one undo step.
+table allows both, the line inspector's Interaction field switches it. Each add or link is one
+batch and one undo step.
 
 Every tile must hang off the user through an action, with no cycles, links the
 [link table](../jeeves/CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 4 entries
@@ -367,7 +381,8 @@ per action; a tile has one entry at most, and a lane one action. An edit that br
 rules is refused with a notice and changes nothing, whether it comes from the canvas, the
 inspector, chat or the API.
 
-Optional shortcuts: V selects, H pans, Escape cancels a pull. Every action works by mouse alone.
+Optional shortcuts: V selects, H pans, C connects, Escape cancels a pull or a drag (and otherwise
+returns to Select). Every action works by mouse alone.
 
 ## Removing
 
@@ -401,7 +416,11 @@ user); after removing a line, nothing is. The modules, module links and settings
 went are removed with it; a database, cache, storage or queue whose owner went belongs to the
 first application that still links to it. Each removal is one batch and one undo step.
 
-Optional shortcuts: Delete or Backspace does what the selected tile's or line's X does.
+In Connect mode any line under the pointer shows its X ([Connect mode](#connect-mode)); the tile
+X stays a Select mode control.
+
+Optional shortcuts: in Select mode, Delete or Backspace does what the selected tile's or line's X
+does.
 
 ## Inspector
 
@@ -473,7 +492,7 @@ reopen to edit."
 
 A **warning** is a design that looks wrong but is allowed. A design is built step by step, so a
 queue with no consumer yet or a new action with no entries must be accepted while you build it.
-Warnings never refuse an edit: no command, pull, attach or chat call is blocked by one, and they
+Warnings never refuse an edit: no command, pull, connect or chat call is blocked by one, and they
 are not "Fix the lanes first" problems (those are lane errors). The rules are:
 
 - **A store with no writer**: where resource access is declared, no valid authority/role/write
@@ -1045,8 +1064,8 @@ and all twenty components, with nothing omitted and no findings.
   project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
   can sit over it.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
-  and the first tiles can leave the view; Fit brings everything back. A link tab's drop target
-  must be on screen, so attaching to a tile that has left the view needs Fit (or a pan) first.
+  and the first tiles can leave the view; Fit brings everything back. A Connect drag's end must
+  be on screen, so linking to a tile that has left the view needs Fit (or a pan) first.
 - Where two services of one lane fork to the same tiles, their lines share one bus (the
   marketplace: the Shop service and Payments into the Catalog database). A line that comes back to
   a store joins its other lines just before it (YouTube: the Transcoder's read joins the Upload

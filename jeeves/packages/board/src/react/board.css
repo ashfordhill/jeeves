@@ -138,6 +138,18 @@
   pointer-events: none;
 }
 
+/* Connect mode: a drag from a tile draws a line, so tiles take a crosshair, as does the whole
+   board while a drag is under way. */
+.board[data-connecting],
+.board[data-connecting] * {
+  cursor: crosshair;
+}
+
+.board[data-mode="connect"] .react-flow__node,
+.board[data-mode="connect"] .react-flow__node * {
+  cursor: crosshair;
+}
+
 /* Ported from automation-illustrator src/app/styles/tokens.css, `.node-remove-x-btn`,
    `.tile-remove-x` and `.remove-picker-hud` (0803c4a).
    The red X: 40px, faint until the pointer or focus is on it. On a tile it sits centred over the
@@ -241,7 +253,7 @@
   pointer-events: none;
 }
 
-/* 40px tabs peeking 18px off the face; `+` above the link. More than two (the user's two lanes)
+/* 40px tabs peeking 18px off the face, one above the other. More than two (the user's two lanes)
    sit closer, centred on the tile. */
 .board-tabs {
   position: absolute;
@@ -365,10 +377,45 @@
   pointer-events: none;
 }
 
-/* An attach tab over a tile it can't attach to. */
-.board-tab-ghost[data-refused] {
-  border-color: var(--board-refuse);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--board-refuse) 45%, transparent);
+/* A connect drag: the scrim (as `.board-pull`), the provisional line with its arrowhead at the
+   pointer, in the refusal colour over a tile it can't end on, and that tile's reason. */
+.board-connect {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  pointer-events: none;
+}
+
+.board-connect-line {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.board-connect-line g {
+  stroke: var(--board-select);
+  stroke-width: 4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.board-connect-line g[data-refused] {
+  stroke: var(--board-refuse);
+}
+
+.board-connect-tip {
+  position: absolute;
+  transform: translate(14px, 18px);
+  width: max-content;
+  max-width: 260px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--board-line);
+  color: var(--board-tile);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 /* Fan items: icons only; the name shows under the one the pointer is on. Data tiles are round.
@@ -455,7 +502,8 @@
   font-weight: 600;
 }
 
-/* Drop targets show through the scrim; the one under the pointer gets the dashed ring. */
+/* A connect drag's allowed ends show through the scrim; the one under the pointer gets the
+   stronger dashed ring. */
 .board .react-flow__node.is-drop-target .board-tile {
   outline: 3px dashed color-mix(in srgb, var(--board-select) 55%, transparent);
   outline-offset: 6px;

@@ -1,11 +1,13 @@
 // Ported from automation-illustrator src/board/controls/tileOverlay.ts and the geometry helpers of
 // src/board/controls/TileChrome.tsx (0803c4a).
-// Screen-space geometry for the pull overlay: the tile's live rect and corner radius (the scrim
-// hole and the ribbon's exit), where the ribbon starts under the tile face, and the ribbon itself.
-// Holes use the tile's own radius (a pill's 32px), scaled by the zoom.
+// Screen-space geometry for the pull and connect overlays: the tile's live rect and corner radius
+// (a scrim hole and the ribbon's exit), where the ribbon starts under the tile face, the ribbon
+// itself, and where a connect drag's line leaves its tile. Holes use the tile's own radius (a
+// pill's 32px), scaled by the zoom.
 //
 // Changes from automation-illustrator: tiles are found inside one board host; the fallback rect
-// takes the tile size from the caller (there are no Step or Data kinds); horizontal only.
+// takes the tile size from the caller (there are no Step or Data kinds); horizontal only; the
+// connect line's exit point.
 import type { Size } from "../layout/metrics.ts";
 
 export type TileRect = { x: number; y: number; w: number; h: number; rx: number };
@@ -28,6 +30,39 @@ export function tileScreenRect(host: HTMLElement | null, id: string): TileRect |
   const cssRx = Number.parseFloat(getComputedStyle(el).borderTopLeftRadius);
   const rx = scaleCornerRadius(Number.isFinite(cssRx) ? cssRx : 14, el.offsetWidth, b.width);
   return { x: b.left, y: b.top, w: b.width, h: b.height, rx };
+}
+
+/** Room around a target's hole in the scrim, for its outline. */
+export const TARGET_PAD = 14;
+
+/** A scrim hole around a tile's screen rect, `pad` wider on every side, with its radius. */
+export function holeRect(tile: TileRect, pad: number) {
+  return {
+    x: tile.x - pad,
+    y: tile.y - pad,
+    width: tile.w + pad * 2,
+    height: tile.h + pad * 2,
+    rx: tile.rx + pad,
+  };
+}
+
+/**
+ * Where a straight line from the middle of `rect` towards `to` crosses the rect's edge (`to`
+ * itself while it is inside the rect).
+ */
+export function rectExit(
+  rect: { x: number; y: number; w: number; h: number },
+  to: { x: number; y: number },
+): { x: number; y: number } {
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
+  const dx = to.x - cx;
+  const dy = to.y - cy;
+  const t = Math.min(
+    dx === 0 ? Number.POSITIVE_INFINITY : rect.w / 2 / Math.abs(dx),
+    dy === 0 ? Number.POSITIVE_INFINITY : rect.h / 2 / Math.abs(dy),
+  );
+  return t >= 1 ? { x: to.x, y: to.y } : { x: cx + dx * t, y: cy + dy * t };
 }
 
 /** Last-resort rect when the tile is not drawn: the tile's size beside the resting tab. */

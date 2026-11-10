@@ -3,7 +3,8 @@
 // become directed lines, dashed only when that relationship is asynchronous. The user's line to an
 // action goes with the action, so it has no X. Lines carry no words; their accessible names say
 // what they join. The selected tile's pull tabs come from `creation`, its X and the selected
-// line's from `removal`. A tile or action with a design warning carries a mark (`Warnings.tsx`).
+// line's from `removal`, and connect mode's rules and new links from `connect`. A tile or action
+// with a design warning carries a mark (`Warnings.tsx`).
 // Every tile and line carries its lane band (`laneLayoutInput`), so the board stacks download,
 // shared and upload.
 //
@@ -26,6 +27,7 @@ import {
   type BoardHandle,
   type BoardMode,
   type BoardProps,
+  type ConnectRules,
   type LineSpec,
   type TileSpec,
 } from "@jeeves/board";
@@ -69,6 +71,7 @@ export function LaneCanvas({
   onClear,
   creation,
   removal,
+  connect,
   ref,
 }: {
   design: DesignDocument;
@@ -86,10 +89,12 @@ export function LaneCanvas({
   /** A module's row was clicked (Detailed view): select its host with the module open. */
   onOpenModule: (host: string, module: string) => void;
   onClear: () => void;
-  /** Pull tabs, fans and drops for the selected tile (`useLaneCreation`). */
-  creation?: Pick<BoardProps, "tabs" | "canDrop" | "onPick" | "onDrop" | "onDropRefused">;
+  /** Pull tabs and fans for the selected tile (`useLaneCreation`). */
+  creation?: Pick<BoardProps, "tabs" | "onPick">;
   /** The red X on the selected tile and line, and the removal's confirmation (`useLaneRemoval`). */
   removal?: Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
+  /** Connect mode's allowed ends, refusals and new links (`useLaneConnect`). */
+  connect?: ConnectRules;
   ref?: Ref<BoardHandle>;
 }) {
   const { tiles, lines, warnings } = useMemo(() => {
@@ -214,6 +219,7 @@ export function LaneCanvas({
           onClear={onClear}
           {...creation}
           {...removal}
+          {...connect}
           {...(onRemoveLine && { onRemoveLine: (line: string) => onRemoveLine(canonical(line)) })}
           view={view}
           {...(drawn && {

@@ -1,7 +1,8 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
-// rail toggles in the app header and Select, Hand, Fit and Overview | Detailed on the canvas (the
-// view is a per-project browser preference; the selection carries across it). The selected tile's
-// pull tabs add tiles and attach them (`creation.tsx`), the red X on a tile or line removes it
+// rail toggles in the app header and Select, Hand, Connect, Fit and Overview | Detailed on the
+// canvas (the mode is view state; the view is a per-project browser preference; the selection
+// carries across both). The selected tile's pull tabs add tiles (`creation.tsx`), connect mode
+// links tiles by dragging (`connect.ts`), the red X on a tile or line removes it
 // (`removal.tsx`); settings and modules are edited in the inspector (`TileInspector.tsx`), an
 // action's name in its own (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
 // The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
@@ -36,6 +37,7 @@ import {
   IconFocusCentered,
   IconHandStop,
   IconLayoutSidebarRight,
+  IconLink,
   IconMessageCircle,
   IconPointer,
   IconX,
@@ -55,6 +57,7 @@ import { OperationChanges } from "../studio/OperationChanges.tsx";
 import { type CanvasView, useStudioPreferences } from "../studio/preferences.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
+import { useLaneConnect } from "./connect.ts";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { ExportDiagram } from "./ExportDiagram.tsx";
 import { GenerateProject } from "./GenerateProject.tsx";
@@ -140,8 +143,9 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     field.select();
     setFocusName(undefined);
   });
-  // Optional shortcuts (mouse remains sufficient): V/H mirror the Select and Hand buttons, and
-  // Delete/Backspace the selected tile's or line's X.
+  // Optional shortcuts (mouse remains sufficient): V/H/C mirror the Select, Hand and Connect
+  // buttons, Escape returns to Select (once nothing else, such as a dialog or a drag, took it),
+  // and Delete/Backspace the selected tile's or line's X.
   const removeSelected = useRef(() => {});
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
@@ -153,7 +157,11 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       )
         return;
       const key = event.key.toLowerCase();
-      if (key === "v" || key === "h") setMode(key === "h" ? "hand" : "select");
+      const modes: Record<string, BoardMode> = { v: "select", h: "hand", c: "connect" };
+      const next = modes[key];
+      if (next) setMode(next);
+      if (key === "escape" && !event.defaultPrevented && !target?.closest('[role="dialog"]'))
+        setMode("select");
       if (key !== "delete" && key !== "backspace") return;
       event.preventDefault();
       removeSelected.current();
@@ -189,6 +197,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       setFocusName(tile);
     },
   });
+  const connect = useLaneConnect({ projectId, design: loaded.design });
   const { remove, ...removal } = useLaneRemoval({
     projectId,
     design: loaded.design,
@@ -325,6 +334,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           onClear={() => select({})}
           creation={creation}
           removal={removal}
+          connect={connect}
         />
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button
@@ -344,6 +354,15 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
             onClick={() => setMode("hand")}
           >
             <IconHandStop size={19} />
+          </button>
+          <button
+            type="button"
+            title="Connect (C)"
+            aria-label="Connect"
+            aria-pressed={mode === "connect"}
+            onClick={() => setMode((current) => (current === "connect" ? "select" : "connect"))}
+          >
+            <IconLink size={19} />
           </button>
           <button type="button" title="Fit" aria-label="Fit" onClick={() => board.current?.fit()}>
             <IconFocusCentered size={19} />

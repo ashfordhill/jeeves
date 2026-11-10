@@ -8,12 +8,16 @@ export function RemoveButton({
   onRemove,
   className,
   style,
+  onPointerEnter,
+  onPointerLeave,
 }: {
   /** Accessible name and tooltip, such as "Remove CDN". */
   label: string;
   onRemove: () => void;
   className?: string;
   style?: CSSProperties;
+  onPointerEnter?: () => void;
+  onPointerLeave?: () => void;
 }) {
   return (
     <button
@@ -22,6 +26,8 @@ export function RemoveButton({
       aria-label={label}
       title={label}
       style={style}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.stopPropagation();

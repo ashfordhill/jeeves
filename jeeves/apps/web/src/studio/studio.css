@@ -171,8 +171,11 @@
   font-size: 13px;
   line-height: 1.5;
 }
+/* Above the canvas's line legend (z-index 5), which would hide a short notice's text and its
+   dismiss button. */
 .studio-notice {
   position: absolute;
+  z-index: 6;
   bottom: 14px;
   left: 14px;
   right: 14px;

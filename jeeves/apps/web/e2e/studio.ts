@@ -53,11 +53,11 @@ export const tile = (page: Page, name: string): Locator =>
   page.locator(".board").getByRole("group", { name, exact: true });
 
 /**
- * Click a visible, exposed stretch of this route, using the same hit target as the mouse. The
+ * A screen point on a visible, exposed stretch of this route, where the mouse hits that line. The
  * route is read once it has stopped moving: `ready` holds as soon as ELK lands, while the layout
- * still animates for 200ms, so a point read then can be paper by the time it is clicked.
+ * still animates for 200ms, so a point read then can be paper by the time it is used.
  */
-export async function clickLine(page: Page, id: string) {
+export async function linePoint(page: Page, id: string) {
   const path = page.locator(`.board .react-flow__edge[data-id="${id}"] .react-flow__edge-path`);
   const camera = page.locator(".board .react-flow__viewport");
   let last = "";
@@ -68,7 +68,7 @@ export async function clickLine(page: Page, id: string) {
     last = now;
     await page.waitForTimeout(60);
   }
-  const point = await path.evaluate((element) => {
+  return path.evaluate((element) => {
     const path = element as SVGPathElement;
     const matrix = path.getScreenCTM();
     if (!matrix) throw new Error("The line is not drawn.");
@@ -81,6 +81,11 @@ export async function clickLine(page: Page, id: string) {
     }
     throw new Error("No visible stretch of this line can be clicked.");
   });
+}
+
+/** Click a visible, exposed stretch of this route, using the same hit target as the mouse. */
+export async function clickLine(page: Page, id: string) {
+  const point = await linePoint(page, id);
   await page.mouse.click(point.x, point.y);
   const chooser = page.getByRole("dialog", { name: "Choose relationship" });
   if (await chooser.isVisible()) await chooser.locator(`[data-line-id="${id}"]`).click();
@@ -111,6 +116,17 @@ export async function pull(page: Page, name: string, tab: string, by = { x: 60, 
   await page.mouse.move(x, y);
   await page.mouse.down();
   await page.mouse.move(x + by.x, y + by.y, { steps: 6 });
+}
+
+/**
+ * Presses the mouse on the middle of tile `from` (or any element) and drags it onto `to` in small
+ * steps (Connect mode draws a line). The mouse stays down.
+ */
+export async function dragOnto(page: Page, from: Locator, to: Locator) {
+  const box = await settledBox(from);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await moveOnto(page, to);
 }
 
 /** Moves the pressed mouse to the middle of `target` in small steps. */

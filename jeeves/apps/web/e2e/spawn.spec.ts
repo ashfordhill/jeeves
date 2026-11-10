@@ -1,8 +1,8 @@
 import type { Page } from "@playwright/test";
 import {
   createStudy,
-  dashedLines,
   design,
+  dragOnto,
   expect,
   lines,
   moveOnto,
@@ -20,7 +20,8 @@ const fanItem = (page: Page, name: string) =>
 
 test("pulls a + tab onto the fan to add a tile", async ({ page, tinyurl: id }) => {
   await tile(page, "Redirect service").click();
-  await expect(tile(page, "Redirect service").locator(".board-tab")).toHaveCount(3);
+  // A `+` on each side; linking existing tiles is Connect mode's (connect.spec.ts).
+  await expect(tile(page, "Redirect service").locator(".board-tab")).toHaveCount(2);
   await pull(page, "Redirect service", "Add after");
   // All seven types; after a service, every one fits.
   await expect(fan(page)).toHaveCount(7);
@@ -40,8 +41,8 @@ test("pulls a + tab onto the fan to add a tile", async ({ page, tinyurl: id }) =
 
 test("greys the types a side can't add, with the reason", async ({ page, tinyurl: id }) => {
   await tile(page, "URL database").click();
-  // A store has no right `+`: its left `+` and the attach tab show.
-  await expect(tile(page, "URL database").locator(".board-tab")).toHaveCount(2);
+  // A store has no right `+`: only its left `+` shows.
+  await expect(tile(page, "URL database").locator(".board-tab")).toHaveCount(1);
   await pull(page, "URL database", "Add before", { x: -60, y: 12 });
   await expect(fan(page)).toHaveCount(7);
   // Before a database only an application fits (an external API can only call one).
@@ -65,7 +66,7 @@ test("greys the types a side can't add, with the reason", async ({ page, tinyurl
 
 test("a + released on a tile changes nothing", async ({ page, tinyurl: id }) => {
   await tile(page, "Redirect service").click();
-  // The left `+` fans left; Analytics worker, which Redirect could attach to, is on the right.
+  // The left `+` fans left; Analytics worker, which Redirect could link to, is on the right.
   await pull(page, "Redirect service", "Add before");
   await expect(fan(page)).toHaveCount(7);
   await expect(page.locator(".board-scrim")).toHaveCount(0);
@@ -79,63 +80,16 @@ test("a + released on a tile changes nothing", async ({ page, tinyurl: id }) => 
   expect((await design(page, id)).revision).toBe(1);
 });
 
-test("attaches a store to a service, backwards, then undoes it", async ({ page, tinyurl: id }) => {
-  await tile(page, "Analytics store").click();
-  await pull(page, "Analytics store", "Attach");
-  await expect(fan(page)).toHaveCount(0);
-  // A store can't link onward, so Redirect service is offered as Redirect → Analytics store.
-  await expect(tile(page, "Redirect service")).toHaveClass(/is-drop-target/);
-  await moveOnto(page, tile(page, "Redirect service"));
-  await expect(tile(page, "Redirect service")).toHaveClass(/is-drop-over/);
-  await page.mouse.up();
-
-  await ready(page);
-  await expect(lines(page)).toHaveCount(13);
-  await expect(tile(page, "Analytics store")).toHaveClass(/selected/);
-  const read = (await design(page, id)).connections.find(
-    (c) => c.from.element === "redirect" && c.to.element === "analytics-store",
-  );
-  expect(read).toMatchObject({ kind: "uses-database" });
-
-  await page.getByRole("button", { name: "Undo" }).click();
-  await expect(lines(page)).toHaveCount(12);
-  const undone = (await design(page, id)).connections;
-  expect(
-    undone.some((c) => c.from.element === "redirect" && c.to.element === "analytics-store"),
-  ).toBe(false);
-});
-
-test("attaches to a queue asynchronously, the pair's default", async ({ page, tinyurl: id }) => {
-  await tile(page, "Shorten service").click();
-  // The inspector opened beside the canvas, and the fitted camera refitted, so no Fit is needed.
-  await expect(dashedLines(page)).toHaveCount(2);
-  await pull(page, "Shorten service", "Attach");
-  await moveOnto(page, tile(page, "Click events"));
-  await expect(tile(page, "Click events")).toHaveClass(/is-drop-over/);
-  await page.mouse.up();
-
-  await ready(page);
-  await expect(dashedLines(page)).toHaveCount(3);
-  // An attach leaves the source selected, ready for its next fork or merge.
-  await expect(tile(page, "Shorten service")).toHaveClass(/selected/);
-  await expect(tile(page, "Click events")).not.toHaveClass(/selected/);
-  const publish = (await design(page, id)).connections.find(
-    (c) => c.from.element === "shorten" && c.to.element === "click-events",
-  );
-  expect(publish?.planned).toMatchObject({ label: "Publishes", interaction: "Asynchronous" });
-});
-
-test("the user's + offers its actions; an action attaches a tile as its entry", async ({
+test("the user's + offers its actions; an action gains an entry in Connect mode", async ({
   page,
   tinyurl: id,
 }) => {
   const tabs = (name: string) => tile(page, name).locator(".board-tab");
   await tile(page, "User").click();
-  // TinyURL has both actions, so the user's one `+` is gone; nothing attaches onto the user.
+  // TinyURL has both actions, so the user's one `+` is gone.
   await expect(tabs("User")).toHaveCount(0);
 
-  // An action has a right `+` and an attach tab, and no left `+`. Every tile that could be an
-  // entry already is one, so Open link shows only its `+`.
+  // An action has a right `+` and no left `+`.
   await tile(page, "Open link").click();
   await expect(tile(page, "Open link").getByRole("button", { name: "Add after" })).toBeVisible();
   await expect(tabs("Open link")).toHaveCount(1);
@@ -151,7 +105,7 @@ test("the user's + offers its actions; an action attaches a tile as its entry", 
   );
   await page.mouse.up();
 
-  // A Service after the Shorten service has no entry: Shorten's attach tab can make it one.
+  // A Service after the Shorten service has no entry: a drag from Shorten makes it one.
   await tile(page, "Shorten service").click();
   await pull(page, "Shorten service", "Add after");
   await moveOnto(page, fanItem(page, "Service"));
@@ -159,11 +113,11 @@ test("the user's + offers its actions; an action attaches a tile as its entry", 
   await ready(page);
   await expect(lines(page)).toHaveCount(13);
   await tile(page, "Shorten").click();
-  await expect(tabs("Shorten")).toHaveCount(2);
-  await pull(page, "Shorten", "Attach");
+  await expect(tabs("Shorten")).toHaveCount(1);
+  await page.getByRole("button", { name: "Connect", exact: true }).click();
+  await dragOnto(page, tile(page, "Shorten"), tile(page, "Redirect service"));
   // A tile has one entry: Redirect service starts the download lane, so it stays dimmed.
   await expect(tile(page, "Service")).toHaveClass(/is-drop-target/);
-  await moveOnto(page, tile(page, "Redirect service"));
   await expect(tile(page, "Redirect service")).not.toHaveClass(/is-drop-target/);
   await page.mouse.up();
   await expect(page.locator(".studio-notice")).toHaveText(
@@ -172,8 +126,7 @@ test("the user's + offers its actions; an action attaches a tile as its entry", 
   await expect(lines(page)).toHaveCount(13);
   await page.getByRole("button", { name: "Dismiss notice" }).click();
 
-  await pull(page, "Shorten", "Attach");
-  await moveOnto(page, tile(page, "Service"));
+  await dragOnto(page, tile(page, "Shorten"), tile(page, "Service"));
   await page.mouse.up();
   await ready(page);
   await expect(lines(page)).toHaveCount(14);

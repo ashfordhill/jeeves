@@ -6,7 +6,7 @@
  * words with tile and action names. A link without a mode takes its pair's default from the link
  * table. The pure helpers tell the canvas and chat which actions the user can add
  * (`laneActionOptions`), which tile types a tile or action can add on each side (`laneOptions`),
- * which tiles it can attach to (`attachOptions`), and what removing a tile strands.
+ * where a link from a tile or action may end (`connectOptions`), and what removing a tile strands.
  */
 import {
   addAfter,
@@ -157,10 +157,10 @@ export type LaneOption =
   | { type: StudioTileType; kind: StudioKind }
   | { type: StudioTileType; refusal: string };
 /**
- * Another tile the link tool can attach to: the `linkTiles` it would run (`from`, `to` and the
- * pair's default mode), or why it can't. From an action, `lane` names the lane the entry joins.
+ * Where a link dragged from a tile or action may end: the `linkTiles` it would run (`from`, `to`
+ * and the pair's default mode), or why it can't.
  */
-export type AttachOption = { tile: string; lane?: StudioLane } & (
+export type ConnectOption = { tile: string } & (
   | { link: { from: LaneFrom; to: string; mode: StudioLinkMode } }
   | { refusal: string }
 );
@@ -315,7 +315,7 @@ function linkTilesRefusal(
   const source = "lane" in from ? laneActionNode(from.lane) : from.tile;
   if (to === LANE_ACTOR) return "Links don't lead back to the user.";
   if (laneActionOf(to))
-    return `Only the user links to ${view.name(to)}; pull from its attach tab to give it an entry.`;
+    return `Only the user links to ${view.name(to)}; link ${view.name(to)} to a tile to give it an entry.`;
   for (const id of [source, to]) if (!view.has(id)) return `There is no tile "${id}".`;
   return (
     linkRefusal(view, source, to, async) ??
@@ -878,34 +878,29 @@ export function laneRemoveActionRefusal(
 }
 
 /**
- * The tiles the link tool can attach `node` to, in lane order, each with the `linkTiles` it
- * would run in the pair's default mode, or why not. For a tile, every other tile: `node → tile`
- * when the rules allow it, else `tile → node`, else the forward direction's reason. For a lane's
- * action (`laneActionNode`): every tile it could take as an entry, or why not. Nothing attaches
- * onto the user.
+ * Where a link from `node` (a tile, a lane's action or the user) may end: every other node on the
+ * board, in lane order, each with the `linkTiles` it would run from `node` to it in the pair's
+ * default mode, or why not. The link always runs from `node`: a refused direction is never
+ * reversed. From an action (`laneActionNode`) a link is an entry. Nothing links onto the user or
+ * an action, and the user links only to its actions (added with its `+`).
  */
-export function attachOptions(design: DesignDocument, node: string): AttachOption[] {
+export function connectOptions(design: DesignDocument, node: string): ConnectOption[] {
   const view = lanes(design)();
-  if (!view.has(node) || node === LANE_ACTOR) return [];
+  if (!view.has(node)) return [];
   const [broken] = laneFindings(design);
-  const tiles = view.graph.nodes.flatMap((item) =>
-    item.kind && item.id !== node ? [item.id] : [],
-  );
-  const tryLink = (from: LaneFrom, to: string) => {
-    const source = "lane" in from ? LANE_ACTOR : from.tile;
-    const mode = pairMode(view, source, to);
+  const lane = laneActionOf(node);
+  const from: LaneFrom = lane ? { lane } : { tile: node };
+  return view.graph.nodes.flatMap((item) => {
+    if (item.id === node) return [];
+    const mode = pairMode(view, node, item.id);
     const refusal = broken
       ? `Fix the lanes first. ${broken.message}`
-      : linkTilesRefusal(view, from, to, mode === "async");
-    return refusal === undefined ? { link: { from, to, mode } } : { refusal };
-  };
-  const lane = laneActionOf(node);
-  if (lane) return tiles.map((tile) => ({ tile, lane, ...tryLink({ lane }, tile) }));
-  return tiles.map((tile) => {
-    const forward = tryLink({ tile: node }, tile);
-    if ("link" in forward) return { tile, ...forward };
-    const backward = tryLink({ tile }, node);
-    return { tile, ...("link" in backward ? backward : forward) };
+      : linkTilesRefusal(view, from, item.id, mode === "async");
+    return [
+      refusal === undefined
+        ? { tile: item.id, link: { from, to: item.id, mode } }
+        : { tile: item.id, refusal },
+    ];
   });
 }
 
@@ -925,8 +920,7 @@ export function planRemoveTile(
 
 /**
  * Why linking `from` (a lane or a tile) to the existing tile `to` is refused, in plain words, or
- * `undefined` when a `linkTiles` would be accepted (in `mode`, else the pair's default). The
- * canvas explains an attach released on the user with it.
+ * `undefined` when a `linkTiles` would be accepted (in `mode`, else the pair's default).
  */
 export function laneLinkRefusal(
   design: DesignDocument,

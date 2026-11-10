@@ -3,8 +3,9 @@
 // it), solid or dashed, a 44px hit band, and an optional chip at the rect ELK kept clear for it.
 // The dashes are drawn per segment with their phase locked to the world, so shared trunks keep
 // the same gaps. The selected line, and the selected tile's own lines, take the selection colour.
-// A selected line shows a red X on a stretch no other line shares (its midpoint when it has none,
-// above its chip when it has one), unless the caller marks it as not removable.
+// A selected line, and in connect mode the line under the pointer, shows a red X on a stretch no
+// other line shares (its midpoint when it has none, above its chip when it has one), unless the
+// caller marks it as not removable.
 //
 // Changes from automation-illustrator: no restitch preview, stretch, insert hover, label editor
 // or context menu (removal is the X). The chip holds caller content (an icon) instead of
@@ -40,6 +41,8 @@ export type BoardLineData = {
   directed?: boolean;
   /** A line into or out of the selected tile: the selection colour at the normal width. */
   linked?: boolean;
+  /** Connect mode: the pointer is on the line (or its X), so its X shows. */
+  hovered?: boolean;
   /** Accessible name of the line and its chip; never drawn. */
   label?: string;
   chip?: ReactNode;
@@ -60,8 +63,9 @@ export function BoardLine({
   data,
 }: EdgeProps<BoardLineEdge>) {
   const context = useBoardContext();
-  const { layout, selectLine } = context;
+  const { layout, selectLine, holdHover, releaseHover } = context;
   const removeLine = data?.fixed ? undefined : context.removeLine;
+  const withX = (selected || Boolean(data?.hovered)) && removeLine !== undefined;
   const dashed = Boolean(data?.dashed);
   const route = layout?.routes[id];
   const points =
@@ -81,7 +85,7 @@ export function BoardLine({
   // that no other line shares (on a bus, the line's own branch), else at its midpoint.
   const remove = data?.chip
     ? { x: chip.x, y: chip.y - (chip.h ?? REMOVE_SIZE) / 2 - REMOVE_GAP - REMOVE_SIZE / 2 }
-    : selected && removeLine
+    : withX
       ? (ownStretchMidpoint(
           points,
           Object.entries(layout?.routes ?? {}).flatMap(([line, route]) =>
@@ -161,12 +165,15 @@ export function BoardLine({
           </button>
         </EdgeLabelRenderer>
       ) : null}
-      {selected && removeLine ? (
+      {withX && removeLine ? (
         <EdgeLabelRenderer>
           <RemoveButton
             className="board-remove-line"
             label={`Remove ${data?.label ?? "line"}`}
             onRemove={() => removeLine(id)}
+            {...(holdHover && releaseHover
+              ? { onPointerEnter: () => holdHover(id), onPointerLeave: releaseHover }
+              : {})}
             style={{ transform: `translate(-50%, -50%) translate(${remove.x}px, ${remove.y}px)` }}
           />
         </EdgeLabelRenderer>

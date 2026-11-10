@@ -1350,3 +1350,19 @@ drawn lines. A relationship with no drawn form should not appear as a highlight;
 draw it first (MA06's Cache reader loader arrow) and let it take the selection with its line. Kind
 descriptions follow the same restraint: one short sentence of purpose ("Reads and writes one
 database."), with no mechanics such as pools, tiers or resilience settings.
+
+## 2026-11-09 MA03: a gesture's direction is the link's, and a refusal must be seen
+
+Linking moved from a tile's attach tab into **Connect** mode: drag from one tile to another. The
+attach tab tried both directions and silently made whichever the rules allowed, so dropping a
+store on a service quietly drew service → store. With a drag the hand already says which way the
+arrow points, so the line runs from where the drag started and a refused direction is refused
+with its reason, never reversed: the user learns the rule ("A database can't link onward")
+instead of getting a line they did not draw. Show the reason where the eye is (a tip at the
+pointer over the faded tile) and again where it stays (the notice on release). That notice must
+sit above the canvas's own overlays: the line legend hid the start of every notice, so a short
+refusal and its dismiss button were invisible. A mode is view state, like the view toggle: it
+never reaches the design, history or blueprint. And a mode for one job removes the controls of
+another: in Connect mode tiles show no pull tabs or X, a press-and-drag on a tile links it, a
+click still selects, and the line under the pointer offers its own X, so removing a link needs no
+selection first.

@@ -7381,3 +7381,97 @@ zoomed in and at 1280 at the fit.
   untouched.
 - The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
   `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-09 — MA03: connect mode
+
+Per the [module authoring plan](plans/module-authoring/units.md) (Owner decision 3), linking and
+unlinking leave the tiles' tabs for **Connect** mode. Docs: `studio.md` (toolbar, Creating and
+connecting with a new Connect mode subsection, Removing, Detailed view, Warnings, Limits),
+`CATALOG.md`, `PLAN.md`, a playbook lesson, the HUMAN_FEEDBACK resolution and the plan's status.
+
+- **Toolbar** (`Workspace.tsx`): Select (V), Hand (H), **Connect** (C; Tabler link icon,
+  `aria-pressed`, title "Connect (C)"), then Fit. Clicking Connect while it is on returns to
+  Select; V or Escape does too (Escape is skipped when a drag or a dialog, such as the removal
+  confirmation, took it). The mode stays component state: never saved, no history.
+- **Board** (generic, `ConnectDrag.tsx`, documented in `Board.tsx`): `BoardMode` gains
+  `"connect"`; `BoardProps` gains `ConnectRules`: `canConnect(from, to)`,
+  `connectRefusal(from, to)`, `onConnect(from, to)`, `onConnectRefused(from, to)`.
+  `useConnectDrag` listens in the capture phase on the board host, so a press anywhere on a node
+  (a container's row included) counts; past 6px it is a drag, otherwise a click (it selects). It
+  draws the attach tab's scrim (moved here) with holes for the source and the allowed ends, a
+  line from the tile's edge to the pointer with the arrowhead at the pointer, red with a tip over
+  a refused tile. A release on an allowed tile calls `onConnect`, on a refused one
+  `onConnectRefused`; the click that ends a drag is swallowed; Escape cancels. Tile chrome (tabs,
+  tile X) shows in select mode only. In connect mode a line under the pointer (`onEdgeMouseEnter`)
+  is inked blue, raised, and shows its X where a selected line's X sits; a 150ms grace and the
+  X's own pointer enter/leave (`holdHover`/`releaseHover` in the context) keep it while the
+  pointer moves onto the X. Fixed lines (the user's) have none.
+- **Attach tab removed** everywhere: `creation.tsx`, and in the board `AttachTab`, `canDrop`,
+  `onDrop`, `onDropRefused`, `PullState` and the pull's scrim. `CreateTab.glyph?: "plus" | "link"`
+  keeps the link glyph and band for MA04's link tab. `overlay.ts` gained `holeRect`, `TARGET_PAD`
+  and `rectExit`.
+- **Spec**: `attachOptions` (tried both directions) became `connectOptions(design, node)`: every
+  other node (user, actions, tiles) with the forward `linkTiles` in the pair's default mode, or the
+  refusal; never reversed. The refusal for a link onto an action no longer names the attach tab:
+  "Only the user links to Shorten; link Shorten to a tile to give it an entry." `laneLinkRefusal`
+  is kept (exported and tested) but no longer used by the app. Chat's `linkTiles` is unchanged.
+- **App**: `canvas/connect.ts` (`useLaneConnect`) caches `connectOptions` per source per design;
+  a release runs `linkTiles` with a fresh `newLinkId` on the latest design; a refusal goes to the
+  studio notice. The notice now has `z-index: 6`: the line legend covered the start of every
+  notice, hiding a short refusal ("Links don't lead back to the user.") and its dismiss button.
+
+**Tests.** `board.test.tsx` +2: the drag's callbacks (allowed, refused with its tip, the direction
+not reversed, paper, self, Escape, the swallowed click, a short press selects, nothing in select
+or hand mode, no chrome in connect mode) and the hover X (only in connect mode, kept on the X,
+gone after leaving it, none on a fixed line). `studio-lane-commands.test.ts`: the two attach tests
+rewritten for `connectOptions`. New `e2e/connect.spec.ts` (6, TinyURL extended): the keys and
+toolbar with design and blueprint unchanged; a drag adds exactly Shorten service → Click events
+(async) and Redirect service → Analytics store, two Undo steps; refusals (store onto a service,
+onto the user) show the tip and notice and change nothing, as do paper and Escape; a hover X
+removes `redirect-db`, Undo restores the design, the user's line has no X, a cutting removal is
+refused; a click selects tiles and lines and Hand still pans; Detailed connects from a row and a
+row click still opens its module. `spawn.spec.ts`: tab counts updated, the two attach tests moved
+into the connect spec, and the action-entry test now drags from Shorten. New e2e helpers
+`linePoint` and `dragOnto`.
+
+**Checks.**
+
+- `pnpm check` exited 0: **499 tests in 73 files** (lint: only the existing info).
+- **E2E (51 tests):** the first full run had 50 passed and 1 failed:
+  `inspector.spec.ts:77` (the system page's outline missed "Warnings"; the test reads it right
+  after a line's X without waiting for the save). Alone it passed 3/3, and the second full run
+  passed **51/51 (2.0m)**.
+- The web build passed with the existing chunk-size advisory.
+- YouTube Overview PNG at 1440×900 on my Vite: `472a4c8c…dc9f`, the same with Connect on.
+- Frozen v2: a fresh `export:v2` of `field-projects/youtube/v2/inputs/design.json` gives 72 files;
+  70 are byte-identical to `generic-export.tar.gz`. `.jeeves/manifest.json` and `report.json`
+  differ only in the source inventory of `spec/src/studio-components.ts` (MA02) and
+  `spec/src/studio-lane-commands.ts` (this unit), and the hashes derived from them.
+
+**Mouse check** (scripted Chromium on my own API 4332 with scratch database `jeeves_ma03`, now
+dropped, and Vite 4322), at 1440×900 and 1280×800, Overview and Detailed: TinyURL foundation 7
+tiles and 7 lines; TinyURL extended 11 tiles and 12 lines. In each: C, V, C+Escape, H and the
+button behaved; a drag (in Detailed from the Shorten service's Link writer row) added exactly
+Shorten service → Click events, async, and Undo removed it; Analytics store → Redirect service
+showed "Analytics store can't link to Redirect service. A database can't link onward." as the tip
+and the notice and changed nothing; the hover X removed `redirect-db` (Detailed: "Remove Link
+reader (Redirect service) to URL database") and Undo restored the connections exactly; a click
+selected with no tabs shown; Hand panned. Dark mode read correctly. No page errors, console
+errors or warnings. Evidence: [ma03](plans/module-authoring/evidence/ma03/).
+
+**For MA04.** The board has no attach or drop API now. Set `glyph: "link"` on a `CreateTab` for
+the link icon (teal band). Connect mode hides all tile chrome. `connectOptions` is the
+forward-only per-node helper; `laneOptions` is unchanged.
+
+**For MA06.**
+
+- The source is found by `tileOf` in `ConnectDrag.tsx` (the closest `.react-flow__node`), and
+  the line starts at `tileScreenRect(drag.from)`. A row-dot source needs its own end there (an
+  element marked inside the node, with its id as `from` and its rect as the start). Ends are
+  tiles (`others` in `Board.tsx`), outlined by `tileClass`; a row→row loader needs row ends,
+  hit-testing and marks too.
+- In Detailed, a module line's hover X still removes the whole relationship (the canonical link,
+  as the selected line's X does since UI07). MA06 must send it to `disconnectModule` instead.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

@@ -4,13 +4,19 @@
 // dragging the paper pans, the wheel zooms, a click selects. The first non-empty layout takes a
 // one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. A fitted camera
 // refits when the board changes size (a rail opens or closes); once the user pans or zooms, the
-// camera is theirs and stays. The selected tile shows the caller's pull tabs (`TileChrome`): a
-// create tab's picked fan item becomes a new tile, which docks at the next slot beside its source
-// until ELK lands and the layout animates, and the camera pans just enough to show it; an attach
-// tab drops on the tiles `canDrop` allows, which show through the scrim. The selected line
-// and the selected tile's lines take the selection colour, drawn over the rest. A removable
-// selected tile, and a selected line, show a red X; a caller's panel (`hud`, a confirmation)
-// sits at the bottom centre of the board.
+// camera is theirs and stays. In select mode the selected tile shows the caller's pull tabs
+// (`TileChrome`): a picked fan item becomes a new tile, which docks at the next slot beside its
+// source until ELK lands and the layout animates, and the camera pans just enough to show it.
+// The selected line and the selected tile's lines take the selection colour, drawn over the rest.
+// A removable selected tile (select mode), and a selected line, show a red X; a caller's panel
+// (`hud`, a confirmation) sits at the bottom centre of the board.
+//
+// Modes: in select mode a click selects and the paper pans. In hand mode tiles and lines let the
+// pointer through, so every drag pans and nothing is selected. In connect mode a click still
+// selects, but a drag from a tile draws a new line to another tile (`ConnectDrag.tsx`, with the
+// caller's `canConnect`, `connectRefusal`, `onConnect` and `onConnectRefused`); tiles show no
+// chrome, and a line under the pointer turns the selection colour and shows its red X (on the
+// stretch the selected line's X would take) until the pointer leaves it and its X.
 //
 // Ports: a tile's `ports` are named ports at fixed heights beside its default mid-height ones, and
 // a line's `sourcePort`/`targetPort` name the ones it uses (`elkGraph.ts` has the rules). Each
@@ -31,9 +37,8 @@
 // entry in the overlap chooser.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
-// insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
-// on each tile face, line chip and fan item. In hand mode tiles and lines let the pointer
-// through, so every drag pans and nothing is selected.
+// insert previews or departing tiles; connect mode is new. Tiles, lines and tabs come in as props,
+// with caller content on each tile face, line chip and fan item.
 import "@xyflow/react/dist/base.css";
 import "./board.css";
 import {
@@ -72,6 +77,7 @@ import {
   type SlotOrder,
 } from "../layout/metrics.ts";
 import { BoardLine, type BoardLineEdge } from "./BoardLine.tsx";
+import { ConnectOverlay, type ConnectRules, useConnectDrag } from "./ConnectDrag.tsx";
 import {
   boardNeedsCover,
   type CameraOrigin,
@@ -99,7 +105,7 @@ import {
 } from "./camera.ts";
 import { BoardContext } from "./context.ts";
 import { crossingBridges, nearestLines, oneLinePerGroup } from "./lineGeometry.ts";
-import { type PullState, type TabSpec, TileChrome } from "./TileChrome.tsx";
+import { type TabSpec, TileChrome } from "./TileChrome.tsx";
 import { prefersReducedMotion, useAnimatedLayout } from "./useAnimatedLayout.ts";
 import { useBoardLayout } from "./useBoardLayout.ts";
 
@@ -155,7 +161,7 @@ export type BoardSelection = { tile?: string; line?: string };
  * screen size. While it shows, that tile has no chrome and the `marked` tiles get a warning ring.
  */
 export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
-export type BoardMode = "select" | "hand";
+export type BoardMode = "select" | "hand" | "connect";
 /** A frozen full view, independent of camera and selection. */
 export type BoardSnapshot = {
   tiles: readonly TileSpec[];
@@ -168,7 +174,7 @@ export type BoardHandle = {
   snapshot: () => BoardSnapshot | null;
 };
 
-export type BoardProps = {
+export type BoardProps = ConnectRules & {
   tiles: readonly TileSpec[];
   lines: readonly LineSpec[];
   engine: LayoutEngine;
@@ -182,27 +188,24 @@ export type BoardProps = {
   hints?: Record<string, Point>;
   /** The selected tile's pull tabs (select mode only); none shows no chrome. */
   tabs?: readonly TabSpec[];
-  /** Whether an attach tab of `tile` may drop on `target`: the target shows through the scrim. */
-  canDrop?: (tile: string, tab: string, target: string) => boolean;
   /**
-   * A create tab's enabled fan item released on: returns, or resolves to, the new tile's ID
-   * (undefined when nothing is added). Return it synchronously so the tile docks at the next slot
-   * as soon as it appears.
+   * A tab's enabled fan item released on: returns, or resolves to, the new tile's ID (undefined
+   * when nothing is added). Return it synchronously so the tile docks at the next slot as soon as
+   * it appears.
    */
   onPick?: (
     tile: string,
     tab: string,
     item: string,
   ) => string | undefined | Promise<string | undefined>;
-  /** An attach tab released over a tile `canDrop` allows. */
-  onDrop?: (tile: string, tab: string, target: string) => void;
-  /** An attach tab released over a tile `canDrop` refuses; the pull springs back. */
-  onDropRefused?: (tile: string, tab: string, target: string) => void;
   /** Whether the selected tile shows a red X (select mode). */
   removable?: (tile: string) => boolean;
   /** The selected tile's X was clicked. */
   onRemoveTile?: (tile: string) => void;
-  /** The selected line's X (at its midpoint) was clicked; without it lines have no X. */
+  /**
+   * A line's X was clicked (the selected line's, or in connect mode the one under the pointer);
+   * without it lines have no X.
+   */
   onRemoveLine?: (line: string) => void;
   hud?: TileHud;
   /**
@@ -387,16 +390,18 @@ function lineEdges(
   placed: (id: string) => Point | undefined = (id) => layout.positions[id],
   highlighted?: ReadonlySet<string>,
   tileLines = true,
+  hovered?: string,
 ): BoardLineEdge[] {
   /* Draw order at crossings: dashed under solid; the selected tile's lines (unless `tileLines`
-     is false) and highlighted lines over the rest, and the selected line on top. */
+     is false) and highlighted lines over the rest, then the hovered line (connect mode), and
+     the selected line on top. */
   const linked = (l: LineSpec) =>
     (tileLines &&
       selected.tile !== undefined &&
       (l.source === selected.tile || l.target === selected.tile)) ||
     highlighted?.has(l.id) === true;
   const rank = (l: LineSpec) =>
-    (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
+    (selected.line === l.id ? 6 : hovered === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
   const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
   const { routes } = layout;
   return ordered.map((l, i) => ({
@@ -412,7 +417,8 @@ function lineEdges(
     data: {
       dashed: l.dashed,
       ...(l.directed ? { directed: true } : {}),
-      ...(linked(l) ? { linked: true } : {}),
+      ...(linked(l) || hovered === l.id ? { linked: true } : {}),
+      ...(hovered === l.id ? { hovered: true } : {}),
       ...(l.label ? { label: l.label } : {}),
       ...(l.chip ? { chip: l.chip.content } : {}),
       ...(l.removable === false ? { fixed: true } : {}),
@@ -437,10 +443,11 @@ function Inner({
   mode,
   hints,
   tabs,
-  canDrop,
   onPick,
-  onDrop,
-  onDropRefused,
+  canConnect,
+  connectRefusal,
+  onConnect,
+  onConnectRefused,
   removable,
   onRemoveTile,
   onRemoveLine,
@@ -456,6 +463,7 @@ function Inner({
   useEffect(() => {
     if (selected.tile || selected.line || mode === "hand") setLineChoice(undefined);
   }, [selected.tile, selected.line, mode]);
+  const connectMode = mode === "connect";
   // biome-ignore lint/correctness/useExhaustiveDependencies: another view's lines close the chooser
   useEffect(() => setLineChoice(undefined), [view]);
   const input = layoutInput(tiles, lines);
@@ -693,26 +701,40 @@ function Inner({
   const hand = mode === "hand";
   const placed = (id: string): Point | undefined => display?.[id] ?? dockShow[id] ?? hints?.[id];
 
-  /* The selected tile's pull: which tiles an attach tab may drop on, and the one under the pointer. */
-  const [pull, setPull] = useState<PullState | null>(null);
-  const onPull = useCallback((next: PullState | null) => {
-    setPull((current) =>
-      current === next ||
-      (current &&
-        next &&
-        current.tab === next.tab &&
-        current.targets === next.targets &&
-        current.over === next.over)
-        ? current
-        : next,
-    );
+  /* Connect mode: a drag from a tile, and the line under the pointer (its X shows). The pointer
+     may leave a line for its X, which sits over it: the line stays hovered for a moment, and
+     while the pointer is on the X. */
+  const connecting = useConnectDrag(
+    hostRef,
+    connectMode && !covering,
+    () => drawn.tiles.map((t) => t.id).filter((id) => placed(id)),
+    { canConnect, connectRefusal, onConnect, onConnectRefused },
+  );
+  const [hoverLine, setHoverLine] = useState<string>();
+  const unhover = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const holdHover = useCallback((id: string) => {
+    clearTimeout(unhover.current);
+    setHoverLine(id);
   }, []);
+  const releaseHover = useCallback(() => {
+    clearTimeout(unhover.current);
+    unhover.current = setTimeout(() => setHoverLine(undefined), 150);
+  }, []);
+  useEffect(() => () => clearTimeout(unhover.current), []);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: leaving or entering connect mode forgets the hover
+  useEffect(() => setHoverLine(undefined), [connectMode]);
+  const hovered = connectMode && !connecting ? hoverLine : undefined;
+  const refusal =
+    connecting?.over != null && !connecting.targets.has(connecting.over)
+      ? connectRefusal?.(connecting.from, connecting.over)
+      : undefined;
+
   const source = selected.tile;
   /* A tile with a panel under it shows no chrome; the panel speaks for it. */
   const hudTile = !hand && !covering && hud && placed(hud.tile) ? hud.tile : null;
   const removeTile = source && removable?.(source) ? onRemoveTile : undefined;
   const chromeTile =
-    !hand &&
+    mode === "select" &&
     !covering &&
     source &&
     source !== hudTile &&
@@ -730,9 +752,6 @@ function Inner({
         remove: { label: `Remove ${label(chromeTile)}`, onRemove: () => removeTile(chromeTile) },
       })}
       host={hostRef}
-      others={() => drawn.tiles.map((t) => t.id).filter((id) => id !== chromeTile && placed(id))}
-      canDrop={(tab, target) => canDrop?.(chromeTile, tab, target) ?? false}
-      onPull={onPull}
       onPick={(tab, item) => {
         const port = drawn.lines.filter((l) =>
           tab.side === "after" ? l.source === chromeTile : l.target === chromeTile,
@@ -752,16 +771,14 @@ function Inner({
         if (result instanceof Promise) void result.then(record, () => {});
         else record(result);
       }}
-      onDrop={(tab, target) => onDrop?.(chromeTile, tab, target)}
-      onRefused={(tab, target) => onDropRefused?.(chromeTile, tab, target)}
     />
   ) : null;
-  /* Tiles an attach pull may drop on are outlined; the one under the pointer more strongly.
-     Tiles a panel is about (a removal's) get a warning ring. */
+  /* A connect drag's allowed ends are outlined; the one under the pointer more strongly. Tiles a
+     panel is about (a removal's) get a warning ring. */
   const tileClass = (id: string): string => {
     if (hudTile && hud?.marked?.includes(id)) return " is-marked";
-    if (!pull?.targets?.has(id) || !chromeTile) return "";
-    return pull.over === id ? " is-drop-target is-drop-over" : " is-drop-target";
+    if (!connecting?.targets.has(id)) return "";
+    return connecting.over === id ? " is-drop-target is-drop-over" : " is-drop-target";
   };
 
   /* The previously drawn tiles' ports. React Flow takes new tiles before new lines, and its lines
@@ -805,7 +822,7 @@ function Inner({
   const routes = shown?.routes ?? {};
   const highlight = useMemo(() => new Set(highlighted), [highlighted]);
   const edges = shown
-    ? lineEdges(drawn.lines, shown, selected, placed, highlight, selectedTileLines)
+    ? lineEdges(drawn.lines, shown, selected, placed, highlight, selectedTileLines, hovered)
     : [];
 
   const context = useMemo(
@@ -814,9 +831,18 @@ function Inner({
       selectLine: (id: string) => {
         if (!hand) onSelectLine(id);
       },
-      ...(!hand && onRemoveLine ? { removeLine: onRemoveLine } : {}),
+      ...(!hand && onRemoveLine
+        ? {
+            removeLine: (id: string) => {
+              clearTimeout(unhover.current);
+              setHoverLine(undefined);
+              onRemoveLine(id);
+            },
+          }
+        : {}),
+      ...(connectMode ? { holdHover, releaseHover } : {}),
     }),
-    [shown, hand, onSelectLine, onRemoveLine],
+    [shown, hand, connectMode, onSelectLine, onRemoveLine, holdHover, releaseHover],
   );
 
   return (
@@ -826,6 +852,7 @@ function Inner({
       data-layout={phase}
       data-board={covering ? "loading" : "ready"}
       data-mode={mode}
+      data-connecting={connecting ? true : undefined}
       data-layout-error={error || undefined}
       aria-busy={covering || undefined}
     >
@@ -878,6 +905,12 @@ function Inner({
             if (Math.abs(zoom - viewport.zoom) <= 1e-4) return;
             lastZoomRef.current = zoom;
             void rf.setViewport({ ...viewport, zoom });
+          }}
+          onEdgeMouseEnter={(_, edge) => {
+            if (connectMode && !connecting) holdHover(edge.id);
+          }}
+          onEdgeMouseLeave={() => {
+            if (connectMode) releaseHover();
           }}
           onNodeClick={(_, node) => {
             setLineChoice(undefined);
@@ -948,6 +981,13 @@ function Inner({
             Cancel
           </button>
         </div>
+      ) : null}
+      {connecting ? (
+        <ConnectOverlay
+          drag={connecting}
+          host={hostRef}
+          {...(refusal !== undefined && { refusal })}
+        />
       ) : null}
       {hudTile ? (
         <div className="board-hud" data-tile={hudTile}>

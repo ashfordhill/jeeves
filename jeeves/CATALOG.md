@@ -213,21 +213,24 @@ Pure helpers answer what a tile can do, for the canvas and chat:
   else its first kind the rules accept), or `{ type, refusal }`, the plain-words reason the type's
   preferred kind is refused ("A queue can't link to URL database. A queue feeds only an
   application, not a database."). A create links with the pair's default mode.
-- `attachOptions(design, node)` is the link tool. For a tile it lists every other tile in lane
-  order with the `linkTiles` an attach would make, in the pair's default mode: selected → target
-  when the rules allow it, else target → selected, else the forward direction's refusal. With
-  URL database selected, dropping on Analytics worker makes Analytics worker → URL database.
-  For an action (`laneActionNode(lane)`) it lists every tile its lane could take as an entry, or
-  why not. Nothing attaches onto the user.
+- `connectOptions(design, node)` is Connect mode's: every other node on the board (the user, the
+  actions, then the tiles, in lane order), each with the `linkTiles` a link from `node` to it
+  would run in the pair's default mode, or why not. The link always runs from `node`; a refused
+  direction is never reversed ("URL database can't link to Analytics worker. A database can't
+  link onward."). From an action (`laneActionNode(lane)`) a link is an entry. Nothing links onto
+  the user or an action, and the user links only to its actions.
+- `laneLinkRefusal(design, from, to, mode?)` gives one pair's refusal, or none.
 
 On the canvas ([studio guide](../docs/studio.md#creating-and-connecting)), the user's one `+` shows
 `laneActionOptions` (a pick runs `addAction`), and a tile's or action's side has a `+` when
 `laneOptions` has a kind for it, and its fan shows all seven types, greyed with the refusal where
-there is none; a pick runs `addTile`. The link tool shows when `attachOptions` has a link, and a
-drop runs that option's `linkTiles`. Both leave out `link`, so the pair's default mode applies. A
+there is none; a pick runs `addTile`. In Connect mode a drag from a node may end on the tiles
+`connectOptions` gives a link for, and a release there runs its `linkTiles`. Both leave out
+`link`, so the pair's default mode applies. A
 tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
-`alsoRemove`), an action's X runs `removeAction` and a line's X runs `removeLink`
-([removing](../docs/studio.md#removing)); the user's line to an action has no X. The inspector's
+`alsoRemove`), an action's X runs `removeAction` and a line's X (a selected line's, or in Connect
+mode a hovered one's) runs `removeLink` ([removing](../docs/studio.md#removing)); the user's line
+to an action has no X. The inspector's
 normal authoring omits kind replacement; an action's Name runs `renameAction`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
 reason as its tooltip). A new tile is named after its type and

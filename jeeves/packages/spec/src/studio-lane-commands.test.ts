@@ -3,7 +3,7 @@ import { applyOperations } from "./apply.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "./design.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import {
-  attachOptions,
+  connectOptions,
   laneActionOptions,
   laneEntryRefusal,
   laneLinkRefusal,
@@ -466,7 +466,7 @@ describe("setEntryLane", () => {
     const cap = "Open link already has 4 entries; the most is 4.";
     expect(laneEntryRefusal(full, "upload-shorten", "download")).toBe(cap);
     expect(laneEntryRefusal(full, "download-redirect", "upload")).toBeUndefined();
-    // The full action offers nothing to add or attach (every tile that could start a lane
+    // The full action offers nothing to add or connect (every tile that could start a lane
     // already has an entry); the other action still adds.
     expect(laneOptions(full, { lane: "download" }, "after")[0]).toEqual({
       type: "service",
@@ -474,7 +474,7 @@ describe("setEntryLane", () => {
     });
     expect(laneOptions(full, { lane: "download" }, "after").some((o) => "kind" in o)).toBe(false);
     expect(laneOptions(full, { lane: "upload" }, "after").some((o) => "kind" in o)).toBe(true);
-    expect(attachOptions(full, laneActionNode("download")).some((o) => "link" in o)).toBe(false);
+    expect(connectOptions(full, laneActionNode("download")).some((o) => "link" in o)).toBe(false);
     // The other lane needs an action to move to.
     const linked = run(design, {
       type: "linkTiles",
@@ -788,11 +788,15 @@ describe("lane options", () => {
   });
 });
 
-describe("attach options", () => {
-  it("attach a tile either way: forward when allowed, else backward, else the forward reason", () => {
+describe("connect options", () => {
+  it("link from the node, never reversed: the forward link, else its reason", () => {
     const design = tinyurl();
-    const options = attachOptions(design, "url-db");
+    const options = connectOptions(design, "url-db");
+    // Every other node, in lane order: the user, both actions, then the tiles.
     expect(options.map((option) => option.tile)).toEqual([
+      LANE_ACTOR,
+      laneActionNode("download"),
+      laneActionNode("upload"),
       "stats-api",
       "redirect",
       "analytics-store",
@@ -801,18 +805,23 @@ describe("attach options", () => {
       "analytics",
       "shorten",
     ]);
-    // URL database dropped on Analytics worker: Analytics worker → URL database.
+    // A store links onward to nothing, so nothing from URL database is offered, not even the
+    // reverse of a link the rules would allow (Analytics worker → URL database).
+    expect(options.some((option) => "link" in option)).toBe(false);
     expect(options.find((option) => option.tile === "analytics")).toEqual({
       tile: "analytics",
-      link: { from: { tile: "analytics" }, to: "url-db", mode: "sync" },
+      refusal: "URL database can't link to Analytics worker. A database can't link onward.",
     });
-    // Redirect already reads it, so neither way works: the forward reason.
-    expect(options.find((option) => option.tile === "redirect")).toEqual({
-      tile: "redirect",
-      refusal: "URL database can't link to Redirect service. A database can't link onward.",
+    expect(options.find((option) => option.tile === LANE_ACTOR)).toEqual({
+      tile: LANE_ACTOR,
+      refusal: "Links don't lead back to the user.",
+    });
+    expect(options.find((option) => option.tile === laneActionNode("upload"))).toEqual({
+      tile: laneActionNode("upload"),
+      refusal: "Only the user links to Shorten; link Shorten to a tile to give it an entry.",
     });
     // Forward from Redirect service: a merge into Analytics worker; a second link is refused.
-    const redirect = attachOptions(design, "redirect");
+    const redirect = connectOptions(design, "redirect");
     expect(redirect.find((option) => option.tile === "analytics")).toEqual({
       tile: "analytics",
       link: { from: { tile: "redirect" }, to: "analytics", mode: "sync" },
@@ -822,12 +831,12 @@ describe("attach options", () => {
       refusal: "Redirect service already links to URL cache.",
     });
     // A queue link takes the async default.
-    expect(attachOptions(design, "click-events").find((o) => o.tile === "shorten")).toEqual({
+    expect(connectOptions(design, "click-events").find((o) => o.tile === "shorten")).toEqual({
       tile: "shorten",
       link: { from: { tile: "click-events" }, to: "shorten", mode: "async" },
     });
     // Accepted options run as given.
-    const link = options.find((option) => option.tile === "analytics");
+    const link = connectOptions(design, "analytics").find((option) => option.tile === "url-db");
     if (!link || !("link" in link)) throw new Error("No link.");
     const next = run(design, {
       type: "linkTiles",
@@ -837,36 +846,34 @@ describe("attach options", () => {
       linkId: "analytics-url-db",
     }).design;
     expect(connection(next, "analytics-url-db")).toMatchObject({ kind: "uses-database" });
-    expect(attachOptions(design, "nope")).toEqual([]);
+    expect(connectOptions(design, "nope")).toEqual([]);
   });
 
-  it("attach an action: the tiles its lane could take as an entry; nothing onto the user", () => {
+  it("link from an action as an entry; the user links to nothing here", () => {
     // In TinyURL every tile that could start a lane already does.
     for (const lane of ["download", "upload"] as const)
       expect(
-        attachOptions(tinyurl(), laneActionNode(lane)).some((option) => "link" in option),
+        connectOptions(tinyurl(), laneActionNode(lane)).some((option) => "link" in option),
       ).toBe(false);
     const design = withGeo();
-    expect(attachOptions(design, LANE_ACTOR)).toEqual([]);
-    const download = attachOptions(design, laneActionNode("download"));
-    expect(download).toHaveLength(9);
+    const user = connectOptions(design, LANE_ACTOR);
+    expect(user).toHaveLength(11);
+    expect(new Set(user.map((option) => ("refusal" in option ? option.refusal : "")))).toEqual(
+      new Set(["The user links only to its actions; add one with the user's +."]),
+    );
+    const download = connectOptions(design, laneActionNode("download"));
+    expect(download).toHaveLength(11);
     expect(download.filter((option) => "link" in option)).toEqual([
-      {
-        tile: "geo",
-        lane: "download",
-        link: { from: { lane: "download" }, to: "geo", mode: "sync" },
-      },
+      { tile: "geo", link: { from: { lane: "download" }, to: "geo", mode: "sync" } },
     ]);
     expect(download.find((option) => option.tile === "shorten")).toEqual({
       tile: "shorten",
-      lane: "download",
       refusal: "Shorten service already starts the upload lane; a tile has one entry.",
     });
     expect(
-      attachOptions(design, laneActionNode("upload")).find((option) => option.tile === "url-db"),
+      connectOptions(design, laneActionNode("upload")).find((option) => option.tile === "url-db"),
     ).toEqual({
       tile: "url-db",
-      lane: "upload",
       refusal:
         "Shorten can't link to URL database. An action reaches a service (not a worker), an API or the CDN.",
     });
@@ -894,7 +901,7 @@ describe("canvas helpers", () => {
       "The user links only to its actions; add one with the user's +.",
     );
     expect(laneLinkRefusal(design, { tile: "redirect" }, laneActionNode("upload"))).toBe(
-      "Only the user links to Shorten; pull from its attach tab to give it an entry.",
+      "Only the user links to Shorten; link Shorten to a tile to give it an entry.",
     );
   });
 

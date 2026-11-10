@@ -514,6 +514,188 @@ describe("Board", () => {
     ]);
   });
 
+  it("connects by dragging from a tile, refuses with the reason, and still selects by click", async () => {
+    if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
+    let under: Element | null = null;
+    document.elementFromPoint = () => under;
+    const calls: string[] = [];
+    const onSelectTile = vi.fn();
+    const onConnect = vi.fn((from: string, to: string) => calls.push(`connect ${from} ${to}`));
+    const onConnectRefused = vi.fn((from: string, to: string) =>
+      calls.push(`refused ${from} ${to}`),
+    );
+    const tab: TabSpec = {
+      id: "add",
+      kind: "create",
+      side: "after",
+      label: "Add after",
+      items: [],
+    };
+    const board = (mode: BoardProps["mode"]) => (
+      <div style={{ width: 1200, height: 800 }}>
+        <Board
+          tiles={tiles}
+          lines={lines}
+          engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+          selected={{ tile: "redirect" }}
+          onSelectTile={onSelectTile}
+          onSelectLine={() => {}}
+          onClear={() => {}}
+          mode={mode}
+          tabs={[tab]}
+          removable={() => true}
+          onRemoveTile={() => {}}
+          canConnect={(from, to) => from === "redirect" && to === "events"}
+          connectRefusal={(from, to) => `${from} can't link to ${to}.`}
+          onConnect={onConnect}
+          onConnectRefused={onConnectRefused}
+        />
+      </div>
+    );
+    const { container, rerender } = render(board("select"));
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const node = (id: string) =>
+      container.querySelector(`.react-flow__node[data-id="${id}"]`) as HTMLElement;
+    // Select mode: the selected tile has its chrome, and a drag from a tile connects nothing.
+    expect(node("redirect").querySelectorAll(".board-tab")).toHaveLength(1);
+    const drag = (from: string, to: string | null, x = 700) => {
+      fireEvent.pointerDown(node(from), { button: 0, isPrimary: true, clientX: 600, clientY: 400 });
+      under = to ? node(to) : null;
+      fireEvent.pointerMove(window, { clientX: x, clientY: 400 });
+    };
+    const release = (x = 700) => fireEvent.pointerUp(window, { clientX: x, clientY: 400 });
+    drag("redirect", "events");
+    release();
+    expect(container.querySelector(".board-connect")).toBeNull();
+    expect(calls).toEqual([]);
+
+    // Connect mode: no chrome; a drag past a few pixels draws the line and lights the allowed end.
+    rerender(board("connect"));
+    expect(container.querySelector(".board")?.getAttribute("data-mode")).toBe("connect");
+    expect(node("redirect").querySelector(".board-tab, .board-remove")).toBeNull();
+    drag("redirect", "events");
+    expect(document.querySelector(".board-connect .board-connect-line line")).not.toBeNull();
+    expect(node("events").className).toContain("is-drop-target is-drop-over");
+    expect(node("actor").className).not.toContain("is-drop-target");
+    expect(document.querySelector(".board-connect-tip")).toBeNull();
+    release();
+    expect(document.querySelector(".board-connect")).toBeNull();
+    expect(calls).toEqual(["connect redirect events"]);
+    // The click that ends a drag is swallowed: it selects nothing.
+    fireEvent.click(node("events"));
+    expect(onSelectTile).not.toHaveBeenCalled();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+    // A refused end fades, its reason by the pointer; a release there reports it.
+    drag("redirect", "actor");
+    expect(node("actor").className).not.toContain("is-drop-target");
+    expect(document.querySelector(".board-connect-line g")?.hasAttribute("data-refused")).toBe(
+      true,
+    );
+    expect(document.querySelector(".board-connect-tip")?.textContent).toBe(
+      "redirect can't link to actor.",
+    );
+    release();
+    expect(calls).toEqual(["connect redirect events", "refused redirect actor"]);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+    // The drag's direction is the line's: from Events, Redirect is refused, not reversed.
+    drag("events", "redirect");
+    release();
+    expect(calls.at(-1)).toBe("refused events redirect");
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+    // Released on paper or on the tile itself, or cancelled with Escape: nothing.
+    drag("redirect", null);
+    release();
+    drag("redirect", "redirect");
+    release();
+    drag("redirect", "events");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(document.querySelector(".board-connect")).toBeNull();
+    release();
+    expect(calls).toHaveLength(3);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+    // A press that doesn't move that far is a click: it selects.
+    fireEvent.pointerDown(node("events"), {
+      button: 0,
+      isPrimary: true,
+      clientX: 600,
+      clientY: 400,
+    });
+    fireEvent.pointerMove(window, { clientX: 603, clientY: 402 });
+    fireEvent.pointerUp(window, { clientX: 603, clientY: 402 });
+    fireEvent.click(node("events"));
+    expect(onSelectTile).toHaveBeenCalledWith("events");
+    expect(calls).toHaveLength(3);
+
+    // Hand mode: no drag at all.
+    rerender(board("hand"));
+    drag("redirect", "events");
+    release();
+    expect(calls).toHaveLength(3);
+  });
+
+  it("shows a line's X while the pointer is on it in connect mode, never on a fixed line", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const onRemoveLine = vi.fn();
+    const board = (mode: BoardProps["mode"], fixed = false) => (
+      <Board
+        tiles={tiles}
+        lines={lines.map((line) =>
+          line.id === "publish" && fixed ? { ...line, removable: false } : line,
+        )}
+        engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+        selected={{}}
+        onSelectTile={() => {}}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        onRemoveLine={onRemoveLine}
+        mode={mode}
+      />
+    );
+    const { container, rerender } = render(board("select"));
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const edge = () =>
+      container.querySelector('.react-flow__edge[data-id="publish"]') as SVGGElement;
+    const x = () => screen.queryByRole("button", { name: "Remove line" });
+    // Select mode: only a selected line has an X.
+    fireEvent.mouseEnter(edge());
+    expect(x()).toBeNull();
+    fireEvent.mouseLeave(edge());
+
+    rerender(board("connect"));
+    fireEvent.mouseEnter(edge());
+    expect(x()).not.toBeNull();
+    // The line takes the selection colour while it is hovered.
+    expect(edge().querySelector<SVGPathElement>(".board-line-dash")?.style.stroke).toBe(
+      "var(--board-select)",
+    );
+    // Leaving the line for its X keeps it; leaving the X ends the hover.
+    fireEvent.mouseLeave(edge());
+    fireEvent.pointerEnter(x() as HTMLElement);
+    await act(() => vi.advanceTimersByTimeAsync(300));
+    expect(x()).not.toBeNull();
+    fireEvent.pointerLeave(x() as HTMLElement);
+    await act(() => vi.advanceTimersByTimeAsync(300));
+    expect(x()).toBeNull();
+    fireEvent.mouseEnter(edge());
+    fireEvent.click(x() as HTMLElement);
+    expect(onRemoveLine).toHaveBeenCalledWith("publish");
+    expect(x()).toBeNull();
+
+    // A line that goes with a tile has no X, hovered or not.
+    rerender(board("connect", true));
+    fireEvent.mouseEnter(edge());
+    expect(x()).toBeNull();
+    vi.useRealTimers();
+  });
+
   it("greys a disabled fan item in its own slot, shows its reason and never picks it", async () => {
     // jsdom has no pointer capture or hit testing; the pull reads both. With no matchMedia the
     // board takes reduced motion, so the fan opens as soon as the tab is pressed.
