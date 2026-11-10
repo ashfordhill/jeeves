@@ -8170,3 +8170,25 @@ The plan is complete.
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — Tile processes plan from owner decisions
+
+This entry is planning only; no code changed. After MA10, the owner approved four defaults for
+contract question 6 (a runnable process per tile):
+
+- IDs follow typed names first;
+- an export option, off by default;
+- provisioning for stubs;
+- consume loops that survive "Not implemented".
+
+The owner also approved the connection-dot fix, and said their own edits in the running UI are
+play.
+
+I wrote the [tile processes plan](plans/tile-processes/units.md) (TP01–TP09). It starts with
+TP01, a contract unit. The coordinator pauses only if TP01's open questions go beyond these
+decisions. I also added a HUMAN_FEEDBACK entry.
+
+I ran no checks: only docs changed. The owner's uncommitted `README.md` and `.docs/` are
+untouched.
+
+Next: TP01 only.
