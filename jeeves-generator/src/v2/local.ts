@@ -772,6 +772,57 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       };
       application.push(name);
     }
+  // The public edge (tile process contract, section 2) owns the single HTTP port.
+  const edge = contributions.filter(({ value }) => value.edge?.length);
+  const edgeHosts = edge.flatMap(({ value }) => (value.edge ?? []).map((row) => row.host)).sort();
+  if (edgeHosts.length) {
+    if (
+      new Set(edgeHosts).size !== edgeHosts.length ||
+      edgeHosts.some(
+        (host) =>
+          !application.includes(`app-${generationLocalIdentity(host).local}`) ||
+          model.processes?.find((process) => process.tile === host)?.shape !== "http",
+      )
+    )
+      refuse(
+        "INVALID_LOCAL_CONTRIBUTION",
+        "/generation/processes",
+        "The edge routes each contributed HTTP process host once.",
+      );
+    if (httpHost)
+      refuse("LOCAL_IDENTITY_LIMIT", httpHost, "One HTTP port slot: the edge publishes it.");
+    if (services["app-edge"])
+      refuse(
+        "LOCAL_IDENTITY_LIMIT",
+        "edge",
+        "A tile with the ID edge would take the edge's service name; rename it.",
+      );
+    services["app-edge"] = {
+      image: pins.nginx,
+      profiles: ["application"],
+      depends_on: Object.fromEntries(
+        edgeHosts.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
+      ),
+      ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:8080`],
+      volumes: ["./infra/edge/nginx.conf:/etc/nginx/nginx.conf:ro"],
+      healthcheck: health([
+        "CMD",
+        "wget",
+        "-q",
+        "-O",
+        "/dev/null",
+        "http://127.0.0.1:8080/healthz",
+      ]),
+    };
+    application.push("app-edge");
+    files.push(
+      file(
+        "infra/edge/nginx.conf",
+        edgeConfig(edgeHosts),
+        edge.map((c) => c.emitter),
+      ),
+    );
+  }
   const providerServices = Object.keys(services)
     .filter((name) => !name.startsWith("setup-") && !name.startsWith("app-"))
     .sort();
@@ -830,6 +881,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         .filter(
           (c) =>
             c.value.services?.length ||
+            c.value.edge?.length ||
             c.value.logins?.length ||
             c.value.storage?.length ||
             c.value.search?.length,
@@ -892,10 +944,34 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? "\nRunnable processes: each application tile runs as `app-<id>` from `src/processes/<id>.ts`, healthy once its ready marker exists; HTTP processes also answer `GET /healthz` on port 3000 inside the Compose network. `first-run` and `start` start them only while `processes.runnable` in .jeeves/report.json is true; its `processes.tiles` lists each process's routes and loops. No restart policy: a failed process stays exited until `pnpm start`.\n"
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes and loops. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
           : ""
       }`,
     ),
   );
   return { files, gaps };
+}
+
+/** The edge's nginx configuration: `/api/<host>/` for each public HTTP process, its own
+ * `/healthz`, and 404 for everything else. Upstreams resolve per request through Docker DNS. */
+function edgeConfig(hosts: readonly string[]) {
+  const json = (value: object) => `'${JSON.stringify(value)}'`;
+  return `${[
+    "events {}",
+    "http {",
+    "  access_log off;",
+    "  error_log /dev/stderr warn;",
+    "  resolver 127.0.0.11 valid=10s;",
+    "  default_type application/json;",
+    "  server {",
+    "    listen 8080;",
+    `    location = /healthz { return 200 ${json({ service: "edge", application: "ready" })}; }`,
+    ...hosts.map(
+      (host) =>
+        `    location /api/${host}/ { set $backend app-${host}:3000; rewrite ^/api/${host}/(.*)$ /$1 break; proxy_pass http://$backend; }`,
+    ),
+    `    location / { return 404 ${json({ error: "NOT_FOUND", message: "Route not found." })}; }`,
+    "  }",
+    "}",
+  ].join("\n")}\n`;
 }

@@ -75,6 +75,8 @@ export type V2GenerationPreview = {
         service: string;
         shape: "http" | "worker";
         exposure?: "public" | "internal";
+        /** A public HTTP process's path at the edge. */
+        edge?: string;
         routes: { method: string; path: string }[];
         loops: { queue: string; module: string }[];
       }[];

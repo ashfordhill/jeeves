@@ -1,5 +1,6 @@
 import { generationRuntime } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
+import { mountedHooksGap } from "./module-stubs.ts";
 import type { V2Emitter } from "./registry.ts";
 
 /** Actual transport library and minimal object access; compiled application bindings and the
@@ -27,9 +28,10 @@ export function createLocalMultipart(sourcePaths: readonly string[]): V2Emitter 
       };
     },
     render: ({ model, asset }) => {
-      const paths = model.selections
-        .filter((s) => s.binding.kind === "owned-multipart")
-        .map((s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`);
+      const selections = model.selections.filter((s) => s.binding.kind === "owned-multipart");
+      const paths = selections.map(
+        (s) => `/${s.sourcePath.map((p) => pointerPart(String(p))).join("/")}`,
+      );
       if (!paths.length) return { files: [] };
       return {
         files: ["multipart", "multipart-objects", "multipart-http"].map((name) => ({
@@ -41,14 +43,14 @@ export function createLocalMultipart(sourcePaths: readonly string[]): V2Emitter 
           sourcePaths: paths,
         })),
         gaps: [
-          {
+          mountedHooksGap(model, selections, {
             id: "multipart-application-bindings",
             status: "unfinished" as const,
             required: true,
             description:
               "Bind verified principal, content/metadata codecs, transaction/repository/completion hooks, object namespace/identity metadata and explicit HTTP/service mounts in a compiled recipe. Transport libraries and storage access alone do not install an application.",
             sourcePaths: paths,
-          },
+          }),
         ],
       };
     },

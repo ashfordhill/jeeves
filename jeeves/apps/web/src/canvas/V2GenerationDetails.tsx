@@ -128,17 +128,23 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
   );
 }
 
-/** Each application tile's process: its service, shape and what it answers. */
+/** Each application tile's process: its service, shape, edge path and what it answers. */
 function GenerationProcesses({
   processes,
 }: {
   processes: NonNullable<V2GenerationPreview["report"]["processes"]>;
 }) {
+  const edge = processes.tiles.flatMap((row) => (row.edge ? [row.edge] : []));
   return (
     <details open>
       <summary>
         Processes · {processes.tiles.length} · {processes.runnable ? "runnable" : "not runnable"}
       </summary>
+      {edge.length ? (
+        <p>
+          Edge <span className="studio-field-help">app-edge</span>: {edge.join(", ")}
+        </p>
+      ) : null}
       <ul aria-label="Runnable processes">
         {processes.tiles.map((row) => {
           const answers = [
@@ -150,6 +156,7 @@ function GenerationProcesses({
               {row.name}{" "}
               <span className="studio-field-help">
                 {row.service} · {row.shape === "http" ? `HTTP, ${row.exposure}` : "worker"}
+                {row.edge ? ` · at ${row.edge}` : ""}
               </span>
               <p>{answers.length ? answers.join(", ") : "Idle until stopped"}</p>
             </li>

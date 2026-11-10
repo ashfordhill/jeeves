@@ -1,6 +1,7 @@
 import {
   generationLocalIdentity,
   generationTemplates,
+  type NormalizedGeneration,
   type NormalizedGenerationSelection,
   type NormalizedStubModule,
   type StudioComponentTargetKind,
@@ -23,6 +24,30 @@ export function moduleStubPaths(host: string, module: string) {
   const directory = `src/modules/${generationLocalIdentity(host).local}`;
   const name = generationLocalIdentity(module).local;
   return { slots: `${directory}/${name}.slots.ts`, module: `${directory}/${name}.ts` };
+}
+/** A mounted template's product hooks, with Runnable processes on (tile process contract, §3). */
+export function moduleHooksPath(host: string, lead: string) {
+  return `src/modules/${generationLocalIdentity(host).local}/${generationLocalIdentity(lead).local}.hooks.ts`;
+}
+/**
+ * With Runnable processes on, a mounted template's application-bindings gap is custom work in its
+ * leads' hooks files; otherwise the gap is unchanged (tile process contract, section 3).
+ */
+export function mountedHooksGap(
+  model: NormalizedGeneration,
+  selections: readonly NormalizedGenerationSelection[],
+  gap: V2Gap,
+): V2Gap {
+  const files = selections.map((s) =>
+    s.target.kind === "component" ? moduleHooksPath(s.host, s.target.component) : undefined,
+  );
+  if (!model.processes || !files.length || files.some((file) => !file)) return gap;
+  return {
+    ...gap,
+    status: "custom",
+    required: true,
+    description: `Write the product hooks in ${files.join(", ")}; until then each throws "Not implemented" and its route answers 501.`,
+  };
 }
 
 /**
@@ -61,10 +86,17 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
         },
       ];
       const gaps: V2Gap[] = [];
+      // With Runnable processes on, a route stub takes the request its tile's process routes to it
+      // (`src/modules/entry.ts`, written by the processes owner).
+      const routes = new Set(
+        (model.processes ?? []).flatMap((process) =>
+          process.stubs.filter((stub) => stub.role === "route").map((stub) => stub.module),
+        ),
+      );
       for (const selection of selections) {
         const module = selection.module;
         if (module) {
-          files.push(...stubFiles(selection, module));
+          files.push(...stubFiles(selection, module, routes.has(module.component)));
           gaps.push(stubGap(selection, module));
         }
       }
@@ -146,7 +178,17 @@ function dependencyType(slot: Slot, connection: Connection): string {
   }
 }
 
-function stubFiles(selection: NormalizedGenerationSelection, module: NormalizedStubModule) {
+/** A stub's entry point: its module ID in camelCase, never a reserved word. */
+export function moduleEntryName(module: string) {
+  const entry = camel(generationLocalIdentity(module).local);
+  return reserved.has(entry) ? `${entry}Module` : entry;
+}
+
+function stubFiles(
+  selection: NormalizedGenerationSelection,
+  module: NormalizedStubModule,
+  route: boolean,
+) {
   const paths = moduleStubPaths(selection.host, module.component);
   const file = (path: string) => path.slice(path.lastIndexOf("/") + 1);
   const kind = kindName(module.kind);
@@ -227,13 +269,19 @@ function stubFiles(selection: NormalizedGenerationSelection, module: NormalizedS
       : "export const slots = [] as const;",
     "",
   ].join("\n");
-  const entry = camel(module.component);
+  const entry = moduleEntryName(module.component);
   const extension = [
     `// ${named} in ${line(module.hostName)}: ${line(description)}`,
     "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
+    ...(route ? ['import type { ModuleRequest, ModuleResponse } from "../entry.ts";'] : []),
     `import type { Dependencies } from "./${file(paths.slots)}";`,
     "",
-    `export async function ${reserved.has(entry) ? `${entry}Module` : entry}(dependencies: Dependencies): Promise<void> {`,
+    ...(route
+      ? [
+          `/** Answers any method on /modules/${generationLocalIdentity(module.component).local} and every path below it. */`,
+          `export async function ${entry}(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {`,
+        ]
+      : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
     `  throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
     "}",
     "",

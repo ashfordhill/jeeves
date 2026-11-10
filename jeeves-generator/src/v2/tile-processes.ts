@@ -1,21 +1,38 @@
 import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
-import { pointerPart } from "../json.ts";
-import type { V2Emitter, V2ProcessReport, V2TemplateFile } from "./registry.ts";
+import { pointerPart, refuse } from "../json.ts";
+import { type HttpMount, httpMounts, importLines } from "./http-wiring.ts";
+import type { V2LocalContribution } from "./local-contract.ts";
+import type { V2Emitter, V2ProcessReport, V2RenderContext, V2TemplateFile } from "./registry.ts";
 
 const pointer = (path: readonly (string | number)[]) =>
   `/${path.map((part) => pointerPart(String(part))).join("/")}`;
 /** One comment line: names are the user's own text. */
 const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
+const unique = (items: readonly string[]) => [...new Set(items)].sort();
+const tileProcessPath = "src/runtime/tile-process.ts";
+/** What a module's entry point receives (tile process contract, section 4). */
+const moduleEntryPath = "src/modules/entry.ts";
 
 /** Where each process's entry point lives and how Compose runs it (tile process contract, §2). */
 export function processPaths(tile: string) {
   return { entry: `src/processes/${tile}.ts`, built: `dist/processes/${tile}.js` };
 }
 
+/** What each process mounts: HTTP processes their templates and route stubs (TP05). */
+function mountsOf(model: V2RenderContext["model"]) {
+  return new Map(
+    (model.processes ?? []).map((process) => [
+      process.tile,
+      process.shape === "http" ? httpMounts(process, model.selections) : [],
+    ]),
+  );
+}
+
 /**
- * A runnable process per application tile, with Runnable processes on: an HTTP process (Service,
- * Uploads and the HTTP legacy kinds) answers `/healthz`, a worker stays up idle. Each writes its
- * ready marker and drains on SIGTERM. Templates and stubs are not wired into processes here.
+ * A runnable process per application tile, with Runnable processes on. An HTTP process (Service,
+ * Uploads and the HTTP legacy kinds) answers `/healthz`, mounts its tile's templates with
+ * generated hooks and routes its stubs; the edge publishes the public ones. A worker stays up
+ * idle. Each writes its ready marker and drains on SIGTERM.
  */
 export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emitter {
   return {
@@ -23,27 +40,72 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
     version: "0.1.0-experimental.1",
     status: "implemented",
     description:
-      "A runnable process per application tile: HTTP readiness or an idle worker, ready marker and graceful shutdown.",
+      "A runnable process per application tile: HTTP routes for its templates and stubs, the public edge, ready marker and graceful shutdown.",
     sourcePaths,
     provides: { processes: true },
-    local: ({ model }) =>
-      model.processes?.length
-        ? {
-            sourcePaths: ["/generation/processes"],
-            services: model.processes.map((process) => ({
-              host: process.tile,
-              command: ["node", processPaths(process.tile).built],
-              http: false,
-              dependsOn: [],
-              readiness: true,
-            })),
-          }
-        : undefined,
-    render: ({ model }) => {
+    local: ({ model }) => {
+      if (!model.processes?.length) return undefined;
+      const mounts = mountsOf(model);
+      const all = [...mounts.values()].flat();
+      const contribution: V2LocalContribution = {
+        sourcePaths: ["/generation/processes"],
+        migrations: all.flatMap((mount) => mount.local.migrations ?? []),
+        logins: all.flatMap((mount) => mount.local.logins ?? []),
+        grants: all.flatMap((mount) => mount.local.grants ?? []),
+        edge: model.processes
+          .filter((process) => process.shape === "http" && process.exposure === "public")
+          .map((process) => ({ host: process.tile })),
+        services: model.processes.map((process) => {
+          const wired = (mounts.get(process.tile) ?? []).map((mount) => mount.service);
+          const identity = unique(wired.flatMap((item) => (item.identity ? [item.identity] : [])));
+          if (identity.length > 1)
+            refuse("LOCAL_IDENTITY_LIMIT", process.tile, "A process verifies one identity.");
+          const environment = Object.assign({}, ...wired.map((item) => item.environment ?? {}));
+          return {
+            host: process.tile,
+            command: ["node", processPaths(process.tile).built],
+            http: false,
+            dependsOn: unique(wired.flatMap((item) => item.dependsOn)),
+            ...(wired.some((item) => item.sql.length) && {
+              sql: unique(wired.flatMap((item) => item.sql)),
+            }),
+            ...(wired.some((item) => item.storage.length) && {
+              storage: unique(wired.flatMap((item) => item.storage)),
+            }),
+            ...(wired.some((item) => item.cache.length) && {
+              cache: unique(wired.flatMap((item) => item.cache)),
+            }),
+            ...(wired.some((item) => item.broker) && { broker: true }),
+            ...(identity[0] && { identity: identity[0] }),
+            ...(Object.keys(environment).length && { environment }),
+            readiness: true,
+          };
+        }),
+      };
+      return contribution;
+    },
+    render: ({ model, asset }) => {
       const processes = model.processes ?? [];
+      const mounts = mountsOf(model);
+      const all = [...mounts.values()].flat();
       return {
-        files: processes.map(entryFile),
-        processes: processes.map(reportRow),
+        files: [
+          ...processes.map((process) => entryFile(process, mounts.get(process.tile) ?? [])),
+          ...all.flatMap((mount) => (mount.hooks ? [mount.hooks.file] : [])),
+          // The 501 wrapper and what an entry point receives, beside the HTTP service.
+          ...(processes.some((process) => process.shape === "http")
+            ? [
+                [tileProcessPath, "src/runtime/tile-process.ts.template"],
+                [moduleEntryPath, "src/modules/entry.ts.template"],
+              ].map(([path = "", source]) => ({
+                path,
+                content: asset(`jeeves-generator/templates/local-v2/assets/${source}`),
+                ownership: "generated-scaffold" as const,
+                sourcePaths: ["/generation/processes"],
+              }))
+            : []),
+        ],
+        processes: processes.map((process) => reportRow(process, mounts.get(process.tile) ?? [])),
       };
     },
   };
@@ -64,7 +126,8 @@ function settings(process: NormalizedProcess) {
     : [];
 }
 
-function reportRow(process: NormalizedProcess): V2ProcessReport {
+function reportRow(process: NormalizedProcess, mounts: readonly HttpMount[]): V2ProcessReport {
+  const http = process.shape === "http";
   return {
     tile: process.tile,
     name: process.name,
@@ -72,25 +135,47 @@ function reportRow(process: NormalizedProcess): V2ProcessReport {
     service: `app-${process.tile}`,
     shape: process.shape,
     ...(process.exposure && { exposure: process.exposure }),
+    ...(http && process.exposure === "public" && { edge: `/api/${process.tile}/` }),
     entry: processPaths(process.tile).entry,
     settings: settings(process),
-    routes:
-      process.shape === "http"
+    routes: http
+      ? [
+          {
+            method: "GET",
+            path: "/healthz",
+            answers: "200 once ready, 503 before and while draining",
+          },
+          ...mounts.flatMap((mount) => mount.routes),
+        ]
+      : [],
+    loops: [],
+    templates: mounts.flatMap((mount) => (mount.template ? [mount.template] : [])),
+    hooks: mounts.flatMap((mount) =>
+      mount.hooks && mount.template
         ? [
             {
-              method: "GET",
-              path: "/healthz",
-              answers: "200 once ready, 503 before and while draining",
+              selection: mount.template.selection,
+              file: mount.hooks.file.path,
+              hooks: mount.hooks.members,
             },
           ]
         : [],
-    loops: [],
+    ),
   };
 }
 
-function entryFile(process: NormalizedProcess): V2TemplateFile {
+const indent = (lines: readonly string[], depth: number) =>
+  lines.map((item) => (item ? `${" ".repeat(depth)}${item}` : item));
+
+function entryFile(process: NormalizedProcess, mounts: readonly HttpMount[]): V2TemplateFile {
   const kind = studioDefinitions[process.kind].name;
   const http = process.shape === "http";
+  const templates = Object.fromEntries(
+    mounts.flatMap((mount) => (mount.config ? [mount.config] : [])),
+  );
+  const stubs = process.stubs
+    .filter((stub) => stub.role === "route")
+    .map((stub) => ({ module: stub.module, path: `/modules/${stub.module}` }));
   const config = {
     tile: process.tile,
     kind: process.kind,
@@ -100,29 +185,56 @@ function entryFile(process: NormalizedProcess): V2TemplateFile {
       settings: Object.fromEntries(settings(process).map((item) => [item.setting, item.value])),
       listen: { host: "0.0.0.0", port: 3000 },
     }),
+    ...(Object.keys(templates).length && { templates }),
+    ...(stubs.length && { stubs }),
   };
   const head = [
     `// Generated scaffold: ${line(process.name)} (${kind}) runs as app-${process.tile}, ${http ? "an HTTP process" : "a worker process"}.`,
     "// Export rewrites this file. Write modules in src/modules/; .jeeves/report.json lists what runs.",
   ];
+  const routed = mounts.some((mount) => mount.configure.length);
+  const block = (key: "configure" | "initialize") => mounts.flatMap((mount) => mount[key]);
+  const imports = importLines([
+    { from: "../runtime/http.ts", name: "createHttpService" },
+    { from: "../runtime/process.ts", name: "runProcess" },
+    ...(routed ? [{ from: "../runtime/tile-process.ts", name: "createNotImplementedLog" }] : []),
+    ...mounts.flatMap((mount) => mount.imports),
+  ]);
+  const configure = block("configure");
+  const initialize = block("initialize");
   const body = http
     ? [
-        'import { createHttpService } from "../runtime/http.ts";',
-        'import { runProcess } from "../runtime/process.ts";',
+        ...imports,
         "",
         "/** Compiled configuration: nothing is read from disk at runtime. */",
         `export const config = ${JSON.stringify(config, null, 2)} as const;`,
         "",
         "await runProcess(async (scope) => {",
+        ...(routed
+          ? ['  // "Not implemented" answers 501 with one log line per module and hook a second.']
+          : []),
+        ...(routed ? ["  const log = createNotImplementedLog(config.tile);"] : []),
+        ...indent(
+          mounts.flatMap((mount) => mount.setup),
+          2,
+        ),
         "  const service = await createHttpService({",
         "    id: config.tile,",
         "    settings: config.settings,",
-        "    configure: () => {},",
-        "    initialize: async () => {},",
+        ...(configure.length
+          ? ["    configure: (routes) => {", ...indent(configure, 6), "    },"]
+          : ["    configure: () => {},"]),
+        ...(initialize.length
+          ? ["    initialize: async () => {", ...indent(initialize, 6), "    },"]
+          : ["    initialize: async () => {},"]),
         "  });",
         "  // Draining stops admission first, then waits for admitted requests.",
         "  scope.own(() => service.close());",
         "  await service.start(config.listen);",
+        ...indent(
+          mounts.flatMap((mount) => mount.started),
+          2,
+        ),
         "  scope.ready();",
         "});",
       ]

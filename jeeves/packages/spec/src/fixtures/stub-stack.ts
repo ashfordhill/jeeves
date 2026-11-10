@@ -93,3 +93,23 @@ export const stubStackDesign = (): DesignDocument =>
     runStudioCommands(emptyDesign(), stubStackTileCommands),
     stubStackModuleCommands,
   );
+
+/**
+ * TP05's addition: a public Preview API whose Cache reader reads Previews database through its
+ * Data access, the loader link, and Previews cache. Its cache read is a complete template, so the
+ * tile runs it with generated hooks beside the stubs.
+ */
+export const stubStackCacheReadCommands: readonly StudioCommand[] = [
+  tile("lane:download", "preview-api", "Preview API", "service"),
+  tile("preview-api", "previews-db", "Previews database", "database"),
+  tile("preview-api", "previews-cache", "Previews cache", "cache"),
+  module("preview-api", "preview-reader", "Preview reader", "cache-reader"),
+  module("preview-api", "preview-source", "Preview source", "data-access"),
+  connect("preview-reader", "cache", { tile: "previews-cache" }),
+  connect("preview-source", "database", { tile: "previews-db" }),
+  connect("preview-reader", "loader", { module: "preview-source" }),
+];
+
+/** The stub stack with Preview API's cache read beside it. */
+export const stubStackWithCacheRead = (): DesignDocument =>
+  runStudioCommands(stubStackDesign(), stubStackCacheReadCommands);

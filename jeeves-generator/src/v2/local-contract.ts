@@ -33,6 +33,9 @@ export type V2LocalContribution = {
   }[];
   /** Application authorization vocabulary belongs to its compiled adapter, not the vendor. */
   identityRoles?: readonly { element: string; roles: readonly string[] }[];
+  /** The public edge (tile process contract, section 2): `app-edge` routes `/api/<host>/` to
+   * `app-<host>:3000/` for each public HTTP process host, and owns the single HTTP port. */
+  edge?: readonly { host: string }[];
   services?: readonly {
     host: string;
     command: readonly string[];

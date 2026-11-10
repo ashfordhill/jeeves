@@ -1,6 +1,7 @@
 import { generationRuntime } from "@jeeves/spec";
 import { jsonFile, pointerPart } from "../json.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
+import { mountedHooksGap } from "./module-stubs.ts";
 import type { V2Emitter } from "./registry.ts";
 
 /** Trusted recipe names an actual public view. This grants no private table access and
@@ -83,14 +84,14 @@ export function createLocalPositiveCache(sourcePaths: readonly string[]): V2Emit
           },
         ],
         gaps: [
-          {
+          mountedHooksGap(model, selections, {
             id: "positive-cache-application-bindings",
             required: true,
             status: "unfinished" as const,
             description:
               "Bind an immutable public-record codec, requested identity/eligibility, key and authoritative loader; contribute an explicit ready-only view/login and construct the reader with emitted TTL and actual cache client in the service. Dependency output alone installs no application.",
             sourcePaths: paths,
-          },
+          }),
         ],
       };
     },

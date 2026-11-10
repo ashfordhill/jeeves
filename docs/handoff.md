@@ -8523,3 +8523,81 @@ no port: TP05's edge owns `LOCAL_HTTP_PORT`. `NotImplemented`/`tile-process.ts` 
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP05: http wiring
+
+Per the [tile processes plan](plans/tile-processes/units.md) and [contract](plans/tile-processes/contract.md)
+§2–4. Docs: the generator README (Runnable processes: the edge, module routes, hooks files, 501),
+`studio.md` (Experimental project export), the plan's status and the HUMAN_FEEDBACK resolution.
+Evidence: [tp05](plans/tile-processes/evidence/tp05/README.md).
+
+- **Edge:** `edge` contribution in `local-contract.ts`; the foundation writes `app-edge` (pinned
+  nginx, `127.0.0.1:${LOCAL_HTTP_PORT}:8080`, `depends_on` each public process healthy, own
+  `/healthz` JSON) and `infra/edge/nginx.conf` (`/api/<id>/` → `app-<id>:3000/`, 404 JSON
+  otherwise), adds it to `plan.application`, and refuses beside an `http: true` service or a tile
+  with the ID `edge`.
+- **Wiring** (`src/v2/http-wiring.ts`, used by `tile-processes.ts`): an `HttpMount` per template
+  or route stub (imports, setup/configure/initialize/started lines, config row, routes, hooks
+  file, service needs, local SQL). Multipart is mounted on its schema (named from the selection
+  ID) with `ownedUploadPersistence` plus a `jobs` outbox (`100-<selection>.sql`, grants to its
+  host), S3 control/signing clients, transaction, jobs publisher and relay, a sweep at start and
+  every 30 s, six routes under `/modules/<lead>/uploads`. Cache read: source login (no grants),
+  Valkey, `createPositiveReader` at `GET /modules/<lead>/:key` (null → 404). Search query:
+  placeholder `GET /modules/<lead>` (client built, cluster health checked at start).
+- **Hooks files** `src/modules/<host>/<lead>.hooks.ts` (`generated-extension`); every hook
+  throws `NotImplemented("<hook> for <lead name>")`. `mountedHooksGap` (in `module-stubs.ts`) turns
+  the multipart and cache read `*-application-bindings` gaps `custom`, naming the file.
+- **Stubs:** route stubs' `<module>.ts` take `(dependencies, request: ModuleRequest):
+  Promise<ModuleResponse>` with processes on; `.slots.ts`, loop and library stubs are unchanged.
+  New scaffolds `src/modules/entry.ts` and `src/runtime/tile-process.ts` (`NotImplemented`,
+  501 wrapper `notImplementedRoutes`, `stubRoutes` for any method on `/modules/<id>` and `/*`,
+  rate-limited log, `unprovisioned<T>()` dependencies).
+- **Report rows** gain `edge`, `templates` (`mounted`/`placeholder`) and `hooks`; the resolver's
+  `model.processes[].templates[]` gain `lead {module, name, kind}`. The web preview shows
+  "Edge app-edge: …" and each process's edge path.
+
+**Deviations:** the multipart hooks add `job` (the outbox relay's payload codec; the contract
+listed eight hooks). The search placeholder has no hooks file, so `search-application-bindings`
+stays `unfinished`. `entry.ts` and `tile-process.ts` are written by the processes owner whenever
+an HTTP process exists (not by `local.module-stubs`), so a template-only design compiles. An extra
+Docker smoke of the v2 module design was run (not required; see evidence).
+
+**Tests.** New `http-wiring.test.ts` (6): route table (stub stack + cache read, v2), edge config
+and compose service, no edge when internal and the `edge` ID refusal, hooks files and gaps (on
+and off), provisioning, route stub files on/off. `tile-processes.test.ts` updated for the edge
+and route stubs. E2E `module-authoring.spec.ts` checks the edge line and the stub routes.
+Fixture `stubStackWithCacheRead()` in `spec/src/fixtures/stub-stack.ts`.
+
+**Checks.** `pnpm check` exited 0: **602 tests in 85 files** (lint: only the existing info).
+**E2E: 67 passed (4.3m)** on the first full run. Web build passed (1.2s, the existing chunk-size
+advisory). Both exports (stub stack + cache read, v2 module design) install and build.
+
+**Gates.** Off pin passes. Frozen v2: fresh `export:v2`, 72 files, 70 byte-identical to
+`generic-export.tar.gz`; manifest/report equal without their inventory. v1 byte-identical.
+YouTube Overview PNG `472a4c8c…dc9f`. **Docker** (`jeeves-tp05-http`, 45450–45452): first-run
+48.1s, edge and 5 `app-*` healthy (60 s after the last request too, 0 restarts, only the edge
+publishes a port); every stub route 501 "Not implemented: <name>" for any method and subpath,
+cache route 501 naming `key`, unknown and internal routes 404 at the edge, Stats search 501
+inside the network; stop 2.3s, start 31.0s, same answers. Cleanup verified against the owner's
+recorded Docker state.
+
+**Mouse check** (scripted Chromium; my API 4375 with scratch DB `jeeves_tp05`, now dropped, and
+Vite 4365): TinyURL 7 tiles and 7 lines at both sizes; blank → Consume → Microservice → Rate
+limiter and Data access, tick, Preview lists the edge and both stubs' routes. No page or console
+errors. My first script run used a wrong fan locator (script bug). All projects deleted;
+`jeeves_e2e` has no leftovers.
+
+**For TP06.** Loop stubs and worker processes are untouched: give loop stubs `ModuleMessage`
+(already in `entry.ts`) and add loops to `HttpMount`-like wiring and report `loops`.
+`tile-process.ts` imports `admission.ts`/`http.ts`, which exist only beside an HTTP process; a
+worker-only design needs them emitted or the loop helpers split out. The asset lifecycle shares
+the multipart's schema (`upload_multipart` in v2), where multipart already creates
+`uploads` and `outbox` (destinations `["jobs"]`) in `100-upload-multipart.sql`; its persistence
+also creates `outbox`, so merge them (one outbox with `jobs` and `publication`). Use
+`mountedHooksGap` for the remaining gaps. The transcoder still runs the `app` target.
+
+**For TP07.** Route stubs get `unprovisioned<Deps>(name)`; replace that in the process file with
+`module-clients.ts`. Stub `depends_on` stays empty until then.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

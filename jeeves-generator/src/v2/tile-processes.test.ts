@@ -51,6 +51,8 @@ describe("local.tile-processes", () => {
   it("adds an entry point per application tile and the libraries a process needs", () => {
     const paths = (b: Bundle) => b.files.map((file) => file.path);
     expect(paths(bundle).filter((path) => !paths(off).includes(path))).toEqual([
+      "infra/edge/nginx.conf",
+      "src/modules/entry.ts",
       "src/processes/links-api.ts",
       "src/processes/stats-api.ts",
       "src/processes/upload-api.ts",
@@ -58,12 +60,9 @@ describe("local.tile-processes", () => {
       "src/runtime/admission.ts",
       "src/runtime/http.ts",
       "src/runtime/process.ts",
+      "src/runtime/tile-process.ts",
     ]);
     expect(paths(off).filter((path) => !paths(bundle).includes(path))).toEqual([]);
-    // The stubs themselves are unchanged: templates and stubs are not wired yet.
-    for (const file of off.files)
-      if (file.path.startsWith("src/modules/"))
-        expect(text(bundle, file.path), file.path).toBe(text(off, file.path));
     const http = text(bundle, "src/processes/links-api.ts");
     expect(http).toContain(
       "// Generated scaffold: Links API (Microservice) runs as app-links-api, an HTTP process.",
@@ -85,12 +84,14 @@ describe("local.tile-processes", () => {
       services: Record<string, Record<string, unknown>>;
     };
     expect(Object.keys(compose.services)).toEqual([
+      "app-edge",
       "app-links-api",
       "app-stats-api",
       "app-upload-api",
       "app-visit-worker",
     ]);
     for (const [name, service] of Object.entries(compose.services)) {
+      if (name === "app-edge") continue;
       expect(service.command).toEqual(["node", `dist/processes/${name.slice(4)}.js`]);
       expect(service.profiles).toEqual(["application"]);
       expect(service.init).toBe(true);
@@ -101,6 +102,7 @@ describe("local.tile-processes", () => {
         "/tmp/application-ready",
       );
     }
+    // The edge starts with the processes; stubs provision nothing yet, so nothing else runs.
     expect(JSON.parse(text(bundle, "infra/local.json")).application).toEqual(
       Object.keys(compose.services),
     );
@@ -134,9 +136,11 @@ describe("local.tile-processes", () => {
       ["upload-api", "app-upload-api", "http", "public", "src/processes/upload-api.ts"],
       ["visit-worker", "app-visit-worker", "worker", undefined, "src/processes/visit-worker.ts"],
     ]);
-    expect(processes?.tiles[0]?.routes).toEqual([
-      { method: "GET", path: "/healthz", answers: "200 once ready, 503 before and while draining" },
-    ]);
+    expect(processes?.tiles[0]?.routes[0]).toEqual({
+      method: "GET",
+      path: "/healthz",
+      answers: "200 once ready, 503 before and while draining",
+    });
     expect(processes?.tiles[3]?.routes).toEqual([]);
     expect(processes?.tiles[0]?.settings).toEqual([
       { setting: "requestTimeoutMs", value: 1000, origin: "fixed" },

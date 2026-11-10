@@ -148,7 +148,12 @@ export type NormalizedProcess = {
   exposure?: "public" | "internal";
   http?: { requestTimeoutMs: NormalizedProcessSetting; concurrencyLimit: NormalizedProcessSetting };
   sourcePath: Path;
-  templates: { selection: string; template: GenerationSelection["template"] }[];
+  /** Each template on the tile, with its lead module when the selection targets one. */
+  templates: {
+    selection: string;
+    template: GenerationSelection["template"];
+    lead?: { module: string; name: string; kind: StudioComponentKind };
+  }[];
   stubs: { module: string; selection: string; role: "loop" | "route" | "library" }[];
 };
 export type NormalizedGeneration = {
@@ -1019,7 +1024,19 @@ function normalizedProcesses(
       sourcePath: ["architecture", "studio", "elements", index],
       templates: hosted
         .filter((item) => item.binding.kind !== "module-stub")
-        .map((item) => ({ selection: item.id, template: structuredClone(item.template) })),
+        .map((item) => {
+          const target = item.target.kind === "component" ? item.target.component : undefined;
+          const lead = target
+            ? studio?.components?.find((component) => component.id === target)
+            : undefined;
+          return {
+            selection: item.id,
+            template: structuredClone(item.template),
+            ...(lead && {
+              lead: { module: lead.id, name: lead.name, kind: lead.settings.kind },
+            }),
+          };
+        }),
       stubs: hosted.flatMap((item) =>
         item.module
           ? [

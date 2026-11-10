@@ -604,8 +604,14 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes, 
       .getByRole("list", { name: "Runnable processes", exact: true })
       .getByRole("listitem");
     await expect(rows).toHaveCount(1);
-    await expect(rows.nth(0)).toContainText("Microservice app-microservice · HTTP, public");
-    await expect(rows.nth(0)).toContainText("GET /healthz");
+    await expect(rows.nth(0)).toContainText(
+      "Microservice app-microservice · HTTP, public · at /api/microservice/",
+    );
+    // The edge publishes it; its stub answers any method on its own path.
+    await expect(dialog.getByText("Edge app-edge: /api/microservice/")).toBeVisible();
+    await expect(rows.nth(0)).toContainText(
+      "GET /healthz, ANY /modules/microservice-rate-limiter, ANY /modules/microservice-rate-limiter/*",
+    );
     await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
     // One Undo step unticks it.
     await undo(page);

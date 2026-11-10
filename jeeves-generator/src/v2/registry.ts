@@ -41,6 +41,8 @@ export type V2ProcessReport = {
   service: string;
   shape: "http" | "worker";
   exposure?: "public" | "internal";
+  /** A public HTTP process's path at the edge, `/api/<tile>/`. */
+  edge?: string;
   entry: string;
   settings: readonly {
     setting: string;
@@ -50,6 +52,10 @@ export type V2ProcessReport = {
   }[];
   routes: readonly { method: string; path: string; answers: string }[];
   loops: readonly { queue: string; module: string; answers: string }[];
+  /** The templates the process runs: mounted on their real libraries, or a placeholder. */
+  templates: readonly { selection: string; template: string; level: "mounted" | "placeholder" }[];
+  /** Each mounted template's generated hooks file and the hooks that answer "Not implemented". */
+  hooks: readonly { selection: string; file: string; hooks: readonly string[] }[];
 };
 export type V2RenderContext = {
   model: NormalizedGeneration;

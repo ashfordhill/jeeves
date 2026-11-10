@@ -224,34 +224,79 @@ Without an installed processes owner the option is a `NEEDS_TEMPLATE` finding at
 `/generation/processes`, which refuses studio export; the dependency-only registry never installs
 it.
 
-`local.tile-processes` (`src/v2/tile-processes.ts`), registered by `loadLocalV2Registry`,
-provides `processes`. For each row it writes the scaffold `src/processes/<id>.ts` with its
-compiled `config` and contributes a `local.services` entry: `app-<id>` running
+`local.tile-processes` (`src/v2/tile-processes.ts`, with `src/v2/http-wiring.ts`), registered by
+`loadLocalV2Registry`, provides `processes`. For each row it writes the scaffold
+`src/processes/<id>.ts` with its compiled `config` (settings, listen address, and its `templates`
+and `stubs` tables) and contributes a `local.services` entry: `app-<id>` running
 `node dist/processes/<id>.js`, profile `application`, `init: true`, no restart policy, no
-published port, `depends_on` only on providers it uses (none yet) and a healthcheck on the ready
-marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering `GET /healthz`
-(200 once ready, 503 before and while draining) and 404 elsewhere; a worker holds an idle timer.
-Both write the ready marker through `runProcess` and drain on SIGTERM. The foundation accepts
-process hosts with no selection, closes `application-services` for them, and substitutes
-`scripts/local.mjs`'s startup gate (exactly once, or it refuses) so `first-run` and `start`
-read `report.processes.runnable` instead of `applicationComplete`. Composition and primitives
-also emit `src/runtime/process.ts`, `http.ts` and `admission.ts` when a process needs them.
-Templates and stubs are not mounted into processes yet.
+published port, `depends_on` only on the providers its mounted templates use, and a healthcheck
+on the ready marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering
+`GET /healthz` (200 once ready, 503 before and while draining), its module routes, and 404
+elsewhere; a worker holds an idle timer. Both write the ready marker through `runProcess` and
+drain on SIGTERM. The foundation accepts process hosts with no selection, closes
+`application-services` for them, and substitutes `scripts/local.mjs`'s startup gate (exactly
+once, or it refuses) so `first-run` and `start` read `report.processes.runnable` instead of
+`applicationComplete`. Composition and primitives also emit `src/runtime/process.ts`, `http.ts`
+and `admission.ts` when a process needs them.
+
+**The edge.** When a public HTTP process exists, the processes owner contributes an `edge` row per
+public host and the foundation writes `app-edge`: the nginx pinned in `assets/providers.json`,
+published at `127.0.0.1:${LOCAL_HTTP_PORT}:8080`, `depends_on` each public process healthy, and
+healthy on its own `GET /healthz` (`{"service":"edge","application":"ready"}`).
+`infra/edge/nginx.conf` routes `/api/<id>/` to `app-<id>:3000/` (resolved per request through
+Docker DNS) and answers 404 JSON for anything else, so an internal process is reached only inside
+the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a service contributing
+`http: true` beside it refuses, and so does a tile whose ID is `edge`.
+
+**Module routes** (contract §3–4). Every route sits under `/modules/<module id>`:
+
+- A **route stub** (any stub in an HTTP tile that consumes no queue) answers any method on
+  `/modules/<module id>` and every path below it. Its `<module>.ts` takes
+  `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; the types live in the
+  scaffold `src/modules/entry.ts` (with `ModuleMessage` for loops). Its `Dependencies` are
+  placeholders that answer "Not implemented: <property> for <module> (not provisioned yet)"
+  until stub provisioning (TP07). Loop and library stubs keep their files and aren't wired yet.
+- **Multipart uploads** is mounted on its real libraries: its private schema (named from the
+  selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in
+  migration `100-<selection>.sql`, granted to its host; S3 control and signing clients; the
+  transaction; the jobs publisher and outbox relay; and a sweep at start and every 30 s. Its six
+  operations are mounted at `/modules/<lead>/uploads…`.
+- **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
+  Valkey cache at `GET /modules/<lead>/:key`; null answers 404.
+- **Search query** is a placeholder: `GET /modules/<lead>` answers "Not implemented" for its
+  mapping and query preset, which are product data.
+
+Each mounted lead gets `src/modules/<host>/<lead>.hooks.ts` (a `generated-extension`): one
+factory over the template's generic resources whose every hook throws `NotImplemented("<hook>
+for <lead name>")`. The multipart's are `principal`, `validate`, `metadata`, `response`,
+`reserve`, `complete`, `closed`, `originalKey` and `job`; the cache reader's `key`, `codec`,
+`eligible`, `load` and `expiresAt`. Its `*-application-bindings` gap becomes a required `custom`
+gap naming that file; the search placeholder's gap stays `unfinished`. The scaffold
+`src/runtime/tile-process.ts` holds `NotImplemented`, the 501 wrapper and the rate-limited log:
+an error that is a `NotImplemented` or whose message starts with "Not implemented" answers 501
+`{"error":"NOT_IMPLEMENTED","message":"Not implemented: …"}` and logs one JSON line
+(`level`, `event: "not-implemented"`, `tile`, `module`, `what`, `route`, `action`) at most once a
+second per module and hook, the next line carrying a `suppressed` count. An `HttpError` keeps its
+status and anything else answers the existing 503. Fill a stub in its `<module>.ts` and a
+template in its `.hooks.ts`; no scaffold changes.
 
 With the option on, the manifest records `"processes": true` beside `runtime`, and the report
 gains `processes`: `runnable` (no findings, no `unsupported` gap and a service for every
 application tile; `applicationComplete` keeps its meaning) and `tiles`, each with its service,
-shape, exposure, entry point, settings with their origin, routes and loops, each with what it
-answers. With it off, nothing changes: `processes-off.test.ts` pins the export of frozen v2, the
-v2 module design with its values and the stub stack (`spec/src/fixtures/stub-stack.ts`) as they
-were before the option existed, every payload byte and the provenance files apart from their
-source and emitter inventory.
+shape, exposure, edge path, entry point, settings with their origin, routes and loops (each with
+what it answers), templates (`mounted` or `placeholder`) and hooks files. With it off, nothing
+changes: `processes-off.test.ts` pins the export of frozen v2, the v2 module design with its
+values and the stub stack (`spec/src/fixtures/stub-stack.ts`) as they were before the option
+existed, every payload byte and the provenance files apart from their source and emitter
+inventory.
 
 To run one, export it into a new directory, then, in it, `pnpm install --frozen-lockfile
 --ignore-scripts` and `pnpm build`; allocate the project and ports as below and run
-`pnpm first-run`. Each `app-*` is healthy once ready; reach an HTTP process from inside the
-network, for example `docker compose --profile '*' exec app-<id> node -e
-"fetch('http://127.0.0.1:3000/healthz').then(r=>r.text()).then(console.log)"`. `pnpm stop`
+`pnpm first-run`. Each `app-*` is healthy once ready. Public processes answer at
+`http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/`, for example `/api/<id>/healthz` or
+`/api/<id>/modules/<module id>`; reach an internal one from inside the network, for example
+`docker compose --profile '*' exec app-<id> node -e
+"fetch('http://app-<other>:3000/healthz').then(r=>r.text()).then(console.log)"`. `pnpm stop`
 drains every process (exit 0) and `pnpm start` brings them back healthy.
 
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
