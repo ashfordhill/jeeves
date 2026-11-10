@@ -1,6 +1,7 @@
 # Module authoring: modules that generate code, built by mouse
 
-**Status:** planned 2026-11-09 from owner feedback. No unit has started.
+**Status:** planned 2026-11-09 from owner feedback. MA01's [contract](contract.md) is drafted and
+awaits the owner's approval; MA05–MA08 below follow it.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-09 — Modules generate code; build v2 from scratch](../../HUMAN_FEEDBACK.md)
 · Follows the [UI overhaul](../ui-overhaul/units.md) and its [review](../ui-overhaul/review.md).
 
@@ -325,23 +326,39 @@ recommendation. MA02–MA04 may run meanwhile; MA05 waits for approval.
 
 ## MA05 — Module catalog and authoring commands (spec + chat)
 
-**Requires the owner's approval of MA01.** Implement the contract's catalog and commands in
+**Requires the owner's approval of MA01.** Implement contract §2, §4 and §5 in
 `jeeves/packages/spec`.
 
-- **Catalog:** each module kind's slots, hosts, description and generation (template or stub).
+- **Catalog:**
+  - the 18 kinds of contract §2 (8 new), with slots, hosts, descriptions, icons and generation
+    (lead, part or stub);
+  - the new icons in `StudioIcon`;
+  - no modules on Identity, Gateway or Browser;
+  - lead kinds as `componentTargets`.
+  - Existing kinds keep their `thirdParty`, `requires` reasons and settings schemas, which v1's
+    frozen blueprint check needs.
+- **Catalog records:**
+  - add `module-stub@0.1.0` and its capability (no role, resources or settings);
+  - pin `youtube-core` to its current 10 template and 6 policy refs, so its sha256 stays
+    `d4c66f03…`;
+  - change no existing record.
 - **Commands:**
-  - `addModule(host, kind)`, with a fresh name from the kind;
-  - `connectModule(module, slot, target)`, which reuses the host link or creates it, as the
-    contract says;
-  - `disconnectModule`;
-  - `removeModule`.
-- **Derived declarations:** each command writes the contract's derived selection, binding and
-  ownership as **one batch and one Undo step**. Conflicts refuse in plain words.
-- **Chat:** add the matching supported-authoring tools in the same unit.
-- **Validation and blueprint:** blueprint v3 output for module selections. Existing designs parse
-  unchanged.
+  - `addModule(host, kind)`. On a schema-2 design it also upgrades to schema 3 and adds an empty
+    `generation`.
+  - `connectModule(module, slot, target)`. A tile target reuses the host link or adds the lane
+    rules' link; the Cache reader's loader targets a Data access in its tile.
+  - `disconnectModule` and `removeModule`.
+  - `removeTile` and `removeLink` re-derive when module-level selections exist.
+- **Derivation (contract §5):** selections, fixed values, initial values and ownership, as
+  **one batch and one Undo step**. Every listed conflict refuses in plain words.
+- **Status:** a pure function gives each module Template, Stub, Custom or Refused with its
+  reason, for the inspector, chat and Generate.
+- **Chat:** the four supported-authoring tools; `getDesign` shows module status.
+- **Blueprint:** no new fields; module-level selections ride v3's `generation`. Existing designs
+  parse unchanged.
 - **Tests**
   - Focused unit tests for every derivation and refusal.
+  - The contract's v2 tables (§3) derive exactly from a design built with the commands.
   - Old designs and the studies resolve exactly as before.
   - The v2 inputs stay unchanged and resolve the same.
 
@@ -352,19 +369,25 @@ recommendation. MA02–MA04 may run meanwhile; MA05 waits for approval.
 **Goal:** add a module by mouse, connect it, and see whether it can connect (Owner decisions 4
 and 5).
 
-- **Module `+`:** a `+` tab on the left of an application tile opens a fan of the module kinds the
-  host allows. Each item shows its icon, name, one-line description and whether it is a
-  **Template** or a **Stub**. Picking one runs `addModule`. The new module opens in the inspector
-  with its name focused. The module fan doubles as the owner's view of "what can be selected".
-- **Module page:** a small status (Template name or Stub), plus the settings its emitter consumes.
-  Still no connection lists; the arrows show them.
+- **Module `+`:** a `+` tab on the left of a Service, Worker or Uploads tile opens a fan of the
+  module kinds the host allows (contract §2). Each item shows its icon, name, one-line
+  description and **Template**, **Part of a template** or **Stub**. Picking one runs `addModule`.
+  The new module opens in the inspector with its name focused. The module fan doubles as the
+  owner's view of "what can be selected".
+- **Module page:** a small status: the template's name, or Stub with what is missing, or Refused
+  with the reason. Then only the settings contract §2 shows (Pool size and Statement timeout on
+  a Data access in a template, and on a Lifecycle writer). Still no connection lists; the arrows
+  show them.
 - **Detailed view and Connect mode:**
   - Rows of kinds that take connections show a small **hollow dot** at their edge; a filled dot
-    means a connected slot. Rows that can't connect show no dot.
+    means a connected slot. Rows that can't connect (Redirect responder, Event counter) show no
+    dot.
   - In Connect mode, drag from a row's dot to a tile to run `connectModule`. Valid targets
     highlight; refused ones fade with the reason.
-  - If the contract has in-process links, do the row→row drag and their drawing as it specifies.
-- **Removing:** hovering a module line in Connect mode shows its X, which runs
+  - The one in-process slot, the Cache reader's loader, is a row→row drag onto a Data access
+    row. It is drawn as a short arrow in the container's left gutter (contract §4). No other
+    in-process link is drawn.
+- **Removing:** hovering a module line or gutter arrow in Connect mode shows its X, which runs
   `disconnectModule`. In Detailed view, this is separate from removing the tile link.
 - **Overview:** the left `+` works there too; modules appear on the tile's inspector page.
 
@@ -381,14 +404,21 @@ and 5).
 
 **Goal:** every module without an installed template generates a typed stub (Owner decision 5).
 
-- **Stubs:** implement the contract's stub emitter in `jeeves-generator/src/v2`. Each stub has a
-  typed dependency for each connected slot, clearly marked unconnected slots, and a TODO entry
-  point inside its host.
-- **Reporting:** the export report and the Generate project dialog list every module as Template,
-  Stub or Refused, with its reason.
+- **Stubs:** implement contract §6 in `jeeves-generator/src/v2`.
+  - Each stub module gets `src/modules/<host>/<module>.slots.ts` (scaffold) and `<module>.ts`
+    (extension). They share one `src/modules/dependencies.ts`.
+  - A stub has a typed dependency for each connected slot, a comment for each unconnected one,
+    and an entry point that throws "Not implemented".
+  - Stub selections skip the role check and the host-setting audit.
+  - Stubs provision nothing.
+- **Reporting:**
+  - `.jeeves/report.json` gains `modules` only when the design has a module-level selection.
+  - The preview response and the Generate project dialog list every module of every design as
+    Template, Stub, Custom or Refused, with its reason.
 - **Preservation:** existing preservation and refusal of edited output also apply to stubs.
 - **Gates:**
-  - v1 and v2 frozen exports are byte-identical.
+  - The v1 frozen export is byte-identical.
+  - The v2 frozen export is identical as contract §8 defines it.
   - Generator tests pass.
   - A fresh design of only stub modules exports, installs and builds (`pnpm build` in the
     export).
@@ -399,12 +429,21 @@ and 5).
 
 **Goal:** module selections reach the 7 installed templates, as the contract maps them.
 
-- **Resolving:** the resolver and assembler accept module-level selections, whether from feature
-  modules or from responsibility modules composed into a template. They produce the same emitted
-  template code and bindings as the equivalent tile-level selections.
+- **Resolving:** the resolver and assembler accept the module-level template selections of
+  contract §3:
+  - a lead module as the target;
+  - the binding filled from its parts' links;
+  - the Lifecycle writer as the SQL setting source for its state.
+
+  They emit the same template code and bindings as the equivalent tile-level selections.
 - **Tests:** an equivalence test shows that a module-authored design and its tile-level twin emit
-  the same template payload, up to identities and paths, as the contract defines.
-- **Frozen exports:** v1 and v2 stay byte-identical.
+  the same template payload, up to identities and paths. The twin is v2's seven installed
+  selections; files outside `.jeeves/` and `diagnostics/` are compared after mapping IDs.
+- **Retire the preset's normal entry points (if the owner agrees, contract question 5):**
+  - the system page's "Add a supported feature", with its component, CSS and tests;
+  - chat's `attachGenerationPreset`.
+  - Keep `buildGenerationPresetCommand` for the product-attachment example and tests.
+- **Frozen exports:** v1 byte-identical; v2 as contract §8 defines.
 
 **Commit:** `MA08: template-backed modules`.
 

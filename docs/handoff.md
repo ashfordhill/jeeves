@@ -7250,3 +7250,60 @@ I ran no checks: only docs changed. The owner's uncommitted `README.md` and `.do
 untouched. I restarted the owner's dev servers on 4300/4310 at the owner's request.
 
 Next: MA01 only.
+
+## 2026-11-09 — MA01: module and generation contract
+
+This unit is docs only; no code changed. I wrote the
+[contract](plans/module-authoring/contract.md) for owner approval, and revised MA05–MA08 and the
+status line in [units.md](plans/module-authoring/units.md).
+
+- **Recommendation:** responsibility modules, with one lead kind per template. A template is
+  selected only by its lead; generic Data access, Event consumer, Event publisher and Auth guard
+  fill its other slots. Everything else is a stub.
+- **Catalog:** 18 kinds (8 new; Video encoder, packager and thumbnailer are video-specific).
+- **v2:** all 22 modules map (20 template, 2 stub). The rebuild needs Upload API → Identity and
+  one in-process link, Cache reader → Data access.
+- **Fan:** 11 kinds; Gateway is not offered.
+- **Open questions:** six, each with a default.
+
+**Unit changes**
+
+- **MA05:** gains the derivation (selections, fixed values, initial values, ownership), the
+  `module-stub` record and pinning `youtube-core`.
+- **MA06:** gains the loader drag and its gutter arrow.
+- **MA07:** stub files, and `modules` in the report only for module-level designs.
+- **MA08:** lead targets, an equivalence test against v2's seven selections, and retiring "Add a
+  supported feature" if the owner agrees.
+
+**Findings for the next units**
+
+- **v2 export:** a fresh v2 export's `.jeeves/manifest.json` and `report.json` hash every file in
+  `packages/spec/src`, `jeeves-generator/src/v2` and `templates/local-v2`
+  (`templates/local-v2/index.ts:52-63`).
+  - MA02's description edit will change those two files. The other 70 stay identical (contract
+    §8, question 1).
+  - Today's export matches `generic-export.tar.gz` byte for byte, because spec src is unchanged
+    since `8813523`.
+- **`youtube-core`:** it is computed from the whole template catalog
+  (`generation-catalog.ts:120-123`). Adding any template or policy before pinning it blocks v2's
+  export.
+- **v1 export:** v1's input check rebuilds blueprint v3 (`jeeves-generator/src/input.ts:170`).
+  Don't change existing kinds' targets, `thirdParty`, `requires` reasons or settings schemas.
+- **For MA04:** `CATALOG.md`'s link table says HTTPS and Service identity, but the code gives HTTP
+  and Private network (`studio-links.ts:88-89, 292`). Correct it when MA04 edits `CATALOG.md`.
+- **For MA09** (section not revised): the contract's §3 differences list the extra tile link and
+  module links.
+- **For MA02:** MA02 may drop `partners`. MA06 draws only the loader link.
+
+**Checks**
+
+- The generation, resolver, operations, modules, ownership, generator v2, supported-authoring
+  and generation-v2 route tests: 21 files, 88 tests passed.
+- `pnpm check` exited 0: 497 tests in 73 files, lint showing only the existing info.
+- A scratch export of the frozen v2 design gave 72 files, identical to the recorded archive.
+- No e2e or browser checks were run, since this unit is docs only.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.
+
+Next: owner approval of the contract before MA05. MA02–MA04 may run meanwhile.
