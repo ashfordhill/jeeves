@@ -79,6 +79,7 @@ describe("local.tile-processes", () => {
     const paths = (b: Bundle) => b.files.map((file) => file.path);
     expect(paths(bundle).filter((path) => !paths(off).includes(path))).toEqual([
       "infra/edge/nginx.conf",
+      "infra/postgres/links-db/000-foundation.sql",
       "src/modules/entry.ts",
       "src/processes/links-api.ts",
       "src/processes/stats-api.ts",
@@ -88,7 +89,11 @@ describe("local.tile-processes", () => {
       "src/runtime/amqp.ts",
       "src/runtime/delivery.ts",
       "src/runtime/http.ts",
+      "src/runtime/module-clients.ts",
+      "src/runtime/objects.ts",
+      "src/runtime/postgres.ts",
       "src/runtime/process.ts",
+      "src/runtime/search.ts",
       "src/runtime/tile-http.ts",
       "src/runtime/tile-loop.ts",
       "src/runtime/tile-process.ts",
@@ -124,31 +129,47 @@ describe("local.tile-processes", () => {
       "app-stats-api",
       "app-upload-api",
       "app-visit-worker",
+      "cache-links-cache",
       "local-broker",
+      "local-objects",
+      "local-postgres",
+      "search-stats-index",
       "setup-broker",
+      "setup-migrate",
     ]);
-    // Only the loops' queues are provisioned yet (TP06): the two tiles with a loop need the broker.
-    const broker = { "local-broker": { condition: "service_healthy" } };
+    // Each process depends on the providers of the stores its stubs use (client-wiring.test.ts).
+    const healthy = (...names: string[]) =>
+      Object.fromEntries(names.map((name) => [name, { condition: "service_healthy" }]));
+    const providers: Record<string, object> = {
+      "app-links-api": healthy("cache-links-cache", "local-broker", "local-postgres"),
+      "app-stats-api": healthy("search-stats-index"),
+      "app-upload-api": healthy("local-broker", "local-objects"),
+      "app-visit-worker": healthy("local-broker", "local-objects", "local-postgres"),
+    };
     for (const [name, service] of Object.entries(compose.services)) {
       if (name === "app-edge" || !name.startsWith("app-")) continue;
       expect(service.command).toEqual(["node", `dist/processes/${name.slice(4)}.js`]);
       expect(service.profiles).toEqual(["application"]);
       expect(service.init).toBe(true);
-      expect(service.depends_on).toEqual(
-        ["app-links-api", "app-visit-worker"].includes(name) ? broker : {},
-      );
+      expect(service.depends_on).toEqual(providers[name]);
       expect(service).not.toHaveProperty("restart");
       expect(service).not.toHaveProperty("ports");
       expect((service.healthcheck as { test: string[] }).test.at(-1)).toContain(
         "/tmp/application-ready",
       );
     }
-    // The edge starts with the processes; the broker is the only provider.
+    // The edge starts with the processes, after the providers.
     const plan = JSON.parse(text(bundle, "infra/local.json"));
     expect(plan.application).toEqual(
       Object.keys(compose.services).filter((name) => name.startsWith("app-")),
     );
-    expect(plan.providers).toEqual(["local-broker"]);
+    expect(plan.providers).toEqual([
+      "cache-links-cache",
+      "local-broker",
+      "local-objects",
+      "local-postgres",
+      "search-stats-index",
+    ]);
     const record = bundle.manifest.files.find((file) => file.path === "compose.yaml");
     expect(record?.contributors.map((item) => item.emitter.id)).toContain("local.tile-processes");
   });

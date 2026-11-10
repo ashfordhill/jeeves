@@ -8687,3 +8687,72 @@ so publishers (Visit/Upload publisher) and other stores need their own facts. `t
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — TP07: provisioning for stubs
+
+Per the [tile processes plan](plans/tile-processes/units.md) (Owner decision 3) and
+[contract](plans/tile-processes/contract.md) §6. Docs: the generator README (provisioning for
+stubs, module clients, credentials), `studio.md` (Experimental project export), a playbook
+lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[tp07](plans/tile-processes/evidence/tp07/README.md).
+
+- **Resolver:** each stub row gains `stores` (`NormalizedStubStore`: element, kind, the link's
+  access by the new shared `stubLinkUse`, saved provider, engine, queue mode, object access) for
+  every store link and every queue it publishes to; consumed queues stay in `consumes`. MA05's
+  ownership is only read: another owner's database, bucket or index is `read` with
+  `boundary: "published-read"`. Only with the option on; nothing is written.
+- **Foundation** (`local.ts`; `stubStores`, `stubUnsupported`, `localLogin` in
+  `local-contract.ts`, replacing TP06's queue block and `stubProvisioned`): each tile's stub
+  stores, merged with the widest access, become resource users beside the templates', then
+  rows: a login per database (CONNECT and USAGE on `public`; SELECT on every contributed view of
+  another owner's database), a subscriber per consumed topic, a key per bucket with read/write.
+  Caches and search services come from the resources. Another provider or engine is a required
+  `unsupported` gap `provider-<module>-<tile>`.
+- **Clients:** new scaffold `src/runtime/module-clients.ts` (sections kept per use, like
+  `service-resources`): `databaseClient`, `queuePublisher`, `cacheClient`, `objectClient`,
+  `searchClient`, `httpTarget`, `unavailable`, `createProbeLog`; one 5 s probe each, logged as
+  `{"event":"probe",…,"result":"ok"}`, a failure fails startup. `client-wiring.ts` builds the
+  process's `clients` and `dependencies["<module>"]` for every stub (library ones too) before
+  loops and HTTP; route and loop stubs use them (`unprovisioned` is gone from
+  `tile-process.ts`). Module links call the target stub's entry point. Primitives emit the
+  needed libraries. Report rows gain `stores` (`provisioned` or `unsupported`); Preview shows
+  "Provisioned: …" per process. A worker with no loop keeps its idle timer even with clients.
+
+**Deviation:** Identity is never a real client for stubs. The contract's exception (a template on
+the same tile binds that Identity) can't arise: that template's Auth guard is the tile's only
+one, and the derivation refuses a second, so the verifier code was left out.
+
+**Tests.** New `client-wiring.test.ts` (6) and `module-clients.test.ts` (7, the emitted scaffold on
+in-memory fakes); spec `runnable-processes.test.ts` +1; updated `tile-processes`, `http-wiring`,
+`loop-wiring` tests and the e2e processes test (Preview's `stores` and "Provisioned:" line).
+
+**Checks.** `pnpm check` exited 0: **630 tests in 89 files** (lint: only the existing info).
+**E2E: 67 passed (4.3m)** on the first full run. Web build passed (956 ms, the existing
+chunk-size advisory).
+
+**Gates.** Off pin passes. Frozen v2: fresh `export:v2` 72 files, 70 byte-identical to
+`generic-export.tar.gz`; manifest/report equal without inventory. v1 byte-identical. YouTube
+Overview PNG `472a4c8c…dc9f`. **Docker** (`jeeves-tp07-stubs`, 45470–45472): first-run 67.7 s;
+`d_links_db` with logins for Links API and Visit worker (CONNECT, USAGE, no CREATE, no table
+grants), `visits` exchange + `visits--visit-worker`, `uploaded`, both `.failed`, bucket `archive`
+with `s3-upload-api` RW and `s3-visit-worker` R, `cache-links-cache` (password) and
+`search-stats-index` (no index); all 8 probes ok; 10 containers healthy, 0 restarts (also 60 s
+later); stub routes 501, unknown 404, one message each to Visits and Uploaded in `.failed` with
+`NOT_IMPLEMENTED`; stop 3.0 s, start 42.9 s, same 10 secret hashes, same 5 volumes, probes ok
+again. **Optional v2 smoke** (`jeeves-tp07-v2`, 45473–45475, 121.8 s): Watch's login reads only
+`counter_sum_public.totals`. Cleanup verified against the owner's recorded Docker state.
+
+**Mouse check** (scripted Chromium; my API 4377 with scratch DB `jeeves_tp07`, now dropped, and
+Vite 4367): TinyURL 7 tiles and 7 lines at both sizes; blank → Microservice with Database and
+Cache, a Data access and a Rate limiter connected by the Connect tool, tick, Preview:
+"Provisioned: Cache (cache, read-write), Database (database, read-write)". No page or console
+errors. My first script run timed out on a click I had left in by mistake; two of its projects
+were deleted afterwards. All projects deleted.
+
+**For TP08.** Run the stub stack as in this evidence; the v2 module design already comes up with
+every probe passing. `report.processes.tiles[].stores` lists what each stub tile got. A stub
+client's probe line is in each `app-*` log. OpenSearch's container exits 143 on `pnpm stop` (its
+JVM); every `app-*` exits 0.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

@@ -1276,13 +1276,17 @@ tiles are reached only inside the stack. In an HTTP tile, each stub that consume
 answers any method on `/modules/<module id>` and below, Multipart uploads and Cache reader run
 their templates with a generated `<lead>.hooks.ts`, and Search query is a placeholder; each
 answers 501 "Not implemented" until written. In any tile, a stub connected to consume a queue
-runs a loop on it (the queue is provisioned), and the asset lifecycle, Video HLS and event
-counter run their workers with a generated `<lead>.hooks.ts` (the search projection is a
-placeholder loop). A message that reaches "Not implemented" goes to its queue's `.failed` with
-one log line, and the process stays healthy. Preview's **Processes** list shows the edge's
-paths, then each process with its service, shape, edge path, routes and loops ("loop on
-<queue>"), and whether the stack is runnable; `first-run` starts the processes only while it
-is. Stores that stubs use otherwise come later. With it off, the export is exactly as before.
+runs a loop on it, and the asset lifecycle, Video HLS and event counter run their workers with a
+generated `<lead>.hooks.ts` (the search projection is a placeholder loop). A message that reaches
+"Not implemented" goes to its queue's `.failed` with one log line, and the process stays
+healthy. Every database, cache, queue, object storage and search index a stub links to is
+provisioned for its tile with that link's access, and the stub gets real clients, each checked
+once at startup; a store on another provider isn't provisioned, and the stack isn't runnable.
+Preview's **Processes** list shows the edge's paths, then each process with its service, shape,
+edge path, routes and loops ("loop on <queue>"), what is provisioned for its stubs
+("Provisioned: Links database (database, read-write)") or not ("Not provisioned: …"), and
+whether the stack is runnable; `first-run` starts the processes only while it is. With it off,
+the export is exactly as before.
 
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:

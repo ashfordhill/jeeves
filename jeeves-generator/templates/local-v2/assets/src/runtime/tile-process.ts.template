@@ -55,20 +55,3 @@ export function createNotImplementedLog(tile: string): NotImplementedLog {
   const log = createProcessLog(tile, "warn", "not-implemented");
   return (entry) => log(`${entry.module}\u0000${entry.what}`, entry);
 }
-
-/** Until its stores are provisioned, each of a stub's dependencies answers "Not implemented". */
-export function unprovisioned<T extends object>(module: string): T {
-  return new Proxy({} as T, {
-    get: (_target, property) =>
-      typeof property === "string" && property !== "then"
-        ? notProvisioned(`${property} for ${module} (not provisioned yet)`)
-        : undefined,
-  });
-}
-function notProvisioned(what: string) {
-  const fail = () => Promise.reject(new NotImplemented(what));
-  return new Proxy(fail, {
-    get: (_target, property) =>
-      typeof property === "string" && property !== "then" ? fail : undefined,
-  });
-}

@@ -112,7 +112,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     // The process mounts each route through its 501 wrapper.
     const links = text(stack, "src/processes/links-api.ts");
     expect(links).toContain(
-      'stubRoutes(routes, log, "link-reader", (request) =>\n        linkReader(unprovisioned<LinkReaderDependencies>("Link reader"), request),\n      );',
+      'stubRoutes(routes, log, "link-reader", (request) =>\n        linkReader(dependencies["link-reader"], request),\n      );',
     );
     expect(links).toContain(
       'import type { Dependencies as LinkReaderDependencies } from "../modules/links-api/link-reader.slots.ts";',
@@ -180,12 +180,16 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         start_period: "20s",
       },
     });
-    // Only the edge publishes a port; Stats API stays internal.
+    // Only the edge publishes the HTTP port (Garage, provisioned for Archive, its object port);
+    // Stats API stays internal.
     expect(
       Object.entries(compose.services)
         .filter(([, service]) => service.ports)
-        .map(([name]) => name),
-    ).toEqual(["app-edge"]);
+        .map(([name, service]) => `${name} ${service.ports}`),
+    ).toEqual([
+      `app-edge 127.0.0.1:\${LOCAL_HTTP_PORT:?Set LOCAL_HTTP_PORT}:8080`,
+      `local-objects 127.0.0.1:\${LOCAL_OBJECT_PORT:?Set LOCAL_OBJECT_PORT}:3900`,
+    ]);
     expect(rows(stack).tiles.map((row) => [row.tile, row.edge])).toEqual([
       ["links-api", "/api/links-api/"],
       ["preview-api", "/api/preview-api/"],
@@ -305,16 +309,14 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
 
   it("provisions what the mounted templates use: tables, logins and providers", () => {
     const plan = json(stack, "infra/local.json");
-    // The cache read: a source login, no grants.
-    expect(plan.logins).toEqual([
-      {
-        resource: "previews-db",
-        host: "preview-api",
-        database: "d_previews_db",
-        user: "r_previews_db__preview_api",
-        secret: "sql-previews-db--preview-api",
-      },
-    ]);
+    // The cache read: a source login, no grants (beside the stubs' logins on Links database).
+    expect(plan.logins).toContainEqual({
+      resource: "previews-db",
+      host: "preview-api",
+      database: "d_previews_db",
+      user: "r_previews_db__preview_api",
+      secret: "sql-previews-db--preview-api",
+    });
     expect(plan.grants).toEqual([]);
     const services = json(stack, "compose.yaml").services;
     expect(services["app-preview-api"]).toMatchObject({
@@ -324,10 +326,12 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       },
       secrets: ["sql-previews-db--preview-api", "cache-previews-cache"],
     });
-    // Route stubs provision nothing yet (TP07); Links API's loop needs only the broker (TP06).
-    expect(services["app-links-api"].depends_on).toEqual({
-      "local-broker": { condition: "service_healthy" },
-    });
+    // Links API's stubs use the cache, the database and the broker (client-wiring.test.ts).
+    expect(Object.keys(services["app-links-api"].depends_on)).toEqual([
+      "cache-links-cache",
+      "local-broker",
+      "local-postgres",
+    ]);
     // Multipart: its private schema with the uploads table and jobs outbox, granted to its host.
     // The asset lifecycle shares the schema and the outbox, which also carries its publication.
     const v2Plan = json(v2, "infra/local.json");

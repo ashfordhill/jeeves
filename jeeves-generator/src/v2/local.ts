@@ -1,6 +1,6 @@
 import { generationCapabilities, generationLocalIdentity, generationRuntime } from "@jeeves/spec";
 import { jsonFile, pointerPart, refuse } from "../json.ts";
-import { stubProvisioned, type V2LocalContribution } from "./local-contract.ts";
+import { type StubStore, stubStores, type V2LocalContribution } from "./local-contract.ts";
 import {
   type V2Emitter,
   type V2Gap,
@@ -225,45 +225,55 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       resourceMap.set(id, resource);
     }
   }
-  // Runnable processes: each queue a loop stub consumes is provisioned for the stub's tile, from
-  // its link (tile process contract, sections 5-6). Nothing is written to ownership.
-  for (const process of model.processes ?? [])
-    for (const stub of process.stubs)
-      for (const queue of stub.consumes ?? []) {
-        if (!stubProvisioned(queue.provider)) {
-          gaps.push({
-            id: `provider-${stub.selection}-${queue.element}`,
-            required: true,
-            status: "unsupported",
-            description: `${queue.name} uses the ${queue.provider} provider; a stub's queue is provisioned locally only when its provider is unspecified or self-hosted.`,
-            sourcePaths: [
-              `/${queue.sourcePath.map((part) => pointerPart(String(part))).join("/")}`,
-            ],
-          });
-          continue;
-        }
-        provenance([queue.sourcePath]);
-        const identity = generationLocalIdentity(queue.element);
-        const id = providerName(identity.local);
-        const existing = resourceMap.get(id);
-        if (existing && (existing.kind !== "queue" || existing.mode !== queue.mode))
-          refuse(
-            "LOCAL_RESOURCE_CONFLICT",
-            id,
-            "A stub's queue disagrees with its selected kind/mode.",
-          );
-        const resource = existing ?? {
+  // Runnable processes: every store or channel a stub links to is provisioned for the stub's tile
+  // with the widest access among its links (tile process contract, section 6). A store on another
+  // provider is a required unsupported gap. Nothing is written to ownership.
+  const stubbed: { host: string; store: StubStore; id: string }[] = [];
+  for (const process of model.processes ?? []) {
+    const plan = stubStores(process);
+    gaps.push(...plan.gaps);
+    for (const store of plan.stores) {
+      if (store.unsupported) continue;
+      for (const path of store.sourcePaths) if (!sourcePaths.includes(path)) sourcePaths.push(path);
+      const identity = generationLocalIdentity(store.element);
+      const id =
+        store.kind === "object-store"
+          ? providerName(identity.local, 3, 63)
+          : providerName(identity.local);
+      const existing = resourceMap.get(id);
+      if (existing && (existing.kind !== store.kind || existing.mode !== store.mode))
+        refuse(
+          "LOCAL_RESOURCE_CONFLICT",
           id,
-          kind: "queue",
-          sql: identity.sql,
-          public: false,
-          mode: queue.mode,
-          users: [],
-        };
-        if (!resource.users.some((u) => u.host === process.tile && u.channel === "consume"))
-          resource.users.push({ host: process.tile, authorized: true, channel: "consume" });
-        resourceMap.set(id, resource);
-      }
+          "A stub's store disagrees with its selected kind/mode.",
+        );
+      const resource = existing ?? {
+        id,
+        kind: store.kind,
+        sql: identity.sql,
+        public: false,
+        ...(store.mode && { mode: store.mode }),
+        users: [],
+      };
+      resource.public ||= store.public === true;
+      const queue = store.kind === "queue";
+      const user: Resource["users"][number] = {
+        host: process.tile,
+        authorized: true,
+        ...(queue ? { channel: store.access } : { access: store.access }),
+        ...(store.boundary && { boundary: store.boundary }),
+      };
+      const prior = resource.users.find((u) => u.host === user.host && u.channel === user.channel);
+      if (prior) {
+        if (prior.boundary !== user.boundary)
+          refuse("LOCAL_RESOURCE_CONFLICT", id, "Host/resource publication boundaries disagree.");
+        if (prior.access && user.access && prior.access !== user.access)
+          prior.access = "read-write";
+      } else resource.users.push(user);
+      resourceMap.set(id, resource);
+      stubbed.push({ host: process.tile, store, id });
+    }
+  }
   const resources = sort([...resourceMap.values()]);
   const byKind = (kind: string) => resources.filter((r) => r.kind === kind);
   const required = (id: string, kind?: string) => {
@@ -417,6 +427,31 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     storage: contributions.flatMap(({ value }) => value.storage ?? []),
     search: contributions.flatMap(({ value }) => value.search ?? []),
   };
+  /** One runtime login per host and database: CONNECT and USAGE on public until grants. */
+  const addLogin = (r: Resource, host: string) => {
+    if (logins.some((l) => l.resource === r.id && l.host === host)) return;
+    const db = databases.find((d) => d.resource === r.id);
+    if (!db) throw new Error("Missing selected database");
+    const name = sqlName(`r_${r.sql}__${generationLocalIdentity(host).sql}`);
+    const credential = secret(`sql-${r.id}--${host}`);
+    setupSecrets.push(credential);
+    logins.push({
+      resource: r.id,
+      host,
+      database: db.database,
+      user: name,
+      secret: credential,
+    });
+  };
+  /** A topic's subscriber queue for a consuming host; a work queue is consumed itself. */
+  const addSubscriber = (r: Resource, host: string) => {
+    const topology = broker.find((b) => b.resource === r.id);
+    if (topology?.exchange) {
+      const queue = providerName(`${r.id}--${host}`, 1, 248);
+      if (!topology.queues.includes(queue)) topology.queues.push(queue);
+      topology.queues.sort();
+    }
+  };
   for (const value of [combined]) {
     for (const login of value.logins ?? []) {
       const r = required(login.resource, "database"),
@@ -427,19 +462,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           login.host,
           "SQL login needs explicit normalized access.",
         );
-      if (logins.some((l) => l.resource === r.id && l.host === login.host)) continue;
-      const db = databases.find((d) => d.resource === r.id);
-      if (!db) throw new Error("Missing selected database");
-      const name = sqlName(`r_${r.sql}__${generationLocalIdentity(login.host).sql}`);
-      const credential = secret(`sql-${r.id}--${login.host}`);
-      setupSecrets.push(credential);
-      logins.push({
-        resource: r.id,
-        host: login.host,
-        database: db.database,
-        user: name,
-        secret: credential,
-      });
+      addLogin(r, login.host);
     }
     for (const migration of value.migrations ?? []) {
       required(migration.resource, "database");
@@ -534,12 +557,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           binding.host,
           "Subscriber requires a normalized consume channel.",
         );
-      const topology = broker.find((b) => b.resource === r.id);
-      if (topology?.exchange) {
-        const queue = providerName(`${r.id}--${binding.host}`, 1, 248);
-        if (!topology.queues.includes(queue)) topology.queues.push(queue);
-        topology.queues.sort();
-      }
+      addSubscriber(r, binding.host);
     }
     for (const binding of value.storage ?? []) {
       const r = required(binding.resource, "object-store"),
@@ -571,6 +589,50 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         );
       search.push({ ...mapping });
     }
+  }
+  // Stub rows, beside the templates' own (tile process contract, section 6): a runtime login per
+  // database, with SELECT on what another owner publishes when it may only read; a subscriber per
+  // consumed topic; a key per bucket with the link's read or write.
+  for (const { host, store, id } of stubbed) {
+    const r = required(id, store.kind);
+    const access = user(r, host, store.kind === "queue" ? store.access : undefined);
+    if (store.kind === "database") {
+      addLogin(r, host);
+      if (access.boundary === "published-read")
+        for (const view of views.filter((v) => v.resource === r.id)) {
+          const schema = view.schema ?? "public";
+          if (
+            !grants.some(
+              (g) =>
+                g.resource === r.id &&
+                g.host === host &&
+                g.relation === view.name &&
+                (g.schema ?? "public") === schema,
+            )
+          )
+            grants.push({
+              resource: r.id,
+              host,
+              ...(view.schema && { schema: view.schema }),
+              relation: view.name,
+              kind: "view",
+              privileges: ["SELECT"],
+            });
+        }
+    }
+    if (store.kind === "queue" && store.access === "consume") addSubscriber(r, host);
+    if (
+      store.kind === "object-store" &&
+      !storage.some((s) => s.resource === r.id && s.host === host)
+    )
+      storage.push({
+        resource: r.id,
+        host,
+        secret: `s3-${host}`,
+        read: access.access !== "write",
+        write: access.access !== "read",
+        corsPut: false,
+      });
   }
   for (const db of databases) db.migrations.sort();
   if (broker.length) {
@@ -983,7 +1045,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), and \`pnpm stop\` drains the loops. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes and loops. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, or SELECT on another owner's published views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
           : ""
       }`,
     ),

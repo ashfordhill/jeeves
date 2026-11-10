@@ -56,6 +56,18 @@ export type V2ProcessReport = {
   templates: readonly { selection: string; template: string; level: "mounted" | "placeholder" }[];
   /** Each mounted template's generated hooks file and the hooks that answer "Not implemented". */
   hooks: readonly { selection: string; file: string; hooks: readonly string[] }[];
+  /** Each store or channel its stubs use (tile process contract, section 6): the widest access
+   * among their links, and what is provisioned for it or why it isn't. */
+  stores: readonly {
+    store: string;
+    name: string;
+    kind: string;
+    access: string;
+    boundary?: "published-read";
+    modules: readonly string[];
+    provisioned?: string;
+    unsupported?: string;
+  }[];
 };
 export type V2RenderContext = {
   model: NormalizedGeneration;

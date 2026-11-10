@@ -65,10 +65,9 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     const worker = text(stack, "src/processes/visit-worker.ts");
     expect(worker).toContain(
       [
-        "  const loopLog = createLoopLog(config.tile);",
         "  // Visit consumer: a loop on visits--visit-worker.",
         "  await startModuleLoop(scope, loopLog, config.loops[0], (message) =>",
-        '    visitConsumer(unprovisioned<VisitConsumerDependencies>("Visit consumer"), message),',
+        '    visitConsumer(dependencies["visit-consumer"], message),',
         "  );",
         "  scope.ready();",
       ].join("\n"),
@@ -119,20 +118,23 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       { resource: "visits", exchange: "visits", queues: ["visits--visit-worker"] },
     ]);
     expect(
-      plan.resources.map((item: { id: string; mode: string }) => [item.id, item.mode]),
+      plan.resources
+        .filter((item: { kind: string }) => item.kind === "queue")
+        .map((item: { id: string; mode: string }) => [item.id, item.mode]),
     ).toEqual([
       ["uploaded", "work-queue"],
       ["visits", "topic"],
     ]);
-    expect(plan.providers).toEqual(["local-broker"]);
+    expect(plan.providers).toContain("local-broker");
     const services = json(stack, "compose.yaml").services as Services;
-    for (const name of ["app-links-api", "app-visit-worker"])
+    // The two loops' tiles, and Upload API, which publishes to Uploaded (client-wiring.test.ts).
+    for (const name of ["app-links-api", "app-visit-worker", "app-upload-api"]) {
       expect(services[name]).toMatchObject({
         depends_on: { "local-broker": { condition: "service_healthy" } },
-        secrets: ["broker-password"],
       });
+      expect(services[name]?.secrets).toContain("broker-password");
+    }
     expect(services["setup-broker"]?.command).toEqual(["node", "scripts/broker-init.mjs"]);
-    expect(services["app-upload-api"]?.depends_on).toEqual({});
     // The generated README says what a loop does with a message.
     expect(text(stack, "README.md")).toContain("sends the message to `<queue>.failed`");
     // Off, nothing is provisioned for stubs.
@@ -160,7 +162,11 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     ]);
     expect(
       (json(bundle, "compose.yaml").services as Services)["app-visit-worker"]?.depends_on,
-    ).toEqual({});
+    ).not.toHaveProperty("local-broker");
+    // Its loop still runs, so the design compiles; the stack won't start until it is provisioned.
+    expect(text(bundle, "src/processes/visit-worker.ts")).toContain(
+      "await startModuleLoop(scope, loopLog, config.loops[0], (message) =>",
+    );
   });
 
   it("mounts the asset lifecycle, Video HLS and event counter on their tables and hooks files", () => {
@@ -306,6 +312,8 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       "upload upload_multipart.outbox SELECT,INSERT,UPDATE",
       "view-counter counter_sum.receipts SELECT,INSERT,UPDATE",
       "view-counter counter_sum.totals SELECT,INSERT,UPDATE",
+      // Watch's View count reader stub reads another owner's database: its published view only.
+      "watch counter_sum_public.totals SELECT",
     ]);
     expect(plan.views).toEqual([
       {

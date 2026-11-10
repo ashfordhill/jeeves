@@ -1,8 +1,17 @@
 import { generationCapabilities, generationRuntime } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
+import { type ClientSection, stubClients } from "./client-wiring.ts";
 import { type V2Emitter, v2Compare } from "./registry.ts";
 
 const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
+const clientLibraries: Record<ClientSection, string[]> = {
+  database: ["postgres"],
+  queue: ["delivery", "amqp"],
+  cache: [],
+  objects: ["objects"],
+  search: ["search"],
+  http: [],
+};
 
 /** Dependency libraries install no user-facing feature or application hook. */
 export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2Emitter {
@@ -24,10 +33,15 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       };
       // An HTTP process serves through the shared HTTP service, with or without a template, and a
       // loop stub consumes through the shared consumer.
+      // A stub's clients use the libraries of the stores it is provisioned (tile process contract,
+      // section 6); its cache client uses redis itself.
       for (const process of model.processes ?? []) {
         if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
         if (process.stubs.some((stub) => stub.consumes?.length))
           add(["delivery", "amqp"], ["generation", "processes"]);
+        for (const section of stubClients(process, model.selections, model.processes ?? [])
+          .sections)
+          add(clientLibraries[section], ["generation", "processes"]);
       }
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)

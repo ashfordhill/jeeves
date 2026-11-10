@@ -5,6 +5,7 @@ import {
   type NormalizedGenerationSelection,
   type NormalizedStubModule,
   type StudioComponentTargetKind,
+  stubLinkUse,
   studioComponentDefinitions,
   studioComponentTargetKind,
   studioDefinitions,
@@ -142,21 +143,7 @@ const list = (items: readonly string[]) =>
   items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} or ${items.at(-1)}`;
 
 /** How a link uses its target: the slot's use, narrowed by the link's own read or channel. */
-function linkUse(slot: Slot, connection: Connection): string {
-  const target = connection.target;
-  if (target.kind === "component") return "in-process";
-  const kind = studioComponentTargetKind(target.tile);
-  if (kind === "queue")
-    return slot.use === "publish" || slot.use === "consume"
-      ? slot.use
-      : (target.channel ?? "publish");
-  const store =
-    kind === "database" || kind === "cache" || kind === "search" || kind === "object-store";
-  if (store && (slot.use === "read-write" || slot.use === "uses"))
-    return target.access === "write" ? "read-write" : "read";
-  if (slot.use === "uses") return "request";
-  return slot.use;
-}
+const linkUse = (slot: Slot, connection: Connection) => stubLinkUse(slot.use, connection.target);
 
 /** The minimal interface in `dependencies.ts` for a link of this use to this kind of target. */
 function dependencyType(slot: Slot, connection: Connection): string {
@@ -188,6 +175,33 @@ export function moduleEntryName(module: string) {
   return reserved.has(entry) ? `${entry}Module` : entry;
 }
 
+/**
+ * Each connected slot's property in a stub's `Dependencies`, in slot order: named after the tile
+ * or module it uses (then its slot, then a number), typed by the link's use. A loop stub's
+ * consumed queue is its input, not a dependency (tile process contract, section 4).
+ */
+export function stubProperties(module: NormalizedStubModule, loop: boolean) {
+  const used = new Set<string>();
+  return module.slots.flatMap((slot) =>
+    slot.connections.map((connection) => {
+      const target = connection.target;
+      const id = target.kind === "component" ? target.component : target.element;
+      let property = camel(id);
+      if (used.has(property)) property = `${property}${camel(`-${slot.id}`)}`;
+      for (let n = 2; used.has(property); n += 1) property = `${camel(id)}${n}`;
+      used.add(property);
+      return {
+        slot,
+        connection,
+        property,
+        type: dependencyType(slot, connection),
+        use: linkUse(slot, connection),
+        input: loop && target.kind === "element" && target.channel === "consume",
+      };
+    }),
+  );
+}
+
 function stubFiles(
   selection: NormalizedGenerationSelection,
   module: NormalizedStubModule,
@@ -204,7 +218,7 @@ function stubFiles(
   const description = module.description ?? studioComponentDefinitions[module.kind].description;
   const selectionPath = pointer(selection.sourcePath);
   const modulePath = pointer(module.sourcePath);
-  const used = new Set<string>();
+  const properties = stubProperties(module, loop);
   const types = new Set<string>();
   const members: string[] = [];
   const descriptors: string[] = [];
@@ -219,21 +233,14 @@ function stubFiles(
       members.push(`  // ${slot.id}: not connected (${targets}, ${words(slot.use)}${need})`);
       continue;
     }
-    for (const connection of slot.connections) {
+    for (const { connection, property, type, use, input } of properties.filter(
+      (item) => item.slot === slot,
+    )) {
       const target = connection.target;
-      const id = target.kind === "component" ? target.component : target.element;
-      let property = camel(id);
-      if (used.has(property)) property = `${property}${camel(`-${slot.id}`)}`;
-      for (let n = 2; used.has(property); n += 1) property = `${camel(id)}${n}`;
-      used.add(property);
-      const type = dependencyType(slot, connection);
-      const use = linkUse(slot, connection);
       const what =
         target.kind === "component"
           ? `${target.name} (${kindName(target.module)} in this tile)`
           : `${target.name} (${studioDefinitions[target.tile].name}) through ${target.connection}`;
-      // A loop stub's consumed queue is its input, not a dependency (tile process contract, §4).
-      const input = loop && target.kind === "element" && target.channel === "consume";
       if (!input) types.add(type);
       members.push(
         `  // ${slot.id}: ${what}, ${words(use)}`,

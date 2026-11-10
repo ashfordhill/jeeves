@@ -1,5 +1,6 @@
 import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
+import { type ClientSection, stubClients, stubStoreRows } from "./client-wiring.ts";
 import { httpMounts, importLines, type ProcessMount } from "./http-wiring.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
@@ -17,6 +18,7 @@ const scaffolds = {
   entry: ["src/modules/entry.ts", "src/modules/entry.ts.template"],
   http: ["src/runtime/tile-http.ts", "src/runtime/tile-http.ts.template"],
   loop: ["src/runtime/tile-loop.ts", "src/runtime/tile-loop.ts.template"],
+  clients: ["src/runtime/module-clients.ts", "src/runtime/module-clients.ts.template"],
 } as const;
 
 /** Where each process's entry point lives and how Compose runs it (tile process contract, §2). */
@@ -24,19 +26,61 @@ export function processPaths(tile: string) {
   return { entry: `src/processes/${tile}.ts`, built: `dist/processes/${tile}.js` };
 }
 
-/** What each process mounts: an HTTP process its templates and route stubs, and any process its
- * worker templates and loop stubs. */
+/** What each process mounts: its stubs' clients and dependencies first, then an HTTP process's
+ * templates and route stubs, and any process's worker templates and loop stubs. */
 function mountsOf(model: V2RenderContext["model"]) {
+  const processes = model.processes ?? [];
   return new Map(
-    (model.processes ?? []).map((process) => [
-      process.tile,
-      [
-        ...(process.shape === "http" ? httpMounts(process, model.selections) : []),
-        ...loopMounts(process, model.selections),
-      ],
-    ]),
+    processes.map((process) => {
+      const clients = stubClients(process, model.selections, processes).mount;
+      return [
+        process.tile,
+        [
+          ...(clients ? [clients] : []),
+          ...(process.shape === "http" ? httpMounts(process, model.selections) : []),
+          ...loopMounts(process, model.selections),
+        ],
+      ];
+    }),
   );
 }
+/** The `src/runtime/module-clients.ts` scaffold, keeping only the sections a process uses. */
+function moduleClients(model: V2RenderContext["model"], asset: V2RenderContext["asset"]) {
+  const processes = model.processes ?? [];
+  const used = new Set<ClientSection>();
+  let stubbed = false;
+  for (const process of processes) {
+    const { mount, sections } = stubClients(process, model.selections, processes);
+    stubbed ||= !!mount;
+    for (const section of sections) used.add(section);
+  }
+  if (!stubbed) return [];
+  let source = new TextDecoder().decode(
+    asset(`jeeves-generator/templates/local-v2/assets/${scaffolds.clients[1]}`),
+  );
+  for (const section of clientSections)
+    for (const name of [section, `${section}-import`])
+      source = source.replace(
+        new RegExp(`// @${name}-start\\n[\\s\\S]*?// @${name}-end\\n`, "g"),
+        (block) => (used.has(section) ? block.replace(/^\/\/ @[^\n]+\n/gm, "") : ""),
+      );
+  return [
+    {
+      path: scaffolds.clients[0],
+      content: source,
+      ownership: "generated-scaffold" as const,
+      sourcePaths: ["/generation/processes"],
+    },
+  ];
+}
+const clientSections: readonly ClientSection[] = [
+  "database",
+  "queue",
+  "cache",
+  "objects",
+  "search",
+  "http",
+];
 
 /**
  * A runnable process per application tile, with Runnable processes on. An HTTP process (Service,
@@ -103,13 +147,21 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       const all = [...mounts.values()].flat();
       const http = processes.some((process) => process.shape === "http");
       const looping = all.some((mount) => mount.loops.length);
+      // The views the mounted templates publish, which another owner's stub may read.
+      const views = all.flatMap((mount) => mount.local.views ?? []);
+      // The stubs' clients answer "Not implemented" through the core scaffold too.
+      const clients = moduleClients(model, asset);
       return {
         files: [
           ...processes.map((process) => entryFile(process, mounts.get(process.tile) ?? [])),
           ...all.flatMap((mount) => (mount.hooks ? [mount.hooks.file] : [])),
           // "Not implemented", the 501 wrapper and the loops, beside the processes that use them.
           ...[
-            ...(http || looping ? [scaffolds.core, scaffolds.entry] : []),
+            ...(http || looping
+              ? [scaffolds.core, scaffolds.entry]
+              : clients.length
+                ? [scaffolds.core]
+                : []),
             ...(http ? [scaffolds.http] : []),
             ...(looping ? [scaffolds.loop] : []),
           ].map(([path, source]) => ({
@@ -118,8 +170,11 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
             ownership: "generated-scaffold" as const,
             sourcePaths: ["/generation/processes"],
           })),
+          ...clients,
         ],
-        processes: processes.map((process) => reportRow(process, mounts.get(process.tile) ?? [])),
+        processes: processes.map((process) =>
+          reportRow(process, mounts.get(process.tile) ?? [], views),
+        ),
       };
     },
   };
@@ -140,7 +195,11 @@ function settings(process: NormalizedProcess) {
     : [];
 }
 
-function reportRow(process: NormalizedProcess, mounts: readonly ProcessMount[]): V2ProcessReport {
+function reportRow(
+  process: NormalizedProcess,
+  mounts: readonly ProcessMount[],
+  views: Parameters<typeof stubStoreRows>[1],
+): V2ProcessReport {
   const http = process.shape === "http";
   return {
     tile: process.tile,
@@ -181,6 +240,7 @@ function reportRow(process: NormalizedProcess, mounts: readonly ProcessMount[]):
           ]
         : [],
     ),
+    stores: stubStoreRows(process, views),
   };
 }
 
@@ -269,10 +329,12 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
       ]
     : [
         "await runProcess(async (scope) => {",
-        ...(setup.length
-          ? [...logs, ...indent(setup, 2)]
+        ...logs,
+        ...indent(setup, 2),
+        ...(loops.length
+          ? []
           : [
-              "  // An idle worker holds a timer until it is stopped, so the process stays up.",
+              "  // A worker with no loop holds a timer until it is stopped, so the process stays up.",
               "  const idle = setInterval(() => {}, 2 ** 30);",
               "  scope.own(() => clearInterval(idle));",
             ]),

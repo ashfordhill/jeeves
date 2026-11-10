@@ -24,7 +24,6 @@ import {
   tileProcess,
   uploadOutbox,
 } from "./http-wiring.ts";
-import { stubProvisioned } from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths } from "./module-stubs.ts";
 
 const tileLoop = "../runtime/tile-loop.ts";
@@ -583,8 +582,8 @@ const builders: Record<string, Builder> = {
   "search-projection": searchProjection,
 };
 
-/** A loop stub: one loop per queue it consumes, calling its entry point with each message. Its
- * other dependencies answer "Not implemented" until their stores are provisioned. */
+/** A loop stub: one loop per queue it consumes, calling its entry point with each message and its
+ * dependencies (`client-wiring.ts`). Its queues are provisioned with the tile's other stub stores. */
 function stubLoops(
   process: NormalizedProcess,
   stub: NormalizedProcess["stubs"][number],
@@ -596,15 +595,9 @@ function stubLoops(
   const id = generationLocalIdentity(module.component).local;
   const paths = moduleStubPaths(process.tile, module.component);
   const entry = moduleEntryName(module.component);
-  const dependencies = `${pascal(id)}Dependencies`;
   const from = (path: string) => `../${path.slice("src/".length)}`;
-  const queues = (stub.consumes ?? []).map((queue) => ({
-    ...queue,
-    resource: generationLocalIdentity(queue.element).local,
-    provisioned: stubProvisioned(queue.provider),
-  }));
-  const loops: LoopRow[] = queues.map((queue) => {
-    const names = consumed(queue.resource, queue.mode, process.tile);
+  const loops: LoopRow[] = (stub.consumes ?? []).map((queue) => {
+    const names = consumed(generationLocalIdentity(queue.element).local, queue.mode, process.tile);
     return {
       module: id,
       ...names,
@@ -612,18 +605,15 @@ function stubLoops(
       answers: `${notImplementedLoop(module.name, names.failedQueue, "NOT_IMPLEMENTED")} until it is written; other errors retry ${stubLoop.retryLimit} times`,
     };
   });
-  const provisioned = queues.filter((queue) => queue.provisioned).map((queue) => queue.resource);
   return {
     imports: [
       { from: tileLoop, name: "startModuleLoop" },
-      { from: tileProcess, name: "unprovisioned" },
       { from: from(paths.module), name: entry },
-      { from: from(paths.slots), name: `Dependencies as ${dependencies}`, type: true },
     ],
     setup: loops.flatMap((loop, offset) => [
       `// ${line(module.name)}: a loop on ${loop.queue}.`,
       `await startModuleLoop(scope, loopLog, ${loopLine(first + offset)}, (message) =>`,
-      `  ${entry}(unprovisioned<${dependencies}>(${text(module.name)}), message),`,
+      `  ${entry}(dependencies[${text(id)}], message),`,
       ");",
     ]),
     configure: [],
@@ -631,14 +621,8 @@ function stubLoops(
     started: [],
     routes: [],
     loops,
-    service: {
-      ...service(),
-      dependsOn: [...new Set(provisioned)],
-      broker: provisioned.length > 0,
-    },
-    local: {
-      broker: [...new Set(provisioned)].map((resource) => ({ resource, host: process.tile })),
-    },
+    service: service(),
+    local: {},
   };
 }
 

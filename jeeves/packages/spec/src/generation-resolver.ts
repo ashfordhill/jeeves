@@ -37,7 +37,7 @@ import type {
 } from "./studio-components.ts";
 import { type StudioStoreAccess, studioStoreAccess } from "./studio-links.ts";
 import { type StudioKind, studioDefinitionStatus } from "./studio-model.ts";
-import { moduleSlots } from "./studio-modules.ts";
+import { moduleSlots, studioComponentTargetKind } from "./studio-modules.ts";
 import { validateDesign } from "./validate.ts";
 
 type Path = (string | number)[];
@@ -161,6 +161,8 @@ export type NormalizedProcess = {
     /** A loop stub's queues, one loop each (section 5): the queue tile with its saved mode and
      * provider, and the module link that consumes it. */
     consumes?: NormalizedLoopQueue[];
+    /** Every other store or channel the stub links to, provisioned for its tile (section 6). */
+    stores?: NormalizedStubStore[];
   }[];
 };
 /** A queue a loop stub consumes, worked out from its links as the resolver reads the design. */
@@ -172,6 +174,43 @@ export type NormalizedLoopQueue = {
   link: string;
   sourcePath: Path;
 };
+/**
+ * A store a stub reads or writes, or a queue it publishes to (tile process contract, section 6),
+ * worked out from the link as the resolver reads the design. MA05's ownership is only read: a
+ * database, bucket or index whose authority is another owner gives the stub read only, through
+ * what that owner publishes. Nothing is written.
+ */
+export type NormalizedStubStore = {
+  element: string;
+  name: string;
+  kind: "database" | "cache" | "queue" | "object-store" | "search";
+  /** The link's use (`stubLinkUse`): read, write or read-write for a store, publish for a queue. */
+  access: "read" | "write" | "read-write" | "publish";
+  /** Another owner's authority: read only, through its published views. */
+  boundary?: "published-read";
+  /** The tile's saved provider, engine, queue mode and object access. */
+  provider: string;
+  engine?: string;
+  mode?: "work-queue" | "topic";
+  objects?: "private" | "public";
+  link: string;
+  sourcePath: Path;
+};
+type StubTarget = NormalizedStubModule["slots"][number]["connections"][number]["target"];
+/** How a stub's link uses its target: the slot's use, narrowed by the link's own read or
+ * channel. A queue link that doesn't consume publishes. */
+export function stubLinkUse(use: StudioModuleSlot["use"], target: StubTarget): string {
+  if (target.kind === "component") return "in-process";
+  const kind = studioComponentTargetKind(target.tile);
+  if (kind === "queue")
+    return use === "publish" || use === "consume" ? use : (target.channel ?? "publish");
+  const store =
+    kind === "database" || kind === "cache" || kind === "search" || kind === "object-store";
+  if (store && (use === "read-write" || use === "uses"))
+    return target.access === "write" ? "read-write" : "read";
+  if (use === "uses") return "request";
+  return use;
+}
 export type NormalizedGeneration = {
   version: 1;
   runtime: GenerationSelection["template"];
@@ -989,6 +1028,61 @@ export function resolveGeneration(
 }
 
 /**
+ * A store or published channel a stub links to (tile process contract, section 6), with the
+ * link's access and the tile's saved provider. A consumed queue is the stub's loop instead
+ * (`consumes`); identity, CDN, external API and application tiles are never provisioned.
+ */
+function stubStore(
+  design: DesignDocument,
+  host: string,
+  use: StudioModuleSlot["use"],
+  target: StubTarget,
+  link: string,
+  sourcePath: Path,
+): NormalizedStubStore | undefined {
+  if (target.kind !== "element" || target.channel === "consume") return undefined;
+  const settings = design.architecture?.studio?.elements.find(
+    (entry) => entry.element === target.element,
+  )?.settings;
+  if (
+    settings?.kind !== "database" &&
+    settings?.kind !== "cache" &&
+    settings?.kind !== "queue" &&
+    settings?.kind !== "object-store" &&
+    settings?.kind !== "search"
+  )
+    return undefined;
+  const base = {
+    element: target.element,
+    name: target.name,
+    provider: settings.provider,
+    link,
+    sourcePath: structuredClone(sourcePath),
+  };
+  if (settings.kind === "queue")
+    return { ...base, kind: "queue", access: "publish", mode: settings.mode };
+  if (settings.kind === "cache")
+    return { ...base, kind: "cache", access: storeAccess(use, target), engine: settings.engine };
+  // MA05's ownership, only read: another owner's database, bucket or index is read only.
+  const ownership = designOwnership(design);
+  const authority = ownership.resources.find((entry) => entry.element === target.element);
+  const owner = ownership.roles.find((entry) => entry.element === host)?.owner;
+  const foreign = !!authority && authority.authority !== owner;
+  const access = foreign ? ("read" as const) : storeAccess(use, target);
+  const narrowed = { ...base, access, ...(foreign && { boundary: "published-read" as const }) };
+  return settings.kind === "object-store"
+    ? { ...narrowed, kind: "object-store", objects: settings.access }
+    : { ...narrowed, kind: settings.kind, engine: settings.engine };
+}
+const storeAccess = (
+  use: StudioModuleSlot["use"],
+  target: StubTarget,
+): "read" | "write" | "read-write" => {
+  const access = stubLinkUse(use, target);
+  return access === "write" || access === "read-write" ? access : "read";
+};
+
+/**
  * Every application tile's process, sorted by ID (tile process contract, sections 2 and 4),
  * including tiles with no modules. An HTTP limit comes from a template on the tile that consumes
  * it, else it is the fixed initial value.
@@ -1074,6 +1168,12 @@ function normalizedProcesses(
             ];
           }),
         );
+        const stores = item.module.slots.flatMap((slot) =>
+          slot.connections.flatMap(
+            ({ link, sourcePath, target }) =>
+              stubStore(design, tile, slot.use, target, link, sourcePath) ?? [],
+          ),
+        );
         return [
           {
             module: item.module.component,
@@ -1081,6 +1181,7 @@ function normalizedProcesses(
             ...(consumes.length
               ? { role: "loop" as const, consumes }
               : { role: shape === "http" ? ("route" as const) : ("library" as const) }),
+            ...(stores.length && { stores }),
           },
         ];
       }),

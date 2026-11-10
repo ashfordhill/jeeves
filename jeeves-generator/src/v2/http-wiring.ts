@@ -556,8 +556,8 @@ const templates: Record<
   "search-query": searchQuery,
 };
 
-/** A route stub: any method on /modules/<module> and below, with dependencies that answer
- * "Not implemented" until their stores are provisioned. */
+/** A route stub: any method on /modules/<module> and below, called with its dependencies
+ * (`client-wiring.ts`). */
 function routeStub(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
@@ -567,20 +567,17 @@ function routeStub(
   const id = generationLocalIdentity(module.component).local;
   const paths = moduleStubPaths(process.tile, module.component);
   const entry = moduleEntryName(module.component);
-  const dependencies = `${pascal(id)}Dependencies`;
   const from = (path: string) => `../${path.slice("src/".length)}`;
   const answers = `501 ${text(`Not implemented: ${module.name}`)} until it is written`;
   return {
     imports: [
       { from: tileHttp, name: "stubRoutes" },
-      { from: tileProcess, name: "unprovisioned" },
       { from: from(paths.module), name: entry },
-      { from: from(paths.slots), name: `Dependencies as ${dependencies}`, type: true },
     ],
     setup: [],
     configure: [
       `stubRoutes(routes, log, ${text(id)}, (request) =>`,
-      `  ${entry}(unprovisioned<${dependencies}>(${text(module.name)}), request),`,
+      `  ${entry}(dependencies[${text(id)}], request),`,
       ");",
     ],
     initialize: [],

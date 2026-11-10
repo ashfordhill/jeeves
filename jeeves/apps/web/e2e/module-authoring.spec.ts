@@ -615,12 +615,21 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
     expect(preview.report.processes).toMatchObject({
       runnable: true,
       tiles: [
-        { tile: "microservice", service: "app-microservice", shape: "http", loops: [] },
+        { tile: "microservice", service: "app-microservice", shape: "http", loops: [], stores: [] },
         {
           tile: "worker-service",
           service: "app-worker-service",
           shape: "worker",
           loops: [{ queue: "queue-or-topic", module: "worker-service-event-consumer" }],
+          // The queue its consumer stub links to is provisioned for it (TP07).
+          stores: [
+            {
+              store: "queue-or-topic",
+              kind: "queue",
+              access: "consume",
+              provisioned: "RabbitMQ work queue queue-or-topic and its .failed",
+            },
+          ],
         },
       ],
     });
@@ -631,6 +640,7 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(1)).toContainText("Worker service app-worker-service · worker");
     await expect(rows.nth(1)).toContainText("loop on queue-or-topic");
+    await expect(rows.nth(1)).toContainText("Provisioned: Queue or topic (queue, consume)");
     await expect(rows.nth(0)).toContainText(
       "Microservice app-microservice · HTTP, public · at /api/microservice/",
     );

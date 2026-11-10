@@ -4,7 +4,8 @@
 revises TP03–TP08 below. TP02 is done (usable connection dots). TP03 is done (IDs follow names).
 TP04 is done (the option and the process skeleton). TP05 is done (HTTP wiring: the edge, template
 routes with hooks files, stub routes). TP06 is done (consume loops: stub and template loops, the
-queues they consume, `.failed` with a log line). TP07–TP09 have not started.
+queues they consume, `.failed` with a log line). TP07 is done (provisioning for stubs: every store
+a stub links to, `module-clients.ts` with a startup probe each). TP08–TP09 have not started.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — A runnable process per tile](../../HUMAN_FEEDBACK.md)
 · Follows [module authoring](../module-authoring/units.md) and its [review](../module-authoring/review.md),
 including contract question 6.

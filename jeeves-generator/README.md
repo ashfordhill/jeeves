@@ -199,8 +199,8 @@ dependency-only registry). For each stub module it writes:
   (database read or read-write, queue publish or consume, object read or write, cache, search
   read or write, token verifier, HTTP target, module call).
 
-Stubs import no template library and provision nothing, so a stub-only export installs and
-builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
+Stubs import no template library and, with Runnable processes off, provision nothing, so a
+stub-only export installs and builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
 Existing preservation applies: export writes only to a new directory, and `planFileWrites`
 refuses an edited `<module>.ts` with `EXISTING_OUTPUT_CHANGED`; export afresh and carry your
 bodies over.
@@ -229,7 +229,7 @@ it.
 `src/processes/<id>.ts` with its compiled `config` (settings, listen address, and its `templates`
 and `stubs` tables) and contributes a `local.services` entry: `app-<id>` running
 `node dist/processes/<id>.js`, profile `application`, `init: true`, no restart policy, no
-published port, `depends_on` only on the providers its mounted templates use, and a healthcheck
+published port, `depends_on` only on the providers its templates and stubs use, and a healthcheck
 on the ready marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering
 `GET /healthz` (200 once ready, 503 before and while draining), its module routes, and 404
 elsewhere; any process runs its loops, and a process with nothing to run holds an idle timer.
@@ -239,7 +239,8 @@ clients and pools. The foundation accepts process hosts with no selection, close
 `application-services` for them, and substitutes `scripts/local.mjs`'s startup gate (exactly
 once, or it refuses) so `first-run` and `start` read `report.processes.runnable` instead of
 `applicationComplete`. Composition and primitives also emit `src/runtime/process.ts`, `http.ts`
-and `admission.ts` when a process needs them, and `amqp.ts` and `delivery.ts` for a loop stub.
+and `admission.ts` when a process needs them, `amqp.ts` and `delivery.ts` for a loop stub, and
+the libraries of the stores a process's stub clients use (below).
 
 **The edge.** When a public HTTP process exists, the processes owner contributes an `edge` row per
 public host and the foundation writes `app-edge`: the nginx pinned in `assets/providers.json`,
@@ -255,9 +256,9 @@ the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a ser
 - A **route stub** (any stub in an HTTP tile that consumes no queue) answers any method on
   `/modules/<module id>` and every path below it. Its `<module>.ts` takes
   `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; the types live in the
-  scaffold `src/modules/entry.ts`. Its `Dependencies` are placeholders that answer "Not
-  implemented: <property> for <module> (not provisioned yet)" until stub provisioning (TP07).
-  Library stubs (a Worker's stubs that consume nothing) keep their files and are only compiled.
+  scaffold `src/modules/entry.ts`. Its `dependencies` are real clients (provisioning for stubs,
+  below). Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
+  and get their clients, and are called only through another module's link.
 - **Multipart uploads** is mounted on its real libraries: its private schema (named from the
   selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in
   migration `100-<selection>.sql`, granted to its host; S3 control and signing clients; the
@@ -306,14 +307,58 @@ except a lost broker connection (it drains and exits 1, with no restart). `pnpm 
 each subscription, cuts a retry wait short (the message is republished for its next attempt) and
 settles the message in hand before closing; undelivered messages stay in their queue.
 `src/runtime/tile-loop.ts` holds the loop and its handlers, `tile-http.ts` the 501 wrapper and
-route stubs, and `tile-process.ts` `NotImplemented`, the log and `unprovisioned`.
-
-With the option on, the foundation provisions each queue a loop stub consumes, from its link:
-the queue (or topic and the stub tile's subscriber) and both `.failed` queues, with the broker
-credential and `depends_on` for its process. A queue whose saved provider is neither unspecified
-nor self-hosted isn't provisioned and is a required `unsupported` gap
-(`provider-<module>-<queue>`), so the stack is not runnable. Two loops in one tile on one topic
+route stubs, and `tile-process.ts` `NotImplemented` and the log. Two loops in one tile on one topic
 share its subscriber queue, so each message reaches one of them.
+
+**Provisioning for stubs** (contract §6). With the option on, every store or channel a stub
+links to is provisioned for its tile. The resolver works the facts out as it reads the design:
+each loop stub's `consumes` and each stub's `stores` (`NormalizedStubStore`: the tile, its kind,
+the link's access by `stubLinkUse` — read, write or read-write for a store, publish for a queue
+it doesn't consume — and its saved provider, engine, queue mode and object access). MA05's
+ownership is only read: a database, bucket or index whose authority is another owner gives the
+stub read only (`boundary: "published-read"`). Nothing is written to ownership and nothing
+derives. `stubStores` (`local-contract.ts`) merges a tile's links per store, with the widest
+access, and the foundation adds them beside the templates' own resources, through the same setup
+scripts:
+
+| Store | Provisioned for each stub tile |
+| --- | --- |
+| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public` only: stubs own no tables. Read only of another owner's database: SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
+| Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
+| Cache | `cache-<id>` (Valkey) and its password |
+| Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
+| Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work |
+
+Each process gets its credentials and `depends_on` its providers healthy. A store whose saved
+provider isn't unspecified or self-hosted, or whose engine isn't unspecified or the local one
+(PostgreSQL, Redis-compatible, OpenSearch), isn't provisioned: a required `unsupported` gap
+`provider-<module>-<tile>`, so the stack isn't runnable. Identity isn't provisioned for stubs
+(a template that binds one holds its tile's only Auth guard), and nor are CDN or External API
+tiles.
+
+**Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind
+the stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
+`databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
+`execute`), `queuePublisher` (publisher confirms; each message gets a fresh ID), `cacheClient`
+(`get`, `set` with a TTL, `delete`; it reconnects in the background), `objectClient` (`get`,
+`undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
+`httpTarget` (another tile's process at `http://app-<id>:3000`, with no probe or `depends_on`).
+Each client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the
+broker and a confirm channel, `PING`, `HeadBucket` (or, for a write-only key, opening and
+aborting a multipart upload) and cluster health. Each logs one JSON line
+(`{"event":"probe","tile","client","kind","check","result":"ok"}`); a failure logs the error and
+fails startup, so a healthy process has reached every store it uses with its own credentials.
+The process file builds one client per store before its loops subscribe and its service listens,
+then each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls
+the module it names (a route stub with the caller's input as its request, a library stub with
+none). What isn't provisioned (another provider, an Identity, a CDN or External API, a tile with
+no process, a template's part) is `unavailable(...)`: every call answers "Not implemented:
+<tile> for <module> (<why>)". A stub's own "Not implemented" still answers 501 or goes to
+`.failed`.
+
+**Credentials** are generated at first run, as for templates: `setup.mjs` writes the
+passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is
+in the export or the repository. `pnpm stop` and `pnpm start` keep them and the volumes.
 
 Each mounted lead gets `src/modules/<host>/<lead>.hooks.ts` (a `generated-extension`): one
 factory over the template's generic resources whose every hook throws `NotImplemented("<hook>
@@ -338,7 +383,9 @@ With the option on, the manifest records `"processes": true` beside `runtime`, a
 gains `processes`: `runnable` (no findings, no `unsupported` gap and a service for every
 application tile; `applicationComplete` keeps its meaning) and `tiles`, each with its service,
 shape, exposure, edge path, entry point, settings with their origin, routes and loops (each with
-what it answers), templates (`mounted` or `placeholder`) and hooks files. With it off, nothing
+what it answers), templates (`mounted` or `placeholder`), hooks files and `stores` (each store or
+channel its stubs use, the access, the modules, and what is `provisioned` for it or why it is
+`unsupported`). With it off, nothing
 changes: `processes-off.test.ts` pins the export of frozen v2, the v2 module design with its
 values and the stub stack (`spec/src/fixtures/stub-stack.ts`) as they were before the option
 existed, every payload byte and the provenance files apart from their source and emitter
@@ -353,8 +400,9 @@ To run one, export it into a new directory, then, in it, `pnpm install --frozen-
 "fetch('http://app-<other>:3000/healthz').then(r=>r.text()).then(console.log)"`. A loop's log
 lines are in `docker compose --profile '*' logs app-<id>`, and `docker compose --profile '*' exec
 local-broker rabbitmqctl list_queues name messages consumers` shows each queue's consumer and
-what reached `.failed`. `pnpm stop` drains every process (exit 0) and `pnpm start` brings them
-back healthy, with the `.failed` messages kept.
+what reached `.failed`. A process's probe lines are in its log too. `pnpm stop` drains every
+process (exit 0) and `pnpm start` brings them back healthy, with the `.failed` messages,
+credentials and volumes kept.
 
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
 hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares

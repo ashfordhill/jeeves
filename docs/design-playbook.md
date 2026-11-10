@@ -1458,3 +1458,16 @@ retries, bounded and backed off, so one bad message can't pin a loop. A consumer
 input, not a dependency: draw it as the module's one consume link, and give each tile that must
 see every event on a topic its own consumer tile, because consumers of one topic inside one tile
 share that tile's subscriber queue and each event reaches only one of them.
+
+## 2026-11-10 TP07: a link is a grant, and healthy means every store answered
+
+Each link a module draws to a store already says what the tile may do there: read, write, both,
+publish or consume. Provision exactly that, per tile and from the widest of its modules' links,
+without asking again in a form: a login with no table rights for a database it only connects
+to, a bucket key that reads or writes, the queue or the topic's subscriber. Ownership narrows it:
+a store another owner's template writes is read only, through the views that owner publishes. A
+store on a provider the local stack can't run is a visible gap, not a silent substitute. Then
+make "healthy" mean "reached": one bounded startup check per client, with what its access
+allows (a write-only bucket key can't list or head the bucket), so a process that is up has
+answered every store it uses with its own credentials, and a wrong grant fails at start, not on
+the first request.

@@ -128,7 +128,8 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
   );
 }
 
-/** Each application tile's process: its service, shape, edge path and what it answers. */
+/** Each application tile's process: its service, shape, edge path, what it answers and what is
+ * provisioned for its stubs. */
 function GenerationProcesses({
   processes,
 }: {
@@ -151,6 +152,10 @@ function GenerationProcesses({
             ...row.routes.map((route) => `${route.method} ${route.path}`),
             ...row.loops.map((loop) => `loop on ${loop.queue}`),
           ];
+          const store = (item: (typeof row.stores)[number]) =>
+            `${item.name} (${item.kind}, ${item.access})`;
+          const provisioned = row.stores.filter((item) => item.provisioned);
+          const unsupported = row.stores.filter((item) => item.unsupported);
           return (
             <li key={row.tile}>
               {row.name}{" "}
@@ -159,6 +164,10 @@ function GenerationProcesses({
                 {row.edge ? ` · at ${row.edge}` : ""}
               </span>
               <p>{answers.length ? answers.join(", ") : "Idle until stopped"}</p>
+              {provisioned.length ? <p>Provisioned: {provisioned.map(store).join(", ")}</p> : null}
+              {unsupported.length ? (
+                <p>Not provisioned: {unsupported.map(store).join(", ")}</p>
+              ) : null}
             </li>
           );
         })}

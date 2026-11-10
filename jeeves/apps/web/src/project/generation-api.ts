@@ -79,6 +79,15 @@ export type V2GenerationPreview = {
         edge?: string;
         routes: { method: string; path: string }[];
         loops: { queue: string; module: string }[];
+        /** Each store or channel its stubs use: what is provisioned for it, or why it isn't. */
+        stores: {
+          store: string;
+          name: string;
+          kind: string;
+          access: string;
+          provisioned?: string;
+          unsupported?: string;
+        }[];
       }[];
     };
   };

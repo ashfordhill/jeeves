@@ -189,6 +189,73 @@ describe("Runnable processes (tile process contract, section 1)", () => {
     ]);
   });
 
+  it("works out every other store and channel a stub links to, with the link's access", () => {
+    const rows = resolveGeneration(run(stubStackDesign(), processes(true)).design, installed).model
+      ?.processes;
+    const stores = (tile: string, module: string) =>
+      rows
+        ?.find((row) => row.tile === tile)
+        ?.stubs.find((stub) => stub.module === module)
+        ?.stores?.map((store) =>
+          [store.element, store.kind, store.access, store.provider, store.engine ?? store.mode]
+            .filter((item) => item !== undefined)
+            .join(" "),
+        );
+    // Links API created Links database, so its Data access reads and writes; Visit worker's only
+    // reads. A queue it doesn't consume is published to; a consumed one is its loop's.
+    expect(stores("links-api", "link-reader")).toEqual([
+      "links-db database read-write unspecified unspecified",
+    ]);
+    expect(stores("visit-worker", "visit-writer")).toEqual([
+      "links-db database read unspecified unspecified",
+    ]);
+    expect(stores("links-api", "limiter")).toEqual([
+      "links-cache cache read-write unspecified unspecified",
+    ]);
+    expect(stores("links-api", "visit-publisher")).toEqual([
+      "visits queue publish unspecified topic",
+    ]);
+    expect(stores("upload-api", "upload-publisher")).toEqual([
+      "uploaded queue publish unspecified work-queue",
+    ]);
+    expect(stores("upload-api", "archive-upload")).toEqual([
+      "archive object-store read-write unspecified",
+    ]);
+    expect(stores("visit-worker", "archiver")).toEqual(["archive object-store read unspecified"]);
+    expect(stores("stats-api", "stats-search")).toEqual([
+      "stats-index search read unspecified unspecified",
+    ]);
+    // Neither a module link nor an application tile is a store, nor is a consumed queue.
+    for (const module of ["link-cache", "stats-caller", "redirector", "upload-consumer"])
+      expect(stores("links-api", module)).toBeUndefined();
+    const archive = rows
+      ?.find((row) => row.tile === "upload-api")
+      ?.stubs.find((stub) => stub.module === "archive-upload")?.stores?.[0];
+    expect(archive).toMatchObject({ name: "Archive", objects: "private" });
+    expect(archive?.sourcePath.slice(0, 3)).toEqual([
+      "architecture",
+      "studio",
+      "componentConnections",
+    ]);
+    // MA05's ownership is only read: View counts belongs to the event counter's owner, so Watch's
+    // View count reader reads it only through what that owner publishes.
+    const v2 = resolveGeneration(run(v2ModuleDesign(), processes(true)).design, installed).model;
+    const watch = v2?.processes?.find((row) => row.tile === "watch");
+    expect(watch?.stubs.map((stub) => stub.stores)).toEqual([
+      [
+        expect.objectContaining({
+          element: "view-counts",
+          kind: "database",
+          access: "read",
+          boundary: "published-read",
+          provider: "self-hosted",
+          engine: "postgresql",
+        }),
+      ],
+      [expect.objectContaining({ element: "view-events", kind: "queue", access: "publish" })],
+    ]);
+  });
+
   it("needs the host to install it, and a design built from modules", () => {
     const on = run(stubStackDesign(), processes(true)).design;
     const without = { ...installed, processes: undefined };
