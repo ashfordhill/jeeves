@@ -1304,3 +1304,25 @@ have no arrows; marking the partners' rows with a lighter border shows them with
 inside a 32px row. The open row needs a fill and bold text, not just a border: a blue border alone
 read the same as its partners' in dark mode. Marks are live view state, so they come from the
 canvas, never from the tile face an export draws.
+
+## 2026-11-09 UI09: modules read when their lines reach them, not when they are bigger
+
+The readability pass changed only faces and CSS; every layout, and the Overview export, stayed
+byte-identical. What made a container read at 100%: rows framed as clear boxes (a 50% line-colour
+border, not 30%), a neutral header divider in the line colour rather than a faint family-colour
+rule, 14px row names like a tile's, and **port marks**. A line ends at the container's frame, 10px
+from its row's box, so it looked as if it hit the container at about that row; a short stub in the
+line's colour from the frame to the row makes the attachment explicit, as the owner's sketch draws
+it. Marks must hold in both themes: a partner row needs a tint as well as its border, and the
+dark paper needs a stronger open-row fill (55% against 32% on light). Chrome must stay off the
+content it serves: a selected container's pull tabs now sit outside its frame, beside the rows
+instead of over their ends. Bigger geometry does not buy readability at the fit: a 64px row pitch
+(with a 32px header) made YouTube 1,920×1,984 instead of 1,920×1,600, so the fit drops by about a
+fifth and every other tile reads smaller, while 224px containers saved only 96px of YouTube's width
+and cut "Publication outbox publisher" short. The fit is for the shape; reading the rows takes
+about 0.6. What still reads badly is layout, not faces: a row's line to a store upstream loops
+round its container (v2's Video lifecycle worker to the Metadata database, 1,280px and 1,312px,
+where the sketch has two short lines to a database on the right), two rows into one store can
+cross, and **Choose relationship** lists one relationship once per drawn line. A form inside the
+inspector should look like its other sections: the system page's feature fieldset now has the
+Options/Modules heading, field and button styles instead of the browser's.

@@ -91,10 +91,13 @@ never saved to the design, its revision or history, the blueprint or chat. Switc
 selection, including an open module, animates every tile to its new place and then fits.
 
 In Detailed, an application tile with at least one module is a **container** (`detailedView.ts`,
-`tiles/ContainerTile.tsx`): 256px wide, a header with the kind icon in its family colour and the
-name on one line, then one 32px row per module in module order. A row shows the module's icon in
-its family colour and its name, cut short with an ellipsis; the full name is its tooltip. A
-warning mark sits in the header's corner. Every other tile keeps its Overview size and face.
+`tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its family colour and
+the name on one line above a divider, then one framed row per module, 32px apart, in module order.
+A row shows the module's icon in its family colour and its name, cut short with an ellipsis; the
+full name is its tooltip. Lines end at the container's frame; where a row has a drawn line, a
+**port mark** (a short stub in the line's colour) joins the frame to the row on that side, so the
+line visibly reaches its module. A warning mark sits in the header's corner. Every other tile keeps
+its Overview size and face.
 
 - Each module link to a tile is drawn from (or into) that module's row, in the relationship's own
   direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
@@ -108,23 +111,59 @@ warning mark sits in the header's corner. Every other tile keeps its Overview si
   (Transcoder) to Transcoded videos"). The X removes the whole relationship, with the same
   refusals and confirmation as in the Overview; module links that use it go with it.
 - Containers are tiles: click one's header to select it, and its pull tabs and X work as on any
-  tile. Each row is its module, a button named "Open <module> in <tile>": a click selects the
-  tile and opens the module's page in the inspector, as its card does. A row and a card are the
-  same module: while one is open, from either, its row is filled in the selection colour and only
-  the lines drawn from or into that row turn blue (not the tile's other lines, nor another
-  module's line of the same relationship); the rows of the modules it links with inside the tile
-  get a blue border. The tile keeps its pull tabs and X. Back, another tile or line, or empty
-  paper clears the marks; the Overview keeps only the tile selected, with all its lines blue.
+  tile. A container's pull tabs sit just outside its frame, beside its rows rather than over them;
+  a selected container's port marks turn blue with its lines. Each row is its module, a button
+  named "Open <module> in <tile>": a click selects the tile and opens the module's page in the
+  inspector, as its card does. A row and a card are the same module: while one is open, from
+  either, its row is filled in the selection colour and ringed, its name bold, and only the lines
+  drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
+  another module's line of the same relationship); the rows of the modules it links with inside
+  the tile get a blue border and a light blue tint. The tile keeps its pull tabs and X. Back,
+  another tile or line, or empty paper clears the marks; the Overview keeps only the tile
+  selected, with all its lines blue.
   In Hand mode rows let the pointer through, so a drag pans and nothing opens. A row reached by
   keyboard shows a focus outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
   positions: switching back finds the Overview exactly as it was, and an edit made in Detailed
   lays the Overview out as if it had been made there.
-- Detailed is larger, so it fits smaller. YouTube draws about 1,920×1,600px and fits at 0.34 at
-  1440×900 with at most one rail open (0.29 with both) and at 0.30 at 1280×800 (0.23). The v2
-  YouTube field design fits at 0.30 at 1440×900 with the chat open (0.38 with no rail, 0.21 with
-  both) and at 0.26 at 1280×800; with both rails open there it stops at the zoom floor, 0.20, and
-  no longer fits whole. Zoom in to read the rows.
+- Detailed is larger, so it fits smaller ([Size and fit](#size-and-fit)). At the fit the rows'
+  names are about 3–5px tall; zoom in to read them (they read from about 0.6, fully at 100%).
+
+### Size and fit
+
+Detailed draws module hosts as containers, wider and taller than a tile, and more lines, so it is
+larger and fits smaller. Drawn size (`layout.bounds`), total line length and line crossings, with real ELK
+on a fresh layout:
+
+| Design | View | Lines | Drawn size | Line length | Crossings |
+| --- | --- | ---: | --- | ---: | ---: |
+| TinyURL extended | Overview | 12 | 1,024×832 | 2,752 | 0 |
+| | Detailed | 12 | 1,280×800 | 3,008 | 1 |
+| Marketplace | Overview | 23 | 1,280×1,472 | 6,912 | 1 |
+| | Detailed | 25 | 1,568×1,536 | 8,576 | 4 |
+| YouTube | Overview | 25 | 1,504×1,376 | 8,864 | 1 |
+| | Detailed | 26 | 1,920×1,600 | 12,608 | 4 |
+| YouTube v2 field design | Overview | 27 | 1,920×1,297 | 10,080 | 3 |
+| | Detailed | 30 | 2,528×1,441 | 17,536 | 12 |
+
+Fit zooms, which the canvas takes by itself. With one rail open a design that fits by height keeps
+its rails-closed zoom; TinyURL extended's Detailed (0.61 with the chat open at 1440×900) and both of
+v2's views fit by width and drop a little:
+
+| Design | View | 1440×900, rails closed | 1440×900, both open | 1280×800, rails closed | 1280×800, both open |
+| --- | --- | ---: | ---: | ---: | ---: |
+| TinyURL extended | Overview | 0.67 | 0.56 | 0.59 | 0.45 |
+| | Detailed | 0.70 | 0.44 | 0.62 | 0.35 |
+| Marketplace | Overview | 0.37 | 0.37 | 0.32 | 0.32 |
+| | Detailed | 0.35 | 0.35 | 0.31 | 0.28 |
+| YouTube | Overview | 0.39 | 0.38 | 0.35 | 0.30 |
+| | Detailed | 0.34 | 0.29 | 0.30 | 0.23 |
+| YouTube v2 field design | Overview | 0.43 | 0.28 | 0.37 | 0.23 |
+| | Detailed | 0.38 | 0.21 | 0.33 | 0.20 |
+
+v2's Detailed with both rails at 1280×800 stops at the zoom floor, 0.20: the fit's margin no longer
+fits, but every tile and line is still inside the canvas. At these zooms a row's 14px name is 3–5px
+tall: the fit shows the shape, and reading the rows takes about 0.6.
 
 ## Diagram PNG export
 
@@ -1020,13 +1059,19 @@ and all twenty components, with nothing omitted and no findings.
 - The inspector neither lists nor edits module links, and the Detailed view draws only those to
   other tiles: a module's links are preserved, preset-bound or made through chat (including a link
   between two modules of one tile, "Supplies code", which no view draws; an open module's row
-  marks its partners). A selected tile's pull tabs sit over the right end of its container's rows,
-  so there a click takes the tab, not the row.
+  marks its partners). A selected container's pull tabs sit just outside its frame, over the first
+  36px of the lines leaving its middle rows, and its red X sits on the header, over the middle of
+  a long name ("Video lifecycle worker").
 - In Detailed, two rows of one container that write one store come back to it as separate lines
   and can cross each other (YouTube's Packager and Thumbnailer into Transcoded videos; twice in the
   v2 field design). A row's line to a store upstream of its tile loops round the container (v2's
   Lifecycle writer and Publication outbox publisher to the Metadata database run over and under
-  the Video lifecycle worker), unlike the owner's sketch, where the database sits after it.
+  the Video lifecycle worker, 1,280px and 1,312px), unlike the owner's sketch, where the database
+  sits after it: a store several tiles use sits beside its earlier users
+  ([Layout](#layout-and-navigation)), and the worker is a later one. The same rule loops an open
+  module's line a long way round.
+- **Choose relationship** lists every drawn line under the click, so one relationship drawn twice
+  (Packager and Thumbnailer into Transcoded videos) appears twice; both entries select it.
 - An unload flush is an attempt, not a durability guarantee.
 - Live chat quality with the lane-canvas instructions has not been evaluated; only the scripted
   test model has run. Selecting an action sends chat no identity, so "rename this" with an action

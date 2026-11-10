@@ -7089,3 +7089,75 @@ partners, dark mode at 1280, the focus outline).
 - An open module's line can be a long loop. The Packager's runs up and round to Transcoded videos,
   and the Lifecycle writer's runs up over the worker to Metadata database. Arrowheads still stop
   at the frame, 10px from the row box.
+
+## 2026-11-09 — UI09: tune detailed view readability
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md), a readability pass on the Detailed view and
+the inspector: faces and CSS only, no behaviour, layout, schema, blueprint, chat or generation
+change. Before/after values, images and the ranked open issues are in
+[evidence/ui09](plans/ui-overhaul/evidence/ui09/README.md).
+
+- **Containers** (`tiles/ContainerTile.tsx`, `canvas.css`): row frames at 50% line colour (was
+  30%); row boxes 26px (was 24) with 14px names (was 13); header name 15px (was 14) above a 2px
+  divider in the line colour at 40% (was 1.5px family colour at 45%). **Port marks**: a row with a
+  drawn line carries `data-ports="in|out|in out"`, drawn as a 2.75px stub (the line width) from the
+  frame to the row's box, so a line that ends at the frame visibly reaches its module. They turn
+  blue for the open row, and for a selected container without an open module (`data-open` on the
+  container says one of its rows is open). Partner rows: full selection-colour border, inner ring,
+  10% tint (18% dark); open row fill 55% in dark (32% light). A container's pull tabs use
+  `--board-tab-peek: 36px` (app CSS on container nodes only), so they sit outside the frame
+  instead of over the rows' right ends.
+- **Inspector**: module cards tighter (padding 8/10, gap 6) with a line-colour border that shows
+  on the dark rail; the section rules likewise. The system page's **Add a supported feature**
+  (`PresetAttachment`) is a section like Options/Modules (`.studio-feature`: rule, 13px legend,
+  `studio-form-field` select, full-width `.studio-feature-action` buttons); same elements, labels
+  and order.
+- **Kept**: width 256, header 48, pitch 32. A 64px pitch made YouTube 1,920×1,984 (from 1,600
+  tall) and v2 2,528×1,824; 224px containers saved 96px of YouTube's width and cut "Publication
+  outbox publisher" short. All Overview and Detailed layouts of the four designs are byte-identical
+  to `6bf1fda`, so UI06's metrics stand (now in `studio.md`, Size and fit).
+- **Overview identity**: a mouse export of my YouTube study at 1440×900 gave PNG
+  `472a4c8c…dc9f` (UI07's hash) before and after, with identical details and tile positions. No
+  board file changed; `elkGraph.golden.json` passes, and a scratch dump of the Overview and
+  Detailed layouts of the four designs (real ELK) is byte-identical to the parent's.
+- Tests: `tiles/ContainerTile.test.tsx` (1): port marks follow `in`/`out`, the open/partner marks
+  and `data-open` come only from the live context, an export face has marks for ports only.
+- Docs: `studio.md` (Detailed view, new Size and fit tables, Limits), playbook lesson,
+  HUMAN_FEEDBACK resolution update, plan status line.
+
+**Fit zooms (Detailed; rails closed / both open, 1440×900 then 1280×800):** TinyURL extended
+0.70/0.44, 0.62/0.35; Marketplace 0.35/0.35, 0.31/0.28; YouTube 0.34/0.29, 0.30/0.23; v2
+0.38/0.21, 0.33/0.20 (floor; every tile and line still inside the canvas, so not cut off as UI07
+reported). Overview: 0.67/0.56, 0.59/0.45; 0.37/0.37, 0.32/0.32; 0.39/0.38, 0.35/0.30; 0.43/0.28,
+0.37/0.23. Unchanged by this unit.
+
+**v2 against the sketch at 100%:** the container, its three rows, Processing events → consumer and
+outbox → Publication events match, and each line now reaches its row. The two Metadata database
+lines do not: the database is upstream, so they loop over (1,280px) and under (1,312px) the worker
+instead of the sketch's two short lines to the right (stores-beside-their-users rule; documented).
+
+**Checks.** `pnpm check` exited 0: **495 tests in 73 files** (lint: only the existing info). An
+earlier run had 3 generator tests (`jeeves-generator/src/v2`) time out at 5s under a load average
+of about 14 from other sessions; they passed alone and in the full rerun. **46 native E2Es passed
+(2.5m).** The web build passed with the existing chunk-size advisory. Mouse check: scripted
+Chromium on my own Vite (port 4320, the owner's API) at 1440×900 and 1280×800 with my own projects
+(all five deleted, 204; the owner's six revisions unchanged):
+
+- TinyURL extended rendered 11 tiles and 12 lines in both views (4 containers, 7 rows with ports).
+- YouTube: clicking the Transcoder's header selected it; its Add after and Attach tabs sit at
+  -4..36px from the frame and overlap no row; its port marks were blue. The Packager row opened
+  Packager (open mark, encoder and completion publisher partners; only Packager's mark blue). Dark
+  mode by its button filled the open row. A pulled Add after tab opened the fan; Escape cancelled.
+- Empty paper showed the system page; Preview attachment showed its summary and Attach feature in
+  the new section style (not attached). Design and blueprint unchanged; no page or console errors.
+
+**For UI10.**
+
+- Behaviour issues left for the review: **Choose relationship** lists both drawn lines of one
+  relationship (both select it); after a Hand-mode pan the next click is sometimes swallowed.
+- Check by eye: port marks at 100% on all three studies and v2, light and dark; the container tab
+  peek (`canvas.css`, `:has(> .board-tile-host .lane-container)`) with a pull and a drop; the
+  system page's feature section through Preview and Attach feature on a throwaway project.
+- Known and documented, not changed: upstream-store loops (v2 worker, 1,280/1,312px), the two-row
+  crossing into Transcoded videos, the red X over a long container name, port marks that stay
+  dark when a line is blue only because another tile or the relationship is selected.

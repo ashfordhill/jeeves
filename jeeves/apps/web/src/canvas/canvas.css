@@ -114,10 +114,17 @@
   color: var(--board-ink);
 }
 
-/* Container face (Detailed view): a one-line header, then one row per module, each centred on its
-   port's height (positions come from the projection). A row is a button that opens its module; the
-   open module's row is marked in the selection colour, its in-process partners' rows more lightly. */
+/* Container face (Detailed view): a one-line header above a divider, then one row per module, each
+   centred on its port's height (positions come from the projection). A row is a framed box and a
+   button that opens its module; a row with a drawn line has a port mark, a stub from the frame to
+   its box on that side, in the line's colour. The open module's row is filled in the selection
+   colour and ringed, its in-process partners' rows get a blue border and a light tint. */
 .lane-container {
+  /* The row box's inset from the frame and its border; the port marks span the inset. */
+  --row-inset: 10px;
+  --row-border: 1.5px;
+  /* The board's line width (LINE_WIDTH in BoardLine.tsx). */
+  --port-mark: 2.75px;
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -130,7 +137,7 @@
   align-items: center;
   gap: 8px;
   padding: 0 40px 0 12px;
-  border-bottom: 1.5px solid color-mix(in srgb, var(--type-color) 45%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--board-line) 40%, transparent);
 }
 
 .lane-container-icon {
@@ -149,7 +156,7 @@
 }
 
 .lane-container-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -161,13 +168,38 @@
 
 .lane-container-row {
   position: absolute;
-  left: 10px;
-  right: 10px;
+  left: var(--row-inset);
+  right: var(--row-inset);
   box-sizing: border-box;
   display: flex;
-  border: 1.5px solid color-mix(in srgb, var(--board-line) 30%, transparent);
+  border: var(--row-border) solid color-mix(in srgb, var(--board-line) 50%, transparent);
   border-radius: 7px;
   background: var(--board-paper);
+}
+
+/* Port marks: the row's lines end at the frame; the stub carries them on to the row's box. */
+.lane-container-row[data-ports~="in"]::before,
+.lane-container-row[data-ports~="out"]::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - var(--port-mark) / 2);
+  width: var(--row-inset);
+  height: var(--port-mark);
+  background: var(--board-line);
+  pointer-events: none;
+}
+.lane-container-row[data-ports~="in"]::before {
+  left: calc(-1 * (var(--row-inset) + var(--row-border)));
+}
+.lane-container-row[data-ports~="out"]::after {
+  right: calc(-1 * (var(--row-inset) + var(--row-border)));
+}
+/* A selected container's lines are all blue, so are its marks; with a module open, only its row's. */
+.board-tile[data-selected] .lane-container:not([data-open]) .lane-container-row::before,
+.board-tile[data-selected] .lane-container:not([data-open]) .lane-container-row::after,
+.lane-container-row[data-mark="open"]::before,
+.lane-container-row[data-mark="open"]::after {
+  background: var(--board-select);
 }
 
 .lane-container-row-button {
@@ -177,7 +209,7 @@
   gap: 6px;
   min-width: 0;
   margin: 0;
-  padding: 0 8px;
+  padding: 0 7px;
   border: 0;
   border-radius: 6px;
   background: none;
@@ -203,14 +235,16 @@
 }
 
 .lane-container-row-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
-/* The open module: filled and ringed in the selection colour. Its partners: only a border. */
+/* The open module: filled and ringed in the selection colour. Its partners: a blue border and a
+   light tint. The dark paper needs a stronger fill for the open row to read as filled. */
 .lane-container-row[data-mark="open"] {
+  --mark-fill: 32%;
   border-color: var(--board-select);
-  background: color-mix(in srgb, var(--board-select) 32%, var(--board-paper));
+  background: color-mix(in srgb, var(--board-select) var(--mark-fill), var(--board-paper));
   box-shadow: 0 0 0 2px var(--board-select);
 }
 
@@ -219,7 +253,22 @@
 }
 
 .lane-container-row[data-mark="partner"] {
-  border-color: color-mix(in srgb, var(--board-select) 80%, transparent);
+  --mark-fill: 10%;
+  border-color: var(--board-select);
+  background: color-mix(in srgb, var(--board-select) var(--mark-fill), var(--board-paper));
+  box-shadow: inset 0 0 0 1px var(--board-select);
+}
+
+:root[data-theme="dark"] .lane-container-row[data-mark="open"] {
+  --mark-fill: 55%;
+}
+:root[data-theme="dark"] .lane-container-row[data-mark="partner"] {
+  --mark-fill: 18%;
+}
+
+/* A selected container's pull tabs sit just outside its frame, beside the rows, not over them. */
+.board .react-flow__node:has(> .board-tile-host .lane-container) {
+  --board-tab-peek: 36px;
 }
 
 /* Actor face (ActorColumn proportions): figure on the pastel strip, name plate at the bottom. */
@@ -416,11 +465,12 @@
   gap: 4px;
 }
 
-/* The inspector page's Options and Modules headings, each starting a section below a rule. */
+/* The inspector page's Options and Modules headings, each starting a section below a rule. The rule
+   mixes the line colour, so it shows on the dark rail too. */
 .studio-selection-summary .lane-inspector-section {
   margin: 18px 0 10px;
   padding-top: 14px;
-  border-top: 1px solid var(--grid-dot);
+  border-top: 1px solid color-mix(in srgb, var(--line) 30%, transparent);
   font-size: 13px;
 }
 
@@ -629,10 +679,11 @@
 }
 
 /* The Modules section: a stack of cards (icon, name, kind and a two-line description), each one
-   button that opens its module. */
+   button that opens its module. The border mixes the line colour, so cards keep an edge on the dark
+   rail too. */
 .lane-module-list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -642,11 +693,11 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: 10px;
-  row-gap: 2px;
+  row-gap: 1px;
   width: 100%;
-  border: 1px solid var(--grid-dot);
+  border: 1px solid color-mix(in srgb, var(--line) 30%, transparent);
   border-radius: 8px;
-  padding: 10px 12px 10px 10px;
+  padding: 8px 10px 9px 9px;
   background: var(--paper);
   color: var(--ink);
   font: inherit;

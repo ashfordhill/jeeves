@@ -61,9 +61,9 @@ export function PresetAttachment({
     }
   };
   return (
-    <fieldset>
+    <fieldset className="studio-feature">
       <legend>Add a supported feature</legend>
-      <label>
+      <label className="studio-form-field">
         Feature preset
         <select
           aria-label="Feature preset"
@@ -85,7 +85,7 @@ export function PresetAttachment({
           ? "Reusable upload and CPU HLS processing. Your application supplies product codecs and service hooks; this remains a partial application."
           : "Historical product declarations require custom implementation after generation."}
       </p>
-      <button type="button" onClick={review}>
+      <button type="button" className="studio-feature-action" onClick={review}>
         Preview attachment
       </button>
       {preview && preview.revision === design.revision ? (
@@ -98,6 +98,7 @@ export function PresetAttachment({
           </p>
           <button
             type="button"
+            className="studio-feature-action"
             onClick={() =>
               void commitAction(projectId, (latest) => {
                 if (latest.revision !== preview.revision)
