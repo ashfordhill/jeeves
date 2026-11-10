@@ -87,15 +87,18 @@ function bendColumn(from: number, to: number, avoid: readonly Rect[]): number {
   return best ?? Math.round(mid);
 }
 
-/** Where a tile's grid line runs, from its top: mid-height, or its top when it has named ports. */
-function anchorOf(tile: LayoutTile | undefined): number {
+/**
+ * Where a tile's grid line runs, from its top: mid-height, or its top when it has named ports.
+ * `layoutBands` places a tile without a band by the same rule.
+ */
+export function gridAnchor(tile: LayoutTile | undefined): number {
   return tile?.ports?.length ? 0 : (tile?.h ?? 0) / 2;
 }
 
 export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayout {
   const raw = layout.positions;
   const sizes = new Map(input.tiles.map((t) => [t.id, t]));
-  const rawAnchor = (id: string) => (raw[id]?.y ?? 0) + anchorOf(sizes.get(id));
+  const rawAnchor = (id: string) => (raw[id]?.y ?? 0) + gridAnchor(sizes.get(id));
   /* A line's end as ELK left it: the tile's raw top plus the port's offset. */
   const rawPort = (id: string, port: string | undefined) =>
     (raw[id]?.y ?? 0) + portOffset(sizes.get(id), port);
@@ -105,11 +108,11 @@ export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayou
   }
 
   // Tiles: column by column, so every predecessor is placed before the tiles it links to. A tile's
-  // `anchor` is its top plus `anchorOf`, the y that sits on the grid.
+  // `anchor` is its top plus `gridAnchor`, the y that sits on the grid.
   const anchors = new Map<string, number>();
   /* A placed line end: the tile's aligned top plus the port's offset. */
   const portY = (id: string, port: string | undefined) =>
-    (anchors.get(id) as number) - anchorOf(sizes.get(id)) + portOffset(sizes.get(id), port);
+    (anchors.get(id) as number) - gridAnchor(sizes.get(id)) + portOffset(sizes.get(id), port);
   const positions: Record<string, Point> = { ...raw };
   for (const column of columns(input.tiles, raw)) {
     column.sort((a, b) => (raw[a.id]?.y ?? 0) - (raw[b.id]?.y ?? 0) || (a.id < b.id ? -1 : 1));
@@ -119,7 +122,7 @@ export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayou
     const floorAbove = (i: number) => {
       const above = placed[i - 1];
       return above
-        ? above.anchor + (above.tile.h - anchorOf(above.tile)) + BRANCH_GAP
+        ? above.anchor + (above.tile.h - gridAnchor(above.tile)) + BRANCH_GAP
         : layout.bounds.y + GRID;
     };
     for (const tile of column) {
@@ -140,28 +143,28 @@ export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayou
       let anchor = follow
         ? portY(follow.source, follow.sourcePort) -
           portOffset(tile, follow.targetPort) +
-          anchorOf(tile)
+          gridAnchor(tile)
         : snapToGrid(at);
       const floor = floorAbove(placed.length);
-      if (anchor - anchorOf(tile) < floor) {
+      if (anchor - gridAnchor(tile) < floor) {
         // Lift a free tile above (rounded the other way) rather than push this one off its row.
         const above = placed[placed.length - 1];
-        const lift = ceilToGrid(floor - (anchor - anchorOf(tile)));
+        const lift = ceilToGrid(floor - (anchor - gridAnchor(tile)));
         if (
           above?.free &&
           rawAnchor(above.tile.id) - (above.anchor - lift) <= STRAIGHTEN_PX &&
-          above.anchor - lift - anchorOf(above.tile) >= floorAbove(placed.length - 1)
+          above.anchor - lift - gridAnchor(above.tile) >= floorAbove(placed.length - 1)
         ) {
           above.anchor -= lift;
         } else {
-          anchor = ceilToGrid(floor + anchorOf(tile));
+          anchor = ceilToGrid(floor + gridAnchor(tile));
         }
       }
       placed.push({ tile, anchor, free: !follow });
     }
     for (const { tile, anchor } of placed) {
       anchors.set(tile.id, anchor);
-      positions[tile.id] = { x: snapToGrid(raw[tile.id]?.x ?? 0), y: anchor - anchorOf(tile) };
+      positions[tile.id] = { x: snapToGrid(raw[tile.id]?.x ?? 0), y: anchor - gridAnchor(tile) };
     }
   }
 

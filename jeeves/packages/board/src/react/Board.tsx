@@ -17,7 +17,7 @@
 // becomes a React Flow handle with the port's id at its height, after the default handle (which an
 // edge without a handle id takes), so a line's fallback route before ELK lands starts and ends at
 // its ports too; the drawn line and its arrowhead follow the routed ends. Snapshots carry them.
-// Only the flat layout takes named ports so far (`layoutBands` refuses them).
+// Flat and banded layouts both route lines to their named ports.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content

@@ -1,6 +1,9 @@
 // Split shared vertical stems using free grid slots in their existing gaps. Tile positions,
 // ports and horizontal tracks stay fixed; a move must reduce overlap without more crossings,
 // cross-band clashes, short jogs or a line through a tile. Crowded gaps keep their routes.
+// A line's ends are its own ports, named or default: its first and last points never move, and
+// cross-band clashes allow only the window next to a port both lines use (`bandClashes`), so two
+// lines at different named ports of one tile get no shared window.
 import type { LayoutInput } from "./elkGraph.ts";
 import type { BoardLayout } from "./elkLayout.ts";
 import { bandClashes } from "./junctions.ts";

@@ -21,8 +21,8 @@
 // request, so the board keeps its previous layout. A tile with named ports has its top on the grid
 // (`alignLayout`), so its named ports are on grid lines; its default port is on one only when its
 // half-height is a multiple of `GRID`. Inputs without named ports give exactly the graph and key
-// they gave before ports existed. Only the flat layout takes named ports so far: `layoutBands`
-// refuses them.
+// they gave before ports existed. Both the flat layout and `layoutBands` take named ports; in
+// bands a named port is never split per band (`bands.ts`).
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { BRANCH_GAP, dockHint, GRID, type Point, type Size, TILE_GAP } from "./metrics.ts";
 

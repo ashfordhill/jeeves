@@ -24,24 +24,36 @@
 //    as U's (`routeReturns`). ELK draws a line that comes back as a staircase through the columns
 //    it passes, and longer (measured on the studies, SD03).
 //
-// Named ports (`elkGraph.ts`) are not supported here yet: `layoutBands` rejects an input with any,
-// so the engine keeps the previous layout and the board flags a layout error. This file,
-// `junctions.ts`, `returns.ts` and `branches.ts` still take every line end at mid-height.
+// Named ports (`elkGraph.ts`). A line that names a port leaves or enters at that port's height in
+// every step: its band's ELK pass, its track, the routing pass, `meetAtPorts` and `routeReturns`.
+// The split ports of step 4 are default ports only. Into a tile they are split per band and also
+// per named source port (`bundleOf`): lines from two named ports of one tile into a store's
+// default port get one ELK port each, so ELK draws them as two lines that meet at the port (where
+// the gap has room for both) rather than one bus. A named port stays one ELK port whichever lines
+// use it. Lines meet "at a port" (`junctions.ts`) only when they use the same port of the same
+// tile, so two lines into different named ports of one tile are not a junction; the junction
+// rule itself stays per band. A tile without a band (the user) is centred on the ports its lines
+// enter; one with named ports keeps its top on the grid, as `alignLayout` does. Columns
+// (`endColumns`) and bands ignore ports.
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
-import { alignLayout } from "./align.ts";
+import { alignLayout, gridAnchor } from "./align.ts";
 import { separateBranches } from "./branches.ts";
 import {
   byHint,
+  checkPorts,
   elkTile,
   inPortId,
   type LayoutInput,
   type LayoutLine,
   type LayoutTile,
+  lineSourcePortId,
+  lineTargetPortId,
+  namedPortId,
   outPortId,
   type PositionMap,
+  portOffset,
   ROOT_OPTIONS,
   stabilityHints,
-  usesNamedPorts,
 } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import type { ElkLike } from "./engine.ts";
@@ -243,7 +255,6 @@ async function layoutBand(
   }
   // A line leaving the band ends at a stub in its target's column. NUL never starts a tile id.
   const stub = (l: LayoutLine) => `\u0000${l.id}`;
-  const end = (l: LayoutLine) => (ids.has(l.target) ? l.target : stub(l));
   const children: ElkNode[] = [
     ...tiles.map((t) => ({ ...elkTile(t), x: col(t.id) * COLUMN_HINT })),
     ...lines
@@ -255,8 +266,8 @@ async function layoutBand(
   ];
   const edges: ElkExtendedEdge[] = lines.map((l) => ({
     id: l.id,
-    sources: [outPortId(l.source)],
-    targets: [inPortId(end(l))],
+    sources: [lineSourcePortId(l)],
+    targets: [ids.has(l.target) ? lineTargetPortId(l) : inPortId(stub(l))],
   }));
   const raw = toBoardLayout(
     "band",
@@ -265,8 +276,14 @@ async function layoutBand(
   const aligned = alignLayout(raw, { tiles: own, lines: lines.filter((l) => ids.has(l.target)) });
 
   const size = new Map(own.map((t) => [t.id, t]));
-  const port = (layout: BoardLayout, id: string) =>
+  /* A tile's mid-height, which orders it among the tracks passing its column. */
+  const middle = (layout: BoardLayout, id: string) =>
     (layout.positions[id]?.y ?? 0) + (size.get(id)?.h ?? 0) / 2;
+  /* Where a line leaves its source or enters its target: its named port, else mid-height. */
+  const from = (layout: BoardLayout, l: LayoutLine) =>
+    (layout.positions[l.source]?.y ?? 0) + portOffset(size.get(l.source), l.sourcePort);
+  const into = (layout: BoardLayout, l: LayoutLine) =>
+    (layout.positions[l.target]?.y ?? 0) + portOffset(size.get(l.target), l.targetPort);
   const centreX = new Map<number, number>();
   for (const t of own) centreX.set(col(t.id), (raw.positions[t.id]?.x ?? 0) + t.w / 2);
 
@@ -275,15 +292,13 @@ async function layoutBand(
   const passing = new Map<number, Track[]>();
   for (const l of lines.filter(long)) {
     const route = raw.routes[l.id] ?? [];
-    const from = { raw: port(raw, l.source), aligned: port(aligned, l.source) };
-    const to = ids.has(l.target)
-      ? { raw: port(raw, l.target), aligned: port(aligned, l.target) }
-      : null;
-    let y = from.raw;
+    const start = { raw: from(raw, l), aligned: from(aligned, l) };
+    const to = ids.has(l.target) ? { raw: into(raw, l), aligned: into(aligned, l) } : null;
+    let y = start.raw;
     for (let c = col(l.source) + 1; c < col(l.target); c++) {
       const x = centreX.get(c);
       y = (x === undefined ? undefined : runAt(route, x)) ?? y;
-      const want = y === from.raw ? from.aligned : y === to?.raw ? to.aligned : y;
+      const want = y === start.raw ? start.aligned : y === to?.raw ? to.aligned : y;
       passing.set(c, [...(passing.get(c) ?? []), { line: l.id, raw: y, want }]);
     }
   }
@@ -299,7 +314,7 @@ async function layoutBand(
   for (const [c, list] of passing) {
     type Item = { key: number; tile: LayoutTile } | { key: number; track: number };
     const items: Item[] = [
-      ...own.filter((t) => col(t.id) === c).map((t) => ({ key: port(raw, t.id), tile: t })),
+      ...own.filter((t) => col(t.id) === c).map((t) => ({ key: middle(raw, t.id), tile: t })),
       ...[...new Set(list.map((t) => t.raw))].map((y) => ({ key: y, track: y })),
     ].sort((a, b) => a.key - b.key);
     let lo = Number.NEGATIVE_INFINITY;
@@ -336,8 +351,9 @@ async function layoutBand(
 }
 
 /**
- * Where a tile without a band goes: centred on the tiles it links to (or at the top), on the grid,
- * and below any tile already in its column that it would touch.
+ * Where a tile without a band goes: its middle level with the middle of the ports its lines enter
+ * (or at the top), its grid anchor on the grid (`gridAnchor`), and below any tile already in its
+ * column that it would touch.
  */
 function placeLoose(
   input: LayoutInput,
@@ -345,12 +361,14 @@ function placeLoose(
   column: Map<string, number>,
 ): void {
   const size = new Map(input.tiles.map((t) => [t.id, t]));
-  const centre = (id: string) => (tops.get(id) ?? 0) + (size.get(id)?.h ?? 0) / 2;
+  const entered = (l: LayoutLine) =>
+    (tops.get(l.target) ?? 0) + portOffset(size.get(l.target), l.targetPort);
   for (const tile of input.tiles.filter((t) => t.band === undefined)) {
     const targets = input.lines.filter((l) => l.source === tile.id && tops.has(l.target));
-    const ys = targets.map((l) => centre(l.target));
-    let y = snapToGrid(ys.length ? (Math.min(...ys) + Math.max(...ys)) / 2 : GRID + tile.h / 2);
-    y -= tile.h / 2;
+    const ys = targets.map(entered);
+    const anchor = gridAnchor(tile);
+    const middle = ys.length ? (Math.min(...ys) + Math.max(...ys)) / 2 : GRID + tile.h / 2;
+    let y = snapToGrid(middle - tile.h / 2 + anchor) - anchor;
     const taken = [...tops.keys()]
       .filter((id) => column.get(id) === column.get(tile.id))
       .map((id) => ({
@@ -360,31 +378,53 @@ function placeLoose(
       .sort((a, b) => a.top - b.top);
     for (const box of taken) {
       if (y < box.bottom + BRANCH_GAP && y + tile.h + BRANCH_GAP > box.top) {
-        y = Math.ceil((box.bottom + BRANCH_GAP + tile.h / 2) / GRID) * GRID - tile.h / 2;
+        y = Math.ceil((box.bottom + BRANCH_GAP + anchor) / GRID) * GRID - anchor;
       }
     }
     tops.set(tile.id, y);
   }
 }
 
-/** Port ids per tile and side: one per band when lines of several bands use that side. */
+/**
+ * What ELK may bundle into one bus at a tile's default in port: lines of one band from default
+ * ports, or from one named port. Lines from two named ports, even of one tile, go apart.
+ */
+function bundleOf(line: LayoutLine): string {
+  const band = `${line.band ?? "-"}`;
+  return line.sourcePort === undefined
+    ? band
+    : `${band}@${namedPortId(line.source, line.sourcePort)}`;
+}
+
+/**
+ * ELK port ids per tile and side. A tile's default port on a side is split into one per group when
+ * lines of several groups use it (`all` lists them): per `bundleOf` into a tile, per band out of
+ * it. A line that names a port uses that port.
+ */
 function portIds(lines: readonly LayoutLine[], end: "source" | "target") {
-  const bands = new Map<string, (number | undefined)[]>();
+  const named = (line: LayoutLine) => (end === "target" ? line.targetPort : line.sourcePort);
+  const group = (line: LayoutLine) => (end === "target" ? bundleOf(line) : `${line.band ?? "-"}`);
+  const groups = new Map<string, string[]>();
   for (const line of lines) {
-    const list = bands.get(line[end]) ?? [];
-    if (!list.includes(line.band)) list.push(line.band);
-    bands.set(line[end], list);
+    if (named(line) !== undefined) continue;
+    const list = groups.get(line[end]) ?? [];
+    if (!list.includes(group(line))) list.push(group(line));
+    groups.set(line[end], list);
   }
   const base = end === "target" ? inPortId : outPortId;
-  const id = (tile: string, band: number | undefined) =>
-    (bands.get(tile)?.length ?? 0) > 1 ? `${base(tile)}:${band ?? "-"}` : base(tile);
-  const all = (tile: string) => (bands.get(tile) ?? [undefined]).map((band) => id(tile, band));
+  const split = (tile: string, key: string) =>
+    (groups.get(tile)?.length ?? 0) > 1 ? `${base(tile)}:${key}` : base(tile);
+  const id = (line: LayoutLine) => {
+    const port = named(line);
+    return port === undefined ? split(line[end], group(line)) : namedPortId(line[end], port);
+  };
+  const all = (tile: string) => (groups.get(tile) ?? ["-"]).map((key) => split(tile, key));
   return { id, all };
 }
 
 /**
- * The board laid out in bands (see the top of this file). `usesBands(input)` must hold. Rejects an
- * input with named ports.
+ * The board laid out in bands (see the top of this file). `usesBands(input)` must hold. Throws as
+ * `checkPorts` does.
  */
 export async function layoutBands(
   elk: ElkLike,
@@ -392,9 +432,7 @@ export async function layoutBands(
   input: LayoutInput,
   previous?: PositionMap,
 ): Promise<BoardLayout> {
-  if (usesNamedPorts(input)) {
-    throw new Error("A banded layout does not take named ports yet.");
-  }
+  checkPorts(input);
   const column = endColumns(input, bandColumns(input) ?? new Map<string, number>());
   const col = (id: string) => column.get(id) ?? 0;
   const hints = stabilityHints(input, previous);
@@ -437,12 +475,13 @@ export async function layoutBands(
     x: col(t.id) * COLUMN_HINT,
     y: tops.get(t.id) ?? 0,
   }));
-  const portY = (id: string) => (tops.get(id) ?? 0) + (size.get(id)?.h ?? 0) / 2;
+  const portY = (id: string, port: string | undefined) =>
+    (tops.get(id) ?? 0) + portOffset(size.get(id), port);
   const edges: ElkExtendedEdge[] = forward.lines.map((l) => {
     const edge: ElkExtendedEdge = {
       id: l.id,
-      sources: [outs.id(l.source, l.band)],
-      targets: [ins.id(l.target, l.band)],
+      sources: [outs.id(l)],
+      targets: [ins.id(l)],
     };
     const track = tracks.get(l.id);
     if (track?.size) {
@@ -451,9 +490,9 @@ export async function layoutBands(
           id: `${l.id}:track`,
           startPoint: {
             x: col(l.source) * COLUMN_HINT + (size.get(l.source)?.w ?? 0),
-            y: portY(l.source),
+            y: portY(l.source, l.sourcePort),
           },
-          endPoint: { x: col(l.target) * COLUMN_HINT, y: portY(l.target) },
+          endPoint: { x: col(l.target) * COLUMN_HINT, y: portY(l.target, l.targetPort) },
           bendPoints: [...track].map(([c, y]) => ({ x: sampleX(c), y })),
         },
       ];

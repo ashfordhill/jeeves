@@ -2,7 +2,8 @@
 // layout an end tile (lines in, none out) that several tiles use sits beside an early user
 // (`endColumns`), so a later user's line comes back to it. ELK routes the other lines; each line
 // that comes back is routed here afterwards, as a U: out of its source's east port, along a free
-// row back past the columns between, and into its target's west port.
+// row back past the columns between, and into its target's west port. Each port is the one the
+// line uses: a named port at its own height (`elkGraph.ts`), else the tile's mid-height one.
 //
 // Jeeves addition.
 //
@@ -11,12 +12,19 @@
 //   moving every tile and line right of it, unless that makes lines of two bands run together.
 // - Its level run takes a free row: at least 16px from every tile in the columns it passes, on the
 //   grid when it can be.
-// - It shares no run with another line, except its source's own lines where they leave the source
-//   and lines into its target for the last stretch: the whole stretch for a line of its own band,
-//   the 32px next to the port for another band's. It touches no other line anywhere else.
+// - It shares no run with another line, except lines from its own source port where they leave it
+//   and lines into its own target port for the last stretch: the whole stretch for a line of its
+//   own band, the 32px next to the port for another band's. It touches no other line anywhere
+//   else, so lines at another port of the same tile are kept clear like any other.
 // - Of the routes that keep those rules, the one with the fewest crossings, then the shortest
 //   (counting what a widening adds to the lines it stretches), then on the grid.
-import type { LayoutInput, LayoutLine } from "./elkGraph.ts";
+import {
+  type LayoutInput,
+  type LayoutLine,
+  lineSourcePortId,
+  lineTargetPortId,
+  portOffset,
+} from "./elkGraph.ts";
 import type { BoardLayout } from "./elkLayout.ts";
 import { bandClashes, JUNCTION_PX } from "./junctions.ts";
 import { GRID, type Point } from "./metrics.ts";
@@ -95,7 +103,9 @@ function bestU(
   };
   const [cs, ct] = [col(line.source), col(line.target)];
   const [s, t] = [box(line.source), box(line.target)];
-  const [sx, ys, tx, yt] = [s.x + s.w, s.y + s.h / 2, t.x, t.y + t.h / 2];
+  const [sx, tx] = [s.x + s.w, t.x];
+  const ys = s.y + portOffset(size.get(line.source), line.sourcePort);
+  const yt = t.y + portOffset(size.get(line.target), line.targetPort);
   const after = edges(cs + 1)?.left ?? Number.POSITIVE_INFINITY;
   const before = edges(ct - 1)?.right ?? Number.NEGATIVE_INFINITY;
   const right = edges(cs)?.right ?? sx;
@@ -191,8 +201,8 @@ function judge(
   const last = mine.length - 1;
   let crossings = 0;
   for (const other of others) {
-    const fromSource = other.line.source === line.source;
-    const intoTarget = other.line.target === line.target;
+    const fromSource = lineSourcePortId(other.line) === lineSourcePortId(line);
+    const intoTarget = lineTargetPortId(other.line) === lineTargetPortId(line);
     const sameBand = other.line.band === line.band;
     for (const [i, m] of mine.entries()) {
       for (const o of other.segs) {
@@ -201,8 +211,8 @@ function judge(
           const from = Math.max(lo(m), lo(o));
           const to = Math.min(hi(m), hi(o));
           if (to < from) continue;
-          // Shared or touching runs: only the source's own lines where they leave it, and lines
-          // into the target on the last stretch (another band's only next to the port).
+          // Shared or touching runs: only lines from its source port where they leave it, and lines
+          // into its target port on the last stretch (another band's only next to the port).
           if (fromSource && i <= 1) continue;
           if (
             intoTarget &&
@@ -295,9 +305,9 @@ export function routeReturns(
           4 * GRID +
           Math.abs(
             (s?.y ?? 0) +
-              (size.get(line.source)?.h ?? 0) / 2 -
+              portOffset(size.get(line.source), line.sourcePort) -
               (t?.y ?? 0) -
-              (size.get(line.target)?.h ?? 0) / 2,
+              portOffset(size.get(line.target), line.targetPort),
           );
         if (choice?.candidate.crossings === 0 && choice.candidate.cost <= extra + shortest)
           continue;

@@ -6,8 +6,24 @@
 // lines of different bands meet only within `JUNCTION_PX` of the port, when a move can do it
 // without more crossings.
 //
+// Named ports. A port here is the one a line actually uses (`lineSourcePortId`,
+// `lineTargetPortId`): a named port, or its tile's default one at mid-height (one point, however
+// many ELK ports `layoutBands` gives it). Lines meet at a port only when they use the same one, so
+// two lines into different named ports of one tile have no window to share, and a junction is a
+// port, not a tile. The rule stays per band: lines of one band from different named ports may
+// share a run, as lines of one band from different tiles do. (Into a default port, `layoutBands`
+// gives each named source port its own ELK port, so ELK draws such lines apart where the gap
+// has room.)
+//
 // Jeeves addition.
-import type { LayoutInput, LayoutLine } from "./elkGraph.ts";
+import {
+  type LayoutInput,
+  type LayoutLine,
+  type LayoutTile,
+  lineSourcePortId,
+  lineTargetPortId,
+  portOffset,
+} from "./elkGraph.ts";
 import type { BoardLayout } from "./elkLayout.ts";
 import { GRID, type Point } from "./metrics.ts";
 
@@ -25,17 +41,18 @@ function sharedPort(
   a: LayoutLine,
   b: LayoutLine,
   layout: BoardLayout,
-  heights: Map<string, number>,
+  tiles: Map<string, LayoutTile>,
 ): { x: number; y: number; dir: 1 | -1 }[] {
   const out: { x: number; y: number; dir: 1 | -1 }[] = [];
   const at = (id: string) => layout.positions[id];
-  const mid = (id: string) => (at(id)?.y ?? 0) + (heights.get(id) ?? 0) / 2;
-  if (a.target === b.target && at(a.target)) {
-    out.push({ x: at(a.target)?.x ?? 0, y: mid(a.target), dir: -1 });
+  const y = (id: string, port: string | undefined) =>
+    (at(id)?.y ?? 0) + portOffset(tiles.get(id), port);
+  if (lineTargetPortId(a) === lineTargetPortId(b) && at(a.target)) {
+    out.push({ x: at(a.target)?.x ?? 0, y: y(a.target, a.targetPort), dir: -1 });
   }
-  if (a.source === b.source && at(a.source)) {
+  if (lineSourcePortId(a) === lineSourcePortId(b) && at(a.source)) {
     const route = layout.routes[a.id];
-    out.push({ x: route?.[0]?.x ?? 0, y: mid(a.source), dir: 1 });
+    out.push({ x: route?.[0]?.x ?? 0, y: y(a.source, a.sourcePort), dir: 1 });
   }
   return out;
 }
@@ -48,12 +65,12 @@ function sharedPort(
 type Score = { clashes: number; crossings: number };
 
 export function bandClashes(layout: BoardLayout, input: LayoutInput): Score {
-  const heights = new Map(input.tiles.map((t) => [t.id, t.h]));
+  const tiles = new Map(input.tiles.map((t) => [t.id, t]));
   let clashes = 0;
   let crossings = 0;
   for (const [i, a] of input.lines.entries()) {
     for (const b of input.lines.slice(i + 1)) {
-      const ports = a.band !== b.band ? sharedPort(a, b, layout, heights) : [];
+      const ports = a.band !== b.band ? sharedPort(a, b, layout, tiles) : [];
       for (const [a1, a2] of segments(layout.routes[a.id] ?? [])) {
         for (const [b1, b2] of segments(layout.routes[b.id] ?? [])) {
           const aLevel = a1.y === a2.y;
@@ -175,8 +192,8 @@ const near = (a: Bus, b: Bus) => a.lo < b.hi + BUS_CLEARANCE && b.lo < a.hi + BU
 
 /**
  * Moves buses so lines of different bands meet only within `JUNCTION_PX` of a port they both
- * enter: for each tile entered by several bands, a bus of a line into it may move onto the slot
- * `JUNCTION_PX` left of the tile, or swap with the one bus there. A move is kept when it leaves
+ * enter: for each port entered by several bands, a bus of a line into it may move onto the slot
+ * `JUNCTION_PX` left of its tile, or swap with the one bus there. A move is kept when it leaves
  * fewer clashes, or as many and fewer crossings (`bandClashes`).
  */
 export function meetAtPorts(
@@ -184,13 +201,21 @@ export function meetAtPorts(
   input: LayoutInput,
   column: Map<string, number>,
 ): BoardLayout {
-  const entering = new Map<string, Set<number | undefined>>();
-  for (const line of input.lines) {
-    entering.set(line.target, (entering.get(line.target) ?? new Set()).add(line.band));
+  // Ports entered by several bands, in tile order and, on a tile, in the order lines reach them.
+  const entering = new Map<string, { tile: LayoutTile; bands: Set<number | undefined> }>();
+  for (const tile of input.tiles) {
+    for (const line of input.lines.filter((l) => l.target === tile.id)) {
+      const port = lineTargetPortId(line);
+      const entry = entering.get(port) ?? { tile, bands: new Set() };
+      entry.bands.add(line.band);
+      entering.set(port, entry);
+    }
   }
-  const junctions = input.tiles.filter((t) => (entering.get(t.id)?.size ?? 0) > 1);
+  const junctions = [...entering]
+    .filter(([, e]) => e.bands.size > 1)
+    .map(([port, e]) => ({ port, tile: e.tile }));
   if (!junctions.length) return layout;
-  const targets = new Map(input.lines.map((l) => [l.id, l.target]));
+  const targets = new Map(input.lines.map((l) => [l.id, lineTargetPortId(l)]));
   const better = (a: Score, b: Score) =>
     a.clashes < b.clashes || (a.clashes === b.clashes && a.crossings < b.crossings);
   const edges = (c: number) => {
@@ -207,13 +232,13 @@ export function meetAtPorts(
   let score = bandClashes(layout, input);
   for (let round = 0; round < input.lines.length && score.clashes > 0; round++) {
     let found: { layout: BoardLayout; score: Score } | undefined;
-    for (const tile of junctions) {
+    for (const { port, tile } of junctions) {
       const c = column.get(tile.id) ?? 0;
       const left = edges(c - 1).right;
       const right = edges(c).left;
       const slot = (best.positions[tile.id]?.x ?? 0) - JUNCTION_PX;
       const buses = busesIn(best.routes, input, left, right);
-      const into = buses.filter((b) => b.runs.some((r) => targets.get(r.line) === tile.id));
+      const into = buses.filter((b) => b.runs.some((r) => targets.get(r.line) === port));
       for (const bus of into.filter((b) => b.x !== slot)) {
         const there = buses.filter((b) => b !== bus && b.x === slot && near(b, bus));
         let routes: BoardLayout["routes"] | undefined;

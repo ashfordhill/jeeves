@@ -664,7 +664,7 @@ describe("named ports", () => {
     ).toEqual(layout);
   });
 
-  it("reject a port name that is unknown or on the wrong side, a port off the grid, and bands", async () => {
+  it("reject a port name that is unknown or on the wrong side, and a port off the grid", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const request = (input: LayoutInput) =>
       createLayoutEngine(elk, { debounceMs: 0 }).request(input);
@@ -682,9 +682,271 @@ describe("named ports", () => {
     const offGrid = structuredClone(ported);
     offGrid.tiles[5] = { id: "sink", w: 128, h: 192, ports: [{ id: "top", side: "in", y: 48 }] };
     await expect(request(offGrid)).rejects.toThrow("must be a multiple of 32");
-    const banded = { ...ported, tiles: ported.tiles.map((t) => ({ ...t, band: 0 })) };
-    await expect(request(banded)).rejects.toThrow("A banded layout does not take named ports yet.");
+    // In bands too.
+    const banded = withLine({ sourcePort: "missing" });
+    banded.tiles = banded.tiles.map((t) => ({ ...t, band: 0 }));
+    banded.lines = banded.lines.map((l) => ({ ...l, band: 0 }));
+    expect(usesBands(banded)).toBe(true);
+    await expect(request(banded)).rejects.toThrow("Line hub-a names port missing");
     vi.restoreAllMocks();
+  });
+});
+
+/**
+ * Named ports in bands, shaped like a detailed view: the upload band's `hub` (256×160) has a
+ * header row (in and out ports at 32) and module rows at 64 (in), 96 and 128 (out). Its writer
+ * and outbox rows both write `meta`, a store only it uses; the outbox also feeds `pub`; its
+ * header writes `db`, the shared store `watch` reads, which sits right after `watch` so the hub's
+ * line comes back. `watch` (download band) enters the hub's header from another band, and
+ * `events` enters its consumer row.
+ */
+const detailed: LayoutInput = {
+  tiles: [
+    { id: "u", w: 128, h: 160 },
+    { id: "watch", w: 128, h: 128, band: 0 },
+    { id: "upload", w: 128, h: 128, band: 2 },
+    { id: "db", w: 128, h: 128, band: 1 },
+    { id: "events", w: 128, h: 128, band: 2 },
+    {
+      id: "hub",
+      w: 256,
+      h: 160,
+      band: 2,
+      ports: [
+        { id: "header-in", side: "in", y: 32 },
+        { id: "consumer", side: "in", y: 64 },
+        { id: "header-out", side: "out", y: 32 },
+        { id: "writer", side: "out", y: 96 },
+        { id: "outbox", side: "out", y: 128 },
+      ],
+    },
+    { id: "meta", w: 128, h: 128, band: 2 },
+    { id: "pub", w: 128, h: 128, band: 2 },
+    { id: "indexer", w: 128, h: 128, band: 2 },
+  ],
+  lines: [
+    { id: "u-watch", source: "u", target: "watch" },
+    { id: "u-upload", source: "u", target: "upload" },
+    { id: "watch-db", source: "watch", target: "db", band: 0 },
+    { id: "watch-hub", source: "watch", target: "hub", band: 0, targetPort: "header-in" },
+    { id: "upload-events", source: "upload", target: "events", band: 2 },
+    { id: "events-hub", source: "events", target: "hub", band: 2, targetPort: "consumer" },
+    { id: "hub-db", source: "hub", target: "db", band: 2, sourcePort: "header-out" },
+    { id: "hub-meta-w", source: "hub", target: "meta", band: 2, sourcePort: "writer" },
+    { id: "hub-meta-o", source: "hub", target: "meta", band: 2, sourcePort: "outbox" },
+    { id: "hub-pub", source: "hub", target: "pub", band: 2, sourcePort: "outbox" },
+    { id: "pub-indexer", source: "pub", target: "indexer", band: 2 },
+  ],
+};
+
+type Run = [Point, Point];
+const runsOf = (layout: BoardLayout, id: string): Run[] => {
+  const route = layout.routes[id] ?? [];
+  return route.slice(0, -1).map((a, i) => [a, route[i + 1] as Point]);
+};
+const portKey = (tile: string, port: string | undefined) => `${tile}:${port ?? ""}`;
+
+/**
+ * Where two lines meet (share a run, touch, or cross) outside the last `JUNCTION_PX` before their
+ * shared target port, as text. `[]` when they meet only there.
+ */
+function meetingsAway(input: LayoutInput, layout: BoardLayout, a: LayoutLine, b: LayoutLine) {
+  const [, port] = ends(input, layout, a);
+  const inWindow = (p: Point) => p.y === port.y && p.x >= port.x - JUNCTION_PX && p.x <= port.x;
+  const out: string[] = [];
+  for (const [a1, a2] of runsOf(layout, a.id)) {
+    for (const [b1, b2] of runsOf(layout, b.id)) {
+      const [aLevel, bLevel] = [a1.y === a2.y, b1.y === b2.y];
+      if (aLevel === bLevel) {
+        if (aLevel ? a1.y !== b1.y : a1.x !== b1.x) continue;
+        const at = (p: Point) => (aLevel ? p.x : p.y);
+        const lo = Math.max(Math.min(at(a1), at(a2)), Math.min(at(b1), at(b2)));
+        const hi = Math.min(Math.max(at(a1), at(a2)), Math.max(at(b1), at(b2)));
+        if (hi < lo) continue;
+        const [from, to] = aLevel
+          ? [
+              { x: lo, y: a1.y },
+              { x: hi, y: a1.y },
+            ]
+          : [
+              { x: a1.x, y: lo },
+              { x: a1.x, y: hi },
+            ];
+        if (!inWindow(from) || !inWindow(to)) out.push(`run ${from.x},${from.y}–${to.x},${to.y}`);
+        continue;
+      }
+      const [h1, h2, v1, v2] = aLevel ? [a1, a2, b1, b2] : [b1, b2, a1, a2];
+      const p = { x: v1.x, y: h1.y };
+      const onH = p.x >= Math.min(h1.x, h2.x) && p.x <= Math.max(h1.x, h2.x);
+      const onV = p.y >= Math.min(v1.y, v2.y) && p.y <= Math.max(v1.y, v2.y);
+      if (onH && onV && !inWindow(p)) out.push(`point ${p.x},${p.y}`);
+    }
+  }
+  return out;
+}
+
+/** Every line starts and ends at its port, is orthogonal and passes through no tile. */
+function expectPorted(input: LayoutInput, layout: BoardLayout) {
+  const rects = input.tiles.map((t) => rect(input, layout, t.id));
+  for (const [i, a] of rects.entries()) {
+    expect(a.x % GRID, `${input.tiles[i]?.id} x`).toBe(0);
+    for (const b of rects.slice(i + 1)) expect(intersects(a, b)).toBe(false);
+  }
+  for (const line of input.lines) {
+    const route = layout.routes[line.id] ?? [];
+    const [from, to] = ends(input, layout, line);
+    expect(route.at(0), `${line.id} start`).toEqual(from);
+    expect(route.at(-1), `${line.id} end`).toEqual(to);
+    expect(from.y % GRID, `${line.id} source port`).toBe(0);
+    expect(to.y % GRID, `${line.id} target port`).toBe(0);
+    for (const [a, b] of runsOf(layout, line.id)) {
+      expect(a.x === b.x || a.y === b.y, `${line.id} has a diagonal`).toBe(true);
+      const run = {
+        x: Math.min(a.x, b.x),
+        y: Math.min(a.y, b.y),
+        w: Math.abs(b.x - a.x),
+        h: Math.abs(b.y - a.y),
+      };
+      for (const r of rects) {
+        const through =
+          run.x < r.x + r.w && run.x + run.w > r.x && run.y < r.y + r.h && run.y + run.h > r.y;
+        expect(through, `${line.id} through a tile at ${r.x},${r.y}`).toBe(false);
+      }
+    }
+  }
+}
+
+/**
+ * Bends off the grid. A level run that passes between two tiles 32px apart in a column keeps
+ * 16px from both, half a grid step off (the rule `bands.ts` and `returns.ts` already follow, as
+ * the studies show); any other bend off the grid is listed.
+ */
+function bendsOffGrid(input: LayoutInput, layout: BoardLayout): string[] {
+  const rects = input.tiles.map((t) => rect(input, layout, t.id));
+  const halfStep = (a: Point, b: Point) =>
+    a.y === b.y &&
+    rects.some(
+      (r) => r.y + r.h === a.y - 16 && r.x < Math.max(a.x, b.x) && r.x + r.w > Math.min(a.x, b.x),
+    ) &&
+    rects.some(
+      (r) => r.y === a.y + 16 && r.x < Math.max(a.x, b.x) && r.x + r.w > Math.min(a.x, b.x),
+    );
+  const out: string[] = [];
+  for (const line of input.lines) {
+    const route = layout.routes[line.id] ?? [];
+    for (const [i, p] of route.slice(1, -1).entries()) {
+      const [before, after] = [route[i] as Point, route[i + 2] as Point];
+      const levelHalf = halfStep(before, p) || halfStep(p, after);
+      if (p.x % GRID !== 0 || (p.y % GRID !== 0 && !levelHalf))
+        out.push(`${line.id}@${p.x},${p.y}`);
+    }
+  }
+  return out;
+}
+
+/** Pairs of lines into one port from different ports that meet before its last 32px. */
+function earlyMeetings(input: LayoutInput, layout: BoardLayout): string[] {
+  const out: string[] = [];
+  for (const [i, a] of input.lines.entries()) {
+    for (const b of input.lines.slice(i + 1)) {
+      if (portKey(a.target, a.targetPort) !== portKey(b.target, b.targetPort)) continue;
+      if (portKey(a.source, a.sourcePort) === portKey(b.source, b.sourcePort)) continue;
+      for (const m of meetingsAway(input, layout, a, b)) out.push(`${a.id} and ${b.id}: ${m}`);
+    }
+  }
+  return out;
+}
+
+describe("named ports in bands", () => {
+  it("route a detailed board from port to port, on the grid and clear of every tile", async () => {
+    expect(usesBands(detailed)).toBe(true);
+    const layout = await bandsOf(detailed);
+    expectPorted(detailed, layout);
+    expect(bendsOffGrid(detailed, layout)).toEqual([]);
+    expect(bandClashes(layout, detailed).clashes).toBe(0);
+    // Every band in its own rows.
+    const [db, hub] = [rect(detailed, layout, "db"), rect(detailed, layout, "hub")];
+    expect(rect(detailed, layout, "watch").y + 128).toBeLessThanOrEqual(db.y);
+    expect(db.y + db.h).toBeLessThanOrEqual(hub.y);
+    // The hub's top is on the grid, so its rows are; half its height is not.
+    expect(hub.y % GRID).toBe(0);
+    // The writer's and the outbox's lines into `meta`, and the download and upload lines into
+    // `db`, meet only in the last 32px before the port they share.
+    expect(earlyMeetings(detailed, layout)).toEqual([]);
+    expect(layout.routes["hub-meta-o"]?.at(-2)?.x).toBe(rect(detailed, layout, "meta").x - GRID);
+    // The header's line comes back to `db` as a U that leaves at the header's height.
+    const back = layout.routes["hub-db"] ?? [];
+    expect(back).toHaveLength(6);
+    expect(back[0]).toEqual({ x: hub.x + hub.w, y: hub.y + 32 });
+    expect(back[1]).toEqual({ x: hub.x + hub.w + GRID, y: hub.y + 32 });
+    expect(back[4]?.x).toBe(db.x - GRID);
+    // Its level run is the one bend off the grid: halfway across the 32px between the bands.
+    expect(back[2]?.y).toBe(db.y + db.h + 16);
+    expect(hub.y - (db.y + db.h)).toBe(GRID);
+    // The other band's line enters the header, its own band's the consumer row: no junction.
+    expect(layout.routes["watch-hub"]?.at(-1)).toEqual({ x: hub.x, y: hub.y + 32 });
+    expect(layout.routes["events-hub"]?.at(-1)).toEqual({ x: hub.x, y: hub.y + 64 });
+    // The user sits between the ports its lines enter.
+    const u = rect(detailed, layout, "u");
+    const watch = rect(detailed, layout, "watch");
+    const upload = rect(detailed, layout, "upload");
+    expect(u.y + u.h / 2).toBe((watch.y + watch.h / 2 + upload.y + upload.h / 2) / 2);
+    // Laid out again from what was shown, nothing moves.
+    expect(await bandsOf(detailed, layout.positions)).toEqual(layout);
+  });
+
+  it("meet two bands at one named port, and two rows below their store, only by the port", async () => {
+    // A named port is not split per band: the upload band's line into the header meets the
+    // download band's only in the last 32px before it. The hub now sits a row lower, so `meta`'s
+    // port is above both the writer's and the outbox's rows: their lines turn in two slots (ELK
+    // gets one port into `meta` for each) rather than sharing one stem.
+    const header: LayoutInput = {
+      ...detailed,
+      lines: [
+        ...detailed.lines,
+        { id: "upload-hub", source: "upload", target: "hub", band: 2, targetPort: "header-in" },
+      ],
+    };
+    const shared = await bandsOf(header);
+    expectPorted(header, shared);
+    expect(bandClashes(shared, header).clashes).toBe(0);
+    expect(earlyMeetings(header, shared)).toEqual([]);
+    const [hub, meta] = [rect(header, shared, "hub"), rect(header, shared, "meta")];
+    expect(meta.y + meta.h / 2).toBeLessThan(hub.y + 96);
+    const turns = ["hub-meta-w", "hub-meta-o"].map((id) => shared.routes[id]?.at(-2)?.x);
+    expect(turns).toEqual([meta.x - 2 * GRID, meta.x - GRID]);
+    expect(await bandsOf(header, shared.positions)).toEqual(shared);
+  });
+
+  it("route two returns from different ports of one tile from their own rows", async () => {
+    // The writer's row comes back to `db` too (as two rows of v2's completion handler do).
+    const returns: LayoutInput = {
+      ...detailed,
+      lines: [
+        ...detailed.lines,
+        { id: "hub-db-w", source: "hub", target: "db", band: 2, sourcePort: "writer" },
+      ],
+    };
+    const both = await bandsOf(returns);
+    expectPorted(returns, both);
+    expect(bandClashes(both, returns).clashes).toBe(0);
+    const hub = rect(returns, both, "hub");
+    for (const [id, y] of [
+      ["hub-db", 32],
+      ["hub-db-w", 96],
+    ] as const) {
+      const route = both.routes[id] ?? [];
+      expect(route[0], id).toEqual({ x: hub.x + hub.w, y: hub.y + y });
+      expect(route[1]?.y, id).toBe(hub.y + y);
+    }
+    // Known limit: the two U's share no run, but cross twice. `routeReturns` routes them one at a
+    // time: the header's takes the gap's one slot and the row between the bands, and the
+    // widening for the writer's puts the new slot on the hub's side, so the writer's goes up
+    // through the header's. Nesting them would need another widening rule.
+    const early = earlyMeetings(returns, both);
+    expect(early).toHaveLength(2);
+    for (const m of early) expect(m).toMatch(/^hub-db and hub-db-w: point /);
+    expect(await bandsOf(returns, both.positions)).toEqual(both);
   });
 });
 

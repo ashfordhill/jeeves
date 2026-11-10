@@ -1264,3 +1264,15 @@ page that inherits the previous page's scroll opens halfway down), and Back land
 section rather than the top of the tile page, so the reader picks the next card where they left
 off. The open module belongs to the workspace's selection, not to the rail, so any other selection
 closes it and the canvas can show it later.
+
+## 2026-11-09 UI05: module rows draw their own lines, but one band still shares a bus
+
+When two rows of one tile link to the same store, ELK would bundle both lines into one bus at the
+store's port, so the reader sees one line leave two rows and cannot tell which row goes where.
+In a banded layout the board now gives each named source port its own ELK port into a store's
+default port, so the two lines turn in their own slots and meet only in the last 32px before it. It does not make that a rule
+between every pair of lines: a store several rows and tiles write (YouTube v2's metadata database
+takes five module lines) cannot have every pair meet only in its last 32px, so lines of one band
+may still share a run, as in Overview. Two rows of one tile that both come back to an earlier
+store currently cross each other's U (see the [UI05 handoff](handoff.md)); check it on the
+detailed view before tuning anything else.

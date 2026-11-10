@@ -6671,3 +6671,111 @@ the mid-height or default port:
 `alignLayout` already handles named ports in both of the band pipeline's align passes. A tile
 with named ports keeps its default port on the grid only when `h / 2` is a multiple of 32. UI06's
 containers should therefore use their header port, not the default port, as the plan already says.
+
+## 2026-11-09 — UI05: board ports through bands and returns
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md), named ports (UI04) now work in the banded
+pipeline the lane canvas always uses. No caller uses them yet, so Jeeves looks the same. The rules
+are in the file headers of `layout/bands.ts`, `junctions.ts`, `returns.ts`, `branches.ts` and
+`elkGraph.ts`.
+
+- `layoutBands` no longer refuses named ports. It runs `checkPorts`, so a bad port throws as in the
+  flat layout. A named port is used at its own height everywhere: the band's ELK pass, long-line
+  tracks, the routing pass's edges and track sections, `meetAtPorts` and `routeReturns`.
+- **Split ELK ports are default ports only.** Out of a tile they stay per band. Into a tile they
+  are per band *and* per named source port (`bundleOf` in `bands.ts`). This was not in the plan's
+  wording, and I added it for the plan's own test: without it, ELK bundles two rows' lines into one
+  store as one hyperedge and they share a stem whenever the store sits above or below both rows. A
+  named port is never split, whichever bands use it.
+- **Junctions** (`sharedPort`, `meetAtPorts`) group lines by the port they actually use, so a
+  junction is a port, not a tile. Two lines into different named ports of one tile get no shared
+  window. The junction rule itself stays per band. I tried making it "per band and named source
+  port", but then three or more such lines into one port cannot all meet within 32px (v2's
+  metadata database takes five module lines), and returns fell back to rule-breaking routes.
+- **Returns** (`bestU`, the `shortest` estimate, `judge`) leave and enter at the ports' heights.
+  `judge` exempts lines from the same *source port* and into the same *target port*, not the same
+  tile.
+- **`separateBranches`** needed no code change: its first and last points never move, and its
+  clash score is now port-aware through `bandClashes`.
+- `placeLoose` centres a tile without a band on the ports its lines enter, and snaps it by
+  `gridAnchor` (exported from `align.ts`; it was `anchorOf`). `endColumns` and the
+  stores-beside-their-users rules are unchanged.
+
+**Identity gate.** Before editing, at `55a8c9b`, I recorded every layout with real ELK through
+`createLayoutEngine` and `laneLayoutInput(laneGraph(design))`. The inputs were the four studies,
+`field-projects/youtube/v2/inputs/design.json`, and the `lanes`, `back` and `widen` band fixtures
+from `layout.test.ts`. For each input I recorded:
+
+- the banded layout and a relayout from the shown positions;
+- a flat layout and a flat relayout;
+- `graphKey`;
+- three `buildElkGraph` outputs;
+- every ELK input graph.
+
+After the changes, all 8 files were **byte-identical**. UI04's own gate script also gave
+byte-identical output for its 5 inputs, and the HEAD files matched UI04's "after" files.
+`elkGraph.golden.json` still passes. The scratch files are outside the repository.
+
+**Fixture** (`layout.test.ts`, "named ports in bands"): a detailed-shaped board.
+
+- The upload band's 256×160 `hub` has in ports at 32 (header) and 64 (consumer), and out ports
+  at 32, 96 and 128.
+- The writer and outbox rows both write `meta`.
+- The header's line comes back to the shared `db`.
+- The download band's `watch` enters the header.
+
+The fixture has 11 lines, **2,560px** of line, **1 crossing** (the U's level run crosses `watch`'s
+entry), 0 clashes, and draws 1,312×704. The tests check that:
+
+- every line starts and ends at its port, orthogonal and through no tile;
+- the bends are on the grid. The one exception is the U's level run, which crosses the 32px gap
+  between the shared and upload bands half a step off the grid, by the existing rule (the YouTube
+  study already has 10 such bends). The test asserts that exactly;
+- the U leaves level at the header's height;
+- lines into one port from different ports meet only in the last 32px;
+- `u` is centred between the ports it enters;
+- a relayout is unchanged.
+
+Two cheap extra cases are also tested:
+
+- **Two bands into one named port.** The hub is a row lower, so `meta` is above both of its rows.
+  The two rows' lines turn in separate slots and meet only in the last 32px: 12 lines, 3,200px,
+  1 crossing.
+- **Two returns from different rows into one store.** 12 lines, 3,648px, 4 crossings. They share
+  no run and meet by the port, but **they cross each other twice**: the first U takes the gap's
+  only slot, and widening for the second adds the new slot on the source side. The test asserts
+  this limit precisely. Fixing it needs a new widening rule, so I left the existing rule alone.
+  v2 has this shape twice: the completion handler's writer and publications rows into the
+  metadata database, and the transcoder's packager and thumbnails rows into transcoded videos.
+
+The old test expecting a banded rejection now checks that a banded input with an unknown port
+rejects.
+
+**Checks.**
+
+- `pnpm check` exited 0: **477 tests in 71 files**.
+- **41 native E2E tests passed (1.6m).**
+- The web build passed, with the existing chunk-size advisory.
+- I ran a scripted Chromium mouse check on the running dev app at 1440×900 and 1280×800, using my
+  own TinyURL extended (11 tiles, 12 lines) and YouTube (21 tiles, 25 lines) projects:
+  - every drawn tile transform and line path matched the `55a8c9b` layout;
+  - clicking a tile and a line selected them;
+  - Fit gave 0.56/0.38 and 0.45/0.30;
+  - there were no page or console errors.
+
+  I deleted my projects, and the owner's six project revisions are unchanged. One setup problem:
+  the running Vite dev server had cached an empty `bands.ts`, because it read the file while a
+  script was rewriting it. Touching the file fixed it.
+
+**For UI06.**
+
+- **Give each container named header ports** for tile-level lines (entries, the user's lines,
+  relationships no module uses). Port IDs are unique across both sides of a tile, so use, for
+  example, `header-in` and `header-out`. A 160px container has its default port at 80, off the
+  grid, so no line should use a container's default port.
+- Header 48 with rows 32px apart puts the row ports at 64, 96, 128 and so on. Put the header
+  port at 32.
+- Several rows writing one store draw as separate lines into its port. Each extra slot widens the
+  gap by 32px, so expect Detailed to be wider than Overview.
+- Lines of one band may still share runs, as in Overview.
+- Measure the two-returns crossing on v2 in your layout smoke. Nothing throws for valid ports.

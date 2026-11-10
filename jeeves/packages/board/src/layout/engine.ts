@@ -11,8 +11,8 @@
 // - Every ELK result is put on the grid (`alignLayout`) before it is cached.
 // - A board with bands (`usesBands`) is laid out by `layoutBands`, which calls ELK once per band
 //   and once more to route.
-// - An input `checkPorts` refuses (a line naming a missing or wrong-side port), or a banded one
-//   with named ports, rejects like an ELK error.
+// - An input `checkPorts` refuses (a line naming a missing or wrong-side port, or a port off the
+//   grid) rejects like an ELK error, flat or banded.
 //
 // Changes from automation-illustrator: one request channel instead of one per lane, no
 // orientation, and a superseded request that was queued for the next microtask no longer runs.
