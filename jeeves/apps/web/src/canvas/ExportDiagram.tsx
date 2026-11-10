@@ -5,6 +5,7 @@ import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api } from "../project/api.ts";
 import { formDrafts } from "../project/form-drafts.ts";
 import { useProject } from "../project/store.ts";
+import type { CanvasView } from "../studio/preferences.ts";
 import { capturePng } from "./capturePng.tsx";
 import {
   CAPTURE_BACKGROUND,
@@ -24,15 +25,24 @@ function download(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
+/**
+ * Export diagram: the PNG of the current view and its capture details, and the way to Source &
+ * diagnostics. An Overview export is byte-for-byte what it was before the Detailed view existed;
+ * a Detailed one says `detailed` in its filenames and its details' `view.canvas`.
+ */
 export function ExportDiagram({
   board,
+  view = "overview",
   onDiagnostics,
   onClose,
 }: {
   board: { current: BoardHandle | null };
+  /** The canvas view the board shows, which the PNG captures. */
+  view?: CanvasView;
   onDiagnostics: () => void;
   onClose: () => void;
 }) {
+  const detailed = view === "detailed";
   const loaded = useProject((state) => state.loaded);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -85,7 +95,7 @@ export function ExportDiagram({
         }
         const capture = await capturePng(snapshot, signal, assertCurrent);
         await assertSaved();
-        const filename = `${project.name.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 80) || "diagram"}-r${design.revision}`;
+        const filename = `${project.name.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 80) || "diagram"}-r${design.revision}${detailed ? "-detailed" : ""}`;
         const metadata = {
           format: "jeeves-diagram-capture-v1",
           capturedAt: new Date().toISOString(),
@@ -118,6 +128,10 @@ export function ExportDiagram({
             embeddedFontCssSha256: capture.fontCssSha256,
           },
           view: {
+            ...(detailed && {
+              canvas: "detailed",
+              modules: "module hosts as containers; module links from and into their rows",
+            }),
             relationships: "all projected relationships",
             selection: "omitted",
             camera: "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
@@ -170,8 +184,8 @@ export function ExportDiagram({
     <ConfigurationDialog title="Export diagram" size="lg" onClose={onClose}>
       <div className="diagram-export-options">
         <p>
-          Export the full saved diagram as a light PNG at 2× scale, including offscreen tiles and
-          all relationships. Selection is omitted.
+          Export the full saved diagram{detailed ? " in the Detailed view" : ""} as a light PNG at
+          2× scale, including offscreen tiles and all relationships. Selection is omitted.
         </p>
         <button type="button" disabled={busy} onClick={onDiagnostics}>
           Source & diagnostics

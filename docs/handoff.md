@@ -6877,3 +6877,121 @@ I deleted the project (204), and the owner's six project revisions are unchanged
   Overview key is laid out from Detailed positions. "Same tile positions after switching back"
   therefore needs per-view hints (or none) on a toggle.
 - Containers use shape `rect`; a row's centre is `row.y`, 32px tall, below a 48px header.
+
+## 2026-11-09 — UI07: detailed view on the canvas
+
+Per the [UI overhaul plan](plans/ui-overhaul/units.md) (R1), **Overview | Detailed** in the canvas
+toolbar (`fieldset.studio-view-toggle`, two `aria-pressed` buttons) switches the whole canvas.
+The choice is `view` in `useStudioPreferences` (per project, browser only); nothing reaches the
+design, history, blueprint or chat. Docs: `studio.md` (new Detailed view section; Lane canvas,
+Layout and navigation, Diagram PNG export, History, Limits) and a playbook lesson.
+
+- **Canvas.** In Detailed, `LaneCanvas` swaps each container's `TileSpec` for the projection's
+  size, ports and `tiles/ContainerTile.tsx` face, and feeds `detailedView`'s lines (plus `detail`,
+  the planned label). The Overview memo is unchanged. The face: a 45px header (kind icon in the
+  family colour, one-line name, `WarningMark`), then `ol > li.lane-container-row[data-module]`
+  boxes 24px tall centred on `row.y` (minus the 3px board frame), icon in the module's family
+  colour, ellipsised name, full name as `title`.
+- **Selection** (`selection.ts`): `canonicalLine(connectionOf, drawn)` maps a clicked or removed
+  drawn line to its relationship; `drawnSelection(linesOf, selection, clicked?)` gives the board
+  one selected drawn line (the clicked one, else the first) and the rest as `highlighted`. The
+  workspace only ever holds canonical IDs, so the inspector, chat, removal, diagnostics and Undo
+  are unchanged; the selection, including `selection.module`, survives a switch.
+- **Board** (generic, documented in `Board.tsx`, `useBoardLayout.ts`, `useAnimatedLayout.ts`):
+  - `view?: string`: `useBoardLayout` keeps each view's last shown layout and hints a request only
+    with the same view's positions (one view behaves exactly as before), and reports which view
+    its layout belongs to. Until the new view is laid out the board keeps drawing the previous
+    view's tiles and lines; the move then animates however far tiles go (`MODEST_MAX_PX` is
+    skipped across views), lines new to the view follow their tiles via the fallback route until
+    the move ends, and the camera fits once it has settled.
+  - `highlighted?: readonly string[]`: lines drawn in the selection colour over the rest, like a
+    selected tile's own lines; selects nothing, no X.
+  - The previous tiles' ports stay as invisible handles until the tiles change again: React Flow
+    takes new nodes before new edges, and without this a switch back to the Overview logged dev
+    warnings (#008, handle not found) for every module line.
+  - No layout file changed; `elkGraph.golden.json` passes.
+- **Export** follows the view (`ExportDiagram`'s `view`). Detailed: filenames end `-detailed` and
+  the details' `view` gains `canvas: "detailed"` and a `modules` note. Overview: no new fields.
+  The e2e export helper moved to `e2e/export.ts`.
+
+**Overview identity.** Before editing, at `d9b8cae`, a scripted export of a fresh YouTube study
+(1440×900, dev app) gave, twice, PNG
+`472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f` and details (without
+`capturedAt`, `renderer` and the project ID) hashing
+`7cf77b11a98b71a98cefe2ec237fbfa5ac229a1563f672e7fcc1858fafbfd8b9`. After the change the same
+script gave the identical PNG, details and tile positions.
+
+**Tests.** `board.test.tsx` +1: a first switch requests no hints, the old view stays drawn until
+the new one lands, an edit in the detailed view is hinted with its own positions and the next
+Overview edit with exactly the Overview's, and `highlighted` inks a line without selecting it.
+`selection.test.ts` +3: canonical mapping, drawn selection (elsewhere/clicked/other line/tile),
+and a round trip of every YouTube drawn line (25 relationships, 26 lines, pinned for the e2e).
+New `detailed-view.spec.ts` (4 tests):
+
+- YouTube by mouse: the toggle, Transcoder's 5 rows (256×224), 26 lines, all tiles inside the
+  canvas after the fit, `transcoder-write/transcoder-thumbnails` opening "Stores segments,
+  playlists and thumbnails" with both drawn lines blue, chat selection `["transcoder-write"]`,
+  the selection across both switches, X removing both drawn lines and Undo, the cut-off refusal
+  on a module line, the container's X panel (Cancel) and an Add after → Cache plus Undo, an open
+  module surviving a switch, then the Overview's exact tiles and line paths, and Detailed
+  surviving a reload; design and blueprint equal apart from the revision.
+- TinyURL extended with declared ownership: a module line's X opens "Remove relationship
+  declarations"; Remove and Undo.
+- TinyURL foundation: identical tiles, line paths and camera in both views, no containers.
+- Export: Overview, Detailed (`-detailed` names, `canvas`, 21 tiles, 26 lines, different PNG),
+  Overview again with identical PNG bytes and details.
+
+**Checks.** `pnpm check` exited 0: **491 tests in 72 files**. **45 native E2Es passed (1.8m).**
+The web build passed with the existing chunk-size advisory. Scripted Chromium mouse checks on the
+running dev app at 1440×900 and 1280×800 with my own projects (TinyURL foundation, YouTube and a
+project seeded from `field-projects/youtube/v2/inputs/design.json` through `/operations`):
+TinyURL rendered 7 tiles and 7 lines in both views; on YouTube a container and a module line
+selected, the line's X removed it (26 → 25 lines) and Undo restored it; the chooser listed
+"Packager (Transcoder) to Transcoded videos" and "Thumbnailer (Transcoder) …" next to the CDN's
+line; dark mode read correctly; no page errors and no console errors or warnings. All my
+projects were deleted (204). Evidence: `plans/ui-overhaul/evidence/ui07/` (YouTube Overview and
+Detailed, a selected module line, v2's Video lifecycle worker).
+
+Fit zooms (rails: none / chat / inspector / both):
+
+| Design, view | 1440×900 | 1280×800 |
+| --- | --- | --- |
+| YouTube Overview | 0.39 / 0.39 / 0.39 / 0.38 | 0.35 / 0.35 / 0.35 / 0.30 |
+| YouTube Detailed | 0.34 / 0.34 / 0.34 / 0.29 | 0.30 / 0.30 / 0.30 / 0.23 |
+| v2 Overview | 0.43 / 0.40 / 0.39 / 0.28 | 0.37 / 0.34 / 0.34 / 0.23 |
+| v2 Detailed | 0.38 / 0.30 / 0.29 / 0.21 | 0.33 / 0.26 / 0.25 / 0.20 (floor, not whole) |
+
+**v2 against the sketch.** The Video lifecycle worker is a 256×160 container with Processing
+consumer, Lifecycle writer and Publication outbox publisher. Processing events → the consumer row
+(dashed) and the outbox row → Publication events (dashed) match the sketch. Both rows' lines to
+the Metadata database differ: the database is upstream (top left), so the writer's line runs up
+and over the worker and the outbox's runs under it and back, instead of the sketch's two short
+lines into a database to the right.
+
+**For UI08.**
+
+- Row hook: `li.lane-container-row[data-module]` in `ContainerTile`, built inside `LaneCanvas`'s
+  `detailed` memo, which has the projection (`rowOf`, `partners`). Rows are inert now; a click
+  falls through to the container (`onSelectTile`). Add `onOpenModule(host, module)` to
+  `LaneCanvas` and call `Workspace`'s `select({ tile: host, module })`. In Hand mode nodes already
+  take `pointer-events: none`.
+- Module selection meets the canvas in `LaneCanvas`: `selected` is the `WorkspaceSelection`, so
+  `selected.module` is there; `drawnSelection` currently drops it. Passing the open module to
+  `ContainerTile` changes the tiles' identity but not the layout key, so no relayout.
+- Highlight: `Board`'s `highlighted` takes any drawn line IDs (filter `projection.lines` by
+  `sourceModule`/`targetModule`). Note the board also inks every line of `selected.tile`, so with
+  a host selected all its lines are already blue; showing only the module's lines needs either
+  another generic prop or a different board selection while a module is open.
+
+**For UI09 (readability seen).**
+
+- At the fit nothing in a container is readable (row text about 4px at 0.34); Detailed is for
+  zooming in. v2 at 1280×800 with both rails stops at the 0.20 floor and is cut off.
+- Rows returning to an upstream store loop round their container (v2's lifecycle worker above;
+  the Transcoder's encoder, packager and thumbnailer lines come back up and left to Original and
+  Transcoded videos), and the two Transcoder rows into Transcoded videos cross (UI05's limit).
+- Choose relationship lists both drawn lines of one relationship (both select the same thing).
+- The header's family-colour rule (45%) is faint; row boxes leave 10px between the frame and the
+  row, so a line's arrowhead stops at the frame, not at the row box.
+- During the 200ms switch, lines new to the view are drawn as right-angle fallbacks between their
+  moving tiles; they snap to their routes at the end.

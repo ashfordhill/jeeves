@@ -114,6 +114,75 @@
   color: var(--board-ink);
 }
 
+/* Container face (Detailed view): a one-line header, then one row per module, each centred on its
+   port's height (positions come from the projection). */
+.lane-container {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+.lane-container-header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 40px 0 12px;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--type-color) 45%, transparent);
+}
+
+.lane-container-icon {
+  display: flex;
+  flex: 0 0 22px;
+  color: var(--type-color);
+}
+
+.lane-container-name,
+.lane-container-row-name {
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--board-ink);
+}
+
+.lane-container-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.lane-container-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lane-container-row {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1.5px solid color-mix(in srgb, var(--board-line) 30%, transparent);
+  border-radius: 7px;
+  background: var(--board-paper);
+}
+
+.lane-container-row-icon {
+  display: flex;
+  flex: 0 0 16px;
+  color: var(--type-color);
+}
+
+.lane-container-row-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
 /* Actor face (ActorColumn proportions): figure on the pastel strip, name plate at the bottom. */
 .lane-actor {
   box-sizing: border-box;
@@ -582,7 +651,8 @@
 /* A design warning's mark in a tile's top-right corner (inside a pill's curve too); its tooltip
    is the message. Warnings never block an edit. */
 .lane-tile,
-.lane-action {
+.lane-action,
+.lane-container {
   position: relative;
 }
 .lane-warning-mark {

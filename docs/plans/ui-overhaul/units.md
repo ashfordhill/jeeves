@@ -1,6 +1,6 @@
 # UI overhaul: modules on the canvas and a one-page inspector
 
-**Status:** planned 2026-11-08 from owner feedback. UI01–UI06 done 2026-11-09; UI07 is next.
+**Status:** planned 2026-11-08 from owner feedback. UI01–UI07 done 2026-11-09; UI08 is next.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-08 — Modules on the canvas and a one-page inspector](../../HUMAN_FEEDBACK.md)
 · [module sketch](../../human-feedback/2026-11-08-module-detail-sketch.png)
 · [current inspector](../../human-feedback/2026-11-08-inspector-current.png)

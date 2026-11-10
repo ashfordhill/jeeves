@@ -1276,3 +1276,18 @@ takes five module lines) cannot have every pair meet only in its last 32px, so l
 may still share a run, as in Overview. Two rows of one tile that both come back to an earlier
 store currently cross each other's U (see the [UI05 handoff](handoff.md)); check it on the
 detailed view before tuning anything else.
+
+## 2026-11-09 UI07: a second view of one design keeps the reader's place
+
+The Detailed view redraws the same design with containers and module lines, so it must never
+feel like another document. Four things keep the reader's place. The toggle is a view preference,
+saved in the browser per project and never in the design, so toggling adds no history step. The
+selection carries across: one relationship drawn as several module lines is still one selection,
+and all its lines turn blue (the clicked one carries the X), whichever view or panel selected it.
+Each view is laid out from its own last positions; hinting the Overview with Detailed's positions
+changed the Overview of all four test designs (UI06), so switching back after an edit would not
+have found it as it was. The switch keeps the old picture until the new one is laid out, then moves every tile
+however far (a jump would lose the reader), lets lines that only the new view draws follow their
+moving tiles, and fits last. At the fit, module names are too small to read (YouTube at 0.34,
+v2 at 0.30); the view is for zooming into a part, and the [UI07 handoff](handoff.md) lists what
+still reads badly there.

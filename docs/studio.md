@@ -72,8 +72,9 @@ future generator's frontend templates) which user flow each service serves.
   a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
   see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
   the same blue, with a red X ([Removing](#removing)).
-  Modules (components) are not drawn; they are cards on their tile's inspector page
-  ([Inspector](#inspector)). C1 people, external systems and packages are not shown.
+  In the Overview, modules (components) are not drawn; they are cards on their tile's inspector
+  page ([Inspector](#inspector)). The [Detailed view](#detailed-view) draws them inside their
+  tiles. C1 people, external systems and packages are not shown.
 
 To trace relationships, select: a tile's lines turn blue, and a selected line shows its
 endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
@@ -82,12 +83,50 @@ plain view; there is no separate mode to leave. Remove a relationship with the s
 When a removed tile had a neighbour, the selection moves to it. **Fit** frames the whole design.
 Selection and Fit change no saved design, revision or blueprint.
 
+## Detailed view
+
+**Overview | Detailed** in the canvas toolbar switches the whole canvas between two views of the
+same design. Overview is the default. The choice is remembered per project in this browser; it is
+never saved to the design, its revision or history, the blueprint or chat. Switching keeps the
+selection, including an open module, animates every tile to its new place and then fits.
+
+In Detailed, an application tile with at least one module is a **container** (`detailedView.ts`,
+`tiles/ContainerTile.tsx`): 256px wide, a header with the kind icon in its family colour and the
+name on one line, then one 32px row per module in module order. A row shows the module's icon in
+its family colour and its name, cut short with an ellipsis; the full name is its tooltip. A
+warning mark sits in the header's corner. Every other tile keeps its Overview size and face.
+
+- Each module link to a tile is drawn from (or into) that module's row, in the relationship's own
+  direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
+  twice (YouTube's Packager and Thumbnailer both write Transcoded videos: 25 relationships, 26
+  lines). A relationship no module uses, an entry and the user's line attach at the header.
+  Links between modules of one tile are not drawn.
+- A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
+  chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
+  the clicked one thicker with the X. A relationship selected elsewhere (diagnostics, chat, Undo)
+  shows its drawn lines the same way. **Choose relationship** names the modules ("Packager
+  (Transcoder) to Transcoded videos"). The X removes the whole relationship, with the same
+  refusals and confirmation as in the Overview; module links that use it go with it.
+- Containers are tiles: click one to select it, and its pull tabs and X work as on any tile.
+  Rows are not clickable yet; a click on one selects its container.
+- Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
+  positions: switching back finds the Overview exactly as it was, and an edit made in Detailed
+  lays the Overview out as if it had been made there.
+- Detailed is larger, so it fits smaller. YouTube draws about 1,920×1,600px and fits at 0.34 at
+  1440×900 with at most one rail open (0.29 with both) and at 0.30 at 1280×800 (0.23). The v2
+  YouTube field design fits at 0.30 at 1440×900 with the chat open (0.38 with no rail, 0.21 with
+  both) and at 0.26 at 1280×800; with both rails open there it stops at the zoom floor, 0.20, and
+  no longer fits whole. Zoom in to read the rows.
+
 ## Diagram PNG export
 
 Click **Export diagram** in the canvas toolbar, then **PNG**. The download contains the full
-saved diagram, including offscreen tiles, their existing labels/icons, all projected routes,
-crossing gaps and arrowheads. It uses the same HTML faces, SVG lines and settled layout as the
-canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
+saved diagram in the current view, including offscreen tiles, their existing labels/icons, all
+projected routes, crossing gaps and arrowheads. An Overview export is byte-for-byte what it was
+before the Detailed view existed. A Detailed export ends its filenames in `-detailed` and its
+capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
+and their lines the relationship each drawn line belongs to. It uses the same HTML faces, SVG
+lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
 The image shows canonical process and resource tiles, retaining every relationship identity.
@@ -195,15 +234,15 @@ On the grid (`alignLayout` in `jeeves/packages/board`, run on every layout):
   no tiles and widens no gaps. Crowded gaps can still retain shared runs.
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
-has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and
-**Fit**. The canvas fits when it opens; Fit refits, and never zooms in past 100%. The camera
-follows the canvas:
+has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected),
+**Fit** and **Overview | Detailed** ([Detailed view](#detailed-view)). The canvas fits when it
+opens; Fit refits, and never zooms in past 100%. The camera follows the canvas:
 
 - While the camera is fitted (since the canvas opened, or since Fit), it refits at once whenever
   the canvas changes size: a rail opens or closes (selecting opens the inspector), a rail is
   resized, or the window is.
 - Once you pan or zoom, the camera is yours: rails opening and closing leave it alone until you
-  click Fit.
+  click Fit or switch views; a view switch always fits.
 - A new tile that lands outside the view is brought in: the canvas pans just enough to show it,
   with room for its tabs, at the same zoom. Attaches and chat edits don't move the camera.
 
@@ -416,8 +455,8 @@ them. The three studies have none. The rules live in `studio-warnings.ts`.
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
 batch (an autosaved edit, an action's rename, an entry's lane switch or removing a module) or chat
 turn is one step; a new edit ends the redo chain. Selecting, opening a module or going Back,
-panning, zooming and Fit add none and leave the design and blueprint unchanged. The history
-survives reloads.
+switching between Overview and Detailed, panning, zooming and Fit add none and leave the design
+and blueprint unchanged. The history survives reloads.
 
 ## Profile and requirements
 
@@ -969,9 +1008,14 @@ and all twenty components, with nothing omitted and no findings.
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
   writes" until renamed, though it reads.
-- Modules are not drawn, and the inspector neither lists nor edits their links: a module's links
-  are preserved, preset-bound or made through chat (including a link between two modules of one
-  tile, "Supplies code").
+- The inspector neither lists nor edits module links, and the Detailed view draws only those to
+  other tiles: a module's links are preserved, preset-bound or made through chat (including a link
+  between two modules of one tile, "Supplies code", which no view draws).
+- In Detailed, two rows of one container that write one store come back to it as separate lines
+  and can cross each other (YouTube's Packager and Thumbnailer into Transcoded videos; twice in the
+  v2 field design). A row's line to a store upstream of its tile loops round the container (v2's
+  Lifecycle writer and Publication outbox publisher to the Metadata database run over and under
+  the Video lifecycle worker), unlike the owner's sketch, where the database sits after it.
 - An unload flush is an attempt, not a durability guarantee.
 - Live chat quality with the lane-canvas instructions has not been evaluated; only the scripted
   test model has run. Selecting an action sends chat no identity, so "rename this" with an action

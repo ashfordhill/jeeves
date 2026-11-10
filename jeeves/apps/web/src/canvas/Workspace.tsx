@@ -1,6 +1,7 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
-// rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
-// tabs add tiles and attach them (`creation.tsx`), the red X on a tile or line removes it
+// rail toggles in the app header and Select, Hand, Fit and Overview | Detailed on the canvas (the
+// view is a per-project browser preference; the selection carries across it). The selected tile's
+// pull tabs add tiles and attach them (`creation.tsx`), the red X on a tile or line removes it
 // (`removal.tsx`); settings and modules are edited in the inspector (`TileInspector.tsx`), an
 // action's name in its own (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
 // The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
@@ -51,7 +52,7 @@ import { ConnectionForm } from "../studio/ConnectionForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
 import { OperationChanges } from "../studio/OperationChanges.tsx";
-import { useStudioPreferences } from "../studio/preferences.ts";
+import { type CanvasView, useStudioPreferences } from "../studio/preferences.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
@@ -200,6 +201,9 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     if (selection.tile) remove(selection.tile);
     else if (selection.line) removal.onRemoveLine?.(selection.line);
   };
+  const view = preferences.view;
+  const showView = (next: CanvasView) =>
+    setPreferences((current) => (current.view === next ? current : { ...current, view: next }));
   const toggle = (rail: "chatOpen" | "inspectorOpen") => {
     if (rail === "inspectorOpen") void formDrafts.flushProject(projectId, true);
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
@@ -252,6 +256,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       {exportOpen ? (
         <ExportDiagram
           board={board}
+          view={view}
           onDiagnostics={() => {
             setExportOpen(false);
             setDiagnosticsOpen(true);
@@ -311,6 +316,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           ref={board}
           design={loaded.design}
           graph={graph}
+          view={view}
           selected={selection}
           mode={mode}
           onSelectTile={(tile) => select({ tile })}
@@ -341,6 +347,23 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           <button type="button" title="Fit" aria-label="Fit" onClick={() => board.current?.fit()}>
             <IconFocusCentered size={19} />
           </button>
+          <fieldset className="studio-view-toggle" aria-label="View">
+            {(
+              [
+                ["overview", "Overview"],
+                ["detailed", "Detailed"],
+              ] as const
+            ).map(([choice, label]) => (
+              <button
+                key={choice}
+                type="button"
+                aria-pressed={view === choice}
+                onClick={() => showView(choice)}
+              >
+                {label}
+              </button>
+            ))}
+          </fieldset>
           <button
             type="button"
             className="diagram-export-trigger"

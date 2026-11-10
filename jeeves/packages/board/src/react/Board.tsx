@@ -19,6 +19,13 @@
 // its ports too; the drawn line and its arrowhead follow the routed ends. Snapshots carry them.
 // Flat and banded layouts both route lines to their named ports.
 //
+// Views: `view` names which view of one graph the tiles and lines show (an overview and a detailed
+// one, say). Each view keeps its own stability hints (`useBoardLayout`). On a switch the previous
+// view stays drawn until the new one is laid out, the move animates however far tiles go
+// (`useAnimatedLayout`), and then the camera fits. `highlighted` lines take the selection colour
+// like the selected tile's own lines (several drawn lines of one selected relationship, say); it
+// is view only and selects nothing. Without either prop the board is a single view, as before.
+//
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
 // on each tile face, line chip and fan item. In hand mode tiles and lines let the pointer
@@ -188,6 +195,17 @@ export type BoardProps = {
   /** The selected line's X (at its midpoint) was clicked; without it lines have no X. */
   onRemoveLine?: (line: string) => void;
   hud?: TileHud;
+  /**
+   * The view the tiles and lines show; default one view. Each view keeps its own stability
+   * hints; a switch keeps the previous view drawn until the new one is laid out, animates the
+   * move however far tiles go, then fits.
+   */
+  view?: string;
+  /**
+   * Lines drawn in the selection colour and over the rest, as the selected tile's own lines are.
+   * View only: it selects nothing and shows no X.
+   */
+  highlighted?: readonly string[];
   ref?: Ref<BoardHandle>;
 };
 
@@ -233,9 +251,12 @@ type TileHandle = NonNullable<TileNode["handles"]>[number];
 
 /**
  * A tile's handles before React Flow measures it (and in tests, where it never does): the default
- * ones at mid-height, then one per named port.
+ * ones at mid-height, then one per named port, then any `lingering` ports it no longer has.
  */
-function tileHandles(t: Pick<TileSpec, "w" | "h" | "ports">): TileHandle[] {
+function tileHandles(
+  t: Pick<TileSpec, "w" | "h" | "ports">,
+  lingering: readonly TilePort[] = [],
+): TileHandle[] {
   const handle = (side: TilePort["side"], y: number, id?: string): TileHandle => ({
     ...(id !== undefined && { id }),
     type: side === "in" ? "target" : "source",
@@ -249,6 +270,9 @@ function tileHandles(t: Pick<TileSpec, "w" | "h" | "ports">): TileHandle[] {
     handle("in", t.h / 2),
     handle("out", t.h / 2),
     ...(t.ports ?? []).map((p) => handle(p.side, p.y, p.id)),
+    ...lingering
+      .filter((p) => !t.ports?.some((own) => own.id === p.id && own.side === p.side))
+      .map((p) => handle(p.side, p.y, p.id)),
   ];
 }
 
@@ -320,6 +344,12 @@ function layoutInput(tiles: readonly TileSpec[], lines: readonly LineSpec[]): La
   };
 }
 
+function sizesOf(tiles: readonly TileSpec[]): Record<string, Size> {
+  const sizes: Record<string, Size> = {};
+  for (const t of tiles) sizes[t.id] = { w: t.w, h: t.h };
+  return sizes;
+}
+
 function paneOf(host: HTMLElement | null): (Pane & { left: number; top: number }) | null {
   const el = host?.querySelector(".react-flow");
   if (!(el instanceof HTMLElement)) return null;
@@ -340,11 +370,13 @@ function lineEdges(
   layout: BoardLayout,
   selected: BoardSelection = {},
   placed: (id: string) => Point | undefined = (id) => layout.positions[id],
+  highlighted?: ReadonlySet<string>,
 ): BoardLineEdge[] {
-  /* Draw order at crossings: dashed under solid; the selected tile's lines over the rest, and the
-     selected line on top. */
+  /* Draw order at crossings: dashed under solid; the selected tile's lines and highlighted lines
+     over the rest, and the selected line on top. */
   const linked = (l: LineSpec) =>
-    selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile);
+    (selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile)) ||
+    highlighted?.has(l.id) === true;
   const rank = (l: LineSpec) =>
     (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
   const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
@@ -395,6 +427,8 @@ function Inner({
   onRemoveTile,
   onRemoveLine,
   hud,
+  view = "",
+  highlighted,
   handle,
 }: Omit<BoardProps, "ref"> & { handle?: Ref<BoardHandle> }) {
   const rf = useReactFlow<TileNode, BoardLineEdge>();
@@ -403,12 +437,12 @@ function Inner({
   useEffect(() => {
     if (selected.tile || selected.line || mode === "hand") setLineChoice(undefined);
   }, [selected.tile, selected.line, mode]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: another view's lines close the chooser
+  useEffect(() => setLineChoice(undefined), [view]);
   const input = layoutInput(tiles, lines);
 
-  const sizes: Record<string, Size> = {};
-  for (const t of tiles) sizes[t.id] = { w: t.w, h: t.h };
+  const sizes = sizesOf(tiles);
   const sizesRef = useRef(sizes);
-  sizesRef.current = sizes;
   const shownRef = useRef<BoardLayout | null>(null);
 
   /* Picked tiles dock beside their source, worked out against the positions shown when they
@@ -427,10 +461,22 @@ function Inner({
     if (dock.hint.show) dockShow[id] = dock.hint.at;
   }
 
-  const { layout, phase, error } = useBoardLayout(engine, input, { ...hints, ...dockOrder });
+  const {
+    layout,
+    phase,
+    error,
+    view: laidOut,
+  } = useBoardLayout(engine, input, { ...hints, ...dockOrder }, view);
+  /* While a switched-to view is laid out, the previous view's tiles and lines stay drawn with the
+     previous layout; then the move animates from one finished view to the other. */
+  const settled = useRef({ tiles, lines, sizes });
+  if (laidOut === view && (settled.current.tiles !== tiles || settled.current.lines !== lines))
+    settled.current = { tiles, lines, sizes };
+  const drawn = settled.current;
+  sizesRef.current = drawn.sizes;
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
-  const shown = useAnimatedLayout(layout);
+  const shown = useAnimatedLayout(layout, laidOut);
   shownRef.current = shown;
   const display = shown?.positions;
   for (const id of docks.current.keys()) if (display?.[id]) docks.current.delete(id);
@@ -493,6 +539,18 @@ function Inner({
     };
   }, [phase, rf, tileCount, layout]);
 
+  /* Frames the shown tiles, animated; never zooms in past 100%. */
+  const fit = useCallback(() => {
+    const pane = paneOf(hostRef.current);
+    const current = shownRef.current;
+    const box = current ? unionTileBounds(current.positions, sizesRef.current) : undefined;
+    if (!pane || !layoutBoundsAreUsable(box)) return;
+    const next = viewportToFitRect(pane, box);
+    lastZoomRef.current = next.zoom;
+    originRef.current = "fit";
+    void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
+  }, [rf]);
+
   useImperativeHandle(
     handle,
     () => ({
@@ -500,21 +558,25 @@ function Inner({
         if (error) throw new Error("The diagram layout failed. Reload and try exporting again.");
         // Animated frames carry the target key too: object identity detects actual settlement.
         if (phase !== "ready" || !layout || shown !== layout || covering) return null;
-        return { tiles: [...tiles], lines: [...lines], layout: structuredClone(layout) };
+        return {
+          tiles: [...drawn.tiles],
+          lines: [...drawn.lines],
+          layout: structuredClone(layout),
+        };
       },
-      fit() {
-        const pane = paneOf(hostRef.current);
-        const current = shownRef.current;
-        const box = current ? unionTileBounds(current.positions, sizesRef.current) : undefined;
-        if (!pane || !layoutBoundsAreUsable(box)) return;
-        const next = viewportToFitRect(pane, box);
-        lastZoomRef.current = next.zoom;
-        originRef.current = "fit";
-        void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
-      },
+      fit,
     }),
-    [rf, lines, tiles, layout, shown, phase, error, covering],
+    [fit, drawn, layout, shown, phase, error, covering],
   );
+
+  /* Once a switched-to view has laid out and animated, the camera fits it. */
+  const fittedView = useRef(laidOut);
+  useEffect(() => {
+    if (laidOut === fittedView.current || phase !== "ready" || shown !== layout) return;
+    if (!cameraApplied.current) return;
+    fittedView.current = laidOut;
+    fit();
+  }, [fit, laidOut, phase, shown, layout]);
 
   /* The board changed size (a rail opened or closed, the window resized): a fitted camera refits
      the laid-out tiles at once; the user's camera stays. */
@@ -639,21 +701,21 @@ function Inner({
     placed(source)
       ? source
       : null;
-  const label = (id: string) => tiles.find((t) => t.id === id)?.label ?? id;
+  const label = (id: string) => drawn.tiles.find((t) => t.id === id)?.label ?? id;
   const chrome = chromeTile ? (
     <TileChrome
       tile={chromeTile}
-      size={sizes[chromeTile] ?? { w: 128, h: 128 }}
+      size={drawn.sizes[chromeTile] ?? { w: 128, h: 128 }}
       tabs={tabs ?? []}
       {...(removeTile && {
         remove: { label: `Remove ${label(chromeTile)}`, onRemove: () => removeTile(chromeTile) },
       })}
       host={hostRef}
-      others={() => tiles.map((t) => t.id).filter((id) => id !== chromeTile && placed(id))}
+      others={() => drawn.tiles.map((t) => t.id).filter((id) => id !== chromeTile && placed(id))}
       canDrop={(tab, target) => canDrop?.(chromeTile, tab, target) ?? false}
       onPull={onPull}
       onPick={(tab, item) => {
-        const port = lines.filter((l) =>
+        const port = drawn.lines.filter((l) =>
           tab.side === "after" ? l.source === chromeTile : l.target === chromeTile,
         ).length;
         const record = (id: string | undefined) => {
@@ -683,7 +745,18 @@ function Inner({
     return pull.over === id ? " is-drop-target is-drop-over" : " is-drop-target";
   };
 
-  const nodes: TileNode[] = tiles.map((t) => {
+  /* The previously drawn tiles' ports. React Flow takes new tiles before new lines, and its lines
+     check their ends once more before they update, so after a view switch drops a port its handle
+     stays (invisible) until the tiles change again. */
+  const lingering = useRef({ drawn, ports: new Map<string, readonly TilePort[]>() });
+  if (lingering.current.drawn !== drawn) {
+    const before = lingering.current.drawn.tiles;
+    lingering.current = {
+      drawn,
+      ports: new Map(before.flatMap((t) => (t.ports ? [[t.id, t.ports]] : []))),
+    };
+  }
+  const nodes: TileNode[] = drawn.tiles.map((t) => {
     const at = placed(t.id);
     return {
       id: t.id,
@@ -704,14 +777,15 @@ function Inner({
       height: t.h,
       measured: { width: t.w, height: t.h },
       // Lines know their ends before React Flow measures the tile (and in tests, where it never does).
-      handles: tileHandles(t),
+      handles: tileHandles(t, lingering.current.ports.get(t.id)),
       ariaLabel: t.label,
       style: { width: t.w, height: t.h, ...(hand ? { pointerEvents: "none" } : {}) },
     };
   });
 
   const routes = shown?.routes ?? {};
-  const edges = shown ? lineEdges(lines, shown, selected, placed) : [];
+  const highlight = useMemo(() => new Set(highlighted), [highlighted]);
+  const edges = shown ? lineEdges(drawn.lines, shown, selected, placed, highlight) : [];
 
   const context = useMemo(
     () => ({
@@ -830,7 +904,7 @@ function Inner({
         >
           <strong>Choose relationship</strong>
           {lineChoice.ids.map((id) => {
-            const line = lines.find((item) => item.id === id);
+            const line = drawn.lines.find((item) => item.id === id);
             return line ? (
               <button
                 key={id}

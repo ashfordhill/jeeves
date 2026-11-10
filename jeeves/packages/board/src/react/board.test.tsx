@@ -215,6 +215,107 @@ describe("Board", () => {
     expect(onRemoveLine).toHaveBeenCalledWith("publish");
   });
 
+  it("keeps each view's hints apart, draws the old view until the new one lands, and highlights lines", async () => {
+    let finish: (() => void) | undefined;
+    let hold = false;
+    const engine = createLayoutEngine(
+      {
+        layout: async (graph) => {
+          if (hold)
+            await new Promise<void>((resolve) => {
+              finish = resolve;
+            });
+          return fakeElk.layout(graph);
+        },
+      },
+      { debounceMs: 0 },
+    );
+    const request = vi.spyOn(engine, "request");
+    // The detailed view draws Redirect taller, with a module line of its own.
+    const detailedTiles = [
+      tiles[0] as TileSpec,
+      tile("redirect", "Redirect", 192),
+      tiles[2] as TileSpec,
+    ];
+    const detailedLines: LineSpec[] = [
+      lines[0] as LineSpec,
+      { id: "publish/m", source: "redirect", target: "events", dashed: true, directed: true },
+    ];
+    const extra = tile("extra", "Extra");
+    const board = (
+      view: string,
+      t: readonly TileSpec[],
+      l: readonly LineSpec[],
+      highlighted?: string[],
+    ) => (
+      <Board
+        tiles={t}
+        lines={l}
+        engine={engine}
+        selected={{}}
+        onSelectTile={() => {}}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        mode="select"
+        view={view}
+        {...(highlighted && { highlighted })}
+      />
+    );
+    const drawn = () =>
+      [...container.querySelectorAll<HTMLElement>(".react-flow__edge")]
+        .map((e) => e.dataset.id)
+        .sort();
+    const { container, rerender } = render(board("overview", tiles, lines));
+    const ready = () =>
+      waitFor(() =>
+        expect(container.querySelector(".board")?.getAttribute("data-layout")).toBe("ready"),
+      );
+    await ready();
+    const overview = request.mock.results[0]?.value as Promise<{ positions: object }>;
+    const overviewPositions = (await overview).positions;
+
+    // A first switch lays the detailed view out without the overview's positions as hints, and
+    // the overview stays drawn until it lands.
+    hold = true;
+    rerender(board("detailed", detailedTiles, detailedLines));
+    await waitFor(() => expect(finish).toBeTypeOf("function"));
+    expect(request.mock.calls.at(-1)?.[1]).toBeUndefined();
+    expect(drawn()).toEqual(["entry", "publish"]);
+    expect(screen.getByRole("group", { name: "Redirect" }).style.height).toBe("128px");
+    hold = false;
+    await act(async () => {
+      finish?.();
+    });
+    await ready();
+    expect(drawn()).toEqual(["entry", "publish/m"]);
+    expect(screen.getByRole("group", { name: "Redirect" }).style.height).toBe("192px");
+
+    // An edit made in the detailed view is hinted by the detailed positions; back in the
+    // overview, the next edit is hinted by the overview's own positions, never the detailed ones.
+    rerender(board("detailed", [...detailedTiles, extra], detailedLines));
+    await ready();
+    const detailedHints = request.mock.calls.at(-1)?.[1];
+    expect(detailedHints && Object.keys(detailedHints).sort()).toEqual([
+      "actor",
+      "events",
+      "redirect",
+    ]);
+    expect(detailedHints).not.toEqual(overviewPositions);
+    rerender(board("overview", [...tiles, extra], lines));
+    await ready();
+    expect(request.mock.calls.at(-1)?.[1]).toEqual(overviewPositions);
+
+    // Highlighted lines take the selection colour; nothing is selected.
+    rerender(board("overview", [...tiles, extra], lines, ["entry"]));
+    const ink = (id: string) =>
+      container.querySelector<SVGPathElement>(
+        `.react-flow__edge[data-id="${id}"] .react-flow__edge-path`,
+      )?.style.stroke;
+    expect(ink("entry")).toBe("var(--board-select)");
+    expect(container.querySelector(".react-flow__edge.selected")).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Remove/ })).toBeNull();
+  });
+
   it("draws lines and arrowheads at named ports, with handles there, and snapshots the ports", async () => {
     const ref = createRef<BoardHandle>();
     const hub: TileSpec = {

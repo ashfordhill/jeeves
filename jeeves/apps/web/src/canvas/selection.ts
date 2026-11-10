@@ -1,4 +1,5 @@
-// The workspace's selection: the board's tile or line, plus the module open in the inspector.
+// The workspace's selection: the board's tile or line, plus the module open in the inspector. Lines
+// are canonical relationships; the Detailed view maps its drawn lines to and from them.
 import type { BoardSelection } from "@jeeves/board";
 import type { DesignDocument, LaneGraph } from "@jeeves/spec";
 
@@ -29,4 +30,34 @@ export function liveSelection(
   }
   if (pick.line && graph.edges.some((edge) => edge.id === pick.line)) return { line: pick.line };
   return {};
+}
+
+/**
+ * The canonical relationship of a line drawn in the Detailed view (`DetailedView.connectionOf`).
+ * The inspector, chat and removal only ever see this ID; an unanchored line already is its edge.
+ */
+export function canonicalLine(
+  connectionOf: (line: string) => string | undefined,
+  line: string,
+): string {
+  return connectionOf(line) ?? line;
+}
+
+/**
+ * What the board shows for a workspace selection in the Detailed view, where one relationship
+ * may be drawn as several lines (`DetailedView.linesOf`): one of them is the board's selected line
+ * (the one last clicked when it is one of them, else the first) and the rest are highlighted in
+ * the selection colour. A tile stays the tile; the open module is the inspector's.
+ */
+export function drawnSelection(
+  linesOf: (connection: string) => readonly string[],
+  selection: BoardSelection,
+  clicked?: string,
+): { selected: BoardSelection; highlighted: readonly string[] } {
+  if (!selection.line)
+    return { selected: selection.tile ? { tile: selection.tile } : {}, highlighted: [] };
+  const drawn = linesOf(selection.line);
+  const line =
+    clicked !== undefined && drawn.includes(clicked) ? clicked : (drawn[0] ?? selection.line);
+  return { selected: { line }, highlighted: drawn.filter((id) => id !== line) };
 }

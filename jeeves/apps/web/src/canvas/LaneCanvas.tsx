@@ -6,6 +6,14 @@
 // line's from `removal`. A tile or action with a design warning carries a mark (`Warnings.tsx`).
 // Every tile and line carries its lane band (`laneLayoutInput`), so the board stacks download,
 // shared and upload.
+//
+// The Detailed view (`detailedView`) draws each module host as a container of its modules
+// (`ContainerTile`) and each module's links from or into its row; every other tile and line is as
+// in the Overview, whose output this view never changes. One relationship may be drawn as several
+// lines there. The workspace only ever sees canonical relationships: a clicked or removed drawn
+// line maps to its connection (`canonicalLine`), and a selected connection shows all of its drawn
+// lines, the clicked one as the board's selected line (`drawnSelection`). The board keeps each
+// view's layout hints apart (`view`).
 import {
   Board,
   type BoardHandle,
@@ -22,12 +30,16 @@ import {
   laneActionName,
   studioWarnings,
 } from "@jeeves/spec";
-import { type Ref, useMemo } from "react";
+import { type Ref, useMemo, useState } from "react";
+import type { CanvasView } from "../studio/preferences.ts";
+import { detailedView } from "./detailedView.ts";
 import { layoutEngine } from "./elk.ts";
 import { LineLegend } from "./LineLegend.tsx";
 import { laneLayoutInput } from "./laneLayout.ts";
+import { canonicalLine, drawnSelection } from "./selection.ts";
 import { ActionTile } from "./tiles/ActionTile.tsx";
 import { ACTOR_NAME, ActorTile } from "./tiles/ActorTile.tsx";
+import { ContainerTile } from "./tiles/ContainerTile.tsx";
 import { Tile, tileShape } from "./tiles/Tile.tsx";
 import "./canvas.css";
 
@@ -42,6 +54,7 @@ export function laneNodeName(design: DesignDocument, graph: LaneGraph, id: strin
 export function LaneCanvas({
   design,
   graph,
+  view = "overview",
   selected,
   mode,
   onSelectTile,
@@ -54,6 +67,8 @@ export function LaneCanvas({
   design: DesignDocument;
   /** `laneGraph(design)`. */
   graph: LaneGraph;
+  view?: CanvasView;
+  /** A tile, or a canonical relationship (never a Detailed view's drawn line). */
   selected: BoardSelection;
   mode: BoardMode;
   onSelectTile: (id: string) => void;
@@ -65,7 +80,7 @@ export function LaneCanvas({
   removal?: Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
   ref?: Ref<BoardHandle>;
 }) {
-  const { tiles, lines } = useMemo(() => {
+  const { tiles, lines, warnings } = useMemo(() => {
     const name = (id: string) => laneNodeName(design, graph, id);
     const warnings = new Map<string, string[]>();
     for (const item of studioWarnings(design))
@@ -114,23 +129,71 @@ export function LaneCanvas({
       ...(edge.source === LANE_ACTOR && { removable: false }),
       ...(input.lines[i]?.band !== undefined && { band: input.lines[i]?.band }),
     }));
-    return { tiles, lines };
+    return { tiles, lines, warnings };
   }, [design, graph]);
+
+  // The Detailed view: containers in place of module hosts, and the projection's lines.
+  const detailed = useMemo(() => {
+    if (view !== "detailed") return undefined;
+    const projection = detailedView(design, graph, (id) => laneNodeName(design, graph, id));
+    // Both are in node order; a container keeps its tile's ID, name and band.
+    const detailedTiles = tiles.map((tile, i): TileSpec => {
+      const box = projection.tiles[i];
+      const container = projection.containers.get(tile.id);
+      if (!box || !container) return tile;
+      return {
+        ...tile,
+        w: box.w,
+        h: box.h,
+        ...(box.ports && { ports: box.ports }),
+        shape: "rect",
+        content: (
+          <ContainerTile
+            kind={graph.nodes[i]?.kind}
+            name={tile.label}
+            rows={container.rows}
+            warnings={warnings.get(tile.id)}
+          />
+        ),
+      };
+    });
+    const detailedLines: LineSpec[] = projection.lines.map((line) => ({
+      ...line,
+      detail: design.connections.find((item) => item.id === line.connection)?.planned.label,
+    }));
+    return { projection, tiles: detailedTiles, lines: detailedLines };
+  }, [view, design, graph, tiles, warnings]);
+
+  // The drawn line last clicked, so it (not its first sibling) shows as the selected line.
+  const [clicked, setClicked] = useState<string>();
+  const drawn = useMemo(
+    () => (detailed ? drawnSelection(detailed.projection.linesOf, selected, clicked) : undefined),
+    [detailed, selected, clicked],
+  );
+  const canonical = (line: string) =>
+    detailed ? canonicalLine(detailed.projection.connectionOf, line) : line;
+  const onRemoveLine = removal?.onRemoveLine;
 
   return (
     <div className="lane-canvas">
       <Board
         ref={ref}
-        tiles={tiles}
-        lines={lines}
+        tiles={detailed?.tiles ?? tiles}
+        lines={detailed?.lines ?? lines}
         engine={layoutEngine}
-        selected={selected}
+        selected={drawn?.selected ?? selected}
         mode={mode}
         onSelectTile={onSelectTile}
-        onSelectLine={onSelectLine}
+        onSelectLine={(line) => {
+          setClicked(line);
+          onSelectLine(canonical(line));
+        }}
         onClear={onClear}
         {...creation}
         {...removal}
+        {...(onRemoveLine && { onRemoveLine: (line: string) => onRemoveLine(canonical(line)) })}
+        view={view}
+        {...(drawn && { highlighted: drawn.highlighted })}
       />
       <LineLegend />
     </div>

@@ -136,6 +136,25 @@
   opacity: 0.45;
   cursor: default;
 }
+/* Overview | Detailed: one switch for the whole canvas, set apart from the tools beside it. */
+.studio-view-toggle {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  border-inline: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
+}
+.studio-view-toggle button {
+  align-items: center;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+.studio-view-toggle button[aria-pressed="true"] {
+  color: var(--on-yellow);
+}
 .studio-selection-summary {
   padding: 4px 16px 20px;
   overflow: auto;
