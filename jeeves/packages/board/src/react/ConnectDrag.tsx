@@ -17,10 +17,17 @@
 // (`canConnect` allows it, or `connectRefusal` says why not); anywhere else in a tile counts as
 // that tile. Allowed ends show through the scrim with the same dashed outline as tiles.
 //
+// Held near the board's edge, or past it, a drag pans the canvas towards that edge at a modest
+// pace (`edgePanStep`, through the board's `EdgePanCamera`), as far as the tiles go. The pointer
+// stays the line's end: each frame redraws the line, the scrim and the end under the pointer
+// against the moved canvas, so a release after the pan lands where the pointer is.
+//
 // The scrim is the attach tab's, ported from automation-illustrator src/board/controls/TileChrome.tsx
 // (0803c4a). Its holes stop at the board's edge, so a tile under a side rail stays covered.
 import { type RefObject, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { Point, Rect } from "../layout/metrics.ts";
+import { edgePanStep } from "./camera.ts";
 import {
   endScreenRect,
   holeRect,
@@ -52,6 +59,17 @@ export type ConnectRules = {
   /** A drag from `from` was released on `to`, which `canConnect` refuses. Nothing is connected. */
   onConnectRefused?: (from: string, to: string) => void;
 };
+
+/** What a connect drag's edge pan needs from the board's camera. */
+export type EdgePanCamera = {
+  /** The board's pane and its drawn tiles' bounds, in screen pixels; null while not drawn. */
+  frame: () => { pane: Rect; content?: Rect } | null;
+  /** Moves the view by (dx, dy) screen pixels. */
+  pan: (dx: number, dy: number) => void;
+};
+
+/** A frame's length (ms), for the edge pan's first step. */
+const FRAME_MS = 1000 / 60;
 
 /** A connect drag under way. */
 export type ConnectDrag = {
@@ -106,17 +124,19 @@ function swallowClick() {
 /**
  * Connect mode's drag, while `enabled`: pressing on a tile inside `host` (or on an end's handle)
  * and moving starts it. Returns the drag under way, or null. `others` lists the tiles that may be
- * ends; the ends inside tiles are read from the board when the drag starts.
+ * ends; the ends inside tiles are read from the board when the drag starts. With `camera`, a drag
+ * held near the board's edge pans it.
  */
 export function useConnectDrag(
   host: RefObject<HTMLElement | null>,
   enabled: boolean,
   others: () => readonly string[],
   rules: ConnectRules,
+  camera?: EdgePanCamera,
 ): ConnectDrag | null {
   const [drag, setDrag] = useState<ConnectDrag | null>(null);
-  const latest = useRef({ others, rules });
-  latest.current = { others, rules };
+  const latest = useRef({ others, rules, camera });
+  latest.current = { others, rules, camera };
   useEffect(() => {
     const el = host.current;
     if (!el || !enabled) return;
@@ -131,7 +151,15 @@ export function useConnectDrag(
       /** Pressed (not yet a drag), dragging, or cancelled by Escape (waiting for the release). */
       let phase: "pressed" | "dragging" | "cancelled" = "pressed";
       let targets: ReadonlySet<string> = new Set();
+      let pointer: Point = { x: down.clientX, y: down.clientY };
+      // The edge pan's next frame, when its last step ran, and whether a step has moved the view
+      // since the drag was last drawn.
+      let frame = 0;
+      let stepped: number | undefined;
+      let moved = false;
       const finish = () => {
+        cancelAnimationFrame(frame);
+        frame = 0;
         window.removeEventListener("pointermove", onMove, true);
         window.removeEventListener("pointerup", onUp, true);
         window.removeEventListener("pointercancel", onCancel, true);
@@ -150,6 +178,31 @@ export function useConnectDrag(
         if (end !== undefined && end !== from && knows(end)) return end;
         const over = tileOf(el, hit);
         return over && over !== from && over !== home ? over : null;
+      };
+      const show = () =>
+        setDrag({ from, x: pointer.x, y: pointer.y, over: overAt(pointer.x, pointer.y), targets });
+      /* The edge pan, a step a frame. Each frame first redraws the drag against the last step,
+         now on screen, so everything under the pointer follows the canvas while the pointer
+         stays put; the frame after the last step redraws once more and stops. */
+      const pan = (now: number) => {
+        frame = 0;
+        if (phase !== "dragging") return;
+        if (moved) {
+          moved = false;
+          show();
+        }
+        const board = latest.current.camera;
+        const view = board?.frame();
+        const dt = stepped === undefined ? FRAME_MS : now - stepped;
+        const step = view ? edgePanStep(pointer, view.pane, dt, view.content) : undefined;
+        if (!board || !step || (step.x === 0 && step.y === 0)) {
+          stepped = undefined;
+          return;
+        }
+        stepped = now;
+        board.pan(step.x, step.y);
+        moved = true;
+        frame = requestAnimationFrame(pan);
       };
       const onMove = (e: PointerEvent) => {
         if (phase === "cancelled") return;
@@ -171,7 +224,9 @@ export function useConnectDrag(
             ),
           );
         }
-        setDrag({ from, x: e.clientX, y: e.clientY, over: overAt(e.clientX, e.clientY), targets });
+        pointer = { x: e.clientX, y: e.clientY };
+        show();
+        if (!frame && latest.current.camera) frame = requestAnimationFrame(pan);
       };
       const onUp = (e: PointerEvent) => {
         const was = phase;

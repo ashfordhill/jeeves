@@ -259,20 +259,25 @@
   --mark-fill: 55%;
 }
 
-/* A row's connection dot, on its right edge: hollow while none of its slots is connected, filled
-   once one is. In Connect mode a drag from it starts at the module; its hit area is wider than the
-   dot, so it can be grabbed at a modest zoom. */
+/* A row's connection dot, centred on its right edge: hollow while none of its slots is connected,
+   filled once one is. In Connect mode a drag from it starts at the module; its hit area is wider
+   than the dot. */
 .lane-container-row-dot {
+  --dot: 12px;
   position: absolute;
   top: 50%;
-  right: calc(-1 * (var(--row-border) + 6px));
+  right: calc(-1 * (var(--row-border) + var(--dot) / 2));
   box-sizing: border-box;
-  width: 12px;
-  height: 12px;
+  width: var(--dot);
+  height: var(--dot);
   border: 2.5px solid var(--board-line);
   border-radius: 50%;
   background: var(--board-paper);
   transform: translateY(-50%);
+  transition:
+    width 120ms ease-out,
+    height 120ms ease-out,
+    right 120ms ease-out;
 }
 
 .lane-container-row-dot::before {
@@ -296,6 +301,33 @@
 
 .board[data-mode="connect"] .lane-container-row-dot {
   cursor: crosshair;
+}
+
+/* In Connect mode the hit area keeps the board's smallest on-screen size (`--board-handle-hit`)
+   at any zoom, never less than 28px, while the dot stays as drawn. It is never taller than the
+   rows' 32px pitch, so neighbouring rows' areas meet halfway between their dots and never
+   overlap, and it stops at the frame (the tile clips its face), reaching further into its row
+   instead. */
+.board[data-mode="connect"] .lane-container-row-dot::before {
+  --dot-hit: max(28px, calc(var(--board-handle-hit, 16px) / var(--board-zoom, 1)));
+  inset: auto;
+  top: 50%;
+  left: calc(50% + min(var(--dot-hit) / 2, var(--row-inset)) - var(--dot-hit));
+  width: var(--dot-hit);
+  height: min(var(--dot-hit), 32px);
+  border-radius: 0;
+  transform: translateY(-50%);
+}
+
+/* In Connect mode the dots of the container under the pointer grow a little. */
+.board[data-mode="connect"]:not([data-connecting]) .lane-container:hover .lane-container-row-dot {
+  --dot: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lane-container-row-dot {
+    transition: none;
+  }
 }
 
 /* The Cache reader's loader: a short arrow in the left gutter, from its row to the Data access

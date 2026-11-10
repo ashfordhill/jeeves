@@ -8261,3 +8261,98 @@ The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode 
 `e2e-docker.sh` are untouched and unstaged.
 
 Next: TP02.
+
+## 2026-11-10 — TP02: usable connection dots
+
+Per the [tile processes plan](plans/tile-processes/units.md) (Owner decision 5; module authoring
+review follow-up 1). Docs: `studio.md` (Detailed view, Connect mode, the camera list, Limits), a
+playbook lesson, the plan's status and the HUMAN_FEEDBACK resolution. UI only: no spec, layout,
+export or Overview change.
+
+- **Board** (generic):
+  - The host carries the camera's zoom as `--board-zoom` (a small `ZoomVariable` on React Flow's
+    store), and `board.css` gives `--board-handle-hit: 16px`, the smallest on-screen hit area an
+    end's handle should keep.
+  - **Edge pan:** `camera.ts` `edgePanStep(pointer, pane, dt, content)`. Within 40px of the
+    board's edge, or past it, a held connect drag pans towards that edge, linearly up to 480px/s
+    (8px a frame). It pans only while the tiles reach past that edge, and stops with their far
+    edge 48px inside, so at the fit nothing pans. A late frame counts as at most 50ms.
+  - `useConnectDrag` takes an optional `EdgePanCamera` (`frame`, `pan`) and runs one step per
+    animation frame. Each frame first redraws the drag against the last step, so the line's end
+    stays at the pointer, and the scrim, outlines and end under the pointer follow the canvas.
+    A release after a pan lands on what is under the pointer. A pan makes the camera the user's.
+    It applies to tile and dot drags alike.
+- **App** (`canvas.css`, no TSX change):
+  - In Connect mode a dot's `::before` hit area is `max(28px, 16px / zoom)` wide. Its right edge
+    stops at the frame (the tile clips its face), so it reaches further into its row. Its height
+    is capped at the 32px row pitch, so neighbours meet halfway.
+  - The drawn dot stays 12px (`--dot`). In Connect mode the hovered container's dots grow to 16px
+    (120ms; none with reduced motion).
+  - Select mode keeps the old 28px area. Exports are unchanged.
+
+**Measured** (elementFromPoint, the YouTube study in Detailed at its fit, chat rail open):
+
+| Window | Zoom | Dot drawn | Hit area | Before |
+| --- | ---: | ---: | --- | --- |
+| 1440×900 | 0.337 | 4.0px | 16.5×11.5px | 8×9.4px |
+| 1280×800 | 0.295 | 3.5px | 16.75×10px | about 7×8px |
+
+Pixel snapping makes neighbouring areas overlap by under 1px; there the lower row wins. The
+boundary is within 1px of the midpoint.
+
+**Tests.**
+
+- `camera.test.ts` +2: edge-pan speed, ramp, sides and corner, dt cap; the content bound, the fit
+  and no tiles.
+- `board.test.tsx` +1: at the fit a held drag doesn't pan. Zoomed in, it pans left at the same
+  zoom with the line's end at the pointer, stops 48px inside, and the release connects.
+  `--board-zoom` follows the camera. The test fails with the camera not passed.
+- New `e2e/connection-dots.spec.ts` (3):
+  - At the YouTube Detailed fit, the hit area is ≥15.5px wide and about the pitch tall, meets the
+    row above halfway, and is the tile below. A press 7px left of the dot connects View publisher
+    to View counts as a module link: one revision, no tile link, Undo. Hover grows the dots. With
+    the CSS rule disabled, the width measured 8 and the test failed.
+  - A dot drag (Job publisher → Metadata database, zoomed in, inspector open) held past the
+    canvas edge pans, keeps the zoom and the line's end at the pointer, then connects.
+  - The same for a tile drag on TinyURL extended (Shorten service → Click events, async).
+- `v2-rebuild.spec.ts` is unchanged: it drags from dots at the Fit and never zoomed in to hit
+  them.
+
+**Checks.**
+
+- `pnpm check` exited 0: **560 tests in 80 files** (lint: only the existing info).
+- **E2E: 64 passed (4.2m)** on the first full run. The new spec alone passed 3/3 earlier; its
+  first run had failed my own hold helper (it waited for clearance on an axis that wasn't
+  panning), which I fixed.
+- The web build passed with the existing chunk-size advisory.
+
+**Gates.**
+
+- YouTube Overview PNG at 1440×900: `472a4c8c…dc9f`, also with Connect on.
+- v1: byte-identical (`assemble.test.ts`).
+- Frozen v2: a fresh `export:v2` gives 72 files, 70 byte-identical to `generic-export.tar.gz`.
+  `report.json` and `manifest.json` are equal once the emitter sources, hashes, dependencies,
+  `local.module-stubs`, the registry and the report's hash are set aside. None of this unit's
+  files is among the 145 inventory paths.
+
+**Mouse check** (scripted Chromium; my API 4372 with scratch database `jeeves_tp02`, now dropped,
+and Vite 4362; toolbar, rails and drags by mouse):
+
+- At both sizes, TinyURL 7 tiles and 7 lines.
+- YouTube Detailed + Connect at the fit: a press 7px off View publisher's dot, released on View
+  counts, connected the module. Hover grew the dots (4.0→5.4px at 1440).
+- Zoomed in to 0.73 / 0.59 with the inspector open: a drag from Job publisher held past the right
+  edge panned 128 / 105px in 254 / 200ms at the same zoom. The line's end stayed at the pointer,
+  and the release on Metadata database connected.
+- No page or console errors or warnings. All my projects were deleted (204), and `jeeves_e2e` has
+  no leftovers.
+- Evidence: [tp02](plans/tile-processes/evidence/tp02/), with the hit areas tinted for the shot at
+  3×, and an edge-pan hold.
+
+**For TP03.** Nothing here touches IDs, the spec or the generator. `ContainerTile.tsx` is
+unchanged. Rows are still found by `data-module` (the module ID), so a re-key changes those
+selectors in e2e helpers. The edge pan is generic, so any future board drag can reuse
+`edgePanStep` and `EdgePanCamera`.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

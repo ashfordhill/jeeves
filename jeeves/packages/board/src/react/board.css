@@ -36,7 +36,11 @@
     grabbing;
 }
 
+/* `--board-zoom` follows the camera (set on the host); `--board-handle-hit` is the smallest hit
+   area an end's handle keeps on screen, whatever the zoom (Board.tsx, Hit areas). */
 .board {
+  --board-zoom: 1;
+  --board-handle-hit: 16px;
   position: relative;
   width: 100%;
   height: 100%;

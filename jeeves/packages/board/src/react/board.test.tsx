@@ -743,6 +743,98 @@ describe("Board", () => {
     expect(calls.at(-1)).toBe("refused redirect events");
   });
 
+  it("pans while a connect drag is held near the edge, as far as the tiles go, then connects", async () => {
+    if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
+    let under: Element | null = null;
+    document.elementFromPoint = () => under;
+    const calls: string[] = [];
+    const { container } = render(
+      <div style={{ width: 1200, height: 800 }}>
+        <Board
+          tiles={tiles}
+          lines={lines}
+          engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+          selected={{}}
+          onSelectTile={() => {}}
+          onSelectLine={() => {}}
+          onClear={() => {}}
+          mode="connect"
+          canConnect={(from, to) => from === "redirect" && to === "events"}
+          onConnect={(from, to) => calls.push(`connect ${from} ${to}`)}
+          onConnectRefused={(from, to) => calls.push(`refused ${from} ${to}`)}
+        />
+      </div>,
+    );
+    const host = container.querySelector(".board") as HTMLElement;
+    await waitFor(() => expect(host.getAttribute("data-board")).toBe("ready"));
+    const node = (id: string) =>
+      container.querySelector(`.react-flow__node[data-id="${id}"]`) as HTMLElement;
+    const camera = () => {
+      const style = (container.querySelector(".react-flow__viewport") as HTMLElement).style;
+      const [x, y, zoom] = (style.transform.match(/-?[\d.]+/g) ?? []).map(Number);
+      return { x: x ?? 0, y: y ?? 0, zoom: zoom ?? 1 };
+    };
+    /** The tiles' right edge on screen (the board fills the 1200×800 window). */
+    const right = () => {
+      const { x, zoom } = camera();
+      const at = Number(node("events").style.transform.match(/-?[\d.]+/)?.[0]);
+      return x + (at + 128) * zoom;
+    };
+    const frames = (n: number) =>
+      act(async () => {
+        for (let i = 0; i < n; i += 1) await new Promise((r) => requestAnimationFrame(r));
+      });
+    // The fit shows every tile: a drag held at the edge doesn't pan.
+    expect(host.style.getPropertyValue("--board-zoom")).toBe(String(camera().zoom));
+    const fitted = camera();
+    fireEvent.pointerDown(node("redirect"), {
+      button: 0,
+      isPrimary: true,
+      clientX: 600,
+      clientY: 400,
+    });
+    fireEvent.pointerMove(window, { clientX: 1196, clientY: 400 });
+    await frames(4);
+    expect(camera()).toEqual(fitted);
+    fireEvent.pointerUp(window, { clientX: 1196, clientY: 400 });
+    expect(calls).toEqual([]);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+    // Zoomed in, Events reaches past the right edge. Held there (past it, over a rail), the drag
+    // pans left at a steady pace with the pointer still the line's end, and stops once the
+    // tiles' end is 48px inside; the zoom is kept.
+    fireEvent.wheel(host, { deltaY: -1200, clientX: 600, clientY: 400 });
+    const zoomed = camera();
+    expect(zoomed.zoom).toBeGreaterThan(fitted.zoom);
+    expect(host.style.getPropertyValue("--board-zoom")).toBe(String(zoomed.zoom));
+    expect(right()).toBeGreaterThan(1200);
+    fireEvent.pointerDown(node("redirect"), {
+      button: 0,
+      isPrimary: true,
+      clientX: 600,
+      clientY: 400,
+    });
+    fireEvent.pointerMove(window, { clientX: 1230, clientY: 400 });
+    await frames(3);
+    const moving = camera();
+    expect(moving.x).toBeLessThan(zoomed.x);
+    expect(zoomed.x - moving.x).toBeLessThanOrEqual(3 * 24);
+    expect(moving.y).toBe(zoomed.y);
+    expect(moving.zoom).toBe(zoomed.zoom);
+    const tip = document.querySelector(".board-connect-line line");
+    expect([tip?.getAttribute("x2"), tip?.getAttribute("y2")]).toEqual(["1230", "400"]);
+    await waitFor(() => expect(right()).toBeCloseTo(1200 - 48, 0), { timeout: 3000 });
+    const stopped = camera();
+    await frames(3);
+    expect(camera()).toEqual(stopped);
+
+    // Released on Events, now in view: it connects.
+    under = node("events");
+    fireEvent.pointerUp(window, { clientX: 1100, clientY: 400 });
+    expect(calls).toEqual(["connect redirect events"]);
+    expect(document.querySelector(".board-connect")).toBeNull();
+  });
+
   it("shows a line's X while the pointer is on it in connect mode, never on a fixed line", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const onRemoveLine = vi.fn();

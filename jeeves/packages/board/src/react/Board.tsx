@@ -18,7 +18,13 @@
 // may mark ends of its own inside it (`data-board-end`, such as a container's rows), dragged from
 // their handles and dropped on where the rules know them. Tiles show no chrome, and a line under
 // the pointer turns the selection colour and shows its red X (on the stretch the selected line's
-// X would take) until the pointer leaves it and its X.
+// X would take) until the pointer leaves it and its X. A drag held near the board's edge pans
+// the camera towards it, as far as the tiles go; the camera is then the user's.
+//
+// Hit areas: the host carries the camera's zoom as `--board-zoom` and the smallest hit area an
+// end's handle should keep on screen as `--board-handle-hit` (16px), so a tile's content can keep
+// a small handle grabbable at any zoom (`calc(var(--board-handle-hit) / var(--board-zoom))`
+// board pixels) without growing what it draws.
 //
 // Ports: a tile's `ports` are named ports at fixed heights beside its default mid-height ones, and
 // a line's `sourcePort`/`targetPort` name the ones it uses (`elkGraph.ts` has the rules). Each
@@ -53,10 +59,12 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  useStore,
 } from "@xyflow/react";
 import {
   type ReactNode,
   type Ref,
+  type RefObject,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -79,7 +87,12 @@ import {
   type SlotOrder,
 } from "../layout/metrics.ts";
 import { BoardLine, type BoardLineEdge } from "./BoardLine.tsx";
-import { ConnectOverlay, type ConnectRules, useConnectDrag } from "./ConnectDrag.tsx";
+import {
+  ConnectOverlay,
+  type ConnectRules,
+  type EdgePanCamera,
+  useConnectDrag,
+} from "./ConnectDrag.tsx";
 import {
   boardNeedsCover,
   type CameraOrigin,
@@ -338,6 +351,15 @@ function dockFor(
       ? { rect: neighbour, place: "after" in dock.order ? "after" : "before" }
       : undefined,
   );
+}
+
+/** Keeps the camera's zoom on the board's host as `--board-zoom`, for content's hit areas. */
+function ZoomVariable({ host }: { host: RefObject<HTMLElement | null> }) {
+  const zoom = useStore((state) => state.transform[2]);
+  useEffect(() => {
+    host.current?.style.setProperty("--board-zoom", String(zoom));
+  }, [host, zoom]);
+  return null;
 }
 
 const nodeTypes = { tile: Tile };
@@ -706,6 +728,37 @@ function Inner({
   const hand = mode === "hand";
   const placed = (id: string): Point | undefined => display?.[id] ?? dockShow[id] ?? hints?.[id];
 
+  /* A connect drag held near the edge pans the camera, as far as the shown tiles reach; a pan
+     makes the camera the user's, so a resize doesn't refit it away. */
+  const edgePan = useMemo<EdgePanCamera>(
+    () => ({
+      frame: () => {
+        const pane = paneOf(hostRef.current);
+        if (!pane) return null;
+        const vp = rf.getViewport();
+        const shown = shownRef.current;
+        const box = shown ? unionTileBounds(shown.positions, sizesRef.current) : undefined;
+        return {
+          pane: { x: pane.left, y: pane.top, w: pane.width, h: pane.height },
+          ...(layoutBoundsAreUsable(box) && {
+            content: {
+              x: pane.left + vp.x + box.x * vp.zoom,
+              y: pane.top + vp.y + box.y * vp.zoom,
+              w: box.w * vp.zoom,
+              h: box.h * vp.zoom,
+            },
+          }),
+        };
+      },
+      pan: (dx, dy) => {
+        const vp = rf.getViewport();
+        originRef.current = "user";
+        void rf.setViewport({ x: vp.x + dx, y: vp.y + dy, zoom: vp.zoom }, { duration: 0 });
+      },
+    }),
+    [rf],
+  );
+
   /* Connect mode: a drag from a tile, and the line under the pointer (its X shows). The pointer
      may leave a line for its X, which sits over it: the line stays hovered for a moment, and
      while the pointer is on the X. */
@@ -714,6 +767,7 @@ function Inner({
     connectMode && !covering,
     () => drawn.tiles.map((t) => t.id).filter((id) => placed(id)),
     { canConnect, connectRefusal, onConnect, onConnectRefused },
+    edgePan,
   );
   const [hoverLine, setHoverLine] = useState<string>();
   const unhover = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -861,6 +915,7 @@ function Inner({
       data-layout-error={error || undefined}
       aria-busy={covering || undefined}
     >
+      <ZoomVariable host={hostRef} />
       <BoardContext.Provider value={context}>
         <ReactFlow<TileNode, BoardLineEdge>
           nodes={nodes}

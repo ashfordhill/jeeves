@@ -1423,3 +1423,14 @@ about presets and declarations. And every route that changes a derived state mus
 two older commands chat could still send removed a module without re-deriving, leaving a
 template selected that the canvas could never produce. Where a command can't derive, normal
 authoring should refuse it and name the one that does.
+
+## 2026-11-10 TP02: a handle is sized on screen, and bounded by its neighbours
+
+A drag handle drawn in board pixels shrinks with the zoom, so at a large design's fit it is a
+speck (a module's dot was 2.5–4.9px). Size its hit area in screen pixels instead (at least 16px)
+and leave the drawn mark small, so the canvas doesn't change. Where handles sit closer together
+than that on screen (rows 32px apart are 7–12px apart at the fit), cap the area at the spacing so
+neighbours meet halfway: a press then always takes the nearer handle, never the other one. A
+drag whose end may be off screen needs the canvas to follow it: pan when the drag is held near the
+edge, slowly at first, only as far as there is something to show, and keep the line's end under
+the pointer, so a release lands where the user is looking.

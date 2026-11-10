@@ -97,7 +97,9 @@ the name on one line above a divider, then one framed row per module, 32px apart
 A row shows the module's icon in its family colour and its name, cut short with an ellipsis; the
 full name is its tooltip. A row whose kind can take a connection has a small **dot** on its right
 edge, hollow until one of its slots is connected, then filled; a row that can't connect
-(Redirect responder, Event counter) has none. Lines end at the container's frame; where a row has
+(Redirect responder, Event counter) has none. In Connect mode the dot keeps its 12px size but is
+easier to grab than it looks, and the dots of the container under the pointer grow a little
+([Connect mode](#connect-mode)). Lines end at the container's frame; where a row has
 a drawn line, a **port mark** (a short stub in the line's colour) joins the frame to the row on
 that side, so the line visibly reaches its module. A warning mark sits in the header's corner.
 Every other tile keeps its Overview size and face.
@@ -306,6 +308,8 @@ Fit refits, and never zooms in past 100%. The camera follows the canvas:
   click Fit or switch views; a view switch always fits.
 - A new tile that lands outside the view is brought in: the canvas pans just enough to show it,
   with room for its tabs, at the same zoom. New links and chat edits don't move the camera.
+- A Connect drag held near or past the canvas edge pans towards it
+  ([Connect mode](#connect-mode)).
 
 The extended TinyURL study fits at these zooms, which the canvas takes by itself as the rails open and close:
 
@@ -418,6 +422,17 @@ onward.").
   access can't use Cache; a Data access connects to a database."). The connection fills the
   slot that takes that tile's kind, through the tiles' existing link, or through a new one the
   lane rules give when the tiles aren't linked yet. The dot fills.
+- **The dot's grab area** is at least 16px wide on screen at any zoom (28px at 100% and above), and
+  reaches into its row rather than past the frame. It is as tall as the rows' 32px pitch allows,
+  so two rows' areas meet halfway between their dots and never overlap: at the YouTube study's
+  Detailed fit (0.34 at 1440×900) a dot drawn 4px wide is grabbed anywhere in about 16×11px. The
+  dots of the container under the pointer grow from 12px to 16px, to show where they are.
+- **Near the canvas edge a drag pans the canvas.** Hold a drag, from a tile or a dot, within 40px
+  of the canvas edge or past it (over a rail or the header) and the canvas moves towards that
+  side, faster the nearer the edge, at most 480px a second, until the tiles' far edge is in view.
+  The line still ends at the pointer, and a release on an allowed end connects as usual. The zoom
+  stays, and the camera is then yours, as after any pan. At the fit everything is in view, so
+  nothing pans.
 - **The Cache reader's loader** is a drag from its dot onto a Data access row in the same tile;
   that row stays bright with a dashed outline. It is drawn as the gutter arrow.
 - **A module's line under the pointer** shows an X named "Disconnect <module> from <tile>": it
@@ -1156,7 +1171,8 @@ and all twenty components, with nothing omitted and no findings.
 - The inspector neither lists nor edits module links. The Detailed view draws a module's links
   to other tiles and the Cache reader's loader; other links between two modules of one tile (the
   studies' "Supplies code") are kept but neither drawn nor authored. Modules connect only in the
-  Detailed view, whose rows read from about 0.6 zoom; the dot's grab area is 28px at 100%. A
+  Detailed view, whose rows read from about 0.6 zoom. Below 0.5 zoom a dot's grab area is only as
+  tall as the row pitch (about 7–12px at the Detailed fits), though 16px wide. A
   selected container's link tab sits just outside its frame, over the first 36px of the lines
   leaving its middle rows, and its red X sits on the header, over the middle of a long name
   ("Video lifecycle worker").

@@ -5,7 +5,8 @@
 // Changes from automation-illustrator: no compare, present or word-web cameras, and a fit never
 // magnifies past 100% (`FIT_MAX_ZOOM`), so a small design does not fill the screen with tiles.
 // The camera remembers whether it came from a fit or from the user: a fitted camera refits when
-// the board changes size, a user's camera stays; a new tile out of view is panned in.
+// the board changes size, a user's camera stays; a new tile out of view is panned in. A connect
+// drag held near the board's edge pans the camera towards it (`edgePanStep`).
 import type { Point, Rect, Size } from "../layout/metrics.ts";
 
 export type Viewport = { x: number; y: number; zoom: number };
@@ -158,6 +159,50 @@ export function viewportToReveal(
   const dy = shift(viewport.y + rect.y * viewport.zoom, rect.h * viewport.zoom, pane.height);
   if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return undefined;
   return { x: viewport.x + dx, y: viewport.y + dy, zoom: viewport.zoom };
+}
+
+// Edge pan -----------------------------------------------------------------------------------
+
+/** How near the board's edge (screen pixels) a held drag starts to pan the canvas. */
+export const EDGE_PAN_ZONE = 40;
+/** The edge pan's top speed (screen pixels a second), at the edge and past it. */
+export const EDGE_PAN_SPEED = 480;
+/** How far inside the board the edge pan stops with the tiles' far edge (screen pixels). */
+export const EDGE_PAN_MARGIN = REVEAL_MARGIN;
+/** The longest step one frame may take (ms), so a late frame doesn't jump. */
+export const EDGE_PAN_MAX_STEP_MS = 50;
+
+/**
+ * One step of the camera while a drag is held near the board's edge: how far to move the view
+ * (screen pixels, as added to the viewport's x and y) over `dt` ms. Within `zone` of an edge it
+ * pans towards that edge, faster the nearer the pointer, at `speed` at the edge and past it. It
+ * pans only while the tiles (`content`, on screen) reach past that edge, and never further than
+ * brings their far edge `margin` inside the board; with no tiles it doesn't pan. Zero elsewhere.
+ */
+export function edgePanStep(
+  pointer: Point,
+  pane: Rect,
+  dt: number,
+  content: Rect | undefined,
+  { zone = EDGE_PAN_ZONE, speed = EDGE_PAN_SPEED, margin = EDGE_PAN_MARGIN } = {},
+): Point {
+  const step = Math.max(0, Math.min(dt, EDGE_PAN_MAX_STEP_MS)) * (speed / 1000);
+  const axis = (at: number, start: number, size: number, from: number, length: number) => {
+    const near = at - start;
+    const far = start + size - at;
+    const pace = (distance: number) => Math.min(1, (zone - distance) / zone) * step;
+    // Towards the start, the view moves forward until the tiles' start is `margin` inside.
+    if (near < zone && near <= far) return Math.max(0, Math.min(pace(near), start + margin - from));
+    // Towards the end, back until their end is `margin` inside.
+    if (far < zone)
+      return 0 - Math.max(0, Math.min(pace(far), from + length - (start + size - margin)));
+    return 0;
+  };
+  if (!content) return { x: 0, y: 0 };
+  return {
+    x: axis(pointer.x, pane.x, pane.w, content.x, content.w),
+    y: axis(pointer.y, pane.y, pane.h, content.y, content.h),
+  };
 }
 
 // Wheel zoom ---------------------------------------------------------------------------------
