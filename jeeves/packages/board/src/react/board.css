@@ -546,11 +546,13 @@
   line-height: 14px;
 }
 
+/* The tip never takes the pointer: it may cover the item below, which must stay pickable. */
 .board-fan-tip {
   position: absolute;
   top: calc(100% + 7px);
   left: 50%;
   transform: translateX(-50%);
+  pointer-events: none;
   padding: 3px 8px;
   border-radius: 6px;
   background: var(--board-line);

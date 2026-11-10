@@ -8010,3 +8010,84 @@ Vite 4328; 1440×900 and 1280×800). Evidence: [ma08](plans/module-authoring/evi
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — MA09: rebuild YouTube v2 by mouse
+
+Per the [module authoring plan](plans/module-authoring/units.md) (MA09) and the approved
+[contract](plans/module-authoring/contract.md) (§3, questions 2 and 3, §8). Docs: the
+[evidence note](plans/module-authoring/evidence/ma09/README.md), a playbook lesson, the plan's
+status and the HUMAN_FEEDBACK resolution. `studio.md` is unchanged (the fix restores what it
+already says).
+
+**Result: v2 was fully rebuilt by mouse.** From a blank project: the system name, Watch and
+Publish, 19 tiles from link fans, 7 Connect drags (Upload API → Identity included), 22 modules from
+the `+` fans with the plan's names and descriptions, 24 dot drags in Detailed + Connect (the loader
+among them) and v2's 7 useful values: 262 gestures (114 clicks, 74 drags, 74 typed fields), built
+in about 96 s by the scripted mouse.
+
+- **Spec** `e2e/v2-rebuild.spec.ts`, steps and helpers in `e2e/v2-rebuild.ts` (`V2_TILES`,
+  `V2_MODULES`, `V2_CONNECTIONS`, `V2_VALUES`, `createBlank`, `buildV2Tiles`, `buildV2Modules`).
+  Only pointer and UI writes; API reads wait for saves. It checks the plan's names and
+  descriptions, the loader arrow, the diff, then Generate project → Preview by mouse: 22 modules
+  listed (20 Template, View count reader and View publisher Stub), HTTP 200, no findings, the
+  same seven template refs as v2's installed selections, "Ready: 77 files". It deletes its
+  project; `JEEVES_V2_REBUILD_KEEP=<name>` keeps it under that name.
+- **Diff** `spec/src/fixtures/v2-diff.ts` (excluded from the source inventory): `v2Diff(frozen,
+  rebuilt, installed?)` compares by tile, link and module name (system, actions, entries, tile
+  kinds and settings, links with kind/interaction/protocol/security/channel use, module kinds,
+  module links with their `via`, the resolver's selections, inputs and resources, ownership with
+  owners by members). `v2IntendedDifferences` lists the contract's intended ones with reasons,
+  most restricted to the side that has a value; `v2DiffReport` returns `unexpected` and `unused`.
+  Result: 163 rows, 0 unexpected, 0 unused. Tests (3): frozen vs itself is empty; the command-built
+  twin's only unexpected rows are the 7 useful values it lacks; a changed interaction, module kind
+  and module link are reported.
+- **Kept project** "YouTube v2 rebuild (MA09)", `9dcb10a3-bb0b-4a5b-b055-b7610ddc1e1a`, revision
+  142, in the owner's `jeeves` database. Built by the same spec through my own API (4340) and Vite
+  (4330) on that database, then stopped; no chat turn was running. The owner's other six projects
+  kept their revisions and `updatedAt` (the frozen v2 project, `2c7c8b08…`, is at revision 4, as
+  before this unit; the spec's helper viewed it read-only before opening New project).
+
+**Bug fix (one).** A greyed kind's tip hung over the kind below it and took the pointer, so a
+pull from an action straight down from Queue or topic onto CDN picked nothing (the rebuild's Local
+video edge). `.board-fan-tip` now has `pointer-events: none` (`board.css`). Test:
+`spawn.spec.ts` "a greyed kind's tip never hides the kind below it" (fails without the fix at the
+hover assertion; passes with it).
+
+**Awkward, worst first** (details in the evidence): (1) connection dots are 2.5px at v2's Detailed
+fit with both rails (0.21), 4.5px with rails closed (0.37), and a connect drag doesn't pan; (2) the
+fan tip (fixed); (3) generated names follow the creation kind (`microservice-2`,
+`worker-service-3`; stubs under `src/modules/microservice/`); (4) 74 of 262 gestures are typing;
+(5) Options appear only after templates derive, so values come after connecting; (6) View
+publisher's stub reason "Needs Multipart uploads in its tile." misleads (MA08 flagged it).
+
+**Checks**
+
+- `pnpm check` exited 0: **556 tests in 80 files** (lint: only the existing info). A first rerun
+  after my last edit failed typecheck (an `only` widened to `string` in `v2-diff.ts`); fixed, it
+  passed.
+- **E2E: 61 passed (4.1m)** on the first full run. Rerun alone with the final files,
+  `v2-rebuild.spec.ts` and `spawn.spec.ts`: 8 passed (1.8m). The rebuild takes about 1.5 min.
+- The web build passed with the existing chunk-size advisory.
+- `jeeves_e2e` has no leftover E2E projects; my scratch database `jeeves_ma09` is dropped.
+
+**Gates**
+
+- **Frozen v2:** a fresh `export:v2`: 72 files, 70 byte-identical to `generic-export.tar.gz`;
+  `report.json` equals it once emitter `sources`, `sourceSha256`, `registry`, `dependencies` and
+  the `local.module-stubs` emitter are set aside; `manifest.json` then differs only in
+  `report.json`'s hash and size. No file of this unit is in the inventory.
+- **v1:** byte-identical (`assemble.test.ts` manifest pin, in `pnpm check`).
+- **YouTube Overview PNG** at 1440×900: `472a4c8c…dc9f`, twice.
+- I did not edit `field-projects/youtube/v2/` or the frozen studio project.
+
+**Browser check** (scripted Chromium; my API 4339 with scratch database `jeeves_ma09` and Vite
+4329, at 1440×900 and 1280×800): TinyURL foundation 7 tiles and 7 lines; an action's fan, over
+the greyed queue and down onto CDN, added the CDN (8 and 8). The kept project at both sizes: 22
+tiles, 28 lines in the Overview, 31 in Detailed, 22 rows (21 dots filled), one loader arrow. No
+page errors or console errors or warnings.
+
+**For MA10:** check the rebuild against decisions 1–9 in the kept project. The dot size at the
+fit, generated names from creation kinds and View publisher's reason are the open findings.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

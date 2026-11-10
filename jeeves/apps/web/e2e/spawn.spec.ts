@@ -88,6 +88,28 @@ test("greys the kinds the rules refuse there, with the reason", async ({ page, t
   expect((await design(page, id)).revision).toBe(1);
 });
 
+test("a greyed kind's tip never hides the kind below it", async ({ page, tinyurl: id }) => {
+  // After an action, Queue or topic is greyed; its tip, with the reason, hangs over CDN below it.
+  await tile(page, "Open link").click();
+  await pull(page, "Open link", LINK_TAB);
+  await moveOnto(page, fanItem(page, "Queue or topic"));
+  const tip = page.locator(".board-fan-tip");
+  await expect(tip.locator(".board-fan-reason")).toBeVisible();
+  const [over, under] = [await tip.boundingBox(), await fanItem(page, "CDN").boundingBox()];
+  if (!over || !under) throw new Error("No tip or CDN.");
+  expect(over.y + over.height).toBeGreaterThan(under.y + under.height / 2);
+  // Straight down onto CDN: the pointer passes through the tip, and CDN is picked.
+  await moveOnto(page, fanItem(page, "CDN"));
+  await expect(fanItem(page, "CDN")).toHaveAttribute("data-hover", "true");
+  await page.mouse.up();
+  await ready(page);
+  await expect(tile(page, "CDN")).toHaveClass(/selected/);
+  expect((await design(page, id)).architecture.studio.entries.at(-1)).toMatchObject({
+    lane: "download",
+    element: "cdn",
+  });
+});
+
 test("a link tab released on a tile changes nothing", async ({ page, tinyurl: id }) => {
   await tile(page, "Redirect service").click();
   // The fan opens on the right; Open link, on the left, is no target.

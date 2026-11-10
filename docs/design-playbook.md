@@ -1394,3 +1394,18 @@ no dot. The provisional line leaves the dot the hand is on. Only one link betwee
 tile is drawn, the Cache reader's loader, as a short gutter arrow: one visible link that decides
 generation beats several hidden ones that might.
 
+## 2026-11-10 MA09: rebuilding by mouse finds what single-feature tests miss
+
+Rebuilding YouTube v2 from a blank project by mouse took 262 gestures and worked, but only after
+a fix no single-feature test had needed: a greyed kind's tip hung over the kind below it and took
+the pointer, so moving straight down from Queue or topic onto CDN picked nothing. Anything that
+only informs (a tip, a reason, a label over the board) must let the pointer through. Three more
+lessons the whole build shows: a drag handle needs a size that survives zoom, because a connect
+drag doesn't pan, so both ends must fit on screen, and at v2's fit a module's dot is 2.5–4.5px;
+names typed after creation should reach what is generated, since IDs fixed at creation from the
+kind (`worker-service-3`) otherwise name the code and stubs; and a control that appears only once
+its template derives (a tile's Options) makes the order of steps matter without saying so. Most of
+the effort is typing (74 of 262 gestures are names, descriptions and values), so the fewer fields a
+new box needs, the faster a design is rebuilt. An acceptance test that rebuilds a real design end
+to end, then diffs it by name against the original, is worth its length: it caught the fan defect
+and proves equivalence where per-feature tests can only sample.
