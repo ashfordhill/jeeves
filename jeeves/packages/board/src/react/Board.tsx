@@ -27,7 +27,8 @@
 // is view only and selects nothing. `selectedTileLines={false}` keeps the selected tile and its
 // chrome but leaves its own lines plain, so `highlighted` alone shows which of them belong to a
 // part of the tile (one row of a container, say). Without these props the board is a single
-// view, as before.
+// view, as before. Lines that share a `group` (one relationship drawn as several lines) are one
+// entry in the overlap chooser.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
@@ -97,7 +98,7 @@ import {
   ZOOM_BOUNDS_PAD,
 } from "./camera.ts";
 import { BoardContext } from "./context.ts";
-import { crossingBridges, nearestLines } from "./lineGeometry.ts";
+import { crossingBridges, nearestLines, oneLinePerGroup } from "./lineGeometry.ts";
 import { type PullState, type TabSpec, TileChrome } from "./TileChrome.tsx";
 import { prefersReducedMotion, useAnimatedLayout } from "./useAnimatedLayout.ts";
 import { useBoardLayout } from "./useBoardLayout.ts";
@@ -130,6 +131,12 @@ export type LineSpec = {
   label?: string;
   /** Optional explanation in the chooser when several routes overlap. */
   detail?: string;
+  /**
+   * Lines with the same group are one choice (several drawn lines of one relationship, say): the
+   * overlap chooser lists the group once, by the first of its lines under the click, and a click
+   * whose lines are all one group selects that line without asking. Default: its own group.
+   */
+  group?: string;
   /** A box drawn on the line (phrasing content, such as an icon), kept clear by ELK. */
   chip?: Size & { content: ReactNode };
   /** `false`: the selected line shows no X (it goes with a tile). Default true. */
@@ -879,7 +886,10 @@ function Inner({
           onEdgeClick={(event, edge) => {
             if (hand) return;
             const point = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
-            const ids = nearestLines(point, routes, 3 / rf.getZoom(), 22);
+            const ids = oneLinePerGroup(
+              nearestLines(point, routes, 3 / rf.getZoom(), 22),
+              (id) => drawn.lines.find((line) => line.id === id)?.group ?? id,
+            );
             if (ids.length > 1) {
               const pane = paneOf(hostRef.current);
               if (pane)

@@ -392,6 +392,135 @@ test("a module row opens its module and marks its row, its own lines and its par
   }
 });
 
+/** A point on the canvas (screen) where exactly `near` lines are within 2 board px. */
+async function pointNear(page: Page, near: readonly string[]) {
+  const point = await page.locator(".lane-canvas .board").evaluate((board, want) => {
+    const route = (edge: Element) =>
+      [
+        ...(edge.querySelector(".react-flow__edge-path")?.getAttribute("d") ?? "").matchAll(
+          /(-?[\d.]+) (-?[\d.]+)/g,
+        ),
+      ].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
+    const routes = [...board.querySelectorAll<HTMLElement>(".react-flow__edge")].map((edge) => ({
+      id: edge.dataset.id ?? "",
+      points: route(edge),
+    }));
+    const distance = (p: { x: number; y: number }, points: { x: number; y: number }[]) =>
+      Math.min(
+        ...points.slice(1).map((b, i) => {
+          const a = points[i] ?? b;
+          const [dx, dy] = [b.x - a.x, b.y - a.y];
+          const t = Math.max(
+            0,
+            Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)),
+          );
+          return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
+        }),
+      );
+    const first = routes.find((r) => r.id === want[0])?.points ?? [];
+    const camera = new DOMMatrix(
+      getComputedStyle(board.querySelector(".react-flow__viewport") as Element).transform,
+    );
+    const pane = (board.querySelector(".react-flow") as Element).getBoundingClientRect();
+    const hits = first.slice(1).flatMap((b, i) => {
+      const a = first[i] ?? b;
+      const steps = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 4);
+      return Array.from({ length: steps + 1 }, (_, j) => ({
+        x: a.x + ((b.x - a.x) * j) / steps,
+        y: a.y + ((b.y - a.y) * j) / steps,
+      })).filter((p) => {
+        const close = routes.filter((r) => distance(p, r.points) <= 2).map((r) => r.id);
+        return close.length === want.length && want.every((id) => close.includes(id));
+      });
+    });
+    const p = hits[Math.floor(hits.length / 2)];
+    return (
+      p && { x: pane.left + camera.e + camera.a * p.x, y: pane.top + camera.f + camera.d * p.y }
+    );
+  }, near);
+  if (!point) throw new Error(`No point where only ${near.join(", ")} meet.`);
+  return point;
+}
+
+test("Choose relationship offers a relationship once, and port marks follow their lines", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await createStudy(page, "E2E UI10 chooser", "YouTube · studio study");
+  try {
+    const blueprint = async () =>
+      await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
+    const before = { design: await design(page, id), blueprint: await blueprint() };
+    const chooser = page.getByRole("dialog", { name: "Choose relationship" });
+    const paper = page.locator(".board .react-flow__pane");
+    const lit = () =>
+      tile(page, "Transcoder")
+        .locator(".lane-container-row[data-lit]")
+        .evaluateAll((rows) =>
+          Object.fromEntries(
+            rows.map((row) => [
+              (row as HTMLElement).dataset.module,
+              (row as HTMLElement).dataset.lit,
+            ]),
+          ),
+        );
+    await show(page, "Detailed");
+
+    // The Packager's and Thumbnailer's lines run together into Transcoded videos: one
+    // relationship, so a click there selects it without asking.
+    const both = await pointNear(page, WRITES);
+    await page.mouse.click(both.x, both.y);
+    await expect(page.locator(".studio-inspector .lane-connection-label")).toHaveText(
+      "Stores segments, playlists and thumbnails",
+    );
+    await expect(chooser).toHaveCount(0);
+    await expect.poll(() => highlighted(page)).toEqual(WRITES);
+    // Their rows' port marks turn blue with them, though the Transcoder is not selected.
+    expect(await lit()).toEqual({ "transcoder-packager": "out", "transcoder-thumbnails": "out" });
+
+    // Where the CDN's line joins them, the chooser lists the two relationships once each.
+    await paper.click({ position: { x: 10, y: 10 } });
+    expect(await lit()).toEqual({});
+    const three = await pointNear(page, ["cdn-transcoded", ...WRITES]);
+    await page.mouse.click(three.x, three.y);
+    await expect(chooser).toBeVisible();
+    const offered = await chooser
+      .locator("[data-line-id]")
+      .evaluateAll((buttons) => buttons.map((b) => (b as HTMLElement).dataset.lineId));
+    expect(offered).toHaveLength(2);
+    expect(offered).toContain("cdn-transcoded");
+    const write = offered.find((line) => line !== "cdn-transcoded") as string;
+    expect(WRITES).toContain(write);
+    await chooser.locator(`[data-line-id="${write}"]`).click();
+    await expect(page.locator(`.board .react-flow__edge[data-id="${write}"]`)).toHaveClass(
+      /selected/,
+    );
+    await expect.poll(() => highlighted(page)).toEqual(WRITES);
+
+    // The tile at the other end selected: its lines from the Transcoder's rows, and their marks.
+    await paper.click({ position: { x: 10, y: 10 } });
+    await tile(page, "Transcoded videos").click();
+    await expect.poll(lit).toEqual({
+      "transcoder-packager": "out",
+      "transcoder-thumbnails": "out",
+    });
+
+    // The canvas toolbar stays one row with both rails open.
+    await expect(page.locator(".studio-inspector")).toBeVisible();
+    await expect(page.locator(".studio-chat")).toBeVisible();
+    const toolbar = await page.getByRole("toolbar", { name: "Canvas tools" }).boundingBox();
+    const button = await page.getByRole("button", { name: "Fit", exact: true }).boundingBox();
+    expect(toolbar?.height ?? 0).toBeLessThan(2 * (button?.height ?? 0));
+
+    expect(await design(page, id)).toEqual(before.design);
+    expect(await blueprint()).toEqual(before.blueprint);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+});
+
 test("a Detailed line's X goes through the relationship declarations confirmation", async ({
   page,
   tinyurl: id,

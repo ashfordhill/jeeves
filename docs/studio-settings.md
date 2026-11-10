@@ -49,7 +49,8 @@ available for imports and diagnostics.
   listed; an omitted optional number or reference means unspecified and shows an empty input.
   Defaults apply on creation only and are never filled in on read (the one exception: a stored
   language outside its kind's pair reads as the default, see [Languages](#languages)).
-- Name (1–120 characters) and purpose (0–240) are the element's own fields.
+- Name (1–120 characters) and description (0–240; **Description** in the inspector) are the
+  element's own fields.
 - No credentials, URLs with credentials, account/zone/project IDs, regions, instance sizes or
   secret names.
 - Selecting a provider changes no other field's meaning, creates no box, calls nothing and claims

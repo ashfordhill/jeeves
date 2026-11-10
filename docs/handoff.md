@@ -7161,3 +7161,67 @@ Chromium on my own Vite (port 4320, the owner's API) at 1440×900 and 1280×800 
 - Known and documented, not changed: upstream-store loops (v2 worker, 1,280/1,312px), the two-row
   crossing into Transcoded videos, the red X over a long container name, port marks that stay
   dark when a line is blue only because another tile or the relationship is selected.
+
+## 2026-11-09 — UI10: review UI overhaul
+
+I did an independent review of UI01–UI09 against the owner's images, by mouse at 1440×900 and
+1280×800. I used my own API (4331, scratch database `jeeves_ui10`, now dropped) and Vite (4321) on
+TinyURL extended, Marketplace, YouTube and a v2 `design.json` project. Dropping the database
+removed every project; the owner's `jeeves` database was not used.
+The full write-up is [review.md](plans/ui-overhaul/review.md): R1–R6 are all delivered. In R1 the
+Metadata database lines loop round v2's worker instead of the sketch's short lines.
+
+**Invariants.**
+
+- The YouTube Overview PNG is `472a4c8c…dc9f` at HEAD. It is byte-identical to an export from a
+  `git archive` copy of `091488e` run by its own Vite in scratch. The details differ only by UI01's
+  "; focus omitted".
+- A real-ELK dump of five designs (banded, relayout, flat, `graphKey`, `buildElkGraph`) is
+  byte-identical at `091488e` and HEAD.
+- Design, revision and blueprint are unchanged by views, selection and modules on 4 designs × 2
+  sizes.
+
+**Fixes.**
+
+- `LineSpec.group` (board, generic): the chooser offers each group once, and a click on one group
+  selects without asking. Detailed lines set `group: connection`; Detailed capture details carry it
+  too.
+- `DrawnSelection.lit` and `data-lit` on rows: port marks are blue whenever their line is. This
+  replaced `data-open` and its CSS.
+- `.studio-tools { width: max-content }`: the toolbar no longer wraps at 1280×800, nor at 1440×900
+  with both rails open.
+- `clickLine` (e2e) waits for the route and camera to stop. The `operations.spec.ts` flake was the
+  200ms animation after `ready`: with 80ms between reading and clicking, the old helper missed 6/6
+  and the new one hit 6/6.
+- Docs wording: `studio.md`, `studio-settings.md`, `CATALOG.md`.
+- Playbook lesson; plan status; HUMAN_FEEDBACK resolution.
+
+Kept, with reasons in the review: the 36px container tab peek (real pull and drop checked) and
+solid port marks on dashed lines. The Hand-pan click is lost only within 50ms of release, in both
+modes, and also at `091488e`.
+
+**Checks.**
+
+- `pnpm check` exited 0: **497 tests in 73 files**. New: a board chooser test, which fails without
+  the fix, and a `selection.test.ts` case.
+- **47 native E2Es passed (1.9m)**, including the new `detailed-view.spec.ts` chooser/port-mark/
+  toolbar test. `operations.spec.ts --repeat-each 3` passed 6/6. An earlier run under synthetic
+  load (10 busy loops, load average 27) failed every test on timeouts. It was not a valid
+  reproduction, and the loops were stopped.
+- The web build passed, with the existing chunk-size advisory.
+- No page or console errors in any mouse run.
+
+**Not mine, left untouched:** the owner edited the root `README.md` and added `.docs/ui-v2/` during
+this unit. Neither is staged.
+
+**Next (owner).** These are ranked follow-ups in the review:
+
+1. upstream-store loops (layout rule);
+2. rows read only from about 0.6 zoom;
+3. two-row crossings (layout rule);
+4. where a container's X goes;
+5. the generator test timeout;
+6. pre-plan dead `OperationsForm`/`OwnershipForm` and nine unused CSS classes;
+7. the Generate project button font.
+
+The plan is complete.

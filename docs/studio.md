@@ -108,11 +108,14 @@ its Overview size and face.
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
   the clicked one thicker with the X. A relationship selected elsewhere (diagnostics, chat, Undo)
   shows its drawn lines the same way. **Choose relationship** names the modules ("Packager
-  (Transcoder) to Transcoded videos"). The X removes the whole relationship, with the same
-  refusals and confirmation as in the Overview; module links that use it go with it.
+  (Transcoder) to Transcoded videos") and offers each relationship once, by its drawn line under
+  the click; where only one relationship's lines run together, a click selects it without asking.
+  The X removes the whole relationship, with the same refusals and confirmation as in the
+  Overview; module links that use it go with it.
 - Containers are tiles: click one's header to select it, and its pull tabs and X work as on any
-  tile. A container's pull tabs sit just outside its frame, beside its rows rather than over them;
-  a selected container's port marks turn blue with its lines. Each row is its module, a button
+  tile. A container's pull tabs sit just outside its frame, beside its rows rather than over them.
+  A port mark turns blue whenever its line does: the container, the relationship, the tile at the
+  line's other end or the open module selected it. Each row is its module, a button
   named "Open <module> in <tile>": a click selects the tile and opens the module's page in the
   inspector, as its card does. A row and a card are the same module: while one is open, from
   either, its row is filled in the selection colour and ringed, its name bold, and only the lines
@@ -544,7 +547,7 @@ and the instructions' copy of that table is generated from it. So chat, like the
 can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
 command changes nothing and comes back in the same plain words as the canvas notice ("URL cache
 can't link to Shorten service. A cache can't link onward."); the turn's activity list shows
-it. Names, purposes, the goal, settings, link details and modules go through `edit`,
+it. Names, descriptions, settings, link details and modules go through `edit`,
 `editSystem`, `editConnection` and the module commands.
 
 Chat reads the design as the canvas draws it: the actions, each with its lane, name, entries and
@@ -1070,8 +1073,6 @@ and all twenty components, with nothing omitted and no findings.
   sits after it: a store several tiles use sits beside its earlier users
   ([Layout](#layout-and-navigation)), and the worker is a later one. The same rule loops an open
   module's line a long way round.
-- **Choose relationship** lists every drawn line under the click, so one relationship drawn twice
-  (Packager and Thumbnailer into Transcoded videos) appears twice; both entries select it.
 - An unload flush is an attempt, not a durability guarantee.
 - Live chat quality with the lane-canvas instructions has not been evaluated; only the scripted
   test model has run. Selecting an action sends chat no identity, so "rename this" with an action

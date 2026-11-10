@@ -115,6 +115,9 @@
   border-radius: 10px;
   background: var(--cream);
   box-shadow: var(--chip-shadow);
+  /* Its own width, not the half of the canvas right of `left: 50%`; it wraps only when the
+     canvas itself is too narrow. */
+  width: max-content;
   max-width: calc(100% - 24px);
   flex-wrap: wrap;
   justify-content: center;

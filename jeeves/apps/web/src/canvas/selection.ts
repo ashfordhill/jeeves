@@ -58,6 +58,11 @@ export type DrawnSelection = {
   selectedTileLines: boolean;
   /** The open module's row, and the rows of the modules of its tile it links with. */
   rows?: { open: string; partners: readonly string[] };
+  /**
+   * The named ports (a row's `in`/`out`) at the ends of the drawn lines in the selection colour,
+   * whatever made them blue, so a row's port mark matches its line.
+   */
+  lit: readonly string[];
 };
 
 /**
@@ -67,12 +72,22 @@ export type DrawnSelection = {
  * rest are highlighted in the selection colour. A tile stays the tile. With one of its modules
  * open, the host stays selected (its chrome too), but only the module's own drawn lines take the
  * selection colour, its row is marked, and so are its in-process partners' rows (`partners`).
+ * Whatever makes a drawn line blue (its relationship, its tile, the other end's tile or its open
+ * module), the named ports at its ends are `lit`, so the rows' port marks turn blue with it.
  */
 export function drawnSelection(
   view: Pick<DetailedView, "lines" | "linesOf" | "rowOf" | "partners">,
   selection: WorkspaceSelection,
   clicked?: string,
 ): DrawnSelection {
+  const lit = (blue: (line: DetailedView["lines"][number]) => boolean) => [
+    ...new Set(
+      view.lines
+        .filter(blue)
+        .flatMap((line) => [line.sourcePort, line.targetPort])
+        .filter((port) => port !== undefined),
+    ),
+  ];
   if (selection.line) {
     const drawn = view.linesOf(selection.line);
     const line =
@@ -81,18 +96,25 @@ export function drawnSelection(
       selected: { line },
       highlighted: drawn.filter((id) => id !== line),
       selectedTileLines: true,
+      lit: lit((item) => drawn.includes(item.id)),
     };
   }
   const { tile, module } = selection;
-  if (!tile) return { selected: {}, highlighted: [], selectedTileLines: true };
+  if (!tile) return { selected: {}, highlighted: [], selectedTileLines: true, lit: [] };
   if (module === undefined || view.rowOf(module)?.host !== tile)
-    return { selected: { tile }, highlighted: [], selectedTileLines: true };
+    return {
+      selected: { tile },
+      highlighted: [],
+      selectedTileLines: true,
+      lit: lit((line) => line.source === tile || line.target === tile),
+    };
+  const own = (line: DetailedView["lines"][number]) =>
+    line.sourceModule === module || line.targetModule === module;
   return {
     selected: { tile },
-    highlighted: view.lines
-      .filter((line) => line.sourceModule === module || line.targetModule === module)
-      .map((line) => line.id),
+    highlighted: view.lines.filter(own).map((line) => line.id),
     selectedTileLines: false,
     rows: { open: module, partners: view.partners(module) },
+    lit: lit(own),
   };
 }

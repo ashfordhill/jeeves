@@ -19,7 +19,8 @@
 // inspector (`onOpenModule`). While a module is open its host stays selected, with its pull tabs
 // and X, but only the module's own drawn lines take the selection colour (the board's
 // `selectedTileLines` and `highlighted`); its row is marked, and its in-process partners' rows
-// more lightly. In the Overview an open module only keeps its host selected.
+// more lightly. A row's port mark turns blue with its line, whatever selected it. In the
+// Overview an open module only keeps its host selected.
 import {
   Board,
   type BoardHandle,
@@ -168,8 +169,10 @@ export function LaneCanvas({
         ),
       };
     });
+    // A relationship drawn as several lines is one entry in Choose relationship (`group`).
     const detailedLines: LineSpec[] = projection.lines.map((line) => ({
       ...line,
+      group: line.connection,
       detail: design.connections.find((item) => item.id === line.connection)?.planned.label,
     }));
     return { projection, tiles: detailedTiles, lines: detailedLines };
@@ -185,6 +188,7 @@ export function LaneCanvas({
     () => ({
       ...(drawn?.rows && { open: drawn.rows.open }),
       partners: drawn?.rows?.partners ?? [],
+      lit: drawn?.lit ?? [],
       onOpen: onOpenModule,
     }),
     [drawn, onOpenModule],

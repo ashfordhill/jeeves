@@ -69,31 +69,42 @@ describe("Detailed view selection", () => {
     const both = ["transcoder-write/transcoder-packager", "transcoder-write/transcoder-thumbnails"];
     expect(view.linesOf("transcoder-write")).toEqual(both);
     // Selected elsewhere (diagnostics, chat, Undo): the first drawn line, the rest highlighted.
+    const writes = ["transcoder-packager:out", "transcoder-thumbnails:out"];
     expect(drawnSelection(view, { line: "transcoder-write" })).toEqual({
       selected: { line: both[0] },
       highlighted: [both[1]],
       selectedTileLines: true,
+      lit: writes,
     });
     expect(drawnSelection(view, { line: "transcoder-write" }, both[1])).toEqual({
       selected: { line: both[1] },
       highlighted: [both[0]],
       selectedTileLines: true,
+      lit: writes,
     });
     // A click on another relationship's line doesn't pick this one's.
     expect(
       drawnSelection(view, { line: "transcoder-write" }, "transcoder-read/transcoder-encoder")
         .selected,
     ).toEqual({ line: both[0] });
-    // A tile stays the tile, with all its lines; nothing selected stays nothing.
+    // A tile stays the tile, with all its lines (and their row ports); nothing stays nothing.
     expect(drawnSelection(view, { tile: "transcoder", line: undefined })).toEqual({
       selected: { tile: "transcoder" },
       highlighted: [],
       selectedTileLines: true,
+      lit: [
+        "transcoder-consumer:in",
+        "transcoder-encoder:out",
+        "transcoder-packager:out",
+        "transcoder-thumbnails:out",
+        "transcoder-done:out",
+      ],
     });
     expect(drawnSelection(view, {})).toEqual({
       selected: {},
       highlighted: [],
       selectedTileLines: true,
+      lit: [],
     });
   });
 
@@ -125,6 +136,7 @@ describe("an open module in the Detailed view", () => {
       highlighted: ["transcoder-write/transcoder-packager"],
       selectedTileLines: false,
       rows: { open: "transcoder-packager", partners: ["transcoder-encoder", "transcoder-done"] },
+      lit: ["transcoder-packager:out"],
     });
     // A module drawn with no line of its own: its host's lines stay plain, its partners marked.
     expect(drawnSelection(view, { tile: "view-counter", module: "counter-sum" })).toEqual({
@@ -132,13 +144,12 @@ describe("an open module in the Detailed view", () => {
       highlighted: [],
       selectedTileLines: false,
       rows: { open: "counter-sum", partners: ["counter-consumer", "counter-writer"] },
+      lit: [],
     });
     // Another tile's module is not open there; the tile shows as a plain selected tile.
-    expect(drawnSelection(view, { tile: "upload", module: "transcoder-packager" })).toEqual({
-      selected: { tile: "upload" },
-      highlighted: [],
-      selectedTileLines: true,
-    });
+    expect(drawnSelection(view, { tile: "upload", module: "transcoder-packager" })).toEqual(
+      drawnSelection(view, { tile: "upload" }),
+    );
   });
 
   it("marks every drawn line of a module and none of its siblings' (v2 Video lifecycle worker)", () => {
@@ -153,5 +164,27 @@ describe("an open module in the Detailed view", () => {
     ]);
     expect(open("handler-writer").highlighted).toEqual(["handler-metadata/handler-writer"]);
     expect(open("handler-writer").rows).toEqual({ open: "handler-writer", partners: [] });
+    expect(open("handler-writer").lit).toEqual(["handler-writer:out"]);
+  });
+
+  it("lights a row's port marks whenever its line is blue, whatever selected it (v2)", () => {
+    const field = designSchema.parse(structuredClone(v2));
+    const fieldGraph = laneGraph(field);
+    const fieldView = detailedView(field, fieldGraph, (id) => laneNodeName(field, fieldGraph, id));
+    const rowPorts = (shown: { lit: readonly string[] }) =>
+      shown.lit.filter((port) => port.startsWith("handler-"));
+    // The Metadata database selected: its lines from the worker's writer and outbox rows are blue.
+    expect(rowPorts(drawnSelection(fieldView, { tile: "metadata-db" }))).toEqual([
+      "handler-writer:out",
+      "handler-publications:out",
+    ]);
+    // One relationship selected: only its own row's port, not the row's other line's.
+    expect(drawnSelection(fieldView, { line: "handler-publication" }).lit).toEqual([
+      "handler-publications:out",
+    ]);
+    // The tile at the other end of the consumer's line.
+    expect(rowPorts(drawnSelection(fieldView, { tile: "completion-events" }))).toEqual([
+      "handler-consumer:in",
+    ]);
   });
 });

@@ -194,11 +194,10 @@
 .lane-container-row[data-ports~="out"]::after {
   right: calc(-1 * (var(--row-inset) + var(--row-border)));
 }
-/* A selected container's lines are all blue, so are its marks; with a module open, only its row's. */
-.board-tile[data-selected] .lane-container:not([data-open]) .lane-container-row::before,
-.board-tile[data-selected] .lane-container:not([data-open]) .lane-container-row::after,
-.lane-container-row[data-mark="open"]::before,
-.lane-container-row[data-mark="open"]::after {
+/* A port mark is blue while a line at that port is: its container, its relationship, the tile
+   at the line's other end or its open module selected it. */
+.lane-container-row[data-lit~="in"]::before,
+.lane-container-row[data-lit~="out"]::after {
   background: var(--board-select);
 }
 

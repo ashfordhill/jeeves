@@ -1326,3 +1326,17 @@ where the sketch has two short lines to a database on the right), two rows into 
 cross, and **Choose relationship** lists one relationship once per drawn line. A form inside the
 inspector should look like its other sections: the system page's feature fieldset now has the
 Options/Modules heading, field and button styles instead of the browser's.
+
+## 2026-11-09 UI10: a choice offers distinct outcomes, and a mark follows what it marks
+
+The independent review of the UI overhaul found three small faults, all in places where a view
+detail stood for something else. **Choose relationship** listed one relationship twice, once per
+drawn line, and both entries did the same thing. A chooser should group by what each entry selects
+and ask only when the outcomes differ, so a click where only one relationship's lines meet now
+selects it directly. **Port marks** turned blue only when their own container or module was
+selected, so they stayed dark beside a line that another tile's selection had turned blue. A mark
+that continues a line must take the line's state from any cause. The **toolbar** gained one
+switch and wrapped onto two rows at common window sizes: centred with `left: 50%`, it could use
+only half the canvas. Give a centred floating bar its own width (`max-content`). The review also
+found that a scripted click can read a line while the layout is still animating after `ready`.
+Positions are final only once they stop moving. [Review](plans/ui-overhaul/review.md).

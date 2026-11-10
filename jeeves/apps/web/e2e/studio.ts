@@ -52,9 +52,22 @@ export const dashedLines = (page: Page) => page.locator(".board .react-flow__edg
 export const tile = (page: Page, name: string): Locator =>
   page.locator(".board").getByRole("group", { name, exact: true });
 
-/** Click a visible, exposed stretch of this route, using the same hit target as the mouse. */
+/**
+ * Click a visible, exposed stretch of this route, using the same hit target as the mouse. The
+ * route is read once it has stopped moving: `ready` holds as soon as ELK lands, while the layout
+ * still animates for 200ms, so a point read then can be paper by the time it is clicked.
+ */
 export async function clickLine(page: Page, id: string) {
   const path = page.locator(`.board .react-flow__edge[data-id="${id}"] .react-flow__edge-path`);
+  const camera = page.locator(".board .react-flow__viewport");
+  let last = "";
+  for (let i = 0, still = 0; still < 2; i += 1) {
+    const now = `${await path.getAttribute("d")} ${await camera.getAttribute("style")}`;
+    still = now === last ? still + 1 : 0;
+    if (i >= 60) throw new Error("The line never stops moving.");
+    last = now;
+    await page.waitForTimeout(60);
+  }
   const point = await path.evaluate((element) => {
     const path = element as SVGPathElement;
     const matrix = path.getScreenCTM();

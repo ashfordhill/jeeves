@@ -355,6 +355,64 @@ describe("Board", () => {
     expect([ink("entry"), ink("publish")]).toEqual(["var(--board-line)", "var(--board-line)"]);
   });
 
+  it("offers each group of overlapping lines once, and selects a lone group without asking", async () => {
+    // Three lines on one route: two drawn lines of one relationship (`group`) and another one.
+    const shared = (id: string, group?: string): LineSpec => ({
+      id,
+      source: "redirect",
+      target: "events",
+      dashed: false,
+      label: id,
+      ...(group && { group }),
+    });
+    const onSelectLine = vi.fn();
+    const board = (overlapping: LineSpec[]) => (
+      <Board
+        tiles={tiles}
+        lines={overlapping}
+        engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+        selected={{}}
+        onSelectTile={() => {}}
+        onSelectLine={onSelectLine}
+        onClear={() => {}}
+        mode="select"
+      />
+    );
+    const clickMiddle = async (container: HTMLElement, id: string) => {
+      await waitFor(() =>
+        expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+      );
+      const edge = container.querySelector(`.react-flow__edge[data-id="${id}"]`);
+      const [x1, y, x2] = (edge?.querySelector(".react-flow__edge-path")?.getAttribute("d") ?? "")
+        .match(/-?\d+(\.\d+)?/g)
+        ?.map(Number) ?? [0, 0, 0];
+      const camera = container.querySelector<HTMLElement>(".react-flow__viewport")?.style.transform;
+      const [tx = 0, ty = 0, zoom = 1] = camera?.match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
+      const hit = edge?.querySelector(".react-flow__edge-interaction");
+      if (!hit || x1 === undefined || y === undefined || x2 === undefined)
+        throw new Error("Missing line");
+      fireEvent.click(hit, { clientX: tx + ((x1 + x2) / 2) * zoom, clientY: ty + y * zoom });
+    };
+
+    const one = render(board([shared("a/first", "a"), shared("a/second", "a")]));
+    await clickMiddle(one.container, "a/second");
+    expect(screen.queryByRole("dialog", { name: "Choose relationship" })).toBeNull();
+    expect(onSelectLine).toHaveBeenCalledWith("a/first");
+    cleanup();
+
+    onSelectLine.mockClear();
+    const two = render(board([shared("a/first", "a"), shared("a/second", "a"), shared("b")]));
+    await clickMiddle(two.container, "b");
+    const chooser = screen.getByRole("dialog", { name: "Choose relationship" });
+    const offered = [...chooser.querySelectorAll<HTMLElement>("[data-line-id]")].map(
+      (button) => button.dataset.lineId,
+    );
+    expect(offered).toEqual(["a/first", "b"]);
+    expect(onSelectLine).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "b" }));
+    expect(onSelectLine).toHaveBeenCalledWith("b");
+  });
+
   it("draws lines and arrowheads at named ports, with handles there, and snapshots the ports", async () => {
     const ref = createRef<BoardHandle>();
     const hub: TileSpec = {

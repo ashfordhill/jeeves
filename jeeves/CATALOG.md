@@ -17,9 +17,9 @@ unchanged on read. Source-schema tables below do not imply editable or executabl
 
 ## C1 context
 
-The **system** (name and goal), **people** and **external systems**, with relationships between
-them. The lane canvas shows only the system: its name and goal are in the inspector when the user
-or nothing is selected. People, external systems and their relationships stay in the format.
+The **system** (name and description), **people** and **external systems**, with relationships
+between them. The lane canvas shows only the system: its Name and Description are in the inspector
+when the user or nothing is selected. People, external systems and their relationships stay in the format.
 
 ## Tile kinds (C2)
 

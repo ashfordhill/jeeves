@@ -34,6 +34,20 @@ export function nearestLines(
     .map((item) => item.id);
 }
 
+/**
+ * The first of `ids` of each group, in order: lines of one group (`LineSpec.group`) select the
+ * same thing, so the overlap chooser offers them once.
+ */
+export function oneLinePerGroup(ids: readonly string[], groupOf: (id: string) => string) {
+  const seen = new Set<string>();
+  return ids.filter((id) => {
+    const group = groupOf(id);
+    if (seen.has(group)) return false;
+    seen.add(group);
+    return true;
+  });
+}
+
 /** A short paper-coloured under-stroke at proper crossings; shared runs/ports are junctions. */
 export function crossingBridges(route: readonly Point[], earlier: readonly (readonly Point[])[]) {
   const bridges: Point[][] = [];
