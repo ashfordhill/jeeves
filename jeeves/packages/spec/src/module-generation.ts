@@ -40,7 +40,7 @@ export type LeadPlan = {
   parts: StudioComponent[];
   /** Set once every needed part is connected. */
   binding?: GenerationBinding;
-  /** What it still needs, as a phrase: "a Data access on a database in Upload API". */
+  /** What it still needs, as a phrase: "a Data access connected to a database". */
   missing?: string;
   /** The store a template writes as a copy of another one: a cache or a search index. */
   projects?: { store: string; source: string };
@@ -145,7 +145,7 @@ export function planModules(
     const hostKind = view.kindOf(lead.host);
     const hosts = generationCapabilities[plan.template].hosts;
     if (!hostKind || !hosts.includes(hostKind)) {
-      plan.missing = `${list(hosts.map(noun), "or")} as its tile`;
+      plan.missing = `to be in ${list(hosts.map(noun), "or")}`;
       continue;
     }
     matchLead(view, plan, refuse);
@@ -218,22 +218,21 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     return first;
   };
   const needs: string[] = [];
-  const connected = (slot: StudioModuleSlotId, kind: StudioKind) =>
-    `its ${slot} connected to ${noun(kind)}`;
+  const connected = (kind: StudioKind) => `a connection to ${noun(kind)}`;
   const inTile = (kind: StudioComponentKind, on: StudioKind) =>
-    `${article(kindName(kind))} on ${noun(on)} in ${host}`;
+    `${article(kindName(kind))} connected to ${noun(on)}`;
   const outboxIn = (publisher: StudioComponent, state: GenerationDependency | undefined) => {
     if (!state) return true;
     const outbox = view.linksOf(publisher, "outbox")[0];
     if (outbox?.tile === state.resource) return true;
-    needs.push(`${publisher.name}'s outbox in ${view.name(state.resource)}`);
+    needs.push(`${publisher.name}'s outbox connected to ${view.name(state.resource)}`);
     return false;
   };
   const isIdentity = (link: ModuleLink) => !!link.tile && view.kindOf(link.tile) === "identity";
   switch (plan.template) {
     case "owned-multipart": {
       const objects = dependency(own("objects"));
-      if (!objects) needs.push(connected("objects", "object-store"));
+      if (!objects) needs.push(connected("object-store"));
       const state = part("data-access", "database");
       const jobs = part("event-publisher", "channel");
       const guard = part("auth-guard", "identity", isIdentity);
@@ -255,7 +254,7 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     }
     case "asset-lifecycle": {
       const state = dependency(own("state"));
-      if (!state) needs.push(connected("state", "database"));
+      if (!state) needs.push(connected("database"));
       const results = part("event-consumer", "channel");
       const publication = part("event-publisher", "channel");
       if (!results) needs.push(inTile("event-consumer", "queue"));
@@ -275,7 +274,7 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     }
     case "video-hls": {
       const originals = dependency(own("originals"));
-      if (!originals) needs.push(connected("originals", "object-store"));
+      if (!originals) needs.push(connected("object-store"));
       const packager = part("video-packager", "outputs");
       const thumbnailer = part("video-thumbnailer", "outputs");
       const jobs = part("event-consumer", "channel");
@@ -303,15 +302,14 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     }
     case "positive-cache-read": {
       const cache = dependency(own("cache"));
-      if (!cache) needs.push(connected("cache", "cache"));
+      if (!cache) needs.push(connected("cache"));
       const loader = view.linksOf(lead, "loader")[0]?.target;
       let source: GenerationDependency | undefined;
-      if (!loader || loader.host !== lead.host)
-        needs.push(`its loader connected to a Data access in ${host}`);
+      if (!loader || loader.host !== lead.host) needs.push("a Data access as its loader");
       else {
         plan.parts.push(loader);
         source = dependency(view.linksOf(loader, "database")[0]);
-        if (!source) needs.push(`${loader.name} connected to a database`);
+        if (!source) needs.push(`${loader.name}, its loader, connected to a database`);
       }
       if (!needs.length && cache && source) {
         plan.binding = { kind: "positive-cache-read", source, cache };
@@ -332,7 +330,7 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     }
     case "search-projection": {
       const index = dependency(own("index"));
-      if (!index) needs.push(connected("index", "search"));
+      if (!index) needs.push(connected("search"));
       const events = part("event-consumer", "channel");
       if (!events) needs.push(inTile("event-consumer", "queue"));
       const eventsDep = dependency(events?.link);
@@ -342,7 +340,7 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     }
     case "search-query": {
       const index = dependency(own("index"));
-      if (!index) needs.push(connected("index", "search"));
+      if (!index) needs.push(connected("search"));
       else plan.binding = { kind: "search-query", index };
       break;
     }
@@ -397,9 +395,12 @@ function settleAcrossTiles(view: ModuleView, leads: LeadPlan[], kept: Ownership)
         ];
         const [upload] = uploads;
         if (!upload)
-          demote(plan, `${article(kindName("multipart-uploads"))} writing ${view.name(state)}`);
+          demote(plan, `${kindName("multipart-uploads")} writing to ${view.name(state)}`);
         else if (uploads.length > 1)
-          demote(plan, `one multipart upload writing ${view.name(state)}, not ${uploads.length}`);
+          demote(
+            plan,
+            `one ${kindName("multipart-uploads")} writing to ${view.name(state)}, not ${count(uploads.length)}`,
+          );
         else binding.upload = upload;
       }
       if (binding.kind === "search-projection") {
@@ -418,8 +419,11 @@ function settleAcrossTiles(view: ModuleView, leads: LeadPlan[], kept: Ownership)
           kept.resources.some((item) => item.element === store && item.kind === "source");
         if (!source) demote(plan, `an Event publisher with an outbox feeding ${view.name(queue)}`);
         else if (sources.size > 1)
-          demote(plan, `one outbox database feeding ${view.name(queue)}, not ${sources.size}`);
-        else if (!declared(source)) demote(plan, `a template writing ${view.name(source)}`);
+          demote(
+            plan,
+            `one outbox database feeding ${view.name(queue)}, not ${count(sources.size)}`,
+          );
+        else if (!declared(source)) demote(plan, `a template writing to ${view.name(source)}`);
         else plan.projects = { store: binding.index.resource, source };
       }
       if (binding.kind === "search-query") {
@@ -438,7 +442,8 @@ function settleAcrossTiles(view: ModuleView, leads: LeadPlan[], kept: Ownership)
                   item.element === index && item.kind === "projection",
               )?.source
             : undefined);
-        if (!source) demote(plan, `${article(kindName("index-writer"))} on ${view.name(index)}`);
+        if (!source)
+          demote(plan, `${article(kindName("index-writer"))} connected to ${view.name(index)}`);
         else plan.projects = { store: index, source };
       }
     }

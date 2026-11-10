@@ -500,7 +500,7 @@ describe("module commands", () => {
     expect(selectionOf(cut, "watch-cache-reader")?.binding.kind).toBe("module-stub");
     expect(moduleStatus(cut, "watch-cache-reader")).toMatchObject({
       status: "stub",
-      reason: "Needs its loader connected to a Data access in Watch API.",
+      reason: "Needs a Data access as its loader.",
       unconnected: ["loader"],
     });
     expect(refusal(cut, { type: "disconnectModule", link: link.id })).toBe(
@@ -621,10 +621,10 @@ describe("module derivation", () => {
     expect(ownership.dependencies.map((item) => item.connection)).not.toContain("counter-write");
     expect(ownership.owners.map((item) => item.id)).not.toContain("view-counter-owner");
     expect(moduleStatus(cut, "counter-sum")?.reason).toBe(
-      "Needs a Data access on a database in View counter.",
+      "Needs a Data access connected to a database.",
     );
     expect(moduleStatus(cut, "counter-consumer")?.reason).toBe(
-      "Waits for Receipt and increment, which needs a Data access on a database in View counter.",
+      "Waits for Receipt and increment, which needs a Data access connected to a database.",
     );
     const again = run(cut, connect("counter-writer", "database", { tile: "view-counts" }));
     expect(designGeneration(again)?.selections).toEqual(designGeneration(built)?.selections);
@@ -731,7 +731,7 @@ describe("module derivation", () => {
     });
     expect(moduleStatus(design, "search-query")).toMatchObject({
       status: "stub",
-      reason: "Needs an Index writer on Search index.",
+      reason: "Needs an Index writer connected to Search index.",
     });
     expect(moduleStatus(design, "watch-views")).toBeUndefined();
   });
@@ -871,7 +871,7 @@ describe("module status and older designs", () => {
     });
     expect(statuses.get("counter-sum")).toMatchObject({
       status: "custom",
-      reason: "No generation selection covers it.",
+      reason: "No template covers it.",
     });
   });
 
@@ -889,20 +889,12 @@ describe("module status and older designs", () => {
       ]),
     );
     expect(reasons).toEqual({
-      "upload-multipart": ["stub", "Needs its objects connected to object storage.", ["objects"]],
-      "upload-limit": [
-        "stub",
-        "Rate limiter has no template; it is generated as a stub.",
-        ["store"],
-      ],
-      "watch-views": [
-        "stub",
-        "Part of a template only beside Multipart uploads, Lifecycle writer or Video encoder in its tile.",
-        ["channel", "outbox"],
-      ],
+      "upload-multipart": ["stub", "Needs a connection to object storage.", ["objects"]],
+      "upload-limit": ["stub", "Rate limiter has no template.", ["store"]],
+      "watch-views": ["stub", "Needs Multipart uploads in its tile.", ["channel", "outbox"]],
       "transcoder-cache": [
         "stub",
-        "Needs a service or a redirect service as its tile.",
+        "Needs to be in a service or a redirect service.",
         ["cache", "loader"],
       ],
     });

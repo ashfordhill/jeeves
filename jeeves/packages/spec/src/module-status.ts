@@ -19,6 +19,7 @@ import {
   generationReferences,
 } from "./generation.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
+import { generationCapabilities } from "./generation-support.ts";
 import { covers, planModules } from "./module-generation.ts";
 import {
   type StudioComponent,
@@ -27,6 +28,7 @@ import {
   studioComponentDefinitions,
   studioModuleTemplates,
 } from "./studio-components.ts";
+import { studioKindNoun } from "./studio-links.ts";
 import { moduleSlots } from "./studio-modules.ts";
 
 export const moduleStatusKinds = ["template", "stub", "custom", "refused"] as const;
@@ -39,6 +41,8 @@ export const moduleStatusLabels: Record<ModuleStatusKind, string> = {
 };
 export type ModuleStatus = {
   module: string;
+  /** The module's name. */
+  name: string;
   host: string;
   kind: StudioComponentKind;
   status: ModuleStatusKind;
@@ -148,7 +152,9 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
     const definition = studioComponentDefinitions[module.settings.kind];
     const generation = definition.generation;
     if (generation.kind === "stub")
-      return `${definition.name} has no template; it is generated as a stub.`;
+      return module.settings.kind === "custom"
+        ? "Your own logic, with no template."
+        : `${definition.name} has no template.`;
     if (generation.kind === "lead") {
       const lead = leads.get(module.id);
       if (lead?.missing) return `Needs ${lead.missing}.`;
@@ -164,15 +170,30 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
     const waiting = beside.find((item) => item.missing);
     if (waiting) return `Waits for ${waiting.lead.name}, which needs ${waiting.missing}.`;
     const [other] = beside;
-    if (other) return `${sentence(other.lead.name)} doesn't use it; it is generated as a stub.`;
-    return `Part of a template only beside ${list(
-      generation.templates.flatMap((template) => leadKinds.get(template) ?? []),
+    if (other) return `${sentence(other.lead.name)} doesn't use it.`;
+    // The leads its tile could hold beside it, else the tiles its templates need.
+    const hostKind = studio?.elements.find((item) => item.element === module.host)?.settings.kind;
+    const fits = generation.templates.filter(
+      (template) => !!hostKind && generationCapabilities[template].hosts.includes(hostKind),
+    );
+    if (!fits.length)
+      return `Needs to be in ${list(
+        [
+          ...new Set(
+            generation.templates.flatMap((template) => generationCapabilities[template].hosts),
+          ),
+        ].map(studioKindNoun),
+        "or",
+      )}.`;
+    return `Needs ${list(
+      fits.flatMap((template) => leadKinds.get(template) ?? []),
       "or",
     )} in its tile.`;
   };
   return modules.map((module) => {
     const base = {
       module: module.id,
+      name: module.name,
       host: module.host,
       kind: module.settings.kind,
       unconnected: moduleSlots(design, module.id)
@@ -193,8 +214,8 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
         ...base,
         status: "custom",
         reason: moduleLevel
-          ? "No generation declaration yet; the next module command adds one."
-          : "No generation selection covers it.",
+          ? "Not declared yet; the next module change declares it."
+          : "No template covers it.",
       } satisfies ModuleStatus;
     const reason = covered.target.kind === "component" ? blocked(covered) : undefined;
     return {

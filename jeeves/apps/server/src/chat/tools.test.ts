@@ -308,7 +308,7 @@ describe("studio chat tools", () => {
     const shorten = tiles.find((tile) => tile.id === "shorten")?.modules;
     expect(shorten?.find((module) => module.id === "shorten-limit")).toMatchObject({
       status: "stub",
-      reason: "Rate limiter has no template; it is generated as a stub.",
+      reason: "Rate limiter has no template.",
       unconnected: ["store"],
     });
     // A kind its tile can't hold, and a slot it doesn't have, are refused in plain words.

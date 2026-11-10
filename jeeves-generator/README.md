@@ -171,8 +171,36 @@ must exist in the original JSON, including when parsing would materialize a defa
 
 Module-level selections (component targets) resolve on the same path. A `module-stub@0.1.0`
 selection, which module commands derive for every module without a complete template, needs no
-role and its host's settings are not audited. No emitter is installed for it yet (MA07), so its
-template is reported as not installed.
+role and its host's settings are not audited. It must target a module; the resolver adds that
+module's name, kind and slots, with each link's target, host link and read or write, to its
+normalized row.
+
+### Module stubs
+
+`local.module-stubs` provides `module-stub@0.1.0` beside the composition (not in the
+dependency-only registry). For each stub module it writes:
+
+- `src/modules/<host>/<module>.slots.ts` (scaffold): a `Dependencies` type with one typed
+  property per connected slot, named after the target tile or module, and a `slots` descriptor
+  naming the tile, its host link and how it is used. Each unconnected slot is a comment line,
+  such as `// outbox: not connected (Database, write, optional)`.
+- `src/modules/<host>/<module>.ts` (extension): an entry point named after the module that takes
+  `Dependencies` and throws `Not implemented: <name>`.
+- one shared `src/modules/dependencies.ts` (scaffold): a minimal interface per tile kind and use
+  (database read or read-write, queue publish or consume, object read or write, cache, search
+  read or write, token verifier, HTTP target, module call).
+
+Stubs import no template library and provision nothing, so a stub-only export installs and
+builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
+Existing preservation applies: export writes only to a new directory, and `planFileWrites`
+refuses an edited `<module>.ts` with `EXISTING_OUTPUT_CHANGED`; export afresh and carry your
+bodies over.
+
+`.jeeves/report.json` gains `modules` only when the design has a module-level selection, so
+tile-level reports keep their shape. Each row has the module, its name, host, kind, status
+(`template`, `stub`, `custom` or `refused`), template, selection, files (those that cite its
+selection, apart from the shared project and diagnostics), unconnected slots and reason. The
+studio's preview response lists `modules` for every design.
 
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
 hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares

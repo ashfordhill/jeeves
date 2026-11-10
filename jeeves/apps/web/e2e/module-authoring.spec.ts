@@ -257,7 +257,9 @@ test("connects a module from its dot, refuses with the reason, and disconnects b
     await addModule(page, "Microservice", "Data access");
     // Unconnected is allowed: a stub, with what its template still needs.
     await expect(status(page)).toHaveAttribute("data-status", "stub");
-    await expect(status(page)).toContainText("Part of a template only beside");
+    await expect(status(page)).toContainText(
+      "Needs Multipart uploads or Cache reader in its tile.",
+    );
 
     await page.getByRole("button", { name: "Detailed", exact: true }).click();
     await ready(page);
@@ -488,6 +490,56 @@ test("a module added to a study tile shows its kept Service identity as Refused"
     await expect
       .poll(async () => ({ ...(await saved(page, id)), revision: 0 }))
       .toEqual({ ...before, revision: 0 });
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("Generate project lists each module's status and previews its stubs", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Module stubs", [["Consume", "Microservice"]]);
+  try {
+    await tile(page, "Microservice").click();
+    await addModule(page, "Microservice", "Rate limiter");
+    await addModule(page, "Microservice", "Custom");
+    const generate = page.getByRole("button", { name: "Generate project", exact: true });
+    await expect(generate).toBeEnabled();
+    await generate.click();
+    const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
+    // Listed before any preview, from the saved design: name, tile, status and reason.
+    const rows = dialog
+      .getByRole("list", { name: "Generated modules", exact: true })
+      .getByRole("listitem");
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0)).toContainText("Rate limiter in Microservice");
+    await expect(rows.nth(0).locator(".lane-module-status")).toHaveAttribute("data-status", "stub");
+    await expect(rows.nth(0)).toContainText("StubRate limiter has no template.");
+    await expect(rows.nth(1)).toContainText("Custom in Microservice");
+    await expect(rows.nth(1)).toContainText("StubYour own logic, with no template.");
+    const result = page.waitForResponse((response) =>
+      response.url().endsWith("/experimental-generation/preview"),
+    );
+    await dialog.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    const preview = await (await result).json();
+    expect(
+      preview.modules.map((row: { name: string; status: string }) => [row.name, row.status]),
+    ).toEqual([
+      ["Rate limiter", "stub"],
+      ["Custom", "stub"],
+    ]);
+    expect(preview.report.findings).toEqual([]);
+    expect(preview.report.modules.map((row: { files: string[] }) => row.files.at(-1))).toEqual([
+      "src/modules/microservice/microservice-rate-limiter.ts",
+      "src/modules/microservice/microservice-custom.ts",
+    ]);
+    await expect(dialog.getByText(/^Ready: \d+ files/)).toBeVisible();
+    await expect(
+      dialog.getByText(/Write Rate limiter in src\/modules\/microservice\//),
+    ).toBeVisible();
+    await expect(rows).toHaveCount(2);
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }

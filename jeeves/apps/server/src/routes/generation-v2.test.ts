@@ -1,8 +1,11 @@
 import { assembleV2, canonicalJson, sha256 } from "@jeeves/generator";
 import {
   buildGenerationPresetCommand,
+  buildStudioCommand,
   buildSupportedAuthoringCommand,
   type DesignDocument,
+  moduleStatuses,
+  type StudioCommand,
 } from "@jeeves/spec";
 import { expect, it, vi } from "vitest";
 import { DesignService } from "../design/service.ts";
@@ -46,6 +49,10 @@ it("exports actual saved v2 consumers deterministically, preserves partial hooks
       const preview = await request("preview", saved.state.design);
       expect(preview.statusCode).toBe(200);
       const data = preview.json();
+      // Every module, though no module-level selection covers it: the report keeps its shape.
+      expect(data.modules).toEqual(moduleStatuses(saved.state.design));
+      expect(data.modules.length).toBeGreaterThan(0);
+      expect("modules" in data.report).toBe(false);
       expect(data).toMatchObject({
         mode: "selected-source-v2",
         selectedSource: {
@@ -154,3 +161,100 @@ it("exports actual saved v2 consumers deterministically, preserves partial hooks
     await database.close();
   }
 }, 15000);
+
+it("lists each module's status in the preview and exports a stub-only design", async () => {
+  const database = await openTestDb(),
+    app = buildTestApp(database.db),
+    service = new DesignService(database.db);
+  try {
+    const project = await service.createProject("Stub modules");
+    const commands: StudioCommand[] = [
+      { type: "addAction", lane: "download", name: "Shorten", system: { name: "Links" } },
+      {
+        type: "addTile",
+        from: { lane: "download" },
+        side: "after",
+        tile: { id: "shorten", name: "Shorten service", kind: "service" },
+        linkId: "use-shorten",
+      },
+      {
+        type: "addTile",
+        from: { tile: "shorten" },
+        side: "after",
+        tile: { id: "links-db", name: "Links database", kind: "database" },
+        linkId: "shorten-to-links",
+      },
+      { type: "addModule", host: "shorten", kind: "data-access", id: "shorten-links" },
+      { type: "addModule", host: "shorten", kind: "rate-limiter", id: "shorten-limit" },
+      {
+        type: "connectModule",
+        module: "shorten-links",
+        slot: "database",
+        target: { tile: "links-db" },
+      },
+    ];
+    for (const command of commands) {
+      const current = await service.getDesign(project.id);
+      if (!current) throw new Error();
+      const saved = await service.edit(project.id, {
+        baseRevision: current.design.revision,
+        source: "api",
+        ops: buildStudioCommand(current.design, command).ops,
+      });
+      if (!saved.ok) throw new Error(JSON.stringify(saved));
+    }
+    const current = await service.getDesign(project.id);
+    if (!current) throw new Error();
+    const response = await app.inject({
+      method: "POST",
+      url: `/projects/${project.id}/experimental-generation/preview`,
+      payload: {
+        profileId: "selected-source-v2",
+        baseRevision: current.design.revision,
+        sourceSha256: sha256(canonicalJson(current.design)),
+      },
+    });
+    expect(response.statusCode).toBe(200);
+    const data = response.json();
+    expect(data.modules).toEqual([
+      {
+        module: "shorten-links",
+        name: "Data access",
+        host: "shorten",
+        kind: "data-access",
+        status: "stub",
+        selection: "shorten-links",
+        reason: "Needs Multipart uploads or Cache reader in its tile.",
+        unconnected: [],
+      },
+      {
+        module: "shorten-limit",
+        name: "Rate limiter",
+        host: "shorten",
+        kind: "rate-limiter",
+        status: "stub",
+        selection: "shorten-limit",
+        reason: "Rate limiter has no template.",
+        unconnected: ["store"],
+      },
+    ]);
+    // The report adds each module's files; the stubs are installed, so nothing is missing.
+    expect(data.report.findings).toEqual([]);
+    expect(data.report.modules.map((row: { files: string[] }) => row.files)).toEqual([
+      [
+        "src/modules/dependencies.ts",
+        "src/modules/shorten/shorten-links.slots.ts",
+        "src/modules/shorten/shorten-links.ts",
+      ],
+      [
+        "src/modules/dependencies.ts",
+        "src/modules/shorten/shorten-limit.slots.ts",
+        "src/modules/shorten/shorten-limit.ts",
+      ],
+    ]);
+    expect(await service.getDesign(project.id)).toEqual(current);
+  } finally {
+    await app.close();
+    await database.close();
+  }
+});

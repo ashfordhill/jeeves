@@ -14,6 +14,7 @@ export * from "./v2/durability.ts";
 export * from "./v2/event-counter.ts";
 export * from "./v2/input.ts";
 export * from "./v2/local-contract.ts";
+export * from "./v2/module-stubs.ts";
 export * from "./v2/multipart.ts";
 export * from "./v2/positive-cache.ts";
 export * from "./v2/registry.ts";

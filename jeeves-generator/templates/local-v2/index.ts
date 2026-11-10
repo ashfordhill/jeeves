@@ -7,6 +7,7 @@ import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalEventCounter } from "../../src/v2/event-counter.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
 import { createLocalMediaWorker } from "../../src/v2/media-worker.ts";
+import { createLocalModuleStubs } from "../../src/v2/module-stubs.ts";
 import { createLocalMultipart } from "../../src/v2/multipart.ts";
 import { createLocalPositiveCache } from "../../src/v2/positive-cache.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
@@ -30,18 +31,17 @@ export function loadLocalV2Registry(
   options: { applications?: boolean } = {},
 ) {
   // Snapshot registration metadata before the foundation captures its contribution callbacks.
+  const closure = [
+    ...new Set([
+      ...sourcePaths("jeeves-generator/src/v2"),
+      ...sourcePaths("jeeves-generator/templates/local-v2"),
+      ...sourcePaths("jeeves/packages/spec/src"),
+    ]),
+  ];
   const features = [
     ...(options.applications === false
       ? []
-      : [
-          createLocalComposition([
-            ...new Set([
-              ...sourcePaths("jeeves-generator/src/v2"),
-              ...sourcePaths("jeeves-generator/templates/local-v2"),
-              ...sourcePaths("jeeves/packages/spec/src"),
-            ]),
-          ]),
-        ]),
+      : [createLocalComposition(closure), createLocalModuleStubs(closure)]),
     ...featureValues,
   ].map((feature) => ({
     ...feature,

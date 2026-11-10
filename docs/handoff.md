@@ -7823,3 +7823,82 @@ is named after its kind and its Name is focused, ready to rename. `module-author
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — MA07: generated module stubs
+
+Per the [module authoring plan](plans/module-authoring/units.md) (Owner decision 5) and contract
+§6 and §8. Docs: the generator README (Module stubs, report `modules`), `studio.md` (Experimental
+project export), the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[ma07](plans/module-authoring/evidence/ma07/).
+
+- **Resolver** (`generation-resolver.ts`): a `module-stub` row gains `module` (name, kind, tile
+  name, own description, each slot with its links: target tile or module, host link, store
+  access from `studioStoreAccess`, queue channel). A stub that doesn't target a module is
+  `CONFIG_INVALID`. The role check and host-setting audit skips (MA05) were checked; nothing else
+  blocks a stub-only design (no findings).
+- **Emitter** `local.module-stubs` (`src/v2/module-stubs.ts`), installed beside the composition
+  (not in `loadLocalV2Dependencies`), provides `module-stub@0.1.0` (consumer output
+  `src/modules/dependencies.ts`). Per stub: `src/modules/<host>/<module>.slots.ts` (scaffold:
+  `Dependencies` with a property per connected slot named after its target, a comment per
+  unconnected slot, and a `slots` descriptor) and `<module>.ts` (extension: an entry point named
+  after the module that throws `Not implemented: <name>`). The shared `dependencies.ts` is an asset
+  (`templates/local-v2/assets/src/modules/dependencies.ts.template`). A read-write slot through a
+  link that only reads gets the reader type. No dependencies, no `local` contribution, no runtime
+  imports; each stub is a required `custom` gap.
+- **Report:** `assembleV2` adds `modules` only when a selection targets a component: module,
+  name, host, kind, status, template, selection, files (payload files citing its selection, minus
+  the foundation's and diagnostics'), unconnected and reason.
+- **Preview and dialog:** both preview modes return `modules: moduleStatuses(design)`. The
+  Generate dialog's **Modules** list (`GenerationModules.tsx`, `moduleStatusLine`) shows every
+  module before and after preview, so a refused source still lists them.
+- **Status** (`module-status.ts`): `ModuleStatus` gains `name`. Reasons are plain sentences: "Needs
+  a connection to a cache.", "Needs a Data access as its loader.", "Needs a Data access connected
+  to a database.", "Needs to be in a worker.", "Rate limiter has no template.", "Your own logic,
+  with no template.", "Needs Multipart uploads or Cache reader in its tile." (only leads its tile
+  could hold), "No template covers it."
+
+**Deviation:** the frozen v2's `manifest.json`/`report.json` list one more emitter
+(`local.module-stubs`, no dependencies) in `implementations`. Contract §8 allows the emitter
+inventory to differ; everything else in them matches apart from the source inventory.
+
+**Tests:** `module-stubs.test.ts` (4): typed and commented slots, names, loader `ModuleCall`, exact
+extension text; determinism, one owner per file, nothing provisioned; report `modules` present
+(stubs, and a completed cache read as Template with its files) and absent (frozen v2, video
+preset); an edited `<module>.ts` refused by `planFileWrites`, kept on disk, and unchanged by a
+new connection (only `.slots.ts` changes). Server: preview `modules` for a preset and a stub-only
+design. E2E: `module-authoring.spec.ts` "Generate project lists each module's status and previews
+its stubs". Updated reason strings in spec, chat and e2e tests; composition's template count is 8.
+
+**Checks:** `pnpm check` exited 0: **548 tests in 78 files** (lint: only the existing info).
+**E2E: 58 passed (2.6m)** first run; the new test also passed alone. Web build passed with the
+existing chunk-size advisory.
+
+**Gates:**
+
+- **v1:** byte-identical (`assemble.test.ts` manifest pin).
+- **Frozen v2:** fresh `export:v2`, 72 files; 70 byte-identical to `generic-export.tar.gz`. The
+  two provenance files equal it apart from the source inventory, `registry.sha256`, the report's
+  hash/size in the manifest and the added emitter.
+- **Stub-only design** (one Service with a connected Data access, an Event publisher with its
+  channel connected and outbox not, an unconnected Rate limiter; MA05 commands): 32 files, no
+  findings, no providers in `compose.yaml`; `pnpm install --frozen-lockfile --ignore-scripts` and
+  `pnpm build` exited 0 (9 JS files); a built stub threw `Not implemented: Data access`.
+- **YouTube Overview PNG** at 1440×900: `472a4c8c…dc9f`.
+
+**Mouse check** (scripted Chromium; my API 4337 with scratch DB `jeeves_ma07`, now dropped, and
+Vite 4327; 1440×900 and 1280×800): TinyURL 7 tiles, 7 lines. Blank project: Consume →
+Microservice, then Rate limiter, Data access and Custom from the `+` fan; Generate project listed
+all three as Stub with their reasons; Preview gave "Ready: 32 files" and the four required gaps;
+the footer stayed reachable at 1280. No page errors or app console warnings. All projects deleted
+(204).
+
+**For MA08:** template rows already get files (those citing the selection). Leads and parts of a
+module-level template use the composition's existing consumers; stubs never mix with them. The
+`modules` report rows are built from `moduleStatuses`, so MA08's statuses flow through. A
+module's stub files disappear once it joins a template.
+
+**For MA09:** View count reader and View publisher are the rebuild's two stubs; Preview lists
+them under Modules with their reasons, and their files are under `src/modules/<Watch API's ID>/`.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

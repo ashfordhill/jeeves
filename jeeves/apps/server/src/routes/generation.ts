@@ -8,7 +8,7 @@ import {
   sha256,
   youtubeLocalProfile,
 } from "@jeeves/generator";
-import { generationExportBlockers } from "@jeeves/spec";
+import { generationExportBlockers, moduleStatuses } from "@jeeves/spec";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import type { DesignService } from "../design/service.ts";
@@ -122,6 +122,8 @@ export const generationRoutes: FastifyPluginAsyncZod<{ service: DesignService }>
             files: bundle.files.length,
             payloadBytes: bundle.files.reduce((n, file) => n + file.bytes.length, 0),
           };
+          // Every module and what it generates: Template, Stub, Custom or Refused, and why.
+          const modules = moduleStatuses(current.design);
           if ("input" in bundle.manifest && "applicationComplete" in bundle.report)
             return {
               mode: "selected-source-v2",
@@ -141,6 +143,7 @@ export const generationRoutes: FastifyPluginAsyncZod<{ service: DesignService }>
               registry: { sha256: bundle.manifest.registry.sha256 },
               templates: bundle.manifest.templates,
               archive: archiveDetails,
+              modules,
               report: bundle.report,
             };
           // Keep legacy bytes and historical provenance unchanged.
@@ -167,6 +170,7 @@ export const generationRoutes: FastifyPluginAsyncZod<{ service: DesignService }>
                 ],
               ),
             ),
+            modules,
             report: bundle.report,
           };
         } catch (error) {

@@ -1,4 +1,4 @@
-import { designGeneration, resolveGeneration, sameContractRef } from "@jeeves/spec";
+import { designGeneration, moduleStatuses, resolveGeneration, sameContractRef } from "@jeeves/spec";
 import { assertDistinctPaths, type BundleFile } from "../files.ts";
 import {
   atPointer,
@@ -218,6 +218,44 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
     )
       selection.status = "unfinished";
   gaps.sort((a, b) => v2Compare(`${a.emitter}/${a.id}`, `${b.emitter}/${b.id}`));
+  // Each module's status, only for a design with module-level selections (contract, section 6):
+  // its files are those that cite its selection, apart from the shared project and diagnostics.
+  const shared = new Set(
+    registry.emitters
+      .filter((emitter) => emitter.provides.runtime || emitter.status === "diagnostic")
+      .map((emitter) => emitter.id),
+  );
+  const modules = generation.selections.some((selection) => selection.target.kind === "component")
+    ? moduleStatuses(input.design).map((status) => {
+        const index = generation.selections.findIndex((item) => item.id === status.selection);
+        const prefix = `/generation/selections/${index}`;
+        return {
+          module: status.module,
+          name: status.name,
+          host: status.host,
+          kind: status.kind,
+          status: status.status,
+          ...(status.template && { template: status.template }),
+          ...(status.selection && { selection: status.selection }),
+          files:
+            index < 0
+              ? []
+              : records
+                  .filter(
+                    (record) =>
+                      typeof record.owner !== "string" &&
+                      !shared.has(record.owner.id) &&
+                      record.sourcePaths.some(
+                        (path) => path === prefix || path.startsWith(`${prefix}/`),
+                      ),
+                  )
+                  .map((record) => record.path)
+                  .sort(v2Compare),
+          unconnected: status.unconnected,
+          ...(status.reason && { reason: status.reason }),
+        };
+      })
+    : undefined;
   const report = freeze({
     format: "jeeves-v2-support-v1",
     semanticComplete: resolution.complete,
@@ -244,6 +282,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
     findings: resolution.findings,
     localAdapterTreatments: model.localAdapterTreatments,
     gaps,
+    ...(modules && { modules }),
   });
   const addMetadata = (path: string, content: string, sourcePaths: string[] = []) => {
     const bytes = new TextEncoder().encode(content);

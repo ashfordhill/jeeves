@@ -32,6 +32,7 @@ describe("moduleGeneration", () => {
 describe("moduleStatusLine", () => {
   const base: ModuleStatus = {
     module: "watch-cache",
+    name: "Details cache",
     host: "watch",
     kind: "cache-reader",
     status: "template",

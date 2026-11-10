@@ -36,7 +36,7 @@ describe("reusable composition before product completion", () => {
     expect(generationExportBlockers(design, registry.installed)).toEqual([]);
     expect(resolveGeneration(design, registry.installed).findings).toHaveLength(4);
     expect(supportedGenerationPresets(registry.installed)).toEqual(["video"]);
-    expect(registry.installed.templates).toHaveLength(7);
+    expect(registry.installed.templates).toHaveLength(8);
     const a = assembleV2({ designJson: JSON.stringify(design) }, registry);
     expect(design).toEqual(before);
     expect(a.report.applicationComplete).toBe(false);

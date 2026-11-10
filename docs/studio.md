@@ -1215,6 +1215,12 @@ The full report stays in `.jeeves/report.json`. The default export is partial: r
 are generated before product-specific completion. It has no runtime verification or strict
 certification, and no unfinished application processes start.
 
+The dialog's **Modules** list shows every module of the design, before any preview: its name,
+its tile and what it generates, in the module page's words (Template with the template's name,
+or Stub, Custom or Refused with the reason). Preview returns the same list. A module without a
+complete template exports as a typed stub under `src/modules/<tile>/`, which throws "Not
+implemented" until you write it; each stub is a required custom gap.
+
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:
 108 files / 19 experimental families, G01–G08/custom work and 25 unsupported paths. Other studies

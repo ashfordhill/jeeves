@@ -26,8 +26,15 @@ import {
 import { idSchema } from "./ids.ts";
 import { sameContractRef } from "./operation-records.ts";
 import { accessAllows, designOwnership } from "./ownership.ts";
-import type { StudioComponent } from "./studio-components.ts";
-import { studioDefinitionStatus } from "./studio-model.ts";
+import type {
+  StudioComponent,
+  StudioComponentKind,
+  StudioComponentTargetKind,
+  StudioModuleSlot,
+} from "./studio-components.ts";
+import { type StudioStoreAccess, studioStoreAccess } from "./studio-links.ts";
+import { type StudioKind, studioDefinitionStatus } from "./studio-model.ts";
+import { moduleSlots } from "./studio-modules.ts";
 import { validateDesign } from "./validate.ts";
 
 type Path = (string | number)[];
@@ -75,6 +82,46 @@ export type NormalizedGenerationSelection = {
     channel?: "publish" | "consume";
   }[];
   policies: (typeof generationPolicies)[keyof typeof generationPolicies][];
+  /** A module stub's module: what its stub files declare (module authoring contract, section 6). */
+  module?: NormalizedStubModule;
+};
+/** A stub module and each of its slots, in catalog order, with the links that fill them. */
+export type NormalizedStubModule = {
+  component: string;
+  name: string;
+  kind: StudioComponentKind;
+  /** Its tile's name. */
+  hostName: string;
+  /** The module's own purpose, when it has one. */
+  description?: string;
+  sourcePath: Path;
+  slots: {
+    id: StudioModuleSlot["id"];
+    use: StudioModuleSlot["use"];
+    need: StudioModuleSlot["need"];
+    targets: StudioComponentTargetKind[];
+    /** An in-process slot's module kind. */
+    module?: StudioComponentKind;
+    many?: true;
+    connections: {
+      /** The module link. */
+      link: string;
+      sourcePath: Path;
+      target:
+        | {
+            kind: "element";
+            element: string;
+            name: string;
+            tile: StudioKind;
+            /** The host's link the module link goes through. */
+            connection: string;
+            /** A store link reads or writes (`studioStoreAccess`); a queue link publishes or consumes. */
+            access?: StudioStoreAccess;
+            channel?: "publish" | "consume";
+          }
+        | { kind: "component"; component: string; name: string; module: StudioComponentKind };
+    }[];
+  }[];
 };
 export type NormalizedGeneration = {
   version: 1;
@@ -106,6 +153,85 @@ const safeOutputPath = (path: string) =>
   !path.includes("\\") &&
   !path.startsWith("/") &&
   path.split("/").every((part) => /^[a-zA-Z0-9_.-]+$/.test(part) && part !== "." && part !== "..");
+
+/** What a stub declares: its module, and each slot with the tiles or module its links reach. */
+function stubModule(
+  design: DesignDocument,
+  component: StudioComponent,
+  sourcePath: Path,
+): NormalizedStubModule {
+  const studio = design.architecture?.studio;
+  const links = studio?.componentConnections ?? [];
+  const name = (id: string) => design.elements.find((entry) => entry.id === id)?.name ?? id;
+  type Connection = NormalizedStubModule["slots"][number]["connections"][number];
+  const connection = (id: string): Connection[] => {
+    const index = links.findIndex((link) => link.id === id);
+    const link = links[index];
+    if (!link) return [];
+    const sourcePath: Path = ["architecture", "studio", "componentConnections", index];
+    const to = link.to;
+    if (to.kind === "component") {
+      const target = studio?.components?.find((entry) => entry.id === to.id);
+      return target
+        ? [
+            {
+              link: link.id,
+              sourcePath,
+              target: {
+                kind: "component",
+                component: target.id,
+                name: target.name,
+                module: target.settings.kind,
+              },
+            },
+          ]
+        : [];
+    }
+    const tile = studio?.elements.find((entry) => entry.element === to.id)?.settings.kind;
+    if (!tile) return [];
+    const access = studioStoreAccess(design, to.via);
+    // A queue link's declared use, else its direction: the host publishes into the queue.
+    const channel =
+      tile === "queue"
+        ? (studio?.connections.find((entry) => entry.connection === to.via)?.settings.channelUse ??
+          (design.connections.find((entry) => entry.id === to.via)?.from.element === component.host
+            ? "publish"
+            : "consume"))
+        : undefined;
+    return [
+      {
+        link: link.id,
+        sourcePath,
+        target: {
+          kind: "element",
+          element: to.id,
+          name: name(to.id),
+          tile,
+          connection: to.via,
+          ...(access && { access }),
+          ...(channel && { channel }),
+        },
+      },
+    ];
+  };
+  return {
+    component: component.id,
+    name: component.name,
+    kind: component.settings.kind,
+    hostName: name(component.host),
+    ...(component.description && { description: component.description }),
+    sourcePath,
+    slots: moduleSlots(design, component.id).map(({ slot, links: filled }) => ({
+      id: slot.id,
+      use: slot.use,
+      need: slot.need,
+      targets: [...slot.targets],
+      ...(slot.module && { module: slot.module }),
+      ...(slot.many && { many: true as const }),
+      connections: filled.flatMap((item) => connection(item.id)),
+    })),
+  };
+}
 
 export function resolveGeneration(
   design: DesignDocument,
@@ -306,6 +432,17 @@ export function resolveGeneration(
         .map((policy) => structuredClone(policy)),
     };
     normalized.push(row);
+    if (selection.binding.kind === "module-stub") {
+      const target = selection.target;
+      const component =
+        target.kind === "component"
+          ? studio?.components?.find((entry) => entry.id === target.component)
+          : undefined;
+      if (target.kind !== "component")
+        report("CONFIG_INVALID", [...base, "target"], "A module stub must target a module.");
+      if (component)
+        row.module = stubModule(design, component, componentPath(component.id).slice(0, -1));
+    }
     const consumerFor = (input: string, consumer: string) =>
       implementation?.consumers.find(
         (entry) =>

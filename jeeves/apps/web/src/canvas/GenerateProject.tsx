@@ -12,6 +12,7 @@ import {
 import { useProject } from "../project/store.ts";
 import { useGenerationSupport } from "../studio/generation-support.ts";
 import { captureJson, sha256 } from "./diagramCapture.ts";
+import { GenerationModules } from "./GenerationModules.tsx";
 import { LegacyGenerationDetails } from "./LegacyGenerationDetails.tsx";
 import { V2GenerationDetails } from "./V2GenerationDetails.tsx";
 import "./generation.css";
@@ -160,6 +161,7 @@ export function GenerateProject({ onClose }: { onClose: () => void }) {
           Preview checks this canvas against the saved source. No project edits are made.
           Experimental export does not certify strict TinyURL readiness or runtime behavior.
         </p>
+        <GenerationModules design={loaded.design} />
         {support ? (
           <p>
             {support.complete
