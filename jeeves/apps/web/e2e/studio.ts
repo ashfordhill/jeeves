@@ -7,6 +7,28 @@ export const ready = (page: Page) =>
     timeout: 20_000,
   });
 
+/**
+ * Waits until no tile moves on screen for 300 ms, longer than the board's 200 ms layout animation.
+ * A save's re-layout lands, animates and may move the camera after `ready` already holds; at
+ * v2's Detailed fit a tile can be 28px across, so a click or drag aimed during that motion misses.
+ */
+export async function stillBoard(page: Page) {
+  const boxes = () =>
+    page
+      .locator(".board .react-flow__node")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => JSON.stringify(node.getBoundingClientRect())).join("|"),
+      );
+  let last = await boxes();
+  for (let same = 0, tries = 0; same < 3; tries += 1) {
+    if (tries > 200) throw new Error("The board never stops moving.");
+    await page.waitForTimeout(100);
+    const now = await boxes();
+    same = now === last ? same + 1 : 0;
+    last = now;
+  }
+}
+
 /** A canvas view; a new project opens in Detailed, the default. */
 export type CanvasView = "Detailed" | "Simple";
 

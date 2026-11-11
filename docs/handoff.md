@@ -9913,3 +9913,89 @@ and only 45400–45402 listen in 454xx.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-14: complete processing
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (the V3-14 row) and [contract](plans/youtube-v3/contract.md)
+§1, §5 and §7 (S04). Docs: the field project's [notes](../field-projects/youtube/v3/notes/README.md)
+(progress, where S04's status comes from, gap 5), [`custom-paths.md`](../field-projects/youtube/v3/notes/custom-paths.md),
+a playbook lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[v3-14](plans/youtube-v3/evidence/v3-14/README.md), with the operator harness.
+
+- **`app/` only**, from v2's events, lifecycle, paths and public SQL:
+  - `src/modules/video-contract.ts`: the result prefix `videos/<videoId>/<jobId>/<attemptId>/`, the
+    three processing events and their IDs, `publicVideo` and `VideoPublished`;
+  - every Transcoder hook (`job` is `requestedJob`; `video`, `result`, `eventId`, `event`, both
+    `owns`);
+  - the rest of the lifecycle's hooks (`event`, `result`, `failure`, both `identities`,
+    `publication.codec` and `construct`);
+  - `published.videos` in `infra/postgres/metadata/modules/video-lifecycle-lifecycle-writer.sql`:
+    `CREATE OR REPLACE VIEW … WITH (security_barrier)` over `assets WHERE state = 'ready'`, v2's
+    nine columns;
+  - `test/processing.test.ts` (new): 4 tests; with V3-13's, 9 pass with `node --test`.
+- **No scaffold edit.** `generated/` is unchanged.
+- **Docker** (`jeeves-v314-processing`, 45640–45642, a scratchpad copy): 11 steps in the order a
+  message reaches the hooks, each a rebuild, stop and start (≈77 s) and a pass; a staging script
+  put the later hooks back to "Not implemented". Final pass:
+  - the fixture went pending → processing → ready in 4 s;
+  - 15 objects in Transcoded videos: H.264/AAC HLS at 640×360 and 1280×720, 5 × 4 s segments each,
+    a 1280×720 thumbnail, the marker (ffprobe in `app-transcoder`); 200 through `/cdn/video-delivery/`;
+  - `published.videos` shows it, and none of the 14 others. Watch API's and Account API's logins
+    read it but get "permission denied" on `assets`;
+  - one `VideoPublished` on Publication events, from an outbox row written in the ready
+    transaction and sent 90 ms after it; Search indexer stops at `mapping` (V3-16's);
+  - `invalid.mp4` went pending → processing → failed `INVALID_MEDIA`, with no objects and no
+    publication; leftovers failed `QUEUE_DEADLINE` (10 min) and `PROCESSING_DEADLINE` (30 min);
+  - a repeated job changed nothing (marker reused, receipt dropped the repeat);
+  - stop and start: an identical snapshot (secrets, volumes, rows, view, outbox, queues, objects).
+- **S04's status:** it comes from the lifecycle's own `assets` row (read as the owner in a scratch
+  run) and the Processing events. No route can show pending, processing or failed to the creator
+  (V3-13 gap 1), and no published view should: every Metadata login reads `published`.
+- **Backend LOC:** 345 post-template lines in 72 files (V3-14 adds 179: contract +89, Transcoder
+  44, lifecycle +46), 33 replaced; 94.74% retained. The scope is unchanged.
+
+**Template gap 5** (in the notes; not patched): a hook that throws while the Transcoder reports a
+failure (`eventId`, `event` in the media worker's terminal step) is fatal. `app-transcoder` exits
+1 with no reason, the job returns to Upload jobs, and the next start fails (steps 2 and 3).
+
+**E2E flake.** `module-authoring.spec.ts`'s `build` now waits for a still board before each tile
+click. This is V3-08's `v2-rebuild.ts` wait, moved unchanged into `studio.ts` as `stillBoard`. No
+assertion changed.
+
+**Checks.**
+
+- `pnpm check` exited 0: **748 tests in 104 files** (lint: only the existing info).
+- **E2E: 80 passed (6.4 m)** on the first full run, `:852` (was `:849`) included. `jeeves_e2e`
+  holds only its TinyURL project.
+- Web build passed (1.21 s, the existing chunk-size advisory).
+- **Browser** (my API 4466 on scratch `jeeves_v314`, now dropped; Vite 4476): TinyURL 7 tiles and
+  7 lines in Detailed and Simple, at 1440×900 and 1280×800, no page or console error; projects
+  deleted.
+
+**Gates (D2).** `git diff d94b13a -- field-projects/youtube/v3/generated/` is empty. The
+processes-off pin, `generator.test.ts` and `assemble.test.ts` pass (17 tests; v1 byte-identical).
+Frozen v2: 72 files, 70 byte-identical to `generic-export.tar.gz`, manifest and report equal under
+`provenanceWithoutInventory`.
+
+**Cleanup.** My stack is down with its volumes, and both image tags are removed. The copy (with
+`.runtime` and passwords), the fixture copies and the scratch exports are deleted, and my servers
+are stopped. The owner's 43 containers (IDs, restart counts, start times, health), 18 volumes, 9
+networks and 31 image rows match the record. 42 are healthy, both edges answer 200, and only
+45400–45402 listen in 454xx.
+
+**For V3-15.**
+
+- **`published.videos`** (Metadata): `video_id`, `title`, `description`, `channel`,
+  `duration_seconds`, `manifest`, `thumbnail` (object keys in Transcoded videos, so the URL is
+  `/cdn/video-delivery/<key>`), `published_at`, `publication_version` (1). Ready rows only. Every
+  Metadata login has SELECT. Use it for the cache read's `load`, View publisher's ready check
+  and Favorites' `eligible`.
+- **`publicVideo`** in `video-contract.ts` is the public record (with `visibility` and `state`),
+  its paths bound to the video. Reuse it rather than re-deriving the shape. `VideoPublished`
+  adds the envelope for V3-16's Index writer `event`.
+- **Testing:** one fixture upload is ready about 5 s after complete. A failed or pending video ID
+  is easy to get with `invalid.mp4` or by waiting. The harness's `run.mjs`, `tap.mjs` and
+  `outputs.mjs` are in the evidence tarball.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

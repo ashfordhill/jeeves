@@ -18,6 +18,7 @@ import {
   moduleMenu,
   pickFrom,
   ready,
+  stillBoard,
   test,
   tile,
 } from "./studio.ts";
@@ -105,7 +106,8 @@ const NO_DOT = ["Redirect responder", "Event counter"];
  * A blank project in the Simple view with the user's Consume action and the given tiles, each
  * added by its fan. The new tile is selected only once its commit lands, so each step waits for
  * that: a commit landing after the next click would move the selection off `from` and hide its
- * tabs.
+ * tabs. The board can still be moving after `ready` (its layout animation and camera), so each
+ * click on `from` waits for a still board: a click aimed during that motion misses the tile.
  */
 async function build(page: Page, name: string, plan: [from: string, kind: string][]) {
   const id = await createStudy(page, name, "blank", "Simple");
@@ -113,6 +115,7 @@ async function build(page: Page, name: string, plan: [from: string, kind: string
   await expect(tile(page, "Consume")).toHaveClass(/selected/);
   await ready(page);
   for (const [from, kind] of plan) {
+    await stillBoard(page);
     await tile(page, from).click();
     await pickFrom(page, from, LINK_TAB, kind);
     await expect(tile(page, kind)).toHaveClass(/selected/);

@@ -1680,3 +1680,18 @@ codec isn't written retries silently, so check the outbox's `attempts`, not the 
 data, not the HTTP answer: status codes, field names and merged status come from the process
 scaffold, so say so as a gap rather than editing it.
 
+
+## 2026-11-11 V3-14: a failure report reaches hooks too, and publication follows the ready commit
+
+Completing a worker in the order a message reaches its hooks also walks its failure path. When a
+job fails for good, the media worker reports `ProcessingFailed` through the same `eventId` and
+`event` codecs, outside the handler, and a throw there is fatal: the process exits and the job
+goes back to its queue, so the next start fails too. Write the codecs a failure report needs
+together with, or before, the first hook that can fail a job. Keep the events two workers
+exchange in the shared contract (started, succeeded and failed, their stable IDs and the result's
+prefix), and test them offline through the receiver's real `parse`. Publish from the transaction
+that commits the state: the lifecycle builds the event from the committed ready record, and the
+outbox sends it after the commit, so whoever gets the event can already read the view. A public
+view selects only the ready rows and only the fields its readers use. A state only the writer's
+table holds (pending, processing, failed) gets no public view just because a page wants it: if no
+route may show it to its owner alone, record that as a gap.

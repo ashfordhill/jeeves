@@ -89,12 +89,25 @@ V3-16 then fill in the following, and V3-17 measures the result:
 | Unit | Area | State |
 | --- | --- | --- |
 | V3-13 | Upload | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-13/README.md)). The account script; the creator check on multipart's `principal`; every multipart hook; the lifecycle's `metadata`, `job` and `response`. A signed-in creator starts a multipart upload, sends its parts to signed URLs, pauses and resumes from the parts that arrived, and completes it; the job reaches Upload jobs. Anonymous 401, a non-creator 403, another creator 404, an aborted upload 410. |
-| V3-14 | Processing and lifecycle | Next. The Transcoder answers the job "Not implemented: job for Segmenter and encoder", so a completed upload stays `pending` and the lifecycle fails it `QUEUE_DEADLINE` after 10 minutes. |
-| V3-15 | Watch and Favorites | To do |
+| V3-14 | Processing and lifecycle | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-14/README.md)). Every Transcoder hook, the rest of the lifecycle's hooks, and `published.videos` in the Lifecycle writer's SQL file. A completed upload goes pending → processing → ready: the Transcoder encodes H.264/AAC HLS at 360p and 720p in 4 s segments, with a full-size thumbnail, into Transcoded videos; the ready video is in `published.videos`, and one `VideoPublished` reaches Publication events after the ready commit. Invalid media goes pending → processing → failed `INVALID_MEDIA`, with no output and no publication. Search indexer then stops at "Not implemented: mapping for Index writer" (V3-16's). |
+| V3-15 | Watch and Favorites | Next. `published.videos` holds each ready video; the details route still answers "Not implemented: key for Video details cache". |
 | V3-16 | Search and the browser | To do |
 
 What each unit wrote is in [`custom-paths.md`](custom-paths.md); what the templates can't yet
 express is under [template gaps](#template-gaps-found-while-completing-app).
+
+**Where S04's status comes from (V3-14).** A video's state is the lifecycle's own record, the
+template table `upload_api_multipart_uploads.assets` (`state`, `failure_code`, `queued_at`,
+`started_at`, `ready_at`), and only the lifecycle moves it: uploading, then pending at complete,
+processing at `ProcessingStarted`, then ready or failed. No v3 route can show it to the creator.
+The upload's status route shows the upload's own state, and its hooks can't merge the video's
+(gap 1). No published view shows it either: every login on Metadata, Watch API's and Account
+API's included, may read `published`, and v2's status was the creator's alone. So S04's sequence
+is observed where the lifecycle writes it: in `assets`, read as the database owner in the scratch
+run (as S04 already reads `published.videos`), and in the Processing events behind each change.
+Ready is public through `published.videos`. For V3-16's browser, the upload's status shows
+`completed`, and the video is ready once Watch's details route (V3-15) answers it. Pending,
+processing and "failed" with its message have no route until gap 1 is closed in the template.
 
 ### How to run each
 
@@ -166,4 +179,5 @@ Recorded as found, not worked around: no generated scaffold in `app/` was edited
 | V3-13 | **Multipart's HTTP answers can't be shaped from its hooks.** `src/processes/upload-api.ts` mounts `createMultipartHttpHandlers({ multipart, principal })` without its `response` and `error` options, and the compiled mounts carry no `statusCode`. | Start answers 200 with `assetId` (v2: 201 with `videoId`); complete answers 200 (v2 and contract S02: 202; its body does carry `videoId` and `jobId`). Status and list give the upload's own state (`uploading`, `completed`, `aborted`, `expired`), not the video's (`pending`, `processing`, `ready`, `failed`) or its failure, which v2's status merged in. Errors keep their codes, with one message, "Upload operation refused.". S04's "uploading → pending → processing → ready" therefore has no upload route to read from: V3-14/V3-16 must say where it comes from. |
 | V3-13 | **A completion stopped by a failing hook blocks the next start.** The upload stays `completing`; multipart's sweep at start re-runs the completion, and any error that isn't the template's own fails the process: "Application startup failed", without the reason. Until then its status route re-runs it too. | Seen once mid-unit with an unwritten hook (the scratch upload was closed by moving its expiry); with every upload hook written nothing on the upload path reaches it now, but any other throw in a completion hook (a bug, a refused SQL statement) would. |
 | V3-13 | **The outbox relay retries a codec failure silently.** An unwritten (or throwing) `job` codec is treated as a failed publish: the row is retried every ≤5 s for ever, with no log line and no `.failed`. | Seen mid-unit: 13 attempts, then sent once `job` was written. |
-| V3-13 | **The lifecycle's and Transcoder's hooks get no key prefix.** Only multipart's hooks get `prefix`. | `video-contract.ts` repeats the compiled prefix as `ORIGINALS_PREFIX`; multipart's hooks refuse to start if they differ. |
+| V3-13 | **The lifecycle's and Transcoder's hooks get no key prefix.** Only multipart's hooks get `prefix`. | `video-contract.ts` repeats the compiled prefix as `ORIGINALS_PREFIX`; multipart's hooks refuse to start if they differ. The Transcoder's result prefix, `videos/<videoId>/<jobId>/<attemptId>/`, is v2's product path, kept in the contract (V3-14). |
+| V3-14 | **A hook that throws while the Transcoder reports a failure stops the Transcoder.** When a job fails for good, the media worker's terminal step builds a `ProcessingFailed` through `eventId` and `event`. If either throws, the failure is fatal: `app-transcoder` exits 1 with no reason (its last line is the hook's `"action":"thrown"`), and the job, never acknowledged, goes back to Upload jobs. The next `pnpm start` takes it again while subscribing and fails with "container app-transcoder exited (1)". | Seen at steps 2 and 3, with `video` written but `eventId` not; writing `eventId` and `event` cleared it, and the job then failed normally. With every hook written nothing reaches it, but a bug in `eventId` or `event` would keep the Transcoder down. |

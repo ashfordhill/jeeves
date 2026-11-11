@@ -1,13 +1,20 @@
 // Lifecycle writer (Lifecycle writer) in Video lifecycle: the product hooks its asset lifecycle template calls.
 // Write them here. Export never overwrites your edits: export afresh and carry them over.
 import type { AssetLifecycleBinding, AssetLifecycleHooks } from "../../runtime/asset-lifecycle.ts";
-import { NotImplemented } from "../../runtime/tile-process.ts";
+import { bindVideoResult } from "../../runtime/video-result.ts";
 import {
   completionResponse,
   originalKey,
+  processingEvent,
+  processingFailure,
+  publicationEventId,
   requestEventId,
   requestedJob,
+  resultEventId,
+  resultPrefix,
   videoMetadata,
+  videoPublished,
+  wireEvent,
 } from "../video-contract.ts";
 
 type Hooks = AssetLifecycleHooks<unknown, unknown, unknown, unknown, unknown>;
@@ -17,24 +24,37 @@ export type VideoLifecycleLifecycleWriterHooks = Omit<Hooks, "publication"> & {
   identities: AssetLifecycleBinding["identities"];
 };
 
-/** Each hook throws "Not implemented" until written; the first one a message reaches sends it to .failed. */
+/** YouTube's lifecycle hooks: the upload's (V3-13), then processing and publication (V3-14),
+ * as v2's createYouTubeLifecycle. A ready video publishes once, in the transaction that marks it
+ * ready; the relay sends it after that commit. */
 export function videoLifecycleLifecycleWriterHooks(): VideoLifecycleLifecycleWriterHooks {
   return {
     /** Parses an asset's stored metadata: the same codec as the upload's. */
     metadata(input) {
       return videoMetadata.parse(input);
     },
-    /** Parses a processing event from the results queue. */
+    /** Parses a processing event from the results queue: the Transcoder's started, succeeded or failed. */
     event(input) {
-      throw new NotImplemented("event for Lifecycle writer");
+      const event = processingEvent.parse(input);
+      const base = {
+        assetId: event.videoId,
+        jobId: event.jobId,
+        attemptId: event.attemptId,
+        eventId: event.eventId,
+        occurredAt: event.occurredAt,
+      };
+      if (event.type === "ProcessingSucceeded")
+        return { ...base, kind: "succeeded", result: event.result };
+      if (event.type === "ProcessingFailed") return { ...base, kind: "failed", code: event.code };
+      return { ...base, kind: "started" };
     },
-    /** Parses a succeeded event's result for its job. */
+    /** Parses a succeeded event's result for its job: the HLS package under that attempt's prefix. */
     result(input, identity) {
-      throw new NotImplemented("result for Lifecycle writer");
+      return bindVideoResult(input, resultPrefix(identity.assetId, identity.jobId, identity.attemptId));
     },
-    /** Maps a failed event's code to a bounded failure label. */
+    /** Maps a failed event's code to a bounded failure label: INVALID_MEDIA or PROCESSING_FAILED. */
     failure(input) {
-      throw new NotImplemented("failure for Lifecycle writer");
+      return processingFailure.parse(input);
     },
     job: {
       /** Parses the job a completed upload publishes: a VideoProcessingRequested. */
@@ -64,13 +84,32 @@ export function videoLifecycleLifecycleWriterHooks(): VideoLifecycleLifecycleWri
       return completionResponse.parse({ ...completion, videoId: assetId });
     },
     publication: {
-      /** Parses what a ready asset publishes. */
+      /** Parses what a ready asset publishes: a VideoPublished bound to its event ID. */
       codec(input, eventId) {
-        throw new NotImplemented("publication.codec for Lifecycle writer");
+        return wireEvent(videoPublished, input, eventId);
       },
-      /** Builds it inside the transaction that marks the asset ready. */
-      async construct(tx, ready, eventId) {
-        throw new NotImplemented("publication.construct for Lifecycle writer");
+      /** Builds it inside the transaction that marks the asset ready: the public record. */
+      async construct(_tx, ready, eventId) {
+        const metadata = videoMetadata.parse(ready.metadata);
+        const result = bindVideoResult(
+          ready.result,
+          resultPrefix(ready.assetId, ready.jobId, ready.attemptId),
+        );
+        return videoPublished.parse({
+          schemaVersion: 1,
+          type: "VideoPublished",
+          eventId,
+          occurredAt: ready.readyAt,
+          videoId: ready.assetId,
+          publicationVersion: ready.publicationVersion,
+          ...metadata,
+          durationSeconds: result.durationSeconds,
+          manifest: result.manifest,
+          thumbnail: result.thumbnail,
+          publishedAt: ready.readyAt,
+          visibility: "public",
+          state: "ready",
+        });
       },
     },
     identities: {
@@ -80,11 +119,11 @@ export function videoLifecycleLifecycleWriterHooks(): VideoLifecycleLifecycleWri
       },
       /** The stable event ID of a job's started, succeeded or failed event. */
       result(identity, kind) {
-        throw new NotImplemented("identities.result for Lifecycle writer");
+        return resultEventId(identity, kind);
       },
-      /** The stable event ID of an asset's publication. */
+      /** The stable event ID of an asset's publication: one per video. */
       publication(assetId) {
-        throw new NotImplemented("identities.publication for Lifecycle writer");
+        return publicationEventId(assetId);
       },
     },
   };

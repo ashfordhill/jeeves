@@ -1,34 +1,66 @@
 // Segmenter and encoder (Video encoder) in Transcoder: the product hooks its video HLS template calls.
 // Write them here. Export never overwrites your edits: export afresh and carry them over.
 import type { MediaCodecs } from "../../runtime/media-worker.ts";
-import type { VideoHlsJob } from "../../runtime/video-result.ts";
-import { NotImplemented } from "../../runtime/tile-process.ts";
+import { bindVideoResult, type VideoHlsJob, type VideoHlsResult } from "../../runtime/video-result.ts";
+import {
+  originalIdentity,
+  processingEvent,
+  processingType,
+  requestedJob,
+  resultEventId,
+  resultPrefix,
+  type ProcessingRequested,
+} from "../video-contract.ts";
 
 /** The template's generic resources: its source and results buckets. */
 export type TranscoderSegmenterAndEncoderResources = { originals: string; outputs: string };
 
-/** Each hook throws "Not implemented" until written; the first one a message reaches sends it to .failed. */
+const identity = (job: ProcessingRequested) => ({
+  assetId: job.videoId,
+  jobId: job.jobId,
+  attemptId: job.attemptId,
+});
+
+/** YouTube's processing codecs (V3-14), as v2's: the job Upload jobs carries, each attempt's
+ * own result prefix, and the started, succeeded and failed events Processing events carries. */
 export function transcoderSegmenterAndEncoderHooks(resources: TranscoderSegmenterAndEncoderResources) {
-  const codecs: MediaCodecs<unknown, unknown> = {
+  const codecs: MediaCodecs<ProcessingRequested, VideoHlsResult> = {
     /** Parses a job message and binds its message ID. */
     job(raw, messageId) {
-      throw new NotImplemented("job for Segmenter and encoder");
+      return requestedJob(raw, messageId);
     },
     /** The job's source object and immutable result prefix. */
     video(job) {
-      throw new NotImplemented("video for Segmenter and encoder");
+      return {
+        ...identity(job),
+        source: { key: job.originalKey, size: job.expectedSize, sha256: job.expectedSha256 },
+        resultPrefix: resultPrefix(job.videoId, job.jobId, job.attemptId),
+      };
     },
     /** Parses a finished job's result. */
     result(raw, job) {
-      throw new NotImplemented("result for Segmenter and encoder");
+      return bindVideoResult(raw, resultPrefix(job.videoId, job.jobId, job.attemptId));
     },
     /** The stable event ID of a job's started, succeeded or failed event. */
     eventId(job, kind) {
-      throw new NotImplemented("eventId for Segmenter and encoder");
+      return resultEventId(identity(job), kind);
     },
     /** Builds the event the results queue receives. */
     event(job, event) {
-      throw new NotImplemented("event for Segmenter and encoder");
+      return processingEvent.parse({
+        schemaVersion: 1,
+        type: processingType[event.kind],
+        eventId: event.eventId,
+        occurredAt: event.occurredAt,
+        videoId: job.videoId,
+        jobId: job.jobId,
+        attemptId: job.attemptId,
+        ...(event.kind === "succeeded"
+          ? { result: event.result }
+          : event.kind === "failed"
+            ? { code: event.code }
+            : {}),
+      });
     },
   };
   return {
@@ -36,13 +68,17 @@ export function transcoderSegmenterAndEncoderHooks(resources: TranscoderSegmente
     source: {
       /** Whether the job's source object is in this worker's namespace. */
       owns(job: VideoHlsJob): boolean {
-        throw new NotImplemented("source.owns for Segmenter and encoder");
+        try {
+          return originalIdentity(job.source.key).videoId === job.assetId;
+        } catch {
+          return false;
+        }
       },
     },
     results: {
       /** Whether the job's result prefix is in this worker's namespace. */
       owns(job: VideoHlsJob): boolean {
-        throw new NotImplemented("results.owns for Segmenter and encoder");
+        return job.resultPrefix === resultPrefix(job.assetId, job.jobId, job.attemptId);
       },
     },
   };

@@ -1,8 +1,11 @@
-// YouTube v3's video contract: the codecs that Multipart uploads (Upload API) and the Lifecycle
-// writer (Video lifecycle) share, so the two tiles can't drift. Product code, written in V3-13
-// from v2's youtube-contract.ts, youtube-events.ts and video-paths.ts (the v1/v2 upload policy).
+// YouTube v3's video contract: the codecs that Multipart uploads (Upload API), the Transcoder and
+// the Lifecycle writer (Video lifecycle) share, so the tiles can't drift. Product code, from v2's
+// youtube-contract.ts, youtube-events.ts and video-paths.ts: the upload (V3-13), then processing
+// and publication (V3-14).
 import { z } from "zod";
+import type { AssetJobIdentity, ProcessingKind } from "../runtime/asset-lifecycle.ts";
 import { assetEventId } from "../runtime/event-identity.ts";
+import { bindVideoResult, videoHlsResult } from "../runtime/video-result.ts";
 
 export const videoUuid = z.uuid().transform((value) => value.toLowerCase());
 export const timestamp = z.iso.datetime({ offset: true });
@@ -97,3 +100,98 @@ export function wireEvent<T extends { eventId: string }>(
 }
 export const requestedJob = (raw: unknown, messageId?: string) =>
   wireEvent(processingRequested, raw, messageId);
+
+// Processing (V3-14). Each attempt's HLS package lies under its own immutable prefix in
+// Transcoded videos (v2's path policy); the Transcoder's hooks get no prefix (template gap 4).
+export const resultPrefix = (videoId: string, jobId: string, attemptId: string) =>
+  `videos/${videoUuid.parse(videoId)}/${videoUuid.parse(jobId)}/${videoUuid.parse(attemptId)}/`;
+export const processingType = {
+  started: "ProcessingStarted",
+  succeeded: "ProcessingSucceeded",
+  failed: "ProcessingFailed",
+} as const;
+export const processingKind = {
+  ProcessingStarted: "started",
+  ProcessingSucceeded: "succeeded",
+  ProcessingFailed: "failed",
+} as const;
+export const resultEventId = (id: AssetJobIdentity, kind: ProcessingKind) =>
+  logicalEventId(videoUuid.parse(id.jobId), videoUuid.parse(id.attemptId), processingType[kind]);
+/** The two failures the Transcoder reports; the lifecycle adds its own deadlines. */
+export const processingFailure = z.enum(["INVALID_MEDIA", "PROCESSING_FAILED"]);
+const processingBase = {
+  schemaVersion: z.literal(1),
+  eventId: videoUuid,
+  occurredAt: timestamp,
+  videoId: videoUuid,
+  jobId: videoUuid,
+  attemptId: videoUuid,
+};
+/** What Processing events carries from the Transcoder to the lifecycle. */
+export const processingEvent = z
+  .discriminatedUnion("type", [
+    z.strictObject({ ...processingBase, type: z.literal("ProcessingStarted") }),
+    z.strictObject({
+      ...processingBase,
+      type: z.literal("ProcessingSucceeded"),
+      result: videoHlsResult,
+    }),
+    z.strictObject({
+      ...processingBase,
+      type: z.literal("ProcessingFailed"),
+      code: processingFailure,
+    }),
+  ])
+  .superRefine((event, ctx) => {
+    try {
+      const id = { assetId: event.videoId, jobId: event.jobId, attemptId: event.attemptId };
+      if (event.eventId !== resultEventId(id, processingKind[event.type])) throw Error();
+      if (event.type === "ProcessingSucceeded")
+        bindVideoResult(event.result, resultPrefix(event.videoId, event.jobId, event.attemptId));
+    } catch {
+      ctx.addIssue({ code: "custom", message: "Unbound processing result" });
+    }
+  });
+export type ProcessingEvent = z.infer<typeof processingEvent>;
+
+// Publication (V3-14): a ready video's public record, as published.videos holds it and as
+// Publication events carries it (with visibility and state, the search document's filters).
+export const publicationEventId = (videoId: string) =>
+  logicalEventId(videoUuid.parse(videoId), "publication", "1");
+export const publicVideo = z
+  .strictObject({
+    videoId: videoUuid,
+    publicationVersion: z.literal(1),
+    title: videoMetadata.shape.title,
+    description: videoMetadata.shape.description,
+    channel: videoMetadata.shape.channel,
+    durationSeconds: z.number().finite().min(1).max(600),
+    manifest: z.string().min(1).max(250),
+    thumbnail: z.string().min(1).max(250),
+    publishedAt: timestamp,
+    visibility: z.literal("public"),
+    state: z.literal("ready"),
+  })
+  .superRefine((video, ctx) => {
+    const [, , jobId = "", attemptId = ""] = video.manifest.split("/");
+    try {
+      const prefix = resultPrefix(video.videoId, jobId, attemptId);
+      if (video.manifest !== `${prefix}master.m3u8` || video.thumbnail !== `${prefix}thumbnail.jpg`)
+        throw Error();
+    } catch {
+      ctx.addIssue({ code: "custom", message: "Unbound public video paths" });
+    }
+  });
+export type PublicVideo = z.infer<typeof publicVideo>;
+export const videoPublished = publicVideo
+  .safeExtend({
+    schemaVersion: z.literal(1),
+    type: z.literal("VideoPublished"),
+    eventId: videoUuid,
+    occurredAt: timestamp,
+  })
+  .superRefine((event, ctx) => {
+    if (event.eventId !== publicationEventId(event.videoId))
+      ctx.addIssue({ code: "custom", message: "Unstable publication identity" });
+  });
+export type VideoPublished = z.infer<typeof videoPublished>;

@@ -19,3 +19,20 @@
 --   upload_api_multipart_uploads.uploads
 -- Template views:
 --   none
+
+-- published.videos (V3-14): the public, ready-only projection of the lifecycle's assets, as v2's
+-- asset_public.ready. Only the lifecycle makes a video ready, so this file owns it. Watch's details
+-- and its View publisher, and Favorites' eligibility, read it; Search reads the index instead.
+-- No owner, upload, job, failure, state or count is in it, and a video is in it only once ready.
+CREATE OR REPLACE VIEW published.videos WITH (security_barrier = true) AS
+SELECT asset_id AS video_id,
+  metadata->>'title' AS title,
+  metadata->>'description' AS description,
+  metadata->>'channel' AS channel,
+  (result->>'durationSeconds')::double precision AS duration_seconds,
+  result->>'manifest' AS manifest,
+  result->>'thumbnail' AS thumbnail,
+  ready_at AS published_at,
+  publication_version
+FROM upload_api_multipart_uploads.assets
+WHERE state = 'ready';
