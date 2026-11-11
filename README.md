@@ -2,7 +2,18 @@
 
 ## V2
 
-next, UI improvements needed
+
+### UI Improvements
+
+<img src=".docs/ui-v2/view-simple.png" width="49%" />&nbsp;<img src=".docs/ui-v2/view-detailed.png" width="49%" />
+
+#### Simple vs Detailed view
+
+Now can view modules inside of a tile/template piece. 
+
+Detailed view also shows connections/arrows at a more granular level to see the flow a bit better.
+
+
 
 ## V1
 
