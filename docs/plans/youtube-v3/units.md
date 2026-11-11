@@ -12,7 +12,7 @@ the lifecycle, publication and `published.videos` ([evidence](evidence/v3-14/REA
 · [module add button sketch](../../human-feedback/2026-11-10-module-add-button.png)
 · Follows [tile processes](../tile-processes/units.md) and its [review](../tile-processes/review.md).
 
-There are 18 units, run in order: V3-01 → V3-18. A coordinator gives each unit to a fresh agent.
+There are 19 units, run in order: V3-01 → V3-19. A coordinator gives each unit to a fresh agent.
 That agent does only its own unit on `main` in the primary checkout, commits it and stops.
 
 The work comes in five phases:
@@ -24,6 +24,7 @@ The work comes in five phases:
 | C — A better chat agent | V3-09 and V3-10 |
 | D — YouTube v3 | V3-11 to V3-17 |
 | E — Review | V3-18 |
+| F — Fair chat evals | V3-19 |
 
 ## Owner feedback (2026-11-10)
 
@@ -515,6 +516,64 @@ against the evidence. It fixes small defects, with tests, and writes
 buyer and seller accounts.
 
 **Commit:** `V3-18: review v3`.
+
+## Phase F — Fair chat evals (added 2026-11-11)
+
+### V3-19 — Fair chat evals, sturdier tools, an Anthropic provider
+
+**Why.** On the live V3-10 suite:
+
+| Model | Build | Review |
+| --- | ---: | ---: |
+| gpt-6.1-sol (via Codex) | 100 | 94.4 |
+| gpt-6-luna (cheap) | 0 | 50 |
+
+See [Sol](../../evals/v3-10/live-codex-2026-11-11.md) and [Luna](../../evals/v3-10/live-codex-luna-2026-11-11.md).
+
+The owner asked whether the models had context of the existing diagrams. They didn't: each run
+starts from a blank in-memory board, and no tool loads projects or studies. But the build case
+leaks the answer in two ways:
+
+- the 795-word brief lists every tile, link and module, with names and descriptions;
+- the pattern defaults are v3's names (`studio-module-patterns.ts`). A scripted patterns-only run
+  scored 90.7.
+
+Luna's build scored 0 because one malformed command (unknown keys, an invalid type) failed the
+whole turn.
+
+**Do:**
+
+1. **Neutral pattern defaults:** generic names, so the names must come from the brief.
+2. **Sturdier tools for modest models:**
+   - smaller, flatter tool schemas (today they total about 113 KB);
+   - per-command errors that a model can correct and retry, instead of failing the turn;
+   - one batch can partly succeed only if the whole batch is still one Undo step and its
+     valid prefix is consistent. Otherwise refuse with a precise, per-command error and keep the
+     turn alive.
+3. **A fair build suite:**
+   - keep today's detailed brief as a "follow a spec" case;
+   - add a **short product brief** for a YouTube-like site (creators upload, videos are processed,
+     viewers watch with optional sign-in, search, view counts, favorites), scored by a
+     **capability rubric** (the right kinds, wiring, async channels, guards and templates present)
+     rather than by exact names;
+   - add **one non-YouTube brief**, such as a podcast app, scored the same way.
+4. **A leak check:** a test that fails if any tool output, the system prompt or a pattern default
+   contains v3 or study names that the case's own brief didn't supply.
+5. **An Anthropic provider:**
+   - add `anthropic` to `jeeves/packages/providers` (Messages API with tool use; the key from
+     `ANTHROPIC_API_KEY` only, never stored);
+   - use the current model IDs (Claude Haiku 5.5 `claude-haiku-5-5` and Claude Sonnet 5.5
+     `claude-sonnet-5-5`);
+   - wire it into chat and the eval runner;
+   - offline tests use the fake or scripted provider.
+6. **Rerun live** (the owner approved on 2026-11-11):
+   - `codex:gpt-6-luna` against `codex:gpt-6.1-sol` through the Codex login;
+   - `anthropic:claude-haiku-5-5` against `anthropic:claude-sonnet-5-5` through the owner's
+     Anthropic key.
+
+   Record each report in `docs/evals/` and summarise whether a modest model is now enough.
+
+**Commit:** `V3-19: fair chat evals and an Anthropic provider`.
 
 ## Risks and stop conditions
 
