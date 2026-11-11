@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { clickLine, createStudy, design, expect, lines, test, tile } from "./studio.ts";
+import { clickLine, createStudy, design, expect, lines, showView, test, tile } from "./studio.ts";
 
 /** The lines drawn in the selection colour: the selected line, or the selected tile's lines. */
 const highlighted = (page: Page) =>
@@ -38,7 +38,7 @@ test("selection traces YouTube relationships, ends when cleared and leaves the d
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  const id = await createStudy(page, "E2E YouTube tracing", "YouTube · studio study");
+  const id = await createStudy(page, "E2E YouTube tracing", "YouTube · studio study", "Simple");
   try {
     const blueprint = async () =>
       await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
@@ -102,7 +102,7 @@ test("selection traces YouTube relationships, ends when cleared and leaves the d
 });
 
 test("a shared stem asks which relationship the mouse intends", async ({ page }) => {
-  const id = await createStudy(page, "E2E YouTube overlap", "YouTube · studio study");
+  const id = await createStudy(page, "E2E YouTube overlap", "YouTube · studio study", "Simple");
   try {
     // Watch's first 32px belong to several routes. SVG stacking must not pick one silently.
     const path = page.locator('.react-flow__edge[data-id="watch-cache"] .react-flow__edge-path');
@@ -143,6 +143,8 @@ test("removing a selected tile traces its surviving neighbour and Undo restores 
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   await tile(page, "Click events").click();
   await expect.poll(() => highlighted(page)).toEqual(await touching(page, "Click events"));
   await tile(page, "Click events")

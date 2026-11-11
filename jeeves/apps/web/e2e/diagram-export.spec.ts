@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { exportPng } from "./export.ts";
-import { clickLine, createStudy, expect, lines, test, tile } from "./studio.ts";
+import { clickLine, createStudy, dragPaper, expect, lines, ready, test, tile } from "./studio.ts";
 
 const view = (page: Page) =>
   page.locator(".lane-canvas .board").evaluate((board) => ({
@@ -22,20 +22,23 @@ test("PNG contains full YouTube routes after mouse selection, pan, zoom and dark
   const id = await createStudy(page, "E2E PNG YouTube", "YouTube · studio study");
   try {
     const before = await (await page.request.get(`/api/projects/${id}/design`)).json();
+    // The Simple view: one plain tile per element and one line per relationship.
+    await page.getByRole("button", { name: "Simple", exact: true }).click();
+    await expect(page.locator(".lane-container")).toHaveCount(0);
+    await ready(page);
     const first = await exportPng(page);
     expect(first.details.tiles).toHaveLength(21);
     expect(first.details.lines).toHaveLength(25);
     await tile(page, "Transcoder").click();
     await clickLine(page, "transcoder-read");
-    await page.getByRole("button", { name: "Hand", exact: true }).click();
-    const paper = await page.locator(".lane-canvas").boundingBox();
-    if (!paper) throw new Error("No paper");
-    await page.mouse.move(paper.x + paper.width / 2, paper.y + paper.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(paper.x + paper.width / 2 - 200, paper.y + paper.height / 2 + 60, {
-      steps: 5,
-    });
-    await page.mouse.up();
+    // Pan by dragging empty paper, then zoom with the wheel.
+    const camera = () =>
+      page
+        .locator(".board .react-flow__viewport")
+        .evaluate((el) => (el as HTMLElement).style.transform);
+    const fitted = await camera();
+    await dragPaper(page, { x: -200, y: 60 });
+    await expect.poll(camera).not.toBe(fitted);
     await page.mouse.wheel(0, -450);
     await page.getByRole("button", { name: "Dark mode", exact: true }).click();
     const selected = await view(page);

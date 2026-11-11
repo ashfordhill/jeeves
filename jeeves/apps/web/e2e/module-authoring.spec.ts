@@ -93,12 +93,13 @@ const WORKER = [
 const NO_DOT = ["Redirect responder", "Event counter"];
 
 /**
- * A blank project with the user's Consume action and the given tiles, each added by its fan. The
- * new tile is selected only once its commit lands, so each step waits for that: a commit landing
- * after the next click would move the selection off `from` and hide its tabs.
+ * A blank project in the Simple view with the user's Consume action and the given tiles, each
+ * added by its fan. The new tile is selected only once its commit lands, so each step waits for
+ * that: a commit landing after the next click would move the selection off `from` and hide its
+ * tabs.
  */
 async function build(page: Page, name: string, plan: [from: string, kind: string][]) {
-  const id = await createStudy(page, name, "blank");
+  const id = await createStudy(page, name, "blank", "Simple");
   await pull(page, "User", "Add action");
   await moveOnto(page, fanItem(page, "Consume"));
   await page.mouse.up();
@@ -182,7 +183,7 @@ test("adds a module of every fan kind to a Service and a Worker by mouse", async
     expect((await saved(page, id)).architecture.studio.components ?? []).toEqual([]);
     await tile(page, "Microservice").click();
 
-    // Every kind, in the Overview: each is one step and opens unconnected, as a stub.
+    // Every kind, in the Simple view: each is one step and opens unconnected, as a stub.
     for (const [index, [kind]] of SERVICE.entries()) {
       await addModule(page, "Microservice", kind as string);
       await expect(status(page).locator("strong")).toHaveText("Stub");
@@ -458,7 +459,7 @@ test("looking, hovering and cancelled drags change neither the design nor the bl
     page.getByRole("button", { name: "Disconnect Cache reader from Link reader" }),
   ).toBeVisible();
   await page.keyboard.press("v");
-  await page.getByRole("button", { name: "Overview", exact: true }).click();
+  await page.getByRole("button", { name: "Simple", exact: true }).click();
   await ready(page);
 
   expect(await saved(page, id)).toEqual(before.design);
@@ -470,7 +471,7 @@ test("a module added to a study tile shows its kept Service identity as Refused"
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  const id = await createStudy(page, "E2E Module study", "YouTube · studio study");
+  const id = await createStudy(page, "E2E Module study", "YouTube · studio study", "Simple");
   try {
     const before = await saved(page, id);
     // Before any module command a study's modules have no generation declaration.

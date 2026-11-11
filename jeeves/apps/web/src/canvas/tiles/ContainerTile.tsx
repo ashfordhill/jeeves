@@ -20,8 +20,7 @@
 // pointer shows its X, which disconnects it. These come from `ModuleRows`, which only the live
 // canvas provides: a diagram export renders the same face in its own root, with no marks and no X,
 // and its rows do nothing. The click stops at the row, as the board's own tile buttons do, so it
-// opens the module instead of selecting the plain tile. In Hand mode the board lets the pointer
-// through the tile and its rows.
+// opens the module instead of selecting the plain tile.
 import { RemoveButton } from "@jeeves/board";
 import { type StudioKind, studioComponentVisuals, studioDefinitions } from "@jeeves/spec";
 import { type CSSProperties, createContext, useContext } from "react";

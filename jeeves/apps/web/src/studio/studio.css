@@ -139,7 +139,7 @@
   opacity: 0.45;
   cursor: default;
 }
-/* Overview | Detailed: one switch for the whole canvas, set apart from the tools beside it. */
+/* Detailed | Simple: one switch for the whole canvas, set apart from the tools beside it. */
 .studio-view-toggle {
   display: flex;
   gap: 2px;

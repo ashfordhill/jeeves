@@ -127,7 +127,7 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     ).toHaveAttribute("data-mark", "open");
 
     // Renaming the Worker again moves its module with it; Undo moves both back.
-    await tool(page, "Overview").click();
+    await tool(page, "Simple").click();
     await ready(page);
     await tile(page, "Video lifecycle worker").click();
     await field(page, "Name").click();

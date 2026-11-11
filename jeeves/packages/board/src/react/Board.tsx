@@ -11,15 +11,15 @@
 // A removable selected tile (select mode), and a selected line, show a red X; a caller's panel
 // (`hud`, a confirmation) sits at the bottom centre of the board.
 //
-// Modes: in select mode a click selects and the paper pans. In hand mode tiles and lines let the
-// pointer through, so every drag pans and nothing is selected. In connect mode a click still
-// selects, but a drag from a tile draws a new line to another tile (`ConnectDrag.tsx`, with the
-// caller's `canConnect`, `connectRefusal`, `onConnect` and `onConnectRefused`); a tile's content
-// may mark ends of its own inside it (`data-board-end`, such as a container's rows), dragged from
-// their handles and dropped on where the rules know them. Tiles show no chrome, and a line under
-// the pointer turns the selection colour and shows its red X (on the stretch the selected line's
-// X would take) until the pointer leaves it and its X. A drag held near the board's edge pans
-// the camera towards it, as far as the tiles go; the camera is then the user's.
+// Modes: in select mode a click selects and the paper pans. In connect mode a click still
+// selects and the paper still pans, but a drag from a tile draws a new line to another tile
+// (`ConnectDrag.tsx`, with the caller's `canConnect`, `connectRefusal`, `onConnect` and
+// `onConnectRefused`); a tile's content may mark ends of its own inside it (`data-board-end`,
+// such as a container's rows), dragged from their handles and dropped on where the rules know
+// them. Tiles show no chrome, and a line under the pointer turns the selection colour and shows
+// its red X (on the stretch the selected line's X would take) until the pointer leaves it and its
+// X. A drag held near the board's edge pans the camera towards it, as far as the tiles go; the
+// camera is then the user's.
 //
 // Hit areas: the host carries the camera's zoom as `--board-zoom` and the smallest hit area an
 // end's handle should keep on screen as `--board-handle-hit` (16px), so a tile's content can keep
@@ -33,7 +33,7 @@
 // its ports too; the drawn line and its arrowhead follow the routed ends. Snapshots carry them.
 // Flat and banded layouts both route lines to their named ports.
 //
-// Views: `view` names which view of one graph the tiles and lines show (an overview and a detailed
+// Views: `view` names which view of one graph the tiles and lines show (a simple and a detailed
 // one, say). Each view keeps its own stability hints (`useBoardLayout`). On a switch the previous
 // view stays drawn until the new one is laid out, the move animates however far tiles go
 // (`useAnimatedLayout`), and then the camera fits. `highlighted` lines take the selection colour
@@ -178,7 +178,7 @@ export type BoardSelection = { tile?: string; line?: string };
  * screen size. While it shows, that tile has no chrome and the `marked` tiles get a warning ring.
  */
 export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
-export type BoardMode = "select" | "hand" | "connect";
+export type BoardMode = "select" | "connect";
 /** A frozen full view, independent of camera and selection. */
 export type BoardSnapshot = {
   tiles: readonly TileSpec[];
@@ -488,8 +488,8 @@ function Inner({
   const hostRef = useRef<HTMLDivElement>(null);
   const [lineChoice, setLineChoice] = useState<{ ids: string[]; x: number; y: number }>();
   useEffect(() => {
-    if (selected.tile || selected.line || mode === "hand") setLineChoice(undefined);
-  }, [selected.tile, selected.line, mode]);
+    if (selected.tile || selected.line) setLineChoice(undefined);
+  }, [selected.tile, selected.line]);
   const connectMode = mode === "connect";
   // biome-ignore lint/correctness/useExhaustiveDependencies: another view's lines close the chooser
   useEffect(() => setLineChoice(undefined), [view]);
@@ -725,7 +725,6 @@ function Inner({
     return () => host.removeEventListener("wheel", onWheel);
   }, [rf]);
 
-  const hand = mode === "hand";
   const placed = (id: string): Point | undefined => display?.[id] ?? dockShow[id] ?? hints?.[id];
 
   /* A connect drag held near the edge pans the camera, as far as the shown tiles reach; a pan
@@ -790,7 +789,7 @@ function Inner({
 
   const source = selected.tile;
   /* A tile with a panel under it shows no chrome; the panel speaks for it. */
-  const hudTile = !hand && !covering && hud && placed(hud.tile) ? hud.tile : null;
+  const hudTile = !covering && hud && placed(hud.tile) ? hud.tile : null;
   const removeTile = source && removable?.(source) ? onRemoveTile : undefined;
   const chromeTile =
     mode === "select" &&
@@ -874,7 +873,7 @@ function Inner({
       // Lines know their ends before React Flow measures the tile (and in tests, where it never does).
       handles: tileHandles(t, lingering.current.ports.get(t.id)),
       ariaLabel: t.label,
-      style: { width: t.w, height: t.h, ...(hand ? { pointerEvents: "none" } : {}) },
+      style: { width: t.w, height: t.h },
     };
   });
 
@@ -887,10 +886,8 @@ function Inner({
   const context = useMemo(
     () => ({
       layout: shown,
-      selectLine: (id: string) => {
-        if (!hand) onSelectLine(id);
-      },
-      ...(!hand && onRemoveLine
+      selectLine: onSelectLine,
+      ...(onRemoveLine
         ? {
             removeLine: (id: string) => {
               clearTimeout(unhover.current);
@@ -901,7 +898,7 @@ function Inner({
         : {}),
       ...(connectMode ? { holdHover, releaseHover } : {}),
     }),
-    [shown, hand, connectMode, onSelectLine, onRemoveLine, holdHover, releaseHover],
+    [shown, connectMode, onSelectLine, onRemoveLine, holdHover, releaseHover],
   );
 
   return (
@@ -924,7 +921,6 @@ function Inner({
           edgeTypes={edgeTypes}
           nodesDraggable={false}
           nodesConnectable={false}
-          elementsSelectable={!hand}
           deleteKeyCode={null}
           selectionKeyCode={null}
           multiSelectionKeyCode={null}
@@ -974,10 +970,9 @@ function Inner({
           }}
           onNodeClick={(_, node) => {
             setLineChoice(undefined);
-            if (!hand) onSelectTile(node.id);
+            onSelectTile(node.id);
           }}
           onEdgeClick={(event, edge) => {
-            if (hand) return;
             const point = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
             const ids = oneLinePerGroup(
               nearestLines(point, routes, 3 / rf.getZoom(), 22),
@@ -998,7 +993,7 @@ function Inner({
           }}
           onPaneClick={() => {
             setLineChoice(undefined);
-            if (!hand) onClear();
+            onClear();
           }}
         >
           {/* React Flow draws each dot at its cell's corner plus the dot's radius, half a cell
@@ -1012,7 +1007,7 @@ function Inner({
           />
         </ReactFlow>
       </BoardContext.Provider>
-      {lineChoice && !hand ? (
+      {lineChoice ? (
         <div
           className="board-line-chooser"
           role="dialog"

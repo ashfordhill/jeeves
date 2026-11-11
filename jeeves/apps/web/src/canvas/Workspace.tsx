@@ -1,12 +1,12 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
-// rail toggles in the app header and Select, Hand, Connect, Fit and Overview | Detailed on the
-// canvas (the mode is view state; the view is a per-project browser preference; the selection
-// carries across both). The selected tile's pull tabs add tiles and modules (`creation.tsx`; a new
-// one opens with its name focused), connect mode links tiles, and in the Detailed view modules,
-// by dragging (`connect.ts`), the red X on a tile or line removes it (`removal.tsx`; in connect
-// mode a module line's X disconnects that module); settings and modules are edited in the
-// inspector (`TileInspector.tsx`), an
-// action's name in its own (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
+// rail toggles in the app header and Pointer, Connect, Fit and Detailed | Simple on the canvas
+// (the mode is view state; the view is a per-project browser preference, Detailed by default;
+// the selection carries across both). The selected tile's pull tabs add tiles and modules
+// (`creation.tsx`; a new one opens with its name focused), connect mode links tiles, and in the
+// Detailed view modules, by dragging (`connect.ts`), the red X on a tile or line removes it
+// (`removal.tsx`; in connect mode a module line's X disconnects that module); settings and
+// modules are edited in the inspector (`TileInspector.tsx`), an action's name in its own
+// (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
 // The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
 import type { BoardHandle, BoardMode } from "@jeeves/board";
 import {
@@ -37,7 +37,6 @@ import {
   IconArrowRight,
   IconDownload,
   IconFocusCentered,
-  IconHandStop,
   IconLayoutSidebarRight,
   IconLink,
   IconMessageCircle,
@@ -74,6 +73,7 @@ import {
   liveSelection,
   type WorkspaceSelection,
 } from "./selection.ts";
+import { dialogOpen, historyKey, inField } from "./shortcuts.ts";
 import { TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
 
@@ -168,21 +168,27 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     field.select();
     setFocusName(undefined);
   });
-  // Optional shortcuts (mouse remains sufficient): V/H/C mirror the Select, Hand and Connect
-  // buttons, Escape returns to Select (once nothing else, such as a dialog or a drag, took it),
-  // and Delete/Backspace the selected tile's or line's X.
+  // Optional shortcuts (`shortcuts.ts`; mouse remains sufficient): Ctrl/Cmd+Z and
+  // Ctrl/Cmd+Shift+Z or Ctrl+Y press the header's Undo and Redo while they are enabled and no
+  // dialog is open, V and C the Pointer and Connect buttons, Escape returns to Pointer (once
+  // nothing else, such as a dialog or a drag, took it), and Delete/Backspace the selected tile's
+  // or line's X. None acts while focus is in a field.
   const removeSelected = useRef(() => {});
+  const historyEnabled = useRef({ undo: false, redo: false });
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
-      if (
-        target?.isContentEditable ||
-        (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
-      )
+      if (inField(target)) return;
+      const step = historyKey(event);
+      if (step) {
+        if (!historyEnabled.current[step] || dialogOpen()) return;
+        event.preventDefault();
+        void useProject.getState()[step]();
         return;
+      }
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       const key = event.key.toLowerCase();
-      const modes: Record<string, BoardMode> = { v: "select", h: "hand", c: "connect" };
+      const modes: Record<string, BoardMode> = { v: "select", c: "connect" };
       const next = modes[key];
       if (next) setMode(next);
       if (key === "escape" && !event.defaultPrevented && !target?.closest('[role="dialog"]'))
@@ -247,13 +253,20 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
   };
 
+  // The header's buttons and their keys: Undo also runs while an edit is pending (it saves the
+  // edit first); Redo doesn't.
+  const history = {
+    undo: !historyBusy && !failed && (undoable || hasDraft),
+    redo: !historyBusy && !failed && redoable && !hasDraft,
+  };
+  historyEnabled.current = history;
   const header = (
     <div className="studio-header-actions lane-header-actions">
       <button
         type="button"
         title="Undo"
         aria-label="Undo"
-        disabled={historyBusy || failed || (!undoable && !hasDraft)}
+        disabled={!history.undo}
         onClick={() => void useProject.getState().undo()}
       >
         <IconArrowBackUp size={18} />
@@ -262,7 +275,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         type="button"
         title="Redo"
         aria-label="Redo"
-        disabled={historyBusy || failed || !redoable || hasDraft}
+        disabled={!history.redo}
         onClick={() => void useProject.getState().redo()}
       >
         <IconArrowForwardUp size={18} />
@@ -369,21 +382,12 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button
             type="button"
-            title="Select (V)"
-            aria-label="Select"
+            title="Pointer (V)"
+            aria-label="Pointer"
             aria-pressed={mode === "select"}
             onClick={() => setMode("select")}
           >
             <IconPointer size={19} />
-          </button>
-          <button
-            type="button"
-            title="Hand (H)"
-            aria-label="Hand"
-            aria-pressed={mode === "hand"}
-            onClick={() => setMode("hand")}
-          >
-            <IconHandStop size={19} />
           </button>
           <button
             type="button"
@@ -400,8 +404,8 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           <fieldset className="studio-view-toggle" aria-label="View">
             {(
               [
-                ["overview", "Overview"],
                 ["detailed", "Detailed"],
+                ["simple", "Simple"],
               ] as const
             ).map(([choice, label]) => (
               <button

@@ -7,14 +7,57 @@ export const ready = (page: Page) =>
     timeout: 20_000,
   });
 
+/** A canvas view; a new project opens in Detailed, the default. */
+export type CanvasView = "Detailed" | "Simple";
+
+/**
+ * Shows a canvas view by its toggle button, by mouse, and waits until its tiles, lines and camera
+ * have stopped moving: a switch animates every tile and then fits.
+ */
+export async function showView(page: Page, view: CanvasView) {
+  const toggle = page.getByRole("group", { name: "View", exact: true });
+  await toggle.getByRole("button", { name: view, exact: true }).click();
+  await expect(toggle.getByRole("button", { name: view, exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  if (view === "Simple") await expect(page.locator(".board .lane-container")).toHaveCount(0);
+  await ready(page);
+  const drawn = () =>
+    page
+      .locator(".lane-canvas .board")
+      .evaluate((board) =>
+        [
+          board.querySelector<HTMLElement>(".react-flow__viewport")?.style.transform,
+          ...Array.from(board.querySelectorAll<HTMLElement>(".react-flow__node")).map(
+            (node) => node.style.transform,
+          ),
+          ...Array.from(board.querySelectorAll(".react-flow__edge-path")).map((path) =>
+            path.getAttribute("d"),
+          ),
+        ].join(" "),
+      );
+  let last = await drawn();
+  for (let still = 0, i = 0; still < 2; i += 1) {
+    if (i >= 60) throw new Error("The canvas never stops moving.");
+    await page.waitForTimeout(150);
+    const now = await drawn();
+    still = now === last ? still + 1 : 0;
+    last = now;
+  }
+}
+
 /**
  * Creates a study project through the project menu (the default study unless `study`
- * names another by its label, or is "blank" for a blank architecture) and returns its ID.
+ * names another by its label, or is "blank" for a blank architecture) and returns its ID. It
+ * opens in Detailed, the default; `view: "Simple"` switches to the Simple view by mouse, for
+ * specs written for one plain tile per element.
  */
 export async function createStudy(
   page: Page,
   name = "E2E TinyURL",
   study?: string,
+  view: CanvasView = "Detailed",
 ): Promise<string> {
   // Without a project in the URL the app opens the most recent one, which may be another test's
   // and be deleted as it loads. So open a project no test deletes, when there is one.
@@ -42,6 +85,7 @@ export async function createStudy(
   await ready(page);
   const id = project();
   if (!id) throw new Error("No project in the URL.");
+  if (view === "Simple") await showView(page, "Simple");
   return id;
 }
 
@@ -81,6 +125,31 @@ export async function linePoint(page: Page, id: string) {
     }
     throw new Error("No visible stretch of this line can be clicked.");
   });
+}
+
+/** A screen point on empty paper in the canvas: the pane itself is under it, not a tile, line or
+ * control. */
+export async function paperPoint(page: Page) {
+  return page.locator(".lane-canvas .board").evaluate((board) => {
+    const box = board.getBoundingClientRect();
+    for (let fy = 0.15; fy < 0.9; fy += 0.05)
+      for (let fx = 0.15; fx < 0.9; fx += 0.05) {
+        const x = box.left + box.width * fx;
+        const y = box.top + box.height * fy;
+        if (document.elementFromPoint(x, y)?.classList.contains("react-flow__pane"))
+          return { x, y };
+      }
+    throw new Error("No empty paper in the canvas.");
+  });
+}
+
+/** Drags empty paper by mouse, which pans the camera. */
+export async function dragPaper(page: Page, by = { x: -160, y: 60 }) {
+  const at = await paperPoint(page);
+  await page.mouse.move(at.x, at.y);
+  await page.mouse.down();
+  await page.mouse.move(at.x + by.x, at.y + by.y, { steps: 6 });
+  await page.mouse.up();
 }
 
 /** Click a visible, exposed stretch of this route, using the same hit target as the mouse. */
@@ -160,8 +229,9 @@ export async function design(page: Page, id: string) {
 }
 
 /**
- * `tinyurl` is the ID of a new TinyURL project, open in `page` and deleted after the test. The
- * test also fails on any uncaught page error.
+ * `tinyurl` is the ID of a new TinyURL project, open in `page` in Detailed (a test written for
+ * the Simple view starts with `showView`) and deleted after the test. The test also fails on any
+ * uncaught page error.
  */
 export const test = base.extend<{ tinyurl: string }>({
   tinyurl: async ({ page }, use) => {

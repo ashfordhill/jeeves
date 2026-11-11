@@ -42,7 +42,7 @@ test("module cards open a module page; Back, other selections, Remove and Undo r
   page.on("pageerror", (error) => errors.push(String(error)));
   // A short window, so the Transcoder's page scrolls and Back has to bring Modules into view.
   await page.setViewportSize({ width: 1280, height: 640 });
-  const id = await createStudy(page, "E2E UI03 module cards", "YouTube · studio study");
+  const id = await createStudy(page, "E2E UI03 module cards", "YouTube · studio study", "Simple");
   try {
     const blueprint = async () =>
       await (await page.request.get(`/api/projects/${id}/blueprint`)).json();

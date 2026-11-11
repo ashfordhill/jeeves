@@ -68,14 +68,14 @@ future generator's frontend templates) which user flow each service serves.
   endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
   decide which one is selected.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
-  In Select mode the selected tile shows its pull tabs
+  In Pointer mode the selected tile shows its pull tabs
   ([Creating and connecting](#creating-and-connecting)) and a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
   see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
   the same blue, with a red X ([Removing](#removing)).
-  In the Overview, modules (components) are not drawn; they are cards on their tile's inspector
-  page ([Inspector](#inspector)). The [Detailed view](#detailed-view) draws them inside their
-  tiles as rows that open them and, in Connect mode, connect them. C1 people, external systems
-  and packages are not shown.
+  The [Detailed view](#detailed-view), the default, draws modules (components) inside their
+  tiles as rows that open them and, in Connect mode, connect them. In the Simple view they are not
+  drawn; they are cards on their tile's inspector page ([Inspector](#inspector)). C1 people,
+  external systems and packages are not shown.
 
 To trace relationships, select: a tile's lines turn blue, and a selected line shows its
 endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
@@ -86,9 +86,11 @@ Selection and Fit change no saved design, revision or blueprint.
 
 ## Detailed view
 
-**Overview | Detailed** in the canvas toolbar switches the whole canvas between two views of the
-same design. Overview is the default. The choice is remembered per project in this browser; it is
-never saved to the design, its revision or history, the blueprint or chat. Switching keeps the
+**Detailed | Simple** in the canvas toolbar switches the whole canvas between two views of the
+same design. Detailed, on the left, is the default for a project with no saved choice. The choice
+is remembered per project in this browser (one saved as "Overview", the Simple view's old name,
+opens as Simple); it is never saved to the design, its revision or history, the blueprint or
+chat. Switching keeps the
 selection, including an open module, animates every tile to its new place and then fits.
 
 In Detailed, an application tile with at least one module is a **container** (`detailedView.ts`,
@@ -102,7 +104,7 @@ easier to grab than it looks, and the dots of the container under the pointer gr
 ([Connect mode](#connect-mode)). Lines end at the container's frame; where a row has
 a drawn line, a **port mark** (a short stub in the line's colour) joins the frame to the row on
 that side, so the line visibly reaches its module. A warning mark sits in the header's corner.
-Every other tile keeps its Overview size and face.
+Every other tile keeps its Simple view size and face.
 
 - Each module link to a tile is drawn from (or into) that module's row, in the relationship's own
   direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
@@ -120,7 +122,7 @@ Every other tile keeps its Overview size and face.
   (Transcoder) to Transcoded videos") and offers each relationship once, by its drawn line under
   the click; where only one relationship's lines run together, a click selects it without asking.
   The X removes the whole relationship, with the same refusals and confirmation as in the
-  Overview; module links that use it go with it.
+  Simple view; module links that use it go with it.
 - Containers are tiles: click one's header to select it, and its module `+`, link tab and X work
   as on any tile. Its tabs sit just outside its frame, beside its rows rather than over them. In
   Connect mode a drag from a row's dot connects that module, and a drag from anywhere else on a
@@ -132,13 +134,12 @@ Every other tile keeps its Overview size and face.
   either, its row is filled in the selection colour and ringed, its name bold, and only the lines
   drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
   another module's line of the same relationship). No other row is marked. The tile keeps its pull
-  tabs and X. Back, another tile or line, or empty paper clears the marks; the Overview keeps only
-  the tile selected, with all its lines blue.
-  In Hand mode rows let the pointer through, so a drag pans and nothing opens. A row reached by
-  keyboard shows a focus outline. The marks are view only: an export never shows them.
+  tabs and X. Back, another tile or line, or empty paper clears the marks; the Simple view keeps
+  only the tile selected, with all its lines blue. A row reached by keyboard shows a focus
+  outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
-  positions: switching back finds the Overview exactly as it was, and an edit made in Detailed
-  lays the Overview out as if it had been made there.
+  positions: switching back finds the Simple view exactly as it was, and an edit made in Detailed
+  lays the Simple view out as if it had been made there.
 - Detailed is larger, so it fits smaller ([Size and fit](#size-and-fit)). At the fit the rows'
   names are about 3–5px tall; zoom in to read them (they read from about 0.6, fully at 100%).
 
@@ -150,13 +151,13 @@ on a fresh layout:
 
 | Design | View | Lines | Drawn size | Line length | Crossings |
 | --- | --- | ---: | --- | ---: | ---: |
-| TinyURL extended | Overview | 12 | 1,024×832 | 2,752 | 0 |
+| TinyURL extended | Simple | 12 | 1,024×832 | 2,752 | 0 |
 | | Detailed | 12 | 1,280×800 | 3,008 | 1 |
-| Marketplace | Overview | 23 | 1,280×1,472 | 6,912 | 1 |
+| Marketplace | Simple | 23 | 1,280×1,472 | 6,912 | 1 |
 | | Detailed | 25 | 1,568×1,536 | 8,576 | 4 |
-| YouTube | Overview | 25 | 1,504×1,376 | 8,864 | 1 |
+| YouTube | Simple | 25 | 1,504×1,376 | 8,864 | 1 |
 | | Detailed | 26 | 1,920×1,600 | 12,608 | 4 |
-| YouTube v2 field design | Overview | 27 | 1,920×1,297 | 10,080 | 3 |
+| YouTube v2 field design | Simple | 27 | 1,920×1,297 | 10,080 | 3 |
 | | Detailed | 30 | 2,528×1,441 | 17,536 | 12 |
 
 Fit zooms, which the canvas takes by itself. With one rail open a design that fits by height keeps
@@ -165,13 +166,13 @@ v2's views fit by width and drop a little:
 
 | Design | View | 1440×900, rails closed | 1440×900, both open | 1280×800, rails closed | 1280×800, both open |
 | --- | --- | ---: | ---: | ---: | ---: |
-| TinyURL extended | Overview | 0.67 | 0.56 | 0.59 | 0.45 |
+| TinyURL extended | Simple | 0.67 | 0.56 | 0.59 | 0.45 |
 | | Detailed | 0.70 | 0.44 | 0.62 | 0.35 |
-| Marketplace | Overview | 0.37 | 0.37 | 0.32 | 0.32 |
+| Marketplace | Simple | 0.37 | 0.37 | 0.32 | 0.32 |
 | | Detailed | 0.35 | 0.35 | 0.31 | 0.28 |
-| YouTube | Overview | 0.39 | 0.38 | 0.35 | 0.30 |
+| YouTube | Simple | 0.39 | 0.38 | 0.35 | 0.30 |
 | | Detailed | 0.34 | 0.29 | 0.30 | 0.23 |
-| YouTube v2 field design | Overview | 0.43 | 0.28 | 0.37 | 0.23 |
+| YouTube v2 field design | Simple | 0.43 | 0.28 | 0.37 | 0.23 |
 | | Detailed | 0.38 | 0.21 | 0.33 | 0.20 |
 
 v2's Detailed with both rails at 1280×800 stops at the zoom floor, 0.20: the fit's margin no longer
@@ -182,7 +183,7 @@ tall: the fit shows the shape, and reading the rows takes about 0.6.
 
 Click **Export diagram** in the canvas toolbar, then **PNG**. The download contains the full
 saved diagram in the current view, including offscreen tiles, their existing labels/icons, all
-projected routes, crossing gaps and arrowheads. An Overview export is byte-for-byte what it was
+projected routes, crossing gaps and arrowheads. A Simple export is byte-for-byte what it was
 before the Detailed view existed. A Detailed export ends its filenames in `-detailed` and its
 capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
 and their lines the relationship each drawn line belongs to. It uses the same HTML faces, SVG
@@ -293,13 +294,13 @@ On the grid (`alignLayout` in `jeeves/packages/board`, run on every layout):
   without more crossings, cross-band clashes, short jogs or a line through a tile. This pass moves
   no tiles and widens no gaps. Crowded gaps can still retain shared runs.
 
-Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
-has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected),
-**Connect** (C, a link icon; a drag from a tile links it to another,
-[Connect mode](#connect-mode)), **Fit** and **Overview | Detailed**
-([Detailed view](#detailed-view)). Escape returns to Select. The mode is view state: it is never
-saved, has no history and changes no design, revision or blueprint. The canvas fits when it opens;
-Fit refits, and never zooms in past 100%. The camera follows the canvas:
+Drag empty paper to pan, with either tool; the wheel zooms, and zooming out stops a little below
+the fit. The toolbar has two tools, **Pointer** (V, an arrow; a click selects) and **Connect** (C,
+a link icon; a drag from a tile links it to another, [Connect mode](#connect-mode)), then **Fit**
+and **Detailed | Simple** ([Detailed view](#detailed-view)). Escape returns to Pointer. The mode
+is view state: it is never saved, has no history and changes no design, revision or blueprint.
+The canvas fits when it opens; Fit refits, and never zooms in past 100%. The camera follows the
+canvas:
 
 - While the camera is fitted (since the canvas opened, or since Fit), it refits at once whenever
   the canvas changes size: a rail opens or closes (selecting opens the inspector), a rail is
@@ -311,7 +312,8 @@ Fit refits, and never zooms in past 100%. The camera follows the canvas:
 - A Connect drag held near or past the canvas edge pans towards it
   ([Connect mode](#connect-mode)).
 
-The extended TinyURL study fits at these zooms, which the canvas takes by itself as the rails open and close:
+In the Simple view the extended TinyURL study fits at these zooms, which the canvas takes by itself
+as the rails open and close ([Size and fit](#size-and-fit) has both views):
 
 | Window | Both rails closed | Chat open | Inspector open | Both open |
 | --- | --- | --- | --- | --- |
@@ -325,7 +327,7 @@ rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
 
-In Select mode only the selected tile shows controls: a tab on its right, for what the lane rules
+In Pointer mode only the selected tile shows controls: a tab on its right, for what the lane rules
 allow there, a module `+` on its left when it holds modules, and the red X on its top edge
 ([Removing](#removing)). Nothing is inserted before a tile.
 
@@ -394,7 +396,7 @@ and nothing is added.
 
 ### Connect mode
 
-**Connect** (C) in the toolbar, right after Hand, links tiles already on the canvas. Press on a
+**Connect** (C) in the toolbar, right after Pointer, links tiles already on the canvas. Press on a
 tile and drag: a line follows the pointer from the tile, with its arrowhead at the pointer. The
 board dims, and the tiles the lane rules allow at its end stay bright with a dashed outline,
 which thickens on the one under the pointer. Over a refused tile the line turns red and a tip by
@@ -416,7 +418,8 @@ onward.").
   removes the line as in [Removing](#removing), with the same refusals, confirmation and Undo.
   The user's line to an action has no X.
 - In the [Detailed view](#detailed-view) a container is linked from anywhere on it, a row
-  included: the link is the tile's, as in the Overview. A click on a row still opens its module.
+  included: the link is the tile's, as in the Simple view. A click on a row still opens its
+  module.
 - **A row's dot** connects its module instead (`connectModule`). Drag from the dot to a tile:
   the tiles the module can use stay bright, and a refused one fades with the reason ("Data
   access can't use Cache; a Data access connects to a database."). The connection fills the
@@ -438,7 +441,7 @@ onward.").
 - **A module's line under the pointer** shows an X named "Disconnect <module> from <tile>": it
   removes that module's connection (`disconnectModule`) and leaves the tiles' link and the other
   modules' lines. A loader arrow under the pointer shows the same X. A line no module draws keeps
-  the X that removes the link. In Select mode a selected line's X still removes its whole
+  the X that removes the link. In Pointer mode a selected line's X still removes its whole
   relationship.
 - Each connection, and each disconnection, derives the module's generation and ownership in the
   same batch: one undo step.
@@ -454,8 +457,8 @@ per action; a tile has one entry at most, and a lane one action. An edit that br
 rules is refused with a notice and changes nothing, whether it comes from the canvas, the
 inspector, chat or the API.
 
-Optional shortcuts: V selects, H pans, C connects, Escape cancels a pull or a drag (and otherwise
-returns to Select). Every action works by mouse alone.
+Optional shortcuts: V picks the Pointer, C connects, Escape cancels a pull or a drag (and
+otherwise returns to Pointer). Every action works by mouse alone.
 
 ## Removing
 
@@ -490,10 +493,10 @@ went are removed with it; a database, cache, storage or queue whose owner went b
 first application that still links to it. Each removal is one batch and one undo step.
 
 In Connect mode any line under the pointer shows its X ([Connect mode](#connect-mode)); on a
-module's line in the Detailed view it disconnects only that module. The tile X stays a Select mode
-control.
+module's line in the Detailed view it disconnects only that module. The tile X stays a Pointer
+mode control.
 
-Optional shortcuts: in Select mode, Delete or Backspace does what the selected tile's or line's X
+Optional shortcuts: in Pointer mode, Delete or Backspace does what the selected tile's or line's X
 does.
 
 ## Inspector
@@ -625,8 +628,13 @@ batch (an autosaved edit, an action's rename, an entry's lane switch, or adding,
 disconnecting or removing a module) or chat turn is one step; a new edit ends the redo chain. A
 rename that re-keyed IDs is one step too: Undo and Redo move the IDs back and again, and the
 selection (an open module included) follows them; the server's answer lists them as `renamed`. Selecting, opening a module or going Back,
-switching between Overview and Detailed, opening a fan, hovering, a cancelled drag, panning,
+switching between Detailed and Simple, opening a fan, hovering, a cancelled drag, panning,
 zooming and Fit add none and leave the design and blueprint unchanged. The history survives reloads.
+
+Optional shortcuts: **Ctrl+Z** (**Cmd+Z** on a Mac) presses Undo, and **Ctrl+Shift+Z**
+(**Cmd+Shift+Z**) or **Ctrl+Y** presses Redo, only while that button is enabled. In a field (a
+name, a setting, the chat box) they are left to the browser's own text undo, and while a dialog is
+open (Export diagram, a removal's confirmation, Choose relationship) they do nothing.
 
 ## Profile and requirements
 

@@ -265,17 +265,17 @@ describe("Board", () => {
       [...container.querySelectorAll<HTMLElement>(".react-flow__edge")]
         .map((e) => e.dataset.id)
         .sort();
-    const { container, rerender } = render(board("overview", tiles, lines));
+    const { container, rerender } = render(board("simple", tiles, lines));
     const ready = () =>
       waitFor(() =>
         expect(container.querySelector(".board")?.getAttribute("data-layout")).toBe("ready"),
       );
     await ready();
-    const overview = request.mock.results[0]?.value as Promise<{ positions: object }>;
-    const overviewPositions = (await overview).positions;
+    const simple = request.mock.results[0]?.value as Promise<{ positions: object }>;
+    const simplePositions = (await simple).positions;
 
-    // A first switch lays the detailed view out without the overview's positions as hints, and
-    // the overview stays drawn until it lands.
+    // A first switch lays the detailed view out without the simple view's positions as hints,
+    // and the simple view stays drawn until it lands.
     hold = true;
     rerender(board("detailed", detailedTiles, detailedLines));
     await waitFor(() => expect(finish).toBeTypeOf("function"));
@@ -290,8 +290,8 @@ describe("Board", () => {
     expect(drawn()).toEqual(["entry", "publish/m"]);
     expect(screen.getByRole("group", { name: "Redirect" }).style.height).toBe("192px");
 
-    // An edit made in the detailed view is hinted by the detailed positions; back in the
-    // overview, the next edit is hinted by the overview's own positions, never the detailed ones.
+    // An edit made in the detailed view is hinted by the detailed positions; back in the simple
+    // view, the next edit is hinted by its own positions, never the detailed ones.
     rerender(board("detailed", [...detailedTiles, extra], detailedLines));
     await ready();
     const detailedHints = request.mock.calls.at(-1)?.[1];
@@ -300,13 +300,13 @@ describe("Board", () => {
       "events",
       "redirect",
     ]);
-    expect(detailedHints).not.toEqual(overviewPositions);
-    rerender(board("overview", [...tiles, extra], lines));
+    expect(detailedHints).not.toEqual(simplePositions);
+    rerender(board("simple", [...tiles, extra], lines));
     await ready();
-    expect(request.mock.calls.at(-1)?.[1]).toEqual(overviewPositions);
+    expect(request.mock.calls.at(-1)?.[1]).toEqual(simplePositions);
 
     // Highlighted lines take the selection colour; nothing is selected.
-    rerender(board("overview", [...tiles, extra], lines, ["entry"]));
+    rerender(board("simple", [...tiles, extra], lines, ["entry"]));
     const ink = (id: string) =>
       container.querySelector<SVGPathElement>(
         `.react-flow__edge[data-id="${id}"] .react-flow__edge-path`,
@@ -630,12 +630,6 @@ describe("Board", () => {
     fireEvent.pointerUp(window, { clientX: 603, clientY: 402 });
     fireEvent.click(node("events"));
     expect(onSelectTile).toHaveBeenCalledWith("events");
-    expect(calls).toHaveLength(3);
-
-    // Hand mode: no drag at all.
-    rerender(board("hand"));
-    drag("redirect", "events");
-    release();
     expect(calls).toHaveLength(3);
   });
 

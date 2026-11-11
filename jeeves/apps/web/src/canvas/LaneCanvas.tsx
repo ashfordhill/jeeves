@@ -10,23 +10,24 @@
 //
 // The Detailed view (`detailedView`) draws each module host as a container of its modules
 // (`ContainerTile`) and each module's links from or into its row; every other tile and line is as
-// in the Overview, whose output this view never changes. One relationship may be drawn as several
-// lines there. The workspace only ever sees canonical relationships: a clicked or removed drawn
-// line maps to its connection (`canonicalLine`), and a selected connection shows all of its drawn
-// lines, the clicked one as the board's selected line (`drawnSelection`). The board keeps each
-// view's layout hints apart (`view`).
+// in the Simple view, whose output this view never changes. One relationship may be drawn as
+// several lines there. The workspace only ever sees canonical relationships: a clicked or removed
+// drawn line maps to its connection (`canonicalLine`), and a selected connection shows all of its
+// drawn lines, the clicked one as the board's selected line (`drawnSelection`). The board keeps
+// each view's layout hints apart (`view`).
 //
 // A container's rows are its modules (`ModuleRows`): clicking one opens that module in the
 // inspector (`onOpenModule`). While a module is open its host stays selected, with its pull tabs
 // and X, but only the module's own drawn lines take the selection colour (the board's
 // `selectedTileLines` and `highlighted`), and only its row is marked. A row's port mark turns
-// blue with its line, whatever selected it. In the Overview an open module only keeps its host
+// blue with its line, whatever selected it. In the Simple view an open module only keeps its host
 // selected.
 //
 // In Connect mode a row's dot is a drag source of its own (connect mode's rules take module IDs
 // too), and the X on a module's drawn line or on a loader arrow disconnects that module link
 // (`onDisconnectModule`), leaving the tiles' link; a line no module anchors keeps the tile link's
-// X. In Select mode a drawn line's X removes its whole relationship, as in the Overview.
+// X. In Pointer (select) mode a drawn line's X removes its whole relationship, as in the Simple
+// view.
 import {
   Board,
   type BoardHandle,
@@ -67,7 +68,7 @@ export function laneNodeName(design: DesignDocument, graph: LaneGraph, id: strin
 export function LaneCanvas({
   design,
   graph,
-  view = "overview",
+  view,
   selected,
   mode,
   onSelectTile,
@@ -83,7 +84,7 @@ export function LaneCanvas({
   design: DesignDocument;
   /** `laneGraph(design)`. */
   graph: LaneGraph;
-  view?: CanvasView;
+  view: CanvasView;
   /**
    * A tile (with its open module, if any), or a canonical relationship (never a Detailed view's
    * drawn line).

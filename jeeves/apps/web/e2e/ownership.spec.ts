@@ -1,12 +1,14 @@
 import { buildOwnershipCommand, designOwnership, previewOwnership } from "@jeeves/spec";
 import { declareLinks } from "./ownership.ts";
 import { openDiagnostics } from "./source.ts";
-import { clickLine, expect, ready, test, tile, tiles } from "./studio.ts";
+import { clickLine, expect, ready, showView, test, tile, tiles } from "./studio.ts";
 
 test("preserves one source owner, keeps canonical resource selection, refuses excess access and undoes exact removal", async ({
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
   const state = async () =>

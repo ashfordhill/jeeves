@@ -1,6 +1,6 @@
 /** The tile, system and action inspectors are one page: no tabs, connection lists or Entries. */
 import type { Locator, Page } from "@playwright/test";
-import { clickLine, design, expect, test, tile } from "./studio.ts";
+import { clickLine, design, expect, showView, test, tile } from "./studio.ts";
 
 /** The page's parts in order: field labels, section headings, the warning list and fieldsets. */
 const outline = (inspector: Locator) =>
@@ -20,6 +20,8 @@ test("a tile is one page: Name, Description and Modules autosave, grow and undo"
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   const inspector = page.locator(".studio-inspector");
   const original = await saved(page, id, "redirect");
   await tile(page, "Redirect service").click();
@@ -78,6 +80,8 @@ test("the system page: Name, Description, then warnings; actions list no entries
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   const inspector = page.locator(".studio-inspector");
   const before = await design(page, id);
   // Removing the stats read leaves the worker's store unread: one warning.

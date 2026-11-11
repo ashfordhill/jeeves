@@ -1,10 +1,10 @@
 /**
- * The Detailed view (UI07): Overview | Detailed in the canvas toolbar draws each module host as a
- * container of its modules, with each module's links from or into its row. It is a per-project
- * browser preference: toggling changes no design, revision or blueprint. Drawn lines map to their
- * canonical relationships for the inspector, chat and removal, and the Overview, including its
- * export, stays exactly what it was. A row is its module (UI08): clicking it opens the module in
- * the inspector, and an open module marks only its own row and its own lines.
+ * The Detailed view (UI07): Detailed | Simple in the canvas toolbar; Detailed, the default, draws
+ * each module host as a container of its modules, with each module's links from or into its row.
+ * It is a per-project browser preference: toggling changes no design, revision or blueprint. Drawn
+ * lines map to their canonical relationships for the inspector, chat and removal, and the Simple
+ * view, including its export, stays exactly what it was. A row is its module (UI08): clicking it
+ * opens the module in the inspector, and an open module marks only its own row and its own lines.
  */
 import type { Page } from "@playwright/test";
 import { exportPng } from "./export.ts";
@@ -13,6 +13,7 @@ import {
   clickLine,
   createStudy,
   design,
+  dragPaper,
   expect,
   lines,
   moveOnto,
@@ -35,7 +36,7 @@ const TRANSCODER_ROWS = [
 ];
 const WRITES = ["transcoder-write/transcoder-packager", "transcoder-write/transcoder-thumbnails"];
 
-const viewButton = (page: Page, name: "Overview" | "Detailed") =>
+const viewButton = (page: Page, name: "Simple" | "Detailed") =>
   page.getByRole("group", { name: "View", exact: true }).getByRole("button", { name, exact: true });
 
 /** The tiles, lines and camera, once the layout, its animation and the fit have stopped. */
@@ -67,10 +68,10 @@ async function settled(page: Page) {
   throw new Error("The canvas never stopped moving.");
 }
 
-async function show(page: Page, view: "Overview" | "Detailed") {
+async function show(page: Page, view: "Simple" | "Detailed") {
   await viewButton(page, view).click();
   await expect(viewButton(page, view)).toHaveAttribute("aria-pressed", "true");
-  await expect(viewButton(page, view === "Overview" ? "Detailed" : "Overview")).toHaveAttribute(
+  await expect(viewButton(page, view === "Simple" ? "Detailed" : "Simple")).toHaveAttribute(
     "aria-pressed",
     "false",
   );
@@ -116,9 +117,10 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
       await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
     const before = { design: await design(page, id), blueprint: await blueprint() };
     const inspector = page.locator(".studio-inspector");
-    await expect(viewButton(page, "Overview")).toHaveAttribute("aria-pressed", "true");
-    const overview = await settled(page);
-    expect(Object.keys(overview.lines)).toHaveLength(25);
+    // A new project opens in Detailed; Simple draws the 25 relationships as plain lines.
+    await expect(viewButton(page, "Detailed")).toHaveAttribute("aria-pressed", "true");
+    const simple = await show(page, "Simple");
+    expect(Object.keys(simple.lines)).toHaveLength(25);
 
     // Detailed: Transcoder is a container of its five modules, one row each, in module order.
     const detailed = await show(page, "Detailed");
@@ -156,7 +158,7 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
       .toBe("done");
 
     // The selection carries across views, both ways.
-    await show(page, "Overview");
+    await show(page, "Simple");
     await expect(page.locator('.board .react-flow__edge[data-id="transcoder-write"]')).toHaveClass(
       /selected/,
     );
@@ -177,7 +179,7 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
       true,
     );
 
-    // A removal that would cut a tile off is refused with the reason, as in the Overview.
+    // A removal that would cut a tile off is refused with the reason, as in the Simple view.
     await clickLine(page, "completions-handler/handler-consumer");
     await page
       .getByRole("button", {
@@ -211,21 +213,23 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
     // An open module stays open across views.
     await transcoder.click({ position: { x: 20, y: 12 } });
     await inspector.getByRole("button", { name: "Open Packager", exact: true }).click();
-    await show(page, "Overview");
+    await show(page, "Simple");
     await expect(
       inspector.getByRole("button", { name: "Back to Transcoder", exact: true }),
     ).toBeVisible();
 
-    // Back in the Overview: the same 25 lines and exactly the same tiles; the choice is
+    // Back in the Simple view: the same 25 lines and exactly the same tiles; the choice is
     // remembered in this browser, and none of it reached the design or the blueprint.
     await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
     const again = await settled(page);
-    expect(again.tiles).toEqual(overview.tiles);
-    expect(again.lines).toEqual(overview.lines);
-    await show(page, "Detailed");
+    expect(again.tiles).toEqual(simple.tiles);
+    expect(again.lines).toEqual(simple.lines);
     await page.reload();
     await ready(page);
-    await expect(viewButton(page, "Detailed")).toHaveAttribute("aria-pressed", "true");
+    await expect(viewButton(page, "Simple")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator(".lane-container")).toHaveCount(0);
+    await expect(lines(page)).toHaveCount(25);
+    await show(page, "Detailed");
     await expect(tile(page, "Transcoder").locator(".lane-container-row")).toHaveCount(5);
     await expect(lines(page)).toHaveCount(YOUTUBE_DETAILED_LINES);
     const after = await design(page, id);
@@ -312,11 +316,11 @@ test("a module row opens its module and marks only its own row and its own lines
     await expect.poll(() => highlighted(page)).toEqual(TRANSCODER_LINES);
 
     // A card in the inspector opens the same module and marks its row; it stays open across views,
-    // where the Overview keeps only its host selected, with all of its lines.
+    // where the Simple view keeps only its host selected, with all of its lines.
     await inspector.getByRole("button", { name: "Open Thumbnailer", exact: true }).click();
     await expect.poll(() => highlighted(page)).toEqual([WRITES[1]]);
     expect(await marks(page)).toEqual({ "transcoder-thumbnails": "open" });
-    await show(page, "Overview");
+    await show(page, "Simple");
     await expect(back).toBeVisible();
     await expect(transcoder).toHaveClass(/selected/);
     await expect
@@ -343,25 +347,17 @@ test("a module row opens its module and marks only its own row and its own lines
     expect(await marks(page)).toEqual({});
     expect(await highlighted(page)).toEqual([]);
 
-    // In Hand mode a row lets the pointer through: a drag from it pans, and nothing opens.
-    await page.getByRole("button", { name: "Hand", exact: true }).click();
+    // Dragging empty paper pans, and opens or marks nothing.
     const camera = () =>
       page
         .locator(".board .react-flow__viewport")
         .evaluate((el) => (el as HTMLElement).style.transform);
     const panned = await camera();
-    const box = await row(page, "Packager").boundingBox();
-    if (!box) throw new Error("The Packager row is not drawn.");
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 40, { steps: 8 });
-    await page.mouse.up();
+    await dragPaper(page, { x: 80, y: 40 });
     await expect.poll(camera).not.toBe(panned);
     await expect(inspector.getByRole("button", { name: /^Back to/ })).toHaveCount(0);
     await expect(transcoder).not.toHaveClass(/selected/);
     expect(await marks(page)).toEqual({});
-    await page.getByRole("button", { name: "Select", exact: true }).click();
 
     // None of it reached the design, its revision or the blueprint.
     expect(await design(page, id)).toEqual(before.design);
@@ -532,27 +528,60 @@ test("a Detailed line's X goes through the relationship declarations confirmatio
     .toEqual({ ...saved, revision: 0 });
 });
 
+test("a new project opens in Detailed, on the left, and an old Overview choice reads as Simple", async ({
+  page,
+  tinyurl: id,
+}) => {
+  // The toggle reads Detailed | Simple, left to right, with Detailed pressed and drawn.
+  const toggle = page.getByRole("group", { name: "View", exact: true });
+  await expect(toggle.getByRole("button")).toHaveText(["Detailed", "Simple"]);
+  const [left, right] = await Promise.all([
+    viewButton(page, "Detailed").boundingBox(),
+    viewButton(page, "Simple").boundingBox(),
+  ]);
+  expect(left?.x ?? 0).toBeLessThan(right?.x ?? 0);
+  await expect(viewButton(page, "Detailed")).toHaveAttribute("aria-pressed", "true");
+  await expect(viewButton(page, "Simple")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(".lane-container").first()).toBeVisible();
+  await expect(toggle.getByRole("button", { name: "Overview" })).toHaveCount(0);
+
+  // A choice saved before the rename, as "overview", opens in Simple and is saved as Simple.
+  const key = `jeeves.studio.ui.v1:${id}`;
+  await page.evaluate(
+    ([key, value]) => localStorage.setItem(key as string, value as string),
+    [key, JSON.stringify({ chatOpen: true, view: "overview" })],
+  );
+  await page.reload();
+  await ready(page);
+  await expect(viewButton(page, "Simple")).toHaveAttribute("aria-pressed", "true");
+  await expect(viewButton(page, "Detailed")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(".lane-container")).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").view, key))
+    .toBe("simple");
+});
+
 test("the TinyURL foundation, which has no modules, looks the same in both views", async ({
   page,
 }) => {
   const id = await createStudy(page, "E2E UI07 foundation");
   try {
-    const overview = await settled(page);
-    const detailed = await show(page, "Detailed");
-    expect(detailed).toEqual(overview);
+    const detailed = await settled(page);
     await expect(page.locator(".lane-container")).toHaveCount(0);
-    expect(await show(page, "Overview")).toEqual(overview);
+    const simple = await show(page, "Simple");
+    expect(simple).toEqual(detailed);
+    expect(await show(page, "Detailed")).toEqual(detailed);
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }
 });
 
-test("export follows the view: Detailed says so, and the Overview's bytes don't change", async ({
+test("export follows the view: Detailed says so, and the Simple view's bytes don't change", async ({
   page,
 }) => {
   const id = await createStudy(page, "E2E UI07 export", "YouTube · studio study");
   try {
-    await settled(page);
+    await show(page, "Simple");
     const first = await exportPng(page);
     expect(first.filenames).toEqual(["E2E-UI07-export-r1.png", "E2E-UI07-export-r1-capture.json"]);
     expect(first.details.view.canvas).toBeUndefined();
@@ -574,7 +603,7 @@ test("export follows the view: Detailed says so, and the Overview's bytes don't 
     const marked = await exportPng(page);
     expect(marked.png.equals(detailed.png)).toBe(true);
     expect({ ...marked.details, capturedAt: "" }).toEqual({ ...detailed.details, capturedAt: "" });
-    await show(page, "Overview");
+    await show(page, "Simple");
     const again = await exportPng(page);
     expect(again.png.equals(first.png)).toBe(true);
     expect({ ...again.details, capturedAt: "" }).toEqual({ ...first.details, capturedAt: "" });

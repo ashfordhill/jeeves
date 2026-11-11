@@ -5,7 +5,7 @@ import { createStudy, design, expect, ready, test, tile } from "./studio.ts";
 test("a historical preset design autosaves its useful TTL and pool controls through Undo, Redo and reload", async ({
   page,
 }) => {
-  const id = await createStudy(page, "E2E historical feature controls", "blank");
+  const id = await createStudy(page, "E2E historical feature controls", "blank", "Simple");
   try {
     const inspector = page.locator(".studio-inspector");
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
@@ -123,4 +123,103 @@ test("legacy unsupported settings stay hidden and unchanged while names/history 
   await page.reload();
   await ready(page);
   expect({ ...(await design(page, id)), revision: 0 }).toEqual({ ...before, revision: 0 });
+});
+
+test("Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y press Undo and Redo, but not in a field or under a dialog", async ({
+  page,
+  tinyurl: id,
+}) => {
+  const steps: string[] = [];
+  page.on("request", (request) => {
+    const step = /\/projects\/[^/]+\/(undo|redo)$/.exec(request.url())?.[1];
+    if (step && request.method() === "POST") steps.push(step);
+  });
+  const inspector = page.locator(".studio-inspector");
+  const undo = page.getByRole("button", { name: "Undo", exact: true });
+  const redo = page.getByRole("button", { name: "Redo", exact: true });
+  const described = async () =>
+    (
+      (await design(page, id)).elements.find((item) => item.id === "url-cache") as
+        | { description?: string }
+        | undefined
+    )?.description ?? "";
+  const original = await described();
+  const edited = "Keeps hot short links";
+  const paper = () =>
+    page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
+
+  await tile(page, "URL cache").click();
+  await inspector.getByLabel("Description", { exact: true }).fill(edited);
+  await expect.poll(described).toBe(edited);
+
+  // Outside a field: the keys do what the header's buttons do, one step each.
+  await paper();
+  await expect(undo).toBeEnabled();
+  await page.keyboard.press("Control+z");
+  await expect.poll(described).toBe(original);
+  await expect(redo).toBeEnabled();
+  await page.keyboard.press("Control+Shift+KeyZ");
+  await expect.poll(described).toBe(edited);
+  await expect(undo).toBeEnabled();
+  await page.keyboard.press("Control+z");
+  await expect.poll(described).toBe(original);
+  await expect(redo).toBeEnabled();
+  await page.keyboard.press("Control+y");
+  await expect.poll(described).toBe(edited);
+  await expect(redo).toBeDisabled();
+  expect(steps).toEqual(["undo", "redo", "undo", "redo"]);
+  // With Redo disabled its keys do nothing.
+  await page.keyboard.press("Control+y");
+  await page.keyboard.press("Control+Shift+KeyZ");
+  await expect(undo).toBeEnabled();
+  expect(steps).toHaveLength(4);
+
+  // In the Name field the keys are the browser's: the design is not undone.
+  await tile(page, "URL cache").click();
+  const name = inspector.getByLabel("Name", { exact: true });
+  await name.click();
+  await expect(name).toBeFocused();
+  await page.keyboard.press("Control+z");
+  await page.keyboard.press("Control+Shift+KeyZ");
+  await page.keyboard.press("Control+y");
+  await expect(name).toHaveValue("URL cache");
+
+  // Under a dialog nothing happens: Export diagram, then a removal's confirmation.
+  await paper();
+  await page.getByRole("button", { name: "Export diagram", exact: true }).click();
+  const exporting = page.getByRole("dialog", { name: "Export diagram" });
+  await expect(exporting).toBeVisible();
+  await page.keyboard.press("Control+z");
+  await page.getByRole("button", { name: "Close export diagram" }).click();
+  await expect(exporting).toHaveCount(0);
+  await tile(page, "Redirect service").click({ position: { x: 20, y: 12 } });
+  await tile(page, "Redirect service")
+    .getByRole("button", { name: "Remove Redirect service", exact: true })
+    .click();
+  const removal = page.getByRole("dialog", { name: "Remove Redirect service" });
+  await expect(removal).toBeVisible();
+  await page.keyboard.press("Control+z");
+  await removal.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(removal).toHaveCount(0);
+  expect(steps).toHaveLength(4);
+  expect(await described()).toBe(edited);
+
+  // Once the dialogs are closed the keys work again.
+  await paper();
+  await page.keyboard.press("Control+z");
+  await expect.poll(described).toBe(original);
+  expect(steps).toEqual(["undo", "redo", "undo", "redo", "undo"]);
+
+  // In the Description box Ctrl+Z undoes the typing, not the saved design.
+  await tile(page, "URL cache").click();
+  const box = inspector.getByLabel("Description", { exact: true });
+  await box.click();
+  await page.keyboard.press("End");
+  await page.keyboard.type("!");
+  await expect(box).toHaveValue(`${original}!`);
+  await page.keyboard.press("Control+z");
+  await expect(box).toHaveValue(original);
+  await paper();
+  await expect.poll(described).toBe(original);
+  expect(steps).toHaveLength(5);
 });

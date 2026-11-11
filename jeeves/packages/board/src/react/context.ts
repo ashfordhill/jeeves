@@ -7,7 +7,7 @@ import type { BoardLayout } from "../layout/elkLayout.ts";
 
 export type BoardContextValue = {
   layout: BoardLayout | null;
-  /** Selects a line; does nothing in hand mode. */
+  /** Selects a line. */
   selectLine: (id: string) => void;
   /** Removes a line: a selected (or, in connect mode, hovered) line shows its X when this is set. */
   removeLine?: (id: string) => void;

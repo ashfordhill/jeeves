@@ -7,7 +7,7 @@
 // hints are the previously shown positions plus the caller's `hints` for tiles that have no
 // shown position yet (a shown position wins); a tile with neither is docked by `buildElkGraph`.
 //
-// Views: a board can show several views of one graph (`view`, such as an overview and a detailed
+// Views: a board can show several views of one graph (`view`, such as a simple and a detailed
 // one). Each view keeps its own previously shown positions, so a layout is never hinted by
 // another view's positions: switching away and back finds a view as it was, and an edit made in
 // one view lays the other out from its own last positions. With one view (the default) this is

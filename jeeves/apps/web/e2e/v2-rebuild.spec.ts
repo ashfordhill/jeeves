@@ -43,7 +43,7 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
       "Video details cache to Video details reader",
     );
     await expect(row(page, "Transcoder", "Packager")).toBeVisible();
-    await tool(page, "Overview").click();
+    await tool(page, "Simple").click();
     await ready(page);
 
     // Every module has the plan's name and description, on its tile.

@@ -7,6 +7,7 @@ import {
   design,
   expect,
   lines,
+  showView,
   test,
   tile,
   tiles,
@@ -47,7 +48,7 @@ test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => 
 test("New project offers the marketplace study", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  const id = await createStudy(page, "E2E Marketplace", "Marketplace · studio study");
+  const id = await createStudy(page, "E2E Marketplace", "Marketplace · studio study", "Simple");
   try {
     // The user, Browse and Buy & sell and seventeen tiles; the user's two lines, seven lane
     // entries (four upload) and fourteen connections, four dashed (publish and consume for
@@ -93,7 +94,7 @@ test("New project offers the marketplace study", async ({ page }) => {
 test("New project offers the YouTube study", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  const id = await createStudy(page, "E2E YouTube", "YouTube · studio study");
+  const id = await createStudy(page, "E2E YouTube", "YouTube · studio study", "Simple");
   try {
     // The user, Watch and Publish and eighteen tiles; the user's two lines, five lane entries
     // (none into storage: the Upload service writes Original videos) and eighteen connections,
@@ -181,6 +182,8 @@ test("preserves inferred access in source and blueprint without exposing ineffec
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   const inspector = page.locator(".studio-inspector");
   const before = await savedSource(page);
   await tile(page, "URL database").click();

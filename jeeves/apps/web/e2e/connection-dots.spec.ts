@@ -7,7 +7,7 @@
  * this holds for a row's dot and for a tile.
  */
 import type { Locator, Page } from "@playwright/test";
-import { createStudy, design, expect, moveOnto, ready, test, tile } from "./studio.ts";
+import { createStudy, design, expect, moveOnto, ready, showView, test, tile } from "./studio.ts";
 
 const tool = (page: Page, name: string) =>
   page.getByRole("toolbar", { name: "Canvas tools" }).getByRole("button", { name, exact: true });
@@ -260,6 +260,8 @@ test("a tile drag held past the canvas edge pans, then links on release", async 
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   await page.getByRole("button", { name: "Open inspector" }).click();
   await tool(page, "Connect").click();
   await tool(page, "Fit").click();

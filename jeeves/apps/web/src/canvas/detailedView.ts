@@ -1,6 +1,6 @@
 // The Detailed view's tiles, ports and lines: the lane graph with each module host drawn as a
 // container, one row per module, and each module's own links drawn from or into its row. Pure view
-// code; it never changes the design, and the Overview never uses it (`laneLayoutInput` stays its
+// code; it never changes the design, and the Simple view never uses it (`laneLayoutInput` stays its
 // only input).
 //
 // Containers. An application tile with at least one module is a container: `CONTAINER.w` wide, a
@@ -10,7 +10,7 @@
 // ports on the grid, so every one is on a grid line. A row has an `in` port when a line enters it
 // and an `out` port when one leaves it, so a module with no drawn line has a row with no port.
 // Lines at the tile level use the header ports, never the container's default mid-height port,
-// which is off the grid at most heights. Every other tile keeps its Overview size, band and
+// which is off the grid at most heights. Every other tile keeps its Simple view size, band and
 // default ports.
 //
 // Lines. For each lane edge from A to B, the source anchors are A's modules that link to B through
@@ -95,7 +95,7 @@ export type DetailedLine = Omit<LayoutLine, "chip"> & {
   dashed: boolean;
   directed: true;
   label: string;
-  /** The user's line goes with its action, as in the Overview. */
+  /** The user's line goes with its action, as in the Simple view. */
   removable?: false;
   sourceModule?: string;
   targetModule?: string;

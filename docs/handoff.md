@@ -8895,3 +8895,69 @@ The owner confirmed D1–D8 and added two directions:
   Live paid runs need the owner's go-ahead at the time (V3-09, V3-10).
 
 The units are renumbered to V3-01–V3-18. Docs only, so no checks were run. Next: V3-01.
+
+## 2026-11-10 — V3-01: undo keys, two tools, simple and detailed
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (owner feedback 1, 6 and 7). Docs:
+`studio.md` (Lane canvas, Detailed view, Size and fit, PNG export, Layout and navigation,
+Creating and connecting, Removing, History), `PLAN.md`, a playbook lesson, the HUMAN_FEEDBACK
+resolution and the plan's status. Evidence: [v3-01](plans/youtube-v3/evidence/v3-01/) (2 shots).
+
+- **Keys** (`canvas/shortcuts.ts`, in `Workspace.tsx`'s key handler): Ctrl/Cmd+Z calls the
+  header's Undo; Ctrl/Cmd+Shift+Z and Ctrl+Y its Redo (not Cmd+Y, Chrome's History on a Mac). One
+  `history` object gives the buttons' `disabled` and the keys' guard (history busy, failed
+  drafts; Undo runs with a pending draft, Redo doesn't). Nothing happens, and the default is kept,
+  with focus in an input, textarea, select or contenteditable, while any `[role="dialog"]` or open
+  `<dialog>` exists (modals, the removal panel, Choose relationship), or with the button disabled.
+- **Tools:** Pointer (V; the old Select button renamed, the board mode is still `"select"`) and
+  Connect (C); Escape returns to Pointer. Gone: the Hand button, H, `BoardMode`'s `"hand"`, the
+  tiles' inline `pointer-events: none`, the `data-mode="hand"` CSS, `elementsSelectable={!hand}`
+  and every `!hand` guard in `Board.tsx`. Paper drag, wheel zoom and Fit are unchanged.
+- **Views:** **Detailed | Simple**, Detailed first and the default. Stored as `"simple"`
+  (`canvasViews = ["detailed", "simple"]`, same `jeeves.studio.ui.v1:<project>` key); a saved
+  `"overview"` reads as Simple and is written back as `"simple"`. `LaneCanvas` and `ExportDiagram`
+  now require `view`. Code and docs say Simple; dated playbook lessons keep "Overview".
+
+**Tests.** `shortcuts.test.ts` (4: the key map, fields, dialogs) and `preferences.test.ts` (2:
+order, default, old value). `board.test.tsx`: the Hand step is gone; the view test says
+`"simple"`. E2E: a key test in `edit-history.spec.ts` (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Z, Ctrl+Y each
+one request; disabled Redo's keys send none; none from the Name field; the Description box's
+Ctrl+Z undoes only its typing; none under Export diagram or the removal panel; works again after);
+`detailed-view.spec.ts` +1 (toggle order, Detailed pressed, old "overview" opens Simple and is
+rewritten). `connect.spec.ts` checks exactly two tools and that H does nothing; its Hand pan is now
+a paper drag in both modes, as is the PNG export spec's pan and the module-row spec's Hand step.
+New helpers `showView`, `paperPoint`, `dragPaper`; `createStudy(…, "Simple")`. The specs whose steps
+assumed one plain tile per element (19 failed on the first full run: centre clicks hit module rows,
+Detailed draws more lines) now open Simple by mouse first; no assertion changed.
+
+**Checks.**
+
+- `pnpm check` exited 0: **640 tests in 91 files** (lint: only the existing info).
+- **E2E:** the first full run, before those spec updates, had 49 passed and 19 failed (all the
+  view default). Rerunning the affected specs: 38 passed, 3 failed (my key test assumed one Ctrl+Z
+  undoes a typed word, Chrome undid one letter; two tracing specs read the canvas mid-fit, so
+  `showView` now waits for it to settle). Those alone, twice each: 12/12. Final full run:
+  **69 passed (4.7m)**. Two projects leaked by the first run were deleted; `jeeves_e2e` has none.
+- Web build passed (2.4 s, the existing chunk-size advisory).
+- **Mouse check** (scripted Chromium; my API 4381 with scratch DB `jeeves_v301`, now dropped, and
+  Vite 4371), at 1440×900 and 1280×800: TinyURL foundation 7 tiles and 7 lines; tools "Pointer (V)",
+  "Connect (C)"; Detailed pressed and left of Simple; a paper drag panned; Ctrl+Z, Ctrl+Shift+Z,
+  Ctrl+Z, Ctrl+Y each stepped the saved design; Connect and Pointer by mouse; YouTube opened in
+  Detailed (7 containers, 26 lines). No page errors, console errors or warnings; all deleted.
+
+**Gates (D2).** The Simple PNG gate is retired. New reference: a fresh YouTube study's **Simple**
+export, `472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f` (3008×2752, 21
+tiles, 25 lines, no `canvas`), twice at 1440×900 and once at 1280×800: unchanged from the old
+Overview hash. Processes-off pin passes; v1 byte-identical (`assemble.test.ts`). Frozen v2: fresh
+`export:v2`, 72 files, 70 byte-identical to `generic-export.tar.gz`; `manifest.json` and
+`report.json` differ only in the source inventory as before (it lists only `jeeves/packages/spec`
+and generator paths, none of this unit's).
+
+**For V3-02.** Specs written for one plain tile per element start with `createStudy(…, "Simple")`
+or `showView(page, "Simple")`; a new project otherwise opens in Detailed, where a tile's centre
+may be a module row. Kind labels change faces in both views, so the Simple PNG reference above
+will change; record the new one. Chrome keeps one text-undo stack per page: Ctrl+Z in an untouched
+Name field undid the Description just typed (no design Undo was sent), which then autosaved.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

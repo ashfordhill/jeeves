@@ -218,7 +218,7 @@ async function linkTiles(page: Page, id: string, [from, onto]: [string, string],
   await page.mouse.up();
   log.drags += 1;
   await expect.poll(async () => (await saved(page, id)).connections.length).toBe(before + 1);
-  await click(tool(page, "Select"), log);
+  await click(tool(page, "Pointer"), log);
   await ready(page);
 }
 
@@ -305,8 +305,8 @@ export async function buildV2Modules(page: Page, id: string, log: Gestures) {
     );
     await ready(page);
   }
-  await click(tool(page, "Select"), log);
-  await click(tool(page, "Overview"), log);
+  await click(tool(page, "Pointer"), log);
+  await click(tool(page, "Simple"), log);
   await ready(page);
 
   for (const [host, name, field, value] of V2_VALUES) {

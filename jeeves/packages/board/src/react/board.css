@@ -136,12 +136,6 @@
   outline-offset: 1px;
 }
 
-/* Hand mode: tiles (inline style) and lines let the pointer through, so every drag pans. */
-.board[data-mode="hand"] .react-flow__edge,
-.board[data-mode="hand"] .board-chip {
-  pointer-events: none;
-}
-
 /* Connect mode: a drag from a tile draws a line, so tiles take a crosshair, as does the whole
    board while a drag is under way. */
 .board[data-connecting],

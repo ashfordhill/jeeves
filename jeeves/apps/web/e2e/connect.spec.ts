@@ -1,5 +1,5 @@
 /**
- * Connect mode (MA03): Connect (C) in the canvas toolbar, next to Hand. A drag from one tile to
+ * Connect mode (MA03): Connect (C) in the canvas toolbar, next to Pointer. A drag from one tile to
  * another links them in the pair's default mode, from where the drag started; a refused end fades
  * with its reason and changes nothing; a hovered line shows its X; a click still selects. The mode
  * is view state: it never reaches the design, its revision or the blueprint.
@@ -10,10 +10,12 @@ import {
   createStudy,
   design,
   dragOnto,
+  dragPaper,
   expect,
   linePoint,
   lines,
   ready,
+  showView,
   test,
   tile,
 } from "./studio.ts";
@@ -28,44 +30,50 @@ const camera = (page: Page) =>
     .evaluate((el) => (el as HTMLElement).style.transform);
 /** The mode the toolbar shows as pressed. */
 const mode = async (page: Page) => {
-  for (const name of ["Select", "Hand", "Connect"])
+  for (const name of ["Pointer", "Connect"])
     if ((await tool(page, name).getAttribute("aria-pressed")) === "true") return name;
   return "none";
 };
 
-test("C, V, Escape and the toolbar switch modes without touching the design", async ({
+test("C, V, Escape and the toolbar's two tools switch modes without touching the design", async ({
   page,
   tinyurl: id,
 }) => {
   const before = { design: await design(page, id), blueprint: await blueprint(page, id) };
-  // Connect sits right after Hand, with a link icon and its key in the title.
-  const names = await page
-    .getByRole("toolbar", { name: "Canvas tools" })
+  // Exactly two tools, Pointer then Connect, with their keys in their titles; then Fit.
+  const toolbar = page.getByRole("toolbar", { name: "Canvas tools" });
+  const names = await toolbar
     .locator(":scope > button")
     .evaluateAll((buttons) => buttons.map((b) => b.getAttribute("aria-label")));
-  expect(names.slice(0, 3)).toEqual(["Select", "Hand", "Connect"]);
+  expect(names.slice(0, 3)).toEqual(["Pointer", "Connect", "Fit"]);
+  await expect(toolbar.locator(":scope > button[aria-pressed]")).toHaveCount(2);
+  await expect(tool(page, "Pointer")).toHaveAttribute("title", "Pointer (V)");
   await expect(tool(page, "Connect")).toHaveAttribute("title", "Connect (C)");
-  expect(await mode(page)).toBe("Select");
+  await expect(page.getByRole("button", { name: /^Hand/ })).toHaveCount(0);
+  expect(await mode(page)).toBe("Pointer");
 
   await page.keyboard.press("c");
   expect(await mode(page)).toBe("Connect");
   await expect(page.locator(".board")).toHaveAttribute("data-mode", "connect");
   await page.keyboard.press("v");
-  expect(await mode(page)).toBe("Select");
+  expect(await mode(page)).toBe("Pointer");
+  await expect(page.locator(".board")).toHaveAttribute("data-mode", "select");
   await page.keyboard.press("c");
   await page.keyboard.press("Escape");
-  expect(await mode(page)).toBe("Select");
+  expect(await mode(page)).toBe("Pointer");
+  // H is no tool's key any more.
   await page.keyboard.press("h");
-  expect(await mode(page)).toBe("Hand");
+  expect(await mode(page)).toBe("Pointer");
   await page.keyboard.press("c");
+  await page.keyboard.press("h");
   expect(await mode(page)).toBe("Connect");
-  // By mouse: the button toggles, and Select returns too.
+  // By mouse: the button toggles, and Pointer returns too.
   await tool(page, "Connect").click();
-  expect(await mode(page)).toBe("Select");
+  expect(await mode(page)).toBe("Pointer");
   await tool(page, "Connect").click();
   expect(await mode(page)).toBe("Connect");
-  await tool(page, "Select").click();
-  expect(await mode(page)).toBe("Select");
+  await tool(page, "Pointer").click();
+  expect(await mode(page)).toBe("Pointer");
 
   expect(await design(page, id)).toEqual(before.design);
   expect(await blueprint(page, id)).toEqual(before.blueprint);
@@ -165,6 +173,8 @@ test("removes a line by its hover X, then Undo; the user's lines have none", asy
   page,
   tinyurl: id,
 }) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   const before = await design(page, id);
   await page.keyboard.press("c");
   const x = page.locator(".board-remove-line");
@@ -197,7 +207,7 @@ test("removes a line by its hover X, then Undo; the user's lines have none", asy
   await page.mouse.move(user.x, user.y, { steps: 4 });
   await page.waitForTimeout(200);
   await expect(x).toHaveCount(0);
-  // A removal that would cut a tile off is refused with the reason, as in Select mode.
+  // A removal that would cut a tile off is refused with the reason, as with Pointer.
   const clicks = await linePoint(page, "redirect-clicks");
   await page.mouse.move(clicks.x, clicks.y, { steps: 4 });
   await x.click();
@@ -205,7 +215,12 @@ test("removes a line by its hover X, then Undo; the user's lines have none", asy
   await expect(lines(page)).toHaveCount(12);
 });
 
-test("a click selects in Connect mode, and Hand still pans", async ({ page, tinyurl: id }) => {
+test("a click selects in Connect mode, and dragging empty paper pans in both modes", async ({
+  page,
+  tinyurl: id,
+}) => {
+  // Written for the Simple view: one plain tile per element.
+  await showView(page, "Simple");
   const before = await design(page, id);
   const inspector = page.locator(".studio-inspector");
   await page.keyboard.press("c");
@@ -219,14 +234,15 @@ test("a click selects in Connect mode, and Hand still pans", async ({ page, tiny
   await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
   await expect(page.locator(".board .react-flow__node.selected")).toHaveCount(0);
 
-  // Hand: a drag from a tile pans, and selects or links nothing.
-  await page.keyboard.press("h");
-  const panned = await camera(page);
-  await dragOnto(page, tile(page, "Redirect service"), tile(page, "Analytics worker"));
-  await page.mouse.up();
-  await expect.poll(() => camera(page)).not.toBe(panned);
-  await expect(page.locator(".board .react-flow__node.selected")).toHaveCount(0);
-  await expect(page.locator(".board-connect")).toHaveCount(0);
+  // A drag on empty paper pans, and selects or links nothing, in Connect mode and with Pointer.
+  for (const key of ["c", "v"]) {
+    await page.keyboard.press(key);
+    const panned = await camera(page);
+    await dragPaper(page);
+    await expect.poll(() => camera(page)).not.toBe(panned);
+    await expect(page.locator(".board .react-flow__node.selected")).toHaveCount(0);
+    await expect(page.locator(".board-connect")).toHaveCount(0);
+  }
   expect(await design(page, id)).toEqual(before);
 });
 

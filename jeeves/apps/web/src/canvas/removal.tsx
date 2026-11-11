@@ -52,13 +52,13 @@ export function useLaneRemoval({
   projectId: string;
   design: DesignDocument;
   graph: LaneGraph;
-  /** The selected tile, if any (none in hand mode). */
+  /** The selected tile, if any (none in connect mode). */
   tile: string | undefined;
   /** A removal was saved; `next` is the tile to select, if any. */
   onRemoved: (next: string | undefined) => void;
 }): Removal & { remove: (tile: string) => void } {
   const [pending, setPending] = useState<Pending>();
-  // A confirmation belongs to its tile: selecting anything else, or Hand, drops it.
+  // A confirmation belongs to its tile: selecting anything else, or Connect, drops it.
   const open = pending && (pending.line || pending.tile === tile) ? pending : undefined;
   useEffect(() => {
     if (pending && !pending.line && pending.tile !== tile) setPending(undefined);

@@ -1484,3 +1484,16 @@ every answer, and give the dead letter the same reason as the log line ("not imp
 "malformed" for a codec nobody has written). Make startup say what it checked, too: stub clients
 log one probe line each, but template processes only said "ready", so their migrations, sweeps,
 FFmpeg check and subscriptions had to be confirmed from the database, the broker and the source.
+
+## 2026-11-10 V3-01: a key is its button's twin, and a check names its view
+
+Ctrl+Z, and Ctrl+Shift+Z or Ctrl+Y, call the header's Undo and Redo under the same enabled state,
+computed once for both, so a key can never do what its button would refuse (history busy, a
+failed draft, Redo while an edit is pending). They leave fields to the browser's own text undo,
+do nothing under any dialog, and stop the browser's default only when they act. The Hand tool
+only repeated what dragging empty paper already did, so the tools are Pointer and Connect.
+Detailed became the default view because it is where modules are seen and connected (the old
+Overview is now Simple). That broke 19 end-to-end specs that had silently assumed one plain tile
+per element: a click at a container's centre opens a module row instead of selecting the tile,
+and Detailed draws more lines. Each now opens the Simple view by mouse first; a check should say
+which view it was written for.

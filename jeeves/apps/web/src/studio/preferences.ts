@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 
-/** The canvas's view: one tile per element, or module hosts drawn as containers of their modules. */
-export const canvasViews = ["overview", "detailed"] as const;
+/**
+ * The canvas's view, in the toggle's order: module hosts drawn as containers of their modules
+ * (the default), or one plain tile per element.
+ */
+export const canvasViews = ["detailed", "simple"] as const;
 export type CanvasView = (typeof canvasViews)[number];
+/** A view saved before Simple had its name ("overview") reads as Simple. */
+const savedView = (value: unknown): CanvasView | undefined =>
+  value === "overview" ? "simple" : canvasViews.find((view) => view === value);
 
 type Preferences = {
   chatOpen: boolean;
@@ -16,14 +22,15 @@ const defaults: Preferences = {
   inspectorOpen: false,
   chatWidth: 300,
   inspectorWidth: 320,
-  view: "overview",
+  view: "detailed",
 };
 const key = (project: string) => `jeeves.studio.ui.v1:${project}`;
 const width = (value: unknown, fallback: number) =>
   typeof value === "number" && Number.isFinite(value)
     ? Math.max(240, Math.min(400, value))
     : fallback;
-function read(project: string): Preferences {
+/** A project's saved preferences; anything missing or invalid takes its default. */
+export function readPreferences(project: string): Preferences {
   try {
     const saved: Partial<Preferences> = JSON.parse(localStorage.getItem(key(project)) ?? "{}");
     return {
@@ -32,7 +39,7 @@ function read(project: string): Preferences {
         typeof saved.inspectorOpen === "boolean" ? saved.inspectorOpen : defaults.inspectorOpen,
       chatWidth: width(saved.chatWidth, defaults.chatWidth),
       inspectorWidth: width(saved.inspectorWidth, defaults.inspectorWidth),
-      view: canvasViews.find((view) => view === saved.view) ?? defaults.view,
+      view: savedView(saved.view) ?? defaults.view,
     };
   } catch {
     return { ...defaults };
@@ -44,7 +51,7 @@ function read(project: string): Preferences {
  * of the design, its history, the blueprint or chat.
  */
 export function useStudioPreferences(project: string) {
-  const [preferences, setPreferences] = useState(() => read(project));
+  const [preferences, setPreferences] = useState(() => readPreferences(project));
   useEffect(() => {
     try {
       localStorage.setItem(key(project), JSON.stringify(preferences));

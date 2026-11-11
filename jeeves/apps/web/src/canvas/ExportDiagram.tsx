@@ -27,18 +27,18 @@ function download(blob: Blob, filename: string) {
 
 /**
  * Export diagram: the PNG of the current view and its capture details, and the way to Source &
- * diagnostics. An Overview export is byte-for-byte what it was before the Detailed view existed;
- * a Detailed one says `detailed` in its filenames and its details' `view.canvas`.
+ * diagnostics. A Simple export is byte-for-byte what it was before the Detailed view existed; a
+ * Detailed one says `detailed` in its filenames and its details' `view.canvas`.
  */
 export function ExportDiagram({
   board,
-  view = "overview",
+  view,
   onDiagnostics,
   onClose,
 }: {
   board: { current: BoardHandle | null };
   /** The canvas view the board shows, which the PNG captures. */
-  view?: CanvasView;
+  view: CanvasView;
   onDiagnostics: () => void;
   onClose: () => void;
 }) {

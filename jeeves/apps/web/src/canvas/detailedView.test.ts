@@ -49,7 +49,7 @@ describe("detailed view projection", () => {
       const { graph, view } = project(design);
       const studio = design.architecture?.studio;
       const components = studio?.components ?? [];
-      const overview = laneLayoutInput(graph);
+      const simple = laneLayoutInput(graph);
 
       // Every module is a row of its host exactly once, in module order.
       const rows = [...view.containers.values()].flatMap((c) => c.rows);
@@ -63,15 +63,15 @@ describe("detailed view projection", () => {
       }
 
       // Tiles in node order; containers resized with their ports on grid lines inside them; every
-      // other tile exactly as in the Overview.
-      expect(view.tiles.map((t) => t.id)).toEqual(overview.tiles.map((t) => t.id));
+      // other tile exactly as in the Simple view.
+      expect(view.tiles.map((t) => t.id)).toEqual(simple.tiles.map((t) => t.id));
       for (const [i, tile] of view.tiles.entries()) {
         const container = view.containers.get(tile.id);
         if (!container) {
-          expect(tile, tile.id).toEqual(overview.tiles[i]);
+          expect(tile, tile.id).toEqual(simple.tiles[i]);
           continue;
         }
-        expect(tile.band).toBe(overview.tiles[i]?.band);
+        expect(tile.band).toBe(simple.tiles[i]?.band);
         expect(tile.w).toBe(CONTAINER.w);
         expect(tile.h % GRID).toBe(0);
         expect(tile.h).toBeGreaterThanOrEqual(
@@ -99,7 +99,7 @@ describe("detailed view projection", () => {
           expect(line.target).toBe(edge.target);
           expect(line.dashed).toBe(edge.dashed);
           expect(line.directed).toBe(true);
-          expect(line.band).toBe(overview.lines[i]?.band);
+          expect(line.band).toBe(simple.lines[i]?.band);
           expect(view.connectionOf(line.id)).toBe(edge.id);
         }
       }
