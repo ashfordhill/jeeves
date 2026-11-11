@@ -87,6 +87,15 @@ same exact saved design after removing product implementations. It counts the ne
 these same exclusions and reports overlap with existing v2 separately; it does not invent a
 new chronological application-completion measurement.
 
+## YouTube v3
+
+v3 keeps the untouched export in `field-projects/youtube/v3/generated/` and completes a copy in
+`app/` (contract D8). The baseline is `app/` at the `V3-12: v3 generated output` commit, which
+equals `generated/`. The [reviewed scope](../../field-projects/youtube/v3/notes/benchmarks/backend-scope.json)
+and [its file-by-file review](../../field-projects/youtube/v3/notes/benchmarks/scope-review.md)
+count 71 backend `src/` files, 6,251 LOC, at the baseline. The rules are unchanged. V3-17
+reports the comparison with the completed commit.
+
 ## Run for the next version
 
 From repository root:

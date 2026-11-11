@@ -123,6 +123,23 @@ describe("the v3 reference (contract section 5)", () => {
       ).sort(),
     );
     expect(validateDesign(design).filter(isStructural)).toEqual([]);
+    // Three Sign-in guards verify the one Identity: its Keycloak substitution is noted once.
+    expect(
+      resolved.model?.selections.filter((item) => item.binding.kind === "verified-identity"),
+    ).toHaveLength(3);
+    expect(resolved.model?.localAdapterTreatments).toEqual([
+      expect.objectContaining({
+        sourcePath: [
+          "architecture",
+          "studio",
+          "elements",
+          expect.any(Number),
+          "settings",
+          "language",
+        ],
+        actual: "keycloak",
+      }),
+    ]);
     // What is left is advice about two long lines, nothing to fix.
     expect(designReview(design, installed).findings.map((item) => item.check)).toEqual([
       "long-line",

@@ -1047,14 +1047,21 @@ export function resolveGeneration(
               "Identity setting has no local Keycloak consumer; only public exposure and one fixed vendor instance are supported.",
             );
         }
-        localAdapterTreatments.push({
-          sourcePath: [...elementPath(identity.element), "language"],
-          declared: identityBinding.settings.language,
-          actual: "keycloak",
-          classification: "unsupported-intent",
-          reason:
-            "Fixed local OIDC vendor substitution. Source requires service-language metadata; neither TypeScript nor Go Identity implementation is provided or claimed.",
-        });
+        // One note per Identity: every guard that verifies it shares the same Keycloak vendor.
+        const sourcePath = [...elementPath(identity.element), "language"];
+        if (
+          !localAdapterTreatments.some(
+            (entry) => JSON.stringify(entry.sourcePath) === JSON.stringify(sourcePath),
+          )
+        )
+          localAdapterTreatments.push({
+            sourcePath,
+            declared: identityBinding.settings.language,
+            actual: "keycloak",
+            classification: "unsupported-intent",
+            reason:
+              "Fixed local OIDC vendor substitution. Source requires service-language metadata; neither TypeScript nor Go Identity implementation is provided or claimed.",
+          });
       }
     }
     if (selection.binding.kind === "positive-cache-read") {

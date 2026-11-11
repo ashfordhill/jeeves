@@ -64,7 +64,7 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
           <summary>Local adapter limits</summary>
           <ul>
             {data.report.localAdapterTreatments.map((treatment) => (
-              <li key={JSON.stringify(treatment.sourcePath)}>
+              <li key={JSON.stringify([treatment.sourcePath, treatment.actual, treatment.reason])}>
                 {treatment.reason} Actual: {treatment.actual}
               </li>
             ))}

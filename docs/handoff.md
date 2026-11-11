@@ -9754,3 +9754,70 @@ outputs. The kept project's revision is 171.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-12: v3 generated output
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (V3-12, D8) and [contract](plans/youtube-v3/contract.md)
+§6. Docs: the field project's [notes](../field-projects/youtube/v3/notes/README.md) (both outputs, how
+to run each, what answers), `notes/custom-paths.md` (empty table), `notes/benchmarks/` (scope and its
+file-by-file review), the method's v3 note, a playbook lesson, the plan's status and the
+HUMAN_FEEDBACK resolution. Evidence: [v3-12](plans/youtube-v3/evidence/v3-12/README.md).
+
+- **Fix first:** the resolver now records the Identity's Keycloak substitution once per Identity
+  (`generation-resolver.ts`), not once per guard; Preview keys each limit by source path, vendor
+  and reason (`V2GenerationDetails.tsx`). Tests: `v3-modules.test.ts` (3 guards, 1 treatment) and
+  new `V2GenerationDetails.test.tsx`. Effect on v3: of 112 files, the 4 provenance/diagnostic ones
+  change (3 → 1 rows, the resolver's inventory hash); 108 are identical to the pre-fix export.
+- **`generated/`:** `export:v2` of `inputs/design.json`, 112 files, 5,133,781 bytes, 0 findings,
+  runnable, 9 required gaps, the 4 product SQL files; manifest `1e06c429…7250`. Committed untouched
+  (its README is the export's own). A fresh export is identical; the studio ZIP of **YouTube v3**
+  by mouse (my API/Vite on the owner's database, read only, revision 171 kept) is 5,149,349 bytes,
+  `898c9edb…c5a0`, and its 112 extracted files equal `generated/`. No difference to explain.
+- **Outside run** (`jeeves-v312-generated`, 45600–45602, a scratchpad copy): install 0.3 s, build
+  0.5 s, first-run 130.0 s; 15 containers healthy (8 `app-*`, edge, 6 providers), 0 restarts. With a
+  real PKCE token for a scratch Keycloak user, 45 requests: each route stops at its first hook or
+  stub by name (501 `key for Video details cache`, `View count reader`, `View publisher`, `mapping
+  for Index writer`, `validate for Multipart uploads`, `eligible for Favorite videos`); `me` routes
+  Optional/Required as designed; CDN 404/405. One message per worker queue reached its `.failed` at
+  attempt 1 `NOT_IMPLEMENTED` (`job for Segmenter and encoder`, `event for Lifecycle writer`,
+  `mapping for Index writer`, `event for Receipt and increment`). Stop 4.6 s / start 64.8 s: same
+  health, 22 secret hashes, 5 volumes, schemas, Keycloak user, answers with the pre-stop token, dead
+  letters. `start` rebuilds the images from cache and recreates the `app-*` containers.
+- **`app/`:** `cp -a generated app`, 112 hashes equal. Scope `backend-scope.json` (contract §6 paths,
+  v2's four pure-data bindings as `configurationPaths`): **71 counted backend files, 6,251 LOC**
+  (runtime 47/5,044, processes 8/764, modules 14/316, features 2/127); excluded 4 bindings and 37
+  outside `src/`; no UI or tests. Biome excludes `v3/generated` and `v3/app`.
+
+**Checks.** `pnpm check` exited 0: **748 tests in 104 files** (lint: only the existing info).
+**E2E: 80 passed (5.8 m)** on the first full run (`v3-build` 2.4 m, `v2-rebuild` 1.9 m);
+`jeeves_e2e` holds only its long-standing TinyURL project. Web build passed (958 ms, the existing
+chunk-size advisory). **Browser** (scripted Chromium by mouse; scratch API 4462 on `jeeves_v312`,
+now dropped, Vite 4472; and API 4463/Vite 4473 on the owner's database for YouTube v3) at
+1440×900 and 1280×800: TinyURL 7 tiles/7 lines in Detailed and Simple; YouTube v3's Preview shows
+Ready 112 files, Processes · 8 · runnable and one Local adapter limit, with no page or console
+error (no duplicate key); projects deleted; the owner's 8 projects keep their revisions.
+
+**Gates (D2).** Processes-off pin passes unchanged. Frozen v2: fresh `export:v2`, 72 files, 70
+byte-identical to `generic-export.tar.gz`; manifest/report equal without inventory. v1
+byte-identical. YouTube study exports unchanged: Simple `9332ea16…89bd` (3008×2752) and Detailed
+`21fe8400…9ae1` (3840×3392), twice at 1440×900, once at 1280×800.
+
+**Cleanup.** Down with volumes, both image tags removed, the copy with its secrets, the token and
+password, scratch exports and ZIPs deleted; my four servers stopped. The owner's 43 containers, 18
+volumes, 9 networks, 31 image rows, restart counts and start times match the record; 42 healthy,
+both edges 200, only 45400–45402 listen in 454xx.
+
+**For V3-13.**
+- Never edit `generated/`; `git diff <this commit> -- field-projects/youtube/v3/generated/` must stay
+  empty. Work in `app/` and add a row to `notes/custom-paths.md` for every path you add or change.
+- Run `app/` from a copy or in place (its `.gitignore` keeps `node_modules`, `dist`, `.runtime`
+  out); pick free ports away from 45400–45402 (45600–45602 were free).
+- Your path in order: the creator check wraps multipart's `principal`; `validate` is the first
+  hook reached (`upload-api-multipart-uploads.hooks.ts`: validate, metadata, response, originalKey,
+  job), then the lifecycle's `metadata`, `job`, `response`. Keycloak's realm `sign-in` has no roles
+  (`roles: []` in `setup.mjs`): the account script must create `creator` and the three users.
+- Keep any browser code in `browser/` (scope-review): a UI file under `src/` backend paths would
+  be counted silently.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

@@ -1649,3 +1649,17 @@ defect showed only with three sign-in guards on one Identity: the resolver repea
 Identity's local Keycloak substitution once per guard, and the dialog keyed its rows by that
 source path. A fact about a tile belongs to the tile; report it once, however many templates use
 it.
+
+## 2026-11-11 V3-12: freeze the export itself, and prove it three ways
+
+A field project's "generated code only" output is the export, not a tidied copy of it. Commit it
+untouched, with its own README, and put the project's explanation beside it. Fix the report
+first: freezing bakes in whatever it repeats. Then prove the folder three ways. A fresh CLI
+export and the studio ZIP's extracted payload must equal it file for file. The ZIP bytes
+themselves can't be compared with a folder. A copy run outside the checkout must leave its
+tracked bytes unchanged. Until a product is written, the running export answers each request and
+message at its first unwritten hook, by name; that is the useful map of what to write next. Judge
+stop and start by the secrets' hashes and the volumes' creation times, not container IDs: `start`
+rebuilds the images from cache and recreates the app containers. Count backend lines from the
+same frozen bytes. Pure-data binding files are configuration; hooks, stubs and the typed slots
+descriptors are code.
