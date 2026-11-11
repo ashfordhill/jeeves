@@ -345,7 +345,8 @@ API**, with the evidence kept. Partial results are reported as partial.
 Each has a recommended default. **Only question 1 goes beyond D1–D8 and the owner's feedback.**
 The rest apply them, and don't pause the coordinator.
 
-1. **BEYOND D1–D8: the link cap.** Optional sign-in on Watch API (D4, feedback 8, and this
+1. **Answered 2026-11-11: the owner approved raising the cap to 5** ("that was a rule made early on").
+   **BEYOND D1–D8: the link cap.** Optional sign-in on Watch API (D4, feedback 8, and this
    unit's brief) needs Watch API → Sign-in. Watch API already has v2's 4 links, the most a tile
    may have (`studio-links.ts:27`; the probe is refused). *Default:* raise
    `laneLimits.outgoingLinks` to 5 in V3-06, with docs and a mouse check of the 5-link Watch API
