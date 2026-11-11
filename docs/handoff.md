@@ -8865,3 +8865,22 @@ TinyURL/Marketplace rebuild. This plan is finished.
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — YouTube v3 plan from owner feedback
+
+This entry is planning only; no code changed. I saved the owner's module add button sketch, added
+the HUMAN_FEEDBACK entry, and wrote the [YouTube v3 plan](plans/youtube-v3/units.md):
+V3-01–V3-17, in five phases.
+
+| Phase | Units | Covers |
+| --- | --- | --- |
+| A — Studio feedback | V3-01 to V3-03 | Undo keys, two tools, Simple and Detailed, kind labels, queue or topic, the legend, the module + in the tile and the inspector |
+| B — Generation gaps | V3-04 to V3-07 | The v3 contract, product tables and published views, the Auth guard template, process settings and robustness |
+| C — Chat | V3-08 and V3-09 | Module-aware tools, patterns and review; design evals |
+| D — YouTube v3 | V3-10 to V3-16 | Design by mouse, the `generated/` output, completion in `app/`, acceptance and benchmark |
+| E — Review | V3-17 | Independent review |
+
+Decisions D1–D8 await the owner's confirmation before V3-01.
+
+I ran no checks: only docs changed. The owner's uncommitted `README.md` and `.docs/` are
+untouched.

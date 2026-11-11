@@ -1,0 +1,428 @@
+# YouTube v3: studio feedback, generation gaps, a better chat agent, then v3
+
+**Status:** planned 2026-11-10 from owner feedback. No unit has started. The owner must confirm
+the **Decisions to confirm** below before V3-01.
+**Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — Studio feedback and YouTube v3](../../HUMAN_FEEDBACK.md)
+· [module add button sketch](../../human-feedback/2026-11-10-module-add-button.png)
+· Follows [tile processes](../tile-processes/units.md) and its [review](../tile-processes/review.md).
+
+There are 17 units, run in order: V3-01 → V3-17. A coordinator gives each unit to a fresh agent.
+That agent does only its own unit on `main` in the primary checkout, commits it and stops.
+
+The work comes in five phases:
+
+| Phase | Units |
+| --- | --- |
+| A — Studio feedback | V3-01 to V3-03 |
+| B — Generation gaps that v3 needs | V3-04 to V3-07 |
+| C — A better chat agent | V3-08 and V3-09 |
+| D — YouTube v3 | V3-10 to V3-16 |
+| E — Review | V3-17 |
+
+## Owner feedback (2026-11-10)
+
+1. **Undo and redo:** Ctrl+Z undoes and Ctrl+Shift+Z redoes, as in other programs.
+2. **"Queue or topic":** the label is unclear. What is a topic?
+3. **Kind labels:** each tile shows its kind in small grey text at the bottom ("database",
+   "service"). Names then don't need the kind word: "Metadata database" becomes "Metadata".
+4. **Adding a module:** replace the drag-out module tab with a **+ button at the bottom inside the
+   tile** that opens and closes the module menu. Clicking away or clicking + again closes it.
+   See the [sketch](../../human-feedback/2026-11-10-module-add-button.png).
+5. **The legend:** drop "Request" from it, because not every solid line is a request. Show that
+   dotted means async. The latest YouTube diagram must follow that convention. Edit it freely;
+   version control keeps the history.
+6. **Views:** rename "Overview" to **"Simple"**. **Detailed** is the default and moves to the left.
+7. **Tools:** remove the Hand tool. The pointer already pans on empty paper, so the tools are
+   **Pointer** and **Connect**.
+8. **Watchers' identity:** some viewers are signed in and some aren't, and the YouTube design
+   doesn't show that. Marketplace will need buyer and seller accounts too.
+9. **Inspector +:** the inspector also gets a **+** for adding a module, using the same command
+   as the board. The module options pop out to the left of the inspector.
+10. **The chat agent:** make it very good at creating and reviewing diagrams.
+11. **Two outputs per field project:**
+    - **generated code only**, for the owner to review and learn from;
+    - **generated code plus the rest of the solution.**
+12. Build **YouTube v3** with all of the above.
+
+## Decisions to confirm
+
+These are the planning defaults. The owner confirms them or changes them before V3-01.
+
+| # | Topic | Default | Alternative |
+| --- | --- | --- | --- |
+| D1 | Product tables and read access (tile-processes review row 2) | **The writer owns its tables, and readers see only what it publishes.** Each module that writes a database gets its own custom SQL file. It is created empty once and never overwritten, and first run and start apply it. A module with a read link to that database gets SELECT on the writer's `published` views only, derived from links with no new forms. This is v2's pattern: Watch saw only the ready-public view and the public totals. | Readers get SELECT on all of the writer's tables. That is simpler, but it exposes private rows and columns. |
+| D2 | Gates | Retire the YouTube Overview PNG hash gate, because tiles visibly change. v1/v2 frozen exports become **check and report**, not stop: they stay in Git as history. | Keep v1/v2 byte gates blocking. |
+| D3 | The link fan | It also opens by **click** (a toggle: click away or click again to close), like the new module menu. Dragging is no longer needed anywhere. | Keep the drag-out link fan. |
+| D4 | Watch identity in v3 | **Optional sign-in** on Watch: an Auth guard set to *optional* verifies a token when present, and otherwise the viewer is anonymous. View events carry the viewer's account when signed in. There are no new viewer features (no history, likes or subscriptions). | Add a signed-in-only feature, such as watch history. |
+| D5 | Settings on stub tiles | Request timeout and Concurrency limit show on every HTTP or worker tile while Runnable processes is on, because the process uses them (tile-processes review row 4). | Show them only once a template derives. |
+| D6 | Chat's tile kinds | Chat offers only the fan's 11 kinds; Gateway, Billing, Redirect and Notifications are refused. Update the eval seeds that used Billing. | Keep chat able to add the legacy kinds. |
+| D7 | The legend | Only **dashed = async** is shown. The expanded help says that solid means a direct call where the caller waits: HTTP, a database or storage read or write, a cache. Dashed means it is sent through a queue or topic and nobody waits. | Show both, as **Direct** and **Async**. |
+| D8 | v3 layout | `field-projects/youtube/v3/` holds `inputs/`, `diagrams/` and `notes/`, plus two outputs: `generated/` (the exact export, never edited) and `app/` (generated plus custom completion). The backend LOC benchmark compares `app/` with `generated/`. | One app directory with a baseline commit, as in v2. |
+
+## Fixed constraints
+
+- **Shared commands:** mouse, chat and generation share commands. Every action works by mouse;
+  hotkeys are extras and never fire inside text fields, where the browser's own text undo works.
+  `jeeves/packages/board` imports no Jeeves code.
+- **Necessary controls only:** a normal control must affect an implemented template, stub or
+  process and represent a necessary user decision. No Advanced forms, no explanatory paragraphs.
+- **Off means unchanged:** with Runnable processes off, exports of existing designs are unchanged
+  unless a unit says otherwise and records it. Generated apps stay standalone and deterministic,
+  with no secrets in source.
+- **Docker hygiene:**
+  - Use your own compose project names and loopback ports.
+  - Never touch the owner's stacks (v1/v2 on 45400–45412), volumes or image tags.
+  - Remove everything you create, including scratch exports holding runtime secrets.
+- **No invented product behaviour:** v3 completion follows v1/v2's product scope (uploads,
+  processing, publication, playback, search, counts), plus D4. It adds nothing else.
+
+## Rules for every unit
+
+- **Read first:** `AGENTS.md`, the latest `docs/handoff.md` entries, this plan (including the
+  confirmed decisions) and the HUMAN_FEEDBACK entry. From V3-05 on, also read
+  `docs/plans/youtube-v3/contract.md`. Do only your unit and stop at its end.
+- **Before editing:**
+  - Run `git status`. The owner may have uncommitted work: `README.md`, `.docs/`,
+    `.jeeves-feedback/` and the mode of `e2e-docker.sh`. Leave it unstaged and untouched.
+  - If a file you must change has uncommitted edits you did not make, stop and report.
+- **Environment:**
+  - Use Node 24 (`~/.nvm/versions/node/v24.21.0/bin` first in `PATH`).
+  - Run Biome or format only from the repo root.
+  - Never stop or restart the owner's dev servers on 4300/4310; use your own ports and scratch
+    databases.
+  - The owner's own edits in the running UI are play. Don't flag them; don't edit owner
+    projects.
+- **Checks:**
+  - `pnpm check`;
+  - `pnpm test:e2e` (or `:docker`);
+  - `pnpm --filter @jeeves/web build`;
+  - a mouse check in the browser at 1440×900 and 1280×800: the TinyURL study renders and the
+    changed behaviour works, with no page errors.
+
+  If an e2e test fails, rerun it alone and report both results. Never weaken a test.
+- **Gates (D2):** run the processes-off pin and the v1/v2 frozen comparison, and report any
+  difference in the handoff.
+- **Docs:** keep current `docs/studio.md`, `docs/studio-settings.md`, `docs/studio-blueprint.md`,
+  `jeeves/CATALOG.md`, `jeeves-generator/README.md` and `docs/chat-evals.md` where affected. Add a
+  dated playbook lesson when you learn something.
+- **Evidence:** at most 4 screenshots per visible unit, under
+  `docs/plans/youtube-v3/evidence/<unit>/`.
+- **Finish:** append a short handoff entry and make one local commit named `V3-nn: <summary>`.
+  Don't push.
+
+---
+
+## Phase A — Studio feedback
+
+### V3-01 — Undo/redo keys, two tools, Simple and Detailed
+
+- **Undo and redo keys:**
+  - **Ctrl/Cmd+Z** runs Undo, and **Ctrl/Cmd+Shift+Z** (and Ctrl+Y) runs Redo.
+  - Both use the same functions and disabled states as the header buttons.
+  - Neither acts while focus is in a text field, select or contenteditable, nor while a dialog
+    is open.
+- **Remove the Hand tool:** remove its button, the H key and every Hand-only code path in web and
+  board. The tools are **Pointer (V)** and **Connect (C)**. Panning by dragging empty paper and
+  zooming by wheel stay as they are.
+- **Views:**
+  - Rename the toggle to **Detailed | Simple**, in that order. Detailed is the default.
+  - Keep a saved per-project choice; old saved "overview" values read as Simple.
+- **Tests**
+  - Key tests: in a field they don't undo; outside one they do.
+  - The toolbar shows two tools.
+  - The default view is Detailed.
+  - Update existing specs that used Hand or "Overview".
+
+**Commit:** `V3-01: undo keys, two tools, simple and detailed`.
+
+### V3-02 — Kind labels, queue or topic, the legend
+
+- **Kind labels:** every tile (Simple faces and Detailed container headers) shows its kind in
+  small grey text at the bottom: "Database", "Service", "Worker", "Search index" and so on. It
+  must stay legible at 100% and not crowd the name.
+- **Queue or topic:** a queue tile's label is **Queue** or **Topic**, from its derived mode
+  (`settings.mode`: work queue or topic). In plain words:
+  - A **queue** gives each message to exactly one consumer. Upload jobs: one transcoder takes each
+    job.
+  - A **topic** copies each message to every subscriber, like a Kafka topic or a RabbitMQ
+    exchange. Publication events go to the search indexer and to anything else that subscribes.
+
+  Reword the kind name, the module descriptions and the inspector text that say "queue or topic"
+  so they read naturally.
+- **The legend (D7):** remove "Request". The collapsed legend shows **dashed = Async**. The
+  expanded help explains solid and dashed in one line each. Keep the direction conventions.
+- **Audit the lines:** in all four studies, check that every dashed line goes through a queue or
+  topic and every solid one is a direct call. Fix the YouTube study's lines where they are wrong
+  (the owner allows editing it). Record what changed.
+- **Names:** the YouTube study's names drop the kind word where the label now shows it
+  ("Metadata database" becomes "Metadata"). Other studies only if trivial.
+- **Gates:** the PNG hash gate is retired (D2). Record a new YouTube Simple export hash as the
+  new reference.
+
+**Commit:** `V3-02: kind labels, queue or topic, legend`.
+
+### V3-03 — A + inside the tile, and in the inspector
+
+- **The module menu on the board ([sketch](../../human-feedback/2026-11-10-module-add-button.png)):**
+  - Remove the drag-out module tab on the left.
+  - In Detailed, every application container shows a small **+** at the bottom, inside the
+    frame. That includes empty Service, Worker and Uploads tiles, which become containers with
+    just the +.
+  - Clicking + toggles a **module menu** popover: grouped Template / Part of a template / Stub,
+    each item with its icon, name, one-line description and status.
+  - Clicking away, pressing Esc or clicking + again closes it. Picking an item runs `addModule`
+    and opens the new module with its name focused.
+  - In Simple, the + appears inside the **selected** application tile.
+- **The inspector:** the tile page's Modules section gets the same **+**. The same menu pops out
+  to the **left of the inspector rail**. One shared component and one command for board and
+  inspector.
+- **The link fan (D3):** it opens by click as a toggle too. Fix it covering its own tile in a
+  narrow canvas (module-authoring review follow-up 6).
+- **Tests**
+  - Add a module from the container + in Detailed, from the selected tile in Simple, and from the
+    inspector +.
+  - Click away closes the menu; + toggles it.
+  - The link fan works by click.
+  - Update the MA06 and MA09 specs (the v2 rebuild must still pass by mouse).
+
+**Commit:** `V3-03: module + in the tile and inspector`.
+
+## Phase B — Generation gaps that v3 needs
+
+### V3-04 — v3 contract (docs only)
+
+Write `docs/plans/youtube-v3/contract.md`, concise, with tables and file:line citations. Start it
+with an Owner summary of at most 12 lines and add Open questions with defaults. The coordinator
+pauses only for questions that go beyond the confirmed decisions.
+
+1. **Product tables (D1):**
+   - the SQL file's path and naming;
+   - which modules get one (writers: Data access, Lifecycle writer, stubs with write links);
+   - apply order and the setup-only owner;
+   - how `published` views are named and granted from read links;
+   - template-owned tables (upload state, lifecycle, counter) versus product tables;
+   - re-export preservation;
+   - processes-off effect.
+2. **The Auth guard template (D4):**
+   - a generic verified identity against the Identity tile (Keycloak locally);
+   - the setting **Sign-in: Required / Optional**;
+   - the principal-or-anonymous value given to the other modules and hooks in its tile;
+   - how it satisfies multipart's `principal` hook;
+   - provisioning of the Keycloak client and realm;
+   - errors (401 when required, anonymous when optional);
+   - reuse in Marketplace for buyers and sellers.
+3. **Settings on process tiles (D5):** which settings and on which kinds.
+4. **The v3 design:** the full table of tiles (names without kind words), links (direct or
+   async, with direction), modules and module links, in the v2-rebuild format.
+   - It includes Watch API's optional Auth guard and the Watch API → Identity link.
+   - View events carry the viewer when signed in.
+   - Product tables come from D1: which module writes `videos` and which views Watch reads.
+   - Search mappings and query preset data.
+   - The useful settings.
+5. **Field-project layout (D8):**
+   - `generated/` (exact export, processes on, never edited) and `app/` (copy plus completion);
+   - how `app/` records its custom paths;
+   - the LOC benchmark scope;
+   - the reused v2 browser.
+6. **Acceptance:** v1/v2's S01–S08 scenarios plus signed-in and anonymous watching. Say exactly
+   what is observed, by mouse in the browser and by API.
+
+Revise V3-05 to V3-16 if the contract changes their scope.
+
+**Commit:** `V3-04: v3 contract`.
+
+### V3-05 — Product tables and published views
+
+Implement contract §1:
+
+- per-writer SQL files (custom-owned, created once, preserved);
+- apply at first run and start;
+- `published` view grants derived from read links;
+- report entries;
+- off means unchanged.
+
+**Tests**
+
+- Generator unit tests.
+- A Docker run of a small design: one writer with a table and a published view, and one reader
+  with a cache-read loader. The reader's filled `load` reads the view. The reader can't read the
+  base table. Restart keeps it all.
+
+**Commit:** `V3-05: product tables and published views`.
+
+### V3-06 — The Auth guard template
+
+Implement contract §2:
+
+- the template;
+- the Sign-in setting in the module page and in chat;
+- Keycloak provisioning;
+- the principal or anonymous value;
+- multipart's `principal` satisfied by the tile's guard.
+
+**Tests**
+
+- Unit tests.
+- A Docker run:
+  - a Required guard answers 401 without a token;
+  - an Optional guard gives anonymous without a token and the principal with a valid one;
+  - an upload with a valid token reaches the next hook.
+
+**Commit:** `V3-06: auth guard template`.
+
+### V3-07 — Process settings and robustness
+
+- **D5:** Request timeout and Concurrency limit show on process tiles while Runnable processes is
+  on, and are consumed.
+- **Tile-processes review follow-ups:**
+  - row 6: each consuming module gets its own subscriber queue when a tile has several on one
+    topic;
+  - row 7: a reached unwritten hook is terminal at once;
+  - row 8: the search indexer probes its index.
+- **A short Docker fault drill** (row 5): stop the broker. A process drains, exits 1 and stays
+  exited, and start recovers it. A stub's own error retries 5 times.
+
+**Commit:** `V3-07: process settings and robustness`.
+
+## Phase C — A better chat agent
+
+### V3-08 — Chat knows modules, patterns and review
+
+- **Tools:**
+  - `listStudioDefinitions` returns the module catalog, with slots, hosts, Template / Part of a
+    template / Stub and the one-line descriptions.
+  - `getDesign` returns module statuses, the processes option, kind labels and queue or topic.
+  - Chat offers only the fan's 11 tile kinds (D6). Update the eval seeds.
+- **Patterns:** `listStudioPatterns` returns curated, module-authored patterns drawn from the
+  design playbook:
+  - the upload pipeline;
+  - the read path with a cache loader;
+  - counting from events;
+  - search fed by events;
+  - optional or required sign-in;
+  - a store with one writer and published views.
+
+  Each pattern lists the tiles, modules, links and their interaction.
+- **Review:** `reviewDesign` adds:
+  - module statuses and their reasons;
+  - required slots left unconnected;
+  - generation findings;
+  - the playbook smells (a store with no writer, a worker writing an unrelated store, a user
+    reaching a store, a long line to a far store);
+  - lines whose dashed or solid style contradicts their channel.
+
+  Each finding names its tile or module and a fix.
+- **The working loop:** the system prompt sets **plan → apply → review → fix**, and chat runs a
+  review after every change it makes and reports what's left. No prompt says "you are an
+  expert"; give it the tools and the loop.
+
+**Commit:** `V3-08: chat knows modules, patterns and review`.
+
+### V3-09 — Chat evals that score real designs
+
+- **Build-from-brief eval:** give chat the v3 brief (contract §4 in prose) and score the design it
+  saves with the structural diff (`v2-diff.ts`, generalised) against the v3 reference. Score
+  tiles, links, modules and module links, and templates resolved, with a 0–100 score per area.
+- **Review eval:** seed designs with known defects (one per smell and status class) and score
+  whether `reviewDesign` and chat name each one and propose its fix.
+- **Running it:**
+  - recorded replay, as the RF06 suite does;
+  - live runs only with the existing explicit paid opt-in;
+  - record a baseline score with the current provider in `docs/evals/`.
+- `docs/chat-evals.md` explains how to run it and how to read the scores.
+
+**Commit:** `V3-09: chat design evals`.
+
+## Phase D — YouTube v3
+
+### V3-10 — Design v3 by mouse
+
+- Build the contract §4 design **by mouse** in a blank project, in Detailed, with the new + and
+  Connect.
+- Check: the structural diff against contract §4 has 0 unexpected rows, and Generate → Preview
+  resolves the expected templates with no findings.
+- Keep the project in the owner's database as **"YouTube v3"**.
+- Save its snapshot to `field-projects/youtube/v3/{inputs,diagrams}`: the design, the blueprint,
+  and Detailed and Simple PNG exports.
+- Note how many mouse steps it took and what was awkward.
+
+**Commit:** `V3-10: design v3 by mouse`.
+
+### V3-11 — Generated output
+
+- Export v3 with Runnable processes on into `field-projects/youtube/v3/generated/`. Commit it
+  untouched; this is the owner's generated-code-only deliverable. Add a short `README.md` saying
+  what it is and how to run it.
+- Check, from an outside copy:
+  - install, build and first-run;
+  - every process healthy;
+  - each missing hook or stub answers "Not implemented" by name.
+- Copy `generated/` to `app/` as the starting point for completion, and record the baseline in
+  the benchmark notes.
+
+**Commit:** `V3-11: v3 generated output`.
+
+### V3-12 to V3-15 — Complete v3 in `app/`
+
+Each unit fills the product hooks, stub bodies and product SQL for one area, in the order a
+request reaches them. Each one reruns its path in Docker after each step and keeps
+`generated/` untouched. They reuse v1/v2 product code only where it fits the hook interfaces.
+They record what was written and why.
+
+| Unit | Area |
+| --- | --- |
+| V3-12 | Upload: guard-required creators, the multipart hooks, upload metadata, the job payload |
+| V3-13 | Processing and lifecycle: transcoder codecs, lifecycle codecs, publication |
+| V3-14 | Watch: video details from published views, counts, view events with the optional viewer, optional sign-in |
+| V3-15 | Search, plus the browser: mappings, the indexer and the query; the v2 browser reused, with optional sign-in for watchers |
+
+**Commits:** `V3-12: complete upload`, `V3-13: complete processing`, `V3-14: complete watch`,
+`V3-15: complete search and browser`.
+
+### V3-16 — End-to-end acceptance and benchmark
+
+- **Independent run:** copy `app/` outside the checkout and run it on its own project and ports.
+  Observe by mouse in the browser:
+  - creator sign-in and a multipart upload with resume;
+  - processing, publication and playback;
+  - search;
+  - counts for a signed-in watcher and for an anonymous one.
+
+  Stop and start keep the data. Record what was observed and what was not.
+- **Backend LOC benchmark:** `app/` against `generated/` (D8), backend only, following
+  `docs/field-projects/source-loc.md`.
+- **Owner review pack:** `field-projects/youtube/v3/notes/review-pack.md`, covering how to run
+  each output, what's generated versus custom, and the screenshots.
+
+**Commit:** `V3-16: v3 acceptance and benchmark`.
+
+## Phase E — Review
+
+### V3-17 — Independent review
+
+A fresh agent adds no features. It checks the owner's feedback items 1–12 and D1–D8 by mouse and
+against the evidence. It fixes small defects, with tests, and writes
+`docs/plans/youtube-v3/review.md` with ranked follow-ups, including the Marketplace revisit with
+buyer and seller accounts.
+
+**Commit:** `V3-17: review v3`.
+
+## Risks and stop conditions
+
+- **Contract (V3-04):** if a decision can't be met without inventing product behaviour or a
+  forms-based "Advanced" UI, stop and report.
+- **Docker:** if Docker or images are unavailable, report it. Do not substitute mocks for the
+  acceptance runs.
+- **Completion (V3-12 to V3-15):** if a hook interface can't express a v1/v2 behaviour, record it
+  as a template gap; don't patch generated files in `generated/`.
+- **Chat evals (V3-09):** live provider calls only with explicit opt-in. Never store keys.
+
+## Coordinator prompt
+
+> You are a fresh agent in `/home/ash/github/jeeves`. Do unit **V3-nn** of
+> `docs/plans/youtube-v3/units.md`, and only that unit. First read `AGENTS.md`, the latest
+> `docs/handoff.md` entries, this plan (owner feedback, confirmed decisions, constraints, rules),
+> the HUMAN_FEEDBACK entry, and (from V3-05) `docs/plans/youtube-v3/contract.md`. Follow the unit,
+> run every check, append a handoff entry, make one local commit named as the unit says, and
+> stop. If a stop condition applies, or a file you must change has someone else's uncommitted
+> edits, report and stop without committing.

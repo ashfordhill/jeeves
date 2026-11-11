@@ -138,3 +138,21 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Resolution update (2026-11-10):** `TP07: provisioning for stubs`: with Runnable processes on, every database, cache, queue, bucket and search index a stub is connected to is now set up for its tile with the link's access (a database another owner writes is read only, through what that owner publishes), and each stub gets real clients, each checked once at startup. A store on another provider isn't set up and the stack isn't runnable. In Docker the stub stack's every resource existed, every check passed, every process was healthy, stubs still answered "Not implemented", and stop and start kept the credentials and data. Preview lists what is provisioned. TP08–TP09 remain.
 - **Resolution update (2026-11-10):** `TP08: run the rebuild`: with Runnable processes on, the stub stack and v2 built from modules (with v2's useful values) both came up healthy in Docker, every process answered as the contract says (stubs and missing hooks "Not implemented", naming the hook; the two search templates placeholders), every message landed in its `.failed` with the processes still healthy, and stop and start kept credentials, data and dead letters. Ticking the box by mouse on v2 exports the same 98 files. Off, exports are unchanged. The run only reaches the first unwritten hook on each path (5 of 37); the [evidence](plans/tile-processes/evidence/tp08/README.md) ranks what it can't show yet. TP09 remains.
 - **Resolution update (2026-11-10):** `TP09: review tile processes`: an independent [review](plans/tile-processes/review.md) found all six decisions delivered (by mouse at both sizes, and in a fresh Docker run of the stub stack); off, frozen v2, v1 and the YouTube PNG are unchanged. It fixed a test race behind TP08's one e2e failure, and template dead letters now say `NOT_IMPLEMENTED` with a `started` log line per template. Remaining: filling hooks past the first, and owner calls on product table grants, YouTube v3, tile settings and the TinyURL/Marketplace rebuild.
+
+## 2026-11-10 — Studio feedback and YouTube v3
+
+[Module add button sketch](human-feedback/2026-11-10-module-add-button.png)
+
+- **Problem:**
+  - Ctrl+Z and Ctrl+Shift+Z don't undo or redo.
+  - "Queue or topic" is unclear.
+  - Tiles don't show their kind, so names repeat it.
+  - Adding a module is a drag-out tab.
+  - The legend calls every solid line a "Request".
+  - "Overview" is the default view, and there's a redundant Hand tool.
+  - YouTube has no identity for watchers.
+  - Modules can't be added from the inspector.
+  - The chat agent isn't strong at designs.
+  - Field projects need two outputs: generated code only, and the complete solution.
+- **Decision:** undo and redo keys; Pointer and Connect only; Detailed (the default) and Simple. Grey kind labels on tiles, and Queue or Topic by mode. The legend shows only async. A module + inside the tile and in the inspector, sharing one command. Optional sign-in for watchers. Better chat tools with design evals. Build YouTube v3 with `generated/` and `app/` outputs. The owner allows editing the YouTube diagram freely.
+- **Resolution:** planned as V3-01–V3-17 in the [YouTube v3 plan](plans/youtube-v3/units.md), with eight decision defaults awaiting the owner's confirmation. Nothing is implemented yet.
