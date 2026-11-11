@@ -16,6 +16,16 @@ import { INSTRUCTIONS, toolDefinitions } from "../chat/tools.ts";
 import { openTestDb } from "../test-support.ts";
 import { cases, EVAL_VERSION, LIMITS, MODEL } from "./cases.ts";
 import {
+  checkScripted,
+  designMarkdown,
+  parseModels,
+  readDesignReport,
+  replayDesignReport,
+  runLive,
+  runScripted,
+} from "./design-runner.ts";
+import { scriptedArms } from "./design-scripts.ts";
+import {
   baselineInstructions,
   baselineTools,
   type CaseResult,
@@ -31,6 +41,9 @@ import { stable } from "./score.ts";
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 const defaultReport = fileURLToPath(
   new URL("../../../../../docs/evals/rf06/live.json", import.meta.url),
+);
+const defaultDesignReport = fileURLToPath(
+  new URL("../../../../../docs/evals/v3-10/live.json", import.meta.url),
 );
 export type Report = {
   version: string;
@@ -135,10 +148,83 @@ export function compact(report: Report) {
   }
   return `${lines.join("\n").trimEnd()}\n`;
 }
+/** Runs `body` with `fetch` throwing, so nothing offline can reach a network. */
+async function offline<T>(body: () => Promise<T>): Promise<T> {
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    throw new Error("Network is forbidden in offline eval replay");
+  };
+  try {
+    return await body();
+  } finally {
+    globalThis.fetch = oldFetch;
+  }
+}
 async function main() {
   const args = process.argv.slice(2);
-  const path = resolve(args.find((a) => a.startsWith("--report="))?.slice(9) ?? defaultReport);
-  if (args.includes("--live")) {
+  const flag = (name: string) =>
+    args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+  const live = args.includes("--live");
+  const reportArg = flag("report");
+  // Live runs one suite (RF06 unless --suite=design); offline runs both unless one is named.
+  const suite = flag("suite") ?? (live ? "rf06" : "all");
+  if (!["all", "rf06", "design"].includes(suite))
+    throw new Error(`Unknown --suite=${suite}; use rf06 or design`);
+  const path = resolve(reportArg ?? defaultReport);
+  if (live && suite === "design") {
+    if (!args.includes("--allow-paid-api"))
+      throw new Error(
+        "Live run requires --allow-paid-api (paid external API with synthetic data only)",
+      );
+    const models = parseModels(flag("models"));
+    const target = resolve(reportArg ?? defaultDesignReport);
+    const { db, close } = await openTestDb();
+    try {
+      const report = await runLive(db, models, target);
+      console.log(designMarkdown(report));
+    } finally {
+      await close();
+    }
+    return;
+  }
+  if (live && suite === "all")
+    throw new Error("A live run takes one suite: --suite=rf06 or --suite=design");
+  if (!live && !reportArg && suite !== "rf06") {
+    // The design evals' scripted arms, offline (V3-10).
+    const record = flag("record");
+    await offline(async () => {
+      const { db, close } = await openTestDb();
+      try {
+        const report = await runScripted(db, scriptedArms);
+        for (const line of checkScripted(report)) console.log(line);
+        if (record) {
+          const target = resolve(record);
+          await mkdir(resolve(target, ".."), { recursive: true });
+          await writeFile(target, `${JSON.stringify(report, null, 2)}\n`);
+          await writeFile(target.replace(/\.json$/, ".md"), designMarkdown(report));
+          console.log(`recorded ${target}`);
+        }
+      } finally {
+        await close();
+      }
+    });
+    if (suite === "design") return;
+  }
+  if (!live && reportArg) {
+    const design = await readDesignReport(path);
+    if (design) {
+      await offline(async () => {
+        const { db, close } = await openTestDb();
+        try {
+          await replayDesignReport(db, design);
+        } finally {
+          await close();
+        }
+      });
+      return;
+    }
+  }
+  if (live) {
     if (!args.includes("--allow-paid-api"))
       throw new Error(
         "Live run requires --allow-paid-api (paid external API with synthetic data only)",
@@ -256,7 +342,7 @@ async function main() {
     } finally {
       await close();
     }
-  } else if (!args.some((arg) => arg.startsWith("--report="))) {
+  } else if (!reportArg) {
     const oldFetch = globalThis.fetch;
     globalThis.fetch = async () => {
       throw new Error("Network is forbidden in offline eval replay");

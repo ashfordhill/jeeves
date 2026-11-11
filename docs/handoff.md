@@ -9593,3 +9593,86 @@ with `publication`.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-10: chat design evals
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (D6, owner feedback 10 and 14) and
+[contract](plans/youtube-v3/contract.md) §5. **Offline only: no live or paid model call.** Docs:
+`chat-evals.md` (Design evals: offline, live, reading the scores, cost), the
+[offline results](evals/v3-10/README.md) with the recorded [scripted report](evals/v3-10/scripted.json),
+a playbook lesson, the plan's status and the HUMAN_FEEDBACK resolution.
+
+- **v3 reference** `spec/src/fixtures/v3-modules.ts`: contract §5 as data in V2_TILES' format
+  (`V3_ACTIONS`, `V3_TILES` 31 steps, `V3_MODULES` 26 with names and descriptions,
+  `V3_CONNECTIONS` 30, `V3_VALUES` 8, `V3_TEMPLATES` 13) and `buildV3Reference(installed)`: 98
+  commands through the supported builder, IDs following names, then Runnable processes. Test
+  (5): 21 tiles, 33 Simple lines (2 user, 6 entries, 25 links), 8 dashed all through a channel,
+  Upload jobs a Queue and the three event channels Topics, Watch API 5 links, 26 modules (24
+  Template; View count reader and View publisher Stub), 30 module links, 11 templates + 2 stubs,
+  resolver findings `[]`, no structural finding, the review's 2 long-line checks only.
+- **Design diff** `fixtures/design-diff.ts`: `designFacts`/`designDiff(reference, candidate,
+  {installed, moduleRenames, candidateNames})`/`designDiffReport(rows, intended)`, rows
+  `{area, key, reference?, candidate?}`, `only: "reference" | "candidate"`. A module is keyed by
+  its name unless two share it (then `Tile / Name`), a tile by its name (with `[id]` when shared);
+  it also compares `generation.processes`. `v2-diff.ts` is now v2's adapter (renames, intended
+  list, `v2Diff`, `v2DiffReport`): the v2 tests, `studio-rekey.test.ts` and `v2-rebuild.spec.ts`
+  pass unchanged. `v3Diff`/`v3DiffReport` with an empty `v3IntendedDifferences`.
+- **Evals** `apps/server/src/eval/design-*.ts`: the [brief](../jeeves/apps/server/src/eval/fixtures/v3-brief.md)
+  (§5 in prose, no IDs or command syntax, tested); nine review seeds, one per V3-09 finding class;
+  `design-score.ts` (rules in its header and in `chat-evals.md`: 5 build areas at
+  100 × credit ÷ max(counts), total their mean, ½ credits for another kind/name/style/lane, names
+  case-insensitive without a trailing kind word; review 50 × named + 50 × fixed);
+  `design-harness.ts` (production ChatService, recording and replaying providers, sizes in the
+  OpenAI wire form); `design-scripts.ts` (good, patterns, bad); `design-runner.ts` (scripted,
+  live, replay, Markdown, `checkScripted`). `runner.ts` takes `--suite=rf06|design`, `--record=`,
+  `--models=`; `--report=` replays either suite by the file's `suite`.
+
+**Offline scores:** good build 100 (every area) and review 100; patterns 90.7 (tiles 100, links
+93.9, modules 96.2, module links 96.7, templates 66.7); bad 1.7 and 5.6 (50 on the advice case).
+**Size:** the good run is 39 requests, 5.2 MB sent (84% the repeated instructions and 113 KB of
+strict tools) ≈ 1.3–1.8 M input tokens, ≈ 4–5 k output; the bound 160 requests ≈ 9–12 M.
+
+**Live command (not run; needs the owner's go-ahead):** `pnpm eval:chat --suite=design --live
+--allow-paid-api --models=openai:gpt-5.4-mini-2026-03-17,openai:gpt-5.5
+--report=/abs/design-live.json` (key from `OPENAI_API_KEY` only; Codex: `env -u OPENAI_API_KEY -u
+CODEX_API_KEY … --models=codex:…`). Checked offline that it refuses without
+`--allow-paid-api` and with the key unset ("no requests sent").
+
+**Deviations.** (1) The 8 values are scored in the templates area (they are its normal controls),
+not as a sixth area. (2) `user-reaches-store` and `line-style` seeds can't be saved through an edit
+(LANE_INVALID), so the harness stores them as revision 1 directly, as a design saved before the
+rule. (3) The generation seed is a Sign-in selection pinned to an uninstalled 0.0.1 (fixed by
+reconnecting the guard): an out-of-range D5 value (Request timeout 99999999 with processes on)
+gives a generation finding no command can fix, because the invalid value hides its own control
+(a finding for V3-18). (4) `studioStudySeedOperations` leaves out `generation`; the design harness
+adds `setGeneration` (RF06's harness is unchanged). (5) "Named" is a subject-and-term match on the
+model's own text, an evidence signal like RF06's.
+
+**Checks.** `pnpm check` exited 0: **747 tests in 103 files** (+26, +3 files; lint: only the
+existing info). **E2E: 79 passed (5.0 m)** on the first full run, `v2-rebuild.spec.ts` included;
+`jeeves_e2e` has no leftover E2E project. Web build passed (1.78 s, the existing chunk-size
+advisory). `pnpm eval:chat`: the design arms deterministic and discriminating, then RF06's 12
+replays; `--suite=rf06` alone too; the recorded scripted report replays identically; RF06's Codex
+report still stops at `Replay mismatch video-build/rf00-ablation: design`, as before. **Browser**
+(scratch Playwright on my API 4420, scratch DB `jeeves_v310`, now dropped, and Vite 4430): TinyURL
+foundation 7 tiles/7 lines in Detailed and Simple at 1440×900 and 1280×800, no page or console
+errors. No UI changed, so there is no new mouse behaviour.
+
+**Gates (D2).** Off pin passes unchanged; v1 byte-identical (`generator.test.ts`). Frozen v2:
+fresh `export:v2`, 72 files, 70 byte-identical to `generic-export.tar.gz`; `manifest.json` and
+`report.json` equal without the source and emitter inventory, which is still 162 paths (every new
+spec file is under `fixtures/`, which the inventory excludes). YouTube exports unchanged: Simple
+`9332ea16…89bd` (3008×2752; twice at 1440×900, once at 1280×800), Detailed `21fe8400…9ae1`
+(3840×3392, at both sizes).
+
+**For V3-11.** Build from `V3_TILES`, `V3_MODULES`, `V3_CONNECTIONS` and `V3_VALUES` (kinds are
+IDs: the fan's and menu's names are `studioDefinitions[kind].name` and
+`studioComponentDefinitions[kind].name`; "⇢" rows are `row:` entries). Sign-in comes from Publish
+(an entry) before its three connects; View publisher is a Custom with two `uses` drags; values
+after the modules, then Runnable processes. Check `v3DiffReport(v3Diff(saved, installed)).unexpected`
+is `[]`; add any intended difference to `v3IntendedDifferences` with its reason.
+`scoreBuild(v3ModuleDesign(installed), saved, installed, V3_VALUES)` should give 100. The
+recorded scripted report drifts once the prompt, a tool or a seed changes: record a new one.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

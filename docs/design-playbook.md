@@ -1617,3 +1617,20 @@ that strands nothing. Separate what must be fixed from advice: a long line to a 
 the end of a pipeline is worth a look, never a tile to shorten it. Measure the cost honestly: a
 dry-run tool that repeats the whole command union doubles every request, so it takes only the
 commands that change structure and statuses.
+
+## 2026-11-11 V3-10: score the saved design by name, one defect per seed
+
+Judge a chat-built design by what it saves, against a reference built from the same commands the
+mouse sends, and compare by name so IDs never matter. Match tiles by name first (case and a
+trailing kind word aside: "Metadata database" is Metadata), then pair the only tile of a kind left
+on both sides for half credit, and divide each area by the larger of the two counts, so an extra
+tile costs as much as a missing one. The curated patterns get v3's shape exactly (every tile and
+almost every module) but not the brief's specifics: a Custom module where the pattern puts an
+Event publisher, a second entry for Sign-in, the actions' names, the values and Runnable
+processes. Score those separately (templates and values), or a pattern-only build looks finished.
+A review seed must hold one defect and nothing else to fix; a design that breaks a lane rule can't
+be saved through an edit any more, so seed it as an old saved revision, and expect evals to find
+dead ends: an out-of-range process value hides its own control, so its generation finding can't
+be fixed by mouse or chat. Measure cost in the provider's wire form (strict tools are 31% larger
+than the canonical schemas): the instructions and tools every request repeats are 84% of what a
+run sends.
