@@ -329,7 +329,7 @@ scripts:
 
 | Store | Provisioned for each stub tile |
 | --- | --- |
-| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public` only: stubs own no tables. Read only of another owner's database: SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
+| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, and SELECT on its `published` views (product tables, below). A stub that writes it also has its own schema there. Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
 | Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
 | Cache | `cache-<id>` (Valkey) and its password |
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
@@ -341,6 +341,43 @@ provider isn't unspecified or self-hosted, or whose engine isn't unspecified or 
 `provider-<module>-<tile>`, so the stack isn't runnable. Identity isn't provisioned for stubs
 (a template that binds one holds its tile's only Auth guard), and nor are CDN or External API
 tiles.
+
+**Product tables and published views** (v3 contract §1). With the option on, every module that
+writes a database other than through an Event publisher's outbox gets its own SQL file,
+`infra/postgres/<database id>/modules/<module id>.sql`: a writing Data access (a stub's or a
+template part's), a Lifecycle writer, and any stub whose link writes the database. The resolver
+lists them per process (`writers`, `NormalizedModuleWriter`): a template's module whose link fills
+a database field its template writes, and a stub's link with its `stubLinkUse` access, so a store
+another owner holds is read only and gives no file. The file is a `generated-extension` with a
+header only: the module, its tile and database, its schema `m_<module sql>`, the logins that may
+read `published`, and the database's template tables and views by qualified name. It is yours,
+like a hooks file: export never overwrites it, so carry it over to a fresh export.
+
+`infra/local.json` lists each database's writers (`databases[].modules`: module, host, schema,
+file), and the foundation substitutes `migrate.mjs`'s product step exactly once, refusing an
+asset whose anchor isn't there once; with the option off the asset keeps its bytes. The step is
+`scripts/products.mjs`, inside the database's one setup transaction run by its setup-only owner
+`o_<db>`: after the template migrations and views it creates `published` and each `m_<module>`
+(no PUBLIC access), runs each writer's file in module-ID order with `SET LOCAL search_path TO
+m_<module>` (so unqualified names land there), and after the template grants it grants again.
+Every runtime login on the database gets USAGE on `published` and SELECT on all its views, with
+default privileges for views added later; only the writer's tile login gets USAGE on its module
+schema and SELECT, INSERT, UPDATE and DELETE on its tables (USAGE, SELECT and UPDATE on its
+sequences), also with default privileges. No login can create objects, and a reader can't read
+a writer's tables: only what it publishes. This gives the cache read's source login its read.
+
+**The file runs at every `first-run` and `start`**, not once, so an edited file applies at the
+next start (the composition hash covers the list, not the files' content, and `start` rebuilds
+the setup image). Keep it re-runnable: `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE … ADD COLUMN IF
+NOT EXISTS`, `INSERT … ON CONFLICT DO NOTHING`, `CREATE OR REPLACE VIEW`, and no `BEGIN` or
+`COMMIT`. Keep one definition per view and edit it in place: `CREATE OR REPLACE VIEW` may only add
+columns at the end, so an older, narrower definition left earlier in the file fails the next run.
+A failing file rolls the whole database back, and setup stops naming it (`Product SQL <file>
+failed: …`). Template tables stay their templates' (uploads, assets, receipts, outboxes, counter
+totals): a product file never creates them, and a template never touches `m_*` or `published`.
+Each writer's row in `report.modules` gains `sql` (`[{database, file, schema}]`, one per database
+it writes), and a stub store's `provisioned` text says `SELECT on published` and names the
+stub's own schema.
 
 **Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind
 the stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:

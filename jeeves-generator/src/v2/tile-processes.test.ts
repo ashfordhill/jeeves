@@ -80,6 +80,8 @@ describe("local.tile-processes", () => {
     expect(paths(bundle).filter((path) => !paths(off).includes(path))).toEqual([
       "infra/edge/nginx.conf",
       "infra/postgres/links-db/000-foundation.sql",
+      "infra/postgres/links-db/modules/link-reader.sql",
+      "scripts/products.mjs",
       "src/modules/entry.ts",
       "src/processes/links-api.ts",
       "src/processes/stats-api.ts",

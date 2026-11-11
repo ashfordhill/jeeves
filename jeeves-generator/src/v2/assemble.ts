@@ -13,6 +13,7 @@ import { type V2Input, validateV2Input } from "./input.ts";
 import {
   type V2EmitterIdentity,
   type V2Gap,
+  type V2ModuleSql,
   type V2ProcessReport,
   type V2Registry,
   v2Compare,
@@ -57,6 +58,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
   const gaps: (V2Gap & { emitter: string })[] = [];
   const resolved: { emitter: string; id: string }[] = [];
   const processRows: (V2ProcessReport & { emitter: string })[] = [];
+  const productSql: V2ModuleSql[] = [];
   for (const emitter of registry.emitters) {
     const rendered = emitter.render(
       freeze({
@@ -81,6 +83,13 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
         "Only the installed processes owner reports processes, and only with Runnable processes on.",
       );
     processRows.push(...(rendered.processes ?? []).map((row) => ({ ...row, emitter: emitter.id })));
+    if (rendered.sql?.length && (!emitter.provides.runtime || !model.processes))
+      refuse(
+        "INVALID_PRODUCT_SQL",
+        emitter.id,
+        "Only the runtime owner reports product SQL, and only with Runnable processes on.",
+      );
+    productSql.push(...(rendered.sql ?? []));
     for (const file of rendered.files) {
       if (file.path.toLowerCase() === ".jeeves" || file.path.toLowerCase().startsWith(metadata))
         refuse("RESERVED_OUTPUT_PATH", file.path, "The assembler owns provenance output.");
@@ -140,6 +149,17 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
       });
   }
   assertDistinctPaths(files.map((file) => file.path));
+  for (const row of productSql)
+    if (
+      !records.some(
+        (record) => record.path === row.file && record.ownership === "generated-extension",
+      )
+    )
+      refuse(
+        "MISSING_CONSUMER_OUTPUT",
+        row.file,
+        "Report only product SQL files actually emitted.",
+      );
   for (const hook of resolved) {
     const index = gaps.findIndex((gap) => gap.emitter === hook.emitter && gap.id === hook.id);
     if (index < 0)
@@ -293,6 +313,12 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
                   .sort(v2Compare),
           unconnected: status.unconnected,
           ...(status.reason && { reason: status.reason }),
+          // Its own SQL file and schema in each database it writes (v3 contract, section 1).
+          ...(productSql.some((row) => row.module === status.module) && {
+            sql: productSql
+              .filter((row) => row.module === status.module)
+              .map(({ database, file, schema }) => ({ database, file, schema })),
+          }),
         };
       })
     : undefined;

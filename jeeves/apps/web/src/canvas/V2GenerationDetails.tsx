@@ -18,7 +18,9 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
             ? " Required hooks remain incomplete. This ZIP is an extension starting point; every application tile still starts as its own process."
             : " Required hooks remain incomplete. This ZIP is an extension starting point; unfinished application services do not start."}
       </p>
-      {processes ? <GenerationProcesses processes={processes} /> : null}
+      {processes ? (
+        <GenerationProcesses processes={processes} modules={data.report.modules ?? []} />
+      ) : null}
       <details open>
         <summary>Support & custom gaps · {required.length} required</summary>
         <ul>
@@ -128,12 +130,14 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
   );
 }
 
-/** Each application tile's process: its service, shape, edge path, what it answers and what is
- * provisioned for its stubs. */
+/** Each application tile's process: its service, shape, edge path, what it answers, what is
+ * provisioned for its stubs and each writer module's own SQL file. */
 function GenerationProcesses({
   processes,
+  modules,
 }: {
   processes: NonNullable<V2GenerationPreview["report"]["processes"]>;
+  modules: NonNullable<V2GenerationPreview["report"]["modules"]>;
 }) {
   const edge = processes.tiles.flatMap((row) => (row.edge ? [row.edge] : []));
   return (
@@ -156,6 +160,9 @@ function GenerationProcesses({
             `${item.name} (${item.kind}, ${item.access})`;
           const provisioned = row.stores.filter((item) => item.provisioned);
           const unsupported = row.stores.filter((item) => item.unsupported);
+          const sql = modules
+            .filter((item) => item.host === row.tile)
+            .flatMap((item) => (item.sql ?? []).map((file) => `${item.name} → ${file.file}`));
           return (
             <li key={row.tile}>
               {row.name}{" "}
@@ -168,6 +175,7 @@ function GenerationProcesses({
               {unsupported.length ? (
                 <p>Not provisioned: {unsupported.map(store).join(", ")}</p>
               ) : null}
+              {sql.length ? <p>Product SQL: {sql.join(", ")}</p> : null}
             </li>
           );
         })}

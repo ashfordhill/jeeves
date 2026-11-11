@@ -661,6 +661,62 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
   expect(errors).toEqual([]);
 });
 
+test("with Runnable processes on, Preview lists each writer module's own product SQL file", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Product SQL", [
+    ["Consume", "Microservice"],
+    ["Microservice", "Database"],
+  ]);
+  try {
+    // Microservice created Database, so its Data access writes it (v3 contract, section 1).
+    await tile(page, "Microservice").click();
+    await addModule(page, "Microservice", "Data access");
+    await page.getByRole("button", { name: "Detailed", exact: true }).click();
+    await ready(page);
+    await page.keyboard.press("c");
+    await dragOnto(page, dot(page, "microservice-data-access"), tile(page, "Database"));
+    await page.mouse.up();
+    await expect(dot(page, "microservice-data-access")).toHaveAttribute("data-connected", "true");
+    await page.keyboard.press("v");
+    await page.getByRole("button", { name: "Generate project", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
+    const box = dialog.getByRole("checkbox", { name: "Runnable processes" });
+    await box.click();
+    await expect(box).toBeChecked();
+    const result = page.waitForResponse((response) =>
+      response.url().endsWith("/experimental-generation/preview"),
+    );
+    await dialog.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    const preview = await (await result).json();
+    expect(preview.report.findings).toEqual([]);
+    const file = "infra/postgres/database/modules/microservice-data-access.sql";
+    expect(
+      preview.report.modules.map((item: { module: string; sql?: unknown }) => [
+        item.module,
+        item.sql,
+      ]),
+    ).toEqual([
+      [
+        "microservice-data-access",
+        [{ database: "database", file, schema: "m_microservice_data_access" }],
+      ],
+    ]);
+    const rows = dialog
+      .getByRole("list", { name: "Runnable processes", exact: true })
+      .getByRole("listitem");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.nth(0)).toContainText(`Product SQL: Data access → ${file}`);
+    await expect(rows.nth(0)).toContainText("Provisioned: Database (database, read-write)");
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
 test("Generate project lists each module's status and previews its stubs", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));

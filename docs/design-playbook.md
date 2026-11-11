@@ -1533,3 +1533,19 @@ kind will become in that tile (Template, Part of a template, Stub), as the owner
 give each kind its one-line description in full: a menu at screen size has room a fan's caption
 did not. Click-away, a second click, the wheel and Escape all close it, and none of them changes
 the design.
+
+## 2026-11-11 V3-05: a writer owns its tables, and readers see only what it publishes
+
+Give each module that writes a database its own schema and its own SQL file, and let the others
+on that database read only the views it puts in a shared `published` schema. The writer's tile
+alone uses its tables; every other login gets SELECT on `published` and nothing else of the
+writer, so a reader can't come to depend on a private column, and the cache read's loader reads a
+view, not a table (a Docker run showed `permission denied for schema m_item_writer` for the
+reader and the record through its filled `load`). Template tables stay their templates': the
+product file reads them, never creates them. Because completion edits the file between runs, the
+file runs at every start rather than once, so it must be re-runnable, and that has a trap: `CREATE
+OR REPLACE VIEW` may only add columns at the end, so an edit appended below an older, narrower
+definition of the same view applies once and then fails the next start. Keep one definition per
+view and edit it in place. A failing file must roll the whole database back and name itself, so
+nothing half-applies. Who writes comes from the links and ownership, not a form: a store another
+owner holds is read only, even when its link draws a write.

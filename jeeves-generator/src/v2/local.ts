@@ -1,4 +1,9 @@
-import { generationCapabilities, generationLocalIdentity, generationRuntime } from "@jeeves/spec";
+import {
+  generationCapabilities,
+  generationLocalIdentity,
+  generationRuntime,
+  studioComponentDefinitions,
+} from "@jeeves/spec";
 import { jsonFile, pointerPart, refuse } from "../json.ts";
 import { type StubStore, stubStores, type V2LocalContribution } from "./local-contract.ts";
 import {
@@ -29,6 +34,8 @@ type Database = {
   owner: string;
   secret: string;
   migrations: string[];
+  /** Runnable processes only: each writer module's SQL file and schema (v3 contract, §1). */
+  modules?: { module: string; host: string; schema: string; file: string }[];
 };
 const composeVariable = (name: string) => `\${${name}:?Set ${name}}`;
 const assets = "jeeves-generator/templates/local-v2/assets/";
@@ -60,14 +67,45 @@ const processGate = [
   ],
 ] as const;
 function gateOnProcesses(bytes: Uint8Array) {
+  return substituteOnce(bytes, "scripts/local.mjs", processGate, "The startup gate");
+}
+/** With Runnable processes on, `migrate.mjs` runs the product step (v3 contract, section 1):
+ * `scripts/products.mjs` after the template views, and its grants after the template grants. */
+const productStep = [
+  [
+    'import { hash, plan, quote, secret } from "./common.mjs";\n',
+    'import { hash, plan, quote, secret } from "./common.mjs";\nimport { applyProductSql, grantProductSql } from "./products.mjs";\n',
+  ],
+  [
+    "      for (const login of runtime) {\n        // Keycloak owns",
+    "      // Product tables: each writer module's own SQL file, re-run every time in its schema.\n      await applyProductSql(owner, db, quote);\n      for (const login of runtime) {\n        // Keycloak owns",
+  ],
+  [
+    '      await owner.query("COMMIT");\n',
+    '      await grantProductSql(owner, db, runtime, quote);\n      await owner.query("COMMIT");\n',
+  ],
+] as const;
+export function migrateWithProducts(bytes: Uint8Array) {
+  return substituteOnce(bytes, "scripts/migrate.mjs", productStep, "The product step's anchor");
+}
+/** Replaces each anchor of an asset exactly once, and refuses an asset where one isn't. */
+function substituteOnce(
+  bytes: Uint8Array,
+  path: string,
+  pairs: readonly (readonly [string, string])[],
+  what: string,
+) {
   let text = new TextDecoder().decode(bytes);
-  for (const [from, to] of processGate) {
+  for (const [from, to] of pairs) {
     if (text.split(from).length !== 2)
-      refuse("INVALID_ASSET", "scripts/local.mjs", "The startup gate must appear exactly once.");
+      refuse("INVALID_ASSET", path, `${what} must appear exactly once.`);
     text = text.replace(from, to);
   }
   return text;
 }
+/** A writer module's product SQL file in its database (v3 contract, section 1). */
+const productSqlPath = (database: string, module: string) =>
+  `infra/postgres/${database}/modules/${module}.sql`;
 
 /** Project owner composes specific local contributions. Contributors never write shared files. */
 export function createLocalFoundation(
@@ -353,6 +391,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       owner: sqlName(`o_${r.sql}`),
       secret: `owner-${r.id}`,
       migrations: [`infra/postgres/${r.id}/000-foundation.sql`],
+      ...(model.processes && { modules: [] }),
     });
   for (const i of identity)
     databases.push({
@@ -635,6 +674,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       });
   }
   for (const db of databases) db.migrations.sort();
+  const productSql = productFiles(model, databases, logins, views, grants);
+  for (const row of productSql) provenance(row.sourcePaths);
+  files.push(...productSql.map((row) => row.file));
   if (broker.length) {
     secret("broker-password");
     services["local-broker"] = {
@@ -1007,6 +1049,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     "scripts/bootstrap.mjs",
     "scripts/storage-config.mjs",
     ...(search.length ? ["scripts/search-init.mjs"] : []),
+    ...(model.processes ? ["scripts/products.mjs"] : []),
     "scripts/common.mjs",
   ])
     files.push(
@@ -1014,7 +1057,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         path,
         path === "scripts/local.mjs" && model.processes
           ? gateOnProcesses(context.asset(`${assets}${path}`))
-          : context.asset(`${assets}${path}`),
+          : path === "scripts/migrate.mjs" && model.processes
+            ? migrateWithProducts(context.asset(`${assets}${path}`))
+            : context.asset(`${assets}${path}`),
       ),
     );
   const missingHosts = [
@@ -1045,12 +1090,146 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, or SELECT on another owner's published views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT on the database's \`published\` views and on another owner's template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in schema \`m_<module>\`, so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only its tile's login uses that schema; every login on the database may SELECT what it publishes as views in \`published\`, and nothing else of its tables. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
           : ""
       }`,
     ),
   );
-  return { files, gaps };
+  return {
+    files,
+    gaps,
+    ...(model.processes && {
+      sql: productSql.map(({ module, database, path, schema }) => ({
+        module,
+        database,
+        file: path,
+        schema,
+      })),
+    }),
+  };
+}
+
+type Login = { resource: string; host: string; database: string; user: string; secret: string };
+type View = { resource: string; schema?: string; name: string; selectSql: string };
+type Grant = NonNullable<V2LocalContribution["grants"]>[number];
+/** One comment line: names are the user's own text. */
+const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
+/** "Item writer, a Data access", or just "Lifecycle writer" when it has its kind's name. */
+const named = (writer: { name: string; kind: keyof typeof studioComponentDefinitions }) => {
+  const kind = studioComponentDefinitions[writer.kind].name;
+  const name = line(writer.name);
+  return name === kind ? name : `${name}, ${/^[AEIOU]/i.test(kind) ? "an" : "a"} ${kind},`;
+};
+const pointer = (path: readonly (string | number)[]) =>
+  `/${path.map((part) => pointerPart(String(part))).join("/")}`;
+
+/**
+ * Product tables (v3 contract, section 1), with Runnable processes on: every module that writes a
+ * provisioned database gets `infra/postgres/<database>/modules/<module>.sql`, a header only and
+ * yours to write, run in its own schema `m_<module>`, and a row in its database's `modules`, which
+ * `migrate.mjs`'s product step reads. A database whose provider isn't local has no file: its gap
+ * is reported already.
+ */
+function productFiles(
+  model: V2RenderContext["model"],
+  databases: Database[],
+  logins: readonly Login[],
+  views: readonly View[],
+  grants: readonly Grant[],
+) {
+  const rows: {
+    module: string;
+    database: string;
+    path: string;
+    schema: string;
+    file: V2TemplateFile;
+    sourcePaths: (readonly (string | number)[])[];
+  }[] = [];
+  const processes = model.processes ?? [];
+  for (const process of processes)
+    for (const writer of process.writers ?? []) {
+      const id = generationLocalIdentity(writer.database).local;
+      const db = databases.find((item) => item.resource === id && item.modules);
+      if (!db?.modules) continue;
+      const module = generationLocalIdentity(writer.module);
+      const schema = sqlName(`m_${module.sql}`);
+      const taken = [
+        "public",
+        "published",
+        ...views.filter((v) => v.resource === id).map((v) => v.schema ?? "public"),
+        ...grants.filter((g) => g.resource === id).map((g) => g.schema ?? "public"),
+      ];
+      if (taken.includes(schema) || db.modules.some((item) => item.schema === schema))
+        refuse(
+          "LOCAL_RESOURCE_CONFLICT",
+          writer.module,
+          `Schema ${schema} is already taken in ${db.database}; rename the module.`,
+        );
+      const login = logins.find((item) => item.resource === id && item.host === process.tile);
+      if (!login)
+        refuse(
+          "INVALID_LOCAL_CONTRIBUTION",
+          writer.module,
+          "A module that writes a database needs its tile's runtime login there.",
+        );
+      const path = productSqlPath(id, module.local);
+      db.modules.push({ module: module.local, host: process.tile, schema, file: path });
+      const selection = model.selections.find((item) => item.id === writer.selection);
+      const sourcePaths = [
+        ...(selection ? [selection.sourcePath] : []),
+        writer.sourcePath,
+        ...writer.links,
+      ];
+      const host = (tile: string) => processes.find((item) => item.tile === tile)?.name ?? tile;
+      const readers = logins
+        .filter((item) => item.resource === id)
+        .map((item) => `--   ${item.user} (${line(host(item.host))})`)
+        .sort();
+      const tables = [
+        ...new Set(
+          grants
+            .filter((g) => g.resource === id && g.kind === "table")
+            .map((g) => `${g.schema ?? "public"}.${g.relation}`),
+        ),
+      ].sort();
+      const published = views
+        .filter((v) => v.resource === id)
+        .map((v) => `${v.schema ?? "public"}.${v.name}`)
+        .sort();
+      const list = (items: readonly string[]) =>
+        items.length ? items.map((item) => `--   ${item}`) : ["--   none"];
+      rows.push({
+        module: writer.module,
+        database: writer.database,
+        path,
+        schema,
+        sourcePaths,
+        file: {
+          path,
+          content: `${[
+            `-- ${named(writer)} in ${line(process.name)} writes ${line(writer.databaseName)}: its product tables and published views.`,
+            "-- Write them here. Export never overwrites your edits: export afresh and carry them over.",
+            `-- first-run and start run this file every time, after the template migrations and views, as`,
+            `-- the setup-only owner ${db.owner} of ${db.database}, in one transaction with search_path ${schema}:`,
+            `-- unqualified names land in schema ${schema}. Keep it re-runnable (IF NOT EXISTS, CREATE OR`,
+            "-- REPLACE), with no BEGIN or COMMIT. A failure rolls the database back, and setup names this file.",
+            "--",
+            `-- Its own tables, in ${schema}: only ${login.user} (${line(process.name)}) selects, inserts, updates and deletes.`,
+            "-- What others may read goes in views in published (CREATE OR REPLACE VIEW published.<name> AS ...),",
+            "-- which every login on this database may select:",
+            ...readers,
+            "-- Template tables it may read, by qualified name:",
+            ...list(tables),
+            "-- Template views:",
+            ...list(published),
+          ].join("\n")}\n`,
+          ownership: "generated-extension",
+          sourcePaths: [...new Set(["/generation/processes", ...sourcePaths.map(pointer)])],
+        },
+      });
+    }
+  for (const db of databases) db.modules?.sort((a, b) => v2Compare(a.module, b.module));
+  return rows;
 }
 
 /** The edge's nginx configuration: `/api/<host>/` for each public HTTP process, its own

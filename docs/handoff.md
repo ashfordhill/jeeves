@@ -9185,3 +9185,79 @@ The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode 
 `e2e-docker.sh` are untouched and unstaged.
 
 Next: the owner answers contract question 1, then V3-05.
+
+## 2026-11-11 — V3-05: product tables and published views
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) and [contract](plans/youtube-v3/contract.md)
+§1 (D1, question 6). Docs: the generator README (product tables, the re-runnable rule),
+`studio.md` (Generate project), a playbook lesson, the contract's Report row, the plan's status
+and the HUMAN_FEEDBACK resolution. Evidence: [v3-05](plans/youtube-v3/evidence/v3-05/README.md).
+
+- **Resolver:** each process gains `writers` (`NormalizedModuleWriter`), only with processes on:
+  a template's module whose link fills a database field its template writes (multipart's and the
+  counter's Data access, the Lifecycle writer), or a stub's link that writes (`stubStore`, so
+  another owner's store is read only). Outbox slots never count.
+- **Foundation** (`local.ts`): per writer, `infra/postgres/<db>/modules/<module>.sql`
+  (`generated-extension`, header only: module, tile, database, schema `m_<module>`, readers,
+  template tables/views); `databases[].modules` in `infra/local.json` (every app database gets
+  `modules`, maybe empty); refuses a taken schema or a writer without its tile's login. `migrate.mjs`
+  gets the product step by exactly-once substitution (`substituteOnce`, shared with TP04's gate;
+  `migrateWithProducts` refuses a missing or doubled anchor): new asset `scripts/products.mjs`
+  creates `published` and each `m_<module>`, runs each file in module order with `SET LOCAL
+  search_path`, then grants: every login USAGE + SELECT on `published` (default privileges too),
+  the writer's tile login its schema (SELECT/INSERT/UPDATE/DELETE, sequences USAGE/SELECT/UPDATE).
+  The export README says so. Off: no file, no `modules`, asset bytes unchanged.
+- **Report:** `report.modules[].sql: [{database, file, schema}]` (the runtime owner's new render
+  field `sql`, checked against emitted files); stub stores' `provisioned` says `SELECT on
+  published` and a writing stub's own schema. **Web:** Preview's process rows add "Product SQL:
+  <module> → <file>".
+- **Flaky board test fixed:** "pans while a connect drag is held…" raced: its `waitFor` accepted
+  `right()` within 0.5 px of the stop before the pan's last sub-pixel step, then that step moved
+  the camera (reproduced under parallel load: old 1 failure in 12, `x -207.74` vs `-208.00`). The
+  test now drives frames itself (stubbed `requestAnimationFrame`, 1/60 s apart) and steps until a
+  frame no longer moves, checking each step ≤ 24 px; same final assertions. New: 25/25 solo, 12/12
+  under the same load.
+
+**Deviations:** `sql` is a list (a Custom module may write two databases; contract row updated).
+Sequences get USAGE, SELECT, UPDATE (INSERT/DELETE don't apply to them). Finding: a stub writer
+next to a template reader on another tile loses the store's ownership to the template's owner, so
+it reads only and gets no file (MA05's rule; my first Docker design hit it, so the run used an
+event counter's Data access as the writer).
+
+**Tests.** New `product-sql.test.ts` (6; PGlite runs the export's `products.mjs`: published read,
+base and template tables refused, writer grants, default privileges, re-run, edit, failing file
+rolls back), spec `runnable-processes.test.ts` +1, updated `client-wiring`/`tile-processes`
+tests, e2e `module-authoring.spec.ts` +1 (Preview's "Product SQL" line by mouse).
+
+**Checks.** `pnpm check` exited 0: **654 tests in 92 files** (lint: only the existing info).
+**E2E: 74 passed, 1 failed (4.6 m)**: `v2-rebuild.spec.ts:25` timed out waiting for its 21st
+connect drag (Video publication publisher → Publication events) to save; **rerun alone it passed
+(1.6 m)**; no leaked project. Web build passed (1.1 s, the existing chunk-size advisory). **Mouse
+check** (my API 4396, scratch DB `jeeves_v305`, dropped; Vite 4386) at 1440×900 and 1280×800:
+TinyURL 7 tiles/7 lines in both views; a Data access connected by mouse to its tile's Database,
+processes ticked, Preview "Product SQL: Data access → infra/postgres/database/modules/
+microservice-data-access.sql"; no page or console errors; projects deleted.
+
+**Gates.** Off pin passes. Frozen v2: fresh `export:v2` 72 files, 70 byte-identical to
+`generic-export.tar.gz`, manifest/report equal without inventory. v1 byte-identical. YouTube
+Simple `9332ea16…89bd`, Detailed `21fe8400…9ae1` (unchanged; twice at 1440×900, once at
+1280×800). **Docker** (`jeeves-v305-products`, 45500–45502; event counter writer Item writer,
+cache-read reader on another tile): first-run 48.8 s; the filled `load` read `published.items`
+(`a` 200, hidden `b` 404); the reader's login got `permission denied for schema m_item_writer`;
+an edit (new column, row, wider view) applied at the next `start`; a broken file failed the start
+naming itself with nothing changed; my appended edit wasn't re-runnable (an older narrower `CREATE
+OR REPLACE VIEW` above it: "cannot drop columns from view"), fixed by editing the view in place;
+stop/start kept the 6 secret hashes, 3 volumes and a runtime-written row, all healthy, 0 restarts.
+Cleanup: project down with volumes, image tag removed, scratch exports and secrets deleted; the
+owner's containers, volumes, networks, images and ports match the record, 42 healthy, both edges
+200.
+
+**For V3-06.** Multipart's Upload state writer already has `metadata-db/modules/
+upload-state-writer.sql`; the Lifecycle writer's file is where `published.videos` goes (V3-13+).
+Favorites (V3-07) is a template writer of its own database: give its `state` resource
+`read-write` and it gets a file automatically. `NormalizedProcess.writers` is the list to read.
+The 5-link cap is yours. `v2-rebuild.spec.ts` failed once under full-suite load at a connect drag.
+
+The owner committed `README.md` and `.docs/ui-v2/` (10858cc) and the legend decision (50d7c8e)
+while this unit ran; nothing of theirs is reverted. `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

@@ -256,6 +256,41 @@ describe("Runnable processes (tile process contract, section 1)", () => {
     ]);
   });
 
+  it("lists each module that writes a database, apart from outboxes and another owner's store", () => {
+    const writers = (design: DesignDocument) =>
+      resolveGeneration(run(design, processes(true)).design, installed).model?.processes?.flatMap(
+        (row) =>
+          (row.writers ?? []).map((writer) =>
+            [row.tile, writer.module, writer.kind, writer.selection, writer.database, writer.access]
+              .join(" ")
+              .concat(` ${writer.links.length}`),
+          ),
+      );
+    // v2 from modules (v3 contract, section 1): the Upload state writer and the Lifecycle writer
+    // write Metadata database, the Count writer View counts. The jobs and publication outboxes
+    // are their templates' tables; the cache read's loader and View count reader only read.
+    expect(writers(v2ModuleDesign())).toEqual([
+      "completion-handler handler-writer lifecycle-writer handler-writer metadata-db read-write 1",
+      "upload upload-state-writer data-access upload-multipart metadata-db read-write 1",
+      "view-counter counter-writer data-access counter-sum view-counts read-write 1",
+    ]);
+    // A stub's is its link's: Links API created Links database; Visit worker's link only reads.
+    expect(writers(stubStackDesign())).toEqual([
+      "links-api link-reader data-access link-reader links-db read-write 1",
+    ]);
+    const v2 = resolveGeneration(run(v2ModuleDesign(), processes(true)).design, installed).model;
+    const writer = v2?.processes?.find((row) => row.tile === "completion-handler")?.writers?.[0];
+    expect(writer).toMatchObject({ name: "Lifecycle writer", databaseName: "Metadata database" });
+    expect(writer?.sourcePath.slice(0, 3)).toEqual(["architecture", "studio", "components"]);
+    expect(writer?.links[0]?.slice(0, 3)).toEqual([
+      "architecture",
+      "studio",
+      "componentConnections",
+    ]);
+    // Off: no processes, so no writers.
+    expect(resolveGeneration(v2ModuleDesign(), installed).model?.processes).toBeUndefined();
+  });
+
   it("needs the host to install it, and a design built from modules", () => {
     const on = run(stubStackDesign(), processes(true)).design;
     const without = { ...installed, processes: undefined };

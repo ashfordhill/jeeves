@@ -232,21 +232,30 @@ export function stubClients(
 /** What runs locally for a store, in the report's words. */
 function provisionedAs(
   store: StubStore,
-  host: string,
+  process: NormalizedProcess,
   views: readonly { resource: string; schema?: string; name: string }[],
 ) {
+  const host = process.tile;
   switch (store.kind) {
     case "database": {
-      const published = views
+      const templateViews = views
         .filter((view) => view.resource === store.resource)
         .map((view) => `${view.schema ?? "public"}.${view.name}`);
-      return `PostgreSQL database ${localDatabase(store.resource)}, login ${localLogin(store.resource, host)} (CONNECT, USAGE on public${
-        store.boundary
-          ? published.length
-            ? `; SELECT on its owner's published ${published.join(", ")}`
-            : "; its owner publishes no view"
-          : ""
-      })`;
+      // Every login reads the writers' published views (v3 contract, section 1); a stub that
+      // writes the database also has its own schema there.
+      const own = (process.writers ?? [])
+        .filter(
+          (writer) => writer.database === store.element && store.modules.includes(writer.module),
+        )
+        .map((writer) => `m_${generationLocalIdentity(writer.module).sql}`);
+      return `PostgreSQL database ${localDatabase(store.resource)}, login ${localLogin(store.resource, host)} (${[
+        "CONNECT, USAGE on public",
+        "SELECT on published",
+        ...(store.boundary && templateViews.length
+          ? [`SELECT on its owner's template views ${templateViews.join(", ")}`]
+          : []),
+        ...(own.length ? [`its own tables in ${own.join(", ")}`] : []),
+      ].join("; ")})`;
     }
     case "queue": {
       const queue =
@@ -281,6 +290,6 @@ export function stubStoreRows(
     modules: [...store.modules],
     ...(store.unsupported
       ? { unsupported: store.unsupported }
-      : { provisioned: provisionedAs(store, process.tile, views) }),
+      : { provisioned: provisionedAs(store, process, views) }),
   }));
 }

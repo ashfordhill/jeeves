@@ -37,7 +37,7 @@ import type {
 } from "./studio-components.ts";
 import { type StudioStoreAccess, studioStoreAccess } from "./studio-links.ts";
 import { type StudioKind, studioDefinitionStatus } from "./studio-model.ts";
-import { moduleSlots, studioComponentTargetKind } from "./studio-modules.ts";
+import { moduleLinkSlot, moduleSlots, studioComponentTargetKind } from "./studio-modules.ts";
 import { validateDesign } from "./validate.ts";
 
 type Path = (string | number)[];
@@ -164,6 +164,28 @@ export type NormalizedProcess = {
     /** Every other store or channel the stub links to, provisioned for its tile (section 6). */
     stores?: NormalizedStubStore[];
   }[];
+  /** Each module in the tile that writes a database other than through an outbox (v3 contract,
+   * section 1): it gets its own SQL file and schema there. */
+  writers?: NormalizedModuleWriter[];
+};
+/**
+ * A module that writes a database (v3 contract, section 1): a template's module whose resolved
+ * access to it is write or read & write, or a stub whose link writes it (`stubLinkUse`, with
+ * another owner's store read only). An Event publisher's outbox is its template's table, not one.
+ */
+export type NormalizedModuleWriter = {
+  module: string;
+  name: string;
+  kind: StudioComponentKind;
+  /** The selection that covers it: its template's, or its own stub. */
+  selection: string;
+  database: string;
+  databaseName: string;
+  access: "write" | "read-write";
+  /** The module's source path. */
+  sourcePath: Path;
+  /** The module links that write the database. */
+  links: Path[];
 };
 /** A queue a loop stub consumes, worked out from its links as the resolver reads the design. */
 export type NormalizedLoopQueue = {
@@ -1119,6 +1141,7 @@ function normalizedProcesses(
         : { value: generationProcessHttpDefaults[setting], origin: "fixed", sourcePaths: [] };
     };
     const saved = "exposure" in binding.settings ? binding.settings.exposure : undefined;
+    const writers = moduleWriters(design, tile, hosted);
     rows.push({
       tile,
       name: design.elements.find((element) => element.id === tile)?.name ?? tile,
@@ -1185,9 +1208,112 @@ function normalizedProcesses(
           },
         ];
       }),
+      ...(writers.length && { writers }),
     });
   });
   return rows.sort((a, b) => (a.tile < b.tile ? -1 : a.tile > b.tile ? 1 : 0));
+}
+
+/**
+ * The modules in a tile that write a database (v3 contract, section 1), sorted by module and
+ * database. A template's module is one whose link fills a database field its template writes; a
+ * stub's is each of its links that writes one, worked out as its stores are. Neither counts an
+ * Event publisher's outbox.
+ */
+function moduleWriters(
+  design: DesignDocument,
+  tile: string,
+  hosted: readonly NormalizedGenerationSelection[],
+): NormalizedModuleWriter[] {
+  const studio = design.architecture?.studio;
+  const components = studio?.components ?? [];
+  const links = studio?.componentConnections ?? [];
+  const name = (id: string) => design.elements.find((entry) => entry.id === id)?.name ?? id;
+  const own = new Map(
+    hosted.flatMap((item) =>
+      item.target.kind === "component" ? [[item.target.component, item.id] as const] : [],
+    ),
+  );
+  const rows = new Map<string, NormalizedModuleWriter>();
+  const add = (
+    component: StudioComponent,
+    selection: string,
+    database: string,
+    access: "write" | "read-write",
+    link: Path,
+  ) => {
+    const key = `${component.id}\u0000${database}`;
+    const prior = rows.get(key);
+    if (prior) {
+      if (prior.access !== access) prior.access = "read-write";
+      prior.links.push(link);
+      return;
+    }
+    rows.set(key, {
+      module: component.id,
+      name: component.name,
+      kind: component.settings.kind,
+      selection,
+      database,
+      databaseName: name(database),
+      access,
+      sourcePath: ["architecture", "studio", "components", components.indexOf(component)],
+      links: [link],
+    });
+  };
+  for (const item of hosted) {
+    if (item.binding.kind === "module-stub") {
+      const module = item.module;
+      const component = components.find((entry) => entry.id === module?.component);
+      if (!module || !component) continue;
+      for (const slot of module.slots) {
+        if (slot.id === "outbox") continue;
+        for (const { link, sourcePath, target } of slot.connections) {
+          const store = stubStore(design, tile, slot.use, target, link, sourcePath);
+          if (
+            store?.kind !== "database" ||
+            (store.access !== "write" && store.access !== "read-write")
+          )
+            continue;
+          add(component, item.id, store.element, store.access, sourcePath);
+        }
+      }
+      continue;
+    }
+    const requirements = generationCapabilities[item.binding.kind].resources;
+    for (const resource of item.resources) {
+      const requirement = requirements.find((entry) => entry.field === resource.field);
+      if (
+        requirement?.kind !== "database" ||
+        (resource.access !== "write" && resource.access !== "read-write")
+      )
+        continue;
+      links.forEach((link, index) => {
+        const component = components.find((entry) => entry.id === link.from);
+        if (
+          !component ||
+          component.host !== tile ||
+          (own.get(component.id) ?? item.id) !== item.id ||
+          link.to.kind !== "element" ||
+          link.to.id !== resource.element ||
+          link.to.via !== resource.connection ||
+          moduleLinkSlot(design, link)?.id === "outbox"
+        )
+          return;
+        add(component, item.id, resource.element, resource.access as "write" | "read-write", [
+          "architecture",
+          "studio",
+          "componentConnections",
+          index,
+        ]);
+      });
+    }
+  }
+  return [...rows.values()].sort((a, b) => {
+    const left = `${a.module}\u0000${a.database}`;
+    const right = `${b.module}\u0000${b.database}`;
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
 }
 
 /** Known declarations without an installed implementation remain explicit custom work in a

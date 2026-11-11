@@ -773,9 +773,27 @@ describe("Board", () => {
       const at = Number(node("events").style.transform.match(/-?[\d.]+/)?.[0]);
       return x + (at + 128) * zoom;
     };
+    // From here on the test drives every frame itself, 1/60 s apart, so each step of the pan is
+    // the same in every run. (jsdom's frames follow the wall clock: a busy machine changed the
+    // step sizes, and a frame could land between the last two steps of the pan.)
+    const due = new Map<number, FrameRequestCallback>();
+    let handle = 0;
+    let clock = 0;
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      handle += 1;
+      due.set(handle, callback);
+      return handle;
+    });
+    vi.stubGlobal("cancelAnimationFrame", (id: number) => due.delete(id));
     const frames = (n: number) =>
       act(async () => {
-        for (let i = 0; i < n; i += 1) await new Promise((r) => requestAnimationFrame(r));
+        for (let i = 0; i < n; i += 1) {
+          clock += 1000 / 60;
+          const callbacks = [...due.values()];
+          due.clear();
+          for (const callback of callbacks) callback(clock);
+          await Promise.resolve();
+        }
       });
     // The fit shows every tile: a drag held at the edge doesn't pan.
     expect(host.style.getPropertyValue("--board-zoom")).toBe(String(camera().zoom));
@@ -816,7 +834,18 @@ describe("Board", () => {
     expect(moving.zoom).toBe(zoomed.zoom);
     const tip = document.querySelector(".board-connect-line line");
     expect([tip?.getAttribute("x2"), tip?.getAttribute("y2")]).toEqual(["1230", "400"]);
-    await waitFor(() => expect(right()).toBeCloseTo(1200 - 48, 0), { timeout: 3000 });
+    // Frame by frame, at most a step's pace each, until a frame no longer moves it.
+    let previous = camera();
+    for (let n = 0; n < 120; n += 1) {
+      await frames(1);
+      const now = camera();
+      if (now.x === previous.x) break;
+      expect(previous.x - now.x).toBeGreaterThan(0);
+      expect(previous.x - now.x).toBeLessThanOrEqual(24);
+      expect(now.zoom).toBe(zoomed.zoom);
+      previous = now;
+    }
+    expect(right()).toBeCloseTo(1200 - 48, 0);
     const stopped = camera();
     await frames(3);
     expect(camera()).toEqual(stopped);

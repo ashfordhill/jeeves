@@ -118,6 +118,15 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         owner: "o_links_db",
         secret: "owner-links-db",
         migrations: ["infra/postgres/links-db/000-foundation.sql"],
+        // Link reader writes it (Links API created it), so it has its own SQL file and schema.
+        modules: [
+          {
+            module: "link-reader",
+            host: "links-api",
+            schema: "m_link_reader",
+            file: "infra/postgres/links-db/modules/link-reader.sql",
+          },
+        ],
       },
     ]);
     expect(
@@ -130,7 +139,8 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       ["links-api", "r_links_db__links_api", "sql-links-db--links-api"],
       ["visit-worker", "r_links_db__visit_worker", "sql-links-db--visit-worker"],
     ]);
-    // Stubs own no tables: CONNECT and USAGE on public only (migrate.mjs), no relation grants.
+    // No template tables: CONNECT and USAGE on public (migrate.mjs), no relation grants; the
+    // product step grants published and the writer's own schema (products.mjs).
     expect(plan.grants).toEqual([]);
     expect(text(stack, "infra/postgres/links-db/000-foundation.sql")).toContain(
       "REVOKE ALL ON SCHEMA public FROM PUBLIC;",
@@ -282,7 +292,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         boundary: "published-read",
         modules: ["watch-counts"],
         provisioned:
-          "PostgreSQL database d_view_counts, login r_view_counts__watch (CONNECT, USAGE on public; SELECT on its owner's published counter_sum_public.totals)",
+          "PostgreSQL database d_view_counts, login r_view_counts__watch (CONNECT, USAGE on public; SELECT on published; SELECT on its owner's template views counter_sum_public.totals)",
       },
       {
         store: "view-events",
@@ -464,7 +474,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       stores(stack, "links-api").map((row) => `${row.store} ${row.access}: ${row.provisioned}`),
     ).toEqual([
       "links-cache read-write: Valkey cache-links-cache with its password",
-      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public)",
+      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader)",
       "uploaded consume: RabbitMQ work queue uploaded and its .failed",
       "visits publish: RabbitMQ exchange visits",
     ]);
@@ -472,7 +482,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       stores(stack, "visit-worker").map((row) => `${row.store} ${row.access}: ${row.provisioned}`),
     ).toEqual([
       "archive read: Garage bucket archive, key s3-visit-worker (read)",
-      "links-db read: PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public)",
+      "links-db read: PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; SELECT on published)",
       "visits consume: RabbitMQ subscriber visits--visit-worker and its .failed",
     ]);
     expect(stores(stack, "stats-api")).toEqual([

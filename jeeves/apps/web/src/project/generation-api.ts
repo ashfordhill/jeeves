@@ -66,6 +66,14 @@ export type V2GenerationPreview = {
     findings: { code: string; message: string }[];
     settings: { input: string; implementationStatus: string }[];
     localAdapterTreatments: { sourcePath: (string | number)[]; actual: string; reason: string }[];
+    /** A design built from modules: each module, and (Runnable processes on) its own SQL file in
+     * each database it writes. */
+    modules?: {
+      module: string;
+      name: string;
+      host: string;
+      sql?: { database: string; file: string; schema: string }[];
+    }[];
     /** Only with Runnable processes on: each application tile's process. */
     processes?: {
       runnable: boolean;

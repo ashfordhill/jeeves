@@ -69,6 +69,8 @@ export type V2ProcessReport = {
     unsupported?: string;
   }[];
 };
+/** A module's own SQL file in a database it writes (v3 contract, section 1). */
+export type V2ModuleSql = { module: string; database: string; file: string; schema: string };
 export type V2RenderContext = {
   model: NormalizedGeneration;
   settings: readonly GenerationSettingDecision[];
@@ -100,6 +102,8 @@ export type V2Emitter = {
     resolves?: readonly { emitter: string; id: string }[];
     /** Only the processes owner, one row per normalized process. */
     processes?: readonly V2ProcessReport[];
+    /** Only the runtime owner, with Runnable processes on: each writer module's product SQL. */
+    sql?: readonly V2ModuleSql[];
   };
 };
 export type V2EmitterIdentity = {

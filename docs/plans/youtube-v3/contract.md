@@ -51,7 +51,7 @@ bytes.
 | Template tables versus product tables | Template-owned: uploads, assets, receipts and outbox (multipart and lifecycle, in the upload selection's schema); counter receipts and totals, with its `_public.totals` view; favorites (§3). Their migrations and grants are unchanged. Product files never create template tables; a template never touches `m_*` or `published`. |
 | Re-export | Export writes only to a new directory, and `planFileWrites` keeps identical files and refuses a changed one (`files.ts:54-78`). Carry your SQL file over, as you do hooks. A rename re-keys the path (TP03). In v3, `generated/` keeps the empty files and `app/` holds the written ones. |
 | Runner change | `migrate.mjs` is an asset that every v2 export copies byte for byte. With processes on, the foundation substitutes its product step once, refusing otherwise, as TP04 did for `local.mjs`. With processes off, the asset bytes are unchanged. The step reads `databases[].modules` in `infra/local.json`. The composition hash covers that list, not the files' content (`local.mjs:76-77`), so an edited file starts. |
-| Report | Each writer's row in `report.modules` gains `sql: {database, file, schema}`. Each process row's database store says `published` when it reads published views. |
+| Report | Each writer's row in `report.modules` gains `sql: [{database, file, schema}]`, one per database it writes (a list since V3-05: a Custom module may write two). Each process row's database store says `SELECT on published`, and names a writing stub's own schema. |
 
 ## 2. The Auth guard template (D4)
 

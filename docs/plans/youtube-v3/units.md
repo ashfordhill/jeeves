@@ -1,8 +1,8 @@
 # YouTube v3: studio feedback, generation gaps, a better chat agent, then v3
 
 **Status:** planned 2026-11-10 from owner feedback. The owner confirmed the decisions the same
-day, revising D4 (adding Favorites) and D6 (chat). V3-01 to V3-04 are done. V3-05 is next, after
-the owner answers [contract](contract.md) question 1 (the link cap).
+day, revising D4 (adding Favorites) and D6 (chat). V3-01 to V3-05 are done; the owner approved
+[contract](contract.md) question 1 (a fifth link). V3-06 is next.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — Studio feedback and YouTube v3](../../HUMAN_FEEDBACK.md)
 · [module add button sketch](../../human-feedback/2026-11-10-module-add-button.png)
 · Follows [tile processes](../tile-processes/units.md) and its [review](../tile-processes/review.md).

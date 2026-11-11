@@ -1343,11 +1343,18 @@ generated `<lead>.hooks.ts` (the search projection is a placeholder loop). A mes
 healthy. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked
 once at startup; a store on another provider isn't provisioned, and the stack isn't runnable.
-Preview's **Processes** list shows the edge's paths, then each process with its service, shape,
-edge path, routes and loops ("loop on <queue>"), what is provisioned for its stubs
-("Provisioned: Links database (database, read-write)") or not ("Not provisioned: …"), and
-whether the stack is runnable; `first-run` starts the processes only while it is. With it off,
-the export is exactly as before.
+Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
+or a stub with a write link; an Event publisher's outbox doesn't count) gets its own SQL file,
+`infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`
+and every `start` run it in the module's own schema, after the template tables; only its tile
+may use its tables, and every tile on that database may read the views it puts in `published`
+(keep the file re-runnable). Preview's **Processes** list shows the edge's paths, then each
+process with its service, shape, edge path, routes and loops ("loop on <queue>"), what is
+provisioned for its stubs ("Provisioned: Links database (database, read-write)") or not ("Not
+provisioned: …"), each writer's file ("Product SQL: Link reader →
+infra/postgres/links-db/modules/link-reader.sql"), and whether the stack is runnable;
+`first-run` starts the processes only while it is. With it off, the export is exactly as
+before.
 
 Without generation selections, only exact frozen YouTube local-v1 snapshot005 (revision 3) can
 export. An exact saved-source copy retains the original frozen archive provenance and bytes:
