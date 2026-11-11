@@ -1663,3 +1663,20 @@ stop and start by the secrets' hashes and the volumes' creation times, not conta
 rebuilds the images from cache and recreates the app containers. Count backend lines from the
 same frozen bytes. Pure-data binding files are configuration; hooks, stubs and the typed slots
 descriptors are code.
+
+## 2026-11-11 V3-13: complete an app in the order its requests reach the hooks
+
+Write a generated app's product hooks one at a time, in the order a request reaches them, and
+rerun the real stack after each: the first unwritten hook names the next one to write
+(`validate`, `metadata`, `originalKey`, then the lifecycle's `metadata`, `job` and `response`, then
+multipart's `response` and `job`). Put the codecs two tiles share (metadata, the completion
+answer, the job and its event ID) in one product contract file both hooks import, so the
+producer and the consumer can't drift; check a constant the hooks repeat (here the key prefix)
+against the compiled value at start. Product policy stays in the hook that owns it: the creator
+role wraps the sign-in's `principal`. Two template behaviours need care while hooks are missing:
+a completion stopped by an unwritten hook stays `completing`, and the next start's sweep re-runs
+it and fails the whole process, so abort such an upload before restarting; and an outbox whose
+codec isn't written retries silently, so check the outbox's `attempts`, not the log. Hooks shape
+data, not the HTTP answer: status codes, field names and merged status come from the process
+scaffold, so say so as a gap rather than editing it.
+

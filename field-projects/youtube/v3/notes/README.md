@@ -84,6 +84,18 @@ V3-16 then fill in the following, and V3-17 measures the result:
 **`app/` doesn't fully work until V3-16.** Until then it runs and is healthy exactly like
 `generated/`, but each request or message stops at its first unwritten hook.
 
+#### Progress
+
+| Unit | Area | State |
+| --- | --- | --- |
+| V3-13 | Upload | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-13/README.md)). The account script; the creator check on multipart's `principal`; every multipart hook; the lifecycle's `metadata`, `job` and `response`. A signed-in creator starts a multipart upload, sends its parts to signed URLs, pauses and resumes from the parts that arrived, and completes it; the job reaches Upload jobs. Anonymous 401, a non-creator 403, another creator 404, an aborted upload 410. |
+| V3-14 | Processing and lifecycle | Next. The Transcoder answers the job "Not implemented: job for Segmenter and encoder", so a completed upload stays `pending` and the lifecycle fails it `QUEUE_DEADLINE` after 10 minutes. |
+| V3-15 | Watch and Favorites | To do |
+| V3-16 | Search and the browser | To do |
+
+What each unit wrote is in [`custom-paths.md`](custom-paths.md); what the templates can't yet
+express is under [template gaps](#template-gaps-found-while-completing-app).
+
 ### How to run each
 
 Both run the same way: Node 24.21.0, pnpm 12.16.1 and Docker. Run `generated/` from a copy
@@ -98,6 +110,7 @@ pnpm build
 export COMPOSE_PROJECT_NAME=youtube-v3-generated \
   LOCAL_HTTP_PORT=45600 LOCAL_IDENTITY_PORT=45601 LOCAL_OBJECT_PORT=45602
 pnpm first-run          # once: about 2 minutes, then 15 containers healthy
+node scripts/accounts.mjs   # app/ only, once: the creator role and the three local accounts
 pnpm stop               # drains every process; keeps volumes and .runtime
 pnpm start              # back, with the same credentials and data
 ```
@@ -113,7 +126,10 @@ pnpm start              # back, with the same credentials and data
 - Transcoded videos at `/cdn/video-delivery/`.
 
 **Credentials:** they are generated into the copy's private `.runtime/secrets` and are never in
-Git.
+Git. In `app/`, `node scripts/accounts.mjs` adds the realm role `creator` and three accounts:
+`creator` and `other-creator` (creators) and `viewer` (not a creator). Their passwords are in
+`.runtime/secrets/creator_password`, `other_creator_password` and `viewer_password`. Sign in
+through Keycloak's own page (client `sign-in-web`, PKCE); there is no sign-up.
 
 **Clean up a disposable copy:**
 
@@ -140,3 +156,14 @@ its path, which names itself:
 
 Hooks after the first one on a path (for example multipart's `metadata`, or the lifecycle's
 `publication`) are reached only once the hooks before them are written. That happens in `app/`.
+
+## Template gaps found while completing `app/`
+
+Recorded as found, not worked around: no generated scaffold in `app/` was edited.
+
+| Unit | Gap | Effect in v3 |
+| --- | --- | --- |
+| V3-13 | **Multipart's HTTP answers can't be shaped from its hooks.** `src/processes/upload-api.ts` mounts `createMultipartHttpHandlers({ multipart, principal })` without its `response` and `error` options, and the compiled mounts carry no `statusCode`. | Start answers 200 with `assetId` (v2: 201 with `videoId`); complete answers 200 (v2 and contract S02: 202; its body does carry `videoId` and `jobId`). Status and list give the upload's own state (`uploading`, `completed`, `aborted`, `expired`), not the video's (`pending`, `processing`, `ready`, `failed`) or its failure, which v2's status merged in. Errors keep their codes, with one message, "Upload operation refused.". S04's "uploading → pending → processing → ready" therefore has no upload route to read from: V3-14/V3-16 must say where it comes from. |
+| V3-13 | **A completion stopped by a failing hook blocks the next start.** The upload stays `completing`; multipart's sweep at start re-runs the completion, and any error that isn't the template's own fails the process: "Application startup failed", without the reason. Until then its status route re-runs it too. | Seen once mid-unit with an unwritten hook (the scratch upload was closed by moving its expiry); with every upload hook written nothing on the upload path reaches it now, but any other throw in a completion hook (a bug, a refused SQL statement) would. |
+| V3-13 | **The outbox relay retries a codec failure silently.** An unwritten (or throwing) `job` codec is treated as a failed publish: the row is retried every ≤5 s for ever, with no log line and no `.failed`. | Seen mid-unit: 13 attempts, then sent once `job` was written. |
+| V3-13 | **The lifecycle's and Transcoder's hooks get no key prefix.** Only multipart's hooks get `prefix`. | `video-contract.ts` repeats the compiled prefix as `ORIGINALS_PREFIX`; multipart's hooks refuse to start if they differ. |

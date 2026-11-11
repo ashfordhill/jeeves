@@ -2,6 +2,13 @@
 // Write them here. Export never overwrites your edits: export afresh and carry them over.
 import type { AssetLifecycleBinding, AssetLifecycleHooks } from "../../runtime/asset-lifecycle.ts";
 import { NotImplemented } from "../../runtime/tile-process.ts";
+import {
+  completionResponse,
+  originalKey,
+  requestEventId,
+  requestedJob,
+  videoMetadata,
+} from "../video-contract.ts";
 
 type Hooks = AssetLifecycleHooks<unknown, unknown, unknown, unknown, unknown>;
 /** The template's hooks; its process names the publication's outbox destination. */
@@ -13,9 +20,9 @@ export type VideoLifecycleLifecycleWriterHooks = Omit<Hooks, "publication"> & {
 /** Each hook throws "Not implemented" until written; the first one a message reaches sends it to .failed. */
 export function videoLifecycleLifecycleWriterHooks(): VideoLifecycleLifecycleWriterHooks {
   return {
-    /** Parses an asset's stored metadata. */
+    /** Parses an asset's stored metadata: the same codec as the upload's. */
     metadata(input) {
-      throw new NotImplemented("metadata for Lifecycle writer");
+      return videoMetadata.parse(input);
     },
     /** Parses a processing event from the results queue. */
     event(input) {
@@ -30,18 +37,31 @@ export function videoLifecycleLifecycleWriterHooks(): VideoLifecycleLifecycleWri
       throw new NotImplemented("failure for Lifecycle writer");
     },
     job: {
-      /** Parses the job a completed upload publishes. */
+      /** Parses the job a completed upload publishes: a VideoProcessingRequested. */
       codec(input, eventId) {
-        throw new NotImplemented("job.codec for Lifecycle writer");
+        return requestedJob(input, eventId);
       },
-      /** Builds that job inside the completion transaction. */
-      async construct(tx, input) {
-        throw new NotImplemented("job.construct for Lifecycle writer");
+      /** Builds that job inside the completion transaction, from the verified original. */
+      async construct(_tx, input) {
+        if (input.original.key !== originalKey(input.assetId, input.uploadId))
+          throw new Error("Unbound completed original");
+        return requestedJob({
+          schemaVersion: 1,
+          type: "VideoProcessingRequested",
+          eventId: input.eventId,
+          occurredAt: input.occurredAt,
+          videoId: input.assetId,
+          jobId: input.jobId,
+          attemptId: input.attemptId,
+          originalKey: input.original.key,
+          expectedSize: input.original.size,
+          expectedSha256: input.original.sha256,
+        });
       },
     },
-    /** What completing an upload answers. */
-    response(input) {
-      throw new NotImplemented("response for Lifecycle writer");
+    /** What completing an upload answers: the video and its job, pending. */
+    response({ assetId, ...completion }) {
+      return completionResponse.parse({ ...completion, videoId: assetId });
     },
     publication: {
       /** Parses what a ready asset publishes. */
@@ -56,7 +76,7 @@ export function videoLifecycleLifecycleWriterHooks(): VideoLifecycleLifecycleWri
     identities: {
       /** The stable event ID of a job request. */
       request(identity) {
-        throw new NotImplemented("identities.request for Lifecycle writer");
+        return requestEventId(identity.jobId, identity.attemptId);
       },
       /** The stable event ID of a job's started, succeeded or failed event. */
       result(identity, kind) {

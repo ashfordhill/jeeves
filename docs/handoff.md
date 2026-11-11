@@ -9821,3 +9821,95 @@ both edges 200, only 45400–45402 listen in 454xx.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-13: complete upload
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (the V3-13 row) and [contract](plans/youtube-v3/contract.md)
+§2 (question 5), §5 and §7. Docs: the field project's [notes](../field-projects/youtube/v3/notes/README.md)
+(progress, the account step, template gaps), [`custom-paths.md`](../field-projects/youtube/v3/notes/custom-paths.md),
+a playbook lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[v3-13](plans/youtube-v3/evidence/v3-13/README.md), with the operator harness.
+
+- **`app/` only:**
+  - `src/modules/video-contract.ts` (new): the codecs Upload API and Video lifecycle share, from
+    v2's product contract;
+  - the multipart hooks: `principal` wraps the guard with v2's creator role check (403
+    `CREATOR_REQUIRED`), plus `validate` (413/422/400), `metadata`, `response`, `originalKey`
+    (`upload-api-multipart-uploads/<videoId>/<uploadId>/source.mp4`) and `job`;
+  - the lifecycle's `metadata`, `identities.request`, `job.codec`, `job.construct` and
+    `response`;
+  - `scripts/accounts.mjs` (new): the realm role `creator`, the users `creator`,
+    `other-creator` and `viewer`, and generated 0600 passwords in `.runtime/secrets`;
+  - `test/upload.test.ts` (new): 5 tests with `node --test`, no setup.
+- **No scaffold edit and no product SQL:** the upload path uses only template tables.
+  `generated/` is unchanged.
+- **Docker** (`jeeves-v313-upload`, 45620–45622, a scratchpad copy):
+  - **The order:** after each hook, in the order a request reaches it, I ran rebuild, stop and
+    start (≈75 s), then the probe. The first unwritten hook moved `validate` → `metadata` →
+    `originalKey` → the lifecycle's `metadata` → `identities.request` → `response` (lifecycle)
+    → `response` (multipart). Then complete answered 200, and the outbox relay waited silently
+    on `job`; once `job` was written, the message reached Upload jobs.
+  - **The recorded pass:** 401 anonymous or bad, 403 viewer, start 200, part 1 PUT, complete
+    409 `INCOMPLETE_PARTS`, then a new sign-in. ListParts gave [1], and only parts 2 and 3 were
+    sent. Complete answered 200 `{videoId, jobId, …}`, and the same again. Other-creator got
+    404 on every route and an empty list; an aborted upload 410.
+  - **The original and the job:** the original's bytes hash to the fixture's SHA-256, and its
+    anonymous GET is 403. `VideoProcessingRequested` was on `upload-jobs.failed`, at attempt 1,
+    `NOT_IMPLEMENTED` from the Transcoder's `job` (V3-14's). The pending videos failed
+    `QUEUE_DEADLINE` at 10 minutes.
+  - **Stop and start** kept the secrets, volumes, rows, queues and accounts.
+- **Backend LOC:** 166 post-template lines (contract 83, multipart 56, lifecycle 27) and 14
+  replaced, in 72 counted files; the scope is unchanged.
+
+**Template gaps** (in the notes; not patched):
+
+1. Hooks can't shape multipart's HTTP answers. Start is 200 with `assetId`, complete 200 (not
+   202), and status has no lifecycle state or failure. The error message is generic.
+2. An interrupted completion that throws fails the next start: "Application startup failed", with
+   no reason. Seen at step 6; I closed that scratch upload by moving its expiry to now.
+3. The outbox relay retries a codec failure silently, for ever.
+4. The lifecycle's and Transcoder's hooks get no key prefix, so the contract repeats it and
+   multipart's hooks check it.
+
+**Checks.**
+
+- `pnpm check` exited 0: **748 tests in 104 files** (lint: only the existing info).
+- **E2E: 79 passed, 1 failed (6.2 m).** `module-authoring.spec.ts:849` timed out waiting for
+  Microservice's "Add linked tile". **Rerun alone it passed (8.5 s).** Its leaked "E2E Product
+  SQL" project was deleted through the API.
+- Web build passed (919 ms, the existing chunk-size advisory).
+- **Browser** (my API 4464 on scratch `jeeves_v313`, now dropped; Vite 4474): TinyURL foundation
+  7 tiles and 7 lines in Detailed and Simple, at 1440×900 and 1280×800, with no page or console
+  error; projects deleted.
+
+**Gates (D2).** `git diff d94b13a -- field-projects/youtube/v3/generated/` is empty. The
+processes-off pin, `generator.test.ts` and `assemble.test.ts` pass (17 tests; v1 is
+byte-identical). Frozen v2: a fresh `export:v2` gives 72 files, 70 byte-identical to
+`generic-export.tar.gz`, with the manifest and report equal under `provenanceWithoutInventory`.
+
+**Cleanup.** My stack is down with its volumes, and both image tags are removed. The copy (with
+its `.runtime` and passwords), the fixture copy and the scratch exports are deleted, and my
+servers are stopped. The owner's 43 containers (IDs, restart counts, start times, health), 18
+volumes, 9 networks and 31 image rows match the record. 42 are healthy, both edges answer 200,
+and only 45400–45402 listen in 454xx.
+
+**For V3-14.**
+
+- **The job:** use `requestedJob` from `src/modules/video-contract.ts` for the Transcoder's `job`
+  codec (it binds the message ID). `video(job)` is v2's (`youtubeMediaCodecs.video`): source
+  `{key: job.originalKey, size: expectedSize, sha256: expectedSha256}`.
+- **Namespaces:** `source.owns` can test `ORIGINALS_PREFIX`/`originalIdentity`; the result prefix
+  and its `owns` are yours (v2: `videos/<videoId>/<jobId>/<attemptId>/`).
+- **The lifecycle hooks still unwritten:** `event`, `result`, `failure`, `publication.codec` and
+  `construct`, `identities.result` and `identities.publication`. Keep v2's event-ID namespace
+  (`logicalEventId`). `published.videos` goes in `video-lifecycle-lifecycle-writer.sql`, over
+  `upload_api_multipart_uploads.assets`.
+- **Status:** the upload's status route can't show pending, processing or ready (gap 1), so say
+  where S04's status sequence comes from.
+- **When testing:** if a completion stops at a 501, abort that upload before restarting (gap 2).
+  Read Upload jobs with the harness's `peek.mjs` inside an `app-*` container. Run the account
+  script after `first-run`. The fixture is v1's `.runtime/media/youtube-v1-fixture.mp4`, copied
+  read only.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.
