@@ -1,12 +1,12 @@
 # YouTube v3: studio feedback, generation gaps, a better chat agent, then v3
 
-**Status:** planned 2026-11-10 from owner feedback. No unit has started. The owner must confirm
-the **Decisions to confirm** below before V3-01.
+**Status:** planned 2026-11-10 from owner feedback. The owner confirmed the decisions the same
+day, revising D4 (adding Favorites) and D6 (chat). No unit has started.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — Studio feedback and YouTube v3](../../HUMAN_FEEDBACK.md)
 · [module add button sketch](../../human-feedback/2026-11-10-module-add-button.png)
 · Follows [tile processes](../tile-processes/units.md) and its [review](../tile-processes/review.md).
 
-There are 17 units, run in order: V3-01 → V3-17. A coordinator gives each unit to a fresh agent.
+There are 18 units, run in order: V3-01 → V3-18. A coordinator gives each unit to a fresh agent.
 That agent does only its own unit on `main` in the primary checkout, commits it and stops.
 
 The work comes in five phases:
@@ -14,10 +14,10 @@ The work comes in five phases:
 | Phase | Units |
 | --- | --- |
 | A — Studio feedback | V3-01 to V3-03 |
-| B — Generation gaps that v3 needs | V3-04 to V3-07 |
-| C — A better chat agent | V3-08 and V3-09 |
-| D — YouTube v3 | V3-10 to V3-16 |
-| E — Review | V3-17 |
+| B — Generation gaps that v3 needs | V3-04 to V3-08 |
+| C — A better chat agent | V3-09 and V3-10 |
+| D — YouTube v3 | V3-11 to V3-17 |
+| E — Review | V3-18 |
 
 ## Owner feedback (2026-11-10)
 
@@ -43,19 +43,22 @@ The work comes in five phases:
     - **generated code only**, for the owner to review and learn from;
     - **generated code plus the rest of the solution.**
 12. Build **YouTube v3** with all of the above.
+13. **Favorites** (owner, at confirmation): a favorites capability belongs to generic account
+    services, because it applies to more than YouTube.
+14. **Chat** (owner, at confirmation): chat takes prompts and makes or suggests diagram edits. It
+    must use the diagram well rather than produce gibberish, and ideally it should not need an
+    expensive model, so give it tools that help.
 
-## Decisions to confirm
-
-These are the planning defaults. The owner confirms them or changes them before V3-01.
+## Decisions (confirmed 2026-11-10)
 
 | # | Topic | Default | Alternative |
 | --- | --- | --- | --- |
 | D1 | Product tables and read access (tile-processes review row 2) | **The writer owns its tables, and readers see only what it publishes.** Each module that writes a database gets its own custom SQL file. It is created empty once and never overwritten, and first run and start apply it. A module with a read link to that database gets SELECT on the writer's `published` views only, derived from links with no new forms. This is v2's pattern: Watch saw only the ready-public view and the public totals. | Readers get SELECT on all of the writer's tables. That is simpler, but it exposes private rows and columns. |
 | D2 | Gates | Retire the YouTube Overview PNG hash gate, because tiles visibly change. v1/v2 frozen exports become **check and report**, not stop: they stay in Git as history. | Keep v1/v2 byte gates blocking. |
 | D3 | The link fan | It also opens by **click** (a toggle: click away or click again to close), like the new module menu. Dragging is no longer needed anywhere. | Keep the drag-out link fan. |
-| D4 | Watch identity in v3 | **Optional sign-in** on Watch: an Auth guard set to *optional* verifies a token when present, and otherwise the viewer is anonymous. View events carry the viewer's account when signed in. There are no new viewer features (no history, likes or subscriptions). | Add a signed-in-only feature, such as watch history. |
+| D4 | Identity and Favorites in v3 | **Optional sign-in** on Watch: an Auth guard set to *optional* verifies a token when present, and otherwise the viewer is anonymous. View events carry the viewer's account when signed in. **Favorites** is a new generic template: a signed-in account can add, remove and list favorite items. Its one product hook decides whether an item may be favorited (in v3, a ready, public video). It is reusable for Marketplace listings. There are no other new viewer features: no history, likes or subscriptions. | Chosen with the owner's addition. |
 | D5 | Settings on stub tiles | Request timeout and Concurrency limit show on every HTTP or worker tile while Runnable processes is on, because the process uses them (tile-processes review row 4). | Show them only once a template derives. |
-| D6 | Chat's tile kinds | Chat offers only the fan's 11 kinds; Gateway, Billing, Redirect and Notifications are refused. Update the eval seeds that used Billing. | Keep chat able to add the legacy kinds. |
+| D6 | The chat agent | **Chat can do exactly what the mouse can, and no more.** It uses the same commands, the fan's 11 tile kinds and the module catalog, so nothing it saves is something the UI couldn't make. Update the eval seeds that used Billing. The knowledge lives in the **tools** so that a cheap model is enough: **apply a reviewed pattern** as one validated batch, **preview** commands with their findings before saving, and an **automatic review** after every change. Evals compare a cheap model with a stronger one. Live, paid runs only with the owner's explicit go-ahead at that time. | Chosen with the owner's direction. |
 | D7 | The legend | Only **dashed = async** is shown. The expanded help says that solid means a direct call where the caller waits: HTTP, a database or storage read or write, a cache. Dashed means it is sent through a queue or topic and nobody waits. | Show both, as **Direct** and **Async**. |
 | D8 | v3 layout | `field-projects/youtube/v3/` holds `inputs/`, `diagrams/` and `notes/`, plus two outputs: `generated/` (the exact export, never edited) and `app/` (generated plus custom completion). The backend LOC benchmark compares `app/` with `generated/`. | One app directory with a baseline commit, as in v2. |
 
@@ -74,7 +77,8 @@ These are the planning defaults. The owner confirms them or changes them before 
   - Never touch the owner's stacks (v1/v2 on 45400–45412), volumes or image tags.
   - Remove everything you create, including scratch exports holding runtime secrets.
 - **No invented product behaviour:** v3 completion follows v1/v2's product scope (uploads,
-  processing, publication, playback, search, counts), plus D4. It adds nothing else.
+  processing, publication, playback, search, counts), plus D4: optional sign-in and Favorites. It
+  adds nothing else.
 
 ## Rules for every unit
 
@@ -211,23 +215,36 @@ pauses only for questions that go beyond the confirmed decisions.
    - provisioning of the Keycloak client and realm;
    - errors (401 when required, anonymous when optional);
    - reuse in Marketplace for buyers and sellers.
-3. **Settings on process tiles (D5):** which settings and on which kinds.
-4. **The v3 design:** the full table of tiles (names without kind words), links (direct or
+3. **The Favorites template (D4):**
+   - its module kind, host kinds and slots: an Auth guard in the same tile set to required, and
+     a database it writes;
+   - its endpoints (add, remove, list for the signed-in account) and their errors;
+   - the table it owns;
+   - the single product hook (`eligible`: may this item be favorited?);
+   - how v3 answers that hook from the published videos view;
+   - reuse for Marketplace listings.
+4. **Settings on process tiles (D5):** which settings and on which kinds.
+5. **The v3 design:** the full table of tiles (names without kind words), links (direct or
    async, with direction), modules and module links, in the v2-rebuild format.
    - It includes Watch API's optional Auth guard and the Watch API → Identity link.
+   - Where Favorites lives: on Watch API, or on a separate **Account API** with a required guard.
+     The default is a separate Account API, because favorites are generic account services; the
+     contract confirms or argues otherwise.
    - View events carry the viewer when signed in.
    - Product tables come from D1: which module writes `videos` and which views Watch reads.
    - Search mappings and query preset data.
    - The useful settings.
-5. **Field-project layout (D8):**
+6. **Field-project layout (D8):**
    - `generated/` (exact export, processes on, never edited) and `app/` (copy plus completion);
    - how `app/` records its custom paths;
    - the LOC benchmark scope;
    - the reused v2 browser.
-6. **Acceptance:** v1/v2's S01–S08 scenarios plus signed-in and anonymous watching. Say exactly
-   what is observed, by mouse in the browser and by API.
+7. **Acceptance:** v1/v2's S01–S08 scenarios plus signed-in and anonymous watching, and
+   Favorites. A signed-in viewer adds, lists and removes favorites. Anonymous favorites calls
+   answer 401. Favoriting a video that isn't ready is refused. Say exactly what is observed, by
+   mouse in the browser and by API.
 
-Revise V3-05 to V3-16 if the contract changes their scope.
+Revise V3-05 to V3-17 if the contract changes their scope.
 
 **Commit:** `V3-04: v3 contract`.
 
@@ -270,7 +287,30 @@ Implement contract §2:
 
 **Commit:** `V3-06: auth guard template`.
 
-### V3-07 — Process settings and robustness
+### V3-07 — The Favorites template
+
+Implement contract §3:
+
+- the template;
+- its module kind in the catalog and the module menu, marked Template;
+- its table and endpoints;
+- the `eligible` hook in a hooks file;
+- the Auth guard requirement (refused with a plain reason without a required guard in the same
+  tile);
+- chat parity.
+
+**Tests**
+
+- Unit tests.
+- A Docker run of a small design: a Service with a required guard, Favorites and a database.
+  - With a token: add, list and remove work.
+  - Without one: 401.
+  - The unwritten `eligible` answers "Not implemented: eligible".
+  - With `eligible` filled in a scratch copy, an ineligible item is refused.
+
+**Commit:** `V3-07: favorites template`.
+
+### V3-08 — Process settings and robustness
 
 - **D5:** Request timeout and Concurrency limit show on process tiles while Runnable processes is
   on, and are consumed.
@@ -282,73 +322,84 @@ Implement contract §2:
 - **A short Docker fault drill** (row 5): stop the broker. A process drains, exits 1 and stays
   exited, and start recovers it. A stub's own error retries 5 times.
 
-**Commit:** `V3-07: process settings and robustness`.
+**Commit:** `V3-08: process settings and robustness`.
 
 ## Phase C — A better chat agent
 
-### V3-08 — Chat knows modules, patterns and review
+### V3-09 — Chat tools that carry the knowledge (D6)
 
-- **Tools:**
-  - `listStudioDefinitions` returns the module catalog, with slots, hosts, Template / Part of a
-    template / Stub and the one-line descriptions.
-  - `getDesign` returns module statuses, the processes option, kind labels and queue or topic.
-  - Chat offers only the fan's 11 tile kinds (D6). Update the eval seeds.
-- **Patterns:** `listStudioPatterns` returns curated, module-authored patterns drawn from the
-  design playbook:
+**Goal:** a modest model builds and reviews correct diagrams because the tools do the hard
+parts. Chat can do exactly what the mouse can, and no more.
+
+- **The same surface as the mouse:** chat's commands are the supported authoring commands, with
+  the fan's 11 tile kinds, the module catalog and the processes option. Update the eval seeds
+  that used Billing.
+- **Knowledge in the tools:**
+  - `listStudioDefinitions` returns the module catalog (slots, hosts, Template / Part of a
+    template / Stub, the one-line descriptions) and the tile kinds with their labels.
+  - `getDesign` returns a compact, readable design: tiles, links, modules and statuses.
+- **Applying a pattern:** `applyPattern` applies a curated, module-authored pattern from the
+  design playbook as **one validated batch**, with names and links filled in from the
+  arguments. The patterns are:
   - the upload pipeline;
   - the read path with a cache loader;
   - counting from events;
   - search fed by events;
-  - optional or required sign-in;
+  - required or optional sign-in;
+  - favorites;
   - a store with one writer and published views.
 
-  Each pattern lists the tiles, modules, links and their interaction.
+  `listStudioPatterns` describes each pattern's arguments.
+- **Preview:** `previewCommands` dry-runs a batch and returns the resulting statuses and findings
+  without saving.
 - **Review:** `reviewDesign` adds:
   - module statuses and their reasons;
   - required slots left unconnected;
   - generation findings;
   - the playbook smells (a store with no writer, a worker writing an unrelated store, a user
     reaching a store, a long line to a far store);
-  - lines whose dashed or solid style contradicts their channel.
+  - line styles that contradict their channel.
 
-  Each finding names its tile or module and a fix.
-- **The working loop:** the system prompt sets **plan → apply → review → fix**, and chat runs a
-  review after every change it makes and reports what's left. No prompt says "you are an
-  expert"; give it the tools and the loop.
+  Each finding names its tile or module and a concrete fix, as a command where possible.
+- **The working loop:** **plan → preview → apply → review → fix**. Chat runs a review after every
+  change it saves and reports what's left. Keep the system prompt short; the tools do the
+  teaching.
 
-**Commit:** `V3-08: chat knows modules, patterns and review`.
+**Commit:** `V3-09: chat tools that carry the knowledge`.
 
-### V3-09 — Chat evals that score real designs
+### V3-10 — Chat evals that score real designs
 
-- **Build-from-brief eval:** give chat the v3 brief (contract §4 in prose) and score the design it
-  saves with the structural diff (`v2-diff.ts`, generalised) against the v3 reference. Score
-  tiles, links, modules and module links, and templates resolved, with a 0–100 score per area.
-- **Review eval:** seed designs with known defects (one per smell and status class) and score
-  whether `reviewDesign` and chat name each one and propose its fix.
-- **Running it:**
-  - recorded replay, as the RF06 suite does;
-  - live runs only with the existing explicit paid opt-in;
-  - record a baseline score with the current provider in `docs/evals/`.
-- `docs/chat-evals.md` explains how to run it and how to read the scores.
+- **Build-from-brief eval:** give chat the v3 brief (contract §5 in prose) and score the saved
+  design with the structural diff (`v2-diff.ts`, generalised) against the v3 reference. Score
+  tiles, links, modules and module links, and templates resolved, from 0 to 100 per area.
+- **Review eval:** seed designs with known defects (one per smell and status class). Score
+  whether chat names each one and fixes it.
+- **Model comparison:** the harness runs any configured provider and model. Recorded replay runs
+  offline, as RF06 does.
+  - The **live comparison** of a cheap model against a stronger one needs the owner's explicit
+    go-ahead at run time; the coordinator asks first.
+  - Never store keys.
+  - Record the scores in `docs/evals/`.
+- `docs/chat-evals.md` explains how to run the evals and how to read the scores.
 
-**Commit:** `V3-09: chat design evals`.
+**Commit:** `V3-10: chat design evals`.
 
 ## Phase D — YouTube v3
 
-### V3-10 — Design v3 by mouse
+### V3-11 — Design v3 by mouse
 
-- Build the contract §4 design **by mouse** in a blank project, in Detailed, with the new + and
+- Build the contract §5 design **by mouse** in a blank project, in Detailed, with the new + and
   Connect.
-- Check: the structural diff against contract §4 has 0 unexpected rows, and Generate → Preview
+- Check: the structural diff against contract §5 has 0 unexpected rows, and Generate → Preview
   resolves the expected templates with no findings.
 - Keep the project in the owner's database as **"YouTube v3"**.
 - Save its snapshot to `field-projects/youtube/v3/{inputs,diagrams}`: the design, the blueprint,
   and Detailed and Simple PNG exports.
 - Note how many mouse steps it took and what was awkward.
 
-**Commit:** `V3-10: design v3 by mouse`.
+**Commit:** `V3-11: design v3 by mouse`.
 
-### V3-11 — Generated output
+### V3-12 — Generated output
 
 - Export v3 with Runnable processes on into `field-projects/youtube/v3/generated/`. Commit it
   untouched; this is the owner's generated-code-only deliverable. Add a short `README.md` saying
@@ -360,9 +411,9 @@ Implement contract §2:
 - Copy `generated/` to `app/` as the starting point for completion, and record the baseline in
   the benchmark notes.
 
-**Commit:** `V3-11: v3 generated output`.
+**Commit:** `V3-12: v3 generated output`.
 
-### V3-12 to V3-15 — Complete v3 in `app/`
+### V3-13 to V3-16 — Complete v3 in `app/`
 
 Each unit fills the product hooks, stub bodies and product SQL for one area, in the order a
 request reaches them. Each one reruns its path in Docker after each step and keeps
@@ -371,22 +422,23 @@ They record what was written and why.
 
 | Unit | Area |
 | --- | --- |
-| V3-12 | Upload: guard-required creators, the multipart hooks, upload metadata, the job payload |
-| V3-13 | Processing and lifecycle: transcoder codecs, lifecycle codecs, publication |
-| V3-14 | Watch: video details from published views, counts, view events with the optional viewer, optional sign-in |
-| V3-15 | Search, plus the browser: mappings, the indexer and the query; the v2 browser reused, with optional sign-in for watchers |
+| V3-13 | Upload: guard-required creators, the multipart hooks, upload metadata, the job payload |
+| V3-14 | Processing and lifecycle: transcoder codecs, lifecycle codecs, publication |
+| V3-15 | Watch and Favorites: video details from published views, counts, view events with the optional viewer, optional sign-in, and Favorites' `eligible` from the published videos view |
+| V3-16 | Search, plus the browser: mappings, the indexer and the query; the v2 browser reused, with optional sign-in for watchers and a favorite toggle and list for signed-in watchers |
 
-**Commits:** `V3-12: complete upload`, `V3-13: complete processing`, `V3-14: complete watch`,
-`V3-15: complete search and browser`.
+**Commits:** `V3-13: complete upload`, `V3-14: complete processing`, `V3-15: complete watch and
+favorites`, `V3-16: complete search and browser`.
 
-### V3-16 — End-to-end acceptance and benchmark
+### V3-17 — End-to-end acceptance and benchmark
 
 - **Independent run:** copy `app/` outside the checkout and run it on its own project and ports.
   Observe by mouse in the browser:
   - creator sign-in and a multipart upload with resume;
   - processing, publication and playback;
   - search;
-  - counts for a signed-in watcher and for an anonymous one.
+  - counts for a signed-in watcher and for an anonymous one;
+  - Favorites for a signed-in watcher, and 401 for an anonymous one.
 
   Stop and start keep the data. Record what was observed and what was not.
 - **Backend LOC benchmark:** `app/` against `generated/` (D8), backend only, following
@@ -394,18 +446,18 @@ They record what was written and why.
 - **Owner review pack:** `field-projects/youtube/v3/notes/review-pack.md`, covering how to run
   each output, what's generated versus custom, and the screenshots.
 
-**Commit:** `V3-16: v3 acceptance and benchmark`.
+**Commit:** `V3-17: v3 acceptance and benchmark`.
 
 ## Phase E — Review
 
-### V3-17 — Independent review
+### V3-18 — Independent review
 
-A fresh agent adds no features. It checks the owner's feedback items 1–12 and D1–D8 by mouse and
+A fresh agent adds no features. It checks the owner's feedback items 1–14 and D1–D8 by mouse and
 against the evidence. It fixes small defects, with tests, and writes
 `docs/plans/youtube-v3/review.md` with ranked follow-ups, including the Marketplace revisit with
 buyer and seller accounts.
 
-**Commit:** `V3-17: review v3`.
+**Commit:** `V3-18: review v3`.
 
 ## Risks and stop conditions
 
@@ -413,9 +465,9 @@ buyer and seller accounts.
   forms-based "Advanced" UI, stop and report.
 - **Docker:** if Docker or images are unavailable, report it. Do not substitute mocks for the
   acceptance runs.
-- **Completion (V3-12 to V3-15):** if a hook interface can't express a v1/v2 behaviour, record it
+- **Completion (V3-13 to V3-16):** if a hook interface can't express a v1/v2 behaviour, record it
   as a template gap; don't patch generated files in `generated/`.
-- **Chat evals (V3-09):** live provider calls only with explicit opt-in. Never store keys.
+- **Chat evals (V3-10):** live provider calls only with explicit opt-in. Never store keys.
 
 ## Coordinator prompt
 

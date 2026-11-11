@@ -8884,3 +8884,14 @@ Decisions D1–D8 await the owner's confirmation before V3-01.
 
 I ran no checks: only docs changed. The owner's uncommitted `README.md` and `.docs/` are
 untouched.
+
+## 2026-11-10 — YouTube v3 decisions confirmed
+
+The owner confirmed D1–D8 and added two directions:
+
+- **Favorites** becomes a generic account template (V3-07, added).
+- **Chat** gets tools that carry the knowledge: `applyPattern`, `previewCommands` and automatic
+  review. It has exactly the mouse's surface, and evals compare a cheap model with a stronger one.
+  Live paid runs need the owner's go-ahead at the time (V3-09, V3-10).
+
+The units are renumbered to V3-01–V3-18. Docs only, so no checks were run. Next: V3-01.
