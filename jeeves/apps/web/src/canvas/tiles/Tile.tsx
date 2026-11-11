@@ -1,7 +1,8 @@
-// A tile's face: the kind's icon (40px) in its family colour and the name in up to two lines. The
-// board draws the frame (a rounded rectangle, or a pill for Database, Cache, Queue and Storage).
+// A tile's face: the kind's icon (40px) in its family colour, the name in up to two lines and its
+// kind label ("Service", "Queue", `studioKindLabel`) in small grey type at the bottom. The board
+// draws the frame (a rounded rectangle, or a pill for Database, Cache, Queue and Storage).
 // Proportions follow automation-illustrator's StepTile task card: the icon is pinned near the top
-// so a second name line grows downwards.
+// so a second name line grows downwards, and the label is pinned to the bottom below it.
 import {
   type StudioKind,
   studioDefinitions,
@@ -21,10 +22,13 @@ export function tileShape(kind: StudioKind | undefined): "rect" | "pill" {
 export function Tile({
   kind,
   name,
+  label,
   warnings,
 }: {
   kind?: StudioKind;
   name: string;
+  /** Its kind label (`studioKindLabel`); none for a tile without studio settings. */
+  label?: string;
   /** Its design warnings, shown as a mark in the corner. */
   warnings?: readonly string[];
 }) {
@@ -35,6 +39,7 @@ export function Tile({
         <StudioIcon name={visual?.icon} size={40} />
       </span>
       <span className="lane-tile-name">{name}</span>
+      {label ? <span className="lane-tile-kind">{label}</span> : null}
       <WarningMark messages={warnings} />
     </div>
   );

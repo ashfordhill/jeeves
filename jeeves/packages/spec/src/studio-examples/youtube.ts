@@ -6,26 +6,29 @@
  *
  * In lanes: the user watches (download, the **Watch** action) through the Watch API (a video's
  * details from its own cache or the database, the view count, and each view), the Search API and
- * the Video CDN (segments, playlists and thumbnails), and publishes (upload, the **Publish**
- * action) through Identity (sign-in) and the Upload service (an Uploads service: it starts, signs
- * and completes a multipart upload into Original videos and queues a job).
+ * Video delivery (the CDN: segments, playlists and thumbnails), and publishes (upload, the
+ * **Publish** action) through Identity (sign-in) and the Upload service (an Uploads service: it
+ * starts, signs and completes a multipart upload into Original videos and queues a job).
+ *
+ * Names leave out the kind each tile's label shows: Metadata (a database), Hot metadata (a cache),
+ * Videos (a search index), Video delivery (a CDN).
  *
  * Xu's boxes and what each became:
  * - Original storage, transcoding servers, transcoded storage, completion queue, completion
  *   handler, metadata DB: Original videos, Transcoder, Transcoded videos, Completion events,
- *   Completion handler, Metadata database.
+ *   Completion handler, Metadata.
  * - API servers: one service per responsibility the reader should see (Watch API, Search API,
  *   Upload service).
  * - The upload with a pre-signed URL: the Upload service, an Uploads service whose Transfer is
  *   signed URLs. The client asks the service first (sign-in, checks), then sends the parts
  *   straight to storage with the URLs it signed, and the service completes the upload. A user
  *   never reaches storage on the canvas.
- * - The metadata cache: Metadata cache, owned and filled by the Watch API (below).
+ * - The metadata cache: Hot metadata, owned and filled by the Watch API (below).
  * - The transcoding DAG (preprocessor, DAG scheduler, resource manager, task workers, temporary
  *   storage): the Transcoder's modules, not tiles.
  * - The load balancer: none; a service's replicas imply it. No gateway either (it would be each
  *   action's only entry and hide which services a viewer and a creator reach).
- * - The CDN: the Video CDN pulls from Transcoded videos (its origin); the pipeline doesn't push.
+ * - The CDN: Video delivery pulls from Transcoded videos (its origin); the pipeline doesn't push.
  *
  * What the other sources add, and what each tile traces to:
  * - All four: originals in object storage, uploaded in parts that can resume; ByteByteGo,
@@ -34,13 +37,13 @@
  * - All four: processing is asynchronous, behind a queue (Upload jobs), and encodes each video at
  *   several resolutions and bitrates. ByteByteGo, HelloInterview and the crash course split it
  *   into segments with HLS or DASH playlists, and a CDN serves them while the player picks each
- *   segment's bitrate (Video CDN). Grokking and ByteByteGo make thumbnails in the pipeline.
+ *   segment's bitrate (Video delivery). Grokking and ByteByteGo make thumbnails in the pipeline.
  * - HelloInterview: a metadata cache partitioned by video ID, least recently used evicted first
- *   (Metadata cache).
+ *   (Hot metadata).
  * - Grokking and the crash course: metadata in MySQL, sharded by video ID, with replicas for
  *   reads; YouTube built Vitess to shard its MySQL.
  * - The crash course: a search service over an index filled when a video becomes playable
- *   (Search API, Search indexer, Search index); view counts in their own store, eventually
+ *   (Search API, Search indexer, Videos); view counts in their own store, eventually
  *   consistent (View events, View counter, View counts; Reddit counts views from events too).
  *
  * Design decisions:
@@ -60,7 +63,7 @@
  *   evicted, and a reader that fills a cache another tile writes would be a second writer.
  * - Views: the Watch API publishes each view the player reports, and the View counter sums them
  *   per video and adds them in batches.
- * - Thumbnails are stored once, at full size, beside the segments; the Video CDN resizes them on
+ * - Thumbnails are stored once, at full size, beside the segments; Video delivery resizes them on
  *   request.
  * - Cloudflare R2 behind the Cloudflare CDN: R2 charges no egress, and ByteByteGo names CDN
  *   traffic the largest cost. Cloudflare's terms want video on its CDN served through a paid
@@ -109,7 +112,7 @@ const description =
 
 export const YOUTUBE_STUDIO_EXAMPLE = {
   id: "studio-youtube",
-  version: "2.1.0",
+  version: "2.2.0",
   name: "YouTube · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -144,7 +147,7 @@ const components: StudioComponent[] = [
     host: "watch",
     name: "Details cache",
     description:
-      "Cache-aside: looks a video up in the Metadata cache; on a miss reads a replica and fills the cache for an hour.",
+      "Cache-aside: looks a video up in Hot metadata; on a miss reads a replica and fills the cache for an hour.",
     settings: {
       kind: "cache-reader",
       pattern: "cache-aside",
@@ -265,7 +268,7 @@ const components: StudioComponent[] = [
       "Announces the playable video with the job's title and description, its duration, playlist and thumbnails.",
     settings: { kind: "event-publisher", outbox: "disabled" },
   },
-  // Completion handler: the Metadata database's only writer.
+  // Completion handler: Metadata's only writer.
   {
     id: "handler-consumer",
     host: "completion-handler",
@@ -281,7 +284,7 @@ const components: StudioComponent[] = [
       "Records the playable video once, by its ID: title, description, channel, duration, playlist and thumbnails.",
     settings: dataAccess(10, 2000),
   },
-  // Search indexer: the Search index's only writer.
+  // Search indexer: the only writer of Videos, the search index.
   {
     id: "indexer-consumer",
     host: "search-indexer",
@@ -348,11 +351,11 @@ const actions: StudioLaneAction[] = [
   { lane: "upload", name: "Publish" },
 ];
 /**
- * Watch reaches the Watch API, the Search API and the Video CDN; Publish reaches Identity and the
+ * Watch reaches the Watch API, the Search API and Video delivery; Publish reaches Identity and the
  * Upload service. Of the 6,912 entry and link orders (entries, and the links of the Watch API, the
  * Transcoder, the Upload service and Completion events), laid out with real ELK with the stores
  * beside their users, half leave a bend shorter than the grid; of the rest every one crosses at
- * least once, and this order crosses once (the Watch API's read of the Metadata database passing
+ * least once, and this order crosses once (the Watch API's read of Metadata passing
  * the Search API's) with the shortest lines (8,864px in all, the longest the Search API's read,
  * 1,056px) and 54 bends. The Upload service links to Upload jobs before Original videos (connections below), so
  * Original videos sit below Upload jobs and the Transcoder's read comes back under them. The Watch
@@ -423,7 +426,7 @@ export function youtubeStudioExample() {
       },
       {
         id: "metadata-cache",
-        name: "Metadata cache",
+        name: "Hot metadata",
         description:
           "Videos' details by video ID, filled by the Watch API on a miss and kept an hour.",
         settings: {
@@ -438,7 +441,7 @@ export function youtubeStudioExample() {
       },
       {
         id: "metadata-db",
-        name: "Metadata database",
+        name: "Metadata",
         description:
           "Playable videos: title, description, channel, duration, playlist and thumbnails.",
         settings: { ...mysql, readReplicas: 3 },
@@ -473,7 +476,7 @@ export function youtubeStudioExample() {
       },
       {
         id: "search-index",
-        name: "Search index",
+        name: "Videos",
         description: "Playable videos by title, description and channel.",
         settings: { kind: "search", engine: "opensearch", provider: "self-hosted" },
         owner: { kind: "element", id: "search-indexer" },
@@ -481,7 +484,7 @@ export function youtubeStudioExample() {
       // Streaming.
       {
         id: "video-cdn",
-        name: "Video CDN",
+        name: "Video delivery",
         description:
           "Serves video segments, playlists and thumbnails from the edge; resizes thumbnails on request.",
         settings: {
@@ -560,13 +563,13 @@ export function youtubeStudioExample() {
       {
         id: "completion-handler",
         name: "Completion handler",
-        description: "Records each playable video in the Metadata database, once.",
+        description: "Records each playable video in Metadata, once.",
         settings: worker(4, 4),
       },
       {
         id: "search-indexer",
         name: "Search indexer",
-        description: "Adds each playable video to the Search index.",
+        description: "Adds each playable video to the search index.",
         settings: worker(4, 4),
       },
     ],

@@ -57,6 +57,10 @@
   box-shadow: var(--chip-shadow);
   font-size: 12px;
 }
+/* Collapsed, it is only as wide as its one sample. */
+.lane-line-legend:not([open]) {
+  width: auto;
+}
 .lane-line-legend summary {
   cursor: pointer;
 }
@@ -80,7 +84,8 @@
   font-weight: 600;
 }
 
-/* Tile face (StepTile task card proportions): icon pinned near the top, name below. */
+/* Tile face (StepTile task card proportions): icon pinned near the top, name below, the kind label
+   pinned to the bottom. */
 .lane-tile {
   box-sizing: border-box;
   width: 100%;
@@ -89,8 +94,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
-  padding: 22px 8px 8px;
+  gap: 6px;
+  padding: 14px 8px 8px;
   text-align: center;
 }
 
@@ -114,7 +119,27 @@
   color: var(--board-ink);
 }
 
-/* Container face (Detailed view): a one-line header above a divider, then one row per module, each
+/* A tile's kind ("Service", "Queue"): small, calm type in the ink mixed toward the tile, about
+   4.9:1 on the light tile and 5.5:1 on the dark one. */
+.lane-tile-kind,
+.lane-container-kind {
+  overflow: hidden;
+  max-width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15px;
+  color: color-mix(in srgb, var(--board-ink) 62%, var(--board-tile));
+}
+
+.lane-tile-kind {
+  flex: none;
+  margin-top: auto;
+}
+
+/* Container face (Detailed view): a header (the name on one line, the kind label below it) above a
+   divider, then one row per module, each
    centred on its port's height (positions come from the projection). A row is a framed box and a
    button that opens its module; a row with a drawn line has a port mark, a stub from the frame to
    its box on that side, in the line's colour. A row that can connect has a dot on its right edge,
@@ -149,6 +174,13 @@
   color: var(--type-color);
 }
 
+/* The name and, below it, the kind label. */
+.lane-container-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .lane-container-name,
 .lane-container-row-name {
   overflow: hidden;
@@ -161,6 +193,7 @@
 .lane-container-name {
   font-size: 15px;
   font-weight: 800;
+  line-height: 1.25;
 }
 
 .lane-container-rows {

@@ -123,6 +123,11 @@ export type StudioDefinition<K extends StudioKind = StudioKind> = {
   version: "1.0.0";
   kind: K;
   name: string;
+  /**
+   * The short kind label a tile shows under its name ("Service", "Worker", "Search index"). A
+   * queue's depends on its mode (`studioKindLabel`); its own is the default, "Topic".
+   */
+  label: string;
   creationName: string;
   description: string;
   classification: Readonly<Pick<Classification, "kind">>;
@@ -323,6 +328,7 @@ function define<K extends StudioKind>(
 export const studioDefinitions = Object.freeze({
   service: define("service", {
     name: "Microservice",
+    label: "Service",
     creationName: "Microservice",
     description: "One independently deployed application responsibility.",
     classification: applicationClassification,
@@ -334,6 +340,7 @@ export const studioDefinitions = Object.freeze({
   }),
   browser: define("browser", {
     name: "Browser app",
+    label: "Browser app",
     creationName: "Browser app",
     description: "Browser assets delivered independently or by an actual application.",
     classification: applicationClassification,
@@ -372,6 +379,7 @@ export const studioDefinitions = Object.freeze({
   }),
   worker: define("worker", {
     name: "Worker service",
+    label: "Worker",
     creationName: "Worker service",
     description: "An independently executed background application.",
     classification: applicationClassification,
@@ -395,6 +403,7 @@ export const studioDefinitions = Object.freeze({
   }),
   billing: define("billing", {
     name: "Billing",
+    label: "Billing",
     creationName: "Billing",
     description: "One Billing service with a payment integration choice.",
     classification: applicationClassification,
@@ -420,6 +429,7 @@ export const studioDefinitions = Object.freeze({
   }),
   redirect: define("redirect", {
     name: "Redirect",
+    label: "Redirect",
     creationName: "Redirect",
     description: "One public Redirect service with identity-backed lookup dependencies.",
     classification: applicationClassification,
@@ -454,6 +464,7 @@ export const studioDefinitions = Object.freeze({
   }),
   notification: define("notification", {
     name: "Notifications",
+    label: "Notifications",
     creationName: "Notifications",
     description: "One notification application with email delivery integration intent.",
     classification: applicationClassification,
@@ -479,6 +490,7 @@ export const studioDefinitions = Object.freeze({
   }),
   identity: define("identity", {
     name: "Identity",
+    label: "Identity",
     creationName: "Identity",
     description: "One application integrating an existing identity provider.",
     classification: applicationClassification,
@@ -504,6 +516,7 @@ export const studioDefinitions = Object.freeze({
   }),
   uploads: define("uploads", {
     name: "Uploads",
+    label: "Uploads",
     creationName: "Uploads",
     description:
       "One service that takes large uploads into object storage; its transfer says how the bytes travel.",
@@ -531,6 +544,7 @@ export const studioDefinitions = Object.freeze({
   }),
   gateway: define("gateway", {
     name: "Gateway",
+    label: "Gateway",
     creationName: "Gateway",
     description: "One entry point that routes client requests to internal services.",
     classification: applicationClassification,
@@ -565,6 +579,7 @@ export const studioDefinitions = Object.freeze({
   }),
   database: define("database", {
     name: "Database",
+    label: "Database",
     creationName: "Database",
     description: "One logical authoritative store; engine and provider are separate choices.",
     classification: dataClassification,
@@ -597,6 +612,7 @@ export const studioDefinitions = Object.freeze({
   }),
   cache: define("cache", {
     name: "Cache",
+    label: "Cache",
     creationName: "Cache",
     description: "A logical cache with an optional technical TTL policy.",
     classification: dataClassification,
@@ -638,7 +654,8 @@ export const studioDefinitions = Object.freeze({
     ],
   }),
   queue: define("queue", {
-    name: "Queue or topic",
+    name: "Message channel",
+    label: "Topic",
     creationName: "Queue",
     description: "One shared logical channel, owned explicitly, between publishers and consumers.",
     classification: dataClassification,
@@ -680,6 +697,7 @@ export const studioDefinitions = Object.freeze({
   }),
   "object-store": define("object-store", {
     name: "Object storage",
+    label: "Object storage",
     creationName: "Object storage",
     description: "A logical byte store with explicit access intent.",
     classification: dataClassification,
@@ -711,6 +729,7 @@ export const studioDefinitions = Object.freeze({
   }),
   search: define("search", {
     name: "Search index",
+    label: "Search index",
     creationName: "Search index",
     description: "A logical derived search index with engine and hosting intent.",
     classification: dataClassification,
@@ -744,6 +763,7 @@ export const studioDefinitions = Object.freeze({
   }),
   cdn: define("cdn", {
     name: "CDN",
+    label: "CDN",
     creationName: "CDN",
     description: "External content delivery with an explicit existing origin.",
     classification: externalClassification,
@@ -784,6 +804,7 @@ export const studioDefinitions = Object.freeze({
   }),
   "external-api": define("external-api", {
     name: "External API",
+    label: "External API",
     creationName: "External API",
     description: "An external integration boundary, named for the actual provider when known.",
     classification: externalClassification,
@@ -813,6 +834,16 @@ export const studioDefinitions = Object.freeze({
     ],
   }),
 });
+
+/**
+ * The kind label a tile shows: its kind's `label`, except a message channel's, which is **Queue**
+ * when its mode is a work queue and **Topic** otherwise (the generation contract's default mode).
+ * A queue gives each message to one consumer; a topic copies it to every subscriber.
+ */
+export function studioKindLabel(settings: StudioSettings): string {
+  if (settings.kind === "queue" && settings.mode === "work-queue") return "Queue";
+  return studioDefinitions[settings.kind].label;
+}
 
 /**
  * Performance descriptors, kept outside `definition.fields`; the inspector appends them to Options.

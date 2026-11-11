@@ -144,8 +144,8 @@ test("adds a module of every fan kind to a Service and a Worker by mouse", async
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await build(page, "E2E Module fan", [
     ["Consume", "Microservice"],
-    ["Microservice", "Queue or topic"],
-    ["Queue or topic", "Worker service"],
+    ["Microservice", "Message channel"],
+    ["Message channel", "Worker service"],
   ]);
   try {
     // A Service: the `+` on its left, the link tab on its right.
@@ -579,8 +579,8 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await build(page, "E2E Runnable processes", [
     ["Consume", "Microservice"],
-    ["Microservice", "Queue or topic"],
-    ["Queue or topic", "Worker service"],
+    ["Microservice", "Message channel"],
+    ["Message channel", "Worker service"],
   ]);
   let study: string | undefined;
   const generation = async (project: string) =>
@@ -597,7 +597,7 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
     await page.getByRole("button", { name: "Detailed", exact: true }).click();
     await ready(page);
     await page.keyboard.press("c");
-    await dragOnto(page, dot(page, "worker-service-event-consumer"), tile(page, "Queue or topic"));
+    await dragOnto(page, dot(page, "worker-service-event-consumer"), tile(page, "Message channel"));
     await page.mouse.up();
     await expect(dot(page, "worker-service-event-consumer")).toHaveAttribute(
       "data-connected",
@@ -627,14 +627,14 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
           tile: "worker-service",
           service: "app-worker-service",
           shape: "worker",
-          loops: [{ queue: "queue-or-topic", module: "worker-service-event-consumer" }],
+          loops: [{ queue: "message-channel", module: "worker-service-event-consumer" }],
           // The queue its consumer stub links to is provisioned for it (TP07).
           stores: [
             {
-              store: "queue-or-topic",
+              store: "message-channel",
               kind: "queue",
               access: "consume",
-              provisioned: "RabbitMQ work queue queue-or-topic and its .failed",
+              provisioned: "RabbitMQ work queue message-channel and its .failed",
             },
           ],
         },
@@ -646,8 +646,8 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
       .getByRole("listitem");
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(1)).toContainText("Worker service app-worker-service · worker");
-    await expect(rows.nth(1)).toContainText("loop on queue-or-topic");
-    await expect(rows.nth(1)).toContainText("Provisioned: Queue or topic (queue, consume)");
+    await expect(rows.nth(1)).toContainText("loop on message-channel");
+    await expect(rows.nth(1)).toContainText("Provisioned: Message channel (queue, consume)");
     await expect(rows.nth(0)).toContainText(
       "Microservice app-microservice · HTTP, public · at /api/microservice/",
     );

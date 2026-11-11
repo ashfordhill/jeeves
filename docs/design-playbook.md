@@ -31,9 +31,11 @@ ones that shape every pattern below:
 - Caps (`laneLimits`): 4 links out of a tile, 4 entries per action.
 
 Notation, as in the [studio guide](studio.md): `→` a request, `⇢` asynchronous, `⇣`/`⇡` an entry
-from the download or upload action. "(owner)" marks a store's one writer. On the canvas a request
-is a solid line and an asynchronous link a dashed one, and so is every link that continues after
-an asynchronous link: a worker's requests after its queue are dashed too.
+from the download or upload action. "(owner)" marks a store's one writer. On the canvas a direct
+call, where the caller waits (HTTP, a database, storage or cache read or write), is a solid line,
+and a message sent through a queue or topic, where nobody waits, a dashed one. A worker's store
+requests after its queue stay solid. Each tile's kind label (Database, Queue, Topic…) is under its
+name, so names leave the kind out.
 
 ## Real-world boxes in Jeeves
 
@@ -1497,3 +1499,20 @@ Overview is now Simple). That broke 19 end-to-end specs that had silently assume
 per element: a click at a container's centre opens a module row instead of selecting the tile,
 and Detailed draws more lines. Each now opens the Simple view by mouse first; a check should say
 which view it was written for.
+
+## 2026-11-10 V3-02: a line style means one thing, and the label says the kind
+
+The owner read the legend's "Request" for every solid line and asked what a "topic" was. A style
+in a legend is a promise about every line drawn in it, so define it by what the reader can check:
+**solid** is a direct call where the caller waits (HTTP, or a database, storage or cache read or
+write); **dashed** is a message through a queue or topic, where nobody waits. Name it by the
+mechanism, not the protocol: a store read is not a "request" to most readers, and a worker's write
+after its queue is still a direct call, so it stays solid. Then audit the drawings against the
+promise (every line of the four studies now is, by test) and say where the rules still allow a
+line that breaks it: the link table's direct async calls between applications would draw dashed
+with no channel. Show only the style that needs explaining (Async); solid is the default reading.
+A small grey kind label under each tile's name answers "what is this?" on the canvas, so a name
+can say what the tile holds ("Metadata", not "Metadata database"); keep names unique even when
+two tiles hold the same thing (Metadata the database, Hot metadata its cache). A channel's label
+is its mode, Queue (each message to one consumer) or Topic (a copy to every subscriber), because
+that difference, not "channel", is what changes the design.

@@ -22,7 +22,7 @@ const LINK_TAB = "Add linked tile";
 const FAN = [
   ["Microservice", "Worker service", "Uploads", "Identity"],
   ["Database", "Search index", "Cache", "Object storage"],
-  ["Queue or topic"],
+  ["Message channel"],
   ["CDN", "External API"],
 ];
 
@@ -89,10 +89,10 @@ test("greys the kinds the rules refuse there, with the reason", async ({ page, t
 });
 
 test("a greyed kind's tip never hides the kind below it", async ({ page, tinyurl: id }) => {
-  // After an action, Queue or topic is greyed; its tip, with the reason, hangs over CDN below it.
+  // After an action, Message channel is greyed; its tip, with the reason, hangs over CDN below it.
   await tile(page, "Open link").click();
   await pull(page, "Open link", LINK_TAB);
-  await moveOnto(page, fanItem(page, "Queue or topic"));
+  await moveOnto(page, fanItem(page, "Message channel"));
   const tip = page.locator(".board-fan-tip");
   await expect(tip.locator(".board-fan-reason")).toBeVisible();
   const [over, under] = [await tip.boundingBox(), await fanItem(page, "CDN").boundingBox()];
@@ -275,7 +275,7 @@ test("builds both actions from a blank design", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("creates each of the eleven kinds by mouse, with its icon, and Undo removes one", async ({
+test("creates each of the eleven kinds by mouse, with its icon and label, and Undo removes one", async ({
   page,
 }) => {
   test.slow();
@@ -289,29 +289,31 @@ test("creates each of the eleven kinds by mouse, with its icon, and Undo removes
     await ready(page);
     // Each kind from a tile it may follow: the action's entries, then a service's stores, then
     // the Uploads service's queue, external API and worker. A tile links to at most four.
-    const plan: [from: string, name: string, kind: string, icon: string][] = [
-      ["Consume", "Microservice", "service", "server"],
-      ["Consume", "Uploads", "uploads", "cloud-upload"],
-      ["Consume", "Identity", "identity", "lock"],
-      ["Consume", "CDN", "cdn", "world"],
-      ["Microservice", "Database", "database", "database"],
-      ["Microservice", "Search index", "search", "search"],
-      ["Microservice", "Cache", "cache", "bolt"],
-      ["Microservice", "Object storage", "object-store", "archive"],
-      ["Uploads", "Queue or topic", "queue", "list"],
-      ["Uploads", "External API", "external-api", "plug"],
-      ["Uploads", "Worker service", "worker", "cpu"],
+    // A new message channel is a work queue, so its label reads Queue.
+    const plan: [from: string, name: string, kind: string, icon: string, label: string][] = [
+      ["Consume", "Microservice", "service", "server", "Service"],
+      ["Consume", "Uploads", "uploads", "cloud-upload", "Uploads"],
+      ["Consume", "Identity", "identity", "lock", "Identity"],
+      ["Consume", "CDN", "cdn", "world", "CDN"],
+      ["Microservice", "Database", "database", "database", "Database"],
+      ["Microservice", "Search index", "search", "search", "Search index"],
+      ["Microservice", "Cache", "cache", "bolt", "Cache"],
+      ["Microservice", "Object storage", "object-store", "archive", "Object storage"],
+      ["Uploads", "Message channel", "queue", "list", "Queue"],
+      ["Uploads", "External API", "external-api", "plug", "External API"],
+      ["Uploads", "Worker service", "worker", "cpu", "Worker"],
     ];
-    for (const [index, [from, name, kind, icon]] of plan.entries()) {
+    for (const [index, [from, name, kind, icon, label]] of plan.entries()) {
       await tile(page, from).click();
       await pull(page, from, LINK_TAB);
       await moveOnto(page, fanItem(page, name));
       await page.mouse.up();
       await ready(page);
-      // The new tile is named after its kind, shows its kind's icon and is selected.
+      // The new tile is named after its kind, shows its kind's icon and label and is selected.
       const added = tile(page, name);
       await expect(added).toHaveClass(/selected/);
       await expect(added.locator(`.lane-tile-icon svg.tabler-icon-${icon}`)).toHaveCount(1);
+      await expect(added.locator(".lane-tile-kind")).toHaveText(label);
       await expect(tiles(page)).toHaveCount(3 + index);
       const saved = await design(page, id);
       const element = saved.elements.find((e) => e.name === name)?.id;

@@ -51,18 +51,34 @@ handle it: its **lane entries**. A user never reaches a store or a third party d
 does that for it. Actions are design intent: they generate no code, and tell the reader (and a
 future generator's frontend templates) which user flow each service serves.
 
-- **Tiles** are 128×128: the kind's icon in its family colour and the name in up to two lines.
-  Database, cache, queue and storage tiles are pills; services, APIs and externals are rounded
-  rectangles. The user tile is 128×160. An **action tile** is 128×128 on the user's pastel: its
-  lane icon in a round badge and its name in large type (smaller for a long name), so it reads as
-  the start of a flow, not as a service.
-- **Lines** carry target arrowheads. A solid line is a request, including a worker's store read or
-  write after a queue; a dashed line is that relationship's asynchronous interaction. Request
-  arrows point caller → target, including reads, rather than showing the return of data. Messaging
-  arrows follow publisher → channel → consumer; direct async calls point sender → receiver. The
-  user's line to an action and entry lines are solid. Lines carry no words or chips; select one
-  for its label, interaction and direction in the inspector. Access declarations remain in diagnostics. The small **Request /
-  Async** legend at the lower left opens these conventions by mouse and stays at screen size.
+- **Tiles** are 128×128: the kind's icon in its family colour, the name in up to two lines and,
+  at the bottom in small grey type, the tile's **kind label** (`studioKindLabel`): Service,
+  Worker, Uploads, Identity, Database, Search index, Cache, Object storage, Queue or Topic, CDN,
+  External API (and Gateway, Redirect, Notifications, Billing on older tiles). So a name needn't
+  repeat its kind: YouTube's "Metadata" is labelled Database. Database, cache, queue and storage
+  tiles are pills; services, APIs and externals are rounded rectangles. The user tile is 128×160.
+  An **action tile** is 128×128 on the user's pastel: its lane icon in a round badge and its name
+  in large type (smaller for a long name), so it reads as the start of a flow, not as a service.
+  Actions and the user have no kind label.
+- **Queue or Topic.** A message channel (the `queue` kind) is labelled by its mode
+  (`settings.mode`): **Queue** for a work queue, **Topic** otherwise (the generation contract's
+  default). A queue gives each message to one consumer: one transcoder takes each upload job. A
+  topic copies each message to every subscriber, like a Kafka topic or a RabbitMQ exchange: the
+  Search indexer and the Completion handler both get each completion event. A new channel is a
+  work queue until a template derives a topic (or chat or source sets one); the mode has no
+  normal form control.
+- **Lines** carry target arrowheads. **Solid** is a direct call where the caller waits: HTTP, or
+  a database, storage or cache read or write (a worker's store write after a queue included).
+  **Dashed** is a message sent through a queue or topic, where nobody waits: publisher → channel
+  and channel → consumer. Arrows point caller → target, including reads, rather than showing the
+  return of data; messaging arrows follow publisher → channel → consumer. The user's line to an
+  action and entry lines are solid. Lines carry no words or chips; select one for its label,
+  interaction and direction in the inspector. Access declarations remain in diagnostics. The
+  small legend at the lower left shows only the dashed sample, **Async**; a click opens one line
+  each for solid and dashed, the direction conventions and how to trace lines. It stays at screen
+  size. Every line of the four studies follows this (`studio-lanes.test.ts`). The link table
+  still allows a direct asynchronous call between applications or an external API, drawn dashed
+  with no channel; no study uses one.
 - At a crossing, a small gap separates the routes; shared stems meet at a tile's port. Where
   several routes are equally close to a mouse click, **Choose relationship** lists their
   endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
@@ -94,8 +110,9 @@ chat. Switching keeps the
 selection, including an open module, animates every tile to its new place and then fits.
 
 In Detailed, an application tile with at least one module is a **container** (`detailedView.ts`,
-`tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its family colour and
-the name on one line above a divider, then one framed row per module, 32px apart, in module order.
+`tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its family colour, the
+name on one line and the kind label in small grey type below it, above a divider, then one framed
+row per module, 32px apart, in module order.
 A row shows the module's icon in its family colour and its name, cut short with an ellipsis; the
 full name is its tooltip. A row whose kind can take a connection has a small **dot** on its right
 edge, hollow until one of its slots is connected, then filled; a row that can't connect
@@ -182,10 +199,10 @@ tall: the fit shows the shape, and reading the rows takes about 0.6.
 ## Diagram PNG export
 
 Click **Export diagram** in the canvas toolbar, then **PNG**. The download contains the full
-saved diagram in the current view, including offscreen tiles, their existing labels/icons, all
-projected routes, crossing gaps and arrowheads. A Simple export is byte-for-byte what it was
-before the Detailed view existed. A Detailed export ends its filenames in `-detailed` and its
-capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
+saved diagram in the current view, including offscreen tiles, their names, kind labels and icons,
+all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
+visual reference (D2: a recorded hash, not a gate), `9332ea16…89bd` (3008×2752) since the kind
+labels. A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
 and their lines the relationship each drawn line belongs to. It uses the same HTML faces, SVG
 lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
@@ -257,8 +274,8 @@ links to its stores are short branches, not long lines beside the pipeline it al
   first link in, so a download user comes before an upload one), that doesn't make its band
   taller: where the band has fewer tiles than in its tallest column. It never sits more than one
   column before its last user, and at most right after it. YouTube: Original videos sit right
-  after the Upload service, beside Upload jobs, and Transcoded videos right after the Video CDN;
-  View counts sit with the Metadata cache and View events right after the Watch API.
+  after the Upload service, beside Upload jobs, and Transcoded videos right after Video delivery;
+  View counts sit with Hot metadata and View events right after the Watch API.
 - A later user's link then **comes back** to the store, drawn as a U like every other line: out of
   the tile's right side, back along a free row between the tiles (at least 16px from them, on the
   grid when it can be) and into the store's left side. Its two upright runs take free slots in
@@ -354,7 +371,7 @@ places, one row per group:
 | --- | --- |
 | Application | Microservice, Worker service, Uploads, Identity |
 | Data | Database, Search index, Cache, Object storage |
-| Messaging | Queue or topic |
+| Messaging | Message channel (labelled Queue or Topic) |
 | Edge | CDN, External API |
 
 A kind the rules refuse after that tile is greyed, and its tip adds why ("Click events can't link
@@ -546,7 +563,7 @@ details.
   normalize historical settings.
 - A module command on a study derives the whole tile's generation. On the TinyURL extended and
   YouTube studies the Cache reader the study already wires then reads **Refused**, as does its
-  Data access ("The link from Watch API to Metadata database uses Service identity, which its
+  Data access ("The link from Watch API to Metadata uses Service identity, which its
   template can't use; 9 other saved values can't be used either."): the study keeps values no
   control edits, such as its links' Service identity and its replicas. Nothing else changes,
   and Undo returns the study.
@@ -969,12 +986,14 @@ components, with nothing omitted and no findings.
 
 ## The YouTube study
 
-`studio-youtube@2.1.0` ([factory](../jeeves/packages/spec/src/studio-examples/youtube.ts)) is a
+`studio-youtube@2.2.0` ([factory](../jeeves/packages/spec/src/studio-examples/youtube.ts)) is a
 video-sharing site with YouTube's core functionality, designed as clean microservices rather than
 copied from YouTube. Version 2 follows Alex Xu's "Design YouTube" (ByteByteGo), mapped to Jeeves
 tiles and templates, after the owner's review of 1.2 (the
 [human feedback](HUMAN_FEEDBACK.md#2026-11-06--youtube-v2-search-feed-upload-forks-layout-xus-design)).
-Its core flows, and the tiles that carry them:
+Version 2.2 leaves the kind out of names the tile's kind label shows: Metadata (a database), Hot
+metadata (a cache), Videos (a search index), Video delivery (a CDN). Its core flows, and the tiles
+that carry them:
 
 - A creator publishes a video: the Upload service (an **Uploads** service, its transfer **signed
   URLs**) starts a multipart upload in Original videos and signs a URL for each part; the
@@ -985,15 +1004,15 @@ Its core flows, and the tiles that carry them:
   encodes it at several resolutions and bitrates in segments of a few seconds, writes the
   segments, HLS playlists and thumbnails to Transcoded videos, and announces the playable video on
   Completion events.
-- The video is recorded and indexed: the Completion handler records it in the Metadata database,
-  and the Search indexer adds it to the Search index, each from the same completion event.
-- A viewer watches: the Watch API gives the player the video's details (from its Metadata cache,
-  or a database replica on a miss, filling the cache), playlist and view count; the Video CDN serves
+- The video is recorded and indexed: the Completion handler records it in Metadata (a database),
+  and the Search indexer adds it to Videos (the search index), each from the same completion event.
+- A viewer watches: the Watch API gives the player the video's details (from its own cache, Hot metadata,
+  or a database replica on a miss, filling the cache), playlist and view count; Video delivery (the CDN) serves
   the playlists and segments from Transcoded videos, and the player picks each segment's bitrate
   (adaptive bitrate streaming). Thumbnails come through the same CDN, resized on request.
 - Views are counted: the Watch API publishes each view the player reports to View events; the
   View counter sums them per video and adds them to View counts in batches.
-- A viewer finds videos: the Search API reads the Search index.
+- A viewer finds videos: the Search API reads Videos.
 - Creators and viewers sign in through Identity (OpenID Connect).
 
 Comments, likes, recommendations, subscriptions, monetisation and live streaming are left out:
@@ -1041,47 +1060,47 @@ It is laid out in lanes from the user, through its two actions, **Watch** and **
 
 ```text
 DOWNLOAD (reads)
-  User → Watch   ⇣ Watch API → Metadata cache                       (its own: fills on a miss)
-                             → Metadata database, View counts       (reads)
+  User → Watch   ⇣ Watch API → Hot metadata                         (its own: fills on a miss)
+                             → Metadata, View counts                (reads)
                              ⇢ View events ⇢ View counter → View counts   (the only writer)
-                 ⇣ Search API → Search index                        (reads)
-                 ⇣ Video CDN → Transcoded videos                    (reads; resizes thumbnails)
+                 ⇣ Search API → Videos                              (reads)
+                 ⇣ Video delivery → Transcoded videos               (reads; resizes thumbnails)
 UPLOAD (writes)
   User → Publish ⇡ Identity                                         (sign-in)
                  ⇡ Upload service ⇢ Upload jobs ⇢ Transcoder → Original videos     (reads)
                                                              → Transcoded videos   (the only writer)
                                                              ⇢ Completion events
-                                                                 ⇢ Completion handler → Metadata database
-                                                                 ⇢ Search indexer → Search index
+                                                                 ⇢ Completion handler → Metadata
+                                                                 ⇢ Search indexer → Videos
                                   → Original videos                 (signed URLs; the only writer)
 ```
 
 Each store has one writer, its owner: the Upload service writes Original videos and Upload jobs;
-the Transcoder writes Transcoded videos and Completion events; the Completion handler writes the
-Metadata database; the Search indexer writes the Search index; the Watch API writes its Metadata
-cache and View events; the View counter writes View counts. Every other link into a store reads.
+the Transcoder writes Transcoded videos and Completion events; the Completion handler writes
+Metadata; the Search indexer writes Videos; the Watch API writes its Hot metadata and View
+events; the View counter writes View counts. Every other link into a store reads.
 In all: the user, two actions and eighteen tiles, and 25 links (the user's two lines, five lane
 entries, two of them upload, and eighteen connections), seven of which are asynchronous (the
 publish and consume links for views, jobs and completion events). Worker store reads and writes,
 including Transcoder → Original videos, are solid directed requests. Every service is
 TypeScript on Docker; the study has no C1 people or relationships and no package. The Watch API
-has four links out, the most a tile can have; the Transcoder three. Transcoded videos, the
-Metadata database and the Search index, which both lanes reach, sit in the shared band, one row;
-the Metadata cache, the Watch API's own, sits in the download band. The stores sit beside their
+has four links out, the most a tile can have; the Transcoder three. Transcoded videos,
+Metadata and Videos, which both lanes reach, sit in the shared band, one row; Hot metadata, the
+Watch API's own cache, sits in the download band. The stores sit beside their
 users ([Layout](#layout-and-navigation)): Original videos right after the Upload service, beside
-Upload jobs; Transcoded videos right after the Video CDN; the Metadata cache, View counts and View
+Upload jobs; Transcoded videos right after Video delivery; Hot metadata, View counts and View
 events right after the Watch API. The Transcoder's read and write and the View counter's write come
-back to them one column. The Metadata database and the Search index sit one column before their
+back to them one column. Metadata and Videos sit one column before their
 writers (the Completion handler, the Search indexer), so the Watch API's and the Search API's
 reads still cross the board to them. Half of its 6,912 entry and link orders, laid out with real
 ELK, leave a bend shorter than the grid; every other one crosses at least once, and this one
-crosses once (the Watch API's read of the Metadata database passing the Search API's), with 54
+crosses once (the Watch API's read of Metadata passing the Search API's), with 54
 bends and the shortest lines (8,864px in all, the longest the Search API's read, 1,056px). The
 Upload service's link to Upload jobs comes before Original videos.
 
 | Part | Content |
 | --- | --- |
-| Tiles | Watch API and Search API (microservices, public); Upload service (Uploads, public, transfer signed URLs); Identity (OpenID Connect); View counter, Transcoder, Completion handler and Search indexer (workers, scaled on queue lag; the Transcoder takes one job at a time per replica, up to 50); Video CDN (Cloudflare, origin Transcoded videos, image resizing on request); Transcoded videos (Cloudflare R2, public through the CDN) and Original videos (Cloudflare R2, private); Metadata cache (Redis-compatible cluster, an hour's TTL, least recently used evicted first); Search index (OpenSearch); Metadata database and View counts (MySQL, partitioned by `video_id`, with read replicas); View events (a topic, 12 partitions, a day's retention), Upload jobs (a work queue, a week's retention) and Completion events (a topic, 6 partitions, a week's retention). |
+| Tiles | Watch API and Search API (microservices, public); Upload service (Uploads, public, transfer signed URLs); Identity (OpenID Connect); View counter, Transcoder, Completion handler and Search indexer (workers, scaled on queue lag; the Transcoder takes one job at a time per replica, up to 50); Video delivery (a CDN: Cloudflare, origin Transcoded videos, image resizing on request); Transcoded videos (Cloudflare R2, public through the CDN) and Original videos (Cloudflare R2, private); Hot metadata (a cache: Redis-compatible cluster, an hour's TTL, least recently used evicted first); Videos (a search index: OpenSearch); Metadata and View counts (databases: MySQL, partitioned by `video_id`, with read replicas); View events (a topic, 12 partitions, a day's retention), Upload jobs (a work queue, a week's retention) and Completion events (a topic, 6 partitions, a week's retention). |
 | Modules | Watch API: details cache (cache-aside, an hour, single-flight), details reader (from a replica), view count reader, view publisher (batched). View counter: view consumer, view summer, count writer. Search API: video search. Upload service: creator check (Identity's token), multipart uploads (start, sign each part, list the parts that arrived, complete), job publisher. Transcoder: job consumer, segmenter and encoder (ffmpeg; Xu's task DAG), packager (HLS playlists), thumbnailer, completion publisher. Completion handler: completion consumer, video writer. Search indexer: completion consumer, index writer. |
 
 **Xu's boxes**, and what each became:
@@ -1094,10 +1113,10 @@ Upload service's link to Upload jobs comes before Original videos.
 | Load balancer | none | A service's replicas imply it; no gateway either, since it would be each action's only entry and hide which services a viewer and a creator reach. |
 | Original storage, transcoding servers, transcoded storage | Original videos, Transcoder, Transcoded videos | The same. Xu's preprocessor, DAG scheduler, resource manager, task workers and temporary storage are the Transcoder's modules. |
 | Completion queue, completion handler | Completion events (a topic), Completion handler | A topic, so the Search indexer consumes the same events. |
-| Completion handler updates the metadata cache | The Watch API owns the Metadata cache (cache-aside) | A video's record is written once and never edited, so a write-through cache would never refill a video it evicted; a reader filling a cache another tile writes would be a second writer. |
-| CDN, transcoded files pushed to it | Video CDN pulling from Transcoded videos | The CDN's origin is the store the pipeline wrote; the pipeline never writes the CDN. |
+| Completion handler updates the metadata cache | The Watch API owns Hot metadata (cache-aside) | A video's record is written once and never edited, so a write-through cache would never refill a video it evicted; a reader filling a cache another tile writes would be a second writer. |
+| CDN, transcoded files pushed to it | Video delivery pulling from Transcoded videos | The CDN's origin is the store the pipeline wrote; the pipeline never writes the CDN. |
 | The client is told the upload finished | not drawn | No line runs to the user; the creator's app asks the Watch API. |
-| (not in Xu) | Search API, Search indexer, Search index; View events, View counter, View counts; Identity | The crash course's search and view counts; sign-in. |
+| (not in Xu) | Search API, Search indexer, Videos; View events, View counter, View counts; Identity | The crash course's search and view counts; sign-in. |
 
 Design decisions, where the sources leave a choice:
 
@@ -1111,11 +1130,11 @@ Design decisions, where the sources leave a choice:
   Completion handler (the record) and the Search indexer (the index) are sibling consumers of that
   topic, so no worker writes a store for another concern. The event carries what both need, so the
   indexer reads no database; for a moment search can find a video whose record isn't written yet.
-- **The Watch API owns the Metadata cache** (see Xu's boxes): it reads the cache, reads a replica
+- **The Watch API owns Hot metadata, its cache** (see Xu's boxes): it reads the cache, reads a replica
   on a miss and fills the cache for an hour.
 - **Views are summed before they are written**, so a popular video's count is not written on
   every view (the reason the crash course reaches for a wide-column store).
-- **Thumbnails are stored once**, at full size, beside the segments, and the Video CDN resizes
+- **Thumbnails are stored once**, at full size, beside the segments, and Video delivery resizes
   them on request (the CDN's Image resizing).
 - **Cloudflare R2 behind the Cloudflare CDN.** R2 charges no egress, and ByteByteGo names CDN
   traffic the largest cost. Cloudflare's terms want video on its CDN served through a paid
@@ -1157,12 +1176,12 @@ and all twenty components, with nothing omitted and no findings.
   1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
   and the bands read, but tile names are about 5px and need the wheel to read.
 - The lane bands cost height. A band's rows hold only its own tiles, so a column the shared band
-  leaves empty stays empty between the lanes (YouTube: the space between the Video CDN and
+  leaves empty stays empty between the lanes (YouTube: the space between Video delivery and
   Identity, beside Transcoded videos). A store with several users goes where its band doesn't grow
   ([Layout](#layout-and-navigation)), which keeps the shared band one row tall in the studies.
 - A store read at the start of one lane and written at the end of the other still has one long
   line. It sits no more than one column before its writer, so the reader's line crosses the
-  columns between: YouTube's Search API → Search index (1,056px) and Watch API → Metadata database
+  columns between: YouTube's Search API → Videos (1,056px) and Watch API → Metadata
   (1,024px, past View events and the View counter), the marketplace's Orders service → Orders
   database (896px) and Storefront API → Search index (800px). Right after the reader instead, the
   writer's line would come back just as far.

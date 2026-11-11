@@ -23,10 +23,16 @@ test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => 
   await expect(lines(page)).toHaveCount(12);
   await expect(dashedLines(page)).toHaveCount(2);
   await expect(page.locator(".board-line-arrow")).toHaveCount(12);
+  // The legend shows only the dashed sample, Async; opened, it says what solid and dashed mean.
   const guide = page.locator(".lane-line-legend");
+  await expect(guide.getByLabel("Line guide")).toHaveText("Async");
+  await expect(guide.locator("summary svg [stroke-dasharray]")).toHaveCount(1);
   await guide.getByLabel("Line guide").click();
+  await expect(guide).toContainText("Solid: a direct call; the caller waits");
+  await expect(guide).toContainText("Dashed: sent through a queue or topic; nobody waits.");
   await expect(guide).toContainText("caller → target, including reads");
   await expect(guide).toContainText("publisher → channel → consumer");
+  await expect(guide).not.toContainText("Request");
   await guide.getByLabel("Line guide").click();
   await expect(tile(page, "User")).toBeVisible();
   await expect(page.locator(".board-chip")).toHaveCount(0);
@@ -109,7 +115,7 @@ test("New project offers the YouTube study", async ({ page }) => {
     for (const name of [
       "Watch",
       "Publish",
-      "Video CDN",
+      "Video delivery",
       "Watch API",
       "Search API",
       "Upload service",
@@ -119,6 +125,20 @@ test("New project offers the YouTube study", async ({ page }) => {
       "Search indexer",
     ])
       await expect(tile(page, name)).toBeVisible();
+    // Each tile's kind label: names leave the kind out, and a channel says Queue or Topic.
+    for (const [name, label] of [
+      ["Metadata", "Database"],
+      ["Hot metadata", "Cache"],
+      ["Videos", "Search index"],
+      ["Video delivery", "CDN"],
+      ["Upload jobs", "Queue"],
+      ["Completion events", "Topic"],
+      ["Transcoder", "Worker"],
+      ["Watch API", "Service"],
+    ] as const)
+      await expect(tile(page, name).locator(".lane-tile-kind")).toHaveText(label);
+    await expect(tile(page, "Watch").locator(".lane-tile-kind")).toHaveCount(0);
+    await expect(tile(page, "User").locator(".lane-tile-kind")).toHaveCount(0);
 
     // One writer per store: the Upload service, the Completion handler, the Search indexer and
     // the Watch API (its own cache).
@@ -134,7 +154,7 @@ test("New project offers the YouTube study", async ({ page }) => {
         source.architecture?.studio?.elements.find((row) => row.element === store)?.owner,
       ).toEqual({ kind: "element", id: owner });
     }
-    await tile(page, "Metadata cache").click();
+    await tile(page, "Hot metadata").click();
     await expect(inspector.locator(".lane-store-access")).toHaveCount(0);
     // The Upload service is an Uploads service; its bytes travel by signed URLs.
     await tile(page, "Upload service").click();

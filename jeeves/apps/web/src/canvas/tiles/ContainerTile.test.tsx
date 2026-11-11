@@ -1,11 +1,13 @@
 // A container's rows carry port marks only on the sides their drawn lines use, and a mark is lit
 // (the selection colour) exactly while a line at that port is, whatever selected it. A row that
 // can connect has a dot, filled once connected, as the handle of its board end; the Cache reader's
-// loader is an arrow in the gutter whose X (live canvas only) disconnects it.
+// loader is an arrow in the gutter whose X (live canvas only) disconnects it. A container's header
+// and a plain tile's face show the kind label under the name.
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DetailedRow } from "../detailedView.ts";
 import { ContainerTile, ModuleRows } from "./ContainerTile.tsx";
+import { Tile } from "./Tile.tsx";
 
 const row = (module: string, index: number, ports: Partial<DetailedRow> = {}): DetailedRow => ({
   module,
@@ -130,5 +132,22 @@ describe("ContainerTile", () => {
         .querySelector<HTMLElement>(".lane-container")
         ?.style.getPropertyValue("--row-inset-left"),
     ).toBe("");
+  });
+  it("shows the kind label under the name, in the header and on a plain tile's face", () => {
+    const text = (container: HTMLElement, selector: string) =>
+      [...container.querySelectorAll(selector)].map((item) => item.textContent);
+    const container = render(
+      <ContainerTile kind="worker" name="Transcoder" label="Worker" rows={rows} />,
+    ).container;
+    expect(text(container, ".lane-container-header .lane-container-title > span")).toEqual([
+      "Transcoder",
+      "Worker",
+    ]);
+    cleanup();
+    const tile = render(<Tile kind="queue" name="Upload jobs" label="Queue" />).container;
+    expect(text(tile, ".lane-tile > span:not(.lane-tile-icon)")).toEqual(["Upload jobs", "Queue"]);
+    cleanup();
+    // A tile without studio settings has no label.
+    expect(render(<Tile name="Legacy" />).container.querySelector(".lane-tile-kind")).toBeNull();
   });
 });

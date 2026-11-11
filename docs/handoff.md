@@ -8961,3 +8961,93 @@ Name field undid the Description just typed (no design Undo was sent), which the
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — V3-02: kind labels, queue or topic, legend
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (owner feedback 2, 3 and 5; D2, D7). Docs:
+`studio.md` (Lane canvas, Detailed view, PNG export, the fan table, the YouTube study, Layout and
+Limits), `CATALOG.md` (kinds table with a Label column, link rules, YouTube), `studio-settings.md`
+(queue row), playbook (notation fixed, a lesson), HUMAN_FEEDBACK resolution, plan status.
+Evidence: [v3-02](plans/youtube-v3/evidence/v3-02/) (4 shots at 100%, 1440×900).
+
+- **Kind labels.** `StudioDefinition.label` (short: Service, Worker, Uploads, Identity, Database,
+  Search index, Cache, Object storage, CDN, External API, plus Gateway, Redirect, Notifications,
+  Billing, Browser app) and `studioKindLabel(settings)` in `studio-definitions.ts`. **Rule:** a
+  message channel is **Queue** when `settings.mode === "work-queue"` and **Topic** otherwise
+  (`label: "Topic"`, the generation contract's `r.mode ?? "topic"`). The mode is required in the
+  schema, so in practice the label is the saved mode; a new channel is a work queue (Queue) until
+  a template derives topic. `LaneCanvas` passes the label to `Tile` (12px/700, pinned to the
+  bottom; the face's top padding 22 → 14px, gap 8 → 6) and `ContainerTile` (under the name in the
+  48px header; no layout change). Colour: ink mixed 62% toward the tile, 4.9:1 light, 5.5:1 dark.
+  Actions and the user have none. Layouts are unchanged (sizes didn't change).
+- **Queue or topic.** Kind name "Queue or topic" → **"Message channel"** (fan item, default tile
+  name and ID `message-channel`, inspector kind line, chat catalog). Event publisher/consumer
+  descriptions → "Publishes events." / "Consumes events.". Docs explain queue vs topic.
+- **Legend (D7).** Collapsed: only the dashed sample, "Async" (the box shrinks to fit). Open:
+  "Solid: a direct call; the caller waits (HTTP, a database, storage or cache read or write).",
+  "Dashed: sent through a queue or topic; nobody waits.", one direction line, two trimmed help
+  lines. "Request", "inferred access" (not shown in the inspector) and "shared stems" are gone.
+
+**Line audit.** No line changed: every line already matched (new test in `studio-lanes.test.ts`:
+dashed ⇔ a queue end, for all four studies). Frozen v2's 27 lines match too.
+
+| Study | Lines | Dashed (all queue publish/consume) | Wrong |
+| --- | ---: | ---: | ---: |
+| TinyURL foundation | 7 | 0 | 0 |
+| TinyURL extended | 12 | 2 | 0 |
+| Marketplace | 23 | 4 | 0 |
+| YouTube | 25 (26 Detailed) | 7 | 0 |
+
+Not fixed (a rules question, not a study line): the link table still allows async on application
+→ application, application → external API and external API → application, drawn dashed with no
+channel, which the new legend doesn't describe. No study uses it. Documented in CATALOG/studio.md.
+
+**Renames (YouTube 2.1.0 → 2.2.0; IDs kept).** Metadata database → **Metadata**; Metadata cache →
+**Hot metadata** (names stay unique); Search index → **Videos**; Video CDN → **Video delivery**.
+Upload service, Original/Transcoded videos and the rest read well and stay. Other studies not
+renamed: TinyURL's URL cache/URL database and Marketplace's Orders service/Orders database would
+collide, and many specs use them (not trivial). No `field-projects/` file or v2 fixture name
+changed; v2-rebuild only picks the fan's "Message channel".
+
+**Tests.** Spec: label rule (+1), study lines (+1); `studio-rekey.test.ts` IDs `message-channel`.
+Web: `ContainerTile.test.tsx` (+1, header and face labels). Generator: `loop-wiring` header text.
+E2E: `canvas.spec` (legend: only Async, the two D7 lines, no "Request"; YouTube labels incl.
+Queue/Topic, none on Watch/User; renamed tiles), `spawn.spec` (each of the 11 kinds' label),
+`connection-dots`, `relationship-tracing`, `ids-follow-names`, `module-authoring`, `v2-rebuild`
+(kind name and renamed tiles).
+
+**Checks.** `pnpm check` exited 0: **643 tests in 91 files** (lint: only the existing info).
+**E2E: 69 passed (4.7m)**, first full run, no failures. Web build passed (1.1 s, the existing
+chunk-size advisory). **Mouse check** (scripted Chromium; my API 4382 with scratch DB
+`jeeves_v302`, now dropped, and Vite 4372) at 1440×900 and 1280×800: TinyURL foundation 7 tiles,
+7 lines, both views (Links database "Database"); extended 11/12, 2 dashed (Click events
+"Topic"); YouTube Detailed 21/26, 7 containers with header labels, Simple 21/25, 18 face labels;
+Upload jobs "Queue", View and Completion events "Topic"; legend collapsed "Async" (one dashed
+sample), opened by click; light and dark checked by the button. No page errors, console errors or
+warnings. All my projects deleted (204).
+
+**Gates (D2).**
+- **New YouTube Simple reference:** `9332ea16be9913598eab3b53829a7bfac8052f9ccc918c27214df9172cb589bd`
+  (3008×2752, 21 tiles, 25 lines), twice at 1440×900 and once at 1280×800. Detailed:
+  `92359674…a9518` (3840×3200, 26 lines). The old `472a4c8c…dc9f` is retired by the labels and
+  renames.
+- **Processes-off pin** passes after an intended update (`fixtures/processes-off.json`, 12
+  lines): frozen-v2 unchanged; v2-module-design `watch-views.ts`/`.slots.ts` and the manifest;
+  stub-stack the 8 publisher/consumer stub files and the manifest. Replacing the new wording with
+  the old reproduces every old hash, so the only change is the stubs' header comment ("Consumes
+  events.") and slot comment ("(Message channel)").
+- **v1** byte-identical (`assemble.test.ts`). **Frozen v2:** fresh `export:v2`, 72 files, 70
+  byte-identical to `generic-export.tar.gz`; `manifest.json`/`report.json` equal without
+  inventory (sources now include this unit's two spec files). Scratch exports removed.
+
+**For V3-03.**
+- The Simple face's kind label sits at the bottom (face y ≈ 99–114 of 122): an in-tile `+` must
+  not cover it. The container header is now two lines (name, label) in the same 48px.
+- A new channel is "Message channel" (`message-channel`) with label Queue; specs pick the fan's
+  "Message channel".
+- Generated code still says "a queue or topic" in template comments (`dependencies.ts.template`
+  and others): accurate code wording, left alone to avoid churn.
+- The line inspector still shows the saved interaction "Request / response (solid)".
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

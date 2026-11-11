@@ -629,7 +629,7 @@ export const studioComponentDefinitions: {
   }),
   "event-publisher": component("event-publisher", {
     name: "Event publisher",
-    description: "Publishes events to a queue or topic.",
+    description: "Publishes events.",
     thirdParty: ["Kafka", "Amazon SQS", "Redis Streams"],
     browserHost: false,
     hosts: anyHost,
@@ -656,7 +656,7 @@ export const studioComponentDefinitions: {
   }),
   "event-consumer": component("event-consumer", {
     name: "Event consumer",
-    description: "Consumes events from a queue or topic.",
+    description: "Consumes events.",
     thirdParty: ["Kafka", "Amazon SQS", "Redis Streams"],
     browserHost: false,
     hosts: anyHost,

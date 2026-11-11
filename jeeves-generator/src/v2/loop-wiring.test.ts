@@ -84,7 +84,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
   it("gives loop stubs the message signature; the consumed queue is no longer a dependency", () => {
     expect(text(stack, "src/modules/visit-worker/visit-consumer.ts")).toBe(
       [
-        "// Visit consumer, an Event consumer in Visit worker: Consumes events from a queue or topic.",
+        "// Visit consumer, an Event consumer in Visit worker: Consumes events.",
         "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
         'import type { ModuleMessage } from "../entry.ts";',
         'import type { Dependencies } from "./visit-consumer.slots.ts";',

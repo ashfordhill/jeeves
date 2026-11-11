@@ -62,7 +62,7 @@ function addTile(design: DesignDocument, from: string, kind: StudioKind) {
 /**
  * Blank → Upload lane → Microservice (a lane entry) with a Cache and a Database; a positive cache
  * read from its Cache reader, Data access and loader, so a template, an owner and grants derive;
- * then a Queue or topic and a Worker service with an Event consumer, a Data access and a module
+ * then a Message channel and a Worker service with an Event consumer, a Data access and a module
  * whose ID was chosen by hand.
  */
 function mouseDesign() {
@@ -92,7 +92,7 @@ function mouseDesign() {
     },
   ]);
   design = addTile(design, "microservice", "queue");
-  design = addTile(design, "queue-or-topic", "worker");
+  design = addTile(design, "message-channel", "worker");
   return runStudioCommands(design, [
     { type: "addModule", host: "worker-service", kind: "event-consumer" },
     { type: "addModule", host: "worker-service", kind: "data-access" },
@@ -101,7 +101,7 @@ function mouseDesign() {
       type: "connectModule",
       module: "worker-service-event-consumer",
       slot: "channel",
-      target: { tile: "queue-or-topic" },
+      target: { tile: "message-channel" },
     },
   ]);
 }
@@ -144,7 +144,7 @@ describe("IDs follow names", () => {
       "microservice",
       "cache",
       "database",
-      "queue-or-topic",
+      "message-channel",
       "video-lifecycle-worker",
     ]);
     const studio = studioOf(design);
@@ -165,9 +165,9 @@ describe("IDs follow names", () => {
       ]),
     );
     expect(studio.componentConnections?.at(-1)).toEqual({
-      id: "worker-service-event-consumer-queue-or-topic",
+      id: "worker-service-event-consumer-message-channel",
       from: "video-lifecycle-worker-event-consumer",
-      to: { kind: "element", id: "queue-or-topic", via: "queue-or-topic-worker-service" },
+      to: { kind: "element", id: "message-channel", via: "message-channel-worker-service" },
     });
     // The stubs' selections follow the module IDs, in one revision with the name.
     expect(designGeneration(design)?.selections.map((item) => item.id)).toEqual([
@@ -224,7 +224,7 @@ describe("IDs follow names", () => {
       ["microservice", "Watch API"],
       ["cache", "Metadata cache"],
       ["database", "Metadata database"],
-      ["queue-or-topic", "View events"],
+      ["message-channel", "View events"],
       ["worker-service", "View counter"],
     ] as const)
       renamed = runStudioCommand(renamed, { type: "edit", element, name });
@@ -486,16 +486,16 @@ describe("IDs follow names", () => {
   });
 
   it("refuses a clash in plain words: a tile's, a link's, a cascaded module's and a module's", () => {
-    let design = addTile(mouseDesign(), "queue-or-topic", "worker");
+    let design = addTile(mouseDesign(), "message-channel", "worker");
     expect(tileIds(design).at(-1)).toBe("worker-service-2");
     const refusal = (command: StudioCommand) => () => buildStudioCommand(design, command);
     expect(refusal({ type: "edit", element: "worker-service-2", name: "Worker service" })).toThrow(
       "Worker service would take the ID worker-service, which Worker service already uses. Choose another name.",
     );
     expect(
-      renameRefusal(design, { element: "worker-service-2" }, "Queue or topic worker service"),
+      renameRefusal(design, { element: "worker-service-2" }, "Message channel worker service"),
     ).toBe(
-      "Queue or topic worker service would take the ID queue-or-topic-worker-service, which a link already uses. Choose another name.",
+      "Message channel worker service would take the ID message-channel-worker-service, which a link already uses. Choose another name.",
     );
     design = runStudioCommand(design, {
       type: "edit",
@@ -642,7 +642,7 @@ function otherReferences(): DesignDocument {
     (item) => item.id === "worker-service-event-consumer",
   );
   if (consumer?.settings.kind === "event-consumer")
-    consumer.settings.deadLetterQueue = "queue-or-topic";
+    consumer.settings.deadLetterQueue = "message-channel";
   design.elements.push({ id: "app", name: "App" });
   architecture.studio.elements.push({
     element: "app",

@@ -218,7 +218,7 @@ is its only writer ([one writer per store](#relationships)).
 | --- | --- | --- |
 | `database` | `engine` unspecified / postgresql / mysql / sqlite / mongodb / clickhouse; `provider` (table below) | tables, queries, migrations, credentials, pool tuning |
 | `cache` | `engine` unspecified / redis-compatible / memcached; `provider`; `ttlSeconds?` 1–604800 | key schemas, invalidation programs |
-| `queue` | `mode` work-queue / topic; `provider` unspecified / self-hosted / aws / google-cloud / cloudflare-queues / external; `retentionSeconds?` 60–1209600 | exactly-once, DLQ automation, event schemas |
+| `queue` | `mode` work-queue / topic (the tile's label: Queue or Topic); `provider` unspecified / self-hosted / aws / google-cloud / cloudflare-queues / external; `retentionSeconds?` 60–1209600 | exactly-once, DLQ automation, event schemas |
 | `object-store` | `provider` unspecified / self-hosted / cloudflare-r2 / aws-s3 / google-cloud-storage / external; `access` private / public | bucket names, lifecycle rules |
 | `search` | `engine` unspecified / opensearch / elasticsearch / meilisearch / external; `provider` unspecified / self-hosted / aws / google-cloud / external | index fields, analyzers |
 | `cdn` | `provider` cloudflare / unspecified / aws-cloudfront / google-cloud-cdn / external; `origin?` application or object-store ref; `imageResizing?` disabled / on-request | cache rules, domains, WAF, language, image sizes or formats |

@@ -217,13 +217,13 @@ test("a dot drag held past the canvas edge pans, then connects on release", asyn
     await tool(page, "Connect").click();
     await tool(page, "Fit").click();
     await camera(page);
-    // Zoomed in on Upload API's Job publisher, Metadata database is out of view.
+    // Zoomed in on the Upload service's Job publisher, Metadata (a database) is out of view.
     const source = dot(page, "upload-jobs");
     const start = await box(source);
     await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
     await page.mouse.wheel(0, -1200);
     const zoomed = await camera(page);
-    const target = tile(page, "Metadata database");
+    const target = tile(page, "Metadata");
     expect(inside(await box(target), await box(canvas(page)), 1)).toBe(false);
 
     const links = await moduleLinks(page, id);

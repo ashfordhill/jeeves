@@ -1,10 +1,11 @@
-// A container's face in the Detailed view: a header with the tile's kind icon in its family colour
-// and its name on one line, then one row per module (`DetailedRow`), each centred on its row's
-// port height so the module's lines meet it. A row shows the module's icon in its family colour
-// and its name, cut short with an ellipsis, with the full name as its tooltip. A row with a drawn
-// line has a port mark on that side (`data-ports`), a stub from the frame to its box, so the line
-// that ends at the frame visibly reaches its module. The board draws the rectangular frame; a
-// design warning is a mark in the header's corner, as on `Tile`.
+// A container's face in the Detailed view: a header with the tile's kind icon in its family colour,
+// its name on one line and its kind label in small grey type below it, then one row per module
+// (`DetailedRow`), each centred on its row's port height so the module's lines meet it. A row
+// shows the module's icon in its family colour and its name, cut short with an ellipsis, with the
+// full name as its tooltip. A row with a drawn line has a port mark on that side (`data-ports`), a
+// stub from the frame to its box, so the line that ends at the frame visibly reaches its module.
+// The board draws the rectangular frame; a design warning is a mark in the header's corner, as on
+// `Tile`.
 //
 // A row whose kind can take connections has a small dot on its right edge, hollow until one of
 // its slots is connected, then filled; a row that can't connect has none. Each row is one of the
@@ -55,12 +56,15 @@ export const ModuleRows = createContext<ModuleRowsState | undefined>(undefined);
 export function ContainerTile({
   kind,
   name,
+  label,
   rows,
   loaders = [],
   warnings,
 }: {
   kind?: StudioKind;
   name: string;
+  /** Its kind label (`studioKindLabel`), under the name in the header. */
+  label?: string;
   rows: readonly DetailedRow[];
   /** The Cache readers' loaders between its rows. */
   loaders?: readonly DetailedLoader[];
@@ -86,7 +90,10 @@ export function ContainerTile({
         <span className="lane-container-icon">
           <StudioIcon name={visual?.icon} size={22} />
         </span>
-        <span className="lane-container-name">{name}</span>
+        <span className="lane-container-title">
+          <span className="lane-container-name">{name}</span>
+          {label ? <span className="lane-container-kind">{label}</span> : null}
+        </span>
         <WarningMark messages={warnings} />
       </div>
       <ol className="lane-container-rows" aria-label="Modules">

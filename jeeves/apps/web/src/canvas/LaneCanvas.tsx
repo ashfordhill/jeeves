@@ -4,7 +4,8 @@
 // action goes with the action, so it has no X. Lines carry no words; their accessible names say
 // what they join. The selected tile's pull tabs come from `creation`, its X and the selected
 // line's from `removal`, and connect mode's rules and new links from `connect`. A tile or action
-// with a design warning carries a mark (`Warnings.tsx`).
+// with a design warning carries a mark (`Warnings.tsx`). Every tile and container shows its kind
+// label (`studioKindLabel`: a message channel's is Queue or Topic, by its mode).
 // Every tile and line carries its lane band (`laneLayoutInput`), so the board stacks download,
 // shared and upload.
 //
@@ -42,6 +43,7 @@ import {
   LANE_ACTOR,
   type LaneGraph,
   laneActionName,
+  studioKindLabel,
   studioWarnings,
 } from "@jeeves/spec";
 import { type Ref, useMemo, useState } from "react";
@@ -106,8 +108,15 @@ export function LaneCanvas({
   onDisconnectModule?: (link: string) => void;
   ref?: Ref<BoardHandle>;
 }) {
-  const { tiles, lines, warnings } = useMemo(() => {
+  const { tiles, lines, warnings, kindLabel } = useMemo(() => {
     const name = (id: string) => laneNodeName(design, graph, id);
+    const settings = new Map(
+      design.architecture?.studio?.elements.map((row) => [row.element, row.settings]),
+    );
+    const kindLabel = (id: string) => {
+      const found = settings.get(id);
+      return found && studioKindLabel(found);
+    };
     const warnings = new Map<string, string[]>();
     for (const item of studioWarnings(design))
       warnings.set(item.node, [...(warnings.get(item.node) ?? []), item.message]);
@@ -140,7 +149,12 @@ export function LaneCanvas({
               shape: tileShape(node.kind),
               label: name(node.id),
               content: (
-                <Tile kind={node.kind} name={name(node.id)} warnings={warnings.get(node.id)} />
+                <Tile
+                  kind={node.kind}
+                  name={name(node.id)}
+                  label={kindLabel(node.id)}
+                  warnings={warnings.get(node.id)}
+                />
               ),
             },
     );
@@ -155,7 +169,7 @@ export function LaneCanvas({
       ...(edge.source === LANE_ACTOR && { removable: false }),
       ...(input.lines[i]?.band !== undefined && { band: input.lines[i]?.band }),
     }));
-    return { tiles, lines, warnings };
+    return { tiles, lines, warnings, kindLabel };
   }, [design, graph]);
 
   // The Detailed view: containers in place of module hosts, and the projection's lines.
@@ -177,6 +191,7 @@ export function LaneCanvas({
           <ContainerTile
             kind={graph.nodes[i]?.kind}
             name={tile.label}
+            label={kindLabel(tile.id)}
             rows={container.rows}
             loaders={container.loaders}
             warnings={warnings.get(tile.id)}
@@ -191,7 +206,7 @@ export function LaneCanvas({
       detail: design.connections.find((item) => item.id === line.connection)?.planned.label,
     }));
     return { projection, tiles: detailedTiles, lines: detailedLines };
-  }, [view, design, graph, tiles, warnings]);
+  }, [view, design, graph, tiles, warnings, kindLabel]);
 
   // The drawn line last clicked, so it (not its first sibling) shows as the selected line.
   const [clicked, setClicked] = useState<string>();

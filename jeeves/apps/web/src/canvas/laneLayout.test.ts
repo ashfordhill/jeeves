@@ -159,7 +159,7 @@ describe("lane bands on the studies", () => {
     });
   }
 
-  it("keep the Video CDN's read clear of the Upload service's lines (YouTube)", async () => {
+  it("keep Video delivery's read clear of the Upload service's lines (YouTube)", async () => {
     const input = laneLayoutInput(laneGraph(studioArchitectureExample("studio-youtube").design));
     const layout = await layoutOf(input);
     const upload = input.lines.filter((l) => l.source === "upload").map((l) => l.id);
@@ -250,7 +250,7 @@ describe("stores beside their users", () => {
     const input = laneLayoutInput(laneGraph(studioArchitectureExample("studio-youtube").design));
     const layout = await layoutOf(input);
     const column = columnsOf(input, layout);
-    // The Video CDN's line to Transcoded videos spans one column gap.
+    // Video delivery's (the CDN's) line to Transcoded videos spans one column gap.
     expect(column.get("transcoded")).toBe((column.get("video-cdn") ?? 0) + 1);
     const cdn = box(input, layout, "video-cdn");
     const transcoded = box(input, layout, "transcoded");

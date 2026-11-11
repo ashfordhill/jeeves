@@ -54,8 +54,8 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
     await pick(page, "User", "Add action", "Consume");
     await pick(page, "Consume", "Add linked tile", "Microservice");
-    await pick(page, "Microservice", "Add linked tile", "Queue or topic");
-    await pick(page, "Queue or topic", "Add linked tile", "Worker service");
+    await pick(page, "Microservice", "Add linked tile", "Message channel");
+    await pick(page, "Message channel", "Add linked tile", "Worker service");
     await expect.poll(() => tiles(page, id)).toContainEqual(["worker-service", "Worker service"]);
 
     // The new Worker opens with its Name focused. Its new name commits after the debounce while

@@ -4,8 +4,8 @@ import { applyOperations } from "./apply.ts";
 import { type DesignDocument, designSchema } from "./design.ts";
 import { isStructural } from "./findings.ts";
 import { designBlueprint, designBlueprintSchema } from "./studio-blueprint.ts";
-import { studioDefinitions } from "./studio-definitions.ts";
-import { studioArchitectureExample } from "./studio-examples/index.ts";
+import { studioDefinitions, studioKindLabel } from "./studio-definitions.ts";
+import { studioArchitectureExample, studioArchitectureExamples } from "./studio-examples/index.ts";
 import {
   LANE_ACTOR,
   laneActionLine,
@@ -27,6 +27,7 @@ import {
   studioLinkRuleTargets,
 } from "./studio-links.ts";
 import {
+  createStudioSettings,
   type StudioKind,
   type StudioModel,
   studioKinds,
@@ -308,6 +309,37 @@ describe("tile types and entries", () => {
     );
   });
 
+  it("label each kind in a word or two, and a message channel Queue or Topic by its mode", () => {
+    const label = (kind: StudioKind) => studioKindLabel(createStudioSettings(kind));
+    expect(Object.fromEntries(studioLinkFanKinds.map((kind) => [kind, label(kind)]))).toEqual({
+      service: "Service",
+      worker: "Worker",
+      uploads: "Uploads",
+      identity: "Identity",
+      database: "Database",
+      search: "Search index",
+      cache: "Cache",
+      "object-store": "Object storage",
+      // A new channel is a work queue until its mode changes.
+      queue: "Queue",
+      cdn: "CDN",
+      "external-api": "External API",
+    });
+    for (const kind of studioKinds) expect(label(kind).length).toBeLessThanOrEqual(14);
+    // A topic, and any mode but a work queue, reads Topic (the generation contract's default).
+    expect(studioKindLabel({ kind: "queue", mode: "topic", provider: "unspecified" })).toBe(
+      "Topic",
+    );
+    expect(studioDefinitions.queue.name).toBe("Message channel");
+    const youtube = studioOf(studioArchitectureExample("studio-youtube").design);
+    expect(
+      ["view-events", "upload-queue", "completion-events"].map((id) => {
+        const row = youtube.elements.find((item) => item.element === id);
+        return row && studioKindLabel(row.settings);
+      }),
+    ).toEqual(["Topic", "Queue", "Topic"]);
+  });
+
   it("are part of the model: unique IDs, live references, removed with their tile, in the blueprint", () => {
     const design = tinyurl();
     expect(validateDesign(design).filter(isStructural)).toEqual([]);
@@ -455,6 +487,17 @@ describe("laneGraph", () => {
       );
     expect(design).toEqual(original);
     expect(designBlueprint(design, "YouTube")).toEqual(blueprint);
+  });
+
+  it("draws every study's line as the legend says: dashed through a queue or topic, else solid", () => {
+    for (const study of studioArchitectureExamples) {
+      const graph = laneGraph(studioArchitectureExample(study.id).design);
+      const kinds = new Map(graph.nodes.map((node) => [node.id, node.kind]));
+      for (const edge of graph.edges)
+        expect(edge.dashed, `${study.id} ${edge.id}`).toBe(
+          kinds.get(edge.source) === "queue" || kinds.get(edge.target) === "queue",
+        );
+    }
   });
 
   it("reads an entry stored with both lanes as a download entry", () => {
