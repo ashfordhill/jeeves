@@ -136,19 +136,21 @@ export function score(test: EvalCase, before: DesignDocument, outcome: Outcome):
     }
   }
   if (test.domain === "checkout") {
-    const services = [...ids("service"), ...ids("billing")];
+    // Eval 1.1.0: new tiles are the link fan's kinds, so Payments is a Service calling one
+    // External API provider (1.0.0 seeds used a Billing tile, whose provider was built in).
+    const services = ids("service");
     checks.push(
       check(
         "durable-checkout-participants",
-        someLink(services, ids("database")) && ids("billing").length > 0,
-        "Owned data and Billing integration are represented intent only",
+        someLink(services, ids("database")) && someLink(services, ids("external-api")),
+        "Owned data and a payment provider call are represented intent only",
       ),
     );
     checks.push(
       check(
         "no-duplicate-provider",
-        !design.elements.some((e) => kind(e.id) === "external-api" && /stripe/i.test(e.name)),
-        "Billing's built-in provider must not become another External tile",
+        ids("external-api").length <= 1,
+        "The payment provider is one External API tile, not duplicated",
       ),
     );
   }

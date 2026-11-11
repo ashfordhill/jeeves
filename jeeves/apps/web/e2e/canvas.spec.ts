@@ -23,17 +23,14 @@ test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => 
   await expect(lines(page)).toHaveCount(12);
   await expect(dashedLines(page)).toHaveCount(2);
   await expect(page.locator(".board-line-arrow")).toHaveCount(12);
-  // The legend shows only the dashed sample, Async; opened, it says what solid and dashed mean.
-  const guide = page.locator(".lane-line-legend");
-  await expect(guide.getByLabel("Line guide")).toHaveText("Async");
-  await expect(guide.locator("summary svg [stroke-dasharray]")).toHaveCount(1);
-  await guide.getByLabel("Line guide").click();
-  await expect(guide).toContainText("Solid: a direct call; the caller waits");
-  await expect(guide).toContainText("Dashed: sent through a queue or topic; nobody waits.");
-  await expect(guide).toContainText("caller → target, including reads");
-  await expect(guide).toContainText("publisher → channel → consumer");
-  await expect(guide).not.toContainText("Request");
-  await guide.getByLabel("Line guide").click();
+  // The legend shows only the dashed sample, Async, with no help text to open (question 12).
+  const guide = page.getByRole("note", { name: "Line guide" });
+  await expect(guide).toHaveText("Async");
+  await expect(guide.locator("svg [stroke-dasharray]")).toHaveCount(1);
+  await expect(guide.locator("svg path")).toHaveCount(2);
+  await expect(guide.locator("details, summary, p")).toHaveCount(0);
+  // It only informs: the pointer passes through it to the board.
+  await expect(guide).toHaveCSS("pointer-events", "none");
   await expect(tile(page, "User")).toBeVisible();
   await expect(page.locator(".board-chip")).toHaveCount(0);
   // No design warnings in a study.

@@ -1,14 +1,17 @@
 /**
- * The design chat agent's tools: a finite studio vocabulary on the lane canvas. They act on a
- * working copy of the design: edits are checked with the same `buildStudioCommand` and
+ * The design chat agent's tools: a finite studio vocabulary on the lane canvas, and tools that
+ * carry the design knowledge so a modest model can build and review correct diagrams (V3-09, D6).
+ * They act on a working copy of the design: edits are checked with the same command builder and
  * `applyOperations` the canvas uses and collected, and the whole turn is committed as one
  * operation at the end, so one chat turn is one undo step. Tiles and links change only through
- * the lane commands, so chat keeps every tile on a lane, as the canvas does.
+ * the lane commands, so chat keeps every tile on a lane, as the canvas does. Every accepted
+ * change returns an automatic review of what is left (`designReview`).
  */
 import type { ToolDefinition } from "@jeeves/providers";
 import {
   applyOperations,
   buildDesignScopeCommand,
+  buildModulePattern,
   buildOperationsCommand,
   buildOwnershipCommand,
   buildSupportedAuthoringCommand,
@@ -19,20 +22,30 @@ import {
   designOperations,
   designOwnership,
   designReadiness,
+  designReview,
   designScope,
   designScopeCommandSchema,
   emptyReviewScope,
   exactContractRefSchema,
   type Finding,
   type GenerationInstalledSupport,
+  type GenerationSettingDecision,
   generationFindings,
   isDesignWarning,
   LANE_ACTOR,
   type LaneGraph,
   laneGraph,
   laneLimits,
+  listModulePatterns,
   listStudioPatterns,
+  type ModulePattern,
+  ModulePatternRefusal,
+  moduleGeneration,
+  moduleGenerationLabels,
+  moduleLinkSlot,
+  modulePatternSchema,
   moduleStatuses,
+  moduleTemplateNames,
   normalGenerationControls,
   type OperationInput,
   operationContractFindings,
@@ -48,6 +61,7 @@ import {
   renamedIds,
   reviewScopeProblem,
   reviewStudioDesign,
+  type StudioCommand,
   type StudioKind,
   type StudioLane,
   type StudioLinkRole,
@@ -58,15 +72,18 @@ import {
   selectedOperationBindings,
   studioActionDefaults,
   studioActions,
+  studioChanges,
   studioCommandSchema,
   studioComponentDefinitions,
   studioComponentKinds,
   studioDefinitions,
+  studioKindLabel,
   studioKindLanguages,
   studioKindSchema,
   studioLimits,
   studioLinkFan,
   studioLinkFanGroups,
+  studioLinkFanKinds,
   studioLinkRules,
   studioPatternCatalogVersion,
   studioPatternIdSchema,
@@ -106,65 +123,65 @@ export function linkRuleText(rule: StudioLinkRule): string {
   const what = rule.source === "action" ? "a lane entry" : rule.connection?.label;
   return `${sentenceCase(roleWords[rule.source])} -> ${targets}: ${modes}${what ? ` (${what})` : ""}.`;
 }
-/** The link table paragraph, generated from `studioLinkRules` so the two can't drift. */
-const linkTable = `Link table (source -> target: modes; a pair not listed is refused). An application is a Service or API kind other than the CDN; a store is a database, search index, cache or storage. ${studioLinkRules.map(linkRuleText).join(" ")}`;
+/** The link table, generated from `studioLinkRules` so the two can't drift. */
+const linkTable = [
+  "Source -> target: modes. A pair not listed is refused. An application is a Service or API kind other than the CDN; a store is a database, search index, cache or object storage. Sync is a direct call where the caller waits (solid); async is sent without waiting (dashed): through a queue or topic, or a direct async call between applications where the table allows it.",
+  ...studioLinkRules.map(linkRuleText),
+];
 const actionWords = `${studioActionDefaults.download} (download) or ${studioActionDefaults.upload} (upload)`;
+const legacyKinds = (Object.keys(studioDefinitions) as StudioKind[]).filter(
+  (kind) => kind !== "browser" && !studioLinkFanKinds.includes(kind),
+);
 
-export const INSTRUCTIONS = `Normal configuration is limited to getDesign.editableSettings from the executing installed registry. Installed templates are reached only through modules: addModule and connectModule derive each template, its graph facts and ownership. YouTube product implementation is custom work after generation; historical YouTube and video feature declarations remain readable, with explicit custom gaps. Never offer Go, cloud/tus, custom FFmpeg, L1/negative caching or internal policies as supported choices. Existing source values are preserved intent, not availability. An explicitly requested custom behavior must be recorded in configureDesignScope.customRequirements as an unresolved generation gap; never invent a template or silently rewrite historical settings.
+/**
+ * A short prompt: the working loop and the few rules that hold everywhere. The rest of the
+ * knowledge (the canvas, the link table, the catalogs, the patterns and what to fix) is in the
+ * tools' descriptions and results.
+ */
+export const INSTRUCTIONS = `You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with the same commands the mouse sends. You design; you do not implement software or claim runtime behavior.
 
-You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.
+Work in a loop: plan, preview, apply, review, fix.
+- Plan: getDesign shows the design as the canvas draws it, with each module's status. listStudioDefinitions says what a new tile and a module can be, the link table and the caps. listStudioPatterns lists curated patterns (an upload pipeline, a cached read path, counting from events, search fed by events, sign-in, favorites, a store with one writer) with their arguments.
+- Preview: previewCommands dry-runs a pattern or a batch of commands and returns the statuses and findings it would leave. Nothing is saved.
+- Apply: applyPattern applies a pattern as one validated batch; applyStudioCommands applies commands. A refused call changes nothing and says why.
+- Review: every accepted change returns an automatic review of what is left; reviewDesign gives the whole review. Each finding names its tile or module and a fix, often as commands.
+- Fix: apply the fixes for findings marked fix, or say why one stays. Findings marked check are advice to confirm.
 
-The lane canvas:
-- One actor, the user (a mobile and desktop user), is always there. It is not a tile; you never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post).
-- An action is what the user does in a lane, drawn as a tile with one short word for a name (Watch, Publish): at most one per lane, named ${actionWords} unless you name it. The user links only to its actions, and each action's lane entries link it to the services that handle that action.
-- A tile has at most one entry, in one lane.
-- Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
-- A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
-- Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
-- Legacy store access is inferred from the studio owner setting: links from the owner or its package members are marked write, others read. An owner's individual read cannot be distinguished from a write. This is a modeling approximation, not proof of runtime access or an independently owned service boundary. To change the inferred writer, edit the store's owner.
-- ${linkTable}
-- Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per action.
-- ${studioWarningSentence}
+Rules:
+- You can do exactly what the mouse can, and no more: new tiles are the link fan's kinds, modules come from the module catalog, and templates come only from modules. Never work around a refusal or invent a tile to get past a rule.
+- Every tile hangs off a lane, with no cycles; stores never link onward; the user reaches a store only through a service.
+- Only getDesign.editableSettings are normal settings, sent as complete values. Behavior the design can't represent stays an explicit unresolved requirement: a name, label or module never implements it.
+- All edits in a turn commit together as one Undo step. Use the IDs the results give you; a rename re-keys IDs that follow names.
+- Keep designs small and readable. Ask one focused askUser question only when the answer changes the architecture. Reply briefly with what changed and what is left. Messages beginning [Jeeves] are caller context; "this" or "the selected" means its selected identities.`;
 
-Tools: listStudioDefinitions lists the tile types, their kinds, the link fan's kinds for new tiles and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
-
-readReadiness returns the same snapshot report as the inspector and blueprint v3: design validity, exact contract completeness, implementation availability and exact generated-output evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Strict readiness has no real artifact/evidence registry or verified runner. Experimental installed feature support is reported separately by getDesign and grants no strict readiness credit. The report is read-only and does not replace a fresh reviewDesign before staged edits commit.
-
-Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before building or substantially restructuring a design, use listStudioPatterns to discover applicability and describeStudioPattern to retrieve the relevant records. Select only patterns that fit the person's use case: cache-aside lookup, durable background job, publication-to-search, pending-order/payment coordination. For an upload/processing/publication flow retrieve both the job and publication records. A trivial rename does not need retrieval. Retrieval alone does not establish that a pattern applies; state the chosen scope and assumptions. Read each record's support limitations and implementation obligations before proposing commands. Examples marked commands are topology-only starting points, not complete applications; examples marked obligation describe unsupported lifecycle contracts and must not be converted into fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. Preserve the intended logical owner and explain the missing contract precisely. Pattern guidance, represented design intent, template availability and runtime verification are separate: these patterns supply no runtime templates or verification. Do not claim tests of this tool loop prove model design quality.
-
-Review before saving: declareReviewScope explicitly selects this turn's pattern IDs, applicable checklist IDs, assumptions and custom obligations. It replaces only turn-local review metadata, never design settings. Retrieval does not select scope. Do not select variant checks (such as finite stock) unless they apply; use an empty checklist for topology-only scope. reviewDesign is read-only: inspect staged additions/updates/removals, targeted findings, assumptions and unsupported obligations. All selected behavior checks without typed contracts stay "not specified", never "verified"; no labels or module names prove payload semantics, transitions or side effects. A fresh review is sent back before edits commit even if you end your response. You may repair at most two response batches after receiving a review, within the normal 16-round limit; review again after edits. Warnings remain saveable: fix represented facts or explicitly report what remains. askUser still ends the turn immediately. The server appends the actual saved-edit and unresolved-review result.
-
-Exact finite operation contracts: use describeOperation with availableOperations or availableCachePolicies exact ref before binding Create/Resolve link. configureOperations previews then applies the exact complete receiver/caller declarations; preserve unrelated rows and unknown refs. The Create link contract requires trusted verified issuer+subject, HTTP(S) normalization, atomic durable link+success-key commit, 24-hour replay, 16 random bytes encoded as 22 base64url characters, five total allocation attempts including the initial attempt, and a single total 10-second deadline. Entry identity includes canonical ID/lane/element; service calls use real role/edge endpoints. Never infer capabilities from tile names/modules or treat raw headers as verified principals. Missing verifier/retention/unknown refs remain targeted unresolved; no auth runtime or template is available. Known auth/idempotency/schema/timeout contradictions refuse. Operations belong to the same role/owner and add no fake service. Resolve is public GET /links/{code}: 307 Location, 400 invalid, 404 unknown, 410 expired, 503 dependency/overload; no-store on EVERY outcome. Canonical 22-character 16-byte base64url ends in A/Q/g/w; no query/body input. Immutable target, indefinite expiry evidence and no code reuse. Exact links-positive-cache policy: 300 s maximum clamped to record expiry, 50 ms cache phases, 1000 ms primary, 64 actual primary calls shared per instance with admission retained until settled/cancelled, 1200 ms total deadline never reset. Cache timeout/malformed payload falls back to fresh primary; DB failure is 503, fill failure preserves timely success. No retries/L1/negative/HTTP response cache. Source read and cache read-write require exact same-owner source/projection grants. Contradictory represented TTL, replica, module, CDN, timeout, protocol/security/channel settings refuse; never rewrite settings. Selected one-namespace profile requires all known create/resolve bindings to share source and owner. Clock/adapters/templates/runtime evidence remain unavailable.
-
-Explicit logical ownership and access: configureOwnership is the narrow mouse/chat command. First preview the exact complete declarations, then apply that same preview; edit/removal/transfer must retain unrelated facts and show every affected grant/dependency. Existing element IDs identify API/worker roles belonging to a logical owner; roles can share a deployable, which grants nothing. Resources declare one logical authority and source/projection intent independently from legacy inferred writer. Explicit same-owner reads stay reads. Cache read and fill needs read-write. Foreign writes refuse; foreign reads require a deliberate published-read contract or an owned projection, never accidental table access. These are declarations; exact operation bindings are edited separately and runtime authorization remains unverified. No owners or grants follow from names, module prose or packages. Missing declarations stay unresolved.
-
-Persistent profile and requirements: getDesign includes schemaVersion, saved persistentScope, unresolved requirements and the one available profile default. configureDesignScope previews or applies exactly those declarations with the same command as the mouse form. For schema v2 first preview the exact scope, then apply with upgrade:true; omission never upgrades. This explicit version change and all turn edits are one Undo step. Preserve unknown profile versions and existing custom requirements unless the person asks to replace them. Included/excluded requirements are saved intent, separate from declareReviewScope. Required custom slugs, mutable destinations, disable/management, reputation, quotas or exact analytics block tinyurl-create-resolve@1.0.0; retain the requirement instead of erasing it or claiming support. Profile selection supplies no owner, API, failure/cache contract, template or runtime verification. Unknown/absent requirements remain unspecified. Missing custom targets stay unresolved after deletion.
-
-Commands (applyStudioCommands, with getDesign's baseRevision):
-- addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
-- addTile: a new tile of tile.kind after a tile, or after a lane's action (from {"lane": "download"} or {"lane": "upload"}; the action is added with its default name if the lane has none). side is always "after": nothing is inserted before a tile. For a new tile choose one of listStudioDefinitions.linkFan, the kinds the canvas's link fan offers (Gateway, Redirect, Notifications and Billing are not offered there; existing tiles of those kinds keep working). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue receives that adjacent application as its legacy inferred writer; no logical authority, role or grant is declared automatically. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
-- linkTiles: links a lane's action or a tile to a tile already on the canvas (a merge, or a new entry).
-- link ("sync" or "async") is optional on addTile and linkTiles: leave it out for the pair's default from the link table; give it only to choose the other mode where the table allows both.
-- setEntryLane: moves an entry to the other lane's action ("download" or "upload"), within its cap.
-- removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
-- removeLink: removes a link or a lane entry, unless that cuts a tile off.
-- changeKind is retained source vocabulary and refuses in normal authoring.
-- edit (a tile's name, purpose, useful supported settings or preserved owner), editSystem (the system name and goal), editConnection (a link's label only). Settings are complete values, not patches; only getDesign.editableSettings can change. Custom requests remain unresolved requirements.
-- addModule (host, kind; optional id, name and description) adds a module of a kind listStudioDefinitions.modules allows in that tile (hosts). connectModule (module, slot, target) fills one of its slots: target {"tile": id} through the host's link to that tile (the link the table gives is added when there is none), or {"module": id} for a Cache reader's loader or Favorites' items, a Data access in the same tile. disconnectModule (link) removes one module link and keeps the tiles' link; removeModule (module) removes it with its links. Each one derives, in the same step, every module's generation (a template once its lead has every needed part connected in its tile, else a typed stub), the values that template fixes and the ownership it needs, or refuses in plain words. getDesign gives each module's status: template, stub (with what it still needs), custom or refused (with why).
-- editComponent changes a module's name, purpose or useful supported settings; disconnectComponent/removeComponent remove source intent without deriving, so once a module generates code (a template or stub selection exists) they are refused: use disconnectModule/removeModule. createComponent/connectComponent are retained source vocabulary and refuse in normal authoring: use addModule and connectModule.
-IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
-- setRunnableProcesses (on: true or false) turns Runnable processes on or off for export, as Generate project's checkbox does: each Service, Uploads and Worker tile then runs as its own process. Only a design built from modules can turn it on; studies, tile-level and preset designs refuse. getDesign.processes says whether it is on.
-- IDs follow names: renaming (edit or editComponent with name) a tile or module whose ID still follows its kind or its old name re-keys it (a tile to its new name's slug, a module to "<tile id>-<slug>", and a tile's following modules with it). The result's renamed lists each {from, to}; use the new IDs from then on. A clash refuses. Studies, designs with tile-level templates or a preset, and other IDs keep their IDs; only the name changes. Link IDs never change.
-
-Several commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.
-
-Only names and purposes, the system goal, finite settings, ownership, exact local operation bindings, links, modules and bounded persistent scope declarations are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior as a persistent unresolved custom requirement when requested. Kinds come preconfigured (listStudioDefinitions shows each kind's defaults): Billing starts with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs, Gateway with Traefik and CDN with Cloudflare; the other choices stay selectable. Large uploads go through an Uploads service that writes the storage; its transfer (signed URLs to storage, or through the service with tus) says how the bytes travel, never a line from an action to storage. Each coded kind offers two languages, its default first (languages in listStudioDefinitions and getDesign); any other language is refused. Gateway and CDN are products, not code, and have no language. A provider chosen on a kind (Billing with Stripe) is that service's integration: never add a separate External tile for it. External tiles are for third parties no kind covers. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.
-
-A selected operation:<id> reference names one exact receiver binding, distinct from its role/owner and other operations. Preserve its binding ID through rename; inspect declaredOperations and do not reinterpret a missing binding as its parent. Generic parent selection selects no operation.
-
-A selected owner:<id> reference names one logical owner, independently from its roles and deployables. Use declaredOwnership to inspect it; preserve the ID on rename. Never treat member roles as independently selected or reinterpret a missing owner as an element.
-
-Keep designs small and readable: a few tiles per lane (at most 15 to start), short names, useful purposes. Docker is the default intent for a new service. No provider setup or credentials. Ask one focused askUser question only when the answer changes the architecture, then end the turn. Reply briefly with what changed and what remains open. Messages beginning [Jeeves] are caller context; "this" or "the selected" means its selected identities (a tile, link or entry on the canvas).`;
+/**
+ * What `previewCommands` dry-runs: the commands that change the lanes, the modules and their
+ * statuses (and an Auth guard's Sign-in). Tile settings, link labels and the retained source
+ * commands have nothing to preview, and leaving them out keeps the strict tool schema small.
+ */
+const previewTypes: readonly string[] = [
+  "addAction",
+  "renameAction",
+  "removeAction",
+  "addTile",
+  "linkTiles",
+  "removeTile",
+  "removeLink",
+  "setEntryLane",
+  "editSystem",
+  "addModule",
+  "connectModule",
+  "disconnectModule",
+  "removeModule",
+  "editComponent",
+  "setRunnableProcesses",
+];
+const previewCommandSchema = z.discriminatedUnion(
+  "type",
+  studioCommandSchema.options.filter((option) =>
+    previewTypes.includes(option.shape.type.value),
+  ) as unknown as typeof studioCommandSchema.options,
+);
 
 const schemas = {
   describeOperation: z.strictObject({ ref: exactContractRefSchema }),
@@ -192,6 +209,15 @@ const schemas = {
     baseRevision: z.int().nonnegative(),
     commands: z.array(supportedAuthoringCommandSchema).min(1).max(50),
   }),
+  applyPattern: z.strictObject({
+    baseRevision: z.int().nonnegative(),
+    pattern: modulePatternSchema,
+  }),
+  previewCommands: z.strictObject({
+    baseRevision: z.int().nonnegative(),
+    commands: z.array(previewCommandSchema).min(1).max(50).optional(),
+    pattern: modulePatternSchema.optional(),
+  }),
   validateDesign: z.strictObject({}),
   readReadiness: z.strictObject({}),
   declareReviewScope: studioReviewScopeSchema,
@@ -205,32 +231,36 @@ const schemas = {
 type ToolName = keyof typeof schemas;
 const descriptions: Record<ToolName, string> = {
   describeOperation:
-    "Read an exact immutable Create/Resolve operation or positive-cache policy with schema/behavior hashes, outcomes and fixed bounds. Unknown exact refs remain unresolved, with no substitution. No HTTP runtime or verifier is supplied.",
+    "Read an exact immutable Create/Resolve operation or positive-cache policy with schema/behavior hashes, outcomes and fixed bounds. Use an exact ref from getDesign.availableOperations or availableCachePolicies before binding one with configureOperations. Unknown exact refs remain unresolved, with no substitution. No HTTP runtime or verifier is supplied.",
   configureOperations:
-    "Preview then stage a complete bounded replacement of exact API receiver implementations and entry/service-call expectations. Preserve unrelated rows. Apply must match the latest preview; explicit v3 upgrade for legacy designs. Bind canonical IDs, refine source read/write and cache read-and-fill grants, and retain unknown refs as unresolved. Templates/runtime evidence remain none; Create verifier availability is separate.",
+    "Preview then stage a complete bounded replacement of exact API receiver implementations and entry/service-call expectations. Read describeOperation first. Preserve unrelated rows and unknown refs. Apply must match the latest preview; explicit v3 upgrade for legacy designs. Bind canonical element/lane/connection IDs and real role/edge endpoints, refine source read/write and cache read-and-fill grants, and retain unknown refs as unresolved. Never infer capabilities from tile names or modules, or treat raw headers as verified principals; operations belong to the same role/owner and add no service. Known auth/idempotency/schema/timeout contradictions refuse. Templates/runtime evidence remain none; Create verifier availability is separate.",
   listStudioDefinitions:
-    "List the tile types with their kinds, the link fan's kinds for new tiles (as the canvas offers them), the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
+    "List what a new tile can be (the link fan's eleven kinds, each with its label), the tile types with their kinds and defaults, the module catalog (each kind's slots, the tiles that hold it, what it becomes there: Template, Part of a template or Stub, and its one-line description), the link table, the caps, the design warnings and notes on preconfigured kinds. Design only; none supplies a runtime or verification.",
   describeStudioDefinition:
     "Read a kind's diagnostic source schema and historical defaults. These are preserved design intent, not editable choices; getDesign.editableSettings supplies actual normal controls.",
   listStudioPatterns:
-    "List the four reviewed design patterns, versions and applicability. Discover relevant records before building or substantial restructuring; retrieval does not establish applicability or runtime support.",
+    "List the curated patterns applyPattern builds (what each makes, the templates it yields and each argument with its default) and the four reviewed guidance records (cache-aside lookup, durable background job, publication-to-search, pending-order/payment). Use them before building or substantially restructuring a design; a trivial rename does not need retrieval. Retrieval alone does not establish that a pattern applies: state the scope and assumptions you chose.",
   describeStudioPattern:
-    "Read one reviewed pattern's roles, required relationships, variants, invariant/failure checklist, sources, topology-only example and precise unsupported implementation obligations. No runtime template or verification is supplied.",
+    "Read one reviewed guidance record: roles, required relationships, variants, invariant/failure checklist, sources, topology-only example and precise unsupported implementation obligations. Read its support limitations and obligations before proposing commands. Examples marked commands are topology-only starting points; examples marked obligation describe unsupported lifecycle contracts and must not become fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. No runtime template or verification is supplied.",
   getDesign:
-    "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules (each with its generation status: template, stub, custom or refused, and why), whether Runnable processes is on, the current findings and the design warnings.",
+    "Read the design compactly, as the canvas draws it: baseRevision; the system; the actions (lane, name, entries and the tiles each lane reaches); every tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, slots' links, and status: template, stub, custom or refused, with why); whether Runnable processes is on; editableSettings, the only normal settings; findings and warnings; and the persistent scope, ownership and operation declarations the configure tools edit.",
   configureDesignScope:
-    "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
+    "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true; omission never upgrades. Preserve unknown profile versions and existing custom requirements unless asked to replace them. Required custom slugs, mutable destinations, disable/management, reputation, quotas or exact analytics block tinyurl-create-resolve@1.0.0: retain the requirement instead of erasing it or claiming support. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
   configureOwnership:
-    "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Declarations only: operation bindings are separate and runtime authorization is unavailable. Foreign writes refuse, foreign reads need a deliberate published-read contract; co-deployment grants nothing.",
+    "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Existing element IDs identify roles; co-deployment grants nothing; no owners or grants follow from names, modules or packages. Cache read and fill needs read-write. Foreign writes refuse; foreign reads need a deliberate published-read contract or an owned projection. Module commands derive the ownership their templates need. Declarations only: operation bindings are separate and runtime authorization is unavailable.",
   applyStudioCommands:
-    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink and setEntryLane; modules through addModule, connectModule, disconnectModule and removeModule; Runnable processes through setRunnableProcesses. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches; only getDesign.editableSettings can change. Custom requests remain unresolved requirements.",
+    'Apply commands against getDesign.baseRevision with the canvas\'s own command builder and validation. Actions, tiles and links: addAction, renameAction, removeAction (by lane); addTile (a tile of one of listStudioDefinitions.tileKinds after a tile, or from {"lane": "download"} or {"lane": "upload"}; side is "after"; leave link out for the pair\'s default mode); linkTiles; setEntryLane; removeTile (alsoRemove only the tiles the person wants removed); removeLink. Names and values: edit (a tile\'s name, description, editable settings as complete values, or owner), editSystem, editConnection (label only). Modules: addModule (host, kind; optional id, name, description), connectModule (module, slot, target {"tile": id}, or {"module": id} for an in-process slot such as a Cache reader\'s loader or Favorites\' items), disconnectModule (link), removeModule (module), editComponent (name, description, editable settings such as an Auth guard\'s signIn); each module command derives every module\'s generation and the ownership it needs in the same step. setRunnableProcesses (on: true or false) turns Runnable processes on or off for export, as Generate project\'s checkbox does; only a design built from modules can turn it on. A design with no system starts with addAction or addTile passing system {name}. IDs are lowercase slugs; name a new link "source-target" and a new entry "lane-target". Refused: new tiles of the legacy kinds (Gateway, Redirect, Notifications, Billing), changeKind, createComponent/connectComponent (use addModule/connectModule), and removeComponent/disconnectComponent once modules generate code. All accepted changes in a turn commit once; concurrent edits stop the turn. The result lists renamed IDs and an automatic review of what is left.',
+  applyPattern:
+    "Apply one curated pattern from listStudioPatterns as one validated batch: pattern {id, ...its arguments}. A tile argument reuses an existing tile named so (by ID or name), or names a new one; defaults are reused the same way, so patterns applied in turn share tiles. Every step is a command the mouse could send, checked with the same builder; one refused step refuses the whole pattern and nothing changes. The result lists the tiles and modules added and an automatic review of what is left.",
+  previewCommands:
+    "Dry-run either one pattern (as applyPattern takes it) or commands that change the lanes and modules (as applyStudioCommands takes them: the lane commands, editSystem, the module commands, editComponent and setRunnableProcesses) on the working design. Returns what would change, every module's resulting status with why, and the review findings it would leave. Nothing is prepared or saved; the working design is unchanged.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   readReadiness:
-    "Read the same snapshot compatibility report as the mouse and blueprint v3: full structural validity, exact contract completeness, implementation availability and exact-output runtime evidence separately. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
+    "Read the same snapshot compatibility report as the mouse and blueprint v3: design validity, exact contract completeness, implementation availability and exact-output runtime evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
   declareReviewScope:
-    "Explicitly replace this turn's review scope: selected pattern/checklist IDs, assumptions and custom unsupported obligations. No persistent design setting or capability contract is created. Retrieve patterns before selecting their IDs.",
+    "Explicitly replace this turn's review scope: selected guidance pattern/checklist IDs, assumptions and custom unsupported obligations. Retrieval does not select scope; select variant checks (such as finite stock) only when they apply, and use an empty checklist for topology-only scope. Never a persistent design setting or capability contract. Retrieve the guidance record before selecting its IDs.",
   reviewDesign:
-    "Preview all staged changes without saving: targeted structural/readiness findings, declared assumptions and unsupported obligations. Exact declared create contracts are checked; undeclared contracts stay not specified. Later edits or scope changes invalidate this review.",
+    "Review all staged changes without saving: what changed, every module's status with why, what is left (each finding names its tile or module, says fix or check, and gives a concrete fix, often as commands: modules that still need something, needed slots left unconnected, generation findings, a store with no writer, a worker writing stores for more than one concern, the user reaching a store, a long line to a far store, line styles that contradict their channel, and the design warnings), the readiness findings, declared assumptions and unsupported obligations, which stay not specified. Later edits or scope changes make it stale. A fresh review is sent back before edits commit; you may repair at most two response batches after receiving one.",
   askUser: "Ask a focused question with clickable choices, then end the turn.",
 };
 
@@ -242,9 +272,10 @@ export function toolDefinitions(): ToolDefinition[] {
   }));
 }
 
-/** Shared by the real loop and evaluation observer; scope previews spend no repair pass. */
+/** Shared by the real loop and evaluation observer; previews spend no repair pass. */
 export function isWorkspaceMutation(name: string, rawArguments: string): boolean {
-  if (name === "applyStudioCommands" || name === "declareReviewScope") return true;
+  if (name === "applyStudioCommands" || name === "applyPattern" || name === "declareReviewScope")
+    return true;
   if (
     name !== "configureDesignScope" &&
     name !== "configureOwnership" &&
@@ -270,30 +301,80 @@ function languagesOf(kind: StudioKind) {
     : {};
 }
 
+/** The lane canvas in a few sentences, for `listStudioDefinitions`. */
+const canvasNotes = [
+  "One actor, the user (a mobile and desktop user), is always there. It is not a tile; never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post).",
+  `An action is what the user does in a lane, a tile with one short word for a name (Watch, Publish): at most one per lane, named ${actionWords} unless you name it (at most ${studioLimits.actionName} characters). The user links only to its actions, and each action's lane entries link it to the services that handle it.`,
+  "A tile has at most one entry, in one lane. Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only after a tile or a lane, never on its own.",
+  "Whatever follows an async link happens later, so slow side work forks off through a queue or topic. Resources (database, cache, object storage, search index) are end tiles: fork at the service instead.",
+  "A message channel is a Queue (each message to one consumer) or a Topic (a copy to every subscriber); templates derive the mode.",
+];
+/** What new tiles start with and what they mean, for `listStudioDefinitions`. */
+const kindNotes = [
+  "Kinds come preconfigured: a new tile starts with its kind's defaults (Identity with OpenID Connect, Uploads with signed URLs, CDN with Cloudflare); the other choices stay selectable where editableSettings offer them.",
+  "Large uploads go through an Uploads service that writes the storage; how bytes travel is a choice on that service, never a line from an action to storage.",
+  "Each coded kind offers two languages, its default first; any other is refused. A CDN is a product, not code. External API tiles are for third parties no kind covers. Provider choices are intent: nothing is deployed, provisioned or verified because one was chosen.",
+  "Never offer Go, cloud tus, custom FFmpeg, L1 or negative caching, or internal policies as supported choices. Existing source values are preserved intent, not availability.",
+  `New tiles of the legacy kinds (${legacyKinds.map((kind) => studioDefinitions[kind].name).join(", ")}) are refused; existing ones keep working and keep their modules.`,
+];
+
 /**
- * The tile types, each with its kinds, each kind's languages and its preset defaults (a new tile
- * starts with them); the link fan's kinds for a new tile, by group, as the canvas offers them.
+ * The catalogs: what a new tile can be (the link fan's kinds with their labels), the tile types
+ * with their kinds and preset defaults, and the module catalog with what each kind becomes in
+ * the tiles that hold it, as the + menu groups it.
  */
 function catalogSummary() {
   return {
+    tileKinds: studioLinkFanGroups.flatMap((group) =>
+      studioLinkFan[group].map((kind) => ({
+        kind,
+        name: studioDefinitions[kind].name,
+        label: studioKindLabel(studioDefinitions[kind].defaults as never),
+        group,
+        description: studioDefinitions[kind].description,
+      })),
+    ),
+    linkFan: studioLinkFanGroups.map((group) => ({ group, kinds: studioLinkFan[group] })),
+    legacyKinds,
     tileTypes: studioTileTypes.map((type) => ({
       type,
       name: studioTileDefinitions[type].name,
       kinds: studioTileDefinitions[type].kinds.map((kind) => ({
         kind,
         name: studioDefinitions[kind].name,
-        description: studioDefinitions[kind].description,
         ...languagesOf(kind),
         defaults: studioDefinitions[kind].defaults,
       })),
     })),
-    linkFan: studioLinkFanGroups.map((group) => ({ group, kinds: studioLinkFan[group] })),
     modules: studioComponentKinds.map((kind) => {
-      const { name, description, targets, hosts, slots, generation } =
-        studioComponentDefinitions[kind];
-      return { kind, name, description, uses: targets, hosts, slots, generation };
+      const { name, description, hosts, slots, generation } = studioComponentDefinitions[kind];
+      const templates =
+        generation.kind === "lead"
+          ? [generation.template]
+          : generation.kind === "part"
+            ? generation.templates
+            : [];
+      return {
+        kind,
+        name,
+        description,
+        hosts,
+        // What it becomes in each tile kind that holds it, as the + menu groups it.
+        as: Object.fromEntries(
+          hosts.map((host) => [host, moduleGenerationLabels[moduleGeneration(kind, host)]]),
+        ),
+        generation,
+        ...(templates.length && {
+          templateNames: templates.map((template) => moduleTemplateNames[template]),
+        }),
+        slots,
+      };
     }),
+    linkRules: linkTable,
     caps,
+    canvas: canvasNotes,
+    kindNotes,
+    warnings: studioWarningSentence,
   };
 }
 
@@ -310,25 +391,52 @@ function laneTiles(graph: LaneGraph, lane: StudioLane): string[] {
   return order;
 }
 
+/** A normal control as chat edits it: the tile or module, the setting, its value and range. */
+function editableSetting(design: DesignDocument, control: GenerationSettingDecision) {
+  const [, , list, index, , key] = control.sourcePaths[0] ?? [];
+  const studio = design.architecture?.studio;
+  const target =
+    list === "elements"
+      ? { element: studio?.elements[index as number]?.element }
+      : list === "components"
+        ? { component: studio?.components?.[index as number]?.id }
+        : {};
+  return {
+    ...(control.selection && { selection: control.selection }),
+    ...(control.process && { process: control.process }),
+    input: control.input,
+    ...target,
+    setting: key,
+    value: control.value,
+    supported: control.supported,
+    ...(control.userNeed && { userNeed: control.userNeed }),
+  };
+}
+
 /**
- * The design as chat sees it: the actions with their lanes, entries and tiles, then every tile in
- * lane order with its kind, settings, outgoing links (sync or async) and modules.
+ * The design as chat sees it, compactly: the actions with their lanes, entries and tiles, then
+ * every tile in lane order with its kind and label, settings, outgoing links (sync or async) and
+ * modules with their statuses, then the declarations the configure tools edit.
  */
-function designSummary(design: DesignDocument, findings: readonly Finding[]) {
+function designSummary(
+  design: DesignDocument,
+  findings: readonly Finding[],
+  installed: GenerationInstalledSupport = installedGenerationSupport(),
+) {
   const studio = design.architecture?.studio;
   const graph = laneGraph(design);
   const elements = new Map(design.elements.map((item) => [item.id, item]));
   const bindings = new Map(studio?.elements.map((item) => [item.element, item]));
   const connections = new Map(design.connections.map((item) => [item.id, item]));
-  const linkSettings = new Map(studio?.connections.map((item) => [item.connection, item.settings]));
   const readiness = designReadiness(design);
+  const declared = designOwnership(design).dependencies;
   /** A link into a store: `write` from its owner, `read` otherwise (one writer per store). */
   const accessOf = (id: string) => {
     const access = studioStoreAccess(design, id);
-    const explicit = designOwnership(design).dependencies.find((item) => item.connection === id);
+    const explicit = declared.find((item) => item.connection === id);
     return {
-      ...(access ? { access, accessBasis: "legacy-inferred; not a declared grant" } : {}),
-      ...(explicit ? { declaredAccess: explicit.access } : {}),
+      ...(access && { access }),
+      ...(explicit && { declaredAccess: explicit.access }),
     };
   };
   const statuses = new Map(moduleStatuses(design).map((item) => [item.module, item]));
@@ -340,11 +448,16 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
         return {
           id: item.id,
           name: item.name,
+          kind: item.settings.kind,
           ...(item.description && { description: item.description }),
           settings: item.settings,
           links: (studio?.componentConnections ?? [])
             .filter((link) => link.from === item.id)
-            .map(({ id, to }) => ({ id, to })),
+            .map((link) => ({
+              id: link.id,
+              ...(moduleLinkSlot(design, link) && { slot: moduleLinkSlot(design, link)?.id }),
+              to: link.to.kind === "component" ? { module: link.to.id } : { tile: link.to.id },
+            })),
           ...(status && {
             status: status.status,
             ...(status.template && { template: status.template }),
@@ -353,51 +466,18 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
           }),
         };
       });
+  const generation = designGeneration(design);
+  // Module-level selections read as module statuses; only historical tile-level selections and
+  // presets are shown as declarations.
+  const tileLevel =
+    !!generation?.preset || !!generation?.selections.some((item) => item.target.kind === "element");
+  const counts = [...statuses.values()].reduce<Record<string, number>>((all, item) => {
+    all[item.status] = (all[item.status] ?? 0) + 1;
+    return all;
+  }, {});
   return {
     baseRevision: design.revision,
     schemaVersion: design.schemaVersion,
-    readiness: {
-      compositionSha256: readiness.composition.sha256,
-      generationEligible: readiness.generationEligible,
-      ...Object.fromEntries(
-        (
-          [
-            "designValidity",
-            "contractCompleteness",
-            "implementationAvailability",
-            "runtimeEvidence",
-          ] as const
-        ).map((stage) => [
-          stage,
-          { status: readiness[stage].status, blockers: readiness[stage].blockers.length },
-        ]),
-      ),
-      detailTool: "readReadiness",
-    },
-    persistentScope: {
-      ...designScope(design),
-      profileStatus: profileStatus(designScope(design)),
-      unresolved: unresolvedDesignScope(design),
-    },
-    availableProfileDefault: tinyurlDesignScope(),
-    declaredOperations: designOperations(design),
-    /** Runnable processes for export (Generate project's checkbox, setRunnableProcesses). */
-    processes: !!designGeneration(design)?.processes,
-    ...(designGeneration(design)
-      ? {
-          declaredGeneration: designGeneration(design),
-          generationFindings: generationFindings(design),
-        }
-      : {}),
-    operationFindings: operationContractFindings(design),
-    availableOperations: operationRecords.map((x) => ({ ...x.ref, name: x.definition.name })),
-    availableCachePolicies: contractRecords
-      .filter((x) => !operationRecords.some((record) => sameContractRef(record.ref, x.ref)))
-      .map((x) => ({ ...x.ref, name: x.definition.name })),
-    declaredOwnership: designOwnership(design),
-    ownershipFindings: ownershipFindings(design),
-    ownershipMeaning:
-      "Logical owners, canonical roles, authority and explicit grants are declarations only. Legacy store owner/access remains separate and inferred; operation bindings are declared separately. Co-deployment grants nothing.",
     system: design.architecture
       ? {
           name: design.architecture.system.name,
@@ -425,6 +505,7 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
           ...(node.kind && {
             type: tileTypeOf(node.kind),
             kind: node.kind,
+            ...(binding && { label: studioKindLabel(binding.settings) }),
             ...languagesOf(node.kind),
           }),
           ...(binding?.owner && { owner: binding.owner }),
@@ -436,17 +517,60 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
               to: edge.target,
               mode: edge.async ? "async" : "sync",
               ...accessOf(edge.id),
-              planned: connections.get(edge.id)?.planned,
-              settings: linkSettings.get(edge.id),
+              label: connections.get(edge.id)?.planned.label,
             })),
           ...(hosted.length && { modules: hosted }),
         };
       }),
+    ...(statuses.size && { moduleStatuses: counts }),
+    accessNote:
+      "access on a link into a store is inferred from the store's owner (the owner writes, others read); declaredAccess is an explicit grant. Neither proves runtime access.",
+    /** Runnable processes for export (Generate project's checkbox, setRunnableProcesses). */
+    processes: !!generation?.processes,
     caps,
+    editableSettings: normalGenerationControls(design, installed).map((control) =>
+      editableSetting(design, control),
+    ),
     findings: findings.filter((item) => !isDesignWarning(item)),
     /** Designs that look wrong but are allowed; resolve the ones this turn caused. */
     warnings: findings.filter(isDesignWarning).map((item) => item.message),
-    editableSettings: normalGenerationControls(design, installedGenerationSupport()),
+    readiness: {
+      compositionSha256: readiness.composition.sha256,
+      generationEligible: readiness.generationEligible,
+      ...Object.fromEntries(
+        (
+          [
+            "designValidity",
+            "contractCompleteness",
+            "implementationAvailability",
+            "runtimeEvidence",
+          ] as const
+        ).map((stage) => [
+          stage,
+          { status: readiness[stage].status, blockers: readiness[stage].blockers.length },
+        ]),
+      ),
+      detailTool: "readReadiness",
+    },
+    persistentScope: {
+      ...designScope(design),
+      profileStatus: profileStatus(designScope(design)),
+      unresolved: unresolvedDesignScope(design),
+    },
+    availableProfileDefault: tinyurlDesignScope(),
+    declaredOperations: designOperations(design),
+    ...(tileLevel && generation
+      ? { declaredGeneration: generation, generationFindings: generationFindings(design) }
+      : {}),
+    operationFindings: operationContractFindings(design),
+    availableOperations: operationRecords.map((x) => ({ ...x.ref, name: x.definition.name })),
+    availableCachePolicies: contractRecords
+      .filter((x) => !operationRecords.some((record) => sameContractRef(record.ref, x.ref)))
+      .map((x) => ({ ...x.ref, name: x.definition.name })),
+    declaredOwnership: designOwnership(design),
+    ownershipFindings: ownershipFindings(design),
+    ownershipMeaning:
+      "Logical owners, canonical roles, authority and explicit grants are declarations only. Legacy store owner/access remains separate and inferred; operation bindings are declared separately. Co-deployment grants nothing.",
     availability:
       "Only editableSettings are normal controls. Other source settings are preserved intent; exact-output runtime verification remains separate.",
   };
@@ -458,7 +582,31 @@ export function turnContext(
   findings: readonly Finding[],
   selection: readonly string[],
 ) {
-  return `[Jeeves] Studio context.\nTile types (finite, design only):\n${JSON.stringify(catalogSummary())}\nCurrent design:\n${JSON.stringify(designSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}\nSelected logical owners (owner:<id>, distinct from element/connection IDs; roles are not independently selected): ${JSON.stringify(selectedLogicalOwners(design, selection))}\nSelected operation bindings (operation:<id>, distinct from role/owner IDs; parent selection does not select operations): ${JSON.stringify(selectedOperationBindings(design, selection))}`;
+  return `[Jeeves] Studio context.\nCurrent design:\n${JSON.stringify(designSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}\nSelected logical owners (owner:<id> names one logical owner, distinct from element/connection IDs and from its roles; preserve its ID on rename): ${JSON.stringify(selectedLogicalOwners(design, selection))}\nSelected operation bindings (operation:<id> names one exact receiver binding, distinct from role/owner IDs; a parent selection selects no operation): ${JSON.stringify(selectedOperationBindings(design, selection))}`;
+}
+
+/**
+ * What is left after a change, compactly: how many modules are in each status, the ones that
+ * aren't templates with why, and every review finding with its fix.
+ */
+export function leftover(design: DesignDocument, installed: GenerationInstalledSupport) {
+  const review = designReview(design, installed);
+  const counts = review.modules.reduce<Record<string, number>>((all, item) => {
+    all[item.status] = (all[item.status] ?? 0) + 1;
+    return all;
+  }, {});
+  return {
+    modules: counts,
+    notTemplates: review.modules
+      .filter((item) => item.status !== "template")
+      .map(({ module, name, host, status, reason }) => ({ module, name, host, status, reason })),
+    left: review.findings,
+    note: review.findings.some((item) => item.severity === "fix")
+      ? "Fix each finding marked fix (its commands are checked against this design), or say why it stays; findings marked check are advice."
+      : review.findings.length
+        ? "Nothing to fix; the findings marked check are advice to confirm."
+        : "Nothing left to fix.",
+  };
 }
 
 const commandTypes: readonly string[] = studioCommandSchema.options.map(
@@ -492,11 +640,11 @@ export class Workspace {
 
   review() {
     this.reviewedGeneration = this.generation;
-    const review = reviewStudioDesign(this.base, this.working, this.scope);
+    const review = reviewWithModules(this.base, this.working, this.scope, this.installed);
     this.log(
       "reviewDesign",
       true,
-      `Reviewed staged design: ${review.changes.length} changes, ${review.findings.length} findings, ${review.obligations.length} not specified obligations`,
+      `Reviewed staged design: ${review.changes.length} changes, ${review.left.length} left to fix or check, ${review.findings.length} findings, ${review.obligations.length} not specified obligations`,
     );
     return review;
   }
@@ -553,7 +701,7 @@ export class Workspace {
     }
     switch (tool) {
       case "listStudioDefinitions":
-        this.log(tool, true, "Listed the tile types and kinds");
+        this.log(tool, true, "Listed the tile kinds, module catalog and link table");
         return {
           ...catalogSummary(),
           availability: "Design only; no runtime or verification supplied.",
@@ -571,8 +719,7 @@ export class Workspace {
       case "getDesign":
         this.log(tool, true, "Read the studio design");
         return {
-          ...designSummary(this.working, validateDesign(this.working)),
-          editableSettings: normalGenerationControls(this.working, this.installed),
+          ...designSummary(this.working, validateDesign(this.working), this.installed),
           baseRevision: this.base.revision,
         };
       case "describeOperation": {
@@ -599,8 +746,13 @@ export class Workspace {
       case "configureDesignScope":
         return this.configureScope(parsed.data as z.infer<typeof schemas.configureDesignScope>);
       case "listStudioPatterns":
-        this.log(tool, true, "Listed reviewed design patterns");
-        return listStudioPatterns();
+        this.log(tool, true, "Listed the curated patterns and reviewed guidance");
+        return {
+          ...listModulePatterns(),
+          apply:
+            "applyPattern {baseRevision, pattern: {id, ...arguments}} applies one as a single batch; previewCommands {baseRevision, pattern} shows what it would leave first.",
+          guidance: listStudioPatterns(),
+        };
       case "describeStudioPattern": {
         const { id } = parsed.data as z.infer<typeof schemas.describeStudioPattern>;
         const pattern = studioPatterns[id];
@@ -641,6 +793,10 @@ export class Workspace {
         return { ok: true, note: "End this turn; the answer comes as a new message." };
       case "applyStudioCommands":
         return this.applyCommands(parsed.data as z.infer<typeof schemas.applyStudioCommands>);
+      case "applyPattern":
+        return this.applyPattern(parsed.data as z.infer<typeof schemas.applyPattern>);
+      case "previewCommands":
+        return this.preview(parsed.data as z.infer<typeof schemas.previewCommands>);
     }
   }
 
@@ -813,6 +969,65 @@ export class Workspace {
     }
   }
 
+  /**
+   * Runs commands one by one on `from` with the canvas's builder: the design they make, their
+   * operations and the IDs they re-keyed, or the first refusal in plain words.
+   */
+  private runBatch(
+    from: DesignDocument,
+    commands: readonly StudioCommand[],
+  ):
+    | { ok: true; working: DesignDocument; ops: OperationInput[]; renamed: Rekey[] }
+    | { ok: false; error: string } {
+    let working = from;
+    const ops: OperationInput[] = [];
+    const renamed: Rekey[] = [];
+    for (const [index, command] of commands.entries()) {
+      // In a call with several commands, say which one was refused.
+      const which = commands.length > 1 ? `Command ${index + 1} (${command.type}): ` : "";
+      try {
+        const batch = buildSupportedAuthoringCommand(working, command, this.installed);
+        const result = applyOperations(working, batch.ops);
+        if (!result.ok)
+          return { ok: false, error: which + result.errors.map((item) => item.message).join(" ") };
+        working = result.design;
+        ops.push(...batch.ops);
+        renamed.push(...renamedIds(batch.ops));
+      } catch (error) {
+        return {
+          ok: false,
+          error: which + (error instanceof Error ? error.message : String(error)),
+        };
+      }
+    }
+    return { ok: true, working, ops, renamed };
+  }
+
+  /** Keeps an accepted batch on the working copy and answers with what is left. */
+  private accept(
+    tool: string,
+    run: { working: DesignDocument; ops: OperationInput[]; renamed: Rekey[] },
+    summary: string,
+    extra: Record<string, unknown> = {},
+  ) {
+    this.working = run.working;
+    this.pending.push(...run.ops);
+    if (run.ops.length) this.generation++;
+    const review = leftover(run.working, this.installed);
+    this.log(tool, true, `${summary}; ${review.left.length} left to fix or check`);
+    const findings = validateDesign(run.working);
+    return {
+      ok: true,
+      ...extra,
+      // A rename re-keys IDs that follow their names: later commands use the new IDs.
+      ...(run.renamed.length && { renamed: run.renamed }),
+      findings: findings.filter((item) => !isDesignWarning(item)),
+      warnings: findings.filter(isDesignWarning).map((item) => item.message),
+      review,
+      note: "Prepared for one atomic turn commit, not saved yet.",
+    };
+  }
+
   private applyCommands({
     baseRevision,
     commands,
@@ -826,44 +1041,134 @@ export class Workspace {
         baseRevision: this.base.revision,
       };
     }
-    let working = this.working;
-    const ops: OperationInput[] = [];
-    const renamed: Rekey[] = [];
-    const refused = (message: string) => {
-      this.log(tool, false, `Refused: ${message}`);
-      return { ok: false, error: message, note: "Nothing changed for this call." };
-    };
-    for (const [index, command] of commands.entries()) {
-      // In a call with several commands, say which one was refused.
-      const which = commands.length > 1 ? `Command ${index + 1} (${command.type}): ` : "";
-      try {
-        const batch = buildSupportedAuthoringCommand(working, command, this.installed);
-        const result = applyOperations(working, batch.ops);
-        if (!result.ok) return refused(which + result.errors.map((item) => item.message).join(" "));
-        working = result.design;
-        ops.push(...batch.ops);
-        renamed.push(...renamedIds(batch.ops));
-      } catch (error) {
-        return refused(which + (error instanceof Error ? error.message : String(error)));
-      }
+    const run = this.runBatch(this.working, commands);
+    if (!run.ok) {
+      this.log(tool, false, `Refused: ${run.error}`);
+      return { ok: false, error: run.error, note: "Nothing changed for this call." };
     }
-    this.working = working;
-    this.pending.push(...ops);
-    if (ops.length) this.generation++;
+    return this.accept(
+      tool,
+      run,
+      `Prepared ${commands.length} studio command${commands.length === 1 ? "" : "s"}`,
+      { commands: commands.length },
+    );
+  }
+
+  /** A pattern's commands on the working copy, checked step by step, or why it is refused. */
+  private patternCommands(
+    pattern: ModulePattern,
+  ): { ok: true; commands: StudioCommand[] } | { ok: false; error: string } {
+    try {
+      return {
+        ok: true,
+        commands: buildModulePattern(this.working, pattern, this.installed).commands,
+      };
+    } catch (error) {
+      if (error instanceof ModulePatternRefusal) return { ok: false, error: error.message };
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  private applyPattern({ baseRevision, pattern }: z.infer<typeof schemas.applyPattern>): unknown {
+    const tool = "applyPattern";
+    const refused = (error: string) => {
+      this.log(tool, false, `Refused: ${error}`);
+      return { ok: false, error, note: "Nothing changed for this call." };
+    };
+    if (baseRevision !== this.base.revision)
+      return refused("Revision conflict. Read getDesign before applying a pattern.");
+    const built = this.patternCommands(pattern);
+    if (!built.ok) return refused(built.error);
+    if (!built.commands.length) {
+      this.log(tool, true, `Pattern ${pattern.id} is already in the design; nothing added`);
+      return {
+        ok: true,
+        pattern: pattern.id,
+        commands: 0,
+        review: leftover(this.working, this.installed),
+        note: "Everything this pattern adds is already in the design; nothing changed.",
+      };
+    }
+    // The same commands, as one batch through the same path as applyStudioCommands.
+    const before = this.working;
+    const run = this.runBatch(before, built.commands);
+    if (!run.ok) return refused(run.error);
+    return this.accept(
+      tool,
+      run,
+      `Applied pattern ${pattern.id} as ${built.commands.length} commands`,
+      { pattern: pattern.id, commands: built.commands.length, added: added(before, run.working) },
+    );
+  }
+
+  /** A dry run of commands or a pattern: what they would change and leave; nothing kept. */
+  private preview({ baseRevision, commands, pattern }: z.infer<typeof schemas.previewCommands>) {
+    const tool = "previewCommands";
+    const refused = (error: string) => {
+      this.log(tool, false, `Preview refused: ${error}`);
+      return { ok: false, error, note: "Nothing changed; nothing was prepared." };
+    };
+    if (baseRevision !== this.base.revision)
+      return refused("Revision conflict. Read getDesign before previewing.");
+    if (!commands === !pattern) return refused("Preview either commands or one pattern.");
+    let batch: readonly StudioCommand[] = commands ?? [];
+    if (pattern) {
+      const built = this.patternCommands(pattern);
+      if (!built.ok) return refused(built.error);
+      batch = built.commands;
+    }
+    const run = this.runBatch(this.working, batch);
+    if (!run.ok) return refused(run.error);
+    const review = leftover(run.working, this.installed);
     this.log(
       tool,
       true,
-      `Prepared ${commands.length} studio command${commands.length === 1 ? "" : "s"}`,
+      `Previewed ${pattern ? `pattern ${pattern.id}` : `${batch.length} commands`}: ${review.left.length} would be left; nothing prepared`,
     );
-    const findings = validateDesign(working);
+    const findings = validateDesign(run.working);
     return {
       ok: true,
-      commands: commands.length,
-      // A rename re-keys IDs that follow their names: later commands use the new IDs.
-      ...(renamed.length && { renamed }),
+      ...(pattern && { pattern: pattern.id, commands: batch.length }),
+      changes: studioChanges(this.working, run.working),
+      added: added(this.working, run.working),
+      ...(run.renamed.length && { renamed: run.renamed }),
+      statuses: moduleStatuses(run.working),
       findings: findings.filter((item) => !isDesignWarning(item)),
       warnings: findings.filter(isDesignWarning).map((item) => item.message),
-      note: "Prepared for one atomic turn commit, not saved yet.",
+      review,
+      note: "Preview only: nothing is prepared or saved. Apply the same commands or pattern to keep it.",
     };
   }
+}
+
+/** The tiles and modules `after` has that `before` hasn't. */
+function added(before: DesignDocument, after: DesignDocument) {
+  const tiles = new Set(before.elements.map((item) => item.id));
+  const modules = new Set((before.architecture?.studio?.components ?? []).map((item) => item.id));
+  const kinds = new Map(
+    after.architecture?.studio?.elements.map((item) => [item.element, item.settings.kind]),
+  );
+  return {
+    tiles: after.elements
+      .filter((item) => !tiles.has(item.id))
+      .map((item) => ({ id: item.id, name: item.name, kind: kinds.get(item.id) })),
+    modules: (after.architecture?.studio?.components ?? [])
+      .filter((item) => !modules.has(item.id))
+      .map((item) => ({ id: item.id, name: item.name, host: item.host, kind: item.settings.kind })),
+  };
+}
+
+/**
+ * The staged review (`reviewStudioDesign`) with every module's status and what is left to fix or
+ * check, as reviewDesign, the pre-save review and the final review return it.
+ */
+export function reviewWithModules(
+  base: DesignDocument,
+  working: DesignDocument,
+  scope: StudioReviewScope,
+  installed: GenerationInstalledSupport,
+) {
+  const review = reviewStudioDesign(base, working, scope);
+  const left = designReview(working, installed);
+  return { ...review, moduleStatuses: left.modules, left: left.findings };
 }

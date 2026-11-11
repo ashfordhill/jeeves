@@ -196,9 +196,18 @@ async function typeOver(page: Page, field: Locator, text: string, log: Gestures)
   log.typed += 1;
 }
 
-/** Clicks a field and types over its text. */
+/**
+ * Clicks a field and types over its text. The page that holds the field can still be mounting
+ * when it first appears (the user's page right after a new project opens), so a click can land
+ * before the field takes focus and lose it; wait until the field is editable, and click again
+ * until it holds focus, before typing.
+ */
 async function typeInto(page: Page, field: Locator, text: string, log: Gestures) {
-  await field.click();
+  await expect(field).toBeEditable();
+  await expect(async () => {
+    await field.click();
+    await expect(field).toBeFocused({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
   log.clicks += 1;
   await typeOver(page, field, text, log);
 }

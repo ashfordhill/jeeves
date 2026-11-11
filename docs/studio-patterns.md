@@ -1,4 +1,53 @@
-# Reviewed chat patterns
+# Chat patterns
+
+Chat has two kinds of pattern: **curated module patterns**, which `applyPattern` builds as one
+validated batch, and **reviewed guidance records**, which describe a shape's obligations and feed
+the turn's review scope.
+
+## Curated module patterns
+
+[studio-module-patterns.ts](../jeeves/packages/spec/src/studio-module-patterns.ts) (V3-09, D6)
+turns the [design playbook](design-playbook.md#patterns)'s shapes into ordinary studio commands,
+so a modest model builds a correct design from a few arguments. `listStudioPatterns` lists each
+with what it makes, the templates it yields and every argument with its default;
+`applyPattern {baseRevision, pattern: {id, ...arguments}}` applies one, and `previewCommands
+{baseRevision, pattern}` shows what it would leave first.
+
+| ID | Builds | Templates when complete |
+| --- | --- | --- |
+| `upload-pipeline` | An Uploads entry with a Required Auth guard, Multipart uploads, a job outbox publisher and an upload state writer; originals storage, a database, a job queue; an encoding worker (consumer, encoder, packager, thumbnailer, result publisher) writing its own storage and announcing on a topic; a lifecycle worker recording each upload's state. Optional: a publication topic through an outbox (`publication`), a CDN entry serving the outputs (`delivery`). | Sign-in, Multipart upload, Video encoding, Upload lifecycle |
+| `cache-read` | A read API with a Cache reader on its own cache and a Data access loader on the database (cache-aside, the reader owns the cache). | Cache read |
+| `counting` | A source publishing to a topic, a counter worker (consumer, Event counter, count writer) owning a totals database, and the source's Data access reading it. | Event counter (the source's publisher and reader are stubs) |
+| `search` | An indexer worker consuming an existing topic, the search index's only writer, and a search API that only reads it. Refused without the topic. | Search indexing, Search query, once the topic's publisher has an outbox on a database a template writes |
+| `sign-in` | One Auth guard in a Service or Uploads tile verifying an Identity, Required or Optional; an existing guard is connected and set to the choice. | Sign-in |
+| `favorites` | An account service with a Required guard and Favorites on its own database; optionally a Data access on the items database (`items`). An Optional guard there is refused, not changed. | Favorites, Sign-in |
+| `owned-store` | One tile owning and writing a database through a Data access, and up to four readers with a Data access each. With Runnable processes on, the writer gets its SQL file and readers read its published views ([v3 contract](plans/youtube-v3/contract.md) §1). | None: the modules are stubs |
+
+**Arguments.** A tile argument names a tile: an existing tile (by ID or by name) is reused, and any
+other text is a new tile's name. Omitted, the default name is used the same way. Defaults are the
+YouTube v3 contract's names (Upload API, Sign-in, Metadata, Watch API, Hot metadata, View events,
+Videos, Account API…), so applying the patterns in turn shares tiles: upload pipeline (with
+`publication` and `delivery`), cache read, counting, search, sign-in on Watch API (Optional) and
+favorites (with `items: "Metadata"`) give v3's 21 tiles and 26 modules, 24 Template and 2 Stub
+(`studio-module-patterns.test.ts`). Module names are arguments too (`reader`, `loader`, `guard`…).
+`system` names an empty design's system and `action` a lane's action when it has none.
+
+**One batch, the mouse's commands.** The builder sends only commands the mouse could send (the
+lane commands with the link fan's kinds, `addAction`, the module commands, `editComponent` for a
+guard's Sign-in, `edit` for an ownerless store's owner), each checked with
+`buildSupportedAuthoringCommand`; chat then runs the same commands as one batch through the same
+path as `applyStudioCommands`. One refused step refuses the whole pattern in plain words, naming
+the pattern ("Favorites: Watch API already has 5 links …. Nothing of the pattern was applied.").
+Applied again, a pattern adds nothing: existing modules of the same kind and name are reused, and
+existing connections are kept. A pattern is a starting point: read the automatic review it
+returns ([studio guide](studio.md#chat)).
+
+**Verified by** applying each pattern to a blank or small design and checking every module's
+status, that the commands replay to the same design, that only link-fan kinds are added, and that
+the result has no structural finding; the owned store's writer and reader access with processes
+on; refusals; and the v3 composition above.
+
+## Reviewed guidance records
 
 The local catalog in [studio-patterns.ts](../jeeves/packages/spec/src/studio-patterns.ts) supplies reviewed
 design guidance to the actual chat tool loop. Catalog and record versions are **1.0.0**. There
@@ -17,14 +66,15 @@ obligations. Checklist and obligation IDs are stable within a pattern; identify 
 with its pattern ID and record version. They are reference material, not automatically applicable
 findings about every design.
 
-`listStudioPatterns({})` returns the bounded index and catalog version.
+`listStudioPatterns({})` returns the bounded index and catalog version under `guidance`.
 `describeStudioPattern({id})` accepts exactly one of those four IDs and returns the complete
 record with its support limitations. Unknown IDs and extra arguments are refused. Both tools are
 read-only and appear in the chat activity list. They use the existing Workspace dispatch and
 ChatService tool-result loop.
 
-Chat is instructed to retrieve relevant records before building or substantially restructuring
-a design, select the scope that applies, and keep unresolved obligations explicit. A trivial
+`listStudioPatterns`'s description tells chat to retrieve relevant records before building or
+substantially restructuring a design, select the scope that applies, and keep unresolved
+obligations explicit (since V3-09 the prompt is short and the tools carry this). A trivial
 rename need not retrieve patterns. For upload/processing/publication it should retrieve both
 the job and publication records. This retrieval instruction is model guidance, not a server-enforced
 retrieval gate. The bounded review described below checks represented facts and explicit scope;

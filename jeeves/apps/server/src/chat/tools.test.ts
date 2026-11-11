@@ -1,10 +1,12 @@
 import {
   applyOperations,
   buildDesignScopeCommand,
+  buildModulePattern,
   buildStudioCommand,
   buildSupportedAuthoringCommand,
   emptyDesign,
   linkFanOptions,
+  modulePatternIds,
   newLinkId,
   newTileIdentity,
   type StudioCommand,
@@ -25,9 +27,17 @@ import {
 import { stubStackDesign } from "../../../../packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../../packages/spec/src/fixtures/v2-modules.ts";
 import { installedGenerationSupport } from "../generation/support.ts";
-import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.ts";
+import {
+  INSTRUCTIONS,
+  isWorkspaceMutation,
+  linkRuleText,
+  toolDefinitions,
+  Workspace,
+} from "./tools.ts";
 
 const tinyurl = () => ({ ...studioArchitectureExample("studio-tinyurl").design, revision: 3 });
+const description = (name: string) =>
+  toolDefinitions().find((tool) => tool.name === name)?.description ?? "";
 const run = (workspace: Workspace, name: string, args: unknown = {}) =>
   JSON.parse(workspace.run(name, JSON.stringify(args)));
 /**
@@ -108,6 +118,8 @@ describe("studio chat tools", () => {
       "configureDesignScope",
       "configureOwnership",
       "applyStudioCommands",
+      "applyPattern",
+      "previewCommands",
       "validateDesign",
       "readReadiness",
       "declareReviewScope",
@@ -119,7 +131,10 @@ describe("studio chat tools", () => {
   it("bounds pattern lookup and leaves the workspace unchanged", () => {
     const base = tinyurl();
     const workspace = new Workspace(base);
-    expect(run(workspace, "listStudioPatterns").patterns).toHaveLength(4);
+    const listed = run(workspace, "listStudioPatterns");
+    // The curated patterns applyPattern builds, and the four reviewed guidance records.
+    expect(listed.patterns.map((item: { id: string }) => item.id)).toEqual(modulePatternIds);
+    expect(listed.guidance.patterns).toHaveLength(4);
     expect(
       run(workspace, "describeStudioPattern", { id: "pending-order-payment" }).pattern,
     ).toMatchObject({
@@ -341,7 +356,13 @@ describe("studio chat tools", () => {
     expect(catalog).toHaveLength(19);
     expect(catalog.find((item) => item.kind === "video-encoder")).toMatchObject({
       hosts: ["worker"],
+      as: { worker: "Template" },
       generation: { kind: "lead", template: "video-hls" },
+      templateNames: ["Video encoding"],
+    });
+    // What a kind becomes depends on its tile, as the + menu groups it.
+    expect(catalog.find((item) => item.kind === "cache-reader")).toMatchObject({
+      as: { service: "Template", worker: "Stub" },
     });
   });
 
@@ -492,7 +513,9 @@ describe("studio chat tools", () => {
     });
     expect(workspace.pending).toEqual(ops);
     expect(run(workspace, "getDesign").processes).toBe(true);
-    expect(INSTRUCTIONS).toContain("setRunnableProcesses (on: true or false)");
+    expect(description("applyStudioCommands")).toContain(
+      "setRunnableProcesses (on: true or false)",
+    );
   });
 
   it("edits a stub tile's process limits with the Options form's command while processes are on (D5)", () => {
@@ -674,8 +697,9 @@ describe("studio chat tools", () => {
   });
 
   it("states the link table from the rules, and leaves the link mode optional", () => {
-    // The instructions' table is generated from studioLinkRules, row by row.
-    for (const rule of studioLinkRules) expect(INSTRUCTIONS).toContain(linkRuleText(rule));
+    // The catalog's table is generated from studioLinkRules, row by row.
+    const catalog = run(new Workspace(tinyurl()), "listStudioDefinitions");
+    for (const rule of studioLinkRules) expect(catalog.linkRules).toContain(linkRuleText(rule));
     expect(studioLinkRules.map(linkRuleText)).toEqual(
       expect.arrayContaining([
         "Application -> queue: async (Publishes).",
@@ -684,9 +708,12 @@ describe("studio chat tools", () => {
         "Action -> CDN: sync (a lane entry).",
       ]),
     );
-    expect(INSTRUCTIONS).not.toMatch(/User -> (object-store|external|service)/);
+    expect(catalog.linkRules.join(" ")).not.toMatch(/User -> (object-store|external|service)/);
     // So is the warnings sentence, from the spec's warning list.
-    expect(INSTRUCTIONS).toContain(studioWarningSentence);
+    expect(catalog.warnings).toBe(studioWarningSentence);
+    // The prompt stays short: the tools carry the knowledge.
+    expect(INSTRUCTIONS.length).toBeLessThan(3000);
+    expect(INSTRUCTIONS).toContain("plan, preview, apply, review, fix");
 
     // Without a link (the schema leaves it optional), each link takes its pair's default.
     const workspace = new Workspace(tinyurl());
@@ -718,6 +745,206 @@ describe("studio chat tools", () => {
     expect(planned("link-events-analytics")).toMatchObject({
       label: "Consumes",
       interaction: "Asynchronous",
+    });
+  });
+
+  it("refuses a new tile of a legacy kind in plain words, as the link fan never offers one", () => {
+    const workspace = new Workspace(tinyurl());
+    const add = (kind: string) =>
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [
+          {
+            type: "addTile",
+            from: { tile: "shorten" },
+            side: "after",
+            tile: { id: `new-${kind}`, name: kind, kind },
+            linkId: `shorten-new-${kind}`,
+          },
+        ],
+      });
+    expect(add("billing")).toMatchObject({
+      ok: false,
+      error:
+        "A new tile can't be Billing: new tiles are the link fan's kinds (Microservice, Worker service, Uploads, Identity, Database, Search index, Cache, Object storage, Message channel, CDN, External API). Existing Billing tiles keep working. For payments, add a Service that owns its payment records and calls the provider as an External API.",
+    });
+    for (const kind of ["gateway", "redirect", "notification"])
+      expect(add(kind)).toMatchObject({ ok: false, error: expect.stringContaining("can't be") });
+    expect(workspace.pending).toEqual([]);
+    // The fan never offers them either; existing Redirect tiles keep their modules.
+    expect(linkFanOptions(tinyurl(), { tile: "shorten" }).map((item) => item.kind)).not.toContain(
+      "billing",
+    );
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [{ type: "addModule", host: "redirect", kind: "rate-limiter" }],
+      }).ok,
+    ).toBe(true);
+    expect(run(workspace, "listStudioDefinitions").legacyKinds).toEqual([
+      "billing",
+      "redirect",
+      "notification",
+      "gateway",
+    ]);
+  });
+
+  it("applies a pattern as one batch of the mouse's commands, with an automatic review", () => {
+    const base = { ...emptyDesign(), revision: 2 };
+    const workspace = new Workspace(base);
+    const pattern = { id: "upload-pipeline", system: "YouTube", publication: "Publication events" };
+    const result = run(workspace, "applyPattern", { baseRevision: 2, pattern });
+    expect(result).toMatchObject({ ok: true, pattern: "upload-pipeline", commands: 36 });
+    expect(result.added.tiles.map((item: { name: string }) => item.name)).toEqual([
+      "Upload API",
+      "Sign-in",
+      "Metadata",
+      "Original videos",
+      "Upload jobs",
+      "Transcoder",
+      "Transcoded videos",
+      "Processing events",
+      "Video lifecycle",
+      "Publication events",
+    ]);
+    // The same commands, as the mouse would send them one by one.
+    const { commands } = buildModulePattern(base, pattern as never, installedGenerationSupport());
+    let mouse: typeof base = base;
+    const ops = commands.flatMap((command) => {
+      const batch = buildSupportedAuthoringCommand(mouse, command, installedGenerationSupport());
+      const applied = applyOperations(mouse, batch.ops);
+      if (!applied.ok) throw new Error(JSON.stringify(applied.errors));
+      mouse = applied.design;
+      return batch.ops;
+    });
+    expect(workspace.pending).toEqual(ops);
+    expect(workspace.generation).toBe(1);
+    // What is left comes back with the call: every module a template, and what to fix or check.
+    expect(result.review.modules).toEqual({ template: 12 });
+    expect(result.review.notTemplates).toEqual([]);
+    expect(
+      result.review.left.map((item: { check: string; tile?: string }) => [item.check, item.tile]),
+    ).toEqual([
+      ["warning", "transcoded-videos"],
+      ["warning", "publication-events"],
+      ["long-line", "metadata"],
+    ]);
+    // A refused pattern changes nothing and says why.
+    const refused = run(workspace, "applyPattern", {
+      baseRevision: 2,
+      pattern: { id: "favorites", service: "Transcoder" },
+    });
+    expect(refused).toMatchObject({
+      ok: false,
+      error:
+        "Favorites: Transcoder is a worker; the account service must be a service. Nothing of the pattern was applied.",
+    });
+    expect(workspace.pending).toEqual(ops);
+    // Applied again, nothing is added.
+    expect(run(workspace, "applyPattern", { baseRevision: 2, pattern })).toMatchObject({
+      ok: true,
+      commands: 0,
+    });
+    expect(workspace.pending).toEqual(ops);
+    // reviewDesign has every module's status and what is left.
+    const review = run(workspace, "reviewDesign");
+    expect(review.moduleStatuses).toHaveLength(12);
+    expect(review.left).toEqual(result.review.left);
+  });
+
+  it("previews commands or a pattern without preparing or saving anything", () => {
+    const base = tinyurl();
+    const workspace = new Workspace(base);
+    const before = {
+      working: workspace.working,
+      generation: workspace.generation,
+      reviewed: workspace.reviewedGeneration,
+    };
+    const preview = run(workspace, "previewCommands", {
+      baseRevision: 3,
+      pattern: { id: "sign-in", tile: "Shorten service" },
+    });
+    expect(preview).toMatchObject({
+      ok: true,
+      pattern: "sign-in",
+      added: {
+        tiles: [{ id: "sign-in", name: "Sign-in", kind: "identity" }],
+        modules: [{ id: "shorten-account-check", name: "Account check", kind: "auth-guard" }],
+      },
+      note: expect.stringContaining("Preview only"),
+    });
+    expect(
+      preview.statuses.find((item: { module: string }) => item.module === "shorten-account-check"),
+    ).toMatchObject({ status: "template", template: "verified-identity" });
+    const commands = run(workspace, "previewCommands", {
+      baseRevision: 3,
+      commands: [{ type: "addModule", host: "shorten", kind: "data-access", id: "shorten-urls" }],
+    });
+    expect(commands.review.left).toContainEqual(
+      expect.objectContaining({
+        check: "unconnected-slot",
+        module: "shorten-urls",
+        commands: [
+          {
+            type: "connectModule",
+            module: "shorten-urls",
+            slot: "database",
+            target: { tile: "url-db" },
+          },
+        ],
+      }),
+    );
+    expect(workspace.working).toBe(before.working);
+    expect(workspace.pending).toEqual([]);
+    expect(workspace.generation).toBe(before.generation);
+    expect(workspace.reviewedGeneration).toBe(before.reviewed);
+    for (const args of [
+      { baseRevision: 3 },
+      {
+        baseRevision: 3,
+        commands: [{ type: "editSystem", name: "X" }],
+        pattern: { id: "cache-read" },
+      },
+      { baseRevision: 2, pattern: { id: "cache-read" } },
+    ])
+      expect(run(workspace, "previewCommands", args).ok).toBe(false);
+    expect(workspace.pending).toEqual([]);
+    expect(isWorkspaceMutation("previewCommands", "{}")).toBe(false);
+    expect(isWorkspaceMutation("applyPattern", "{}")).toBe(true);
+  });
+
+  it("reads a compact design: each tile's label, its links and its modules' kinds, slots and status", () => {
+    const workspace = new Workspace({
+      ...runStudioCommands(emptyDesign(), signInStackCommands),
+      revision: 3,
+    });
+    const design = run(workspace, "getDesign");
+    const upload = design.tiles.find((tile: { id: string }) => tile.id === "upload-api");
+    expect(upload).toMatchObject({ kind: "uploads", label: "Uploads" });
+    expect(upload.links[0]).toEqual({
+      id: "upload-api-sign-in",
+      to: "sign-in",
+      mode: "sync",
+      label: "Calls",
+    });
+    expect(upload.modules[0]).toMatchObject({
+      id: "creator-check",
+      kind: "auth-guard",
+      status: "template",
+      template: "verified-identity",
+      links: [{ id: "creator-check-sign-in", slot: "identity", to: { tile: "sign-in" } }],
+    });
+    expect(design.moduleStatuses).toEqual({ template: 7, stub: 1 });
+    expect(design.tiles.find((tile: { id: string }) => tile.id === "upload-jobs").label).toBe(
+      "Queue",
+    );
+    // Module-level selections read as statuses, not as raw declarations.
+    expect(design.declaredGeneration).toBeUndefined();
+    expect(design.editableSettings[0]).toMatchObject({
+      input: "guard.signIn",
+      component: "viewer-check",
+      setting: "signIn",
+      value: "required",
     });
   });
 

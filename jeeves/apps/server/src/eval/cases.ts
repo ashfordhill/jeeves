@@ -10,7 +10,12 @@ import {
 } from "@jeeves/spec";
 import { Workspace } from "../chat/tools.ts";
 
-export const EVAL_VERSION = "1.0.0";
+/**
+ * 1.1.0 (V3-09): chat adds new tiles only of the link fan's kinds, so the checkout seed's and
+ * canonical fixture's Payments is a Service that owns its records and calls one External API
+ * payment provider, where 1.0.0 used a Billing tile. Recorded 1.0.0 reports keep their seeds.
+ */
+export const EVAL_VERSION = "1.1.0";
 export const MODEL = "gpt-5.4-mini-2026-03-17";
 export const LIMITS = { rounds: 16, maxOutputTokens: 4096, caseTimeoutMs: 180_000 };
 export type EvalCase = {
@@ -48,7 +53,7 @@ const after = (
   from: string,
   id: string,
   name: string,
-  kind: "service" | "database" | "billing" | "queue" | "worker" | "search",
+  kind: "service" | "database" | "external-api" | "queue" | "worker" | "search",
 ): StudioCommand => ({
   type: "addTile",
   side: "after",
@@ -78,8 +83,9 @@ function checkoutSeed() {
     after("orders", "order-state", "Order state", "database"),
     after("orders", "catalog", "Catalog", "service"),
     after("catalog", "inventory", "Inventory", "database"),
-    after("orders", "payments", "Payments", "billing"),
+    after("orders", "payments", "Payments", "service"),
     after("payments", "payment-state", "Payment state", "database"),
+    after("payments", "payment-provider", "Payment provider", "external-api"),
     {
       type: "edit",
       element: "inventory",
@@ -187,7 +193,7 @@ export const cases: EvalCase[] = [
       notification,
     ],
     alternatives:
-      "Inventory inside Catalog or Orders/Payments inside one service boundary can be reasonable. No separate Stripe External tile or fake callback owner is needed.",
+      "Inventory inside Catalog or Orders/Payments inside one service boundary can be reasonable. Payments calls one External API payment provider; no second provider tile or fake callback owner is needed.",
   },
   {
     id: "checkout-late-notification-edit",

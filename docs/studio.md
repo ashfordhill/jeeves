@@ -74,11 +74,12 @@ future generator's frontend templates) which user flow each service serves.
   return of data; messaging arrows follow publisher → channel → consumer. The user's line to an
   action and entry lines are solid. Lines carry no words or chips; select one for its label,
   interaction and direction in the inspector. Access declarations remain in diagnostics. The
-  small legend at the lower left shows only the dashed sample, **Async**; a click opens one line
-  each for solid and dashed, the direction conventions and how to trace lines. It stays at screen
-  size. Every line of the four studies follows this (`studio-lanes.test.ts`). The link table
-  still allows a direct asynchronous call between applications or an external API, drawn dashed
-  with no channel; no study uses one.
+  small legend at the lower left shows only the dashed sample, **Async**, with no help text and
+  nothing to open (contract question 12); solid is the default reading. It stays at screen size
+  and lets the pointer through to the board. Every line of the four studies follows this
+  (`studio-lanes.test.ts`). The link table still allows a direct asynchronous call between
+  applications or an external API, drawn dashed with no channel; no study uses one, and chat's
+  review accepts it, flagging only a style the table refuses for its channel.
 - At a crossing, a small gap separates the routes; shared stems meet at a tile's port. Where
   several routes are equally close to a mouse click, **Choose relationship** lists their
   endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
@@ -717,45 +718,71 @@ selection, Fit and export change no saved semantic data or revision.
 
 Chat (left rail, open by default in a fresh project) edits the design with the canvas's own
 commands, validation and history: a chat turn is one undo step, however many commands it ran.
-Actions, tiles and links change only through the lane commands: `addAction`, `renameAction` and
-`removeAction` (a lane's action, by lane), `addTile` (after a tile or a lane's action, which it
-adds with its default name if the lane has none), `linkTiles`, `removeTile`,
-`removeLink`, `changeKind` and `setEntryLane` (moves an entry to the other lane's action). The
-instructions say what an action is in two sentences. A new link's mode is optional: left out, it is the pair's default
-from the [link table](../jeeves/CATALOG.md#lanes-and-links) (async for queue links, sync otherwise),
-and the instructions' copy of that table is generated from it. So chat, like the mouse,
-can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
-command changes nothing and comes back in the same plain words as the canvas notice ("URL cache
-can't link to Shorten service. A cache can't link onward."); the turn's activity list shows
-it. Names, descriptions, settings and link details go through `edit`, `editSystem` and
-`editConnection`. Modules are added, connected, disconnected and removed with `addModule`,
-`connectModule`, `disconnectModule` and `removeModule`
-([catalog](../jeeves/CATALOG.md#components-c3)), which derive each module's generation and the
-ownership it needs in the same step. A rename through `edit` or `editComponent` re-keys IDs that
-follow their names, as the inspector does ([Names and IDs](#inspector)); the `applyStudioCommands`
-result lists them as `renamed: [{from, to}]`, and later commands in the turn use the new IDs. An
-`addModule` with a name and no ID takes its ID from that name. `setRunnableProcesses` turns
-[Runnable processes](#experimental-project-export) on or off, as Generate project's checkbox does,
-with the same refusals; `getDesign` says whether it is on. Chat sees each module's status (template, stub, custom or
-refused, with why), and the module kinds with the tiles that hold them, their slots and what they
-generate. The canvas runs the same commands ([Adding a module](#adding-a-module),
-[Connect mode](#connect-mode)).
+**It can do exactly what the mouse can, and no more** (D6): new tiles are the link fan's eleven
+kinds, modules come from the module catalog, templates come only from modules, and the
+Runnable processes option is the dialog's. A new tile of a legacy kind (Gateway, Redirect,
+Notifications, Billing) is refused with a plain reason ("A new tile can't be Billing: … For
+payments, add a Service that owns its payment records and calls the provider as an External
+API."); existing tiles of those kinds keep working and keep their modules.
 
-Chat reads the design as the canvas draws it: the actions, each with its lane, name, entries and
-the tiles its lane reaches, then each tile in lane order with its kind, settings, links (sync or
-async; a link into a store also says whether it writes or reads) and modules, and the caps.
-It also sees the findings and, separately, the [warnings](#warnings), in `getDesign` and after
-each accepted command; its instructions list the warnings (generated from the spec) and say to
-resolve the ones its edits caused before it finishes, or say why one stays.
-It lists the seven tile types with their kinds, and the link fan's eleven kinds for a new tile;
-`addTile` takes the new tile's kind and adds it only after a tile or a lane's action. The selected
-tile, line or entry is sent with
-each message, so "Add a cache after the selected service" works; the user, an action and the
-user's line to it have no design ID, so selecting one sends nothing. It can ask one focused
-question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP, SVG). An
-empty project starts with an `addAction` or an `addTile` from a lane that names the system. Token counts and
-provider-reported cost appear only when complete. The model and provider are chosen in
-**Settings**. Chat and the inspector collapse and resize independently.
+**The prompt is short; the tools carry the knowledge.** The instructions (about 2 KB) set one
+working loop, **plan → preview → apply → review → fix**, and the few rules that hold everywhere.
+What a modest model needs to get a design right comes back from the tools:
+
+| Tool | Gives |
+| --- | --- |
+| `listStudioDefinitions` | The eleven tile kinds a new tile can be, each with its label; the tile types with their kinds and defaults; the module catalog (each kind's slots, the tiles that hold it, what it becomes there, Template, Part of a template or Stub, as the `+` menu groups it, and its one-line description); the link table (generated from `studioLinkRules`); the caps; the lane canvas and kind notes; the warnings sentence. |
+| `getDesign` | The design compactly, as the canvas draws it: the actions with their entries and the tiles each lane reaches; each tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, each link's slot, status and why); the status counts; Runnable processes; `editableSettings` (the only normal settings, each naming its tile or module and setting); findings and warnings; and the scope, ownership and operation declarations the configure tools edit. |
+| `listStudioPatterns` | The seven curated patterns `applyPattern` builds, with what each makes, its templates and each argument with its default ([patterns](studio-patterns.md#curated-module-patterns)); and the four reviewed guidance records. |
+| `applyPattern` | One pattern as one validated batch, names and links filled in from its arguments. Every step is a command the mouse could send; one refused step refuses the whole pattern. |
+| `previewCommands` | A dry run of a pattern or of lane and module commands: what would change, every module's status with why, and what would be left. Nothing is prepared or saved. |
+| `applyStudioCommands` | The lane commands (`addAction`, `renameAction`, `removeAction`, `addTile` after a tile or a lane's action, `linkTiles`, `removeTile`, `removeLink`, `setEntryLane`), `edit`, `editSystem`, `editConnection` (label only), the module commands (`addModule`, `connectModule`, `disconnectModule`, `removeModule`, `editComponent`) and `setRunnableProcesses`. |
+| `reviewDesign` | The staged changes, every module's status, and what is left (below), with the readiness findings, assumptions and unsupported obligations. |
+
+Every accepted `applyStudioCommands` or `applyPattern` returns an **automatic review**: how many
+modules are in each status, the ones that aren't templates with why, and every finding left.
+Each finding names its tile or module, says **fix** (unfinished or wrong: fix it or say why it
+stays) or **check** (advice to confirm), and gives a concrete fix, as commands where one is
+possible; those commands are checked against the design before they are offered
+(`designReview`, `studio-design-review.ts`). The checks:
+
+- **module-status:** a lead that is a Stub because its template still needs something ("Needs an
+  Auth guard set to Required in Account API.", fixed by setting the guard's Sign-in), a Refused
+  module with the saved value its template can't use, a module not declared yet. A stub that is
+  normal ("No template in Watch API uses it.") is listed in the statuses, not as a finding;
+- **unconnected-slot:** a needed slot with nothing in it, connected through the host's own link
+  where it has one, or with a new module or tile for it;
+- **generation:** the resolver's findings, as Generate project shows them, except those a Refused
+  module already names;
+- the playbook's smells: **store-without-writer** (the design warning, and a store only modules
+  that read reach), **unrelated-store** (a worker writing stores for more than one concern; the
+  fix disconnects the extra writes), **user-reaches-store** (an action's line to a store; removed
+  when a service already reaches it), **long-line** (a reader's line to a store whose last user
+  is far down a pipeline; advice only, never a tile to shorten it);
+- **line-style:** a line whose style contradicts its channel, redrawn as the link table makes
+  it, with its module links reconnected. A dashed line between applications, which the table
+  allows, is accepted. A line the lanes can't remove first (it is all that reaches its store) is
+  fixed in Source & diagnostics;
+- **warning:** the other design warnings, with what to do.
+
+The service keeps the review in the loop: a fresh `reviewDesign` reaches the model before
+commands or meaningful declared scope finish, even if the model ends its response; later
+commands make it stale; the model may make two response batches of repairs after receiving it,
+within the 16-round limit. A question still ends the turn immediately. After saving, the final
+review of the saved revision lists what is left in **Review details**, and the reply says how
+many findings are left to fix and to check. Review/no-op turns create no design revision or
+Undo step. Warnings remain saveable; structural errors still refuse a batch.
+
+A refused command changes nothing and comes back in the same plain words as the canvas notice
+("URL cache can't link to Shorten service. A cache can't link onward."); the turn's activity list
+shows it. A rename through `edit` or `editComponent` re-keys IDs that follow their names, as the
+inspector does ([Names and IDs](#inspector)); results list them as `renamed: [{from, to}]`. An
+`addModule` with a name and no ID takes its ID from that name. The selected tile, line or entry is
+sent with each message, so "Add a cache after the selected service" works; the user, an action
+and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
+focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
+SVG). Token counts and provider-reported cost appear only when complete. The model and provider
+are chosen in **Settings**. Chat and the inspector collapse and resize independently.
 
 OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,
 defaults and explicit owner clearing. Codex constrains the outer answer only: its inner argument
@@ -763,36 +790,11 @@ JSON strings still need server validation. Both providers use the same canonical
 validators. See [tool argument schemas](chat-tool-schemas.md) for the audited subset and limits;
 strict arguments alone establish no architecture or runtime guarantee.
 
-Chat can retrieve four [reviewed design patterns](studio-patterns.md) through bounded
-`listStudioPatterns` and `describeStudioPattern` tools: cache-aside lookup, durable background
-jobs, committed publication to search, and pending-order/payment coordination. Its instructions
-require relevant retrieval before building or substantial restructuring; a trivial rename can
-proceed directly. Each record separates applicability, topology support and implementation
-obligations from template availability and runtime verification (both absent). Unsupported
-same-owner callbacks remain precise obligations, with no extra service invented for lane rules.
-Lookup appears in the activity list and changes no design or revision. The local catalog supplies
-guidance; it does not certify a design or enforce live-model retrieval and judgment.
-
-Before saving a proposed turn, chat reviews the working copy through `reviewDesign`. It returns
-staged additions, updates and removals, findings targeted to elements/connections, declared
-assumptions and unsupported obligations without writing the design. `declareReviewScope`
-explicitly selects pattern/checklist IDs and custom requirements for **this turn only**; lookup
-alone selects nothing. This metadata is not saved as design settings or capability contracts.
-Checks without typed contracts say **not specified**, even if a name or module describes the
-behavior. Undeclared requirements are outside the review.
-
-A fresh review reaches the model before commands or meaningful declared scope finish; ending
-its response cannot skip it. Further commands or scope changes invalidate the review. The model
-may make two response batches of repairs after receiving review, within the existing 16-round
-limit. Warnings remain saveable; structural errors still refuse a batch. A pure conversational
-answer needs no extra model round. A question still ends immediately with the current edits and
-deterministic final review. Review/no-op turns create no design revision or Undo step.
-
-Each final reply names what the chat actually saved and what remains unresolved; **Review
-details** opens targeted findings, assumptions and precise requirements by mouse. This review is
-of the latest saved revision, including after a conflict/failure. A later mouse edit is never
-counted as part of the chat's committed snapshot. Concurrent edits still prevent a stale commit;
-a successful edited turn still undoes once. No review claims a runtime template or verification.
+The four [reviewed guidance records](studio-patterns.md) (cache-aside lookup, durable background
+jobs, committed publication to search, pending-order/payment coordination) stay available through
+`describeStudioPattern`, and `declareReviewScope` selects their checklist IDs and custom
+requirements for **this turn only**. Checks without typed contracts say **not specified**, even
+if a name or module describes the behavior. No review claims a runtime template or verification.
 
 ## The TinyURL foundation study
 

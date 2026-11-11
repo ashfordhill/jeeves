@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "provenance": "Hand-authored canonical replay fixtures. Synthetic plumbing/oracle evidence only; never model-quality evidence. Fixed before any successful live response (access blocked).",
+  "version": "1.1.0",
+  "provenance": "Hand-authored canonical replay fixtures. Synthetic plumbing/oracle evidence only; never model-quality evidence. Fixed before any successful live response (access blocked). 1.1.0 (V3-09): checkout-build's Payments is a Service calling one External API payment provider, since chat adds no new Billing tile.",
   "cases": {
     "video-build": {
       "commands": [
@@ -199,7 +199,7 @@
           "tile": {
             "id": "payments",
             "name": "Payments",
-            "kind": "billing"
+            "kind": "service"
           },
           "linkId": "orders-payments"
         },
@@ -215,9 +215,22 @@
             "kind": "database"
           },
           "linkId": "payments-payment-state"
+        },
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "payments"
+          },
+          "tile": {
+            "id": "payment-provider",
+            "name": "Payment provider",
+            "kind": "external-api"
+          },
+          "linkId": "payments-payment-provider"
         }
       ],
-      "reply": "Represented Orders, Catalog/stock authority and Payments with owned stores. Unresolved implementation obligations: durable pending attempt before payment, atomic stock reservation with concurrency and expiry, duplicate/unordered payment notification handling and durable reconciliation/compensation. No typed behavior contracts or runtime implementation exist."
+      "reply": "Represented Orders, Catalog/stock authority and Payments with owned stores and one payment provider call. Unresolved implementation obligations: durable pending attempt before payment, atomic stock reservation with concurrency and expiry, duplicate/unordered payment notification handling and durable reconciliation/compensation. No typed behavior contracts or runtime implementation exist."
     },
     "checkout-late-notification-edit": {
       "commands": [],

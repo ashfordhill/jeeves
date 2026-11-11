@@ -20,14 +20,57 @@ import {
   generationReferences,
 } from "./generation.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
+import { generationCapabilities } from "./generation-support.ts";
 import { covers, planModules } from "./module-generation.ts";
 import {
   type StudioComponent,
+  type StudioComponentDefinition,
   type StudioComponentKind,
   type StudioModuleSlotId,
   studioComponentDefinitions,
 } from "./studio-components.ts";
+import type { StudioKind } from "./studio-model.ts";
 import { moduleSlots } from "./studio-modules.ts";
+
+type Generation = StudioComponentDefinition["generation"]["kind"];
+/** The module menu's groups, in order (the mouse and chat share these words). */
+export const moduleGenerationOrder: readonly Generation[] = ["lead", "part", "stub"];
+/** What a module kind becomes in a tile, in the menu's words. */
+export const moduleGenerationLabels: Record<Generation, string> = {
+  lead: "Template",
+  part: "Part of a template",
+  stub: "Stub",
+};
+
+/**
+ * What a module of `kind` can generate in a tile of `host`: the lead or a part of a template only
+ * where that template allows the tile's kind (a Cache reader in a Worker is a stub), else a stub.
+ */
+export function moduleGeneration(kind: StudioComponentKind, host: StudioKind): Generation {
+  const generation = studioComponentDefinitions[kind].generation;
+  const allows = (template: keyof typeof generationCapabilities) =>
+    generationCapabilities[template].hosts.includes(host);
+  if (generation.kind === "lead") return allows(generation.template) ? "lead" : "stub";
+  if (generation.kind === "part") return generation.templates.some(allows) ? "part" : "stub";
+  return "stub";
+}
+
+/** Each installed template's name, as a module page and chat show it. */
+export const moduleTemplateNames: Record<GenerationBinding["kind"], string> = {
+  "verified-identity": "Sign-in",
+  "owned-multipart": "Multipart upload",
+  "asset-lifecycle": "Upload lifecycle",
+  "video-hls": "Video encoding",
+  "positive-cache-read": "Cache read",
+  "event-counter": "Event counter",
+  "search-projection": "Search indexing",
+  "search-query": "Search query",
+  favorites: "Favorites",
+  "youtube-upload": "YouTube upload",
+  "youtube-watch": "YouTube watch",
+  "youtube-search": "YouTube search",
+  "module-stub": "Module stub",
+};
 
 export const moduleStatusKinds = ["template", "stub", "custom", "refused"] as const;
 export type ModuleStatusKind = (typeof moduleStatusKinds)[number];
@@ -138,6 +181,16 @@ function keptValue(design: DesignDocument, path: Path | undefined): string | und
 
 /** Every module's status, in the design's module order. */
 export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
+  return moduleStatusDetails(design).map((item) => item.status);
+}
+
+/**
+ * Each module's status with the resolver findings that make it Refused (empty otherwise), so a
+ * review can name a refused module once instead of also repeating its findings.
+ */
+export function moduleStatusDetails(
+  design: DesignDocument,
+): { status: ModuleStatus; blocking: readonly Finding[] }[] {
   const studio = design.architecture?.studio;
   const modules = studio?.components ?? [];
   if (!modules.length) return [];
@@ -155,19 +208,22 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
   const covering = (module: StudioComponent) =>
     selections.find((item) => item.target.kind === "component" && covers(design, item, module)) ??
     selections.find((item) => item.target.kind === "element" && covers(design, item, module));
-  /** Why a module-level template selection is blocked, in plain words, if it is. */
-  const blocked = (selection: GenerationSelection) => {
+  /** The resolver findings that block a module-level template selection. */
+  const blockingOf = (selection: GenerationSelection) => {
     const index = selections.indexOf(selection);
     const members = modules
       .filter((item) => covers(design, selection, item))
       .map((item) => item.id);
     const scope = selectionScope(design, selection, index, members);
     const template: Path = ["generation", "selections", index, "template"];
-    const blocking = findings.filter((item) => {
+    return findings.filter((item) => {
       const path = item.target.path;
       if (!path || (path.length === template.length && within(path, template))) return false;
       return scope.some((prefix) => within(path, prefix));
     });
+  };
+  /** Why a module-level template selection is blocked, in plain words, if it is. */
+  const blocked = (blocking: readonly Finding[]) => {
     const [first] = blocking;
     if (!first) return undefined;
     const kept = keptValue(design, first.target.path);
@@ -216,28 +272,38 @@ export function moduleStatuses(design: DesignDocument): ModuleStatus[] {
     const selection = own.get(module.id);
     if (selection?.binding.kind === "module-stub")
       return {
-        ...base,
-        status: "stub",
-        selection: selection.id,
-        reason: stubReason(module),
-      } satisfies ModuleStatus;
+        status: {
+          ...base,
+          status: "stub",
+          selection: selection.id,
+          reason: stubReason(module),
+        } satisfies ModuleStatus,
+        blocking: [],
+      };
     const covered = selection ?? covering(module);
     if (!covered)
       return {
-        ...base,
-        status: "custom",
-        reason: moduleLevel
-          ? "Not declared yet; the next module change declares it."
-          : "No template covers it.",
-      } satisfies ModuleStatus;
-    const reason = covered.target.kind === "component" ? blocked(covered) : undefined;
+        status: {
+          ...base,
+          status: "custom",
+          reason: moduleLevel
+            ? "Not declared yet; the next module change declares it."
+            : "No template covers it.",
+        } satisfies ModuleStatus,
+        blocking: [],
+      };
+    const blocking = covered.target.kind === "component" ? blockingOf(covered) : [];
+    const reason = blocked(blocking);
     return {
-      ...base,
-      status: reason ? "refused" : "template",
-      template: covered.binding.kind,
-      selection: covered.id,
-      ...(reason && { reason }),
-    } satisfies ModuleStatus;
+      status: {
+        ...base,
+        status: reason ? "refused" : "template",
+        template: covered.binding.kind,
+        selection: covered.id,
+        ...(reason && { reason }),
+      } satisfies ModuleStatus,
+      blocking: reason ? blocking : [],
+    };
   });
 }
 

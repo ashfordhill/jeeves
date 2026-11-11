@@ -97,16 +97,28 @@ test("saves a warned proposal with readable review details and one mouse Undo", 
   await expect(
     page.getByText("Unresolved: 1 design finding; 1 requirement not specified", { exact: false }),
   ).toBeVisible();
+  // What is left in the design (V3-09): the warning, to fix, with its fix.
+  await expect(
+    page.getByText("Left in the design: 1 to fix and 0 to check", { exact: false }),
+  ).toBeVisible();
   // The completed turn replaces the streaming view; open its disclosure after that replacement.
   await expect(page.locator(".chat-turn[aria-busy]")).toHaveCount(0);
-  await page.getByText("Review details (3)", { exact: true }).click();
+  await page.getByText("Review details (4)", { exact: true }).click();
+  await expect(
+    page.locator(".chat-review-details").getByText("Left (fix) · warning · uploads:", {
+      exact: false,
+    }),
+  ).toBeVisible();
   await expect(
     page
       .locator(".chat-review-details")
       .getByText("Not specified · upload-lifecycle:", { exact: false }),
   ).toBeVisible();
+  // The warning itself, beside its Left line.
   await expect(
-    page.locator(".chat-review-details").getByText("has no storage relationship", { exact: false }),
+    page
+      .locator(".chat-review-details")
+      .getByText("DESIGN_WARNING · uploads: Uploads has no storage relationship", { exact: false }),
   ).toBeVisible();
   await ready(page);
   await tile(page, "Uploads").click();

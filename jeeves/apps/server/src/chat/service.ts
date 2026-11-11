@@ -16,7 +16,6 @@ import {
   designIds,
   type Finding,
   reviewStudioDesign,
-  type StudioReview,
   selectedLogicalOwners,
   selectedOperationBindings,
 } from "@jeeves/spec";
@@ -31,10 +30,12 @@ import {
   files,
 } from "../db/schema.ts";
 import type { DesignService, DesignState } from "../design/service.ts";
+import { installedGenerationSupport } from "../generation/support.ts";
 import { type AcceptedType, checkFile, fileParts } from "./files.ts";
 import {
   INSTRUCTIONS,
   isWorkspaceMutation,
+  reviewWithModules,
   toolDefinitions,
   turnContext,
   Workspace,
@@ -417,15 +418,16 @@ export class ChatService {
     const savedChanges = committedState
       ? reviewStudioDesign(initial.design, committedState.design).changes.length
       : 0;
+    // The saved revision's review, with what is left to fix or check (V3-09).
     const finalReview = state
-      ? reviewStudioDesign(state.design, state.design, workspace.scope)
+      ? reviewWithModules(state.design, state.design, workspace.scope, installedGenerationSupport())
       : null;
     const beforeFinal = logged();
     if (finalReview && state) {
       workspace.log(
         "finalReview",
         true,
-        `Reviewed saved revision ${state.design.revision}: ${operationId === null ? "no design edits saved" : `chat committed at revision ${committedState?.design.revision}`}, ${finalReview.findings.length} findings, ${finalReview.obligations.length} not specified obligations`,
+        `Reviewed saved revision ${state.design.revision}: ${operationId === null ? "no design edits saved" : `chat committed at revision ${committedState?.design.revision}`}, ${finalReview.left.length} left to fix or check, ${finalReview.findings.length} findings, ${finalReview.obligations.length} not specified obligations`,
       );
       if (committedState)
         for (const row of reviewStudioDesign(initial.design, committedState.design).ownership
@@ -443,6 +445,12 @@ export class ChatService {
             true,
             `Saved operation ${row.change} · ${row.field}/${row.id}: ${JSON.stringify({ before: row.before, after: row.after })}`,
           );
+      for (const item of finalReview.left)
+        workspace.log(
+          "reviewDetail",
+          true,
+          `Left (${item.severity}) · ${item.check}${item.module ? ` · ${item.module}` : item.tile ? ` · ${item.tile}` : ""}: ${item.message} Fix: ${item.fix}`,
+        );
       for (const finding of finalReview.findings)
         workspace.log(
           "reviewDetail",
@@ -635,7 +643,7 @@ export function changedIds(before: DesignDocument, after: DesignDocument): strin
 
 /** Compact result for the narrow chat rail; full targeted diagnostics stay in review activity. */
 function reviewSummary(
-  review: StudioReview,
+  review: ReturnType<typeof reviewWithModules>,
   committed: DesignState | null,
   savedChanges: number,
   revision: number,
@@ -651,5 +659,10 @@ function reviewSummary(
     review.findings.length || review.obligations.length
       ? `Unresolved: ${review.findings.length} design finding${review.findings.length === 1 ? "" : "s"}; ${review.obligations.length} requirement${review.obligations.length === 1 ? "" : "s"} not specified${names ? ` (${names})` : ""}. See Review details.`
       : "No represented structural/readiness findings. Undeclared requirements remain outside this review.";
-  return `${saved} Review of saved revision ${revision}.\n${unresolved} No runtime verification.`;
+  const fix = review.left.filter((item) => item.severity === "fix").length;
+  const check = review.left.length - fix;
+  const left = review.left.length
+    ? `Left in the design: ${fix} to fix and ${check} to check (see Review details).`
+    : "Nothing left to fix in the design.";
+  return `${saved} Review of saved revision ${revision}.\n${left}\n${unresolved} No runtime verification.`;
 }

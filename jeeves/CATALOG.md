@@ -66,7 +66,9 @@ settings](../docs/studio-settings.md#languages)).
 
 A provider chosen on a kind is that service's integration, not a separate tile: Billing with
 Stripe needs no External tile for Stripe. **External API tiles are for third parties no kind
-covers.** The chat instructions say the same.
+covers.** Chat's `listStudioDefinitions` says the same. Neither the link fan nor chat adds a new
+tile of the legacy kinds (Gateway, Redirect, Notifications, Billing); a new payment flow is a
+Service that calls its provider as an External API.
 
 ## Tile types and the link fan
 
@@ -121,9 +123,10 @@ action; its links are its entries), **application** (the Service and API kinds e
 `object-store`). Each row has its allowed modes, its
 default mode and the connection a new link gets; a pair with no row is refused. A sync link is a
 direct call where the caller waits (solid line); an async link does not wait (dashed line). The
-canvas legend says dashed means through a queue or topic: every study's async link is a queue
-link. Application → application, application → external API and external API → application still
-allow async, a direct call drawn dashed with no channel. Style follows each relationship, so a
+canvas legend shows only the dashed sample, Async: every study's async link is a queue link.
+Application → application, application → external API and external API → application still
+allow async, a direct call drawn dashed with no channel, which chat's review accepts; it flags a
+line whose style the table refuses for its channel. Style follows each relationship, so a
 worker's store request remains solid after a queue. Target arrowheads mean caller → target for
 requests, including reads, and publisher → channel → consumer for messaging. The connection's
 interaction follows the mode (Request / response or Asynchronous); its security is Private network.

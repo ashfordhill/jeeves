@@ -40,14 +40,17 @@
   inset: 0;
 }
 
-/* Screen-sized notation, with details available by mouse at either fitted or zoomed views. */
+/* Screen-sized notation: only the dashed Async sample, as wide as it is. It only informs, so the
+   pointer passes through to the board. */
 .lane-line-legend {
   position: absolute;
   bottom: 12px;
   left: 12px;
   z-index: 5;
   box-sizing: border-box;
-  width: 248px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   max-width: calc(100% - 24px);
   padding: 9px 12px;
   border: 1px solid var(--line);
@@ -56,29 +59,12 @@
   color: var(--ink);
   box-shadow: var(--chip-shadow);
   font-size: 12px;
-}
-/* Collapsed, it is only as wide as its one sample. */
-.lane-line-legend:not([open]) {
-  width: auto;
-}
-.lane-line-legend summary {
-  cursor: pointer;
-}
-.lane-line-legend summary span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 8px;
-  vertical-align: middle;
+  pointer-events: none;
 }
 .lane-line-legend svg {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.75px;
-}
-.lane-line-legend p {
-  margin: 10px 0 0;
-  line-height: 1.4;
 }
 .lane-connection-label {
   font-weight: 600;

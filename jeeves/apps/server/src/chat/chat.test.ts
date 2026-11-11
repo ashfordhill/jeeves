@@ -622,6 +622,108 @@ function textOf(item: ModelItem | undefined): string {
 }
 
 describe("design chat", () => {
+  it("plans, previews, applies patterns and gets an automatic review back, then saves one Undo step", async () => {
+    const results: Record<string, unknown>[] = [];
+    const h = harness((request, round) => {
+      const outputs = request.items.flatMap((item) =>
+        item.type === "tool-result" ? [JSON.parse(item.output)] : [],
+      );
+      results.splice(0, results.length, ...outputs);
+      if (round === 0) return { toolCalls: [{ name: "listStudioPatterns", arguments: {} }] };
+      if (round === 1) {
+        // The patterns and their arguments come from the tool, not the prompt.
+        expect(outputs.at(-1)?.patterns.map((item: { id: string }) => item.id)).toContain(
+          "upload-pipeline",
+        );
+        return {
+          toolCalls: [
+            {
+              name: "previewCommands",
+              arguments: { baseRevision: 0, pattern: { id: "cache-read", system: "Video" } },
+            },
+          ],
+        };
+      }
+      if (round === 2) {
+        // The preview says the read path alone leaves Metadata with no writer, and saves nothing.
+        const preview = outputs.at(-1);
+        expect(preview?.ok).toBe(true);
+        expect(preview?.review.left).toContainEqual(
+          expect.objectContaining({ check: "store-without-writer", tile: "metadata" }),
+        );
+        return {
+          toolCalls: [
+            {
+              name: "applyPattern",
+              arguments: {
+                baseRevision: 0,
+                pattern: { id: "upload-pipeline", system: "Video", delivery: "Video delivery" },
+              },
+            },
+            {
+              name: "applyPattern",
+              arguments: { baseRevision: 0, pattern: { id: "cache-read" } },
+            },
+          ],
+        };
+      }
+      if (round === 3) {
+        // Each applied pattern came back with its review: after the read path nothing to fix.
+        const [pipeline, read] = outputs.slice(-2);
+        expect(pipeline?.review.modules).toEqual({ template: 11 });
+        expect(read?.ok).toBe(true);
+        expect(
+          read?.review.left.filter((item: { severity: string }) => item.severity === "fix"),
+        ).toEqual([]);
+        expect(read?.review.left.map((item: { check: string }) => item.check)).toEqual([
+          "long-line",
+        ]);
+        return { text: "Built the upload pipeline and the cached read path." };
+      }
+      // The service's own pre-save review reaches the model before saving.
+      expect(
+        request.items.some(
+          (item) => item.type === "tool-call" && item.callId.startsWith("jeeves-review-"),
+        ),
+      ).toBe(true);
+      const review = outputs.at(-1);
+      expect(review?.moduleStatuses).toHaveLength(13);
+      expect(review?.left.map((item: { check: string }) => item.check)).toEqual(["long-line"]);
+      return { text: "Reviewed: one long line to check, nothing to fix." };
+    });
+    try {
+      const id = await h.project();
+      const { turn, state } = await h.chat(id, "Build an upload pipeline and a cached read path.");
+      expect(turn.status).toBe("done");
+      expect(turn.error).toBeNull();
+      expect(state.design.revision).toBe(1);
+      expect(state.design.architecture?.studio?.components).toHaveLength(13);
+      expect(turn.activity).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ tool: "previewCommands", ok: true }),
+          expect.objectContaining({
+            tool: "applyPattern",
+            ok: true,
+            summary: "Applied pattern upload-pipeline as 34 commands; 1 left to fix or check",
+          }),
+          expect.objectContaining({
+            tool: "reviewDetail",
+            summary: expect.stringMatching(/^Left \(check\) · long-line · metadata: /),
+          }),
+        ]),
+      );
+      expect(turn.reply).toContain("Left in the design: 0 to fix and 1 to check");
+      expect(turn.reply).toContain("as one Undo step");
+      expect(h.requests).toHaveLength(5);
+      // The prompt is short; the tools carry the patterns and the review.
+      expect(h.requests[0]?.instructions.length).toBeLessThan(3000);
+      const undo = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+      expect(undo.body.design.elements).toEqual([]);
+    } finally {
+      await h.app.close();
+    }
+  });
+
   it.each(studioPatternIds)(
     "delivers %s and its support limits through the actual chat tool loop",
     async (patternId) => {
@@ -647,15 +749,19 @@ describe("design chat", () => {
         }
         if (round === 0) {
           expect(request.tools?.map((tool) => tool.name)).toContain("describeStudioPattern");
-          expect(request.instructions).toContain("before building or substantially restructuring");
-          expect(request.instructions).toContain("A trivial rename does not need retrieval");
-          expect(request.instructions).toContain(
+          // The tool carries the guidance; the prompt stays short.
+          const lookup = request.tools?.find((tool) => tool.name === "listStudioPatterns");
+          expect(lookup?.description).toContain("before building or substantially restructuring");
+          expect(lookup?.description).toContain("a trivial rename does not need retrieval");
+          expect(lookup?.description).toContain(
             "Retrieval alone does not establish that a pattern applies",
           );
           return { toolCalls: [{ name: "listStudioPatterns", arguments: {} }] };
         }
         if (round === 1) {
-          expect(result().patterns.map((entry: { id: string }) => entry.id)).toContain(patternId);
+          expect(result().guidance.patterns.map((entry: { id: string }) => entry.id)).toContain(
+            patternId,
+          );
           return { toolCalls: [{ name: "describeStudioPattern", arguments: { id: patternId } }] };
         }
         if (round === 2) {

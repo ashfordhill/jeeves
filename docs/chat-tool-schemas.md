@@ -169,3 +169,46 @@ adds operation declarations/findings/catalog identity and namespaced selection. 
 response was replayed. Exact audit/drift are retained in
 `plans/reliable-foundations/evidence/nc03/`; RF06's 2.44× input / 2.07× responses and intended
 Mini/live acceptance gap remain historical limits.
+
+V3-09 (D6) adds two tools, `applyPattern` and `previewCommands`; there are now **seventeen**.
+Measured on the adapter's emitted wire schemas:
+
+| Tool | Properties | Enum values | Depth | Bytes |
+| --- | ---: | ---: | ---: | ---: |
+| `applyStudioCommands` (unchanged union) | 469 | 598 | 9 | 57,589 |
+| `applyPattern` | 66 | 9 | 4 | 9,284 |
+| `previewCommands` | 185 | 144 | 5 | 23,559 |
+
+- `applyPattern {baseRevision, pattern}`: `pattern` is a discriminated union on `id` (seven
+  distinct literals, closed objects of optional strings, one `signIn` enum and one bounded
+  `readers` array), so the adapter proves its branches disjoint. Omitted arguments travel as wire
+  null and return to omission; the server applies the defaults.
+- `previewCommands {baseRevision, commands?, pattern?}`: the same `pattern` union, and a narrower
+  command union than `applyStudioCommands`: the lane commands except `changeKind`, `editSystem`,
+  the module commands, `editComponent` and `setRunnableProcesses`. Tile settings (`edit`, 17 KB of
+  canonical schema), link labels and the retained source commands have nothing to preview, and
+  repeating the full union would have doubled the tool array. Exactly one of `commands` and
+  `pattern` is a server check the schema can't express.
+- `applyStudioCommands` keeps its union: the codec tests round-trip historical
+  `createComponent`/`connectComponent` arguments through it, though normal authoring refuses them.
+  `addTile` of a legacy kind (Gateway, Redirect, Notifications, Billing) is now a server refusal,
+  not a schema change.
+
+The prompt moved into the tools. On the same designs as HEAD (`1c9116f`), UTF-8 bytes:
+
+| | HEAD | V3-09 |
+| --- | ---: | ---: |
+| Instructions | 18,468 | 2,168 |
+| Strict tool array (all tools) | 76,396 | 113,238 |
+| Caller context, TinyURL study | 22,687 | 11,718 |
+| Caller context, v2 module design | 49,047 | 25,592 |
+| `getDesign`, v2 module design | 42,712 | 29,503 |
+| `listStudioDefinitions` | 10,339 | 16,212 |
+
+The first request of a turn is about the same size on the v2 module design (143.9 KB → 141.0 KB)
+and 9.5 KB larger on TinyURL: the tool array grew by the two tools and the descriptions that now
+carry what the prompt said, while the caller context no longer repeats the catalog and the design
+is compact (no per-link connection objects; module-level selections read as statuses). These are
+bytes, not tokens, price or quality results. Old RF06 records still stop at their first request
+([chat evals](chat-evals.md#eval-110-no-new-billing-tile-v3-09)). No live or paid call was made.
+

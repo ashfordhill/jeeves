@@ -1,6 +1,6 @@
 # Chat design evaluations
 
-RF06 eval **1.0.0** is a small versioned, synthetic architecture suite. It evaluates design intent
+RF06 eval **1.1.0** (1.0.0 until V3-09) is a small versioned, synthetic architecture suite. It evaluates design intent
 and honest unresolved requirements. It supplies no generated runtime, template or verification.
 It is separate from scripted browser E2E tests.
 
@@ -88,3 +88,28 @@ invariant violations block release claims. Successful graph checks cannot waive 
 one-sample-per-case suite has substantial uncertainty and establishes neither population-level
 improvement nor runtime correctness. See [RF06 reports](evals/rf06/README.md) for actual results,
 access failures, independent review and remaining limitations.
+
+## Eval 1.1.0: no new Billing tile (V3-09)
+
+Since V3-09 chat adds new tiles only of the link fan's kinds (D6), so a new Billing tile is
+refused. Two checkout inputs used one, and changed:
+
+- the `checkout-late-notification-edit` seed (`cases.ts`): Payments is a **Service** that owns
+  Payment state and calls one **External API**, Payment provider;
+- `checkout-build`'s canonical commands (`fixtures/synthetic.json`, version 1.1.0): the same
+  Payments and Payment provider, and one more phrase in its reply.
+
+The checkout rubric follows: `durable-checkout-participants` asks for owned data and a service's
+call to an External API (it asked for a Billing tile), and `no-duplicate-provider` allows at most
+one External API tile (it refused a Stripe-named one beside Billing's built-in provider). The
+prompts, obligations and other cases are unchanged. `pnpm eval:chat` replays all six cases in both
+arms deterministically, offline.
+
+Recorded reports keep their 1.0.0 seeds and are not rewritten. Their replay
+(`pnpm eval:chat --report=…`) still stops at its first request, as it has since NC01: the shared
+caller context changed (here also the short prompt, the tools and the compact design), so the
+recorded request hash no longer matches and no recorded response runs; the CLI then reports
+`Replay mismatch video-build/rf00-ablation: design`. That is the drift, not a re-adjudication of
+the old model result. A new recorded report needs a live run, which needs the owner's explicit
+go-ahead at the time (V3-10).
+

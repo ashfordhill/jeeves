@@ -6,7 +6,9 @@ import type { DesignDocument } from "./design.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
 import type { GenerationInstalledSupport } from "./generation-support.ts";
 import { hasModuleSelections } from "./module-generation.ts";
+import { studioDefinitions } from "./studio-definitions.ts";
 import { buildStudioCommand, studioCommandSchema } from "./studio-operations.ts";
+import { studioLinkFanKinds } from "./studio-tiles.ts";
 
 /** What the mouse and chat may send: the studio's commands, refused below where unsupported. */
 export const supportedAuthoringCommandSchema = studioCommandSchema;
@@ -47,12 +49,31 @@ export function normalSettingFields(
   );
 }
 
+/** What to draw instead of a legacy kind, in plain words. */
+const legacyKindInstead: Partial<Record<string, string>> = {
+  billing:
+    "For payments, add a Service that owns its payment records and calls the provider as an External API.",
+  notification:
+    "For notifications, add a Worker or Service that calls the provider as an External API.",
+  redirect: "For redirects, add a Service.",
+  gateway: "Link the action to the services that handle it instead.",
+};
+
 export function buildSupportedAuthoringCommand(
   design: DesignDocument,
   raw: SupportedAuthoringCommand,
   installed: GenerationInstalledSupport,
 ) {
   const command = supportedAuthoringCommandSchema.parse(raw);
+  // The link fan's kinds are what a new tile can be by mouse; the legacy kinds keep working on
+  // existing tiles but are never added (module authoring contract, D6).
+  if (command.type === "addTile" && !studioLinkFanKinds.includes(command.tile.kind)) {
+    const name = studioDefinitions[command.tile.kind].name;
+    const instead = legacyKindInstead[command.tile.kind] ?? "";
+    throw new Error(
+      `A new tile can't be ${name}: new tiles are the link fan's kinds (${studioLinkFanKinds.map((kind) => studioDefinitions[kind].name).join(", ")}). Existing ${name} tiles keep working.${instead && ` ${instead}`}`,
+    );
+  }
   if (command.type === "createComponent" || command.type === "connectComponent")
     throw new Error(
       "Add a module with addModule and connect it with connectModule; its generation and ownership are derived in the same step.",

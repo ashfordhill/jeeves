@@ -1599,3 +1599,21 @@ canvas expects. A reached unwritten hook is terminal at once: a retry can't writ
 of public storage is an edge route serving that bucket read only, typed by extension, sandboxed,
 with the edge's own errors (missing key, a stopped process) answered as JSON whatever the path's
 extension says.
+
+## 2026-11-11 V3-09: put the knowledge in the tools, and let every change answer what is left
+
+A long prompt asked the model to remember the lane rules, the link table, the module slots and
+which parts make a template, and a cheap model still drew gibberish. The knowledge belongs where
+the model reaches for it: a catalog that says what a module becomes in each tile (Template, Part
+of a template or Stub), a compact design with each module's status and why, patterns that build a
+playbook shape from a few names as one checked batch, a dry run, and a review returned with every
+change. Patterns must send only what the mouse could send, step by step through the same builder,
+so nothing a pattern saves is something the canvas couldn't make; reusing a tile by its name lets
+patterns applied in turn compose (the seven give v3's 21 tiles and 26 modules). A review finding
+is only useful if it names the tile or module and the fix, and a fix offered as commands must be
+checked against the design first: a design that already breaks a lane rule refuses every new
+link until the bad line is gone, so a fix that redraws a line must remove it first, and only when
+that strands nothing. Separate what must be fixed from advice: a long line to a store written at
+the end of a pipeline is worth a look, never a tile to shorten it. Measure the cost honestly: a
+dry-run tool that repeats the whole command union doubles every request, so it takes only the
+commands that change structure and statuses.

@@ -404,7 +404,7 @@ The rest apply them, and don't pause the coordinator.
     Publish, and as each guard's target), "Video lifecycle worker" becomes **Video lifecycle**, and
     Account API is the Watch action's 4th entry. The alternative keeps "Identity", as the study
     does. (Feedback 3, D4)
-12. **Answered 2026-11-11:** the legend shows only the dashed **Async** sample, with **no explanatory text**. Direct async lines stay allowed. v3's 8 dashed lines all go through queues or topics. V3-09 removes the legend's help text.
+12. **Answered 2026-11-11:** the legend shows only the dashed **Async** sample, with **no explanatory text**. Direct async lines stay allowed. v3's 8 dashed lines all go through queues or topics. V3-09 removes the legend's help text. **As built (V3-09):** the legend is one dashed sample and the word Async, with nothing to open, and the pointer passes through it; chat's review accepts a dashed line the link table allows and flags a line whose style its channel refuses (`line-style`).
     **Direct async lines (V3-02's finding).** The link rules still
     allow a dashed line with no queue or topic: application → application, application → External
     API, and External API → application (`studio-links.ts:114-115, 160`). The legend says "Dashed:

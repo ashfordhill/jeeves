@@ -9499,3 +9499,97 @@ The search hooks' shapes are in the contract's §5 "As built" note; V3-16 fills 
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-09: chat tools that carry the knowledge
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (D6, owner feedback 10 and 14) and
+[contract](plans/youtube-v3/contract.md) question 12. Docs: `studio.md` (Chat, the legend),
+`studio-patterns.md` (curated module patterns), `chat-tool-schemas.md`, `chat-evals.md` (eval
+1.1.0), `CATALOG.md` (legend, legacy kinds), a playbook lesson, question 12's "As built", the
+plan's status and the HUMAN_FEEDBACK resolution. Evidence: [v3-09](plans/youtube-v3/evidence/v3-09/README.md) (3 shots).
+
+- **Same surface as the mouse:** `buildSupportedAuthoringCommand` refuses `addTile` of a kind
+  outside the link fan (Gateway, Redirect, Notifications, Billing) with a plain reason and what to
+  draw instead; existing tiles keep working. Chat already shared the module commands, Sign-in
+  (`editComponent`), the D5 process settings (`editableSettings`) and `setRunnableProcesses`.
+- **Spec:** `studio-module-patterns.ts`: seven patterns (`upload-pipeline`, `cache-read`,
+  `counting`, `search`, `sign-in`, `favorites`, `owned-store`), `buildModulePattern` (each step
+  checked with the supported builder; one refused step refuses all, naming the pattern),
+  `listModulePatterns`. Tile arguments reuse an existing tile by ID or name, else name a new one;
+  defaults are v3's names, so the patterns compose. `studio-design-review.ts`: `designReview`
+  (statuses, plus findings `module-status`, `unconnected-slot`, `generation`,
+  `store-without-writer`, `unrelated-store`, `user-reaches-store`, `long-line`, `line-style`,
+  `warning`, each with tile/module, fix or check, a fix in words and commands checked against the
+  design). `module-status.ts`: `moduleStatusDetails` (a Refused module's blocking findings) and the
+  menu wording (`moduleGeneration`, labels, template names) moved from web, which re-exports it.
+- **Chat:** the prompt is the loop plan → preview → apply → review → fix and a few rules (18,468 →
+  2,168 bytes); the rest moved into tool descriptions and results. New `applyPattern` and
+  `previewCommands` (a narrower command union, see deviations); `listStudioDefinitions` adds the
+  tile kinds with labels, each module kind's group per host (`as`), the link table, canvas and kind
+  notes; `getDesign` is compact (labels, module kind and slot links, status counts,
+  `editableSettings` naming their tile or module; raw selections only for tile-level designs);
+  `listStudioPatterns` gives the patterns and, under `guidance`, the four reviewed records;
+  `reviewDesign` adds `moduleStatuses` and `left`. Every accepted `applyStudioCommands` or
+  `applyPattern` returns `review` (what is left). The service's final review adds `Left (fix|check)`
+  details and the reply's "Left in the design: N to fix and M to check".
+- **Legend:** one dashed sample and "Async", no `details`, pointer passes through.
+- **Flaky `v2-rebuild.spec.ts:30`:** a test race; `typeInto` now waits until the field is
+  editable and clicks again until it holds focus before typing (no assertion changed).
+
+**Tests.** Spec `studio-module-patterns.test.ts` (10: each pattern's statuses, replay to the same
+design, link-fan kinds only, refusals, the v3 composition: 21 tiles, 26 modules, 24 Template, 2
+Stub, 11 template selections) and `studio-design-review.test.ts` (10: each finding class and its
+fix applied); chat `tools.test.ts` +4 (legacy refusal, `applyPattern` equals the mouse's batches,
+preview never saves, compact design) and updated; `chat.test.ts` +1 (scripted conversation:
+patterns, preview, two `applyPattern` with their reviews, the pre-save review, one Undo);
+`openai-tools` 17 tools; eval rubric; web `LineLegend.test.tsx`; e2e `canvas.spec.ts` (legend) and
+`blueprint-chat.spec.ts` (Review details 3 → 4, with the Left line asserted).
+
+**Checks.** `pnpm check` exited 0: **721 tests in 100 files** (lint: only the existing info).
+**E2E:** the first full run had 78 passed and 1 failed: `blueprint-chat.spec.ts:90` waited for "Review details (3)", and the final review now adds a Left line (an intended change); updated, it passed alone (5/5). The final full run: **79 passed (4.9 m)**, `v2-rebuild.spec.ts:30` passing in both runs (1.7 m). Web build passed (981 ms, the existing chunk-size advisory). **Mouse check**
+(scripted Chromium; my API 4409, scratch DB `jeeves_v309`, dropped; Vite 4419) at 1440×900 and
+1280×800: TinyURL foundation 7 tiles/7 lines in both views; the legend reads only "Async" (94×39
+px), a click on it opens nothing; a chat turn by mouse (scripted model) previewed and applied the
+upload pipeline: revision 1, 10 tiles, 11 modules, reply "Left in the design: 0 to fix and 1 to
+check", the Left line in Review details; header Undo emptied it. No page errors (only the export
+check's Canvas2D warnings). All my projects deleted (204); `jeeves_e2e` has no leftovers.
+
+**Gates (D2).** Off pin passes unchanged. v1 byte-identical (`assemble.test.ts`). Frozen v2:
+fresh `export:v2`, 72 files, 70 byte-identical to `generic-export.tar.gz`; `manifest.json`/
+`report.json` equal without the source inventory (141 → 162 paths since the archive; this unit
+adds `studio-design-review.ts` and `studio-module-patterns.ts`). **YouTube exports unchanged:**
+Simple `9332ea16…89bd` (twice at 1440×900, once at 1280×800), Detailed `21fe8400…9ae1`.
+
+**Evals.** RF06 is **1.1.0**: the checkout seed's and canonical fixture's Payments is a Service
+calling one External API (was Billing); the checkout rubric follows. `pnpm eval:chat`: all 12
+case/arm replays deterministic, offline. The recorded Codex report still stops at its first
+request (`video-build/rf00-ablation`, then the CLI's `design` mismatch), exactly as at `1c9116f`
+before this unit; recorded reports are not rewritten.
+
+**Deviations.** (1) The export hashes did **not** change: the legend was never part of the PNG
+(`studio.md`, Diagram PNG export), so the references stand. (2) `previewCommands` takes patterns
+and the lane/module commands (plus `editSystem`, `editComponent`, `setRunnableProcesses`), not
+tile settings: repeating the full union doubled the tool array (154 KB). Even so the tool array
+grew 76 → 113 KB; with the shorter prompt and compact context a turn's first request is 141.0 KB
+vs 143.9 KB on the v2 module design (+9.5 KB on TinyURL). (3) A line-style or user-reaches-store
+fix is commands only when removing the bad line strands nothing: a design that breaks a lane rule
+refuses every new link ("Fix the lanes first."), so otherwise the fix points to Source &
+diagnostics. (4) The counting pattern's publisher is an Event publisher stub; v3's View publisher
+is a Custom (it reads Metadata). (5) `search` needs an existing topic; `upload-pipeline` makes one
+with `publication`.
+
+**For V3-10.**
+- Offline: `pnpm eval:chat` replays `fixtures/synthetic.json` through the real `ChatService`
+  twice per arm with `fetch` throwing; `--report=<abs path>` replays a recorded live report and
+  fails on the first request whose hash (`requestContent`: instructions, tools, items without
+  opaque) differs. Any change to the prompt, a tool description or schema, or the caller context
+  drifts old reports; record new ones instead of editing them.
+- Live needs the owner's explicit go-ahead at run time (`--live --allow-paid-api`, keys only in
+  the environment). Patterns make a build-from-brief eval cheap to script: the composition in
+  `studio-module-patterns.test.ts` is v3's shape (Sign-in is created after Upload API, not as a
+  Publish entry; View publisher is an Event publisher), a ready baseline for `v3-modules.ts`.
+- The review's finding classes and `commands` are what a review eval can score; seeding a smell
+  usually needs a direct document edit (the commands refuse most of them).
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.
