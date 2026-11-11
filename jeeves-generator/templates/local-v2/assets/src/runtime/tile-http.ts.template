@@ -2,7 +2,7 @@ import type { FastifyRequest } from "fastify";
 import { HttpError } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
 import { isNotImplemented, notImplementedWhat, type NotImplementedLog } from "./tile-process.ts";
-import type { ModuleRequest, ModuleResponse } from "../modules/entry.ts";
+import type { Caller, ModuleRequest, ModuleResponse } from "../modules/entry.ts";
 
 /** A module's routes: "Not implemented" answers 501 with one rate-limited log line. Any other
  * error keeps the HTTP service's own mapping (an HttpError its status, anything else 503). */
@@ -35,7 +35,11 @@ export function notImplementedRoutes(
 }
 
 const anyMethod = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"] as const;
-function moduleRequest(request: FastifyRequest): ModuleRequest {
+const anonymous = async (): Promise<Caller> => ({ signedIn: false });
+async function moduleRequest(
+  request: FastifyRequest,
+  caller: (request: FastifyRequest) => Promise<Caller>,
+): Promise<ModuleRequest> {
   const rest = (request.params as { "*"?: string })["*"];
   return {
     method: request.method,
@@ -43,14 +47,17 @@ function moduleRequest(request: FastifyRequest): ModuleRequest {
     query: request.query as ModuleRequest["query"],
     headers: request.headers,
     body: request.body,
+    caller: await caller(request),
   };
 }
-/** A route stub answers any method on /modules/<module> and every path below it. */
+/** A route stub answers any method on /modules/<module> and every path below it. `caller` is the
+ * tile's Auth guard's, or anonymous. */
 export function stubRoutes(
   routes: HttpRoutes,
   log: NotImplementedLog,
   module: string,
   entry: (request: ModuleRequest) => Promise<ModuleResponse>,
+  caller: (request: FastifyRequest) => Promise<Caller> = anonymous,
 ): void {
   const mounted = notImplementedRoutes(routes, log, module);
   for (const url of [`/modules/${module}`, `/modules/${module}/*`])
@@ -58,7 +65,7 @@ export function stubRoutes(
       method: [...anyMethod],
       url,
       async handler(request, reply) {
-        const response = await entry(moduleRequest(request));
+        const response = await entry(await moduleRequest(request, caller));
         reply.code(response.status ?? 200);
         for (const [name, value] of Object.entries(response.headers ?? {})) reply.header(name, value);
         return response.body;

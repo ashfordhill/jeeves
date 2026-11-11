@@ -695,11 +695,12 @@ describe("laneFindings", () => {
       draft.connections.push(
         connection("redirect-stats", "redirect", "stats-api"),
         connection("redirect-shorten", "redirect", "shorten"),
+        connection("redirect-admin", "redirect", "admin"),
       );
     });
     expect(messages(crowded)).toEqual([
       "Open link has 5 entries; the most is 4.",
-      "Redirect service has 5 links; the most is 4.",
+      "Redirect service has 6 links; the most is 5.",
     ]);
     expect(laneFindings(crowded)[0]?.target).toEqual({
       path: ["architecture", "studio", "actions", 0],

@@ -9261,3 +9261,88 @@ The 5-link cap is yours. `v2-rebuild.spec.ts` failed once under full-suite load 
 The owner committed `README.md` and `.docs/ui-v2/` (10858cc) and the legend decision (50d7c8e)
 while this unit ran; nothing of theirs is reverted. `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-11 — V3-06: auth guard template
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) and [contract](plans/youtube-v3/contract.md)
+§2 ("Also in V3-06"), questions 1–5. Docs: `studio.md` (module menu, module page, the cap, export),
+`studio-settings.md` (Sign-in), `CATALOG.md` (Auth guard as Template, the cap), the generator
+README (the guard runtime, Keycloak, multipart → lifecycle), a playbook lesson, the plan's status
+and the HUMAN_FEEDBACK resolution. Evidence: [v3-06](plans/youtube-v3/evidence/v3-06/README.md).
+
+- **Spec:** `verified-identity@0.1.0` (binding `{identity: {element, guard}}`, no policy;
+  capability `api`, Service/Uploads, lead `auth-guard`). The Auth guard leads it once connected to
+  an Identity (External API or a Worker: stub; one per tile, the existing refusal); it is no longer
+  multipart's part. `signIn?: required | optional` (absent = Required); derivation writes Required
+  and the Identity's public exposure. Rules `guard.signIn` (normal control, default `required`)
+  and `guard.credential` (fixed JWT); a component rule with no field reads the lead. Multipart
+  needs the tile's one guard connected and Required (`requiredGuard`), else Stub "Needs an Auth
+  guard set to Required in <tile>."; its binding still names the guard. An `editComponent` that
+  changes a guard's Sign-in derives (one batch). A guard a tile-level multipart binds (frozen v2,
+  presets) stays that template's. `youtube-core`'s policies pinned to six refs (sha unchanged).
+  `laneLimits.outgoingLinks` 5.
+- **Generator:** the composition provides `verified-identity`. With processes on, the guard's mount
+  builds `createTileGuard` (new scaffold `src/runtime/tile-guard.ts`, emitted only with a guard)
+  on `createPrincipalVerifier`; the process mounts every module route through `guard.routes(open)`,
+  first; `GET /modules/<guard>/me`; route stubs get `guard.caller` (`ModuleRequest.caller`, in
+  `entry.ts`; anonymous without a guard). Multipart's factory gets `guard` (`principal` returns
+  `guard.require`) and, when a lifecycle names the upload, `lifecycle` (`createAssetLifecycle` from
+  the lifecycle's hooks file on the worker's own binding, shared helper `uploadLifecycle`);
+  `reserve`, `complete` and `closed` delegate. Keycloak comes from every guard selection.
+
+**Deviations:** (1) Multipart's `job` codec still throws (the contract delegates only reserve,
+complete and closed); a product can return the lifecycle's `job.codec`. (2) Processes off, the
+guard adds no gap of its own: `application-services` already says no service runs. (3)
+`client-wiring.test.ts`'s `wider()` Gate became an External call to Login, since a connected Auth
+guard is now a template; the test still covers an Identity no template binds.
+
+**Flaky spec:** `v2-rebuild.spec.ts`'s 21st drag never connected (a save takes ~120 ms). `ready`
+holds when ELK lands, but tiles kept moving after it on 15 of 24 steps (200 ms animation, camera),
+and Publication events is 28 px at the fit. Fixed in `v2-rebuild.ts` with no assertion changed:
+wait for a still board (300 ms) before each drag, and release only once the board marks the end
+(`is-drop-over` / the row outline's `data-over`), re-aiming meanwhile.
+
+**Tests.** New `tile-guard.test.ts` (5: the emitted scaffold, stub caller and multipart hooks),
+spec fixture `fixtures/sign-in-stack.ts`; `module-generation.test.ts` +6 and the six pinned
+policies; `http-wiring.test.ts` +1 (sign-in stack) and the v2 routes/hooks updated;
+`tools.test.ts` +1 (chat's Sign-in batch equals the page's); cap tests at 5; web
+`ModuleMenu`/`module-status` tests; equivalence test (seven templates plus the sign-in row); e2e
+`module-authoring.spec.ts` +1 (Sign-in Optional by mouse, Undo) and Service menu,
+`spawn.spec.ts` +1 (five links, sixth refused, no line through a tile), `v2-rebuild.spec.ts`
+(eight templates).
+
+**Checks.** `pnpm check` exited 0: **666 tests in 93 files** (lint: only the existing info; a
+first run failed two web tests still expecting the guard as a part, fixed). **E2E: 77 passed
+(4.9 m)** on the first full run; `jeeves_e2e` has no leftover E2E project. Web build passed
+(974 ms, the existing chunk-size advisory). **Mouse check** (scripted Chromium; my API 4397 with
+scratch DB `jeeves_v306`, now dropped, and Vite 4387; 1440×900 and 1280×800): TinyURL foundation
+7 tiles/7 lines in both views, extended 11/12; Redirect service 3 → 5 links, 13 tiles/14 lines,
+no line through a tile in Simple or Detailed, link tab gone; the `+` lists Auth guard under
+Template, connected it reads Template · Sign-in, Optional saved in one revision; no page or
+console errors; 9 projects deleted.
+
+**Gates.** Off pin passes after one intended update (v2 module design only: inputs `design.json`,
+manifest, normalized, report, diagnostics and `application-bindings.ts`); dropping just the
+sign-in selection and `signIn` reproduces all 77 old hashes. Frozen v2: fresh `export:v2`, 72
+files, 70 byte-identical to `generic-export.tar.gz`, manifest/report equal without inventory. v1
+byte-identical. YouTube Simple `9332ea16…89bd`, Detailed `21fe8400…9ae1`, unchanged (twice at
+1440×900, once at 1280×800). `youtube-core` sha `d4c66f03…` unchanged.
+
+**Docker** (`jeeves-v306-guard`, 45520–45522; the sign-in stack): first-run 97.6 s, 8 healthy, 0
+restarts. A real Keycloak PKCE token: Optional `me` → `{signedIn:false}` / the viewer / 401
+tampered; Required `me` and every multipart route 401 without or with a tampered token; a start
+with a valid token → 501 `validate for Multipart uploads`; the Hello stub saw its caller. With
+four multipart hooks filled in the run copy, the start reached **501 `metadata for Lifecycle
+writer`** (the delegation, rolled back). Stop 4.0 s / start 51.0 s: 14 secret hashes, 3 volumes,
+the account and the realm's keys kept (the pre-stop token still verified). Cleanup: down with
+volumes, image tag removed, exports, secrets and tokens deleted; the owner's container IDs, 18
+volumes, 9 networks, 31 image rows and ports match the record, 42 healthy, both edges 200.
+
+**For V3-07.** Favorites needs a Required guard the same way: reuse `requiredGuard(view, host)` in
+`module-generation.ts` (its reason wording is built in `matchLead`), and take the caller in the
+mount from `tileGuard(process, selections)` in `http-wiring.ts` (the guard mounts first; mount the
+items routes through `routes`, which the guard already wraps). Add `favorites-policy` now that
+`youtube-core`'s policies are pinned. A Service with Favorites has 3+ links; the cap is 5.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

@@ -67,8 +67,10 @@ const wider = () =>
       slot: "target",
       target: { tile: "partner" },
     },
-    { type: "addModule", host: "stats-api", kind: "auth-guard", id: "gate", name: "Gate" },
-    { type: "connectModule", module: "gate", slot: "identity", target: { tile: "login" } },
+    // An Auth guard connected to Login would lead its sign-in template (V3-06); an External call
+    // is a stub that still reaches the Identity no template binds.
+    { type: "addModule", host: "stats-api", kind: "external-call", id: "gate", name: "Gate" },
+    { type: "connectModule", module: "gate", slot: "target", target: { tile: "login" } },
     {
       type: "addModule",
       host: "visit-worker",

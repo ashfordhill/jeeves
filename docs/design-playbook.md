@@ -1549,3 +1549,20 @@ definition of the same view applies once and then fails the next start. Keep one
 view and edit it in place. A failing file must roll the whole database back and name itself, so
 nothing half-applies. Who writes comes from the links and ownership, not a form: a store another
 owner holds is read only, even when its link draws a write.
+
+## 2026-11-11 V3-06: sign-in is one template per tile, and what needs it says so
+
+Who may call a tile is a decision about the whole tile, so make it one module with one setting:
+an Auth guard connected to an Identity leads its own sign-in template, and its **Sign-in** is
+Required or Optional. Every module route of the tile passes through it, so a stub written later
+can't forget to check, and it hands each route its caller (signed in, or anonymous). Optional
+still refuses a token that fails verification: an expired session must be noticed, never counted
+as anonymous. A template that needs signed-in callers (Multipart uploads, Favorites next) doesn't
+bring its own verifier; it needs the tile's guard set to Required and says so in plain words while
+it isn't ("Needs an Auth guard set to Required in Upload API."), and flipping the setting
+re-derives the tile in the same Undo step. Templates that share tables share hooks the same way:
+an upload's `reserve`, `complete` and `closed` are the lifecycle's that names it, built from the
+lifecycle's own hooks file, so nothing is written twice. On the canvas, `ready` holds when the
+layout lands, but tiles still animate and the camera may move; at a fit a tile can be 28px across,
+so a scripted drag must wait for a still board and release only once the board marks the target
+under the pointer.

@@ -18,12 +18,17 @@ describe("moduleGeneration", () => {
       "event-counter",
       "index-writer",
     ]);
-    // An Event consumer is part only of worker templates; an Auth guard only of the upload one.
+    // An Event consumer is part only of worker templates; an Auth guard leads the sign-in in a
+    // Service or Uploads tile (V3-06) and is a stub in a Worker.
     expect([by("service")["event-consumer"], by("worker")["event-consumer"]]).toEqual([
       "stub",
       "part",
     ]);
-    expect([by("uploads")["auth-guard"], by("worker")["auth-guard"]]).toEqual(["part", "stub"]);
+    expect([
+      by("service")["auth-guard"],
+      by("uploads")["auth-guard"],
+      by("worker")["auth-guard"],
+    ]).toEqual(["lead", "lead", "stub"]);
     // Stub kinds are stubs everywhere.
     expect(by("service").custom).toBe("stub");
   });

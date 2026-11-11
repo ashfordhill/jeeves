@@ -256,17 +256,40 @@ the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a ser
 
 **Module routes** (contract §3–4). Every route sits under `/modules/<module id>`:
 
+- The tile's **sign-in** (v3 contract §2): an Auth guard connected to an Identity selects
+  `verified-identity@0.1.0`, and the process builds one `createTileGuard` (the scaffold
+  `src/runtime/tile-guard.ts`, emitted when a guard exists) on `createPrincipalVerifier`
+  (`OIDC_ISSUER`, audience `<identity id>-web`, `OIDC_JWKS_URL`, RS256, a 3 s key-set timeout,
+  `exp` and `sub` required). Every module route of the tile is mounted through
+  `guard.routes(...)`: **Required** answers 401
+  `{"error":"SIGN_IN_REQUIRED","message":"Sign in to continue."}` without a valid
+  `Authorization: Bearer` token; **Optional** treats a request without the header as anonymous
+  and still answers 401 for a token that fails verification (a key-set failure included).
+  `/healthz` stays open. `guard.caller(request)` gives `{signedIn: true, principal}` or
+  `{signedIn: false}`, verified once per request; `guard.require(request)` gives the principal or
+  401. `GET /modules/<guard>/me` answers `{signedIn: true, subject, username}` (the token's
+  `preferred_username`, or null) or `{signedIn: false}`. The guard declares no roles and has no
+  hooks file: a product adds roles and accounts through Keycloak's admin API (as v2's account
+  script did) and checks them in its own hooks.
 - A **route stub** (any stub in an HTTP tile that consumes no queue) answers any method on
   `/modules/<module id>` and every path below it. Its `<module>.ts` takes
   `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; the types live in the
-  scaffold `src/modules/entry.ts`. Its `dependencies` are real clients (provisioning for stubs,
+  scaffold `src/modules/entry.ts`. `request.caller` is the tile's sign-in caller, and always
+  `{signedIn: false}` in a tile with no guard. Its `dependencies` are real clients (provisioning for stubs,
   below). Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
   and get their clients, and are called only through another module's link.
 - **Multipart uploads** is mounted on its real libraries: its private schema (named from the
   selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in
   migration `100-<selection>.sql`, granted to its host; S3 control and signing clients; the
   transaction; the jobs publisher and outbox relay; and a sweep at start and every 30 s. Its six
-  operations are mounted at `/modules/<lead>/uploads…`.
+  operations are mounted at `/modules/<lead>/uploads…`. It needs its tile's Auth guard set to
+  Required (the derivation keeps it a stub otherwise): its hooks factory gets `guard`, and
+  `principal` is `return resources.guard.require(request);`, so a start with a valid token
+  reaches `validate` first. When an asset lifecycle names the upload, the upload's process also
+  builds that lifecycle (`createAssetLifecycle`, from the lifecycle's own hooks file and the same
+  binding its worker uses) and the factory gets `lifecycle`, its upload hooks: `reserve`,
+  `complete` and `closed` delegate to it, so their "Not implemented" comes from the lifecycle
+  hooks they reach (`metadata`, `job.construct`, `response`).
 - **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
   Valkey cache at `GET /modules/<lead>/:key`; null answers 404.
 - **Search query** is a placeholder: `GET /modules/<lead>` answers "Not implemented" for its
@@ -339,8 +362,14 @@ Each process gets its credentials and `depends_on` its providers healthy. A stor
 provider isn't unspecified or self-hosted, or whose engine isn't unspecified or the local one
 (PostgreSQL, Redis-compatible, OpenSearch), isn't provisioned: a required `unsupported` gap
 `provider-<module>-<tile>`, so the stack isn't runnable. Identity isn't provisioned for stubs
-(a template that binds one holds its tile's only Auth guard), and nor are CDN or External API
-tiles.
+(an Auth guard connected to it is a sign-in template, the tile's only one), and nor are CDN or
+External API tiles.
+
+**Keycloak** comes from every guard selection (and from a tile-level multipart, as in v2): each
+binds its Identity, which runs as `identity-<id>` with one realm `<id>` and one public PKCE client
+`<id>-web` whose redirect is the edge origin `/`, written once at setup (`setup.mjs`), with the
+admin and database passwords generated into `.runtime/secrets`. Each guarded process gets
+`OIDC_ISSUER` and `OIDC_JWKS_URL` and `depends_on` Keycloak healthy. One Identity per design.
 
 **Product tables and published views** (v3 contract §1). With the option on, every module that
 writes a database other than through an Event publisher's outbox gets its own SQL file,
@@ -405,8 +434,9 @@ in the export or the repository. `pnpm stop` and `pnpm start` keep them and the 
 
 Each mounted lead gets `src/modules/<host>/<lead>.hooks.ts` (a `generated-extension`): one
 factory over the template's generic resources whose every hook throws `NotImplemented("<hook>
-for <lead name>")`. The multipart's are `principal`, `validate`, `metadata`, `response`,
-`reserve`, `complete`, `closed`, `originalKey` and `job`; the cache reader's `key`, `codec`,
+for <lead name>")`. The multipart's are `validate`, `metadata`, `response`, `originalKey` and
+`job`, plus `reserve`, `complete` and `closed` when no asset lifecycle names the upload
+(`principal` is the sign-in's); the cache reader's `key`, `codec`,
 `eligible`, `load` and `expiresAt`; the lifecycle's `metadata`, `event`, `result`, `failure`,
 `job.codec`, `job.construct`, `response`, `publication.codec`/`construct` and the three
 `identities`; the video's codecs (`job`, `video`, `result`, `eventId`, `event`) and the source and

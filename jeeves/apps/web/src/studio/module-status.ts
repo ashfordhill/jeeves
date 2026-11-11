@@ -39,6 +39,7 @@ export function moduleGeneration(kind: StudioComponentKind, host: StudioKind): G
 
 /** Each installed template's name, as a module page shows it. */
 export const moduleTemplateNames: Record<GenerationBinding["kind"], string> = {
+  "verified-identity": "Sign-in",
   "owned-multipart": "Multipart upload",
   "asset-lifecycle": "Upload lifecycle",
   "video-hls": "Video encoding",

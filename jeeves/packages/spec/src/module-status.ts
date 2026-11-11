@@ -73,7 +73,10 @@ function selectionScope(
     elements.push(item.dependency.resource);
     connections.push(item.dependency.connection);
   }
-  if (selection.binding.kind === "owned-multipart")
+  if (
+    selection.binding.kind === "owned-multipart" ||
+    selection.binding.kind === "verified-identity"
+  )
     elements.push(selection.binding.identity.element);
   return [
     ["generation", "selections", index],

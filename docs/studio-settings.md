@@ -316,7 +316,7 @@ its `description`.
 | `event-publisher` | `batchSize?`; `lingerMs?`; `outbox` disabled / enabled |
 | `event-consumer` | `concurrency?`; `batchSize?`; `retryLimit?`; `deadLetterQueue?` (a queue other than the source) |
 | `data-access` | `poolSize?`; `readRouting` primary / replica; `statementTimeoutMs?` |
-| `auth-guard` | `credential` jwt / api-key / session |
+| `auth-guard` | `credential` jwt / api-key / session; `signIn?` required / optional (absent = required) |
 | `external-call` | `circuitBreaker` disabled / enabled; timeout and retry stay on the traced connection |
 | `custom` | none; its `description` is its one-line purpose |
 | `lifecycle-writer` | `poolSize?`; `statementTimeoutMs?` |
@@ -338,11 +338,21 @@ default or `unspecified`:
 | Video encoding worker | concurrency 1 |
 | Event publisher | outbox on for jobs and publication, off for results |
 | Cache reader | cache-aside, single-flight (also set when it is added) |
+| Auth guard | Sign-in required, once it verifies an Identity |
 
 A needed setting with no value gets one: Request timeout 1000 ms, Concurrency limit 1000, Worker
 concurrency 4, Cache TTL 3600 s, Pool size 10 and Statement timeout 2000 ms (on a Data access in
 a template and on a Lifecycle writer). Any other kept value stays, and the module's status is
 **Refused** with the reason. Stub modules get no values.
+
+**Sign-in** (`signIn`, v3 contract §2) is the one setting an Auth guard shows, on its module page
+and in chat's `editableSettings`, once the guard leads its sign-in template (connected to an
+Identity, in a Service or Uploads tile). **Required**: every module route of the tile needs a
+valid token, else 401. **Optional**: a request without a token is anonymous; an invalid one is
+still 401. Absent reads as Required, so older designs keep their meaning. With Runnable
+processes on, `src/runtime/tile-guard.ts` consumes it. Changing it re-derives the tile in the
+same step: Multipart uploads needs its tile's guard set to Required, and is a Stub ("Needs an
+Auth guard set to Required in <tile>.") otherwise. Credential stays fixed at JWT and hidden.
 
 Rejected outright: a host that is not a studio application (browser apps host only auth guard,
 external call and custom); a component-to-component link across hosts; an element link whose

@@ -22,9 +22,10 @@ export type StudioLinkResult =
 /**
  * The caps on branching. Raise them here, and only here, if a realistic design needs more. Four
  * entries per lane (per action): the marketplace study's upload lane has sign-in, the seller's
- * shop, the cart and Payments (the checkout).
+ * shop, the cart and Payments (the checkout). Five links out of a tile: YouTube v3's Watch API
+ * reads two databases and a cache, publishes view events and verifies optional sign-in.
  */
-export const laneLimits = { entriesPerLane: 4, outgoingLinks: 4 } as const;
+export const laneLimits = { entriesPerLane: 4, outgoingLinks: 5 } as const;
 
 /**
  * The roles in the link table. `user` is the actor; `action` is one of its lane actions (the

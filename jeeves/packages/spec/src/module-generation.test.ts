@@ -17,6 +17,7 @@ import { resolveGeneration } from "./generation-resolver.ts";
 import { generationCapabilities } from "./generation-support.ts";
 import { planModules } from "./module-generation.ts";
 import { moduleStatus, moduleStatuses } from "./module-status.ts";
+import type { OperationInput } from "./operations.ts";
 import { designOwnership, type Ownership } from "./ownership.ts";
 import { designBlueprintV3 } from "./studio-blueprint.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
@@ -36,7 +37,8 @@ const refusal = (design: DesignDocument, command: StudioCommand) => {
   throw new Error(`${command.type} was accepted`);
 };
 
-/** v2's seven installed selections, keyed by host, with v2's upload selection named by its lead. */
+/** v2's seven installed selections, keyed by host and template, with v2's upload selection named
+ * by its lead. */
 const v2Templates = () =>
   Object.fromEntries(
     (designGeneration(v2())?.selections ?? [])
@@ -44,15 +46,28 @@ const v2Templates = () =>
       .map((item) => {
         const binding = structuredClone(item.binding);
         if (binding.kind === "asset-lifecycle") binding.upload = "upload-multipart";
-        return [item.target.kind === "element" ? item.target.element : "", binding];
+        return [
+          `${item.target.kind === "element" ? item.target.element : ""}/${binding.kind}`,
+          binding,
+        ];
       }),
   );
 const moduleTemplates = (design: DesignDocument) =>
   Object.fromEntries(
     (designGeneration(design)?.selections ?? [])
       .filter((item) => item.binding.kind !== "module-stub")
-      .map((item) => [item.target.kind === "component" ? item.target.host : "", item.binding]),
+      .map((item) => [
+        `${item.target.kind === "component" ? item.target.host : ""}/${item.binding.kind}`,
+        item.binding,
+      ]),
   );
+/** V3-06 (v3 contract, section 2 and question 4): the Creator check leads its own sign-in. */
+const creatorCheck = {
+  "upload/verified-identity": {
+    kind: "verified-identity",
+    identity: { element: "identity", guard: "upload-auth" },
+  },
+};
 const sortRows = <T>(rows: readonly T[]) => [...rows].map((row) => JSON.stringify(row)).sort();
 /** Ownership with owner IDs replaced by the hosts they hold, so owners compare by membership. */
 function byMembers(ownership: Ownership) {
@@ -74,8 +89,8 @@ function byMembers(ownership: Ownership) {
 describe("module authoring rebuilds YouTube v2", () => {
   const built = runAll(v2Tiles(), v2Modules);
 
-  it("derives v2's seven templates with v2's bindings and two stubs", () => {
-    expect(moduleTemplates(built)).toEqual(v2Templates());
+  it("derives v2's seven templates with v2's bindings, the Creator check's sign-in and two stubs", () => {
+    expect(moduleTemplates(built)).toEqual({ ...v2Templates(), ...creatorCheck });
     const selections = designGeneration(built)?.selections ?? [];
     expect(selections.every((item) => item.target.kind === "component")).toBe(true);
     expect(
@@ -88,6 +103,7 @@ describe("module authoring rebuilds YouTube v2", () => {
         "watch-views",
         "counter-sum",
         "search-query",
+        "upload-auth",
         "upload-multipart",
         "transcoder-encoder",
         "handler-writer",
@@ -175,6 +191,17 @@ describe("module catalog records", () => {
     expect(generationPresets.youtube.ref.sha256).toBe(
       "d4c66f03133f8f27de09e94b879b5f731dba42c988ef6dddb04a91da25718ad5",
     );
+    // Pinned to its six policies (V3-06): a policy added later never changes it.
+    const { generationPolicies } = await import("./generation-catalog.ts");
+    expect(generationPresets.youtube.definition.policies.map((ref) => ref.id)).toEqual([
+      "owned-multipart-policy",
+      "asset-lifecycle-policy",
+      "video-hls-policy",
+      "positive-cache-policy",
+      "event-counter-policy",
+      "public-video-policy",
+    ]);
+    expect(Object.keys(generationPolicies)).toHaveLength(6);
     // Every record v2 saved is still the catalog's, byte for byte.
     const saved = designGeneration(v2());
     expect(saved?.runtime).toEqual(generationRuntime.ref);
@@ -200,6 +227,7 @@ describe("module catalog records", () => {
       "event-counter": ["event-counter"],
       "search-projection": ["index-writer"],
       "search-query": ["search-query"],
+      "verified-identity": ["auth-guard"],
       "youtube-upload": ["custom"],
       "youtube-watch": ["custom"],
       "youtube-search": ["custom"],
@@ -632,8 +660,15 @@ describe("module derivation", () => {
         { element: "completion-handler", owner: "lifecycle", kind: "worker" },
       ],
     });
-    // Both templates complete in the same command: the Upload API's last connection.
-    const commands = [...v2Modules.slice(35, 40), ...v2Modules.slice(16, 25)];
+    // Both templates complete in the same command: the Creator check's connection, last, which
+    // completes the Upload API's sign-in and its multipart at once (a sign-in already derived
+    // would replace the hand-declared Upload API role by key, MA05's clean-up).
+    const commands = [
+      ...v2Modules.slice(35, 40),
+      ...v2Modules.slice(16, 20),
+      ...v2Modules.slice(21, 25),
+      ...v2Modules.slice(20, 21),
+    ];
     const last = commands.at(-1);
     if (!last) throw new Error();
     expect(refusal(runAll(design, commands.slice(0, -1)), last)).toBe(
@@ -810,6 +845,240 @@ describe("module refusals", () => {
         connect("transcoder-thumbnails", "outputs", { tile: "originals" }),
       ]),
     ).toBe("Packager and Thumbnailer write different storage; Segmenter and encoder needs one.");
+  });
+});
+
+describe("the Auth guard's sign-in (V3-06, v3 contract section 2)", () => {
+  /** The composition's support for the sign-in, as the executing registry installs it. */
+  const installed = {
+    runtime: generationRuntime.ref,
+    templates: [
+      {
+        ref: generationTemplates["verified-identity"].ref,
+        consumers: [
+          { input: "binding", consumer: "verified-identity" },
+          ...generationCapabilities["verified-identity"].settings.map((rule) => ({
+            input: rule.input,
+            consumer: rule.consumer,
+          })),
+        ].map((item) => ({ ...item, outputPaths: ["src/features/application-bindings.ts"] })),
+      },
+    ],
+  };
+  const guarded = () =>
+    runAll(v2Tiles(), [
+      add("upload", "upload-auth", "auth-guard"),
+      connect("upload-auth", "identity", { tile: "identity" }),
+    ]);
+  const guard = (design: DesignDocument) =>
+    design.architecture?.studio?.components?.find((item) => item.id === "upload-auth");
+  const withSignIn = (design: DesignDocument, value: "required" | "optional") =>
+    buildSupportedAuthoringCommand(
+      design,
+      {
+        type: "editComponent",
+        component: "upload-auth",
+        settings: { kind: "auth-guard", credential: "jwt", signIn: value },
+      },
+      installed,
+    );
+  const applied = (design: DesignDocument, batch: { ops: OperationInput[] }) => {
+    const result = applyOperations(design, batch.ops);
+    if (!result.ok) throw new Error(JSON.stringify(result.errors));
+    return result.design;
+  };
+
+  it("leads its sign-in once connected to an Identity, with Sign-in Required at first", () => {
+    const design = guarded();
+    expect(selectionOf(design, "upload-auth")).toMatchObject({
+      target: { kind: "component", component: "upload-auth", host: "upload" },
+      template: generationTemplates["verified-identity"].ref,
+      binding: {
+        kind: "verified-identity",
+        identity: { element: "identity", guard: "upload-auth" },
+      },
+    });
+    expect(guard(design)?.settings).toEqual({
+      kind: "auth-guard",
+      credential: "jwt",
+      signIn: "required",
+    });
+    // The Identity runs as Keycloak: public, with an API role of its own; the guard's tile too.
+    expect(settingsOf(design, "identity")?.exposure).toBe("public");
+    const roles = designOwnership(design).roles.map((item) => [item.element, item.kind]);
+    expect(roles).toEqual(
+      expect.arrayContaining([
+        ["upload", "api"],
+        ["identity", "api"],
+      ]),
+    );
+    expect(moduleStatus(design, "upload-auth")).toMatchObject({
+      status: "template",
+      template: "verified-identity",
+    });
+    const resolved = resolveGeneration(design, installed);
+    expect(resolved.findings).toEqual([]);
+    const row = resolved.model?.selections.find((item) => item.id === "upload-auth");
+    expect(row?.inputs).toEqual({ "guard.signIn": "required", "guard.credential": "jwt" });
+    expect(row?.identity).toMatchObject({ element: "identity", guard: "upload-auth" });
+  });
+
+  it("shows Sign-in on the module page, Required or Optional; absent reads as Required", () => {
+    const design = guarded();
+    const index = design.architecture?.studio?.components?.findIndex(
+      (item) => item.id === "upload-auth",
+    );
+    expect(
+      normalSettingFields(design, installed, { component: "upload-auth" }).map((item) => [
+        item.input,
+        item.value,
+        item.supported,
+        item.sourcePaths,
+      ]),
+    ).toEqual([
+      [
+        "guard.signIn",
+        "required",
+        { values: ["required", "optional"] },
+        [["architecture", "studio", "components", index, "settings", "signIn"]],
+      ],
+    ]);
+    // Credential stays fixed at JWT and is never a control.
+    expect(
+      resolveGeneration(design, installed).settings.find(
+        (item) => item.input === "guard.credential",
+      ),
+    ).toMatchObject({ status: "fixed", value: "jwt", normalControl: false });
+    // An older guard saved with no Sign-in reads as Required.
+    const older = structuredClone(design);
+    const settings = guard(older)?.settings;
+    if (settings?.kind === "auth-guard") delete settings.signIn;
+    expect(
+      resolveGeneration(older, installed).settings.find((item) => item.input === "guard.signIn"),
+    ).toMatchObject({ value: "required", origin: "descriptor-default", status: "supported" });
+    // An unsupported credential is refused with the reason, and kept.
+    const session = structuredClone(design);
+    const kept = guard(session)?.settings;
+    if (kept?.kind === "auth-guard") kept.credential = "session";
+    expect(
+      resolveGeneration(session, installed).findings.map((item) => [item.code, item.message]),
+    ).toContainEqual([
+      "NEEDS_TEMPLATE",
+      'Unsupported guard.credential=session; supported values are {"values":["jwt"]}. Source is preserved.',
+    ]);
+  });
+
+  it("saves Optional by mouse and chat alike, and Multipart uploads beside it waits for Required", () => {
+    const upload = runAll(guarded(), v2Modules.slice(17, 20).concat(v2Modules.slice(21, 25)));
+    expect(moduleStatus(upload, "upload-multipart")).toMatchObject({
+      status: "template",
+      template: "owned-multipart",
+    });
+    expect(selectionOf(upload, "upload-multipart")?.binding).toMatchObject({
+      identity: { element: "identity", guard: "upload-auth" },
+    });
+    // The guard isn't one of the multipart's parts: it leads its own selection.
+    expect(
+      planModules(upload)
+        .leads.find((item) => item.lead.id === "upload-multipart")
+        ?.parts.map((item) => item.id),
+    ).toEqual(["upload-state-writer", "upload-jobs"]);
+    const batch = withSignIn(upload, "optional");
+    // One Undo step: the setting, then the derived generation.
+    expect(batch.ops.map((op) => op.op)).toEqual(["setStudio", "setOwnership", "setGeneration"]);
+    const optional = applied(upload, batch);
+    expect(guard(optional)?.settings).toMatchObject({ signIn: "optional" });
+    expect(selectionOf(optional, "upload-auth")?.binding.kind).toBe("verified-identity");
+    expect(moduleStatus(optional, "upload-multipart")).toMatchObject({
+      status: "stub",
+      reason: "Needs an Auth guard set to Required in Upload API.",
+    });
+    expect(
+      resolveGeneration(optional, installed).model?.selections.find(
+        (item) => item.id === "upload-auth",
+      )?.inputs["guard.signIn"],
+    ).toBe("optional");
+    // Required again: Multipart uploads is a template again.
+    const back = applied(optional, withSignIn(optional, "required"));
+    expect(moduleStatus(back, "upload-multipart")).toMatchObject({ status: "template" });
+    // A value no control offers is refused.
+    expect(() =>
+      buildSupportedAuthoringCommand(
+        upload,
+        {
+          type: "editComponent",
+          component: "upload-auth",
+          settings: { kind: "auth-guard", credential: "session", signIn: "required" },
+        },
+        installed,
+      ),
+    ).toThrow("credential has no installed, useful editable consumer");
+  });
+
+  it("stays a stub where it can't verify, and two in one tile are refused", () => {
+    const design = runAll(v2Tiles(), [
+      add("upload", "upload-auth", "auth-guard"),
+      add("upload", "upload-multipart", "multipart-uploads"),
+      add("transcoder", "worker-guard", "auth-guard"),
+    ]);
+    const reasons = Object.fromEntries(
+      moduleStatuses(design).map((item) => [item.module, [item.status, item.reason]]),
+    );
+    expect(reasons).toEqual({
+      "upload-auth": ["stub", "Needs a connection to an identity service."],
+      "upload-multipart": ["stub", "Needs a connection to object storage."],
+      "worker-guard": ["stub", "Needs to be in a service or an upload service."],
+    });
+    // Connected to everything but its guard, Multipart uploads names what it waits for.
+    const waiting = runAll(design, [...v2Modules.slice(18, 20), ...v2Modules.slice(21, 25)]);
+    expect(moduleStatus(waiting, "upload-multipart")).toMatchObject({
+      status: "stub",
+      reason: "Needs an Auth guard set to Required in Upload API.",
+    });
+    const connected = run(waiting, connect("upload-auth", "identity", { tile: "identity" }));
+    expect(moduleStatus(connected, "upload-multipart")).toMatchObject({ status: "template" });
+    const two = run(connected, add("upload", "second-check", "auth-guard"));
+    expect(refusal(two, connect("second-check", "identity", { tile: "identity" }))).toBe(
+      "Upload API can hold one sign-in template; Creator check and Auth guard would each make one.",
+    );
+  });
+
+  it("verifies optional sign-in on v2's Watch API, its fifth link", () => {
+    const design = runAll(v2Tiles(), [add("watch", "watch-viewer", "auth-guard")]);
+    const before = design.connections.filter((item) => item.from.element === "watch").length;
+    expect(before).toBe(4);
+    const connected = run(design, connect("watch-viewer", "identity", { tile: "identity" }));
+    expect(connected.connections.filter((item) => item.from.element === "watch")).toHaveLength(5);
+    const optional = applied(
+      connected,
+      buildSupportedAuthoringCommand(
+        connected,
+        {
+          type: "editComponent",
+          component: "watch-viewer",
+          settings: { kind: "auth-guard", credential: "jwt", signIn: "optional" },
+        },
+        installed,
+      ),
+    );
+    expect(selectionOf(optional, "watch-viewer")?.binding).toEqual({
+      kind: "verified-identity",
+      identity: { element: "identity", guard: "watch-viewer" },
+    });
+    expect(
+      optional.architecture?.studio?.components?.find((item) => item.id === "watch-viewer")
+        ?.settings,
+    ).toMatchObject({ signIn: "optional" });
+    // A sixth link is refused.
+    expect(
+      refusal(optional, {
+        type: "addTile",
+        from: { tile: "watch" },
+        side: "after",
+        tile: { id: "watch-more", name: "More", kind: "database" },
+        linkId: "watch-to-more",
+      }),
+    ).toBe("Watch API already has 5 links; the most is 5.");
   });
 });
 

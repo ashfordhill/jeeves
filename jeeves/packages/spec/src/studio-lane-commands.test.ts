@@ -289,24 +289,32 @@ describe("addTile", () => {
     expect(add({ tile: tile("redirect", "Geo lookup", "external-api") })).toBe(
       'The ID "redirect" is already in use.',
     );
-    const busy = run(design, {
-      type: "addTile",
-      from: { tile: "redirect" },
-      side: "after",
-      link: "sync",
-      tile: tile("geo", "Geo lookup", "external-api"),
-      linkId: "redirect-geo",
-    }).design;
+    // Redirect service has three links; a fourth and a fifth fill it (V3-06 raised the cap to 5).
+    const busy = [
+      tile("geo", "Geo lookup", "external-api"),
+      tile("cache-2", "Second cache", "cache"),
+    ].reduce(
+      (current, item) =>
+        run(current, {
+          type: "addTile",
+          from: { tile: "redirect" },
+          side: "after",
+          link: "sync",
+          tile: item,
+          linkId: `redirect-${item.id}`,
+        }).design,
+      design,
+    );
     expect(
       refusal(busy, {
         type: "addTile",
         from: { tile: "redirect" },
         side: "after",
         link: "sync",
-        tile: tile("cache-2", "Second cache", "cache"),
-        linkId: "redirect-cache-2",
+        tile: tile("cache-3", "Third cache", "cache"),
+        linkId: "redirect-cache-3",
       }),
-    ).toBe("Redirect service already has 4 links; the most is 4.");
+    ).toBe("Redirect service already has 5 links; the most is 5.");
 
     // The download lane has two entries; a third and a fourth fill it.
     const full = ["one", "two"].reduce(
@@ -740,16 +748,20 @@ describe("link fan options", () => {
     );
     // From a lane with no action, the options are those of its new action.
     expect(kinds(linkFanOptions(emptyDesign(), { lane: "download" }))).toEqual(kinds(entries));
-    // A full tile refuses every kind with the cap.
-    const busy = run(design, {
-      type: "addTile",
-      from: { tile: "redirect" },
-      side: "after",
-      tile: tile("geo", "Geo lookup", "service"),
-      linkId: "redirect-geo",
-    }).design;
+    // A full tile (five links) refuses every kind with the cap.
+    const busy = ["geo", "audit"].reduce(
+      (current, id) =>
+        run(current, {
+          type: "addTile",
+          from: { tile: "redirect" },
+          side: "after",
+          tile: tile(id, `${id} API`, "service"),
+          linkId: `redirect-${id}`,
+        }).design,
+      design,
+    );
     expect(new Set(linkFanOptions(busy, { tile: "redirect" }).map((o) => o.refusal))).toEqual(
-      new Set(["Redirect service already has 4 links; the most is 4."]),
+      new Set(["Redirect service already has 5 links; the most is 5."]),
     );
   });
 

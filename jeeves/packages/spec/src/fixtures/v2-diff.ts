@@ -124,6 +124,22 @@ export const v2IntendedDifferences: readonly V2IntendedDifference[] = [
     only: "rebuilt",
     reason: "Contract section 3: the two stubs youtube-watch's modules become.",
   },
+  ...["selection", "selection input"].map(
+    (area): V2IntendedDifference => ({
+      area,
+      key: /^verified-identity in Upload API($|\.)/,
+      only: "rebuilt",
+      reason:
+        "v3 contract section 2 and question 4 (V3-06): the Creator check leads its own sign-in template.",
+    }),
+  ),
+  {
+    area: "module setting",
+    key: "Creator check.signIn",
+    only: "rebuilt",
+    reason:
+      "v3 contract section 2 (V3-06): the sign-in template writes its initial Sign-in, Required.",
+  },
   {
     area: "selection input",
     key: /\.(host\.minReplicas|host\.maxReplicas|cache\.eviction|cache\.topology|source\.readReplicas|state\.readReplicas|state\.readRouting)$/,

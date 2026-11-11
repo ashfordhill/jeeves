@@ -19,6 +19,7 @@ const scaffolds = {
   http: ["src/runtime/tile-http.ts", "src/runtime/tile-http.ts.template"],
   loop: ["src/runtime/tile-loop.ts", "src/runtime/tile-loop.ts.template"],
   clients: ["src/runtime/module-clients.ts", "src/runtime/module-clients.ts.template"],
+  guard: ["src/runtime/tile-guard.ts", "src/runtime/tile-guard.ts.template"],
 } as const;
 
 /** Where each process's entry point lives and how Compose runs it (tile process contract, §2). */
@@ -37,7 +38,7 @@ function mountsOf(model: V2RenderContext["model"]) {
         process.tile,
         [
           ...(clients ? [clients] : []),
-          ...(process.shape === "http" ? httpMounts(process, model.selections) : []),
+          ...(process.shape === "http" ? httpMounts(process, model.selections, processes) : []),
           ...loopMounts(process, model.selections),
         ],
       ];
@@ -147,6 +148,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       const all = [...mounts.values()].flat();
       const http = processes.some((process) => process.shape === "http");
       const looping = all.some((mount) => mount.loops.length);
+      const guarded = all.some((mount) => mount.guard);
       // The views the mounted templates publish, which another owner's stub may read.
       const views = all.flatMap((mount) => mount.local.views ?? []);
       // The stubs' clients answer "Not implemented" through the core scaffold too.
@@ -163,6 +165,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
                 ? [scaffolds.core]
                 : []),
             ...(http ? [scaffolds.http] : []),
+            ...(guarded ? [scaffolds.guard] : []),
             ...(looping ? [scaffolds.loop] : []),
           ].map(([path, source]) => ({
             path,
@@ -291,6 +294,8 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
       : [],
   );
   const block = (key: "configure" | "initialize") => mounts.flatMap((mount) => mount[key]);
+  // A tile with a sign-in mounts every module route through it.
+  const guard = mounts.find((mount) => mount.guard)?.guard;
   const imports = importLines([
     ...(http ? [{ from: "../runtime/http.ts", name: "createHttpService" }] : []),
     { from: "../runtime/process.ts", name: "runProcess" },
@@ -325,7 +330,17 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         "    id: config.tile,",
         "    settings: config.settings,",
         ...(configure.length
-          ? ["    configure: (routes) => {", ...indent(configure, 6), "    },"]
+          ? [
+              `    configure: (${guard ? "open" : "routes"}) => {`,
+              ...(guard
+                ? [
+                    "      // Every module route checks its caller first: the tile's sign-in.",
+                    `      const routes = ${guard}.routes(open);`,
+                  ]
+                : []),
+              ...indent(configure, 6),
+              "    },",
+            ]
           : ["    configure: () => {},"]),
         ...(initialize.length
           ? ["    initialize: async () => {", ...indent(initialize, 6), "    },"]

@@ -73,6 +73,8 @@ export const redirectStatusSchema = z.enum(["301", "302", "307"]);
 export const switchSchema = z.enum(["disabled", "enabled"]);
 export const dataReadRoutingSchema = z.enum(["primary", "replica"]);
 export const authCredentialSchema = z.enum(["jwt", "api-key", "session"]);
+/** An Auth guard's Sign-in (v3 contract, section 2): absent reads as Required. */
+export const authSignInSchema = z.enum(["required", "optional"]);
 
 /** Every kind is a strict object; omitted optional numbers mean "unspecified", never zero. */
 export const studioRateLimiterSettingsSchema = z.strictObject({
@@ -148,6 +150,9 @@ export const studioDataAccessSettingsSchema = z.strictObject({
 export const studioAuthGuardSettingsSchema = z.strictObject({
   kind: z.literal("auth-guard"),
   credential: authCredentialSchema,
+  /** Required: every request needs a valid token. Optional: no token means anonymous. Absent
+   * reads as Required, so older designs keep their meaning. */
+  signIn: authSignInSchema.optional(),
 });
 /**
  * Timeout and retries stay on the traced C2 connection binding (single destination rule);
@@ -332,6 +337,7 @@ export type StudioComponentField =
     });
 /** The installed templates a module can lead or be part of (`generationTemplates` keys). */
 export const studioModuleTemplates = [
+  "verified-identity",
   "owned-multipart",
   "asset-lifecycle",
   "video-hls",
@@ -447,6 +453,8 @@ const label = (value: string) =>
     replica: "Replica",
     jwt: "JWT",
     session: "Session",
+    required: "Required",
+    optional: "Optional",
   })[value] ?? value;
 const select = (
   key: string,
@@ -709,9 +717,18 @@ export const studioComponentDefinitions: {
     hosts: anyHost,
     scope: "generic",
     slots: [slot("identity", ["identity", "external-api"], "verify")],
-    generation: part("owned-multipart"),
+    generation: lead("verified-identity"),
     targets: ["identity", "external-api"],
-    fields: [select("credential", "Credential", authCredentialSchema.options)],
+    fields: [
+      select(
+        "signIn",
+        "Sign-in",
+        authSignInSchema.options,
+        "Options",
+        "Optional: a caller without a token is anonymous.",
+      ),
+      select("credential", "Credential", authCredentialSchema.options),
+    ],
   }),
   "external-call": component("external-call", {
     name: "External call",

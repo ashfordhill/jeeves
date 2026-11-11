@@ -770,7 +770,18 @@ export function resolveGeneration(
           },
         ];
       }
-      if (rule.source === "component" && rule.component)
+      // A component rule with no field reads the selection's own lead (the Auth guard's Sign-in).
+      if (rule.source === "component" && rule.component && !rule.field)
+        values =
+          lead?.settings.kind === rule.component
+            ? [
+                {
+                  value: lead.settings[rule.setting as keyof typeof lead.settings],
+                  path: [...componentPath(lead.id), rule.setting],
+                },
+              ]
+            : [];
+      else if (rule.source === "component" && rule.component)
         values = moduleSources(dependency, rule.component).map((component) => ({
           value: component.settings[rule.setting as keyof typeof component.settings],
           path: [...componentPath(component.id), rule.setting],
@@ -868,12 +879,13 @@ export function resolveGeneration(
     capability.settings.forEach(readRule);
     // Report every selected setting with no consumer, rather than copying an arbitrary intent
     // map into generated JSON. Adapters delegate their host settings to the selected mechanism; a
-    // module stub reads none of them.
+    // module stub and the guard's sign-in read none of them.
     const mechanism = ![
       "youtube-upload",
       "youtube-watch",
       "youtube-search",
       "module-stub",
+      "verified-identity",
     ].includes(selection.binding.kind);
     const audit = (value: object, path: Path, ignored: string[] = []) => {
       for (const key of Object.keys(value))
@@ -917,10 +929,24 @@ export function resolveGeneration(
           }
         }
     }
-    if (selection.binding.kind === "owned-multipart") {
+    // The Identity a guard verifies runs as Keycloak. A module-level multipart's guard leads its
+    // own sign-in selection, which checks it; tile-level multipart (frozen v2) checks it here.
+    const verifies =
+      selection.binding.kind === "verified-identity" ||
+      (selection.binding.kind === "owned-multipart" &&
+        !ownSelection.has(selection.binding.identity.guard));
+    if (
+      selection.binding.kind === "owned-multipart" ||
+      selection.binding.kind === "verified-identity"
+    ) {
       const identity = selection.binding.identity;
       const guard = studio?.components?.find((entry) => entry.id === identity.guard);
-      if (guard?.settings.kind === "auth-guard" && guard.settings.credential !== "jwt")
+      if (
+        verifies &&
+        selection.binding.kind === "owned-multipart" &&
+        guard?.settings.kind === "auth-guard" &&
+        guard.settings.credential !== "jwt"
+      )
         report(
           "NEEDS_TEMPLATE",
           [...componentPath(guard.id), "credential"],
@@ -944,7 +970,7 @@ export function resolveGeneration(
             [...elementPath(identity.element), "provider"],
           ],
         };
-      if (identityBinding?.settings.kind === "identity") {
+      if (verifies && identityBinding?.settings.kind === "identity") {
         for (const [key, expected] of [
           ["execution", "docker"],
           ["provider", "oidc"],

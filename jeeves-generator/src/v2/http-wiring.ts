@@ -49,6 +49,9 @@ export type ProcessMount = {
   /** A template's `started` line, logged just before the ready marker: what its startup ran. */
   startup?: { module: string; checks: string[] };
   hooks?: { file: V2TemplateFile; members: string[] };
+  /** The tile's sign-in (an Auth guard's): every module route of the process is mounted through
+   * `<guard>.routes(...)`, and route stubs get `<guard>.caller`. */
+  guard?: string;
   service: {
     dependsOn: string[];
     sql: string[];
@@ -243,12 +246,115 @@ export function uploadOutbox(
   };
 }
 
-/** Multipart uploads: the engine on its own tables, objects and jobs outbox, with a sweep. */
+/**
+ * The asset lifecycle that names an upload, and its binding: its tables sit in the upload
+ * selection's schema beside the uploads and the shared outbox. Its worker runs it on its own tile;
+ * the upload's tile runs its upload hooks (v3 contract, section 2, "Also in V3-06").
+ */
+export function uploadLifecycle(
+  upload: NormalizedGenerationSelection,
+  selections: readonly NormalizedGenerationSelection[],
+) {
+  const selection = selections.find(
+    (item) => item.binding.kind === "asset-lifecycle" && item.binding.upload === upload.id,
+  );
+  if (selection?.binding.kind !== "asset-lifecycle") return undefined;
+  const outbox = uploadOutbox(upload.id, selections);
+  const lead = selection.target.kind === "component" ? selection.target.component : undefined;
+  return {
+    selection,
+    lead,
+    publication: !!selection.binding.publication,
+    binding: {
+      relation: { schema: outbox.schema, table: "assets" },
+      receipts: { schema: outbox.schema, table: "receipts" },
+      receiptScope: selection.id,
+      outbox,
+      jobsDestination: "jobs",
+    },
+  };
+}
+
+/** The process's sign-in, when its tile has an Auth guard's template: the variable it is in. */
+export function tileGuard(
+  process: NormalizedProcess,
+  selections: readonly NormalizedGenerationSelection[],
+) {
+  const guard = selections.find(
+    (item) => item.host === process.tile && item.binding.kind === "verified-identity",
+  );
+  return guard ? camel(guard.id) : undefined;
+}
+
+/** Auth guard: the tile's sign-in. Every module route checks its caller, Required or Optional,
+ * and GET /modules/<guard>/me answers who it is. */
+function verifiedIdentity(
+  _process: NormalizedProcess,
+  selection: NormalizedGenerationSelection,
+  lead: Lead,
+): ProcessMount {
+  const id = selection.id;
+  const name = camel(id);
+  const identity = selection.identity?.element;
+  if (!identity) refuse("INVALID_LOCAL_CONTRIBUTION", id, "An Auth guard needs its identity.");
+  const signIn = selection.inputs["guard.signIn"] === "optional" ? "optional" : "required";
+  const url = `/modules/${lead.module}/me`;
+  return {
+    imports: [
+      { from: "../runtime/identity.ts", name: "createPrincipalVerifier" },
+      { from: "../runtime/tile-guard.ts", name: "createTileGuard" },
+    ],
+    setup: [
+      `// ${line(lead.name)}: the tile's sign-in, ${signIn === "required" ? "Required: every module route needs a valid token" : "Optional: a token sent with a request is verified; none is anonymous"}.`,
+      `const ${name} = (() => {`,
+      `  const binding = config.templates[${text(id)}];`,
+      "  return createTileGuard({",
+      "    signIn: binding.signIn,",
+      "    verify: createPrincipalVerifier({",
+      `      issuer: process.env.OIDC_ISSUER ?? "",`,
+      `      audience: \`\${binding.identity}-web\`,`,
+      `      jwksUrl: process.env.OIDC_JWKS_URL ?? "",`,
+      `      algorithms: ["RS256"],`,
+      "      jwksTimeoutMs: 3000,",
+      "    }),",
+      "  });",
+      "})();",
+    ],
+    configure: [`${name}.me(routes, ${text(url)});`],
+    initialize: [],
+    started: [],
+    config: [id, { template: "verified-identity", lead: lead.module, identity, signIn, me: url }],
+    routes: [
+      {
+        method: "GET",
+        path: url,
+        answers: `200 {signedIn, subject, username} for a signed-in caller${signIn === "optional" ? " or {signedIn: false} without a token" : ""}; 401 SIGN_IN_REQUIRED for ${signIn === "required" ? "a missing or invalid token" : "an invalid token"}`,
+      },
+    ],
+    loops: [],
+    template: { selection: id, template: "verified-identity", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: [
+        signIn === "required"
+          ? "sign-in Required on every module route"
+          : "sign-in Optional on every module route",
+      ],
+    },
+    guard: name,
+    service: { ...service(), identity },
+    local: {},
+  };
+}
+
+/** Multipart uploads: the engine on its own tables, objects and jobs outbox, with a sweep. Its
+ * caller is the tile's Required sign-in, and an asset lifecycle naming it gets its upload hooks. */
 function ownedMultipart(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
   selections: readonly NormalizedGenerationSelection[],
+  processes: readonly NormalizedProcess[],
 ): ProcessMount {
   const id = selection.id;
   const name = camel(id);
@@ -259,6 +365,13 @@ function ownedMultipart(
   const jobs = resource(selection, "jobs");
   const identity = selection.identity?.element;
   if (!identity) refuse("INVALID_LOCAL_CONTRIBUTION", id, "Multipart uploads needs its identity.");
+  const guard = tileGuard(process, selections);
+  if (!guard)
+    refuse("INVALID_LOCAL_CONTRIBUTION", id, "Multipart uploads needs its tile's Auth guard.");
+  const lifecycle = uploadLifecycle(selection, selections);
+  const lifecycleHost = lifecycle?.selection.host;
+  const lifecycleLead = lifecycle?.lead;
+  const lifecycleHooks = lifecycleLead && `${camel(lifecycleLead)}Hooks`;
   // The generic schema rule: one private schema per template selection, named from its ID.
   const schema = generationLocalIdentity(id).sql;
   const uploads = { schema, table: "uploads" };
@@ -279,14 +392,13 @@ function ownedMultipart(
     { operation: "complete", method: "POST", url: `${base}/:uploadId/complete` },
     { operation: "abort", method: "POST", url: `${base}/:uploadId/abort` },
   ];
+  // The hooks that answer "Not implemented" until written: the sign-in answers `principal`, and
+  // an asset lifecycle naming the upload answers `reserve`, `complete` and `closed`.
   const members = [
-    "principal",
     "validate",
     "metadata",
     "response",
-    "reserve",
-    "complete",
-    "closed",
+    ...(lifecycle ? [] : ["reserve", "complete", "closed"]),
     "originalKey",
     "job",
   ];
@@ -296,6 +408,24 @@ function ownedMultipart(
     `      ${throws(hook, lead)}`,
     "    },",
   ];
+  /** A hook the asset lifecycle naming this upload answers: it delegates to it. */
+  const delegated = (hook: string, signature: string, call: string, comment: string) =>
+    lifecycle
+      ? [
+          `    /** ${comment} The asset lifecycle answers it. */`,
+          `    ${signature} {`,
+          `      return resources.lifecycle.${hook}(${call});`,
+          "    },",
+        ]
+      : upload(hook, signature, comment);
+  // The lifecycle's lead and tile by name, for the hooks file.
+  const lifecycleProcess = processes.find((item) => item.tile === lifecycleHost);
+  const lifecycleName = lifecycle
+    ? `${
+        lifecycleProcess?.templates.find((item) => item.selection === lifecycle.selection.id)?.lead
+          ?.name ?? lifecycle.selection.id
+      } in ${lifecycleProcess?.name ?? lifecycleHost}`
+    : undefined;
   return {
     imports: [
       { from: resources, name: "objects" },
@@ -303,7 +433,15 @@ function ownedMultipart(
       { from: resources, name: "publisher" },
       { from: resources, name: "resource" },
       { from: resources, name: "selected" },
-      { from: "../runtime/identity.ts", name: "createPrincipalVerifier" },
+      ...(lifecycle && lifecycleHooks
+        ? [
+            { from: "../runtime/asset-lifecycle.ts", name: "createAssetLifecycle" },
+            {
+              from: `../modules/${lifecycleHost}/${lifecycleLead}.hooks.ts`,
+              name: lifecycleHooks,
+            },
+          ]
+        : []),
       { from: "../runtime/multipart-http.ts", name: "createMultipartHttpHandlers" },
       { from: "../runtime/multipart-objects.ts", name: "createMultipartObjects" },
       { from: "../runtime/multipart.ts", name: "createOwnedMultipart" },
@@ -328,15 +466,31 @@ function ownedMultipart(
       "    control.destroy();",
       "    signing.destroy();",
       "  });",
+      ...(lifecycle && lifecycleHooks
+        ? [
+            "  // The asset lifecycle that names this upload: its upload hooks run in this tile's",
+            "  // transactions on the tables it shares with the lifecycle's worker.",
+            `  const lifecycleHooks = ${lifecycleHooks}();`,
+            "  const lifecycle = createAssetLifecycle(",
+            "    { ...binding.lifecycle.binding, identities: lifecycleHooks.identities },",
+            ...(lifecycle.publication
+              ? [
+                  "    {",
+                  "      ...lifecycleHooks,",
+                  "      publication: {",
+                  "        ...lifecycleHooks.publication,",
+                  "        destination: binding.lifecycle.publication,",
+                  "      },",
+                  "    },",
+                ]
+              : ["    lifecycleHooks,"]),
+            "  );",
+          ]
+        : []),
       `  const hooks = ${hooks}({`,
       "    prefix: binding.prefix,",
-      "    verify: createPrincipalVerifier({",
-      `      issuer: process.env.OIDC_ISSUER ?? "",`,
-      `      audience: \`\${binding.identity}-web\`,`,
-      `      jwksUrl: process.env.OIDC_JWKS_URL ?? "",`,
-      `      algorithms: ["RS256"],`,
-      "      jwksTimeoutMs: 3000,",
-      "    }),",
+      `    guard: ${guard},`,
+      ...(lifecycle ? ["    lifecycle: lifecycle.uploadHooks,"] : []),
       "  });",
       "  const multipart = createOwnedMultipart({",
       "    repository: createOwnedUploads(",
@@ -389,12 +543,25 @@ function ownedMultipart(
           expectedSize: "expected-size",
         },
         mounts,
+        ...(lifecycle && {
+          lifecycle: {
+            selection: lifecycle.selection.id,
+            binding: lifecycle.binding,
+            ...(lifecycle.publication && { publication: "publication" }),
+          },
+        }),
       },
     ],
+    // The caller is the tile's sign-in (401 without it); then each route's first unwritten hook.
     routes: mounts.map((mount) => ({
       method: mount.method,
       path: mount.url,
-      answers: notImplementedAnswer(`principal for ${lead.name}`),
+      answers:
+        mount.operation === "start"
+          ? notImplementedAnswer(`validate for ${lead.name}`)
+          : mount.operation === "list"
+            ? "200 the caller's uploads: none until one is started"
+            : "404 UPLOAD_NOT_FOUND until an upload is started",
     })),
     loops: [],
     template: { selection: id, template: "owned-multipart", level: "mounted" },
@@ -415,12 +582,22 @@ function ownedMultipart(
           'import type { FastifyRequest } from "fastify";',
           'import type { VerifiedPrincipal } from "../../runtime/identity.ts";',
           'import type { UploadFile, UploadHooks } from "../../runtime/owned-upload.ts";',
+          'import type { TileGuard } from "../../runtime/tile-guard.ts";',
         ],
         types: [
-          "/** The template's generic resources: the object key prefix it owns and a token verifier. */",
+          lifecycle
+            ? "/** The template's generic resources: the key prefix it owns, the tile's sign-in and the lifecycle's upload hooks. */"
+            : "/** The template's generic resources: the object key prefix it owns and the tile's sign-in. */",
           `export type ${types}Resources = {`,
           "  prefix: string;",
-          "  verify(bearer: string): Promise<VerifiedPrincipal>;",
+          "  /** The tile's Auth guard, set to Required. */",
+          "  guard: TileGuard;",
+          ...(lifecycle
+            ? [
+                `  /** The asset lifecycle (${line(lifecycleName ?? "")}): it records each upload's asset. */`,
+                '  lifecycle: Pick<UploadHooks<unknown, unknown>, "reserve" | "complete" | "closed">;',
+              ]
+            : []),
           "};",
         ],
         factory: [
@@ -433,22 +610,29 @@ function ownedMultipart(
           ),
           ...upload("metadata", "metadata(input)", "Parses stored metadata."),
           ...upload("response", "response(input)", "Parses a stored completion response."),
-          ...upload("reserve", "async reserve(tx, record)", "Runs in the start transaction."),
-          ...upload(
+          ...delegated(
+            "reserve",
+            "async reserve(tx, record)",
+            "tx, record",
+            "Runs in the start transaction.",
+          ),
+          ...delegated(
             "complete",
             "async complete(tx, record, original)",
+            "tx, record, original",
             "Runs in the completion transaction: what completing answers.",
           ),
-          ...upload(
+          ...delegated(
             "closed",
             "async closed(tx, record, terminal)",
+            "tx, record, terminal",
             "Runs when an upload is aborted, expires or fails.",
           ),
           "  };",
           "  return {",
-          "    /** The verified caller of a request. */",
+          "    /** The verified caller of a request: the tile's sign-in (401 without one). */",
           "    async principal(request: FastifyRequest): Promise<VerifiedPrincipal> {",
-          `      ${throws("principal", lead)}`,
+          "      return resources.guard.require(request);",
           "    },",
           "    upload,",
           "    /** An upload's object key, under resources.prefix. */",
@@ -563,18 +747,21 @@ const templates: Record<
     selection: NormalizedGenerationSelection,
     lead: Lead,
     selections: readonly NormalizedGenerationSelection[],
+    processes: readonly NormalizedProcess[],
   ) => ProcessMount
 > = {
+  "verified-identity": verifiedIdentity,
   "owned-multipart": ownedMultipart,
   "positive-cache-read": positiveCacheRead,
   "search-query": searchQuery,
 };
 
 /** A route stub: any method on /modules/<module> and below, called with its dependencies
- * (`client-wiring.ts`). */
+ * (`client-wiring.ts`) and the tile's sign-in's caller. */
 function routeStub(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
+  guard: string | undefined,
 ): ProcessMount {
   const module = selection.module;
   if (!module) refuse("INVALID_LOCAL_CONTRIBUTION", selection.id, "A route stub needs its module.");
@@ -589,11 +776,22 @@ function routeStub(
       { from: from(paths.module), name: entry },
     ],
     setup: [],
-    configure: [
-      `stubRoutes(routes, log, ${text(id)}, (request) =>`,
-      `  ${entry}(dependencies[${text(id)}], request),`,
-      ");",
-    ],
+    // In a tile with a sign-in, the stub's request carries its caller.
+    configure: guard
+      ? [
+          "stubRoutes(",
+          "  routes,",
+          "  log,",
+          `  ${text(id)},`,
+          `  (request) => ${entry}(dependencies[${text(id)}], request),`,
+          `  ${guard}.caller,`,
+          ");",
+        ]
+      : [
+          `stubRoutes(routes, log, ${text(id)}, (request) =>`,
+          `  ${entry}(dependencies[${text(id)}], request),`,
+          ");",
+        ],
     initialize: [],
     started: [],
     routes: [
@@ -606,21 +804,29 @@ function routeStub(
   };
 }
 
-/** Everything an HTTP process mounts: its templates in order, then its route stubs. */
+/** Everything an HTTP process mounts: its sign-in first (the others use it), its other templates
+ * in order, then its route stubs. */
 export function httpMounts(
   process: NormalizedProcess,
   selections: readonly NormalizedGenerationSelection[],
+  processes: readonly NormalizedProcess[] = [process],
 ): ProcessMount[] {
   const mounts: ProcessMount[] = [];
-  for (const row of process.templates) {
+  const rows = [...process.templates].sort(
+    (a, b) =>
+      Number(a.template.id !== "verified-identity") - Number(b.template.id !== "verified-identity"),
+  );
+  for (const row of rows) {
     const selection = selections.find((item) => item.id === row.selection);
     const wire = selection && templates[selection.binding.kind];
-    if (selection && wire && row.lead) mounts.push(wire(process, selection, row.lead, selections));
+    if (selection && wire && row.lead)
+      mounts.push(wire(process, selection, row.lead, selections, processes));
   }
+  const guard = tileGuard(process, selections);
   for (const stub of process.stubs) {
     if (stub.role !== "route") continue;
     const selection = selections.find((item) => item.id === stub.selection);
-    if (selection) mounts.push(routeStub(process, selection));
+    if (selection) mounts.push(routeStub(process, selection, guard));
   }
   return mounts;
 }

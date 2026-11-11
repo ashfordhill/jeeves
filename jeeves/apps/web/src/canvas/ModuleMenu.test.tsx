@@ -27,8 +27,8 @@ const rows = (host: string, kind: "service" | "worker") =>
 describe("moduleMenuGroups", () => {
   it("groups a Service's and a Worker's kinds by Template, Part of a template and Stub", () => {
     expect(rows("watch", "service")).toEqual([
-      ["Template", ["Cache reader", "Multipart uploads", "Search query"]],
-      ["Part of a template", ["Event publisher", "Data access", "Auth guard"]],
+      ["Template", ["Cache reader", "Auth guard", "Multipart uploads", "Search query"]],
+      ["Part of a template", ["Event publisher", "Data access"]],
       [
         "Stub",
         [

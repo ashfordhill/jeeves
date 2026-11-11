@@ -22,7 +22,7 @@ import {
   text,
   throws,
   tileProcess,
-  uploadOutbox,
+  uploadLifecycle,
 } from "./http-wiring.ts";
 import { moduleEntryName, moduleStubPaths } from "./module-stubs.ts";
 
@@ -85,12 +85,13 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
   // and the outbox that multipart creates there.
   const upload = selections.find((item) => item.id === binding.upload);
   if (!upload) refuse("INVALID_LOCAL_CONTRIBUTION", id, "Bind its upload selection.");
-  const outbox = uploadOutbox(upload.id, selections);
-  const schema = outbox.schema;
+  // The binding the upload's tile runs its upload hooks with too (http-wiring.ts).
+  const shared = uploadLifecycle(upload, selections);
+  if (shared?.selection.id !== id)
+    refuse("INVALID_LOCAL_CONTRIBUTION", id, "Name one asset lifecycle per upload.");
+  const { outbox, relation, receipts } = shared.binding;
   const sharedOutbox =
     upload.binding.kind === "owned-multipart" && upload.target.kind === "component";
-  const relation = { schema, table: "assets" };
-  const receipts = { schema, table: "receipts" };
   const loop = templateQueue(selection, "results");
   const members = [
     "metadata",
@@ -178,13 +179,7 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
       {
         template: "asset-lifecycle",
         lead: lead.module,
-        lifecycle: {
-          relation,
-          receipts,
-          receiptScope: id,
-          outbox,
-          jobsDestination: "jobs",
-        },
+        lifecycle: shared.binding,
         ...(publication && { publication: "publication" }),
       },
     ],

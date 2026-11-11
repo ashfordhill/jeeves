@@ -424,8 +424,8 @@ database."):
 
 | Group | Means | A Microservice's | A Worker service's |
 | --- | --- | --- | --- |
-| **Template** | It leads an installed template once its connections are made | Cache reader, Multipart uploads, Search query | Lifecycle writer, Video encoder, Event counter, Index writer |
-| **Part of a template** | It fills a connection of a template led by another module in the tile | Event publisher, Data access, Auth guard | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
+| **Template** | It leads an installed template once its connections are made | Cache reader, Auth guard, Multipart uploads, Search query | Lifecycle writer, Video encoder, Event counter, Index writer |
+| **Part of a template** | It fills a connection of a template led by another module in the tile | Event publisher, Data access | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
 | **Stub** | It is generated as a typed stub there | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
 
 An Uploads tile offers 11 kinds, a Microservice 12 and a Worker service 16; a Worker service's
@@ -496,7 +496,7 @@ table allows both, the line inspector's Interaction field switches it. Each add 
 batch and one undo step.
 
 Every tile must hang off the user through an action, with no cycles, links the
-[link table](../jeeves/CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 4 entries
+[link table](../jeeves/CATALOG.md#lanes-and-links) allows and at most 5 links out of a tile and 4 entries
 per action; a tile has one entry at most, and a lane one action. An edit that breaks one of these
 rules is refused with a notice and changes nothing, whether it comes from the canvas, the
 inspector, chat or the API.
@@ -579,7 +579,8 @@ details.
   it."), Refused with the kept value that blocks it, or Custom when no generation declaration
   covers it yet (a study's modules before any module command). Then any readiness findings, Description,
   **Options** only for the settings a template consumes (Pool size and Statement timeout on a
-  Data access in a template, and on a Lifecycle writer, its template's SQL settings), and
+  Data access in a template, and on a Lifecycle writer, its template's SQL settings; **Sign-in**,
+  Required or Optional, on an Auth guard once it verifies an Identity, "Template · Sign-in"), and
   **Remove module** at the bottom (`removeModule`, which
   re-derives the tile's generation). It lists no links: a module's links follow its tile's drawn
   lines and its row's dot; in Detailed its row and its own lines are marked. Back returns to the tile page with Modules in
@@ -1336,7 +1337,14 @@ publishes each public HTTP tile (a lane entry, or saved public) at `/api/<tile i
 tiles are reached only inside the stack. In an HTTP tile, each stub that consumes no queue
 answers any method on `/modules/<module id>` and below, Multipart uploads and Cache reader run
 their templates with a generated `<lead>.hooks.ts`, and Search query is a placeholder; each
-answers 501 "Not implemented" until written. In any tile, a stub connected to consume a queue
+answers 501 "Not implemented" until written. An Auth guard connected to an Identity is the tile's
+**sign-in**: with Sign-in **Required** every module route of the tile answers 401 without a valid
+token; with **Optional** a request without a token is anonymous and one with an invalid token is
+401. `GET /modules/<guard>/me` says who is calling, a stub's request carries its caller, and
+Multipart uploads (which needs its tile's guard set to Required) takes its caller from it. The
+Identity then runs as Keycloak, with one realm and one browser client, and the guarded processes
+verify tokens against it. When an asset lifecycle names an upload, that upload's `reserve`,
+`complete` and `closed` hooks are the lifecycle's, so only its own hooks are left to write. In any tile, a stub connected to consume a queue
 runs a loop on it, and the asset lifecycle, Video HLS and event counter run their workers with a
 generated `<lead>.hooks.ts` (the search projection is a placeholder loop). A message that reaches
 "Not implemented" goes to its queue's `.failed` with one log line, and the process stays

@@ -11,8 +11,9 @@ Installed templates are reached through modules: a template's lead, with its par
 its tile, selects it (the [module catalog](#components-c3)); there is no feature preset to attach,
 and designs that attached the video feature stay readable and exportable. Product codecs, routes,
 projections and service composition remain custom work after generation. Historical YouTube declarations
-remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL
-and SQL pool/statement limits on a bound Data access or a Lifecycle writer. Fixed policies/providers/language and unsupported alternatives
+remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL,
+SQL pool/statement limits on a bound Data access or a Lifecycle writer, and an Auth guard's
+Sign-in (Required or Optional). Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
 The one export option is **Runnable processes** (`generation.processes`, Generate project's
@@ -169,9 +170,10 @@ The table records design intent only. No template-support state is kept: a futur
 will mark the tiles and links it has no template for (a badge and a blueprint finding) and never
 refuse them, keeping design intent and template availability apart.
 
-Caps (`laneLimits`): at most 4 outgoing links per tile and 4 entries per lane (per action), and a
+Caps (`laneLimits`): at most 5 outgoing links per tile and 4 entries per lane (per action), and a
 tile has at most one entry. The entry cap was raised from 3 for the marketplace study, whose
-upload lane has sign-in, the seller's shop, payments and the cart. A broken rule is a
+upload lane has sign-in, the seller's shop, payments and the cart; the link cap from 4 for
+YouTube v3's Watch API, which also verifies optional sign-in (owner approval, 2026-11-11). A broken rule is a
 `LANE_INVALID` finding (`laneFindings`). Validation includes
 these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
 C1 people, external systems and relationships are not tiles and are not checked.
@@ -288,7 +290,7 @@ slots and generation: `studioComponentDefinitions` in
 | `event-publisher` | Event publisher | `plug-connected` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
 | `event-consumer` | Event consumer | `plug` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
 | `data-access` | Data access | `database` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter` |
-| `auth-guard` | Auth guard | `lock` | any | identity: Identity or External API · verify | Part of `owned-multipart` |
+| `auth-guard` | Auth guard | `lock` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
 | `external-call` | External call | `world` | any | target: External API, an application or Identity · request | Stub |
 | `custom` | Custom | `puzzle` | any | uses: any tile, many | Stub |
 | `multipart-uploads` | Multipart uploads | `cloud-upload` | Uploads, Service | objects: Object storage · read & write | Lead of `owned-multipart` |
@@ -312,6 +314,12 @@ slots and generation: `studioComponentDefinitions` in
   connected. Any other module is generated as a typed stub (`module-stub@0.1.0`), including a part
   outside a complete template. The ten older kinds keep their targets, typical products
   (`thirdParty`) and `requires` reasons.
+- **Sign-in:** an Auth guard connected to an Identity leads `verified-identity@0.1.0` (Template ·
+  Sign-in), with **Sign-in** Required or Optional (`signIn`, absent = Required); connected to an
+  External API, or in a Worker, it stays a stub. A tile holds one. Multipart uploads needs its
+  tile's guard set to Required: it binds the guard's Identity and is a Stub ("Needs an Auth guard
+  set to Required in Upload API.") until then; the guard is no longer one of its parts. A guard a
+  tile-level upload template binds (frozen v2, the presets) stays that template's.
 
 Module commands, in [`studio-operations.ts`](packages/spec/src/studio-operations.ts), are shared
 by the mouse and chat through `buildSupportedAuthoringCommand`:
@@ -328,7 +336,8 @@ Each command derives, in the same batch and one Undo step, every module's genera
 the values a template fixes, initial values for its needed settings, and the ownership it needs
 (roles, owners, authority, grants and access). `removeTile` and `removeLink` re-derive once
 module-level selections exist. `createComponent` and `connectComponent` stay refused in normal
-authoring. `disconnectComponent`, `removeComponent` and `editComponent` don't derive, so once
+authoring. `disconnectComponent`, `removeComponent` and `editComponent` don't derive (except an
+`editComponent` that changes an Auth guard's Sign-in, which re-derives its tile), so once
 module-level selections exist normal authoring (chat) refuses the first two and names
 `disconnectModule` and `removeModule`; the mouse sends only those.
 

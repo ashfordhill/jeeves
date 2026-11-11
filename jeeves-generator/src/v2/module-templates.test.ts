@@ -11,6 +11,9 @@ const registry = loadLocalV2Registry();
 const text = (bytes: Uint8Array | undefined) => new TextDecoder().decode(bytes);
 
 /** Contract section 3: each of v2's seven installed selections becomes its lead's selection. */
+/** V3-06 (v3 contract, section 2 and question 4): the Creator check also leads its own sign-in,
+ * which the tile-level twin has no selection for (its multipart binds the guard). */
+const signIn = "upload-auth";
 const leads: Record<string, string> = {
   "owned-upload": "upload-multipart",
   lifecycle: "handler-writer",
@@ -67,21 +70,32 @@ describe("module-authored v2 and its tile-level twin", () => {
         .map((file) => [file.path, file.bytes]),
     );
 
-  it("select the same seven templates with the same bindings", () => {
+  it("select the same seven templates with the same bindings, and the Creator check's sign-in", () => {
     expect(tiles.report.findings).toEqual([]);
     expect(modules.report.findings).toEqual([]);
     const templates = (bundle: typeof tiles) =>
-      bundle.manifest.templates.filter((item) => item.ref.id !== "module-stub");
+      bundle.manifest.templates.filter(
+        (item) => item.ref.id !== "module-stub" && item.selection !== signIn,
+      );
     expect(templates(modules)).toEqual(templates(tiles));
     expect(
       templates(modules)
         .map((item) => item.selection)
         .sort(),
     ).toEqual(Object.values(leads).sort());
+    expect(
+      modules.manifest.templates
+        .filter((item) => item.selection === signIn)
+        .map((item) => item.ref.id),
+    ).toEqual(["verified-identity"]);
+    expect(tiles.manifest.templates.some((item) => item.ref.id === "verified-identity")).toBe(
+      false,
+    );
     const normalized = (bundle: typeof tiles) =>
       JSON.parse(text(bundle.files.find((file) => file.path === ".jeeves/normalized.json")?.bytes))
         .selections.filter(
-          (item: { binding: { kind: string } }) => item.binding.kind !== "module-stub",
+          (item: { binding: { kind: string } }) =>
+            item.binding.kind !== "module-stub" && item.binding.kind !== "verified-identity",
         )
         .map((item: { id: string; binding: unknown; host: string }) => [
           item.id,
@@ -91,7 +105,7 @@ describe("module-authored v2 and its tile-level twin", () => {
     expect(normalized(modules)).toEqual(normalized(tiles));
   });
 
-  it("emit the same template payload, apart from the two stubs and v2's declared fixed values", () => {
+  it("emit the same template payload, apart from the two stubs, v2's declared fixed values and the sign-in row", () => {
     const a = payload(tiles);
     const b = payload(modules);
     // Only the two stubs (View count reader, View publisher) add files.
@@ -111,8 +125,20 @@ describe("module-authored v2 and its tile-level twin", () => {
     ).toEqual([]);
     // The application bindings differ only by the fixed values v2 declares explicitly.
     const before = bindings(text(a.get(bindingsFile)));
-    const after = bindings(text(b.get(bindingsFile)));
-    expect(after.head).toBe(before.head);
+    const all = bindings(text(b.get(bindingsFile)));
+    expect(all.head).toBe(before.head);
+    // The sign-in adds one row, with its Sign-in and fixed JWT.
+    expect(all.rows.filter((row) => row.id === signIn)).toEqual([
+      {
+        id: signIn,
+        kind: "verified-identity",
+        host: "upload",
+        identity: "identity",
+        inputs: { "guard.credential": "jwt", "guard.signIn": "required" },
+        resources: {},
+      },
+    ]);
+    const after = { ...all, rows: all.rows.filter((row) => row.id !== signIn) };
     const fixed = new Set(
       tiles.report.settings
         .filter((item) => item.status === "fixed")
@@ -158,6 +184,11 @@ describe("module-authored v2 and its tile-level twin", () => {
     expect(files("handler-consumer")).toEqual(files("handler-writer"));
     expect(files("handler-writer")).toContain("src/runtime/asset-lifecycle.ts");
     expect(files("watch-details")).toContain("src/features/positive-cache-bindings.ts");
+    expect(rows.find((row) => row.module === signIn)).toMatchObject({
+      status: "template",
+      template: "verified-identity",
+      selection: signIn,
+    });
     expect(files("watch-counts")).toEqual([
       "src/modules/dependencies.ts",
       "src/modules/watch/watch-counts.slots.ts",

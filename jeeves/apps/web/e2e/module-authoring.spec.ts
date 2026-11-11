@@ -66,11 +66,11 @@ const moduleLinks = async (page: Page, id: string) =>
 /** The menu's kinds for a Service and a Worker: [name, status] by Template, Part, Stub. */
 const SERVICE = [
   ["Cache reader", "Template"],
+  ["Auth guard", "Template"],
   ["Multipart uploads", "Template"],
   ["Search query", "Template"],
   ["Event publisher", "Part of a template"],
   ["Data access", "Part of a template"],
-  ["Auth guard", "Part of a template"],
   ["Rate limiter", "Stub"],
   ["ID generator", "Stub"],
   ["Redirect responder", "Stub"],
@@ -475,6 +475,69 @@ test("a module added to a study tile shows its kept Service identity as Refused"
     await expect
       .poll(async () => ({ ...(await saved(page, id)), revision: 0 }))
       .toEqual({ ...before, revision: 0 });
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("an Auth guard is a Template once it verifies an Identity: Sign-in Required, or Optional by mouse", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Sign-in", [
+    ["Consume", "Microservice"],
+    ["Microservice", "Identity"],
+  ]);
+  const module = "microservice-auth-guard";
+  const settings = async () =>
+    (await saved(page, id)).architecture.studio.components?.find((item) => item.id === module)
+      ?.settings;
+  try {
+    await tile(page, "Microservice").click();
+    await addModule(page, "Microservice", "Auth guard");
+    // Unconnected: a stub, with no Sign-in until it generates.
+    await expect(status(page)).toHaveAttribute("data-status", "stub");
+    await expect(status(page)).toContainText("Needs a connection to an identity service.");
+    await expect(inspector(page).getByLabel("Sign-in", { exact: true })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Detailed", exact: true }).click();
+    await ready(page);
+    await page.keyboard.press("c");
+    await dragOnto(page, dot(page, module), tile(page, "Identity"));
+    await expect(tile(page, "Identity")).toHaveClass(/is-drop-over/);
+    await page.mouse.up();
+    await expect(dot(page, module)).toHaveAttribute("data-connected", "true");
+    await ready(page);
+    await page.keyboard.press("v");
+    await row(page, module)
+      .getByRole("button", { name: "Open Auth guard in Microservice", exact: true })
+      .click();
+
+    // Its template is the sign-in, Required at first; Credential stays fixed and hidden.
+    await expect(status(page)).toHaveAttribute("data-status", "template");
+    await expect(status(page)).toContainText("Sign-in");
+    const select = inspector(page).getByLabel("Sign-in", { exact: true });
+    await expect(select).toHaveValue("required");
+    await expect(inspector(page).getByLabel("Credential", { exact: true })).toHaveCount(0);
+    await expect.poll(settings).toMatchObject({ signIn: "required" });
+    const required = await saved(page, id);
+    const selection = (
+      required as unknown as {
+        generation: { selections: { id: string; template: { id: string } }[] };
+      }
+    ).generation.selections.find((item) => item.id === module);
+    expect(selection?.template.id).toBe("verified-identity");
+
+    // Optional saves in one step, and Undo returns Required.
+    await select.selectOption({ label: "Optional" });
+    await expect.poll(settings).toMatchObject({ signIn: "optional" });
+    expect((await saved(page, id)).revision).toBe(required.revision + 1);
+    await expect(status(page)).toHaveAttribute("data-status", "template");
+    await undo(page);
+    await expect.poll(settings).toMatchObject({ signIn: "required" });
+    await expect(select).toHaveValue("required");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }

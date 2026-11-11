@@ -293,9 +293,19 @@ export function buildStudioCommand(
     input.type === "connectModule" ||
     input.type === "disconnectModule" ||
     input.type === "removeModule";
+  // An Auth guard's Sign-in decides whether the templates beside it that need signed-in callers
+  // (Multipart uploads) are complete, so changing it derives too.
+  const signIn =
+    input.type === "editComponent" &&
+    input.settings?.kind === "auth-guard" &&
+    (input.settings.signIn ?? "required") !==
+      ((
+        design.architecture?.studio?.components?.find((item) => item.id === input.component)
+          ?.settings as { signIn?: string } | undefined
+      )?.signIn ?? "required");
   const derive =
     moduleCommand ||
-    ((input.type === "removeTile" || input.type === "removeLink" || renames.length > 0) &&
+    ((input.type === "removeTile" || input.type === "removeLink" || renames.length > 0 || signIn) &&
       hasModuleSelections(design));
   if (moduleCommand) upgradeForModules(draft, ops);
   switch (input.type) {

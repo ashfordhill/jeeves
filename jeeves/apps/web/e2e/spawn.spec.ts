@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import {
   createStudy,
   design,
@@ -11,6 +12,7 @@ import {
   pickFrom,
   pull,
   ready,
+  showView,
   test,
   tile,
   tiles,
@@ -340,6 +342,94 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
       .not.toContain("worker-service");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
+/**
+ * Every drawn line that passes inside a tile other than its two ends (`ends`, by line ID), sampled
+ * every 2px along its path, and every line `ends` doesn't know (so the check can't pass vacuously).
+ */
+async function linesThroughTiles(page: Page, ends: Record<string, [string, string]>) {
+  return page.evaluate((ends) => {
+    const boxes = [...document.querySelectorAll<HTMLElement>(".board .react-flow__node")].map(
+      (node) => ({ id: node.dataset.id ?? "", box: node.getBoundingClientRect() }),
+    );
+    const through: string[] = [];
+    for (const edge of document.querySelectorAll<SVGGElement>(".board .react-flow__edge")) {
+      const line = edge.dataset.id ?? "";
+      const known = ends[line.split("/")[0] ?? ""];
+      if (!known) {
+        through.push(`${line} unknown`);
+        continue;
+      }
+      const [from, to] = known;
+      const path = edge.querySelector<SVGPathElement>(".react-flow__edge-path");
+      const matrix = path?.getScreenCTM();
+      if (!path || !matrix) continue;
+      for (let at = 0; at <= path.getTotalLength(); at += 2) {
+        const local = path.getPointAtLength(at);
+        const { x, y } = new DOMPoint(local.x, local.y).matrixTransform(matrix);
+        const hit = boxes.find(
+          ({ id, box }) =>
+            id !== from &&
+            id !== to &&
+            x > box.left + 1 &&
+            x < box.right - 1 &&
+            y > box.top + 1 &&
+            y < box.bottom - 1,
+        );
+        if (hit) {
+          through.push(`${line} through ${hit.id}`);
+          break;
+        }
+      }
+    }
+    return through;
+  }, ends);
+}
+
+test("a tile takes five links and refuses a sixth, and no line crosses a tile", async ({
+  page,
+  tinyurl: id,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  await showView(page, "Simple");
+  const outgoing = async () =>
+    (await design(page, id)).connections.filter((item) => item.from.element === "redirect").length;
+  const start = await outgoing();
+  // V3-06 raised the cap from four to five: fill Redirect service up to five by its fan.
+  for (const kind of ["Database", "Cache", "Object storage", "Search index"].slice(0, 5 - start)) {
+    await tile(page, "Redirect service").click();
+    await pickFrom(page, "Redirect service", LINK_TAB, kind);
+    await expect(tile(page, kind)).toHaveClass(/selected/);
+    await ready(page);
+  }
+  expect(await outgoing()).toBe(5);
+  // Full: its link tab is gone, and a Connect drag to a sixth tile is refused with the reason.
+  await tile(page, "Redirect service").click();
+  await expect(tile(page, "Redirect service").locator(".board-tab")).toHaveCount(0);
+  const full = await design(page, id);
+  await page.keyboard.press("c");
+  await dragOnto(page, tile(page, "Redirect service"), tile(page, "Analytics store"));
+  const reason = "Redirect service already has 5 links; the most is 5.";
+  await expect(page.locator(".board-connect-tip")).toHaveText(reason);
+  await page.mouse.up();
+  await expect(page.locator(".studio-notice")).toHaveText(reason);
+  expect((await design(page, id)).revision).toBe(full.revision);
+  await page.keyboard.press("v");
+  const saved = await design(page, id);
+  // Each line's ends: a link's tiles, an entry's action and tile, the user's line to an action.
+  const ends: Record<string, [string, string]> = Object.fromEntries([
+    ...saved.connections.map((item) => [item.id, [item.from.element, item.to.element]]),
+    ...saved.architecture.studio.entries.map((item) => [item.id, [`@${item.lane}`, item.element]]),
+    ...["download", "upload"].map((lane) => [`@actor-${lane}`, ["@actor", `@${lane}`]]),
+  ]);
+  for (const view of ["Simple", "Detailed"] as const) {
+    await showView(page, view);
+    await expect(lines(page)).not.toHaveCount(0);
+    expect(await linesThroughTiles(page, ends), view).toEqual([]);
   }
   expect(errors).toEqual([]);
 });

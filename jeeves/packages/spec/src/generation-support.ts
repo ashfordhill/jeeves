@@ -15,6 +15,7 @@ export type GenerationSettingRule = {
   input: string;
   setting: string;
   source: "host" | "resource" | "component";
+  /** The binding field whose module it reads; a component rule without one reads the lead. */
   field?: string;
   component?: StudioComponentKind;
   supported: GenerationSupportedValues;
@@ -324,6 +325,32 @@ export const generationCapabilities = freezeRecord({
     [store("index", "search", "read", "projection")],
     http,
     ["search-query"],
+  ),
+  /** The Auth guard's own settings (v3 contract, section 2): Sign-in, and the fixed JWT. */
+  "verified-identity": capability(
+    "verified-identity",
+    "api",
+    ["service", "uploads"],
+    [],
+    [
+      rule(
+        "guard.signIn",
+        "component",
+        "signIn",
+        choice("required", "optional"),
+        "tile-guard.signIn",
+        {
+          component: "auth-guard",
+          default: "required",
+          userNeed: "Choose whether every caller must sign in, or only some.",
+        },
+      ),
+      rule("guard.credential", "component", "credential", choice("jwt"), "tile-guard.credential", {
+        component: "auth-guard",
+        required: true,
+      }),
+    ],
+    ["auth-guard"],
   ),
   "youtube-upload": capability("youtube-upload", "api", ["uploads", "service"], [], []),
   "youtube-watch": capability(

@@ -11,6 +11,7 @@ import {
   design,
   dragOnto,
   expect,
+  moveOnto,
   pickFrom,
   ready,
   tile,
@@ -213,13 +214,49 @@ async function click(target: Locator, log: Gestures) {
   log.clicks += 1;
 }
 
+/**
+ * Waits until no tile moves on screen for 300 ms, longer than the board's 200 ms layout animation.
+ * A save's re-layout lands, animates and may move the camera after `ready` already holds; at
+ * v2's Detailed fit a tile can be 28px across, so a drag aimed during that motion misses.
+ */
+async function still(page: Page) {
+  const boxes = () =>
+    page
+      .locator(".board .react-flow__node")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => JSON.stringify(node.getBoundingClientRect())).join("|"),
+      );
+  let last = await boxes();
+  for (let same = 0, tries = 0; same < 3; tries += 1) {
+    if (tries > 200) throw new Error("The board never stops moving.");
+    await page.waitForTimeout(100);
+    const now = await boxes();
+    same = now === last ? same + 1 : 0;
+    last = now;
+  }
+}
+
+/**
+ * Holds a pressed drag over `end` until the board marks it as the drop under the pointer, aiming
+ * again if the end moved, so the release lands on it.
+ */
+async function holdOver(page: Page, end: Locator, marked: () => Promise<void>) {
+  await expect(async () => {
+    await moveOnto(page, end);
+    await marked();
+  }).toPass({ timeout: 15_000 });
+}
+
 /** A Connect mode drag from one tile onto another. */
 async function linkTiles(page: Page, id: string, [from, onto]: [string, string], log: Gestures) {
   const before = (await saved(page, id)).connections.length;
   await click(tool(page, "Fit"), log);
   await click(tool(page, "Connect"), log);
+  await still(page);
   await dragOnto(page, tile(page, from), tile(page, onto));
-  await expect(tile(page, onto)).toHaveClass(/is-drop-over/);
+  await holdOver(page, tile(page, onto), () =>
+    expect(tile(page, onto)).toHaveClass(/is-drop-over/, { timeout: 1_000 }),
+  );
   await page.mouse.up();
   log.drags += 1;
   await expect.poll(async () => (await saved(page, id)).connections.length).toBe(before + 1);
@@ -302,7 +339,17 @@ export async function buildV2Modules(page: Page, id: string, log: Gestures) {
       "tile" in connection
         ? tile(page, connection.tile)
         : row(page, connection.host, connection.row);
+    // A tile end is marked on the tile; an end in a tile (a row) by its outline on the overlay.
+    const outline = page.locator(
+      `.board-connect-ends rect[data-over][data-end="${await end.getAttribute("data-board-end")}"]`,
+    );
+    const marked = () =>
+      "tile" in connection
+        ? expect(end).toHaveClass(/is-drop-over/, { timeout: 1_000 })
+        : expect(outline).toHaveCount(1, { timeout: 1_000 });
+    await still(page);
     await dragOnto(page, dot(page, connection.host, connection.module), end);
+    await holdOver(page, end, marked);
     await page.mouse.up();
     log.drags += 1;
     await expect.poll(async () => (await links()).length).toBe(before + 1);

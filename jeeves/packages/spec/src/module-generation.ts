@@ -67,6 +67,7 @@ const plural: Partial<Record<StudioKind, string>> = {
 };
 /** Templates in plain words, for refusals. */
 const templateWords: Record<StudioModuleTemplate, string> = {
+  "verified-identity": "sign-in",
   "owned-multipart": "multipart upload",
   "asset-lifecycle": "upload lifecycle",
   "video-hls": "video encoding",
@@ -137,9 +138,18 @@ export function planModules(
   };
   const leads: LeadPlan[] = [];
   const claims = new Map<string, LeadPlan>();
+  const tileLevel = (designGeneration(design)?.selections ?? []).filter(
+    (item) => item.target.kind === "element",
+  );
   for (const lead of view.modules) {
     const generation = studioComponentDefinitions[lead.settings.kind].generation;
     if (generation.kind !== "lead") continue;
+    // A guard a tile-level upload template binds stays that template's (frozen v2, presets).
+    if (
+      generation.template === "verified-identity" &&
+      tileLevel.some((item) => covers(design, item, lead))
+    )
+      continue;
     const plan: LeadPlan = { lead, template: generation.template, parts: [] };
     leads.push(plan);
     const hostKind = view.kindOf(lead.host);
@@ -160,9 +170,6 @@ export function planModules(
   }
   settleAcrossTiles(view, leads, keptOwnership(design, previous));
   // One template of a kind per tile, and never the same template both ways.
-  const tileLevel = (designGeneration(design)?.selections ?? []).filter(
-    (item) => item.target.kind === "element",
-  );
   for (const plan of leads) {
     if (!plan.binding) continue;
     const host = plan.lead.host;
@@ -230,24 +237,36 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
   };
   const isIdentity = (link: ModuleLink) => !!link.tile && view.kindOf(link.tile) === "identity";
   switch (plan.template) {
+    case "verified-identity": {
+      // An External API target stays a stub: only an Identity tile runs as Keycloak.
+      const identity = view.linksOf(lead, "identity").find(isIdentity);
+      if (!identity?.tile) needs.push(connected("identity"));
+      else
+        plan.binding = {
+          kind: "verified-identity",
+          identity: { element: identity.tile, guard: lead.id },
+        };
+      break;
+    }
     case "owned-multipart": {
       const objects = dependency(own("objects"));
       if (!objects) needs.push(connected("object-store"));
       const state = part("data-access", "database");
       const jobs = part("event-publisher", "channel");
-      const guard = part("auth-guard", "identity", isIdentity);
+      // The tile's Auth guard leads its own sign-in template; uploads need it Required.
+      const guard = requiredGuard(view, lead.host);
       if (!state) needs.push(inTile("data-access", "database"));
       if (!jobs) needs.push(inTile("event-publisher", "queue"));
       else outboxIn(jobs.module, dependency(state?.link));
-      if (!guard) needs.push(inTile("auth-guard", "identity"));
+      if (!guard) needs.push(`${article(kindName("auth-guard"))} set to Required in ${host}`);
       const stateDep = dependency(state?.link);
       const jobsDep = dependency(jobs?.link);
-      if (!needs.length && objects && stateDep && jobsDep && guard?.link.tile)
+      if (!needs.length && objects && stateDep && jobsDep && guard)
         plan.binding = {
           kind: "owned-multipart",
           state: stateDep,
           objects,
-          identity: { element: guard.link.tile, guard: guard.module.id },
+          identity: guard,
           jobs: jobsDep,
         };
       break;
@@ -349,6 +368,31 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
     plan.missing = needs[0];
     delete plan.binding;
   }
+}
+
+/** An Auth guard's Sign-in: absent reads as Required (v3 contract, section 2). */
+export const guardSignIn = (module: StudioComponent) =>
+  module.settings.kind === "auth-guard" ? (module.settings.signIn ?? "required") : undefined;
+
+/**
+ * The tile's Auth guard, when it is the one guard there connected to an Identity and set to
+ * Required: the identity a template that needs signed-in callers binds (Multipart uploads, and
+ * Favorites in V3-07). Two such guards are refused as two sign-in templates.
+ */
+function requiredGuard(view: ModuleView, host: string) {
+  const guards = view
+    .inHost(host)
+    .filter((module) => module.settings.kind === "auth-guard")
+    .flatMap((module) => {
+      const link = view
+        .linksOf(module, "identity")
+        .find((item) => !!item.tile && view.kindOf(item.tile) === "identity");
+      return link?.tile ? [{ module, element: link.tile }] : [];
+    });
+  const [guard] = guards;
+  return guards.length === 1 && guard && guardSignIn(guard.module) === "required"
+    ? { element: guard.element, guard: guard.module.id }
+    : undefined;
 }
 
 /**
@@ -489,7 +533,11 @@ function ownershipKeys(selections: readonly Pick<GenerationSelection, "target" |
     const host =
       selection.target.kind === "element" ? selection.target.element : selection.target.host;
     roles.add(host);
-    if (selection.binding.kind === "owned-multipart") roles.add(selection.binding.identity.element);
+    if (
+      selection.binding.kind === "owned-multipart" ||
+      selection.binding.kind === "verified-identity"
+    )
+      roles.add(selection.binding.identity.element);
     for (const use of bindingUses(selection.binding)) {
       resources.add(use.store);
       grants.add(`${host}/${use.store}`);
@@ -706,7 +754,9 @@ function deriveOwnership(
   const identities = [
     ...new Set(
       complete.flatMap((item) =>
-        item.binding?.kind === "owned-multipart" ? [item.binding.identity.element] : [],
+        item.binding?.kind === "owned-multipart" || item.binding?.kind === "verified-identity"
+          ? [item.binding.identity.element]
+          : [],
       ),
     ),
   ].sort(byRank);
@@ -988,8 +1038,10 @@ function writeValues(draft: DesignDocument, view: ModuleView, complete: LeadPlan
           fix(settings, "outbox", "enabled", "disabled");
       }
       if (kind === "cache-reader") fix(settings, "stampede", "single-flight", "none");
+      // A guard's Sign-in starts Required, the meaning it has when absent.
+      if (kind === "auth-guard") fix(settings, "signIn", "required");
     }
-    if (binding.kind === "owned-multipart")
+    if (binding.kind === "owned-multipart" || binding.kind === "verified-identity")
       fix(tile(binding.identity.element), "exposure", "public", "internal");
   }
 }

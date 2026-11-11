@@ -2,6 +2,7 @@ import {
   applyOperations,
   buildDesignScopeCommand,
   buildStudioCommand,
+  buildSupportedAuthoringCommand,
   emptyDesign,
   linkFanOptions,
   newLinkId,
@@ -13,6 +14,12 @@ import {
   tinyurlDesignScope,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import {
+  signIn,
+  signInStackCommands,
+} from "../../../../packages/spec/src/fixtures/sign-in-stack.ts";
+import { runStudioCommands } from "../../../../packages/spec/src/fixtures/v2-modules.ts";
+import { installedGenerationSupport } from "../generation/support.ts";
 import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.ts";
 
 const tinyurl = () => ({ ...studioArchitectureExample("studio-tinyurl").design, revision: 3 });
@@ -187,7 +194,7 @@ describe("studio chat tools", () => {
       { group: "messaging", kinds: ["queue"] },
       { group: "edge", kinds: ["cdn", "external-api"] },
     ]);
-    expect(catalog.caps).toEqual({ linksPerTile: 4, entriesPerLane: 4 });
+    expect(catalog.caps).toEqual({ linksPerTile: 5, entriesPerLane: 4 });
     expect(run(workspace, "describeStudioDefinition", { kind: "cache" }).settingsSchema).toBeTypeOf(
       "object",
     );
@@ -330,6 +337,51 @@ describe("studio chat tools", () => {
     expect(catalog.find((item) => item.kind === "video-encoder")).toMatchObject({
       hosts: ["worker"],
       generation: { kind: "lead", template: "video-hls" },
+    });
+  });
+
+  it("sets an Auth guard's Sign-in with the module page's command, and reads it back", () => {
+    const base = { ...runStudioCommands(emptyDesign(), signInStackCommands), revision: 3 };
+    const workspace = new Workspace(base);
+    const editable = (
+      run(workspace, "getDesign").editableSettings as {
+        input: string;
+        selection: string;
+        value: string;
+        supported: unknown;
+      }[]
+    ).filter((item) => item.input === "guard.signIn");
+    expect(editable.map((item) => [item.selection, item.value, item.supported])).toEqual([
+      ["viewer-check", "required", { values: ["required", "optional"] }],
+      ["creator-check", "required", { values: ["required", "optional"] }],
+    ]);
+    const command = signIn(base, "viewer-check", "optional");
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 3, commands: [command] }).ok).toBe(
+      true,
+    );
+    // The same batch the module page sends.
+    expect(workspace.pending).toEqual(
+      buildSupportedAuthoringCommand(base, command, installedGenerationSupport()).ops,
+    );
+    const tiles = run(workspace, "getDesign").tiles as {
+      id: string;
+      modules?: { id: string; status?: string; settings?: { signIn?: string } }[];
+    }[];
+    const viewer = tiles.find((tile) => tile.id === "watch-api")?.modules?.[0];
+    expect(viewer).toMatchObject({ id: "viewer-check", status: "template" });
+    // Optional on the Creator check leaves Multipart uploads a stub, with the reason.
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [signIn(base, "creator-check", "optional")],
+      }).ok,
+    ).toBe(true);
+    const upload = (run(workspace, "getDesign").tiles as typeof tiles).find(
+      (tile) => tile.id === "upload-api",
+    )?.modules;
+    expect(upload?.find((module) => module.id === "multipart-uploads")).toMatchObject({
+      status: "stub",
+      reason: "Needs an Auth guard set to Required in Upload API.",
     });
   });
 

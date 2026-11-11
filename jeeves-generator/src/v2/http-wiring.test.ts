@@ -1,6 +1,11 @@
 import { type DesignDocument, emptyDesign, type StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
+  signIn,
+  signInStackCommands,
+  signInStackDesign,
+} from "../../../jeeves/packages/spec/src/fixtures/sign-in-stack.ts";
+import {
   stubStackDesign,
   stubStackWithCacheRead,
 } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
@@ -74,20 +79,20 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       'GET /modules/preview-reader/:key → 501 "Not implemented: key for Preview reader" until its hooks are written',
     ]);
     expect(routes(stack, "visit-worker")).toEqual([]);
-    // v2 built from modules: the multipart's six mounts reach `principal` first, the cache read
-    // `key`, and search query is a placeholder.
-    const principal =
-      '501 "Not implemented: principal for Multipart uploads" until its hooks are written';
+    // v2 built from modules: the Creator check's sign-in answers `principal` (V3-06), so a start
+    // reaches `validate` first; the cache read reaches `key`, and search query is a placeholder.
+    const unknown = "404 UPLOAD_NOT_FOUND until an upload is started";
     expect(routes(v2, "upload")).toEqual([
       ready,
+      "GET /modules/upload-auth/me → 200 {signedIn, subject, username} for a signed-in caller; 401 SIGN_IN_REQUIRED for a missing or invalid token",
+      'POST /modules/upload-multipart/uploads → 501 "Not implemented: validate for Multipart uploads" until its hooks are written',
+      "GET /modules/upload-multipart/uploads → 200 the caller's uploads: none until one is started",
       ...[
-        "POST /modules/upload-multipart/uploads",
-        "GET /modules/upload-multipart/uploads",
         "GET /modules/upload-multipart/uploads/:uploadId",
         "POST /modules/upload-multipart/uploads/:uploadId/parts/:partNumber",
         "POST /modules/upload-multipart/uploads/:uploadId/complete",
         "POST /modules/upload-multipart/uploads/:uploadId/abort",
-      ].map((route) => `${route} → ${principal}`),
+      ].map((route) => `${route} → ${unknown}`),
     ]);
     expect(routes(v2, "watch")).toEqual([
       ready,
@@ -106,6 +111,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         .flatMap((row) => row.templates),
     ).toEqual([
       { selection: "search-query", template: "search-query", level: "placeholder" },
+      { selection: "upload-auth", template: "verified-identity", level: "mounted" },
       { selection: "upload-multipart", template: "owned-multipart", level: "mounted" },
       { selection: "watch-cache-reader", template: "positive-cache-read", level: "mounted" },
     ]);
@@ -257,19 +263,18 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     for (const hook of ["key", "codec", "eligible", "load", "expiresAt"])
       expect(hooks).toContain(`throw new NotImplemented("${hook} for Preview reader");`);
     const upload = text(v2, "src/modules/upload/upload-multipart.hooks.ts");
-    for (const hook of [
-      "principal",
-      "validate",
-      "metadata",
-      "response",
-      "reserve",
-      "complete",
-      "closed",
-      "originalKey",
-      "job",
-    ])
+    for (const hook of ["validate", "metadata", "response", "originalKey", "job"])
       expect(upload).toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
     expect(upload).toContain("const upload: UploadHooks<unknown, unknown> = {");
+    // V3-06: the tile's sign-in answers `principal`, and the asset lifecycle naming the upload
+    // answers `reserve`, `complete` and `closed`; nothing else to write there.
+    for (const hook of ["principal", "reserve", "complete", "closed"])
+      expect(upload).not.toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
+    expect(upload).toContain("      return resources.guard.require(request);");
+    expect(upload).toContain("      return resources.lifecycle.reserve(tx, record);");
+    expect(upload).toContain("      return resources.lifecycle.complete(tx, record, original);");
+    expect(upload).toContain("      return resources.lifecycle.closed(tx, record, terminal);");
+    expect(upload).toContain("  guard: TileGuard;");
     // Search query is a placeholder: no hooks file. The worker templates' are in
     // loop-wiring.test.ts.
     expect(
@@ -288,7 +293,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         .tiles.filter((row) => row.routes.length)
         .flatMap((row) => row.hooks.map((item) => [item.file, item.hooks.length])),
     ).toEqual([
-      ["src/modules/upload/upload-multipart.hooks.ts", 9],
+      ["src/modules/upload/upload-multipart.hooks.ts", 5],
       ["src/modules/watch/watch-cache-reader.hooks.ts", 5],
     ]);
     expect(gap(v2, "multipart-application-bindings")).toMatchObject({
@@ -374,6 +379,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       source.slice(source.indexOf("await service.start(config.listen);"));
     expect(tail(upload).split("\n").slice(1)).toEqual([
       "  periodic(scope, () => uploadMultipart.multipart.sweep(), 30000);",
+      '  logStarted(config.tile, {"module":"upload-auth","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]});',
       '  logStarted(config.tile, {"module":"upload-multipart","template":"owned-multipart","wiring":"mounted","checks":["jobs publisher open","outbox relay started","SELECT 1 on its state login","sweep at start","sweep every 30 s"]});',
       "  scope.ready();",
       "});",
@@ -385,6 +391,119 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(tail(text(v2, "src/processes/search.ts"))).toContain(
       'logStarted(config.tile, {"module":"search-query","template":"search-query","wiring":"placeholder","checks":["cluster health"]});',
     );
+  });
+
+  it("mounts each tile's sign-in, Required or Optional, and provisions Keycloak for it (V3-06)", () => {
+    const bundle = assemble(signInStackDesign());
+    expect(bundle.report.findings).toEqual([]);
+    expect(rows(bundle).runnable).toBe(true);
+    const ready = "GET /healthz → 200 once ready, 503 before and while draining";
+    expect(routes(bundle, "watch-api")).toEqual([
+      ready,
+      "GET /modules/viewer-check/me → 200 {signedIn, subject, username} for a signed-in caller or {signedIn: false} without a token; 401 SIGN_IN_REQUIRED for an invalid token",
+      'ANY /modules/hello → 501 "Not implemented: Hello" until it is written',
+      'ANY /modules/hello/* → 501 "Not implemented: Hello" until it is written',
+    ]);
+    expect(routes(bundle, "upload-api")?.slice(0, 3)).toEqual([
+      ready,
+      "GET /modules/creator-check/me → 200 {signedIn, subject, username} for a signed-in caller; 401 SIGN_IN_REQUIRED for a missing or invalid token",
+      'POST /modules/multipart-uploads/uploads → 501 "Not implemented: validate for Multipart uploads" until its hooks are written',
+    ]);
+    // Every module route of the tile goes through its sign-in; the stub's request gets the caller.
+    const watch = text(bundle, "src/processes/watch-api.ts");
+    expect(watch).toContain(
+      '    configure: (open) => {\n      // Every module route checks its caller first: the tile\'s sign-in.\n      const routes = viewerCheck.routes(open);\n      viewerCheck.me(routes, "/modules/viewer-check/me");',
+    );
+    expect(watch).toContain(
+      '      stubRoutes(\n        routes,\n        log,\n        "hello",\n        (request) => hello(dependencies["hello"], request),\n        viewerCheck.caller,\n      );',
+    );
+    expect(watch).toContain('      "signIn": "optional",');
+    expect(text(bundle, "src/processes/upload-api.ts")).toContain('      "signIn": "required",');
+    // The sign-in comes first, so the multipart setup can use it.
+    const upload = text(bundle, "src/processes/upload-api.ts");
+    expect(upload.indexOf("const creatorCheck = ")).toBeLessThan(
+      upload.indexOf("const multipartUploads = "),
+    );
+    expect(upload).toContain("      guard: creatorCheck,");
+    expect(upload).toContain("      lifecycle: lifecycle.uploadHooks,");
+    // The upload's tile runs the lifecycle's upload hooks on the lifecycle worker's own binding.
+    const config = (source: string) =>
+      JSON.parse(source.slice(source.indexOf("= {") + 2, source.indexOf("} as const;") + 1));
+    expect(config(upload).templates["multipart-uploads"].lifecycle).toEqual({
+      selection: "lifecycle-writer",
+      binding: config(text(bundle, "src/processes/video-lifecycle.ts")).templates[
+        "lifecycle-writer"
+      ].lifecycle,
+    });
+    // One realm for both guards: each guarded process verifies against Keycloak.
+    const plan = json(bundle, "infra/local.json");
+    expect(
+      plan.identity.map((item: { id: string; roles: string[] }) => [item.id, item.roles]),
+    ).toEqual([["sign-in", []]]);
+    const services = json(bundle, "compose.yaml").services;
+    for (const service of ["app-watch-api", "app-upload-api"]) {
+      expect(services[service].depends_on["identity-sign-in"]).toEqual({
+        condition: "service_healthy",
+      });
+      expect(services[service].environment).toMatchObject({
+        OIDC_ISSUER: `http://127.0.0.1:\${LOCAL_IDENTITY_PORT:?Set LOCAL_IDENTITY_PORT}/realms/sign-in`,
+        OIDC_JWKS_URL: "http://identity-sign-in:8080/realms/sign-in/protocol/openid-connect/certs",
+      });
+    }
+    expect(services["app-video-lifecycle"].environment?.OIDC_ISSUER).toBeUndefined();
+    expect(
+      bundle.manifest.files.find((file) => file.path === "src/runtime/tile-guard.ts"),
+    ).toMatchObject({ ownership: "generated-scaffold" });
+    expect(stack.files.map((file) => file.path)).not.toContain("src/runtime/tile-guard.ts");
+    // An Optional guard alone binds the Identity: Keycloak still runs for it.
+    const watchOnly = runStudioCommands(emptyDesign(), [
+      ...signInStackCommands.slice(0, 5),
+      {
+        type: "addModule",
+        host: "watch-api",
+        kind: "auth-guard",
+        id: "viewer-check",
+        name: "Viewer check",
+      },
+      {
+        type: "connectModule",
+        module: "viewer-check",
+        slot: "identity",
+        target: { tile: "sign-in" },
+      },
+    ]);
+    const optional = assemble(
+      runStudioCommands(watchOnly, [signIn(watchOnly, "viewer-check", "optional"), on]),
+    );
+    expect(optional.report.findings).toEqual([]);
+    expect(Object.keys(json(optional, "compose.yaml").services)).toContain("identity-sign-in");
+    // Without an asset lifecycle, multipart's own reserve, complete and closed stay to write.
+    const alone = assemble(
+      runStudioCommands(emptyDesign(), [
+        ...signInStackCommands.filter(
+          (command) =>
+            !(
+              "module" in command &&
+              ["processing-consumer", "lifecycle-writer"].includes(String(command.module))
+            ) && !(command.type === "addModule" && command.host === "video-lifecycle"),
+        ),
+        on,
+      ]),
+    );
+    const hooks = text(alone, "src/modules/upload-api/multipart-uploads.hooks.ts");
+    for (const hook of ["reserve", "complete", "closed"])
+      expect(hooks).toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
+    expect(hooks).not.toContain("lifecycle");
+    expect(rows(alone).tiles.find((row) => row.tile === "upload-api")?.hooks[0]?.hooks).toEqual([
+      "validate",
+      "metadata",
+      "response",
+      "reserve",
+      "complete",
+      "closed",
+      "originalKey",
+      "job",
+    ]);
   });
 
   it("gives route stubs the request signature with the option on, and changes nothing else", () => {

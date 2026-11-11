@@ -5,7 +5,12 @@
  * and previewed through Generate project. Set JEEVES_V2_REBUILD_KEEP to a project name to keep it.
  */
 import { writeFile } from "node:fs/promises";
-import { designGeneration, designSchema, type GenerationInstalledSupport } from "@jeeves/spec";
+import {
+  designGeneration,
+  designSchema,
+  type GenerationInstalledSupport,
+  generationTemplates,
+} from "@jeeves/spec";
 import { v2Diff, v2DiffReport } from "../../../packages/spec/src/fixtures/v2-diff.ts";
 import { frozenV2Design } from "../../../packages/spec/src/fixtures/v2-modules.ts";
 import { design, expect, ready, test, tile } from "./studio.ts";
@@ -70,8 +75,8 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
     expect(report.unexpected).toEqual([]);
     expect(report.unused).toEqual([]);
 
-    // Generate project → Preview, by mouse: v2's seven installed templates, the two stubs, and
-    // no finding.
+    // Generate project → Preview, by mouse: v2's seven installed templates, the Creator check's
+    // sign-in (V3-06: the Auth guard leads its own template), the two stubs, and no finding.
     await tool(page, "Generate project").click();
     const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
     const listed = dialog
@@ -94,12 +99,18 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
     const templates = (
       preview.templates as { ref: { id: string }; selection: string; host?: string }[]
     ).filter((item) => item.ref.id !== "module-stub");
-    const installedV2 = (designGeneration(frozenV2Design())?.selections ?? [])
-      .filter((item) => !item.binding.kind.startsWith("youtube-"))
-      .map((item) => item.template)
-      .sort((a, b) => a.id.localeCompare(b.id));
+    const installedV2 = [
+      ...(designGeneration(frozenV2Design())?.selections ?? [])
+        .filter((item) => !item.binding.kind.startsWith("youtube-"))
+        .map((item) => item.template),
+      generationTemplates["verified-identity"].ref,
+    ].sort((a, b) => a.id.localeCompare(b.id));
     expect(templates.map((item) => item.ref).sort((a, b) => a.id.localeCompare(b.id))).toEqual(
       installedV2,
+    );
+    expect(templates.find((item) => item.ref.id === "verified-identity")?.selection).toBe(
+      (saved.architecture?.studio?.components ?? []).find((item) => item.name === "Creator check")
+        ?.id,
     );
     expect(
       (preview.modules as { name: string; status: string }[])

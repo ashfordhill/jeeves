@@ -48,6 +48,8 @@ export const generationBindingSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("event-counter"), state: dep, events: dep }),
   z.strictObject({ kind: z.literal("search-projection"), index: dep, events: dep }),
   z.strictObject({ kind: z.literal("search-query"), index: dep }),
+  /** An Auth guard's sign-in (v3 contract, section 2): the guard and the Identity it verifies. */
+  z.strictObject({ kind: z.literal("verified-identity"), identity: generationIdentitySchema }),
   z.strictObject({ kind: z.literal("youtube-upload"), upload: idSchema, lifecycle: idSchema }),
   z.strictObject({ kind: z.literal("youtube-watch"), reader: idSchema, counts: dep, events: dep }),
   z.strictObject({ kind: z.literal("youtube-search"), query: idSchema }),
@@ -223,7 +225,10 @@ export function generationFindings(design: DesignDocument): Finding[] {
           "Component host does not match generation target.",
         );
     }
-    if (selection.binding.kind === "owned-multipart") {
+    if (
+      selection.binding.kind === "owned-multipart" ||
+      selection.binding.kind === "verified-identity"
+    ) {
       const identity = selection.binding.identity;
       if (!elements.has(identity.element))
         row(
@@ -248,7 +253,19 @@ export function generationFindings(design: DesignDocument): Finding[] {
         row(
           "CONFIG_INVALID",
           ["binding", "identity", "guard"],
-          "Authentication guard must belong to the selected upload host.",
+          selection.binding.kind === "verified-identity"
+            ? "Authentication guard must belong to the selected host."
+            : "Authentication guard must belong to the selected upload host.",
+        );
+      else if (
+        selection.binding.kind === "verified-identity" &&
+        selection.target.kind === "component" &&
+        selection.target.component !== guard.id
+      )
+        row(
+          "CONFIG_INVALID",
+          ["binding", "identity", "guard"],
+          "A sign-in selection's guard must be its own module.",
         );
     }
     if (known && known.definition.binding !== selection.binding.kind)

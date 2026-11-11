@@ -98,6 +98,8 @@ export const generationTemplates = freezeRecord({
   "event-counter": template("event-counter", [generationPolicies.eventCounter.ref]),
   "search-projection": template("search-projection", []),
   "search-query": template("search-query", []),
+  /** An Auth guard's sign-in (v3 contract, section 2): Required or Optional, against its Identity. */
+  "verified-identity": template("verified-identity", []),
   "youtube-upload": template("youtube-upload", [generationPolicies.publicVideo.ref]),
   "youtube-watch": template("youtube-watch", [generationPolicies.publicVideo.ref]),
   "youtube-search": template("youtube-search", [generationPolicies.publicVideo.ref]),
@@ -119,7 +121,8 @@ export const generationPresets = freezeRecord({
       generationPolicies.videoHls.ref,
     ],
   }),
-  /** Pinned to the ten templates and six policies it was recorded with (sha256 `d4c66f03…`). */
+  /** Pinned to the ten templates and six policies it was recorded with (sha256 `d4c66f03…`), so a
+   * policy or template added later never changes it. */
   youtube: record("youtube-core", {
     templates: (
       [
@@ -135,7 +138,16 @@ export const generationPresets = freezeRecord({
         "youtube-search",
       ] as const
     ).map((kind) => generationTemplates[kind].ref),
-    policies: Object.values(generationPolicies).map((entry) => entry.ref),
+    policies: (
+      [
+        "ownedMultipart",
+        "assetLifecycle",
+        "videoHls",
+        "positiveCache",
+        "eventCounter",
+        "publicVideo",
+      ] as const
+    ).map((key) => generationPolicies[key].ref),
   }),
 });
 export const generationPresetCatalog = freezeRecord(Object.values(generationPresets));
