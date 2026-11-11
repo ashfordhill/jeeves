@@ -22,12 +22,18 @@
 // canvas provides: a diagram export renders the same face in its own root, with no marks and no X,
 // and its rows do nothing. The click stops at the row, as the board's own tile buttons do, so it
 // opens the module instead of selecting the plain tile.
+//
+// A container that can take modules (`addable`) has a footer under its rows, and on the live
+// canvas in Pointer mode (`BoardModuleAdding`) a small blue `+` sits centred in it, inside the
+// frame: it toggles the tile's module menu (`ModuleAddButton`), selected or not. An export and
+// Connect mode show none, and the footer stays empty.
 import { RemoveButton } from "@jeeves/board";
 import { type StudioKind, studioComponentVisuals, studioDefinitions } from "@jeeves/spec";
 import { type CSSProperties, createContext, useContext } from "react";
 import { StudioIcon } from "../../studio/StudioIcon.tsx";
 import type { DetailedLoader, DetailedRow } from "../detailedView.ts";
 import { CONTAINER } from "../detailedView.ts";
+import { BoardModuleAdding, ModuleAddButton } from "../ModuleMenu.tsx";
 import { WarningMark } from "../Warnings.tsx";
 
 /** The board's tile border (`.board-tile` in board.css): the face starts this far inside. */
@@ -40,6 +46,8 @@ const GUTTER_STEP = 6;
 /** How far an arrow's vertical run sits from the rows, and its arrowhead's arms. */
 const RUN = 10;
 const HEAD = 4;
+/** The `+` (canvas.css `.lane-module-add`), centred in the footer. */
+const ADD = 28;
 
 /**
  * The live canvas's module rows: the open module, the ports whose lines are in the selection
@@ -54,13 +62,17 @@ export type ModuleRowsState = {
 export const ModuleRows = createContext<ModuleRowsState | undefined>(undefined);
 
 export function ContainerTile({
+  id,
   kind,
   name,
   label,
   rows,
   loaders = [],
+  addable = false,
   warnings,
 }: {
+  /** The tile's ID, which its `+` adds modules to. */
+  id?: string;
   kind?: StudioKind;
   name: string;
   /** Its kind label (`studioKindLabel`), under the name in the header. */
@@ -68,10 +80,14 @@ export function ContainerTile({
   rows: readonly DetailedRow[];
   /** The Cache readers' loaders between its rows. */
   loaders?: readonly DetailedLoader[];
+  /** It can take new modules: its footer holds the `+` (`DetailedContainer.addable`). */
+  addable?: boolean;
   /** Its design warnings, shown as a mark in the header's corner. */
   warnings?: readonly string[];
 }) {
   const live = useContext(ModuleRows);
+  const adding = useContext(BoardModuleAdding);
+  const groups = addable && id !== undefined ? adding?.groups(id) : undefined;
   const visual = kind ? studioDefinitions[kind].visual : undefined;
   const rowOf = new Map(rows.map((row) => [row.module, row]));
   const arrows = loaders.flatMap((loader) => {
@@ -183,6 +199,23 @@ export function ContainerTile({
           </div>
         );
       })}
+      {adding && groups?.length && id !== undefined ? (
+        <div
+          className="lane-container-add"
+          style={{
+            top:
+              CONTAINER.header + CONTAINER.row * rows.length + (CONTAINER.footer - ADD) / 2 - FRAME,
+          }}
+        >
+          <ModuleAddButton
+            tile={id}
+            name={name}
+            groups={groups}
+            onAdd={adding.add}
+            placement="board"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

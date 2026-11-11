@@ -419,9 +419,214 @@
   display: inline-flex;
 }
 
-/* A selected container's pull tabs sit just outside its frame, beside the rows, not over them. */
+/* A selected container's link tab sits just outside its frame, beside the rows, not over them. */
 .board .react-flow__node:has(> .board-tile-host .lane-container) {
   --board-tab-peek: 36px;
+}
+
+/* The module `+` (owner's sketch, 2026-11-10): a small blue square with a dark `+`, inside the
+   tile. On the board it scales with the zoom, as the tile does; the menu it opens doesn't. Its
+   fill is the theme's blue lightened (light) or as is (dark), with the dark ink on both. */
+.lane-module-add {
+  --module-add: color-mix(in srgb, var(--blue) 70%, #fff);
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: var(--module-add);
+  color: #071c28;
+  box-shadow: 0 2px 0 var(--btn-shadow);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+:root[data-theme="dark"] .lane-module-add {
+  --module-add: var(--blue);
+  border-color: var(--blue-deep);
+}
+
+.lane-module-add:hover {
+  background: color-mix(in srgb, var(--module-add) 82%, #071c28);
+}
+
+.lane-module-add[aria-expanded="true"] {
+  transform: translateY(1px);
+  box-shadow: none;
+  outline: 3px solid var(--select-ring);
+  outline-offset: 1px;
+}
+
+.lane-module-add:focus-visible {
+  outline: 3px solid var(--board-select, var(--blue));
+  outline-offset: 2px;
+}
+
+/* A container's footer: the `+` centred under its rows (`CONTAINER.footer` in detailedView.ts). */
+.lane-container-add {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* The selected Simple tile's `+`: its top-left corner, clear of the icon, name and kind label (and
+   of the warning mark, top-right). */
+.lane-tile .lane-tile-add {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+/* The module menu, on <body> at screen size: a title, then a group per status (Template, Part of
+   a template, Stub), its kinds two to a row, each with its icon, name and one-line description. */
+.lane-module-menu {
+  position: fixed;
+  z-index: 4100;
+  box-sizing: border-box;
+  width: 468px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 10px 12px 12px;
+  border: 2px solid color-mix(in srgb, var(--line) 45%, transparent);
+  border-radius: 14px;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: 0 8px 24px var(--btn-shadow);
+  font-size: 12px;
+}
+
+.lane-module-menu-title {
+  margin: 0 2px 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lane-module-menu-title strong {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.lane-module-menu-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lane-module-menu-group + .lane-module-menu-group {
+  margin-top: 8px;
+}
+
+/* A group's status, in the module page's pill (Template in the plus colour). */
+.lane-module-menu-heading {
+  display: inline-block;
+  margin: 0 0 5px 2px;
+  float: left;
+  padding: 0 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 17px;
+}
+
+.lane-module-menu-heading[data-generation="lead"] {
+  color: var(--plus);
+}
+
+.lane-module-menu-items {
+  clear: left;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lane-module-menu-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 6px 8px 7px 7px;
+  border: 1px solid color-mix(in srgb, var(--line) 30%, transparent);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lane-module-menu-item:hover {
+  border-color: var(--type-color, var(--ink-soft));
+  background: color-mix(in srgb, var(--type-color, var(--ink)) 9%, var(--paper));
+}
+
+.lane-module-menu-item:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.lane-module-menu-icon {
+  display: flex;
+  margin-top: 1px;
+  color: var(--type-color, var(--ink));
+}
+
+.lane-module-menu-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lane-module-menu-text strong {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.lane-module-menu-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* The status is the group's heading; it stays in the item's description for assistive tech. */
+.lane-module-menu-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The inspector's `+`, centred under the Modules cards. */
+.lane-module-list-add {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
 }
 
 /* Actor face (ActorColumn proportions): figure on the pastel strip, name plate at the bottom. */

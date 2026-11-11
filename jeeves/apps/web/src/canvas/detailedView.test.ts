@@ -10,10 +10,13 @@ import {
   portOffset,
 } from "@jeeves/board";
 import {
+  applyOperations,
+  buildStudioCommand,
   type DesignDocument,
   designSchema,
   type LaneGraph,
   laneGraph,
+  moduleKinds,
   studioArchitectureExample,
 } from "@jeeves/spec";
 import ELK from "elkjs/lib/elk.bundled.js";
@@ -62,20 +65,29 @@ describe("detailed view projection", () => {
         expect(row?.y).toBe(CONTAINER.header + CONTAINER.row * own.indexOf(item.id) + 16);
       }
 
-      // Tiles in node order; containers resized with their ports on grid lines inside them; every
+      // Tiles in node order; every tile that can hold modules, or holds some, a container, resized
+      // with its ports on grid lines inside it and room for its `+` when it can take more; every
       // other tile exactly as in the Simple view.
       expect(view.tiles.map((t) => t.id)).toEqual(simple.tiles.map((t) => t.id));
       for (const [i, tile] of view.tiles.entries()) {
         const container = view.containers.get(tile.id);
+        const addable = moduleKinds(design, tile.id).length > 0;
+        expect(container?.addable ?? false, tile.id).toBe(addable);
         if (!container) {
+          expect(
+            components.some((c) => c.host === tile.id),
+            tile.id,
+          ).toBe(false);
           expect(tile, tile.id).toEqual(simple.tiles[i]);
           continue;
         }
         expect(tile.band).toBe(simple.tiles[i]?.band);
         expect(tile.w).toBe(CONTAINER.w);
         expect(tile.h % GRID).toBe(0);
-        expect(tile.h).toBeGreaterThanOrEqual(
-          CONTAINER.header + CONTAINER.row * container.rows.length + CONTAINER.padding,
+        expect(tile.h).toBe(
+          CONTAINER.header +
+            CONTAINER.row * container.rows.length +
+            (addable ? CONTAINER.footer : CONTAINER.padding),
         );
         for (const port of tile.ports ?? []) {
           expect(port.y % GRID, `${tile.id} ${port.id}`).toBe(0);
@@ -162,7 +174,7 @@ describe("detailed view projection", () => {
       ["Lifecycle writer", 96],
       ["Publication outbox publisher", 128],
     ]);
-    expect(view.tiles.find((t) => t.id === worker)).toMatchObject({ w: 256, h: 160 });
+    expect(view.tiles.find((t) => t.id === worker)).toMatchObject({ w: 256, h: 192 });
     const drawn = view.lines
       .filter((l) => l.source === worker || l.target === worker)
       .map(({ id, source, sourcePort, target, targetPort, dashed, label }) => ({
@@ -288,6 +300,53 @@ describe("detailed view projection", () => {
       connection: "@actor-download",
     });
     expect(view.lines.some((l) => l.id.includes("responder"))).toBe(false);
+  });
+});
+
+describe("containers with no modules", () => {
+  it("draws an empty Service as a container holding just its `+`, its lines at the header", () => {
+    const base = studioArchitectureExample("studio-tinyurl").design;
+    // A new Microservice after the Shorten service, with no modules, and a database after it.
+    const add = (
+      design: DesignDocument,
+      from: string,
+      id: string,
+      kind: "service" | "database",
+    ) => {
+      const result = applyOperations(
+        design,
+        buildStudioCommand(design, {
+          type: "addTile",
+          from: { tile: from },
+          side: "after",
+          tile: { id, name: id, kind },
+          linkId: `${from}-${id}`,
+        }).ops,
+      );
+      if (!result.ok) throw new Error(result.errors.map((e) => e.message).join(" "));
+      return result.design;
+    };
+    const design = add(add(base, "shorten", "fresh", "service"), "fresh", "fresh-db", "database");
+    const { view } = project(design);
+    expect(view.containers.get("fresh")).toEqual({
+      tile: "fresh",
+      rows: [],
+      loaders: [],
+      addable: true,
+    });
+    // The header, then the footer for its `+`: 96px, on the grid.
+    expect(view.tiles.find((t) => t.id === "fresh")).toMatchObject({
+      w: CONTAINER.w,
+      h: CONTAINER.header + CONTAINER.footer,
+      ports: [
+        { id: HEADER_IN, side: "in", y: 32 },
+        { id: HEADER_OUT, side: "out", y: 32 },
+      ],
+    });
+    expect(view.lines.find((l) => l.id === "shorten-fresh")?.targetPort).toBe(HEADER_IN);
+    expect(view.lines.find((l) => l.id === "fresh-fresh-db")?.sourcePort).toBe(HEADER_OUT);
+    // A store can't hold modules: it keeps its Simple face.
+    expect(view.containers.has("fresh-db")).toBe(false);
   });
 });
 

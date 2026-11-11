@@ -3,15 +3,16 @@ import type { Point } from "../layout/metrics.ts";
 import {
   FAN_CAPTION_H,
   FAN_CELL,
-  FAN_CELL_DETAIL,
   FAN_EDGE_MARGIN,
   FAN_GRID_OFFSET,
   FAN_ITEM_SIZE,
   FAN_MAX_SPREAD,
   FAN_RADIUS,
+  FAN_TILE_GAP,
   fanCenters,
   fanGrid,
   gridBounds,
+  placeBeside,
   placeFan,
   placeGrid,
 } from "./fan.ts";
@@ -30,8 +31,8 @@ describe("fanCenters", () => {
     expect(Math.round(Math.hypot(seven[0]?.x ?? 0, seven[0]?.y ?? 0))).toBe(FAN_RADIUS + 5 * 24);
     expect(Math.round(angle(seven[0] ?? { x: 0, y: 0 }))).toBe(-FAN_MAX_SPREAD / 2);
     expect(Math.round(angle(seven[6] ?? { x: 0, y: 0 }))).toBe(FAN_MAX_SPREAD / 2);
-    // A "before" tab fans left.
-    expect(fanCenters(0, 0, 3, true).every((p) => p.x < 0)).toBe(true);
+    // Every item is right of the tab.
+    expect(seven.every((p) => p.x > 0)).toBe(true);
   });
 });
 
@@ -68,17 +69,13 @@ describe("fanGrid", () => {
     // Rows a cell apart, centred on the tab (each item sits above its caption).
     expect(rows.map((y) => y - (rows[0] ?? 0))).toEqual([0, 1, 2, 3].map((i) => i * FAN_CELL.h));
     expect(((rows[0] ?? 0) + (rows[3] ?? 0)) / 2 + FAN_CAPTION_H / 2).toBeCloseTo(0);
-    // Each row starts in the first column, right of an "after" tab.
+    // Each row starts in the first column, right of the tab.
     const first = FAN_GRID_OFFSET + FAN_CELL.w / 2;
     expect(cells.map((p) => (p.x - first) / FAN_CELL.w)).toEqual([0, 1, 2, 3, 0, 1, 2, 3, 0, 0, 1]);
     // An item's column is its place in its group, whatever comes after it.
     expect(fanGrid(0, 0, groups.slice(0, 9)).map((p) => p.x)).toEqual(
       cells.slice(0, 9).map((p) => p.x),
     );
-    // A "before" tab's grid ends left of it, still read left to right.
-    const left = fanGrid(0, 0, groups, true);
-    expect(Math.max(...left.map((p) => p.x)) + FAN_CELL.w / 2).toBe(-FAN_GRID_OFFSET);
-    expect(nth(left, 1).x - nth(left, 0).x).toBe(FAN_CELL.w);
   });
 
   it("stays on the board as one block", () => {
@@ -104,26 +101,66 @@ describe("fanGrid", () => {
     expect(placeGrid(middle, board)).toEqual(middle);
   });
 
-  it("wraps a long group after `columns`, in cells sized for a detail line", () => {
-    // Four, five and seven items in rows of at most five: rows of 4, 5, 5 and 2.
-    const long = [...Array(4).fill("lead"), ...Array(5).fill("part"), ...Array(7).fill("stub")];
-    const layout = { cell: FAN_CELL_DETAIL, columns: 5 };
-    const cells = fanGrid(0, 0, long, true, layout);
-    const rows = [...new Set(cells.map((p) => p.y))];
-    expect(rows.map((y) => y - (rows[0] ?? 0))).toEqual([0, 1, 2, 3].map((i) => i * 108));
-    const first = -FAN_GRID_OFFSET - 5 * FAN_CELL_DETAIL.w + FAN_CELL_DETAIL.w / 2;
-    expect(cells.map((p) => (p.x - first) / FAN_CELL_DETAIL.w)).toEqual([
-      0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1,
-    ]);
-    // Centred on the tab, captions included; the panel is the cells' box.
-    const box = gridBounds(cells, FAN_CELL_DETAIL);
-    expect(box).toEqual({ x: -FAN_GRID_OFFSET - 600, y: -216, w: 600, h: 432 });
-    // Kept on a board as one block, measured with the same cells.
-    const placed = placeGrid(cells, { x: -700, y: -200, w: 800, h: 500 }, FAN_CELL_DETAIL);
-    const moved = gridBounds(placed, FAN_CELL_DETAIL);
-    expect(moved.y).toBe(-200 + FAN_EDGE_MARGIN);
-    expect(moved.x).toBe(box.x);
-    // Without a limit a group stays on one row, as before.
-    expect(new Set(fanGrid(0, 0, long).map((p) => p.y)).size).toBe(3);
+  it("goes beside its own tile, not over it, where the board is too narrow beside the tab", () => {
+    // A 128px tile whose tab rests on its right edge, 212px from the board's right edge: the
+    // grid (four columns, 416px) can't sit right of the tab.
+    const tile = { x: 500, y: 300, w: 128, h: 128 };
+    const rest = { x: 626, y: 364 };
+    const cells = fanGrid(rest.x, rest.y, groups);
+    const box = gridBounds(cells);
+    const covers = (placed: readonly Point[]) => {
+      const b = gridBounds(placed);
+      return (
+        b.x < tile.x + tile.w && b.x + b.w > tile.x && b.y < tile.y + tile.h && b.y + b.h > tile.y
+      );
+    };
+    // Kept on the board only, it would slide back over the tile.
+    const narrow = { x: 0, y: 0, w: 840, h: 900 };
+    expect(covers(placeGrid(cells, narrow))).toBe(true);
+    // With the tile to avoid: on its left, at the tab's height, as one block.
+    const left = placeGrid(cells, narrow, tile);
+    expect(covers(left)).toBe(false);
+    const moved = gridBounds(left);
+    expect(moved.x + moved.w).toBe(tile.x - FAN_TILE_GAP);
+    expect(moved.y).toBe(box.y);
+    expect(nth(left, 1).x - nth(left, 0).x).toBe(FAN_CELL.w);
+    // No room on either side: below the tile, centred on it, kept inside the board.
+    const tight = { x: 200, y: 0, w: 560, h: 900 };
+    const below = gridBounds(placeGrid(cells, tight, tile));
+    expect(below.y).toBe(tile.y + tile.h + FAN_TILE_GAP);
+    expect(below.x).toBe(tight.x + tight.w - FAN_EDGE_MARGIN - box.w);
+    // A tile low on the board: above it instead.
+    const low = { ...tile, y: 600 };
+    const above = gridBounds(placeGrid(fanGrid(rest.x, 664, groups), tight, low));
+    expect(above.y + above.h).toBe(low.y - FAN_TILE_GAP);
+    // No side has room (a tile in the middle of a board too small for the grid on any side): the
+    // grid still keeps off the tile, its panel included, on the side that covers least.
+    const middle = { x: 445, y: 290, w: 128, h: 128 };
+    const small = { x: 0, y: 0, w: 650, h: 708 };
+    const squeezed = gridBounds(placeGrid(fanGrid(571, 354, groups), small, middle));
+    expect(squeezed.x + squeezed.w).toBeLessThanOrEqual(middle.x - 8);
+    expect(squeezed.x).toBe(FAN_EDGE_MARGIN);
+    // Room beside the tab: where it was.
+    expect(placeGrid(cells, { x: 0, y: 0, w: 1400, h: 900 }, tile)).toEqual(cells);
+  });
+});
+
+describe("placeBeside", () => {
+  it("takes the first side with room, else the one that covers least", () => {
+    const board = { x: 0, y: 0, w: 1000, h: 800 };
+    const avoid = { x: 400, y: 300, w: 200, h: 100 };
+    const size = { w: 300, h: 200 };
+    // Right, centred on the tile's middle.
+    expect(placeBeside(size, avoid, board)).toEqual({ x: 628, y: 250 });
+    // Below first, centred on a given point, slid inside the board.
+    expect(
+      placeBeside(size, avoid, board, { sides: ["below"], gap: 8, align: { x: 950, y: 0 } }),
+    ).toEqual({ x: 1000 - FAN_EDGE_MARGIN - 300, y: 408 });
+    // Left of a tile near the right edge.
+    expect(placeBeside(size, { ...avoid, x: 760 }, board)).toEqual({ x: 432, y: 250 });
+    // Too big for any side: inside the board, covering as little as it can.
+    const big = placeBeside({ w: 900, h: 700 }, avoid, board);
+    expect(big.x).toBeGreaterThanOrEqual(FAN_EDGE_MARGIN);
+    expect(big.y).toBeGreaterThanOrEqual(FAN_EDGE_MARGIN);
   });
 });

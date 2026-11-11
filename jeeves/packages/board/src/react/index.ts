@@ -1,5 +1,5 @@
 // The board's React layer: React Flow showing tiles and lines where ELK put them, the layout
-// hooks, the camera, the selected tile's pull tabs, connect mode's drag and the red X (for a
+// hooks, the camera, the selected tile's tabs and fans, connect mode's drag and the red X (for a
 // caller's own removable marks, such as an arrow inside a tile face). React, React DOM and
 // React Flow are peer dependencies.
 

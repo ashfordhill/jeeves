@@ -130,7 +130,8 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
     await expect(rows).toHaveText(TRANSCODER_ROWS);
     await expect(rows.first()).toHaveAttribute("data-module", "transcoder-consumer");
     await expect(rows.nth(1)).toHaveAttribute("title", "Segmenter and encoder");
-    expect(detailed.tiles.transcoder).toContain("256px×224px");
+    // Five rows, then the footer that holds its `+`.
+    expect(detailed.tiles.transcoder).toContain("256px×256px");
     expect(Object.keys(detailed.lines)).toHaveLength(YOUTUBE_DETAILED_LINES);
     for (const line of WRITES) expect(detailed.lines[line]).toBeTruthy();
     expect(detailed.lines["transcoder-write"]).toBeUndefined();
@@ -561,15 +562,32 @@ test("a new project opens in Detailed, on the left, and an old Overview choice r
     .toBe("simple");
 });
 
-test("the TinyURL foundation, which has no modules, looks the same in both views", async ({
+test("the TinyURL foundation, which has no modules: its services are containers holding just the +", async ({
   page,
 }) => {
   const id = await createStudy(page, "E2E UI07 foundation");
   try {
+    // Detailed: each Service that can hold modules is a container with no rows and its `+` (V3-03);
+    // every other tile and every line is as in Simple.
     const detailed = await settled(page);
-    await expect(page.locator(".lane-container")).toHaveCount(0);
+    const containers = page.locator(".react-flow__node:has(.lane-container)");
+    await expect(containers).toHaveCount(2);
+    await expect(page.locator(".lane-container-row")).toHaveCount(0);
+    for (const container of await containers.all())
+      await expect(container.getByRole("button", { name: "Add module", exact: true })).toHaveCount(
+        1,
+      );
+    const held = await containers.evaluateAll((nodes) =>
+      nodes.map((node) => (node as HTMLElement).dataset.id),
+    );
     const simple = await show(page, "Simple");
-    expect(simple).toEqual(detailed);
+    await expect(page.locator(".lane-container")).toHaveCount(0);
+    expect(Object.keys(simple.tiles)).toEqual(Object.keys(detailed.tiles));
+    expect(Object.keys(simple.lines)).toEqual(Object.keys(detailed.lines));
+    const size = (tile: unknown) => String(tile).split(" ").at(-1);
+    for (const [id, tile] of Object.entries(simple.tiles))
+      if (held.includes(id)) expect(size(detailed.tiles[id]), id).toBe("256px×96px");
+      else expect(size(detailed.tiles[id]), id).toBe(size(tile));
     expect(await show(page, "Detailed")).toEqual(detailed);
   } finally {
     await page.request.delete(`/api/projects/${id}`);

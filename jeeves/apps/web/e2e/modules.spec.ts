@@ -205,7 +205,8 @@ test("an open module is chat's selection, and its host's when it closes", async 
       return selection;
     };
     const before = await design(page, id);
-    await tile(page, "Transcoder").click();
+    // The container's header selects the tile (its middle is a module row).
+    await tile(page, "Transcoder").click({ position: { x: 20, y: 12 } });
     await inspector.getByRole("button", { name: `Open ${encoder}`, exact: true }).click();
     expect(await send("Describe this module")).toEqual(["transcoder-encoder"]);
     const history = await (await page.request.get(`/api/projects/${id}/chat`)).json();

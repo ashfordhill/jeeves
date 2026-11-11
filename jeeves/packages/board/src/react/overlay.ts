@@ -89,14 +89,10 @@ export function fallbackTileRect(rest: { right: number; top: number }, size: Siz
   return { x: rest.right - size.w, y: rest.top - 8, w: size.w, h: size.h, rx: 14 };
 }
 
-/** Where the ribbon starts: under the tile face, near the pulled side, level with the tab. */
-export function underTileOrigin(
-  tile: TileRect,
-  restY: number,
-  before: boolean,
-): { x: number; y: number } {
+/** Where the ribbon starts: under the tile face, near its right side, level with the tab. */
+export function underTileOrigin(tile: TileRect, restY: number): { x: number; y: number } {
   return {
-    x: before ? tile.x + 22 : tile.x + tile.w - 22,
+    x: tile.x + tile.w - 22,
     y: Math.min(Math.max(restY, tile.y + tile.rx + 8), tile.y + tile.h - tile.rx - 8),
   };
 }

@@ -162,7 +162,7 @@ export async function clickLine(page: Page, id: string) {
 }
 
 /** The element's box once the camera and layout have stopped moving it. */
-async function settledBox(target: Locator) {
+export async function settledBox(target: Locator) {
   let last = "";
   for (let i = 0; i < 40; i += 1) {
     const box = await target.boundingBox();
@@ -174,8 +174,49 @@ async function settledBox(target: Locator) {
   throw new Error("The element is not drawn, or never stops moving.");
 }
 
+/** The open fan's items (every kind, in its slot), opened by a click or a pull. */
+export const fan = (page: Page) => page.locator(".board-pull [data-fan-item]");
+/** An item of the open fan, by its name. */
+export const fanItem = (page: Page, name: string) =>
+  page.locator(".board-pull").getByRole("button", { name, exact: true });
+
 /**
- * Presses one of the selected tile's pull tabs (by its accessible name, such as "Add linked tile")
+ * Clicks one of the selected tile's tabs (by its accessible name, such as "Add linked tile"), which
+ * opens its fan until the next click.
+ */
+export async function openFan(page: Page, name: string, tab: string) {
+  const handle = tile(page, name).getByRole("button", { name: tab, exact: true });
+  await settledBox(handle);
+  await handle.click();
+  await expect(handle).toHaveAttribute("aria-expanded", "true");
+  await expect(fan(page).first()).toBeVisible();
+}
+
+/** Clicks the selected tile's tab, then the fan's item `item`, by mouse. */
+export async function pickFrom(page: Page, name: string, tab: string, item: string) {
+  await openFan(page, name, tab);
+  await fanItem(page, item).click();
+  await expect(fan(page)).toHaveCount(0);
+}
+
+/** The open module menu (a tile's `+`, on the board or in the inspector). */
+export const moduleMenu = (page: Page) => page.getByRole("menu", { name: /^Add module to / });
+
+/**
+ * Clicks the `+` in `scope` (a tile on the board, or the inspector), then the menu's `kind`, by
+ * mouse; the new module's page opens with its name focused.
+ */
+export async function addModuleFrom(page: Page, scope: Locator, kind: string) {
+  const plus = scope.getByRole("button", { name: "Add module", exact: true });
+  await settledBox(plus);
+  await plus.click();
+  await expect(moduleMenu(page)).toBeVisible();
+  await moduleMenu(page).getByRole("menuitem", { name: kind, exact: true }).click();
+  await expect(moduleMenu(page)).toHaveCount(0);
+}
+
+/**
+ * Presses one of the selected tile's tabs (by its accessible name, such as "Add linked tile")
  * and pulls it past the 36px threshold, so the fan opens. The mouse stays down.
  */
 export async function pull(page: Page, name: string, tab: string, by = { x: 60, y: 12 }) {

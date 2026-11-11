@@ -1,11 +1,14 @@
-import type { Page } from "@playwright/test";
 import {
   createStudy,
   design,
   dragOnto,
   expect,
+  fan,
+  fanItem,
   lines,
   moveOnto,
+  openFan,
+  pickFrom,
   pull,
   ready,
   test,
@@ -13,10 +16,6 @@ import {
   tiles,
 } from "./studio.ts";
 
-/** The open fan's items (every kind, in its slot). */
-const fan = (page: Page) => page.locator(".board-pull [data-fan-item]");
-const fanItem = (page: Page, name: string) =>
-  page.locator(".board-pull").getByRole("button", { name, exact: true });
 const LINK_TAB = "Add linked tile";
 /** The link fan's eleven kinds by row (application, data, messaging, edge), as named in it. */
 const FAN = [
@@ -26,17 +25,15 @@ const FAN = [
   ["CDN", "External API"],
 ];
 
-test("pulls the link tab onto a kind to add a linked tile", async ({ page, tinyurl: id }) => {
-  await tile(page, "Redirect service").click();
-  // One link tab on the right, and on the left only the module `+` (linking existing tiles is
-  // Connect mode's).
-  const side = (which: string) =>
-    tile(page, "Redirect service").locator(`.board-tabs[data-side="${which}"] .board-tab`);
-  await expect(side("after")).toHaveCount(1);
-  await expect(side("after")).toHaveAttribute("data-glyph", "link");
-  await expect(side("before")).toHaveCount(1);
-  await expect(side("before")).toHaveAttribute("aria-label", "Add module");
-  await pull(page, "Redirect service", LINK_TAB);
+test("clicks the link tab, then a kind, to add a linked tile", async ({ page, tinyurl: id }) => {
+  await tile(page, "Redirect service").click({ position: { x: 20, y: 12 } });
+  // One tab, the link tab on the right (linking existing tiles is Connect mode's); the module `+`
+  // is inside the container, not a tab.
+  const tabs = tile(page, "Redirect service").locator(".board-tab");
+  await expect(tabs).toHaveCount(1);
+  await expect(tabs).toHaveAttribute("data-glyph", "link");
+  await expect(tile(page, "Redirect service").locator(".lane-container-add")).toHaveCount(1);
+  await openFan(page, "Redirect service", LINK_TAB);
   // All eleven kinds, captioned, a row per group in a fixed order; after a service all fit.
   await expect(fan(page)).toHaveCount(11);
   await expect(page.locator(".board-pull .board-fan-caption")).toHaveText(FAN.flat());
@@ -48,8 +45,7 @@ test("pulls the link tab onto a kind to add a linked tile", async ({ page, tinyu
   expect(rows.slice(0, 4).every((top) => top === rows[0])).toBe(true);
   // Every item and its caption is on screen.
   for (const item of await fan(page).all()) await expect(item).toBeInViewport({ ratio: 1 });
-  await moveOnto(page, fanItem(page, "Cache"));
-  await page.mouse.up();
+  await fanItem(page, "Cache").click();
 
   await ready(page);
   await expect(tiles(page)).toHaveCount(12);
@@ -68,20 +64,24 @@ test("greys the kinds the rules refuse there, with the reason", async ({ page, t
 
   // After a queue only applications fit: a Service and a Worker both consume.
   await tile(page, "Click events").click();
-  await pull(page, "Click events", LINK_TAB);
+  await openFan(page, "Click events", LINK_TAB);
   await expect(fan(page)).toHaveCount(11);
   for (const name of FAN[0] ?? [])
     await expect(fanItem(page, name)).not.toHaveAttribute("aria-disabled");
   for (const name of [...(FAN[1] ?? []), ...(FAN[2] ?? []), ...(FAN[3] ?? [])])
     await expect(fanItem(page, name)).toHaveAttribute("aria-disabled", "true");
   await moveOnto(page, fanItem(page, "Search index"));
-  // Its tip gives the name and the reason; releasing there changes nothing.
+  // Its tip gives the name and the reason; a click there changes nothing, and the fan stays open
+  // until Escape.
   const tip = page.locator(".board-fan-tip");
   await expect(tip).toContainText("Search index");
   await expect(tip.locator(".board-fan-reason")).toHaveText(
     "Click events can't link to a search index. A queue feeds only an application, not a search index.",
   );
+  await page.mouse.down();
   await page.mouse.up();
+  await expect(fan(page)).toHaveCount(11);
+  await page.keyboard.press("Escape");
 
   await expect(fan(page)).toHaveCount(0);
   await expect(tiles(page)).toHaveCount(11);
@@ -91,7 +91,7 @@ test("greys the kinds the rules refuse there, with the reason", async ({ page, t
 test("a greyed kind's tip never hides the kind below it", async ({ page, tinyurl: id }) => {
   // After an action, Message channel is greyed; its tip, with the reason, hangs over CDN below it.
   await tile(page, "Open link").click();
-  await pull(page, "Open link", LINK_TAB);
+  await openFan(page, "Open link", LINK_TAB);
   await moveOnto(page, fanItem(page, "Message channel"));
   const tip = page.locator(".board-fan-tip");
   await expect(tip.locator(".board-fan-reason")).toBeVisible();
@@ -101,6 +101,7 @@ test("a greyed kind's tip never hides the kind below it", async ({ page, tinyurl
   // Straight down onto CDN: the pointer passes through the tip, and CDN is picked.
   await moveOnto(page, fanItem(page, "CDN"));
   await expect(fanItem(page, "CDN")).toHaveAttribute("data-hover", "true");
+  await page.mouse.down();
   await page.mouse.up();
   await ready(page);
   await expect(tile(page, "CDN")).toHaveClass(/selected/);
@@ -110,9 +111,9 @@ test("a greyed kind's tip never hides the kind below it", async ({ page, tinyurl
   });
 });
 
-test("a link tab released on a tile changes nothing", async ({ page, tinyurl: id }) => {
-  await tile(page, "Redirect service").click();
-  // The fan opens on the right; Open link, on the left, is no target.
+test("a link tab pulled and released on a tile changes nothing", async ({ page, tinyurl: id }) => {
+  await tile(page, "Redirect service").click({ position: { x: 20, y: 12 } });
+  // A pull still opens the fan, on the right; Open link, on the left, is no target.
   await pull(page, "Redirect service", LINK_TAB);
   await expect(fan(page)).toHaveCount(11);
   await expect(page.locator(".board-scrim")).toHaveCount(0);
@@ -139,7 +140,7 @@ test("an action's link tab adds an entry; a drag in Connect mode adds one too", 
   await tile(page, "Open link").click();
   await expect(tabs("Open link")).toHaveCount(1);
   await expect(tabs("Open link")).toHaveAttribute("data-glyph", "link");
-  await pull(page, "Open link", LINK_TAB);
+  await openFan(page, "Open link", LINK_TAB);
   // An entry is a service (not a worker), Uploads, Identity or the CDN.
   for (const name of ["Microservice", "Uploads", "Identity", "CDN"])
     await expect(fanItem(page, name)).not.toHaveAttribute("aria-disabled");
@@ -151,8 +152,7 @@ test("an action's link tab adds an entry; a drag in Connect mode adds one too", 
   await expect(page.locator(".board-fan-tip .board-fan-reason")).toHaveText(
     "Open link can't link to object storage. An action reaches a service (not a worker), an API or the CDN.",
   );
-  await moveOnto(page, fanItem(page, "Identity"));
-  await page.mouse.up();
+  await fanItem(page, "Identity").click();
   await ready(page);
   await expect(tile(page, "Identity")).toHaveClass(/selected/);
   await expect(lines(page)).toHaveCount(13);
@@ -167,10 +167,8 @@ test("an action's link tab adds an entry; a drag in Connect mode adds one too", 
   await expect(lines(page)).toHaveCount(12);
 
   // A Microservice after the Shorten service has no entry: a drag from Shorten makes it one.
-  await tile(page, "Shorten service").click();
-  await pull(page, "Shorten service", LINK_TAB);
-  await moveOnto(page, fanItem(page, "Microservice"));
-  await page.mouse.up();
+  await tile(page, "Shorten service").click({ position: { x: 20, y: 12 } });
+  await pickFrom(page, "Shorten service", LINK_TAB, "Microservice");
   await ready(page);
   await expect(lines(page)).toHaveCount(13);
   await tile(page, "Shorten").click();
@@ -208,13 +206,12 @@ test("builds both actions from a blank design", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await createStudy(page, "E2E Blank actions", "blank");
   try {
-    // A blank design opens with the user selected and its one `+`.
+    // A blank design opens with the user selected and its one `+`, which opens by a click.
     await expect(tile(page, "User").locator(".board-tab")).toHaveCount(1);
     await expect(tile(page, "User").locator(".board-tab")).toHaveAttribute("data-glyph", "plus");
-    await pull(page, "User", "Add action");
+    await openFan(page, "User", "Add action");
     await expect(fan(page)).toHaveCount(2);
-    await moveOnto(page, fanItem(page, "Consume"));
-    await page.mouse.up();
+    await fanItem(page, "Consume").click();
     await ready(page);
     // The new action is selected with its Name ready to type over.
     const name = page.locator(".studio-inspector").getByLabel("Name", { exact: true });
@@ -234,23 +231,20 @@ test("builds both actions from a blank design", async ({ page }) => {
       page.locator(".studio-inspector").getByRole("list", { name: "Warnings" }),
     ).toHaveText(nothing);
 
-    await pull(page, "Watch", LINK_TAB);
-    await moveOnto(page, fanItem(page, "Microservice"));
-    await page.mouse.up();
+    await pickFrom(page, "Watch", LINK_TAB, "Microservice");
     await ready(page);
     await expect(tile(page, "Microservice")).toHaveClass(/selected/);
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
 
     // The user's `+` greys the action the design already has.
     await tile(page, "User").click();
-    await pull(page, "User", "Add action");
+    await openFan(page, "User", "Add action");
     await expect(fanItem(page, "Consume")).toHaveAttribute("aria-disabled", "true");
     await moveOnto(page, fanItem(page, "Consume"));
     await expect(page.locator(".board-fan-tip .board-fan-reason")).toHaveText(
       "This design already has a Consume action; each lane has one.",
     );
-    await moveOnto(page, fanItem(page, "Produce"));
-    await page.mouse.up();
+    await fanItem(page, "Produce").click();
     await ready(page);
     await expect(tiles(page)).toHaveCount(4);
     await expect(lines(page)).toHaveCount(3);
@@ -283,9 +277,7 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await createStudy(page, "E2E Every kind", "blank");
   try {
-    await pull(page, "User", "Add action");
-    await moveOnto(page, fanItem(page, "Consume"));
-    await page.mouse.up();
+    await pickFrom(page, "User", "Add action", "Consume");
     await ready(page);
     // Each kind from a tile it may follow: the action's entries, then a service's stores, then
     // the Uploads service's queue, external API and worker. A tile links to at most four.
@@ -304,16 +296,20 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
       ["Uploads", "Worker service", "worker", "cpu", "Worker"],
     ];
     for (const [index, [from, name, kind, icon, label]] of plan.entries()) {
-      await tile(page, from).click();
-      await pull(page, from, LINK_TAB);
-      await moveOnto(page, fanItem(page, name));
-      await page.mouse.up();
+      await tile(page, from).click({ position: { x: 20, y: 12 } });
+      await pickFrom(page, from, LINK_TAB, name);
       await ready(page);
-      // The new tile is named after its kind, shows its kind's icon and label and is selected.
+      // The new tile is named after its kind, shows its kind's icon and label and is selected. In
+      // Detailed a tile that can hold modules is a container, even with none yet.
       const added = tile(page, name);
       await expect(added).toHaveClass(/selected/);
-      await expect(added.locator(`.lane-tile-icon svg.tabler-icon-${icon}`)).toHaveCount(1);
-      await expect(added.locator(".lane-tile-kind")).toHaveText(label);
+      await expect(
+        added.locator(`:is(.lane-tile-icon, .lane-container-icon) svg.tabler-icon-${icon}`),
+      ).toHaveCount(1);
+      await expect(added.locator(":is(.lane-tile-kind, .lane-container-kind)")).toHaveText(label);
+      await expect(added.locator(".lane-container")).toHaveCount(
+        ["service", "uploads", "worker"].includes(kind) ? 1 : 0,
+      );
       await expect(tiles(page)).toHaveCount(3 + index);
       const saved = await design(page, id);
       const element = saved.elements.find((e) => e.name === name)?.id;

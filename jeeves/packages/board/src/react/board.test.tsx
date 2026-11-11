@@ -12,7 +12,7 @@ import {
   type LineSpec,
   type TileSpec,
 } from "./Board.tsx";
-import { FAN_CELL_DETAIL, fanCenters, fanGrid, placeGrid } from "./fan.ts";
+import { fanCenters, fanGrid, placeGrid } from "./fan.ts";
 import type { FanItem, TabSpec } from "./TileChrome.tsx";
 
 /**
@@ -527,7 +527,6 @@ describe("Board", () => {
     const tab: TabSpec = {
       id: "add",
       kind: "create",
-      side: "after",
       label: "Add after",
       items: [],
     };
@@ -914,7 +913,6 @@ describe("Board", () => {
     const tab = (items: FanItem[]): TabSpec => ({
       id: "add",
       kind: "create",
-      side: "after",
       label: "Add after",
       items,
     });
@@ -959,7 +957,10 @@ describe("Board", () => {
     ]);
     // An arc fan has no panel and no captions.
     expect(document.querySelectorAll(".board-fan-panel, .board-fan-caption")).toHaveLength(0);
-    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 600, clientY: 400 });
+    // Pulled and released on nothing: it springs back.
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    expect(fan()).toEqual([]);
 
     // Disabling an item keeps every item in its slot.
     rerender(board([item("a"), item("b", "B doesn't fit here."), item("c")]));
@@ -992,6 +993,14 @@ describe("Board", () => {
   });
 
   it("lays a grid fan out in a row per group, captions every item and picks from it", async () => {
+    // The tile sits left of the tab, which rests at the board's centre, so the grid has room.
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains("board-tile")
+        ? DOMRect.fromRect({ x: 456, y: 336, width: 128, height: 128 })
+        : DOMRect.fromRect({ x: 0, y: 0, width: 1200, height: 800 });
+    });
     const capture = { setPointerCapture: () => {}, releasePointerCapture: () => {} };
     Object.assign(HTMLElement.prototype, capture);
     if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
@@ -1021,7 +1030,6 @@ describe("Board", () => {
             {
               id: "link",
               kind: "create",
-              side: "after",
               label: "Add linked tile",
               glyph: "link",
               layout: "grid",
@@ -1039,7 +1047,12 @@ describe("Board", () => {
     // One panel under the cells, so the items read over the tiles they cover.
     expect(document.querySelectorAll(".board-pull .board-fan-panel")).toHaveLength(1);
     // Every item in its grid slot, kept on the 1200×800 board, with its name as a caption.
-    const slots = placeGrid(fanGrid(600, 400, groups), { x: 0, y: 0, w: 1200, h: 800 });
+    const slots = placeGrid(
+      fanGrid(600, 400, groups),
+      { x: 0, y: 0, w: 1200, h: 800 },
+      { x: 456, y: 336, w: 128, h: 128 },
+    );
+    expect(slots).toEqual(fanGrid(600, 400, groups));
     const fan = [...document.querySelectorAll<HTMLElement>("[data-fan-item]")];
     expect(fan.map((el) => `${el.style.left},${el.style.top}`)).toEqual(
       slots.map((p) => `${p.x}px,${p.y}px`),
@@ -1057,20 +1070,18 @@ describe("Board", () => {
     });
     expect(onPick).toHaveBeenCalledWith("redirect", "link", "k4");
   });
-  it("captions grid items with a detail line, tips them with a description, wraps after `columns`", async () => {
+  it("opens a fan by a click, closes it on a second click, a click away, the wheel or Escape, and picks by a click", async () => {
     const capture = { setPointerCapture: () => {}, releasePointerCapture: () => {} };
     Object.assign(HTMLElement.prototype, capture);
     if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
-    let under: Element | null = null;
-    document.elementFromPoint = () => under;
-    const groups = ["lead", "part", "part", "part", "stub"];
+    document.elementFromPoint = () => null;
+    const groups = ["app", "app", "data"];
     const items: FanItem[] = groups.map((group, i) => ({
-      id: `m${i}`,
-      label: `Module ${i}`,
-      detail: group === "lead" ? "Template" : group === "part" ? "Part of a template" : "Stub",
-      description: `Does thing ${i}.`,
+      id: `k${i}`,
+      label: `Kind ${i}`,
       content: <span>{i}</span>,
       group,
+      ...(i === 1 && { disabled: "Kind 1 doesn't fit here." }),
     }));
     const onPick = vi.fn<NonNullable<BoardProps["onPick"]>>(() => undefined);
     render(
@@ -1086,12 +1097,11 @@ describe("Board", () => {
           mode="select"
           tabs={[
             {
-              id: "module",
+              id: "link",
               kind: "create",
-              side: "before",
-              label: "Add module",
+              label: "Add linked tile",
+              glyph: "link",
               layout: "grid",
-              columns: 2,
               items,
             },
           ]}
@@ -1099,33 +1109,64 @@ describe("Board", () => {
         />
       </div>,
     );
-    const handle = await screen.findByRole("button", { name: "Add module" });
-    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 600, clientY: 400 });
-    expect(document.querySelector(".board-pull")?.hasAttribute("data-detail")).toBe(true);
-    const slots = placeGrid(
-      fanGrid(600, 400, groups, true, { cell: FAN_CELL_DETAIL, columns: 2 }),
-      { x: 0, y: 0, w: 1200, h: 800 },
-      FAN_CELL_DETAIL,
+    const handle = await screen.findByRole("button", { name: "Add linked tile" });
+    const fan = () =>
+      document.querySelectorAll<HTMLElement>(".board-pull[data-clicked] [data-fan-item]");
+    /** A press and a release in place on the tab: a click. */
+    const click = () => {
+      fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 600, clientY: 400 });
+      fireEvent.pointerUp(handle, { pointerId: 1, clientX: 600, clientY: 400 });
+    };
+
+    click();
+    expect(fan()).toHaveLength(3);
+    expect(handle.getAttribute("aria-expanded")).toBe("true");
+    // No band and no ghost: the tab stays where it is.
+    expect(document.querySelector(".board-ribbon, .board-tab-ghost")).toBeNull();
+    expect(handle.hasAttribute("data-hidden")).toBe(false);
+    // A press on the fan (an item or its panel) keeps it open; the pointer on an item shows its
+    // tip; a click on a disabled one picks nothing.
+    const disabled = document.querySelector<HTMLElement>('[data-fan-item="k1"]');
+    if (!disabled) throw new Error("No item.");
+    fireEvent.pointerDown(disabled);
+    fireEvent.pointerDown(document.querySelector(".board-fan-panel") as Element);
+    fireEvent.pointerEnter(disabled);
+    expect(document.querySelector(".board-fan-tip")?.textContent).toBe(
+      "Kind 1Kind 1 doesn't fit here.",
     );
-    const fan = [...document.querySelectorAll<HTMLElement>("[data-fan-item]")];
-    expect(fan.map((el) => `${el.style.left},${el.style.top}`)).toEqual(
-      slots.map((p) => `${p.x}px,${p.y}px`),
-    );
-    // Rows: the lead; two parts, then the third wrapped; the stub.
-    expect(new Set(slots.map((p) => p.y)).size).toBe(4);
-    expect(fan.map((el) => el.querySelector(".board-fan-detail")?.textContent)).toEqual(
-      items.map((item) => item.detail),
-    );
-    expect(fan[2]?.querySelector(".board-fan-caption")?.firstChild?.textContent).toBe("Module 2");
-    // The tip under the pointer: its name, then its description.
-    under = document.querySelector('[data-fan-item="m2"]');
-    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 500, clientY: 400 });
-    const tip = document.querySelector(".board-fan-tip");
-    expect(tip?.hasAttribute("data-wrap")).toBe(true);
-    expect(tip?.querySelector(".board-fan-description")?.textContent).toBe("Does thing 2.");
+    fireEvent.click(disabled);
+    expect(onPick).not.toHaveBeenCalled();
+    expect(fan()).toHaveLength(3);
+
+    // A second click on the tab closes it.
+    click();
+    expect(fan()).toHaveLength(0);
+    expect(handle.getAttribute("aria-expanded")).toBe("false");
+    // A press anywhere else closes it.
+    click();
+    expect(fan()).toHaveLength(3);
+    fireEvent.pointerDown(document.body);
+    expect(fan()).toHaveLength(0);
+    // Escape closes it, and the wheel does.
+    click();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(fan()).toHaveLength(0);
+    click();
+    fireEvent.wheel(document.body);
+    expect(fan()).toHaveLength(0);
+
+    // The keyboard's click (no pointer press) toggles it too.
+    fireEvent.click(handle, { detail: 0 });
+    expect(fan()).toHaveLength(3);
+    fireEvent.click(handle, { detail: 0 });
+    expect(fan()).toHaveLength(0);
+
+    // A click on an enabled item picks it and closes the fan.
+    click();
     await act(async () => {
-      fireEvent.pointerUp(handle, { pointerId: 1, clientX: 500, clientY: 400 });
+      fireEvent.click(document.querySelector('[data-fan-item="k2"]') as Element);
     });
-    expect(onPick).toHaveBeenCalledWith("redirect", "module", "m2");
+    expect(onPick).toHaveBeenCalledWith("redirect", "link", "k2");
+    expect(fan()).toHaveLength(0);
   });
 });

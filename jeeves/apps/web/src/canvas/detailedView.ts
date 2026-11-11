@@ -3,11 +3,14 @@
 // code; it never changes the design, and the Simple view never uses it (`laneLayoutInput` stays its
 // only input).
 //
-// Containers. An application tile with at least one module is a container: `CONTAINER.w` wide, a
-// header, one `CONTAINER.row` row per module in `studio.components` order, then padding, the height
-// rounded up to the grid. Row i's ports sit at `header + row * i + row / 2` (64, 96, … with the
-// values below), the header's at `HEADER_PORT_Y`; the board puts the top of a tile with named
-// ports on the grid, so every one is on a grid line. A row has an `in` port when a line enters it
+// Containers. An application tile that can hold modules (`moduleKinds`: a Service, Worker or
+// Uploads, and the older coded kinds), or that has any, is a container: `CONTAINER.w` wide, a
+// header, one `CONTAINER.row` row per module in `studio.components` order, then the footer where
+// the live canvas puts its `+` (`CONTAINER.footer`; only padding when it can't take modules), so a
+// tile with no modules is a container holding just the `+`. Every height is a multiple of the
+// grid. Row i's ports sit at `header + row * i + row / 2` (64, 96, … with the values below), the
+// header's at `HEADER_PORT_Y`; the board puts the top of a tile with named ports on the grid, so
+// every one is on a grid line. A row has an `in` port when a line enters it
 // and an `out` port when one leaves it, so a module with no drawn line has a row with no port.
 // Lines at the tile level use the header ports, never the container's default mid-height port,
 // which is off the grid at most heights. Every other tile keeps its Simple view size, band and
@@ -35,6 +38,7 @@ import {
   type DesignDocument,
   LANE_ACTOR,
   type LaneGraph,
+  moduleKinds,
   moduleLinkSlot,
   moduleSlots,
   type StudioComponentKind,
@@ -42,8 +46,11 @@ import {
 } from "@jeeves/spec";
 import { laneLayoutInput } from "./laneLayout.ts";
 
-/** A container's width, header height, row pitch and bottom padding (px). */
-export const CONTAINER = { w: 256, header: 48, row: 32, padding: 16 } as const;
+/**
+ * A container's width, header height, row pitch, the footer under its rows that holds its `+`, and
+ * its bottom padding when it can't take modules (px).
+ */
+export const CONTAINER = { w: 256, header: 48, row: 32, footer: 48, padding: 16 } as const;
 /** The header's ports, for the container's own lines. */
 export const HEADER_PORT_Y = GRID;
 export const HEADER_IN = "header-in";
@@ -84,6 +91,8 @@ export type DetailedContainer = {
   tile: string;
   rows: readonly DetailedRow[];
   loaders: readonly DetailedLoader[];
+  /** It can take new modules (`moduleKinds`), so its footer holds the `+`. */
+  addable: boolean;
 };
 /**
  * A drawn line. `connection` is its canonical lane edge (a connection, an entry or the user's
@@ -115,8 +124,11 @@ export type DetailedView = {
   rowOf(module: string): DetailedRow | undefined;
 };
 
-const containerHeight = (rows: number) =>
-  Math.ceil((CONTAINER.header + CONTAINER.row * rows + CONTAINER.padding) / GRID) * GRID;
+const containerHeight = (rows: number, addable: boolean) =>
+  Math.ceil(
+    (CONTAINER.header + CONTAINER.row * rows + (addable ? CONTAINER.footer : CONTAINER.padding)) /
+      GRID,
+  ) * GRID;
 const rowY = (index: number) => CONTAINER.header + CONTAINER.row * index + CONTAINER.row / 2;
 
 /**
@@ -153,6 +165,9 @@ export function detailedView(
     hosted.set(item.host, own);
     rows.set(item.id, row);
   }
+  // Every tile that can take modules is a container too, with no rows yet.
+  const addable = new Set([...tiles].filter((tile) => moduleKinds(design, tile).length > 0));
+  for (const tile of addable) if (!hosted.has(tile)) hosted.set(tile, []);
 
   // Each edge's anchors: the modules that reach a tile through it, and each one's link there.
   // The Cache reader's loader is the one link between modules of a tile that is drawn.
@@ -255,7 +270,12 @@ export function detailedView(
   const layoutTiles = input.tiles.map((tile): LayoutTile => {
     const own = hosted.get(tile.id);
     if (!own) return tile;
-    containers.set(tile.id, { tile: tile.id, rows: own, loaders: loaders.get(tile.id) ?? [] });
+    containers.set(tile.id, {
+      tile: tile.id,
+      rows: own,
+      loaders: loaders.get(tile.id) ?? [],
+      addable: addable.has(tile.id),
+    });
     const header = (side: TilePort["side"], id: string): TilePort[] =>
       lines.some((line) =>
         side === "in"
@@ -275,7 +295,7 @@ export function detailedView(
     return {
       ...tile,
       w: CONTAINER.w,
-      h: containerHeight(own.length),
+      h: containerHeight(own.length, addable.has(tile.id)),
       ...(ports.length > 0 && { ports }),
     };
   });

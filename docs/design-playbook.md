@@ -1516,3 +1516,20 @@ can say what the tile holds ("Metadata", not "Metadata database"); keep names un
 two tiles hold the same thing (Metadata the database, Hot metadata its cache). A channel's label
 is its mode, Queue (each message to one consumer) or Topic (a copy to every subscriber), because
 that difference, not "channel", is what changes the design.
+
+## 2026-11-10 V3-03: put an add button where the thing goes, and never open over it
+
+A drag-out tab for adding modules sat outside the tile, on the side its lines come in, and had to
+be pulled to show anything. The owner's sketch put a **+** inside the frame, under the rows it
+adds to: the button reads as "one more of these", in place, and a click toggles a menu instead of
+asking for a gesture. Show it on every container in Detailed (an empty Service becomes a
+container holding just the +, so where modules go is visible before there are any), only on the
+selected tile in Simple (a 128px face has no free bottom; its top-left corner is clear of the
+icon, name, label and warning), and in the inspector's Modules section, with the same menu and the
+same command, so no path can offer a different list. A menu or fan opened from a tile must sit
+**beside** that tile, never over it: try the natural side, then left, below and above, and only a
+canvas too small on every side may cover it, as little as it can. Group the menu by what each
+kind will become in that tile (Template, Part of a template, Stub), as the owner reads it, and
+give each kind its one-line description in full: a menu at screen size has room a fan's caption
+did not. Click-away, a second click, the wheel and Escape all close it, and none of them changes
+the design.

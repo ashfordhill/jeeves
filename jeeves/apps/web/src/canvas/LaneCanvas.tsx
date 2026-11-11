@@ -2,7 +2,7 @@
 // every tile become board tiles; the user's lines to its actions, the entries and connections
 // become directed lines, dashed only when that relationship is asynchronous. The user's line to an
 // action goes with the action, so it has no X. Lines carry no words; their accessible names say
-// what they join. The selected tile's pull tabs come from `creation`, its X and the selected
+// what they join. The selected tile's tabs come from `creation`, its X and the selected
 // line's from `removal`, and connect mode's rules and new links from `connect`. A tile or action
 // with a design warning carries a mark (`Warnings.tsx`). Every tile and container shows its kind
 // label (`studioKindLabel`: a message channel's is Queue or Topic, by its mode).
@@ -18,8 +18,11 @@
 // each view's layout hints apart (`view`).
 //
 // A container's rows are its modules (`ModuleRows`): clicking one opens that module in the
-// inspector (`onOpenModule`). While a module is open its host stays selected, with its pull tabs
-// and X, but only the module's own drawn lines take the selection colour (the board's
+// inspector (`onOpenModule`). In Pointer mode every container that can take modules has a `+` in
+// its footer, and in the Simple view the selected tile has one in its corner (`BoardModuleAdding`
+// from `adding`): it opens the tile's module menu. While a module is open its host stays
+// selected, with its link tab and X, but only the module's own drawn lines take the selection
+// colour (the board's
 // `selectedTileLines` and `highlighted`), and only its row is marked. A row's port mark turns
 // blue with its line, whatever selected it. In the Simple view an open module only keeps its host
 // selected.
@@ -52,6 +55,7 @@ import { detailedView } from "./detailedView.ts";
 import { layoutEngine } from "./elk.ts";
 import { LineLegend } from "./LineLegend.tsx";
 import { laneLayoutInput } from "./laneLayout.ts";
+import { BoardModuleAdding, type ModuleAdding } from "./ModuleMenu.tsx";
 import { canonicalLine, drawnSelection, type WorkspaceSelection } from "./selection.ts";
 import { ActionTile } from "./tiles/ActionTile.tsx";
 import { ACTOR_NAME, ActorTile } from "./tiles/ActorTile.tsx";
@@ -81,6 +85,7 @@ export function LaneCanvas({
   removal,
   connect,
   onDisconnectModule,
+  adding,
   ref,
 }: {
   design: DesignDocument;
@@ -98,7 +103,7 @@ export function LaneCanvas({
   /** A module's row was clicked (Detailed view): select its host with the module open. */
   onOpenModule: (host: string, module: string) => void;
   onClear: () => void;
-  /** Pull tabs and fans for the selected tile (`useLaneCreation`). */
+  /** Tabs and fans for the selected tile (`useLaneCreation`). */
   creation?: Pick<BoardProps, "tabs" | "onPick">;
   /** The red X on the selected tile and line, and the removal's confirmation (`useLaneRemoval`). */
   removal?: Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
@@ -106,6 +111,8 @@ export function LaneCanvas({
   connect?: ConnectRules;
   /** Connect mode, Detailed view: the X on a module link (its drawn line or loader arrow). */
   onDisconnectModule?: (link: string) => void;
+  /** The tiles' module menus and the pick, for the `+` (Pointer mode only). */
+  adding?: ModuleAdding;
   ref?: Ref<BoardHandle>;
 }) {
   const { tiles, lines, warnings, kindLabel } = useMemo(() => {
@@ -150,6 +157,7 @@ export function LaneCanvas({
               label: name(node.id),
               content: (
                 <Tile
+                  id={node.id}
                   kind={node.kind}
                   name={name(node.id)}
                   label={kindLabel(node.id)}
@@ -189,11 +197,13 @@ export function LaneCanvas({
         shape: "rect",
         content: (
           <ContainerTile
+            id={tile.id}
             kind={graph.nodes[i]?.kind}
             name={tile.label}
             label={kindLabel(tile.id)}
             rows={container.rows}
             loaders={container.loaders}
+            addable={container.addable}
             warnings={warnings.get(tile.id)}
           />
         ),
@@ -235,6 +245,12 @@ export function LaneCanvas({
       return disconnect ? { ...line, removeLabel: disconnect.label } : line;
     });
   }, [detailed, lines, unlinks]);
+  // The `+`: every addable container's, and the selected tile's in the Simple view; none in
+  // Connect mode.
+  const boardAdding = useMemo(
+    () => (adding && mode === "select" ? { ...adding, selected: selected.tile } : undefined),
+    [adding, mode, selected.tile],
+  );
   const removeLine = removal?.onRemoveLine;
   const onRemoveLine =
     removeLine &&
@@ -248,31 +264,33 @@ export function LaneCanvas({
 
   return (
     <div className="lane-canvas">
-      <ModuleRows value={rows}>
-        <Board
-          ref={ref}
-          tiles={detailed?.tiles ?? tiles}
-          lines={boardLines}
-          engine={layoutEngine}
-          selected={drawn?.selected ?? selected}
-          mode={mode}
-          onSelectTile={onSelectTile}
-          onSelectLine={(line) => {
-            setClicked(line);
-            onSelectLine(canonical(line));
-          }}
-          onClear={onClear}
-          {...creation}
-          {...removal}
-          {...connect}
-          {...(onRemoveLine && { onRemoveLine })}
-          view={view}
-          {...(drawn && {
-            highlighted: drawn.highlighted,
-            selectedTileLines: drawn.selectedTileLines,
-          })}
-        />
-      </ModuleRows>
+      <BoardModuleAdding value={boardAdding}>
+        <ModuleRows value={rows}>
+          <Board
+            ref={ref}
+            tiles={detailed?.tiles ?? tiles}
+            lines={boardLines}
+            engine={layoutEngine}
+            selected={drawn?.selected ?? selected}
+            mode={mode}
+            onSelectTile={onSelectTile}
+            onSelectLine={(line) => {
+              setClicked(line);
+              onSelectLine(canonical(line));
+            }}
+            onClear={onClear}
+            {...creation}
+            {...removal}
+            {...connect}
+            {...(onRemoveLine && { onRemoveLine })}
+            view={view}
+            {...(drawn && {
+              highlighted: drawn.highlighted,
+              selectedTileLines: drawn.selectedTileLines,
+            })}
+          />
+        </ModuleRows>
+      </BoardModuleAdding>
       <LineLegend />
     </div>
   );

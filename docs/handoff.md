@@ -9051,3 +9051,91 @@ warnings. All my projects deleted (204).
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — V3-03: module + in the tile and inspector
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (owner feedback 4 and 9, D3; the
+[sketch](human-feedback/2026-11-10-module-add-button.png)). Docs: `studio.md` (Lane canvas, Detailed
+view, Size and fit, PNG export, Creating and connecting, Adding a module, Connect mode, Inspector,
+History, Limits), `CATALOG.md`, `PLAN.md`, a playbook lesson, the HUMAN_FEEDBACK resolution and the
+plan's status. Evidence: [v3-03](plans/youtube-v3/evidence/v3-03/) (4 shots).
+
+- **One menu, one command** (`canvas/ModuleMenu.tsx`): `ModuleAddButton` (a 28px blue `+`, dark
+  glyph) toggles `ModuleMenu`, a popover on <body> at screen size: "Add module to <tile>", then
+  groups Template / Part of a template / Stub (fieldset + legend pill), two kinds to a row, each
+  with icon, name and full one-line description; the status is the group (also in each item's
+  accessible description). A click on the `+` again, a press elsewhere, the wheel, a resize or
+  Escape closes it; a pick runs `addModule(projectId, host, kind)` and the workspace opens the
+  module with its Name focused. Keyboard activation focuses the first item. `moduleMenuGroups`
+  replaces `creation.tsx`'s `moduleItems`; the module tab is gone from `creation.tsx`.
+- **Where the `+` is:** Detailed: every container's footer, centred, selected or not.
+  `detailedView.ts`: every tile with `moduleKinds` (Service, Worker, Uploads, Redirect,
+  Notifications, Billing) is a container, so an empty one is 256×96 (header + footer);
+  `CONTAINER.footer` 48 (padding 16 stays for a container that can't take modules);
+  `DetailedContainer.addable`. Heights are 96 + 32·rows; row and header ports unchanged (all on the
+  grid). Simple: the selected tile's top-left corner (8px in), clear of icon, name, kind label and
+  the top-right warning mark. Inspector: under the Modules cards; the section now shows for any
+  tile that can hold modules. None in Connect mode or exports (`BoardModuleAdding` context, given
+  only by the live canvas in Pointer mode).
+- **Placement:** board menu beside the tile (below, right, left, above; `placeBeside`) inside the
+  canvas, else beside it in the window (over a rail), else least cover. Inspector menu: left of the
+  rail, top level with the `+`, slid into the window.
+- **Board (generic):** a tab opens its fan by a **click** (toggle; click-away, wheel, resize and
+  Escape close; items are clickable, tips on hover); a pull still works (kept, it cost nothing).
+  `placeGrid(centers, board, avoid)` puts a grid fan that would cover its tile beside it instead
+  (left at the tab's height, below, above; its panel kept 2px clear), else least cover;
+  `placeBeside` is exported for any box. **Removed (dead):** before-side tabs (`CreateTab.side`),
+  `badge`, `columns`, `FAN_CELL_DETAIL`/`FanCell`, `FanItem.detail`/`description`, `fanCenters`'
+  and `fanGrid`'s `before`, `underTileOrigin`'s side and their CSS. Layout's `DockSide` is kept.
+
+**Tests.** Board: `fan.test.ts` (grid beside its tile: left, below, above, squeezed;
+`placeBeside`), `board.test.tsx` (the detail-caption test became the click test: toggle, press on
+fan/panel keeps it, click-away, Escape, wheel, keyboard, pick). Web: `ModuleMenu.test.tsx`
+(groups; toggle/close/pick; which tiles show the `+`), `detailedView.test.ts` (every host a
+container, exact heights, an empty Service 96px with header ports; v2 worker 192). New
+`e2e/module-menu.spec.ts` (5): empty Service container with its `+` (centred at the bottom inside
+the frame), toggle, click-away, Escape, pick, Connect hides it; Simple `+` clear of the label;
+inspector `+` left of the rail, same kinds; link fan by click; narrow canvas (1280×800, both
+rails) fan beside its tile. Updated to clicks: `spawn` (one pull test kept), `module-authoring`
+(menu kinds and statuses), `ids-follow-names`, `v2-rebuild.ts` (tabs and `+` by click, in
+Detailed). Header clicks instead of centre clicks (a taller container's middle is a row):
+`detailed-view`, `ids-follow-names`, `edit-history`, `modules`; `detailed-view` Transcoder
+256×256 and the foundation's two Services now containers.
+
+**Checks.**
+- `pnpm check` exited 0: **647 tests in 91 files** (lint: only the existing info). The board's
+  edge-pan test ("pans while a connect drag is held…") failed once in four isolated runs while I
+  worked (timing; this unit doesn't touch it); it passed in `pnpm check`.
+- **E2E:** first full run 72 passed, 2 failed (`edit-history.spec.ts:96`, `modules.spec.ts:187`:
+  centre clicks now landing on a module row); fixed to header clicks, alone 2/2 passed; final full
+  run **74 passed (4.3m)**. The v2 rebuild passes by mouse (1.4m alone). A project leaked by the
+  failed run was deleted from `jeeves_e2e`; none remain.
+- Web build passed (1.0 s, the existing chunk-size advisory).
+- **Mouse check** (scripted Chromium; my API 4393, scratch DB `jeeves_v303`, now dropped, Vite
+  4383) at 1440×900 and 1280×800: TinyURL foundation 7 tiles, 7 lines, 2 containers with a `+`;
+  extended 11/12; container menu (10 kinds) beside Redirect service, not over it; click-away and
+  a second click close it; Simple `+` only on the selected tile, a pick focused "Rate limiter";
+  inspector menu's right edge 12px left of the rail; link fan 11 items by click, second click
+  closes, a pick added a tile; dark mode menu beside its tile; Escape closes. Worker menu (16
+  kinds) 468×713, on screen at 1280×800. No page errors. All my projects deleted (204).
+
+**Gates (D2).** YouTube **Simple** export unchanged: `9332ea16…89bd` (3008×2752), twice at
+1440×900, once at 1280×800. Detailed changed (containers +32px):
+`21fe8400b200a4f0a3bb010e45038f8fd49420b16a23daaf071a1e7ce0219ae1` (3840×3392; was
+`92359674…a9518`, 3840×3200). Processes-off pin passes; v1 byte-identical (`assemble.test.ts`).
+Frozen v2: fresh `export:v2`, 72 files, 70 byte-identical to `generic-export.tar.gz`;
+`manifest.json`/`report.json` differ only in emitter sources/hashes and the added
+`local.module-stubs`/`local.tile-processes` implementations (155 inventory paths, none of this
+unit's). Scratch exports removed.
+
+**For V3-04 (docs only).**
+- V3-11 builds v3 by mouse with: link tab click → kind click; container `+` click → kind click
+  (Detailed, no selection needed); Connect drags unchanged. `e2e/studio.ts` has `openFan`,
+  `pickFrom`, `addModuleFrom`, `moduleMenu`, `settledBox`.
+- In Detailed every Service/Worker/Uploads is a container even when empty, so a centre click on a
+  container may open a module row: click its header (`{ position: { x: 20, y: 12 } }`).
+- The `+` is small at the fit (about 8–9px at YouTube's Detailed fit); the menu itself is screen-size.
+- Not done: the menu doesn't follow a camera that moves while it is open (the wheel closes it).
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.

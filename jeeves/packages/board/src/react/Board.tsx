@@ -4,9 +4,10 @@
 // dragging the paper pans, the wheel zooms, a click selects. The first non-empty layout takes a
 // one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. A fitted camera
 // refits when the board changes size (a rail opens or closes); once the user pans or zooms, the
-// camera is theirs and stays. In select mode the selected tile shows the caller's pull tabs
-// (`TileChrome`): a picked fan item becomes a new tile, which docks at the next slot beside its
-// source until ELK lands and the layout animates, and the camera pans just enough to show it.
+// camera is theirs and stays. In select mode the selected tile shows the caller's tabs on its
+// right (`TileChrome`, opened by a click or a pull): a picked fan item becomes a new tile, which
+// docks at the next slot after its source until ELK lands and the layout animates, and the camera
+// pans just enough to show it.
 // The selected line and the selected tile's lines take the selection colour, drawn over the rest.
 // A removable selected tile (select mode), and a selected line, show a red X; a caller's panel
 // (`hud`, a confirmation) sits at the bottom centre of the board.
@@ -78,7 +79,6 @@ import type { LayoutInput, TilePort } from "../layout/elkGraph.ts";
 import type { BoardLayout } from "../layout/elkLayout.ts";
 import type { LayoutEngine } from "../layout/engine.ts";
 import {
-  type DockSide,
   GRID,
   newTileHint,
   type Point,
@@ -203,7 +203,7 @@ export type BoardProps = ConnectRules & {
   mode: BoardMode;
   /** Positions for tiles that have none shown yet (a new tile's slot); shown positions win. */
   hints?: Record<string, Point>;
-  /** The selected tile's pull tabs (select mode only); none shows no chrome. */
+  /** The selected tile's tabs (select mode only); none shows no chrome. */
   tabs?: readonly TabSpec[];
   /**
    * A tab's enabled fan item released on: returns, or resolves to, the new tile's ID (undefined
@@ -314,7 +314,6 @@ function tileHandles(
 /** A picked tile waiting to appear: where it docks, worked out once it is in `tiles`. */
 type Dock = {
   source: string;
-  side: DockSide;
   port: number;
   order?: SlotOrder;
   hint?: { at: Point; show: boolean };
@@ -346,7 +345,7 @@ function dockFor(
     size,
     dock.port,
     others,
-    dock.side,
+    "after",
     neighbour && dock.order
       ? { rect: neighbour, place: "after" in dock.order ? "after" : "before" }
       : undefined,
@@ -811,15 +810,12 @@ function Inner({
       })}
       host={hostRef}
       onPick={(tab, item) => {
-        const port = drawn.lines.filter((l) =>
-          tab.side === "after" ? l.source === chromeTile : l.target === chromeTile,
-        ).length;
+        const port = drawn.lines.filter((l) => l.source === chromeTile).length;
         const record = (id: string | undefined) => {
           if (id) revealRef.current = id;
           if (!id || shownRef.current?.positions[id]) return;
           docks.current.set(id, {
             source: chromeTile,
-            side: tab.side,
             port,
             ...(tab.order ? { order: tab.order } : {}),
           });

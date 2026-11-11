@@ -1,31 +1,38 @@
 /**
- * Modules on tiles (MA06): a tile's left `+` opens the fan of the module kinds it allows, each
- * captioned Template, Part of a template or Stub; a picked kind becomes a module that opens with
- * its name focused. In the Detailed view a row that can connect has a dot: in Connect mode a drag
+ * Modules on tiles (MA06, V3-03): the `+` inside a tile opens the menu of the module kinds it
+ * allows, grouped Template, Part of a template and Stub; a picked kind becomes a module that opens
+ * with its name focused. In the Detailed view a row that can connect has a dot: in Connect mode a drag
  * from it runs `connectModule`, the Cache reader's loader is a row→row drag drawn as a gutter
  * arrow, and the X on a module's line or arrow runs `disconnectModule`. Every change is one
  * command and one Undo step; looking, hovering and cancelled drags change nothing.
  */
 import type { Locator, Page } from "@playwright/test";
 import {
+  addModuleFrom,
   createStudy,
   design,
   dragOnto,
   expect,
   linePoint,
-  moveOnto,
-  pull,
+  moduleMenu,
+  pickFrom,
   ready,
   test,
   tile,
 } from "./studio.ts";
 
-const MODULE_TAB = "Add module";
+const PLUS = "Add module";
 const LINK_TAB = "Add linked tile";
-const LEFT = { x: -60, y: 12 };
-const fan = (page: Page) => page.locator(".board-pull [data-fan-item]");
-const fanItem = (page: Page, name: string) =>
-  page.locator(".board-pull").getByRole("button", { name, exact: true });
+/** The open menu's kinds, each with its group's status: [name, status]. */
+const menuKinds = (page: Page) =>
+  moduleMenu(page)
+    .getByRole("menuitem")
+    .evaluateAll((items) =>
+      items.map((item) => [
+        item.getAttribute("aria-label"),
+        item.closest("fieldset")?.querySelector("legend")?.textContent,
+      ]),
+    );
 const inspector = (page: Page) => page.locator(".studio-inspector");
 const status = (page: Page) => inspector(page).locator(".lane-module-status");
 const undo = (page: Page) => page.getByRole("button", { name: "Undo", exact: true }).click();
@@ -56,7 +63,7 @@ const modules = async (page: Page, id: string, host: string) =>
 const moduleLinks = async (page: Page, id: string) =>
   (await saved(page, id)).architecture.studio.componentConnections ?? [];
 
-/** The fan's rows for a Service and a Worker: [name, caption] by Template, Part, Stub. */
+/** The menu's kinds for a Service and a Worker: [name, status] by Template, Part, Stub. */
 const SERVICE = [
   ["Cache reader", "Template"],
   ["Multipart uploads", "Template"],
@@ -100,27 +107,24 @@ const NO_DOT = ["Redirect responder", "Event counter"];
  */
 async function build(page: Page, name: string, plan: [from: string, kind: string][]) {
   const id = await createStudy(page, name, "blank", "Simple");
-  await pull(page, "User", "Add action");
-  await moveOnto(page, fanItem(page, "Consume"));
-  await page.mouse.up();
+  await pickFrom(page, "User", "Add action", "Consume");
   await expect(tile(page, "Consume")).toHaveClass(/selected/);
   await ready(page);
   for (const [from, kind] of plan) {
     await tile(page, from).click();
-    await pull(page, from, LINK_TAB);
-    await moveOnto(page, fanItem(page, kind));
-    await page.mouse.up();
+    await pickFrom(page, from, LINK_TAB, kind);
     await expect(tile(page, kind)).toHaveClass(/selected/);
     await ready(page);
   }
   return id;
 }
 
-/** Picks `kind` from the selected tile's module fan; its page opens with the name focused. */
+/**
+ * Picks `kind` from the module menu of the `+` in tile `host` (in Simple, the selected tile's);
+ * its page opens with the name focused.
+ */
 async function addModule(page: Page, host: string, kind: string) {
-  await pull(page, host, MODULE_TAB, LEFT);
-  await moveOnto(page, fanItem(page, kind));
-  await page.mouse.up();
+  await addModuleFrom(page, tile(page, host), kind);
   const name = inspector(page).getByLabel("Name", { exact: true });
   await expect(name).toHaveValue(kind);
   await expect(name).toBeFocused();
@@ -138,7 +142,7 @@ const arrowPoint = (arrow: Locator) =>
     return { x: screen.x, y: screen.y };
   });
 
-test("adds a module of every fan kind to a Service and a Worker by mouse", async ({ page }) => {
+test("adds a module of every menu kind to a Service and a Worker by mouse", async ({ page }) => {
   test.slow();
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
@@ -148,40 +152,27 @@ test("adds a module of every fan kind to a Service and a Worker by mouse", async
     ["Message channel", "Worker service"],
   ]);
   try {
-    // A Service: the `+` on its left, the link tab on its right.
+    // A selected Service in the Simple view: the `+` inside it (no tab on its left), the link tab
+    // on its right.
     await tile(page, "Microservice").click();
-    const tabs = (side: string) =>
-      tile(page, "Microservice").locator(`.board-tabs[data-side="${side}"] .board-tab`);
-    await expect(tabs("before")).toHaveAttribute("aria-label", MODULE_TAB);
-    await expect(tabs("before")).toHaveAttribute("data-glyph", "plus");
-    await expect(tabs("after")).toHaveAttribute("aria-label", LINK_TAB);
-    // Its fan: the twelve kinds a Service allows, a row per Template, Part of a template and
-    // Stub (five to a row), each named and captioned, all on screen; the tip adds its purpose.
-    await pull(page, "Microservice", MODULE_TAB, LEFT);
-    await expect(fan(page)).toHaveCount(SERVICE.length);
-    expect(
-      await fan(page).evaluateAll((items) =>
-        items.map((item) => [
-          item.querySelector(".board-fan-caption")?.firstChild?.textContent,
-          item.querySelector(".board-fan-detail")?.textContent,
-        ]),
-      ),
-    ).toEqual(SERVICE);
-    const rows = await fan(page).evaluateAll((items) =>
-      items.map((item) => (item as HTMLElement).style.top),
-    );
-    expect(new Set(rows).size).toBe(4);
-    for (const item of await fan(page).all()) await expect(item).toBeInViewport({ ratio: 0.99 });
-    await moveOnto(page, fanItem(page, "Data access"));
-    await expect(page.locator(".board-fan-tip")).toHaveText(
-      "Data accessReads and writes one database.",
-    );
-    // Cancelled: nothing is added. The release may land on the paper and clear the selection.
+    const service = tile(page, "Microservice");
+    await expect(service.locator(".board-tab")).toHaveCount(1);
+    await expect(service.locator(".board-tab")).toHaveAttribute("aria-label", LINK_TAB);
+    const plus = service.locator(".lane-tile-add");
+    await expect(plus).toHaveAttribute("aria-label", PLUS);
+    // Its menu: the twelve kinds a Service allows, grouped by Template, Part of a template and
+    // Stub, each named and described, all on screen.
+    await plus.click();
+    await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(SERVICE.length);
+    expect(await menuKinds(page)).toEqual(SERVICE);
+    await expect(moduleMenu(page)).toBeInViewport({ ratio: 1 });
+    await expect(
+      moduleMenu(page).getByRole("menuitem", { name: "Data access", exact: true }),
+    ).toContainText("Reads and writes one database.");
+    // Cancelled: nothing is added.
     await page.keyboard.press("Escape");
-    await page.mouse.up();
-    await expect(fan(page)).toHaveCount(0);
+    await expect(moduleMenu(page)).toHaveCount(0);
     expect((await saved(page, id)).architecture.studio.components ?? []).toEqual([]);
-    await tile(page, "Microservice").click();
 
     // Every kind, in the Simple view: each is one step and opens unconnected, as a stub.
     for (const [index, [kind]] of SERVICE.entries()) {
@@ -191,8 +182,8 @@ test("adds a module of every fan kind to a Service and a Worker by mouse", async
         .poll(async () => (await modules(page, id, "microservice")).length)
         .toBe(index + 1);
     }
-    const service = await modules(page, id, "microservice");
-    expect(service.map((item) => item.name)).toEqual(SERVICE.map(([kind]) => kind));
+    const added = await modules(page, id, "microservice");
+    expect(added.map((item) => item.name)).toEqual(SERVICE.map(([kind]) => kind));
     expect((await saved(page, id)).schemaVersion).toBe(3);
     // The tile's page lists them as cards.
     await inspector(page).getByRole("button", { name: "Back to Microservice" }).click();
@@ -200,23 +191,14 @@ test("adds a module of every fan kind to a Service and a Worker by mouse", async
       inspector(page).getByRole("list", { name: "Modules", exact: true }).getByRole("button"),
     ).toHaveCount(SERVICE.length);
 
-    // A Worker, in the Detailed view: its sixteen kinds, each a new row.
+    // A Worker, in the Detailed view: the `+` in its container, selected or not; its sixteen
+    // kinds, each a new row.
     await page.getByRole("button", { name: "Detailed", exact: true }).click();
     await ready(page);
-    await tile(page, "Worker service").click();
-    await pull(page, "Worker service", MODULE_TAB, LEFT);
-    expect(
-      await fan(page).evaluateAll((items) =>
-        items.map((item) => [
-          item.querySelector(".board-fan-caption")?.firstChild?.textContent,
-          item.querySelector(".board-fan-detail")?.textContent,
-        ]),
-      ),
-    ).toEqual(WORKER);
-    for (const item of await fan(page).all()) await expect(item).toBeInViewport({ ratio: 0.99 });
+    await tile(page, "Worker service").getByRole("button", { name: PLUS }).click();
+    expect(await menuKinds(page)).toEqual(WORKER);
+    await expect(moduleMenu(page)).toBeInViewport({ ratio: 1 });
     await page.keyboard.press("Escape");
-    await page.mouse.up();
-    await tile(page, "Worker service").click({ position: { x: 20, y: 12 } });
     for (const [index, [kind]] of WORKER.entries()) {
       await addModule(page, "Worker service", kind as string);
       await ready(page);
@@ -413,13 +395,11 @@ test("looking, hovering and cancelled drags change neither the design nor the bl
   tinyurl: id,
 }) => {
   const before = { design: await saved(page, id), blueprint: await blueprint(page, id) };
-  // The older Redirect service kind takes modules too: its fan, released on paper.
-  await tile(page, "Redirect service").click();
-  await pull(page, "Redirect service", MODULE_TAB, LEFT);
-  await expect(fan(page)).toHaveCount(10);
+  // The older Redirect service kind takes modules too: its menu, opened and closed.
+  await tile(page, "Redirect service").getByRole("button", { name: PLUS }).click();
+  await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(10);
   await page.keyboard.press("Escape");
-  await page.mouse.up();
-  await expect(fan(page)).toHaveCount(0);
+  await expect(moduleMenu(page)).toHaveCount(0);
 
   await page.getByRole("button", { name: "Detailed", exact: true }).click();
   await ready(page);

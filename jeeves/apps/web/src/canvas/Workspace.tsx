@@ -1,8 +1,9 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Pointer, Connect, Fit and Detailed | Simple on the canvas
 // (the mode is view state; the view is a per-project browser preference, Detailed by default;
-// the selection carries across both). The selected tile's pull tabs add tiles and modules
-// (`creation.tsx`; a new one opens with its name focused), connect mode links tiles, and in the
+// the selection carries across both). The selected tile's tabs add tiles (`creation.tsx`), and the
+// `+` in a tile or in the inspector's Modules section adds modules (`ModuleMenu.tsx`, one
+// command); a new tile or module opens with its name focused. Connect mode links tiles, and in the
 // Detailed view modules, by dragging (`connect.ts`), the red X on a tile or line removes it
 // (`removal.tsx`; in connect mode a module line's X disconnects that module); settings and
 // modules are edited in the inspector (`TileInspector.tsx`), an action's name in its own
@@ -22,9 +23,11 @@ import {
   laneActionOf,
   laneEntryRefusal,
   laneGraph,
+  moduleKinds,
   operationChanges,
   operationSelectionReference,
   ownerSelectionReference,
+  type StudioComponentKind,
   type StudioLane,
   studioActionDefaults,
   studioDefinitions,
@@ -64,6 +67,7 @@ import { ExportDiagram } from "./ExportDiagram.tsx";
 import { GenerateProject } from "./GenerateProject.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
+import { addModule, type ModuleAdding, moduleMenuGroups } from "./ModuleMenu.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { SourceDiagnostics } from "./SourceDiagnostics.tsx";
@@ -227,11 +231,31 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       select({ tile });
       setFocusName(tile);
     },
-    onModuleCreated: (tile, module) => {
-      select({ tile, module });
-      setFocusName(module);
-    },
   });
+  // A module added from a tile's `+` (the board's or the inspector's) opens with its Name focused.
+  const moduleAdded = useRef((_tile: string, _module: string) => {});
+  moduleAdded.current = (tile, module) => {
+    select({ tile, module });
+    setFocusName(module);
+  };
+  const adding = useMemo<ModuleAdding>(() => {
+    const design = loaded.design;
+    const groups = new Map<string, ReturnType<typeof moduleMenuGroups> | undefined>();
+    return {
+      groups: (tile) => {
+        if (!groups.has(tile)) {
+          const kind = graph.nodes.find((node) => node.id === tile)?.kind;
+          const kinds = moduleKinds(design, tile);
+          groups.set(tile, kind && kinds.length ? moduleMenuGroups(kinds, kind) : undefined);
+        }
+        return groups.get(tile);
+      },
+      add: (tile: string, kind: StudioComponentKind) =>
+        void addModule(projectId, tile, kind).then((module) => {
+          if (module) moduleAdded.current(tile, module);
+        }),
+    };
+  }, [projectId, loaded.design, graph]);
   const { disconnectModule, ...connect } = useLaneConnect({ projectId, design: loaded.design });
   const { remove, ...removal } = useLaneRemoval({
     projectId,
@@ -378,6 +402,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           removal={removal}
           connect={connect}
           onDisconnectModule={disconnectModule}
+          adding={adding}
         />
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button
@@ -489,6 +514,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
               selection={selection}
               moduleKey={selection.module && keyOf(selection.module)}
               onSelect={select}
+              adding={adding}
             />
             {selectedOperation || selectedOwner ? (
               <p className="studio-field-help" role="status">
@@ -513,6 +539,7 @@ function Inspector({
   selection,
   moduleKey,
   onSelect,
+  adding,
 }: {
   loaded: Loaded;
   graph: LaneGraph;
@@ -520,6 +547,8 @@ function Inspector({
   /** The open module's page key, which stays when a rename re-keys the module. */
   moduleKey?: string;
   onSelect: (next: WorkspaceSelection) => void;
+  /** The tiles' module menus and the pick, for the Modules section's `+`. */
+  adding: ModuleAdding;
 }) {
   const { design, project } = loaded;
   const name = (id: string) => laneNodeName(design, graph, id);
@@ -537,6 +566,7 @@ function Inspector({
         module={selection.module}
         moduleKey={moduleKey}
         onModule={(module) => onSelect({ tile: selection.tile, module })}
+        adding={adding}
       />
     );
   const started = edge && edge.source === LANE_ACTOR ? laneActionOf(edge.target) : undefined;

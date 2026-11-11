@@ -237,7 +237,7 @@
 }
 
 /* Ported from automation-illustrator src/app/styles/tokens.css, the tile chrome rules (0803c4a).
-   The selected tile's pull tabs, and the pull layer: scrim, band, fan and the tab ghost. */
+   The selected tile's tabs, and the fan layer: band, fan and the tab ghost. */
 .board-tile-host {
   position: relative;
   width: 100%;
@@ -251,11 +251,12 @@
   pointer-events: none;
 }
 
-/* 40px tabs peeking 18px off the face, one above the other. More than two (the user's two lanes)
-   sit closer, centred on the tile. */
+/* 40px tabs peeking 18px off the face's right side, one above the other. More than two sit
+   closer, centred on the tile. */
 .board-tabs {
   position: absolute;
   top: 50%;
+  right: calc(-1 * var(--board-tab-peek));
   transform: translateY(-50%);
   z-index: 5;
   display: flex;
@@ -266,14 +267,6 @@
 
 .board-tabs[data-many] {
   gap: 14px;
-}
-
-.board-tabs[data-side="after"] {
-  right: calc(-1 * var(--board-tab-peek));
-}
-
-.board-tabs[data-side="before"] {
-  left: calc(-1 * var(--board-tab-peek));
 }
 
 .board-tab,
@@ -322,33 +315,16 @@
   outline-offset: 2px;
 }
 
+/* A tab whose fan a click opened stays pressed until it closes. */
+.board-tab[aria-expanded="true"] {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--board-shadow);
+}
+
 /* While one tab is pulled, the tile's tabs hide; the ghost stands in for the pulled one. */
 .board-tab[data-hidden],
 .board-chrome[data-pulling] .board-tab {
   visibility: hidden;
-}
-
-/* A lane mark (download or upload) on the tab's corner. */
-.board-tab-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  box-sizing: border-box;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--board-line);
-  border-radius: 999px;
-  background: var(--board-tile);
-  color: var(--board-ink);
-}
-
-.board-tab-badge svg {
-  display: block;
-  width: 13px;
-  height: 13px;
 }
 
 .board-pull {
@@ -493,7 +469,8 @@
   filter: grayscale(1);
 }
 
-/* A grid fan's panel: one surface under its cells, so the items read over the tiles it covers. */
+/* A grid fan's panel: one surface under its cells, so the items read over the tiles it covers.
+   Opened by a click, it takes the pointer, so a click between its items is still on the fan. */
 .board-fan-panel {
   position: absolute;
   box-sizing: border-box;
@@ -502,6 +479,15 @@
   background: color-mix(in srgb, var(--board-paper) 97%, transparent);
   box-shadow: 0 8px 24px var(--board-shadow);
   pointer-events: none;
+}
+
+.board-pull[data-clicked] .board-fan-panel {
+  pointer-events: auto;
+}
+
+.board-fan-item:focus-visible {
+  outline: 3px solid var(--board-select);
+  outline-offset: 2px;
 }
 
 /* A grid fan captions every item: its name under the box, on a light backing so it reads over
@@ -528,22 +514,6 @@
   color: color-mix(in srgb, var(--board-ink) 45%, transparent);
 }
 
-/* A caption with a detail line under the name: the wider, taller `FAN_CELL_DETAIL` (120 × 108). */
-.board-pull[data-detail] .board-fan-caption {
-  max-width: 116px;
-  font-size: 11.5px;
-}
-
-.board-fan-detail {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: color-mix(in srgb, var(--board-ink) 68%, transparent);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 14px;
-}
-
 /* The tip never takes the pointer: it may cover the item below, which must stay pickable. */
 .board-fan-tip {
   position: absolute;
@@ -561,7 +531,7 @@
   white-space: nowrap;
 }
 
-/* A longer tip: the name, then its description or why it can't be added here. */
+/* A longer tip: the name, then why it can't be added here. */
 .board-fan-tip[data-wrap] {
   z-index: 2;
   width: max-content;
@@ -570,7 +540,6 @@
   text-align: center;
 }
 
-.board-fan-description,
 .board-fan-reason {
   display: block;
   margin-top: 2px;

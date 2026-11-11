@@ -99,7 +99,8 @@ test("legacy unsupported settings stay hidden and unchanged while names/history 
 }) => {
   const before = await design(page, id);
   const inspector = page.locator(".studio-inspector");
-  await tile(page, "Shorten service").click();
+  // The container's header selects the tile (its middle may be a module row).
+  await tile(page, "Shorten service").click({ position: { x: 20, y: 12 } });
   await expect(inspector.getByRole("group", { name: "Type", exact: true })).toHaveCount(0);
   await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
   await inspector.getByRole("button", { name: "Open Link writer", exact: true }).click();

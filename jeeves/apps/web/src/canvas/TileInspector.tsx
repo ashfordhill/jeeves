@@ -1,7 +1,10 @@
 // A tile's one-page inspector (`TargetInspector`) with its modules as cards at the bottom. A card
 // opens its module's page in place of the tile's (`ComponentForm`: what it generates, its
-// settings, Remove module); Back returns to the tile with the Modules section in view. Which
-// module is open is the workspace's selection (`selection.ts`), not state of this rail.
+// settings, Remove module); Back returns to the tile with the Modules section in view. A tile that
+// can take modules has the Modules section even with none, and a `+` under its cards that opens
+// the same module menu as the board's `+`, out to the left of the rail (`ModuleAddButton`, one
+// command). Which module is open is the workspace's selection (`selection.ts`), not state of this
+// rail.
 import {
   type DesignDocument,
   type StudioComponent,
@@ -14,6 +17,7 @@ import { IconArrowLeft } from "@tabler/icons-react";
 import { type RefObject, useLayoutEffect, useRef } from "react";
 import { ComponentForm, TargetInspector } from "../studio/InspectorForm.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
+import { ModuleAddButton, type ModuleAdding } from "./ModuleMenu.tsx";
 import { WarningList } from "./Warnings.tsx";
 
 /** A tile's modules as cards: icon, name, kind and a two-line description. A click opens one. */
@@ -66,6 +70,7 @@ export function TileInspector({
   module: open,
   moduleKey,
   onModule,
+  adding,
 }: {
   projectId: string;
   design: DesignDocument;
@@ -77,11 +82,14 @@ export function TileInspector({
   moduleKey?: string;
   /** Opens one of this tile's modules, or (undefined) returns to the tile. */
   onModule: (module?: string) => void;
+  /** The module menu and the pick for the Modules section's `+`. */
+  adding?: ModuleAdding;
 }) {
   const modules = (design.architecture?.studio?.components ?? []).filter(
     (item) => item.host === id,
   );
   const module = open ? modules.find((item) => item.id === open) : undefined;
+  const groups = adding?.groups(id);
   const shown = module?.id;
   const list = useRef<HTMLUListElement>(null);
   const left = useRef<string>(undefined);
@@ -141,8 +149,23 @@ export function TileInspector({
           <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
         }
         modules={
-          modules.length ? (
-            <ModuleCards modules={modules} list={list} onOpen={onModule} />
+          modules.length || groups?.length ? (
+            <>
+              {modules.length ? (
+                <ModuleCards modules={modules} list={list} onOpen={onModule} />
+              ) : null}
+              {adding && groups?.length ? (
+                <div className="lane-module-list-add">
+                  <ModuleAddButton
+                    tile={id}
+                    name={name}
+                    groups={groups}
+                    onAdd={adding.add}
+                    placement="rail"
+                  />
+                </div>
+              ) : null}
+            </>
           ) : undefined
         }
       />

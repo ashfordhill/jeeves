@@ -1,11 +1,20 @@
 /**
- * YouTube v2 rebuilt from a blank project by mouse (module authoring plan, MA09): the plan's
- * steps as data, and the helpers that perform them. Only pointer and UI interactions write:
- * clicks, pulls onto a fan item, Connect mode drags and typing into fields. API reads only wait
- * for saves and check results.
+ * YouTube v2 rebuilt from a blank project by mouse (module authoring plan, MA09; V3-03's clicks):
+ * the plan's steps as data, and the helpers that perform them. Only pointer and UI interactions
+ * write: clicks (a tab or a `+`, then an item), Connect mode drags and typing into fields. API
+ * reads only wait for saves and check results.
  */
 import type { Locator, Page } from "@playwright/test";
-import { createStudy, design, dragOnto, expect, moveOnto, pull, ready, tile } from "./studio.ts";
+import {
+  addModuleFrom,
+  createStudy,
+  design,
+  dragOnto,
+  expect,
+  pickFrom,
+  ready,
+  tile,
+} from "./studio.ts";
 
 /** A tile from an action's or tile's link fan, or a Connect mode drag between two tiles. */
 export type V2Step = { from: string; kind: string; tile: string } | { link: [string, string] };
@@ -46,7 +55,7 @@ const module = (kind: string, name: string, description: string): Module => ({
   name,
   description,
 });
-/** The 22 modules by tile: each kind from the `+` fan, with the plan's name and description. */
+/** The 22 modules by tile: each kind from the `+` menu, with the plan's name and description. */
 export const V2_MODULES: Readonly<Record<string, readonly Module[]>> = {
   "Watch API": [
     module("Cache reader", "Video details cache", "Serves video details from the cache."),
@@ -142,12 +151,10 @@ export const V2_VALUES: readonly [string, string | undefined, string, number][] 
   ["View counter", undefined, "Concurrency", 8],
 ];
 
-/** The gestures a rebuild takes: clicks, drags (a pull onto a fan item counts as one) and fields typed. */
+/** The gestures a rebuild takes: clicks, drags and fields typed. */
 export type Gestures = { clicks: number; drags: number; typed: number };
 export const gestures = (): Gestures => ({ clicks: 0, drags: 0, typed: 0 });
 
-export const fanItem = (page: Page, name: string) =>
-  page.locator(".board-pull").getByRole("button", { name, exact: true });
 export const inspector = (page: Page) => page.locator(".studio-inspector");
 export const tool = (page: Page, name: string) =>
   page.getByRole("toolbar", { name: "Canvas tools" }).getByRole("button", { name, exact: true });
@@ -195,12 +202,10 @@ async function typeInto(page: Page, field: Locator, text: string, log: Gestures)
   await typeOver(page, field, text, log);
 }
 
-/** Pulls the selected tile's tab onto a fan item. */
+/** Clicks the selected tile's tab, then a fan item: two clicks. */
 async function pick(page: Page, from: string, tab: string, item: string, log: Gestures) {
-  await pull(page, from, tab, tab === "Add module" ? { x: -60, y: 12 } : undefined);
-  await moveOnto(page, fanItem(page, item));
-  await page.mouse.up();
-  log.drags += 1;
+  await pickFrom(page, from, tab, item);
+  log.clicks += 2;
 }
 
 async function click(target: Locator, log: Gestures) {
@@ -266,14 +271,18 @@ export async function buildV2Tiles(page: Page, id: string, log: Gestures) {
 }
 
 /**
- * v2's modules from each tile's `+` (named and described as the plan's table), their connections
- * by dot drags in Detailed + Connect, and v2's useful values in the inspector, by mouse.
+ * v2's modules from the `+` in each tile's container (named and described as the plan's table),
+ * their connections by dot drags in Detailed + Connect, and v2's useful values in the inspector,
+ * by mouse.
  */
 export async function buildV2Modules(page: Page, id: string, log: Gestures) {
+  await click(tool(page, "Detailed"), log);
+  await ready(page);
   for (const [host, modules] of Object.entries(V2_MODULES))
     for (const item of modules) {
-      await click(tile(page, host), log);
-      await pick(page, host, "Add module", item.kind, log);
+      // In Detailed every Service and Worker shows its `+`, selected or not: the `+`, then the kind.
+      await addModuleFrom(page, tile(page, host), item.kind);
+      log.clicks += 2;
       await typeOver(page, inspector(page).getByLabel("Name", { exact: true }), item.name, log);
       await typeInto(
         page,
@@ -284,8 +293,6 @@ export async function buildV2Modules(page: Page, id: string, log: Gestures) {
       await named(page, id, item.name);
     }
 
-  await click(tool(page, "Detailed"), log);
-  await ready(page);
   await click(tool(page, "Fit"), log);
   await click(tool(page, "Connect"), log);
   const links = async () => (await saved(page, id)).architecture.studio.componentConnections ?? [];

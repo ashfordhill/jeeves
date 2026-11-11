@@ -4,10 +4,17 @@
  * and the field being typed in stay on it. A study keeps its IDs; only the name changes.
  */
 import type { Page } from "@playwright/test";
-import { createStudy, design, expect, moveOnto, pull, ready, test, tile } from "./studio.ts";
+import {
+  addModuleFrom,
+  createStudy,
+  design,
+  expect,
+  pickFrom,
+  ready,
+  test,
+  tile,
+} from "./studio.ts";
 
-const fanItem = (page: Page, name: string) =>
-  page.locator(".board-pull").getByRole("button", { name, exact: true });
 const inspector = (page: Page) => page.locator(".studio-inspector");
 const field = (page: Page, label: string) => inspector(page).getByLabel(label, { exact: true });
 const tool = (page: Page, name: string) =>
@@ -30,11 +37,10 @@ const modules = async (page: Page, id: string) =>
     item.name,
   ]);
 
-/** Pulls the selected tile's tab onto a fan item and lets go. */
+/** Clicks the selected tile's tab, or its `+`, then the fan's or the menu's item. */
 async function pick(page: Page, from: string, tab: string, item: string) {
-  await pull(page, from, tab, tab === "Add module" ? { x: -60, y: 12 } : undefined);
-  await moveOnto(page, fanItem(page, item));
-  await page.mouse.up();
+  if (tab === "Add module") await addModuleFrom(page, tile(page, from), item);
+  else await pickFrom(page, from, tab, item);
   await ready(page);
 }
 
@@ -158,7 +164,8 @@ test("renaming a study's tile keeps its ID", async ({ page }) => {
   const id = await createStudy(page, "E2E IDs pinned", "YouTube · studio study");
   try {
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
-    await tile(page, "Transcoder").click();
+    // The container's header selects the tile (its middle is a module row).
+    await tile(page, "Transcoder").click({ position: { x: 20, y: 12 } });
     await field(page, "Name").click();
     await typeOver(page, "Video transcoder");
     await page.keyboard.press("Tab");

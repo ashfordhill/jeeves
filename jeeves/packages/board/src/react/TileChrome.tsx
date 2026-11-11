@@ -1,21 +1,23 @@
 // Ported from automation-illustrator src/board/controls/TileChrome.tsx (0803c4a).
-// The selected tile's pull tabs. A tab opens a fan of items around its resting place once pulled
-// past 36px, while a thick rubber band stretches from under the tile face to the pointer;
-// releasing over an item picks it. A tab never links to existing tiles (no drop targets, no
-// dimming); the board's connect mode does that. Releasing anywhere else, or Escape, springs back.
-// Pointer capture stays on the tab, so panning never steals the gesture.
+// The selected tile's tabs, on its right. A click on a tab opens its fan of items beside it, and
+// a click on an item picks it; a second click on the tab, a click anywhere else, the wheel or
+// Escape closes the fan. A tab can still be pulled: past 36px a thick rubber band stretches from
+// under the tile face to the pointer, and releasing over an item picks it; releasing anywhere
+// else, or Escape, springs back. Pointer capture stays on the tab, so panning never steals the
+// gesture. A tab never links to existing tiles (no drop targets, no dimming); the board's
+// connect mode does that.
 //
 // Changes from automation-illustrator: the tabs and fan items come from props; a tab's mark is a
-// `+` or a link glyph; a fan item can be disabled (greyed in its slot, its tip gives the reason, a
-// release on it changes nothing); once past the threshold the pull stays open until it ends, so a
-// fan item the board's edge pushed back beside the tab can still be picked; Escape cancels and a
-// cancelled pull springs back. The fan stays inside the board (`placeFan`). A long list can be a
-// grid fan instead (`layout: "grid"`): a row per item group beside the tab (wrapping after
-// `columns`), each item captioned with its name and, when it has one, a detail line, on one panel
-// kept on the board as a block (`placeGrid`), so it reads over the tiles it covers. An item's tip
-// gives its name, its description and, when disabled, the reason.
-// The red X shows only when the caller lets the tile go (`remove`). No path tab, tile pickup or
-// insert silhouette.
+// `+` or a link glyph; a tab opens by click (or the keyboard) as well as by a pull; a fan item can be disabled
+// (greyed in its slot, its tip gives the reason, picking it changes nothing); once past the
+// threshold the pull stays open until it ends, so a fan item the board's edge pushed back beside
+// the tab can still be picked; Escape cancels and a cancelled pull springs back. The fan stays
+// inside the board (`placeFan`). A long list can be a grid fan instead (`layout: "grid"`): a row
+// per item group right of the tab, each item captioned with its name, on one panel kept on the
+// board as a block (`placeGrid`), so it reads over the tiles it covers; where the board is too
+// narrow for it beside the tab it goes beside its own tile (left, below or above), not over it.
+// An item's tip gives its name and, when disabled, the reason. The red X shows only when the
+// caller lets the tile go (`remove`). No path tab, tile pickup or insert silhouette.
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -26,16 +28,8 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import type { DockSide, Size, SlotOrder } from "../layout/metrics.ts";
-import {
-  FAN_CELL,
-  FAN_CELL_DETAIL,
-  fanCenters,
-  fanGrid,
-  gridBounds,
-  placeFan,
-  placeGrid,
-} from "./fan.ts";
+import type { Point, Size, SlotOrder } from "../layout/metrics.ts";
+import { FAN_PANEL_PAD, fanCenters, fanGrid, gridBounds, placeFan, placeGrid } from "./fan.ts";
 import { LinkGlyph } from "./LinkGlyph.tsx";
 import {
   fallbackTileRect,
@@ -49,16 +43,14 @@ import { RemoveButton } from "./RemoveButton.tsx";
 import { prefersReducedMotion } from "./useAnimatedLayout.ts";
 
 export const PULL_THRESHOLD = 36;
-/** A grid fan's panel reaches this far past its cells (6px of the board's 16px margin). */
-const PANEL_PAD = 6;
+const PANEL_PAD = FAN_PANEL_PAD;
 export const SPRING_MS = 200;
 
 /**
  * One item of a create tab's fan: an icon, named by `label` (its accessible name and hover tip,
  * and its caption in a grid fan). A `disabled` item (the reason, in words) is greyed in its usual
- * slot, its tip adds the reason, and releasing on it changes nothing. In a grid fan, items with
- * the same `group` share a row, and a `detail` (a few words, such as what the item is) is a
- * second caption line. A `description` (one sentence) follows the name in its tip.
+ * slot, its tip adds the reason, and picking it changes nothing. In a grid fan, items with the
+ * same `group` share a row.
  */
 export type FanItem = {
   id: string;
@@ -67,40 +59,32 @@ export type FanItem = {
   shape?: "rect" | "pill";
   disabled?: string;
   group?: string;
-  detail?: string;
-  description?: string;
 };
 
-/** How a fan lays out its items: on an arc around the tab, or in a grid of rows beside it. */
+/** How a fan lays out its items: on an arc right of the tab, or in a grid of rows beside it. */
 export type FanLayout = "arc" | "grid";
 
 /** A tab's mark, and its band's colour: a `+`, or a link glyph. */
 export type TabGlyph = "plus" | "link";
 
-/** A pull tab on the selected tile: its fan's items create; it never drops on a tile. */
+/** A tab on the selected tile's right: its fan's items create; it never drops on a tile. */
 export type CreateTab = {
   id: string;
   kind: "create";
-  /** `after` sits on the right (fans right); `before` on the left (fans left). */
-  side: DockSide;
   /** Accessible name. */
   label: string;
   /** Tooltip; defaults to the label. */
   title?: string;
   /** Default `plus`. */
   glyph?: TabGlyph;
-  /** A small mark on the tab's corner (an icon). */
-  badge?: ReactNode;
   /** Every item, always in the same order, so each sits in the same slot every time. */
   items: readonly FanItem[];
   /** Default `arc`; `grid` puts each group of items in a row and captions every item. */
   layout?: FanLayout;
-  /** A grid fan's longest row; a longer group wraps onto the next row. Default: no limit. */
-  columns?: number;
   /** The row a tile picked from this fan takes, next to an existing tile (a lane's last tile). */
   order?: SlotOrder;
 };
-/** A pull tab on the selected tile. */
+/** A tab on the selected tile. */
 export type TabSpec = CreateTab;
 
 export const tabGlyph = (tab: TabSpec): TabGlyph => tab.glyph ?? "plus";
@@ -128,6 +112,8 @@ type Drag = {
   opened: boolean;
   hover: Hover;
 };
+/** A fan opened by a click: where the tab rests and its tile, on screen, when it opened. */
+type Clicked = { rest: Point; tile: TileRect };
 
 /** Whether the pointer is past the threshold from the tab's resting place. */
 const stretched = (drag: Drag, at: { clientX: number; clientY: number }) =>
@@ -139,24 +125,15 @@ function TabGlyphMark({ glyph }: { glyph: TabGlyph }) {
 
 export function TileChrome(props: ChromeProps) {
   const [active, setActive] = useState<string | null>(null);
-  const sides: DockSide[] = ["before", "after"];
   return (
     <div className="board-chrome" data-pulling={active ? true : undefined}>
-      {sides.map((side) => {
-        const tabs = props.tabs.filter((tab) => tab.side === side);
-        return tabs.length ? (
-          <div
-            key={side}
-            className="board-tabs"
-            data-side={side}
-            data-many={tabs.length > 2 || undefined}
-          >
-            {tabs.map((tab) => (
-              <PullTab key={tab.id} tab={tab} chrome={props} onActive={setActive} />
-            ))}
-          </div>
-        ) : null;
-      })}
+      {props.tabs.length ? (
+        <div className="board-tabs" data-many={props.tabs.length > 2 || undefined}>
+          {props.tabs.map((tab) => (
+            <PullTab key={tab.id} tab={tab} chrome={props} onActive={setActive} />
+          ))}
+        </div>
+      ) : null}
       {props.remove ? (
         <RemoveButton
           className="board-remove-tile"
@@ -182,6 +159,10 @@ function PullTab({
   const pointer = useRef<number | null>(null);
   const springRef = useRef<{ x: number; y: number } | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  const [clicked, setClicked] = useState<Clicked | null>(null);
+  const [clickHover, setClickHover] = useState<string | null>(null);
+  /** The layer of a fan opened by a click. */
+  const clickLayer = useRef<HTMLDivElement>(null);
   const ids = useId();
   const live = Boolean(drag?.live);
   const open = live && (Boolean(drag?.opened) || prefersReducedMotion());
@@ -268,20 +249,69 @@ function PullTab({
     return () => window.removeEventListener("keydown", onKey, true);
   }, [live]);
 
+  // A fan opened by a click closes on a press anywhere but the fan and its tab (the tab's own
+  // press closes it), on the wheel (the board would move under it), on a resize and on Escape.
+  const isOpen = clicked !== null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = () => {
+      setClicked(null);
+      setClickHover(null);
+    };
+    const inside = (target: EventTarget | null) =>
+      target instanceof Node &&
+      (restRef.current?.contains(target) || clickLayer.current?.contains(target));
+    const away = (event: Event) => {
+      if (!inside(event.target)) close();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+    };
+    window.addEventListener("pointerdown", away, true);
+    window.addEventListener("wheel", away, true);
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("pointerdown", away, true);
+      window.removeEventListener("wheel", away, true);
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [isOpen]);
+
+  /** The rest point and the tile, on screen now. */
+  const measure = () => {
+    const rest = restRef.current?.getBoundingClientRect();
+    if (!rest) return undefined;
+    return {
+      rest: { x: rest.left + rest.width / 2, y: rest.top + rest.height / 2 },
+      tile: tileScreenRect(host.current, tile) ?? fallbackTileRect(rest, chrome.size),
+    };
+  };
+
   const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0 || drag) return;
     e.preventDefault();
     e.stopPropagation();
-    const rest = restRef.current?.getBoundingClientRect();
-    if (!rest) return;
+    // A press on the tab of an open fan closes it (a second click).
+    if (clicked) {
+      setClicked(null);
+      setClickHover(null);
+      return;
+    }
+    const at = measure();
+    if (!at) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     pointer.current = e.pointerId;
     setDrag({
       x: e.clientX,
       y: e.clientY,
-      restX: rest.left + rest.width / 2,
-      restY: rest.top + rest.height / 2,
-      tile: tileScreenRect(host.current, tile) ?? fallbackTileRect(rest, chrome.size),
+      restX: at.rest.x,
+      restY: at.rest.y,
+      tile: at.tile,
       live: true,
       opened: false,
       hover: null,
@@ -306,7 +336,14 @@ function PullTab({
   const onPointerUp = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (!drag?.live) return;
     e.stopPropagation();
-    const hover = drag.opened || stretched(drag, e) ? hitAt(e.clientX, e.clientY) : null;
+    // Released before the threshold: a click, which opens the fan until the next click.
+    if (!drag.opened && !stretched(drag, e)) {
+      end();
+      const at = measure();
+      if (at) setClicked(at);
+      return;
+    }
+    const hover = hitAt(e.clientX, e.clientY);
     // A disabled item is not picked: the pull springs back and nothing changes.
     const item = hover && tab.items.find((each) => each.id === hover.item);
     if (item && !item.disabled) {
@@ -324,19 +361,43 @@ function PullTab({
     springBack();
   };
 
+  const board = host.current?.getBoundingClientRect();
   const overlay =
-    drag && typeof document !== "undefined"
-      ? createPortal(
-          <PullOverlay
-            ids={ids}
-            tab={tab}
-            drag={drag}
-            open={open}
-            board={host.current?.getBoundingClientRect()}
-          />,
-          document.body,
-        )
-      : null;
+    typeof document === "undefined"
+      ? null
+      : drag
+        ? createPortal(
+            <PullOverlay ids={ids} tab={tab} drag={drag} open={open} board={board} />,
+            document.body,
+          )
+        : clicked
+          ? createPortal(
+              <div
+                ref={clickLayer}
+                className="board-overlay board-pull"
+                data-fan={ids}
+                data-clicked
+                data-glyph={tabGlyph(tab)}
+                data-layout={tab.layout === "grid" ? "grid" : undefined}
+              >
+                <FanItems
+                  tab={tab}
+                  rest={clicked.rest}
+                  tile={clicked.tile}
+                  board={board}
+                  hovered={clickHover}
+                  onHover={setClickHover}
+                  onPick={(item) => {
+                    if (item.disabled) return;
+                    setClicked(null);
+                    setClickHover(null);
+                    chrome.onPick(tab, item.id);
+                  }}
+                />
+              </div>,
+              document.body,
+            )
+          : null;
 
   return (
     <>
@@ -347,17 +408,123 @@ function PullTab({
         data-glyph={tabGlyph(tab)}
         data-hidden={drag ? true : undefined}
         aria-label={tab.label}
+        aria-expanded={isOpen}
         title={tab.title ?? tab.label}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          // A click from the keyboard (no pointer press) toggles the fan too, focusing its first
+          // item that can be picked.
+          if (e.detail !== 0) return;
+          const at = clicked ? null : measure();
+          setClicked(at ?? null);
+          setClickHover(null);
+          if (at)
+            requestAnimationFrame(() =>
+              clickLayer.current
+                ?.querySelector<HTMLElement>('[data-fan-item]:not([aria-disabled="true"])')
+                ?.focus(),
+            );
+        }}
       >
         <TabGlyphMark glyph={tabGlyph(tab)} />
-        {tab.badge ? <span className="board-tab-badge">{tab.badge}</span> : null}
       </button>
       {overlay}
+    </>
+  );
+}
+
+/**
+ * A fan's items (and a grid fan's panel), in their slots around the tab resting at `rest`, kept on
+ * the board and, for a grid, off `tile`. Opened by a click (`onPick`), each item is a button the
+ * pointer picks, with its tip while the pointer is on it; during a pull the tab's pointer picks
+ * and `hovered` is the item under it.
+ */
+function FanItems({
+  tab,
+  rest,
+  tile,
+  board,
+  hovered,
+  onHover,
+  onPick,
+}: {
+  tab: TabSpec;
+  rest: Point;
+  tile: TileRect;
+  /** The board's screen rect. */
+  board: DOMRect | undefined;
+  hovered: string | null;
+  onHover?: (item: string | null) => void;
+  onPick?: (item: FanItem) => void;
+}) {
+  const { items } = tab;
+  const grid = tab.layout === "grid";
+  // Slots come from the item's place in the whole list, disabled or not, so they never shift.
+  const box = board && { x: board.x, y: board.y, w: board.width, h: board.height };
+  const centers = grid
+    ? placeGrid(
+        fanGrid(
+          rest.x,
+          rest.y,
+          items.map((item) => item.group),
+        ),
+        box,
+        tile,
+      )
+    : placeFan(fanCenters(rest.x, rest.y, items.length), box);
+  const panel = grid && centers.length ? gridBounds(centers) : undefined;
+  const clickable = onPick !== undefined;
+  return (
+    <>
+      {panel ? (
+        <div
+          className="board-fan-panel"
+          style={{
+            left: panel.x - PANEL_PAD,
+            top: panel.y - PANEL_PAD,
+            width: panel.w + 2 * PANEL_PAD,
+            height: panel.h + 2 * PANEL_PAD,
+          }}
+        />
+      ) : null}
+      {items.map((item, i) => {
+        const at = centers[i];
+        return at ? (
+          <button
+            key={item.id}
+            type="button"
+            tabIndex={clickable ? 0 : -1}
+            className="board-fan-item"
+            data-fan-item={item.id}
+            data-fan-tab={tab.id}
+            data-shape={item.shape ?? "rect"}
+            data-hover={hovered === item.id || undefined}
+            aria-label={item.label}
+            aria-disabled={item.disabled ? true : undefined}
+            style={{ left: at.x, top: at.y }}
+            {...(clickable && {
+              onPointerEnter: () => onHover?.(item.id),
+              onPointerLeave: () => onHover?.(null),
+              onFocus: () => onHover?.(item.id),
+              onBlur: () => onHover?.(null),
+              onClick: () => onPick(item),
+            })}
+          >
+            <span className="board-fan-content">{item.content}</span>
+            {grid ? <span className="board-fan-caption">{item.label}</span> : null}
+            {hovered === item.id ? (
+              <span className="board-fan-tip" data-wrap={item.disabled ? true : undefined}>
+                {item.label}
+                {item.disabled ? <span className="board-fan-reason">{item.disabled}</span> : null}
+              </span>
+            ) : null}
+          </button>
+        ) : null;
+      })}
     </>
   );
 }
@@ -377,39 +544,17 @@ function PullOverlay({
   /** The board's screen rect. */
   board: DOMRect | undefined;
 }) {
-  const before = tab.side === "before";
   const glyph = tabGlyph(tab);
-  const origin = underTileOrigin(drag.tile, drag.restY, before);
+  const origin = underTileOrigin(drag.tile, drag.restY);
   const ribbon = taffyRibbon(origin.x, origin.y, drag.x, drag.y);
-  const { items } = tab;
-  const grid = tab.layout === "grid";
-  // Slots come from the item's place in the whole list, disabled or not, so they never shift.
-  const box = board && { x: board.x, y: board.y, w: board.width, h: board.height };
-  const detailed = grid && items.some((item) => item.detail);
-  const cell = detailed ? FAN_CELL_DETAIL : FAN_CELL;
-  const centers = grid
-    ? placeGrid(
-        fanGrid(
-          drag.restX,
-          drag.restY,
-          items.map((item) => item.group),
-          before,
-          { cell, ...(tab.columns !== undefined && { columns: tab.columns }) },
-        ),
-        box,
-        cell,
-      )
-    : placeFan(fanCenters(drag.restX, drag.restY, items.length, before), box);
-  const panel = grid && open && centers.length ? gridBounds(centers, cell) : undefined;
   const exit = holeRect(drag.tile, 0);
   const exitMask = `${ids}-exit`;
-  const hovered = drag.hover?.item ?? null;
   return (
     <div
       className="board-overlay board-pull"
+      data-fan={ids}
       data-glyph={glyph}
-      data-layout={grid ? "grid" : undefined}
-      data-detail={detailed || undefined}
+      data-layout={tab.layout === "grid" ? "grid" : undefined}
       aria-hidden={!open}
     >
       <svg className="board-ribbon" width="100%" height="100%" overflow="visible" aria-hidden>
@@ -428,62 +573,17 @@ function PullOverlay({
           />
         </g>
       </svg>
-      {panel ? (
-        <div
-          className="board-fan-panel"
-          style={{
-            left: panel.x - PANEL_PAD,
-            top: panel.y - PANEL_PAD,
-            width: panel.w + 2 * PANEL_PAD,
-            height: panel.h + 2 * PANEL_PAD,
-          }}
+      {open ? (
+        <FanItems
+          tab={tab}
+          rest={{ x: drag.restX, y: drag.restY }}
+          tile={drag.tile}
+          board={board}
+          hovered={drag.hover?.item ?? null}
         />
       ) : null}
-      {open
-        ? items.map((item, i) => {
-            const at = centers[i];
-            return at ? (
-              <button
-                key={item.id}
-                type="button"
-                tabIndex={-1}
-                className="board-fan-item"
-                data-fan-item={item.id}
-                data-fan-tab={tab.id}
-                data-shape={item.shape ?? "rect"}
-                data-hover={hovered === item.id || undefined}
-                aria-label={item.label}
-                aria-disabled={item.disabled ? true : undefined}
-                style={{ left: at.x, top: at.y }}
-              >
-                <span className="board-fan-content">{item.content}</span>
-                {grid ? (
-                  <span className="board-fan-caption">
-                    {item.label}
-                    {item.detail ? <span className="board-fan-detail">{item.detail}</span> : null}
-                  </span>
-                ) : null}
-                {hovered === item.id ? (
-                  <span
-                    className="board-fan-tip"
-                    data-wrap={item.disabled || item.description ? true : undefined}
-                  >
-                    {item.label}
-                    {item.description ? (
-                      <span className="board-fan-description">{item.description}</span>
-                    ) : null}
-                    {item.disabled ? (
-                      <span className="board-fan-reason">{item.disabled}</span>
-                    ) : null}
-                  </span>
-                ) : null}
-              </button>
-            ) : null;
-          })
-        : null}
       <div className="board-tab-ghost" data-glyph={glyph} style={{ left: drag.x, top: drag.y }}>
         <TabGlyphMark glyph={glyph} />
-        {tab.badge ? <span className="board-tab-badge">{tab.badge}</span> : null}
       </div>
     </div>
   );

@@ -84,7 +84,7 @@ future generator's frontend templates) which user flow each service serves.
   endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
   decide which one is selected.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
-  In Pointer mode the selected tile shows its pull tabs
+  In Pointer mode the selected tile shows its tabs
   ([Creating and connecting](#creating-and-connecting)) and a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
   see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
   the same blue, with a red X ([Removing](#removing)).
@@ -109,10 +109,14 @@ opens as Simple); it is never saved to the design, its revision or history, the 
 chat. Switching keeps the
 selection, including an open module, animates every tile to its new place and then fits.
 
-In Detailed, an application tile with at least one module is a **container** (`detailedView.ts`,
-`tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its family colour, the
-name on one line and the kind label in small grey type below it, above a divider, then one framed
-row per module, 32px apart, in module order.
+In Detailed, every application tile that can hold modules (a Service, Worker or Uploads, and an
+older Redirect, Notifications or Billing tile), or that has any, is a **container**
+(`detailedView.ts`, `tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its
+family colour, the name on one line and the kind label in small grey type below it, above a
+divider, then one framed row per module, 32px apart, in module order, then a 48px footer with a
+small blue **+** centred in it, inside the frame ([Adding a module](#adding-a-module)). A tile with
+no modules yet is a container holding just its header and the `+` (96px tall). The `+` shows on
+every such container, selected or not, in Pointer mode only; an export draws the footer empty.
 A row shows the module's icon in its family colour and its name, cut short with an ellipsis; the
 full name is its tooltip. A row whose kind can take a connection has a small **dot** on its right
 edge, hollow until one of its slots is connected, then filled; a row that can't connect
@@ -140,8 +144,9 @@ Every other tile keeps its Simple view size and face.
   the click; where only one relationship's lines run together, a click selects it without asking.
   The X removes the whole relationship, with the same refusals and confirmation as in the
   Simple view; module links that use it go with it.
-- Containers are tiles: click one's header to select it, and its module `+`, link tab and X work
-  as on any tile. Its tabs sit just outside its frame, beside its rows rather than over them. In
+- Containers are tiles: click one's header to select it, and its link tab and X work as on any
+  tile; its `+` works whether it is selected or not. Its link tab sits just outside its frame,
+  beside its rows rather than over them. In
   Connect mode a drag from a row's dot connects that module, and a drag from anywhere else on a
   container, a row included, links the container ([Connect mode](#connect-mode)).
   A port mark turns blue whenever its line does: the container, the relationship, the tile at the
@@ -150,8 +155,8 @@ Every other tile keeps its Simple view size and face.
   inspector, as its card does. A row and a card are the same module: while one is open, from
   either, its row is filled in the selection colour and ringed, its name bold, and only the lines
   drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
-  another module's line of the same relationship). No other row is marked. The tile keeps its pull
-  tabs and X. Back, another tile or line, or empty paper clears the marks; the Simple view keeps
+  another module's line of the same relationship). No other row is marked. The tile keeps its link
+  tab and X. Back, another tile or line, or empty paper clears the marks; the Simple view keeps
   only the tile selected, with all its lines blue. A row reached by keyboard shows a focus
   outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
@@ -162,35 +167,36 @@ Every other tile keeps its Simple view size and face.
 
 ### Size and fit
 
-Detailed draws module hosts as containers, wider and taller than a tile, and more lines, so it is
-larger and fits smaller. Drawn size (`layout.bounds`), total line length and line crossings, with real ELK
+Detailed draws module hosts as containers, wider and taller than a tile (each with the 48px
+footer that holds its `+`), and more lines, so it is larger and fits smaller. Drawn size (`layout.bounds`), total line length and line crossings, with real ELK
 on a fresh layout:
 
 | Design | View | Lines | Drawn size | Line length | Crossings |
 | --- | --- | ---: | --- | ---: | ---: |
 | TinyURL extended | Simple | 12 | 1,024×832 | 2,752 | 0 |
-| | Detailed | 12 | 1,280×800 | 3,008 | 1 |
+| | Detailed | 12 | 1,280×896 | 3,136 | 1 |
 | Marketplace | Simple | 23 | 1,280×1,472 | 6,912 | 1 |
-| | Detailed | 25 | 1,568×1,536 | 8,576 | 4 |
+| | Detailed | 25 | 1,568×1,632 | 8,896 | 4 |
 | YouTube | Simple | 25 | 1,504×1,376 | 8,864 | 1 |
-| | Detailed | 26 | 1,920×1,600 | 12,608 | 4 |
+| | Detailed | 26 | 1,920×1,696 | 12,800 | 4 |
 | YouTube v2 field design | Simple | 27 | 1,920×1,297 | 10,080 | 3 |
-| | Detailed | 30 | 2,528×1,441 | 17,536 | 12 |
+| | Detailed | 30 | 2,528×1,536 | 17,728 | 11 |
 
 Fit zooms, which the canvas takes by itself. With one rail open a design that fits by height keeps
 its rails-closed zoom; TinyURL extended's Detailed (0.61 with the chat open at 1440×900) and both of
-v2's views fit by width and drop a little:
+v2's views fit by width and drop a little (v2's Detailed zooms are worked out from its drawn size,
+the others measured in the browser):
 
 | Design | View | 1440×900, rails closed | 1440×900, both open | 1280×800, rails closed | 1280×800, both open |
 | --- | --- | ---: | ---: | ---: | ---: |
 | TinyURL extended | Simple | 0.67 | 0.56 | 0.59 | 0.45 |
-| | Detailed | 0.70 | 0.44 | 0.62 | 0.35 |
+| | Detailed | 0.62 | 0.44 | 0.55 | 0.35 |
 | Marketplace | Simple | 0.37 | 0.37 | 0.32 | 0.32 |
-| | Detailed | 0.35 | 0.35 | 0.31 | 0.28 |
+| | Detailed | 0.33 | 0.33 | 0.29 | 0.28 |
 | YouTube | Simple | 0.39 | 0.38 | 0.35 | 0.30 |
-| | Detailed | 0.34 | 0.29 | 0.30 | 0.23 |
+| | Detailed | 0.32 | 0.29 | 0.28 | 0.23 |
 | YouTube v2 field design | Simple | 0.43 | 0.28 | 0.37 | 0.23 |
-| | Detailed | 0.38 | 0.21 | 0.33 | 0.20 |
+| | Detailed | 0.35 | 0.21 | 0.31 | 0.20 |
 
 v2's Detailed with both rails at 1280×800 stops at the zoom floor, 0.20: the fit's margin no longer
 fits, but every tile and line is still inside the canvas. At these zooms a row's 14px name is 3–5px
@@ -203,7 +209,9 @@ saved diagram in the current view, including offscreen tiles, their names, kind 
 all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
 visual reference (D2: a recorded hash, not a gate), `9332ea16…89bd` (3008×2752) since the kind
 labels. A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
-and their lines the relationship each drawn line belongs to. It uses the same HTML faces, SVG
+and their lines the relationship each drawn line belongs to. No control is drawn: a container's
+footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `21fe8400…9ae1`,
+3840×3392). It uses the same HTML faces, SVG
 lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
@@ -344,9 +352,10 @@ rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
 
-In Pointer mode only the selected tile shows controls: a tab on its right, for what the lane rules
-allow there, a module `+` on its left when it holds modules, and the red X on its top edge
-([Removing](#removing)). Nothing is inserted before a tile.
+In Pointer mode the selected tile shows a tab on its right, for what the lane rules allow there,
+and the red X on its top edge ([Removing](#removing)); a tile that holds modules has its module
+`+` inside it ([Adding a module](#adding-a-module)). Nothing is inserted before a tile, and no tab
+sits on a tile's left.
 
 - **The link tab** (the link icon) adds a new tile after the tile and links the two. A tile has it
   when at least one kind fits after it, so databases, caches, storage and search indexes have none.
@@ -358,14 +367,15 @@ allow there, a module `+` on its left when it holds modules, and the red X on it
 - **An action** has the same link tab: a new tile that becomes its entry, a Microservice, Uploads,
   Identity or a CDN; the other kinds are greyed ("An action reaches a service (not a worker), an
   API or the CDN.").
-- **The module `+`** on the left of a Microservice, Worker service or Uploads tile (and of an
-  older Redirect, Notifications or Billing tile) adds a module to it
-  ([Adding a module](#adding-a-module)).
+- **The module `+`** inside a Microservice, Worker service or Uploads tile (and an older Redirect,
+  Notifications or Billing tile) adds a module to it ([Adding a module](#adding-a-module)).
 
-Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
-and the pull stays open until you let go. The link tab opens a grid of the eleven kinds a new tile
-can be, on one panel beside the tab, each with its kind's icon and name, always in the same
-places, one row per group:
+**Click a tab** to open its fan, and click it again to close it; a click anywhere else, the wheel
+or Escape closes it too, and picks nothing. The tab stays pressed while its fan is open. (A tab can
+still be pulled, as before: past 36px a thick band stretches from under the tile to the pointer,
+and releasing on a kind picks it; dragging is never needed.) The link tab opens a grid of the
+eleven kinds a new tile can be, on one panel beside the tab, each with its kind's icon and name,
+always in the same places, one row per group:
 
 | Row | Kinds |
 | --- | --- |
@@ -374,42 +384,59 @@ places, one row per group:
 | Messaging | Message channel (labelled Queue or Topic) |
 | Edge | CDN, External API |
 
-A kind the rules refuse after that tile is greyed, and its tip adds why ("Click events can't link
-to a search index. A queue feeds only an application, not a search index."). Gateway and the older
-Redirect, Notifications and Billing kinds are not offered; existing tiles of those kinds keep
-working. The panel stays on the canvas, at least 16px inside its edges, so it never covers a rail
-or the header; where the canvas is narrow it moves aside as one block and can cover its own tile.
-**Release on a kind** to add a tile of it. It is named after the kind ("Worker service", then
-"Worker service 2"), docks at the next slot beside its source while the layout animates around
-it, and is selected with its Name field ready to type over (the canvas pans to it if it landed
-out of view). After a queue both a Microservice and a Worker service consume; a new database,
-cache, storage or queue belongs to the application it is added next to. A tab never links to
-existing tiles: releasing on a greyed kind or on a tile changes nothing. **Release anywhere
-else**, or press Escape, and the band springs back.
+A kind the rules refuse after that tile is greyed, and its tip (under the pointer) adds why
+("Click events can't link to a search index. A queue feeds only an application, not a search
+index."). Gateway and the older Redirect, Notifications and Billing kinds are not offered;
+existing tiles of those kinds keep working. The panel stays on the canvas, at least 16px inside
+its edges, so it never covers a rail or the header. Where the canvas is too narrow for it beside
+the tab, it goes beside its own tile instead, as one block: on the tile's left, or below or above
+it, never over it; only a canvas too small for it on any side lets it cover part of the tile, as
+little as it can. **Click a kind** to add a tile of it. It is named after the kind ("Worker
+service", then "Worker service 2"), docks at the next slot beside its source while the layout
+animates around it, and is selected with its Name field ready to type over (the canvas pans to it
+if it landed out of view). After a queue both a Microservice and a Worker service consume; a new
+database, cache, storage or queue belongs to the application it is added next to. A tab never
+links to existing tiles: a click on a greyed kind changes nothing, and a pulled tab released on a
+tile or anywhere else springs back.
 
 ### Adding a module
 
-Pull a tile's module `+` and its grid opens to the left: the module kinds that tile allows
-([catalog](../jeeves/CATALOG.md#components-c3)), each with its icon, its name and what it can
-generate in that tile, a row per answer, five to a row:
+A tile that can hold modules has a small blue **+** inside it (`ModuleMenu.tsx`), in three
+places that share one menu and one command:
 
-| Row | Means | A Microservice's | A Worker service's |
+- **Detailed:** at the bottom of every such container, centred under its rows, inside the frame,
+  whether the tile is selected or not; a Service, Worker or Uploads tile with no modules yet is a
+  container holding just the `+` ([Detailed view](#detailed-view)).
+- **Simple:** in the top-left corner of the selected tile, clear of its icon, name, kind label and
+  warning mark. Other tiles show none.
+- **The inspector:** under the cards of the tile page's Modules section, which a tile that can
+  hold modules always has ([Inspector](#inspector)).
+
+None shows in Connect mode or in an export. **Click the `+`** to open the module menu, and click it
+again to close it; a click anywhere else, the wheel, a resize or Escape closes it too, and adds
+nothing. On the board the menu opens beside the tile, never over it: below it when there is room,
+else on its right, left or above, inside the canvas, or over a rail when the canvas has no room
+beside the tile (only a window too small for it on every side lets it cover part of the tile). From the inspector it pops out to the left of the rail, level with the `+`. It is drawn
+at screen size, whatever the zoom, and lists the module kinds that tile allows
+([catalog](../jeeves/CATALOG.md#components-c3)) under what each can generate in that tile, two to a
+row, each with its icon, its name and its one-line description ("Data access · Reads and writes one
+database."):
+
+| Group | Means | A Microservice's | A Worker service's |
 | --- | --- | --- | --- |
 | **Template** | It leads an installed template once its connections are made | Cache reader, Multipart uploads, Search query | Lifecycle writer, Video encoder, Event counter, Index writer |
 | **Part of a template** | It fills a connection of a template led by another module in the tile | Event publisher, Data access, Auth guard | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
 | **Stub** | It is generated as a typed stub there | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
 
-A kind's tip adds its one-line description ("Data access · Reads and writes one database."). An
-Uploads tile offers 11 kinds, a Microservice 12 and a Worker service 16. The grid is the fan's
-panel, kept on the canvas: a Worker service's four rows fit beside both rails at 1280×800.
-**Release on a kind** to add a module of it, named after the kind ("Data access", then "Data
-access 2"), at the end of the tile's modules (`addModule`). Its page opens in the inspector with
-its Name field ready to type over; the tile stays selected, and in the Detailed view the
-container grows a row. A new module is unconnected, which is allowed: it is generated as a stub
-until its connections are made ([Inspector](#inspector) says what it still needs). On a design
-saved before schema 3 the first module also upgrades it. The module, its generation and the
-ownership it needs are one batch and one undo step. **Release anywhere else**, or press Escape,
-and nothing is added.
+An Uploads tile offers 11 kinds, a Microservice 12 and a Worker service 16; a Worker service's
+menu fits on screen at 1280×800. **Click a kind** to add a module of it, named after the kind
+("Data access", then "Data access 2"), at the end of the tile's modules (`addModule`). Its page
+opens in the inspector with its Name field ready to type over; the tile is selected, and in the
+Detailed view the container grows a row, its `+` moving down under it. A new module is
+unconnected, which is allowed: it is generated as a stub until its connections are made
+([Inspector](#inspector) says what it still needs). On a design saved before schema 3 the first
+module also upgrades it. The module, its generation and the ownership it needs are one batch and
+one undo step.
 
 ### Connect mode
 
@@ -429,7 +456,7 @@ onward.").
 - **Release on a refused tile** and the notice gives the same reason; nothing changes. Release
   on paper or on the tile itself, or press Escape during the drag, and nothing happens.
 - A press without a drag is a click: it selects, so the inspector works in Connect mode. Tiles
-  show no pull tabs or X there, and the paper still pans.
+  show no tabs, `+` or X there, and the paper still pans.
 - **A line under the pointer** turns the selection blue, is drawn over the rest, and shows its
   red X where a selected line's X would sit; the pointer can move from the line onto it. The X
   removes the line as in [Removing](#removing), with the same refusals, confirmation and Undo.
@@ -474,8 +501,9 @@ per action; a tile has one entry at most, and a lane one action. An edit that br
 rules is refused with a notice and changes nothing, whether it comes from the canvas, the
 inspector, chat or the API.
 
-Optional shortcuts: V picks the Pointer, C connects, Escape cancels a pull or a drag (and
-otherwise returns to Pointer). Every action works by mouse alone.
+Optional shortcuts: V picks the Pointer, C connects, Escape closes an open fan or module menu
+and cancels a pull or a drag (and otherwise returns to Pointer). Every action works by mouse
+alone.
 
 ## Removing
 
@@ -531,9 +559,11 @@ this order:
    timeout when selected by a feature. Fixed local Docker/TypeScript, provider, media and internal
    policies have no controls. Historical unsupported settings remain in source and diagnostics
    unchanged.
-4. **Modules**, only when the tile has modules: a stack of cards, each one button ("Open
-   <module>") with the module's icon in its family colour, its name, its kind and the first two
-   lines of its Description.
+4. **Modules**, when the tile has modules or can hold them: a stack of cards, each one button
+   ("Open <module>") with the module's icon in its family colour, its name, its kind and the
+   first two lines of its Description, then the blue **+** centred under them. The `+` opens the
+   same module menu as the board's, out to the left of the rail
+   ([Adding a module](#adding-a-module)).
 
 The page lists no connections: the drawn lines are the relationships, and selecting one shows its
 details.
@@ -558,7 +588,8 @@ details.
   reopens the module, as a selected tile comes back when Redo restores it. While a module is
   open, chat's selection is the module's ID. The open module is the workspace's selection
   (`selection.ts`), never saved.
-- Modules are added with the tile's [module `+`](#adding-a-module) and connected in
+- Modules are added with the [module `+`](#adding-a-module) (in the tile or the inspector) and
+  connected in
   [Connect mode](#connect-mode); a module's kind can't change, and changing a name does not
   normalize historical settings.
 - A module command on a study derives the whole tile's generation. On the TinyURL extended and
@@ -612,7 +643,7 @@ reopen to edit."
 
 A **warning** is a design that looks wrong but is allowed. A design is built step by step, so a
 queue with no consumer yet or a new action with no entries must be accepted while you build it.
-Warnings never refuse an edit: no command, pull, connect or chat call is blocked by one, and they
+Warnings never refuse an edit: no command, fan, menu, connect or chat call is blocked by one, and they
 are not "Fix the lanes first" problems (those are lane errors). The rules are:
 
 - **A store with no writer**: where resource access is declared, no valid authority/role/write
@@ -645,7 +676,7 @@ batch (an autosaved edit, an action's rename, an entry's lane switch, or adding,
 disconnecting or removing a module) or chat turn is one step; a new edit ends the redo chain. A
 rename that re-keyed IDs is one step too: Undo and Redo move the IDs back and again, and the
 selection (an open module included) follows them; the server's answer lists them as `renamed`. Selecting, opening a module or going Back,
-switching between Detailed and Simple, opening a fan, hovering, a cancelled drag, panning,
+switching between Detailed and Simple, opening a fan or a module menu, hovering, a cancelled drag, panning,
 zooming and Fit add none and leave the design and blueprint unchanged. The history survives reloads.
 
 Optional shortcuts: **Ctrl+Z** (**Cmd+Z** on a Mac) presses Undo, and **Ctrl+Shift+Z**
@@ -1165,12 +1196,15 @@ and all twenty components, with nothing omitted and no findings.
 
 ## Limits
 
-- The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
-  scale with the board. With both rails open (TinyURL fits at 0.56 at 1440×900, 0.45 at 1280×800)
-  the tabs are about 22px or 18px, tile names are small, and the link fan's panel (about 430 by
-  380px) covers nearby tiles (a tab never drops on them, so nothing is lost). Where the canvas is
-  too narrow for it beside the tab, it moves aside as one block, over the tile's own tab and often
-  the tile itself. Closing a rail helps; a fitted camera refits by itself.
+- The fan and the module menu are drawn at screen size beside tiles drawn at the board's zoom,
+  while the tabs, the `+` and the X scale with the board. With both rails open (TinyURL fits at
+  0.56 at 1440×900, 0.45 at 1280×800) the tabs are about 22px or 18px, a container's `+` about
+  16px or 13px (the Detailed fits are smaller still: about 8–9px for YouTube), tile names are small,
+  and the link fan's panel (about 430 by 380px) and the module menu (468px wide) cover nearby
+  tiles, never their own (a tab never drops on them, so nothing is lost). Only a canvas too small
+  for the panel on every side of its tile lets it cover part of that tile. Closing a rail or
+  zooming in helps; a fitted camera refits by itself.
+- A menu or fan stays where it opened: the wheel and a resize close it rather than move it.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
   marketplace study (seventeen tiles, 1,472px tall) fits at 0.37 at 1440×900 and 0.32 at
   1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
