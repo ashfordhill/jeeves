@@ -21,6 +21,7 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
       "search-projection",
       "search-query",
       "verified-identity",
+      "favorites",
     ] as const
   ).map((kind) => [kind, generationCapabilities[kind]] as const);
   return {

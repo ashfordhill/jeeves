@@ -7,9 +7,9 @@
 // X (`removal.tsx`).
 //
 // In the Detailed view a drag may also start at a module row's dot (the board passes the module's
-// ID): it ends on a tile, or for the Cache reader's loader on a Data access row of the same tile,
-// and runs that module's `connectModule` (`moduleConnectOptions` gives each end's command or the
-// reason it is refused). A module link's X runs `disconnectModule`; the tiles' link stays. Each is
+// ID): it ends on a tile, or for an in-process slot (the Cache reader's loader, Favorites' items)
+// on a Data access row of the same tile, and runs that module's `connectModule`
+// (`moduleConnectOptions` gives each end's command or the reason it is refused). A module link's X runs `disconnectModule`; the tiles' link stays. Each is
 // one batch and one undo step, with its generation derived in the same step.
 import type { ConnectRules } from "@jeeves/board";
 import {

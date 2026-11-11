@@ -47,6 +47,7 @@ export const moduleTemplateNames: Record<GenerationBinding["kind"], string> = {
   "event-counter": "Event counter",
   "search-projection": "Search indexing",
   "search-query": "Search query",
+  favorites: "Favorites",
   "youtube-upload": "YouTube upload",
   "youtube-watch": "YouTube watch",
   "youtube-search": "YouTube search",

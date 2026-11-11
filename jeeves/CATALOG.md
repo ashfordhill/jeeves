@@ -12,8 +12,8 @@ its tile, selects it (the [module catalog](#components-c3)); there is no feature
 and designs that attached the video feature stay readable and exportable. Product codecs, routes,
 projections and service composition remain custom work after generation. Historical YouTube declarations
 remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL,
-SQL pool/statement limits on a bound Data access or a Lifecycle writer, and an Auth guard's
-Sign-in (Required or Optional). Fixed policies/providers/language and unsupported alternatives
+SQL pool/statement limits on a bound Data access or a Lifecycle writer (Favorites' items Data
+access too), and an Auth guard's Sign-in (Required or Optional). Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
 The one export option is **Runnable processes** (`generation.processes`, Generate project's
@@ -289,7 +289,7 @@ slots and generation: `studioComponentDefinitions` in
 | `redirect-responder` | Redirect responder | `route` | any | none: can't connect | Stub |
 | `event-publisher` | Event publisher | `plug-connected` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
 | `event-consumer` | Event consumer | `plug` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
-| `data-access` | Data access | `database` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter` |
+| `data-access` | Data access | `database` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
 | `auth-guard` | Auth guard | `lock` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
 | `external-call` | External call | `world` | any | target: External API, an application or Identity · request | Stub |
 | `custom` | Custom | `puzzle` | any | uses: any tile, many | Stub |
@@ -301,13 +301,15 @@ slots and generation: `studioComponentDefinitions` in
 | `event-counter` | Event counter | `sum` | Worker | none: can't connect | Lead of `event-counter` |
 | `index-writer` | Index writer | `list-search` | Worker | index: Search index · write | Lead of `search-projection` |
 | `search-query` | Search query | `search` | Service | index: Search index · read | Lead of `search-query` |
+| `favorites` | Favorites | `star` | Service | state: Database · read & write; items: a Data access in its tile (optional) | Lead of `favorites` |
 
 - **Hosts:** "any" is a Service, Worker or Uploads tile, and existing Redirect, Notifications
   and Billing tiles. Identity, Gateway and Browser tiles take no new modules (`moduleKinds`); older
   source keeps the browser-safe kinds it has.
 - **Slots:** a slot is one use of a tile through the host's link, and its arrow follows that link.
   Every slot takes one connection except Custom's. The publisher's outbox is needed for jobs and
-  publication, not for results. The Cache reader's **loader** is the one in-process slot.
+  publication, not for results. The Cache reader's **loader** and Favorites' **items** are the
+  in-process slots.
   `moduleSlots` lists a module's slots and the links that fill them; `moduleLinkSlot` gives the slot
   a link fills.
 - **Generation:** a template is selected only by its lead, once every needed part in its tile is
@@ -320,6 +322,15 @@ slots and generation: `studioComponentDefinitions` in
   tile's guard set to Required: it binds the guard's Identity and is a Stub ("Needs an Auth guard
   set to Required in Upload API.") until then; the guard is no longer one of its parts. A guard a
   tile-level upload template binds (frozen v2, the presets) stays that template's.
+- **Favorites:** generic, for any product's items (videos, listings). Connected to its own
+  database (`state`) beside its tile's Auth guard set to Required, it leads `favorites@0.1.0`
+  (Template · Favorites); its optional **items** are a Data access in the same tile, whose database
+  the product's `eligible` hook reads. Until then it is a Stub that says what it needs ("Needs an
+  Auth guard set to Required in Account API."; "Needs Item reader, its items, connected to a
+  database."). Its bounds are fixed in `favorites-policy`: item IDs of 1–200 characters of
+  `A-Za-z0-9._:-`, 1,000 favorites per account, 50 to a page. It has no settings; its own pool
+  runs fixed at 10 connections and 2000 ms, and its items Data access shows Pool size and
+  Statement timeout.
 
 Module commands, in [`studio-operations.ts`](packages/spec/src/studio-operations.ts), are shared
 by the mouse and chat through `buildSupportedAuthoringCommand`:
@@ -327,7 +338,7 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 | Command | What it does |
 | --- | --- |
 | `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` with a new name re-keys an ID that still follows to `<host>-<slug(name)>`. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
-| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"` targets `{module}`, a Data access in the same tile. A filled slot must be disconnected first. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
 
@@ -366,7 +377,7 @@ kind can generate in that tile: **Template** for a lead, **Part of a template** 
 runs `addModule`. A
 row has a dot when its kind has slots, filled when `moduleSlots` has a link; a drag from it may
 end where `moduleConnectOptions` gives a command, and runs it. The X on a module's drawn line or
-on the loader's gutter arrow runs `disconnectModule`, and the module page's Remove module runs
+on an in-process link's gutter arrow (a loader, Favorites' items) runs `disconnectModule`, and the module page's Remove module runs
 `removeModule`.
 
 ## Settings

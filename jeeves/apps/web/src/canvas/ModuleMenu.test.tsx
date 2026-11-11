@@ -27,7 +27,10 @@ const rows = (host: string, kind: "service" | "worker") =>
 describe("moduleMenuGroups", () => {
   it("groups a Service's and a Worker's kinds by Template, Part of a template and Stub", () => {
     expect(rows("watch", "service")).toEqual([
-      ["Template", ["Cache reader", "Auth guard", "Multipart uploads", "Search query"]],
+      [
+        "Template",
+        ["Cache reader", "Auth guard", "Multipart uploads", "Search query", "Favorites"],
+      ],
       ["Part of a template", ["Event publisher", "Data access"]],
       [
         "Stub",
@@ -86,7 +89,7 @@ describe("ModuleAddButton", () => {
     expect(
       screen.getAllByRole("group").map((group) => group.querySelector("legend")?.textContent),
     ).toEqual(["Template", "Part of a template", "Stub"]);
-    expect(screen.getAllByRole("menuitem")).toHaveLength(12);
+    expect(screen.getAllByRole("menuitem")).toHaveLength(13);
     const data = screen.getByRole("menuitem", { name: "Data access" });
     const described = document.getElementById(data.getAttribute("aria-describedby") ?? "");
     expect(described?.textContent).toBe("Part of a template. Reads and writes one database.");

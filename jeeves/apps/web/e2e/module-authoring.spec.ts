@@ -3,8 +3,9 @@
  * allows, grouped Template, Part of a template and Stub; a picked kind becomes a module that opens
  * with its name focused. In the Detailed view a row that can connect has a dot: in Connect mode a drag
  * from it runs `connectModule`, the Cache reader's loader is a row→row drag drawn as a gutter
- * arrow, and the X on a module's line or arrow runs `disconnectModule`. Every change is one
- * command and one Undo step; looking, hovering and cancelled drags change nothing.
+ * arrow (so is Favorites' items), and the X on a module's line or arrow runs `disconnectModule`.
+ * Every change is one command and one Undo step; looking, hovering and cancelled drags change
+ * nothing.
  */
 import type { Locator, Page } from "@playwright/test";
 import {
@@ -69,6 +70,7 @@ const SERVICE = [
   ["Auth guard", "Template"],
   ["Multipart uploads", "Template"],
   ["Search query", "Template"],
+  ["Favorites", "Template"],
   ["Event publisher", "Part of a template"],
   ["Data access", "Part of a template"],
   ["Rate limiter", "Stub"],
@@ -160,7 +162,7 @@ test("adds a module of every menu kind to a Service and a Worker by mouse", asyn
     await expect(service.locator(".board-tab")).toHaveAttribute("aria-label", LINK_TAB);
     const plus = service.locator(".lane-tile-add");
     await expect(plus).toHaveAttribute("aria-label", PLUS);
-    // Its menu: the twelve kinds a Service allows, grouped by Template, Part of a template and
+    // Its menu: the thirteen kinds a Service allows, grouped by Template, Part of a template and
     // Stub, each named and described, all on screen.
     await plus.click();
     await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(SERVICE.length);
@@ -538,6 +540,126 @@ test("an Auth guard is a Template once it verifies an Identity: Sign-in Required
     await undo(page);
     await expect.poll(settings).toMatchObject({ signIn: "required" });
     await expect(select).toHaveValue("required");
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("Favorites is a Template beside a Required Auth guard; its items are a row-to-row drag onto a Data access", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Favorites", [
+    ["Consume", "Microservice"],
+    ["Microservice", "Database"],
+    ["Microservice", "Identity"],
+  ]);
+  const guard = "microservice-auth-guard";
+  const favorites = "microservice-favorites";
+  const data = "microservice-data-access";
+  const open = async (module: string, kind: string) => {
+    await page.keyboard.press("v");
+    await row(page, module)
+      .getByRole("button", { name: `Open ${kind} in Microservice`, exact: true })
+      .click();
+  };
+  try {
+    // A second database, for the items.
+    await tile(page, "Microservice").click();
+    await pickFrom(page, "Microservice", LINK_TAB, "Database");
+    await expect(tile(page, "Database 2")).toHaveClass(/selected/);
+    await ready(page);
+    await tile(page, "Microservice").click();
+    // The + lists Favorites under Template, with its one line.
+    await tile(page, "Microservice").locator(".lane-tile-add").click();
+    expect(await menuKinds(page)).toContainEqual(["Favorites", "Template"]);
+    await expect(
+      moduleMenu(page).getByRole("menuitem", { name: "Favorites", exact: true }),
+    ).toContainText("Keeps each signed-in account's favorite items.");
+    await page.keyboard.press("Escape");
+    await addModule(page, "Microservice", "Favorites");
+    await expect(status(page)).toHaveAttribute("data-status", "stub");
+    await expect(status(page)).toContainText("Needs a connection to a database.");
+    await addModule(page, "Microservice", "Auth guard");
+    await addModule(page, "Microservice", "Data access");
+
+    await page.getByRole("button", { name: "Detailed", exact: true }).click();
+    await ready(page);
+    await page.keyboard.press("c");
+    await dragOnto(page, dot(page, favorites), tile(page, "Database"));
+    await page.mouse.up();
+    await expect(dot(page, favorites)).toHaveAttribute("data-connected", "true");
+    await dragOnto(page, dot(page, data), tile(page, "Database 2"));
+    await page.mouse.up();
+    await expect(dot(page, data)).toHaveAttribute("data-connected", "true");
+    await ready(page);
+    // Without a guard it is a Stub, with the reason.
+    await open(favorites, "Favorites");
+    await expect(status(page)).toHaveAttribute("data-status", "stub");
+    await expect(status(page)).toContainText(
+      "Needs an Auth guard set to Required in Microservice.",
+    );
+    // A Required guard beside it makes it a Template.
+    await page.keyboard.press("c");
+    await dragOnto(page, dot(page, guard), tile(page, "Identity"));
+    await page.mouse.up();
+    await expect(dot(page, guard)).toHaveAttribute("data-connected", "true");
+    await ready(page);
+    await open(favorites, "Favorites");
+    await expect(status(page)).toHaveAttribute("data-status", "template");
+    await expect(status(page)).toHaveText("TemplateFavorites");
+    const before = await saved(page, id);
+
+    // Its items: from its dot onto the Data access row of its own tile, drawn as a gutter arrow.
+    await page.keyboard.press("c");
+    await dragOnto(page, dot(page, favorites), row(page, data));
+    await expect(page.locator(`.board-connect-ends rect[data-end="${data}"]`)).toHaveAttribute(
+      "data-over",
+      "true",
+    );
+    await page.mouse.up();
+    const arrow = tile(page, "Microservice").locator(".lane-container-loader");
+    await expect(arrow).toHaveCount(1);
+    await expect(arrow.getByRole("img")).toHaveAttribute("aria-label", "Favorites to Data access");
+    const linked = await saved(page, id);
+    expect(linked.revision).toBe(before.revision + 1);
+    expect(linked.architecture.studio.componentConnections?.at(-1)).toEqual({
+      id: `${favorites}-${data}`,
+      from: favorites,
+      to: { kind: "component", id: data },
+    });
+    // The Data access is now its part.
+    await open(data, "Data access");
+    await expect(status(page)).toHaveAttribute("data-status", "template");
+    await expect(status(page)).toHaveText("TemplateFavorites");
+
+    // Sign-in Optional: Favorites waits for Required again; Undo brings it back.
+    await open(guard, "Auth guard");
+    await inspector(page)
+      .getByLabel("Sign-in", { exact: true })
+      .selectOption({ label: "Optional" });
+    await expect.poll(async () => (await saved(page, id)).revision).toBe(linked.revision + 1);
+    await open(favorites, "Favorites");
+    await expect(status(page)).toHaveAttribute("data-status", "stub");
+    await expect(status(page)).toContainText(
+      "Needs an Auth guard set to Required in Microservice.",
+    );
+    await undo(page);
+    await expect(status(page)).toHaveAttribute("data-status", "template");
+
+    // In Connect mode the arrow's X disconnects the items; Undo returns them.
+    await page.keyboard.press("c");
+    const at = await arrowPoint(arrow);
+    await page.mouse.move(at.x, at.y, { steps: 4 });
+    const x = page.getByRole("button", { name: "Disconnect Favorites from Data access" });
+    await expect(x).toBeVisible();
+    await x.click();
+    await expect(arrow).toHaveCount(0);
+    expect(await moduleLinks(page, id)).toEqual(before.architecture.studio.componentConnections);
+    await undo(page);
+    await expect(arrow).toHaveCount(1);
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }

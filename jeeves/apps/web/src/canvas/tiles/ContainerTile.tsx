@@ -10,9 +10,9 @@
 // A row whose kind can take connections has a small dot on its right edge, hollow until one of
 // its slots is connected, then filled; a row that can't connect has none. Each row is one of the
 // board's ends (`data-board-end`) and its dot the end's handle (`data-board-end-handle`), so in
-// Connect mode a drag from the dot starts at the module, not at the tile. The Cache reader's loader
-// is a short arrow in the left gutter, from its row to the Data access row; the rows move right to
-// make room for it.
+// Connect mode a drag from the dot starts at the module, not at the tile. An in-process slot's link
+// (the Cache reader's loader, Favorites' items) is a short arrow in the left gutter, from its row
+// to the Data access row; the rows move right to make room for it.
 //
 // Each row is a button ("Open <module> in <host>") that opens its module in the inspector, and
 // marks itself while that module is open (`data-mark="open"`); no other row is marked. A port mark
@@ -78,7 +78,7 @@ export function ContainerTile({
   /** Its kind label (`studioKindLabel`), under the name in the header. */
   label?: string;
   rows: readonly DetailedRow[];
-  /** The Cache readers' loaders between its rows. */
+  /** The in-process links between its rows (loaders, items). */
   loaders?: readonly DetailedLoader[];
   /** It can take new modules: its footer holds the `+` (`DetailedContainer.addable`). */
   addable?: boolean;

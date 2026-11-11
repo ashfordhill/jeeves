@@ -12,6 +12,7 @@ import {
   type GenerationBinding,
   type GenerationDependency,
   type GenerationSelection,
+  generationBindingIdentity,
   generationHost,
   generationReferences,
 } from "./generation.ts";
@@ -75,6 +76,7 @@ const templateWords: Record<StudioModuleTemplate, string> = {
   "event-counter": "event counter",
   "search-projection": "search indexing",
   "search-query": "search query",
+  favorites: "favorites",
 };
 
 type ModuleLink = {
@@ -363,6 +365,29 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
       else plan.binding = { kind: "search-query", index };
       break;
     }
+    case "favorites": {
+      const state = dependency(own("state"));
+      if (!state) needs.push(connected("database"));
+      // Its items are optional; once connected, that Data access is a part and its database is
+      // the one the eligibility hook reads.
+      const link = view.linksOf(lead, "items")[0];
+      let items: GenerationDependency | undefined;
+      if (link) {
+        const reader = link.target;
+        if (!reader || reader.host !== lead.host) needs.push("a Data access as its items");
+        else {
+          plan.parts.push(reader);
+          items = dependency(view.linksOf(reader, "database")[0]);
+          if (!items) needs.push(`${reader.name}, its items, connected to a database`);
+        }
+      }
+      // Only signed-in accounts keep favorites: the tile's Auth guard, set to Required.
+      const guard = requiredGuard(view, lead.host);
+      if (!guard) needs.push(`${article(kindName("auth-guard"))} set to Required in ${host}`);
+      if (!needs.length && state && guard)
+        plan.binding = { kind: "favorites", state, identity: guard, ...(items && { items }) };
+      break;
+    }
   }
   if (needs.length) {
     plan.missing = needs[0];
@@ -376,8 +401,8 @@ export const guardSignIn = (module: StudioComponent) =>
 
 /**
  * The tile's Auth guard, when it is the one guard there connected to an Identity and set to
- * Required: the identity a template that needs signed-in callers binds (Multipart uploads, and
- * Favorites in V3-07). Two such guards are refused as two sign-in templates.
+ * Required: the identity a template that needs signed-in callers binds (Multipart uploads and
+ * Favorites). Two such guards are refused as two sign-in templates.
  */
 function requiredGuard(view: ModuleView, host: string) {
   const guards = view
@@ -533,11 +558,8 @@ function ownershipKeys(selections: readonly Pick<GenerationSelection, "target" |
     const host =
       selection.target.kind === "element" ? selection.target.element : selection.target.host;
     roles.add(host);
-    if (
-      selection.binding.kind === "owned-multipart" ||
-      selection.binding.kind === "verified-identity"
-    )
-      roles.add(selection.binding.identity.element);
+    const identity = generationBindingIdentity(selection.binding);
+    if (identity) roles.add(identity.element);
     for (const use of bindingUses(selection.binding)) {
       resources.add(use.store);
       grants.add(`${host}/${use.store}`);
@@ -560,9 +582,10 @@ export function covers(
   const binding = selection.binding;
   if (binding.kind === "owned-multipart" && binding.identity.guard === module.id) return true;
   const links = design.architecture?.studio?.componentConnections ?? [];
+  // An in-process part: the Cache reader's loader, Favorites' items.
   if (
     selection.target.kind === "component" &&
-    binding.kind === "positive-cache-read" &&
+    (binding.kind === "positive-cache-read" || binding.kind === "favorites") &&
     links.some(
       (link) =>
         link.from === (selection.target.kind === "component" ? selection.target.component : "") &&
@@ -753,11 +776,10 @@ function deriveOwnership(
   const hosts = [...new Set(complete.map((item) => item.lead.host))].sort(byRank);
   const identities = [
     ...new Set(
-      complete.flatMap((item) =>
-        item.binding?.kind === "owned-multipart" || item.binding?.kind === "verified-identity"
-          ? [item.binding.identity.element]
-          : [],
-      ),
+      complete.flatMap((item) => {
+        const identity = item.binding && generationBindingIdentity(item.binding);
+        return identity ? [identity.element] : [];
+      }),
     ),
   ].sort(byRank);
   const uses = complete.flatMap((item) =>
@@ -1041,7 +1063,7 @@ function writeValues(draft: DesignDocument, view: ModuleView, complete: LeadPlan
       // A guard's Sign-in starts Required, the meaning it has when absent.
       if (kind === "auth-guard") fix(settings, "signIn", "required");
     }
-    if (binding.kind === "owned-multipart" || binding.kind === "verified-identity")
-      fix(tile(binding.identity.element), "exposure", "public", "internal");
+    const identity = generationBindingIdentity(binding);
+    if (identity) fix(tile(identity.element), "exposure", "public", "internal");
   }
 }

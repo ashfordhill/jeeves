@@ -50,6 +50,14 @@ export const generationBindingSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("search-query"), index: dep }),
   /** An Auth guard's sign-in (v3 contract, section 2): the guard and the Identity it verifies. */
   z.strictObject({ kind: z.literal("verified-identity"), identity: generationIdentitySchema }),
+  /** Favorites (v3 contract, section 3): its own table's database, the tile's Required guard, and
+   * the database its items Data access reads to say which items may be favorited. */
+  z.strictObject({
+    kind: z.literal("favorites"),
+    state: dep,
+    identity: generationIdentitySchema,
+    items: dep.optional(),
+  }),
   z.strictObject({ kind: z.literal("youtube-upload"), upload: idSchema, lifecycle: idSchema }),
   z.strictObject({ kind: z.literal("youtube-watch"), reader: idSchema, counts: dep, events: dep }),
   z.strictObject({ kind: z.literal("youtube-search"), query: idSchema }),
@@ -81,6 +89,13 @@ export const designGeneration = (design: DesignDocument): Generation | undefined
   design.schemaVersion === 3 ? design.generation : undefined;
 export const generationHost = (selection: GenerationSelection) =>
   selection.target.kind === "element" ? selection.target.element : selection.target.host;
+/** The guard and Identity a binding names: an upload's, a sign-in's or Favorites'. */
+export const generationBindingIdentity = (binding: GenerationBinding) =>
+  binding.kind === "owned-multipart" ||
+  binding.kind === "verified-identity" ||
+  binding.kind === "favorites"
+    ? binding.identity
+    : undefined;
 
 /** Explicit field traversal also gives validators/resolvers canonical source paths. */
 export function generationReferences(binding: GenerationBinding) {
@@ -140,6 +155,10 @@ export function generationReferences(binding: GenerationBinding) {
       break;
     case "search-query":
       resource("index", binding.index, "search");
+      break;
+    case "favorites":
+      resource("state", binding.state, "database");
+      if (binding.items) resource("items", binding.items, "database");
       break;
     case "youtube-upload":
       selected("upload", binding.upload, "owned-multipart");
@@ -225,11 +244,8 @@ export function generationFindings(design: DesignDocument): Finding[] {
           "Component host does not match generation target.",
         );
     }
-    if (
-      selection.binding.kind === "owned-multipart" ||
-      selection.binding.kind === "verified-identity"
-    ) {
-      const identity = selection.binding.identity;
+    const identity = generationBindingIdentity(selection.binding);
+    if (identity) {
       if (!elements.has(identity.element))
         row(
           "UNKNOWN_REFERENCE",
@@ -253,9 +269,9 @@ export function generationFindings(design: DesignDocument): Finding[] {
         row(
           "CONFIG_INVALID",
           ["binding", "identity", "guard"],
-          selection.binding.kind === "verified-identity"
-            ? "Authentication guard must belong to the selected host."
-            : "Authentication guard must belong to the selected upload host.",
+          selection.binding.kind === "owned-multipart"
+            ? "Authentication guard must belong to the selected upload host."
+            : "Authentication guard must belong to the selected host.",
         );
       else if (
         selection.binding.kind === "verified-identity" &&

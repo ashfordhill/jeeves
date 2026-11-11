@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import type { DesignDocument } from "./design.ts";
+import { emptyDesign } from "./design.ts";
+import {
+  favoritesStackDesign,
+  favoritesStackModuleCommands,
+  favoritesStackTileCommands,
+} from "./fixtures/favorites-stack.ts";
 import {
   addV2Module as add,
   connectModule as connect,
@@ -11,7 +17,11 @@ import {
   v2Tiles,
 } from "./fixtures/v2-modules.ts";
 import { designGeneration, type GenerationSelection } from "./generation.ts";
-import { generationRuntime, generationTemplates } from "./generation-catalog.ts";
+import {
+  generationPolicies,
+  generationRuntime,
+  generationTemplates,
+} from "./generation-catalog.ts";
 import { buildGenerationPresetCommand } from "./generation-presets.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
 import { generationCapabilities } from "./generation-support.ts";
@@ -21,6 +31,7 @@ import type { OperationInput } from "./operations.ts";
 import { designOwnership, type Ownership } from "./ownership.ts";
 import { designBlueprintV3 } from "./studio-blueprint.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
+import { moduleKinds } from "./studio-modules.ts";
 import {
   buildStudioCommand,
   moduleConnectOptions,
@@ -201,7 +212,8 @@ describe("module catalog records", () => {
       "event-counter-policy",
       "public-video-policy",
     ]);
-    expect(Object.keys(generationPolicies)).toHaveLength(6);
+    // V3-07 added the favorites policy; youtube-core still names the six above.
+    expect(Object.keys(generationPolicies)).toHaveLength(7);
     // Every record v2 saved is still the catalog's, byte for byte.
     const saved = designGeneration(v2());
     expect(saved?.runtime).toEqual(generationRuntime.ref);
@@ -228,10 +240,11 @@ describe("module catalog records", () => {
       "search-projection": ["index-writer"],
       "search-query": ["search-query"],
       "verified-identity": ["auth-guard"],
+      favorites: ["favorites"],
       "youtube-upload": ["custom"],
       "youtube-watch": ["custom"],
       "youtube-search": ["custom"],
-      "module-stub": 18,
+      "module-stub": 19,
     });
     expect(generationCapabilities["module-stub"].role).toBeUndefined();
     expect(generationCapabilities["module-stub"].resources).toEqual([]);
@@ -1079,6 +1092,256 @@ describe("the Auth guard's sign-in (V3-06, v3 contract section 2)", () => {
         linkId: "watch-to-more",
       }),
     ).toBe("Watch API already has 5 links; the most is 5.");
+  });
+});
+
+describe("Favorites (V3-07, v3 contract section 3)", () => {
+  /** The composition's support for the sign-in and Favorites, as the executing registry installs
+   * them. */
+  const installed = {
+    runtime: generationRuntime.ref,
+    templates: (["verified-identity", "favorites", "module-stub"] as const).map((kind) => ({
+      ref: generationTemplates[kind].ref,
+      consumers: [
+        { input: "binding", consumer: kind },
+        ...generationTemplates[kind].definition.policies.map((ref) => ({
+          input: `policy.${ref.id}`,
+          consumer: kind,
+        })),
+        ...generationCapabilities[kind].settings.map((rule) => ({
+          input: rule.input,
+          consumer: rule.consumer,
+        })),
+      ].map((item) => ({ ...item, outputPaths: ["src/features/application-bindings.ts"] })),
+    })),
+  };
+  const tiles = () => runAll(emptyDesign(), favoritesStackTileCommands);
+  /** The stack's modules up to (not including) command `n`. */
+  const upTo = (n: number) => runAll(tiles(), favoritesStackModuleCommands.slice(0, n));
+  const reason = (design: DesignDocument, module: string) => {
+    const status = moduleStatus(design, module);
+    return [status?.status, status?.reason ?? status?.template];
+  };
+  const applied = (design: DesignDocument, batch: { ops: OperationInput[] }) => {
+    const result = applyOperations(design, batch.ops);
+    if (!result.ok) throw new Error(JSON.stringify(result.errors));
+    return result.design;
+  };
+  const signIn = (design: DesignDocument, value: "required" | "optional") =>
+    buildSupportedAuthoringCommand(
+      design,
+      {
+        type: "editComponent",
+        component: "account-check",
+        settings: { kind: "auth-guard", credential: "jwt", signIn: value },
+      },
+      installed,
+    );
+
+  it("is a generic Template in a Service's menu, with its own policy of bounds", () => {
+    expect(planModules(tiles()).leads).toEqual([]);
+    expect(generationTemplates.favorites.definition.policies).toEqual([
+      generationPolicies.favorites.ref,
+    ]);
+    expect(generationPolicies.favorites.definition).toEqual({
+      account: { source: "verified-principal-subject", maxCharacters: 255 },
+      item: { minCharacters: 1, maxCharacters: 200, characters: "A-Za-z0-9._:-" },
+      perAccount: 1000,
+      pageSize: 50,
+      order: "newest-first",
+      add: "idempotent-eligible-only",
+    });
+    expect(generationCapabilities.favorites).toMatchObject({
+      role: "api",
+      hosts: ["service"],
+      componentTargets: ["favorites"],
+      resources: [
+        { field: "state", kind: "database", access: "read-write", pool: "fixed" },
+        { field: "items", kind: "database", access: "read", optional: true },
+      ],
+    });
+  });
+
+  it("leads its template beside a Required guard; its items Data access is a part", () => {
+    const design = favoritesStackDesign(false);
+    expect(selectionOf(design, "favorite-items")).toEqual({
+      id: "favorite-items",
+      target: { kind: "component", component: "favorite-items", host: "account-api" },
+      template: generationTemplates.favorites.ref,
+      binding: {
+        kind: "favorites",
+        state: { resource: "favorites", connection: "account-api-favorites" },
+        identity: { element: "sign-in", guard: "account-check" },
+        items: { resource: "catalog", connection: "account-api-catalog" },
+      },
+    });
+    expect(
+      Object.fromEntries(
+        moduleStatuses(design).map((item) => [item.module, reason(design, item.module)]),
+      ),
+    ).toEqual({
+      "account-check": ["template", "verified-identity"],
+      "favorite-items": ["template", "favorites"],
+      "item-reader": ["template", "favorites"],
+      "catalog-writer": ["stub", "Favorite items doesn't use it."],
+    });
+    // Its own database is written; the items database only read, and the tile owns both.
+    expect(designOwnership(design).grants).toEqual([
+      { role: "account-api", resource: "favorites", access: "read-write" },
+      { role: "account-api", resource: "catalog", access: "read" },
+    ]);
+    // The values its template needs: the tile's limits, the items Data access's SQL settings.
+    expect(settingsOf(design, "account-api")).toMatchObject({
+      requestTimeoutMs: 1000,
+      concurrencyLimit: 1000,
+      exposure: "public",
+    });
+    expect(settingsOf(design, "item-reader")).toMatchObject({
+      poolSize: 10,
+      statementTimeoutMs: 2000,
+    });
+    expect(settingsOf(design, "favorite-items")).toEqual({ kind: "favorites" });
+    const resolved = resolveGeneration(design, installed);
+    expect(resolved.findings).toEqual([]);
+    const row = resolved.model?.selections.find((item) => item.id === "favorite-items");
+    expect(row?.policies.map((item) => item.ref)).toEqual([generationPolicies.favorites.ref]);
+    expect(row?.inputs).toMatchObject({
+      "state.poolSize": 10,
+      "state.statementTimeoutMs": 2000,
+      "items.poolSize": 10,
+      "items.statementTimeoutMs": 2000,
+      "host.requestTimeoutMs": 1000,
+    });
+    expect(row?.resources.map((item) => [item.field, item.element, item.access])).toEqual([
+      ["state", "favorites", "read-write"],
+      ["items", "catalog", "read"],
+    ]);
+    // Favorites' own page has no control: its pool is fixed and its bounds are the policy's.
+    const fields = (target: { element: string } | { component: string }) =>
+      normalSettingFields(design, installed, target).map((item) => item.input);
+    expect(fields({ component: "favorite-items" })).toEqual([]);
+    expect(
+      resolved.settings.find(
+        (item) => item.selection === "favorite-items" && item.input === "state.poolSize",
+      ),
+    ).toMatchObject({ origin: "descriptor-default", status: "fixed", normalControl: false });
+    expect(fields({ component: "item-reader" })).toEqual([
+      "items.poolSize",
+      "items.statementTimeoutMs",
+    ]);
+    expect(fields({ element: "account-api" })).toEqual([
+      "host.requestTimeoutMs",
+      "host.concurrencyLimit",
+    ]);
+  });
+
+  it("stays a Stub with a plain reason until it has a database and a Required guard", () => {
+    // Added alone, then given its database, then its guard.
+    expect(reason(upTo(2), "favorite-items")).toEqual([
+      "stub",
+      "Needs a connection to a database.",
+    ]);
+    const stated = run(upTo(4), connect("favorite-items", "state", { tile: "favorites" }));
+    expect(reason(stated, "favorite-items")).toEqual([
+      "stub",
+      "Needs an Auth guard set to Required in Account API.",
+    ]);
+    const guarded = run(stated, connect("account-check", "identity", { tile: "sign-in" }));
+    expect(reason(guarded, "favorite-items")).toEqual(["template", "favorites"]);
+    // No items: still a Template, with no items in its binding.
+    expect(selectionOf(guarded, "favorite-items")?.binding).toEqual({
+      kind: "favorites",
+      state: { resource: "favorites", connection: "account-api-favorites" },
+      identity: { element: "sign-in", guard: "account-check" },
+    });
+    // Items on a Data access with no database: a Stub naming it.
+    const unread = run(guarded, connect("favorite-items", "items", { module: "item-reader" }));
+    expect(reason(unread, "favorite-items")).toEqual([
+      "stub",
+      "Needs Item reader, its items, connected to a database.",
+    ]);
+    // Optional sign-in, by the module page's command (chat sends the same): a Stub again, then
+    // a Template when Required again.
+    const design = favoritesStackDesign(false);
+    const optional = applied(design, signIn(design, "optional"));
+    expect(reason(optional, "favorite-items")).toEqual([
+      "stub",
+      "Needs an Auth guard set to Required in Account API.",
+    ]);
+    expect(selectionOf(optional, "favorite-items")?.binding.kind).toBe("module-stub");
+    expect(reason(applied(optional, signIn(optional, "required")), "favorite-items")).toEqual([
+      "template",
+      "favorites",
+    ]);
+    // The menu offers it only in a Service.
+    expect(moduleKinds(v2Tiles(), "watch")).toContain("favorites");
+    expect(moduleKinds(v2Tiles(), "transcoder")).not.toContain("favorites");
+    expect(refusal(v2Tiles(), add("transcoder", "worker-favorites", "favorites"))).toBe(
+      "Favorites can't go in Transcoder; it goes in a service.",
+    );
+  });
+
+  it("refuses in plain words: items must be a Data access, one template serves a part, one Favorites a tile", () => {
+    const design = favoritesStackDesign(false);
+    expect(refusal(design, connect("favorite-items", "items", { module: "account-check" }))).toBe(
+      "Favorite items' items must be a Data access in Account API.",
+    );
+    // The row-to-row ends: only a Data access row of its tile takes its items.
+    const ends = moduleConnectOptions(design, "favorite-items").filter(
+      (item) => "module" in item.target,
+    );
+    expect(
+      ends.map((item) => [
+        "module" in item.target ? item.target.module : "",
+        "command" in item ? item.command.slot : item.refusal,
+      ]),
+    ).toEqual([
+      ["account-check", "Favorite items' items must be a Data access."],
+      ["item-reader", "Favorite items' items already come from Item reader; disconnect it first."],
+      [
+        "catalog-writer",
+        "Favorite items' items already come from Item reader; disconnect it first.",
+      ],
+    ]);
+    const open = moduleConnectOptions(
+      runAll(tiles(), favoritesStackModuleCommands.slice(0, 4)),
+      "favorite-items",
+    ).filter((item) => "module" in item.target);
+    expect(open.map((item) => ("command" in item ? item.command : item.refusal))).toEqual([
+      "Favorite items' items must be a Data access.",
+      {
+        type: "connectModule",
+        module: "favorite-items",
+        slot: "items",
+        target: { module: "item-reader" },
+      },
+      {
+        type: "connectModule",
+        module: "favorite-items",
+        slot: "items",
+        target: { module: "catalog-writer" },
+      },
+    ]);
+    // A Cache reader's loader can't share the items Data access.
+    const shared = runAll(design, [
+      {
+        type: "addTile",
+        from: { tile: "account-api" },
+        side: "after",
+        tile: { id: "hot", name: "Hot", kind: "cache" },
+        linkId: "account-api-hot",
+      },
+      add("account-api", "reader-cache", "cache-reader"),
+      connect("reader-cache", "cache", { tile: "hot" }),
+    ]);
+    expect(refusal(shared, connect("reader-cache", "loader", { module: "item-reader" }))).toBe(
+      "Item reader already serves Favorite items; Cache reader needs its own Data access.",
+    );
+    // Two complete Favorites in one tile are refused as two templates of one kind.
+    const two = runAll(design, [add("account-api", "more-favorites", "favorites")]);
+    expect(refusal(two, connect("more-favorites", "state", { tile: "favorites" }))).toBe(
+      "Account API can hold one favorites template; Favorite items and Favorites would each make one.",
+    );
   });
 });
 

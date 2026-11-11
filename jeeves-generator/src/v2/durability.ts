@@ -21,21 +21,28 @@ export function createLocalDurability(sourcePaths: readonly string[]): V2Emitter
     sourcePaths,
     dependencies: [generationRuntime.ref],
     render: ({ model, asset }) => {
-      const paths = model.selections
-        .filter((s) =>
-          ["owned-multipart", "asset-lifecycle", "event-counter"].includes(s.binding.kind),
-        )
-        .map((s) => `/${s.sourcePath.map((part) => pointerPart(String(part))).join("/")}`);
+      const selected = model.selections.filter((s) =>
+        ["owned-multipart", "asset-lifecycle", "event-counter", "favorites"].includes(
+          s.binding.kind,
+        ),
+      );
+      const paths = selected.map(
+        (s) => `/${s.sourcePath.map((part) => pointerPart(String(part))).join("/")}`,
+      );
       if (!paths.length) return { files: [] };
+      // Favorites needs only transactions and qualified tables: no outbox or receipts.
+      const messaging = selected.some((s) => s.binding.kind !== "favorites");
       return {
-        files: ["transaction", "durable-sql", "outbox", "receipts"].map((name) => ({
-          path: `src/runtime/${name}.ts`,
-          content: asset(
-            `jeeves-generator/templates/local-v2/assets/src/runtime/${name}.ts${name === "durable-sql" ? "" : ".template"}`,
-          ),
-          ownership: "generated-scaffold" as const,
-          sourcePaths: paths,
-        })),
+        files: ["transaction", "durable-sql", ...(messaging ? ["outbox", "receipts"] : [])].map(
+          (name) => ({
+            path: `src/runtime/${name}.ts`,
+            content: asset(
+              `jeeves-generator/templates/local-v2/assets/src/runtime/${name}.ts${name === "durable-sql" ? "" : ".template"}`,
+            ),
+            ownership: "generated-scaffold" as const,
+            sourcePaths: paths,
+          }),
+        ),
       };
     },
   };

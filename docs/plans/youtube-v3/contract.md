@@ -92,6 +92,7 @@ lifecycle hooks they reach (`metadata`, `job`, `response`).
 | The hook | `src/modules/<host>/<lead>.hooks.ts`: `<lead>Hooks(resources: { items?: pg.Pool })` returns `{ async eligible(itemId: string): Promise<boolean> }`. The `items` pool is the Data access's login, which can see that database's `published` views (§1). |
 | v3's answer | `eligible` is true when `itemId` is a UUID and `SELECT 1 FROM published.videos WHERE video_id = $1` finds a row. So a pending, failed or unknown video is refused with 404. |
 | Marketplace | Account API: Required guard, Favorites, and a Data access on Listings, whose writer publishes `published.listings`. `eligible` is `SELECT 1 FROM published.listings WHERE listing_id = $1 AND state = 'active'`. There is no YouTube code in the template. |
+| As built (V3-07) | The binding is `{kind: "favorites", state, identity: {element, guard}, items?}` (it names the tile's guard, as multipart's does). The hooks' resources are `{ items: pg.Pool }` when an items Data access is connected and empty otherwise. Adding an item already there answers it again without asking `eligible`. A subject over 255 characters is 403 `ACCOUNT_ID`. Its own pool is fixed at 10 connections and 2000 ms (no setting). [Evidence](evidence/v3-07/README.md). |
 
 ## 4. Settings on process tiles (D5)
 

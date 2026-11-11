@@ -30,6 +30,7 @@ import {
   IconServer,
   IconShield,
   IconStack2,
+  IconStar,
   IconSum,
   IconWorld,
 } from "@tabler/icons-react";
@@ -59,6 +60,7 @@ const ICONS: Record<string, Icon> = {
   search: IconSearch,
   shield: IconShield,
   "stack-2": IconStack2,
+  star: IconStar,
   sum: IconSum,
   world: IconWorld,
 };

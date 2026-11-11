@@ -28,8 +28,9 @@
 //
 // Rows and in-process links. A row whose kind has slots can take connections (`connects`, a dot
 // at its edge), filled once one of its slots is (`connected`). Of the links between modules of one
-// tile, only the Cache reader's loader is drawn: a short arrow in the container's left gutter
-// (`DetailedLoader`). Every other one stays saved and is neither drawn nor counted.
+// tile, only an in-process slot's is drawn (the Cache reader's loader, Favorites' items): a short
+// arrow in the container's left gutter (`DetailedLoader`). Every other one stays saved and is
+// neither drawn nor counted.
 //
 // Output order follows `laneLayoutInput`: tiles in node order, lines in edge order (an edge's
 // lines together), so the result is a `LayoutInput` and its lines are `LineSpec`s.
@@ -77,13 +78,14 @@ export type DetailedRow = {
   /** At least one of its slots is connected. */
   connected: boolean;
 };
-/** The Cache reader's loader inside one container: an arrow from one row to another. */
+/** An in-process slot's link inside one container (the Cache reader's loader, Favorites' items):
+ * an arrow from one row to another. */
 export type DetailedLoader = {
   /** The module link. */
   link: string;
-  /** The Cache reader. */
+  /** The module whose slot it fills (a Cache reader, Favorites). */
   from: string;
-  /** The Data access it loads from. */
+  /** The module it uses (a Data access). */
   to: string;
   label: string;
 };
@@ -170,7 +172,7 @@ export function detailedView(
   for (const tile of addable) if (!hosted.has(tile)) hosted.set(tile, []);
 
   // Each edge's anchors: the modules that reach a tile through it, and each one's link there.
-  // The Cache reader's loader is the one link between modules of a tile that is drawn.
+  // An in-process slot's link is the one link between modules of a tile that is drawn.
   const edges = new Map(graph.edges.map((edge) => [edge.id, edge]));
   const anchors = new Map<string, { source: string[]; target: string[] }>();
   const linkOf = new Map<string, string>();

@@ -131,10 +131,11 @@ Every other tile keeps its Simple view size and face.
   direction, so a consumer's line runs channel → consumer. A relationship two modules use is drawn
   twice (YouTube's Packager and Thumbnailer both write Transcoded videos: 25 relationships, 26
   lines). A relationship no module uses, an entry and the user's line attach at the header.
-- Of the links between modules of one tile, only the **Cache reader's loader** is drawn: a short
-  arrow in the container's left gutter, from the Cache reader's row to the Data access row it
-  loads from on a miss (the rows move right to make room). It turns blue while either module is
-  open. Every other link between modules of one tile stays saved and is neither drawn nor
+- Of the links between modules of one tile, only an in-process slot's is drawn, the **Cache
+  reader's loader** or **Favorites' items**: a short arrow in the container's left gutter, from
+  that module's row to the Data access row it uses (the one a Cache reader loads from on a miss,
+  or whose database says which items Favorites may keep; the rows move right to make room). It
+  turns blue while either module is open. Every other link between modules of one tile stays saved and is neither drawn nor
   authored, and decides nothing that is generated.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
@@ -424,11 +425,11 @@ database."):
 
 | Group | Means | A Microservice's | A Worker service's |
 | --- | --- | --- | --- |
-| **Template** | It leads an installed template once its connections are made | Cache reader, Auth guard, Multipart uploads, Search query | Lifecycle writer, Video encoder, Event counter, Index writer |
+| **Template** | It leads an installed template once its connections are made | Cache reader, Auth guard, Multipart uploads, Search query, Favorites | Lifecycle writer, Video encoder, Event counter, Index writer |
 | **Part of a template** | It fills a connection of a template led by another module in the tile | Event publisher, Data access | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
 | **Stub** | It is generated as a typed stub there | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
 
-An Uploads tile offers 11 kinds, a Microservice 12 and a Worker service 16; a Worker service's
+An Uploads tile offers 11 kinds, a Microservice 13 and a Worker service 16; a Worker service's
 menu fits on screen at 1280×800. **Click a kind** to add a module of it, named after the kind
 ("Data access", then "Data access 2"), at the end of the tile's modules (`addModule`). Its page
 opens in the inspector with its Name field ready to type over; the tile is selected, and in the
@@ -480,11 +481,12 @@ onward.").
   The line still ends at the pointer, and a release on an allowed end connects as usual. The zoom
   stays, and the camera is then yours, as after any pan. At the fit everything is in view, so
   nothing pans.
-- **The Cache reader's loader** is a drag from its dot onto a Data access row in the same tile;
-  that row stays bright with a dashed outline. It is drawn as the gutter arrow.
+- **The Cache reader's loader**, and **Favorites' items**, are a drag from its dot onto a Data
+  access row in the same tile; that row stays bright with a dashed outline. Each is drawn as a
+  gutter arrow.
 - **A module's line under the pointer** shows an X named "Disconnect <module> from <tile>": it
   removes that module's connection (`disconnectModule`) and leaves the tiles' link and the other
-  modules' lines. A loader arrow under the pointer shows the same X. A line no module draws keeps
+  modules' lines. A gutter arrow under the pointer shows the same X. A line no module draws keeps
   the X that removes the link. In Pointer mode a selected line's X still removes its whole
   relationship.
 - Each connection, and each disconnection, derives the module's generation and ownership in the
@@ -580,7 +582,9 @@ details.
   covers it yet (a study's modules before any module command). Then any readiness findings, Description,
   **Options** only for the settings a template consumes (Pool size and Statement timeout on a
   Data access in a template, and on a Lifecycle writer, its template's SQL settings; **Sign-in**,
-  Required or Optional, on an Auth guard once it verifies an Identity, "Template · Sign-in"), and
+  Required or Optional, on an Auth guard once it verifies an Identity, "Template · Sign-in";
+  none on Favorites, whose bounds are fixed: "Template · Favorites" beside an Auth guard set to
+  Required, else "Needs an Auth guard set to Required in <tile>."), and
   **Remove module** at the bottom (`removeModule`, which
   re-derives the tile's generation). It lists no links: a module's links follow its tile's drawn
   lines and its row's dot; in Detailed its row and its own lines are marked. Back returns to the tile page with Modules in
@@ -1254,8 +1258,8 @@ and all twenty components, with nothing omitted and no findings.
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
   writes" until renamed, though it reads.
 - The inspector neither lists nor edits module links. The Detailed view draws a module's links
-  to other tiles and the Cache reader's loader; other links between two modules of one tile (the
-  studies' "Supplies code") are kept but neither drawn nor authored. Modules connect only in the
+  to other tiles, the Cache reader's loader and Favorites' items; other links between two modules
+  of one tile (the studies' "Supplies code") are kept but neither drawn nor authored. Modules connect only in the
   Detailed view, whose rows read from about 0.6 zoom. Below 0.5 zoom a dot's grab area is only as
   tall as the row pitch (about 7–12px at the Detailed fits), though 16px wide. A
   selected container's link tab sits just outside its frame, over the first 36px of the lines
@@ -1341,7 +1345,11 @@ answers 501 "Not implemented" until written. An Auth guard connected to an Ident
 **sign-in**: with Sign-in **Required** every module route of the tile answers 401 without a valid
 token; with **Optional** a request without a token is anonymous and one with an invalid token is
 401. `GET /modules/<guard>/me` says who is calling, a stub's request carries its caller, and
-Multipart uploads (which needs its tile's guard set to Required) takes its caller from it. The
+Multipart uploads (which needs its tile's guard set to Required) takes its caller from it.
+**Favorites** (which needs it Required too) keeps each signed-in account's items in its own
+table at `/modules/<favorites>/items`: PUT adds one, DELETE removes it, GET checks one, and GET
+of the list gives 50 a page, newest first; adding asks its generated `eligible` hook, which
+answers 501 until written and reads the database of its items Data access. The
 Identity then runs as Keycloak, with one realm and one browser client, and the guarded processes
 verify tokens against it. When an asset lifecycle names an upload, that upload's `reserve`,
 `complete` and `closed` hooks are the lifecycle's, so only its own hooks are left to write. In any tile, a stub connected to consume a queue

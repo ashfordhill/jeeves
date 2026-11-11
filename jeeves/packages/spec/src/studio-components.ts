@@ -52,6 +52,7 @@ export const studioComponentKinds = [
   "event-counter",
   "index-writer",
   "search-query",
+  "favorites",
 ] as const;
 export const studioComponentKindSchema = z.enum(studioComponentKinds);
 export type StudioComponentKind = z.infer<typeof studioComponentKindSchema>;
@@ -187,6 +188,8 @@ export const studioEventCounterSettingsSchema = z.strictObject({
 });
 export const studioIndexWriterSettingsSchema = z.strictObject({ kind: z.literal("index-writer") });
 export const studioSearchQuerySettingsSchema = z.strictObject({ kind: z.literal("search-query") });
+/** Favorites has no settings: its bounds are fixed in the favorites policy (v3 contract, §3). */
+export const studioFavoritesSettingsSchema = z.strictObject({ kind: z.literal("favorites") });
 
 export const studioComponentSettingsSchemas = {
   "rate-limiter": studioRateLimiterSettingsSchema,
@@ -207,6 +210,7 @@ export const studioComponentSettingsSchemas = {
   "event-counter": studioEventCounterSettingsSchema,
   "index-writer": studioIndexWriterSettingsSchema,
   "search-query": studioSearchQuerySettingsSchema,
+  favorites: studioFavoritesSettingsSchema,
 } as const;
 export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
   studioRateLimiterSettingsSchema,
@@ -227,6 +231,7 @@ export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
   studioEventCounterSettingsSchema,
   studioIndexWriterSettingsSchema,
   studioSearchQuerySettingsSchema,
+  studioFavoritesSettingsSchema,
 ]);
 export type StudioComponentSettings = z.infer<typeof studioComponentSettingsSchema>;
 export type StudioComponentSettingsByKind = {
@@ -261,6 +266,7 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
     "event-counter": { kind: "event-counter" },
     "index-writer": { kind: "index-writer" },
     "search-query": { kind: "search-query" },
+    favorites: { kind: "favorites" },
   };
   return defaults[kind];
 }
@@ -345,6 +351,7 @@ export const studioModuleTemplates = [
   "event-counter",
   "search-projection",
   "search-query",
+  "favorites",
 ] as const;
 export type StudioModuleTemplate = (typeof studioModuleTemplates)[number];
 /** The slot names across the catalog. */
@@ -363,12 +370,14 @@ export const studioModuleSlotIds = [
   "originals",
   "outputs",
   "index",
+  "items",
 ] as const;
 export const studioModuleSlotIdSchema = z.enum(studioModuleSlotIds);
 export type StudioModuleSlotId = (typeof studioModuleSlotIds)[number];
 /**
  * One named use of a tile through the host's link (its arrow follows that link), or, for the
- * Cache reader's loader, of another module in the same tile (`module`, `in-process`). `needed`
+ * Cache reader's loader and Favorites' items, of another module in the same tile (`module`,
+ * `in-process`). `needed`
  * means needed for the module's template; an unconnected module is still allowed and is a stub.
  * A slot takes one connection unless `many`.
  */
@@ -409,7 +418,8 @@ export type StudioComponentDefinition<K extends StudioComponentKind = StudioComp
   hosts: readonly StudioKind[];
   /** Video-specific kinds carry "Video" in their names. */
   scope: "generic" | "video";
-  /** Its uses of tiles (and the loader's of a module), in order; none means it can't connect. */
+  /** Its uses of tiles (and an in-process slot's of a module), in order; none means it can't
+   * connect. */
   slots: readonly StudioModuleSlot[];
   generation: StudioModuleGeneration;
   /** Element kinds this component may use through a traced C2 connection. */
@@ -695,7 +705,7 @@ export const studioComponentDefinitions: {
     hosts: anyHost,
     scope: "generic",
     slots: [slot("database", ["database"], "read-write")],
-    generation: part("owned-multipart", "positive-cache-read", "event-counter"),
+    generation: part("owned-multipart", "positive-cache-read", "event-counter", "favorites"),
     targets: ["database"],
     fields: [
       integer("poolSize", "Pool size", L.poolSize, "connections"),
@@ -859,6 +869,23 @@ export const studioComponentDefinitions: {
     slots: [slot("index", ["search"], "read")],
     generation: lead("search-query"),
     targets: ["search"],
+    fields: [],
+  }),
+  // Generic account capability (v3 contract, section 3): no product wording. Its items are the
+  // Data access whose database says which items may be favorited.
+  favorites: component("favorites", {
+    name: "Favorites",
+    description: "Keeps each signed-in account's favorite items.",
+    thirdParty: ["PostgreSQL"],
+    browserHost: false,
+    hosts: ["service"],
+    scope: "generic",
+    slots: [
+      slot("state", ["database"], "read-write"),
+      { id: "items", targets: [], module: "data-access", use: "in-process", need: "optional" },
+    ],
+    generation: lead("favorites"),
+    targets: ["database"],
     fields: [],
   }),
 });

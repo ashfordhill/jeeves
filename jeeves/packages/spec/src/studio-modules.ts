@@ -38,6 +38,7 @@ export const studioComponentVisuals: Readonly<
   "event-counter": { icon: "sum", color: "data" },
   "index-writer": { icon: "list-search", color: "data" },
   "search-query": { icon: "search", color: "data" },
+  favorites: { icon: "star", color: "data" },
 };
 
 /** What a module may use a tile of this kind as (validation's target kinds). */

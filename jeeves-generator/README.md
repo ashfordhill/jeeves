@@ -292,6 +292,30 @@ the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a ser
   hooks they reach (`metadata`, `job.construct`, `response`).
 - **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
   Valkey cache at `GET /modules/<lead>/:key`; null answers 404.
+- **Favorites** (v3 contract §3; `local.favorites` emits `src/runtime/favorites.ts`, with
+  `transaction.ts` and `durable-sql.ts` from `local.durability`) is mounted on its own table
+  `<selection sql>.favorites` (`account` 1–255, `item` 1–200 of `A-Za-z0-9._:-`, `added_at`
+  `clock_timestamp()`, primary key `(account, item)`, an index on `(account, added_at DESC,
+  item)`), created by migration `100-<selection>.sql` on its `state` database; its tile's login
+  gets SELECT, INSERT and DELETE, and nothing is published. It needs its tile's Auth guard set
+  to Required (the mount refuses otherwise), and the account is the principal's subject. Under
+  `/modules/<lead>/items`: `PUT /items/<itemId>` adds it, idempotently (200 `{itemId, addedAt}`,
+  the same `addedAt` again); `DELETE` answers 204, also when it isn't there; `GET /items/<itemId>`
+  gives 200 or 404 `NOT_FAVORITE`; `GET /items?after=<cursor>` gives `{items, next}`, newest
+  first. Errors: 401 from the guard, 400 `ITEM_ID` and `CURSOR`, and on add only 404
+  `NOT_ELIGIBLE` ("This item can't be added to favorites.") and 409 `FAVORITES_FULL`. One item's
+  path is a wildcard route, so a 200-character ID passes Fastify's 100-character parameter
+  limit. Adds of one account are serialized (an advisory lock), so its count never passes the
+  bound. The bounds come from the `favorites-policy` record (item ID size, **1,000 per
+  account**, **50 to a page**) into the process config; the table's checks use the same values.
+  The hooks file `src/modules/<host>/<lead>.hooks.ts` exports
+  `<lead>Hooks(resources: { items: pg.Pool }): FavoritesHooks` with one hook,
+  `eligible(itemId): Promise<boolean>`, which throws `Not implemented: eligible for <lead name>`
+  (501) until written; only adding asks it. `items` is a pool on the database its **items** Data
+  access reads (that Data access's Pool size and Statement timeout), whose login may select that
+  database's `published` views; with no items Data access the resources are empty. Its own pool
+  runs fixed at 10 connections and 2000 ms. With processes off it emits only the runtime file
+  and an unfinished `favorites-application-bindings` gap.
 - **Search query** is a placeholder: `GET /modules/<lead>` answers "Not implemented" for its
   mapping and query preset, which are product data.
 
@@ -440,7 +464,8 @@ for <lead name>")`. The multipart's are `validate`, `metadata`, `response`, `ori
 `eligible`, `load` and `expiresAt`; the lifecycle's `metadata`, `event`, `result`, `failure`,
 `job.codec`, `job.construct`, `response`, `publication.codec`/`construct` and the three
 `identities`; the video's codecs (`job`, `video`, `result`, `eventId`, `event`) and the source and
-results `owns`; the counter's `event`, `aggregateKey`, `eventId` and `identity`. The process wraps
+results `owns`; the counter's `event`, `aggregateKey`, `eventId` and `identity`; Favorites'
+`eligible`. The process wraps
 the hooks so a loop's log names the hook a message reached. Its `*-application-bindings` gap
 becomes a required `custom` gap naming that file; the search placeholders' gap stays
 `unfinished`. The scaffold

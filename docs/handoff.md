@@ -9346,3 +9346,77 @@ items routes through `routes`, which the guard already wraps). Add `favorites-po
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-07: favorites template
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) and [contract](plans/youtube-v3/contract.md)
+§3 (D4, owner feedback 13), §5 and question 7. Docs: `CATALOG.md` (the kind, the `items` slot,
+the bounds), `studio.md` (menu, Detailed arrow, Connect, module page, export), `studio-settings.md`
+(no setting added; fixed pool), the generator README (endpoints, hook, bounds), a playbook
+lesson, the contract's "As built (V3-07)" row, the plan's status and the HUMAN_FEEDBACK
+resolution. Evidence: [v3-07](plans/youtube-v3/evidence/v3-07/README.md).
+
+- **Spec:** kind `favorites` (Service, `star`, Template, "Keeps each signed-in account's favorite
+  items.", no settings; 19 kinds), slots `state` (Database, read & write) and new `items` (a Data
+  access in its tile, in-process, optional; Data access is now also a part of `favorites`).
+  `favorites@0.1.0` with the new `favorites-policy` (item IDs 1–200 of `A-Za-z0-9._:-`, 1,000 per
+  account, 50 a page; `youtube-core` still pins its six). Binding `{state, identity, items?}`.
+  Derivation: Stub until it has its database and the tile's Required guard (`requiredGuard`),
+  and, when items are connected, that Data access's database ("Needs Item reader, its items,
+  connected to a database."). Capability `http` rules; its `state` pool is fixed at 10/2000
+  (new `pool: "fixed"` requirement flag), so its page has no Options. `generationBindingIdentity`
+  replaces three multipart/guard special cases; `covers` treats items like the loader. Refusals
+  use `possessive` ("Favorite items' items …"), and a filled in-process slot now says what fills
+  it ("… already come from Item reader; disconnect it first.").
+- **Generator:** `local.favorites` (`src/v2/favorites.ts`) emits `src/runtime/favorites.ts`
+  (engine + `mountFavorites`) and the `favorites-application-bindings` gap (custom with
+  processes on); `local.durability` emits only `transaction`/`durable-sql` for it. The mount
+  (`http-wiring.ts`) refuses without a Required guard, builds pools on `state` and `items`,
+  contributes migration `100-<selection>.sql`, both logins and SELECT/INSERT/DELETE, compiles the
+  bounds into `config.templates`, and the hooks file `<lead>.hooks.ts` with `eligible`. One
+  item's route is a wildcard (Fastify's 100-character param limit). Adds per account are
+  serialized by an advisory lock.
+- **Web/chat:** `IconStar`, `moduleTemplateNames`, comments; the arrow, the drag and chat were
+  already generic over in-process slots. Chat's instructions name Favorites' items.
+
+**Deviations:** hooks resources are `{ items: pg.Pool }` only when items are connected (empty
+otherwise; contract wrote `items?`); a re-add answers without asking `eligible`; a subject over
+255 characters is 403 `ACCOUNT_ID`. The Docker design adds a stub Data access (Catalog writer) on
+Account API to create the published view: a writer on another tile would be read only (V3-05).
+
+**Tests.** Spec +4 (`module-generation.test.ts`), generator `favorites.test.ts` (8, PGlite on the
+emitted engine and migration), chat `tools.test.ts` +1 (parity), web menu/status/icon updates, e2e
+`module-authoring.spec.ts` +1 (menu, Stub → Template by guard, `items` row drag, Optional, X,
+Undo) and the every-kind test at 13 Service kinds. New fixture `fixtures/favorites-stack.ts`.
+
+**Checks.** `pnpm check` exited 0: **679 tests in 94 files** (lint: only the existing info).
+**E2E: 78 passed (4.9 m)** on the first full run; `jeeves_e2e` has no leftover E2E project. Web
+build passed (1.01 s, the existing chunk-size advisory). **Mouse check** (scripted Chromium; my API
+4398 with scratch DB `jeeves_v307`, now dropped, and Vite 4388; 1440×900 and 1280×800): TinyURL
+7 tiles/7 lines in both views; Favorites under Template in a 13-kind menu that fits at 1280; by
+mouse Stub "Needs an Auth guard set to Required in Microservice." → Template · Favorites, the
+items arrow, Optional → Stub, Undo; Preview Ready 48 files, runnable, the four routes; no page or
+app console errors; 6 projects deleted.
+
+**Gates.** Off pin passes unchanged. Frozen v2: fresh `export:v2` 72 files, 70 byte-identical to
+`generic-export.tar.gz`, manifest/report equal without inventory. v1 byte-identical. YouTube
+Simple `9332ea16…89bd`, Detailed `21fe8400…9ae1` (twice at 1440×900, once at 1280×800).
+**Docker** (`jeeves-v307-favorites`, 45540–45542; the favorites stack): first-run 75.8 s, 4
+healthy, 0 restarts. Real Keycloak PKCE token: 401 without/tampered/garbage on all four routes;
+unwritten `eligible` 501 "Not implemented: eligible for Favorite items" (check 404, list empty,
+remove 204 without it). With `eligible` reading `published.items` in the run copy: add 200 (same
+`addedAt` again), check, list, remove 204; `hidden-1` and unknown 404 `NOT_ELIGIBLE`; 1,000 adds
+200 in 10.3 s, the 1,001st 409; 20 pages of 50; a second account separate. Stop 3.5 s / start
+39.2 s kept 11 secret hashes, the volume and all 1,000 favorites. Cleanup: down with volumes,
+image tag removed, export, run copy, passwords and tokens deleted; the owner's 43 containers, 18
+volumes, 9 networks, 31 image rows and ports match the record, 42 healthy, both edges 200.
+
+**For V3-08.** Favorites' Account API has Request timeout and Concurrency limit from its template
+already. The search mounts can follow `favorites` in `http-wiring.ts` (a runtime scaffold from an
+emitter, the mount's `local` migrations/logins/grants, a hooks file). `GenerationResourceRequirement.pool`
+exists if another lead fills a database field itself. A Data access writing a database read by a
+template on another tile is read only there (V3-05), so a product's published view needs its
+writer on the reading tile or a template writer.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

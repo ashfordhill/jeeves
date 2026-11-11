@@ -15,6 +15,10 @@ import {
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
+  favoritesStackModuleCommands,
+  favoritesStackTileCommands,
+} from "../../../../packages/spec/src/fixtures/favorites-stack.ts";
+import {
   signIn,
   signInStackCommands,
 } from "../../../../packages/spec/src/fixtures/sign-in-stack.ts";
@@ -333,7 +337,7 @@ describe("studio chat tools", () => {
       hosts: string[];
       generation: { kind: string };
     }[];
-    expect(catalog).toHaveLength(18);
+    expect(catalog).toHaveLength(19);
     expect(catalog.find((item) => item.kind === "video-encoder")).toMatchObject({
       hosts: ["worker"],
       generation: { kind: "lead", template: "video-hls" },
@@ -382,6 +386,75 @@ describe("studio chat tools", () => {
     expect(upload?.find((module) => module.id === "multipart-uploads")).toMatchObject({
       status: "stub",
       reason: "Needs an Auth guard set to Required in Upload API.",
+    });
+  });
+
+  it("adds Favorites and connects its items with the canvas's commands; its status follows the guard", () => {
+    const base = { ...runStudioCommands(emptyDesign(), favoritesStackTileCommands), revision: 3 };
+    const workspace = new Workspace(base);
+    const commands = favoritesStackModuleCommands;
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 3, commands }).ok).toBe(true);
+    // The same batches the mouse sends: the + menu's addModule, the dots' and rows' connectModule.
+    let mouse: typeof base = base;
+    const ops = commands.flatMap((command) => {
+      const batch = buildStudioCommand(mouse, command);
+      const result = applyOperations(mouse, batch.ops);
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      mouse = result.design;
+      return batch.ops;
+    });
+    expect(workspace.pending).toEqual(ops);
+    type Tiles = { id: string; modules?: { id: string; status?: string; reason?: string }[] }[];
+    const account = () =>
+      (run(workspace, "getDesign").tiles as Tiles).find((tile) => tile.id === "account-api")
+        ?.modules;
+    expect(account()?.map((module) => [module.id, module.status])).toEqual([
+      ["account-check", "template"],
+      ["favorite-items", "template"],
+      ["item-reader", "template"],
+      ["catalog-writer", "stub"],
+    ]);
+    // Its items are a Data access: chat is refused as the row drag is.
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [
+          {
+            type: "connectModule",
+            module: "favorite-items",
+            slot: "items",
+            target: { module: "account-check" },
+          },
+        ],
+      }),
+    ).toMatchObject({
+      ok: false,
+      error: "Favorite items' items must be a Data access in Account API.",
+    });
+    // Sign-in Optional, with the module page's command: Favorites waits for Required.
+    const settings = { kind: "auth-guard", credential: "jwt", signIn: "optional" };
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [{ type: "editComponent", component: "account-check", settings }],
+      }).ok,
+    ).toBe(true);
+    expect(account()?.find((module) => module.id === "favorite-items")).toMatchObject({
+      status: "stub",
+      reason: "Needs an Auth guard set to Required in Account API.",
+    });
+    const catalog = run(workspace, "listStudioDefinitions").modules as {
+      kind: string;
+      description: string;
+      hosts: string[];
+      slots: { id: string; module?: string }[];
+      generation: unknown;
+    }[];
+    expect(catalog.find((item) => item.kind === "favorites")).toMatchObject({
+      description: "Keeps each signed-in account's favorite items.",
+      hosts: ["service"],
+      slots: [{ id: "state" }, { id: "items", module: "data-access" }],
+      generation: { kind: "lead", template: "favorites" },
     });
   });
 

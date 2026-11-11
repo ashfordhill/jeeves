@@ -1566,3 +1566,18 @@ lifecycle's own hooks file, so nothing is written twice. On the canvas, `ready` 
 layout lands, but tiles still animate and the camera may move; at a fit a tile can be 28px across,
 so a scripted drag must wait for a still board and release only once the board marks the target
 under the pointer.
+
+## 2026-11-11 V3-07: a generic capability keeps product policy in one hook
+
+An account capability that more than one product needs (favorite videos, saved listings) is a
+template with no product words in it: the table, the bounds, the routes and the paging are the
+template's, and the one product decision, which items may be kept, is a single hook. Give that
+hook its data through a link the user draws, not a setting: Favorites' **items** is a row-to-row
+drag onto a Data access, like the cache's loader, and the hook reads that Data access's database
+through what its writer publishes, so the product's tables stay private. Put the bounds in a
+policy record (200-character IDs, 1,000 per account, 50 to a page) and compile them into both the
+runtime and the table's checks, so the two can't disagree; serialize one account's adds, or two
+racing requests pass the bound. Ask the hook only where it decides something (adding), never on
+check, list or remove, so an unwritten hook still leaves the rest usable. Watch the framework's
+own limits: Fastify refuses a route parameter over 100 characters, so a 200-character ID needs a
+wildcard route.

@@ -6,6 +6,7 @@ import {
 } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
 import { type OutboxTable, outboxSchema } from "./durability.ts";
+import { favoritesBounds, favoritesSchema } from "./favorites.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
 import { moduleEntryName, moduleHooksPath, moduleStubPaths } from "./module-stubs.ts";
 import type { V2TemplateFile } from "./registry.ts";
@@ -680,6 +681,154 @@ function ownedMultipart(
   };
 }
 
+/**
+ * Favorites: each signed-in account's items in the template's own table, at
+ * /modules/<lead>/items, behind the tile's Required sign-in. Adding asks `eligible`, which reads
+ * the items Data access's database when one is connected.
+ */
+function favorites(
+  process: NormalizedProcess,
+  selection: NormalizedGenerationSelection,
+  lead: Lead,
+  selections: readonly NormalizedGenerationSelection[],
+): ProcessMount {
+  const id = selection.id;
+  const name = camel(id);
+  const hooks = `${camel(lead.module)}Hooks`;
+  const types = pascal(lead.module);
+  const state = resource(selection, "state");
+  const items = selection.resources.find((item) => item.field === "items")?.identity.local;
+  const guard = tileGuard(process, selections);
+  if (!guard) refuse("INVALID_LOCAL_CONTRIBUTION", id, "Favorites needs its tile's Auth guard.");
+  const sign = selections.find(
+    (item) => item.host === process.tile && item.binding.kind === "verified-identity",
+  );
+  if (sign?.inputs["guard.signIn"] !== "required")
+    refuse(
+      "INVALID_LOCAL_CONTRIBUTION",
+      id,
+      "Favorites needs its tile's Auth guard set to Required.",
+    );
+  // The generic schema rule: one private schema per template selection, named from its ID.
+  const table = { schema: generationLocalIdentity(id).sql, table: "favorites" };
+  const bounds = favoritesBounds(selection);
+  const base = `/modules/${lead.module}/items`;
+  return {
+    imports: [
+      { from: resources, name: "pool" },
+      { from: resources, name: "selected" },
+      { from: "../runtime/favorites.ts", name: "createFavorites" },
+      { from: "../runtime/favorites.ts", name: "mountFavorites" },
+      { from: tileHttp, name: "notImplementedRoutes" },
+      { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
+    ],
+    setup: [
+      `// ${line(lead.name)}: each signed-in account's favorite items, in the template's own table.`,
+      `const ${name} = (() => {`,
+      `  const s = selected("favorites", ${text(id)});`,
+      `  const binding = config.templates[${text(id)}];`,
+      `  const db = pool(scope, s, "state");`,
+      ...(items ? [`  const items = pool(scope, s, "items");`] : []),
+      "  const favorites = createFavorites({",
+      "    db,",
+      "    table: binding.table,",
+      "    bounds: binding.bounds,",
+      `    hooks: ${hooks}({${items ? " items " : ""}}),`,
+      "  });",
+      `  return { db,${items ? " items," : ""} favorites };`,
+      "})();",
+    ],
+    configure: [
+      `mountFavorites(notImplementedRoutes(routes, log, ${text(lead.module)}), {`,
+      `  base: config.templates[${text(id)}].routes,`,
+      `  favorites: ${name}.favorites,`,
+      `  principal: (request) => ${guard}.require(request),`,
+      "});",
+    ],
+    initialize: [
+      `await ${name}.db.query("SELECT 1");`,
+      ...(items ? [`await ${name}.items.query("SELECT 1");`] : []),
+    ],
+    started: [],
+    config: [id, { template: "favorites", lead: lead.module, table, bounds, routes: base }],
+    routes: [
+      {
+        method: "PUT",
+        path: `${base}/:itemId`,
+        answers: `${notImplementedAnswer(`eligible for ${lead.name}`)}; 200 {itemId, addedAt} once written, or 404 NOT_ELIGIBLE, 409 FAVORITES_FULL at ${bounds.perAccount}`,
+      },
+      { method: "DELETE", path: `${base}/:itemId`, answers: "204, also when it isn't a favorite" },
+      {
+        method: "GET",
+        path: `${base}/:itemId`,
+        answers: "200 {itemId, addedAt}, or 404 NOT_FAVORITE",
+      },
+      {
+        method: "GET",
+        path: base,
+        answers: `200 {items, next}: newest first, ${bounds.pageSize} to a page`,
+      },
+    ],
+    loops: [],
+    template: { selection: id, template: "favorites", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: ["SELECT 1 on its state login", ...(items ? ["SELECT 1 on its items login"] : [])],
+    },
+    hooks: {
+      members: ["eligible"],
+      file: hooksFile(process, selection, lead, "favorites", {
+        imports: [
+          ...(items ? ['import type pg from "pg";'] : []),
+          'import type { FavoritesHooks } from "../../runtime/favorites.ts";',
+        ],
+        types: items
+          ? [
+              `/** The template's generic resources: a pool on ${items}, the database its items Data access reads. This tile's login there sees that database's published views. */`,
+              `export type ${types}Resources = { items: pg.Pool };`,
+            ]
+          : [
+              "/** The template's generic resources: none, until an items Data access is connected. */",
+              `export type ${types}Resources = Record<string, never>;`,
+            ],
+        factory: [
+          `export function ${hooks}(resources: ${types}Resources): FavoritesHooks {`,
+          "  return {",
+          "    /** Whether an item may be added to favorites; only adding asks. */",
+          "    async eligible(itemId) {",
+          `      ${throws("eligible", lead)}`,
+          "    },",
+          "  };",
+          "}",
+        ],
+        reached: "adding an item answers 501 until `eligible` is",
+      }),
+    },
+    service: {
+      ...service(),
+      dependsOn: items ? [state, items] : [state],
+      sql: items ? [state, items] : [state],
+    },
+    local: {
+      migrations: [{ resource: state, id: `100-${id}.sql`, sql: favoritesSchema(table, bounds) }],
+      logins: [
+        { resource: state, host: process.tile },
+        ...(items ? [{ resource: items, host: process.tile }] : []),
+      ],
+      grants: [
+        {
+          resource: state,
+          host: process.tile,
+          schema: table.schema,
+          relation: table.table,
+          kind: "table",
+          privileges: ["SELECT", "INSERT", "DELETE"],
+        },
+      ],
+    },
+  };
+}
+
 /** Search query: a placeholder. Its route answers "Not implemented" until a mapping and a query
  * preset exist, which are product data, not hooks (tile process contract, section 3). */
 function searchQuery(
@@ -754,6 +903,7 @@ const templates: Record<
   "owned-multipart": ownedMultipart,
   "positive-cache-read": positiveCacheRead,
   "search-query": searchQuery,
+  favorites,
 };
 
 /** A route stub: any method on /modules/<module> and below, called with its dependencies

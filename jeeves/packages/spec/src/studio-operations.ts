@@ -473,6 +473,8 @@ const targetNouns: Record<StudioComponentTargetKind, string> = {
   "external-api": "an external API",
 };
 const article = (text: string) => (/^[AEIOU]/i.test(text) ? `an ${text}` : `a ${text}`);
+/** "Cache reader's", "Favorites'". */
+const possessive = (name: string) => (name.endsWith("s") ? `${name}'` : `${name}'s`);
 
 /** Applies a module command to the draft (its studio is `studio`) and returns any lane operations. */
 function buildModuleCommand(
@@ -543,7 +545,9 @@ function buildModuleCommand(
       if ("module" in input.target) {
         const wanted = slot.module;
         if (!wanted)
-          throw new Error(`${who}'s ${slot.id} connects to a tile, not to another module.`);
+          throw new Error(
+            `${possessive(who)} ${slot.id} connects to a tile, not to another module.`,
+          );
         const target = component(input.target.module);
         if (
           target.id === module.id ||
@@ -551,10 +555,17 @@ function buildModuleCommand(
           target.settings.kind !== wanted
         )
           throw new Error(
-            `${who}'s ${slot.id} must be ${article(studioComponentDefinitions[wanted].name)} in ${host}.`,
+            `${possessive(who)} ${slot.id} must be ${article(studioComponentDefinitions[wanted].name)} in ${host}.`,
           );
-        if (filled?.links.length)
-          throw new Error(`${who} already has a ${slot.id}; disconnect it first.`);
+        const [current] = filled?.links ?? [];
+        if (current)
+          throw new Error(
+            `${possessive(who)} ${slot.id} already ${slot.id.endsWith("s") ? "come from" : "uses"} ${
+              "module" in current.target
+                ? component(current.target.module).name
+                : name(current.target.tile)
+            }; disconnect it first.`,
+          );
         studio.componentConnections = [
           ...links(),
           {
@@ -569,12 +580,12 @@ function buildModuleCommand(
       const kind = tileKind(tile);
       if (slot.module)
         throw new Error(
-          `${who}'s ${slot.id} is ${article(studioComponentDefinitions[slot.module].name)} in ${host}, not a tile.`,
+          `${possessive(who)} ${slot.id} is ${article(studioComponentDefinitions[slot.module].name)} in ${host}, not a tile.`,
         );
       if (tile === module.host) throw new Error(`${who} can't connect to its own tile.`);
       if (!slot.targets.includes(studioComponentTargetKind(kind)))
         throw new Error(
-          `${who}'s ${slot.id} connects to ${list(
+          `${possessive(who)} ${slot.id} connects to ${list(
             slot.targets.map((item) => targetNouns[item]),
             "or",
           )}, not ${name(tile)}.`,
@@ -584,7 +595,7 @@ function buildModuleCommand(
       const other = filled?.links[0]?.target;
       if (other && !slot.many)
         throw new Error(
-          `${who}'s ${slot.id} already uses ${"tile" in other ? name(other.tile) : other.module}; disconnect it first.`,
+          `${possessive(who)} ${slot.id} already uses ${"tile" in other ? name(other.tile) : other.module}; disconnect it first.`,
         );
       // The host's own link to the tile, in the slot's direction; the lane rules add one if none.
       const consume = slot.use === "consume";
@@ -715,7 +726,7 @@ export function moduleConnectOptions(
         { module: other.id },
         loader && other.settings.kind === loader.module ? loader.id : undefined,
         loader?.module
-          ? `${who}'s ${loader.id} must be ${article(studioComponentDefinitions[loader.module].name)}.`
+          ? `${possessive(who)} ${loader.id} must be ${article(studioComponentDefinitions[loader.module].name)}.`
           : `${who} connects to tiles, not to other modules.`,
       ),
     );

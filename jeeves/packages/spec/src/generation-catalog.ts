@@ -70,6 +70,15 @@ export const generationPolicies = freezeRecord({
     playback: "two-cumulative-qualifying-seconds-per-page-session",
     totals: "outside-immutable-metadata-cache",
   }),
+  /** Favorites' bounds (v3 contract, section 3): the item ID, per account and to a page. */
+  favorites: record("favorites-policy", {
+    account: { source: "verified-principal-subject", maxCharacters: 255 },
+    item: { minCharacters: 1, maxCharacters: 200, characters: "A-Za-z0-9._:-" },
+    perAccount: 1000,
+    pageSize: 50,
+    order: "newest-first",
+    add: "idempotent-eligible-only",
+  }),
 });
 
 export const generationRuntime = record("local-runtime", {
@@ -100,6 +109,8 @@ export const generationTemplates = freezeRecord({
   "search-query": template("search-query", []),
   /** An Auth guard's sign-in (v3 contract, section 2): Required or Optional, against its Identity. */
   "verified-identity": template("verified-identity", []),
+  /** An account's favorite items behind a Required sign-in (v3 contract, section 3). */
+  favorites: template("favorites", [generationPolicies.favorites.ref]),
   "youtube-upload": template("youtube-upload", [generationPolicies.publicVideo.ref]),
   "youtube-watch": template("youtube-watch", [generationPolicies.publicVideo.ref]),
   "youtube-search": template("youtube-search", [generationPolicies.publicVideo.ref]),

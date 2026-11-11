@@ -35,6 +35,9 @@ export type GenerationResourceRequirement = {
   channel?: "publish" | "consume";
   mode?: "work-queue" | "topic";
   optional?: boolean;
+  /** A database field the lead fills itself with no SQL settings of its own (Favorites' state):
+   * its pool runs the initial values, fixed, and the module page shows no control for them. */
+  pool?: "fixed";
 };
 export type GenerationCapability = {
   template: ExactContractRef;
@@ -161,10 +164,19 @@ const resourceRules = (r: GenerationResourceRequirement): GenerationSettingRule[
         ...extra,
       });
     rules.push(
-      component("poolSize", integer(1, 1000), { userNeed: "Bound connections to this database." }),
-      component("statementTimeoutMs", integer(1, 300000), {
-        userNeed: "Bound database statement execution.",
-      }),
+      ...(r.pool === "fixed"
+        ? [
+            component("poolSize", choice(10), { default: 10 }),
+            component("statementTimeoutMs", choice(2000), { default: 2000 }),
+          ]
+        : [
+            component("poolSize", integer(1, 1000), {
+              userNeed: "Bound connections to this database.",
+            }),
+            component("statementTimeoutMs", integer(1, 300000), {
+              userNeed: "Bound database statement execution.",
+            }),
+          ]),
       component("readRouting", choice("primary")),
     );
   }
@@ -351,6 +363,19 @@ export const generationCapabilities = freezeRecord({
       }),
     ],
     ["auth-guard"],
+  ),
+  /** Favorites (v3 contract, section 3): its own table in `state`, read and written through the
+   * lead's own link, and the optional database its items Data access reads. */
+  favorites: capability(
+    "favorites",
+    "api",
+    ["service"],
+    [
+      { ...store("state", "database", "read-write"), pool: "fixed" },
+      { ...store("items", "database", "read"), optional: true },
+    ],
+    http,
+    ["favorites"],
   ),
   "youtube-upload": capability("youtube-upload", "api", ["uploads", "service"], [], []),
   "youtube-watch": capability(

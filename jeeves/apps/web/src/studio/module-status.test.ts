@@ -29,6 +29,12 @@ describe("moduleGeneration", () => {
       by("uploads")["auth-guard"],
       by("worker")["auth-guard"],
     ]).toEqual(["lead", "lead", "stub"]);
+    // Favorites leads its template only in a Service (V3-07); its items Data access is a part.
+    expect([by("service").favorites, by("uploads").favorites, by("worker").favorites]).toEqual([
+      "lead",
+      "stub",
+      "stub",
+    ]);
     // Stub kinds are stubs everywhere.
     expect(by("service").custom).toBe("stub");
   });
@@ -66,5 +72,9 @@ describe("moduleStatusLine", () => {
         "The link from Watch API to Metadata database uses Service identity, which its template can't use.",
     });
     expect(moduleStatusLine({ ...base, status: "custom" })).toEqual({ label: "Custom" });
+    expect(moduleStatusLine({ ...base, kind: "favorites", template: "favorites" })).toEqual({
+      label: "Template",
+      detail: "Favorites",
+    });
   });
 });
