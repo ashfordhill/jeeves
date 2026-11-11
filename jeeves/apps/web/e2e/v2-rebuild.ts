@@ -50,7 +50,7 @@ export const V2_TILES: readonly V2Step[] = [
   { link: ["Upload API", "Identity"] },
 ];
 
-type Module = { kind: string; name: string; description: string };
+export type Module = { kind: string; name: string; description: string };
 const module = (kind: string, name: string, description: string): Module => ({
   kind,
   name,
@@ -111,7 +111,7 @@ export const V2_MODULES: Readonly<Record<string, readonly Module[]>> = {
 };
 
 /** A drag from a module row's dot onto a tile, or onto another module's row (the loader). */
-type Connection = { host: string; module: string } & ({ tile: string } | { row: string });
+export type Connection = { host: string; module: string } & ({ tile: string } | { row: string });
 const to = (host: string, module: string, tile: string): Connection => ({ host, module, tile });
 /** Every module connection, in the module fixture's order: the loader third. */
 export const V2_CONNECTIONS: readonly Connection[] = [
@@ -163,7 +163,7 @@ export const row = (page: Page, host: string, module: string) =>
   page
     .locator(".board .lane-container-row")
     .filter({ has: page.getByRole("button", { name: `Open ${module} in ${host}`, exact: true }) });
-const dot = (page: Page, host: string, module: string) =>
+export const dot = (page: Page, host: string, module: string) =>
   row(page, host, module).locator(".lane-container-row-dot");
 
 type Saved = Awaited<ReturnType<typeof design>> & {
@@ -285,24 +285,30 @@ export async function createBlank(page: Page, name: string, log: Gestures) {
   return id;
 }
 
-/** v2's system name, actions, tiles and links, by mouse, in a blank project. */
-export async function buildV2Tiles(page: Page, id: string, log: Gestures) {
+/** A design's tiles by mouse: its system's name, the user's actions (fan item, name), the steps. */
+export type TilePlan = {
+  system: string;
+  actions: readonly (readonly [item: string, name: string])[];
+  steps: readonly V2Step[];
+};
+
+/** A plan's system name, actions, tiles and links, by mouse, in a blank project. */
+export async function buildTiles(page: Page, id: string, plan: TilePlan, log: Gestures) {
   // The system's name, on the user's page.
   await click(tile(page, "User"), log);
-  await typeInto(page, inspector(page).getByLabel("Name", { exact: true }), "YouTube", log);
-  await expect.poll(async () => (await saved(page, id)).architecture?.system?.name).toBe("YouTube");
-  // The user's `+`: Consume, named Watch, and Produce, named Publish.
-  for (const [item, action] of [
-    ["Consume", "Watch"],
-    ["Produce", "Publish"],
-  ] as const) {
+  await typeInto(page, inspector(page).getByLabel("Name", { exact: true }), plan.system, log);
+  await expect
+    .poll(async () => (await saved(page, id)).architecture?.system?.name)
+    .toBe(plan.system);
+  // The user's `+`: each action from its fan, named.
+  for (const [item, action] of plan.actions) {
     await click(tile(page, "User"), log);
     await pick(page, "User", "Add action", item, log);
     await typeOver(page, inspector(page).getByLabel("Name", { exact: true }), action, log);
     await named(page, id, action);
     await ready(page);
   }
-  for (const step of V2_TILES) {
+  for (const step of plan.steps) {
     if ("link" in step) {
       await linkTiles(page, id, step.link, log);
       continue;
@@ -316,18 +322,49 @@ export async function buildV2Tiles(page: Page, id: string, log: Gestures) {
   }
 }
 
+/** v2's system name, actions, tiles and links, by mouse, in a blank project. */
+export const buildV2Tiles = (page: Page, id: string, log: Gestures) =>
+  buildTiles(
+    page,
+    id,
+    {
+      system: "YouTube",
+      actions: [
+        ["Consume", "Watch"],
+        ["Produce", "Publish"],
+      ],
+      steps: V2_TILES,
+    },
+    log,
+  );
+
 /**
- * v2's modules from the `+` in each tile's container (named and described as the plan's table),
- * their connections by dot drags in Detailed + Connect, and v2's useful values in the inspector,
- * by mouse.
+ * Each tile's modules, in Detailed, named and described as the plan's table: from the `+` in the
+ * tile's container (selected or not), or, for a tile in `fromInspector`, from the `+` on its
+ * inspector page (its header selects it; Back returns to that page for the next module).
  */
-export async function buildV2Modules(page: Page, id: string, log: Gestures) {
+export async function addModules(
+  page: Page,
+  id: string,
+  modules: Readonly<Record<string, readonly Module[]>>,
+  log: Gestures,
+  fromInspector: ReadonlySet<string> = new Set(),
+) {
   await click(tool(page, "Detailed"), log);
   await ready(page);
-  for (const [host, modules] of Object.entries(V2_MODULES))
-    for (const item of modules) {
-      // In Detailed every Service and Worker shows its `+`, selected or not: the `+`, then the kind.
-      await addModuleFrom(page, tile(page, host), item.kind);
+  for (const [host, items] of Object.entries(modules))
+    for (const [index, item] of items.entries()) {
+      if (fromInspector.has(host)) {
+        // The tile's page first: its header on the board, then Back from the module just added.
+        await click(
+          index === 0
+            ? tile(page, host).getByText(host, { exact: true }).first()
+            : inspector(page).getByRole("button", { name: `Back to ${host}`, exact: true }),
+          log,
+        );
+        await addModuleFrom(page, inspector(page), item.kind);
+      } else await addModuleFrom(page, tile(page, host), item.kind);
+      // The `+`, then the kind.
       log.clicks += 2;
       await typeOver(page, inspector(page).getByLabel("Name", { exact: true }), item.name, log);
       await typeInto(
@@ -338,11 +375,23 @@ export async function buildV2Modules(page: Page, id: string, log: Gestures) {
       );
       await named(page, id, item.name);
     }
+}
 
+/**
+ * Every module connection, in Detailed + Connect at the fit: a drag from the module row's dot onto
+ * a tile, or onto another module's row (an in-process slot), released once the board marks the
+ * end. Then back to Pointer and the Simple view.
+ */
+export async function connectModules(
+  page: Page,
+  id: string,
+  connections: readonly Connection[],
+  log: Gestures,
+) {
   await click(tool(page, "Fit"), log);
   await click(tool(page, "Connect"), log);
   const links = async () => (await saved(page, id)).architecture.studio.componentConnections ?? [];
-  for (const connection of V2_CONNECTIONS) {
+  for (const connection of connections) {
     const before = (await links()).length;
     const end =
       "tile" in connection
@@ -371,15 +420,52 @@ export async function buildV2Modules(page: Page, id: string, log: Gestures) {
   await click(tool(page, "Pointer"), log);
   await click(tool(page, "Simple"), log);
   await ready(page);
+}
 
-  for (const [host, name, field, value] of V2_VALUES) {
+/** A useful value: a tile's or one of its modules' inspector field (`label`), and its value. */
+export type Value = { tile: string; module?: string; label: string; value: number | string };
+
+/**
+ * Each value in the inspector, in Simple: the tile, its module's card when it is a module's, then
+ * the field. A text field is typed over; a select (Sign-in) is picked from.
+ */
+export async function setValues(page: Page, values: readonly Value[], log: Gestures) {
+  for (const { tile: host, module, label, value } of values) {
     await click(tile(page, host), log);
-    if (name)
-      await click(inspector(page).getByRole("button", { name: `Open ${name}`, exact: true }), log);
-    const input = inspector(page).getByLabel(field, { exact: true });
-    await typeInto(page, input, String(value), log);
+    if (module)
+      await click(
+        inspector(page).getByRole("button", { name: `Open ${module}`, exact: true }),
+        log,
+      );
+    const input = inspector(page).getByLabel(label, { exact: true });
+    if ((await input.evaluate((element) => element.tagName)) === "SELECT") {
+      // A native select's list is drawn outside the page, so the script picks the option as the
+      // list would: a click on the select and one on the option.
+      await input.selectOption(String(value));
+      log.clicks += 2;
+    } else await typeInto(page, input, String(value), log);
     await expect(input).toHaveValue(String(value));
   }
   // The last value saves when the page closes.
   await click(tile(page, "User"), log);
+}
+
+/**
+ * v2's modules from the `+` in each tile's container (named and described as the plan's table),
+ * their connections by dot drags in Detailed + Connect, and v2's useful values in the inspector,
+ * by mouse.
+ */
+export async function buildV2Modules(page: Page, id: string, log: Gestures) {
+  await addModules(page, id, V2_MODULES, log);
+  await connectModules(page, id, V2_CONNECTIONS, log);
+  await setValues(
+    page,
+    V2_VALUES.map(([tile, module, label, value]) => ({
+      tile,
+      ...(module && { module }),
+      label,
+      value,
+    })),
+    log,
+  );
 }

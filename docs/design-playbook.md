@@ -1634,3 +1634,18 @@ dead ends: an out-of-range process value hides its own control, so its generatio
 be fixed by mouse or chat. Measure cost in the provider's wire form (strict tools are 31% larger
 than the canonical schemas): the instructions and tools every request repeats are 84% of what a
 run sends.
+
+## 2026-11-11 V3-11: build the reference from the mouse's commands, and report a tile's fact once
+
+Designing YouTube v3 by mouse from a blank project took 340 gestures, and the saved design
+differs from V3-10's reference in **no row at all**: the reference was built from the commands the
+mouse sends, with IDs following names, so equality is exact and any later difference is a
+regression, not a rule to excuse. Write a design's reference that way before anyone builds it by
+hand. What the build still shows: at a large design's Detailed fit (0.20 with both rails) a
+module row's dot is 2–4px and the container's `+` 6–9px, so the targets of 56 of the gestures
+need zooming by hand; a third of the work is typing names over kind defaults; and controls that
+appear only once a template derives (Sign-in, Options) put all values after all connections. One
+defect showed only with three sign-in guards on one Identity: the resolver repeated the
+Identity's local Keycloak substitution once per guard, and the dialog keyed its rows by that
+source path. A fact about a tile belongs to the tile; report it once, however many templates use
+it.

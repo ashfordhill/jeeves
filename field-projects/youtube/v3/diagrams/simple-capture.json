@@ -1,0 +1,1349 @@
+{
+  "format": "jeeves-diagram-capture-v1",
+  "capturedAt": "2026-11-11T20:44:06.707Z",
+  "project": {
+    "id": "e56a3800-d0d6-43df-b6d0-01019c4bae8b",
+    "name": "YouTube v3",
+    "revision": 171
+  },
+  "source": {
+    "designSha256": "9762df418108917c71f42de6190c3c756d1db62dbaeca83653b6e9b6db93813f",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+    "schemaVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "2cf676f6fa507b74b97d2968dd616ceb6931ab5c",
+    "trackedTreeDirtyAtBuild": true,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36"
+  },
+  "image": {
+    "filename": "YouTube-v3-r171.png",
+    "sha256": "beb30cc869964fc9fb3e992509cd0556da83a3c44b6b011d01d1a006273288ea",
+    "width": 3904,
+    "height": 2976,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1952,
+      "h": 1488
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "canonical process tiles",
+    "owners": [
+      {
+        "id": "watch-api-owner",
+        "name": "Watch API",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "search-api-owner",
+        "name": "Search API",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "account-api-owner",
+        "name": "Account API",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "sign-in-owner",
+        "name": "Sign-in",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "view-counter-owner",
+        "name": "View counter",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "upload-api-owner",
+        "name": "Upload API",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      },
+      {
+        "id": "transcoder-owner",
+        "name": "Transcoder",
+        "requestedExpanded": false,
+        "fallbackExpanded": false,
+        "rendered": "roles"
+      }
+    ]
+  },
+  "layout": {
+    "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"watch-api\",128,128,0],[\"search-api\",128,128,0],[\"video-delivery\",128,128,0],[\"account-api\",128,128,0],[\"hot-metadata\",128,128,0],[\"metadata\",128,128,1],[\"view-counts\",128,128,0],[\"view-events\",128,128,0],[\"sign-in\",128,128,1],[\"videos\",128,128,1],[\"transcoded-videos\",128,128,1],[\"favorites\",128,128,0],[\"view-counter\",128,128,0],[\"upload-api\",128,128,2],[\"original-videos\",128,128,2],[\"upload-jobs\",128,128,2],[\"transcoder\",128,128,2],[\"processing-events\",128,128,2],[\"video-lifecycle\",128,128,2],[\"publication-events\",128,128,2],[\"search-indexer\",128,128,2]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-microservice\",\"@download\",\"watch-api\",0,0,0],[\"download-microservice-2\",\"@download\",\"search-api\",0,0,0],[\"download-cdn\",\"@download\",\"video-delivery\",0,0,0],[\"download-microservice-3\",\"@download\",\"account-api\",0,0,0],[\"upload-identity\",\"@upload\",\"sign-in\",0,0,2],[\"upload-uploads\",\"@upload\",\"upload-api\",0,0,2],[\"watch-api-cache\",\"watch-api\",\"hot-metadata\",0,0,0],[\"watch-api-database\",\"watch-api\",\"metadata\",0,0,0],[\"watch-api-database-2\",\"watch-api\",\"view-counts\",0,0,0],[\"watch-api-message-channel\",\"watch-api\",\"view-events\",0,0,0],[\"watch-api-sign-in\",\"watch-api\",\"sign-in\",0,0,0],[\"search-api-search-index\",\"search-api\",\"videos\",0,0,0],[\"video-delivery-transcoded-videos\",\"video-delivery\",\"transcoded-videos\",0,0,0],[\"account-api-database\",\"account-api\",\"favorites\",0,0,0],[\"account-api-metadata\",\"account-api\",\"metadata\",0,0,0],[\"account-api-sign-in\",\"account-api\",\"sign-in\",0,0,0],[\"view-events-worker-service\",\"view-events\",\"view-counter\",0,0,0],[\"view-counter-view-counts\",\"view-counter\",\"view-counts\",0,0,0],[\"upload-api-metadata\",\"upload-api\",\"metadata\",0,0,2],[\"upload-api-object-storage\",\"upload-api\",\"original-videos\",0,0,2],[\"upload-api-message-channel\",\"upload-api\",\"upload-jobs\",0,0,2],[\"upload-api-sign-in\",\"upload-api\",\"sign-in\",0,0,2],[\"upload-jobs-worker-service\",\"upload-jobs\",\"transcoder\",0,0,2],[\"transcoder-original-videos\",\"transcoder\",\"original-videos\",0,0,2],[\"transcoder-object-storage\",\"transcoder\",\"transcoded-videos\",0,0,2],[\"transcoder-message-channel\",\"transcoder\",\"processing-events\",0,0,2],[\"processing-events-worker-service\",\"processing-events\",\"video-lifecycle\",0,0,2],[\"video-lifecycle-metadata\",\"video-lifecycle\",\"metadata\",0,0,2],[\"video-lifecycle-message-channel\",\"video-lifecycle\",\"publication-events\",0,0,2],[\"publication-events-worker-service\",\"publication-events\",\"search-indexer\",0,0,2],[\"search-indexer-videos\",\"search-indexer\",\"videos\",0,0,2]]]",
+    "positions": {
+      "@actor": {
+        "x": 32,
+        "y": 912
+      },
+      "@download": {
+        "x": 224,
+        "y": 576
+      },
+      "@upload": {
+        "x": 224,
+        "y": 1280
+      },
+      "watch-api": {
+        "x": 448,
+        "y": 288
+      },
+      "search-api": {
+        "x": 448,
+        "y": 480
+      },
+      "video-delivery": {
+        "x": 448,
+        "y": 640
+      },
+      "account-api": {
+        "x": 448,
+        "y": 800
+      },
+      "hot-metadata": {
+        "x": 704,
+        "y": 32
+      },
+      "metadata": {
+        "x": 1152,
+        "y": 960
+      },
+      "view-counts": {
+        "x": 704,
+        "y": 192
+      },
+      "view-events": {
+        "x": 704,
+        "y": 352
+      },
+      "sign-in": {
+        "x": 448,
+        "y": 960
+      },
+      "videos": {
+        "x": 1568,
+        "y": 960
+      },
+      "transcoded-videos": {
+        "x": 704,
+        "y": 960
+      },
+      "favorites": {
+        "x": 704,
+        "y": 768
+      },
+      "view-counter": {
+        "x": 896,
+        "y": 352
+      },
+      "upload-api": {
+        "x": 448,
+        "y": 1280
+      },
+      "original-videos": {
+        "x": 704,
+        "y": 1120
+      },
+      "upload-jobs": {
+        "x": 704,
+        "y": 1280
+      },
+      "transcoder": {
+        "x": 896,
+        "y": 1280
+      },
+      "processing-events": {
+        "x": 1152,
+        "y": 1280
+      },
+      "video-lifecycle": {
+        "x": 1344,
+        "y": 1280
+      },
+      "publication-events": {
+        "x": 1568,
+        "y": 1280
+      },
+      "search-indexer": {
+        "x": 1760,
+        "y": 1280
+      }
+    },
+    "routes": {
+      "@actor-download": [
+        {
+          "x": 160,
+          "y": 992
+        },
+        {
+          "x": 192,
+          "y": 992
+        },
+        {
+          "x": 192,
+          "y": 640
+        },
+        {
+          "x": 224,
+          "y": 640
+        }
+      ],
+      "@actor-upload": [
+        {
+          "x": 160,
+          "y": 992
+        },
+        {
+          "x": 192,
+          "y": 992
+        },
+        {
+          "x": 192,
+          "y": 1344
+        },
+        {
+          "x": 224,
+          "y": 1344
+        }
+      ],
+      "download-microservice": [
+        {
+          "x": 352,
+          "y": 640
+        },
+        {
+          "x": 384,
+          "y": 640
+        },
+        {
+          "x": 384,
+          "y": 352
+        },
+        {
+          "x": 448,
+          "y": 352
+        }
+      ],
+      "download-microservice-2": [
+        {
+          "x": 352,
+          "y": 640
+        },
+        {
+          "x": 416,
+          "y": 640
+        },
+        {
+          "x": 416,
+          "y": 544
+        },
+        {
+          "x": 448,
+          "y": 544
+        }
+      ],
+      "download-cdn": [
+        {
+          "x": 352,
+          "y": 640
+        },
+        {
+          "x": 384,
+          "y": 640
+        },
+        {
+          "x": 384,
+          "y": 704
+        },
+        {
+          "x": 448,
+          "y": 704
+        }
+      ],
+      "download-microservice-3": [
+        {
+          "x": 352,
+          "y": 640
+        },
+        {
+          "x": 384,
+          "y": 640
+        },
+        {
+          "x": 384,
+          "y": 864
+        },
+        {
+          "x": 448,
+          "y": 864
+        }
+      ],
+      "upload-identity": [
+        {
+          "x": 352,
+          "y": 1344
+        },
+        {
+          "x": 384,
+          "y": 1344
+        },
+        {
+          "x": 384,
+          "y": 1024
+        },
+        {
+          "x": 448,
+          "y": 1024
+        }
+      ],
+      "upload-uploads": [
+        {
+          "x": 352,
+          "y": 1344
+        },
+        {
+          "x": 448,
+          "y": 1344
+        }
+      ],
+      "watch-api-cache": [
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 96
+        },
+        {
+          "x": 704,
+          "y": 96
+        }
+      ],
+      "watch-api-database": [
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 640,
+          "y": 352
+        },
+        {
+          "x": 640,
+          "y": 496
+        },
+        {
+          "x": 1120,
+          "y": 496
+        },
+        {
+          "x": 1120,
+          "y": 1024
+        },
+        {
+          "x": 1152,
+          "y": 1024
+        }
+      ],
+      "watch-api-database-2": [
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 640,
+          "y": 352
+        },
+        {
+          "x": 640,
+          "y": 256
+        },
+        {
+          "x": 704,
+          "y": 256
+        }
+      ],
+      "watch-api-message-channel": [
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 672,
+          "y": 352
+        },
+        {
+          "x": 672,
+          "y": 416
+        },
+        {
+          "x": 704,
+          "y": 416
+        }
+      ],
+      "search-api-search-index": [
+        {
+          "x": 576,
+          "y": 544
+        },
+        {
+          "x": 1504,
+          "y": 544
+        },
+        {
+          "x": 1504,
+          "y": 1024
+        },
+        {
+          "x": 1568,
+          "y": 1024
+        }
+      ],
+      "video-delivery-transcoded-videos": [
+        {
+          "x": 576,
+          "y": 704
+        },
+        {
+          "x": 640,
+          "y": 704
+        },
+        {
+          "x": 640,
+          "y": 1024
+        },
+        {
+          "x": 704,
+          "y": 1024
+        }
+      ],
+      "account-api-database": [
+        {
+          "x": 576,
+          "y": 864
+        },
+        {
+          "x": 672,
+          "y": 864
+        },
+        {
+          "x": 672,
+          "y": 832
+        },
+        {
+          "x": 704,
+          "y": 832
+        }
+      ],
+      "account-api-metadata": [
+        {
+          "x": 576,
+          "y": 864
+        },
+        {
+          "x": 672,
+          "y": 864
+        },
+        {
+          "x": 672,
+          "y": 912
+        },
+        {
+          "x": 864,
+          "y": 912
+        },
+        {
+          "x": 864,
+          "y": 905
+        },
+        {
+          "x": 1120,
+          "y": 905
+        },
+        {
+          "x": 1120,
+          "y": 1024
+        },
+        {
+          "x": 1152,
+          "y": 1024
+        }
+      ],
+      "view-events-worker-service": [
+        {
+          "x": 832,
+          "y": 416
+        },
+        {
+          "x": 896,
+          "y": 416
+        }
+      ],
+      "upload-api-metadata": [
+        {
+          "x": 576,
+          "y": 1344
+        },
+        {
+          "x": 640,
+          "y": 1344
+        },
+        {
+          "x": 640,
+          "y": 1440
+        },
+        {
+          "x": 1056,
+          "y": 1440
+        },
+        {
+          "x": 1056,
+          "y": 1024
+        },
+        {
+          "x": 1152,
+          "y": 1024
+        }
+      ],
+      "upload-api-object-storage": [
+        {
+          "x": 576,
+          "y": 1344
+        },
+        {
+          "x": 640,
+          "y": 1344
+        },
+        {
+          "x": 640,
+          "y": 1184
+        },
+        {
+          "x": 704,
+          "y": 1184
+        }
+      ],
+      "upload-api-message-channel": [
+        {
+          "x": 576,
+          "y": 1344
+        },
+        {
+          "x": 704,
+          "y": 1344
+        }
+      ],
+      "upload-jobs-worker-service": [
+        {
+          "x": 832,
+          "y": 1344
+        },
+        {
+          "x": 896,
+          "y": 1344
+        }
+      ],
+      "transcoder-message-channel": [
+        {
+          "x": 1024,
+          "y": 1344
+        },
+        {
+          "x": 1152,
+          "y": 1344
+        }
+      ],
+      "processing-events-worker-service": [
+        {
+          "x": 1280,
+          "y": 1344
+        },
+        {
+          "x": 1344,
+          "y": 1344
+        }
+      ],
+      "video-lifecycle-message-channel": [
+        {
+          "x": 1472,
+          "y": 1344
+        },
+        {
+          "x": 1568,
+          "y": 1344
+        }
+      ],
+      "publication-events-worker-service": [
+        {
+          "x": 1696,
+          "y": 1344
+        },
+        {
+          "x": 1760,
+          "y": 1344
+        }
+      ],
+      "watch-api-sign-in": [
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 624
+        },
+        {
+          "x": 416,
+          "y": 624
+        },
+        {
+          "x": 416,
+          "y": 1024
+        },
+        {
+          "x": 448,
+          "y": 1024
+        }
+      ],
+      "account-api-sign-in": [
+        {
+          "x": 576,
+          "y": 864
+        },
+        {
+          "x": 608,
+          "y": 864
+        },
+        {
+          "x": 608,
+          "y": 1104
+        },
+        {
+          "x": 416,
+          "y": 1104
+        },
+        {
+          "x": 416,
+          "y": 1024
+        },
+        {
+          "x": 448,
+          "y": 1024
+        }
+      ],
+      "view-counter-view-counts": [
+        {
+          "x": 1024,
+          "y": 416
+        },
+        {
+          "x": 1088,
+          "y": 416
+        },
+        {
+          "x": 1088,
+          "y": 336
+        },
+        {
+          "x": 672,
+          "y": 336
+        },
+        {
+          "x": 672,
+          "y": 256
+        },
+        {
+          "x": 704,
+          "y": 256
+        }
+      ],
+      "upload-api-sign-in": [
+        {
+          "x": 576,
+          "y": 1344
+        },
+        {
+          "x": 608,
+          "y": 1344
+        },
+        {
+          "x": 608,
+          "y": 1424
+        },
+        {
+          "x": 384,
+          "y": 1424
+        },
+        {
+          "x": 384,
+          "y": 1024
+        },
+        {
+          "x": 448,
+          "y": 1024
+        }
+      ],
+      "transcoder-original-videos": [
+        {
+          "x": 1024,
+          "y": 1344
+        },
+        {
+          "x": 1056,
+          "y": 1344
+        },
+        {
+          "x": 1056,
+          "y": 1264
+        },
+        {
+          "x": 672,
+          "y": 1264
+        },
+        {
+          "x": 672,
+          "y": 1184
+        },
+        {
+          "x": 704,
+          "y": 1184
+        }
+      ],
+      "transcoder-object-storage": [
+        {
+          "x": 1024,
+          "y": 1344
+        },
+        {
+          "x": 1056,
+          "y": 1344
+        },
+        {
+          "x": 1056,
+          "y": 1104
+        },
+        {
+          "x": 672,
+          "y": 1104
+        },
+        {
+          "x": 672,
+          "y": 1024
+        },
+        {
+          "x": 704,
+          "y": 1024
+        }
+      ],
+      "video-lifecycle-metadata": [
+        {
+          "x": 1472,
+          "y": 1344
+        },
+        {
+          "x": 1504,
+          "y": 1344
+        },
+        {
+          "x": 1504,
+          "y": 1456
+        },
+        {
+          "x": 1088,
+          "y": 1456
+        },
+        {
+          "x": 1088,
+          "y": 1024
+        },
+        {
+          "x": 1152,
+          "y": 1024
+        }
+      ],
+      "search-indexer-videos": [
+        {
+          "x": 1888,
+          "y": 1344
+        },
+        {
+          "x": 1920,
+          "y": 1344
+        },
+        {
+          "x": 1920,
+          "y": 1120
+        },
+        {
+          "x": 1536,
+          "y": 1120
+        },
+        {
+          "x": 1536,
+          "y": 1024
+        },
+        {
+          "x": 1568,
+          "y": 1024
+        }
+      ]
+    },
+    "chips": {},
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1952,
+      "h": 1488
+    }
+  },
+  "tiles": [
+    {
+      "id": "@actor",
+      "w": 128,
+      "h": 160,
+      "shape": "rect",
+      "label": "User"
+    },
+    {
+      "id": "@download",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Watch"
+    },
+    {
+      "id": "@upload",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Publish"
+    },
+    {
+      "id": "watch-api",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Watch API"
+    },
+    {
+      "id": "search-api",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Search API"
+    },
+    {
+      "id": "video-delivery",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Video delivery"
+    },
+    {
+      "id": "account-api",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Account API"
+    },
+    {
+      "id": "hot-metadata",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "Hot metadata"
+    },
+    {
+      "id": "metadata",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Metadata"
+    },
+    {
+      "id": "view-counts",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "View counts"
+    },
+    {
+      "id": "view-events",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "View events"
+    },
+    {
+      "id": "sign-in",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "rect",
+      "label": "Sign-in"
+    },
+    {
+      "id": "videos",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Videos"
+    },
+    {
+      "id": "transcoded-videos",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Transcoded videos"
+    },
+    {
+      "id": "favorites",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "Favorites"
+    },
+    {
+      "id": "view-counter",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "View counter"
+    },
+    {
+      "id": "upload-api",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Upload API"
+    },
+    {
+      "id": "original-videos",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Original videos"
+    },
+    {
+      "id": "upload-jobs",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Upload jobs"
+    },
+    {
+      "id": "transcoder",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Transcoder"
+    },
+    {
+      "id": "processing-events",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Processing events"
+    },
+    {
+      "id": "video-lifecycle",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Video lifecycle"
+    },
+    {
+      "id": "publication-events",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Publication events"
+    },
+    {
+      "id": "search-indexer",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Search indexer"
+    }
+  ],
+  "lines": [
+    {
+      "id": "@actor-download",
+      "source": "@actor",
+      "target": "@download",
+      "dashed": false,
+      "directed": true,
+      "label": "User to Watch",
+      "removable": false
+    },
+    {
+      "id": "@actor-upload",
+      "source": "@actor",
+      "target": "@upload",
+      "dashed": false,
+      "directed": true,
+      "label": "User to Publish",
+      "removable": false
+    },
+    {
+      "id": "download-microservice",
+      "source": "@download",
+      "target": "watch-api",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Watch API",
+      "band": 0
+    },
+    {
+      "id": "download-microservice-2",
+      "source": "@download",
+      "target": "search-api",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Search API",
+      "band": 0
+    },
+    {
+      "id": "download-cdn",
+      "source": "@download",
+      "target": "video-delivery",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Video delivery",
+      "band": 0
+    },
+    {
+      "id": "download-microservice-3",
+      "source": "@download",
+      "target": "account-api",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Account API",
+      "band": 0
+    },
+    {
+      "id": "upload-identity",
+      "source": "@upload",
+      "target": "sign-in",
+      "dashed": false,
+      "directed": true,
+      "label": "Publish to Sign-in",
+      "band": 2
+    },
+    {
+      "id": "upload-uploads",
+      "source": "@upload",
+      "target": "upload-api",
+      "dashed": false,
+      "directed": true,
+      "label": "Publish to Upload API",
+      "band": 2
+    },
+    {
+      "id": "watch-api-cache",
+      "source": "watch-api",
+      "target": "hot-metadata",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to Hot metadata",
+      "detail": "Reads & writes",
+      "band": 0
+    },
+    {
+      "id": "watch-api-database",
+      "source": "watch-api",
+      "target": "metadata",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to Metadata",
+      "detail": "Reads & writes",
+      "band": 0
+    },
+    {
+      "id": "watch-api-database-2",
+      "source": "watch-api",
+      "target": "view-counts",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to View counts",
+      "detail": "Reads & writes",
+      "band": 0
+    },
+    {
+      "id": "watch-api-message-channel",
+      "source": "watch-api",
+      "target": "view-events",
+      "dashed": true,
+      "directed": true,
+      "label": "Watch API to View events",
+      "detail": "Publishes",
+      "band": 0
+    },
+    {
+      "id": "watch-api-sign-in",
+      "source": "watch-api",
+      "target": "sign-in",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to Sign-in",
+      "detail": "Calls",
+      "band": 0
+    },
+    {
+      "id": "search-api-search-index",
+      "source": "search-api",
+      "target": "videos",
+      "dashed": false,
+      "directed": true,
+      "label": "Search API to Videos",
+      "detail": "Uses",
+      "band": 0
+    },
+    {
+      "id": "video-delivery-transcoded-videos",
+      "source": "video-delivery",
+      "target": "transcoded-videos",
+      "dashed": false,
+      "directed": true,
+      "label": "Video delivery to Transcoded videos",
+      "detail": "Uses",
+      "band": 0
+    },
+    {
+      "id": "account-api-database",
+      "source": "account-api",
+      "target": "favorites",
+      "dashed": false,
+      "directed": true,
+      "label": "Account API to Favorites",
+      "detail": "Reads & writes",
+      "band": 0
+    },
+    {
+      "id": "account-api-metadata",
+      "source": "account-api",
+      "target": "metadata",
+      "dashed": false,
+      "directed": true,
+      "label": "Account API to Metadata",
+      "detail": "Reads & writes",
+      "band": 0
+    },
+    {
+      "id": "account-api-sign-in",
+      "source": "account-api",
+      "target": "sign-in",
+      "dashed": false,
+      "directed": true,
+      "label": "Account API to Sign-in",
+      "detail": "Calls",
+      "band": 0
+    },
+    {
+      "id": "view-events-worker-service",
+      "source": "view-events",
+      "target": "view-counter",
+      "dashed": true,
+      "directed": true,
+      "label": "View events to View counter",
+      "detail": "Consumes",
+      "band": 0
+    },
+    {
+      "id": "view-counter-view-counts",
+      "source": "view-counter",
+      "target": "view-counts",
+      "dashed": false,
+      "directed": true,
+      "label": "View counter to View counts",
+      "detail": "Reads & writes",
+      "band": 0
+    },
+    {
+      "id": "upload-api-metadata",
+      "source": "upload-api",
+      "target": "metadata",
+      "dashed": false,
+      "directed": true,
+      "label": "Upload API to Metadata",
+      "detail": "Reads & writes",
+      "band": 2
+    },
+    {
+      "id": "upload-api-object-storage",
+      "source": "upload-api",
+      "target": "original-videos",
+      "dashed": false,
+      "directed": true,
+      "label": "Upload API to Original videos",
+      "detail": "Uses",
+      "band": 2
+    },
+    {
+      "id": "upload-api-message-channel",
+      "source": "upload-api",
+      "target": "upload-jobs",
+      "dashed": true,
+      "directed": true,
+      "label": "Upload API to Upload jobs",
+      "detail": "Publishes",
+      "band": 2
+    },
+    {
+      "id": "upload-api-sign-in",
+      "source": "upload-api",
+      "target": "sign-in",
+      "dashed": false,
+      "directed": true,
+      "label": "Upload API to Sign-in",
+      "detail": "Calls",
+      "band": 2
+    },
+    {
+      "id": "upload-jobs-worker-service",
+      "source": "upload-jobs",
+      "target": "transcoder",
+      "dashed": true,
+      "directed": true,
+      "label": "Upload jobs to Transcoder",
+      "detail": "Consumes",
+      "band": 2
+    },
+    {
+      "id": "transcoder-original-videos",
+      "source": "transcoder",
+      "target": "original-videos",
+      "dashed": false,
+      "directed": true,
+      "label": "Transcoder to Original videos",
+      "detail": "Uses",
+      "band": 2
+    },
+    {
+      "id": "transcoder-object-storage",
+      "source": "transcoder",
+      "target": "transcoded-videos",
+      "dashed": false,
+      "directed": true,
+      "label": "Transcoder to Transcoded videos",
+      "detail": "Uses",
+      "band": 2
+    },
+    {
+      "id": "transcoder-message-channel",
+      "source": "transcoder",
+      "target": "processing-events",
+      "dashed": true,
+      "directed": true,
+      "label": "Transcoder to Processing events",
+      "detail": "Publishes",
+      "band": 2
+    },
+    {
+      "id": "processing-events-worker-service",
+      "source": "processing-events",
+      "target": "video-lifecycle",
+      "dashed": true,
+      "directed": true,
+      "label": "Processing events to Video lifecycle",
+      "detail": "Consumes",
+      "band": 2
+    },
+    {
+      "id": "video-lifecycle-metadata",
+      "source": "video-lifecycle",
+      "target": "metadata",
+      "dashed": false,
+      "directed": true,
+      "label": "Video lifecycle to Metadata",
+      "detail": "Reads & writes",
+      "band": 2
+    },
+    {
+      "id": "video-lifecycle-message-channel",
+      "source": "video-lifecycle",
+      "target": "publication-events",
+      "dashed": true,
+      "directed": true,
+      "label": "Video lifecycle to Publication events",
+      "detail": "Publishes",
+      "band": 2
+    },
+    {
+      "id": "publication-events-worker-service",
+      "source": "publication-events",
+      "target": "search-indexer",
+      "dashed": true,
+      "directed": true,
+      "label": "Publication events to Search indexer",
+      "detail": "Consumes",
+      "band": 2
+    },
+    {
+      "id": "search-indexer-videos",
+      "source": "search-indexer",
+      "target": "videos",
+      "dashed": false,
+      "directed": true,
+      "label": "Search indexer to Videos",
+      "detail": "Uses",
+      "band": 2
+    }
+  ]
+}

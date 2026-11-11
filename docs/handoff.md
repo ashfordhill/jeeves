@@ -9676,3 +9676,81 @@ recorded scripted report drifts once the prompt, a tool or a seed changes: recor
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-11: design v3 by mouse
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (V3-11) and [contract](plans/youtube-v3/contract.md)
+§5. Docs: the [evidence](plans/youtube-v3/evidence/v3-11/README.md) (4 shots), the field project's
+[notes](../field-projects/youtube/v3/notes/README.md), a playbook lesson, the plan's status and the
+HUMAN_FEEDBACK resolution. No UI changed, so `studio.md` and the catalog are unchanged.
+
+**Result: v3 was fully designed by mouse**, with no API write and no chat: the system name,
+Watch and Publish, 21 tiles from link fans, 10 Connect drags, 26 modules with the contract's names
+and descriptions (23 from their container's `+` in Detailed, Account API's 3 from the inspector's
+`+`), 30 module connections by dot drags in Detailed + Connect (the loader and Favorites' items row
+to row), the 8 values (Sign-in Optional on Viewer check; Account check and Creator check stay
+Required), then Runnable processes ticked in Generate project. **340 gestures** (216 clicks, 40
+drags, 84 typed fields), built in 145 s by the scripted mouse. Nothing was impossible, no UI defect
+blocked a step and **no fix was made**.
+
+- **Spec** `e2e/v3-build.spec.ts`, rows in `e2e/v3-build.ts` (V3-10's fixture rows in the fan's
+  and menu's names). `v2-rebuild.ts`'s mouse steps are now exported and generic: `buildTiles`,
+  `addModules` (container or inspector `+`), `connectModules`, `setValues` (a field typed over, or
+  a select picked); `buildV2Tiles`/`buildV2Modules` call them with v2's data, same steps and counts.
+  The spec checks names and descriptions, Sign-in, **`v3DiffReport(v3Diff(saved, installed))`: 0
+  rows** (so 0 unexpected; `v3IntendedDifferences` stays empty), **`scoreBuild`: 100** (every area),
+  Simple **24 tiles (21 with the user and two actions), 33 lines, 8 dashed**, both gutter arrows in
+  Detailed, and Generate → Preview: 26 modules (24 Template, 2 Stub), the 11 template selections and
+  2 stubs on their tiles, no findings, runnable, "Ready: 112 files", "Processes · 8 · runnable". It
+  deletes its project; `JEEVES_V3_BUILD_KEEP=<name>` keeps it. The scoring imports the server's
+  `eval/design-score.ts` (web typecheck passes).
+- **Kept project** **YouTube v3**, `e56a3800-d0d6-43df-b6d0-01019c4bae8b`, revision 171, in the
+  owner's `jeeves` database, built by the same spec through my own API (4452) and Vite (4442) on
+  that database, then stopped. The owner's other seven projects kept their revisions and `updatedAt`
+  (listed in the evidence).
+- **Snapshot** `field-projects/youtube/v3/`: `inputs/design.json` (server-canonical, no trailing
+  newline, SHA-256 `9762df41…813f`, the captures' source hash), `inputs/blueprint.json` (v3),
+  `diagrams/{detailed,simple}.png` with `-capture.json` (5312×3520, 37 lines; 3904×2976, 33 lines),
+  `notes/README.md`. Biome excludes `v3/{inputs,diagrams}/**/*.json`.
+
+**Found, not fixed (doesn't block a mouse step):** Preview logs a React "two children with the same
+key" console error. The resolver pushes the Identity's Keycloak `localAdapterTreatments` row once
+per `verified-identity` selection (`generation-resolver.ts:1050`), so v3's report has 3 identical
+rows, and `V2GenerationDetails.tsx:67` keys them by source path.
+
+**Awkward, worst first** (details in the evidence): (1) at v3's Detailed fit (0.20 with both rails,
+0.31 closed) a row's dot is drawn 2.4–3.7px with a grab area about 16×6–10px, and the container `+`
+5.6–8.6px; (2) 84 typed fields and 26 Description clicks; (3) Sign-in and Options appear only after
+connections derive the template, and Runnable processes lives in the Generate dialog; (4) each tile
+link between fan picks costs Fit, Connect, drag, Pointer; (5) the inspector's `+` needs Back per
+module, and a container is selected by its header; (6) the duplicate key above; (7) at 100% the
+selected container's X sits over the end of its name.
+
+**Checks**
+
+- `pnpm check` exited 0: **747 tests in 103 files** (lint: only the existing info). A first run
+  failed lint on my scratch Playwright config, which I then moved out of the repo.
+- **E2E: 80 passed (5.8 m)** on the first full run; `v3-build.spec.ts` 2.4 m and
+  `v2-rebuild.spec.ts` 1.9 m in it. Both also passed alone against my scratch API (4451, scratch
+  database `jeeves_v311`, now dropped) and Vite (4441). `jeeves_e2e` has no leftover E2E project.
+- Web build passed (1.41 s, the existing chunk-size advisory).
+- **Browser check** (scripted Chromium, by mouse; scratch API/Vite above) at 1440×900 and
+  1280×800: TinyURL foundation 7 tiles and 7 lines in Detailed and Simple, no page or console
+  errors. The kept project in the owner's running app (4300, not restarted): Simple 24 tiles, 33
+  lines, 8 dashed; Detailed 8 containers and 26 rows; revision 171 before and after; no page
+  errors.
+
+**Gates (D2).** Processes-off pin passes (`processes-off.test.ts`), v1 byte-identical
+(`generator.test.ts`). Frozen v2: fresh `export:v2`, 72 files, 70 byte-identical to
+`generic-export.tar.gz`; `manifest.json`/`report.json` differ only in the emitter source inventory
+(no spec or generator file changed). YouTube study exports unchanged: Simple `9332ea16…89bd`
+(3008×2752) and Detailed `21fe8400…9ae1` (3840×3392), twice at 1440×900 and once at 1280×800.
+
+**For V3-12.** `export:v2` of `inputs/design.json` gives 112 files, 0 findings, 9 required gaps (7
+template binding files and the 2 stubs) and exactly §5's four product SQL files. Unless the
+repeated Keycloak treatment is fixed first, `generated/.jeeves/report.json` freezes its 3 rows.
+Add `v3/generated` and `v3/app` to Biome's exclusions and extend `notes/README.md` with both
+outputs. The kept project's revision is 171.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.
