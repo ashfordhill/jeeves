@@ -9139,3 +9139,49 @@ unit's). Scratch exports removed.
 
 The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-10 — V3-04: v3 contract
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md). Docs only; no code changed. I wrote the
+[v3 contract](plans/youtube-v3/contract.md), revised V3-05–V3-17 and the status line in
+`units.md`, and added the HUMAN_FEEDBACK resolution.
+
+- **Product tables (D1):** each module that writes a database (not through a template's outbox)
+  gets `infra/postgres/<db>/modules/<module>.sql` (`generated-extension`, header only). It is
+  re-run at every first-run and start, by the setup-only owner, after the template views, in its
+  own `m_<module>` schema. Every login on the database gets SELECT on `published` views. This
+  applies only with processes on (a `migrate.mjs` substitution).
+- **Auth guard (D4):** it leads `verified-identity` with Sign-in Required or Optional. Also:
+  `tile-guard.ts` with `caller`/`require`, `GET /modules/<guard>/me`, and `ModuleRequest.caller`.
+  Multipart's `principal` defaults to the guard. Multipart and Favorites need a Required guard.
+- **Favorites (D4):** a `favorites` kind (Service). `state` → its database; `items` → a Data
+  access row, like the loader. PUT, DELETE and GET of one item, and a paged list; its own table;
+  the `eligible` hook (v3: `published.videos`).
+- **D5:** Service and Uploads show Request timeout and Concurrency limit; Worker shows
+  Concurrency, used by stub loops.
+- **v3:** 21 tiles, 33 Simple lines (8 dashed, none direct async), 26 modules (24 Template, 2
+  Stub), 30 module connections, 8 values. Identity is named Sign-in; Favorites is on Account API.
+
+**Found (probes in memory, nothing written):** the 4-link cap refuses Watch API → Identity
+(question 1, beyond D1–D8, so the coordinator pauses; default: raise it to 5). The cache read's
+source login has no grant. Multipart's hooks can't reach the asset lifecycle. Search is a
+placeholder, and a CDN tile generates nothing.
+
+**Unit changes:**
+
+- **V3-06:** also joins multipart to the lifecycle, pins `youtube-core`'s policies and raises the
+  cap if the owner agrees. It records the v2 module design's off-pin change.
+- **V3-07:** gains the `items` slot and the bounds.
+- **V3-08:** also mounts search on hooks and adds `/cdn/<cdn>/`.
+- **V3-09:** the legend wording.
+- **V3-10:** writes `fixtures/v3-modules.ts` and generalises `v2-diff.ts`.
+- **V3-12:** adds nothing to `generated/`; the benchmark baseline is `app/` at V3-12.
+
+**Checks:** `pnpm check` exited 0: **647 tests in 91 files**, which include the spec and generator
+suites, the processes-off pin and v1's manifest pin. Lint showed only the existing info. No e2e,
+browser or Docker checks were run, since this unit is docs only. The v2 app files were read, not run.
+
+The owner's uncommitted `README.md`, `.docs/`, `.jeeves-feedback/` and the mode of
+`e2e-docker.sh` are untouched and unstaged.
+
+Next: the owner answers contract question 1, then V3-05.
