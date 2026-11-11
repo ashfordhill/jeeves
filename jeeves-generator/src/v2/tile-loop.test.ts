@@ -408,7 +408,7 @@ describe("emitted template loops", () => {
     ]);
   });
 
-  it("keeps a template's own code and its retries for an unwritten hook", async () => {
+  it("keeps a template's own code; an unwritten effect hook is terminal at once (review row 7)", async () => {
     const log = loop.createLoopLog("transcoder");
     const unwritten = loop.watchHooks(
       {
@@ -427,21 +427,65 @@ describe("emitted template loops", () => {
     await expect(media(Buffer.from("{}"), delivery(1))).rejects.toMatchObject({
       code: "INVALID_MEDIA",
     });
-    // An effect hook's failure retries within the template's limit, then ends NOT_IMPLEMENTED.
+    // An effect hook's failure would retry within the template's limit; unwritten, a retry can't
+    // write it, so it is NOT_IMPLEMENTED on its first delivery.
     const effect = loop.templateHandler(log, { ...lifecycle, module: "effect" }, async () => {
       await unwritten.owns();
     });
-    await expect(effect(Buffer.from("{}"), delivery(3))).rejects.toThrow(
-      "Not implemented: source.owns",
-    );
-    await expect(effect(Buffer.from("{}"), delivery(11))).rejects.toMatchObject({
+    await expect(effect(Buffer.from("{}"), delivery(1))).rejects.toMatchObject({
       code: "NOT_IMPLEMENTED",
     });
-    // The exhausted attempt's line, within the same second, was held back.
     expect(lines.map((line) => [line.module, line.action])).toEqual([
       ["handler-writer", `sent to ${lifecycle.failedQueue} (INVALID_MEDIA)`],
-      ["effect", "retry 3 of 10"],
+      ["effect", `sent to ${lifecycle.failedQueue} (NOT_IMPLEMENTED)`],
     ]);
+    // Any other failure still retries within the template's limit.
+    const down = loop.templateHandler(log, { ...lifecycle, module: "down" }, async () => {
+      throw new Error("database down");
+    });
+    await expect(down(Buffer.from("{}"), delivery(1))).rejects.toThrow("database down");
+    expect(lines.at(-1)).toMatchObject({ module: "down", action: "retry 1 of 10" });
+  });
+
+  it("dead-letters an unwritten effect hook on its first delivery on the real runner", async () => {
+    const log = loop.createLoopLog("completion-handler");
+    const hooks = loop.watchHooks(
+      {
+        async construct() {
+          throw new NotImplemented("job.construct for Lifecycle writer");
+        },
+      },
+      log,
+      "handler-writer",
+    );
+    const scope = testScope();
+    // A template's consumer on its loop row (the queue its process config names).
+    const consumer: Consumer = await loop.loopConsumer(
+      { ...lifecycle, queue: "completion-events--handler-writer", concurrency: 2 },
+      loop.templateHandler(log, lifecycle, async () => {
+        await hooks.construct();
+      }),
+      { onFatal: scope.fail },
+    );
+    expect(consumer.binding).toMatchObject({ hostname: "local-broker" });
+    expect(consumer.options).toMatchObject({
+      queue: "completion-events--handler-writer",
+      failedQueue: lifecycle.failedQueue,
+      concurrency: 2,
+      retryLimit: 10,
+      onFatal: scope.fail,
+    });
+    consumer.deliver("job-1");
+    await settled(consumer, "job-1");
+    expect(consumer.events).toEqual([
+      {
+        republish: lifecycle.failedQueue,
+        receipt: "job-1",
+        headers: { "x-delivery-attempt": 1, "x-terminal-code": "NOT_IMPLEMENTED" },
+      },
+      { ack: "job-1" },
+    ]);
+    await consumer.close();
   });
 
   it("logs another failure with what the template's limit does next", async () => {

@@ -150,6 +150,12 @@ function GenerationProcesses({
           Edge <span className="studio-field-help">app-edge</span>: {edge.join(", ")}
         </p>
       ) : null}
+      {(processes.delivery ?? []).map((row) => (
+        <p key={row.cdn}>
+          {row.name} <span className="studio-field-help">CDN</span>:{" "}
+          {row.path ? `${row.path} → ${row.bucket}` : row.answers}
+        </p>
+      ))}
       <ul aria-label="Runnable processes">
         {processes.tiles.map((row) => {
           const answers = [

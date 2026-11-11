@@ -218,8 +218,16 @@ application tile ([tile process contract](../docs/plans/tile-processes/contract.
 resolver adds `model.processes` only when it is on: one row per Service, Uploads, Worker,
 Redirect, Billing and Notifications tile, sorted by ID, including tiles with no modules, with its
 shape (`http` or `worker`), exposure (public for a lane entry or a saved public exposure), HTTP
-limits (a template on the tile that consumes Request timeout and Concurrency limit, else the
-fixed 1000 ms and 1000), its template selections and each stub's role (loop, route or library).
+limits, a Worker's loop concurrency, its template selections and each stub's role (loop, route or
+library). Each limit's origin is `template` (a template on the tile consumes the tile's Request
+timeout and Concurrency limit, or Concurrency), else `tile` (the tile's own saved value, which only
+the process consumes; v3 contract §4), else `fixed` (1000 ms and 1000, or one message at a time).
+Where no template on the tile consumes them, they are the tile's normal controls while the option
+is on (`process.requestTimeoutMs`, `process.concurrencyLimit` and `process.concurrency` setting
+decisions with `process: <tile>`; unsaved, each shows the value the process runs). A Video HLS
+worker's concurrency stays its template's fixed 1, with no control. The resolver also adds
+`model.delivery` when the design has a CDN tile: the object storage each CDN fronts (its links
+and saved origin), with each one's saved access and provider.
 Without an installed processes owner the option is a `NEEDS_TEMPLATE` finding at
 `/generation/processes`, which refuses studio export; the dependency-only registry never installs
 it.
@@ -245,14 +253,30 @@ once, or it refuses) so `first-run` and `start` read `report.processes.runnable`
 and `admission.ts` when a process needs them, `amqp.ts` and `delivery.ts` for a loop stub, and
 the libraries of the stores a process's stub clients use (below).
 
-**The edge.** When a public HTTP process exists, the processes owner contributes an `edge` row per
-public host and the foundation writes `app-edge`: the nginx pinned in `assets/providers.json`,
-published at `127.0.0.1:${LOCAL_HTTP_PORT}:8080`, `depends_on` each public process healthy, and
-healthy on its own `GET /healthz` (`{"service":"edge","application":"ready"}`).
-`infra/edge/nginx.conf` routes `/api/<id>/` to `app-<id>:3000/` (resolved per request through
-Docker DNS) and answers 404 JSON for anything else, so an internal process is reached only inside
-the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a service contributing
-`http: true` beside it refuses, and so does a tile whose ID is `edge`.
+**The edge.** When a public HTTP process or a served CDN exists, the processes owner contributes
+an `edge` row per public host and the foundation writes `app-edge`: the nginx pinned in
+`assets/providers.json`, published at `127.0.0.1:${LOCAL_HTTP_PORT}:8080`, `depends_on` each public
+process healthy (and Garage for a CDN route), and healthy on its own `GET /healthz`
+(`{"service":"edge","application":"ready"}`). `infra/edge/nginx.conf` routes `/api/<id>/` to
+`app-<id>:3000/` (resolved per request through Docker DNS), answers 503
+`{"error":"UNAVAILABLE","message":"Service unavailable."}` while that process is down, and 404 JSON
+for anything else, so an internal process is reached only inside the network at
+`http://app-<id>:3000`. The edge's own answers are JSON whatever a path's extension (`types { }`).
+The edge owns the single HTTP port: a service contributing `http: true` beside it refuses, and so
+does a tile whose ID is `edge`.
+
+**CDN delivery** (V3-08). A CDN tile in front of exactly one public object storage that the design
+provisions (a template's bucket or a stub's) gets the edge route `/cdn/<cdn id>/`, served from that
+bucket's local Garage website (`local-objects:3902`, `Host: <bucket>.web.garage.localhost`): read
+only (GET and HEAD; any other method 405 `METHOD_NOT_ALLOWED`), ranges passed through, a missing
+key 404 `NOT_FOUND`. The `Content-Type` comes from the key's extension for common web media (HLS
+playlists and segments, MP4, WebM, audio, VTT, images, JSON, text), else the object's own; each
+answer also carries `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`, and
+the request's `Authorization` and cookies never reach the bucket. The local edge stands in for the
+CDN whatever its saved provider, and doesn't resize images. Any other CDN (none, several or private
+origins, another provider, or a bucket nothing reads or writes) serves nothing locally and says why
+in an optional `custom` gap `cdn-<cdn id>`. `report.processes.delivery` lists each CDN's path and
+bucket, or why it has none, and Preview shows them.
 
 **Module routes** (contract §3–4). Every route sits under `/modules/<module id>`:
 
@@ -316,18 +340,28 @@ the network at `http://app-<id>:3000`. The edge owns the single HTTP port: a ser
   database's `published` views; with no items Data access the resources are empty. Its own pool
   runs fixed at 10 connections and 2000 ms. With processes off it emits only the runtime file
   and an unfinished `favorites-application-bindings` gap.
-- **Search query** is a placeholder: `GET /modules/<lead>` answers "Not implemented" for its
-  mapping and query preset, which are product data.
+- **Search query** (v3 contract §5) is mounted at `GET /modules/<lead>?q=&page=` on its index,
+  with the mapping and document from the Index writer that fills that index: the process imports
+  that writer's hooks file, so the two can't drift. At start it checks the search service (cluster
+  health) and, once the mapping is written, asserts the index (`openSearchIndex` in the scaffold
+  `src/runtime/tile-search.ts`: created when missing, also when another process creates it at the
+  same moment; refused when its mapping differs). A bad `q` (1–200 characters) or `page` (1–100)
+  answers 400 `SEARCH_QUERY`; then a search reaches the writer's `mapping`, its own `preset` and
+  `hit`, each 501 until written; then it answers `{q, page, pageSize, total, hits}`, 20 to a page,
+  in 750 ms at most.
 
-**Consume loops** (contract §3–5). A loop consumes a topic's `<topic>--<tile>` subscriber queue
-or a work queue itself, through the shared `createConsumer` and delivery runner (manual ack,
-prefetch equal to its concurrency, `x-delivery-attempt`, and `<queue>.failed` with
-`x-terminal-code`). The report's `loops` rows name each queue, module and what a failure does,
-and the process file's `config.loops` holds each loop's queue, `.failed`, retry limit and
-concurrency.
+**Consume loops** (contract §3–5). A loop consumes a topic's subscriber queue or a work queue
+itself, through the shared `createConsumer` and delivery runner (manual ack, prefetch equal to its
+concurrency, `x-delivery-attempt`, and `<queue>.failed` with `x-terminal-code`). A topic's
+subscriber is the tile's `<topic>--<tile>`, unless the tile has several consuming modules on that
+topic: then each gets its own `<topic>--<module>` (tile-processes review row 6), so each receives
+every message. The report's `loops` rows name each queue, module and what a failure does, and the
+process file's `config.loops` holds each loop's queue, `.failed`, retry limit and concurrency;
+stub loops and mounted templates both consume their row (`startModuleLoop`, `loopConsumer`).
 
 - A **loop stub** (any stub, in any tile, connected to consume a queue) gets one loop per queue
-  it consumes, one message at a time. Its `<module>.ts` takes `(dependencies, message:
+  it consumes, at its Worker's Concurrency (one message at a time beside HTTP routes). Its
+  `<module>.ts` takes `(dependencies, message:
   ModuleMessage): Promise<void>` (`body`, `messageId`, `headers`, `attempt` from 1, and `source`,
   the queue). Its `.slots.ts` keeps the slot's descriptor, and the consumed queue's property
   becomes a comment: it is the input, not a dependency. "Not implemented" is terminal at once
@@ -344,24 +378,31 @@ concurrency.
   image (`target: media`, 21 m stop grace).
 - **Event counter** runs `startCounterWorker` on its events subscriber, on its private schema's
   `receipts` and `totals` and the public view `<schema>_public.totals`.
-- **Search projection** is a placeholder: a loop on its events subscriber whose every message is
-  `NOT_IMPLEMENTED` until a mapping and an event codec exist.
+- **Search projection** (v3 contract §5) runs the Index writer on its events subscriber
+  (`startSearchIndexWorker`): at start it checks the search service and, once the mapping is
+  written, asserts the index; until then it logs `mapping` once and stays up, and each message goes
+  to `.failed` as `NOT_IMPLEMENTED` naming the first unwritten hook it reaches. A message's event
+  names its document (the event ID must be the message's ID), which is parsed against the mapping
+  and upserted at its version (`external_gte`): a repeat or an older version never overwrites a
+  newer one, and an older one is done rather than retried; a message that doesn't parse is
+  `MALFORMED_MESSAGE`.
 
 A mounted template keeps its own limits and handling: a codec or parse hook that throws is
-terminal at once, other failures retry within its limit (lifecycle 10, video 3, counter 5). A
-message that ends in `.failed` after reaching a hook that isn't written goes there as
-`NOT_IMPLEMENTED`, as a stub's does, rather than the template's generic `MALFORMED_MESSAGE` or
-`RETRY_EXHAUSTED`; a code of the template's own (the media worker's `INVALID_MEDIA`) is kept, and
-so are its retries. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
+terminal at once, other failures retry within its limit (lifecycle 10, video 3, counter and search
+5). A message that reaches a hook that isn't written goes to `.failed` at once as
+`NOT_IMPLEMENTED`, as a stub's does (tile-processes review row 7: a retry can't write it), rather
+than the template's generic `MALFORMED_MESSAGE` or retrying to `RETRY_EXHAUSTED`; a code of the
+template's own (the media worker's `INVALID_MEDIA`) is kept. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
 and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process
-except a lost broker connection (it drains and exits 1, with no restart). `pnpm stop` cancels
+except a lost broker connection: any process holding one (a loop, or a publisher) drains and
+exits 1, and stays exited (no restart policy) while the edge answers 503 for it; `pnpm start`
+brings the broker and it back, resubscribed, with the `.failed` messages kept. `pnpm stop` cancels
 each subscription, cuts a retry wait short (the message is republished for its next attempt) and
 settles the message in hand before closing; undelivered messages stay in their queue.
 `src/runtime/tile-loop.ts` holds the loop and its handlers, `tile-http.ts` the 501 wrapper and
-route stubs, and `tile-process.ts` `NotImplemented`, the log and the `started` line. Two loops in
-one tile on one topic share its subscriber queue, so each message reaches one of them.
+route stubs, and `tile-process.ts` `NotImplemented`, the log and the `started` line.
 
 **Provisioning for stubs** (contract §6). With the option on, every store or channel a stub
 links to is provisioned for its tile. The resolver works the facts out as it reads the design:
@@ -380,7 +421,7 @@ scripts:
 | Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
 | Cache | `cache-<id>` (Valkey) and its password |
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
-| Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work |
+| Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
 
 Each process gets its credentials and `depends_on` its providers healthy. A store whose saved
 provider isn't unspecified or self-hosted, or whose engine isn't unspecified or the local one
@@ -465,10 +506,13 @@ for <lead name>")`. The multipart's are `validate`, `metadata`, `response`, `ori
 `job.codec`, `job.construct`, `response`, `publication.codec`/`construct` and the three
 `identities`; the video's codecs (`job`, `video`, `result`, `eventId`, `event`) and the source and
 results `owns`; the counter's `event`, `aggregateKey`, `eventId` and `identity`; Favorites'
-`eligible`. The process wraps
+`eligible`; the Index writer's `mapping`, `document.parse`, `document.id`, `document.version` and
+`event` (`<Lead>Document` is its document type); the Search query's `preset` and `hit`. No hook
+names a product: the mapping, documents, events and query preset are product data the hooks
+return. The process wraps
 the hooks so a loop's log names the hook a message reached. Its `*-application-bindings` gap
-becomes a required `custom` gap naming that file; the search placeholders' gap stays
-`unfinished`. The scaffold
+becomes a required `custom` gap naming that file (search's names both); an index an Index writer
+asserts needs no contributed mapping, so no `search-mappings` gap. The scaffold
 `src/runtime/tile-process.ts` holds `NotImplemented`, the rate-limited log and the `started`
 line, and `tile-http.ts` the 501 wrapper: an error that is a `NotImplemented` or whose message
 starts with "Not implemented" answers 501
@@ -481,10 +525,11 @@ template in its `.hooks.ts`; no scaffold changes.
 With the option on, the manifest records `"processes": true` beside `runtime`, and the report
 gains `processes`: `runnable` (no findings, no `unsupported` gap and a service for every
 application tile; `applicationComplete` keeps its meaning) and `tiles`, each with its service,
-shape, exposure, edge path, entry point, settings with their origin, routes and loops (each with
-what it answers), templates (`mounted` or `placeholder`), hooks files and `stores` (each store or
-channel its stubs use, the access, the modules, and what is `provisioned` for it or why it is
-`unsupported`). With it off, nothing
+shape, exposure, edge path, entry point, settings with their origin (`template`, `tile` or
+`fixed`: an HTTP process's Request timeout and Concurrency limit, a worker's Concurrency), routes
+and loops (each with what it answers), templates (`mounted` or `placeholder`), hooks files and
+`stores` (each store or channel its stubs use, the access, the modules, and what is `provisioned`
+for it or why it is `unsupported`), and `delivery` (each CDN tile's route). With it off, nothing
 changes: `processes-off.test.ts` pins the export of frozen v2, the v2 module design with its
 values and the stub stack (`spec/src/fixtures/stub-stack.ts`) as they were before the option
 existed, every payload byte and the provenance files apart from their source and emitter
@@ -555,7 +600,9 @@ Selected search projection/query emits public-document validation, explicit vers
 assertion, repeat-safe event upsert, a bounded query factory and a draining consumer factory.
 The public-video record/mapping and title/description/channel query preset are separate feature
 assets. Compiled recipes still supply committed event codecs, mappings, service construction
-and HTTP response mapping; no private SQL login or complete application is installed. See the
+and HTTP response mapping; no private SQL login or complete application is installed. With
+Runnable processes on, the search mounts above construct the services and take the codecs,
+mapping, preset and hits from hooks files. See the
 [search interfaces and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-14--public-search-projection-and-bounded-query).
 
 Trusted feature registration can pass `V2Emitter[]` to `loadLocalV2Registry(features)`.

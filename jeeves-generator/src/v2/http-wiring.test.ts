@@ -100,9 +100,10 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       ...stub("watch-counts", "View count reader"),
       ...stub("watch-views", "View publisher"),
     ]);
+    // Search query reaches its Index writer's mapping first (V3-08).
     expect(routes(v2, "search")).toEqual([
       ready,
-      'GET /modules/search-query → 501 "Not implemented: search mapping and query preset for Video search" (placeholder)',
+      'GET /modules/search-query → 400 SEARCH_QUERY for a bad q or page; 501 "Not implemented: mapping for Index writer" until its hooks are written; then {q, page, pageSize, total, hits}, 20 to a page',
     ]);
     // The HTTP processes' templates; the worker templates run loops (loop-wiring.test.ts).
     expect(
@@ -110,7 +111,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         .tiles.filter((row) => row.routes.length)
         .flatMap((row) => row.templates),
     ).toEqual([
-      { selection: "search-query", template: "search-query", level: "placeholder" },
+      { selection: "search-query", template: "search-query", level: "mounted" },
       { selection: "upload-auth", template: "verified-identity", level: "mounted" },
       { selection: "upload-multipart", template: "owned-multipart", level: "mounted" },
       { selection: "watch-cache-reader", template: "positive-cache-read", level: "mounted" },
@@ -146,14 +147,18 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         "  access_log off;",
         "  error_log /dev/stderr warn;",
         "  resolver 127.0.0.11 valid=10s;",
+        // The edge's own answers are JSON whatever the extension, a process that is down too.
+        "  types { }",
         "  default_type application/json;",
         "  server {",
         "    listen 8080;",
+        "    error_page 502 504 = @unavailable;",
         `    location = /healthz { return 200 '{"service":"edge","application":"ready"}'; }`,
         ...["links-api", "preview-api", "upload-api"].map(
           (id) =>
             `    location /api/${id}/ { set $backend app-${id}:3000; rewrite ^/api/${id}/(.*)$ /$1 break; proxy_pass http://$backend; }`,
         ),
+        `    location @unavailable { return 503 '{"error":"UNAVAILABLE","message":"Service unavailable."}'; }`,
         `    location / { return 404 '{"error":"NOT_FOUND","message":"Route not found."}'; }`,
         "  }",
         "}",
@@ -275,13 +280,13 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(upload).toContain("      return resources.lifecycle.complete(tx, record, original);");
     expect(upload).toContain("      return resources.lifecycle.closed(tx, record, terminal);");
     expect(upload).toContain("  guard: TileGuard;");
-    // Search query is a placeholder: no hooks file. The worker templates' are in
-    // loop-wiring.test.ts.
+    // The worker templates' hooks files are in loop-wiring.test.ts.
     expect(
       v2.files
         .map((file) => file.path)
         .filter((path) => /^src\/modules\/(upload|watch|search)\/.*\.hooks\.ts$/.test(path)),
     ).toEqual([
+      "src/modules/search/search-query.hooks.ts",
       "src/modules/upload/upload-multipart.hooks.ts",
       "src/modules/watch/watch-cache-reader.hooks.ts",
     ]);
@@ -293,6 +298,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         .tiles.filter((row) => row.routes.length)
         .flatMap((row) => row.hooks.map((item) => [item.file, item.hooks.length])),
     ).toEqual([
+      ["src/modules/search/search-query.hooks.ts", 2],
       ["src/modules/upload/upload-multipart.hooks.ts", 5],
       ["src/modules/watch/watch-cache-reader.hooks.ts", 5],
     ]);
@@ -306,10 +312,15 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       status: "custom",
       description: expect.stringContaining("src/modules/preview-api/preview-reader.hooks.ts"),
     });
-    // Off, the gaps keep their wording; the search placeholder's gap stays unfinished.
+    // Off, the gaps keep their wording, search's too.
     expect(gap(v2Off, "multipart-application-bindings")?.status).toBe("unfinished");
     expect(gap(stackOff, "positive-cache-application-bindings")?.status).toBe("unfinished");
-    expect(gap(v2, "search-application-bindings")?.status).toBe("unfinished");
+    expect(gap(v2Off, "search-application-bindings")?.status).toBe("unfinished");
+    expect(gap(v2, "search-application-bindings")).toMatchObject({
+      status: "custom",
+      description:
+        'Write the product hooks in src/modules/search/search-query.hooks.ts, src/modules/search-indexer/indexer-writer.hooks.ts; until then each throws "Not implemented" and a search answers 501 and each event goes to .failed.',
+    });
   });
 
   it("provisions what the mounted templates use: tables, logins and providers", () => {
@@ -389,7 +400,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       'logStarted(config.tile, {"module":"watch-cache-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]});',
     );
     expect(tail(text(v2, "src/processes/search.ts"))).toContain(
-      'logStarted(config.tile, {"module":"search-query","template":"search-query","wiring":"placeholder","checks":["cluster health"]});',
+      'logStarted(config.tile, {"module":"search-query","template":"search-query","wiring":"mounted","checks":["cluster health","index search-index asserted once its mapping is written"]});',
     );
   });
 

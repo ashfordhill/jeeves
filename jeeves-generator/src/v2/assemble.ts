@@ -11,6 +11,7 @@ import {
 } from "../json.ts";
 import { type V2Input, validateV2Input } from "./input.ts";
 import {
+  type V2Delivery,
   type V2EmitterIdentity,
   type V2Gap,
   type V2ModuleSql,
@@ -59,6 +60,7 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
   const resolved: { emitter: string; id: string }[] = [];
   const processRows: (V2ProcessReport & { emitter: string })[] = [];
   const productSql: V2ModuleSql[] = [];
+  const delivery: V2Delivery[] = [];
   for (const emitter of registry.emitters) {
     const rendered = emitter.render(
       freeze({
@@ -90,6 +92,13 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
         "Only the runtime owner reports product SQL, and only with Runnable processes on.",
       );
     productSql.push(...(rendered.sql ?? []));
+    if (rendered.delivery?.length && (!emitter.provides.runtime || !model.processes))
+      refuse(
+        "INVALID_PROCESS_REPORT",
+        emitter.id,
+        "Only the runtime owner reports CDN routes, and only with Runnable processes on.",
+      );
+    delivery.push(...(rendered.delivery ?? []));
     for (const file of rendered.files) {
       if (file.path.toLowerCase() === ".jeeves" || file.path.toLowerCase().startsWith(metadata))
         refuse("RESERVED_OUTPUT_PATH", file.path, "The assembler owns provenance output.");
@@ -329,6 +338,8 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
       !gaps.some((gap) => gap.status === "unsupported" || gap.id === "application-services") &&
       processTiles.every((row) => row !== undefined),
     tiles: processTiles.filter((row) => row !== undefined),
+    // Each CDN tile's edge route (V3-08).
+    ...(delivery.length && { delivery }),
   };
   const report = freeze({
     format: "jeeves-v2-support-v1",

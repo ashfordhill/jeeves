@@ -121,6 +121,7 @@ function DraftField({
   references,
   help,
   className,
+  placeholder,
   onSelect,
 }: {
   idPrefix: string;
@@ -129,6 +130,8 @@ function DraftField({
   references: readonly Choice[];
   help?: boolean;
   className?: string;
+  /** What an empty integer field runs, such as a process's initial limit. */
+  placeholder?: string;
   onSelect: (value: string) => void;
 }) {
   const value = draft.values[field.path];
@@ -172,7 +175,7 @@ function DraftField({
           min={field.min}
           max={field.max}
           step={1}
-          placeholder="Unspecified"
+          placeholder={placeholder ?? "Unspecified"}
           value={typeof value === "number" || typeof value === "string" ? value : ""}
           onInput={(event) =>
             change(
@@ -498,6 +501,13 @@ function TargetForm({
         label: `${design.elements.find((element) => element.id === item.to.element)?.name} · ${item.planned.label} (${item.planned.protocol})`,
       }));
   };
+  // A tile setting only its process consumes shows, while unsaved, what the process runs.
+  const runs = (field: InspectorField) => {
+    const control = controls.find(
+      (item) => item.process && `settings.${item.sourcePaths[0]?.at(-1)}` === field.path,
+    );
+    return control && control.origin !== "source" ? String(control.value) : undefined;
+  };
   const draftField = (field: InspectorField, className?: string) => (
     <DraftField
       key={field.path}
@@ -505,6 +515,7 @@ function TargetForm({
       field={field}
       draft={entry}
       className={className}
+      placeholder={runs(field)}
       references={optionsFor(field)}
       help={performance.includes(field as StudioPerformanceField)}
       onSelect={(value) =>

@@ -77,6 +77,8 @@ export type V2GenerationPreview = {
     /** Only with Runnable processes on: each application tile's process. */
     processes?: {
       runnable: boolean;
+      /** Each CDN tile's route at the edge, or why it serves nothing locally. */
+      delivery?: { cdn: string; name: string; path?: string; bucket?: string; answers: string }[];
       tiles: {
         tile: string;
         name: string;

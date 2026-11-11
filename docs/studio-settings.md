@@ -15,9 +15,9 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 
 | Normal control | Actual selected consumer | Bound |
 | --- | --- | --- |
-| Request timeout | HTTP service deadline | 1–300000 ms |
-| Concurrency limit | HTTP admission | 1–100000 |
-| Worker concurrency | AMQP handler admission, except fixed media worker | 1–1024 |
+| Request timeout | HTTP service deadline: a template's, or (Runnable processes on) the tile's process | 1–300000 ms |
+| Concurrency limit | HTTP admission: a template's, or (Runnable processes on) the tile's process | 1–100000 |
+| Worker concurrency | AMQP handler admission, except fixed media worker; (Runnable processes on) its stub loops too | 1–1024 |
 | TTL | Positive cache reader | 1–604800 seconds |
 | Pool size | SQL client of a Data access or Lifecycle writer | 1–1000 |
 | Statement timeout | SQL client of a Data access or Lifecycle writer | 1–300000 ms |
@@ -494,9 +494,22 @@ templates or a preset: "Runnable processes needs a design built from modules."),
 module-level selection ("Add a module first.") and where the registry doesn't install processes
 (`GenerationInstalledSupport.processes`); a raw source edit on a tile-level design is a
 `CONFIG_INVALID` finding at `/generation/processes`. Blueprint v3 carries it in `generation`, and
-v2 refuses its path. It adds no `generationPolicies` record and no tile or module setting:
-an HTTP process uses the Request timeout and Concurrency limit a template on its tile consumes,
-else the fixed 1000 ms and 1000, which the report lists with their origin.
+v2 refuses its path. It adds no `generationPolicies` record and no new tile or module field.
+
+**Process settings (D5, v3 contract §4).** While Runnable processes is on, a tile's process uses
+its limits, so they are its normal controls even with only stubs (or no module): a Service or
+Uploads tile (and the legacy Redirect and Billing) shows **Request timeout** and **Concurrency
+limit** in its Options, consumed by the process's admission for every route, and a Worker shows
+**Concurrency**, which its stub loops run (each loop's prefetch) instead of one message at a time.
+Where a template on the tile consumes them, that template's control is the one shown (and its stub
+loops take the same value); a Video HLS worker's Concurrency stays fixed at 1 and hidden.
+Notifications has no Concurrency field, so its loops run one at a time. Turning the option on
+writes nothing: an unsaved field is empty and shows what the process runs as its placeholder
+(1000 ms, 1000, or 1), typing saves the value on the tile, and clearing it runs the initial value
+again. The report lists each process's settings with their origin: `template`, `tile` (the
+tile's saved value) or `fixed`. Mouse and chat share the controls (`getDesign.editableSettings`
+rows with `process: <tile>` and `input: process.<setting>`). With the option off, nothing shows
+and a saved value is preserved intent.
 
 Generation preview and ZIP use these same installed consumer contracts. The dialog shows exact
 selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse

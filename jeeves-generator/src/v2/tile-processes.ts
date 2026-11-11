@@ -20,6 +20,7 @@ const scaffolds = {
   loop: ["src/runtime/tile-loop.ts", "src/runtime/tile-loop.ts.template"],
   clients: ["src/runtime/module-clients.ts", "src/runtime/module-clients.ts.template"],
   guard: ["src/runtime/tile-guard.ts", "src/runtime/tile-guard.ts.template"],
+  search: ["src/runtime/tile-search.ts", "src/runtime/tile-search.ts.template"],
 } as const;
 
 /** Where each process's entry point lives and how Compose runs it (tile process contract, §2). */
@@ -149,6 +150,12 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       const http = processes.some((process) => process.shape === "http");
       const looping = all.some((mount) => mount.loops.length);
       const guarded = all.some((mount) => mount.guard);
+      // Mounted search templates open their index through the search scaffold.
+      const searching = all.some(
+        (mount) =>
+          mount.template?.template === "search-query" ||
+          mount.template?.template === "search-projection",
+      );
       // The views the mounted templates publish, which another owner's stub may read.
       const views = all.flatMap((mount) => mount.local.views ?? []);
       // The stubs' clients answer "Not implemented" through the core scaffold too.
@@ -167,6 +174,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
             ...(http ? [scaffolds.http] : []),
             ...(guarded ? [scaffolds.guard] : []),
             ...(looping ? [scaffolds.loop] : []),
+            ...(searching ? [scaffolds.search] : []),
           ].map(([path, source]) => ({
             path,
             content: asset(`jeeves-generator/templates/local-v2/assets/${source}`),
@@ -183,19 +191,22 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
   };
 }
 
-/** The process's settings: its HTTP limits, from a template on its tile or fixed. */
+/** The process's settings (v3 contract, section 4): an HTTP process's limits, or a worker's loop
+ * concurrency, each from a template on its tile, the tile's own value or fixed. */
 function settings(process: NormalizedProcess) {
-  return process.http
-    ? (["requestTimeoutMs", "concurrencyLimit"] as const).map((setting) => {
-        const value = process.http?.[setting];
-        return {
-          setting,
-          value: value?.value ?? 0,
-          origin: value?.origin ?? "fixed",
-          ...(value?.selection && { selection: value.selection }),
-        };
-      })
-    : [];
+  const rows = process.http
+    ? (["requestTimeoutMs", "concurrencyLimit"] as const).map(
+        (setting) => [setting, process.http?.[setting]] as const,
+      )
+    : process.worker
+      ? [["concurrency", process.worker.concurrency] as const]
+      : [];
+  return rows.map(([setting, value]) => ({
+    setting,
+    value: value?.value ?? 0,
+    origin: value?.origin ?? "fixed",
+    ...(value?.selection && { selection: value.selection }),
+  }));
 }
 
 function reportRow(

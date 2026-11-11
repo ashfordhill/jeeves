@@ -22,6 +22,7 @@ import {
   signIn,
   signInStackCommands,
 } from "../../../../packages/spec/src/fixtures/sign-in-stack.ts";
+import { stubStackDesign } from "../../../../packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../../packages/spec/src/fixtures/v2-modules.ts";
 import { installedGenerationSupport } from "../generation/support.ts";
 import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.ts";
@@ -492,6 +493,47 @@ describe("studio chat tools", () => {
     expect(workspace.pending).toEqual(ops);
     expect(run(workspace, "getDesign").processes).toBe(true);
     expect(INSTRUCTIONS).toContain("setRunnableProcesses (on: true or false)");
+  });
+
+  it("edits a stub tile's process limits with the Options form's command while processes are on (D5)", () => {
+    const base = {
+      ...runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+      revision: 3,
+    };
+    const workspace = new Workspace(base);
+    const editable = (
+      run(workspace, "getDesign").editableSettings as {
+        input: string;
+        process?: string;
+        value: number;
+      }[]
+    ).filter((item) => item.process);
+    expect(editable.map((item) => [item.process, item.input, item.value])).toEqual([
+      ["links-api", "process.requestTimeoutMs", 1000],
+      ["links-api", "process.concurrencyLimit", 1000],
+      ["stats-api", "process.requestTimeoutMs", 1000],
+      ["stats-api", "process.concurrencyLimit", 1000],
+      ["upload-api", "process.requestTimeoutMs", 1000],
+      ["upload-api", "process.concurrencyLimit", 1000],
+      ["visit-worker", "process.concurrency", 1],
+    ]);
+    const settings = {
+      ...base.architecture?.studio?.elements.find((item) => item.element === "links-api")?.settings,
+      requestTimeoutMs: 250,
+    };
+    const command = { type: "edit", element: "links-api", settings } as StudioCommand;
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 3, commands: [command] }).ok).toBe(
+      true,
+    );
+    // The same batch the tile's Options form sends.
+    expect(workspace.pending).toEqual(
+      buildSupportedAuthoringCommand(base, command, installedGenerationSupport()).ops,
+    );
+    // Off, the same edit has no control to reach.
+    const off = new Workspace({ ...stubStackDesign(), revision: 3 });
+    expect(run(off, "applyStudioCommands", { baseRevision: 3, commands: [command] })).toMatchObject(
+      { ok: false },
+    );
   });
 
   it("prepares accepted commands on the working copy without committing them", () => {

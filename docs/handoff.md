@@ -9420,3 +9420,82 @@ writer on the reading tile or a template writer.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-08: process settings and robustness
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) and [contract](plans/youtube-v3/contract.md)
+§4 (D5), §5 and question 10, with tile-processes review rows 5–8. Docs: `studio-settings.md`
+(process settings), `studio.md` (export), `CATALOG.md` (search, consumers of one topic, the CDN),
+the generator README (search hooks, the CDN route, subscriber queues, terminal unwritten hooks,
+broker loss, the edge's JSON answers), a playbook lesson, the contract's "As built (V3-08)" notes,
+the plan's status and the HUMAN_FEEDBACK resolution. Evidence: [v3-08](plans/youtube-v3/evidence/v3-08/README.md).
+
+- **D5:** with processes on, the resolver gives each process tile's limits an origin `template`,
+  `tile` (its saved value) or `fixed`, and `worker.concurrency` for Workers. Where no template on
+  the tile has a decision for the `host.*` input, it adds a setting decision with `process: <tile>`
+  (`process.requestTimeoutMs`/`concurrencyLimit`/`concurrency`, sourcePath on the tile even when
+  unsaved, `normalControl` when the runtime and processes are installed), so Options, chat's
+  `editableSettings` and `buildSupportedAuthoringCommand` share them; clearing one is allowed.
+  `GenerationSettingDecision.selection` is now optional. The inspector shows an unsaved one's value
+  as its placeholder. Stub loops in a Worker run its concurrency; reports list each origin.
+- **Search:** both search templates are mounted (`http-wiring.ts` `searchQuery`,
+  `loop-wiring.ts` `searchProjection`) on the new scaffold `src/runtime/tile-search.ts`
+  (`openSearchIndex`, `startSearchIndexWorker`, `createSearchHandler`) and hooks files: the Index
+  writer's `mapping`, `document.parse/id/version`, `event`; the query's `preset`, `hit`, importing
+  the writer's hooks. Both probe cluster health and assert the index at start once `mapping` is
+  written (a create race is tolerated); an older version's 409 is done. `search-application-bindings`
+  is custom; an asserted index needs no `search-mappings` gap.
+- **Delivery:** resolver `model.delivery` (CDN tiles and the object storage they front); the
+  foundation's `deliveryRoutes` writes `/cdn/<cdn>/` to the bucket's Garage website, typed by
+  extension, read only, or an optional custom `cdn-<cdn>` gap; `report.processes.delivery`; Preview
+  shows it. The edge now has `types { }` and answers 503 JSON for a down process.
+- **Rows 6 and 7:** `subscriberQueue(s)` (`local-contract.ts`) give each consuming module of a
+  tile with several on one topic `<topic>--<module>`; the foundation, `search-bindings.ts` and the
+  loops use it, and template loops consume their `config.loops` row through `loopConsumer`.
+  `templateHandler` makes a reached unwritten hook `NOT_IMPLEMENTED` at once.
+
+**Deviations:** Notifications has no Concurrency field, so its loops stay at 1 (contract §4 listed
+it); a loop stub beside HTTP routes stays at 1. Three defects found in Docker were fixed (the edge's
+`.jpg` 404 type, the older-version retries, the edge's HTML 502). Search's 400 `SEARCH_QUERY` is
+the template's answer to a bad `q` or `page` (v2's wording). The shared v2 runtime files are
+unchanged; `tile-loop.test.ts`'s "keeps a template's … retries for an unwritten hook" test was
+rewritten to row 7's intended behaviour.
+
+**Tests.** New: spec `process-settings.test.ts` (4), generator `tile-search.test.ts` (5, the
+emitted scaffold on an in-memory OpenSearch and the real delivery runner) and
+`search-stack.test.ts` (5), fixture `fixtures/search-stack.ts`; chat `tools.test.ts` +1 (parity);
+`tile-loop.test.ts` +1 and one rewritten; e2e `module-authoring.spec.ts` +1 (D5 by mouse, Undo);
+`http-wiring`/`loop-wiring` tests updated for mounted search, `loopConsumer` and the edge.
+
+**Checks.** `pnpm check` exited 0: **695 tests in 97 files** (lint: only the existing info).
+**E2E: 78 passed, 1 failed (3.4 m)**: `v2-rebuild.spec.ts:30` failed at its first step (the
+system Name field not focused before typing); **rerun alone it passed (1.7 m)**; no leaked
+project. Web build passed (1.12 s, the existing chunk-size advisory). **Mouse check** (my API
+4399, scratch DB `jeeves_v308`, dropped; Vite 4389) at 1440×900 and 1280×800: TinyURL 7 tiles/7
+lines in both views; with processes on, Request timeout and Concurrency limit on the stub-only
+Microservice and Concurrency on the Worker, placeholders 1000/1000/1, 300 saved, Undo, Redo; no
+page or console errors; projects deleted.
+
+**Gates.** Off pin passes unchanged. Frozen v2: 72 files, 70 byte-identical to
+`generic-export.tar.gz`, manifest/report equal without inventory. v1 byte-identical. YouTube
+Simple `9332ea16…89bd`, Detailed `21fe8400…9ae1` (twice at 1440×900, once at 1280×800).
+**Docker:** search stack (`jeeves-v308-search`, 45560–45562): first-run 63.6 s, 10 healthy; search
+501 `mapping`, an event dead at attempt 1 in all three subscribers' `.failed`; CDN types, 206, 405,
+404; with hooks filled in the run copy the index was asserted and the published item found; a
+stub's own error retried 5 times (250–4000 ms) to `RETRY_EXHAUSTED`; a stopped broker exited the
+three broker processes 1 in 0.3 s, still exited 88 s later, `pnpm start` recovered all with dead
+letters kept; stop/start kept 8 secrets and 5 volumes. Request timeout set by mouse
+(`jeeves-v308-timeout`, 45563–45565): 300 ms in the downloaded ZIP; 299 ms → 200, 350/1000/5000 ms
+→ 503 `DEADLINE` at 0.30 s. Cleanup: both projects down with volumes, two image tags removed,
+exports, run copies, secrets and ZIP deleted; the owner's 43 containers, 18 volumes, 9 networks,
+31 image rows and ports match the record, 42 healthy, both edges 200.
+
+**For V3-09.** Chat's `editableSettings` already carry the process controls (`process: <tile>`);
+patterns that build search must put an Index writer (with an Event consumer fed from an outbox a
+template writes) on the same index before a Search query is a template. **For V3-11.** v3's
+process tiles all have templates, so D5 shows no extra control there. Preview should list
+`/cdn/video-delivery/ → transcoded-videos` once Video delivery links to public Transcoded videos.
+The search hooks' shapes are in the contract's §5 "As built" note; V3-16 fills them.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

@@ -1,5 +1,6 @@
 import {
   generationLocalIdentity,
+  type NormalizedGenerationSelection,
   type NormalizedProcess,
   type NormalizedStubStore,
 } from "@jeeves/spec";
@@ -181,4 +182,63 @@ export function stubStores(process: NormalizedProcess): { stores: StubStore[]; g
     v2Compare(`${a.resource}\u0000${a.access}`, `${b.resource}\u0000${b.access}`),
   );
   return { stores, gaps: [...gaps.values()] };
+}
+
+/** What naming a tile's subscriber queues reads: its process's loop stubs and its selections. */
+type LoopModel = {
+  processes?: readonly NormalizedProcess[];
+  selections: readonly NormalizedGenerationSelection[];
+};
+/**
+ * The modules of a tile that consume each topic (tile-processes review row 6), by the topic's local
+ * ID: each template's lead with a consumed topic field, and each loop stub on a topic.
+ */
+function topicConsumers(model: LoopModel, host: string): Map<string, string[]> {
+  const rows = new Map<string, string[]>();
+  const add = (topic: string, module: string) => {
+    const modules = rows.get(topic) ?? [];
+    if (!modules.includes(module)) modules.push(module);
+    rows.set(topic, modules);
+  };
+  for (const selection of model.selections) {
+    if (selection.host !== host || selection.binding.kind === "module-stub") continue;
+    const module =
+      selection.target.kind === "component" ? selection.target.component : selection.id;
+    for (const resource of selection.resources)
+      if (resource.channel === "consume" && selection.inputs[`${resource.field}.mode`] === "topic")
+        add(resource.identity.local, generationLocalIdentity(module).local);
+  }
+  const process = model.processes?.find((item) => item.tile === host);
+  for (const stub of process?.stubs ?? [])
+    for (const queue of stub.consumes ?? [])
+      if (queue.mode === "topic")
+        add(
+          generationLocalIdentity(queue.element).local,
+          generationLocalIdentity(stub.module).local,
+        );
+  return rows;
+}
+/**
+ * The subscriber queue a module of a tile reads on a topic: the tile's own `<topic>--<tile>` when
+ * it is the tile's only consumer of that topic, else the module's own `<topic>--<module>`, so each
+ * module gets every message (tile-processes review row 6). With Runnable processes off, always the
+ * tile's. A work queue is consumed itself.
+ */
+export function subscriberQueue(
+  model: LoopModel,
+  topic: string,
+  host: string,
+  module: string,
+): string {
+  const modules = model.processes ? (topicConsumers(model, host).get(topic) ?? []) : [];
+  return modules.length > 1
+    ? `${topic}--${generationLocalIdentity(module).local}`
+    : `${topic}--${host}`;
+}
+/** Every subscriber queue a tile has on a topic: one per consuming module when it has several. */
+export function subscriberQueues(model: LoopModel, topic: string, host: string): string[] {
+  const modules = model.processes ? (topicConsumers(model, host).get(topic) ?? []) : [];
+  return modules.length > 1
+    ? modules.map((module) => `${topic}--${module}`)
+    : [`${topic}--${host}`];
 }

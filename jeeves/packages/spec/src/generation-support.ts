@@ -80,6 +80,53 @@ const choice = (...values: GenerationValue[]): GenerationSupportedValues => ({ v
 const integer = (min: number, max: number): GenerationSupportedValues => ({
   integer: { min, max },
 });
+/**
+ * The tile settings a process consumes when no template on its tile does (v3 contract, section 4,
+ * D5): with Runnable processes on, a Service or Uploads tile (and the legacy Redirect and Billing)
+ * shows Request timeout and Concurrency limit, and a Worker Concurrency, which its stub loops use.
+ * With no saved value the process runs the initial one; a saved value is the tile's.
+ */
+export const generationProcessSettings = {
+  http: [
+    {
+      setting: "requestTimeoutMs",
+      supported: integer(1, 300000),
+      initial: generationProcessHttpDefaults.requestTimeoutMs,
+      userNeed: "Bound how long a request may occupy this service.",
+    },
+    {
+      setting: "concurrencyLimit",
+      supported: integer(1, 100000),
+      initial: generationProcessHttpDefaults.concurrencyLimit,
+      userNeed: "Bound concurrent admitted requests.",
+    },
+  ],
+  worker: [
+    {
+      setting: "concurrency",
+      supported: integer(1, 1024),
+      initial: 1,
+      userNeed: "Bound concurrent deliveries handled by this worker.",
+    },
+  ],
+} as const satisfies Record<
+  "http" | "worker",
+  readonly {
+    setting: string;
+    supported: GenerationSupportedValues;
+    initial: number;
+    userNeed: string;
+  }[]
+>;
+/** The process kinds whose tile settings hold each process setting: Notifications has no
+ * Concurrency field, so its loops run the initial one. */
+export const generationProcessSettingKinds: Readonly<
+  Record<string, readonly GenerationProcessKind[]>
+> = {
+  requestTimeoutMs: ["service", "uploads", "redirect", "billing"],
+  concurrencyLimit: ["service", "uploads", "redirect", "billing"],
+  concurrency: ["worker"],
+};
 const rule = (
   input: string,
   source: GenerationSettingRule["source"],

@@ -24,6 +24,8 @@ import {
   type GenerationValue,
   generationCapabilities,
   generationProcessHttpDefaults,
+  generationProcessSettingKinds,
+  generationProcessSettings,
   generationProcessShapes,
 } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
@@ -42,7 +44,10 @@ import { validateDesign } from "./validate.ts";
 
 type Path = (string | number)[];
 export type GenerationSettingDecision = {
-  selection: string;
+  /** The template selection that consumes it. Absent on a process's own setting. */
+  selection?: string;
+  /** A tile setting only its process consumes (v3 contract, section 4): the process's tile. */
+  process?: string;
   input: string;
   sourcePaths: Path[];
   origin: "source" | "descriptor-default" | "missing";
@@ -126,10 +131,13 @@ export type NormalizedStubModule = {
     }[];
   }[];
 };
-/** An HTTP limit of a process: the tile's value a template on it consumes, else the initial value. */
+/**
+ * A limit a process runs: the tile's value a template on it consumes (`template`), else the tile's
+ * own saved value (`tile`, v3 contract section 4), else the initial value (`fixed`).
+ */
 export type NormalizedProcessSetting = {
   value: number;
-  origin: "template" | "fixed";
+  origin: "template" | "tile" | "fixed";
   /** The template selection that consumes the tile's value. */
   selection?: string;
   sourcePaths: Path[];
@@ -147,6 +155,9 @@ export type NormalizedProcess = {
   /** HTTP only: public for a lane entry or a saved public exposure, else internal. */
   exposure?: "public" | "internal";
   http?: { requestTimeoutMs: NormalizedProcessSetting; concurrencyLimit: NormalizedProcessSetting };
+  /** A worker's loop concurrency: its template's, else the tile's Concurrency, else 1. Its stub
+   * loops run it (v3 contract, section 4). */
+  worker?: { concurrency: NormalizedProcessSetting };
   sourcePath: Path;
   /** Each template on the tile, with its lead module when the selection targets one. */
   templates: {
@@ -247,6 +258,26 @@ export type NormalizedGeneration = {
   }[];
   /** Present only with Runnable processes on: every application tile that runs, by ID. */
   processes?: NormalizedProcess[];
+  /** Present only with Runnable processes on and a CDN tile: what each CDN fronts. */
+  delivery?: NormalizedDelivery[];
+};
+/**
+ * A CDN tile and the object storage it fronts (V3-08): its links to object storage tiles and its
+ * saved origin, each with its saved access and provider. The local edge serves one public
+ * bucket's objects at `/cdn/<cdn>/`.
+ */
+export type NormalizedDelivery = {
+  cdn: string;
+  name: string;
+  sourcePath: Path;
+  origins: {
+    element: string;
+    name: string;
+    objects: "private" | "public";
+    provider: string;
+    /** The link to it, or the CDN's saved origin. */
+    sourcePath: Path;
+  }[];
 };
 const supports = (support: GenerationSupportedValues, value: GenerationValue) =>
   "values" in support
@@ -1066,6 +1097,18 @@ export function resolveGeneration(
           processes: normalizedProcesses(design, normalized, settings),
         }),
       };
+  if (model?.processes) {
+    settings.push(
+      ...processSettings(
+        design,
+        model.processes,
+        settings,
+        runtimeInstalled && !!installed.processes,
+      ),
+    );
+    const delivery = normalizedDelivery(design);
+    if (delivery.length) model.delivery = delivery;
+  }
   if (!model) for (const decision of settings) decision.normalControl = false;
   return freezeRecord({
     model,
@@ -1073,6 +1116,104 @@ export function resolveGeneration(
     settings,
     complete: !!model && findings.length === 0 && normalized.length > 0,
   });
+}
+
+/**
+ * The tile settings each process consumes itself (v3 contract, section 4): where no template on
+ * the tile consumes Request timeout and Concurrency limit (an HTTP process) or Concurrency (a
+ * Worker's), the process does, so they are the tile's normal controls. Unsaved, each shows what
+ * the process runs; a Video HLS worker's fixed 1 has its template's decision and stays hidden.
+ */
+function processSettings(
+  design: DesignDocument,
+  processes: readonly NormalizedProcess[],
+  decisions: readonly GenerationSettingDecision[],
+  installed: boolean,
+): GenerationSettingDecision[] {
+  const studio = design.architecture?.studio;
+  return processes.flatMap((process) => {
+    const binding = studio?.elements.find((entry) => entry.element === process.tile);
+    const current = { ...process.http, ...process.worker };
+    const hosted = new Set([...process.templates, ...process.stubs].map((item) => item.selection));
+    return generationProcessSettings[process.shape === "http" ? "http" : "worker"].flatMap(
+      (rule): GenerationSettingDecision[] => {
+        const value = current[rule.setting as keyof typeof current];
+        if (
+          !value ||
+          value.origin === "template" ||
+          !generationProcessSettingKinds[rule.setting]?.includes(process.kind) ||
+          decisions.some(
+            (item) =>
+              item.input === `host.${rule.setting}` &&
+              item.selection !== undefined &&
+              hosted.has(item.selection),
+          )
+        )
+          return [];
+        return [
+          {
+            process: process.tile,
+            input: `process.${rule.setting}`,
+            sourcePaths: [[...process.sourcePath, "settings", rule.setting]],
+            origin: value.origin === "tile" ? "source" : "descriptor-default",
+            value: value.value,
+            supported: rule.supported,
+            consumer: `tile-process.${rule.setting}`,
+            outputPaths: [`src/processes/${process.tile}.ts`],
+            status: "supported",
+            userNeed: rule.userNeed,
+            normalControl:
+              installed &&
+              !!binding &&
+              studioDefinitionStatus(binding.definition, binding.settings.kind) === "known",
+          },
+        ];
+      },
+    );
+  });
+}
+
+/** Every CDN tile and the object storage it fronts: its links to object storage, then its saved
+ * origin when that is object storage it doesn't link to (V3-08). */
+function normalizedDelivery(design: DesignDocument): NormalizedDelivery[] {
+  const studio = design.architecture?.studio;
+  const elements = studio?.elements ?? [];
+  const name = (id: string) => design.elements.find((entry) => entry.id === id)?.name ?? id;
+  const bucket = (id: string) => {
+    const settings = elements.find((entry) => entry.element === id)?.settings;
+    return settings?.kind === "object-store" ? settings : undefined;
+  };
+  const rows: NormalizedDelivery[] = [];
+  elements.forEach((binding, index) => {
+    const settings = binding.settings;
+    if (settings.kind !== "cdn") return;
+    const cdn = binding.element;
+    const origins: NormalizedDelivery["origins"] = [];
+    const add = (element: string, sourcePath: Path) => {
+      const target = bucket(element);
+      if (!target || origins.some((item) => item.element === element)) return;
+      origins.push({
+        element,
+        name: name(element),
+        objects: target.access,
+        provider: target.provider,
+        sourcePath,
+      });
+    };
+    design.connections.forEach((connection, at) => {
+      if (connection.from.element === cdn) add(connection.to.element, ["connections", at]);
+    });
+    if (settings.origin)
+      add(settings.origin, ["architecture", "studio", "elements", index, "settings", "origin"]);
+    origins.sort((a, b) => (a.element < b.element ? -1 : a.element > b.element ? 1 : 0));
+    rows.push({
+      cdn,
+      name: name(cdn),
+      sourcePath: ["architecture", "studio", "elements", index],
+      origins,
+    });
+  });
+  return rows.sort((a, b) => (a.cdn < b.cdn ? -1 : a.cdn > b.cdn ? 1 : 0));
 }
 
 /**
@@ -1150,21 +1291,35 @@ function normalizedProcesses(
     const shape = generationProcessShapes[processKind];
     const tile = binding.element;
     const hosted = selections.filter((item) => item.host === tile);
-    const limit = (setting: "requestTimeoutMs" | "concurrencyLimit"): NormalizedProcessSetting => {
+    // A template on the tile that consumes the setting decides it; else the tile's saved value,
+    // which only the process consumes; else the initial value (v3 contract, section 4).
+    const limit = (
+      setting: "requestTimeoutMs" | "concurrencyLimit" | "concurrency",
+      initial: number,
+    ): NormalizedProcessSetting => {
       const decision = settings.find(
         (item) =>
           item.input === `host.${setting}` &&
           typeof item.value === "number" &&
           hosted.some((selection) => selection.id === item.selection),
       );
-      return decision && typeof decision.value === "number"
+      if (decision && typeof decision.value === "number")
+        return {
+          value: decision.value,
+          origin: "template",
+          ...(decision.selection && { selection: decision.selection }),
+          sourcePaths: structuredClone(decision.sourcePaths),
+        };
+      const saved = generationProcessSettingKinds[setting]?.includes(processKind)
+        ? (binding.settings as unknown as Record<string, unknown>)[setting]
+        : undefined;
+      return typeof saved === "number"
         ? {
-            value: decision.value,
-            origin: "template",
-            selection: decision.selection,
-            sourcePaths: structuredClone(decision.sourcePaths),
+            value: saved,
+            origin: "tile",
+            sourcePaths: [["architecture", "studio", "elements", index, "settings", setting]],
           }
-        : { value: generationProcessHttpDefaults[setting], origin: "fixed", sourcePaths: [] };
+        : { value: initial, origin: "fixed", sourcePaths: [] };
     };
     const saved = "exposure" in binding.settings ? binding.settings.exposure : undefined;
     const writers = moduleWriters(design, tile, hosted);
@@ -1176,10 +1331,17 @@ function normalizedProcesses(
       ...(shape === "http" && {
         exposure: entries.has(tile) || saved === "public" ? "public" : "internal",
         http: {
-          requestTimeoutMs: limit("requestTimeoutMs"),
-          concurrencyLimit: limit("concurrencyLimit"),
+          requestTimeoutMs: limit(
+            "requestTimeoutMs",
+            generationProcessHttpDefaults.requestTimeoutMs,
+          ),
+          concurrencyLimit: limit(
+            "concurrencyLimit",
+            generationProcessHttpDefaults.concurrencyLimit,
+          ),
         },
       }),
+      ...(shape === "worker" && { worker: { concurrency: limit("concurrency", 1) } }),
       sourcePath: ["architecture", "studio", "elements", index],
       templates: hosted
         .filter((item) => item.binding.kind !== "module-stub")

@@ -1581,3 +1581,21 @@ racing requests pass the bound. Ask the hook only where it decides something (ad
 check, list or remove, so an unwritten hook still leaves the rest usable. Watch the framework's
 own limits: Fastify refuses a route parameter over 100 characters, so a 200-character ID needs a
 wildcard route.
+
+## 2026-11-11 V3-08: a running tile shows what it runs, and every subscriber gets every message
+
+A control belongs wherever the generated code reads it. With Runnable processes on, a stub-only
+Service still has a request deadline and an admission limit, and a Worker still has a loop
+concurrency, so those tiles show Request timeout, Concurrency limit and Concurrency, empty but with
+the value the process runs as the placeholder; a template that consumes them keeps its own
+control, and turning the option on writes nothing. Search fed by events puts the product data in
+one place: the Index writer's hooks hold the mapping, the document codec and the event, and the
+Search query imports them, so the two can't drift; both processes create and check the index at
+start, and until the mapping is written they stay healthy and answer "Not implemented". A
+versioned upsert must treat an older version as done (OpenSearch answers 409), or out-of-order
+events retry and pile up in `.failed`. Two modules in one tile on one topic each need their own
+subscriber queue; sharing the tile's splits the events between them, which no reader of the
+canvas expects. A reached unwritten hook is terminal at once: a retry can't write it. A CDN in front
+of public storage is an edge route serving that bucket read only, typed by extension, sandboxed,
+with the edge's own errors (missing key, a stopped process) answered as JSON whatever the path's
+extension says.

@@ -902,6 +902,78 @@ test("with Runnable processes on, Preview lists each writer module's own product
   expect(errors).toEqual([]);
 });
 
+test("with Runnable processes on, a stub tile's Options show what its process runs, typing saves on the tile and Undo restores it", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await build(page, "E2E Process settings", [
+    ["Consume", "Microservice"],
+    ["Microservice", "Message channel"],
+    ["Message channel", "Worker service"],
+  ]);
+  const settings = async (element: string) =>
+    (await design(page, id)).architecture.studio.elements.find((row) => row.element === element)
+      ?.settings as Record<string, unknown> | undefined;
+  try {
+    await tile(page, "Microservice").click();
+    await addModule(page, "Microservice", "Rate limiter");
+    await inspector(page).getByRole("button", { name: "Back to Microservice" }).click();
+    const timeout = inspector(page).getByLabel("Request timeout", { exact: true });
+    const limit = inspector(page).getByLabel("Concurrency limit", { exact: true });
+    // Off, a stub tile's process limits are no control.
+    await expect(timeout).toHaveCount(0);
+    const generate = page.getByRole("button", { name: "Generate project", exact: true });
+    await generate.click();
+    const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
+    const box = dialog.getByRole("checkbox", { name: "Runnable processes" });
+    await box.click();
+    await expect(box).toBeChecked();
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+    // On: empty, each shows what the process runs, and turning it on wrote nothing.
+    await tile(page, "Microservice").click();
+    await expect(timeout).toHaveValue("");
+    await expect(timeout).toHaveAttribute("placeholder", "1000");
+    await expect(limit).toHaveAttribute("placeholder", "1000");
+    expect((await settings("microservice"))?.requestTimeoutMs).toBeUndefined();
+    await timeout.fill("250");
+    await inspector(page).getByRole("heading", { name: "Options", exact: true }).click();
+    await expect.poll(async () => (await settings("microservice"))?.requestTimeoutMs).toBe(250);
+    // The Worker shows Concurrency, which its stub loops run.
+    await tile(page, "Worker service").click();
+    const concurrency = inspector(page).getByLabel("Concurrency", { exact: true });
+    await expect(concurrency).toHaveAttribute("placeholder", "1");
+    await expect(inspector(page).getByLabel("Request timeout", { exact: true })).toHaveCount(0);
+    // The process runs the tile's value, listed with its origin.
+    await generate.click();
+    const result = page.waitForResponse((response) =>
+      response.url().endsWith("/experimental-generation/preview"),
+    );
+    await dialog.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+    const preview = await (await result).json();
+    const rows = preview.report.processes.tiles as { tile: string; settings: unknown[] }[];
+    expect(rows.find((row) => row.tile === "microservice")?.settings).toEqual([
+      { setting: "requestTimeoutMs", value: 250, origin: "tile" },
+      { setting: "concurrencyLimit", value: 1000, origin: "fixed" },
+    ]);
+    expect(rows.find((row) => row.tile === "worker-service")?.settings).toEqual([
+      { setting: "concurrency", value: 1, origin: "fixed" },
+    ]);
+    await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
+    // One Undo step takes the value off the tile again.
+    await undo(page);
+    await expect
+      .poll(async () => (await settings("microservice"))?.requestTimeoutMs)
+      .toBeUndefined();
+    await tile(page, "Microservice").click();
+    await expect(timeout).toHaveValue("");
+    await expect(timeout).toHaveAttribute("placeholder", "1000");
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
 test("Generate project lists each module's status and previews its stubs", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));

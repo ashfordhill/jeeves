@@ -110,6 +110,11 @@ derives them.
   A tile's saved value wins over the fixed one (origin `tile`), and the report shows its origin.
 - **v3:** every process tile in v3 has a template, so D5 adds no control there. It matters for
   stub-only tiles (the stub stack, early v3 by mouse).
+- **As built (V3-08):** the controls are setting decisions with `process: <tile>` and inputs
+  `process.requestTimeoutMs`, `process.concurrencyLimit` and `process.concurrency`, only where no
+  template on the tile has a decision for the same `host.*` input; clearing one is allowed and
+  runs the initial value. Notifications has no Concurrency field in its schema, so its loops run
+  one at a time. A loop stub beside HTTP routes runs one at a time. [Evidence](evidence/v3-08/README.md).
 
 ## 5. The v3 design
 
@@ -282,6 +287,17 @@ they answer "Not implemented" naming the hook, and stay healthy.
 | Index writer: `event` | Parse `VideoPublished` (`youtube-contract.ts:56-69`, with `wireEvent`) and drop its envelope (`youtube-projection.ts:18-27`). |
 | Video search: `preset` | Filter `state = ready` and `visibility = public`; `multi_match` on title^3, description and channel^2, `best_fields`; sort by score desc, publishedAt desc, videoId asc (`public-video-search.ts:11-27`). The runtime fixes q at 1–200 characters, pages 1–100, 20 to a page, and 750 ms (`search-query.ts.template:31, 58-60`). |
 | Video search: `hit` | videoId, title, description, channel, durationSeconds, publishedAt, and `thumbnailUrl` `/cdn/video-delivery/<thumbnail>` (`youtube-search.ts:23-31`, path changed). The mapping and document are imported from the Index writer's hooks file, so the two can't drift. |
+
+**As built (V3-08).** The Index writer's hooks file exports `<Lead>Document` and
+`<lead>Hooks(): SearchIndexHooks<Document>`: `mapping()`, `document.parse`, `document.id`,
+`document.version` and `event(raw, messageId) → {eventId, document}` (the event ID must be the
+message's ID; v2's envelope drop goes there). The Search query's exports `preset()` (a
+`SearchQueryPreset`) and `hit(document)`; the answer is `{q, page, pageSize, total, hits}`, and a
+bad `q` or `page` is 400 `SEARCH_QUERY`. A search reaches `mapping`, then `preset`, then `hit`. An
+older version's upsert (OpenSearch's 409) is done, not retried. `/cdn/<cdn id>/` serves the
+bucket's local Garage website read only (GET and HEAD, else 405), typed by the key's extension
+for common web media (else the object's own type), with `nosniff` and `Content-Security-Policy:
+sandbox`; a missing key is 404 JSON. The edge answers 503 JSON for a process that is down.
 
 ## 6. Field-project layout (D8)
 

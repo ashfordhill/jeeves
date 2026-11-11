@@ -1338,10 +1338,18 @@ older Redirect, Billing and Notifications kinds) as its own Compose service, `ap
 including tiles with no modules: an HTTP process answers `/healthz` and its module routes, a
 worker runs its loops (or stays up idle), and both are healthy once ready. One edge, `app-edge`,
 publishes each public HTTP tile (a lane entry, or saved public) at `/api/<tile id>/`; internal
-tiles are reached only inside the stack. In an HTTP tile, each stub that consumes no queue
-answers any method on `/modules/<module id>` and below, Multipart uploads and Cache reader run
-their templates with a generated `<lead>.hooks.ts`, and Search query is a placeholder; each
-answers 501 "Not implemented" until written. An Auth guard connected to an Identity is the tile's
+tiles are reached only inside the stack, and a process that is down answers 503 JSON there. A CDN
+tile in front of one public object storage serves that bucket's objects at `/cdn/<cdn id>/`
+through the same edge: read only, typed by extension (any other CDN serves nothing locally, and
+the export says why). With the option on, each process tile's Options also show what its process
+uses where no template on the tile does: **Request timeout** and **Concurrency limit** on a
+Service or Uploads tile, **Concurrency** on a Worker (its stub loops run that many messages at
+once). Empty, each shows the value the process runs; typing saves it on the tile (one Undo
+step), and Preview lists each process's settings with their origin. In an HTTP tile, each stub that consumes no queue
+answers any method on `/modules/<module id>` and below, Multipart uploads, Cache reader and Search
+query run their templates with a generated `<lead>.hooks.ts`; each answers 501 "Not implemented"
+until written. Search query (`?q=&page=`) reads the mapping and document from its Index writer's
+hooks file and its own `preset` and `hit`. An Auth guard connected to an Identity is the tile's
 **sign-in**: with Sign-in **Required** every module route of the tile answers 401 without a valid
 token; with **Optional** a request without a token is anonymous and one with an invalid token is
 401. `GET /modules/<guard>/me` says who is calling, a stub's request carries its caller, and
@@ -1353,10 +1361,14 @@ answers 501 until written and reads the database of its items Data access. The
 Identity then runs as Keycloak, with one realm and one browser client, and the guarded processes
 verify tokens against it. When an asset lifecycle names an upload, that upload's `reserve`,
 `complete` and `closed` hooks are the lifecycle's, so only its own hooks are left to write. In any tile, a stub connected to consume a queue
-runs a loop on it, and the asset lifecycle, Video HLS and event counter run their workers with a
-generated `<lead>.hooks.ts` (the search projection is a placeholder loop). A message that reaches
-"Not implemented" goes to its queue's `.failed` with one log line, and the process stays
-healthy. Every database, cache, queue, object storage and search index a stub links to is
+runs a loop on it, and the asset lifecycle, Video HLS, event counter and Index writer run their
+workers with a generated `<lead>.hooks.ts` (the Index writer's holds the index's mapping, its
+documents and the events that carry them; both search processes create the index at start once
+the mapping is written). Two modules in one tile that consume the same topic each get their own
+subscriber queue, so each receives every message. A message that reaches "Not implemented" goes
+to its queue's `.failed` at once with one log line (a template's too, with no retries), and the
+process stays healthy; a stub's own error is retried 5 times with backoff before `.failed`. A
+process that loses its broker stops (exit 1, no restart) until `pnpm start`. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked
 once at startup; a store on another provider isn't provisioned, and the stack isn't runnable.
 Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
@@ -1364,7 +1376,8 @@ or a stub with a write link; an Event publisher's outbox doesn't count) gets its
 `infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`
 and every `start` run it in the module's own schema, after the template tables; only its tile
 may use its tables, and every tile on that database may read the views it puts in `published`
-(keep the file re-runnable). Preview's **Processes** list shows the edge's paths, then each
+(keep the file re-runnable). Preview's **Processes** list shows the edge's paths and each CDN's
+route, then each
 process with its service, shape, edge path, routes and loops ("loop on <queue>"), what is
 provisioned for its stubs ("Provisioned: Links database (database, read-write)") or not ("Not
 provisioned: …"), each writer's file ("Product SQL: Link reader →

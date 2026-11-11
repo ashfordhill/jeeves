@@ -183,8 +183,8 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(row(v2, "completion-handler").loops[0]?.answers).toBe(
       '"Not implemented: event for Lifecycle writer" sends the message to completion-events--completion-handler.failed (NOT_IMPLEMENTED) until its hooks are written',
     );
-    expect(row(v2, "search-indexer").loops[0]?.answers).toContain(
-      "(NOT_IMPLEMENTED) (placeholder)",
+    expect(row(v2, "search-indexer").loops[0]?.answers).toBe(
+      '"Not implemented: mapping for Index writer" sends the message to publication-events--search-indexer.failed (NOT_IMPLEMENTED) until its hooks are written; then each event\'s document is upserted at its version',
     );
     expect(
       ["completion-handler", "transcoder", "view-counter", "search-indexer"].flatMap(
@@ -194,10 +194,10 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       { selection: "handler-writer", template: "asset-lifecycle", level: "mounted" },
       { selection: "transcoder-encoder", template: "video-hls", level: "mounted" },
       { selection: "counter-sum", template: "event-counter", level: "mounted" },
-      { selection: "indexer-writer", template: "search-projection", level: "placeholder" },
+      { selection: "indexer-writer", template: "search-projection", level: "mounted" },
     ]);
     expect(
-      ["completion-handler", "transcoder", "view-counter"].flatMap((tile) =>
+      ["completion-handler", "transcoder", "view-counter", "search-indexer"].flatMap((tile) =>
         row(v2, tile).hooks.map((item) => [item.file, item.hooks]),
       ),
     ).toEqual([
@@ -226,29 +226,38 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
         "src/modules/view-counter/counter-sum.hooks.ts",
         ["event", "aggregateKey", "eventId", "identity"],
       ],
+      [
+        "src/modules/search-indexer/indexer-writer.hooks.ts",
+        ["mapping", "document.parse", "document.id", "document.version", "event"],
+      ],
     ]);
     for (const [file, hooks] of [
       ["src/modules/completion-handler/handler-writer.hooks.ts", ["event", "job.construct"]],
       ["src/modules/transcoder/transcoder-encoder.hooks.ts", ["job", "results.owns"]],
       ["src/modules/view-counter/counter-sum.hooks.ts", ["aggregateKey"]],
+      ["src/modules/search-indexer/indexer-writer.hooks.ts", ["mapping", "document.version"]],
     ] as const) {
       const lead = file.includes("handler")
         ? "Lifecycle writer"
         : file.includes("transcoder")
           ? "Segmenter and encoder"
-          : "Receipt and increment";
+          : file.includes("indexer")
+            ? "Index writer"
+            : "Receipt and increment";
       for (const hook of hooks)
         expect(text(v2, file)).toContain(`throw new NotImplemented("${hook} for ${lead}");`);
       expect(v2.manifest.files.find((item) => item.path === file)?.ownership).toBe(
         "generated-extension",
       );
     }
-    // Each template's application-bindings gap is custom work in its hooks file; search stays
-    // unfinished (both search templates are placeholders).
+    // Each template's application-bindings gap is custom work in its hooks file; search's names
+    // both search templates' (V3-08).
     for (const [id, file] of [
       ["asset-lifecycle-application-bindings", "handler-writer.hooks.ts"],
       ["video-hls-worker-bindings", "transcoder-encoder.hooks.ts"],
       ["event-counter-application-bindings", "counter-sum.hooks.ts"],
+      ["search-application-bindings", "indexer-writer.hooks.ts"],
+      ["search-application-bindings", "search-query.hooks.ts"],
     ] as const)
       expect(gap(v2, id)).toMatchObject({
         status: "custom",
@@ -258,7 +267,8 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(gap(v2, "video-hls-worker-bindings")?.description).toContain(
       "a message that reaches one ends in its queue's .failed",
     );
-    expect(gap(v2, "search-application-bindings")?.status).toBe("unfinished");
+    // The Index writer's process asserts its index from its hooks, so no mapping gap is left.
+    expect(gap(v2, "search-mappings")).toBeUndefined();
   });
 
   it("starts each template's worker in its process, with its hooks watched", () => {
@@ -266,8 +276,9 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(lifecycle).toContain(
       'const hooks = watchHooks(handlerWriterHooks(), loopLog, "handler-writer");',
     );
+    // Each template consumes its loop row's queue (tile-processes review row 6).
     expect(lifecycle).toContain(
-      'consumer(s, "results", templateHandler(loopLog, config.loops[0], handle), {',
+      "loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), {",
     );
     expect(lifecycle).toContain('openPublisher: () => publisher(s, "publication", scope),');
     expect(lifecycle).toContain(
@@ -278,14 +289,22 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       media.indexOf("await startMediaWorker({"),
     );
     expect(media).toContain(
-      'consumer(s, "jobs", templateHandler(loopLog, config.loops[0], handle), consumerHooks),',
+      "loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), consumerHooks),",
     );
     expect(text(v2, "src/processes/view-counter.ts")).toContain(
       'counter: createEventCounter(binding.tables, watchHooks(counterSumHooks(), loopLog, "counter-sum")),',
     );
-    expect(text(v2, "src/processes/search-indexer.ts")).toContain(
-      'throw new NotImplemented("search mapping and event codec for Index writer");',
+    const indexer = text(v2, "src/processes/search-indexer.ts");
+    expect(indexer).toContain(
+      'const hooks = watchHooks(indexerWriterHooks(), loopLog, "indexer-writer");',
     );
+    // The search service answers first; then the index opens from the hooks' mapping.
+    expect(indexer.indexOf("await client.cluster.health();")).toBeLessThan(
+      indexer.indexOf(
+        "const index = await openSearchIndex(client, binding.index.resource, hooks);",
+      ),
+    );
+    expect(indexer).toContain("const worker = await startSearchIndexWorker({");
     for (const tile of ["completion-handler", "transcoder", "view-counter", "search-indexer"])
       expect(text(v2, `src/processes/${tile}.ts`)).toContain("scope.ready();");
   });
@@ -332,8 +351,12 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       {
         module: "indexer-writer",
         template: "search-projection",
-        wiring: "placeholder",
-        checks: ["subscribed publication-events--search-indexer"],
+        wiring: "mounted",
+        checks: [
+          "cluster health",
+          "index search-index asserted once its mapping is written",
+          "subscribed publication-events--search-indexer",
+        ],
       },
     ]);
     // A stub's process logs its probes instead.
@@ -400,8 +423,10 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       "sql-view-counts--view-counter",
       "broker-password",
     ]);
+    // The Index writer probes its index's search service too (tile-processes review row 8).
     expect(services["app-search-indexer"]?.depends_on).toEqual({
       "local-broker": { condition: "service_healthy" },
+      "search-search-index": { condition: "service_healthy" },
     });
   });
 });

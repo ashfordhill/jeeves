@@ -118,6 +118,16 @@ export function hooksFile(
     sourcePaths: ["/generation/processes", pointer(selection.sourcePath)],
   };
 }
+/** The Index writer's hooks file and its factory: the mapping and document the search query on
+ * the same index reads too (v3 contract, section 5). */
+export function indexHooks(process: { tile: string }, lead: Lead) {
+  return {
+    path: moduleHooksPath(process.tile, lead.module),
+    factory: `${camel(lead.module)}Hooks`,
+    document: `${pascal(lead.module)}Document`,
+  };
+}
+
 export const throws = (hook: string, lead: Lead) =>
   `throw new NotImplemented(${text(`${hook} for ${lead.name}`)});`;
 
@@ -829,61 +839,132 @@ function favorites(
   };
 }
 
-/** Search query: a placeholder. Its route answers "Not implemented" until a mapping and a query
- * preset exist, which are product data, not hooks (tile process contract, section 3). */
+/**
+ * Search query: the search query template on its index, with the mapping and document from the
+ * Index writer that fills it (v3 contract, section 5), at GET /modules/<lead>?q=&page=. Its own
+ * hooks file holds the preset and each hit's answer.
+ */
 function searchQuery(
-  _process: NormalizedProcess,
+  process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
+  selections: readonly NormalizedGenerationSelection[],
+  processes: readonly NormalizedProcess[],
 ): ProcessMount {
   const id = selection.id;
   const name = camel(id);
   const index = resource(selection, "index");
   const url = `/modules/${lead.module}`;
-  const what = `search mapping and query preset for ${lead.name}`;
+  // The Index writer on the same index: the derivation makes a search query a template only then.
+  const writer = selections.find(
+    (item) =>
+      item.binding.kind === "search-projection" &&
+      item.resources.some((row) => row.field === "index" && row.identity.local === index),
+  );
+  const writerLead = processes
+    .find((item) => item.tile === writer?.host)
+    ?.templates.find((item) => item.selection === writer?.id)?.lead;
+  if (!writer || !writerLead)
+    refuse("INVALID_LOCAL_CONTRIBUTION", id, "A search query needs the Index writer on its index.");
+  const writerHooks = indexHooks({ tile: writer.host }, writerLead);
+  const hooks = `${camel(lead.module)}Hooks`;
   return {
     imports: [
       { from: resources, name: "input" },
       { from: resources, name: "selected" },
       { from: "../features/search-bindings.ts", name: "searchBindings" },
+      { from: "../runtime/http.ts", name: "HttpError" },
       { from: "../runtime/search.ts", name: "createSearch" },
-      { from: tileProcess, name: "NotImplemented" },
+      { from: "../runtime/search-query.ts", name: "parseSearchInput" },
       { from: tileHttp, name: "notImplementedRoutes" },
+      { from: "../runtime/tile-search.ts", name: "openSearchIndex" },
+      { from: "../runtime/tile-search.ts", name: "createSearchHandler" },
+      {
+        from: `../modules/${writer.host}/${writerLead.module}.hooks.ts`,
+        name: writerHooks.factory,
+      },
+      { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
-      `// ${line(lead.name)} (placeholder): the search client; no mapping or query preset exists yet.`,
-      `const ${name} = (() => {`,
+      `// ${line(lead.name)}: the search query template on its index, with ${line(writerLead.name)}'s mapping and document.`,
+      `const ${name} = await (async () => {`,
       `  const s = selected("search-query", ${text(id)});`,
+      `  const binding = searchBindings[${text(id)}];`,
       "  const client = createSearch({",
-      `    endpoint: searchBindings[${text(id)}].index.endpoint,`,
+      "    endpoint: binding.index.endpoint,",
       `    requestTimeoutMs: input(s, "host.requestTimeoutMs"),`,
       "  });",
       "  scope.own(() => client.close());",
-      "  return { client };",
+      "  // The search service answers; the index is asserted once its mapping is written.",
+      "  await client.cluster.health();",
+      `  const indexHooks = ${writerHooks.factory}();`,
+      "  const index = await openSearchIndex(client, binding.index.resource, indexHooks);",
+      `  return createSearchHandler({ client, index, indexHooks, hooks: ${hooks}() });`,
       "})();",
     ],
     configure: [
       `notImplementedRoutes(routes, log, ${text(lead.module)}).route({`,
       `  method: "GET",`,
       `  url: ${text(url)},`,
-      "  handler: async () => {",
-      `    throw new NotImplemented(${text(what)});`,
+      "  handler: async (request) => {",
+      "    try {",
+      "      parseSearchInput(request.query);",
+      "    } catch {",
+      "      throw new HttpError(",
+      "        400,",
+      `        "SEARCH_QUERY",`,
+      `        "Enter a query of 1–200 characters and a page from 1–100.",`,
+      "      );",
+      "    }",
+      `    return ${name}(request.query);`,
       "  },",
       "});",
     ],
-    initialize: [`await ${name}.client.cluster.health();`],
+    initialize: [],
     started: [],
-    config: [id, { template: "search-query", lead: lead.module, route: url, placeholder: true }],
+    config: [id, { template: "search-query", lead: lead.module, route: url, index }],
     routes: [
       {
         method: "GET",
         path: url,
-        answers: `501 ${text(`Not implemented: ${what}`)} (placeholder)`,
+        answers: `400 SEARCH_QUERY for a bad q or page; ${notImplementedAnswer(`mapping for ${writerLead.name}`)}; then {q, page, pageSize, total, hits}, 20 to a page`,
       },
     ],
     loops: [],
-    template: { selection: id, template: "search-query", level: "placeholder" },
-    startup: { module: lead.module, checks: ["cluster health"] },
+    template: { selection: id, template: "search-query", level: "mounted" },
+    startup: {
+      module: lead.module,
+      checks: ["cluster health", `index ${index} asserted once its mapping is written`],
+    },
+    hooks: {
+      members: ["preset", "hit"],
+      file: hooksFile(process, selection, lead, "search query", {
+        imports: [
+          'import type { SearchQueryPreset } from "../../runtime/search-query.ts";',
+          'import type { SearchQueryHooks } from "../../runtime/tile-search.ts";',
+          `import type { ${writerHooks.document} } from "../${writer.host}/${writerLead.module}.hooks.ts";`,
+        ],
+        types: [
+          `/** A document of the index: ${line(writerLead.name)}'s, whose hooks file holds its mapping. */`,
+          `type Document = ${writerHooks.document};`,
+        ],
+        reached: `a search reaches ${line(writerLead.name)}'s \`mapping\` first, then these; the first one it reaches answers 501`,
+        factory: [
+          `export function ${hooks}(): SearchQueryHooks<Document> {`,
+          "  return {",
+          "    /** The compiled query preset: the query for a search's text and page, and its sort. */",
+          "    preset(): SearchQueryPreset {",
+          `      ${throws("preset", lead)}`,
+          "    },",
+          "    /** What each hit answers: a document of the index, as a search shows it. */",
+          "    hit(document) {",
+          `      ${throws("hit", lead)}`,
+          "    },",
+          "  };",
+          "}",
+        ],
+      }),
+    },
     service: { ...service(), dependsOn: [index] },
     local: {},
   };

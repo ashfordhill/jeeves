@@ -47,7 +47,8 @@ export type V2ProcessReport = {
   settings: readonly {
     setting: string;
     value: number;
-    origin: "template" | "fixed";
+    /** A template on the tile consumes it, the tile's own value, or the initial one. */
+    origin: "template" | "tile" | "fixed";
     selection?: string;
   }[];
   routes: readonly { method: string; path: string; answers: string }[];
@@ -71,6 +72,15 @@ export type V2ProcessReport = {
 };
 /** A module's own SQL file in a database it writes (v3 contract, section 1). */
 export type V2ModuleSql = { module: string; database: string; file: string; schema: string };
+/** A CDN tile's route at the edge (V3-08): the public bucket it serves, or why it serves none. */
+export type V2Delivery = {
+  cdn: string;
+  name: string;
+  /** `/cdn/<cdn>/`, when it serves one public bucket. */
+  path?: string;
+  bucket?: string;
+  answers: string;
+};
 export type V2RenderContext = {
   model: NormalizedGeneration;
   settings: readonly GenerationSettingDecision[];
@@ -104,6 +114,8 @@ export type V2Emitter = {
     processes?: readonly V2ProcessReport[];
     /** Only the runtime owner, with Runnable processes on: each writer module's product SQL. */
     sql?: readonly V2ModuleSql[];
+    /** Only the runtime owner, with Runnable processes on: each CDN tile's edge route. */
+    delivery?: readonly V2Delivery[];
   };
 };
 export type V2EmitterIdentity = {

@@ -5,8 +5,15 @@ import {
   studioComponentDefinitions,
 } from "@jeeves/spec";
 import { jsonFile, pointerPart, refuse } from "../json.ts";
-import { type StubStore, stubStores, type V2LocalContribution } from "./local-contract.ts";
 import {
+  type StubStore,
+  stubStores,
+  stubUnsupported,
+  subscriberQueues,
+  type V2LocalContribution,
+} from "./local-contract.ts";
+import {
+  type V2Delivery,
   type V2Emitter,
   type V2Gap,
   type V2RenderContext,
@@ -482,12 +489,15 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       secret: credential,
     });
   };
-  /** A topic's subscriber queue for a consuming host; a work queue is consumed itself. */
+  /** A topic's subscriber queue for a consuming host (one per consuming module when the host's
+   * process has several on the topic); a work queue is consumed itself. */
   const addSubscriber = (r: Resource, host: string) => {
     const topology = broker.find((b) => b.resource === r.id);
     if (topology?.exchange) {
-      const queue = providerName(`${r.id}--${host}`, 1, 248);
-      if (!topology.queues.includes(queue)) topology.queues.push(queue);
+      for (const name of subscriberQueues(model, r.id, host)) {
+        const queue = providerName(name, 1, 248);
+        if (!topology.queues.includes(queue)) topology.queues.push(queue);
+      }
       topology.queues.sort();
     }
   };
@@ -918,7 +928,12 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   // The public edge (tile process contract, section 2) owns the single HTTP port.
   const edge = contributions.filter(({ value }) => value.edge?.length);
   const edgeHosts = edge.flatMap(({ value }) => (value.edge ?? []).map((row) => row.host)).sort();
-  if (edgeHosts.length) {
+  // A CDN in front of one public bucket: the edge serves its objects at /cdn/<cdn>/ (V3-08).
+  const delivery = deliveryRoutes(model, resourceMap);
+  gaps.push(...delivery.gaps);
+  for (const row of delivery.routes) provenance(row.sourcePaths);
+  const cdn = delivery.routes.map(({ cdn, bucket }) => ({ cdn, bucket }));
+  if (edgeHosts.length || cdn.length) {
     if (
       new Set(edgeHosts).size !== edgeHosts.length ||
       edgeHosts.some(
@@ -943,9 +958,10 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     services["app-edge"] = {
       image: pins.nginx,
       profiles: ["application"],
-      depends_on: Object.fromEntries(
-        edgeHosts.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
-      ),
+      depends_on: Object.fromEntries([
+        ...edgeHosts.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
+        ...(cdn.length ? [["local-objects", { condition: "service_healthy" }]] : []),
+      ]),
       ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:8080`],
       volumes: ["./infra/edge/nginx.conf:/etc/nginx/nginx.conf:ro"],
       healthcheck: health([
@@ -961,7 +977,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     files.push(
       file(
         "infra/edge/nginx.conf",
-        edgeConfig(edgeHosts),
+        edgeConfig(edgeHosts, cdn),
         edge.map((c) => c.emitter),
       ),
     );
@@ -1076,7 +1092,18 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       description: `No runnable feature/application hooks are contributed for selected hosts: ${missingHosts.join(", ")}. Providers alone are not a working app.`,
       sourcePaths,
     });
-  if (byKind("search").some((r) => !search.some((s) => s.resource === r.id)))
+  // With Runnable processes on, an Index writer's process asserts its index from the mapping in
+  // its hooks file (v3 contract, section 5), so that index needs no contributed mapping.
+  const asserted = new Set(
+    model.processes
+      ? model.selections.flatMap((s) =>
+          s.binding.kind === "search-projection"
+            ? s.resources.filter((r) => r.field === "index").map((r) => r.identity.local)
+            : [],
+        )
+      : [],
+  );
+  if (byKind("search").some((r) => !search.some((s) => s.resource === r.id) && !asserted.has(r.id)))
     gaps.push({
       id: "search-mappings",
       status: "unfinished",
@@ -1105,8 +1132,60 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         file: path,
         schema,
       })),
+      ...(delivery.report.length && { delivery: delivery.report }),
     }),
   };
+}
+
+/**
+ * Each CDN tile's route at the edge, with Runnable processes on (V3-08): a CDN in front of exactly
+ * one public object storage that the design provisions locally is served read-only at
+ * `/cdn/<cdn>/` from that bucket's local website. Any other CDN serves nothing locally and says why
+ * in an optional custom gap `cdn-<cdn>`.
+ */
+function deliveryRoutes(model: V2RenderContext["model"], resources: ReadonlyMap<string, Resource>) {
+  const routes: { cdn: string; bucket: string; sourcePaths: (readonly (string | number)[])[] }[] =
+    [];
+  const gaps: V2Gap[] = [];
+  const report: V2Delivery[] = [];
+  if (!model.processes) return { routes, gaps, report };
+  for (const row of model.delivery ?? []) {
+    const cdn = generationLocalIdentity(row.cdn).local;
+    const [origin, ...others] = row.origins;
+    const id = origin && generationLocalIdentity(origin.element).local;
+    const why = !origin
+      ? "it fronts no object storage"
+      : others.length
+        ? `it fronts ${row.origins.length} object storage tiles, and the edge serves one`
+        : origin.objects !== "public"
+          ? `${origin.name} is private`
+          : stubUnsupported({ kind: "object-store", name: origin.name, provider: origin.provider })
+            ? `${origin.name} isn't provisioned locally (its provider)`
+            : !id || resources.get(id)?.kind !== "object-store" || !resources.get(id)?.public
+              ? `no module reads or writes ${origin.name}, so it isn't provisioned`
+              : undefined;
+    const name = line(row.name);
+    if (why || !origin || !id) {
+      gaps.push({
+        id: `cdn-${cdn}`,
+        required: false,
+        status: "custom",
+        description: `${name} serves nothing locally: ${why}. The local edge serves one public object storage a CDN links to at /cdn/<cdn id>/.`,
+        sourcePaths: [pointer(row.sourcePath)],
+      });
+      report.push({ cdn, name: row.name, answers: `nothing locally: ${why ?? "no origin"}` });
+      continue;
+    }
+    routes.push({ cdn, bucket: id, sourcePaths: [row.sourcePath, origin.sourcePath] });
+    report.push({
+      cdn,
+      name: row.name,
+      path: `/cdn/${cdn}/`,
+      bucket: id,
+      answers: `GET and HEAD of the objects in ${line(origin.name)}, typed by extension; 404 for a missing key, 405 for any other method`,
+    });
+  }
+  return { routes, gaps, report };
 }
 
 type Login = { resource: string; host: string; database: string; user: string; secret: string };
@@ -1232,9 +1311,35 @@ function productFiles(
   return rows;
 }
 
-/** The edge's nginx configuration: `/api/<host>/` for each public HTTP process, its own
- * `/healthz`, and 404 for everything else. Upstreams resolve per request through Docker DNS. */
-function edgeConfig(hosts: readonly string[]) {
+/** A CDN route's content type, by its key's extension, else the object's own (V3-08). */
+const cdnTypes: readonly (readonly [string, string])[] = [
+  ["m3u8", "application/vnd.apple.mpegurl"],
+  ["ts", "video/mp2t"],
+  ["m4s", "video/iso.segment"],
+  ["mp4", "video/mp4"],
+  ["webm", "video/webm"],
+  ["m4a", "audio/mp4"],
+  ["mp3", "audio/mpeg"],
+  ["aac", "audio/aac"],
+  ["vtt", "text/vtt"],
+  ["jpe?g", "image/jpeg"],
+  ["png", "image/png"],
+  ["webp", "image/webp"],
+  ["gif", "image/gif"],
+  ["avif", "image/avif"],
+  ["svg", "image/svg+xml"],
+  ["json", "application/json"],
+  ["txt", "text/plain"],
+];
+
+/** The edge's nginx configuration: `/api/<host>/` for each public HTTP process, `/cdn/<cdn>/` for
+ * each CDN's public bucket (read only, from the bucket's local website), its own `/healthz`, 503
+ * JSON for a process that is down, and 404 for everything else. Upstreams resolve per request
+ * through Docker DNS. */
+function edgeConfig(
+  hosts: readonly string[],
+  cdn: readonly { cdn: string; bucket: string }[] = [],
+) {
   const json = (value: object) => `'${JSON.stringify(value)}'`;
   return `${[
     "events {}",
@@ -1242,14 +1347,50 @@ function edgeConfig(hosts: readonly string[]) {
     "  access_log off;",
     "  error_log /dev/stderr warn;",
     "  resolver 127.0.0.11 valid=10s;",
+    // The edge's own answers are JSON whatever the path's extension (no built-in types).
+    "  types { }",
     "  default_type application/json;",
+    ...(cdn.length
+      ? [
+          "  map $uri $cdn_type {",
+          "    default $upstream_http_content_type;",
+          ...cdnTypes.map(([extension, type]) => `    ~*\\.${extension}$ ${type};`),
+          "  }",
+        ]
+      : []),
     "  server {",
     "    listen 8080;",
+    // A process that is down (stopped, or exited after losing its broker) answers JSON too.
+    "    error_page 502 504 = @unavailable;",
     `    location = /healthz { return 200 ${json({ service: "edge", application: "ready" })}; }`,
     ...hosts.map(
       (host) =>
         `    location /api/${host}/ { set $backend app-${host}:3000; rewrite ^/api/${host}/(.*)$ /$1 break; proxy_pass http://$backend; }`,
     ),
+    ...cdn.flatMap(({ cdn: id, bucket }) => [
+      `    location /cdn/${id}/ {`,
+      `      if ($request_method !~ ^(GET|HEAD)$ ) { return 405 ${json({ error: "METHOD_NOT_ALLOWED", message: "This route only reads." })}; }`,
+      "      set $objects local-objects:3902;",
+      `      rewrite ^/cdn/${id}/(.*)$ /$1 break;`,
+      "      proxy_pass http://$objects;",
+      `      proxy_set_header Host ${bucket}.web.garage.localhost;`,
+      '      proxy_set_header Authorization "";',
+      '      proxy_set_header Cookie "";',
+      "      proxy_intercept_errors on;",
+      "      error_page 403 404 = @cdn-missing;",
+      "      error_page 502 504 = @unavailable;",
+      "      proxy_hide_header Content-Type;",
+      "      add_header Content-Type $cdn_type;",
+      "      add_header X-Content-Type-Options nosniff;",
+      '      add_header Content-Security-Policy "sandbox";',
+      "    }",
+    ]),
+    ...(cdn.length
+      ? [
+          `    location @cdn-missing { return 404 ${json({ error: "NOT_FOUND", message: "No object for this key." })}; }`,
+        ]
+      : []),
+    `    location @unavailable { return 503 ${json({ error: "UNAVAILABLE", message: "Service unavailable." })}; }`,
     `    location / { return 404 ${json({ error: "NOT_FOUND", message: "Route not found." })}; }`,
     "  }",
     "}",

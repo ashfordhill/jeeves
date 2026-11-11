@@ -4,7 +4,8 @@ import {
   validateSearchMapping,
 } from "../../templates/local-v2/assets/src/runtime/search-contract.ts";
 import { jsonFile, pointerPart } from "../json.ts";
-import type { V2LocalContribution } from "./local-contract.ts";
+import { subscriberQueue, type V2LocalContribution } from "./local-contract.ts";
+import { mountedHooksGap } from "./module-stubs.ts";
 import type { V2Emitter } from "./registry.ts";
 
 export type {
@@ -56,6 +57,15 @@ export function createLocalSearch(sourcePaths: readonly string[]): V2Emitter {
           const index = s.resources.find((r) => r.field === "index");
           if (!index) throw new Error("Normalized search index required");
           const events = s.resources.find((r) => r.field === "events");
+          // The Index writer's subscriber: its own beside another consumer of the topic.
+          const queue =
+            events &&
+            subscriberQueue(
+              model,
+              events.identity.local,
+              s.host,
+              s.target.kind === "component" ? s.target.component : s.id,
+            );
           return [
             s.id,
             {
@@ -68,8 +78,8 @@ export function createLocalSearch(sourcePaths: readonly string[]): V2Emitter {
                 events: {
                   resource: events.identity.local,
                   exchange: events.identity.local,
-                  queue: `${events.identity.local}--${s.host}`,
-                  failedQueue: `${events.identity.local}--${s.host}.failed`,
+                  queue,
+                  failedQueue: `${queue}.failed`,
                 },
               }),
             },
@@ -102,14 +112,20 @@ export function createLocalSearch(sourcePaths: readonly string[]): V2Emitter {
           },
         ],
         gaps: [
-          {
-            id: "search-application-bindings",
-            required: true,
-            status: "unfinished" as const,
-            description:
-              "Bind a committed public event codec, document ID/version, explicit contributed mapping and compiled query preset; construct actual bound indexer/query services with readiness, client/consumer drain and HTTP mapping. Dependencies alone install no application.",
-            sourcePaths: paths,
-          },
+          // With Runnable processes on, each lead's hooks file holds that product data.
+          mountedHooksGap(
+            model,
+            selections,
+            {
+              id: "search-application-bindings",
+              required: true,
+              status: "unfinished" as const,
+              description:
+                "Bind a committed public event codec, document ID/version, explicit contributed mapping and compiled query preset; construct actual bound indexer/query services with readiness, client/consumer drain and HTTP mapping. Dependencies alone install no application.",
+              sourcePaths: paths,
+            },
+            "a search answers 501 and each event goes to .failed",
+          ),
         ],
       };
     },

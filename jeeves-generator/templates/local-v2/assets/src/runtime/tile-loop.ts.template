@@ -1,6 +1,11 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createConsumer, type BrokerBinding } from "./amqp.ts";
-import { NonRetryable, type Delivery, type MessageHandler } from "./delivery.ts";
+import {
+  NonRetryable,
+  type ConsumerHooks,
+  type Delivery,
+  type MessageHandler,
+} from "./delivery.ts";
 import type { ProcessScope } from "./process.ts";
 import {
   createNotImplementedLog,
@@ -162,6 +167,26 @@ export async function startModuleLoop(
   return consumer;
 }
 
+/**
+ * A mounted template's consumer on its loop row: the queue, `.failed`, concurrency and retry limit
+ * the process config names, so each consuming module of a tile reads its own subscriber queue.
+ */
+export function loopConsumer(
+  loop: Omit<ModuleLoop, "module">,
+  handle: MessageHandler,
+  hooks: ConsumerHooks = {},
+  broker: BrokerBinding = loopBroker,
+) {
+  return createConsumer(broker, {
+    ...hooks,
+    queue: loop.queue,
+    failedQueue: loop.failedQueue,
+    concurrency: loop.concurrency,
+    retryLimit: loop.retryLimit,
+    handle,
+  });
+}
+
 const reached = new AsyncLocalStorage<{ what?: string }>();
 /**
  * A mounted template's hooks, unchanged except that a hook throwing "Not implemented" is noted
@@ -199,8 +224,9 @@ const specific = (error: unknown) =>
 /**
  * A mounted template's handler: the template decides what a failure does, with its own retry
  * limit and terminal codes. Each failed message logs one line, naming the hook it reached when
- * that hook is not implemented. A message that ends in .failed after reaching such a hook goes
- * there as NOT_IMPLEMENTED, as a stub's does, unless the template gave a code of its own.
+ * that hook is not implemented. A message that reached such a hook goes to .failed at once as
+ * NOT_IMPLEMENTED, as a stub's does (a retry can't write it), unless the template gave a code of
+ * its own.
  */
 export function templateHandler(
   log: LoopLog,
@@ -213,7 +239,7 @@ export function templateHandler(
       await reached.run(store, () => handle(body, delivery));
     } catch (error) {
       const next = outcome(loop, error, delivery);
-      const unwritten = store.what !== undefined && !next.retry && !specific(error);
+      const unwritten = store.what !== undefined && !specific(error);
       if (store.what)
         log.notImplemented({
           module: loop.module,

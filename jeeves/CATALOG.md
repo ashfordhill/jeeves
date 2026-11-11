@@ -19,6 +19,10 @@ unchanged on read. Source-schema tables below do not imply editable or executabl
 The one export option is **Runnable processes** (`generation.processes`, Generate project's
 checkbox and chat's `setRunnableProcesses`): every Service, Uploads, Worker, Redirect, Billing and
 Notifications tile then exports as its own process ([export](../docs/studio.md#experimental-project-export)).
+While it is on, a process tile with no template that consumes them shows its process's own
+limits: Request timeout and Concurrency limit on a Service, Uploads, Redirect or Billing tile, and
+Concurrency on a Worker, which its stub loops run ([process settings](../docs/studio-settings.md)).
+A CDN tile linked to one public object storage is then served at the edge's `/cdn/<cdn id>/`.
 
 ## C1 context
 
@@ -299,8 +303,8 @@ slots and generation: `studioComponentDefinitions` in
 | `video-packager` | Video packager | `stack-2` | Worker | outputs: Object storage · write | Part of `video-hls` |
 | `video-thumbnailer` | Video thumbnailer | `photo` | Worker | outputs: Object storage · write | Part of `video-hls` |
 | `event-counter` | Event counter | `sum` | Worker | none: can't connect | Lead of `event-counter` |
-| `index-writer` | Index writer | `list-search` | Worker | index: Search index · write | Lead of `search-projection` |
-| `search-query` | Search query | `search` | Service | index: Search index · read | Lead of `search-query` |
+| `index-writer` | Index writer | `list-search` | Worker | index: Search index · write | Lead of `search-projection`; hooks `mapping`, `document`, `event` |
+| `search-query` | Search query | `search` | Service | index: Search index · read | Lead of `search-query` (needs an Index writer on its index); hooks `preset`, `hit` |
 | `favorites` | Favorites | `star` | Service | state: Database · read & write; items: a Data access in its tile (optional) | Lead of `favorites` |
 
 - **Hosts:** "any" is a Service, Worker or Uploads tile, and existing Redirect, Notifications
@@ -331,6 +335,15 @@ slots and generation: `studioComponentDefinitions` in
   `A-Za-z0-9._:-`, 1,000 favorites per account, 50 to a page. It has no settings; its own pool
   runs fixed at 10 connections and 2000 ms, and its items Data access shows Pool size and
   Statement timeout.
+- **Search:** generic, for any product's documents. The Index writer (fed by an Event consumer
+  in its Worker, from an outbox a template writes) and the Search query on the same index are
+  mounted on hooks files: the writer's holds the index's mapping, its documents and the events
+  that carry them, and the query reads those and adds its own preset and each hit's answer. Both
+  processes create and check the index at start once the mapping is written. No template code
+  names a product.
+- **Consumers of one topic:** with Runnable processes on, two or more modules in one tile that
+  consume the same topic (stub Event consumers, say) each get their own subscriber queue, so each
+  receives every message; one alone uses the tile's.
 
 Module commands, in [`studio-operations.ts`](packages/spec/src/studio-operations.ts), are shared
 by the mouse and chat through `buildSupportedAuthoringCommand`:
