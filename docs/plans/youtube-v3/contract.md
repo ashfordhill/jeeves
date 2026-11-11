@@ -387,7 +387,8 @@ The rest apply them, and don't pause the coordinator.
     Publish, and as each guard's target), "Video lifecycle worker" becomes **Video lifecycle**, and
     Account API is the Watch action's 4th entry. The alternative keeps "Identity", as the study
     does. (Feedback 3, D4)
-12. **Direct async lines (V3-02's finding; the owner hasn't answered).** The link rules still
+12. **Answered 2026-11-11:** the legend shows only the dashed **Async** sample, with **no explanatory text**. Direct async lines stay allowed. v3's 8 dashed lines all go through queues or topics. V3-09 removes the legend's help text.
+    **Direct async lines (V3-02's finding).** The link rules still
     allow a dashed line with no queue or topic: application → application, application → External
     API, and External API → application (`studio-links.ts:114-115, 160`). The legend says "Dashed:
     sent through a queue or topic". *Coordinator's default:* keep direct async lines, and reword

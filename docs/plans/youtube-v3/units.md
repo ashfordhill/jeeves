@@ -60,7 +60,7 @@ The work comes in five phases:
 | D4 | Identity and Favorites in v3 | **Optional sign-in** on Watch: an Auth guard set to *optional* verifies a token when present, and otherwise the viewer is anonymous. View events carry the viewer's account when signed in. **Favorites** is a new generic template: a signed-in account can add, remove and list favorite items. Its one product hook decides whether an item may be favorited (in v3, a ready, public video). It is reusable for Marketplace listings. There are no other new viewer features: no history, likes or subscriptions. | Chosen with the owner's addition. |
 | D5 | Settings on stub tiles | Request timeout and Concurrency limit show on every HTTP or worker tile while Runnable processes is on, because the process uses them (tile-processes review row 4). | Show them only once a template derives. |
 | D6 | The chat agent | **Chat can do exactly what the mouse can, and no more.** It uses the same commands, the fan's 11 tile kinds and the module catalog, so nothing it saves is something the UI couldn't make. Update the eval seeds that used Billing. The knowledge lives in the **tools** so that a cheap model is enough: **apply a reviewed pattern** as one validated batch, **preview** commands with their findings before saving, and an **automatic review** after every change. Evals compare a cheap model with a stronger one. Live, paid runs only with the owner's explicit go-ahead at that time. | Chosen with the owner's direction. |
-| D7 | The legend | Only **dashed = async** is shown. The expanded help says that solid means a direct call where the caller waits: HTTP, a database or storage read or write, a cache. Dashed means it is sent through a queue or topic and nobody waits. | Show both, as **Direct** and **Async**. |
+| D7 | The legend | Only **dashed = Async** is shown, with no explanatory text (owner, 2026-11-11). | Show both, as **Direct** and **Async**. |
 | D8 | v3 layout | `field-projects/youtube/v3/` holds `inputs/`, `diagrams/` and `notes/`, plus two outputs: `generated/` (the exact export, never edited) and `app/` (generated plus custom completion). The backend LOC benchmark compares `app/` with `generated/`. | One app directory with a baseline commit, as in v2. |
 
 ## Fixed constraints
@@ -398,9 +398,9 @@ parts. Chat can do exactly what the mouse can, and no more.
 - **The working loop:** **plan → preview → apply → review → fix**. Chat runs a review after every
   change it saves and reports what's left. Keep the system prompt short; the tools do the
   teaching.
-- **Direct async lines ([contract](contract.md) question 12):** if the owner keeps the default,
-  reword the legend's dashed line to "Dashed: async, nobody waits (usually through a queue or
-  topic)". The review then accepts a dashed line with no queue or topic where the link table
+- **The legend and direct async lines ([contract](contract.md) question 12, answered
+  2026-11-11):** the legend shows only the dashed **Async** sample. Remove its explanatory help
+  text. Direct async lines stay allowed. The review accepts a dashed line with no queue or topic where the link table
   allows one (between applications, or to and from an External API), and flags a line whose
   style contradicts its channel.
 
