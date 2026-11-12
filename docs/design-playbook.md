@@ -1723,3 +1723,20 @@ yet give: a folder the edge serves at its origin, a step that builds it, and its
 the run's ports at first run. Keep its code outside `src/` so the backend measure can't count it.
 With an Optional sign-in, send the token when there is one, and treat a 401 or an expired sign-in
 as "sign in again", never as anonymous; a sign-in started on a watch page should come back to it.
+
+## 2026-11-11 V3-17: the person who started the work must see how it ends
+
+When one template takes a request (multipart upload) and another owns what follows (the asset
+lifecycle), the first one's status route must also show the second one's state to its owner:
+pending, processing, ready, or failed with its code. Without that, the work runs perfectly
+(v3's lifecycle, events and `published.videos` were all right) and the creator still sees only
+"uploaded · not ready yet": a failed video looks like a slow one. In v3's acceptance that one
+missing join made three scenario rows partial by mouse (S02, S04, S08). It is a template binding
+between the two, not a public view: every login on the database may read `published`, and a
+status belongs to its owner. Two lessons for acceptance runs:
+
+- **A pending state lasts as long as its consumer is busy.** To observe it, hold the consumer.
+  V3-15 and V3-17 stopped their own worker container briefly.
+- **A refused sign-in is noticed by whichever request carries it first,** often the page's own
+  background refresh. Check that the page signs out and doesn't retry anonymously, not which of
+  its requests was refused.

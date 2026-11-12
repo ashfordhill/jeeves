@@ -10192,3 +10192,98 @@ edges answer 200, and only 45400–45402 listen in 454xx.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-17: v3 acceptance and benchmark
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (V3-17) and [contract](plans/youtube-v3/contract.md)
+§6 and §7. Docs:
+
+- in the field project's notes: [`scenarios.md`](../field-projects/youtube/v3/notes/scenarios.md)
+  (new), [`review-pack.md`](../field-projects/youtube/v3/notes/review-pack.md) (new),
+  [`benchmarks/README.md`](../field-projects/youtube/v3/notes/benchmarks/README.md) (new) and
+  `source-loc-v2.json` (new), and a V3-17 row in [the notes](../field-projects/youtube/v3/notes/README.md);
+- the v3 result in [the method](field-projects/source-loc.md);
+- a playbook lesson, the plan's status and the HUMAN_FEEDBACK resolution.
+
+Evidence: [v3-17](plans/youtube-v3/evidence/v3-17/README.md), with 4 screenshots, the operator
+harness and run records, and the benchmark CLI's raw output.
+
+- **No app or generated file changed.** The run used `git archive` of `app/` at `3409af2`
+  (V3-16's commit, 129 files), copied outside the checkout: `jeeves-v317-accept`, 45700–45702.
+  - Setup: install 0.3 s, build 0.5 s, 19 app tests, first-run 120.7 s, accounts 0.8 s. Then 9
+    `app-*` and 6 providers healthy, 0 restarts.
+  - Ten videos: by mouse with pause and resume, by API (V3-13's recorded pass), two held pending
+    by briefly stopping my own `app-transcoder` (as V3-15 did), two invalid, one unfinished and
+    two aborted.
+- **S01–S10:**
+  - **Observed in full by mouse and API:** S01, S03, S06, S07, S09 and S10.
+    - S06: a just-ready video was found by mouse 1.7 s after its ready commit.
+    - S07: counts 0 → 1 → 2 → 3, each visible 0.3–1.3 s after its 202. A short play, seeks and
+      pauses added nothing, and a replayed event ID made one receipt.
+    - S09: View events got `viewer: null` and the viewer's subject.
+  - **S05,** except human listening: 5 s and more of play, 217 frames and 0 dropped, decoded PCM
+    peaking at 440.08 Hz. Playwright's Chromium runs with `--mute-audio`.
+  - **Partial, all because of template gap 1:**
+    - S02: complete answers 200, not 202, and the page shows "uploaded · not ready yet", not
+      "pending".
+    - S04: the page can't show processing or "failed". The full sequence, ffprobe and
+      `published.videos` (0 rows while pending, 1 once ready, never a failed video) were read by
+      API.
+    - S08: invalid media stays "not ready yet" in the page. Its API rows and every other S08
+      item were observed.
+  - Also not observed: the encoder's log, which the template doesn't keep.
+  - **Stop and start:** 8.0 s and 64.0 s, with an identical snapshot: secrets, volumes, assets,
+    view, totals, receipts, favorites, index, cache, objects and accounts.
+- **Attempts:** the V3-16 refused-token spec failed twice, on the spec. With favorites kept, the
+  page's own list refresh was the first request to carry the bad token: it got 401, and the page
+  signed out without an anonymous retry. The spec now checks whichever request goes first, and
+  passed on the third run. Phase C first counted its own new-session play wrongly; it passed on
+  the second run. Both are recorded.
+- **`custom-paths.md`:** its 34 rows equal the 34 files from `diff -rq generated app`.
+- **Backend LOC** (`d94b13a` → `3409af2`, the scope unchanged): **72 files, 6,251 → 6,740 LOC,
+  6,184 retained, 556 post-template, 67 replaced, 91.75% template.** All 556 are in
+  `src/modules`, apart from gap 6's two scaffold lines.
+- **Corrected:** the export has **8** hooks files, not 9 (`notes/README.md` and
+  `scope-review.md` said 9; the 14 counted module files are 8 + 2 stubs + 2 slots + 2 types).
+
+**Checks.**
+
+- `pnpm check` exited 0: **748 tests in 104 files** (lint: only the existing info).
+- **E2E: 80 passed (5.7 m)** on the first full run, `connection-dots` included. `jeeves_e2e`
+  holds only its TinyURL project.
+- Web build passed (967 ms, the existing chunk-size advisory).
+- **Browser** (my API 4469 on scratch `jeeves_v317`, now dropped; Vite 4479): TinyURL showed 7
+  tiles and 7 lines in Detailed and Simple, at 1440×900 and 1280×800, with no page or console
+  error. The projects were deleted.
+
+**Gates (D2).** `git diff d94b13a -- field-projects/youtube/v3/generated/` is empty. The
+processes-off pin, `generator.test.ts` and `assemble.test.ts` pass; v1 is byte-identical. Frozen
+v2: 72 files, 70 byte-identical to `generic-export.tar.gz`, and the manifest and report are equal
+under `provenanceWithoutInventory`.
+
+**Cleanup.**
+
+- My stack is down with its volumes, and both image tags are removed.
+- The copy (with `.runtime`, 25 secrets and the passwords), the media, the exports and my
+  servers are gone.
+- No token, password or signed URL is in the records (scanned).
+- The owner's 43 containers (IDs, restart counts, start times, health), 18 volumes, 9 networks
+  and 31 image rows match the record, before and after the regression runs. 42 are healthy,
+  both edges answer 200, and only 45400–45402 listen in 454xx–459xx.
+
+**For V3-18.**
+
+- **The evidence to review against:** [`scenarios.md`](../field-projects/youtube/v3/notes/scenarios.md)
+  (one row per scenario, with what wasn't observed) and the [review pack](../field-projects/youtube/v3/notes/review-pack.md).
+  No v3 stack is left running; the pack says how to start one.
+- **Gap 1 is the one the acceptance feels,** in three rows. The fix is a template binding:
+  multipart's status (and complete's 202) should carry the asset lifecycle's state, for the owner
+  only, not through `published`. Rank it first among gaps 1–8.
+- **Still open:** human listening (S05) is the owner's to do. The encoder's log for v1's S04
+  wording isn't kept by the template.
+- **If V3-18 changes `app/`,** re-run the benchmark into a new, versioned report; don't replace
+  `source-loc-v2.json`.
+- **The connection-dots flake** didn't recur, but its cause is still unproven (V3-16).
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

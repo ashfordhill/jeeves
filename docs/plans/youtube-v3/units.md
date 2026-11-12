@@ -1,7 +1,7 @@
 # YouTube v3: studio feedback, generation gaps, a better chat agent, then v3
 
 **Status:** planned 2026-11-10 from owner feedback. The owner confirmed the decisions the same
-day, revising D4 (adding Favorites) and D6 (chat). V3-01 to V3-16 are done; the owner approved
+day, revising D4 (adding Favorites) and D6 (chat). V3-01 to V3-17 are done; the owner approved
 [contract](contract.md) question 1 (a fifth link, raised in V3-06). V3-10's live model comparison
 waits for the owner's go-ahead. V3-11 designed v3 by mouse as the kept project **YouTube v3**
 ([evidence](evidence/v3-11/README.md)). V3-12 committed its exact export as `generated/` and
@@ -9,7 +9,10 @@ the byte-for-byte copy `app/`, the benchmark baseline ([evidence](evidence/v3-12
 completed the upload path in `app/` ([evidence](evidence/v3-13/README.md)), and V3-14 processing,
 the lifecycle, publication and `published.videos` ([evidence](evidence/v3-14/README.md)). V3-15
 completed watching, counts and Favorites ([evidence](evidence/v3-15/README.md)), and V3-16 search
-and the browser, served by the edge ([evidence](evidence/v3-16/README.md)). V3-17 is next.
+and the browser, served by the edge ([evidence](evidence/v3-16/README.md)). V3-17 ran the
+acceptance from a fresh copy (S02, S04 and S08 partial, because of template gap 1) and measured
+the backend: 556 post-template lines, 91.75% template ([evidence](evidence/v3-17/README.md),
+[review pack](../../../field-projects/youtube/v3/notes/review-pack.md)). V3-18 is next.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — Studio feedback and YouTube v3](../../HUMAN_FEEDBACK.md)
 · [module add button sketch](../../human-feedback/2026-11-10-module-add-button.png)
 · Follows [tile processes](../tile-processes/units.md) and its [review](../tile-processes/review.md).

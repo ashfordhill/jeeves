@@ -61,7 +61,7 @@ Where to look:
   with its compiled settings and what it mounts.
 - **`src/runtime/`:** the reusable mechanisms (sign-in, multipart, lifecycle, HLS, cache, counter,
   favorites, search, delivery, loops).
-- **`src/modules/`:** what is yours to write. There are 9 hooks files and the 2 stub bodies,
+- **`src/modules/`:** what is yours to write. There are 8 hooks files and the 2 stub bodies,
   View count reader and View publisher.
 - **`infra/postgres/`:** the template migrations, plus the 4 product SQL files, which are empty
   in the export.
@@ -73,7 +73,7 @@ Where to look:
 At V3-12, `app/` equals `generated/`, byte for byte. That commit is the backend LOC benchmark's
 baseline (contract §6), with the reviewed [scope](benchmarks/backend-scope.json) and its
 [file-by-file review](benchmarks/scope-review.md): 71 backend `src/` files, 6,251 LOC. V3-13 to
-V3-16 then fill in the following, and V3-17 measures the result:
+V3-16 then filled in the following, and V3-17 measured the result:
 
 - the product hooks;
 - the two stub bodies;
@@ -84,7 +84,9 @@ V3-16 then fill in the following, and V3-17 measures the result:
 **Since V3-16, `app/` works end to end, in the browser at the edge's origin:** a creator signs
 in, uploads in resumable parts and sees the upload's status; the video is processed and published;
 anyone searches for it and watches it, and its plays are counted; a signed-in account keeps
-favorites. V3-17 runs the acceptance (contract §7) from a fresh copy.
+favorites. **V3-17 ran the acceptance** (contract §7) from a fresh copy: see the
+[scenarios](scenarios.md), the [owner review pack](review-pack.md) and the
+[backend benchmark](benchmarks/README.md) (556 post-template lines, 91.75% template).
 
 #### Progress
 
@@ -94,6 +96,7 @@ favorites. V3-17 runs the acceptance (contract §7) from a fresh copy.
 | V3-14 | Processing and lifecycle | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-14/README.md)). Every Transcoder hook, the rest of the lifecycle's hooks, and `published.videos` in the Lifecycle writer's SQL file. A completed upload goes pending → processing → ready: the Transcoder encodes H.264/AAC HLS at 360p and 720p in 4 s segments, with a full-size thumbnail, into Transcoded videos; the ready video is in `published.videos`, and one `VideoPublished` reaches Publication events after the ready commit. Invalid media goes pending → processing → failed `INVALID_MEDIA`, with no output and no publication. Search indexer then stops at "Not implemented: mapping for Index writer" (V3-16's). |
 | V3-15 | Watch and Favorites | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-15/README.md)). The five cache read hooks, the two Watch stubs, the four counter hooks and Favorites' `eligible`. Anyone, signed in or not, reads a ready video's details from `published.videos`, then from Hot metadata for the cache's TTL; a pending, failed or unknown video is 404 and never cached. A play of a ready video (`POST …/watch-api-view-publisher/<videoId>` `{eventId}`, 202) reaches View events with the viewer's subject or `null`, and View counter counts it once per `(videoId, eventId)`; `…/watch-api-view-count-reader/<videoId>` reads the total fresh. A signed-in account adds, checks, lists and removes favorite videos; only a ready video may be added (404 `NOT_ELIGIBLE`), and anonymous callers get 401. One scaffold edit (gap 6). |
 | V3-16 | Search and the browser | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-16/README.md)). The Index writer's five hooks and Video search's two: a `VideoPublished` is indexed as the ready video's public record (v2's mapping, version 1), and `…/search-api-video-search?q=&page=` finds ready public videos by title, description and channel (v1/v2's preset), each hit with its thumbnail under `/cdn/video-delivery/`. The v2 browser, moved to v3's routes in `browser/` and `public/` and served by the edge at `/`, with an Optional sign-in for watchers and, when signed in, a ☆/★ favorite toggle and "My favorites". Four scaffold edits so the edge can serve it (gap 8). |
+| V3-17 | Acceptance and benchmark | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-17/README.md)). No change to `app/`. A fresh copy outside the checkout, observed by mouse and by API: S01, S03, S06, S07, S09 and S10 in full; S05 except human listening; S02, S04 and S08 in part, because of gap 1 (complete answers 200, and the page can't show pending, processing or failed). Stop and start kept everything. `custom-paths.md` matches `diff -rq generated app`. Backend LOC: 72 files, 556 post-template, 91.75% template ([report](benchmarks/README.md)). |
 
 What each unit wrote is in [`custom-paths.md`](custom-paths.md); what the templates can't yet
 express is under [template gaps](#template-gaps-found-while-completing-app).

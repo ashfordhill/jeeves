@@ -12,7 +12,7 @@ export has `src/modules` and `src/processes` where v2's had `src/adapters` and `
 | --- | ---: | ---: | --- |
 | Counted `src/runtime` | 47 | 5,044 | The mechanisms: HTTP, admission, process, AMQP, identity and the tile guard, SQL constructors (`upload-sql.ts`, `asset-sql.ts`, `counter-sql.ts`), outbox and receipts, multipart, lifecycle, media and HLS, cache, counter, favorites, search, delivery and the tile loops |
 | Counted `src/processes` | 8 | 764 | One per application tile: its compiled `config` and the code that mounts its templates, stubs and loops. These files mix data and code, so they count |
-| Counted `src/modules` | 14 | 316 | The 9 hooks files (each hook throws "Not implemented" until written); the 2 stub entry points; the 2 `.slots.ts` files (a `Dependencies` type that the process and the stub import, plus a `slots` descriptor); `dependencies.ts` and `entry.ts` (types) |
+| Counted `src/modules` | 14 | 316 | The 8 hooks files (each hook throws "Not implemented" until written); the 2 stub entry points; the 2 `.slots.ts` files (a `Dependencies` type that the process and the stub import, plus a `slots` descriptor); `dependencies.ts` and `entry.ts` (types) |
 | Counted `src/features` | 2 | 127 | `service-resources.ts` (resource constructors) and `video-runtime.ts` (the media binary check) |
 | **Counted total** | **71** | **6,251** | |
 | Excluded `configuration-or-build` | 4 | 4 | `configurationPaths`: `application-bindings.ts`, `local-bindings.ts`, `positive-cache-bindings.ts` and `search-bindings.ts`. Each is one exported constant of normalized IDs, settings, logins, hosts and queue names, with no logic. Code in `service-resources.ts`, `runtime/module-clients.ts` and the processes reads them, as it would a config file |

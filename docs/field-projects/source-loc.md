@@ -93,8 +93,27 @@ v3 keeps the untouched export in `field-projects/youtube/v3/generated/` and comp
 `app/` (contract D8). The baseline is `app/` at the `V3-12: v3 generated output` commit, which
 equals `generated/`. The [reviewed scope](../../field-projects/youtube/v3/notes/benchmarks/backend-scope.json)
 and [its file-by-file review](../../field-projects/youtube/v3/notes/benchmarks/scope-review.md)
-count 71 backend `src/` files, 6,251 LOC, at the baseline. The rules are unchanged. V3-17
-reports the comparison with the completed commit.
+count 71 backend `src/` files, 6,251 LOC, at the baseline. The rules are unchanged.
+
+| Backend source composition | LOC | Share of final backend src LOC |
+| --- | ---: | ---: |
+| Retained template lines | 6,184 | 91.75% |
+| Post-template lines | 556 | 8.25% |
+| Completed backend production src | 6,740 | 100% |
+
+V3-17 compared baseline `d94b13a5b759fd4ead1f7ac10bc0ac7197206f30` with completed
+`3409af283040330f64cb791ada38b9bad48282d3` (V3-16, the last commit to change `app/`). The
+comparison covers 72 included files; 67 baseline lines were removed or replaced.
+
+- **The post-template lines:** all 556 are product hooks, the two stub bodies and the shared
+  video contract in `src/modules`, plus one line in each of two scaffold files (template gap 6).
+- **What is excluded:** the six `browser/` files are `ui-source`; the product SQL, scripts and
+  tests are outside `src/`.
+- **Why this one counts:** unlike v2's, this baseline holds no product implementation, so the
+  share is the intended reusable-generation measure.
+
+See the [per-file report](../../field-projects/youtube/v3/notes/benchmarks/source-loc-v2.json)
+and its [summary](../../field-projects/youtube/v3/notes/benchmarks/README.md).
 
 ## Run for the next version
 
