@@ -4,6 +4,7 @@ import { V3_MODULES, V3_TILES } from "../../../../packages/spec/src/fixtures/v3-
 import { installedGenerationSupport } from "../generation/support.ts";
 import { openTestDb } from "../test-support.ts";
 import { buildCase, reviewCases, V3_BRIEF } from "./design-cases.ts";
+import type { CapabilityScore } from "./design-rubric.ts";
 import {
   checkScripted,
   type DesignReport,
@@ -36,8 +37,10 @@ const run = (label: string) => {
   if (!found) throw new Error(label);
   return found;
 };
-const build = (label: string) =>
-  run(label).results.find((item) => item.kind === "build")?.score as BuildScore;
+const build = (label: string, id = "v3-build") =>
+  run(label).results.find((item) => item.id === id)?.score as BuildScore;
+const capability = (label: string, id: string) =>
+  run(label).results.find((item) => item.id === id)?.score as CapabilityScore;
 const reviews = (label: string) =>
   run(label)
     .results.filter((item) => item.kind === "review")
@@ -55,6 +58,17 @@ describe("the chat design evals, offline (V3-10)", () => {
     expect(patterns.areas.tiles.score).toBe(100);
     expect(patterns.areas.templates.score).toBeLessThan(80);
     expect(build("scripted-bad").total).toBeLessThan(5);
+    // The product briefs: the patterns carry the capabilities whatever the names (V3-19); the
+    // good run also turns Runnable processes on; the generic site has few of them.
+    for (const id of ["video-build", "podcast-build"]) {
+      expect(capability("scripted-good", id).total).toBe(100);
+      const placeholders = capability("scripted-patterns", id);
+      expect(placeholders.total).toBeGreaterThan(95);
+      expect(placeholders.capabilities.templates.items).toContainEqual(
+        expect.objectContaining({ key: "Runnable processes on", credit: 0 }),
+      );
+      expect(capability("scripted-bad", id).total).toBeLessThan(30);
+    }
     // Saying "looks fine" earns only the advice case's no-change, unnamed.
     expect(reviews("scripted-bad")).toEqual(
       reviewCases.map((item) => [item.id, item.expect === "keep" ? 50 : 0]),
@@ -94,12 +108,14 @@ describe("the chat design evals, offline (V3-10)", () => {
 
   it("measures each run's requests and bytes for the cost estimate", () => {
     const measured = usage(run("scripted-good").results);
-    expect(measured.requests).toBe(39);
-    // Every request repeats the instructions and tools: most of what a run sends.
-    expect(measured.promptBytes / measured.requestBytes).toBeGreaterThan(0.7);
+    expect(measured.requests).toBe(53);
+    // Every request repeats the instructions and tools: still most of what a run sends, though
+    // less since V3-19 shrank the tools (84% before, 69% now).
+    expect(measured.promptBytes / measured.requestBytes).toBeGreaterThan(0.5);
+    expect(measured.promptBytes / measured.requestBytes).toBeLessThan(0.75);
     expect(measured.tokens).toBeNull();
     const markdown = designMarkdown(report);
-    expect(markdown).toContain("| scripted-good | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 39 |");
+    expect(markdown).toContain("| scripted-good | 100 | 100 | 100 | 100 | 53 |");
     expect(markdown).toContain("not model quality");
   });
 
@@ -114,6 +130,7 @@ describe("the chat design evals, offline (V3-10)", () => {
       "user-reaches-store",
       "long-line",
       "line-style",
+      "generation",
       "warning",
     ]);
     for (const item of reviewCases) {

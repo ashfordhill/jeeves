@@ -48,6 +48,8 @@ export type Usage = {
   inputTokens: number;
   outputTokens: number;
   cachedInputTokens?: number;
+  /** Input tokens written to the provider's prompt cache (Anthropic), billed above the rest. */
+  cacheWriteInputTokens?: number;
   costUsd?: number;
 };
 

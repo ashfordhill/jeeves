@@ -7,7 +7,7 @@ import { moduleStatuses } from "../module-status.ts";
 import { studioKindLabel } from "../studio-definitions.ts";
 import { designReview } from "../studio-design-review.ts";
 import { laneGraph } from "../studio-lanes.ts";
-import { buildModulePattern, type ModulePattern } from "../studio-module-patterns.ts";
+import { buildModulePattern } from "../studio-module-patterns.ts";
 import { studioLinkFanKinds } from "../studio-tiles.ts";
 import { validateDesign } from "../validate.ts";
 import { designDiff } from "./design-diff.ts";
@@ -16,6 +16,7 @@ import {
   buildV3Reference,
   V3_CONNECTIONS,
   V3_MODULES,
+  V3_PATTERN_STEPS,
   V3_TEMPLATES,
   V3_TILES,
   V3_VALUES,
@@ -164,21 +165,9 @@ describe("the v3 reference (contract section 5)", () => {
   it("compares by name: nothing against itself, and a different build's differences", () => {
     expect(v3DiffReport(v3Diff(v3ModuleDesign(installed), installed)).unexpected).toEqual([]);
     expect(designDiff(design, design, { installed })).toEqual([]);
-    // V3-09's patterns compose v3's shape with other choices: these rows say where.
-    const steps: ModulePattern[] = [
-      {
-        id: "upload-pipeline",
-        system: "YouTube",
-        publication: "Publication events",
-        delivery: "Video delivery",
-      },
-      { id: "cache-read" },
-      { id: "counting" },
-      { id: "search" },
-      { id: "sign-in", tile: "Watch API", signIn: "optional" },
-      { id: "favorites", items: "Metadata" },
-    ];
-    const composed = steps.reduce(
+    // V3-09's patterns, given the brief's names (V3-19), compose v3's shape with other choices:
+    // these rows say where.
+    const composed = V3_PATTERN_STEPS.reduce(
       (current, step) => buildModulePattern(current, step, installed).design,
       emptyDesign(),
     );
@@ -187,6 +176,8 @@ describe("the v3 reference (contract section 5)", () => {
       expect.arrayContaining([
         // Sign-in hangs off Upload API rather than being a Publish entry.
         "entry: Sign-in",
+        // Module names the patterns don't take keep the patterns' neutral defaults.
+        "module kind: Upload API / Creator check",
         // View publisher is an Event publisher, not a Custom module reading Metadata.
         "module kind: Watch API / View publisher",
         "module link: View publisher → Metadata",

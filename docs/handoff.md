@@ -10394,3 +10394,160 @@ match the record taken before the unit. 42 are healthy, and both edges answer 20
 
 The owner's uncommitted `.jeeves-feedback/`, `.docs/` Zone.Identifier files and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-11 — V3-19: fair chat evals and an Anthropic provider
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (V3-19) and the coordinator's brief; live,
+paid runs approved by the owner the same day. Docs: `studio.md` (Chat), `chat-tool-schemas.md`,
+`chat-evals.md` (design evals 2.0.0), `studio-patterns.md`, `CATALOG.md` (providers), a playbook
+lesson, the plan's status and the HUMAN_FEEDBACK resolution. Results:
+[V3-19 evals](evals/v3-19/README.md). Evidence: [v3-19](plans/youtube-v3/evidence/v3-19/README.md)
+(2 shots).
+
+**Verdict: a modest model is now enough; use Claude Haiku 5.5.** Five samples of every case for
+the modest models, three for the strong ones ([results](evals/v3-19/README.md)):
+
+| Model | Spec build | Video brief | Podcast brief | Review | Turns lost | Est. USD |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| gpt-6-luna (Codex) | 98 (91–100) | 81.2 (5.8–100) | 90.5 (79.6–100) | 85 (70–92.5) | 1 of 65 | unknown |
+| gpt-6.1-sol (Codex) | 100 | 100 | 90.5 (84.7–100) | 93.3 (92.5–95) | 0 of 39 | unknown |
+| claude-haiku-5-5 | 99.8 (99–100) | 97.8 (94.4–100) | 94.4 | 98 (95–100) | 0 of 65 | 0.40 |
+| claude-sonnet-5-5 | 100 | 100 | 100 | 95 | 0 of 39 | 3.27 |
+
+Haiku is about a fourteenth of Sonnet's price ($0.08 against $1.09 a full run of the suite). Its
+one consistent miss is the Optional sign-in for viewers (7 of 10 product builds). Luna, at 0 and
+50 in V3-10, now usually matches Sol but is less consistent (one turn ran out of its 16
+responses; 7 named review findings left unfixed). Every Anthropic review sample below 100 is
+`review-unrelated-store`, whose finding the review marks *check* (see deviations).
+
+**How the unit got there.** Three live passes. Pass 1 (chat's commands and neutral defaults)
+showed whole builds lost to the 16-response limit, Sol's included: every step previewed then
+applied, one refusal per round, duplicates refused, a stale `baseRevision`, readiness "errors"
+chased, and a pinned template version with no fix. Pass 2 fixed those (below); Sonnet and Haiku's
+first three samples are from it. In pass 2 Luna told the person "the studio tools aren't
+available" in 7 of 23 cases (it looked in Codex's own tool list), and gave up after Zod's bare
+"Too big" on a 51-command batch; pass 3 fixed both for the Codex arms and Haiku's samples 4–5.
+All four reports replay identically at this commit. Passes 1 and 2's partial reports aren't kept.
+
+**What changed.**
+
+- **Neutral pattern defaults** (`studio-module-patterns.ts`): Ingest API, Login, Records,
+  Originals, Jobs, Processor, Outputs, Results, Lifecycle, Read API, Read cache, Events, Counter,
+  Totals, Publications, Indexer, Index, Query API, Member API, Saved items, Writer API, Entries;
+  modules named for their kind. `V3_PATTERN_STEPS` and `withV3Names` (`fixtures/v3-modules.ts`)
+  give the old v3 names where a test or seed needs them; the review seeds are unchanged.
+- **Chat's commands** (`chat/commands.ts`): one shape each, `tile`/`module` everywhere,
+  `editTile`, `editModule`, `setSetting` (merged into the target's settings and checked against its
+  normal controls, with the controls listed on a refusal), IDs from names, no legacy kinds or raw
+  component commands; each compiles to one studio command through the same builder. The studio's
+  shapes (settings on `edit`, `editComponent`, `side`, `planned.label`) are still accepted. Review
+  fixes are converted to chat's form.
+- **Batches** (`tools.ts`): all or nothing; every malformed command reported at once with the
+  shape it takes and a hint for names models reach for (`setOwner` → `editTile`); up to five
+  builder refusals, each checked without the earlier ones; commands already in effect skipped
+  (`skipped`); a clear refusal past 50 commands ("split them into two calls"). `previewCommands`
+  folded into `preview: true` on the apply tools; the apply tools take no `baseRevision`. Apply results count readiness findings
+  under `notSpecified`; `reviewDesign` leads with `left` and a note.
+- **Tool sizes** (canonical / strict): 86,382 / 113,238 → 37,317 / 44,362 bytes;
+  `applyStudioCommands` 43,062 / 57,589 → 10,137 / 12,210 (469 → 81 properties, 598 → 79 enum
+  values, depth 9 → 5). Sixteen tools (was 17). Instructions 2,168 → 2,804 bytes.
+- **Prompt and service:** the loop is plan → apply → review → fix, preview when unsure; the
+  16-response budget is stated, and from three responses left each tool round ends with a
+  `[Jeeves] N of 16 responses left` reminder (`STEPS_REMINDER`, `service.ts`). The repair-pass
+  refusal says the turn itself isn't over. A turn that runs out still saves nothing (pinned; not
+  changed).
+- **Review** (`studio-design-review.ts`): a module's selection pinned to an uninstalled template
+  version gets a reconnect fix (disconnect and connect one link), checked against the design.
+- **Leak check** (`design-leak.test.ts`): no v3, v2 or study tile/module/action/system name in
+  the prompt, the tools, the patterns' defaults, what chat reads about each seed, or any scripted
+  run's tool output unless the case or the model supplied it. It found "(Watch, Publish)" in a
+  canvas note and "Publication events"/"Search indexer" in the publication-to-search guidance
+  example; both reworded (the guidance record's version is unchanged: its example names only).
+- **Evals 2.0.0:** the spec build kept as "follow a spec"; `video-build` and `podcast-build`
+  (about 120 words each) scored by the capability rubric (`design-rubric.ts`: kinds, wiring,
+  async, guards, templates); `review-out-of-range` back; limits 16 responses, 16,000 output
+  tokens, 600 s; `--repeat`, `--resume`, `--cases`, `--merge`; mean and spread in the reports.
+  The recording provider's size measurement never throws (`requestSize`): V3-10's Luna build had
+  failed there, in the harness, not in chat. RF06's current arm sends its fixture in chat's form.
+- **Anthropic** (`packages/providers/src/anthropic.ts`, `@anthropic-ai/sdk` 1.3.0, released
+  2026-10-23): Messages API with streamed text, tool use, adaptive thinking at medium effort,
+  thinking blocks kept as opaque items and sent back in place, automatic prompt caching, usage
+  with cache reads and writes (`Usage.cacheWriteInputTokens`), errors mapped (auth, quota from
+  "credit balance", rate limit, bad request), a tool call cut off by `max_tokens` marked
+  `truncated`. The key comes only from `ANTHROPIC_API_KEY` (never the config file). Wired into
+  Settings (`env-key` auth, "Anthropic API" in the picker), chat (`models.ts`) and the eval runner
+  (2 SDK retries; list prices for Haiku 5.5 and Sonnet 5.5). Codex's preamble now says the Jeeves
+  tools are called through `toolCalls` and are always available that way.
+
+**Tests.** Unit: chat tools (+1, and the preview test rewritten: per-command and multiple
+refusals, skips, the readiness count, the 50-command refusal), the strict wire tests rewritten for
+chat's commands, chat service (step reminders, preview flag), providers (+4 Anthropic over a mocked transport, the Codex preamble),
+spec (+1 pinned version; the pattern tests on neutral defaults), evals (capability builds,
+`review-out-of-range`, the leak check, 53 scripted requests). E2E +2 (`blueprint-chat.spec.ts`: a
+refused batch named by mouse, then saved corrected; Anthropic in Settings by mouse).
+
+**Checks.**
+
+- `pnpm check` exited 0: **764 tests in 106 files** (+10 tests and 2 files since V3-18:
+  `design-leak.test.ts` and `anthropic.test.ts`); lint shows only the existing info.
+- **E2E: 82 passed (5.8 m)** on the first full run of the final code (an earlier full run on the
+  pass-1 code: 82 passed, 5.7 m). `jeeves_e2e` holds only its TinyURL project.
+- Web build passed (the existing chunk-size advisory).
+- **Browser** (my API 4520 on scratch `jeeves_v319`, now dropped; Vite 4530; both stopped), by
+  mouse at 1440×900 and 1280×800: TinyURL renders (11 tiles); a scripted chat turn shows the
+  refused batch naming `setOwner` → `editTile`, then saves the corrected `addTile` as one edit
+  that one Undo takes back; Settings lists Anthropic API ("No API key", `export
+  ANTHROPIC_API_KEY=`) and saves it as the design model. No page or console error. A first try at
+  1280 timed out on my own scratch state (the model already saved), not the app.
+- `pnpm eval:chat` scripted arms: good 100 / 100 / 100 and 100; patterns 86.3 / 98.2 / 98.2; bad
+  1.7 / 18.5 / 18.5 and 5; the scripted report replays. The four live reports replay identically
+  at this commit (Sol's also from its committed `.json.gz`).
+- **No key stored:** neither the Anthropic key prefix nor the key's value appears in the reports
+  (the gzipped ones searched unpacked), the evidence, the code, the diff or my scratch logs
+  (checked in a login shell, the value never printed). The key was exported only into the eval
+  subprocesses.
+
+**Gates (D2).** The off pin, `generator.test.ts` and `assemble.test.ts` pass (17 tests; v1
+byte-identical). Frozen v2: a fresh `export:v2` gives 72 files, 70 byte-identical to
+`generic-export.tar.gz`, and the manifest and report are equal under `provenanceWithoutInventory`.
+`git diff d94b13a -- field-projects/youtube/v3/generated/` is empty; `app/` is untouched.
+
+**Deviations and choices** (the owner was asleep; defaults recorded here).
+
+1. **Batches are all or nothing** (not a valid prefix): a resent fixed batch is simpler for a
+   model than tracking what was kept, and skips make resends harmless.
+2. **A turn that runs out still saves nothing** (`chat.test.ts` pins it). The budget is stated
+   and reminded instead. `MAX_REPAIR_PASSES` stays 2.
+3. **`previewCommands` became `preview: true`** on the apply tools, and the prompt's loop is plan
+   → apply → review → fix, preview when unsure: previewing every step cost whole builds, and every
+   prepared change is still reviewed before saving (D6).
+4. **The Codex adapter's preamble changed** (a transport fix, outside the provider notes).
+5. **`review-unrelated-store` is not rescored:** the review marks it *check* and the case expects
+   a fix; naming it and leaving it, as Sonnet did, scores 50. Recalibrating would change eval
+   2.0.0's scores after the runs; it's a follow-up.
+6. **The publication-to-search guidance example's tile names changed** without a version bump
+   (example names only; content and checklists unchanged).
+7. **Reports:** the four live reports are kept gzipped (about 0.8 MB, 9 MB as JSON;
+   `--report=` reads `.json.gz`); the merged JSON isn't kept (`live.md` is); `docs/evals/v3-19/live*.json`
+   is excluded from Biome (over its 1 MiB limit).
+8. **`@anthropic-ai/sdk` 1.3.0** sends API version `2026-10-21` and the key as a bearer token;
+   nothing it removed is used. Effort is medium for both Claude models (Codex's level), 2 retries.
+9. **Eval limits** rose to 16,000 output tokens (thinking counts toward it on Claude) and 600 s
+   (a Codex request is a whole session); responses stay at 16.
+10. The default design model is unchanged (`openai:gpt-5.4-mini`): choosing Haiku as the default
+    is the owner's call.
+
+**For the next unit.**
+
+- **Haiku and optional sign-in:** a viewer path that "may sign in" needs an Optional guard.
+  The sign-in pattern's summary, or a review check for a read path with no guard beside guarded
+  tiles, could close it.
+- **Recalibrate `review-unrelated-store`** (eval 2.1.0): mark the finding *fix*, or score a named
+  piece of advice left with a reason as full credit.
+- **Luna's retries:** it can spend ten rounds resending one refused command; a refusal that
+  repeats could say "this command was refused 3 times; leave it and report".
+- Record a new report whenever the prompt, a tool, a brief or a case changes: replay refuses
+  drift by request hash.
+
+The owner's uncommitted `.jeeves-feedback/`, `.docs/` Zone.Identifier files and the mode of
+`e2e-docker.sh` are untouched and unstaged.

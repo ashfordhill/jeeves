@@ -89,6 +89,8 @@ export type StartResult =
   | { ok: false; status: 404 | 409 | 422; code: string; message: string };
 
 export const MAX_ROUNDS = 16;
+/** From this many responses left, each tool round ends with a reminder of the limit. */
+export const STEPS_REMINDER = 3;
 /** Response batches allowed to change commands/scope after the model has received review. */
 export const MAX_REPAIR_PASSES = 2;
 /** Earlier turns sent as conversation history. */
@@ -350,7 +352,7 @@ export class ChatService {
             const mutation = isWorkspaceMutation(call.name, call.arguments);
             let output: string;
             if (mutation && seenReview >= 0 && repairPasses >= MAX_REPAIR_PASSES) {
-              const message = `The ${MAX_REPAIR_PASSES} review repair passes are used. End with the unresolved findings; no more commands or scope changes can be prepared this turn.`;
+              const message = `The ${MAX_REPAIR_PASSES} review repair passes are used: no more commands or scope changes can be prepared this turn, though the turn itself is not over. End now with your reply: what changed, and what is left unresolved.`;
               workspace.log(call.name, false, message);
               output = JSON.stringify({ ok: false, error: message });
             } else {
@@ -360,7 +362,18 @@ export class ChatService {
             flushActivity(before);
           }
           if (seenReview >= 0 && workspace.generation !== generation) repairPasses++;
-          if (!workspace.question) continue;
+          if (!workspace.question) {
+            // The last few responses carry a reminder: a turn that runs out saves nothing (V3-19).
+            const left = MAX_ROUNDS - round - 1;
+            if (left > 0 && left <= STEPS_REMINDER)
+              items.push(
+                textMessage(
+                  "user",
+                  `[Jeeves] ${left} of ${MAX_ROUNDS} responses left in this turn. Finish what you are doing and end with your reply; if the turn runs out, nothing is saved.`,
+                ),
+              );
+            continue;
+          }
         }
 
         if (

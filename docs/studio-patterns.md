@@ -10,8 +10,8 @@ the turn's review scope.
 turns the [design playbook](design-playbook.md#patterns)'s shapes into ordinary studio commands,
 so a modest model builds a correct design from a few arguments. `listStudioPatterns` lists each
 with what it makes, the templates it yields and every argument with its default;
-`applyPattern {baseRevision, pattern: {id, ...arguments}}` applies one, and `previewCommands
-{baseRevision, pattern}` shows what it would leave first.
+`applyPattern {pattern: {id, ...arguments}}` applies one, and the same call with `preview: true`
+shows what it would leave first.
 
 | ID | Builds | Templates when complete |
 | --- | --- | --- |
@@ -24,11 +24,17 @@ with what it makes, the templates it yields and every argument with its default;
 | `owned-store` | One tile owning and writing a database through a Data access, and up to four readers with a Data access each. With Runnable processes on, the writer gets its SQL file and readers read its published views ([v3 contract](plans/youtube-v3/contract.md) §1). | None: the modules are stubs |
 
 **Arguments.** A tile argument names a tile: an existing tile (by ID or by name) is reused, and any
-other text is a new tile's name. Omitted, the default name is used the same way. Defaults are the
-YouTube v3 contract's names (Upload API, Sign-in, Metadata, Watch API, Hot metadata, View events,
-Videos, Account API…), so applying the patterns in turn shares tiles: upload pipeline (with
-`publication` and `delivery`), cache read, counting, search, sign-in on Watch API (Optional) and
-favorites (with `items: "Metadata"`) give v3's 21 tiles and 26 modules, 24 Template and 2 Stub
+other text is a new tile's name. Omitted, the default name is used the same way. **Defaults are
+neutral role names** (V3-19): Ingest API, Login, Records, Originals, Jobs, Processor, Outputs,
+Results, Lifecycle; Read API, Read cache, Record loader; Events, Counter, Totals; Publications,
+Indexer, Index, Query API; Member API, Saved items; Writer API, Entries; and modules named for
+their kind (Auth guard, Event publisher, Event consumer, Video encoder…). None is a study's or
+YouTube v3's name, so a design's names come from the person's brief; the leak check
+(`design-leak.test.ts`) fails if a pattern default, a tool or the prompt ever hands chat one. The
+defaults are shared, so the patterns applied in turn with their defaults share Records, Login and
+the rest. Given v3's names as arguments (`V3_PATTERN_STEPS` in `fixtures/v3-modules.ts`), upload
+pipeline (with `publication` and `delivery`), cache read, counting, search, sign-in on Watch API
+(Optional) and favorites (with `items`) give v3's 21 tiles and 26 modules, 24 Template and 2 Stub
 (`studio-module-patterns.test.ts`). Module names are arguments too (`reader`, `loader`, `guard`…).
 `system` names an empty design's system and `action` a lane's action when it has none.
 

@@ -18,6 +18,7 @@ import type {
 import { slug } from "../studio-ids.ts";
 import { newLinkId } from "../studio-lane-commands.ts";
 import type { StudioKind } from "../studio-model.ts";
+import type { ModulePattern } from "../studio-module-patterns.ts";
 import { newModuleIdentity } from "../studio-modules.ts";
 import type { StudioCommand } from "../studio-operations.ts";
 import { buildSupportedAuthoringCommand } from "../supported-authoring.ts";
@@ -237,6 +238,101 @@ export const V3_TEMPLATES: readonly { template: string; tile: string; module?: s
   { template: "module-stub", tile: "Watch API", module: "View count reader" },
   { template: "module-stub", tile: "Watch API", module: "View publisher" },
 ];
+
+/**
+ * The six curated patterns with v3's names as their arguments, in the order a model following the
+ * v3 brief would send them (V3-19: the patterns' own defaults are neutral, so the names come from
+ * the brief). They make v3's 21 tiles; what they leave against the reference (module names the
+ * patterns don't take, View publisher's kind, Sign-in's Publish entry, the values and Runnable
+ * processes) is the brief's to fix.
+ */
+export const V3_PATTERN_STEPS: readonly ModulePattern[] = [
+  {
+    id: "cache-read",
+    system: V3_SYSTEM,
+    action: "Watch",
+    service: "Watch API",
+    cache: "Hot metadata",
+    database: "Metadata",
+    reader: "Video details cache",
+    loader: "Video details reader",
+  },
+  {
+    id: "counting",
+    source: "Watch API",
+    events: "View events",
+    counter: "View counter",
+    counts: "View counts",
+    publisher: "View publisher",
+    reader: "View count reader",
+  },
+  {
+    id: "upload-pipeline",
+    action: "Publish",
+    service: "Upload API",
+    identity: "Sign-in",
+    metadata: "Metadata",
+    originals: "Original videos",
+    jobs: "Upload jobs",
+    processor: "Transcoder",
+    outputs: "Transcoded videos",
+    results: "Processing events",
+    lifecycle: "Video lifecycle",
+    publication: "Publication events",
+    delivery: "Video delivery",
+  },
+  {
+    id: "search",
+    events: "Publication events",
+    indexer: "Search indexer",
+    index: "Videos",
+    service: "Search API",
+    query: "Video search",
+  },
+  {
+    id: "sign-in",
+    tile: "Watch API",
+    signIn: "optional",
+    identity: "Sign-in",
+    guard: "Viewer check",
+  },
+  {
+    id: "favorites",
+    service: "Account API",
+    database: "Favorites",
+    identity: "Sign-in",
+    items: "Metadata",
+    favorites: "Favorite videos",
+    reader: "Video reader",
+    guard: "Account check",
+  },
+];
+
+/**
+ * A pattern step with v3's tile and module names filled in where it gives none: what the
+ * patterns' defaults were before V3-19, for checks and seeds that read as v3 (each still adds
+ * only the optional tiles it asks for).
+ */
+export function withV3Names(step: ModulePattern): ModulePattern {
+  const named = V3_PATTERN_STEPS.find((item) => item.id === step.id) ?? { id: step.id };
+  const {
+    system: _system,
+    action: _action,
+    publication: _publication,
+    delivery: _delivery,
+    items: _items,
+    tile: _tile,
+    signIn: _signIn,
+    guard,
+    ...names
+  } = named as Record<string, unknown>;
+  const required = step.id === "sign-in" && step.signIn !== "optional";
+  return {
+    ...names,
+    ...(guard !== undefined && { guard: required ? "Account check" : guard }),
+    ...step,
+  } as ModulePattern;
+}
 
 /** Builds `design` up one command at a time, each checked with the supported builder. */
 class V3Build {

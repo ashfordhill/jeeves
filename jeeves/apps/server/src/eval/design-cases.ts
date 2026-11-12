@@ -1,8 +1,15 @@
 /**
- * The chat design evals (V3-10): build YouTube v3 from a plain-prose brief, and review designs
- * seeded with one known defect each, one per review finding class (V3-09). Seeds are built with
- * the commands the mouse sends; a defect the commands refuse is a direct document edit, as an old
- * or hand-made design could have.
+ * The chat design evals: three builds and ten reviews. Seeds are built with the commands the mouse
+ * sends; a defect the commands refuse is a direct document edit, as an old or hand-made design
+ * could have.
+ *
+ * - **Follow a spec** (`v3-build`, V3-10): YouTube v3 from a detailed brief that names every
+ *   tile, link and module, scored by name against the v3 reference.
+ * - **Product briefs** (V3-19): a short brief for a YouTube-like site (`video-build`) and one for
+ *   a podcast app (`podcast-build`). They name nothing, so they are scored by the capability
+ *   rubric (`design-rubric.ts`): the right kinds, wiring, async channels, guards and templates.
+ * - **Review:** one seeded defect per review finding class (V3-09), plus a setting saved out of
+ *   range (V3-18 made it fixable).
  */
 import { readFileSync } from "node:fs";
 import {
@@ -20,16 +27,32 @@ import {
   V3_VALUES,
   type V3Value,
   v3ModuleDesign,
+  withV3Names,
 } from "../../../../packages/spec/src/fixtures/v3-modules.ts";
 import { installedGenerationSupport } from "../generation/support.ts";
+import type { CapabilityRubric } from "./design-rubric.ts";
 
-/** 1.0.0 (V3-10): the v3 build and nine review seeds. */
-export const DESIGN_EVAL_VERSION = "1.0.0";
-/** The same bounds as RF06, with more time: a build is one long turn. */
-export const DESIGN_LIMITS = { rounds: 16, maxOutputTokens: 4096, caseTimeoutMs: 300_000 };
+/**
+ * 1.0.0 (V3-10): the v3 build and nine review seeds. 2.0.0 (V3-19): two product briefs scored by
+ * capability, the out-of-range review seed, and chat's V3-19 tools (neutral pattern defaults,
+ * chat's own command shapes); limits as below.
+ */
+export const DESIGN_EVAL_VERSION = "2.0.0";
+/**
+ * RF06's 16 responses per case. 16,000 output tokens a response, since thinking counts toward
+ * it on Anthropic models and a whole build can be one batch (the Codex adapter enforces none),
+ * and 600 seconds a case, since a Codex request is a whole agent session.
+ */
+export const DESIGN_LIMITS = { rounds: 16, maxOutputTokens: 16_000, caseTimeoutMs: 600_000 };
 
+const brief = (file: string) =>
+  readFileSync(new URL(`./fixtures/${file}`, import.meta.url), "utf8");
 /** The v3 brief: contract section 5 in an owner's words, with no IDs or command syntax. */
-export const V3_BRIEF = readFileSync(new URL("./fixtures/v3-brief.md", import.meta.url), "utf8");
+export const V3_BRIEF = brief("v3-brief.md");
+/** A YouTube-like site in a short product brief: what it does, never what to draw. */
+export const VIDEO_BRIEF = brief("video-brief.md");
+/** A podcast app in the same words: the non-YouTube brief. */
+export const PODCAST_BRIEF = brief("podcast-brief.md");
 /** One owner prompt for every review case. */
 export const REVIEW_PROMPT =
   "Review this design and fix what is wrong. Tell me what you found and what you changed.";
@@ -37,12 +60,19 @@ export const REVIEW_PROMPT =
 export type BuildCase = {
   id: string;
   kind: "build";
+  /** What it asks, for the report. */
+  title: string;
   prompt: string;
   seed: () => DesignDocument;
-  reference: (installed: GenerationInstalledSupport) => DesignDocument;
-  /** The brief's useful values, scored with the templates. */
-  values: readonly V3Value[];
-};
+} & (
+  | {
+      scoring: "reference";
+      reference: (installed: GenerationInstalledSupport) => DesignDocument;
+      /** The brief's useful values, scored with the templates. */
+      values: readonly V3Value[];
+    }
+  | { scoring: "capabilities"; rubric: CapabilityRubric }
+);
 export type ReviewCase = {
   id: string;
   kind: "review";
@@ -67,14 +97,39 @@ export type ReviewCase = {
 };
 export type DesignCase = BuildCase | ReviewCase;
 
-export const buildCase: BuildCase = {
-  id: "v3-build",
-  kind: "build",
-  prompt: V3_BRIEF,
-  seed: emptyDesign,
-  reference: (installed) => v3ModuleDesign(installed),
-  values: V3_VALUES,
-};
+export const buildCases: readonly BuildCase[] = [
+  {
+    id: "v3-build",
+    kind: "build",
+    title: "Follow a spec: YouTube v3 from the detailed brief, scored by name",
+    prompt: V3_BRIEF,
+    seed: emptyDesign,
+    scoring: "reference",
+    reference: (installed) => v3ModuleDesign(installed),
+    values: V3_VALUES,
+  },
+  {
+    id: "video-build",
+    kind: "build",
+    title: "A YouTube-like site from a short product brief, scored by capability",
+    prompt: VIDEO_BRIEF,
+    seed: emptyDesign,
+    scoring: "capabilities",
+    rubric: { id: "video-site", processing: "video-encoding" },
+  },
+  {
+    id: "podcast-build",
+    kind: "build",
+    title: "A podcast app from a short product brief, scored by capability",
+    prompt: PODCAST_BRIEF,
+    seed: emptyDesign,
+    scoring: "capabilities",
+    rubric: { id: "podcast-app", processing: "any" },
+  },
+];
+export type SpecBuildCase = Extract<BuildCase, { scoring: "reference" }>;
+/** The spec build (V3-10's only build). */
+export const buildCase = buildCases[0] as SpecBuildCase;
 
 const installed = () => installedGenerationSupport();
 /** Runs commands with the supported builder, as the mouse and chat send them. */
@@ -86,8 +141,12 @@ export function run(design: DesignDocument, commands: readonly StudioCommand[]):
     return result.design;
   }, design);
 }
+/** Patterns with v3's names where a seed gives none: the seeds are V3-10's, unchanged. */
 const pattern = (design: DesignDocument, ...steps: ModulePattern[]) =>
-  steps.reduce((current, step) => buildModulePattern(current, step, installed()).design, design);
+  steps.reduce(
+    (current, step) => buildModulePattern(current, withV3Names(step), installed()).design,
+    design,
+  );
 /** A direct document edit, as an old or hand-made design could have. */
 function edited(design: DesignDocument, change: (draft: DesignDocument) => void) {
   const draft = structuredClone(design);
@@ -120,7 +179,13 @@ const connect = (module: string, slot: string, target: { tile: string } | { modu
 
 /** A shop whose Catalog API writes Catalog and whose Shop API reads it (both stubs). */
 const shop = () =>
-  pattern(emptyDesign(), { id: "owned-store", system: "Shop", readers: ["Shop API"] });
+  pattern(emptyDesign(), {
+    id: "owned-store",
+    system: "Shop",
+    writer: "Catalog API",
+    database: "Catalog",
+    readers: ["Shop API"],
+  });
 
 export const reviewCases: readonly ReviewCase[] = [
   {
@@ -311,6 +376,36 @@ export const reviewCases: readonly ReviewCase[] = [
     stored: "legacy",
   },
   {
+    id: "review-out-of-range",
+    kind: "review",
+    check: "generation",
+    defect:
+      "Orders API's Request timeout was saved as 99999999 ms, past the 300000 its process allows (an older saved design; V3-18 made it fixable).",
+    prompt: REVIEW_PROMPT,
+    seed: () =>
+      edited(
+        run(
+          pattern(emptyDesign(), {
+            id: "owned-store",
+            system: "Orders",
+            writer: "Orders API",
+            database: "Orders",
+            readers: ["Store API"],
+          }),
+          [{ type: "setRunnableProcesses", on: true }],
+        ),
+        (draft) => {
+          const settings = settingsOf(draft, "orders-api").settings as Record<string, unknown>;
+          settings.requestTimeoutMs = 99999999;
+        },
+      ),
+    at: { tile: "Orders API" },
+    subjects: ["Orders API", "Request timeout", "requestTimeoutMs"],
+    terms: ["99999999", "300000", "too big", "out of range", "timeout", "invalid"],
+    expect: "fix",
+    stored: "legacy",
+  },
+  {
     id: "review-warning",
     kind: "review",
     check: "warning",
@@ -327,4 +422,4 @@ export const reviewCases: readonly ReviewCase[] = [
   },
 ];
 
-export const designCases: readonly DesignCase[] = [buildCase, ...reviewCases];
+export const designCases: readonly DesignCase[] = [...buildCases, ...reviewCases];

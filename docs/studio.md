@@ -727,18 +727,19 @@ Notifications, Billing) is refused with a plain reason ("A new tile can't be Bil
 payments, add a Service that owns its payment records and calls the provider as an External
 API."); existing tiles of those kinds keep working and keep their modules.
 
-**The prompt is short; the tools carry the knowledge.** The instructions (about 2 KB) set one
-working loop, **plan → preview → apply → review → fix**, and the few rules that hold everywhere.
-What a modest model needs to get a design right comes back from the tools:
+**The prompt is short; the tools carry the knowledge.** The instructions (about 2.8 KB) set one
+working loop, **plan → apply → review → fix** (preview when unsure), the turn's budget and the
+few rules that hold everywhere. What a modest model needs to get a design right comes back from
+the tools, whose schemas total about 37 KB (44 KB as OpenAI's strict tools, down from 86 KB and
+113 KB before V3-19):
 
 | Tool | Gives |
 | --- | --- |
 | `listStudioDefinitions` | The eleven tile kinds a new tile can be, each with its label; the tile types with their kinds and defaults; the module catalog (each kind's slots, the tiles that hold it, what it becomes there, Template, Part of a template or Stub, as the `+` menu groups it, and its one-line description); the link table (generated from `studioLinkRules`); the caps; the lane canvas and kind notes; the warnings sentence. |
 | `getDesign` | The design compactly, as the canvas draws it: the actions with their entries and the tiles each lane reaches; each tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, each link's slot, status and why); the status counts; Runnable processes; `editableSettings` (the only normal settings, each naming its tile or module and setting); findings and warnings; and the scope, ownership and operation declarations the configure tools edit. |
-| `listStudioPatterns` | The seven curated patterns `applyPattern` builds, with what each makes, its templates and each argument with its default ([patterns](studio-patterns.md#curated-module-patterns)); and the four reviewed guidance records. |
-| `applyPattern` | One pattern as one validated batch, names and links filled in from its arguments. Every step is a command the mouse could send; one refused step refuses the whole pattern. |
-| `previewCommands` | A dry run of a pattern or of lane and module commands: what would change, every module's status with why, and what would be left. Nothing is prepared or saved. |
-| `applyStudioCommands` | The lane commands (`addAction`, `renameAction`, `removeAction`, `addTile` after a tile or a lane's action, `linkTiles`, `removeTile`, `removeLink`, `setEntryLane`), `edit`, `editSystem`, `editConnection` (label only), the module commands (`addModule`, `connectModule`, `disconnectModule`, `removeModule`, `editComponent`) and `setRunnableProcesses`. |
+| `listStudioPatterns` | The seven curated patterns `applyPattern` builds, with what each makes, its templates and each argument with its default ([patterns](studio-patterns.md#curated-module-patterns)); and the four reviewed guidance records. The defaults are neutral placeholders (Records, Login, Jobs), never a study's names, so a design's names come from the person. |
+| `applyPattern` | One pattern as one validated batch, names and links filled in from its arguments; `preview: true` dry-runs it (what would change, every module's status with why, what would be left) and keeps nothing. Every step is a command the mouse could send; one refused step refuses the whole pattern. |
+| `applyStudioCommands` | Chat's commands, or with `preview: true` a dry run of them: the lane commands (`addAction`, `renameAction`, `removeAction`, `addTile` after a tile or a lane's action, `linkTiles`, `removeTile`, `removeLink`, `setEntryLane`), `editTile`, `setSetting`, `editSystem`, `editConnection` (label only), the module commands (`addModule`, `connectModule`, `disconnectModule`, `removeModule`, `editModule`) and `setRunnableProcesses`. |
 | `reviewDesign` | The staged changes, every module's status, and what is left (below), with the readiness findings, assumptions and unsupported obligations. |
 
 Every accepted `applyStudioCommands` or `applyPattern` returns an **automatic review**: how many
@@ -771,26 +772,62 @@ possible; those commands are checked against the design before they are offered
 The service keeps the review in the loop: a fresh `reviewDesign` reaches the model before
 commands or meaningful declared scope finish, even if the model ends its response; later
 commands make it stale; the model may make two response batches of repairs after receiving it,
-within the 16-round limit. A question still ends the turn immediately. After saving, the final
+within the 16-round limit. The prompt states that limit, and from three responses left each tool
+round ends with a reminder ("[Jeeves] 3 of 16 responses left in this turn…"): a turn that runs
+out still saves nothing. A question still ends the turn immediately. After saving, the final
 review of the saved revision lists what is left in **Review details**, and the reply says how
 many findings are left to fix and to check. Review/no-op turns create no design revision or
 Undo step. Warnings remain saveable; structural errors still refuse a batch.
 
-A refused command changes nothing and comes back in the same plain words as the canvas notice
-("URL cache can't link to Shorten service. A cache can't link onward."); the turn's activity list
-shows it. A rename through `edit` or `editComponent` re-keys IDs that follow their names, as the
-inspector does ([Names and IDs](#inspector)); results list them as `renamed: [{from, to}]`. An
-`addModule` with a name and no ID takes its ID from that name. The selected tile, line or entry is
+**Chat's commands** (V3-19) are the canvas's commands in a smaller, flatter form a modest model
+can write (`jeeves/apps/server/src/chat/commands.ts`). Each compiles to exactly one studio command
+on the design it runs on, through the same builder:
+
+- a tile is always `tile` and a module `module`: `editTile {tile, name?, description?, owner?}`
+  (owner is the tile that writes a store) and `editModule {module, name?, description?}` send the
+  canvas's `edit` and `editComponent`;
+- a setting is one `setSetting {tile or module, setting, value}`, a row of
+  `getDesign.editableSettings` with a new value (null clears a process setting). It is merged into
+  the target's settings and sent whole, as the inspector field sends it, after a check against
+  that target's normal controls; a refusal lists them with what each takes;
+- IDs follow names: `addTile` and `linkTiles` need no `id` or `linkId`, and `side` is gone;
+- only what chat may send is listed: no legacy tile kinds, `changeKind` or raw component
+  commands. The studio's own shapes (a settings object on `edit`, `editComponent`, `side`,
+  `planned.label`) are still accepted, so a fix written the spec's way isn't refused for it.
+
+A batch is **all or nothing**. Every command is checked on its own shape first, so a refused
+batch names **every** malformed command at once (its number, what is wrong and the shape it
+takes, with the right command for a name a model reaches for: "There is no "setOwner" command;
+use editTile."); otherwise up to five commands the builder refuses, in the same plain words as
+the canvas notice ("URL cache can't link to Shorten service. A cache can't link onward."), each
+checked without the refused ones before it and saying so. Nothing of the call is kept, the turn
+goes on, and the model sends the corrected call again; the turn's activity list shows it. A
+command whose effect is already in the design (a link or entry that exists, a slot already
+holding its target, a module or tile already there under that name) is skipped and listed as
+`skipped`, not refused, so a resent batch goes through. A call takes at most 50 commands; more is
+refused with what to do (two calls in one response, which run in order). The apply tools take no `baseRevision`
+(one sent is ignored): a turn edits one working copy, and the commit still refuses a concurrent
+edit. Their results count readiness findings (a behavior profile, contracts, ownership
+declarations) under `notSpecified` instead of listing them beside design errors, and
+`reviewDesign` leads with `left`. Review fixes come back in the same commands. A rename re-keys IDs that
+follow their names, as the inspector does ([Names and IDs](#inspector)); results list them as
+`renamed: [{from, to}]`. An `addModule` with a name and no ID takes its ID from that name. The selected tile, line or entry is
 sent with each message, so "Add a cache after the selected service" works; the user, an action
 and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
 SVG). Token counts and provider-reported cost appear only when complete. The model and provider
-are chosen in **Settings**. Chat and the inspector collapse and resize independently.
+are chosen in **Settings**: OpenAI's API, Codex's own login, or (V3-19) Anthropic's API, with
+the key read from `ANTHROPIC_API_KEY` in the environment only and never stored. Chat and the
+inspector collapse and resize independently.
 
 OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,
 defaults and explicit owner clearing. Codex constrains the outer answer only: its inner argument
-JSON strings still need server validation. Both providers use the same canonical commands and
-validators. See [tool argument schemas](chat-tool-schemas.md) for the audited subset and limits;
+JSON strings still need server validation. Its preamble tells the model the Jeeves tools are called
+through `toolCalls` and are always available that way (V3-19: a smaller model sometimes looked
+for them in Codex's own tool list and told the person it couldn't make changes). Anthropic gets
+the canonical schemas as they are, with adaptive thinking at medium effort and prompt caching;
+nothing constrains its arguments either.
+Every provider uses the same canonical commands and validators. See [tool argument schemas](chat-tool-schemas.md) for the audited subset and limits;
 strict arguments alone establish no architecture or runtime guarantee.
 
 The four [reviewed guidance records](studio-patterns.md) (cache-aside lookup, durable background

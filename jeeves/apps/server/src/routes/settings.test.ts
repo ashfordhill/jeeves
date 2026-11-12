@@ -31,6 +31,7 @@ describe("settings", () => {
     ).toEqual([
       ["openai", false, "No API key"],
       ["codex", false, "Not logged in"],
+      ["anthropic", false, "No API key"],
     ]);
 
     const res = await app.inject({

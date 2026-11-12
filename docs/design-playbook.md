@@ -1753,3 +1753,31 @@ path back: the control that fixes it is reachable, and chat's review offers the 
 is safe (clearing a process setting runs its initial value). The same applies to a generated
 library: a stub that publishes to a deduplicating consumer must be able to set the message's ID.
 That is now in the generator, not a scaffold edit.
+
+## 2026-11-11 V3-19: a cheap model fails on the tools' rough edges, not on the design
+
+When a modest model scores 0 on a build, read its rounds before blaming the model. V3-10's
+gpt-6-luna "failed the whole turn" because the eval measured each request with the strict
+OpenAI codec, which refused its malformed commands before chat could. In V3-19's first live pass
+the same model, and gpt-6.1-sol too, ran out of the turn's 16 responses with nothing saved: each
+step was previewed and then applied, a refusal named one problem per round, a link addTile had
+already made was refused as a duplicate, a stale `baseRevision` refused a whole batch, and a
+review full of readiness "errors" (profiles, contracts) sent models off configuring ownership. So:
+
+- **Measure without judging.** A harness that measures or records must never refuse what the
+  system under test would have accepted or refused in its own words.
+- **Say the budget and help keep it.** State the response limit in the prompt, remind near the
+  end, and make the cheap path the default: apply directly (nothing is saved until the turn
+  ends), preview only when unsure, and send independent calls together.
+- **Refuse once, completely.** Check every command's shape, report every malformed one and
+  several refused ones in one answer, each with the shape it takes; skip what is already there
+  instead of refusing it.
+- **Lead with what to do.** Put the actionable list (`left`) first and count the findings no
+  command can fix, so a model doesn't chase them.
+- **Keep the brief from giving the answer.** A detailed spec measures following instructions; a
+  short product brief scored by capability (kinds, wiring, async channels, guards, templates)
+  measures designing. Pattern defaults are neutral, and a leak test proves no tool or prompt names
+  a study's tiles.
+
+With these, the second pass's early cases went from 0 to 99.4 (Luna's spec build) and from 5.8
+to 100 (Sol's podcast brief); the [V3-19 evals](evals/v3-19/README.md) have the full results.

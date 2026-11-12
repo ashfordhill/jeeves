@@ -135,3 +135,62 @@ test("saves a warned proposal with readable review details and one mouse Undo", 
   const undone = await design(page, id);
   expect({ ...undone, revision: before.revision }).toEqual(before);
 });
+
+test("names a refused command, keeps nothing of its batch, and saves the corrected one (V3-19)", async ({
+  page,
+  tinyurl: id,
+}) => {
+  // The script's first batch holds a command that doesn't exist; its second sends the tile alone.
+  await send(page, "Archive the clicks");
+  await expect(page.getByText("Added Click archive after the Redirect service.")).toBeVisible();
+  await expect(page.locator(".chat-turn[aria-busy]")).toHaveCount(0);
+  const activity = page.getByRole("list", { name: "What the assistant did" }).last();
+  await expect(
+    activity.getByText('Command 2 (setOwner): There is no "setOwner" command; use editTile.', {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(activity.getByText("Prepared 1 studio command", { exact: false })).toBeVisible();
+  await ready(page);
+  await expect(tiles(page)).toHaveCount(12);
+  await expect(tile(page, "Click archive")).toBeVisible();
+  // One edit: the refused batch kept nothing, and IDs follow the name.
+  const saved = await design(page, id);
+  expect(saved.revision).toBe(2);
+  expect(saved.connections.find((c) => c.to.element === "click-archive")?.id).toBe(
+    "redirect-click-archive",
+  );
+  await page.locator(".lane-header-actions").getByRole("button", { name: "Undo" }).click();
+  await ready(page);
+  await expect(tiles(page)).toHaveCount(11);
+});
+
+test("offers Anthropic in Settings with its environment key, and saves it as the design model", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Settings" }).click();
+  const anthropic = page.locator(".settings-providers li").filter({ hasText: "Anthropic API" });
+  await expect(anthropic).toBeVisible();
+  // The e2e server has no Anthropic key: the badge says so, and the setup is the variable.
+  await expect(anthropic.getByText("No API key", { exact: true })).toBeVisible();
+  await expect(anthropic.getByText("Jeeves never stores it.", { exact: false })).toBeVisible();
+  await expect(
+    anthropic.getByRole("button", { name: "Copy Anthropic API setup command" }),
+  ).toContainText("export ANTHROPIC_API_KEY=");
+  // Pick it and one of its models by mouse, and save.
+  await page.getByLabel("Design provider").selectOption({ label: "Anthropic API" });
+  await page.getByRole("combobox", { name: "Design model" }).click();
+  await page.getByRole("option", { name: "claude-haiku-5-5", exact: true }).click();
+  await expect(page.getByRole("combobox", { name: "Design model" })).toHaveValue(
+    "claude-haiku-5-5",
+  );
+  await page.getByRole("button", { name: "Save model" }).click();
+  await expect(page.getByText("Saved to", { exact: false })).toBeVisible();
+  const settings = await (await page.request.get("/api/settings")).json();
+  expect(settings.roles.designChat).toEqual({ provider: "anthropic", model: "claude-haiku-5-5" });
+  // Put the default back for the other specs on this server.
+  await page.request.put("/api/settings/roles", {
+    data: { designChat: { provider: "openai", model: "gpt-5.4-mini" } },
+  });
+});

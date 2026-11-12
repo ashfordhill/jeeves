@@ -4,6 +4,7 @@ import { type DesignDocument, emptyDesign } from "./design.ts";
 import { testInstalledSupport as installed } from "./fixtures/installed-support.ts";
 import { stubStackDesign } from "./fixtures/stub-stack.ts";
 import { runStudioCommands } from "./fixtures/v2-modules.ts";
+import { withV3Names } from "./fixtures/v3-modules.ts";
 import { moduleStatus } from "./module-status.ts";
 import {
   type DesignReviewCheck,
@@ -14,8 +15,12 @@ import { buildModulePattern, type ModulePattern } from "./studio-module-patterns
 import type { StudioCommand } from "./studio-operations.ts";
 import { buildSupportedAuthoringCommand } from "./supported-authoring.ts";
 
+/** Patterns with v3's names (their own defaults are neutral since V3-19). */
 const pattern = (design: DesignDocument, ...steps: ModulePattern[]) =>
-  steps.reduce((current, step) => buildModulePattern(current, step, installed).design, design);
+  steps.reduce(
+    (current, step) => buildModulePattern(current, withV3Names(step), installed).design,
+    design,
+  );
 const findings = (design: DesignDocument, check: DesignReviewCheck) =>
   designReview(design, installed).findings.filter((item) => item.check === check);
 /** Runs a finding's fix commands as chat would send them. */
@@ -165,6 +170,33 @@ describe("the design review chat runs after each change (V3-09)", () => {
       /^Video details cache in Watch API: Installed template has no actual output consumer/,
     );
     expect(findings(design, "generation")).toEqual([]);
+  });
+
+  it("re-derives a module's selection pinned to an uninstalled template version by reconnecting it (V3-19)", () => {
+    // An older saved design: Account check's Sign-in selection names version 0.0.1.
+    const design = edited(pattern(emptyDesign(), { id: "favorites" }), (draft) => {
+      const selection = draft.schemaVersion === 3 ? draft.generation?.selections[0] : undefined;
+      if (selection?.template.id !== "verified-identity") throw new Error("Sign-in comes first");
+      selection.template.version = "0.0.1";
+    });
+    const pinned = findings(design, "generation").find(
+      (item) => item.module === "account-api-account-check",
+    );
+    expect(pinned).toMatchObject({
+      severity: "fix",
+      tile: "account-api",
+      fix: expect.stringContaining("pinned to version 0.0.1, which isn't installed"),
+      commands: [
+        { type: "disconnectModule", link: expect.any(String) },
+        {
+          type: "connectModule",
+          module: "account-api-account-check",
+          slot: "identity",
+          target: { tile: "sign-in" },
+        },
+      ],
+    });
+    expect(findings(fix(design, pinned as DesignReviewFinding), "generation")).toEqual([]);
   });
 
   it("offers to clear a process's own out-of-range setting, which its control can reach (V3-18)", () => {

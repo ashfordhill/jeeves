@@ -4,6 +4,7 @@ import { type DesignDocument, emptyDesign } from "./design.ts";
 import { isStructural } from "./findings.ts";
 import { testInstalledSupport as installed } from "./fixtures/installed-support.ts";
 import { runStudioCommands } from "./fixtures/v2-modules.ts";
+import { V3_PATTERN_STEPS } from "./fixtures/v3-modules.ts";
 import { designGeneration } from "./generation.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
 import { moduleStatuses } from "./module-status.ts";
@@ -49,21 +50,23 @@ function apply(design: DesignDocument, pattern: ModulePattern) {
   expect(validateDesign(built.design).filter(isStructural)).toEqual([]);
   return built;
 }
+/** Every module's status, keyed `Tile / Module` (default module names repeat across tiles). */
 const statuses = (design: DesignDocument) =>
   Object.fromEntries(
     moduleStatuses(design).map((item) => [
-      item.name,
+      `${design.elements.find((tile) => tile.id === item.host)?.name} / ${item.name}`,
       item.status === "template" ? `template ${item.template}` : `${item.status}: ${item.reason}`,
     ]),
   );
 const tileId = (design: DesignDocument, name: string) =>
   design.elements.find((item) => item.name === name)?.id ?? name;
 
+/** The pipeline with its neutral defaults, plus the optional topic and CDN. */
 const pipeline: ModulePattern = {
   id: "upload-pipeline",
-  system: "YouTube",
-  publication: "Publication events",
-  delivery: "Video delivery",
+  system: "Media",
+  publication: "Publications",
+  delivery: "Delivery",
 };
 
 describe("curated module patterns (V3-09)", () => {
@@ -79,26 +82,41 @@ describe("curated module patterns (V3-09)", () => {
   it("builds the upload pipeline from blank: sign-in, multipart, encoding and lifecycle templates", () => {
     const { design } = apply(emptyDesign(), pipeline);
     expect(statuses(design)).toEqual({
-      "Creator check": "template verified-identity",
-      "Multipart uploads": "template owned-multipart",
-      "Job outbox publisher": "template owned-multipart",
-      "Upload state writer": "template owned-multipart",
-      "Job consumer": "template video-hls",
-      "Segmenter and encoder": "template video-hls",
-      Packager: "template video-hls",
-      Thumbnailer: "template video-hls",
-      "Processing result publisher": "template video-hls",
-      "Processing consumer": "template asset-lifecycle",
-      "Lifecycle writer": "template asset-lifecycle",
-      "Video publication publisher": "template asset-lifecycle",
+      "Ingest API / Auth guard": "template verified-identity",
+      "Ingest API / Multipart uploads": "template owned-multipart",
+      "Ingest API / Event publisher": "template owned-multipart",
+      "Ingest API / State writer": "template owned-multipart",
+      "Processor / Event consumer": "template video-hls",
+      "Processor / Video encoder": "template video-hls",
+      "Processor / Video packager": "template video-hls",
+      "Processor / Video thumbnailer": "template video-hls",
+      "Processor / Event publisher": "template video-hls",
+      "Lifecycle / Event consumer": "template asset-lifecycle",
+      "Lifecycle / Lifecycle writer": "template asset-lifecycle",
+      "Lifecycle / Event publisher": "template asset-lifecycle",
     });
-    expect(design.architecture?.system.name).toBe("YouTube");
+    expect(design.architecture?.system.name).toBe("Media");
+    expect(design.elements.map((item) => item.name).sort()).toEqual(
+      [
+        "Delivery",
+        "Ingest API",
+        "Jobs",
+        "Lifecycle",
+        "Login",
+        "Originals",
+        "Outputs",
+        "Processor",
+        "Publications",
+        "Records",
+        "Results",
+      ].sort(),
+    );
     // A queue for jobs and a topic for results, derived by the templates.
     const mode = (name: string) =>
       design.architecture?.studio?.elements.find((item) => item.element === tileId(design, name))
         ?.settings;
-    expect(mode("Upload jobs")).toMatchObject({ mode: "work-queue" });
-    expect(mode("Processing events")).toMatchObject({ mode: "topic" });
+    expect(mode("Jobs")).toMatchObject({ mode: "work-queue" });
+    expect(mode("Results")).toMatchObject({ mode: "topic" });
     // Applied again, everything is there: nothing to add.
     expect(buildModulePattern(design, pipeline, installed).commands).toEqual([]);
   });
@@ -106,14 +124,14 @@ describe("curated module patterns (V3-09)", () => {
   it("builds a cached read path: the cache read template, and says its database has no writer", () => {
     const { design } = apply(emptyDesign(), { id: "cache-read" });
     expect(statuses(design)).toEqual({
-      "Video details cache": "template positive-cache-read",
-      "Video details reader": "template positive-cache-read",
+      "Read API / Cache reader": "template positive-cache-read",
+      "Read API / Record loader": "template positive-cache-read",
     });
     expect(designReview(design, installed).findings).toContainEqual(
-      expect.objectContaining({ check: "store-without-writer", tile: "metadata" }),
+      expect.objectContaining({ check: "store-without-writer", tile: "records" }),
     );
-    // Beside the upload pipeline, which writes Metadata, nothing is left to fix.
-    const writer = apply(emptyDesign(), { id: "upload-pipeline", delivery: "Video delivery" });
+    // Beside the upload pipeline, which writes Records, nothing is left to fix.
+    const writer = apply(emptyDesign(), { id: "upload-pipeline", delivery: "Delivery" });
     const both = apply(writer.design, { id: "cache-read" }).design;
     expect(
       designReview(both, installed).findings.filter((item) => item.severity === "fix"),
@@ -123,17 +141,15 @@ describe("curated module patterns (V3-09)", () => {
   it("counts from events: the counter's template, the source's publisher and reader as stubs", () => {
     const { design } = apply(emptyDesign(), { id: "counting" });
     expect(statuses(design)).toEqual({
-      "View publisher": "stub: No template in Watch API uses it.",
-      "View count reader": "stub: No template in Watch API uses it.",
-      "View consumer": "template event-counter",
-      "Receipt and increment": "template event-counter",
-      "Count writer": "template event-counter",
+      "Read API / Event publisher": "stub: No template in Read API uses it.",
+      "Read API / Totals reader": "stub: No template in Read API uses it.",
+      "Counter / Event consumer": "template event-counter",
+      "Counter / Event counter": "template event-counter",
+      "Counter / Totals writer": "template event-counter",
     });
     // The counter owns the totals; the source only reads them.
-    const counts = design.architecture?.studio?.elements.find(
-      (item) => item.element === "view-counts",
-    );
-    expect(counts?.owner).toEqual({ kind: "element", id: "view-counter" });
+    const counts = design.architecture?.studio?.elements.find((item) => item.element === "totals");
+    expect(counts?.owner).toEqual({ kind: "element", id: "counter" });
   });
 
   it("feeds search from the lifecycle's publication topic, and refuses without a topic", () => {
@@ -141,29 +157,30 @@ describe("curated module patterns (V3-09)", () => {
       ModulePatternRefusal,
     );
     expect(() => buildModulePattern(emptyDesign(), { id: "search" }, installed)).toThrow(
-      'There is no topic "Publication events".',
+      'There is no topic "Publications".',
     );
     const { design } = apply(apply(emptyDesign(), pipeline).design, { id: "search" });
     expect(statuses(design)).toMatchObject({
-      "Publication consumer": "template search-projection",
-      "Index writer": "template search-projection",
-      "Video search": "template search-query",
+      "Indexer / Event consumer": "template search-projection",
+      "Indexer / Index writer": "template search-projection",
+      "Query API / Search query": "template search-query",
     });
   });
 
   it("protects a tile with required or optional sign-in, and changes an existing guard's choice", () => {
     const optional = apply(emptyDesign(), {
       id: "sign-in",
-      tile: "Watch API",
+      tile: "Read API",
       signIn: "optional",
     }).design;
-    expect(statuses(optional)).toEqual({ "Viewer check": "template verified-identity" });
+    expect(statuses(optional)).toEqual({ "Read API / Auth guard": "template verified-identity" });
+    expect(optional.elements.map((item) => item.name)).toEqual(["Read API", "Login"]);
     const guard = () =>
-      optional.architecture?.studio?.components?.find((item) => item.name === "Viewer check");
+      optional.architecture?.studio?.components?.find((item) => item.name === "Auth guard");
     expect(guard()?.settings).toMatchObject({ signIn: "optional" });
-    const required = apply(optional, { id: "sign-in", tile: "Watch API" }).design;
+    const required = apply(optional, { id: "sign-in", tile: "Read API" }).design;
     expect(
-      required.architecture?.studio?.components?.find((item) => item.name === "Viewer check")
+      required.architecture?.studio?.components?.find((item) => item.name === "Auth guard")
         ?.settings,
     ).toMatchObject({ signIn: "required" });
     // A tile of the wrong kind is refused in plain words, and nothing is applied.
@@ -172,47 +189,56 @@ describe("curated module patterns (V3-09)", () => {
         apply(emptyDesign(), { id: "cache-read" }).design,
         {
           id: "sign-in",
-          tile: "Metadata",
+          tile: "Records",
         },
         installed,
       ),
-    ).toThrow(
-      "Metadata is a database; the tile to protect must be a service or an upload service.",
-    );
+    ).toThrow("Records is a database; the tile to protect must be a service or an upload service.");
   });
 
   it("keeps favorites behind a Required guard, with optional items, and refuses an Optional guard", () => {
     const { design } = apply(emptyDesign(), { id: "favorites" });
     expect(statuses(design)).toEqual({
-      "Account check": "template verified-identity",
-      "Favorite videos": "template favorites",
+      "Member API / Auth guard": "template verified-identity",
+      "Member API / Favorites": "template favorites",
     });
+    expect(design.elements.map((item) => item.name)).toEqual([
+      "Member API",
+      "Saved items",
+      "Login",
+    ]);
     const items = apply(apply(emptyDesign(), pipeline).design, {
       id: "favorites",
-      items: "Metadata",
+      items: "Records",
     }).design;
     expect(statuses(items)).toMatchObject({
-      "Favorite videos": "template favorites",
-      "Video reader": "template favorites",
+      "Member API / Favorites": "template favorites",
+      "Member API / Item reader": "template favorites",
     });
     const optional = apply(emptyDesign(), {
       id: "sign-in",
-      tile: "Account API",
+      tile: "Member API",
       signIn: "optional",
     }).design;
     expect(() => buildModulePattern(optional, { id: "favorites" }, installed)).toThrow(
-      "Viewer check in Account API is Optional, and this pattern needs it Required.",
+      "Auth guard in Member API is Optional, and this pattern needs it Required.",
     );
   });
 
   it("gives a store one writer and readers: stubs, a SQL file for the writer and published reads", () => {
+    expect(statuses(apply(emptyDesign(), { id: "owned-store" }).design)).toEqual({
+      "Writer API / Entries writer": "stub: No template in Writer API uses it.",
+    });
     const { design } = apply(emptyDesign(), {
       id: "owned-store",
+      writer: "Catalog API",
+      database: "Catalog",
       readers: ["Shop API", "Search API"],
     });
     expect(statuses(design)).toEqual({
-      "Catalog writer": "stub: No template in Catalog API uses it.",
-      "Catalog reader": "stub: No template in Search API uses it.",
+      "Catalog API / Catalog writer": "stub: No template in Catalog API uses it.",
+      "Shop API / Catalog reader": "stub: No template in Shop API uses it.",
+      "Search API / Catalog reader": "stub: No template in Search API uses it.",
     });
     expect(moduleStatuses(design)).toHaveLength(3);
     const on = runStudioCommands(design, [{ type: "setRunnableProcesses", on: true }]);
@@ -230,16 +256,11 @@ describe("curated module patterns (V3-09)", () => {
     expect(store("shop-api")?.access).toBe("read");
   });
 
-  it("builds YouTube v3's shape from the patterns: 21 tiles, 26 modules, 24 templates and 2 stubs", () => {
-    const steps: ModulePattern[] = [
-      pipeline,
-      { id: "cache-read" },
-      { id: "counting" },
-      { id: "search" },
-      { id: "sign-in", tile: "Watch API", signIn: "optional" },
-      { id: "favorites", items: "Metadata" },
-    ];
-    const design = steps.reduce((current, step) => apply(current, step).design, emptyDesign());
+  it("builds YouTube v3's shape from the patterns and the brief's names: 21 tiles, 26 modules, 24 templates and 2 stubs", () => {
+    const design = V3_PATTERN_STEPS.reduce(
+      (current, step) => apply(current, step).design,
+      emptyDesign(),
+    );
     expect(design.elements).toHaveLength(21);
     const all = moduleStatuses(design);
     expect(all).toHaveLength(26);
@@ -277,18 +298,17 @@ describe("curated module patterns (V3-09)", () => {
 
   it("refuses a step the lanes refuse, naming the pattern, and applies nothing", () => {
     // A sixth link out of Watch API is past the cap.
-    const full = [
-      pipeline,
-      { id: "cache-read" },
-      { id: "counting" },
-      { id: "sign-in", tile: "Watch API", signIn: "optional" },
-    ] satisfies ModulePattern[];
+    const full = V3_PATTERN_STEPS.filter((step) => step.id !== "search" && step.id !== "favorites");
     const design = full.reduce<DesignDocument>(
       (current, step) => apply(current, step as ModulePattern).design,
       emptyDesign(),
     );
     const attempt = () =>
-      buildModulePattern(design, { id: "favorites", service: "Watch API" }, installed);
+      buildModulePattern(
+        design,
+        { id: "favorites", service: "Watch API", identity: "Sign-in" },
+        installed,
+      );
     expect(attempt).toThrow(/^Favorites: .*Nothing of the pattern was applied\.$/);
     expect(attempt).toThrow("Watch API already has 5 links");
     // Only the design's own commands: the pattern returned none.

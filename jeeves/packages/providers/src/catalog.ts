@@ -4,11 +4,13 @@
  */
 import type { ModelRole } from "./types.ts";
 
-export type ProviderId = "openai" | "codex";
+export type ProviderId = "openai" | "codex" | "anthropic";
 
 export type ProviderAuth =
   /** An API key from the environment or `~/.jeeves/config.json` (`<configKey>.apiKey`). */
   | { type: "api-key"; envVar: string; configKey: string }
+  /** An API key from the environment only; Jeeves never stores it. */
+  | { type: "env-key"; envVar: string }
   /** The provider's own CLI login, e.g. `codex login`. Jeeves never sees the credentials. */
   | { type: "cli-login"; command: string };
 
@@ -40,6 +42,15 @@ export const providerCatalog: readonly ProviderInfo[] = [
     auth: { type: "cli-login", command: "codex login" },
     suggestedModels: ["gpt-6-astra", "gpt-6.1-sol", "gpt-5.5", "gpt-5.3-codex"],
     defaultModelAllowed: true,
+  },
+  {
+    id: "anthropic",
+    name: "Anthropic API",
+    description:
+      "Claude on Anthropic's Messages API, billed to the API key in ANTHROPIC_API_KEY. Jeeves reads the key from the environment and never stores it.",
+    auth: { type: "env-key", envVar: "ANTHROPIC_API_KEY" },
+    suggestedModels: ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"],
+    defaultModelAllowed: false,
   },
 ];
 

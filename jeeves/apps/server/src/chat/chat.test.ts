@@ -638,18 +638,18 @@ describe("design chat", () => {
         return {
           toolCalls: [
             {
-              name: "previewCommands",
-              arguments: { baseRevision: 0, pattern: { id: "cache-read", system: "Video" } },
+              name: "applyPattern",
+              arguments: { preview: true, pattern: { id: "cache-read", system: "Video" } },
             },
           ],
         };
       }
       if (round === 2) {
-        // The preview says the read path alone leaves Metadata with no writer, and saves nothing.
+        // The preview says the read path alone leaves Records with no writer, and saves nothing.
         const preview = outputs.at(-1);
-        expect(preview?.ok).toBe(true);
+        expect(preview).toMatchObject({ ok: true, preview: true });
         expect(preview?.review.left).toContainEqual(
-          expect.objectContaining({ check: "store-without-writer", tile: "metadata" }),
+          expect.objectContaining({ check: "store-without-writer", tile: "records" }),
         );
         return {
           toolCalls: [
@@ -700,7 +700,11 @@ describe("design chat", () => {
       expect(state.design.architecture?.studio?.components).toHaveLength(13);
       expect(turn.activity).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ tool: "previewCommands", ok: true }),
+          expect.objectContaining({
+            tool: "applyPattern",
+            ok: true,
+            summary: "Previewed pattern cache-read: 1 would be left; nothing prepared",
+          }),
           expect.objectContaining({
             tool: "applyPattern",
             ok: true,
@@ -708,7 +712,7 @@ describe("design chat", () => {
           }),
           expect.objectContaining({
             tool: "reviewDetail",
-            summary: expect.stringMatching(/^Left \(check\) · long-line · metadata: /),
+            summary: expect.stringMatching(/^Left \(check\) · long-line · records: /),
           }),
         ]),
       );
@@ -1102,7 +1106,8 @@ describe("proposed-design review in ChatService", () => {
       if (round === 1) {
         expect(toolOutput(request)).toMatchObject({
           ok: false,
-          note: "Nothing changed for this call.",
+          problems: [{ command: 2, type: "linkTiles" }],
+          note: expect.stringContaining("Nothing from this call was kept."),
         });
         return { toolCalls: [{ name: "reviewDesign", arguments: {} }] };
       }
@@ -1251,6 +1256,17 @@ describe("proposed-design review in ChatService", () => {
     const other = await endless.project();
     const failed = await endless.chat(other, "Never finish");
     expect(endless.requests).toHaveLength(MAX_ROUNDS);
+    // The last responses were warned: a turn that runs out saves nothing (V3-19).
+    const reminders = (request: ModelRequest) =>
+      request.items.filter(
+        (item) =>
+          item.type === "message" &&
+          item.content.some((part) => part.type === "text" && part.text.includes("responses left")),
+      ).length;
+    expect(endless.requests.map(reminders).slice(-4)).toEqual([0, 1, 2, 3]);
+    expect(JSON.stringify(endless.requests.at(-1)?.items.at(-1))).toContain(
+      "1 of 16 responses left in this turn",
+    );
     expect(failed.turn.status).toBe("failed");
     expect(failed.state.design.elements).toEqual([]);
     expect(failed.turn.reply).toContain("No design edits saved");

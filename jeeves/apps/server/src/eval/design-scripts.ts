@@ -1,11 +1,15 @@
 /**
- * Scripted models for the design evals (V3-10): canned responses that exercise the production
- * chat loop offline and prove the scorers discriminate. They are not model-quality evidence.
+ * Scripted models for the design evals (V3-10, V3-19): canned responses that exercise the
+ * production chat loop offline and prove the scorers discriminate. They are not model-quality
+ * evidence. Their commands are chat's own form (V3-19), as a model reading the tool schema sends.
  *
- * - **good:** builds v3 with the six curated patterns, then fixes what they leave against the
- *   brief (one more entry, View publisher as a Custom module, a name, the descriptions, the
- *   values, Runnable processes); reviews by calling reviewDesign, fixing the defect and naming it.
- * - **patterns:** the build only: the six patterns with their defaults and nothing else.
+ * - **good:** builds v3 with the six curated patterns given the brief's names, then fixes what
+ *   they leave against the brief (one more entry, View publisher as a Custom module, the module
+ *   names and descriptions, the values, Runnable processes); builds a product brief with the
+ *   patterns and their neutral names, then turns Runnable processes on; reviews by calling
+ *   reviewDesign, fixing the defect and naming it.
+ * - **patterns:** the builds only: the six patterns (with the spec's names on the spec build,
+ *   their own placeholders on a product brief) and nothing else.
  * - **bad:** builds a small generic video site with no modules; answers a review with "looks
  *   fine" and changes nothing.
  */
@@ -23,31 +27,51 @@ import {
   type StudioCommand,
   type StudioComponent,
 } from "@jeeves/spec";
-import { V3_MODULES, V3_VALUES } from "../../../../packages/spec/src/fixtures/v3-modules.ts";
+import {
+  V3_MODULES,
+  V3_PATTERN_STEPS,
+  V3_VALUES,
+} from "../../../../packages/spec/src/fixtures/v3-modules.ts";
+import { type ChatCommand, toChatCommands } from "../chat/commands.ts";
 import { installedGenerationSupport } from "../generation/support.ts";
 import { type DesignCase, type ReviewCase, reviewCases, run } from "./design-cases.ts";
 
 export const scriptedArms = ["good", "patterns", "bad"] as const;
 export type ScriptedArm = (typeof scriptedArms)[number];
 
-const patterns = (named: boolean): ModulePattern[] => [
-  { id: "cache-read", system: "YouTube", ...(named && { action: "Watch" }) },
+/**
+ * The six patterns for a product brief with their own neutral placeholders: only the arguments a
+ * pattern needs (the protected tile, the optional topic and CDN, favorites' items).
+ */
+const productPatterns = (system: string): ModulePattern[] => [
+  { id: "cache-read", system },
   { id: "counting" },
-  {
-    id: "upload-pipeline",
-    ...(named && { action: "Publish" }),
-    publication: "Publication events",
-    delivery: "Video delivery",
-  },
+  { id: "upload-pipeline", publication: "Publications", delivery: "Delivery" },
   { id: "search" },
-  { id: "sign-in", tile: "Watch API", signIn: "optional" },
-  { id: "favorites", items: "Metadata" },
+  { id: "sign-in", tile: "Read API", signIn: "optional" },
+  { id: "favorites", items: "Records" },
 ];
-const composed = (named: boolean) =>
-  patterns(named).reduce(
+const composed = () =>
+  V3_PATTERN_STEPS.reduce(
     (current, step) => buildModulePattern(current, step, installedGenerationSupport()).design,
     emptyDesign(),
   );
+
+/**
+ * Studio commands in chat's own form, each converted on the design the ones before it leave, as
+ * the tools state a fix (`toChatCommands`).
+ */
+export function chatForm(
+  design: DesignDocument,
+  commands: readonly StudioCommand[],
+): ChatCommand[] {
+  let current = design;
+  return commands.flatMap((command) => {
+    const converted = toChatCommands(current, command);
+    current = run(current, [command]);
+    return converted;
+  });
+}
 
 const tileId = (design: DesignDocument, name: string) => {
   const found = design.elements.find((item) => item.name === name);
@@ -67,12 +91,12 @@ const moduleIn = (design: DesignDocument, host: string, name: string): StudioCom
  * What the good build fixes after the patterns, as one batch: each command is computed on the
  * design the previous ones leave, as a careful model reading the results would send it.
  */
-export function goodBuildFixes(): StudioCommand[] {
-  let design = composed(true);
-  const commands: StudioCommand[] = [];
+export function goodBuildFixes(): ChatCommand[] {
+  let design = composed();
+  const commands: ChatCommand[] = [];
   const send = (command: StudioCommand) => {
+    commands.push(...toChatCommands(design, command));
     design = run(design, [command]);
-    commands.push(command);
   };
   // Sign-in is also an entry of Publish.
   send({
@@ -186,7 +210,7 @@ const badBuild: StudioCommand[] = [
   },
 ];
 
-/** The good review's change for each seed, and the reply that names the defect. */
+/** The good review's change for each seed (studio commands), and the reply that names it. */
 export function goodReview(test: ReviewCase): { commands: StudioCommand[]; reply: string } {
   const seed = test.seed();
   const component = (id: string) => {
@@ -223,6 +247,18 @@ export function goodReview(test: ReviewCase): { commands: StudioCommand[]; reply
           "Found: Price reader in Shop API had nothing in its database slot. Connected it to Catalog, the database Shop API already reads.",
       };
     case "generation": {
+      if (test.id === "review-out-of-range") {
+        const row = seed.architecture?.studio?.elements.find(
+          (item) => item.element === "orders-api",
+        );
+        if (!row) throw new Error("No Orders API");
+        const { requestTimeoutMs: _bad, ...settings } = row.settings as Record<string, unknown>;
+        return {
+          commands: [{ type: "edit", element: "orders-api", settings: settings as never }],
+          reply:
+            "Found: Orders API's Request timeout was saved as 99999999 ms, past the 300000 its process allows. Cleared it, so the process runs its initial 1000 ms.",
+        };
+      }
       const link = seed.architecture?.studio?.componentConnections?.find(
         (item) => item.from === "account-api-account-check",
       );
@@ -373,7 +409,10 @@ function steps(test: DesignCase, arm: ScriptedArm): ScriptStep[] {
       return [
         {
           toolCalls: [
-            { name: "applyStudioCommands", arguments: { baseRevision: 0, commands: badBuild } },
+            {
+              name: "applyStudioCommands",
+              arguments: { commands: chatForm(emptyDesign(), badBuild) },
+            },
           ],
           usage,
         },
@@ -382,30 +421,25 @@ function steps(test: DesignCase, arm: ScriptedArm): ScriptStep[] {
           usage,
         },
       ];
-    const named = arm === "good";
-    const apply = patterns(named).map((pattern) => ({
-      name: "applyPattern",
-      arguments: { baseRevision: 0, pattern },
-    }));
+    const spec = test.scoring === "reference";
+    const good = arm === "good";
+    const apply = (
+      spec ? V3_PATTERN_STEPS : productPatterns(test.id === "podcast-build" ? "Podcasts" : "Videos")
+    ).map((pattern) => ({ name: "applyPattern", arguments: { pattern } }));
+    const fixes: ChatCommand[] = spec
+      ? goodBuildFixes()
+      : [{ type: "setRunnableProcesses", on: true }];
     return [
       { toolCalls: [{ name: "listStudioPatterns", arguments: {} }], usage },
       { toolCalls: apply, usage },
-      ...(named
-        ? [
-            {
-              toolCalls: [
-                {
-                  name: "applyStudioCommands",
-                  arguments: { baseRevision: 0, commands: goodBuildFixes() },
-                },
-              ],
-              usage,
-            },
-          ]
+      ...(good
+        ? [{ toolCalls: [{ name: "applyStudioCommands", arguments: { commands: fixes } }], usage }]
         : []),
       {
-        text: named
-          ? "Built YouTube v3 from the patterns, then made View publisher a Custom module, added Sign-in under Publish, set the names, descriptions and values, and turned on Runnable processes."
+        text: good
+          ? spec
+            ? "Built YouTube v3 from the patterns, then made View publisher a Custom module, added Sign-in under Publish, set the names, descriptions and values, and turned on Runnable processes."
+            : "Built it from the patterns (uploads, processing, a cached read path with optional sign-in, counting, search and favorites), then turned on Runnable processes."
           : "Built the upload pipeline, the cached read path, counting, search, sign-in and favorites from the patterns.",
         usage,
       },
@@ -419,7 +453,12 @@ function steps(test: DesignCase, arm: ScriptedArm): ScriptStep[] {
     ...(commands.length
       ? [
           {
-            toolCalls: [{ name: "applyStudioCommands", arguments: { baseRevision: 1, commands } }],
+            toolCalls: [
+              {
+                name: "applyStudioCommands",
+                arguments: { commands: chatForm(test.seed(), commands) },
+              },
+            ],
             usage,
           },
         ]

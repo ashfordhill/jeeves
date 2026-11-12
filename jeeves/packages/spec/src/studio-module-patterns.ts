@@ -7,8 +7,9 @@
  * modules resolve to the templates the v3 contract names once everything they need is there.
  *
  * A tile argument names a tile: an existing tile (by ID or by name) is reused, and any other text
- * is a new tile's name. Defaults are the YouTube v3 contract's names, so applying the patterns in
- * turn shares Metadata, Sign-in and the rest.
+ * is a new tile's name. Defaults are neutral role names (Records, Login, Jobs), never a study's or
+ * YouTube v3's (V3-19): the names a design gets come from the person's brief. Defaults are shared,
+ * so patterns applied in turn with their defaults share Records, Login and the rest.
  */
 import { z } from "zod";
 import { applyOperations } from "./apply.ts";
@@ -150,15 +151,15 @@ export const modulePatternGuide: Readonly<
       "Signed-in multipart uploads into object storage, recorded in a database; a job queue to a video encoding worker that writes its own output and announces each result on a topic; a lifecycle worker that records each upload's state (playbook patterns 1, 2 and 7).",
     templates: ["Sign-in", "Multipart upload", "Video encoding", "Upload lifecycle"],
     arguments: {
-      service: 'The upload service, an Uploads entry of the upload lane. Default "Upload API".',
-      identity: 'The Identity its Required Auth guard verifies. Default "Sign-in".',
-      metadata: 'The database for upload state and the lifecycle. Default "Metadata".',
-      originals: 'The object storage the uploads write. Default "Original videos".',
-      jobs: 'The job queue. Default "Upload jobs".',
-      processor: 'The encoding worker. Default "Transcoder".',
-      outputs: 'The object storage the encoder writes. Default "Transcoded videos".',
-      results: 'The topic the encoder announces results on. Default "Processing events".',
-      lifecycle: 'The worker that records each upload\'s state. Default "Video lifecycle".',
+      service: 'The upload service, an Uploads entry of the upload lane. Default "Ingest API".',
+      identity: 'The Identity its Required Auth guard verifies. Default "Login".',
+      metadata: 'The database for upload state and the lifecycle. Default "Records".',
+      originals: 'The object storage the uploads write. Default "Originals".',
+      jobs: 'The job queue. Default "Jobs".',
+      processor: 'The encoding worker. Default "Processor".',
+      outputs: 'The object storage the encoder writes. Default "Outputs".',
+      results: 'The topic the encoder announces results on. Default "Results".',
+      lifecycle: 'The worker that records each upload\'s state. Default "Lifecycle".',
       publication:
         "Optional: a topic the lifecycle publishes each committed state to, through an outbox (what search consumes). Omitted: none.",
       delivery:
@@ -173,11 +174,11 @@ export const modulePatternGuide: Readonly<
       "A read API that serves records from its own cache and, on a miss, loads them through a Data access on the database (cache-aside, the reader owns the cache; playbook pattern 4).",
     templates: ["Cache read"],
     arguments: {
-      service: 'The read API, a Service entry of the download lane. Default "Watch API".',
-      cache: 'Its cache. Default "Hot metadata".',
-      database: 'The database it reads; another tile should write it. Default "Metadata".',
-      reader: 'The Cache reader module. Default "Video details cache".',
-      loader: 'The Data access that loads a miss. Default "Video details reader".',
+      service: 'The read API, a Service entry of the download lane. Default "Read API".',
+      cache: 'Its cache. Default "Read cache".',
+      database: 'The database it reads; another tile should write it. Default "Records".',
+      reader: 'The Cache reader module. Default "Cache reader".',
+      loader: 'The Data access that loads a miss. Default "Record loader".',
       action: actionArg("download"),
       system: systemArg,
     },
@@ -188,12 +189,12 @@ export const modulePatternGuide: Readonly<
       "A tile publishes each event to a topic; a counter worker counts each event once into its own database; the source reads the totals (playbook pattern 5).",
     templates: ["Event counter"],
     arguments: {
-      source: 'The tile that publishes events and reads the totals. Default "Watch API".',
-      events: 'The topic. Default "View events".',
-      counter: 'The counter worker. Default "View counter".',
-      counts: 'The totals database, written only by the counter. Default "View counts".',
-      publisher: 'The source\'s Event publisher. Default "View publisher".',
-      reader: 'The source\'s Data access reading the totals. Default "View count reader".',
+      source: 'The tile that publishes events and reads the totals. Default "Read API".',
+      events: 'The topic. Default "Events".',
+      counter: 'The counter worker. Default "Counter".',
+      counts: 'The totals database, written only by the counter. Default "Totals".',
+      publisher: 'The source\'s Event publisher. Default "Event publisher".',
+      reader: 'The source\'s Data access reading the totals. Default "Totals reader".',
       action: actionArg("download"),
       system: systemArg,
     },
@@ -204,11 +205,11 @@ export const modulePatternGuide: Readonly<
       "An indexer worker consumes an existing topic and is the search index's only writer; a search API only reads it (playbook pattern 3). The Index writer is a template once the topic's publisher has an outbox on a database a template writes (the upload pipeline's publication).",
     templates: ["Search indexing", "Search query"],
     arguments: {
-      events: 'An existing topic the indexer consumes. Default "Publication events".',
-      indexer: 'The indexer worker. Default "Search indexer".',
-      index: 'The search index. Default "Videos".',
-      service: 'The search API, a Service entry of the download lane. Default "Search API".',
-      query: 'The Search query module. Default "Video search".',
+      events: 'An existing topic the indexer consumes. Default "Publications".',
+      indexer: 'The indexer worker. Default "Indexer".',
+      index: 'The search index. Default "Index".',
+      service: 'The search API, a Service entry of the download lane. Default "Query API".',
+      query: 'The Search query module. Default "Search query".',
       action: actionArg("download"),
       system: systemArg,
     },
@@ -221,9 +222,8 @@ export const modulePatternGuide: Readonly<
     arguments: {
       tile: "The Service or Uploads tile to protect (a new name adds a Service entry of the download lane).",
       signIn: 'required or optional. Default "required".',
-      identity: 'The Identity tile. Default "Sign-in".',
-      guard:
-        'The Auth guard\'s name. Default "Viewer check" (optional) or "Account check" (required).',
+      identity: 'The Identity tile. Default "Login".',
+      guard: 'The Auth guard\'s name. Default "Auth guard".',
       action: actionArg("download"),
       system: systemArg,
     },
@@ -234,14 +234,14 @@ export const modulePatternGuide: Readonly<
       "An account service with a Required Auth guard keeps each signed-in account's favorite items in its own database; optionally a Data access on another database says which items may be kept.",
     templates: ["Favorites", "Sign-in"],
     arguments: {
-      service: 'The account service, a Service entry of the download lane. Default "Account API".',
-      database: 'Favorites\' own database. Default "Favorites".',
-      identity: 'The Identity its Required guard verifies. Default "Sign-in".',
+      service: 'The account service, a Service entry of the download lane. Default "Member API".',
+      database: 'Favorites\' own database. Default "Saved items".',
+      identity: 'The Identity its Required guard verifies. Default "Login".',
       items:
         "Optional: the database that says which items may be favorited (read through its published views). Omitted: none.",
-      favorites: 'The Favorites module. Default "Favorite videos".',
-      reader: 'The Data access on items. Default "Video reader".',
-      guard: 'The Auth guard, when the service has none. Default "Account check".',
+      favorites: 'The Favorites module. Default "Favorites".',
+      reader: 'The Data access on items. Default "Item reader".',
+      guard: 'The Auth guard, when the service has none. Default "Auth guard".',
       action: actionArg("download"),
       system: systemArg,
     },
@@ -253,8 +253,8 @@ export const modulePatternGuide: Readonly<
     templates: [],
     arguments: {
       writer:
-        'The tile that owns and writes the database (a new name adds a Service entry of the upload lane). Default "Catalog API".',
-      database: 'The database. Default "Catalog".',
+        'The tile that owns and writes the database (a new name adds a Service entry of the upload lane). Default "Writer API".',
+      database: 'The database. Default "Entries".',
       readers:
         "Up to 4 tiles that read it (a new name adds a Service entry of the download lane). Default none.",
       writerModule: 'The writer\'s Data access. Default "<database> writer".',
@@ -479,46 +479,41 @@ export function buildModulePattern(
     case "upload-pipeline": {
       const service = build.entry(
         "upload",
-        pattern.service ?? "Upload API",
+        pattern.service ?? "Ingest API",
         hosts("owned-multipart"),
         "upload service",
         pattern.action,
       );
-      const identity = build.after(
-        service,
-        pattern.identity ?? "Sign-in",
-        ["identity"],
-        "identity",
-      );
+      const identity = build.after(service, pattern.identity ?? "Login", ["identity"], "identity");
       const metadata = build.after(
         service,
-        pattern.metadata ?? "Metadata",
+        pattern.metadata ?? "Records",
         ["database"],
         "database",
       );
       const originals = build.after(
         service,
-        pattern.originals ?? "Original videos",
+        pattern.originals ?? "Originals",
         ["object-store"],
         "originals storage",
       );
-      const jobs = build.after(service, pattern.jobs ?? "Upload jobs", ["queue"], "job queue");
-      const processor = build.after(jobs, pattern.processor ?? "Transcoder", ["worker"], "worker");
+      const jobs = build.after(service, pattern.jobs ?? "Jobs", ["queue"], "job queue");
+      const processor = build.after(jobs, pattern.processor ?? "Processor", ["worker"], "worker");
       const outputs = build.after(
         processor,
-        pattern.outputs ?? "Transcoded videos",
+        pattern.outputs ?? "Outputs",
         ["object-store"],
         "output storage",
       );
       const results = build.after(
         processor,
-        pattern.results ?? "Processing events",
+        pattern.results ?? "Results",
         ["queue"],
         "results topic",
       );
       const lifecycle = build.after(
         results,
-        pattern.lifecycle ?? "Video lifecycle",
+        pattern.lifecycle ?? "Lifecycle",
         ["worker"],
         "lifecycle worker",
       );
@@ -539,30 +534,30 @@ export function buildModulePattern(
             linkId: newLinkId(build.design, { tile: delivery }, outputs),
           });
       }
-      build.guard(service, identity, "required", "Creator check", true);
+      build.guard(service, identity, "required", "Auth guard", true);
       const uploads = build.module(service, "multipart-uploads", "Multipart uploads");
       build.connect(uploads, "objects", { tile: originals });
-      const outbox = build.module(service, "event-publisher", "Job outbox publisher");
+      const outbox = build.module(service, "event-publisher", "Event publisher");
       build.connect(outbox, "channel", { tile: jobs });
       build.connect(outbox, "outbox", { tile: metadata });
-      const state = build.module(service, "data-access", "Upload state writer");
+      const state = build.module(service, "data-access", "State writer");
       build.connect(state, "database", { tile: metadata });
-      const consumer = build.module(processor, "event-consumer", "Job consumer");
+      const consumer = build.module(processor, "event-consumer", "Event consumer");
       build.connect(consumer, "channel", { tile: jobs });
-      const encoder = build.module(processor, "video-encoder", "Segmenter and encoder");
+      const encoder = build.module(processor, "video-encoder", "Video encoder");
       build.connect(encoder, "originals", { tile: originals });
-      const packager = build.module(processor, "video-packager", "Packager");
+      const packager = build.module(processor, "video-packager", "Video packager");
       build.connect(packager, "outputs", { tile: outputs });
-      const thumbnailer = build.module(processor, "video-thumbnailer", "Thumbnailer");
+      const thumbnailer = build.module(processor, "video-thumbnailer", "Video thumbnailer");
       build.connect(thumbnailer, "outputs", { tile: outputs });
-      const announce = build.module(processor, "event-publisher", "Processing result publisher");
+      const announce = build.module(processor, "event-publisher", "Event publisher");
       build.connect(announce, "channel", { tile: results });
-      const processing = build.module(lifecycle, "event-consumer", "Processing consumer");
+      const processing = build.module(lifecycle, "event-consumer", "Event consumer");
       build.connect(processing, "channel", { tile: results });
       const writer = build.module(lifecycle, "lifecycle-writer", "Lifecycle writer");
       build.connect(writer, "state", { tile: metadata });
       if (publication) {
-        const publisher = build.module(lifecycle, "event-publisher", "Video publication publisher");
+        const publisher = build.module(lifecycle, "event-publisher", "Event publisher");
         build.connect(publisher, "channel", { tile: publication });
         build.connect(publisher, "outbox", { tile: metadata });
       }
@@ -571,20 +566,20 @@ export function buildModulePattern(
     case "cache-read": {
       const service = build.entry(
         "download",
-        pattern.service ?? "Watch API",
+        pattern.service ?? "Read API",
         hosts("positive-cache-read"),
         "read API",
         pattern.action,
       );
-      const cache = build.after(service, pattern.cache ?? "Hot metadata", ["cache"], "cache");
+      const cache = build.after(service, pattern.cache ?? "Read cache", ["cache"], "cache");
       const database = build.after(
         service,
-        pattern.database ?? "Metadata",
+        pattern.database ?? "Records",
         ["database"],
         "database",
       );
-      const reader = build.module(service, "cache-reader", pattern.reader ?? "Video details cache");
-      const loader = build.module(service, "data-access", pattern.loader ?? "Video details reader");
+      const reader = build.module(service, "cache-reader", pattern.reader ?? "Cache reader");
+      const loader = build.module(service, "data-access", pattern.loader ?? "Record loader");
       build.connect(reader, "cache", { tile: cache });
       build.connect(loader, "database", { tile: database });
       build.connect(reader, "loader", { module: loader });
@@ -593,64 +588,50 @@ export function buildModulePattern(
     case "counting": {
       const source = build.entry(
         "download",
-        pattern.source ?? "Watch API",
+        pattern.source ?? "Read API",
         application,
         "event source",
         pattern.action,
       );
-      const events = build.after(source, pattern.events ?? "View events", ["queue"], "topic");
-      const counter = build.after(events, pattern.counter ?? "View counter", ["worker"], "counter");
-      const counts = build.after(
-        counter,
-        pattern.counts ?? "View counts",
-        ["database"],
-        "database",
-      );
+      const events = build.after(source, pattern.events ?? "Events", ["queue"], "topic");
+      const counter = build.after(events, pattern.counter ?? "Counter", ["worker"], "counter");
+      const counts = build.after(counter, pattern.counts ?? "Totals", ["database"], "database");
       const publisher = build.module(
         source,
         "event-publisher",
-        pattern.publisher ?? "View publisher",
+        pattern.publisher ?? "Event publisher",
       );
       build.connect(publisher, "channel", { tile: events });
-      const reader = build.module(source, "data-access", pattern.reader ?? "View count reader");
+      const reader = build.module(source, "data-access", pattern.reader ?? "Totals reader");
       build.connect(reader, "database", { tile: counts });
-      const consumer = build.module(counter, "event-consumer", "View consumer");
+      const consumer = build.module(counter, "event-consumer", "Event consumer");
       build.connect(consumer, "channel", { tile: events });
-      build.module(counter, "event-counter", "Receipt and increment");
-      const writer = build.module(counter, "data-access", "Count writer");
+      build.module(counter, "event-counter", "Event counter");
+      const writer = build.module(counter, "data-access", "Totals writer");
       build.connect(writer, "database", { tile: counts });
       break;
     }
     case "search": {
-      const named = pattern.events ?? "Publication events";
+      const named = pattern.events ?? "Publications";
       const events =
         build.find(named, ["queue"], "topic") ??
         build.refuse(
           `There is no topic "${named}". Search consumes an existing topic: name one (events), such as the upload pipeline's publication topic.`,
         );
-      const indexer = build.after(
-        events,
-        pattern.indexer ?? "Search indexer",
-        ["worker"],
-        "indexer",
-      );
-      const index = build.after(indexer, pattern.index ?? "Videos", ["search"], "search index");
+      const indexer = build.after(events, pattern.indexer ?? "Indexer", ["worker"], "indexer");
+      const index = build.after(indexer, pattern.index ?? "Index", ["search"], "search index");
       const service = build.entry(
         "download",
-        pattern.service ?? "Search API",
+        pattern.service ?? "Query API",
         hosts("search-query"),
         "search API",
         pattern.action,
       );
-      const consumer = build.module(
-        indexer,
-        "event-consumer",
-        `${build.name(events).replace(/ events?$/i, "")} consumer`,
-      );
+      const consumer = build.module(indexer, "event-consumer", "Event consumer");
       build.connect(consumer, "channel", { tile: events });
       const writer = build.module(indexer, "index-writer", "Index writer");
       build.connect(writer, "index", { tile: index });
-      const query = build.module(service, "search-query", pattern.query ?? "Video search");
+      const query = build.module(service, "search-query", pattern.query ?? "Search query");
       build.connect(query, "index", { tile: index });
       break;
     }
@@ -663,42 +644,31 @@ export function buildModulePattern(
         "tile to protect",
         pattern.action,
       );
-      const identity = build.after(host, pattern.identity ?? "Sign-in", ["identity"], "identity");
-      build.guard(
-        host,
-        identity,
-        wanted,
-        pattern.guard ?? (wanted === "optional" ? "Viewer check" : "Account check"),
-        false,
-      );
+      const identity = build.after(host, pattern.identity ?? "Login", ["identity"], "identity");
+      build.guard(host, identity, wanted, pattern.guard ?? "Auth guard", false);
       break;
     }
     case "favorites": {
       const service = build.entry(
         "download",
-        pattern.service ?? "Account API",
+        pattern.service ?? "Member API",
         hosts("favorites"),
         "account service",
         pattern.action,
       );
       const database = build.after(
         service,
-        pattern.database ?? "Favorites",
+        pattern.database ?? "Saved items",
         ["database"],
         "database",
       );
-      const identity = build.after(
-        service,
-        pattern.identity ?? "Sign-in",
-        ["identity"],
-        "identity",
-      );
-      build.guard(service, identity, "required", pattern.guard ?? "Account check", true);
-      const favorites = build.module(service, "favorites", pattern.favorites ?? "Favorite videos");
+      const identity = build.after(service, pattern.identity ?? "Login", ["identity"], "identity");
+      build.guard(service, identity, "required", pattern.guard ?? "Auth guard", true);
+      const favorites = build.module(service, "favorites", pattern.favorites ?? "Favorites");
       build.connect(favorites, "state", { tile: database });
       if (pattern.items) {
         const items = build.after(service, pattern.items, ["database"], "items database");
-        const reader = build.module(service, "data-access", pattern.reader ?? "Video reader");
+        const reader = build.module(service, "data-access", pattern.reader ?? "Item reader");
         build.connect(reader, "database", { tile: items });
         build.connect(favorites, "items", { module: reader });
       }
@@ -707,12 +677,12 @@ export function buildModulePattern(
     case "owned-store": {
       const writer = build.entry(
         "upload",
-        pattern.writer ?? "Catalog API",
+        pattern.writer ?? "Writer API",
         application,
         "writer",
         pattern.action,
       );
-      const named = pattern.database ?? "Catalog";
+      const named = pattern.database ?? "Entries";
       const existing = build.find(named, ["database"], "database");
       if (existing) {
         const owner = build.design.architecture?.studio?.elements.find(

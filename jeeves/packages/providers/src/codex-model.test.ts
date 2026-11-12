@@ -126,6 +126,8 @@ describe("Codex as a model provider", () => {
     const prompt = input[0]?.type === "text" ? input[0].text : "";
     expect(prompt).toContain("# Instructions\n\nYou edit designs.");
     expect(prompt).toContain("### getDesign");
+    // The tools are called through toolCalls, never from Codex's own tool list (V3-19).
+    expect(prompt).toContain("you call them only by listing them in `toolCalls`");
     expect(prompt).toContain("Draw this sketch.\n\n[Attached image 1]");
     expect(prompt).toContain("Call c1: `getDesign` with arguments {}");
     expect(prompt).toContain('## Tool result for call c1\n\n{"elements":[]}');

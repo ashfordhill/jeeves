@@ -13,3 +13,4 @@ refused as a revision conflict and nothing changes (the scripted reply still fol
 | --- | --- |
 | "Rename the redirect service to Redirector" | `applyStudioCommands` with an `edit` renaming `redirect`, then a reply. |
 | "Add a cache after the redirect service" | `getDesign`, then `applyStudioCommands` with an `addTile` after `redirect` (tile `cache`, "Cache", link `redirect-cache-2`: what Redirect's `+` → Cache makes on the canvas), then a reply. |
+| "Archive the clicks" | `applyStudioCommands` with an `addTile` after `redirect` and a `setOwner` that doesn't exist (refused, nothing kept), then the `addTile` alone in chat's own form (no ID or link ID: they follow the name, `click-archive`), then a reply (V3-19). |

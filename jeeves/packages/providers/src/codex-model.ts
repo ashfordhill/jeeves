@@ -167,6 +167,9 @@ export function codexInput(request: ModelRequest, scratch: string): UserInput[] 
   const prompt = [
     "You are answering as a model inside an application called Jeeves. Don't run shell commands or read files: everything you need is below, and the application runs your tool calls for you.",
     "Reply with the JSON the output schema asks for. To call tools, list them in `toolCalls`, with each call's `arguments` as a JSON string matching that tool's schema; you'll get the results in the next request. When you're done, or need the person, leave `toolCalls` empty and write your reply in `message`.",
+    // V3-19: through Codex, a smaller model sometimes looked for these tools in its own tool list,
+    // didn't find them and told the person it couldn't make changes.
+    "The tools under # Tools are Jeeves's, not part of your own tool list: you call them only by listing them in `toolCalls`, and they are always available that way. Never answer that a tool isn't available or that you can't make changes; call it.",
     `# Instructions\n\n${request.instructions}`,
     tools ? `# Tools\n\n${tools}` : "# Tools\n\nNone: answer with a message only.",
     `# Conversation so far\n\n${transcript.join("\n\n")}`,

@@ -261,6 +261,43 @@ export function designReview(
         .find((entry) => entry.setting === setting);
       const binding = studio.elements.find((entry) => entry.element === control?.process);
       const range = rule && "integer" in rule.supported ? rule.supported.integer : undefined;
+      // A module's selection saved with a template version that isn't installed (an older
+      // design): any module command derives its generation again, with the installed version, so
+      // the fix reconnects one of its links (V3-19).
+      const lead =
+        selection?.target.kind === "component"
+          ? components.get(selection.target.component)
+          : undefined;
+      const pinned =
+        lead &&
+        selection &&
+        !installed.templates.some(
+          (entry) =>
+            entry.ref.id === selection.template.id &&
+            entry.ref.version === selection.template.version,
+        );
+      const relink = pinned
+        ? moduleSlots(design, lead.id).flatMap((state) =>
+            state.links.map((link) => ({ slot: state.slot.id, ...link })),
+          )[0]
+        : undefined;
+      if (lead && relink && (!binding || !setting || !rule || !range)) {
+        add(
+          withCommands(
+            {
+              ...finding,
+              module: lead.id,
+              tile: lead.host,
+              fix: `Its ${selection?.template.id} template is pinned to version ${selection?.template.version}, which isn't installed. Disconnect ${lead.name}'s ${relink.slot} link and connect it again: every module command derives the generation again, with the installed version.`,
+            },
+            [
+              { type: "disconnectModule", link: relink.id },
+              { type: "connectModule", module: lead.id, slot: relink.slot, target: relink.target },
+            ],
+          ),
+        );
+        continue;
+      }
       if (!binding || !setting || !rule || !range) {
         add(finding);
         continue;

@@ -75,10 +75,11 @@ export type ChatEvent =
 
 export type ModelRole = "designChat";
 
-export type ProviderId = "openai" | "codex";
+export type ProviderId = "openai" | "codex" | "anthropic";
 
 export type ProviderAuth =
   | { type: "api-key"; envVar: string; configKey: string }
+  | { type: "env-key"; envVar: string }
   | { type: "cli-login"; command: string };
 
 export type ProviderStatus = {

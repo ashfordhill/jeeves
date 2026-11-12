@@ -436,6 +436,7 @@ The design chat uses one provider and model chosen in Settings
 | --- | --- | --- |
 | OpenAI API | `OPENAI_API_KEY` or `openai.apiKey` in `~/.jeeves/config.json` | Strict function schemas through an audited wire adapter; canonical server validation still applies. |
 | Codex | its own CLI login (`codex login`); Jeeves never sees the credentials | Outer structured answer only; inner argument JSON strings are validated by the server. |
+| Anthropic API | `ANTHROPIC_API_KEY` in the environment only; never read from or written to the config file | None: the canonical schemas go as they are (Messages API tool use, adaptive thinking at medium effort, prompt caching); every call is validated by the server. |
 
 The [tool-schema guide](../docs/chat-tool-schemas.md) documents omission/null encoding, the supported
 subset, history replay and explicit refusal of unaudited schema constructs. Strict arguments do

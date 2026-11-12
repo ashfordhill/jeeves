@@ -515,8 +515,8 @@ export const studioPatterns: Readonly<Record<StudioPatternId, StudioPattern>> = 
       commands: [
         first("publisher", "Publication owner", "upload"),
         after("publisher", "records", "Published records", "database"),
-        after("publisher", "published", "Publication events", "queue"),
-        after("published", "indexer", "Search indexer", "worker"),
+        after("publisher", "published", "Changes", "queue"),
+        after("published", "indexer", "Indexer", "worker"),
         after("indexer", "search-index", "Search index", "search"),
         {
           type: "editConnection",

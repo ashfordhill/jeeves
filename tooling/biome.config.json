@@ -21,7 +21,8 @@
       "!field-projects/youtube/v3/inputs/**/*.json",
       "!field-projects/youtube/v3/generated",
       "!field-projects/youtube/v3/app",
-      "!docs/archive/pre-rewrite"
+      "!docs/archive/pre-rewrite",
+      "!docs/evals/v3-19/live*.json"
     ]
   },
   "formatter": {

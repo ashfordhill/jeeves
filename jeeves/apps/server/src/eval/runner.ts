@@ -18,8 +18,10 @@ import { cases, EVAL_VERSION, LIMITS, MODEL } from "./cases.ts";
 import {
   checkScripted,
   designMarkdown,
+  mergeReports,
   parseModels,
   readDesignReport,
+  readReportJson,
   replayDesignReport,
   runLive,
   runScripted,
@@ -43,7 +45,7 @@ const defaultReport = fileURLToPath(
   new URL("../../../../../docs/evals/rf06/live.json", import.meta.url),
 );
 const defaultDesignReport = fileURLToPath(
-  new URL("../../../../../docs/evals/v3-10/live.json", import.meta.url),
+  new URL("../../../../../docs/evals/v3-19/live.json", import.meta.url),
 );
 export type Report = {
   version: string;
@@ -171,6 +173,22 @@ async function main() {
   if (!["all", "rf06", "design"].includes(suite))
     throw new Error(`Unknown --suite=${suite}; use rf06 or design`);
   const path = resolve(reportArg ?? defaultReport);
+  const merge = flag("merge");
+  if (merge) {
+    // Design reports run side by side, as one report (offline: nothing is sent).
+    if (!reportArg) throw new Error("--merge=<a.json,b.json> needs --report=<merged.json>");
+    const parts = [];
+    for (const item of merge.split(",")) {
+      const part = await readDesignReport(resolve(item));
+      if (!part) throw new Error(`${item} is not a design report`);
+      parts.push(part);
+    }
+    const merged = mergeReports(parts);
+    await writeFile(path, `${JSON.stringify(merged, null, 2)}\n`);
+    await writeFile(path.replace(/\.json$/, ".md"), designMarkdown(merged));
+    console.log(`merged ${parts.length} reports into ${path}`);
+    return;
+  }
   if (live && suite === "design") {
     if (!args.includes("--allow-paid-api"))
       throw new Error(
@@ -178,9 +196,16 @@ async function main() {
       );
     const models = parseModels(flag("models"));
     const target = resolve(reportArg ?? defaultDesignReport);
+    const repeat = Number(flag("repeat") ?? 1);
+    if (!Number.isInteger(repeat) || repeat < 1 || repeat > 10)
+      throw new Error("--repeat takes a whole number from 1 to 10");
     const { db, close } = await openTestDb();
     try {
-      const report = await runLive(db, models, target);
+      const report = await runLive(db, models, target, {
+        repeat,
+        cases: flag("cases")?.split(",").filter(Boolean),
+        resume: args.includes("--resume"),
+      });
       console.log(designMarkdown(report));
     } finally {
       await close();
@@ -365,7 +390,7 @@ async function main() {
     }
   } else {
     // No OpenAI provider is constructed in this branch. A throwing global fetch also enforces it.
-    const report = JSON.parse(await readFile(path, "utf8")) as Report;
+    const report = (await readReportJson(path)) as Report;
     const oldFetch = globalThis.fetch;
     globalThis.fetch = async () => {
       throw new Error("Network is forbidden in offline eval replay");

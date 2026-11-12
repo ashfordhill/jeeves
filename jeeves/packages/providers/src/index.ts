@@ -1,4 +1,5 @@
-// Model provider interface, the OpenAI and Codex adapters, and a scripted fake.
+// Model provider interface, the OpenAI, Codex and Anthropic adapters, and a scripted fake.
+export * from "./anthropic.ts";
 export * from "./catalog.ts";
 export * from "./codex.ts";
 export * from "./codex-model.ts";

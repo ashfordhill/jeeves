@@ -186,6 +186,61 @@
           "text": "Selected logical owner retained. No design edits."
         }
       ]
+    },
+    {
+      "match": "Archive the clicks",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "applyStudioCommands",
+              "arguments": {
+                "commands": [
+                  {
+                    "type": "addTile",
+                    "from": {
+                      "tile": "redirect"
+                    },
+                    "tile": {
+                      "name": "Click archive",
+                      "kind": "database"
+                    }
+                  },
+                  {
+                    "type": "setOwner",
+                    "tile": "click-archive",
+                    "owner": "redirect"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "applyStudioCommands",
+              "arguments": {
+                "commands": [
+                  {
+                    "type": "addTile",
+                    "from": {
+                      "tile": "redirect"
+                    },
+                    "tile": {
+                      "name": "Click archive",
+                      "kind": "database"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "Added Click archive after the Redirect service. My first batch used a command that doesn't exist, so nothing of it was kept; the second went through."
+        }
+      ]
     }
   ]
 }

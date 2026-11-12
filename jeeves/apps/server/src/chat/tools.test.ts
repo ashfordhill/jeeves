@@ -119,7 +119,6 @@ describe("studio chat tools", () => {
       "configureOwnership",
       "applyStudioCommands",
       "applyPattern",
-      "previewCommands",
       "validateDesign",
       "readReadiness",
       "declareReviewScope",
@@ -346,7 +345,9 @@ describe("studio chat tools", () => {
       }),
     ).toMatchObject({
       ok: false,
-      error: "Video encoder can't go in Shorten service; it goes in a worker.",
+      error: expect.stringContaining(
+        "Video encoder can't go in Shorten service; it goes in a worker.",
+      ),
     });
     const catalog = run(workspace, "listStudioDefinitions").modules as {
       kind: string;
@@ -451,7 +452,7 @@ describe("studio chat tools", () => {
       }),
     ).toMatchObject({
       ok: false,
-      error: "Favorite items' items must be a Data access in Account API.",
+      error: expect.stringContaining("Favorite items' items must be a Data access in Account API."),
     });
     // Sign-in Optional, with the module page's command: Favorites waits for Required.
     const settings = { kind: "auth-guard", credential: "jwt", signIn: "optional" };
@@ -488,7 +489,10 @@ describe("studio chat tools", () => {
         baseRevision: 3,
         commands: [{ type: "setRunnableProcesses", on: true }],
       }),
-    ).toMatchObject({ ok: false, error: "Runnable processes needs a design built from modules." });
+    ).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("Runnable processes needs a design built from modules."),
+    });
     const workspace = new Workspace(emptyDesign());
     const commands = [
       { type: "addAction", lane: "download", name: "Visit", system: { name: "Links" } },
@@ -513,9 +517,7 @@ describe("studio chat tools", () => {
     });
     expect(workspace.pending).toEqual(ops);
     expect(run(workspace, "getDesign").processes).toBe(true);
-    expect(description("applyStudioCommands")).toContain(
-      "setRunnableProcesses (on: true or false)",
-    );
+    expect(description("applyStudioCommands")).toContain("setRunnableProcesses {on: true|false}");
   });
 
   it("edits a stub tile's process limits with the Options form's command while processes are on (D5)", () => {
@@ -584,25 +586,27 @@ describe("studio chat tools", () => {
     const before = workspace.working;
     const apply = (...commands: unknown[]) =>
       run(workspace, "applyStudioCommands", { baseRevision: 3, commands });
-    expect(run(workspace, "applyStudioCommands", addCache(2)).ok).toBe(false);
+    // A stale baseRevision is ignored: a turn edits one working copy, and the commit checks for
+    // a concurrent edit itself (V3-19).
+    expect(run(new Workspace(workspace.base), "applyStudioCommands", addCache(2)).ok).toBe(true);
     expect(apply({ type: "addRoute", path: "/x" }).error).toMatch(/no "addRoute" command/);
     // The old island-making commands are gone; tiles hang off lanes.
     expect(apply({ type: "create", elements: [] }).error).toMatch(
       /no "create" command\. The commands are addAction, renameAction, removeAction, addTile, linkTiles/,
     );
-    expect(apply({ type: "edit", element: "ghost", name: "Ghost" }).error).toBe(
+    expect(apply({ type: "edit", element: "ghost", name: "Ghost" }).error).toContain(
       'There is no tile "ghost".',
     );
     // The second command would cut off the click path and the new cache; neither is kept.
     expect(apply(addCache(3).commands[0], { type: "removeTile", tile: "redirect" }).error).toBe(
-      "Command 2 (removeTile): Removing Redirect service would cut off Click events, URL cache, Cache and Analytics worker; list them in alsoRemove to remove them too.",
+      "Nothing changed: 1 command needs fixing. Command 2 (removeTile): Removing Redirect service would cut off Click events, URL cache, Cache and Analytics worker; list them in alsoRemove to remove them too. It takes removeTile {tile, alsoRemove?: [tile ids]}.",
     );
     const link = (from: string, to: string) =>
       apply({ type: "linkTiles", from: { tile: from }, to, link: "sync", linkId: `${from}-${to}` });
-    expect(link("analytics", "redirect").error).toBe(
+    expect(link("analytics", "redirect").error).toContain(
       "Redirect service already leads to Analytics worker; linking them would make a loop.",
     );
-    expect(link("url-cache", "shorten").error).toBe(
+    expect(link("url-cache", "shorten").error).toContain(
       "URL cache can't link to Shorten service. A cache can't link onward.",
     );
     expect(run(workspace, "editEntity", {}).ok).toBe(false);
@@ -617,7 +621,7 @@ describe("studio chat tools", () => {
     const apply = (...commands: unknown[]) =>
       run(workspace, "applyStudioCommands", { baseRevision: 0, commands });
     expect(apply({ type: "addAction", lane: "download" }).error).toMatch(
-      /^This design has no system yet\. Start it with addAction/,
+      /This design has no system yet\. Start it with addAction/,
     );
     expect(
       apply(
@@ -642,9 +646,12 @@ describe("studio chat tools", () => {
     expect(design.findings).toEqual([]);
     expect(design.warnings).toHaveLength(2);
     // One action per lane; the name is a word, not a sentence.
-    expect(apply({ type: "addAction", lane: "upload" }).error).toBe(
-      "This design already has a Produce action; each lane has one.",
-    );
+    // An action the lane already has is skipped as already there, not refused (V3-19).
+    expect(apply({ type: "addAction", lane: "upload" })).toMatchObject({
+      ok: true,
+      commands: 0,
+      skipped: [{ command: 1, why: "The upload lane already has its Publish action." }],
+    });
     expect(
       apply({ type: "renameAction", lane: "upload", name: "Publish a video to the channel" }).ok,
     ).toBe(false);
@@ -664,7 +671,7 @@ describe("studio chat tools", () => {
     };
     const apply = (command: unknown) =>
       run(workspace, "applyStudioCommands", { baseRevision: 0, commands: [command] });
-    expect(apply(first).error).toMatch(/^This design has no system yet\./);
+    expect(apply(first).error).toMatch(/This design has no system yet\./);
     const result = apply({ ...first, system: { name: "Shortener" } });
     expect(result).toMatchObject({ ok: true, findings: [] });
     expect(workspace.working.architecture?.system.name).toBe("Shortener");
@@ -680,7 +687,7 @@ describe("studio chat tools", () => {
     // An entry is in one lane: "both" is refused, and setEntryLane moves it to the other lane's
     // action, which must exist.
     expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "both" }).ok).toBe(false);
-    expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "download" }).error).toBe(
+    expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "download" }).error).toContain(
       "The download lane has no action yet; add its Consume action first.",
     );
     expect(apply({ type: "addAction", lane: "download" }).ok).toBe(true);
@@ -713,7 +720,7 @@ describe("studio chat tools", () => {
     expect(catalog.warnings).toBe(studioWarningSentence);
     // The prompt stays short: the tools carry the knowledge.
     expect(INSTRUCTIONS.length).toBeLessThan(3000);
-    expect(INSTRUCTIONS).toContain("plan, preview, apply, review, fix");
+    expect(INSTRUCTIONS).toContain("plan, apply, review, fix");
 
     // Without a link (the schema leaves it optional), each link takes its pair's default.
     const workspace = new Workspace(tinyurl());
@@ -765,8 +772,9 @@ describe("studio chat tools", () => {
       });
     expect(add("billing")).toMatchObject({
       ok: false,
-      error:
+      error: expect.stringContaining(
         "A new tile can't be Billing: new tiles are the link fan's kinds (Microservice, Worker service, Uploads, Identity, Database, Search index, Cache, Object storage, Message channel, CDN, External API). Existing Billing tiles keep working. For payments, add a Service that owns its payment records and calls the provider as an External API.",
+      ),
     });
     for (const kind of ["gateway", "redirect", "notification"])
       expect(add(kind)).toMatchObject({ ok: false, error: expect.stringContaining("can't be") });
@@ -792,20 +800,21 @@ describe("studio chat tools", () => {
   it("applies a pattern as one batch of the mouse's commands, with an automatic review", () => {
     const base = { ...emptyDesign(), revision: 2 };
     const workspace = new Workspace(base);
-    const pattern = { id: "upload-pipeline", system: "YouTube", publication: "Publication events" };
+    const pattern = { id: "upload-pipeline", system: "Media", publication: "Publications" };
     const result = run(workspace, "applyPattern", { baseRevision: 2, pattern });
     expect(result).toMatchObject({ ok: true, pattern: "upload-pipeline", commands: 36 });
+    // The patterns' defaults are neutral role names: a design's names come from its brief.
     expect(result.added.tiles.map((item: { name: string }) => item.name)).toEqual([
-      "Upload API",
-      "Sign-in",
-      "Metadata",
-      "Original videos",
-      "Upload jobs",
-      "Transcoder",
-      "Transcoded videos",
-      "Processing events",
-      "Video lifecycle",
-      "Publication events",
+      "Ingest API",
+      "Login",
+      "Records",
+      "Originals",
+      "Jobs",
+      "Processor",
+      "Outputs",
+      "Results",
+      "Lifecycle",
+      "Publications",
     ]);
     // The same commands, as the mouse would send them one by one.
     const { commands } = buildModulePattern(base, pattern as never, installedGenerationSupport());
@@ -825,19 +834,20 @@ describe("studio chat tools", () => {
     expect(
       result.review.left.map((item: { check: string; tile?: string }) => [item.check, item.tile]),
     ).toEqual([
-      ["warning", "transcoded-videos"],
-      ["warning", "publication-events"],
-      ["long-line", "metadata"],
+      ["warning", "outputs"],
+      ["warning", "publications"],
+      ["long-line", "records"],
     ]);
     // A refused pattern changes nothing and says why.
     const refused = run(workspace, "applyPattern", {
       baseRevision: 2,
-      pattern: { id: "favorites", service: "Transcoder" },
+      pattern: { id: "favorites", service: "Processor" },
     });
     expect(refused).toMatchObject({
       ok: false,
-      error:
-        "Favorites: Transcoder is a worker; the account service must be a service. Nothing of the pattern was applied.",
+      error: expect.stringContaining(
+        "Favorites: Processor is a worker; the account service must be a service. Nothing of the pattern was applied.",
+      ),
     });
     expect(workspace.pending).toEqual(ops);
     // Applied again, nothing is added.
@@ -860,24 +870,25 @@ describe("studio chat tools", () => {
       generation: workspace.generation,
       reviewed: workspace.reviewedGeneration,
     };
-    const preview = run(workspace, "previewCommands", {
-      baseRevision: 3,
+    const preview = run(workspace, "applyPattern", {
+      preview: true,
       pattern: { id: "sign-in", tile: "Shorten service" },
     });
     expect(preview).toMatchObject({
       ok: true,
+      preview: true,
       pattern: "sign-in",
       added: {
-        tiles: [{ id: "sign-in", name: "Sign-in", kind: "identity" }],
-        modules: [{ id: "shorten-account-check", name: "Account check", kind: "auth-guard" }],
+        tiles: [{ id: "login", name: "Login", kind: "identity" }],
+        modules: [{ id: "shorten-auth-guard", name: "Auth guard", kind: "auth-guard" }],
       },
       note: expect.stringContaining("Preview only"),
     });
     expect(
-      preview.statuses.find((item: { module: string }) => item.module === "shorten-account-check"),
+      preview.statuses.find((item: { module: string }) => item.module === "shorten-auth-guard"),
     ).toMatchObject({ status: "template", template: "verified-identity" });
-    const commands = run(workspace, "previewCommands", {
-      baseRevision: 3,
+    const commands = run(workspace, "applyStudioCommands", {
+      preview: true,
       commands: [{ type: "addModule", host: "shorten", kind: "data-access", id: "shorten-urls" }],
     });
     expect(commands.review.left).toContainEqual(
@@ -898,19 +909,112 @@ describe("studio chat tools", () => {
     expect(workspace.pending).toEqual([]);
     expect(workspace.generation).toBe(before.generation);
     expect(workspace.reviewedGeneration).toBe(before.reviewed);
-    for (const args of [
-      { baseRevision: 3 },
-      {
-        baseRevision: 3,
-        commands: [{ type: "editSystem", name: "X" }],
-        pattern: { id: "cache-read" },
-      },
-      { baseRevision: 2, pattern: { id: "cache-read" } },
-    ])
-      expect(run(workspace, "previewCommands", args).ok).toBe(false);
+    for (const [tool, args] of [
+      ["applyStudioCommands", { preview: true }],
+      ["applyStudioCommands", { preview: true, commands: [{ type: "editSystem", name: 3 }] }],
+      ["applyPattern", { preview: true, pattern: { id: "search" } }],
+    ] as const)
+      expect(run(workspace, tool, args).ok).toBe(false);
     expect(workspace.pending).toEqual([]);
-    expect(isWorkspaceMutation("previewCommands", "{}")).toBe(false);
+    expect(isWorkspaceMutation("applyStudioCommands", '{"preview":true}')).toBe(false);
+    expect(isWorkspaceMutation("applyPattern", '{"preview":true,"pattern":{}}')).toBe(false);
     expect(isWorkspaceMutation("applyPattern", "{}")).toBe(true);
+  });
+
+  it("names every command to fix in a refused batch, with its shape, and keeps nothing (V3-19)", () => {
+    const workspace = new Workspace(tinyurl());
+    const refused = run(workspace, "applyStudioCommands", {
+      commands: [
+        { type: "editTile", tile: "url-db", name: "Links" },
+        { type: "setOwner", element: "url-db", owner: "shorten" },
+        { type: "addTile", from: { tile: "shorten" }, tile: { name: "Logs" } },
+        "not a command",
+      ],
+    });
+    expect(refused.ok).toBe(false);
+    expect(refused.problems).toEqual([
+      {
+        command: 2,
+        type: "setOwner",
+        problem: 'There is no "setOwner" command; use editTile.',
+        takes:
+          "editTile {tile, name?, description?, owner?: tile id that writes this store, or null}",
+      },
+      {
+        command: 3,
+        type: "addTile",
+        problem: expect.stringContaining("tile.kind"),
+        takes: expect.stringContaining("addTile {from:"),
+      },
+      { command: 4, problem: expect.stringContaining("A command is an object with a type") },
+    ]);
+    expect(refused.error).toMatch(
+      /^Nothing changed: 3 commands need fixing\. Command 2 \(setOwner\)/,
+    );
+    expect(refused.note).toContain("send the whole call again");
+    expect(workspace.pending).toEqual([]);
+    // Corrected, the same batch goes through, with IDs following the names.
+    const accepted = run(workspace, "applyStudioCommands", {
+      commands: [
+        { type: "editTile", tile: "url-db", name: "Links" },
+        { type: "addTile", from: { tile: "shorten" }, tile: { name: "Logs", kind: "database" } },
+      ],
+    });
+    expect(accepted).toMatchObject({ ok: true, commands: 2 });
+    expect(workspace.working.elements.map((item) => item.id)).toContain("logs");
+    expect(workspace.working.connections.map((item) => item.id)).toContain("shorten-logs");
+    // A setting is one setSetting, checked against the tile's own controls.
+    const unknown = run(workspace, "applyStudioCommands", {
+      commands: [{ type: "setSetting", tile: "logs", setting: "ttlSeconds", value: 5 }],
+    });
+    expect(unknown.problems[0].problem).toContain('Logs has no editable setting "ttlSeconds".');
+    expect(isWorkspaceMutation("applyStudioCommands", "{}")).toBe(true);
+    // A batch past the limit is refused in words, with what to do.
+    const tooMany = run(workspace, "applyStudioCommands", {
+      commands: Array.from({ length: 51 }, () => ({ type: "editSystem", name: "Links" })),
+    });
+    expect(tooMany.error).toBe(
+      "One call takes at most 50 commands, and this one has 51. Split them into two applyStudioCommands calls in the same response: they run in order.",
+    );
+    // Refusals past the first are still found, each checked without the ones before it.
+    const before = workspace.pending.length;
+    const several = run(workspace, "applyStudioCommands", {
+      commands: [
+        { type: "linkTiles", from: { tile: "url-cache" }, to: "shorten" },
+        { type: "addTile", from: { tile: "logs" }, tile: { name: "Log reader", kind: "service" } },
+        { type: "editTile", tile: "ghost", name: "Ghost" },
+        { type: "editSystem", name: "Links" },
+      ],
+    });
+    expect(several.problems.map((item: { command: number }) => item.command)).toEqual([1, 2, 3]);
+    expect(several.problems[1].problem).toContain(
+      "(Checked without command 1; this may follow from it.)",
+    );
+    expect(workspace.pending).toHaveLength(before);
+    // A command whose effect is already there is skipped, not refused: a resent batch goes through.
+    const pending = workspace.pending.length;
+    const resent = run(workspace, "applyStudioCommands", {
+      commands: [
+        { type: "addTile", from: { tile: "shorten" }, tile: { name: "Logs", kind: "database" } },
+        { type: "linkTiles", from: { tile: "shorten" }, to: "logs" },
+        { type: "editSystem", name: "Short links" },
+      ],
+    });
+    expect(resent).toMatchObject({
+      ok: true,
+      commands: 1,
+      skipped: [
+        { command: 1, type: "addTile", why: "Logs (logs) is already there, linked from it." },
+        { command: 2, type: "linkTiles", why: "shorten already links to logs." },
+      ],
+    });
+    expect(workspace.pending.length).toBeGreaterThan(pending);
+    // Readiness findings are a count with a note, not design errors to chase.
+    const built = run(new Workspace(emptyDesign()), "applyPattern", {
+      pattern: { id: "owned-store" },
+    });
+    expect(built.findings).toEqual([]);
+    expect(built.notSpecified).toMatch(/readiness findings? .*not design errors/);
   });
 
   it("reads a compact design: each tile's label, its links and its modules' kinds, slots and status", () => {
@@ -942,7 +1046,7 @@ describe("studio chat tools", () => {
     expect(design.declaredGeneration).toBeUndefined();
     expect(design.editableSettings[0]).toMatchObject({
       input: "guard.signIn",
-      component: "viewer-check",
+      module: "viewer-check",
       setting: "signIn",
       value: "required",
     });

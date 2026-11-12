@@ -26,6 +26,7 @@ import type { Db } from "../db/client.ts";
 import { designRevisions, projects } from "../db/schema.ts";
 import { DesignService } from "../design/service.ts";
 import { DESIGN_LIMITS, type DesignCase } from "./design-cases.ts";
+import { type CapabilityScore, scoreCapabilities } from "./design-rubric.ts";
 import { type BuildScore, type ReviewScore, scoreBuild, scoreReview } from "./design-score.ts";
 import { cleanResponse, requestContent } from "./harness.ts";
 import { stable } from "./score.ts";
@@ -55,12 +56,31 @@ export type DesignCaseResult = {
   refusals: number;
   /** The saved design after the turn. */
   design: DesignDocument;
-  score: BuildScore | ReviewScore;
+  score: BuildScore | CapabilityScore | ReviewScore;
   latencyMs: number;
 };
 
 const sha = (value: string) => createHash("sha256").update(value).digest("hex");
 const bytes = (value: string) => Buffer.byteLength(value, "utf8");
+
+/**
+ * A request's size in the OpenAI Responses wire form, the default provider's (strict tools are
+ * larger). Measuring never fails a turn: a model that isn't held to the strict schemas (Codex,
+ * Anthropic) can send arguments the strict codec refuses, and the tools refuse them in their own
+ * words. Such a request is measured with its arguments as sent (V3-10's Luna build failed here,
+ * in the measuring, not in chat).
+ */
+export function requestSize(request: ModelRequest): { requestBytes: number; promptBytes: number } {
+  const tools = JSON.stringify(request.tools.map(toOpenAITool));
+  const prompt = `${JSON.stringify(request.instructions)}${tools}`;
+  let items: string;
+  try {
+    items = JSON.stringify(toOpenAIInput(request.items, request.tools));
+  } catch {
+    items = JSON.stringify(request.items.filter((item) => item.type !== "opaque"));
+  }
+  return { requestBytes: bytes(`${prompt}${items}`), promptBytes: bytes(prompt) };
+}
 
 /**
  * A provider that records every round into `rounds`, stops at the case's response limit, asks for
@@ -78,15 +98,7 @@ export function recording(
       if (rounds.length >= DESIGN_LIMITS.rounds)
         throw new Error("Evaluation response limit exhausted");
       const start = performance.now();
-      // Sizes in the OpenAI Responses wire form, the default provider's (strict tools are larger).
-      const tools = JSON.stringify(request.tools.map(toOpenAITool));
-      const measured = {
-        requestHash: sha(requestContent(request)),
-        requestBytes: bytes(
-          `${JSON.stringify(request.instructions)}${tools}${JSON.stringify(toOpenAIInput(request.items, request.tools))}`,
-        ),
-        promptBytes: bytes(`${JSON.stringify(request.instructions)}${tools}`),
-      };
+      const measured = { requestHash: sha(requestContent(request)), ...requestSize(request) };
       try {
         const response = await provider.respond(
           { ...request, maxOutputTokens: DESIGN_LIMITS.maxOutputTokens },
@@ -181,8 +193,10 @@ export async function runDesignCase(
   const project = await designs.createProject(`Design eval ${test.id}`);
   try {
     const seed = test.seed();
-    const ops = seedOperations(seed);
-    if (test.kind === "review" && test.stored === "legacy") await storeLegacy(db, project.id, seed);
+    const legacy = test.kind === "review" && test.stored === "legacy";
+    // A legacy seed is stored as it is (the commands, and so the seed operations, refuse it).
+    const ops = legacy ? [] : seedOperations(seed);
+    if (legacy) await storeLegacy(db, project.id, seed);
     else if (ops.length) {
       const seeded = await designs.edit(project.id, { baseRevision: 0, source: "api", ops });
       if (!seeded.ok) throw new Error(`Could not seed ${test.id}: ${stable(seeded)}`);
@@ -225,9 +239,11 @@ export async function runDesignCase(
       refusals: turn.activity.filter((item) => !item.ok).length,
       design: state.design,
       score:
-        test.kind === "build"
-          ? scoreBuild(test.reference(installed), state.design, installed, test.values)
-          : scoreReview(test, initial.design, state.design, modelText, installed),
+        test.kind === "review"
+          ? scoreReview(test, initial.design, state.design, modelText, installed)
+          : test.scoring === "reference"
+            ? scoreBuild(test.reference(installed), state.design, installed, test.values)
+            : scoreCapabilities(test.rubric, state.design, installed),
     };
   } finally {
     await designs.deleteProject(project.id);

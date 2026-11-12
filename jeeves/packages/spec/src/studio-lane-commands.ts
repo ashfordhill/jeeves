@@ -906,6 +906,23 @@ export function newTileIdentity(
 }
 
 /**
+ * A free ID for a new tile named `name` (IDs follow names, TP03): its slug, or `slug-2`… when
+ * taken; the kind's slug when the name has none (chat names a tile as it adds it, V3-19).
+ */
+export function newNamedTileId(
+  design: DesignDocument,
+  name: string,
+  kind: StudioKind,
+  reserved: readonly string[] = [],
+): string {
+  const used = usedIds(design);
+  return freshId(
+    slug(name) || slug(studioDefinitions[kind].name),
+    (id) => used.has(id) || reserved.includes(id),
+  );
+}
+
+/**
  * A free ID for a new link from `from` to `to`: `source-target`, or `lane-target` for an entry of
  * a lane's action (as the TinyURL study names them). `reserved` are IDs about to be used in the
  * same batch.

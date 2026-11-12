@@ -1,9 +1,9 @@
 # YouTube v3: studio feedback, generation gaps, a better chat agent, then v3
 
 **Status:** planned 2026-11-10 from owner feedback. The owner confirmed the decisions the same
-day, revising D4 (adding Favorites) and D6 (chat). V3-01 to V3-18 are done; the owner approved
-[contract](contract.md) question 1 (a fifth link, raised in V3-06). V3-10's live model comparison
-waits for the owner's go-ahead. V3-11 designed v3 by mouse as the kept project **YouTube v3**
+day, revising D4 (adding Favorites) and D6 (chat). **V3-01 to V3-19 are done**; the owner approved
+[contract](contract.md) question 1 (a fifth link, raised in V3-06). The live model comparisons ran
+with the owner's go-ahead (V3-10, V3-19). V3-11 designed v3 by mouse as the kept project **YouTube v3**
 ([evidence](evidence/v3-11/README.md)). V3-12 committed its exact export as `generated/` and
 the byte-for-byte copy `app/`, the benchmark baseline ([evidence](evidence/v3-12/README.md)). V3-13
 completed the upload path in `app/` ([evidence](evidence/v3-13/README.md)), and V3-14 processing,
@@ -15,7 +15,12 @@ the backend: 556 post-template lines, 91.75% template ([evidence](evidence/v3-17
 [review pack](../../../field-projects/youtube/v3/notes/review-pack.md)). V3-18 reviewed v3
 ([review](review.md)): feedback and decisions delivered, chat's cheap model still pending (V3-19).
 It fixed template gap 6 in the generator and the out-of-range dead end, and ranked gap 1 first.
-V3-19 is next.
+V3-19 made the chat evals fair (neutral pattern defaults, two short product briefs scored by
+capability, a leak test), made the tools smaller and sturdier, and added an Anthropic provider:
+a modest model is now enough. Claude Haiku 5.5 scored 99.8, 97.8 and 94.4 on the spec, video and
+podcast builds and 98 on review, against Sonnet 5.5's 100, 100, 100 and 95, at about a fourteenth
+of the cost; gpt-6-luna through Codex scored 98, 81.2, 90.5 and 85, against gpt-6.1-sol's 100, 100,
+90.5 and 93.3 (V3-10: 0 and 50) ([results](../../evals/v3-19/README.md)).
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-10 — Studio feedback and YouTube v3](../../HUMAN_FEEDBACK.md)
 · [module add button sketch](../../human-feedback/2026-11-10-module-add-button.png)
 · Follows [tile processes](../tile-processes/units.md) and its [review](../tile-processes/review.md).

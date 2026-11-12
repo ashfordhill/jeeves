@@ -1,10 +1,8 @@
 /** Real tool schemas + mocked Responses transport + the authoritative Workspace command path. */
 import { createOpenAIProvider, type ModelItem, toOpenAIInput } from "@jeeves/providers";
 import {
-  applyOperations,
   buildOperationsCommand,
   buildOwnershipCommand,
-  buildStudioCommand,
   createLinkOperation,
   designBlueprintV3,
   emptyDesign,
@@ -12,7 +10,6 @@ import {
   ownershipSchema,
   positiveCachePolicy,
   studioArchitectureExample,
-  studioCommandSchema,
   tinyurlDesignScope,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
@@ -289,102 +286,39 @@ describe("strict OpenAI studio tools", () => {
   });
   it("transmits every current schema as strict, preserves nested commands/defaults, and replays wire history", async () => {
     const args = {
-      baseRevision: 0,
       commands: [
         {
           type: "addTile",
           from: { lane: "upload" },
-          side: "after",
           tile: { id: "service", name: "Publisher", kind: "service" },
           linkId: "upload-service",
           system: { name: "Strict studio" },
         },
+        { type: "addTile", from: { tile: "service" }, tile: { name: "Cache", kind: "cache" } },
+        { type: "addTile", from: { tile: "service" }, tile: { name: "Jobs", kind: "queue" } },
+        { type: "addTile", from: { tile: "jobs" }, tile: { name: "Worker", kind: "worker" } },
+        { type: "addModule", host: "service", kind: "cache-reader", name: "Read cache" },
         {
-          type: "addTile",
-          from: { tile: "service" },
-          side: "after",
-          tile: { id: "cache", name: "Cache", kind: "cache" },
-          linkId: "service-cache",
+          type: "connectModule",
+          module: "service-read-cache",
+          slot: "cache",
+          target: { tile: "cache" },
         },
-        {
-          type: "addTile",
-          from: { tile: "service" },
-          side: "after",
-          tile: { id: "jobs", name: "Jobs", kind: "queue" },
-          linkId: "service-jobs",
-        },
-        {
-          type: "addTile",
-          from: { tile: "jobs" },
-          side: "after",
-          tile: { id: "worker", name: "Worker", kind: "worker" },
-          linkId: "jobs-worker",
-        },
-        {
-          type: "edit",
-          element: "cache",
-          settings: { kind: "cache", engine: "redis-compatible", provider: "self-hosted" },
-        },
-        {
-          type: "createComponent",
-          component: {
-            id: "reader",
-            host: "service",
-            name: "Read cache",
-            description: "Preserve me",
-            settings: { kind: "cache-reader", pattern: "cache-aside", stampede: "single-flight" },
-          },
-          links: [
-            {
-              link: {
-                id: "reader-cache",
-                from: "reader",
-                to: { kind: "element", id: "cache", via: "service-cache" },
-              },
-            },
-          ],
-        },
-        {
-          type: "createComponent",
-          component: {
-            id: "custom",
-            host: "service",
-            name: "Custom",
-            settings: { kind: "custom" },
-          },
-          links: [
-            {
-              link: {
-                id: "custom-reader",
-                from: "custom",
-                to: { kind: "component", id: "reader" },
-              },
-            },
-          ],
-        },
-        {
-          type: "editComponent",
-          component: "reader",
-          name: "Cache lookup",
-          settings: {
-            kind: "cache-reader",
-            pattern: "cache-aside",
-            stampede: "single-flight",
-            l2TtlSeconds: 60,
-          },
-        },
-        { type: "editConnection", connection: "service-cache", planned: { label: "Lookup cache" } },
+        { type: "editModule", module: "service-read-cache", description: "Preserve me" },
+        { type: "editConnection", connection: "service-cache", label: "Lookup cache" },
+        { type: "setSetting", tile: "cache", setting: "engine", value: "redis-compatible" },
       ],
     };
     const encoded = wire("applyStudioCommands", args);
     const raw = JSON.parse(encoded);
+    expect(raw).toMatchObject({ preview: null });
     expect(raw.commands[0]).toMatchObject({
       link: null,
       system: { name: "Strict studio", description: null },
       tile: { description: null },
     });
-    expect(raw.commands[4]).toMatchObject({ owner: null, settings: { ttlSeconds: null } });
-    expect(raw.commands[5].links[0]).toMatchObject({ connection: null, link: { label: null } });
+    expect(raw.commands[1]).toMatchObject({ linkId: null, tile: { id: null } });
+    expect(raw.commands[8]).toMatchObject({ module: null, value: "redis-compatible" });
     const { provider, requests } = transport([
       [{ name: "applyStudioCommands", arguments: encoded }],
       [],
@@ -393,51 +327,33 @@ describe("strict OpenAI studio tools", () => {
     expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(args);
     const workspace = new Workspace(emptyDesign());
     const [result] = execute(workspace, response.toolCalls);
+    // A setting that isn't a normal control is refused, by command, and nothing is kept.
     expect(result).toMatchObject({
       ok: false,
-      error: expect.stringContaining("editable consumer"),
+      problems: [
+        {
+          command: 9,
+          type: "setSetting",
+          problem: expect.stringContaining('Cache has no editable setting "engine"'),
+        },
+      ],
     });
     expect(workspace.working).toEqual(emptyDesign());
     expect(workspace.pending).toEqual([]);
-    // Wire round-trip still preserves historical nested source, independently of normal authoring.
-    let historical = emptyDesign();
-    for (const command of args.commands) {
-      const applied = applyOperations(
-        historical,
-        buildStudioCommand(historical, studioCommandSchema.parse(command)).ops,
-      );
-      if (!applied.ok) throw new Error(JSON.stringify(applied.errors));
-      historical = applied.design;
-    }
-    expect(historical.architecture?.studio).toMatchObject({
-      actions: [{ lane: "upload", name: "Produce" }],
-      elements: expect.arrayContaining([
-        expect.objectContaining({
-          element: "cache",
-          owner: { kind: "element", id: "service" },
-          settings: { kind: "cache", engine: "redis-compatible", provider: "self-hosted" },
-        }),
-      ]),
-      connections: expect.arrayContaining([
-        expect.objectContaining({
-          connection: "service-jobs",
-          settings: { channelUse: "publish" },
-        }),
-        expect.objectContaining({ connection: "jobs-worker", settings: { channelUse: "consume" } }),
-      ]),
-      components: expect.arrayContaining([
-        expect.objectContaining({
-          id: "reader",
-          description: "Preserve me",
-          settings: {
-            kind: "cache-reader",
-            pattern: "cache-aside",
-            stampede: "single-flight",
-            l2TtlSeconds: 60,
-          },
-        }),
-      ]),
-    });
+    // Without it, the batch goes through: IDs follow names, and the module keeps its description.
+    const accepted = execute(workspace, [
+      {
+        name: "applyStudioCommands",
+        arguments: JSON.stringify({ ...args, commands: args.commands.slice(0, 8) }),
+      },
+    ])[0];
+    expect(accepted).toMatchObject({ ok: true, commands: 8 });
+    expect(workspace.working.architecture?.studio?.components).toEqual([
+      expect.objectContaining({ id: "service-read-cache", description: "Preserve me" }),
+    ]);
+    expect(workspace.working.connections.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["service-cache", "service-jobs", "jobs-worker"]),
+    );
     await provider.respond(
       request([
         ...response.items,
@@ -450,7 +366,7 @@ describe("strict OpenAI studio tools", () => {
     );
     expect(requests[1]?.input[0]).toMatchObject({ type: "function_call", arguments: encoded });
     expect(requests[0]?.tools).toEqual(requests[1]?.tools);
-    expect(requests[0]?.tools).toHaveLength(17);
+    expect(requests[0]?.tools).toHaveLength(16);
     // Inspect the actual HTTP body recursively, including all settings/module/scope unions.
     function inspect(schema: Record<string, unknown>) {
       expect(schema).not.toHaveProperty("oneOf");
@@ -472,39 +388,16 @@ describe("strict OpenAI studio tools", () => {
     expect(tools).toEqual(toolDefinitions());
   });
 
-  it("round-trips nested connection creation and retry discriminators without filling optional settings", async () => {
+  it("round-trips target and value discriminators without filling optional fields", async () => {
     const args = {
-      baseRevision: 1,
       commands: [
-        {
-          type: "connectComponent",
-          links: [
-            {
-              link: {
-                id: "module-target",
-                from: "module",
-                to: { kind: "element", id: "target", via: "new-link" },
-              },
-              connection: {
-                id: "new-link",
-                from: "service",
-                to: "target",
-                kind: "calls",
-                planned: {
-                  label: "Call",
-                  protocol: "HTTPS",
-                  interaction: "Request / response",
-                  security: "Service identity",
-                },
-                settings: { retry: { mode: "fixed", attempts: 3, delayMs: 100 } },
-              },
-            },
-          ],
-        },
-        ...["none", "unspecified"].map((mode) => ({
-          type: "editConnection",
-          connection: "new-link",
-          settings: { retry: { mode } },
+        { type: "connectModule", module: "m", slot: "cache", target: { tile: "cache" } },
+        { type: "connectModule", module: "m", slot: "loader", target: { module: "loader" } },
+        ...["optional", 5000, true, null].map((value) => ({
+          type: "setSetting",
+          module: "guard",
+          setting: "signIn",
+          value,
         })),
       ],
     };
@@ -524,15 +417,14 @@ describe("strict OpenAI studio tools", () => {
     expect(owner()).toEqual({ kind: "element", id: "shorten" });
     let items: ModelItem[] = [];
     const edits = [
-      { type: "edit", element: "url-db", name: "Links" },
-      { type: "edit", element: "url-db", owner: null },
-      { type: "edit", element: "url-db", owner: { kind: "element", id: "shorten" } },
+      { type: "editTile", tile: "url-db", name: "Links" },
+      { type: "editTile", tile: "url-db", owner: null },
+      { type: "editTile", tile: "url-db", owner: "shorten" },
     ];
     const rounds = edits.map((edit) => [
       {
         name: "applyStudioCommands",
         arguments: wire("applyStudioCommands", {
-          baseRevision: workspace.base.revision,
           commands: [edit],
         }),
       },
@@ -575,7 +467,6 @@ describe("strict OpenAI studio tools", () => {
       {
         name: "applyStudioCommands",
         arguments: wire("applyStudioCommands", {
-          baseRevision: 0,
           commands: [{ type: "addAction", lane: "download", system: { name: "Example" } }],
         }),
       },
@@ -610,30 +501,16 @@ describe("strict OpenAI studio tools", () => {
     const workspace = new Workspace(studioArchitectureExample("studio-tinyurl").design);
     const before = workspace.working;
     const invalidCommands = [
-      { type: "edit", element: "ghost", name: "Missing" },
+      { type: "editTile", tile: "ghost", name: "Missing" },
       { type: "linkTiles", from: { tile: "url-cache" }, to: "shorten", linkId: "invalid" },
-      // Zod superRefine is not expressible in the wire JSON Schema. The server must still refuse.
-      {
-        type: "createComponent",
-        component: {
-          id: "invalid",
-          host: "redirect",
-          name: "Invalid",
-          settings: {
-            kind: "cache-reader",
-            pattern: "cache-aside",
-            stampede: "none",
-            l1TtlSeconds: 20,
-          },
-        },
-      },
+      // The catalog's host rules are not expressible in the wire JSON Schema. The server refuses.
+      { type: "addModule", host: "redirect", kind: "video-encoder" },
     ];
     const { provider } = transport(
       invalidCommands.map((command) => [
         {
           name: "applyStudioCommands",
           arguments: wire("applyStudioCommands", {
-            baseRevision: before.revision,
             commands: [command],
           }),
         },
@@ -649,13 +526,13 @@ describe("strict OpenAI studio tools", () => {
 
   it("refuses malformed and extra nested wire arguments without sanitizing them", async () => {
     const args = JSON.parse(
-      wire("applyStudioCommands", { baseRevision: 0, commands: [{ type: "edit", element: "x" }] }),
+      wire("applyStudioCommands", { commands: [{ type: "editTile", tile: "x" }] }),
     );
     const variants = [
       { ...args, extra: null },
       { ...args, commands: [{ ...args.commands[0], surprise: null }] },
       { ...args, commands: [{ ...args.commands[0], owner: { value: null, extra: null } }] },
-      { ...args, commands: [{ type: "edit", element: "x" }] },
+      { ...args, commands: [{ type: "editTile", tile: "x" }] },
       { ...args, commands: [{ ...args.commands[0], name: 42 }] },
     ];
     const { provider } = transport(

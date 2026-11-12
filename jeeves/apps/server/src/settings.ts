@@ -85,6 +85,11 @@ export class Settings {
     return fromFile ? { key: fromFile, source: "file" } : undefined;
   }
 
+  /** The Anthropic key: from the environment only, never the config file (V3-19). */
+  anthropicKey(): string | undefined {
+    return this.env.ANTHROPIC_API_KEY?.trim() || undefined;
+  }
+
   /** Whether `codex login` has stored credentials (Codex reads them itself). */
   codexLoggedIn(): boolean {
     const codexHome = this.env.CODEX_HOME ?? join(this.env.HOME ?? homedir(), ".codex");
@@ -132,6 +137,14 @@ export class Settings {
               help: `Set OPENAI_API_KEY before starting Jeeves, or add {"openai": {"apiKey": "…"}} to ${this.configPath}.`,
             };
       }
+      case "anthropic":
+        return this.anthropicKey()
+          ? { ready: true, status: "API key set from the environment", help: null }
+          : {
+              ready: false,
+              status: "No API key",
+              help: "Set ANTHROPIC_API_KEY in the environment before starting Jeeves. Jeeves never stores it.",
+            };
       case "codex":
         return this.codexLoggedIn()
           ? { ready: true, status: "Logged in", help: null }

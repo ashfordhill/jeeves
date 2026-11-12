@@ -212,3 +212,32 @@ is compact (no per-link connection objects; module-level selections read as stat
 bytes, not tokens, price or quality results. Old RF06 records still stop at their first request
 ([chat evals](chat-evals.md#eval-110-no-new-billing-tile-v3-09)). No live or paid call was made.
 
+
+V3-19 makes the tools small and flat enough for a modest model, and drops `previewCommands`;
+there are now **sixteen**. `applyStudioCommands` takes chat's own commands
+([studio guide](studio.md#chat), `jeeves/apps/server/src/chat/commands.ts`), each compiling to
+exactly one studio command, and both apply tools take `preview: true` for a dry run and no
+`baseRevision` (the parser ignores one sent; the configure tools keep theirs). Measured on the
+emitted wire schemas:
+
+| Tool | Properties | Enum values | Depth | Bytes |
+| --- | ---: | ---: | ---: | ---: |
+| `applyStudioCommands` | 81 (was 469) | 79 (was 598) | 5 (was 9) | 12,210 (was 57,589) |
+| `applyPattern` | 66 | 9 | 4 | 9,364 (was 9,284) |
+| All sixteen tools, strict | | | | 44,362 (was 113,238) |
+| All sixteen tools, canonical | | | | 37,317 (was 86,382) |
+
+The command union lost the tile settings union (`edit`'s 17 KB of canonical schema: a setting
+is now `setSetting {tile or module, setting, value}`, checked on the server against the target's
+normal controls), the commands chat always refused (`changeKind`, `createComponent`,
+`connectComponent`, transport settings on `editConnection`) and the legacy tile kinds from
+`addTile`'s enum. A setting's `value` is a string, number, boolean or null; each branch carries a
+description, so Zod writes an `anyOf` rather than a type array, which the audited codec still
+refuses. `editTile.owner` (a tile ID, or null to clear it) keeps the presence wrapper described
+above. The server's parser for `applyStudioCommands` takes any commands and checks each on its
+own shape, so a refusal can name every malformed command; it also accepts the studio's own
+shapes (a settings object on `edit`, `editComponent`, `side`, `planned.label`), which the strict
+schema doesn't list. The instructions are 2,804 bytes (2,168 in V3-09): they now state the turn's 16-response budget.
+
+The Anthropic adapter (V3-19) sends each tool's canonical schema as its `input_schema`, with no
+`strict` mode: like Codex, nothing constrains the arguments, and the server checks every call.

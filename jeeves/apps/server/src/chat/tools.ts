@@ -17,6 +17,7 @@ import {
   buildSupportedAuthoringCommand,
   contractRecords,
   type DesignDocument,
+  type DesignReviewFinding,
   type DesignScope,
   designGeneration,
   designOperations,
@@ -28,6 +29,7 @@ import {
   emptyReviewScope,
   exactContractRefSchema,
   type Finding,
+  findingCatalog,
   type GenerationInstalledSupport,
   type GenerationSettingDecision,
   generationFindings,
@@ -44,6 +46,7 @@ import {
   moduleGenerationLabels,
   moduleLinkSlot,
   modulePatternSchema,
+  moduleSlots,
   moduleStatuses,
   moduleTemplateNames,
   normalGenerationControls,
@@ -73,7 +76,6 @@ import {
   studioActionDefaults,
   studioActions,
   studioChanges,
-  studioCommandSchema,
   studioComponentDefinitions,
   studioComponentKinds,
   studioDefinitions,
@@ -93,7 +95,6 @@ import {
   studioTileDefinitions,
   studioTileTypes,
   studioWarningSentence,
-  supportedAuthoringCommandSchema,
   tileTypeOf,
   tinyurlDesignScope,
   unresolvedDesignScope,
@@ -102,6 +103,16 @@ import {
 import { z } from "zod";
 import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
 import { installedGenerationSupport } from "../generation/support.ts";
+import {
+  type CommandProblem,
+  chatCommandSchema,
+  chatCommandShapes,
+  chatCommandTypes,
+  compileChatCommand,
+  type ParsedCommand,
+  parseChatCommand,
+  toChatCommands,
+} from "./commands.ts";
 
 const roleWords: Record<StudioLinkRole, string> = {
   user: "user",
@@ -140,48 +151,24 @@ const legacyKinds = (Object.keys(studioDefinitions) as StudioKind[]).filter(
  */
 export const INSTRUCTIONS = `You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with the same commands the mouse sends. You design; you do not implement software or claim runtime behavior.
 
-Work in a loop: plan, preview, apply, review, fix.
+Work in a loop: plan, apply, review, fix.
 - Plan: getDesign shows the design as the canvas draws it, with each module's status. listStudioDefinitions says what a new tile and a module can be, the link table and the caps. listStudioPatterns lists curated patterns (an upload pipeline, a cached read path, counting from events, search fed by events, sign-in, favorites, a store with one writer) with their arguments.
-- Preview: previewCommands dry-runs a pattern or a batch of commands and returns the statuses and findings it would leave. Nothing is saved.
-- Apply: applyPattern applies a pattern as one validated batch; applyStudioCommands applies commands. A refused call changes nothing and says why.
-- Review: every accepted change returns an automatic review of what is left; reviewDesign gives the whole review. Each finding names its tile or module and a fix, often as commands.
-- Fix: apply the fixes for findings marked fix, or say why one stays. Findings marked check are advice to confirm.
+- Apply: applyPattern applies a pattern as one validated batch; applyStudioCommands applies commands. Apply directly: nothing is saved until the turn ends, and every accepted change returns what is left. Add preview: true only to try something you are unsure of; it keeps nothing. A refused call changes nothing and names each command to fix and how: correct those and send the call again.
+- Review: every accepted change returns an automatic review; its left list is what is left in the design, each finding naming its tile or module and a fix, often as commands. reviewDesign gives the whole review.
+- Fix: apply the fixes for findings marked fix, or say why one stays. Findings marked check are advice to confirm. Readiness findings (a behavior profile, contracts, ownership declarations) are not design errors: leave them unless the person asks.
+
+A turn has at most 16 responses, and a turn that runs out saves nothing. So batch: send independent calls together in one response (several applyPattern calls, or one applyStudioCommands with many commands), and finish in a few steps.
 
 Rules:
 - You can do exactly what the mouse can, and no more: new tiles are the link fan's kinds, modules come from the module catalog, and templates come only from modules. Never work around a refusal or invent a tile to get past a rule.
 - Every tile hangs off a lane, with no cycles; stores never link onward; the user reaches a store only through a service.
-- Only getDesign.editableSettings are normal settings, sent as complete values. Behavior the design can't represent stays an explicit unresolved requirement: a name, label or module never implements it.
+- Only getDesign.editableSettings are normal settings; set one with setSetting. Behavior the design can't represent stays an explicit unresolved requirement: a name, label or module never implements it.
 - All edits in a turn commit together as one Undo step. Use the IDs the results give you; a rename re-keys IDs that follow names.
+- Name tiles and modules as the person does; when they don't, choose plain names for what each does. Pattern defaults are neutral placeholders.
 - Keep designs small and readable. Ask one focused askUser question only when the answer changes the architecture. Reply briefly with what changed and what is left. Messages beginning [Jeeves] are caller context; "this" or "the selected" means its selected identities.`;
 
-/**
- * What `previewCommands` dry-runs: the commands that change the lanes, the modules and their
- * statuses (and an Auth guard's Sign-in). Tile settings, link labels and the retained source
- * commands have nothing to preview, and leaving them out keeps the strict tool schema small.
- */
-const previewTypes: readonly string[] = [
-  "addAction",
-  "renameAction",
-  "removeAction",
-  "addTile",
-  "linkTiles",
-  "removeTile",
-  "removeLink",
-  "setEntryLane",
-  "editSystem",
-  "addModule",
-  "connectModule",
-  "disconnectModule",
-  "removeModule",
-  "editComponent",
-  "setRunnableProcesses",
-];
-const previewCommandSchema = z.discriminatedUnion(
-  "type",
-  studioCommandSchema.options.filter((option) =>
-    previewTypes.includes(option.shape.type.value),
-  ) as unknown as typeof studioCommandSchema.options,
-);
+/** The most commands one applyStudioCommands call takes. */
+const MAX_COMMANDS = 50;
 
 const schemas = {
   describeOperation: z.strictObject({ ref: exactContractRefSchema }),
@@ -206,17 +193,12 @@ const schemas = {
     ...ownershipCommandSchema.shape,
   }),
   applyStudioCommands: z.strictObject({
-    baseRevision: z.int().nonnegative(),
-    commands: z.array(supportedAuthoringCommandSchema).min(1).max(50),
+    preview: z.boolean().optional(),
+    commands: z.array(chatCommandSchema).min(1).max(MAX_COMMANDS),
   }),
   applyPattern: z.strictObject({
-    baseRevision: z.int().nonnegative(),
+    preview: z.boolean().optional(),
     pattern: modulePatternSchema,
-  }),
-  previewCommands: z.strictObject({
-    baseRevision: z.int().nonnegative(),
-    commands: z.array(previewCommandSchema).min(1).max(50).optional(),
-    pattern: modulePatternSchema.optional(),
   }),
   validateDesign: z.strictObject({}),
   readReadiness: z.strictObject({}),
@@ -229,6 +211,22 @@ const schemas = {
   }),
 };
 type ToolName = keyof typeof schemas;
+/**
+ * What each tool parses: its listed schema, except that applyStudioCommands takes any commands
+ * and checks each one on its own, so a refusal can name every command to fix, and that the apply
+ * tools still accept a `baseRevision`, which they ignore (V3-19): a turn edits one working copy,
+ * and the commit checks for a concurrent edit itself.
+ */
+const parsers: Record<ToolName, z.ZodType> = {
+  ...schemas,
+  applyStudioCommands: z.strictObject({
+    baseRevision: z.unknown().optional(),
+    preview: z.boolean().optional(),
+    // Over 50 is refused in words by applyCommands, not by the schema's bare "Too big".
+    commands: z.array(z.unknown()).min(1),
+  }),
+  applyPattern: schemas.applyPattern.extend({ baseRevision: z.unknown().optional() }),
+};
 const descriptions: Record<ToolName, string> = {
   describeOperation:
     "Read an exact immutable Create/Resolve operation or positive-cache policy with schema/behavior hashes, outcomes and fixed bounds. Use an exact ref from getDesign.availableOperations or availableCachePolicies before binding one with configureOperations. Unknown exact refs remain unresolved, with no substitution. No HTTP runtime or verifier is supplied.",
@@ -248,12 +246,9 @@ const descriptions: Record<ToolName, string> = {
     "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true; omission never upgrades. Preserve unknown profile versions and existing custom requirements unless asked to replace them. Required custom slugs, mutable destinations, disable/management, reputation, quotas or exact analytics block tinyurl-create-resolve@1.0.0: retain the requirement instead of erasing it or claiming support. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
   configureOwnership:
     "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Existing element IDs identify roles; co-deployment grants nothing; no owners or grants follow from names, modules or packages. Cache read and fill needs read-write. Foreign writes refuse; foreign reads need a deliberate published-read contract or an owned projection. Module commands derive the ownership their templates need. Declarations only: operation bindings are separate and runtime authorization is unavailable.",
-  applyStudioCommands:
-    'Apply commands against getDesign.baseRevision with the canvas\'s own command builder and validation. Actions, tiles and links: addAction, renameAction, removeAction (by lane); addTile (a tile of one of listStudioDefinitions.tileKinds after a tile, or from {"lane": "download"} or {"lane": "upload"}; side is "after"; leave link out for the pair\'s default mode); linkTiles; setEntryLane; removeTile (alsoRemove only the tiles the person wants removed); removeLink. Names and values: edit (a tile\'s name, description, editable settings as complete values, or owner), editSystem, editConnection (label only). Modules: addModule (host, kind; optional id, name, description), connectModule (module, slot, target {"tile": id}, or {"module": id} for an in-process slot such as a Cache reader\'s loader or Favorites\' items), disconnectModule (link), removeModule (module), editComponent (name, description, editable settings such as an Auth guard\'s signIn); each module command derives every module\'s generation and the ownership it needs in the same step. setRunnableProcesses (on: true or false) turns Runnable processes on or off for export, as Generate project\'s checkbox does; only a design built from modules can turn it on. A design with no system starts with addAction or addTile passing system {name}. IDs are lowercase slugs; name a new link "source-target" and a new entry "lane-target". Refused: new tiles of the legacy kinds (Gateway, Redirect, Notifications, Billing), changeKind, createComponent/connectComponent (use addModule/connectModule), and removeComponent/disconnectComponent once modules generate code. All accepted changes in a turn commit once; concurrent edits stop the turn. The result lists renamed IDs and an automatic review of what is left.',
+  applyStudioCommands: `Apply commands with the canvas's own command builder and validation, or with preview: true see what they would leave without keeping them. The commands: ${chatCommandTypes.map((type) => chatCommandShapes[type]).join("; ")}. A new tile is one of listStudioDefinitions.tileKinds, linked after a tile or from a lane; IDs follow names, so leave id and linkId out unless you need a particular one. Without link, a new link takes its pair's default mode. A design with no system starts with addAction or addTile passing system {name}. owner is the tile that writes a store. A module command derives every module's generation and the ownership it needs in the same step; a target {module} fills an in-process slot such as a Cache reader's loader or Favorites' items. setRunnableProcesses turns Runnable processes on for export, as Generate project's checkbox does (a design built from modules only). removeTile's alsoRemove names only tiles the person wants removed. The batch is all or nothing: a refusal names each command to fix, what is wrong and the shape it takes, and nothing is kept. Accepted changes in a turn commit once, as one Undo step; the result lists renamed IDs and an automatic review of what is left.`,
   applyPattern:
-    "Apply one curated pattern from listStudioPatterns as one validated batch: pattern {id, ...its arguments}. A tile argument reuses an existing tile named so (by ID or name), or names a new one; defaults are reused the same way, so patterns applied in turn share tiles. Every step is a command the mouse could send, checked with the same builder; one refused step refuses the whole pattern and nothing changes. The result lists the tiles and modules added and an automatic review of what is left.",
-  previewCommands:
-    "Dry-run either one pattern (as applyPattern takes it) or commands that change the lanes and modules (as applyStudioCommands takes them: the lane commands, editSystem, the module commands, editComponent and setRunnableProcesses) on the working design. Returns what would change, every module's resulting status with why, and the review findings it would leave. Nothing is prepared or saved; the working design is unchanged.",
+    "Apply one curated pattern from listStudioPatterns as one validated batch: pattern {id, ...its arguments}; preview: true shows what it would leave without keeping it. A tile argument reuses an existing tile named so (by ID or name), or names a new one; give the names the person uses, since the defaults are neutral placeholders. Every step is a command the mouse could send, checked with the same builder; one refused step refuses the whole pattern and nothing changes. The result lists the tiles and modules added and an automatic review of what is left.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   readReadiness:
     "Read the same snapshot compatibility report as the mouse and blueprint v3: design validity, exact contract completeness, implementation availability and exact-output runtime evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
@@ -274,8 +269,14 @@ export function toolDefinitions(): ToolDefinition[] {
 
 /** Shared by the real loop and evaluation observer; previews spend no repair pass. */
 export function isWorkspaceMutation(name: string, rawArguments: string): boolean {
-  if (name === "applyStudioCommands" || name === "applyPattern" || name === "declareReviewScope")
-    return true;
+  if (name === "declareReviewScope") return true;
+  if (name === "applyStudioCommands" || name === "applyPattern") {
+    try {
+      return JSON.parse(rawArguments)?.preview !== true;
+    } catch {
+      return true;
+    }
+  }
   if (
     name !== "configureDesignScope" &&
     name !== "configureOwnership" &&
@@ -304,7 +305,7 @@ function languagesOf(kind: StudioKind) {
 /** The lane canvas in a few sentences, for `listStudioDefinitions`. */
 const canvasNotes = [
   "One actor, the user (a mobile and desktop user), is always there. It is not a tile; never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post).",
-  `An action is what the user does in a lane, a tile with one short word for a name (Watch, Publish): at most one per lane, named ${actionWords} unless you name it (at most ${studioLimits.actionName} characters). The user links only to its actions, and each action's lane entries link it to the services that handle it.`,
+  `An action is what the user does in a lane, a tile with one short word for a name (such as View or Send): at most one per lane, named ${actionWords} unless you name it (at most ${studioLimits.actionName} characters). The user links only to its actions, and each action's lane entries link it to the services that handle it.`,
   "A tile has at most one entry, in one lane. Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only after a tile or a lane, never on its own.",
   "Whatever follows an async link happens later, so slow side work forks off through a queue or topic. Resources (database, cache, object storage, search index) are end tiles: fork at the service instead.",
   "A message channel is a Queue (each message to one consumer) or a Topic (a copy to every subscriber); templates derive the mode.",
@@ -395,11 +396,12 @@ function laneTiles(graph: LaneGraph, lane: StudioLane): string[] {
 function editableSetting(design: DesignDocument, control: GenerationSettingDecision) {
   const [, , list, index, , key] = control.sourcePaths[0] ?? [];
   const studio = design.architecture?.studio;
+  // The setSetting arguments that change it: the tile or module, the setting and a value.
   const target =
     list === "elements"
-      ? { element: studio?.elements[index as number]?.element }
+      ? { tile: studio?.elements[index as number]?.element }
       : list === "components"
-        ? { component: studio?.components?.[index as number]?.id }
+        ? { module: studio?.components?.[index as number]?.id }
         : {};
   return {
     ...(control.selection && { selection: control.selection }),
@@ -600,7 +602,7 @@ export function leftover(design: DesignDocument, installed: GenerationInstalledS
     notTemplates: review.modules
       .filter((item) => item.status !== "template")
       .map(({ module, name, host, status, reason }) => ({ module, name, host, status, reason })),
-    left: review.findings,
+    left: chatFindings(design, review.findings),
     note: review.findings.some((item) => item.severity === "fix")
       ? "Fix each finding marked fix (its commands are checked against this design), or say why it stays; findings marked check are advice."
       : review.findings.length
@@ -609,19 +611,32 @@ export function leftover(design: DesignDocument, installed: GenerationInstalledS
   };
 }
 
-const commandTypes: readonly string[] = studioCommandSchema.options.map(
-  (option) => option.shape.type.value,
-);
+const isReadiness = (finding: Finding) => findingCatalog[finding.code].category === "readiness";
+/**
+ * A change's validation findings for chat: the design's own (structural errors and the like),
+ * its warnings, and only a count of the readiness findings (a behavior profile, contracts,
+ * ownership declarations or templates the design doesn't name), which no design command fixes
+ * and which a modest model otherwise chases (V3-19).
+ */
+function designFindings(findings: readonly Finding[]) {
+  const readiness = findings.filter(isReadiness);
+  return {
+    findings: findings.filter((item) => !isDesignWarning(item) && !isReadiness(item)),
+    warnings: findings.filter(isDesignWarning).map((item) => item.message),
+    ...(readiness.length && {
+      notSpecified: `${readiness.length} readiness finding${readiness.length === 1 ? "" : "s"} (a behavior profile, contracts, ownership declarations or templates the design doesn't name): not design errors and not saved changes; leave them unless the person asks for them.`,
+    }),
+  };
+}
 
-/** A command type outside the vocabulary, refused in plain words. */
-function unknownCommand(args: unknown): string | undefined {
-  const commands = args && typeof args === "object" && "commands" in args ? args.commands : [];
-  for (const command of Array.isArray(commands) ? commands : []) {
-    const type = command && typeof command === "object" && "type" in command && command.type;
-    if (typeof type === "string" && !commandTypes.includes(type))
-      return `There is no "${type}" command. The commands are ${commandTypes.join(", ")}. Actions, tiles and links are added and removed only with addAction, removeAction, addTile, linkTiles, removeTile and removeLink, which keep every tile on a lane.`;
-  }
-  return undefined;
+/** Review findings with their fix commands in chat's own form (`toChatCommands`). */
+function chatFindings(design: DesignDocument, findings: readonly DesignReviewFinding[]) {
+  return findings.map((finding) => {
+    if (!finding.commands) return finding;
+    const commands = finding.commands.flatMap((command) => toChatCommands(design, command));
+    const { commands: _studio, ...rest } = finding;
+    return commands.length ? { ...rest, commands } : rest;
+  });
 }
 
 /** The working copy one turn edits, plus what the turn has done so far. */
@@ -689,13 +704,12 @@ export class Workspace {
       this.log(tool, false, "Malformed arguments");
       return { ok: false, error: "Arguments must be valid JSON." };
     }
-    const parsed = schemas[tool].safeParse(json);
+    const parsed = parsers[tool].safeParse(json);
     if (!parsed.success) {
-      const unknown = unknownCommand(json);
-      this.log(tool, false, unknown ?? "Arguments refused; nothing changed");
+      this.log(tool, false, "Arguments refused; nothing changed");
       return {
         ok: false,
-        error: unknown ?? z.prettifyError(parsed.error),
+        error: z.prettifyError(parsed.error),
         note: "Nothing changed for this call. Business/schema/route inputs are unavailable.",
       };
     }
@@ -750,7 +764,7 @@ export class Workspace {
         return {
           ...listModulePatterns(),
           apply:
-            "applyPattern {baseRevision, pattern: {id, ...arguments}} applies one as a single batch; previewCommands {baseRevision, pattern} shows what it would leave first.",
+            "applyPattern {pattern: {id, ...arguments}} applies one as a single batch; with preview: true it shows what it would leave first. Give the tiles and modules the names the person uses: the defaults are neutral placeholders.",
           guidance: listStudioPatterns(),
         };
       case "describeStudioPattern": {
@@ -792,11 +806,11 @@ export class Workspace {
         this.log(tool, true, "Asked a question");
         return { ok: true, note: "End this turn; the answer comes as a new message." };
       case "applyStudioCommands":
-        return this.applyCommands(parsed.data as z.infer<typeof schemas.applyStudioCommands>);
+        return this.applyCommands(
+          parsed.data as z.infer<typeof parsers.applyStudioCommands> as never,
+        );
       case "applyPattern":
         return this.applyPattern(parsed.data as z.infer<typeof schemas.applyPattern>);
-      case "previewCommands":
-        return this.preview(parsed.data as z.infer<typeof schemas.previewCommands>);
     }
   }
 
@@ -970,37 +984,123 @@ export class Workspace {
   }
 
   /**
-   * Runs commands one by one on `from` with the canvas's builder: the design they make, their
-   * operations and the IDs they re-keyed, or the first refusal in plain words.
+   * Runs studio commands one by one on `from` with the canvas's builder: the design they make,
+   * their operations and the IDs they re-keyed, or the first refusal (its 1-based position).
    */
   private runBatch(
     from: DesignDocument,
     commands: readonly StudioCommand[],
   ):
     | { ok: true; working: DesignDocument; ops: OperationInput[]; renamed: Rekey[] }
-    | { ok: false; error: string } {
+    | { ok: false; error: string; index: number } {
     let working = from;
     const ops: OperationInput[] = [];
     const renamed: Rekey[] = [];
     for (const [index, command] of commands.entries()) {
-      // In a call with several commands, say which one was refused.
-      const which = commands.length > 1 ? `Command ${index + 1} (${command.type}): ` : "";
       try {
         const batch = buildSupportedAuthoringCommand(working, command, this.installed);
         const result = applyOperations(working, batch.ops);
         if (!result.ok)
-          return { ok: false, error: which + result.errors.map((item) => item.message).join(" ") };
+          return { ok: false, index, error: result.errors.map((item) => item.message).join(" ") };
         working = result.design;
         ops.push(...batch.ops);
         renamed.push(...renamedIds(batch.ops));
       } catch (error) {
-        return {
-          ok: false,
-          error: which + (error instanceof Error ? error.message : String(error)),
-        };
+        return { ok: false, index, error: error instanceof Error ? error.message : String(error) };
       }
     }
     return { ok: true, working, ops, renamed };
+  }
+
+  /**
+   * Chat's commands checked one by one (each on its own shape first, then each compiled to its
+   * studio command and run on the design the earlier ones leave), or every problem found: all
+   * the shape problems, else up to five refusals (after a refused command the rest are still
+   * checked without it, so a model can fix several at once). A command whose effect is already in
+   * the design (a link that exists, a slot already holding its target, a module or tile already
+   * there) is skipped and listed, not refused. All or nothing: a refused batch keeps nothing.
+   */
+  private runChatBatch(
+    from: DesignDocument,
+    raw: readonly unknown[],
+  ):
+    | {
+        ok: true;
+        working: DesignDocument;
+        ops: OperationInput[];
+        renamed: Rekey[];
+        skipped: { command: number; type: string; why: string }[];
+      }
+    | { ok: false; problems: CommandProblem[] } {
+    const parsed = raw.map((item, index) => parseChatCommand(item, index));
+    const malformed = parsed.flatMap((item) => (item.ok ? [] : [item.problem]));
+    if (malformed.length) return { ok: false, problems: malformed };
+    let working = from;
+    const ops: OperationInput[] = [];
+    const renamed: Rekey[] = [];
+    const skipped: { command: number; type: string; why: string }[] = [];
+    const problems: CommandProblem[] = [];
+    for (const [index, item] of parsed.entries()) {
+      if (!item.ok) continue;
+      const type = item.command.type;
+      const takes = Object.hasOwn(chatCommandShapes, type)
+        ? chatCommandShapes[type as keyof typeof chatCommandShapes]
+        : undefined;
+      const fail = (problem: string) => {
+        const first = problems[0];
+        problems.push({
+          command: index + 1,
+          type,
+          problem: first
+            ? `${problem} (Checked without command ${first.command}; this may follow from it.)`
+            : problem,
+          ...(takes && { takes }),
+        });
+      };
+      const present = alreadyThere(working, item.command);
+      if (present) {
+        skipped.push({ command: index + 1, type, why: present });
+        continue;
+      }
+      let command: StudioCommand;
+      try {
+        command = compileChatCommand(working, item.command, this.installed);
+      } catch (error) {
+        fail(error instanceof Error ? error.message : String(error));
+        if (problems.length >= 5) break;
+        continue;
+      }
+      const run = this.runBatch(working, [command]);
+      if (!run.ok) {
+        fail(run.error);
+        if (problems.length >= 5) break;
+        continue;
+      }
+      working = run.working;
+      ops.push(...run.ops);
+      renamed.push(...run.renamed);
+    }
+    if (problems.length) return { ok: false, problems };
+    return { ok: true, working, ops, renamed, skipped };
+  }
+
+  /** A refused batch in words: each command to fix, then what to do. */
+  private refusedBatch(tool: string, problems: readonly CommandProblem[], total: number) {
+    const last = problems.at(-1);
+    const later = problems.length >= 5 && last && last.command < total ? total - last.command : 0;
+    const error = `Nothing changed: ${problems.length === 1 ? "1 command needs" : `${problems.length} commands need`} fixing. ${problems
+      .map(
+        (item) =>
+          `Command ${item.command}${item.type ? ` (${item.type})` : ""}: ${item.problem}${item.takes ? ` It takes ${item.takes}.` : ""}`,
+      )
+      .join(" ")}`;
+    this.log(tool, false, `Refused: ${error}`);
+    return {
+      ok: false,
+      error,
+      problems,
+      note: `Nothing from this call was kept. Fix ${problems.length === 1 ? "that command" : "those commands"} and send the whole call again${later ? `; the ${later} command${later === 1 ? "" : "s"} after the last one ${later === 1 ? "was" : "were"} not checked yet` : ""}.`,
+    };
   }
 
   /** Keeps an accepted batch on the working copy and answers with what is left. */
@@ -1021,37 +1121,57 @@ export class Workspace {
       ...extra,
       // A rename re-keys IDs that follow their names: later commands use the new IDs.
       ...(run.renamed.length && { renamed: run.renamed }),
-      findings: findings.filter((item) => !isDesignWarning(item)),
-      warnings: findings.filter(isDesignWarning).map((item) => item.message),
+      ...designFindings(findings),
       review,
       note: "Prepared for one atomic turn commit, not saved yet.",
     };
   }
 
+  /** What a batch would change and leave, with nothing kept (`preview: true`). */
+  private previewed(
+    tool: string,
+    run: { working: DesignDocument; renamed: Rekey[] },
+    summary: string,
+    extra: Record<string, unknown> = {},
+  ) {
+    const review = leftover(run.working, this.installed);
+    this.log(tool, true, `${summary}: ${review.left.length} would be left; nothing prepared`);
+    const findings = validateDesign(run.working);
+    return {
+      ok: true,
+      preview: true,
+      ...extra,
+      changes: studioChanges(this.working, run.working),
+      added: added(this.working, run.working),
+      ...(run.renamed.length && { renamed: run.renamed }),
+      statuses: moduleStatuses(run.working),
+      ...designFindings(findings),
+      review,
+      note: "Preview only: nothing is prepared or saved. Send the same call without preview to keep it.",
+    };
+  }
+
   private applyCommands({
-    baseRevision,
+    preview,
     commands,
-  }: z.infer<typeof schemas.applyStudioCommands>): unknown {
+  }: {
+    preview?: boolean;
+    commands: unknown[];
+  }): unknown {
     const tool = "applyStudioCommands";
-    if (baseRevision !== this.base.revision) {
-      this.log(tool, false, "Base revision mismatch; nothing prepared");
-      return {
-        ok: false,
-        error: "Revision conflict. Read getDesign before preparing commands.",
-        baseRevision: this.base.revision,
-      };
+    if (commands.length > MAX_COMMANDS) {
+      const error = `One call takes at most ${MAX_COMMANDS} commands, and this one has ${commands.length}. Split them into two applyStudioCommands calls in the same response: they run in order.`;
+      this.log(tool, false, `Refused: ${error}`);
+      return { ok: false, error, note: "Nothing from this call was kept." };
     }
-    const run = this.runBatch(this.working, commands);
-    if (!run.ok) {
-      this.log(tool, false, `Refused: ${run.error}`);
-      return { ok: false, error: run.error, note: "Nothing changed for this call." };
-    }
-    return this.accept(
-      tool,
-      run,
-      `Prepared ${commands.length} studio command${commands.length === 1 ? "" : "s"}`,
-      { commands: commands.length },
-    );
+    const run = this.runChatBatch(this.working, commands);
+    if (!run.ok) return this.refusedBatch(tool, run.problems, commands.length);
+    const kept = commands.length - run.skipped.length;
+    const summary = `${preview ? "Previewed" : "Prepared"} ${kept} studio command${kept === 1 ? "" : "s"}${run.skipped.length ? ` (${run.skipped.length} already in the design)` : ""}`;
+    const extra = { commands: kept, ...(run.skipped.length && { skipped: run.skipped }) };
+    return preview
+      ? this.previewed(tool, run, summary, extra)
+      : this.accept(tool, run, summary, extra);
   }
 
   /** A pattern's commands on the working copy, checked step by step, or why it is refused. */
@@ -1069,14 +1189,12 @@ export class Workspace {
     }
   }
 
-  private applyPattern({ baseRevision, pattern }: z.infer<typeof schemas.applyPattern>): unknown {
+  private applyPattern({ preview, pattern }: z.infer<typeof schemas.applyPattern>): unknown {
     const tool = "applyPattern";
     const refused = (error: string) => {
-      this.log(tool, false, `Refused: ${error}`);
+      this.log(tool, false, `${preview ? "Preview refused" : "Refused"}: ${error}`);
       return { ok: false, error, note: "Nothing changed for this call." };
     };
-    if (baseRevision !== this.base.revision)
-      return refused("Revision conflict. Read getDesign before applying a pattern.");
     const built = this.patternCommands(pattern);
     if (!built.ok) return refused(built.error);
     if (!built.commands.length) {
@@ -1092,52 +1210,88 @@ export class Workspace {
     // The same commands, as one batch through the same path as applyStudioCommands.
     const before = this.working;
     const run = this.runBatch(before, built.commands);
-    if (!run.ok) return refused(run.error);
-    return this.accept(
-      tool,
-      run,
-      `Applied pattern ${pattern.id} as ${built.commands.length} commands`,
-      { pattern: pattern.id, commands: built.commands.length, added: added(before, run.working) },
-    );
+    if (!run.ok) return refused(`Step ${run.index + 1}: ${run.error}`);
+    const extra = {
+      pattern: pattern.id,
+      commands: built.commands.length,
+      added: added(before, run.working),
+    };
+    return preview
+      ? this.previewed(tool, run, `Previewed pattern ${pattern.id}`, extra)
+      : this.accept(
+          tool,
+          run,
+          `Applied pattern ${pattern.id} as ${built.commands.length} commands`,
+          extra,
+        );
   }
+}
 
-  /** A dry run of commands or a pattern: what they would change and leave; nothing kept. */
-  private preview({ baseRevision, commands, pattern }: z.infer<typeof schemas.previewCommands>) {
-    const tool = "previewCommands";
-    const refused = (error: string) => {
-      this.log(tool, false, `Preview refused: ${error}`);
-      return { ok: false, error, note: "Nothing changed; nothing was prepared." };
-    };
-    if (baseRevision !== this.base.revision)
-      return refused("Revision conflict. Read getDesign before previewing.");
-    if (!commands === !pattern) return refused("Preview either commands or one pattern.");
-    let batch: readonly StudioCommand[] = commands ?? [];
-    if (pattern) {
-      const built = this.patternCommands(pattern);
-      if (!built.ok) return refused(built.error);
-      batch = built.commands;
+/**
+ * Why a chat command would change nothing because its effect is already in the design, or
+ * `undefined`: a model resending a batch, or linking what addTile already linked, isn't refused.
+ */
+function alreadyThere(design: DesignDocument, command: ParsedCommand): string | undefined {
+  const studio = design.architecture?.studio;
+  const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const kindOf = (id: string) =>
+    studio?.elements.find((item) => item.element === id)?.settings.kind;
+  const entryOf = (lane: string, tile: string) =>
+    !!studio?.entries?.some((item) => item.lane === lane && item.element === tile);
+  const linkOf = (from: string, to: string) =>
+    design.connections.some((item) => item.from.element === from && item.to.element === to);
+  switch (command.type) {
+    case "linkTiles":
+      return "lane" in command.from
+        ? entryOf(command.from.lane, command.to)
+          ? `${command.to} is already an entry of the ${command.from.lane} lane.`
+          : undefined
+        : linkOf(command.from.tile, command.to)
+          ? `${command.from.tile} already links to ${command.to}.`
+          : undefined;
+    case "addTile": {
+      const { from, tile } = command;
+      const existing = design.elements.find(
+        (item) =>
+          same(item.name, tile.name) &&
+          kindOf(item.id) === tile.kind &&
+          ("lane" in from ? entryOf(from.lane, item.id) : linkOf(from.tile, item.id)),
+      );
+      return existing
+        ? `${existing.name} (${existing.id}) is already there, linked from it.`
+        : undefined;
     }
-    const run = this.runBatch(this.working, batch);
-    if (!run.ok) return refused(run.error);
-    const review = leftover(run.working, this.installed);
-    this.log(
-      tool,
-      true,
-      `Previewed ${pattern ? `pattern ${pattern.id}` : `${batch.length} commands`}: ${review.left.length} would be left; nothing prepared`,
-    );
-    const findings = validateDesign(run.working);
-    return {
-      ok: true,
-      ...(pattern && { pattern: pattern.id, commands: batch.length }),
-      changes: studioChanges(this.working, run.working),
-      added: added(this.working, run.working),
-      ...(run.renamed.length && { renamed: run.renamed }),
-      statuses: moduleStatuses(run.working),
-      findings: findings.filter((item) => !isDesignWarning(item)),
-      warnings: findings.filter(isDesignWarning).map((item) => item.message),
-      review,
-      note: "Preview only: nothing is prepared or saved. Apply the same commands or pattern to keep it.",
-    };
+    case "addModule": {
+      const existing = studio?.components?.find(
+        (item) =>
+          item.host === command.host &&
+          item.settings.kind === command.kind &&
+          (command.id ? item.id === command.id : !!command.name && same(item.name, command.name)),
+      );
+      return existing
+        ? `${existing.name} (${existing.id}) is already in ${command.host}.`
+        : undefined;
+    }
+    case "connectModule": {
+      const state = moduleSlots(design, command.module).find(
+        (item) => item.slot.id === command.slot,
+      );
+      const target = command.target;
+      const held = state?.links.some((link) =>
+        "tile" in target
+          ? "tile" in link.target && link.target.tile === target.tile
+          : "module" in link.target && link.target.module === target.module,
+      );
+      return held ? `${command.module}'s ${command.slot} already holds that.` : undefined;
+    }
+    case "addAction": {
+      const stored = studio?.actions?.find((item) => item.lane === command.lane);
+      return stored && (!command.name || same(stored.name, command.name))
+        ? `The ${command.lane} lane already has its ${stored.name} action.`
+        : undefined;
+    }
+    default:
+      return undefined;
   }
 }
 
@@ -1170,5 +1324,13 @@ export function reviewWithModules(
 ) {
   const review = reviewStudioDesign(base, working, scope);
   const left = designReview(working, installed);
-  return { ...review, moduleStatuses: left.modules, left: left.findings };
+  // What is left comes first: a model reads the top. The readiness findings stay below.
+  return {
+    left: chatFindings(working, left.findings),
+    leftNote: left.findings.some((item) => item.severity === "fix")
+      ? "left is what to fix or check in the design: fix each finding marked fix (its commands are checked against this design), or say why it stays. findings below are readiness (profiles, contracts, ownership declarations), not design errors: leave them unless the person asks."
+      : "Nothing in the design to fix (left lists any advice to check). findings below are readiness (profiles, contracts, ownership declarations), not design errors: leave them unless the person asks.",
+    moduleStatuses: left.modules,
+    ...review,
+  };
 }
