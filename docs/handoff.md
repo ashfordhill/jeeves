@@ -10551,3 +10551,44 @@ byte-identical). Frozen v2: a fresh `export:v2` gives 72 files, 70 byte-identica
 
 The owner's uncommitted `.jeeves-feedback/`, `.docs/` Zone.Identifier files and the mode of
 `e2e-docker.sh` are untouched and unstaged.
+
+## 2026-11-12 — Production foundations plan from the owner's review
+
+This entry is planning only; no code changed. The owner asked for a review of the docs and the
+concept after YouTube v3, answered its questions, and asked for a build plan that modest agents
+can run one unit at a time. I added the HUMAN_FEEDBACK entry and wrote the
+[production foundations plan](plans/production-foundations/units.md): PF01–PF14.
+
+| Phase | Units | Covers |
+| --- | --- | --- |
+| A. Docs | PF01, PF02 | The owner's goals in `AGENTS.md`, a glossary, a template-gap list, stale statements, current-state `PLAN.md` and generator READMEs |
+| B. Smaller surface | PF03–PF05 | Direct async links removed; the strict-contract surface retired from the web app and chat; the TinyURL study as the default |
+| C. Sturdier templates | PF06–PF08 | Every failure logged; the cache read recovers; one bad item never stops a process (template gaps 2, 3 and 5) |
+| D. Regeneration | PF09, PF10 | `update:v2` regenerates into an existing export and keeps the application's own files |
+| E. Proof | PF11–PF13 | YouTube v4 (v3 regenerated), run with two copies of each process and with faults |
+| F. Review | PF14 | Independent review |
+
+**Decisions.** D1–D8 in the plan are the owner's, confirmed on 2026-11-12: no scale setting
+(sizing is deployment), direct async links removed while queue and topic lines stay dashed, the
+strict-contract surface retired with its spec code kept, the TinyURL study as the default, the
+diagram as the source of truth for generated files, only what generates offered, one Docker run
+with two copies and faults, and Jeeves kept narrow.
+
+**What I checked while planning** (so the units name real files):
+
+- `DesignScopeForm.tsx`, `OwnershipForm.tsx`, `OperationsForm.tsx` and `ResolveFields.tsx` in
+  `jeeves/apps/web/src/studio/` are imported by nothing.
+- Generation reads `ownership` but not the design's scope, operation contracts or readiness.
+- Five of chat's sixteen tools serve the strict-contract layer, and `designSummary` sends its
+  declarations with every turn.
+- The cache read turns its cache off for the life of the process after one stalled call
+  (`positive-cache.ts.template`, `valkey.ts.template`); a test pins that.
+- `onTerminal` in `media-worker.ts.template` and the sweep in `multipart.ts.template` are where
+  template gaps 5 and 2 arise; the multipart's outbox relay is started with no error callback.
+- Each manifest file has `ownership` and `sha256`, which is what an in-place update needs.
+
+I ran no checks: only docs changed. The owner's uncommitted `.jeeves-feedback/`, `.docs/`
+Zone.Identifier files and the mode of `e2e-docker.sh` are untouched and unstaged.
+
+**For the next unit.** PF01 is docs only. `AGENTS.md` still points at the YouTube v2 plan until
+PF01 changes it.
