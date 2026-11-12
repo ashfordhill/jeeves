@@ -1148,7 +1148,7 @@ or provider abort; and the `startup-failed`, `process-failed` and `drain-failed`
 
 **Goal:** after the cache stalls or disconnects, the Cache read template uses the database for
 a short time and then uses the cache again, and says so in the log, without ever piling up calls
-on a cache that doesn't answer.
+on a cache that doesn't answer, and without a failure line for every read while it is down.
 **Checks:** check, e2e, build.
 **Exported files this unit may change:** `src/runtime/positive-cache.ts`,
 `src/runtime/valkey.ts` and `src/processes/*.ts`.
@@ -1160,6 +1160,11 @@ on a cache that doesn't answer.
 - When a phase passes its 150 ms deadline, set `skipUntil = Date.now() + 5000` (it set
   `usable = false`), count the underlying call as stalled, and uncount it when that call
   settles (`.finally` on the effect's own promise; `Promise.race` doesn't cancel it).
+- A cache `get` or `set` that **rejects** (for example `Cache unavailable` while Valkey is
+  down) also sets `skipUntil = Date.now() + 5000`, in the same `catch` that PF06 made report it.
+  A cached value that fails to decode does not: that is one bad entry, not a down cache. So
+  while the cache is down a reader reports at most one failure every five seconds, not one per
+  read, and Valkey's own `onState` (step 2) reports the outage once.
 - Use the cache when `cache && stalled === 0 && Date.now() >= skipUntil` (it tested
   `cache && usable`), in both places. So a call that never settles keeps the cache off; once it
   settles, the cache is tried again after the five seconds.
@@ -1212,7 +1217,11 @@ with the lead module's ID written in place of `<module id>`.
    replace the expectation commented `Disabled after the stalled phase` with: a second read
    within 5 s doesn't call the cache. Add: a cache `get` that never settles keeps the cache
    unused across three 5 s intervals; a stalled `get` that settles at 7 s lets a read after
-   that call the cache again.
+   that call the cache again. Add: a cache whose `get` rejects at once is called by the first
+   of ten reads of ten different keys within 5 s and by none of the other nine (no fill is
+   tried either), `onFailure` is called once, and every
+   read is answered from the database; a read after the five seconds calls the cache again. A
+   cached value that fails to decode leaves the next read still calling the cache.
 2. A first connect that succeeds reports `available` once; one that fails reports `unavailable`
    once and is retried 5 s later.
 3. After an `error` event the next `get` rejects with `Cache unavailable` and `onState` was
@@ -1367,8 +1376,8 @@ becomes generated.
 
 | Row | Ownership | Condition, first match wins | Action |
 | --- | --- | --- | --- |
-| G1 | generated | `D` absent | `create` |
-| G2 | generated | overridden | `override` (even when `D == N`) |
+| G1 | generated | overridden | `override` (even when `D == N`, and when `D` is absent: the application removed its own copy, so it isn't recreated) |
+| G2 | generated | `D` absent | `create` |
 | G3 | generated | `V` absent | `edited` (an unknown file is in the way, even with the same bytes) |
 | G4 | generated | `D == N` | `unchanged` |
 | G5 | generated | `D == V` | `replace` |
@@ -1409,7 +1418,8 @@ becomes generated.
 
 **Tests** (`jeeves-generator/src/update.test.ts`): one case per row (the ownership rule, G1–G6,
 E1–E4, R1–R5, U1 and U2: eighteen); the equal-byte collision (G3 with `D == N`); an override
-winning over equal hashes (G2 with `D == N`, R2 with `D == V`); the three `refused` forms;
+winning over equal hashes (G1 with `D == N`, R2 with `D == V`); an overridden file the
+application deleted (G1 with `D` absent: `override`, never `create`); the three `refused` forms;
 `shadows`; the sort order; and two consecutive plans, the second with `previous` set to the
 first's `next` as PF10 would leave it: (a) an edited override that the export dropped is
 `orphan` the first time (R2) and `orphan` again the second time (U1), never `unknown override`;
@@ -1450,7 +1460,8 @@ update that is refused or unsafe changes nothing at all.
      `Unsafe update path: <path>`.
    Then it hashes the files on disk and calls `planUpdate`.
 6. If `refused` is not empty, or `options.check` is true: writes nothing.
-7. Otherwise, in this order:
+7. Otherwise, in this order (every write goes to a temporary file in the target's own directory
+   and is then renamed over the target, so a stopped update never leaves a half-written file):
    - writes each `create` and `replace` file (making parent directories);
    - deletes each `remove` file;
    - writes each `shadows` path's new bytes to `.jeeves/generated/<path>`;

@@ -65,3 +65,13 @@ against a stub server. Nothing was run against Docker.
 PF07 (the reconnecting client and its races) and PF09–PF10 (the updater) are new logic with no
 trial run: the plan gives their contracts and tests, not code. PF12–PF13 depend on a live stack
 that nothing in this revision started.
+
+## Coordinator amendments (2026-11-12, after this response)
+
+- **PF09:** the override row is now G1, ahead of "`D` absent → `create`", so an overridden file
+  the application deleted is not recreated. A test covers it.
+- **PF10:** every write goes to a temporary file and is renamed over the target, so a stopped
+  update never leaves a half-written file.
+- **PF07:** a cache call that rejects also skips the cache for five seconds, not only a stalled
+  one. Without this, PF06's failure logging would write a line for every read while Valkey is
+  down. A test covers it.
