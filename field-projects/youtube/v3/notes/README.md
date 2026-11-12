@@ -90,8 +90,8 @@ V3-16 then fill in the following, and V3-17 measures the result:
 | --- | --- | --- |
 | V3-13 | Upload | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-13/README.md)). The account script; the creator check on multipart's `principal`; every multipart hook; the lifecycle's `metadata`, `job` and `response`. A signed-in creator starts a multipart upload, sends its parts to signed URLs, pauses and resumes from the parts that arrived, and completes it; the job reaches Upload jobs. Anonymous 401, a non-creator 403, another creator 404, an aborted upload 410. |
 | V3-14 | Processing and lifecycle | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-14/README.md)). Every Transcoder hook, the rest of the lifecycle's hooks, and `published.videos` in the Lifecycle writer's SQL file. A completed upload goes pending → processing → ready: the Transcoder encodes H.264/AAC HLS at 360p and 720p in 4 s segments, with a full-size thumbnail, into Transcoded videos; the ready video is in `published.videos`, and one `VideoPublished` reaches Publication events after the ready commit. Invalid media goes pending → processing → failed `INVALID_MEDIA`, with no output and no publication. Search indexer then stops at "Not implemented: mapping for Index writer" (V3-16's). |
-| V3-15 | Watch and Favorites | Next. `published.videos` holds each ready video; the details route still answers "Not implemented: key for Video details cache". |
-| V3-16 | Search and the browser | To do |
+| V3-15 | Watch and Favorites | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-15/README.md)). The five cache read hooks, the two Watch stubs, the four counter hooks and Favorites' `eligible`. Anyone, signed in or not, reads a ready video's details from `published.videos`, then from Hot metadata for the cache's TTL; a pending, failed or unknown video is 404 and never cached. A play of a ready video (`POST …/watch-api-view-publisher/<videoId>` `{eventId}`, 202) reaches View events with the viewer's subject or `null`, and View counter counts it once per `(videoId, eventId)`; `…/watch-api-view-count-reader/<videoId>` reads the total fresh. A signed-in account adds, checks, lists and removes favorite videos; only a ready video may be added (404 `NOT_ELIGIBLE`), and anonymous callers get 401. One scaffold edit (gap 6). |
+| V3-16 | Search and the browser | Next |
 
 What each unit wrote is in [`custom-paths.md`](custom-paths.md); what the templates can't yet
 express is under [template gaps](#template-gaps-found-while-completing-app).
@@ -106,8 +106,21 @@ API's included, may read `published`, and v2's status was the creator's alone. S
 is observed where the lifecycle writes it: in `assets`, read as the database owner in the scratch
 run (as S04 already reads `published.videos`), and in the Processing events behind each change.
 Ready is public through `published.videos`. For V3-16's browser, the upload's status shows
-`completed`, and the video is ready once Watch's details route (V3-15) answers it. Pending,
-processing and "failed" with its message have no route until gap 1 is closed in the template.
+`completed`, and the video is ready once Watch's details route (V3-15) answers it (200, not
+404). Pending, processing and "failed" with its message have no route until gap 1 is closed in the
+template.
+
+**What Watch and Account API answer (V3-15),** through the edge, for V3-16's browser. Every
+Watch route takes an optional `Authorization: Bearer <token>` (anonymous without one, 401
+`SIGN_IN_REQUIRED` for a bad one); every Account API route needs one.
+
+| Request | Answer |
+| --- | --- |
+| `GET /api/watch-api/modules/watch-api-video-details-cache/<videoId>` | 200: `videoId`, `title`, `description`, `channel`, `durationSeconds`, `publishedAt`, `publicationVersion`, `manifest`, `thumbnail`, `visibility`, `state`, and `manifestUrl` and `thumbnailUrl` under `/cdn/video-delivery/`; 404 `NOT_FOUND` unless ready; 400 `VIDEO_ID` |
+| `GET /api/watch-api/modules/watch-api-view-count-reader/<videoId>` | 200 `{views}`, a decimal string, read fresh |
+| `POST /api/watch-api/modules/watch-api-view-publisher/<videoId>` `{eventId}` | 202 `{eventId, accepted, acceptedAt, publicationVersion}`; 404 `VIDEO_NOT_READY`; 400 `VIEW_REQUEST`. Send one event ID per page session, once two cumulative seconds have played; a retry with the same ID counts once |
+| `GET /api/watch-api/modules/watch-api-viewer-check/me` | `{signedIn:false}` or `{signedIn:true, subject, username}` |
+| `PUT`, `GET`, `DELETE /api/account-api/modules/account-api-favorite-videos/items/<videoId>`, `GET …/items?after=` | contract §3: 200 `{itemId, addedAt}`, 404 `NOT_FAVORITE` or `NOT_ELIGIBLE`, 204, `{items, next}` |
 
 ### How to run each
 
@@ -172,7 +185,9 @@ Hooks after the first one on a path (for example multipart's `metadata`, or the 
 
 ## Template gaps found while completing `app/`
 
-Recorded as found, not worked around: no generated scaffold in `app/` was edited.
+Recorded as found. V3-13 and V3-14 worked around none and edited no generated scaffold. V3-15
+made one small scaffold edit for gap 6, because without it v1/v2's duplicate-safe count can't be
+had at all; it is listed in [`custom-paths.md`](custom-paths.md) as a scaffold edit.
 
 | Unit | Gap | Effect in v3 |
 | --- | --- | --- |
@@ -181,3 +196,5 @@ Recorded as found, not worked around: no generated scaffold in `app/` was edited
 | V3-13 | **The outbox relay retries a codec failure silently.** An unwritten (or throwing) `job` codec is treated as a failed publish: the row is retried every ≤5 s for ever, with no log line and no `.failed`. | Seen mid-unit: 13 attempts, then sent once `job` was written. |
 | V3-13 | **The lifecycle's and Transcoder's hooks get no key prefix.** Only multipart's hooks get `prefix`. | `video-contract.ts` repeats the compiled prefix as `ORIGINALS_PREFIX`; multipart's hooks refuse to start if they differ. The Transcoder's result prefix, `videos/<videoId>/<jobId>/<attemptId>/`, is v2's product path, kept in the contract (V3-14). |
 | V3-14 | **A hook that throws while the Transcoder reports a failure stops the Transcoder.** When a job fails for good, the media worker's terminal step builds a `ProcessingFailed` through `eventId` and `event`. If either throws, the failure is fatal: `app-transcoder` exits 1 with no reason (its last line is the hook's `"action":"thrown"`), and the job, never acknowledged, goes back to Upload jobs. The next `pnpm start` takes it again while subscribing and fails with "container app-transcoder exited (1)". | Seen at steps 2 and 3, with `video` written but `eventId` not; writing `eventId` and `event` cleared it, and the job then failed normally. With every hook written nothing reaches it, but a bug in `eventId` or `event` would keep the Transcoder down. |
+| V3-15 | **A stub's queue publisher can't name its message's ID, and the event counter's receipt is keyed on it.** The generated `queuePublisher` (`src/runtime/module-clients.ts`) gave every message a fresh ID, and `QueuePublisher.publish` (`src/modules/dependencies.ts`) had no way to pass one. The counter template requires each event's ID to be its broker message's ID (`createEventCounter`, "Counter event mismatch"), and its receipt is `(aggregate, event ID)`. | Without a change, a View publisher stub can't send a retried play as the same message, so no hook can make v1/v2's `(videoId, eventId)` count once: with the counter's hooks binding the play's event ID to the message ID (as v2's did), every play went to `view-events--view-counter.failed` as `MALFORMED_MESSAGE` (step 8 of the [V3-15 run](../../../../docs/plans/youtube-v3/evidence/v3-15/README.md)), and binding the message's random ID instead would count every retry. **Scaffold edit in `app/`:** `publish(message, { messageId })`, one line in each file; the generator fix is the same in `module-clients.ts.template` and `dependencies.ts.template`. |
+| V3-15 | **The cache read's 404 can't be shaped from its hooks.** `src/processes/watch-api.ts` answers a null record with the template's own 404 `NOT_FOUND` "No record for this key."; `load` may only return null for a missing record. | A pending, failed or unknown video is 404 `NOT_FOUND`, where v1/v2's details said 404 `VIDEO_NOT_READY` "This video is not publicly available." (the View publisher still says that). The status is the same, and the browser (V3-16) reads 404 as not available. A bad ID is v2's 400 `VIDEO_ID` (from `key`). |

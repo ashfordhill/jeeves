@@ -9999,3 +9999,91 @@ networks and 31 image rows match the record. 42 are healthy, both edges answer 2
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-15: complete watch and favorites
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (the V3-15 row) and [contract](plans/youtube-v3/contract.md)
+§2, §3, §5, §7 (S05, S07, S09, S10) and questions 7 and 8. Docs: the field project's
+[notes](../field-projects/youtube/v3/notes/README.md) (progress, the Watch and Account routes,
+gaps 6 and 7), [`custom-paths.md`](../field-projects/youtube/v3/notes/custom-paths.md), a playbook
+lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[v3-15](plans/youtube-v3/evidence/v3-15/README.md), with the operator harness.
+
+- **`app/` only**, from v2's `youtube-watch.ts`, `youtube-counter.ts` and `ViewPlayed`:
+  - `video-contract.ts`: `watchedVideo` (`publicVideo` plus `manifestUrl`/`thumbnailUrl` under
+    `/cdn/video-delivery/`), `watched` (from a `published.videos` row), `viewRequest` and
+    `viewPlayed` (v2's plus `viewer`: subject or null);
+  - the cache read's five hooks: `key` `ready-video:v1:<id>` (400 `VIDEO_ID`), `load` from
+    `published.videos`, `codec`, `eligible`, `expiresAt` null (the tile's TTL 3601 s bounds it);
+  - View count reader body: `GET /<id>` → `{views}` from `view_counter_receipt_and_increment_public.totals`;
+  - View publisher body: `POST /<id>` `{eventId}`: 400 `VIEW_REQUEST`, 404 `VIDEO_NOT_READY` unless
+    in `published.videos`, one `ViewPlayed` with the viewer and **message ID = event ID**, 202;
+  - the counter's four hooks (aggregate = video, receipt `(videoId, eventId)`, identity without
+    the accept time, with the viewer); Favorites' `eligible` (a canonical ID in `published.videos`);
+  - `test/watch.test.ts`: 6 tests; with V3-13's and V3-14's, 15 pass with `node --test`.
+- **Scaffold edit (gap 6), the only one so far:** `dependencies.ts` (`publish` options gain
+  `messageId`) and `module-clients.ts` (`queuePublisher` sends it, else a fresh ID), one line each.
+  The counter template needs each event's ID to be its message's ID; the generated stub client gave
+  every message a random ID, so a retried play could only fail or count twice. Step 8 showed it:
+  every play `MALFORMED_MESSAGE`. The generator fix is the same two lines in the templates.
+- **Gap 7 (minor):** the cache read's 404 is the template's `NOT_FOUND`, not v2's `VIDEO_NOT_READY`.
+- **Docker** (`jeeves-v315-watch`, 45660–45662, a scratchpad copy): first-run 119 s, 15 healthy;
+  13 steps in hook order, each a stop (≈4.4 s) and start (≈77 s), 15 healthy, 0 restarts.
+  Final pass: details 200 anonymous and signed in, then from Valkey (misses then hits; the key's
+  PTTL ≈ 3601 s); failed, uploading, unknown 404 and never cached; a bad token 401 on every Watch
+  route; two plays and their two retries: 4 messages (viewer `null` and the subject), 2 receipts,
+  count +2; a repeat claiming another viewer → `RETRY_EXHAUSTED`, never counted; a pending video
+  404 everywhere, then 200 the moment it was ready; Favorites add (same `addedAt` again), check,
+  list, remove 204, then 404; not-ready and upper-case IDs 404 `NOT_ELIGIBLE`, `bad%20id!` 400;
+  anonymous and bad token 401. Stop 4.4 s / start 65.9 s: an identical snapshot (secrets, volumes,
+  totals 5 and 1, 6 receipts, the favorite, `published.videos`, cached records, accounts).
+- **Backend LOC:** 498 post-template in 72 files (V3-15 adds 153: publisher 43, contract +50,
+  details hooks 20, count reader 20, counter hooks 13, `eligible` 5, 1 per scaffold edit), 57
+  replaced; 92.56% retained. The scope is unchanged.
+
+**Checks.**
+
+- `pnpm check` exited 0: **748 tests in 104 files** (lint: only the existing info).
+- **E2E: 79 passed, 1 failed (5.7 m).** `connection-dots.spec.ts:208` timed out waiting for the
+  pan to bring its target inside the board. **Rerun alone it passed (5.0 s), then 5/5 with
+  `--repeat-each=5`.** `jeeves_e2e` holds only its TinyURL project.
+- Web build passed (1.27 s, the existing chunk-size advisory).
+- **Browser** (my API 4467 on scratch `jeeves_v315`, now dropped; Vite 4477): TinyURL 7 tiles and
+  7 lines in Detailed and Simple, at 1440×900 and 1280×800, no page or console error; projects
+  deleted. A first run during my Docker restarts saw Chromium's `ERR_NETWORK_CHANGED`; rerun quiet,
+  clean.
+
+**Gates (D2).** `git diff d94b13a -- field-projects/youtube/v3/generated/` is empty. The
+processes-off pin, `generator.test.ts` and `assemble.test.ts` pass (17 tests; v1 byte-identical).
+Frozen v2: 72 files, 70 byte-identical to `generic-export.tar.gz`, manifest and report equal under
+`provenanceWithoutInventory`.
+
+**Cleanup.** My stack is down with its volumes, and both image tags are removed. The copy (with
+`.runtime` and passwords), the fixture copies, type-check copies and scratch exports are deleted,
+and my servers are stopped. The owner's 43 containers (IDs, restart counts, start times, health),
+18 volumes, 9 networks and 31 image rows match the record. 42 are healthy, both edges answer 200,
+and only 45400–45402 listen in 454xx.
+
+**For V3-16 (browser).**
+
+- **Routes** (all under the edge; the table is in the notes): details
+  `GET /api/watch-api/modules/watch-api-video-details-cache/<id>` (200 with `manifestUrl` and
+  `thumbnailUrl` ready to use, or 404 = not available); count `GET …/watch-api-view-count-reader/<id>`
+  → `{views}` (a string; refetch after a play); play `POST …/watch-api-view-publisher/<id>`
+  `{eventId}` → 202; `me` at `…/watch-api-viewer-check/me`; Favorites under
+  `/api/account-api/modules/account-api-favorite-videos/items[/<id>]` (PUT 200, GET 200 or 404
+  `NOT_FAVORITE` for the toggle, DELETE 204, list `{items, next}`, newest first; the item ID is
+  the lower-case video ID from the details).
+- **Playback acceptance is the browser's:** make one `eventId` (UUID) per watch page load, count
+  cumulative played seconds (timeupdate while playing, not seeking), POST once at 2 s, and retry
+  with the same ID on failure; pause, seek and resume never send again. The server dedupes
+  `(videoId, eventId)` and refuses not-ready videos.
+- **Sign-in:** Watch is Optional: send the token when signed in, nothing when not; a stale token is
+  401 (sign in again, don't fall back to anonymous). Account API is Required: show the ☆/★ toggle
+  and the Favorites list only when signed in, else Sign in. Keycloak realm `sign-in`, client
+  `sign-in-web`, PKCE, redirect the edge origin `/`.
+- Keep browser code in `browser/` (scope `uiPaths`). Search hooks (`mapping`, `document`, `event`,
+  `preset`, `hit`) are untouched; `VideoPublished` and `publicVideo` are in the contract.
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

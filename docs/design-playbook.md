@@ -1695,3 +1695,17 @@ outbox sends it after the commit, so whoever gets the event can already read the
 view selects only the ready rows and only the fields its readers use. A state only the writer's
 table holds (pending, processing, failed) gets no public view just because a page wants it: if no
 route may show it to its owner alone, record that as a gap.
+
+## 2026-11-11 V3-15: a deduplicating consumer needs a publisher that can name the message's ID
+
+A template that consumes events and drops repeats (the event counter's receipt, the lifecycle's
+inbox) keys its receipt on the broker message's ID and requires the event's own ID to equal it.
+So whoever publishes to it must be able to set that ID from the business identity: a play's event
+ID, a job's stable ID. Templates that publish do (outboxes, the media worker); a stub's module
+client gave every message a fresh ID, so a retried play could only count twice or not at all, and
+no hook could fix it. When a design pairs a stub publisher with a deduplicating template consumer,
+its client must take a message ID. Keep the cache to what can't change: the details cache holds
+only the ready, immutable public record, under the canonical ID, and never a miss, so a video
+answers the moment it is ready; its count is a separate read, fresh every time. With an Optional
+sign-in the viewer travels in the event's payload (a subject or null), so the consumer needs no
+token, and the receipt's identity carries it, so one play can't be claimed twice.

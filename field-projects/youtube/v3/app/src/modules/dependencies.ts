@@ -11,9 +11,10 @@ export interface DatabaseReadWriter extends DatabaseReader {
   execute(sql: string, values?: readonly unknown[]): Promise<{ rowCount: number }>;
 }
 
-/** A queue or topic a module publishes to. */
+/** A queue or topic a module publishes to. `messageId` is the message's ID (a fresh one when it
+ * is absent), so a consumer whose receipts are keyed on it takes a repeat once. */
 export interface QueuePublisher {
-  publish(message: Uint8Array, options?: { key?: string }): Promise<void>;
+  publish(message: Uint8Array, options?: { key?: string; messageId?: string }): Promise<void>;
 }
 
 /** A queue or topic a module consumes from. */

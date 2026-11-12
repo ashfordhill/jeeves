@@ -1,7 +1,7 @@
-// YouTube v3's video contract: the codecs that Multipart uploads (Upload API), the Transcoder and
-// the Lifecycle writer (Video lifecycle) share, so the tiles can't drift. Product code, from v2's
-// youtube-contract.ts, youtube-events.ts and video-paths.ts: the upload (V3-13), then processing
-// and publication (V3-14).
+// YouTube v3's video contract: the codecs that Multipart uploads (Upload API), the Transcoder,
+// the Lifecycle writer (Video lifecycle), Watch API and View counter share, so the tiles can't
+// drift. Product code, from v2's youtube-contract.ts, youtube-events.ts, video-paths.ts and
+// youtube-watch.ts: the upload (V3-13), processing and publication (V3-14), then watching (V3-15).
 import { z } from "zod";
 import type { AssetJobIdentity, ProcessingKind } from "../runtime/asset-lifecycle.ts";
 import { assetEventId } from "../runtime/event-identity.ts";
@@ -195,3 +195,63 @@ export const videoPublished = publicVideo
       ctx.addIssue({ code: "custom", message: "Unstable publication identity" });
   });
 export type VideoPublished = z.infer<typeof videoPublished>;
+
+// Watching (V3-15), from v2's youtube-watch.ts and ViewPlayed.
+/** Where the edge serves Transcoded videos: Video delivery's CDN route. */
+export const DELIVERY_PATH = "/cdn/video-delivery/";
+/** Watch's details answer: a ready video's public record and its delivery URLs. It is immutable
+ * once ready, so the cache may keep it; a count is never in it (the View count reader's). */
+export const watchedVideo = publicVideo
+  .safeExtend({ manifestUrl: z.string(), thumbnailUrl: z.string() })
+  .superRefine((video, ctx) => {
+    if (
+      video.manifestUrl !== `${DELIVERY_PATH}${video.manifest}` ||
+      video.thumbnailUrl !== `${DELIVERY_PATH}${video.thumbnail}`
+    )
+      ctx.addIssue({ code: "custom", message: "Unbound delivery URLs" });
+  });
+export type WatchedVideo = z.infer<typeof watchedVideo>;
+/** A published.videos row, as pg reads it. */
+export type PublishedVideoRow = {
+  video_id: string;
+  title: string;
+  description: string;
+  channel: string;
+  duration_seconds: number;
+  manifest: string;
+  thumbnail: string;
+  published_at: Date;
+  publication_version: number;
+};
+export const watched = (row: PublishedVideoRow): WatchedVideo =>
+  watchedVideo.parse({
+    videoId: row.video_id,
+    publicationVersion: row.publication_version,
+    title: row.title,
+    description: row.description,
+    channel: row.channel,
+    durationSeconds: row.duration_seconds,
+    manifest: row.manifest,
+    thumbnail: row.thumbnail,
+    publishedAt: row.published_at.toISOString(),
+    visibility: "public",
+    state: "ready",
+    manifestUrl: `${DELIVERY_PATH}${row.manifest}`,
+    thumbnailUrl: `${DELIVERY_PATH}${row.thumbnail}`,
+  });
+
+/** What a play sends: one event ID per watch page session (v1's policy), reused by its retries. */
+export const viewRequest = z.strictObject({ eventId: videoUuid });
+/** One accepted play on View events (v2's ViewPlayed), with the viewer: the signed-in account's
+ * subject, or null when anonymous (D4). Its event ID is its broker message ID. */
+export const viewPlayed = z.strictObject({
+  schemaVersion: z.literal(1),
+  type: z.literal("ViewPlayed"),
+  eventId: videoUuid,
+  occurredAt: timestamp,
+  videoId: videoUuid,
+  acceptedAt: timestamp,
+  publicationVersion: z.literal(1),
+  viewer: z.string().min(1).max(255).nullable(),
+});
+export type ViewPlayed = z.infer<typeof viewPlayed>;

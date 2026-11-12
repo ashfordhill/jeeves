@@ -1,27 +1,34 @@
 // Receipt and increment (Event counter) in View counter: the product hooks its event counter template calls.
 // Write them here. Export never overwrites your edits: export afresh and carry them over.
 import type { CounterAdapter } from "../../runtime/event-counter.ts";
-import { NotImplemented } from "../../runtime/tile-process.ts";
+import { type ViewPlayed, viewPlayed, wireEvent } from "../video-contract.ts";
 
-
-/** Each hook throws "Not implemented" until written; the first one a message reaches sends it to .failed. */
-export function viewCounterReceiptAndIncrementHooks(): CounterAdapter<unknown> {
+/** YouTube's view counter (V3-15), v2's: each play counts once towards its video. The receipt is
+ * the video and the play's event ID, which is its message ID, so a retried play counts once. */
+export function viewCounterReceiptAndIncrementHooks(): CounterAdapter<ViewPlayed> {
   return {
     /** Parses an event and binds its message ID. */
     event(input, messageId) {
-      throw new NotImplemented("event for Receipt and increment");
+      return wireEvent(viewPlayed, input, messageId);
     },
     /** What the event counts towards. */
     aggregateKey(event) {
-      throw new NotImplemented("aggregateKey for Receipt and increment");
+      return event.videoId;
     },
     /** The event's stable ID: a repeat counts once. */
     eventId(event) {
-      throw new NotImplemented("eventId for Receipt and increment");
+      return event.eventId;
     },
-    /** The event data a repeat must match. */
+    /** The event data a repeat must match: not its accept time, which a retry stamps again. */
     identity(event) {
-      throw new NotImplemented("identity for Receipt and increment");
+      return {
+        schemaVersion: event.schemaVersion,
+        type: event.type,
+        videoId: event.videoId,
+        eventId: event.eventId,
+        publicationVersion: event.publicationVersion,
+        viewer: event.viewer,
+      };
     },
   };
 }
