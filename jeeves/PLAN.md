@@ -9,7 +9,7 @@ for a user is in the [studio guide](../docs/studio.md); field values are in
 apps/web (React studio) ──/api──▶ apps/server (Fastify) ──▶ Postgres
         │                              │
         └──── @jeeves/spec ◀───────────┤   (schemas, operations, validation, lanes, blueprint)
-                                       └──▶ @jeeves/providers ──▶ OpenAI API / Codex (chat only)
+                                       └──▶ @jeeves/providers ──▶ OpenAI API / Codex / Anthropic API (chat only)
 
 Frozen design/blueprint + local bindings ──▶ jeeves-generator (experimental in-memory assembly)
 ```
@@ -25,8 +25,8 @@ Studio paths below are relative to `jeeves/`. The generator is the sibling
 | `apps/server` | Fastify 5 with Zod type providers, Drizzle ORM on `pg`, migrations in `drizzle/`. `routes/` (projects, chat, settings), `design/service.ts` (projects, revisions, history, layout, blueprint), `chat/` (turn loop, tools, files, model wiring), `settings.ts` (provider keys and the chosen model). |
 | `packages/spec` | The design format and every pure function over it (no I/O). |
 | `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap, one for every tile or per tile) and edits (add after, link, plan and apply a removal with restitching, remove a link, the tile to select after a removal). The root export adds the layout core: ELK layered left to right with stability hints, in horizontal bands when tiles carry one (`layoutBands`: an end tile several tiles use beside them, `endColumns`; each band alone, stacked, then routed in one pass with the bands' lines kept apart, `meetAtPorts`; lines that come back routed as U's, `routeReturns`), then put on the 32px grid (`alignLayout`), a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; a fitted camera refits when the board changes size, a user's pan or zoom is kept, and a picked tile that lands out of view is panned in; select and connect modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band; the selected line and the selected tile's lines in the selection colour, drawn on top; a selected line's red X, on a stretch no other line shares when it has one, and none on a line the caller marks not removable), `TileChrome` (the selected tile's tabs on its right: a click toggles a create tab's fan (a `+` or a link glyph), and a pull with its rubber band still works; an icon fan kept on the board (`placeFan`), or a grid fan of captioned rows on one panel (`fanGrid`, `placeGrid`, beside its own tile where the board is narrow, `placeBeside`), whose items keep their slots and may be disabled with a reason, and a picked tile docks at the next slot; the red X), connect mode (`ConnectDrag.tsx`: a drag from a tile draws a line to the pointer over a scrim with holes for the ends the caller allows, a tip gives a refused end's reason, and a release connects or reports the refusal; a click still selects; a hovered line shows its X), a caller's panel at the board's bottom centre (`hud`, with marked tiles), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The web app's lane canvas mounts it. |
-| `../jeeves-generator` | Explicit `@jeeves/generator` workspace: frozen local-v1 validation, deterministic in-memory assembly, provenance/partial reports and safe export preflight. 19 experimental local template families and a new-directory exporter; guarded mouse studio preview/ZIP export accepts only the exact frozen source; see [package API](../jeeves-generator/README.md). |
-| `packages/providers` | A provider-neutral model interface with OpenAI Responses and Codex adapters and a scripted fake. |
+| `../jeeves-generator` | The `@jeeves/generator` workspace. The `local-v2` registry exports a saved schema-3 design as a standalone project: nine templates, typed module stubs and, with Runnable processes on, one process per application tile. The frozen `local-v1` profile is kept for exact legacy snapshot exports (Generate project offers it only for the exact frozen YouTube v1 source, and `export:new` writes it) and regression checks; new module-authored projects use `local-v2`. See its [README](../jeeves-generator/README.md). |
+| `packages/providers` | A provider-neutral model interface with OpenAI Responses, Codex and Anthropic adapters and a scripted fake. |
 | `apps/web/e2e`, `fixtures/chat` | The Playwright smoke set and its scripted chat model. |
 | `docker/`, `Dockerfile`, `compose.yaml` | The single-container image (nginx, API, Postgres 17) and the dev/E2E Postgres. |
 
@@ -55,8 +55,8 @@ preview/commands and unresolved diagnostics. Selecting scope implements no capab
   being `download` or `upload`; a tile has at most one; a stored `both` loads as `download`) and an
   optional study origin.
 
-The vocabulary is finite: sixteen kinds with immutable definitions (`studio-definitions.ts`), ten
-component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
+The vocabulary is finite: sixteen kinds with immutable definitions (`studio-definitions.ts`), nineteen
+module kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
 modules, are in `studio-modules.ts`). The studies, TinyURL foundation v1 (the default), extended TinyURL v3.2, the marketplace and
 YouTube, are built in lanes from published designs (`studio-examples/`).
 
@@ -130,13 +130,8 @@ layout), but the web app neither reads nor writes it.
 ## Chat
 
 `POST /projects/:id/chat` streams a turn as NDJSON. The server loop (`chat/service.ts`) calls the
-chosen model with a finite toolset (`chat/tools.ts`): `listStudioDefinitions` (the tile types
-with their kinds, the link fan's kinds, the module kinds and the caps), `describeStudioDefinition` (one kind's
-settings), `getDesign` (the actions, each with its lane, name, entries and the tiles its lane
-reaches, then each tile's kind, settings, links with their modes and modules, the caps,
-the findings and the design warnings; an accepted command returns both too), `applyStudioCommands`,
-`validateDesign`, `askUser`, `listStudioPatterns`, `describeStudioPattern`, `declareReviewScope`
-and `reviewDesign`, plus bounded `configureDesignScope`, `configureOwnership`, `describeOperation` and `configureOperations`. The pattern tools supply four versioned local guidance records, their
+chosen model with a finite toolset (`chat/tools.ts`), listed in the
+[studio guide](../docs/studio.md#chat). The pattern tools supply four versioned local guidance records, their
 applicability and unsupported obligations; retrieval alone selects no scope and supplies no
 runtime template. The instructions
 (`INSTRUCTIONS`) describe the actor, the two lanes, what an action is (two sentences; a tile has
@@ -168,7 +163,8 @@ are stored in `files`. Turns, replies, questions, activity and token usage are k
 
 Providers (`packages/providers`): the OpenAI Responses API with an API key sends strict function
 schemas through an audited omission/null codec; server validation remains authoritative.
-Codex through its own CLI login constrains an outer answer containing JSON-string arguments,
+The Anthropic Messages API gets the canonical schemas as they are, with the key read from
+`ANTHROPIC_API_KEY` only. Codex through its own CLI login constrains an outer answer containing JSON-string arguments,
 whose inner values are validated by the server. Mock transport checks do not establish live
 API acceptance or model quality; see [tool schemas](../docs/chat-tool-schemas.md).
 Settings (`GET /settings`, `PUT /settings/roles`) choose one design-chat provider
@@ -201,98 +197,19 @@ See [studio blueprint](../docs/studio-blueprint.md) and [readiness](../docs/stud
 
 The web app reaches these under `/api` (Vite proxy in development, nginx in the image).
 
-## Next
+## Status
 
-The lane grid ([build plan](../docs/build-plan-lane-grid.md), units LG01–LG13 in
-[execution units](../docs/plans/lane-grid/execution-units.md), then
-[polish units](../docs/plans/lane-grid/polish-units.md) PL01–PL02) is complete; the build plan's §7
-lists what was left for later. Experimental generation lives in the same-repository
-`jeeves-generator/` package; it reads frozen design/blueprint inputs separately from the studio.
+Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-units.md),
+[design polish](../docs/plans/design-polish/units.md),
+[lane actions](../docs/plans/lane-actions/units.md),
+[system design](../docs/plans/system-design/units.md),
+[reliable foundations](../docs/plans/reliable-foundations/units.md),
+[UI overhaul](../docs/plans/ui-overhaul/units.md),
+[module authoring](../docs/plans/module-authoring/units.md),
+[tile processes](../docs/plans/tile-processes/units.md) and
+[YouTube v3](../docs/plans/youtube-v3/units.md).
 
-The [design polish units](../docs/plans/design-polish/units.md) DP01–DP10 are done:
-
-- lines aligned on the grid
-- no both-lane entries
-- link rules as one table
-- `+` creates and a link tool attaches
-- a labelled Type list with preconfigured kinds and two languages each
-- TinyURL v3 from published designs, with one writer per store
-- an acceptance walkthrough and docs sweep
-- a marketplace study, with a CDN image-resizing setting and four entries per lane
-- a YouTube study, built from the existing options
-- a review of DP01–DP09, which fixed what it could show and left questions for the owner
-
-The [lane actions units](../docs/plans/lane-actions/units.md) LA01–LA05 answer three of DP10's
-questions. LA01 (action tiles: the user links only to its Consume and Produce actions, which reach
-the services), LA02 (design warnings), LA03 (lane bands: download above shared above upload,
-lanes' lines apart), LA04 (an acceptance walkthrough, a docs sweep and fresh copies of the
-marketplace and YouTube studies in the owner's database) and LA05 (a review of LA01–LA04, which
-fixed what it could show and left questions for the owner) are done. The next work is the owner's
-answers to the LA05 and open DP10 questions in [the handoff](../docs/handoff.md).
-
-The [system design units](../docs/plans/system-design/units.md) SD01–SD05 answer the owner's
-YouTube review: SD01 wrote the [design playbook](../docs/design-playbook.md) (patterns, smells and
-gaps for designing studies); SD02 rebuilt YouTube as v2 from Xu's design (a Transcoder, a
-completion topic feeding a Completion handler and a Search indexer, the Watch API's own metadata
-cache) and added the Uploads kind; SD03 put stores beside the tiles that use them (a later user's
-line comes back to the store), which made every study's lines shorter; SD04 walked them through
-by mouse, replaced the owner's YouTube copy and recorded what still reads oddly (lines that come
-back read as boxes; two long reads remain); SD05 reviewed SD01–SD04, fixed what it could show
-and left questions for the owner. The next work is the owner's answers to the SD05, LA05 and open
-DP10 questions in [the handoff](../docs/handoff.md), and to the open points of the last
-[human feedback](../docs/HUMAN_FEEDBACK.md) entry.
-
-The owner's subsequent three-study review is recorded in the
-[reliable foundations review](../docs/plans/reliable-foundations/review.md). Its
-[build plan](../docs/plans/reliable-foundations/units.md) starts with relationship clarity,
-traceable paths and a pattern-backed, evaluated design assistant; later milestones define
-behavior contracts and a separate generator beginning with TinyURL. The owner authorized
-sequential implementation on 2026-11-07. RF01 adds per-relationship solid/dashed strokes, target
-arrowheads, a mouse-visible legend and selected-line explanations; it changes no ownership,
-access inference or blueprint semantics. Later units and contract/generator milestones remain
-open as described in the plan.
-
-
-NC01–NC05 now implement the accepted first-phase scope/version, ownership/access and report boundaries.
-`ownership.ts` validates declarations independently of legacy store inference; the narrow tool and
-mouse form share pure preview/commands. Owner collapse/expansion is a web view projection over
-canonical role/edge IDs, with safe expansion fallback. Deletion and transfer expose exact affected
-rows, preserve unrelated requirements and undo once. NC03 adds immutable finite Create link/schema refs, exact caller/receiver binding IDs, explicit operation selection and the shared bounded mouse/chat editor. [Finite contracts](../docs/studio-contracts.md) define the accepted semantics; NC04 adds exact public Resolve/positive-cache records, expiry/primary/permission/settings checks and selected-profile namespace agreement; templates/runtime evidence are unavailable. No generator/runtime exists here. The first-phase continuation and G1/G2/G3/G4 decisions are recorded in the next contract plan.
-
-NC05 separates full design validity, exact contract completeness, exact implementation artifact
-availability and exact generated-output evidence. Generation eligibility requires the first three;
-future output evidence is separate. Whole-design coverage blocks generic/legacy/unknown extras.
-The host-only trusted artifact formats have fixture-only positive tests; product has no registry,
-manifest, output or evidence. Existing write-only Create bindings retain a targeted missing-read
-gap rather than gaining permission. NC06 adds the distinct `studio-tinyurl-foundation@1.0.0` default,
-with complete atomic v3 seeding, one Links owner, two API roles, exact source/cache contracts and
-visible exclusions. The old `studio-tinyurl@3.2.0` source and saved projects remain intact.
-Actual blank-canvas mouse and scripted ChatService construction agree exactly on the semantic
-blueprint/report; this is plumbing evidence, not model quality or runtime proof. The independent review covers this subset.
-
-The [NC14 independent review](../docs/plans/reliable-foundations/nc14-review.md) records the bounded
-contract milestone and its corrections: secondary legacy inspector facts, exact Create source
-compatibility, detached ownership exports and executable-suite content pinning.
-
-The active [YouTube field-project plan](../docs/plans/reliable-foundations/youtube-field-project-plan.md)
-supersedes the separate-repository, TinyURL-first backend sequence. Keep generation/templates
-in `jeeves-generator/`; generate from the existing YouTube design, commit untouched output, plan and implement the
-missing custom behavior, then compare fresh versions after owner review. Scope is local Docker
-upload/transcode/playback/search/basic counts with automatic public publication and generation
-from Jeeves. The owner selected a minimal browser interface and PostgreSQL, approving the diagram
-change before v1. FP00 implements mouse PNG export; FP01 preserves the original and changed
-diagrams and [freezes the local v1 input baseline](../field-projects/youtube/v1/README.md).
-FP02 supplies the [experimental generator foundation](../jeeves-generator/README.md): one frozen
-local-v1 profile, deterministic in-memory bundles, partial reports and safe file preflight. FP03a
-adds 19 real experimental local template families, standalone exact locks and independent actual
-output build/startup evidence. FP03b adds guarded mouse preview/ZIP export for the exact frozen saved source. Every intentional diagram or presentation
-change during a field version retains a new source-linked snapshot; UI changes also retain
-studio screenshots.
-
-Heavy template certification is deferred while designs iterate. Use lightweight build/start/flow
-checks and experimental labels; strict readiness does not certify partial scaffolds. Track reusable
-diagram/template/operation/tile candidates, actual custom effort, generated repairs and investment
-in Jeeves. The actual field app remains uncommitted until FP04 and business scenarios remain
-unmeasured; template availability is experimental, with G01–G08 explicit custom work. NC07–NC13 are reference briefs, not
-mandatory pre-v1 work; the older [TinyURL proof plan](../docs/plans/reliable-foundations/backend-first-proof-plan.md)
-remains a later verification reference.
+The active plan is [production foundations](../docs/plans/production-foundations/units.md).
+What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
+[HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in
+[template gaps](../docs/template-gaps.md).

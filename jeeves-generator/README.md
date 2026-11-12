@@ -1,5 +1,28 @@
 # Experimental generator foundation
 
+## Current state
+
+- **Input:** a saved schema-3 design (`design.json`) built from modules.
+- **Output:** a standalone Node 24 and TypeScript project for local Docker Compose. With
+  Runnable processes on it has one process per application tile, the providers they use
+  (PostgreSQL, RabbitMQ, Valkey, Garage, OpenSearch, Keycloak), an nginx edge, and `.jeeves/`
+  with the manifest and report.
+- **Templates (9):** Sign-in, Multipart upload, Upload lifecycle, Video encoding, Cache read,
+  Event counter, Search indexing, Search query and Favorites. Any other module exports as a
+  typed stub.
+- **Yours to write:** each template's `<lead>.hooks.ts`, each stub's `<module>.ts` and each
+  writer's product SQL file.
+- **Commands:** `pnpm --filter @jeeves/generator export:v2 <design.json> <new directory>`. The
+  studio's Generate project dialog produces the same files as a ZIP.
+- **Not provided:** deployment to anything but local Compose, a browser UI, and load or runtime
+  certification.
+- **Legacy:** the frozen `youtube-local-v1` profile (the sections from API to Preserving work)
+  is kept for exact legacy snapshot exports and regression checks: Generate project offers it
+  only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
+  projects use `local-v2`.
+
+The rest of this page is reference.
+
 The separate v2 API now accepts explicit schema3 generation selections. See
 [v2 registry and export](#v2-registry-and-export) for its standalone local foundation;
 the frozen v1 API, CLI and emitted bytes below retain their original contract.
@@ -571,11 +594,7 @@ mechanisms, fixed policies, custom hooks, unsupported choices and unfinished wor
 does not imply emitted build/runtime evidence or strict TinyURL readiness; required hook gaps keep
 `applicationComplete` false. Partial and diagnostic emitters cannot install complete support.
 
-`loadLocalV2Registry()` installs the **local runtime foundation**, with exact standalone
-package/lock/build files, selected pinned providers and private setup/restart/access wiring.
-Feature/preset implementations remain unfinished; no handlers or domain tables are started, and
-no process runs unless [Runnable processes](#runnable-processes) is on. `diagnostics/generation.json` and required report gaps retain that distinction.
-No v2 studio preview or browser controls are wired yet.
+`loadLocalV2Registry()` installs the local runtime foundation (standalone package, lock and build files, pinned providers, setup and restart wiring), the nine templates, module stubs and tile processes. No process runs unless [Runnable processes](#runnable-processes) is on. The studio's Generate project dialog previews and downloads this export ([above](#jeeves-preview-and-zip-download)).
 
 Selected owned uploads also emit the actual generic signed multipart engine, S3 adapter and
 explicit HTTP handler factory. `local.multipart` contributes only selected storage read/write

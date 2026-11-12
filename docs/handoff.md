@@ -10662,3 +10662,38 @@ field-project plan as the owner's choice of same-repository generation (true as 
 changed).
 **For the next unit.** PF02 next. `docs/glossary.md` and `docs/template-gaps.md` now exist for
 its links.
+
+## 2026-11-12 — PF02: Current-state `PLAN.md` and generator READMEs
+
+**What changed.**
+
+- `jeeves/PLAN.md`: the diagram names the Anthropic API beside OpenAI and Codex; the generator row
+  describes `local-v2` (nine templates, typed module stubs, one process per application tile with
+  Runnable processes on) and keeps `local-v1` for exact legacy snapshot exports; the providers
+  row names the Anthropic adapter; "nineteen module kinds" (the CATALOG Components table has 19
+  rows, as does `studioComponentKinds`); `## Chat` points at the studio guide's tool list instead
+  of naming the tools, and says how the Anthropic Messages API gets its schemas and key; `## Next`
+  and the history below it are replaced by `## Status` (completed plans, the active plan, where
+  handoffs, decisions and template gaps live).
+- `jeeves-generator/README.md`: a `## Current state` section under the title (input, output, the
+  nine templates, what is yours to write, commands, what is not provided, the legacy v1 profile),
+  then "The rest of this page is reference."; the `loadLocalV2Registry()` paragraph now says it
+  installs the nine templates, module stubs and tile processes, and that Generate project
+  previews and downloads the export.
+- `jeeves-generator/templates/README.md`: the first paragraph no longer says `local-v2` registers
+  only a diagnostic inventory emitter.
+
+**Checks.** None required (docs only), and none run. Every inserted block and replacement was
+compared with the plan's text (all equal; the two `PLAN.md` Chat sentences equal once line breaks
+are joined). The three "Done when" greps print nothing, also with `command grep`. Every new link
+resolves, including `../docs/studio.md#chat`, `#runnable-processes` and
+`#jeeves-preview-and-zip-download`; nothing linked to `PLAN.md#next`.
+**Differences from the plan.** The two new `PLAN.md` Chat sentences are wrapped at about 100
+columns like their neighbours; the words are the plan's.
+**Noticed.** `jeeves-generator/README.md`'s opening paragraphs after "The rest of this page is
+reference." still read as history (FP03a, FP03b, FP04, "now offers"). `jeeves/PLAN.md` still
+describes the strict-contract layer in Data model, Chat (`declareReviewScope`,
+`configureDesignScope`) and Blueprint, and calls TinyURL foundation v1 the default study; PF04
+and PF05 retire those.
+**For the next unit.** PF03 next. `jeeves/PLAN.md` now ends at `## Status`; later units add to it
+only where their change makes a sentence false (rule 8).
