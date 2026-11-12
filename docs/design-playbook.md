@@ -1709,3 +1709,17 @@ only the ready, immutable public record, under the canonical ID, and never a mis
 answers the moment it is ready; its count is a separate read, fresh every time. With an Optional
 sign-in the viewer travels in the event's payload (a subject or null), so the consumer needs no
 token, and the receipt's identity carries it, so one play can't be claimed twice.
+
+## 2026-11-11 V3-16: the search document is the published record, and a browser needs a place in the export
+
+Make the search index's document codec the same public record the writer publishes (v3's
+`publicVideo`, with `visibility` and `state`), and keep its mapping in the Index writer's hooks file
+that the query imports: the index then can't hold a private field, a hit that isn't a ready,
+public record is refused on the way out, and the indexer and the query can't drift. The event hook
+only binds the publication to its message ID and drops the envelope. A message refused while a
+hook was unwritten stays in `.failed`, so videos published before search worked are found only once
+their dead letters are sent back. A browser for a field app needs three things the export doesn't
+yet give: a folder the edge serves at its origin, a step that builds it, and its sign-in bound to
+the run's ports at first run. Keep its code outside `src/` so the backend measure can't count it.
+With an Optional sign-in, send the token when there is one, and treat a 401 or an expired sign-in
+as "sign in again", never as anonymous; a sign-in started on a watch page should come back to it.

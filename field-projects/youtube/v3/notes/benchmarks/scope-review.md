@@ -32,3 +32,18 @@ source-loc-v2's own `exclusionReason` and `codeLines`, run over `app/`.
   UI file put inside `src/modules` or another backend path would be counted without warning, so
   put the browser in `browser/`, or add any UI path under `src/` to `uiPaths` before the report.
   New backend directories under `src/` must be added to `backendPaths`, or the report refuses.
+
+## V3-16: the browser, reviewed against the unchanged scope
+
+V3-16 added v2's browser to `app/` without changing [`backend-scope.json`](backend-scope.json)
+(the same JSON-content SHA-256 `507a225b…0084`). source-loc-v2, run over a temporary commit object
+of the V3-16 tree against `d94b13a`, classifies every new path:
+
+| Classification | Paths |
+| --- | --- |
+| `ui-source` (`uiPaths: ["browser"]`) | `browser/auth.ts`, `favorites.ts`, `main.ts`, `playback-policy.ts`, `search.ts`, `watch.ts` (6 files) |
+| `outside-src` | `public/index.html`, `public/style.css`, `tsconfig.browser.json`, `scripts/build-browser.mjs`, `scripts/browser-config.mjs`, `test/search.test.ts`, and the edited `package.json`, `compose.yaml`, `infra/edge/nginx.conf` and `.gitignore` |
+| counted (`src/modules`) | only the two search hooks files, already in the baseline |
+
+No browser code is under `src/`, so nothing UI is counted, and no eligible source is outside the
+listed paths. The counted set stays 72 files (71 at V3-12 plus `video-contract.ts`).

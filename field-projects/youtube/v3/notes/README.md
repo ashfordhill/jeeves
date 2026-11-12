@@ -81,8 +81,10 @@ V3-16 then fill in the following, and V3-17 measures the result:
 - the account script;
 - the reused v2 browser.
 
-**`app/` doesn't fully work until V3-16.** Until then it runs and is healthy exactly like
-`generated/`, but each request or message stops at its first unwritten hook.
+**Since V3-16, `app/` works end to end, in the browser at the edge's origin:** a creator signs
+in, uploads in resumable parts and sees the upload's status; the video is processed and published;
+anyone searches for it and watches it, and its plays are counted; a signed-in account keeps
+favorites. V3-17 runs the acceptance (contract §7) from a fresh copy.
 
 #### Progress
 
@@ -91,7 +93,7 @@ V3-16 then fill in the following, and V3-17 measures the result:
 | V3-13 | Upload | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-13/README.md)). The account script; the creator check on multipart's `principal`; every multipart hook; the lifecycle's `metadata`, `job` and `response`. A signed-in creator starts a multipart upload, sends its parts to signed URLs, pauses and resumes from the parts that arrived, and completes it; the job reaches Upload jobs. Anonymous 401, a non-creator 403, another creator 404, an aborted upload 410. |
 | V3-14 | Processing and lifecycle | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-14/README.md)). Every Transcoder hook, the rest of the lifecycle's hooks, and `published.videos` in the Lifecycle writer's SQL file. A completed upload goes pending → processing → ready: the Transcoder encodes H.264/AAC HLS at 360p and 720p in 4 s segments, with a full-size thumbnail, into Transcoded videos; the ready video is in `published.videos`, and one `VideoPublished` reaches Publication events after the ready commit. Invalid media goes pending → processing → failed `INVALID_MEDIA`, with no output and no publication. Search indexer then stops at "Not implemented: mapping for Index writer" (V3-16's). |
 | V3-15 | Watch and Favorites | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-15/README.md)). The five cache read hooks, the two Watch stubs, the four counter hooks and Favorites' `eligible`. Anyone, signed in or not, reads a ready video's details from `published.videos`, then from Hot metadata for the cache's TTL; a pending, failed or unknown video is 404 and never cached. A play of a ready video (`POST …/watch-api-view-publisher/<videoId>` `{eventId}`, 202) reaches View events with the viewer's subject or `null`, and View counter counts it once per `(videoId, eventId)`; `…/watch-api-view-count-reader/<videoId>` reads the total fresh. A signed-in account adds, checks, lists and removes favorite videos; only a ready video may be added (404 `NOT_ELIGIBLE`), and anonymous callers get 401. One scaffold edit (gap 6). |
-| V3-16 | Search and the browser | Next |
+| V3-16 | Search and the browser | **Done** ([evidence](../../../../docs/plans/youtube-v3/evidence/v3-16/README.md)). The Index writer's five hooks and Video search's two: a `VideoPublished` is indexed as the ready video's public record (v2's mapping, version 1), and `…/search-api-video-search?q=&page=` finds ready public videos by title, description and channel (v1/v2's preset), each hit with its thumbnail under `/cdn/video-delivery/`. The v2 browser, moved to v3's routes in `browser/` and `public/` and served by the edge at `/`, with an Optional sign-in for watchers and, when signed in, a ☆/★ favorite toggle and "My favorites". Four scaffold edits so the edge can serve it (gap 8). |
 
 What each unit wrote is in [`custom-paths.md`](custom-paths.md); what the templates can't yet
 express is under [template gaps](#template-gaps-found-while-completing-app).
@@ -105,10 +107,11 @@ The upload's status route shows the upload's own state, and its hooks can't merg
 API's included, may read `published`, and v2's status was the creator's alone. So S04's sequence
 is observed where the lifecycle writes it: in `assets`, read as the database owner in the scratch
 run (as S04 already reads `published.videos`), and in the Processing events behind each change.
-Ready is public through `published.videos`. For V3-16's browser, the upload's status shows
-`completed`, and the video is ready once Watch's details route (V3-15) answers it (200, not
-404). Pending, processing and "failed" with its message have no route until gap 1 is closed in the
-template.
+Ready is public through `published.videos`. The browser (V3-16) shows the upload's own status;
+a completed upload reads "uploaded · not ready yet" until Watch's details route (V3-15) answers
+its video (200, not 404), then "ready" with Watch video. Pending, processing and "failed" with its
+message have no route until gap 1 is closed in the template, so an invalid upload stays "not ready
+yet" in the browser.
 
 **What Watch and Account API answer (V3-15),** through the edge, for V3-16's browser. Every
 Watch route takes an optional `Authorization: Bearer <token>` (anonymous without one, 401
@@ -121,6 +124,26 @@ Watch route takes an optional `Authorization: Bearer <token>` (anonymous without
 | `POST /api/watch-api/modules/watch-api-view-publisher/<videoId>` `{eventId}` | 202 `{eventId, accepted, acceptedAt, publicationVersion}`; 404 `VIDEO_NOT_READY`; 400 `VIEW_REQUEST`. Send one event ID per page session, once two cumulative seconds have played; a retry with the same ID counts once |
 | `GET /api/watch-api/modules/watch-api-viewer-check/me` | `{signedIn:false}` or `{signedIn:true, subject, username}` |
 | `PUT`, `GET`, `DELETE /api/account-api/modules/account-api-favorite-videos/items/<videoId>`, `GET …/items?after=` | contract §3: 200 `{itemId, addedAt}`, 404 `NOT_FAVORITE` or `NOT_ELIGIBLE`, 204, `{items, next}` |
+
+**What Search answers (V3-16),** through the edge, with no sign-in:
+
+| Request | Answer |
+| --- | --- |
+| `GET /api/search-api/modules/search-api-video-search?q=<text>&page=<n>` | 200 `{q, page, pageSize: 20, total, hits}`; each hit `videoId`, `title`, `description`, `channel`, `durationSeconds`, `publishedAt` and `thumbnailUrl` (`/cdn/video-delivery/…/thumbnail.jpg`). Ready public videos only, matched on title^3, description and channel^2 (any word), by score, then newest, then ID |
+| a `q` empty or over 200 characters, a `page` outside 1–100, any other parameter | 400 `SEARCH_QUERY` |
+
+A video is searchable about a second after it is ready: the lifecycle's outbox sends its
+`VideoPublished` after the ready commit, and the Search indexer upserts it at its version. A
+publication refused while a hook was unwritten stays in `publication-events--search-indexer.failed`;
+it is indexed once sent back to the queue.
+
+**The browser (V3-16)** is at `http://127.0.0.1:$LOCAL_HTTP_PORT/`. `pnpm first-run` and `pnpm
+start` build it into `dist-public/` (git-ignored) and bind its sign-in to the run's ports; the edge
+serves that folder. Signed out you can search and watch, and plays count anonymously. **Sign in**
+(top right, Keycloak's page) as `creator` to upload (choose an MP4, a title and a description;
+**Pause upload**, then after a refresh select the upload, reselect the file and **Resume selected
+upload**), or as any account to favorite the open video (☆/★) and see **My favorites**. A sign-in
+started on a watch page returns to that video.
 
 ### How to run each
 
@@ -135,7 +158,7 @@ pnpm install --frozen-lockfile --ignore-scripts
 pnpm build
 export COMPOSE_PROJECT_NAME=youtube-v3-generated \
   LOCAL_HTTP_PORT=45600 LOCAL_IDENTITY_PORT=45601 LOCAL_OBJECT_PORT=45602
-pnpm first-run          # once: about 2 minutes, then 15 containers healthy
+pnpm first-run          # once: about 2 minutes, then 15 containers healthy (app/: builds the browser first)
 node scripts/accounts.mjs   # app/ only, once: the creator role and the three local accounts
 pnpm stop               # drains every process; keeps volumes and .runtime
 pnpm start              # back, with the same credentials and data
@@ -146,6 +169,7 @@ pnpm start              # back, with the same credentials and data
 
 **Where things answer:**
 
+- in `app/`, the browser at `http://127.0.0.1:$LOCAL_HTTP_PORT/`;
 - the edge at `http://127.0.0.1:$LOCAL_HTTP_PORT/healthz`, and each public tile under `/api/<tile>/`
   (for example `/api/watch-api/modules/watch-api-viewer-check/me`);
 - Keycloak's sign-in at `$LOCAL_IDENTITY_PORT` (realm `sign-in`, client `sign-in-web`);
@@ -187,7 +211,8 @@ Hooks after the first one on a path (for example multipart's `metadata`, or the 
 
 Recorded as found. V3-13 and V3-14 worked around none and edited no generated scaffold. V3-15
 made one small scaffold edit for gap 6, because without it v1/v2's duplicate-safe count can't be
-had at all; it is listed in [`custom-paths.md`](custom-paths.md) as a scaffold edit.
+had at all. V3-16 made four for gap 8, because the export has no place for a browser. Each is
+listed in [`custom-paths.md`](custom-paths.md) as a scaffold edit.
 
 | Unit | Gap | Effect in v3 |
 | --- | --- | --- |
@@ -198,3 +223,4 @@ had at all; it is listed in [`custom-paths.md`](custom-paths.md) as a scaffold e
 | V3-14 | **A hook that throws while the Transcoder reports a failure stops the Transcoder.** When a job fails for good, the media worker's terminal step builds a `ProcessingFailed` through `eventId` and `event`. If either throws, the failure is fatal: `app-transcoder` exits 1 with no reason (its last line is the hook's `"action":"thrown"`), and the job, never acknowledged, goes back to Upload jobs. The next `pnpm start` takes it again while subscribing and fails with "container app-transcoder exited (1)". | Seen at steps 2 and 3, with `video` written but `eventId` not; writing `eventId` and `event` cleared it, and the job then failed normally. With every hook written nothing reaches it, but a bug in `eventId` or `event` would keep the Transcoder down. |
 | V3-15 | **A stub's queue publisher can't name its message's ID, and the event counter's receipt is keyed on it.** The generated `queuePublisher` (`src/runtime/module-clients.ts`) gave every message a fresh ID, and `QueuePublisher.publish` (`src/modules/dependencies.ts`) had no way to pass one. The counter template requires each event's ID to be its broker message's ID (`createEventCounter`, "Counter event mismatch"), and its receipt is `(aggregate, event ID)`. | Without a change, a View publisher stub can't send a retried play as the same message, so no hook can make v1/v2's `(videoId, eventId)` count once: with the counter's hooks binding the play's event ID to the message ID (as v2's did), every play went to `view-events--view-counter.failed` as `MALFORMED_MESSAGE` (step 8 of the [V3-15 run](../../../../docs/plans/youtube-v3/evidence/v3-15/README.md)), and binding the message's random ID instead would count every retry. **Scaffold edit in `app/`:** `publish(message, { messageId })`, one line in each file; the generator fix is the same in `module-clients.ts.template` and `dependencies.ts.template`. |
 | V3-15 | **The cache read's 404 can't be shaped from its hooks.** `src/processes/watch-api.ts` answers a null record with the template's own 404 `NOT_FOUND` "No record for this key."; `load` may only return null for a missing record. | A pending, failed or unknown video is 404 `NOT_FOUND`, where v1/v2's details said 404 `VIDEO_NOT_READY` "This video is not publicly available." (the View publisher still says that). The status is the same, and the browser (V3-16) reads 404 as not available. A bad ID is v2's 400 `VIDEO_ID` (from `key`). |
+| V3-16 | **The export serves no browser and has no place for one.** The edge's `location /` answers 404 JSON, `app-edge` mounts only `nginx.conf`, nothing builds a browser, and nothing writes its sign-in binding (issuer, client, callback) for the run's ports. The search hooks themselves expressed v1/v2's policy fully: no gap there. | Serving v2's browser took four **scaffold edits** in `app/`: `infra/edge/nginx.conf` (`location /` serves the built files), `compose.yaml` (the edge mounts `./dist-public` read only), `package.json` (`first-run` and `start` build the browser first) and `.gitignore` (`dist-public/`). Because `local.mjs` records `compose.yaml`'s hash, an existing v3 runtime refuses to start with the new edge ("composition … differs"); it takes a fresh `first-run`. The generator fix: when a design has a user, emit a `public/` folder the edge serves at `/`, a browser build step and the sign-in binding. |

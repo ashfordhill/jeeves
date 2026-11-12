@@ -10087,3 +10087,108 @@ and only 45400–45402 listen in 454xx.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-16: complete search and browser
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (the V3-16 row) and [contract](plans/youtube-v3/contract.md)
+§5 (search data), §6 (the reused v2 browser) and §7. Docs: the field project's
+[notes](../field-projects/youtube/v3/notes/README.md) (progress, what Search answers, the browser,
+gap 8), [`custom-paths.md`](../field-projects/youtube/v3/notes/custom-paths.md), the scope review's
+V3-16 note, a playbook lesson, the plan's status and the HUMAN_FEEDBACK resolution. Evidence:
+[v3-16](plans/youtube-v3/evidence/v3-16/README.md), with the operator harness and 4 screenshots.
+
+- **Search hooks**, from v2's `public-video.ts`, `public-video-search.ts`, `youtube-search.ts` and
+  `youtube-projection.ts`:
+  - **The Index writer's** `mapping` is v2's version 1, the document is the contract's
+    `publicVideo`, `id` is the video and `version` is `publicationVersion`. `event` binds
+    `VideoPublished` to its message ID and drops the envelope.
+  - **Video search's** `preset` is v1/v2's: ready and public; title^3, description and channel^2,
+    `best_fields`; by score, then newest, then ID. `hit` is v2's fields, with `thumbnailUrl`
+    under `/cdn/video-delivery/`.
+  - `test/search.test.ts` adds 4 tests; with the earlier ones, 19 pass with `node --test`.
+- **The browser:** v2's five `browser/` files, `public/`, `tsconfig.browser.json`,
+  `build-browser.mjs` and `browser-config.mjs`, moved to v3's routes, plus `browser/favorites.ts`.
+  - **Sign-in:** one header sign-in. Watch gets the token only when signed in; a 401 or an expired
+    sign-in asks to sign in again and never falls back to anonymous. A sign-in started on a watch
+    page returns to the video.
+  - **Favorites:** the ☆/★ toggle and "My favorites" only when signed in.
+  - **Plays:** one event ID per video per page load, sent once after 2 played seconds and retried
+    with the same ID.
+  - **Uploads:** an account that isn't a creator keeps its sign-in (403 says uploading needs a
+    creator). A completed upload shows "not ready yet" until Watch's details answer, then "ready"
+    (gap 1).
+- **Gap 8, four scaffold edits:** the export serves no browser. `nginx.conf`'s `location /` now
+  serves `dist-public/`; `compose.yaml` mounts it read only on the edge; `package.json`'s
+  `first-run` and `start` build it first; `.gitignore` ignores it. `local.mjs` hashes
+  `compose.yaml`, so an existing v3 runtime refuses to start with the new edge (seen, step 8); a
+  fresh first-run works.
+- **Backend LOC** (source-loc-v2, a temporary commit object against `d94b13a`, the scope
+  unchanged): 72 files, 556 post-template, 67 replaced, 91.75%. V3-16 adds 58 (Index writer 30,
+  Video search 28). The 6 `browser/` files are `ui-source`; nothing UI is counted.
+
+**Docker.**
+
+- **Steps** (`jeeves-v316-browser`, 45680–45682, a copy of V3-15's `app/`): 7 steps in the order a
+  message, then a search, reaches the hooks. Each was a stop (4.2–8.4 s) and start (76.6–81.4 s),
+  15 healthy, 0 restarts, and a fresh fixture ready in 5 s. The stop moved from `mapping` (no
+  index; 501) through `event`, `document.parse`, `id` and `version` (dead letters at attempt 1) to
+  indexed (step 5), then `preset` and `hit`, then 200 (step 7).
+- **After step 7:** `synthetic`/`creator` found 3, newest first. Invalid and unfinished uploads:
+  0 hits. Bad `q`/`page`/extra parameter: 400. The 5 dead letters, sent back, were all indexed
+  (8 in all). Thumbnail 200 `image/jpeg`.
+- **Browser run** (`jeeves-v316-final`, a fresh first-run of `app/`, 116 s): by mouse in
+  Playwright's Chromium.
+  - **Creator:** signs in, uploads at 1 MiB/s and pauses in part 2. After a refresh, ListParts
+    showed part 1, and the resume sent only parts 2 and 3. Ready 4.8 s later.
+  - **Anonymous:** search found the video on the second click, 2.1 s after the first. Watch, with
+    no favorites UI. HLS played (90 frames, 0 dropped), and the count went 0 → 1 3.7 s after play.
+    A seek to 12 s kept playing; still 1.
+  - **Viewer:** signed in on the watch page and came back to it. Played → 2. ☆ → ★, listed;
+    unfavorited; favorited again.
+  - **View events:** the tap got `viewer: null` and the viewer's subject; 2 receipts.
+  - **A tampered token:** "Sign in again", no anonymous retry.
+  - **Restart:** stop 4.8 s / start 67.1 s, an identical snapshot (secrets, volumes, video, count
+    2, receipts, favorite, index, cache, accounts).
+  - **After the restart:** found, 2 views; the creator's list ready; the viewer's sign-in asked
+    for the password again; the favorite kept, then removed from the list.
+  - **Attempts:** 4 earlier ones failed on the spec only (all recorded); no app change.
+
+**Checks.**
+
+- `pnpm check` exited 0: **748 tests in 104 files** (lint: only the existing info).
+- **E2E: 80 passed (5.7 m)** on the first full run. `jeeves_e2e` holds only its TinyURL project.
+- **The connection-dots flake:** `camera()` now needs three unchanged reads 100 ms apart, not
+  one at 60 ms, as `stillBoard` does. No assertion changed. 15/15 with `--repeat-each=5`.
+- Web build passed (1.20 s, the existing chunk-size advisory).
+- **Browser** (my API 4468 on scratch `jeeves_v316`, now dropped; Vite 4478): TinyURL 7 tiles and
+  7 lines in Detailed and Simple, at 1440×900 and 1280×800, no page or console error; projects
+  deleted.
+
+**Gates (D2).** `git diff d94b13a -- field-projects/youtube/v3/generated/` is empty. The
+processes-off pin, `generator.test.ts` and `assemble.test.ts` pass (17 tests; v1 byte-identical).
+Frozen v2: 72 files, 70 byte-identical to `generic-export.tar.gz`, manifest and report equal under
+`provenanceWithoutInventory`. `custom-paths.md` matches `diff -rq generated app`.
+
+**Cleanup.** Both projects are down with their volumes, and their 4 image tags are removed. The
+copies (with `.runtime`, passwords and `dist-public`), the fixtures and the scratch exports are
+deleted, and my servers are stopped. The owner's 43 containers (IDs, restart counts, start
+times, health), 18 volumes, 9 networks and 31 image rows match the record. 42 are healthy, both
+edges answer 200, and only 45400–45402 listen in 454xx.
+
+**For V3-17.**
+
+- **Run:** `app/` from a fresh copy: `pnpm install`, `pnpm build`, then `pnpm first-run` (it builds
+  the browser first) and `node scripts/accounts.mjs`. Open `http://127.0.0.1:$LOCAL_HTTP_PORT/`.
+  Don't reuse a runtime made before V3-16: `compose.yaml` changed.
+- **Not observable by mouse because of the template gaps:**
+  - S02/S04: complete answers 200, not 202; status shows only the upload's own state, so a
+    pending, processing or failed video reads "not ready yet" and an invalid upload never shows
+    "failed" (gap 1). S04 is read in `assets`, as V3-14 did.
+  - S05: a not-ready video's details are 404 `NOT_FOUND` (gap 7).
+- **Search is eventually consistent,** about 1 s after ready, so search again if it isn't found
+  at once.
+- **Gaps to carry into V3-18:** 1–8 are in the notes.
+- **The connection-dots cause is unproven** (above).
+
+The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
+unstaged.

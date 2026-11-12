@@ -31,7 +31,11 @@ const box = async (target: Locator): Promise<Box> => {
   return found;
 };
 
-/** The camera once it has stopped moving (a Fit animates). */
+/**
+ * The camera once it has stopped moving (a Fit and a wheel zoom animate): the same for three reads
+ * in a row, 100ms apart, as `stillBoard` waits, since one unchanged read can fall between two slow
+ * frames of an animation under load.
+ */
 async function camera(page: Page) {
   const read = () =>
     page.locator(".board .react-flow__viewport").evaluate((element) => {
@@ -41,10 +45,11 @@ async function camera(page: Page) {
       return { x: x ?? 0, y: y ?? 0, zoom: zoom ?? 1 };
     });
   let last = JSON.stringify(await read());
-  for (let i = 0; i < 40; i += 1) {
-    await page.waitForTimeout(60);
+  for (let same = 0, tries = 0; tries < 60; tries += 1) {
+    await page.waitForTimeout(100);
     const now = await read();
-    if (JSON.stringify(now) === last) return now;
+    same = JSON.stringify(now) === last ? same + 1 : 0;
+    if (same === 3) return now;
     last = JSON.stringify(now);
   }
   throw new Error("The camera never stops moving.");
