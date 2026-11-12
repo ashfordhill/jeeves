@@ -10592,3 +10592,45 @@ Zone.Identifier files and the mode of `e2e-docker.sh` are untouched and unstaged
 
 **For the next unit.** PF01 is docs only. `AGENTS.md` still points at the YouTube v2 plan until
 PF01 changes it.
+
+## 2026-11-12 — Production foundations plan revised after review
+
+Planning only; no code changed. An independent review
+([findings](plans/production-foundations/review-findings.md)) marked 13 of the 14 units "Needs
+change" or "Blocked". I revised the [plan](plans/production-foundations/units.md) to answer all
+18 findings (17 applied, 1 applied differently) and recorded each in the
+[response](plans/production-foundations/review-response.md). D1–D8 are unchanged.
+
+**What changed.**
+
+- Rules: rule 7 saves the old pins and lists every changed pinned path before new pins are
+  accepted; rule 5 allows PF11–PF13's commands in a scratch app copy and warns that `grep` may be
+  a shell function; rule 6 gives the mouse check the Docker fallback.
+- PF02: local-v1 is "kept for exact legacy snapshot exports", not "otherwise unused".
+- PF03: Notifications follows the worker rule (also as an entry); the read-only "Source &
+  diagnostics" fallback texts and the server's link-table preamble change; 14 unit tests and 5
+  e2e tests are named with their exact change.
+- PF04: the two reference docs stay in place with a "Retired" note (no broken links); dead CSS,
+  `selectOperation` and `Workspace.tsx`'s operation selection go; two more spec tests are named.
+- PF05: chat's reads and reviews are projected onto design findings plus `notSpecified`; exact
+  test deletions, trims and a new test; a recursive, production-only grep.
+- PF06–PF08: the missing failure sites, a reconnect state contract, stalled-call tracking,
+  complete encode-before-report, `AggregateError` sweeps and named existing assertions.
+- PF09–PF10: safe tables (18 rows), pending shadows kept across updates, and a full preflight
+  before any write.
+- PF11–PF14: a byte-level preservation check, checked patches for overrides, one Docker run
+  shared by PF12 and PF13, a step script `pf.mjs` for the harness, and a freshness check in PF14.
+
+**Checks.** Docs only, so none required; `pnpm lint` passed. To verify the plan, I ran on a
+scratch copy of the repository: PF03–PF05's code and test changes (unit tests: 742 passed, and
+the 12 that failed were PF03 tests the plan names that I left unedited; all 27 tests of the six
+changed e2e files passed; the full e2e run failed only in the 7 tests the plan now names; the
+web build and Biome passed; `pnpm eval:chat` kept its scores); PF06's pin updater
+(byte-identical pins); PF11's
+preservation script on v3 (31 files, none differ); and PF12's harness preparation, with
+`pf.mjs`'s token-free steps against a stub server. Every exact string, path, count and test
+title in the plan was checked against `076d715` (37 named test titles each occur once). I used
+only the `jeeves_e2e` database and ports 4301/4311; no Docker stack was started.
+
+**For the next unit.** PF01 is docs only and unchanged by the review. PF07 and PF09–PF10 are the
+units with new logic that no trial run covered; PF12 leaves its Docker stack running for PF13.

@@ -1,7 +1,10 @@
 # Production foundations: true docs, a smaller surface, sturdier templates, regeneration
 
 **Status:** planned 2026-11-12 from the owner's review of Jeeves after YouTube v3. The owner
-confirmed every decision below the same day. **Nothing is implemented yet.**
+confirmed every decision below the same day. Revised on 2026-11-12 after an independent review
+([findings](review-findings.md), [response](review-response.md)): every exact string, path, count
+and command was checked against the repository at `076d715`, and PF03–PF05's code and tests
+were tried on a scratch copy. **Nothing is implemented yet.**
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-12](../../HUMAN_FEEDBACK.md).
 
 There are 14 units, run in order: PF01 → PF14. A coordinator gives each unit to a fresh agent.
@@ -13,7 +16,7 @@ That agent does only its own unit on `main` in the primary checkout, commits it 
 | B. Smaller surface | PF03–PF05 | Remove direct async links and direct calls to a worker; retire the strict-contract surface from the web app and from chat |
 | C. Sturdier templates | PF06–PF08 | Every failure is logged; the cache read recovers; one bad item never stops a process |
 | D. Regeneration | PF09, PF10 | Update an existing export in place and keep the application's own files |
-| E. Proof | PF11–PF13 | YouTube v4: v3 regenerated onto the new templates, then run with two copies and with faults |
+| E. Proof | PF11–PF13 | YouTube v4: v3 regenerated onto the new templates, then one Docker run: two copies, then faults |
 | F. Review | PF14 | Independent review |
 
 ## Why
@@ -87,7 +90,10 @@ and the mode of `jeeves/scripts/e2e-docker.sh`. Stage by path (`git add <path>`)
 **5. Environment.**
 
 - Put Node 24 first: `export PATH=$HOME/.nvm/versions/node/v24.21.0/bin:$PATH`.
-- Run every `pnpm` command from the repository root.
+- Run every `pnpm` command from the repository root, except PF11–PF13's commands inside an app
+  copy in your scratch directory, which run in that copy.
+- `grep` may be a shell function in an agent's shell. Run each grep a unit names as written; it
+  searches folders only where it says `-r`.
 - Never stop, restart or use the owner's dev servers (ports 4300 and 4310) or the `jeeves`
   database. Never edit the owner's projects.
 
@@ -108,21 +114,44 @@ and the mode of `jeeves/scripts/e2e-docker.sh`. Stage by path (`git add <path>`)
   (ports 4301 and 4311, database `jeeves_e2e`) and does what your unit's "Mouse check" lists,
   once with `test.use({ viewport: { width: 1440, height: 900 } })` and once with
   `{ width: 1280, height: 800 }`. It fails on any `pageerror`. Run it with
-  `pnpm db:up && pnpm exec playwright test -c jeeves/playwright.config.ts pfNN-check`. Save at most 4
+  `pnpm db:up && pnpm exec playwright test -c jeeves/playwright.config.ts pfNN-check` (or
+  `pnpm test:e2e:docker pfNN-check` if Chromium's system libraries are missing). Save at most 4
   screenshots under `docs/plans/production-foundations/evidence/pfNN/`. Delete the spec file
   before you commit. Delete every project it created.
 
 **7. Export gates.**
 
-- `pnpm check` includes `assemble.test.ts`: the frozen v1 export must stay byte-identical. If it
+- `pnpm check` includes `jeeves-generator/src/v2/assemble.test.ts`, whose test `retains the
+  frozen v1 output including its exact manifest` keeps the frozen v1 export byte-identical. If it
   fails, stop as in rule 2.
-- `pnpm check` includes `processes-off.test.ts`, which pins three exports by file hash. A unit
-  that edits a template lists "Exported files this unit may change". If the test fails:
-  1. Read the failing paths. Each must be in your unit's list, or be `.jeeves/manifest.json` or
-     `.jeeves/report.json`. If any other path is listed, stop as in rule 2.
-  2. Run `pnpm --filter @jeeves/generator pins:update` (PF06 adds this command), then
-     `pnpm format`, then `pnpm check` again.
-  3. List the changed pinned paths in your handoff entry.
+- `pnpm check` includes `jeeves-generator/src/v2/processes-off.test.ts`, which pins three exports
+  (Runnable processes off) by file hash. A unit that edits a template lists "Exported files this
+  unit may change". If that test fails:
+  1. Save the old pins: `cp jeeves-generator/src/v2/fixtures/processes-off.json "$SCRATCH/pins-before.json"`
+     (`$SCRATCH` is your scratch directory).
+  2. Run `pnpm --filter @jeeves/generator pins:update` (PF06 adds this command).
+  3. List every changed, added and removed pinned path:
+
+     ```sh
+     node -e '
+     const fs = require("node:fs");
+     const [a, b] = process.argv.slice(1).map((file) => JSON.parse(fs.readFileSync(file, "utf8")));
+     for (const name of Object.keys({ ...a, ...b })) {
+       const x = a[name]?.sha256 ?? {}, y = b[name]?.sha256 ?? {};
+       for (const path of [...new Set([...Object.keys(x), ...Object.keys(y)])].sort())
+         if (x[path] !== y[path])
+           console.log(name, !(path in x) ? "added" : !(path in y) ? "removed" : "changed", path);
+     }' "$SCRATCH/pins-before.json" jeeves-generator/src/v2/fixtures/processes-off.json
+     ```
+
+     Each listed path must be in your unit's list, or be `.jeeves/manifest.json` or
+     `.jeeves/report.json`. If any other path is listed, put the old pins back
+     (`cp "$SCRATCH/pins-before.json" jeeves-generator/src/v2/fixtures/processes-off.json`) and
+     stop as in rule 2.
+  4. Run `pnpm format`, then `pnpm check` again. New pins never excuse another failing test.
+  5. List the changed pinned paths in your handoff entry.
+- Update the existing result-shape and emitted-string assertions your unit names. Change no other
+  assertion to make a check pass.
 - Skip the older comparison with `generic-export.tar.gz`: the pin covers the same design.
 
 **8. Docs.** Update the docs your unit names. If your change makes another sentence in
@@ -308,7 +337,7 @@ prints nothing.
    (`../jeeves-generator`). Replace its whole second cell with:
 
 ```text
-The `@jeeves/generator` workspace. The `local-v2` registry exports a saved schema-3 design as a standalone project: nine templates, typed module stubs and, with Runnable processes on, one process per application tile. The frozen `local-v1` profile still exports byte-identically and is otherwise unused. See its [README](../jeeves-generator/README.md).
+The `@jeeves/generator` workspace. The `local-v2` registry exports a saved schema-3 design as a standalone project: nine templates, typed module stubs and, with Runnable processes on, one process per application tile. The frozen `local-v1` profile is kept for exact legacy snapshot exports (Generate project offers it only for the exact frozen YouTube v1 source, and `export:new` writes it) and regression checks; new module-authored projects use `local-v2`. See its [README](../jeeves-generator/README.md).
 ```
 
 3. In the same table, replace the second cell of the `packages/providers` row with:
@@ -377,7 +406,9 @@ What each unit did is in [the handoff](../docs/handoff.md); the owner's decision
 - **Not provided:** deployment to anything but local Compose, a browser UI, and load or runtime
   certification.
 - **Legacy:** the frozen `youtube-local-v1` profile (the sections from API to Preserving work)
-  still exports byte-identically and is otherwise unused.
+  is kept for exact legacy snapshot exports and regression checks: Generate project offers it
+  only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
+  projects use `local-v2`.
 
 The rest of this page is reference.
 ````
@@ -408,18 +439,21 @@ The rest of this page is reference.
 ### PF03 — Remove direct async links and direct calls to a worker (D2, D6)
 
 **Goal:** no line can be drawn or saved as asynchronous unless one end is a Queue or Topic tile,
-and a Worker is reached only from a Queue or Topic.
+and a Worker (or an older Notifications tile) is reached only from a Queue or Topic.
 **Checks:** check, e2e, build, evals, mouse. **Exported files this unit may change:** none.
 
 **Why the worker rule** (found while planning, after the decisions; it applies D6): a Worker's
 process has no HTTP listener, so a direct call to one generates a client that reaches nothing.
-No study, pinned fixture or field design has such a link.
+Notifications runs as a worker process too (`generation-support.ts`), so it gets the same rule,
+including as an action's entry. No study, pinned fixture or field design has such a link, or a
+dashed line between two applications (checked on every study, every fixture under
+`jeeves/packages/spec/src/fixtures/` and every field design).
 
 **Code, in `jeeves/packages/spec/src/studio-links.ts`:**
 
 1. Delete the constant `either`.
-2. In `studioLinkRules`, the rows `application → application`, `application → external` and
-   `external → application` use `...sync` instead of `...either`.
+2. In `studioLinkRules`, the three rows `application → application`, `application → external`
+   and `external → application` use `...sync` instead of `...either`.
 3. In the comment above `studioLinkRules`, replace `an application or external API sync or
    async.` with `an application or external API by request.` and replace
    `An external API calls an application, sync or async.` with
@@ -445,84 +479,154 @@ const callableKinds: readonly StudioKind[] = applicationKinds.filter(
 6. In `studioLinkRules`, add `targets: callableKinds,` to three rows: `application →
    application`, `external → application` and `cdn → application`. Leave `queue → application`
    as it is, so a queue still feeds a worker.
-7. In `pairRefusal`, directly after the `browser` check, add:
+7. In the `action → application` row, delete `"notification", ` from its `targets`, so they are
+   `["service", "redirect", "identity", "billing", "uploads", "gateway"]`.
+8. In `pairRefusal`, directly after the `browser` check, add:
 
 ```ts
 if (target === "worker" || target === "notification")
   return `${Noun(target)} takes its work from a queue or topic. Put one between them.`;
 ```
 
-Change nothing else in the spec's logic. In `studio-design-review.ts` change only the header
-comment that says a dashed line between applications is accepted: it is now flagged.
+**Code, in `jeeves/packages/spec/src/studio-design-review.ts`** (text only; change no logic):
 
-**What must be true afterwards** (these follow from the change; don't write code for them):
+- In the header comment, replace `a dashed line between applications,` + `which the table allows,
+  is accepted;` (it wraps after `applications,`) with `a dashed line between applications, or to
+  an external API, is flagged too;`.
+- In the line-style fallback `fix`, replace `so fix its interaction in Source & diagnostics.`
+  with `so no mouse or chat command can redraw it.`
+- In the user-reaches-store fallback `fix`, replace `so fix it in Source & diagnostics.` with
+  `so no mouse or chat command can do it.` (Source & diagnostics is read-only.)
 
-- `linkTiles` or `addTile` with `link: "async"` between two services is refused with the
-  sentence in step 4.
-- `linkTiles` or `addTile` from a service, an external API or a CDN straight to a Worker is
-  refused with the sentence in step 7. After a Queue or Topic, a Worker is still offered.
-- A stored design with a direct link into a Worker still opens and reports it as
-  `LANE_INVALID`.
-- A stored design that has such a link still opens. `validateDesign` reports it as
-  `LANE_INVALID` with that sentence, and `designReview` reports a `line-style` finding whose
-  commands redraw it.
-- Removing a Queue or Topic no longer links its publisher straight to its consumer. The consumer
-  is listed among the tiles the removal also removes, unless something else still reaches it.
+**Code, in `jeeves/apps/server/src/chat/tools.ts`:** in the `linkTable` preamble, replace
+`async is sent without waiting (dashed): through a queue or topic, or a direct async call between
+applications where the table allows it.` with `async is sent without waiting (dashed), always
+through a queue or topic.`
+
+Change nothing else.
+
+**What must be true afterwards** (each was seen on a scratch copy with exactly this change):
+
+- `linkTiles` or `addTile` with `link: "async"` between two services is refused; the reason ends
+  with the sentence in step 4.
+- `linkTiles` or `addTile` from a service, an external API or a CDN straight to a Worker or a
+  Notifications tile is refused with the sentence in step 8, and no action can enter a
+  Notifications tile. After a Queue or Topic, a Worker is still offered.
+- On the TinyURL study, `planRemoveTile(design, "click-events")` returns
+  `{ ok: true, value: { strands: ["analytics"] } }`: removing the queue no longer links its
+  publisher straight to its consumer, so the consumer goes with it.
+- A stored design with a direct link into a Worker still opens. `validateDesign` reports
+  `LANE_INVALID` with the sentence in step 8; `designReview` gives it no `line-style` finding
+  (the table has no row for the pair). No repair is promised.
+- A stored design with a dashed link between two services still opens. `validateDesign` reports
+  `LANE_INVALID` with the sentence in step 4, and `designReview` reports one `line-style`
+  finding. Its redraw commands (`removeLink`, then `linkTiles`) are there only when removing the
+  line cuts nothing off; otherwise its fix says no mouse or chat command can redraw it.
+- `pnpm eval:chat` exits 0 with the same scripted scores as before. The recorded V3-19 live
+  reports (`docs/evals/v3-19/live-*.json.gz`) no longer replay, because their requests carry the
+  old link table; `docs/evals/v3-19/scripted.json` still replays.
 
 **Tests.**
 
-- Add to `studio-lanes.test.ts` (or `studio-links.test.ts` if it exists):
+- Add to `jeeves/packages/spec/src/studio-lanes.test.ts`:
   1. `studioLinkRefusal("service", "service", "async")`,
      `studioLinkRefusal("service", "external-api", "async")` and
-     `studioLinkRefusal("external-api", "service", "async")` each equal the sentence, with
+     `studioLinkRefusal("external-api", "service", "async")` each equal the step-4 sentence, with
      `a service`, `an external API` and `a service` as the noun.
   2. `studioLinkRule("service", "service")?.modes` equals `["sync"]`;
      `studioLinkRule("queue", "worker")?.modes` equals `["async"]`;
-     `studioLinkRule("service", "worker")`, `studioLinkRule("external-api", "worker")` and
-     `studioLinkRule("cdn", "worker")` are `undefined`; and
+     `studioLinkRule("service", "worker")`, `studioLinkRule("external-api", "worker")`,
+     `studioLinkRule("cdn", "worker")`, `studioLinkRule("service", "notification")` and
+     `studioLinkRule("action", "notification")` are `undefined`; and
      `studioLinkRefusal("service", "worker")` equals
      `A worker takes its work from a queue or topic. Put one between them.`
-  3. On the TinyURL study (`studio-tinyurl`), `planRemoveTile` for its queue adds no link from
-     the queue's publisher to its consumer and lists the consumer among the tiles to remove.
-  4. A design with one service-to-service connection whose `planned.interaction` is
-     `"Asynchronous"`: `validateDesign` returns a `LANE_INVALID` finding containing
-     `is a direct call`, and `designReview` returns one `line-style` finding for that link.
-- Update every existing test that expects an async link between two applications, or between
-  an application and an external API, to be accepted. Find them with
-  `grep -rln "async" jeeves/packages/spec/src/*.test.ts jeeves/packages/spec/src/fixtures/*.test.ts jeeves/apps/server/src --include=*.test.ts`
-  and run the suite. A test of a restitched async link after removing a queue now expects the
-  consumer to be removed with it.
-- Update every existing test whose design links a service, an external API or a CDN straight
-  to a Worker: put a Queue between them in that test's design
-  (`grep -rln 'kind: "worker"' jeeves/packages/spec/src jeeves/apps/server/src jeeves/apps/web/e2e`
-  lists the candidates; change only the ones that fail).
+- Add to `jeeves/packages/spec/src/studio-lane-commands.test.ts`:
+  3. On the TinyURL study (`studio-tinyurl`), `planRemoveTile(design, "click-events")` returns
+     `strands: ["analytics"]`; building `{ type: "removeTile", tile: "click-events", alsoRemove:
+     ["analytics"] }` with `buildStudioCommand` and applying it leaves no `analytics` element and
+     no connection from `redirect` to `analytics`.
+- Add to `jeeves/packages/spec/src/studio-design-review.test.ts`:
+  4. A copy of the TinyURL study with one more connection, `stats-shorten`, from `stats-api` to
+     `shorten` (kind `calls`, `planned.interaction` `"Asynchronous"`), added to both
+     `design.connections` and `architecture.studio.connections` (`{ connection: "stats-shorten",
+     settings: {} }`): `validateDesign` returns a `LANE_INVALID` finding containing
+     `is a direct call`, and `designReview` returns one `line-style` finding for `stats-shorten`
+     whose commands are `removeLink` then `linkTiles`.
+  5. The same with a connection `redirect-analytics` from `redirect` to `analytics`
+     (`"Request / response"`): `validateDesign` returns a `LANE_INVALID` finding containing
+     `takes its work from a queue or topic`, and `designReview` returns no `line-style` finding.
+- These existing tests fail after the change (seen on a scratch copy). Update each to the new
+  table and texts as its comment explains; change nothing else in them:
+
+| File | Test | Change |
+| --- | --- | --- |
+| `jeeves/packages/spec/src/studio-lanes.test.ts` | `allow exactly the plan's pairs in each mode` | No async between applications or to an external API; no pair into `worker` or `notification` except from `queue` |
+| same | `give each link its connection and name refusals in plain words` | Its `link("service", "worker", "async")` becomes a refusal |
+| same | `holds the owner's rules as rows with allowed and default modes` | The rows as the table now prints them |
+| same | `give every pair its default mode: async for queue links, sync otherwise` | A pair into a worker from an application is refused |
+| same | `refuse each rule in plain words` | `("external-api", "billing", "async")` and `("billing", "external-api", "async")` now refuse with the step-4 sentence |
+| same | `cover every kind but the browser once, with distinct kind icons` | `studioEntryKinds` no longer has `notification` |
+| `jeeves/packages/spec/src/studio-lane-commands.test.ts` | `restitch: removing a CDN in front of Redirect moves the download entry back to it` | Its Click events removal now also removes Analytics worker (`alsoRemove: ["analytics"]`) |
+| same | `always list the fan's eleven kinds in their groups, each allowed or with a reason` | After a service, Worker service is refused with the step-8 reason |
+| same | `keep the fan's list for the canvas: addTile still takes every tile kind` | Add the Worker and Notifications tiles after a Queue |
+| same | `link from the node, never reversed: the forward link, else its reason` | Redirect service → Analytics worker is a refusal |
+| `jeeves/packages/spec/src/studio-design-review.test.ts` | `flags a line whose style contradicts its channel, redraws it and keeps its module link` | Its async Watch API → Recommendations `linkTiles` (`link: "async"`) is now refused when built: expect that refusal instead of an accepted dashed line; its expected fallback fix ends `so no mouse or chat command can redraw it.` |
+| same | `finds the user reaching a store and removes the action's line when a service already reaches it` | Its `toContain("fix it in Source & diagnostics")` becomes `toContain("so no mouse or chat command can do it.")` |
+| `jeeves-generator/src/v2/tile-processes.test.ts` | `runs the legacy kinds and empty tiles` | Put a queue between Go and Mail: replace the `go-mail` `addTile` with one adding `{ id: "mail-jobs", name: "Mail jobs", kind: "queue" }` after `go` (`linkId: "go-mail-jobs"`) and one adding Mail after `mail-jobs` (`linkId: "mail-jobs-mail"`). Its expected processes are unchanged |
+| `jeeves/apps/server/src/chat/tools.test.ts` | `states the link table from the rules, and leaves the link mode optional` | Expect `External API -> service, redirect, identity, billing, uploads, gateway: sync (Calls).` instead of the `sync or async` row |
+
+- These e2e tests fail after the change (seen on a scratch copy). Change them as follows:
+
+| File | Test | Change |
+| --- | --- | --- |
+| `jeeves/apps/web/e2e/remove.spec.ts` | `removes a tile with its X, restitches its links and undoes` | Rename it `removes a tile with its X and the tile it cuts off, and undoes`. After clicking **Remove Click events**, the dialog `Remove Click events` lists Analytics worker; click its **Remove 2 tiles**. Then 9 tiles and 9 lines; the saved design has neither `click-events` nor `analytics` and no `redirect-analytics` connection. Undo: 11 tiles, 12 lines, both back |
+| `jeeves/apps/web/e2e/relationship-tracing.spec.ts` | `removing a selected tile traces its surviving neighbour and Undo restores the route` | After clicking **Remove Click events**, click **Remove 2 tiles** in the dialog `Remove Click events`; the rest is unchanged |
+| `jeeves/apps/web/e2e/connect.spec.ts` | `connects containers from anywhere in the Detailed view` | First drag the `stats-data` row onto Analytics worker: `.board-connect-tip` reads `Stats API can't link to Analytics worker. A worker takes its work from a queue or topic. Put one between them.`; press Escape and release. Then drag it onto Shorten service instead of Analytics worker, and expect the added link `stats-api shorten` |
+| `jeeves/apps/web/e2e/spawn.spec.ts` | `clicks the link tab, then a kind, to add a linked tile` | After a service one kind is greyed: expect one `[aria-disabled="true"]` item, Worker service |
+| same | `creates each of the eleven kinds by mouse, with its icon and label, and Undo removes one` | In its plan, the Worker service row comes from `"Message channel"` instead of `"Uploads"`; fix the comment above the plan to match |
+
+- If any other test fails, stop (rule 2).
 
 **Docs.**
 
-- `jeeves/CATALOG.md`, link table: the three rows `application → application`,
-  `external-api → application` and `cdn → application` say `(not a worker)` after their target.
-  After the paragraph that begins `So the user reaches a store`, add:
-  `A Worker is reached only from a Queue or Topic: its process answers no requests.`
-- `jeeves/CATALOG.md`, link table: the Modes cell of the three rows becomes `sync`. Replace the
-  sentence that begins `Application → application, application → external API and external
-  API → application still allow async` (it ends `for its channel.`) with:
-  `A line between two applications, or between an application and an external API, is always a direct call: to hand work off without waiting, put a Queue or Topic between them (owner, 2026-11-12).`
+- `jeeves/CATALOG.md`, link table:
+  - the `action → …` row loses `` `notification`, ``;
+  - `application → application` and `` `cdn` → application `` and `` `external-api` →
+    application `` say `` (not `worker` or `notification`) `` after `application` in their first
+    cell;
+  - the Modes cell of `application → application`, `` application → `external-api` `` and
+    `` `external-api` → application `` becomes `sync`.
+- `jeeves/CATALOG.md`: after the paragraph that begins `So the user reaches a store`, add:
+  `A Worker (or an older Notifications tile) is reached only from a Queue or Topic: its process answers no requests. A design stored with a dashed line between applications or a line straight into a Worker loads the same way and reports it; where removing that line would cut a tile off, no command can repair it.`
+- `jeeves/CATALOG.md`: replace the sentence that begins `Application → application, application
+  → external API and external API → application still` (it wraps after `still` and ends
+  `for its channel.`) with:
+  `A line between two applications, or between an application and an external API, is always a direct call: to hand work off without waiting, put a Queue or Topic between them (owner, 2026-11-12). Chat's review flags a stored line whose style the table refuses.`
 - `jeeves/CATALOG.md`: replace the paragraph that begins `The table records design intent only.`
   with:
-  `The table offers only links that generate something. A link or a module connection that no installed template or stub can generate is refused when it is made, with the reason (owner, 2026-11-12); a gap found this way is recorded in [template gaps](../docs/template-gaps.md).`
+  `The table offers only links the generator can use (owner, 2026-11-12): a dashed line always goes through a Queue or Topic, and a Worker is reached only from one, because its process answers no requests. A gap found in a field project is recorded in [template gaps](../docs/template-gaps.md).`
 - `docs/studio.md`, lane canvas, Lines bullet: replace the sentence that begins `The link table
-  still allows a direct asynchronous call` with
-  `A dashed line always goes through a Queue or Topic tile; a line between two services is always a direct call.`
-- `docs/studio.md`, Chat, the **line-style** bullet: replace `A dashed line between
-  applications, which the table allows, is accepted.` with
-  `A dashed line between two services or to an external API is flagged too.`
+  still allows a direct asynchronous call` (it ends `for its channel.`) with
+  `A dashed line always goes through a Queue or Topic tile; a line between two services, or between a service and an external API, is always a direct call. A Worker is reached only from a Queue or Topic.`
+- `docs/studio.md`, Chat, the **line-style** bullet: replace `A dashed line between applications,
+  which the table allows, is accepted. A line the lanes can't remove first (it is all that
+  reaches its store) is fixed in Source & diagnostics;` with
+  `A dashed line between two services or to an external API is flagged too. A line the lanes can't remove first (it is all that reaches its tile) can't be redrawn by mouse or chat, and its fix says so;`
+- `docs/studio.md`, `## Limits`: after the bullet that begins `A design stored with an entry
+  straight into storage`, add the bullet
+  `- A design stored with a dashed line between applications, or a line straight into a Worker, loads and reports it the same way; where removing that line would cut a tile off, no command can repair it.`
+- `docs/chat-evals.md`: add at the end of `## Design evals 2.0.0 (V3-19)`:
 
-**Mouse check:** on a blank project add a Service after the Produce action, then a second
-Service after it from the link fan: the line between them is solid. Open the second Service's
-link fan: Worker service is greyed, and its reason contains `takes its work from a queue or
-topic`. Add a Queue after that Service, then a Worker after the Queue: both lines are dashed.
-On a new TinyURL study the lines into and out of its queue are dashed and the legend shows
-Async.
+```text
+Since PF03 changed the link table chat's tools send, the recorded V3-19 live reports no longer replay (their requests differ); they stay as the record of that run. `pnpm eval:chat` still runs the scripted arms.
+```
+
+**Mouse check:** on a blank project add the Produce action, a Microservice after it, then a
+second Microservice after that one from its link fan: the line between them is solid. Open the
+second Microservice's link fan: Worker service is greyed, and its reason contains `takes its work
+from a queue or topic`. Add a Message channel after it, then a Worker service after the channel:
+both lines are dashed. On a new TinyURL study the lines into and out of its queue are dashed and
+the legend shows Async.
 
 **Done when:** `grep -n "either" jeeves/packages/spec/src/studio-links.ts` prints nothing and all
 five checks pass.
@@ -530,19 +634,23 @@ five checks pass.
 
 ### PF04 — Retire the strict-contract surface: web app and default study (D3, D4)
 
-**Goal:** the web app shows nothing of the strict-contract layer, and New project preselects
-the TinyURL study. Spec code is untouched.
+**Goal:** the web app shows nothing of the strict-contract layer except three things that keep
+legacy designs safe: the read-only ownership summary in Source & diagnostics (generation reads
+ownership), the declarations a removal's confirmation names, and the confirmation that moving an
+entry clears operation bindings. New project preselects the TinyURL study. Spec code is
+untouched.
 **Checks:** check, e2e, build, mouse. **Exported files this unit may change:** none.
 
 **Do not edit** anything under `jeeves/packages/spec/src/` or `jeeves/apps/server/` except
 `studio-examples/index.ts` and the test files named in step 4.
 
-**1. Delete four unused files** (nothing imports them; confirm with
-`grep -rn "DesignScopeForm\|OwnershipForm\|OperationsForm\|ResolveFields" jeeves/apps/web/src`,
-which must list only these files and each other):
-`jeeves/apps/web/src/studio/DesignScopeForm.tsx`, `OwnershipForm.tsx`, `OperationsForm.tsx` and
-`ResolveFields.tsx`. Keep `OperationChanges.tsx` and `OwnershipChanges.tsx`: removal previews
-use them.
+**1. Delete six unused files** (nothing imports them; confirm with
+`grep -rn "DesignScopeForm\|OwnershipForm\|OperationsForm\|ResolveFields\|design-scope.css\|ownership.css" jeeves/apps/web/src`,
+which must list only lines inside the four forms):
+`jeeves/apps/web/src/studio/DesignScopeForm.tsx`, `OwnershipForm.tsx`, `OperationsForm.tsx`,
+`ResolveFields.tsx`, and the two style sheets only they import, `design-scope.css` and
+`ownership.css`. Keep `OperationChanges.tsx` and `OwnershipChanges.tsx`: the removal and
+entry-move confirmations use them.
 
 **2. `jeeves/apps/web/src/canvas/SourceDiagnostics.tsx`.**
 
@@ -554,9 +662,15 @@ use them.
 - The dialog then holds, in this order: that paragraph, **Download source JSON**, the ownership
   summary, and **Full saved source**.
 
-Then delete `jeeves/apps/web/src/studio/ReadinessReport.tsx` and `OperationsSummary.tsx`, with
-their test files if they exist. In `Workspace.tsx` stop passing `selectedOperation`, and remove
-only code that TypeScript or Biome then reports as unused.
+Then delete `jeeves/apps/web/src/studio/ReadinessReport.tsx` and `OperationsSummary.tsx` (they
+have no test files). In `jeeves/apps/web/src/canvas/Workspace.tsx`, stop passing
+`selectedOperation`; then, since nothing can select an operation any more, delete
+`operationPick`, `setOperationPick` (and its call in `select`), `selectedOperation`, the
+`target.operation` branch of the dialog's `onTarget`, the operation branch of the chat selection
+effect (and `selectedOperation` in its dependency list), and the operation half of the
+`Selected … for chat` status, which becomes `Selected logical owner for chat · {selectedOwner.id}`
+shown when `selectedOwner` is set. Keep the owner selection and the entry-move dialog. Remove the
+imports that become unused.
 
 **3. `jeeves/packages/spec/src/studio-examples/index.ts`.**
 
@@ -567,46 +681,82 @@ only code that TypeScript or Biome then reports as unused.
 - Keep the `studioArchitectureExample` switch as it is, with its foundation case, and keep
   `tinyurl-foundation.ts`.
 
-**4. Tests.**
+**4. Tests.** With exactly these changes, every unit test and e2e test that this unit affects
+passed on a scratch copy.
 
 | File | Do |
 | --- | --- |
 | `jeeves/apps/web/e2e/design-scope.spec.ts`, `foundation.spec.ts`, `operations.spec.ts`, `readiness.spec.ts`, `resolve.spec.ts` | Delete the file |
-| `jeeves/apps/web/e2e/operations.ts` | Delete it if `grep -rn "operations.ts" jeeves/apps/web/e2e` then finds no importer |
+| `jeeves/apps/web/e2e/operations.ts` | Delete it if `grep -rn "operations.ts" jeeves/apps/web/e2e` then finds no importer (only the deleted specs import it) |
+| `jeeves/apps/web/e2e/source.ts` | Delete `selectOperation`: only the deleted specs use it |
 | `jeeves/apps/web/e2e/ownership.spec.ts`, `ownership.ts` | Keep. Change only selectors or texts this unit changed. If it needs more, stop (rule 2). |
 | `jeeves/apps/web/e2e/detailed-view.spec.ts` | Delete the one test titled `the TinyURL foundation, which has no modules: its services are containers holding just the +` |
-| `jeeves/apps/web/e2e/diagram-export.spec.ts`, the test that calls `createStudy(page, "E2E PNG owner")` | It needs the foundation design. Add `createFoundation(page, name)` to `jeeves/apps/web/e2e/studio.ts`: it creates a project through the API, posts `studioStudySeedOperations(studioArchitectureExample("studio-tinyurl-foundation").design)` as one batch with base revision 0 (copy the request shape from an existing e2e helper: `grep -rn "/operations" jeeves/apps/web/e2e`), opens `/?project=<id>` and returns the ID. Use it in that test only. |
-| `jeeves/packages/spec/src/studio-examples/foundation.test.ts`, `jeeves/apps/server/src/routes/foundation.test.ts`, `jeeves/apps/web/src/project/create-example.test.ts` | Where a test uses `DEFAULT_STUDIO_EXAMPLE_ID` (or `DEFAULT_EXAMPLE_ID`) to get the **foundation** design, write the literal `"studio-tinyurl-foundation"`. Where it asserts what the default is, expect `"studio-tinyurl"`. Change nothing else in them. |
-| Any other test that counts the chooser's studies as four, or expects the foundation in `studioArchitectureExamples` | Expect three studies without it |
+| `jeeves/apps/web/e2e/studio.ts` | Add `createFoundation` (below), importing `studioArchitectureExample` and `studioStudySeedOperations` from `@jeeves/spec`. In the `tinyurl` fixture, replace the two comment lines that mention the extended schema2 study and `foundation.spec.ts` with `// The extended TinyURL study is New project's default.` |
+| `jeeves/apps/web/e2e/diagram-export.spec.ts` | In the test that calls `createStudy(page, "E2E PNG owner")`, call `createFoundation(page, "E2E PNG owner")` instead; it needs the foundation design |
+| `jeeves/packages/spec/src/studio-examples/foundation.test.ts` | `expect(DEFAULT_STUDIO_EXAMPLE_ID).toBe("studio-tinyurl-foundation")` becomes `.toBe("studio-tinyurl")`; every `studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID)` becomes `studioArchitectureExample("studio-tinyurl-foundation")` |
+| `jeeves/apps/server/src/routes/foundation.test.ts` | `studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID)` becomes `studioArchitectureExample("studio-tinyurl-foundation")`; remove the import that becomes unused |
+| `jeeves/packages/spec/src/studio-rekey.test.ts` | In `updates every kind of reference, exactly where the completeness walk finds them`, add `["TinyURL foundation", studioArchitectureExample("studio-tinyurl-foundation").design],` directly after `...studies,`: without it the walk loses the foundation's operation references and the test fails |
+| `jeeves/packages/spec/src/studio-warnings.test.ts` | In `studies have no topology warnings; the foundation retains its honest verifier gaps`, loop over `const ids: string[] = [...studioArchitectureExamples.map((study) => study.id), "studio-tinyurl-foundation"]` (with `id` in place of `study.id` in the body): its `study.id !== "studio-tinyurl-foundation"` comparison no longer type-checks |
+| `jeeves/apps/web/src/project/create-example.test.ts` | No change: it passes with any default |
 
-Update the comment in `jeeves/apps/web/e2e/studio.ts` that mentions `foundation.spec.ts`.
+`createFoundation`, in `jeeves/apps/web/e2e/studio.ts` before `export const tiles`:
+
+```ts
+/** A new project holding the TinyURL foundation study, which New project no longer offers. */
+export async function createFoundation(page: Page, name: string): Promise<string> {
+  const created = await page.request.post("/api/projects", { data: { name } });
+  expect(created.status()).toBe(201);
+  const id = (await created.json()).project.id as string;
+  const seeded = await page.request.post(`/api/projects/${id}/operations`, {
+    data: {
+      baseRevision: 0,
+      source: "canvas",
+      ops: studioStudySeedOperations(studioArchitectureExample("studio-tinyurl-foundation").design),
+    },
+  });
+  expect(seeded.ok(), await seeded.text()).toBe(true);
+  await page.goto(`/?project=${id}`);
+  await ready(page);
+  return id;
+}
+```
+
+If any other test fails, stop (rule 2).
 
 **5. Docs.**
 
 - `docs/studio.md`: delete the paragraph that begins `Open **Export diagram → Source &
-  diagnostics → Compatibility report**`. In `## Projects`, the study list is the TinyURL study
-  (the default), the marketplace study and the YouTube study. Delete the sections
-  `## Profile and requirements`, `## The TinyURL foundation study` and
-  `## Named API operation responsibilities`. Replace the body of
-  `## Logical owners, roles and access` with:
-  `Module commands derive who owns each store and who may read it; generation reads that. **Export diagram → Source & diagnostics** shows it read-only, with the saved source. Removal previews still name the declarations a removal affects, and one Undo restores them.`
-- Move two files with `git mv`: `docs/studio-contracts.md` and `docs/studio-readiness.md` go to
-  `docs/archive/`. In `docs/studio-settings.md`, `docs/studio-blueprint.md` and `jeeves/PLAN.md`,
-  repoint each link to them at `archive/…` (relative to the linking file).
+  diagnostics → Compatibility report**` (it ends with the report guide link). In `## Projects`,
+  the study list is the TinyURL study (the default; a fresh installation starts with one), the
+  marketplace study and the YouTube study. Delete the sections `## Profile and requirements`,
+  `## The TinyURL foundation study` and `## Named API operation responsibilities`. Replace the
+  body of `## Logical owners, roles and access` with:
+  `Module commands derive who owns each store and who may read it; generation reads that. **Export diagram → Source & diagnostics** shows it read-only, with the saved source. Removal previews still name the declarations a removal affects, and one Undo restores them; moving an entry that would clear operation bindings asks first.`
+- `docs/studio.md`, `## Diagram PNG export`: replace the paragraph that begins `**Source &
+  diagnostics** opens read-only ownership/access` with:
+  `**Source & diagnostics** shows, read-only, who owns and may read each store, and the full saved source. **Download source JSON** preserves the complete document, including historical settings and custom declarations. Its owner buttons select a logical owner for chat without changing source. This path supplies no declaration forms or extra settings menu.`
+- `docs/studio-contracts.md` and `docs/studio-readiness.md` stay where they are, so every link
+  into and out of them keeps working. Directly under each one's title, add:
+  `> **Retired (owner, 2026-11-12).** The studio no longer shows or edits these declarations. A schema-3 design may still carry them: they are parsed, validated and exported in blueprint 3, so this page stays as their reference.`
 - `jeeves/CATALOG.md`: delete the sections `## Persistent behavior scope`,
   `### Finite Create link contract (NC03)`, `### Finite Resolve link and positive cache (NC04)`
   and `### Exact snapshot compatibility report (NC05)`. In `## Studies`, delete the TinyURL
-  foundation paragraph, say three studies, and mark the TinyURL study as the default. Add this
-  section before `### Experimental local-v2 video composition`:
+  foundation paragraph, keep `New project offers three studies`, and mark the Extended TinyURL
+  study as the default. In `## Explicit logical authority and access`, replace the sentence that
+  begins `**Export diagram → Source & diagnostics** retains read-only` (it wraps after `retains`
+  and ends `useful installed settings.`) and the sentence after it (`Diagnostic buttons retain
+  exact owner/operation chat selection.`, which wraps after `chat`) with:
+  `**Export diagram → Source & diagnostics** shows ownership/access read-only, with the saved source and its JSON download; its owner buttons select a logical owner for chat. Normal forms contain only identity and useful installed settings.`
+  Add this section before `### Experimental local-v2 video composition`:
 
 ````markdown
 ### Legacy declarations
 
 A schema-3 design may carry `scope`, `operations` and cache-policy declarations from the retired
 strict-contract work (NC01–NC14, 2026-11-07). They are still parsed, validated and exported in
-blueprint 3, and no studio or chat surface edits them. The TinyURL foundation study
+blueprint 3, and the studio no longer shows or edits them. The TinyURL foundation study
 (`studio-tinyurl-foundation`) is no longer offered; projects made from it still open. Details:
-[contracts](../docs/archive/studio-contracts.md) and [readiness](../docs/archive/studio-readiness.md).
+[contracts](../docs/studio-contracts.md) and [readiness](../docs/studio-readiness.md).
 ````
 
 - `jeeves/PLAN.md`, `## Data model`: the studies offered are TinyURL v3.2 (the default), the
@@ -617,70 +767,205 @@ only)** preselected and lists three studies. Create it: the TinyURL study render
 diagram → Source & diagnostics shows the four things in step 2 and nothing else.
 
 **Done when:** the four checks pass, and
-`grep -rn "ReadinessReport\|OperationsSummary\|DesignScopeForm" jeeves/apps/web/src` prints
-nothing.
+`grep -rn "ReadinessReport\|OperationsSummary\|DesignScopeForm\|selectedOperation" jeeves/apps/web/src`
+prints nothing.
 **Commit:** `PF04: retire strict-contract surface in the web app`.
 
 ### PF05 — Retire the strict-contract surface: chat (D3)
 
-**Goal:** chat has 11 tools, and neither its tools nor its context mention scope, operation
-contracts, readiness reports or ownership declarations. Chat still does exactly what the mouse
-can.
+**Goal:** chat has 11 tools. None edits or reads persistent scope, operation contracts or the
+readiness report, and what chat reads (`getDesign`, `validateDesign`, its reviews and each
+turn's context) carries the design's own findings and only a count of readiness findings
+(`notSpecified`). Ownership stays where generation needs it: each link's `access` and
+`declaredAccess`, and a logical owner the user selects in Source & diagnostics (sent as
+`Selected logical owners`). Chat still does exactly what the mouse can.
 **Checks:** check, e2e, build, evals, mouse. **Exported files this unit may change:** none.
 
-**Do not edit** `jeeves/packages/spec/src/` (tests included) or `jeeves/apps/web/src/`.
+**Do not edit** `jeeves/packages/spec/src/` (tests included), `jeeves/apps/web/src/` or
+`jeeves/apps/server/src/chat/service.ts`. With exactly the changes below (on top of PF03 and
+PF04), the server tests and `pnpm eval:chat` passed on a scratch copy, with the same scripted
+scores, and no e2e test failed because of them.
 
 **1. `jeeves/apps/server/src/chat/tools.ts`.**
 
-- Remove these five tools completely (schema, description, handler, any state fields and
-  helpers only they use, and their names in `isWorkspaceMutation`): `configureDesignScope`,
-  `configureOwnership`, `describeOperation`, `configureOperations`, `readReadiness`.
-- In `designSummary`, remove these properties and the code only they use: `readiness`,
-  `persistentScope`, `availableProfileDefault`, `declaredOperations`, `operationFindings`,
-  `availableOperations`, `availableCachePolicies`, `declaredOwnership`, `ownershipFindings`,
-  `ownershipMeaning`. Keep everything else, including each link's `declaredAccess` and
-  `accessNote`.
+- Remove these five tools completely: `configureDesignScope`, `configureOwnership`,
+  `describeOperation`, `configureOperations`, `readReadiness`. That is their entries in
+  `schemas` and `descriptions`, their `case`s in `dispatch`, the private methods
+  `configureOperations`, `configureOwnership` and `configureScope`, the fields
+  `operationsPreview`, `ownershipPreview` and `scopePreview`, and the configure branch of
+  `isWorkspaceMutation` (which then ends `return false;` after the apply-tools branch).
+- In `designSummary`, remove these properties and the code only they use (including
+  `const readiness = designReadiness(design);`): `readiness`, `persistentScope`,
+  `availableProfileDefault`, `declaredOperations`, `operationFindings`, `availableOperations`,
+  `availableCachePolicies`, `declaredOwnership`, `ownershipFindings`, `ownershipMeaning`. Replace
+  its `findings: …` and `warnings: …` properties with `...designFindings(findings),`. Keep
+  everything else, including each link's `declaredAccess` and `accessNote`.
+- The `validateDesign` case logs `Checked the design's findings` and returns
+  `designFindings(validateDesign(this.working))`.
+- `reviewWithModules` keeps the review's other fields but projects these three:
+
+```ts
+const {
+  findings,
+  obligations,
+  ownership: _ownership,
+  operations: _operations,
+  persistentScope: _persistentScope,
+  ...review
+} = reviewStudioDesign(base, working, scope);
+const left = designReview(working, installed);
+const readiness = findings.filter(isReadiness);
+```
+
+  and its returned object ends `...review,`, then
+  `findings: findings.filter((item) => !isReadiness(item)),`,
+  `...(readiness.length && { notSpecified: designFindings(readiness).notSpecified }),` and
+  `obligations: obligations.filter((item) => "pattern" in item || "targetPresent" in item),`
+  (only the turn's own review scope: a saved profile's requirements stay out).
 - In `turnContext`, remove the sentence about selected operation bindings (from
-  `\nSelected operation bindings` to the end of the string). Keep the rest.
-- Keep `validateDesign`, `declareReviewScope`, `reviewDesign`, the `notSpecified` count and
-  every other tool as they are.
-- In the instructions and the remaining tool descriptions, remove any mention of the five
-  removed tools (`grep -n "configureDesignScope\|configureOwnership\|describeOperation\|configureOperations\|readReadiness" jeeves/apps/server/src`
-  must end with matches only in tests you are about to change, then none).
+  `\nSelected operation bindings` to the end of the string). Keep `Selected logical owners`.
+- Texts:
+  - in `INSTRUCTIONS`, replace `Readiness findings (a behavior profile, contracts, ownership
+    declarations) are not design errors: leave them unless the person asks.` with
+    `Readiness findings are only counted (notSpecified): they are not design errors, so leave them.`;
+  - in `reviewWithModules`'s two `leftNote` strings, replace `findings below are readiness
+    (profiles, contracts, ownership declarations), not design errors: leave them unless the
+    person asks.` with `findings below are the design's validation findings; readiness findings
+    are only counted (notSpecified).`;
+  - `getDesign`'s description: replace `; findings and warnings; and the persistent scope,
+    ownership and operation declarations the configure tools edit.` with `; and the design's
+    findings and warnings, with readiness findings only counted (notSpecified).`;
+  - `validateDesign`'s description becomes `Read the design's findings and warnings, with
+    readiness findings only counted (notSpecified). Findings do not establish runtime support.`;
+  - `reviewDesign`'s description: replace `the readiness findings, declared assumptions` with
+    `the design's findings with readiness findings only counted, declared assumptions`.
+- Remove the imports that become unused. Keep `validateDesign`, `declareReviewScope`,
+  `reviewDesign`, the `notSpecified` count and every other tool as they are. `service.ts` is
+  unchanged: its final review reads the projected review, so the reply's counts no longer
+  include readiness findings or a saved profile's requirements.
 
-**2. Tests.** In `jeeves/apps/server/src/chat/chat.test.ts`, `tools.test.ts`,
-`openai-tools.test.ts` and `jeeves/apps/server/src/routes/foundation-chat.test.ts`,
-`operation-contracts.test.ts`, `resolve-contracts.test.ts`, `readiness.test.ts`,
-`ownership.test.ts` (the test files that name a removed tool):
+**2. Tests.**
 
-- delete each test that calls a removed tool or asserts a removed `designSummary` property;
-- delete a file when no test is left in it;
-- the expected tool list has 11 names, in the order `toolDefinitions()` returns them, and
-  `expect(requests[0]?.tools).toHaveLength(16)` becomes `11`;
-- change no other test.
+- `jeeves/apps/server/src/chat/chat.test.ts`: delete the tests `bounds persistent scope repairs,
+  allows preview after exhaustion and saves scope-only edits as one Undo`, `bounds resolve
+  repairs through actual ChatService and leaves policy lookup/preview available afterward`,
+  `bounds actual operation repairs, preserves read-only lookup/preview and commits exact operation
+  details as one Undo` and `bounds actual ownership repairs, permits previews after exhaustion,
+  and saves exact declaration details as one Undo`. In `carries one explicit operation selection
+  into actual context/history, preserves rename and refuses removed/malformed bindings`, the two
+  expectations `toContain("Selected operation bindings")` and
+  ``toContain(`"binding":{"id":"${binding.id}"`)`` become `not.toContain(…)`; keep its selection,
+  rename and refusal checks. In `forces review when the model ends, invalidates it after later
+  commands, and saves warnings`, the two `{ name: "readReadiness", arguments: {} }` calls become
+  `{ name: "getDesign", arguments: {} }` and its `item.tool === "readReadiness"` count becomes
+  `item.tool === "getDesign"`.
+- `jeeves/apps/server/src/chat/openai-tools.test.ts`: delete the tests `round-trips the resolve
+  union, null policy/connection and unknown exact policy through actual strict wire/history`,
+  `transmits exact tagged operation refs, nullable verifier/retention, omission defaults and
+  canonical history; refuses unknown fields`, `transmits bounded ownership with omitted
+  deployables/boundaries, defaults, canonical history and atomic grant refusal` and `transmits
+  persistent scope with exact nullable references, omission defaults and canonical history
+  replay`. In `transmits every current schema as strict…`,
+  `expect(requests[0]?.tools).toHaveLength(16)` becomes `11`.
+- `jeeves/apps/server/src/chat/tools.test.ts`: delete the test `shares persistent scope commands
+  with mouse edits and requires a fresh explicit upgrade preview`. `offers exactly the finite
+  studio toolset` expects `["listStudioDefinitions", "describeStudioDefinition",
+  "listStudioPatterns", "describeStudioPattern", "getDesign", "applyStudioCommands",
+  "applyPattern", "validateDesign", "declareReviewScope", "reviewDesign", "askUser"]`. Add this
+  test before it (import `turnContext` from `./tools.ts`):
 
-Add one test to `tools.test.ts`: the names from `toolDefinitions()` include none of the five,
-and `JSON.stringify(designSummary(<any study's design>, []))` contains none of `"readiness"`,
-`"persistentScope"`, `"declaredOperations"` and `"declaredOwnership"`.
+```ts
+it("names no strict-contract tool and keeps the retired declarations out of what chat reads", () => {
+  const removed = [
+    "configureDesignScope",
+    "configureOwnership",
+    "describeOperation",
+    "configureOperations",
+    "readReadiness",
+  ];
+  expect(toolDefinitions().filter((tool) => removed.includes(tool.name))).toEqual([]);
+  // The foundation study declares a profile, ownership and operations.
+  const design = { ...studioArchitectureExample("studio-tinyurl-foundation").design, revision: 3 };
+  const summary = run(new Workspace(design), "getDesign");
+  for (const key of ["readiness", "persistentScope", "declaredOperations", "declaredOwnership"])
+    expect(summary).not.toHaveProperty(key);
+  const review = run(new Workspace(design), "reviewDesign");
+  for (const key of ["persistentScope", "operations", "ownership"])
+    expect(review).not.toHaveProperty(key);
+  const readiness = ["NEEDS_TEMPLATE", "CONFIG_REQUIRED", "ARCHITECTURE_UNBOUND"];
+  const checked = run(new Workspace(design), "validateDesign");
+  for (const findings of [summary.findings, review.findings, checked.findings])
+    expect(findings.filter((item: { code: string }) => readiness.includes(item.code))).toEqual([]);
+  expect(checked.notSpecified).toMatch(/readiness findings? .*not design errors/);
+  expect(turnContext(design, [], [])).not.toContain("Selected operation bindings");
+});
+```
+
+- Delete `jeeves/apps/server/src/routes/foundation-chat.test.ts` and
+  `jeeves/apps/server/src/routes/readiness.test.ts`: each tests only chat's use of a removed
+  tool.
+- In `jeeves/apps/server/src/routes/ownership.test.ts`, `operation-contracts.test.ts` and
+  `resolve-contracts.test.ts`, keep the test and its mouse/API half: delete each statement that
+  uses the chat `Workspace` (the `chat` or `workspace` variable, the `args` it alone uses, and
+  `expect(saved.state.design).toEqual(chat.working)` or `…(workspace.working)`), save the command
+  builder's ops instead of `workspace.pending` (`buildOperationsCommand(before, { operations }).ops`
+  in `resolve-contracts.test.ts`; the other two already have `mouseOps`), delete the `Workspace`
+  import, and take `mouse/chat` out of the title (`mouse` in its place).
+- Then remove each import and helper that TypeScript reports unused in these files
+  (`pnpm exec biome check --config-path=tooling/biome.config.json --write --unsafe <file>` removes
+  the imports).
+- Change no other test. If another test fails, stop (rule 2).
 
 **3. Docs.**
 
-- `docs/studio.md`, Chat: in the `getDesign` row delete `; and the scope, ownership and
-  operation declarations the configure tools edit`. Say chat has eleven tools where a count is
-  given.
-- `docs/chat-tool-schemas.md`: remove the five tools. Leave size figures as they are and add
-  `(before PF05 removed five tools)` after them, unless a test prints the new sizes.
-- `docs/chat-evals.md`: add at the end of `## Design evals 2.0.0 (V3-19)`:
-  `Since PF05 chat has eleven tools, so the recorded V3-19 live reports no longer replay: their requests differ. They stay as the record of that run.`
-- `jeeves/CATALOG.md`, `## Explicit logical authority and access`: delete the words that name
-  the `configureOwnership` chat tool.
+- `docs/studio.md`, Chat: in the `getDesign` row replace `findings and warnings; and the scope,
+  ownership and operation declarations the configure tools edit.` with `the design's findings and
+  warnings, with readiness findings only counted (notSpecified).`; in the `reviewDesign` row
+  replace `with the readiness findings, assumptions` with `with the design's findings (readiness
+  findings only counted), assumptions`. After `whose schemas total about 37 KB (44 KB as OpenAI's
+  strict tools, down from 86 KB and 113 KB before V3-19)` add `, measured with sixteen tools; chat
+  now has eleven`.
+- `docs/chat-tool-schemas.md`: directly after the V3-19 table (its last row begins
+  `| All sixteen tools, canonical`), add the paragraph below. Leave the NC01–NC03 paragraphs as
+  the record.
+
+```text
+Five tools have since been removed (`configureDesignScope`, `configureOwnership`, `describeOperation`, `configureOperations`, `readReadiness`): chat has eleven. The sizes above were measured with sixteen.
+```
+
+- `docs/chat-evals.md`: after PF03's sentence at the end of `## Design evals 2.0.0 (V3-19)`, add:
+
+```text
+Since PF05 changed chat's tools and context, the recorded scripted report (`docs/evals/v3-19/scripted.json`) no longer replays either; `pnpm eval:chat` reruns its arms.
+```
+
+- `docs/studio-settings.md`: replace the sentence that begins ``Chat's `configureDesignScope` uses
+  the canonical source command`` (it wraps after `RF04` and ends `remains turn-only metadata.`)
+  with:
+
+```text
+RF04 `declareReviewScope` is turn-only review metadata; chat does not edit the saved scope.
+```
+
+- `jeeves/CATALOG.md`, `## Explicit logical authority and access`: in the sentence that begins
+  `` `previewOwnership` / `buildOwnershipCommand` back ``, replace ``back explicit source commands
+  and the narrow `configureOwnership` chat tool;`` (it wraps after `and the`) with
+  `back explicit source commands;`. In `### Legacy declarations`, `the studio no longer shows or
+  edits them` becomes `neither the studio nor chat shows or edits them`.
+- `docs/studio-contracts.md` and `docs/studio-readiness.md`: in the Retired note, `The studio no
+  longer shows or edits` becomes `Neither the studio nor chat shows or edits`.
+- `jeeves/PLAN.md`, `## Chat`: delete the two sentences that begin ``Persistent scope uses a
+  separate bounded `configureDesignScope` tool`` and `Schema v2 requires a read-only preview`
+  (both on one line, ending `explicit upgrade.`).
 
 **Mouse check:** open the TinyURL study, open the chat rail, and confirm it renders with its
 input. (The scripted chat turns in `blueprint-chat.spec.ts` are the functional check.)
 
 **If `pnpm eval:chat` fails a threshold,** stop as in rule 2 and report the scores it printed.
 
-**Done when:** the five checks pass and the grep in step 1 prints nothing.
+**Done when:** the five checks pass and
+`grep -rn --include=*.ts --exclude=*.test.ts "configureDesignScope\|configureOwnership\|describeOperation\|configureOperations\|readReadiness" jeeves/apps/server/src`
+prints nothing.
 **Commit:** `PF05: retire strict-contract tools in chat`.
 
 ---
@@ -690,16 +975,22 @@ input. (The scripted chat turns in `blueprint-chat.spec.ts` are the functional c
 All template files are under `jeeves-generator/templates/local-v2/assets/`. The code that
 writes each process file is in `jeeves-generator/src/v2/` (`tile-processes.ts`,
 `http-wiring.ts`, `loop-wiring.ts`). Tests are beside them (`*.test.ts`); add each new test to
-the existing file that already tests the same template (find it with `grep -rln`).
+the existing file that already tests the same template (find it with `grep -rln`). The runtime
+template tests load a template's source as a module (see `positive-cache.test.ts`'s `source` and
+`moduleUrl`, and its fake `redis` client in `uses bound Valkey credentials/endpoint, fixed queue
+bounds and destructive command/startup deadlines`); use the same harness. Each unit below states
+its goal, the behaviour each changed function must have, and the tests that must pass. Where it
+gives no code, write the smallest code that meets them.
 
 ### PF06 — Every failure is logged
 
 **Goal:** when a generated process survives a failure, it writes one JSON line saying what
-failed and why. When startup fails, it says why.
+failed and why, with the original error. When startup, a fatal transport loss or a drain fails,
+it says why. Answers, retries and what is kept stay as they are.
 **Checks:** check, e2e, build.
 **Exported files this unit may change:** `src/runtime/tile-process.ts`, `src/runtime/http.ts`,
-`src/runtime/process.ts`, `src/runtime/outbox.ts`, `src/runtime/asset-worker.ts` and
-`src/processes/*.ts`.
+`src/runtime/process.ts`, `src/runtime/outbox.ts`, `src/runtime/asset-worker.ts`,
+`src/runtime/positive-cache.ts`, `src/runtime/multipart.ts` and `src/processes/*.ts`.
 
 **1. The pin updater (rule 7 needs it).** Create
 `jeeves-generator/src/v2/fixtures/update-processes-off.ts`:
@@ -726,7 +1017,8 @@ console.log(Object.fromEntries(Object.entries(pins).map(([name, pin]) => [name, 
 Add to `jeeves-generator/package.json` scripts:
 `"pins:update": "tsx src/v2/fixtures/update-processes-off.ts"`. Run it once now, before any
 template change, then `pnpm format`: `git diff --stat jeeves-generator/src/v2/fixtures/processes-off.json`
-must show no change. If it shows one, stop (rule 2).
+must show no change (on a scratch copy it printed `{ 'frozen-v2': 72, 'v2-module-design': 77,
+'stub-stack': 52 }` and left the file byte-identical). If it shows one, stop (rule 2).
 
 **2. `src/runtime/tile-process.ts.template`.** Add:
 
@@ -748,20 +1040,24 @@ A line looks like
 
 **3. `src/runtime/http.ts.template`.** `createHttpService` takes one more optional option,
 `onFailure?: (what: string, error: unknown) => void`. In `setErrorHandler` (use its request
-argument), call `options.onFailure?.(`request ${request.method} ${request.routeOptions?.url ?? "unmatched"}`, error)`
-before replying when:
+argument), call ``options.onFailure?.(`request ${request.method} ${request.routeOptions?.url ?? "unmatched"}`, error)``
+inside a `try`/`catch` that ignores what it throws, before replying, when:
 
 - the error is an `HttpError` with `statusCode >= 500` and `statusCode !== 501`; or
 - the error is not an `HttpError` and is not one of the client errors 400, 413 and 415.
 
 The answers themselves don't change.
 
-**4. `src/runtime/process.ts.template`.**
+**4. `src/runtime/process.ts.template`** (it is indented with tabs).
 
 - In `runProcess`'s `catch`, bind the error and, before the existing
   `console.error("Application startup failed")`, write
   `console.error(JSON.stringify({ level: "error", event: "startup-failed", error: <name: message, at most 300 characters> }))`.
   Keep the existing line.
+- `fail(error)` keeps what it does and, when given an error, first writes one
+  `{"level":"error","event":"process-failed","error":…}` line (the same 300-character form).
+- In `close`, the drain `catch` binds its error and writes one
+  `{"level":"error","event":"drain-failed","error":…}` line; it still sets `failed`.
 - `periodic` takes a fourth optional parameter, `onFailure?: (error: unknown) => void`. Its
   `.catch` calls it inside a `try`/`catch` that ignores what `onFailure` throws.
 
@@ -770,75 +1066,136 @@ The answers themselves don't change.
 - `relayBatch` returns `{ selected, sent, deferred, errors }`, where `errors` is every error
   caught in the per-row `catch` (bind the error there), in order.
 - In `startRelay`'s `tick`, after a batch resolves, call `options.onError?.(error)` for each of
-  its `errors`, inside the same guard that protects the existing `onError` call.
+  its `errors`, inside the same kind of guard that protects the existing `onError` call.
 
-**6. Wiring** (`jeeves-generator/src/v2/`). Every process file that the wiring writes:
+**6. `src/runtime/asset-worker.ts.template`.** `startAssetLifecycleWorker` takes one more
+optional option, `onRelayError?: (error: unknown) => void`, called through its own guard (as
+`notify` guards `onSweepError`). The publication relay's `onError` uses it; sweeps keep
+`onSweepError`.
+
+**7. `src/runtime/positive-cache.ts.template`.** `createPositiveReader` takes one more optional
+option, `onFailure?: (what: "cache read" | "cache fill", error: unknown) => void`, called through
+a guard. Its two `catch` blocks bind the error and call it (`cache read` for a failed or corrupt
+cached read, `cache fill` for a failed fill) before going on exactly as now.
+
+**8. `src/runtime/multipart.ts.template`.** `createOwnedMultipart` takes one more optional
+option, `onFailure?: (what: string, error: unknown, extra?: Record<string, unknown>) => void`,
+called through a guard. In `start`, the `catch` binds the original error and reports it as
+`multipart start` (with `{ upload: saved.uploadId }`) before it records `INITIATION_FAILED`, and
+the provider abort's `.catch(() => {})` reports `multipart abort` instead of discarding the
+error. `start` still answers 503 `INITIATION_FAILED`.
+
+**9. Wiring** (`jeeves-generator/src/v2/`). Every process file that the wiring writes:
 
 - creates `const failure = createFailureLog(config.tile);` once, importing it from
   `../runtime/tile-process.ts`;
 - passes `onFailure: failure` to `createHttpService`;
 - passes `{ onError: (error) => failure("outbox relay jobs", error) }` as `startRelay`'s fourth
-  argument in the multipart wiring, and makes the lifecycle's publication relay report through
-  `failure("outbox relay publication", error)`;
+  argument in the multipart wiring (`http-wiring.ts`, the line with
+  `startRelay(createOutbox(binding.outbox, "jobs", hooks.job), db, jobs)`), and
+  ``onFailure: (what, error, extra) => failure(`${what} <module id>`, error, extra)`` to
+  `createOwnedMultipart`;
+- in the lifecycle wiring (`loop-wiring.ts`, `startAssetLifecycleWorker({`), passes
+  `onSweepError: (error) => failure("sweep <module id>", error)` and
+  `onRelayError: (error) => failure("outbox relay publication", error)`;
+- passes ``onFailure: (what, error) => failure(`${what} <module id>`, error)`` to
+  `createPositiveReader` in the Cache read wiring;
 - passes `(error) => failure("sweep <module id>", error)` as the fourth argument of every
-  `periodic(` call it writes.
+  `periodic(` call it writes (today one: the multipart sweep);
+
+with the lead module's ID written in place of `<module id>`.
 
 **Tests** (add to the existing files):
 
 1. `createHttpService` with `onFailure`: a handler that throws `new Error("boom")` answers 503
    and calls `onFailure` once with `request GET <its route>`; an `HttpError(404, …)` doesn't
-   call it; an `HttpError(503, "OVERLOADED", …)` does; a 501 doesn't.
+   call it; an `HttpError(503, "OVERLOADED", …)` does; a 501 doesn't; an `onFailure` that throws
+   changes no answer.
 2. `periodic` with a rejecting effect calls `onFailure` with that error and keeps ticking.
 3. `relayBatch` whose codec throws for one row returns that error in `errors` and still defers
    the row; `startRelay` passes it to `onError`.
 4. `createFailureLog("t")("x", new Error("y"))` writes one line with `"event":"failure"`,
    `"what":"x"` and `"error":"Error: y"`, and a second call within a second writes none.
-5. A wiring test: the exported `src/processes/<id>.ts` of an HTTP tile contains
+5. `runProcess`: `scope.fail(new Error("x"))` writes one `process-failed` line containing
+   `Error: x`; a drain that throws writes one `drain-failed` line and the exit code is 1.
+6. `startAssetLifecycleWorker`: a failing sweep calls `onSweepError`, a failing publication relay
+   calls `onRelayError`, and a callback that throws stops neither.
+7. `createPositiveReader`: a corrupt cached value and a failing fill each call `onFailure` once
+   (`cache read`, `cache fill`), and the read still answers from the loader.
+8. `createOwnedMultipart`: a provider `create` that throws reports `multipart start` with that
+   error and the upload ID, and `start` still rejects with 503 `INITIATION_FAILED`.
+9. A wiring test: the exported `src/processes/<id>.ts` of an HTTP tile contains
    `createFailureLog(config.tile)` and `onFailure: failure`.
 
+Update these existing assertions (rule 7): `jeeves-generator/src/v2/durability.test.ts`, the
+`relayBatch` result at line 216 gains `errors` (one error, `confirm lost`);
+`jeeves-generator/src/v2/http-wiring.test.ts`, the two pinned `periodic(scope, () =>
+uploadMultipart.multipart.sweep(), 30000);` strings (lines 387 and 392) gain the fourth argument.
+Another emitted-string assertion may differ only by this unit's lines (`failure`, `onFailure`,
+`onError`, `onSweepError`, `onRelayError`); update it and list it in the handoff. Any other
+failing assertion: stop (rule 2).
+
 **Docs.** `jeeves-generator/README.md`, under Runnable processes: add the `failure` line, its
-fields and the five things that write it (a failed request, a failed sweep, a failed outbox
-relay, and the `startup-failed` line). `docs/template-gaps.md`: gap 3's Status becomes
-`Open: still retried for ever, now logged (PF06)`.
+fields (`level`, `event`, `tile`, `what`, `error`, and `upload` where there is one) and what writes
+it: a failed request (5xx other than 501), a failed sweep (multipart and lifecycle), a failed
+outbox relay (jobs and publication), a failed cache read or fill, and a failed multipart start
+or provider abort; and the `startup-failed`, `process-failed` and `drain-failed` lines.
+`docs/template-gaps.md`: gap 3's Status becomes `Open: still retried for ever, now logged (PF06)`.
 
 **Commit:** `PF06: log every failure`.
 
 ### PF07 — The cache read recovers
 
 **Goal:** after the cache stalls or disconnects, the Cache read template uses the database for
-a short time and then uses the cache again, and says so in the log.
+a short time and then uses the cache again, and says so in the log, without ever piling up calls
+on a cache that doesn't answer.
 **Checks:** check, e2e, build.
 **Exported files this unit may change:** `src/runtime/positive-cache.ts`,
 `src/runtime/valkey.ts` and `src/processes/*.ts`.
 
 **1. `src/runtime/positive-cache.ts.template`** (`createPositiveReader`).
 
-- Replace `let usable = !!cache;` with `let skipUntil = 0;`.
+- Replace `let usable = !!cache;` with `let skipUntil = 0;` and a count of cache calls that
+  passed their deadline and haven't settled yet (`let stalled = 0;`).
 - When a phase passes its 150 ms deadline, set `skipUntil = Date.now() + 5000` (it set
-  `usable = false`).
-- Use the cache when `cache && Date.now() >= skipUntil` (it tested `cache && usable`), in both
-  places.
-- Change nothing else: the 150 ms bound, the single flight per key, the absolute expiry and
-  "null is never cached" stay.
+  `usable = false`), count the underlying call as stalled, and uncount it when that call
+  settles (`.finally` on the effect's own promise; `Promise.race` doesn't cancel it).
+- Use the cache when `cache && stalled === 0 && Date.now() >= skipUntil` (it tested
+  `cache && usable`), in both places. So a call that never settles keeps the cache off; once it
+  settles, the cache is tried again after the five seconds.
+- Replace the comment above `phase` (it says the cache is disabled after a stalled phase) with
+  one that says this.
+- Change nothing else: the 150 ms bound, the single flight per key, the absolute expiry,
+  "null is never cached" and PF06's `onFailure` stay.
 
 **2. `src/runtime/valkey.ts.template`** (`createValkeyCache`).
 
 - New optional option:
   `onState?: (state: "available" | "unavailable", error?: unknown) => void`.
-- Keep the 500 ms connect bound, the 150 ms command bound, `disableOfflineQueue: true` and
-  `reconnectStrategy: false`.
-- The client is created by an inner function, so a new one can replace it.
-- When the client becomes unusable (the first connect fails, an `error` event, or a command
-  that times out or rejects), destroy it, call `onState("unavailable", error)` once for that
-  change, and start one timer of 5000 ms if none is pending.
-- When the timer fires, create a new client and connect it within 500 ms. On success it becomes
-  the client in use, and `onState("available")` is called. On failure, start the timer again.
-- The returned `close()` clears the timer, destroys the client in use and prevents any further
-  reconnect.
+- Keep the 500 ms connect bound, the 150 ms command bound, `disableOfflineQueue: true`,
+  `commandsQueueMaxLength: 32`, `reconnectStrategy: false` and the `createClient` options.
+- **State.** One client generation at a time (active or still connecting), one pending retry
+  timer at most, and a permanent `closed` flag. Every `error` handler, connect result and
+  command result captures the generation it belongs to and is ignored when that generation is
+  no longer current or `closed` is set.
+- **Losing the client.** The first connect failing or timing out, an `error` event, or a command
+  that times out or rejects, for the current generation: destroy that client, mark the cache
+  unusable, report `unavailable` (with that error), and start the 5000 ms retry timer if none is
+  pending.
+- **Retrying.** When the timer fires, a new generation creates a new client and connects it
+  within 500 ms. Success makes it the client in use and reports `available`; failure is a loss
+  as above (it starts the timer again).
+- **Reporting.** `onState` is called only when the reported state changes, starting with the
+  first connect's result (`available` or `unavailable`). A failed retry while already
+  unavailable reports nothing. `onState` is called through a guard: what it throws is ignored.
+- **Closing.** The returned `close()` sets `closed`, clears the timer and destroys the active
+  client and any client still connecting. A connect that succeeds after `close()` destroys its
+  client and reports nothing.
 - `get` and `set` still reject with `Error("Cache unavailable")` while there is no usable
   client.
 
-**3. Wiring.** Where the wiring writes `createValkeyCache({ binding: … })`, add:
+**3. Wiring.** Where the wiring writes `createValkeyCache({ binding: … })`
+(`http-wiring.ts`, the Cache read), add:
 
 ```ts
 onState: (state, error) =>
@@ -849,72 +1206,113 @@ onState: (state, error) =>
 
 with the lead module's ID written in place of `<module id>`.
 
-**Tests** (in `positive-cache.test.ts`, with fake timers):
+**Tests** (in `positive-cache.test.ts`, with fake timers and its fake `redis` client):
 
-1. Replace the expectation commented `Disabled after the stalled phase`: after a stalled read,
-   a second read within 5 s doesn't call the cache; a read 5 s later calls it again.
-2. After an `error` event the next `get` rejects with `Cache unavailable`, and `onState` was
-   called with `unavailable`. 5 s later a new client is created and connected, `onState` is
-   called with `available`, and `get` resolves.
-3. A reconnect that fails is tried again 5 s later.
-4. After `close()`, advancing time creates no client.
+1. In `preserves successful primary reads on failed fills and bounds stalled read/fill phases`,
+   replace the expectation commented `Disabled after the stalled phase` with: a second read
+   within 5 s doesn't call the cache. Add: a cache `get` that never settles keeps the cache
+   unused across three 5 s intervals; a stalled `get` that settles at 7 s lets a read after
+   that call the cache again.
+2. A first connect that succeeds reports `available` once; one that fails reports `unavailable`
+   once and is retried 5 s later.
+3. After an `error` event the next `get` rejects with `Cache unavailable` and `onState` was
+   called once with `unavailable`. 5 s later a new client is created and connected, `onState`
+   is called with `available`, and `get` resolves.
+4. Three failed reconnects in a row report no further `unavailable`.
+5. After a new client is active, an `error` event or a late command rejection from the old
+   client changes nothing.
+6. Two commands that fail together report one `unavailable` and start one timer.
+7. `close()` while a reconnect is still connecting destroys that client; its connect resolving
+   afterwards reports nothing; advancing time afterwards creates no client.
+8. An `onState` that throws breaks neither `get` nor the reconnect.
+9. The existing test `uses bound Valkey credentials/endpoint, fixed queue bounds and destructive
+   command/startup deadlines` passes unchanged.
 
 **Docs.** `jeeves-generator/README.md`, the Cache reader bullet: say it reads the database
-while the cache is down and reconnects every 5 s. `docs/template-gaps.md`: the cache limit's
-Status becomes `Fixed in PF07`. `jeeves/CATALOG.md`: no change.
+while the cache is down, reconnects every 5 s and logs each change (`event: "cache"` and the
+`failure` line). `docs/template-gaps.md`: the cache limit's Status becomes `Fixed in PF07`.
+`jeeves/CATALOG.md`: no change.
 
 **Commit:** `PF07: cache read recovers`.
 
 ### PF08 — One bad item never stops a process
 
-**Goal:** a hook that throws while the Transcoder reports a failure, or an upload whose
-completion keeps failing, no longer stops a process or blocks its start (template gaps 5 and 2).
+**Goal:** a hook that throws or returns something unusable while the Transcoder reports a
+failure, or an upload whose completion keeps failing, no longer stops a process or blocks its
+start (template gaps 5 and 2), and each such failure is logged.
 **Checks:** check, e2e, build.
 **Exported files this unit may change:** `src/runtime/media-worker.ts`,
 `src/runtime/multipart.ts` and `src/processes/*.ts`.
 
 **1. `src/runtime/media-worker.ts.template` (gap 5).**
 
-- Split `emit` in two. `encode(job, event)` calls the two hooks and returns `{ id, wire }`:
-  `id` is `messageId(options.codecs.eventId(job, event.kind))`, and `wire` is what
-  `options.codecs.event` returns for the event with `eventId: id` and `occurredAt`. `emit` calls
-  `encode`, then checks the publisher and publishes, as now.
+- Split `emit` in two. `encode(job, event)` does the whole preparation: the ID
+  (`messageId(options.codecs.eventId(job, event.kind))`), the wire value
+  (`options.codecs.event` with `eventId` and `occurredAt`) and its body (`jsonBody`, which
+  refuses a value it can't serialize and a body over 65,536 bytes). It returns `{ id, body }`.
+  `emit` calls `encode`, then checks the publisher and publishes, as now.
+- `startMediaWorker` takes one more optional option,
+  `onSkippedReport?: (error: unknown, messageId: string | undefined) => void`, called through a
+  guard.
 - In `onTerminal`, after the existing `abort` check: call `encode` for the `failed` event
-  inside `try`/`catch`. If it throws, `return` (add the comment
-  `// A hook that throws while reporting a failure must not stop the worker.`). Otherwise check
-  the publisher and publish, as `emit` does.
+  inside `try`/`catch`. If it throws, call `onSkippedReport` with that error and
+  `delivery.messageId`, then `return` (add the comment
+  `// A hook that fails while reporting a failure must not stop the worker.`). Otherwise check
+  the publisher and publish, outside that `try`, as `emit` does.
 - So the delivery runner still moves the message to its `.failed` queue with its code, and the
   worker keeps consuming.
 
 **2. `src/runtime/multipart.ts.template` (gap 2).**
 
-- `sweep()` resolves to `{ failed: { uploadId: string; error: unknown }[] }`.
+- `sweep()` resolves to `{ failed: { uploadId: string; error: unknown }[] }`. Keep its single
+  flight (a second call while one runs returns the same promise) and change its two
+  `Promise<void>` types (the method and the `sweeping` variable) to match.
 - In its first loop (durable cleanup) and its second loop (interrupted uploads), wrap the body
   of each iteration in `try`/`catch`. A caught error is pushed to `failed` with that row's
   upload ID, and the loop continues with the next row.
-- The third part (unfinished provider uploads) is unchanged and may still throw.
-- Update every caller of `sweep()` (`grep -rn "sweep()" jeeves-generator`).
+- The third part (unfinished provider uploads) is unchanged and may still throw. If it throws
+  and `failed` is not empty, `sweep()` rejects with
+  ``new AggregateError([...each failed item as new Error(`upload ${uploadId}: ${message}`, { cause: error }), providerError], "Multipart sweep failed")``;
+  with `failed` empty it rejects with the provider error, as now.
+- Update every caller of `sweep()` (`grep -rn "sweep()" jeeves-generator`): the wiring (below),
+  `jeeves-generator/examples/product-attachment/service.ts.template` (at start and in its
+  `periodic`: log each returned failure with
+  `console.error(JSON.stringify({ level: "error", event: "failure", what: "sweep multipart", upload: item.uploadId, error: String(item.error) }))`),
+  and the tests.
 
-**3. Wiring.** Where the wiring writes the multipart's start and its periodic sweep:
+**3. Wiring.**
 
-- at start: `for (const item of (await <name>.multipart.sweep()).failed) failure("sweep <module id>", item.error, { upload: item.uploadId });`
-- every 30 s: the same loop inside the `periodic` effect, keeping PF06's fourth argument.
+- Where the wiring writes the multipart's start and its periodic sweep (`http-wiring.ts`, its
+  `initialize` and `started` lines):
+  - at start: `for (const item of (await <name>.multipart.sweep()).failed) failure("sweep <module id>", item.error, { upload: item.uploadId });`
+  - every 30 s: the same loop inside the `periodic` effect, keeping PF06's fourth argument.
+- Where the wiring writes `startMediaWorker({` (`loop-wiring.ts`), pass
+  `onSkippedReport: (error, messageId) => failure("failure report <module id>", error, { message: messageId })`.
 
 **Tests.**
 
-1. Media worker: with `codecs.event` throwing for kind `failed`, a job that fails for good is
-   republished to the failed queue with its `x-terminal-code` and acknowledged; `closed` has not
-   resolved; the next message is handled.
+1. Media worker, for each of: `codecs.eventId` throwing for kind `failed`, `codecs.event`
+   returning a cyclic object, and `codecs.event` returning a value whose JSON is over 65,536
+   bytes: a job that fails for good is republished to the failed queue with its
+   `x-terminal-code` and acknowledged; `onSkippedReport` was called once with the message ID;
+   `closed` has not resolved; the next message is handled.
 2. Multipart: with two interrupted uploads where the first one's completion throws a plain
    `Error`, `sweep()` resolves, `failed` holds the first upload's ID and error, and the second
    upload was completed.
-3. A wiring test: the exported upload process contains `.sweep()).failed`.
+3. Multipart, mixed: an interrupted upload's completion throws, then the provider inventory
+   (`objects.unfinished`) throws: `sweep()` rejects with an `AggregateError` whose `errors` are
+   the upload's (its message names the upload ID) and then the provider's.
+4. A wiring test: the exported upload process contains `.sweep()).failed`.
+
+Update these existing assertions (rule 7): `jeeves-generator/src/v2/http-wiring.test.ts`, the
+`await uploadMultipart.multipart.sweep();` and `periodic(scope, () => …sweep(), …)` strings
+(lines 386–392, after PF06's change); and the `sweep()` uses in
+`jeeves-generator/src/v2/multipart.test.ts` (lines 222–225) where they read its result.
 
 **Docs.** `jeeves-generator/README.md`: say both behaviours where the Video HLS loop and the
-Multipart sweep are described. Read `asset-lifecycle.ts.template` for what then happens to a
-video whose failure report was skipped (search it for `deadline`) and state that in one
-sentence; if you can't tell, write `Its state is then left to the lifecycle.` `docs/template-gaps.md`:
-gaps 2 and 5 become `Fixed in PF08`.
+Multipart sweep are described. Add this sentence where the Video HLS loop is described:
+`A video whose failure report is skipped is not marked failed at once: it stays pending until its ten-minute queue deadline, or processing until its thirty-minute processing deadline, and the lifecycle's next sweep then marks it QUEUE_DEADLINE or PROCESSING_DEADLINE, if that sweep succeeds (its failure hook runs inside the same transaction and can stop it).`
+`docs/template-gaps.md`: gaps 2 and 5 become `Fixed in PF08`.
 
 **Commit:** `PF08: one bad item never stops a process`.
 
@@ -925,7 +1323,8 @@ gaps 2 and 5 become `Fixed in PF08`.
 ### PF09 — Plan an update of an existing export
 
 **Goal:** a pure function decides, file by file, what regenerating into an existing directory
-does. It writes nothing.
+does. It never deletes, overwrites or takes over a file the application owns, and a second
+update keeps what the first one left for review. It writes nothing.
 **Checks:** check, e2e, build. **Exported files this unit may change:** none.
 
 Create `jeeves-generator/src/update.ts` and export it from `src/index.ts`.
@@ -944,60 +1343,86 @@ export function planUpdate(input: {
   next: readonly ManifestFile[];
   /** The files of the manifest already in the directory. */
   previous: readonly ManifestFile[];
-  /** SHA-256 of each file now on disk, for every path in `next` or `previous` that exists. */
+  /** SHA-256 of each file now on disk, for every path in `next`, `previous` or `overrides` that exists. */
   disk: ReadonlyMap<string, string>;
-  /** Generated paths the application keeps as its own. */
+  /** Generated paths the application keeps as its own (`.jeeves/overrides.json`). */
   overrides: readonly string[];
+  /** Paths that already have a file under `.jeeves/generated/` from an earlier update. */
+  pendingShadows: readonly string[];
 }): { actions: UpdateAction[]; refused: string[]; shadows: string[] };
 ```
 
 `ownership` is `generated-extension` for the application's own files (hook files, stub bodies,
-product SQL). Every other value (`generated-scaffold`, `generator-metadata`) is **generated**.
-Below, `D` is the path's hash on disk (or absent), `N` its hash in `next`, and `V` its hash in
-`previous` (or absent).
+product SQL): **extension** below. Every other value (`generated-scaffold`,
+`generator-metadata`) is **generated**. Below, `D` is the path's hash on disk (or absent), `N`
+its hash in `next`, `V` its hash in `previous` (or absent), `P` its ownership in `previous` (or
+absent), **overridden** means the path is in `overrides`, and **shadowed** means it is in
+`pendingShadows`.
 
-**For each path in `next`:**
+**First, for each path in `next`:** if its ownership is generated and `P` is extension, its
+action is `edited` and `refused` gets `ownership changed: <path>`. An application's file never
+becomes generated.
 
-| Ownership | Condition, first match wins | Action |
-| --- | --- | --- |
-| generated | `D` absent | `create` |
-| generated | `D == N` | `unchanged` |
-| generated | path is in `overrides` | `override` |
-| generated | `V` present and `D == V` | `replace` |
-| generated | otherwise | `edited` |
-| extension | `D` absent | `create` |
-| extension | `D == N` | `unchanged` |
-| extension | `V` present and `V == N` | `keep` |
-| extension | otherwise | `keep-changed` |
+**Then, for each other path in `next`:**
+
+| Row | Ownership | Condition, first match wins | Action |
+| --- | --- | --- | --- |
+| G1 | generated | `D` absent | `create` |
+| G2 | generated | overridden | `override` (even when `D == N`) |
+| G3 | generated | `V` absent | `edited` (an unknown file is in the way, even with the same bytes) |
+| G4 | generated | `D == N` | `unchanged` |
+| G5 | generated | `D == V` | `replace` |
+| G6 | generated | otherwise | `edited` |
+| E1 | extension | `D` absent | `create` |
+| E2 | extension | `D == N` | `unchanged` |
+| E3 | extension | `V == N` and not shadowed | `keep` |
+| E4 | extension | otherwise | `keep-changed` |
 
 **For each path in `previous` that is not in `next`:**
 
-| Previous ownership | Condition, first match wins | Action |
+| Row | Condition, first match wins | Action |
 | --- | --- | --- |
-| any | `D` absent | no action |
-| extension | — | `orphan` |
-| generated | `D == V` | `remove` |
-| generated | path is in `overrides` | `orphan` |
-| generated | otherwise | `edited` |
+| R1 | `D` absent | no action |
+| R2 | overridden | `orphan` (even when `D == V`) |
+| R3 | `P` is extension | `orphan` |
+| R4 | `D == V` | `remove` |
+| R5 | otherwise | `edited` |
+
+**For each overridden path in neither `next` nor `previous`:**
+
+| Row | Condition | Action |
+| --- | --- | --- |
+| U1 | `D` present | `orphan` (an override the export dropped earlier: still the application's) |
+| U2 | `D` absent | no action; `refused` gets `unknown override: <path>` |
 
 **Also:**
 
-- `refused` lists every `edited` path, then `unknown override: <path>` for each override that is
-  a generated path in neither `next` nor `previous`.
+- `refused` lists, sorted by path, every `edited` path (as the path itself, or as
+  `ownership changed: <path>` for the first rule), then every `unknown override: <path>`.
 - `shadows` lists every `override` and `keep-changed` path: the caller writes the new generated
-  bytes for these to `.jeeves/generated/<path>`.
+  bytes for these to `.jeeves/generated/<path>`, and deletes each pending shadow that is not in
+  `shadows` (a `keep-changed` file whose disk now equals `N` is `unchanged`, and the application
+  may also delete a shadow to accept its file as it is). So a shadow stays until the
+  application's file equals the new bytes or the application deletes it.
 - `actions` is sorted by path. The function never throws for these inputs and reads nothing
   from disk.
 
-**Tests** (`jeeves-generator/src/update.test.ts`): one case per table row (fourteen), the two
-`refused` forms, `shadows`, and the sort order.
+**Tests** (`jeeves-generator/src/update.test.ts`): one case per row (the ownership rule, G1–G6,
+E1–E4, R1–R5, U1 and U2: eighteen); the equal-byte collision (G3 with `D == N`); an override
+winning over equal hashes (G2 with `D == N`, R2 with `D == V`); the three `refused` forms;
+`shadows`; the sort order; and two consecutive plans, the second with `previous` set to the
+first's `next` as PF10 would leave it: (a) an edited override that the export dropped is
+`orphan` the first time (R2) and `orphan` again the second time (U1), never `unknown override`;
+(b) an extension that is `keep-changed` the first time is `keep-changed` again while its shadow
+is pending, and `keep` once the shadow is gone.
 
 **Commit:** `PF09: plan an update of an existing export`.
 
 ### PF10 — `update:v2`: regenerate into an existing app (D5)
 
 **Goal:** one command regenerates an export in place: generated files are rewritten, the
-application's own files are kept, and a hand-edited generated file refuses the update.
+application's own files are kept, a hand-edited generated file refuses the update, and an
+update that is refused or unsafe changes nothing at all.
 **Checks:** check, e2e, build. **Exported files this unit may change:** none.
 
 **1. `jeeves-generator/src/update.ts`:** add
@@ -1007,23 +1432,35 @@ application's own files are kept, and a hand-edited generated file refuses the u
 1. Requires `directory` to be an absolute path to an existing real directory (not a symlink)
    that holds `.jeeves/manifest.json` whose `format` is `jeeves-v2-manifest-v1`. Otherwise it
    throws `Not a Jeeves v2 export: <directory>`.
-2. Reads `.jeeves/overrides.json` if it exists. Its shape is
+2. Validates the directory's manifest: `files` is an array of records with a string `path`, a
+   64-hex `sha256` and an `ownership` of `generated-scaffold`, `generated-extension` or
+   `generator-metadata`, and `assertDistinctPaths` (`src/files.ts`) accepts their paths. Else it
+   throws `Invalid .jeeves/manifest.json`.
+3. Reads `.jeeves/overrides.json` if it exists. Its shape is
    `{ "overrides": [{ "path": "compose.yaml", "reason": "…" }] }`; each `reason` must be a
-   non-empty string, else it throws `Invalid .jeeves/overrides.json`.
-3. Builds `next` from `bundle.manifest.files` and `previous` from the directory's manifest,
-   hashes the files on disk, and calls `planUpdate`.
-4. If `refused` is not empty, or `options.check` is true: writes nothing.
-5. Otherwise, in this order:
-   - deletes the directory `.jeeves/generated/` if it exists;
-   - writes each `create` and `replace` file (making parent directories; refusing a target or
-     parent that is a symlink);
+   non-empty string, `assertDistinctPaths` must accept the paths, and none may be under
+   `.jeeves/`. Else it throws `Invalid .jeeves/overrides.json`.
+4. Lists the files under `.jeeves/generated/`, if it exists, as the pending shadows.
+5. **Preflight, before anything changes, and also with `check`:**
+   - `assertDistinctPaths` over the union of `next`'s and `previous`'s paths (each path once):
+     this refuses case collisions and a file that would become a directory or the reverse.
+   - For every path in `next`, `previous` or the overrides, and every shadow path, `lstat` the
+     path and each of its parent directories inside `directory`. A symlink anywhere, an existing
+     target that is not a regular file, or an existing parent that is not a directory throws
+     `Unsafe update path: <path>`.
+   Then it hashes the files on disk and calls `planUpdate`.
+6. If `refused` is not empty, or `options.check` is true: writes nothing.
+7. Otherwise, in this order:
+   - writes each `create` and `replace` file (making parent directories);
    - deletes each `remove` file;
    - writes each `shadows` path's new bytes to `.jeeves/generated/<path>`;
+   - deletes each pending shadow not in `shadows`;
    - writes `.jeeves/manifest.json` last, from the bundle.
-6. Returns `{ directory, check, refused, counts: { create, replace, unchanged, keep }, keepChanged, override, remove, orphan }`,
+8. Returns `{ directory, check, refused, counts: { create, replace, unchanged, keep }, keepChanged, override, remove, orphan }`,
    where the last four are path lists.
 
-It never touches a file that is in neither manifest.
+It touches no file outside `next`, `previous` and the overrides, except `.jeeves/manifest.json`
+and files under `.jeeves/generated/`.
 
 **2. CLI.** Create `jeeves-generator/src/v2/update-cli.ts`, modelled on `src/v2/cli.ts`:
 
@@ -1047,13 +1484,26 @@ afterwards). Export the stub stack (`stubStackDesign()`, as `processes-off.ts` b
    kept, its action is `override`, and `.jeeves/generated/<path>` holds the new generated bytes.
 5. `check: true` writes nothing.
 6. A directory with no manifest throws `Not a Jeeves v2 export`.
+7. A symlink in place of a file the update would replace or remove throws `Unsafe update path`
+   before anything is written: a scaffold file changed as in test 2 is still changed.
+8. A manifest record whose path is a directory of a generated file (add
+   `{ path: "src/runtime", sha256: <any 64 hex>, ownership: "generated-scaffold" }`) throws
+   before anything is written.
+9. Two updates in a row keep a pending shadow: edit a stub body and set its `sha256` in the
+   manifest to a different hash, update (`keep-changed`, shadow written), update again (still
+   `keep-changed`, shadow still there), delete the shadow and update again (`keep`).
+10. An edited override the export no longer has (add a `generated-scaffold` record for a new
+    file `extra.txt` to the manifest, write the file with other bytes, and list it in
+    `overrides.json`) is `orphan` on the first update and again on the second, and the second
+    is not refused.
 
 **Docs.**
 
 - `jeeves-generator/README.md`: add `## Updating an existing export` after
-  `## Preserving work and remaining export work`, with the command, the two tables' meaning in
-  plain words (what is rewritten, what is kept, what refuses), `.jeeves/overrides.json`,
-  `.jeeves/generated/` and `--check`. Add the command to `## Current state`.
+  `## Preserving work and remaining export work`, with the command, the tables' meaning in
+  plain words (what is rewritten, what is kept, what refuses), the preflight (an unsafe or
+  refused update changes nothing), `.jeeves/overrides.json`, `.jeeves/generated/` and when a
+  shadow goes away, and `--check`. Add the command to `## Current state`.
 - `docs/studio.md`, Experimental project export: one sentence that the ZIP is for a new
   directory and `update:v2` regenerates into an existing one.
 - `docs/glossary.md`: add rows **Override** (a generated file the application keeps as its own,
@@ -1068,20 +1518,24 @@ afterwards). Export the stub stack (`stubStackDesign()`, as `processes-off.ts` b
 
 Docker rules for PF11–PF13:
 
-- Work in a copy **outside** the checkout (your scratch directory), never in place.
+- Work in a copy **outside** the checkout (your scratch directory, `$SCRATCH` below), never in
+  place.
 - Before anything else, record the owner's containers, volumes and networks
-  (`docker ps -a --format '{{.Names}}'`, `docker volume ls -q`, `docker network ls -q`), and
-  compare at the end: only yours may have come and gone.
+  (`docker ps -a --format '{{.Names}}'`, `docker volume ls -q`, `docker network ls -q`) in the
+  evidence folder, and compare at the end: only yours may have come and gone.
 - Use the Compose project name and ports your unit gives. If a port is in use, add 10 to all
   three and say so. Never touch the owner's stacks, volumes or images.
-- At the end run `docker compose --profile '*' down --volumes --remove-orphans` with the same
-  environment, remove your two images (`<project>-app`, `<project>-media`), and delete the copy
-  with its `.runtime`.
+- D7 asks for **one** run: PF12 starts the stack and leaves it running with two copies of each
+  application process; PF13 uses that same stack and cleans up. At the end of PF13 run
+  `docker compose --profile '*' down --volumes --remove-orphans` in the app copy with the same
+  environment, remove the two images (`jeeves-pf12-app`, `jeeves-pf12-media`), and delete the
+  copy with its `.runtime`.
 
 ### PF11 — YouTube v4: v3 regenerated onto the new templates
 
-**Goal:** v3's completed app takes the new templates through `update:v2`, with every hook file
-kept, and still builds and passes its tests. No Docker stack is started.
+**Goal:** v3's completed app takes the new templates through `update:v2`, with every file the
+application owns kept byte for byte, and still builds and passes its tests. No Docker stack is
+started.
 **Checks:** check (the Biome config changes).
 
 **Steps.**
@@ -1110,19 +1564,48 @@ kept, and still builds and passes its tests. No Docker stack is started.
 5. Run `pnpm --filter @jeeves/generator update:v2 "$PWD/field-projects/youtube/v4/inputs/design.json" "$PWD/field-projects/youtube/v4/app" --check`
    and save its output.
    - If `refused` lists only `src/modules/dependencies.ts` and/or
-     `src/runtime/module-clients.ts`: copy each from `v4/generated/` over `v4/app/`, and run the
-     check again.
+     `src/runtime/module-clients.ts` (v3's gap-6 edits, which the generator has matched since
+     V3-18): copy each from `v4/generated/` over `v4/app/`, and run the check again.
    - If `refused` lists anything else, stop (rule 2).
 6. Run the same command without `--check`. Save its output as
-   `field-projects/youtube/v4/notes/update.json`. Expected: `refused` is empty; `override` lists
-   the four paths; every `.hooks.ts` file, both stub bodies, `video-contract.ts` and every
-   product SQL file are byte for byte v3's. Confirm with
-   `git diff --no-index --stat field-projects/youtube/v3/app/src/modules field-projects/youtube/v4/app/src/modules`:
-   it must list no `.hooks.ts` file, neither stub body and not `video-contract.ts`.
-7. For each of the four override paths, compare `v4/app/.jeeves/generated/<path>` with
-   `v3/generated/<path>` (`cmp`). If they are equal, do nothing. If one differs, the generated
-   file changed: copy the new generated file over the app's, then re-apply v3's one edit to it
-   exactly as `field-projects/youtube/v3/notes/custom-paths.md` describes that path.
+   `field-projects/youtube/v4/notes/update.json`. Expected: `refused` is empty and `override`
+   lists the four paths. Then check that every file the application owns is byte for byte v3's:
+   every previous manifest record with ownership `generated-extension` (hook files, stub bodies
+   and product SQL, which lives under `infra/postgres/`), and every tracked v3 app file that is
+   not in v3's manifest (such as `video-contract.ts`, the browser, scripts and tests). Run
+   this from the repository root; it must print `"differ":[]` and exit 0:
+
+```sh
+node --input-type=module -e '
+import { readFileSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+const v3 = "field-projects/youtube/v3/app", v4 = "field-projects/youtube/v4/app";
+const manifest = JSON.parse(readFileSync(`${v3}/.jeeves/manifest.json`, "utf8"));
+const generated = new Set(manifest.files.filter((f) => f.ownership !== "generated-extension").map((f) => f.path));
+const tracked = execFileSync("git", ["ls-files", v3], { encoding: "utf8" }).split("\n").filter(Boolean).map((p) => p.slice(v3.length + 1));
+const own = tracked.filter((p) => !generated.has(p) && p !== ".jeeves/manifest.json");
+const differ = own.filter((p) => !existsSync(`${v4}/${p}`) || !readFileSync(`${v3}/${p}`).equals(readFileSync(`${v4}/${p}`)));
+console.log(JSON.stringify({ checked: own.length, differ }));
+if (differ.length) process.exit(1);
+'
+```
+
+   (Run on v3 against itself at `076d715`, it printed `{"checked":31,"differ":[]}`.) If it
+   lists any path, stop (rule 2).
+7. For each of the four override paths, compare the new generated file with v3's:
+   `cmp field-projects/youtube/v4/app/.jeeves/generated/<path> field-projects/youtube/v3/generated/<path>`.
+   If they are equal, do nothing. If one differs, re-apply v3's edit as a patch, and stop
+   (rule 2) if it doesn't apply:
+
+```sh
+diff -u field-projects/youtube/v3/generated/<path> field-projects/youtube/v3/app/<path> > "$SCRATCH/<name>.patch"   # exits 1: they differ
+cp field-projects/youtube/v4/app/.jeeves/generated/<path> "$SCRATCH/<name>.new"
+patch --dry-run "$SCRATCH/<name>.new" "$SCRATCH/<name>.patch"
+patch "$SCRATCH/<name>.new" "$SCRATCH/<name>.patch"
+cp "$SCRATCH/<name>.new" field-projects/youtube/v4/app/<path>
+```
+
+   Then run step 5's `--check` again: `refused` must be empty.
 8. Copy `v4/app` to your scratch directory and run there:
    `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm build`, `node --test "test/*.test.ts"`.
    All must exit 0, with 19 tests passing. If not, stop (rule 2) and report the output.
@@ -1141,38 +1624,178 @@ kept, and still builds and passes its tests. No Docker stack is started.
 ### PF12 — Run v4: acceptance by API, then two copies
 
 **Goal:** record whether v4 works as v3 did, and whether it still works with two copies of
-every process. **Change no code.** If a step fails, record exactly what happened and go on to
-the next step; PF14 ranks the failures.
+every application process, then leave that two-copy stack running for PF13's faults (D7: one
+run). **Change no code.** If a step fails, record exactly what happened and go on to the next
+step; PF14 ranks the failures.
 **Checks:** none (evidence and notes only).
 **Project and ports:** `COMPOSE_PROJECT_NAME=jeeves-pf12`, `LOCAL_HTTP_PORT=45800`,
 `LOCAL_IDENTITY_PORT=45801`, `LOCAL_OBJECT_PORT=45802`.
 
 **Setup.**
 
-1. Copy the app: `git archive HEAD:field-projects/youtube/v4/app | tar -x -C <scratch>/app`.
-2. In the copy: `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm build`,
-   `pnpm first-run`, `node scripts/accounts.mjs`. Expect 15 healthy containers.
-3. Extract `docs/plans/youtube-v3/evidence/v3-17/operator-harness.tar.gz` into your scratch
-   directory. Read its `env.sh` and `harness/lib.mjs`; set the project and ports in your copy
-   of `env.sh`. Its `harness/` scripts sign in and call the API. If a harness script fails for
-   a reason that isn't the app's behaviour, write your own small script for that step from the
-   route table in `field-projects/youtube/v3/notes/README.md`, and keep it in the evidence.
-4. The media: `field-projects/youtube/v1/app/.runtime/media/youtube-v1-fixture.mp4`, copied
-   read only.
+1. The app: `mkdir -p "$SCRATCH/app"`, then
+   `git archive HEAD:field-projects/youtube/v4/app | tar -x -C "$SCRATCH/app"`.
+2. The harness: `tar -xzf docs/plans/youtube-v3/evidence/v3-17/operator-harness.tar.gz -C "$SCRATCH"`
+   (it adds `env.sh`, four `.sh` helpers, `harness/`, `browser/` and V3-17's `runs/`). Then:
+   - replace `$SCRATCH/env.sh` with these four lines, writing your scratch path for `<scratch>`:
+
+     ```sh
+     export PATH=$HOME/.nvm/versions/node/v24.21.0/bin:$PATH
+     export S=<scratch>
+     export COMPOSE_PROJECT_NAME=jeeves-pf12 LOCAL_HTTP_PORT=45800 LOCAL_IDENTITY_PORT=45801 LOCAL_OBJECT_PORT=45802
+     export APP=$S/app FIXTURE=$S/media/youtube-v1-fixture.mp4 INVALID=$S/media/invalid.mp4
+     ```
+
+   - make the helpers source the `env.sh` beside them:
+     `sed -i 's|^\. /.*/env\.sh$|. "$(dirname "$0")/env.sh"|' "$SCRATCH"/*.sh`;
+   - start with empty results, in one place for both script families:
+     `rm -rf "$SCRATCH/runs" && mkdir "$SCRATCH/runs" && ln -s ../runs "$SCRATCH/harness/runs"`;
+   - write `$SCRATCH/harness/pf.mjs` (below) and keep it in the evidence.
+3. The media: `mkdir -p "$SCRATCH/media"`, copy
+   `field-projects/youtube/v1/app/.runtime/media/youtube-v1-fixture.mp4` into it, and
+   `chmod a-w` the copy.
+4. In `$SCRATCH/app`, with `. "$SCRATCH/env.sh"`: `pnpm install --frozen-lockfile --ignore-scripts`,
+   `pnpm build`, `pnpm first-run`, `node scripts/accounts.mjs`. Expect 15 healthy containers
+   (`docker compose --profile '*' ps`).
+
+Every harness command below runs as `cd "$SCRATCH/harness" && . ../env.sh && node <script> …`;
+each writes `$SCRATCH/runs/<label>.json`. `<word>` is a new unique word for each upload's title.
+Database reads use
+`docker exec jeeves-pf12-local-postgres-1 psql -U postgres -d d_metadata -Atc "<sql>"`.
+
+`pf.mjs` (built on V3-17's `lib.mjs`; its token-free steps were tried against a stub server):
+
+```js
+// PF12/PF13 steps by API through the edge, on V3-17's lib.mjs. Tokens stay in memory.
+// node pf.mjs <step> <label> [args]. Writes ./runs/<label>.json.
+import { randomUUID } from "node:crypto";
+import { writeFileSync } from "node:fs";
+import { api, log, token } from "./lib.mjs";
+
+const W = "/api/watch-api/modules";
+const details = (id) => `${W}/watch-api-video-details-cache/${id}`;
+const count = (id) => `${W}/watch-api-view-count-reader/${id}`;
+const play = (id) => `${W}/watch-api-view-publisher/${id}`;
+const search = (q) => `/api/search-api/modules/search-api-video-search?q=${encodeURIComponent(q)}`;
+const FAV = "/api/account-api/modules/account-api-favorite-videos/items";
+const ME = [
+  `${W}/watch-api-viewer-check/me`,
+  "/api/upload-api/modules/upload-api-creator-check/me",
+  "/api/account-api/modules/account-api-account-check/me",
+];
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+/** Reads every `every` ms until `done` holds or `ms` pass; keeps only the last read in the log. */
+async function poll(read, done, ms, every = 250) {
+  const started = Date.now();
+  for (;;) {
+    const entry = await read();
+    if (done(entry) || Date.now() - started >= ms) return { entry, afterMs: Date.now() - started };
+    log.pop();
+    await sleep(every);
+  }
+}
+const [step, label, ...args] = process.argv.slice(2);
+if (!label) throw new Error("Usage: node pf.mjs <step> <label> [args]");
+const out = { step, label, args };
+switch (step) {
+  case "signin": {
+    const creator = { who: "creator", bearer: await token("creator") };
+    const viewer = { who: "viewer", bearer: await token("viewer") };
+    for (const path of ME) {
+      await api("GET", path);
+      await api("GET", path, creator);
+      await api("GET", path, viewer);
+    }
+    break;
+  }
+  case "ready": {
+    const [id, seconds = "120"] = args;
+    const seen = await poll(
+      () => api("GET", details(id)),
+      (e) => e.status === 200,
+      Number(seconds) * 1000,
+      2000,
+    );
+    out.ready = { status: seen.entry.status, afterMs: seen.afterMs };
+    break;
+  }
+  case "details": {
+    const [id, times = "1"] = args;
+    for (let i = 0; i < Number(times); i++) await api("GET", details(id));
+    out.statuses = log.map((e) => e.status);
+    break;
+  }
+  case "plays": {
+    const [id, n = "1"] = args;
+    const before = BigInt((await api("GET", count(id))).body.views);
+    const ids = Array.from({ length: Number(n) }, () => randomUUID());
+    for (const eventId of ids) await api("POST", play(id), { body: { eventId } });
+    const expected = before + BigInt(ids.length);
+    const seen = await poll(
+      () => api("GET", count(id)),
+      (e) => e.status === 200 && BigInt(e.body.views) >= expected,
+      10000,
+    );
+    for (const eventId of ids) await api("POST", play(id), { body: { eventId } });
+    await sleep(5000);
+    const settled = await api("GET", count(id));
+    out.counts = {
+      before: String(before),
+      expected: String(expected),
+      after: seen.entry.body?.views,
+      visibleAfterMs: seen.afterMs,
+      settled: settled.body?.views,
+    };
+    out.playStatuses = [...new Set(log.filter((e) => e.method === "POST").map((e) => e.status))];
+    break;
+  }
+  case "search": {
+    const [word, id] = args;
+    const hits = (e) => (e.body?.hits ?? []).filter((hit) => hit.videoId === id).length;
+    const seen = await poll(
+      () => api("GET", search(word)),
+      (e) => hits(e) > 0,
+      10000,
+    );
+    out.search = { status: seen.entry.status, found: hits(seen.entry), afterMs: seen.afterMs };
+    break;
+  }
+  case "favorites": {
+    const [id] = args;
+    const viewer = { who: "viewer", bearer: await token("viewer") };
+    await api("PUT", `${FAV}/${id}`, viewer);
+    await api("GET", `${FAV}/${id}`, viewer);
+    const listed = await api("GET", FAV, viewer);
+    out.listed = (listed.body?.items ?? []).some((item) => item.itemId === id);
+    await api("DELETE", `${FAV}/${id}`, viewer);
+    await api("PUT", `${FAV}/${id}`);
+    break;
+  }
+  default:
+    throw new Error("Steps: signin, ready, details, plays, search, favorites");
+}
+out.log = log;
+writeFileSync(new URL(`./runs/${label}.json`, import.meta.url), JSON.stringify(out, null, 2));
+for (const e of log) console.log(`${e.method} ${e.path} [${e.who}] → ${e.status}`);
+console.log(JSON.stringify({ ...out, log: undefined }));
+```
+
+If a harness script fails for a reason that isn't the app's behaviour, fix the script (it is
+evidence, not app code), say what you changed, and keep it in the evidence.
 
 **Part A — one copy of each process.** Record each as Observed or Failed, with the status codes.
 
 | Step | Do | Expect |
 | --- | --- | --- |
-| A1 | Sign in as `creator` and as `viewer`; call each tile's `…/me` | Both tokens work; Watch's `me` without a token is `{"signedIn":false}` |
-| A2 | As `creator`, upload the fixture in parts and complete it; poll Watch's details every 2 s for up to 120 s | 404 until ready, then 200 |
-| A3 | Read the details twice, signed out | 200 twice; the key `ready-video:v1:<videoId>` then exists in the cache (`docker compose --profile '*' exec cache-hot-metadata valkey-cli -a "$(cat .runtime/secrets/cache-hot-metadata)" EXISTS <key>` prints 1) |
-| A4 | Send one play (`{eventId}`), read the count, send the same event ID again, read the count | 202 twice; the count is `"1"` both times |
-| A5 | Search for a word of the title | 200 with that video as a hit |
-| A6 | As `viewer`: add, check, list and remove the favorite; then add without a token | 200, 200, the item listed, 204; 401 |
+| A1 | `node pf.mjs signin a1` | The three sign-in module routes, `/api/watch-api/modules/watch-api-viewer-check/me`, `/api/upload-api/modules/upload-api-creator-check/me` and `/api/account-api/modules/account-api-account-check/me`, answer 200 with each token; without a token Watch's answers 200 `{"signedIn":false}` and the other two 401 |
+| A2 | `node upload.mjs a2 fixture:<word>` (V3-17's: start, three parts, complete; the video ID is in `runs/a2-ids`), then `node pf.mjs ready a2-ready <videoId>` | Upload 200s; details 404 until ready, then 200 within 120 s (`ready.status` 200). This video is **A** |
+| A3 | `node pf.mjs details a3 <A> 2`, then `docker exec jeeves-pf12-cache-hot-metadata-1 sh -c 'REDISCLI_AUTH="$(cat /run/secrets/cache-hot-metadata)" valkey-cli EXISTS ready-video:v1:<A>'` | 200 twice; the cache check prints 1 |
+| A4 | `node pf.mjs plays a4 <A> 1` | `playStatuses` `[202]`; `counts.after` and `counts.settled` both equal `counts.expected` (`before` + 1): the resent play counted once |
+| A5 | `node pf.mjs search a5 <word> <A>` | 200 with A as one hit within 10 s (`search.found` 1) |
+| A6 | `node pf.mjs favorites a6 <A>` | PUT 200, GET 200, `listed` true, DELETE 204; PUT without a token 401 |
 
-**Part B — two copies.** Run this one command, with the same environment. It names the eight
-services so that no setup job runs again:
+**Part B — two copies.** Run this one command in `$SCRATCH/app`, with the same environment. It
+names the eight services so that no setup job runs again:
 
 ```sh
 docker compose --profile application up -d --no-recreate --no-deps \
@@ -1183,47 +1806,59 @@ docker compose --profile application up -d --no-recreate --no-deps \
   app-video-lifecycle app-view-counter app-search-indexer app-transcoder
 ```
 
-Wait until `docker compose --profile '*' ps` shows every container healthy (up to 180 s).
+Wait until `docker compose --profile '*' ps` shows 23 containers, every one healthy (up to
+180 s). Record that output.
 
 | Step | Do | Expect |
 | --- | --- | --- |
-| B1 | Repeat A3, A5 and A6 twenty times each | Every answer as in Part A |
-| B2 | `docker stop jeeves-pf12-app-watch-api-1`; wait 11 s; read the details 20 times. Start it; stop `…-watch-api-2`; wait 11 s; read 20 times. Start it. | 200 every time |
-| B3 | Send 50 plays with 50 new event IDs, then send each again; wait 5 s; read the count | It rose by exactly 50 |
-| B4 | Upload the fixture again as a second video and wait for ready | It becomes ready; search finds it once; `published.videos` has exactly one row for it |
+| B1 | `node pf.mjs details b1 <A> 20`; then `node pf.mjs search b1-search-<n> <word> <A>` and `node pf.mjs favorites b1-fav-<n> <A>` for `<n>` = 1 to 20 | Every answer as in Part A |
+| B2 | `docker stop jeeves-pf12-app-watch-api-1`; wait 11 s (the edge re-resolves names every 10 s); `node pf.mjs details b2-1 <A> 20`. `docker start` it; stop `jeeves-pf12-app-watch-api-2`; wait 11 s; `node pf.mjs details b2-2 <A> 20`. `docker start` it | 200 every time |
+| B3 | `node pf.mjs plays b3 <A> 50` | `counts.settled` equals `counts.expected` (`before` + 50) |
+| B4 | `node upload.mjs b4 fixture:<word2>`, then `node pf.mjs ready b4-ready <B>` and `node pf.mjs search b4-search <word2> <B>` | B becomes ready; `search.found` 1; `select count(*) from published.videos where video_id='<B>'` prints 1 |
 
 **Record.** Write `field-projects/youtube/v4/notes/scenarios.md`: the two tables with a Verdict
-column and what was seen. Put raw outputs under
-`docs/plans/production-foundations/evidence/pf12/` (gzip anything over 100 KB), with a
-`README.md` that lists them. Then clean up as the Docker rules say.
+column and what was seen. Put raw outputs (the `runs/` files, `ps` outputs, the Docker
+inventory) under `docs/plans/production-foundations/evidence/pf12/` (gzip anything over 100 KB),
+with a `README.md` that lists them.
+
+**Leave the stack running**, scaled to two, for PF13. Do not clean up. In the handoff entry's
+**For the next unit**, give `$SCRATCH`, the project name and the three ports, and say whether
+all 23 containers are healthy.
 
 **Commit:** `PF12: run v4 with one and two copies`.
 
 ### PF13 — Run v4: faults and a throughput sample
 
-**Goal:** record what v4 does when the cache, the broker and a worker stop, and how fast one
-read path answers. **Change no code.** Record failures and go on, as in PF12.
+**Goal:** on PF12's two-copy stack, record what v4 does when the cache, the broker and a worker
+stop, and how fast one read path answers; then clean up. **Change no code.** Record failures and
+go on, as in PF12.
 **Checks:** none (evidence and notes only).
-**Project and ports:** `COMPOSE_PROJECT_NAME=jeeves-pf13`, ports 45810, 45811 and 45812.
+**Project and ports:** PF12's, from its handoff (`jeeves-pf12`, 45800, 45801 and 45802), and its
+`$SCRATCH`.
 
-**Setup:** as PF12's setup, then upload the fixture once and wait for ready (video **A**).
-Then scale two services to 2, in PF12's form:
-`docker compose --profile application up -d --no-recreate --no-deps --scale app-watch-api=2 --scale app-view-counter=2 app-watch-api app-view-counter`.
-
-**F3's fallback.** If you can't catch the `processing` state in three tries, run the simpler
-form instead and say so: stop the transcoder, complete the upload, wait 10 s, start the
-transcoder. The expectation is the same.
+**Setup.** `docker compose --profile '*' ps` in PF12's `$SCRATCH/app` must show its 23 healthy
+containers; if the stack isn't there, stop (rule 2). Use PF12's harness as it left it. Upload
+the fixture once and wait for ready (`node upload.mjs f-a fixture:<word>`, then
+`node pf.mjs ready f-a-ready <videoId>`): this video is **A**. Before each fault, record a
+boundary (`date -u +%Y-%m-%dT%H:%M:%SZ`) and read each container's log only since it
+(`docker logs --since <boundary> <container>`).
 
 | Step | Do | Expect |
 | --- | --- | --- |
-| F1a | `docker stop jeeves-pf13-cache-hot-metadata-1`; read A's details 10 times | 200 every time. Each `app-watch-api` container's log has a line with `"event":"failure"` and `"what":"cache watch-api-video-details-cache"` |
-| F1b | `docker start` the cache; wait 15 s; delete A's key with `valkey-cli … DEL <key>`; read the details twice | 200 twice; `EXISTS <key>` prints 1; each `app-watch-api` log has `"event":"cache"` with `"state":"available"` |
-| F2a | `docker stop jeeves-pf13-local-broker-1`; wait 20 s; list the containers; read the details and search | Record which `app-*` containers exited and which stayed. Details and search are expected to answer or to answer 503: record which. |
-| F2b | `pnpm start` (it also returns every process to one copy); send one play for A; read the count | Everything healthy; the count rose by 1 |
-| F3 | Upload the fixture as video **C**. As soon as its row in `upload_api_multipart_uploads.assets` has state `processing` (poll every 0.5 s; the harness's `snapshot.sh` and `incontainer.sh` show how V3-17 read that table), `docker kill jeeves-pf13-app-transcoder-1`; wait 5 s; `docker start` it | C becomes ready within 180 s; search finds it once; `published.videos` has one row for it |
-| T1 | Scale `app-watch-api` to 2 again (the command in Setup). Run `node reads.mjs http://127.0.0.1:45810/api/watch-api/modules/watch-api-video-details-cache/<A's id> 2000 50` (the script below) three times | `failed` is 0 each time. Record `perSecond`, `p50Ms`, `p95Ms` and `p99Ms`; there is no pass mark for speed. |
+| F1a | `docker stop jeeves-pf12-cache-hot-metadata-1`; `node pf.mjs details f1a <A> 10` | 200 every time. Since the boundary, each `app-watch-api` container's log (`jeeves-pf12-app-watch-api-1` and `-2`) has a line with `"event":"failure"` and `"what":"cache watch-api-video-details-cache"` |
+| F1b | `docker start jeeves-pf12-cache-hot-metadata-1`; wait 15 s; delete A's key (`docker exec jeeves-pf12-cache-hot-metadata-1 sh -c 'REDISCLI_AUTH="$(cat /run/secrets/cache-hot-metadata)" valkey-cli DEL ready-video:v1:<A>'`); `node pf.mjs details f1b <A> 2` | 200 twice; the `EXISTS` check (as in A3) prints 1; since F1b's boundary each `app-watch-api` log has `"event":"cache"` with `"state":"available"` |
+| F2a | `docker stop jeeves-pf12-local-broker-1`; wait 20 s; `docker compose --profile '*' ps -a`; `node pf.mjs details f2a <A> 1`; `node pf.mjs search f2a-search <word> <A>` | Record which `app-*` containers exited and which stayed. Details and search are expected to answer or to answer 503: record which. |
+| F2b | `docker start jeeves-pf12-local-broker-1`; in `$SCRATCH/app`, `pnpm start`; record `docker compose --profile '*' ps`; run PF12's Part B scale command again and wait for 23 healthy containers; `node pf.mjs plays f2b <A> 1` | Everything healthy with two copies again; `counts.settled` equals `counts.expected`. (Whether `pnpm start` itself changes the number of copies is not known: record what `ps` showed.) |
+| F3 | `node upload.mjs f3 fixture:<word3>` (video **C**). Poll `select state from upload_api_multipart_uploads.assets where asset_id='<C>'` every 0.5 s. When it is `processing`, find the transcoder running the job: the one of `jeeves-pf12-app-transcoder-1` and `-2` whose `docker top <container>` lists an `ffmpeg` process. `docker kill` that one; wait 5 s; `docker start` it | C becomes ready (`node pf.mjs ready f3-ready <C> 180`); `node pf.mjs search f3-search <word3> <C>` finds it once; `select count(*) from published.videos where video_id='<C>'` prints 1 |
+| T1 | `node "$SCRATCH/reads.mjs" "http://127.0.0.1:$LOCAL_HTTP_PORT/api/watch-api/modules/watch-api-video-details-cache/<A>" 2000 50` (the script below), three times | `failed` is 0 each time. Record `perSecond`, `p50Ms`, `p95Ms` and `p99Ms`; there is no pass mark for speed. |
 
-`reads.mjs` (keep it in the evidence folder):
+**F3 if the job is never caught running.** Try F3 with three uploads (C1–C3). If no transcoder
+was seen running `ffmpeg` while the state was `processing`, mark F3 **Unverified** (a worker
+killed during a delivery was not observed). Then record, as a separate row **F3b**, the simpler
+case: `docker stop` both transcoders, complete an upload, wait 10 s, `docker start` both, and
+expect it ready within 180 s. F3b is not a result for F3.
+
+`reads.mjs` (keep it in the evidence folder; each request gives up after 10 s):
 
 ```js
 const [url, total = "2000", concurrency = "50"] = process.argv.slice(2);
@@ -1236,7 +1871,7 @@ async function worker() {
     next += 1;
     const at = performance.now();
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
       await response.arrayBuffer();
       if (response.status !== 200) failed += 1;
     } catch {
@@ -1266,8 +1901,8 @@ console.log(
 **Record.** Add a "Faults and throughput" table to
 `field-projects/youtube/v4/notes/scenarios.md`, and raw outputs under
 `docs/plans/production-foundations/evidence/pf13/` with a `README.md`. State the machine (CPU
-count, memory) beside the T1 numbers, and that they are from one laptop. Clean up as the Docker
-rules say.
+count, memory) beside the T1 numbers, and that they are from one laptop. Then clean up as the
+Docker rules say, and compare the Docker inventory with PF12's.
 
 **Commit:** `PF13: run v4 with faults and a throughput sample`.
 
@@ -1284,13 +1919,19 @@ owner what was delivered, what failed and what to decide next.
 1. For each unit PF01–PF13, read its handoff entry and check its **Done when**, its tests and
    its docs against this plan. Rerun each grep the units name.
 2. Run the four checks. Run `pnpm --filter @jeeves/generator update:v2 "$PWD/field-projects/youtube/v4/inputs/design.json" "$PWD/field-projects/youtube/v4/app" --check`:
-   `refused` must be empty.
+   `refused` must be empty, `counts.create` and `counts.replace` must be 0 and `remove` must be
+   empty, and `override` and `keepChanged` must list only the paths v4's notes document. If not,
+   v4 isn't on the final templates: say so first in the review.
 3. Sweep the docs for false statements: read `AGENTS.md`, `jeeves/README.md`, `jeeves/PLAN.md`,
    `jeeves/CATALOG.md`, `docs/studio.md` (the sections this plan touched),
    `jeeves-generator/README.md`, `docs/glossary.md` and `docs/template-gaps.md`. Fix a false
    sentence only when the code proves it false; list each fix.
 4. Fix a defect only if it is inside one of this plan's units, has a failing test you can write
-   first, and needs fewer than 40 changed lines. List everything else as a follow-up.
+   first, and needs fewer than 40 changed lines. A fix that changes emitted code is a follow-up
+   unless you also regenerate v4 (`update:v2` without `--check`), rerun its 19 tests in a
+   scratch copy and repeat step 2; PF14 runs no Docker, so then say in the review that PF12's
+   and PF13's evidence covers the templates before that fix. List everything else as a
+   follow-up.
 5. Write `docs/plans/production-foundations/review.md`:
    - an **Owner summary** of at most 12 lines;
    - a table of D1–D8 with Delivered, Partly or Not, and what you saw;
