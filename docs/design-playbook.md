@@ -1740,3 +1740,16 @@ status belongs to its owner. Two lessons for acceptance runs:
 - **A refused sign-in is noticed by whichever request carries it first,** often the page's own
   background refresh. Check that the page signs out and doesn't retry anonymously, not which of
   its requests was refused.
+
+## 2026-11-11 V3-18: every finding needs a way back, by mouse and by chat
+
+A finding the user can't act on is a dead end, and it hides in layers. V3-10's out-of-range
+Request timeout had two. The server wouldn't open a design whose saved number broke its bound,
+and the resolver, refusing the model, hid every control, the one that could fix it included. Open
+a document whose only fault is a saved value out of range: show that value with its reason in
+its own control, accept only a valid replacement, and keep everything else waiting until the
+design is valid. Anything else malformed should still fail loudly. Check each finding class for a
+path back: the control that fixes it is reachable, and chat's review offers the command when one
+is safe (clearing a process setting runs its initial value). The same applies to a generated
+library: a stub that publishes to a deduplicating consumer must be able to set the message's ID.
+That is now in the generator, not a scaffold edit.

@@ -7,7 +7,17 @@
  * this holds for a row's dot and for a tile.
  */
 import type { Locator, Page } from "@playwright/test";
-import { createStudy, design, expect, moveOnto, ready, showView, test, tile } from "./studio.ts";
+import {
+  createStudy,
+  design,
+  expect,
+  moveOnto,
+  ready,
+  showView,
+  stillBoard,
+  test,
+  tile,
+} from "./studio.ts";
 
 const tool = (page: Page, name: string) =>
   page.getByRole("toolbar", { name: "Canvas tools" }).getByRole("button", { name, exact: true });
@@ -222,20 +232,32 @@ test("a dot drag held past the canvas edge pans, then connects on release", asyn
     await tool(page, "Connect").click();
     await tool(page, "Fit").click();
     await camera(page);
-    // Zoomed in on the Upload service's Job publisher, Metadata (a database) is out of view.
+    // Zoomed in on the Upload service's Job publisher, Metadata (a database) is out of view. The
+    // zoom aims at the pointer only while it is on a tile, so aim once the tiles are still too.
+    await stillBoard(page);
     const source = dot(page, "upload-jobs");
     const start = await box(source);
+    expect(await pressAt(page, start.x + start.width / 2, start.y + start.height / 2)).toBe(
+      "upload-jobs",
+    );
     await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
     await page.mouse.wheel(0, -1200);
     const zoomed = await camera(page);
     const target = tile(page, "Metadata");
     expect(inside(await box(target), await box(canvas(page)), 1)).toBe(false);
 
+    // The press lands on the module's dot, inside the board, and the move starts a connect drag:
+    // each a precondition of the pan, so a failure names the step that broke.
     const links = await moduleLinks(page, id);
     const from = await box(source);
+    expect(inside(from, await box(canvas(page)), 0)).toBe(true);
+    expect(await pressAt(page, from.x + from.width / 2, from.y + from.height / 2)).toBe(
+      "upload-jobs",
+    );
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
     await page.mouse.down();
     await page.mouse.move(from.x + from.width / 2 + 20, from.y, { steps: 3 });
+    await expect(page.locator(".board")).toHaveAttribute("data-connecting");
     const held = await holdPastEdge(page, target);
     // The canvas moved, at the same zoom, and the line still ends at the pointer.
     const panned = await camera(page);

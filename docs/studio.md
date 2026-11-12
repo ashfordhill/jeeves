@@ -561,7 +561,9 @@ this order:
    HTTP deadline/admission, adjustable worker concurrency, cache TTL, SQL pool size and statement
    timeout when selected by a feature. Fixed local Docker/TypeScript, provider, media and internal
    policies have no controls. Historical unsupported settings remain in source and diagnostics
-   unchanged.
+   unchanged. A saved number outside its bound (an older design) still opens: its own field shows
+   the value and the reason, and only that field shows until a value in range is saved
+   ([settings](studio-settings.md#normal-feature-configuration)).
 4. **Modules**, when the tile has modules or can hold them: a stack of cards, each one button
    ("Open <module>") with the module's icon in its family colour, its name, its kind and the
    first two lines of its Description, then the blue **+** centred under them. The `+` opens the
@@ -753,7 +755,8 @@ possible; those commands are checked against the design before they are offered
 - **unconnected-slot:** a needed slot with nothing in it, connected through the host's own link
   where it has one, or with a new module or tile for it;
 - **generation:** the resolver's findings, as Generate project shows them, except those a Refused
-  module already names;
+  module already names. A process's own setting saved out of range (an older design) comes with
+  the command that clears it, so the process runs its initial value;
 - the playbook's smells: **store-without-writer** (the design warning, and a store only modules
   that read reach), **unrelated-store** (a worker writing stores for more than one concern; the
   fix disconnects the extra writes), **user-reaches-store** (an action's line to a store; removed

@@ -169,13 +169,18 @@ describe("projects", () => {
     old.revision = 2;
     const settings = old.architecture?.studio?.elements[0]?.settings as Record<string, unknown>;
     settings.requestTimeoutMs = 99999999;
-    await db.insert(designRevisions).values({ projectId: id, revision: 2, document: old, findings: [] });
+    await db
+      .insert(designRevisions)
+      .values({ projectId: id, revision: 2, document: old, findings: [] });
     await db.update(projects).set({ revision: 2 }).where(eq(projects.id, id));
     const opened = await client.design(id);
-    expect(
-      (opened.design.architecture?.studio?.elements[0]?.settings as Record<string, unknown>)
-        .requestTimeoutMs,
-    ).toBe(99999999);
+    const timeout = (design: DesignDocument) =>
+      (
+        design.architecture?.studio?.elements[0]?.settings as
+          | { requestTimeoutMs?: number }
+          | undefined
+      )?.requestTimeoutMs;
+    expect(timeout(opened.design)).toBe(99999999);
     expect(opened.findings).toContainEqual(
       expect.objectContaining({
         code: "CONFIG_INVALID",
@@ -198,10 +203,7 @@ describe("projects", () => {
     // Undo puts the old value back, and it still opens.
     const undone = await client.undo(id, 3);
     expect(undone.status).toBe(200);
-    expect(
-      (undone.body.design.architecture.studio.elements[0].settings as Record<string, unknown>)
-        .requestTimeoutMs,
-    ).toBe(99999999);
+    expect(timeout(undone.body.design)).toBe(99999999);
   });
 });
 

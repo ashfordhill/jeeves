@@ -34,7 +34,8 @@ What is custom in `app/`, by area:
   - the account script (the creator role and three local accounts);
   - the browser build and its sign-in binding;
   - six scaffold edits:
-    - two lines so a module can name its message's ID (gap 6);
+    - two lines so a module can name its message's ID (gap 6; the generator writes them too
+      since V3-18);
     - four small edits so the edge serves the browser (gap 8).
 - **UI (not counted):** v2's browser in `browser/` and `public/`, on v3's routes, with optional
   sign-in for watchers, a ☆/★ toggle and My favorites.

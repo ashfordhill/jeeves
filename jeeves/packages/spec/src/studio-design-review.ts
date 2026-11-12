@@ -260,7 +260,8 @@ export function designReview(
         .flat()
         .find((entry) => entry.setting === setting);
       const binding = studio.elements.find((entry) => entry.element === control?.process);
-      if (!binding || !setting || !rule) {
+      const range = rule && "integer" in rule.supported ? rule.supported.integer : undefined;
+      if (!binding || !setting || !rule || !range) {
         add(finding);
         continue;
       }
@@ -270,7 +271,7 @@ export function designReview(
         withCommands(
           {
             ...finding,
-            fix: `Clear it, and the process runs ${rule.initial}; or set it from ${rule.supported.integer.min} to ${rule.supported.integer.max}.`,
+            fix: `Clear it, and the process runs ${rule.initial}; or set it from ${range.min} to ${range.max}.`,
           },
           [{ type: "edit", element: binding.element, settings: settings as StudioSettings }],
         ),

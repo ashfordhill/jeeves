@@ -169,7 +169,9 @@ describe("the design review chat runs after each change (V3-09)", () => {
 
   it("offers to clear a process's own out-of-range setting, which its control can reach (V3-18)", () => {
     // The stub stack's Links API runs only stubs, so its process consumes its limits itself.
-    const valid = runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]);
+    const valid = runStudioCommands(stubStackDesign(), [
+      { type: "setRunnableProcesses", on: true },
+    ]);
     const tile = valid.architecture?.studio?.elements.find((item) => item.element === "links-api");
     if (!tile) throw new Error("No Links API.");
     // An older saved revision with an out-of-range Request timeout, as V3-10 found.

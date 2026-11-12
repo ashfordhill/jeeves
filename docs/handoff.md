@@ -10287,3 +10287,110 @@ under `provenanceWithoutInventory`.
 
 The owner's uncommitted `.jeeves-feedback/` and the mode of `e2e-docker.sh` are untouched and
 unstaged.
+
+## 2026-11-11 — V3-18: review v3
+
+Per the [YouTube v3 plan](plans/youtube-v3/units.md) (V3-18) and the coordinator's three items.
+The [review](plans/youtube-v3/review.md) has the verdicts on feedback 1–14 and D1–D8, the
+ranked template gaps and follow-ups. Evidence: [v3-18](plans/youtube-v3/evidence/v3-18/README.md),
+with 4 screenshots and the scripts. Also: notes, `custom-paths.md` and the review pack (gap 6),
+`studio-settings.md`, `studio.md`, the generator README, a playbook lesson, the plan's status
+and the HUMAN_FEEDBACK resolution.
+
+**Verdicts.** Feedback 1–9, 11–13 and D1–D8 are delivered, checked by mouse at 1440×900 and
+1280×800 on a scratch copy of YouTube v3's saved design. 10 and 14 are partly met: a cheap model
+isn't enough yet (V3-19). Marketplace's buyer and seller accounts aren't built (follow-up 3).
+
+**The three items:**
+
+1. **Template gap 6 is fixed in the generator.** `module-clients.ts.template` and
+   `dependencies.ts.template` now hold V3-15's lines (`publish(message, { messageId })`, sent,
+   else a fresh ID).
+   - A fresh v3 export's two files equal `app/`'s byte for byte. `generated/` and `app/` are
+     untouched.
+   - Test: `module-clients.test.ts` +1.
+   - **Intended pin change:** `processes-off.json` changes `src/modules/dependencies.ts` and the
+     manifest's entry for the v2 module design and the stub stack (both emit stubs). Frozen v2
+     is unchanged.
+2. **The out-of-range dead end is gone.** It had two layers.
+   - **The server couldn't open the design:** `designSchema.parse` threw, a 500 on GET design and
+     on undo. `parseStoredDesign` (spec `design.ts`) now opens a stored design whose only
+     problems are setting numbers outside their bounds, keeping them with their
+     `CONFIG_INVALID`; anything else still throws. `service.ts` uses it for load and undo.
+   - **The resolver hid every control** when the model was refused.
+     - The control a finding names now stays, and process decisions are worked out even
+       without a model.
+     - A template control with an unsupported saved value stays a control.
+     - The edit still accepts only supported values.
+     - The review offers a checked "clear it" command for a process's own setting.
+   - Tests: `process-settings.test.ts` +3, `studio-design-review.test.ts` +1,
+     `projects.test.ts` +1. Each new resolver and review test fails on the old code.
+   - **Mouse check, both sizes:** a seeded older revision (Request timeout 99999999) opens,
+     shows only that field with "Too big…", is fixed by typing 5000, and Undo and Redo work.
+   - **Not fixed (follow-up 7):** out-of-range values on two or more tiles. Each tile edit
+     carries the whole studio, and the operation schema refuses the other tile's value.
+3. **The connection-dots flake: cause not proven.**
+   - The Fit in that test is a no-op: the inspector's resize already refits. So V3-16's camera
+     change can't be the fix.
+   - CPU throttling (to 12×) and delayed frames (to 150 ms) never failed it.
+   - A Docker network flapped during the runs aborts the page's loopback requests
+     (`ERR_NETWORK_CHANGED`) and fails a run at load. This test makes no request during its
+     drag, though, so that doesn't explain it.
+   - The spec now waits for still tiles before aiming, and asserts that the press is the
+     module's and that a connect drag starts. No assertion was weakened. It passed 15/15.
+
+**Checks.**
+
+- `pnpm check` exited 0: **754 tests in 104 files** (+6); lint shows only the existing info.
+- **E2E: 80 passed (5.5 m)** on the first full run. `jeeves_e2e` holds only its TinyURL project.
+  A leaked "E2E YouTube v2 rebuild" from my contaminated load run was deleted through the API.
+- Web build passed (the existing chunk-size advisory).
+- `pnpm eval:chat` is deterministic. The V3-10 recorded report replays identically (21 cases).
+- **Load runs:** the first was contaminated by my own edits (Vite reloaded the heavy builds'
+  pages), but its 12 dot runs passed. The clean rerun passed 15/15: the dot file's 3 tests ×3,
+  beside 3 v3-builds and 3 v2-rebuilds, with 3 workers (5.5 m).
+- **Browser:** my API 4480 on scratch `jeeves_v318` (now dropped), Vite 4490, both stopped.
+  The review pass and the out-of-range check passed 2/2 each, with no page or console error.
+
+**Gates (D2).**
+
+- `git diff d94b13a -- field-projects/youtube/v3/generated/` is empty.
+- The off pin passes after the intended update above. v1 is byte-identical.
+- Frozen v2: 72 files, 70 byte-identical to `generic-export.tar.gz`, and the manifest and report
+  are equal under `provenanceWithoutInventory`.
+- A fresh v3 export differs from `generated/` only in the two gap-6 files (and their manifest
+  lines). The report is equal without inventory.
+- `app/` is unchanged, so `source-loc-v2.json` stands and no new benchmark report was made.
+
+**Repository note.** The owner's commit `695cb93 add README updates` (20:41, pushed) also took
+part of this unit's work in progress:
+
+- the templates, the pin and `module-clients.test.ts`;
+- `design.ts`, `generation-resolver.ts` and `service.ts`;
+- the first versions of the tests and `studio-design-review.ts`;
+- `studio-settings.md` and the generator README;
+- my scratch `e2e/zz-v318-flake.spec.ts`.
+
+I didn't rewrite it. This unit's commit completes the work: a type fix in the review, the
+formatted tests, the dot spec, and the docs. It also deletes that scratch spec.
+
+**Docker.** I made one network of my own, `jeeves-v318-net`, and it is removed. The owner's 43
+containers (IDs, restart counts, start times, health), 18 volumes, 9 networks and 31 image rows
+match the record taken before the unit. 42 are healthy, and both edges answer 200.
+
+**For V3-19.**
+
+- **What I touched in chat:**
+  - `reviewDesign`'s generation finding for a process's own out-of-range setting now carries a
+    checked `edit` command;
+  - `getDesign.editableSettings` can now list a named control on an invalid design.
+  - No tool schema, prompt, pattern or provider changed, and the scripted arms and the recorded
+    report are unchanged.
+- **A seed:** a stored out-of-range D5 value now opens and is fixable, so V3-10's dropped
+  generation seed could come back as a review case (stored as legacy).
+- **The eval runner and providers:** untouched.
+- **Docker during e2e and evals:** keep it quiet. A network change aborts the browser's loopback
+  requests.
+
+The owner's uncommitted `.jeeves-feedback/`, `.docs/` Zone.Identifier files and the mode of
+`e2e-docker.sh` are untouched and unstaged.

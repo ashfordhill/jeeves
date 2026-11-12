@@ -225,7 +225,9 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
     const text = settingsOf(typed, "links-api");
     if (text) text.requestTimeoutMs = "slow";
     expect(() => parseStoredDesign(typed)).toThrow();
-    expect(() => parseStoredDesign({ ...valid, elements: [{ id: "Bad ID", name: "x" }] })).toThrow();
+    expect(() =>
+      parseStoredDesign({ ...valid, elements: [{ id: "Bad ID", name: "x" }] }),
+    ).toThrow();
     expect(parseStoredDesign(valid)).toEqual(valid);
   });
 
