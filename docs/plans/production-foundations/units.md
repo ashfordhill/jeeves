@@ -10,7 +10,7 @@ That agent does only its own unit on `main` in the primary checkout, commits it 
 | Phase | Units | What |
 | --- | --- | --- |
 | A. Docs | PF01, PF02 | Record the owner's goals; fix stale statements; current-state `PLAN.md` and generator READMEs |
-| B. Smaller surface | PF03–PF05 | Remove direct async links; retire the strict-contract surface from the web app and from chat |
+| B. Smaller surface | PF03–PF05 | Remove direct async links and direct calls to a worker; retire the strict-contract surface from the web app and from chat |
 | C. Sturdier templates | PF06–PF08 | Every failure is logged; the cache read recovers; one bad item never stops a process |
 | D. Regeneration | PF09, PF10 | Update an existing export in place and keep the application's own files |
 | E. Proof | PF11–PF13 | YouTube v4: v3 regenerated onto the new templates, then run with two copies and with faults |
@@ -25,7 +25,8 @@ The review (2026-11-12) found:
 3. Agent-facing docs contain stale statements.
 4. A strict-contract layer (units NC01–NC14) that no template uses fills chat's tools, a dialog
    and the docs.
-5. The canvas allows a dashed line straight between two services, which generates nothing.
+5. The canvas allows two links that generate nothing: a dashed line straight between two
+   services, and a direct call to a Worker, whose process has no HTTP listener.
 
 ## Decisions (owner, 2026-11-12)
 
@@ -404,10 +405,15 @@ The rest of this page is reference.
 
 ## Phase B — Smaller surface
 
-### PF03 — Remove direct async links (D2)
+### PF03 — Remove direct async links and direct calls to a worker (D2, D6)
 
-**Goal:** no line can be drawn or saved as asynchronous unless one end is a Queue or Topic tile.
+**Goal:** no line can be drawn or saved as asynchronous unless one end is a Queue or Topic tile,
+and a Worker is reached only from a Queue or Topic.
 **Checks:** check, e2e, build, evals, mouse. **Exported files this unit may change:** none.
+
+**Why the worker rule** (found while planning, after the decisions; it applies D6): a Worker's
+process has no HTTP listener, so a direct call to one generates a client that reaches nothing.
+No study, pinned fixture or field design has such a link.
 
 **Code, in `jeeves/packages/spec/src/studio-links.ts`:**
 
@@ -426,13 +432,37 @@ if (mode === "async" && (role === "application" || role === "external"))
   return `A link to ${noun(target)} is a direct call. To hand work off without waiting, put a queue or topic between them.`;
 ```
 
+5. Directly after the `roleKinds` constant, add:
+
+```ts
+/** Application kinds another tile can call directly. A worker (and the older Notifications
+ * kind) answers no requests: it takes its work only from a queue or topic. */
+const callableKinds: readonly StudioKind[] = applicationKinds.filter(
+  (kind) => kind !== "worker" && kind !== "notification",
+);
+```
+
+6. In `studioLinkRules`, add `targets: callableKinds,` to three rows: `application →
+   application`, `external → application` and `cdn → application`. Leave `queue → application`
+   as it is, so a queue still feeds a worker.
+7. In `pairRefusal`, directly after the `browser` check, add:
+
+```ts
+if (target === "worker" || target === "notification")
+  return `${Noun(target)} takes its work from a queue or topic. Put one between them.`;
+```
+
 Change nothing else in the spec's logic. In `studio-design-review.ts` change only the header
 comment that says a dashed line between applications is accepted: it is now flagged.
 
 **What must be true afterwards** (these follow from the change; don't write code for them):
 
 - `linkTiles` or `addTile` with `link: "async"` between two services is refused with the
-  sentence above.
+  sentence in step 4.
+- `linkTiles` or `addTile` from a service, an external API or a CDN straight to a Worker is
+  refused with the sentence in step 7. After a Queue or Topic, a Worker is still offered.
+- A stored design with a direct link into a Worker still opens and reports it as
+  `LANE_INVALID`.
 - A stored design that has such a link still opens. `validateDesign` reports it as
   `LANE_INVALID` with that sentence, and `designReview` reports a `line-style` finding whose
   commands redraw it.
@@ -446,7 +476,12 @@ comment that says a dashed line between applications is accepted: it is now flag
      `studioLinkRefusal("service", "external-api", "async")` and
      `studioLinkRefusal("external-api", "service", "async")` each equal the sentence, with
      `a service`, `an external API` and `a service` as the noun.
-  2. `studioLinkRule("service", "worker")?.modes` equals `["sync"]`.
+  2. `studioLinkRule("service", "service")?.modes` equals `["sync"]`;
+     `studioLinkRule("queue", "worker")?.modes` equals `["async"]`;
+     `studioLinkRule("service", "worker")`, `studioLinkRule("external-api", "worker")` and
+     `studioLinkRule("cdn", "worker")` are `undefined`; and
+     `studioLinkRefusal("service", "worker")` equals
+     `A worker takes its work from a queue or topic. Put one between them.`
   3. On the TinyURL study (`studio-tinyurl`), `planRemoveTile` for its queue adds no link from
      the queue's publisher to its consumer and lists the consumer among the tiles to remove.
   4. A design with one service-to-service connection whose `planned.interaction` is
@@ -457,9 +492,17 @@ comment that says a dashed line between applications is accepted: it is now flag
   `grep -rln "async" jeeves/packages/spec/src/*.test.ts jeeves/packages/spec/src/fixtures/*.test.ts jeeves/apps/server/src --include=*.test.ts`
   and run the suite. A test of a restitched async link after removing a queue now expects the
   consumer to be removed with it.
+- Update every existing test whose design links a service, an external API or a CDN straight
+  to a Worker: put a Queue between them in that test's design
+  (`grep -rln 'kind: "worker"' jeeves/packages/spec/src jeeves/apps/server/src jeeves/apps/web/e2e`
+  lists the candidates; change only the ones that fail).
 
 **Docs.**
 
+- `jeeves/CATALOG.md`, link table: the three rows `application → application`,
+  `external-api → application` and `cdn → application` say `(not a worker)` after their target.
+  After the paragraph that begins `So the user reaches a store`, add:
+  `A Worker is reached only from a Queue or Topic: its process answers no requests.`
 - `jeeves/CATALOG.md`, link table: the Modes cell of the three rows becomes `sync`. Replace the
   sentence that begins `Application → application, application → external API and external
   API → application still allow async` (it ends `for its channel.`) with:
@@ -475,12 +518,15 @@ comment that says a dashed line between applications is accepted: it is now flag
   `A dashed line between two services or to an external API is flagged too.`
 
 **Mouse check:** on a blank project add a Service after the Produce action, then a second
-Service after it from the link fan: the line between them is solid. On a new TinyURL study the
-lines into and out of its queue are dashed and the legend shows Async.
+Service after it from the link fan: the line between them is solid. Open the second Service's
+link fan: Worker service is greyed, and its reason contains `takes its work from a queue or
+topic`. Add a Queue after that Service, then a Worker after the Queue: both lines are dashed.
+On a new TinyURL study the lines into and out of its queue are dashed and the legend shows
+Async.
 
 **Done when:** `grep -n "either" jeeves/packages/spec/src/studio-links.ts` prints nothing and all
 five checks pass.
-**Commit:** `PF03: remove direct async links`.
+**Commit:** `PF03: remove direct async links and direct calls to a worker`.
 
 ### PF04 — Retire the strict-contract surface: web app and default study (D3, D4)
 
