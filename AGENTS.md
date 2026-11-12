@@ -7,6 +7,29 @@ Keep studio, `jeeves-generator/` and independently runnable field apps separate.
 experimental; heavy certification is deferred while field projects inform their design.
 That deferral does not remove the existing Jeeves regression checks below.
 
+## Goals and scope (owner, 2026-11-12)
+
+- **What Jeeves is for.** One person designs a web application's backend as a diagram. Jeeves
+  generates the deterministic part of the code from it: the target is 60% or more of backend
+  source, across different applications. People or agents write the rest in the hook and stub
+  files the export leaves for them.
+- **The diagram is the source of truth for generated files.** Never edit a generated file by
+  hand: a needed edit is a template gap, recorded in [template gaps](docs/template-gaps.md). Hook
+  files, stub bodies and product SQL are the application's own and need no diagram change.
+- **Only what generates is offered.** The canvas and chat offer only tiles, links, modules and
+  settings that an installed template or a stub generates. Two templates that can't work
+  together are refused when they are connected, with the reason. Application-specific code is a
+  stub.
+- **Production architecture, not deployment.** Generated code must be correct when several
+  copies of a process run and when a store or the broker fails and comes back. How many copies
+  run, and on what infrastructure, is deployment and is outside Jeeves.
+- **Outside Jeeves:** the UI of generated applications; sizing, cloud provisioning and
+  deployment; features that only review or analyse diagrams (a separate companion tool).
+- **Field projects** (YouTube first) exist to grow and test the template library. They need core
+  features only, and none is a product to preserve.
+- **The owner is the only user.** Don't add onboarding, multi-user or audit features.
+- **Words:** see the [glossary](docs/glossary.md).
+
 ## How work happens
 
 - **The root `README.md` is owner-maintained. Agents must never edit it during implementation,
@@ -73,8 +96,8 @@ database when their work calls for it.
   user decision. Keep internal generation metadata/defaults out of diagrams and forms; do not create
   an Advanced dumping ground. Mouse, chat and generation must share supported choices.
 - Prefer generic template mechanisms and reusable feature packs across field projects and other
-  apps. Keep product policy in narrow adapters. For YouTube v2, follow the assigned unit in the
-  [build plan](docs/plans/reliable-foundations/youtube-v2-plan.md); do not execute later units.
+  apps. Keep product policy in narrow adapters. Follow the assigned unit in the active plan,
+  [production foundations](docs/plans/production-foundations/units.md); do not execute later units.
 - Keep design intent, template availability and verification evidence distinct.
 - Field-project LOC benchmarks measure **backend code only**. Exclude all UI/frontend code,
   including UI under `src/`, until the owner expands the measure after adding a UI builder.

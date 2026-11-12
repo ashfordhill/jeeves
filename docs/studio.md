@@ -1316,9 +1316,9 @@ and all twenty components, with nothing omitted and no findings.
   ([Layout](#layout-and-navigation)), and the worker is a later one. The same rule loops an open
   module's line a long way round.
 - An unload flush is an attempt, not a durability guarantee.
-- Live chat quality with the lane-canvas instructions has not been evaluated; only the scripted
-  test model has run. Selecting an action sends chat no identity, so "rename this" with an action
-  selected needs the lane or the name in words.
+- Live chat quality was measured on four models in V3-19 ([results](evals/v3-19/README.md)).
+  Selecting an action sends chat no identity, so "rename this" with an action selected needs the
+  lane or the name in words.
 - A design stored with an entry straight into storage or an external API (YouTube 1.0.0 had one)
   loads unchanged and reports it ("Produce can't link to Original videos; an action reaches a
   service (not a worker), an API or the CDN."). Until that entry is removed (select its line and

@@ -28,7 +28,7 @@ ones that shape every pattern below:
   (`studioStoreAccess`). The canvas derives this, so it can't show a second writer: a second
   writer is drawn as a reader.
 - No loops: a line never runs back to an earlier tile.
-- Caps (`laneLimits`): 4 links out of a tile, 4 entries per action.
+- Caps (`laneLimits`): 5 links out of a tile, 4 entries per action.
 
 Notation, as in the [studio guide](studio.md): `→` a request, `⇢` asynchronous, `⇣`/`⇡` an entry
 from the download or upload action. "(owner)" marks a store's one writer. On the canvas a direct
@@ -54,8 +54,8 @@ name, so names leave the kind out.
 | Search cluster (Elasticsearch, OpenSearch) | Database (`search`) | A derived index, never the source of truth. |
 | Cache (Redis, Memcached) | Cache (`cache`) | Its owner is whoever writes it (pattern 4). |
 | Sign-in, OAuth, user service | Service (`identity`) | Other services verify its tokens (`auth-guard` module); no line to it. |
-| Payment provider | Service (`billing`) | Stripe is its provider, not an External tile. |
-| Email | Service (`notification`) | Resend or SES as its provider. |
+| Payment provider | Service (`service`) and External (`external-api`) | A Service that owns its payment records and calls the provider as an External API. New Billing tiles are no longer offered. |
+| Email | Service (`service`) and External (`external-api`) | A Service that calls the email provider as an External API. New Notifications tiles are no longer offered. |
 | Any other third party | External (`external-api`) | Named for the provider. |
 | DAG scheduler, resource manager, preprocessor, orchestrator | modules of the worker | Inside the worker that runs the work (gaps). |
 
@@ -505,10 +505,10 @@ the other lane if it produces rather than consumes.
 ### A line that comes back reads as a box
 
 **Looks like:** a store's later user, drawn as a U ([guide](studio.md#layout-and-navigation)),
-wraps the tiles between it and the store in a rectangle. Lines have no arrowheads and a pipeline's
-lines are all dashed, so a dashed U reads as a group outline. YouTube 2.1 (SD04, at 100%): the
-View counter's write wraps View events and the View counter; the Transcoder's read and write wrap
-Upload jobs and the Transcoder; the Completion handler's and the Search indexer's writes nest
+wraps the tiles between it and the store in a rectangle. Lines have arrowheads, but a U still
+wraps the tiles between its ends, so it can read as a group outline. YouTube 2.1 (SD04, at 100%):
+the View counter's write wraps View events and the View counter; the Transcoder's read and write
+wrap Upload jobs and the Transcoder; the Completion handler's and the Search indexer's writes nest
 round the Search index.
 **Why wrong:** the reader sees a group, not a line from a worker to its store, and can't tell
 which tile the U leaves from without selecting it.

@@ -10634,3 +10634,31 @@ only the `jeeves_e2e` database and ports 4301/4311; no Docker stack was started.
 
 **For the next unit.** PF01 is docs only and unchanged by the review. PF07 and PF09–PF10 are the
 units with new logic that no trial run covered; PF12 leaves its Docker stack running for PF13.
+
+## 2026-11-12 — PF01: Record the owner's goals and fix stale statements
+
+**What changed.**
+
+- `AGENTS.md`: the owner's "Goals and scope (owner, 2026-11-12)" section, inserted between the
+  opening paragraph and `## How work happens`, exactly as the plan gives it; the Conventions
+  sentence that pointed at the YouTube v2 build plan now points at the active plan,
+  [production foundations](plans/production-foundations/units.md).
+- `docs/design-playbook.md`: caps are 5 links out of a tile; the Payment provider and Email rows
+  map to a Service plus an External API (new Billing and Notifications tiles are no longer
+  offered); the U smell says lines have arrowheads but a U can still read as a group outline.
+- `docs/studio.md` (Limits): live chat quality was measured on four models in V3-19.
+- `field-projects/youtube/v3/notes/review-pack.md`: six scenarios in full, not seven.
+- New `docs/glossary.md` and `docs/template-gaps.md`, exactly as the plan gives them.
+- `docs/HUMAN_FEEDBACK.md`: a resolution line on the 2026-11-12 entry.
+
+**Checks.** None required (docs only), and none run. The two new files and the inserted
+`AGENTS.md` section were compared byte for byte with the plan's blocks (all equal);
+`grep -n "YouTube v2, follow" AGENTS.md` prints nothing (also with `command grep`). Every new
+link resolves, including `../field-projects/youtube/v3/notes/README.md#template-gaps-found-while-completing-app`.
+**Differences from the plan.** The replacement Conventions sentence and the playbook's U
+paragraph are wrapped at about 100 columns like their neighbours; the words are the plan's.
+**Noticed.** `AGENTS.md`'s opening paragraph still links the reliable-foundations YouTube
+field-project plan as the owner's choice of same-repository generation (true as a record, not
+changed).
+**For the next unit.** PF02 next. `docs/glossary.md` and `docs/template-gaps.md` now exist for
+its links.

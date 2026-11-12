@@ -4,7 +4,7 @@
 `generated/` (V3-12), and that export was completed in a copy, `app/` (V3-13 to V3-16).
 
 V3-17 ran `app/` from a fresh copy outside the checkout and observed S01–S10 by mouse and by API:
-**seven scenarios in full, S05 except human listening, and S02, S04 and S08 in part.** All three
+**six scenarios in full, S05 except human listening, and S02, S04 and S08 in part.** All three
 partial rows have one cause: the upload's status can't show the video's state (template gap 1).
 
 The backend is **91.75% template source**: 6,184 of 6,740 lines. The other 556 lines are the
