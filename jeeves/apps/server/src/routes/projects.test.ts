@@ -158,6 +158,51 @@ describe("projects", () => {
     const res = await client.call("GET", `/projects/${id}/design`);
     expect(res.status).toBe(500);
   });
+
+  it("opens a stored design whose saved setting is out of bounds, and an edit puts it right", async () => {
+    // An older saved revision, as a bound tightened since or a hand-made document could leave it:
+    // it opens with that value's finding, so its control can fix it (V3-18).
+    const id = await client.createProject("Old bound");
+    expect((await client.addService(id, "links")).status).toBe(200);
+    const valid = (await client.design(id)).design;
+    const old = structuredClone(valid) as DesignDocument;
+    old.revision = 2;
+    const settings = old.architecture?.studio?.elements[0]?.settings as Record<string, unknown>;
+    settings.requestTimeoutMs = 99999999;
+    await db.insert(designRevisions).values({ projectId: id, revision: 2, document: old, findings: [] });
+    await db.update(projects).set({ revision: 2 }).where(eq(projects.id, id));
+    const opened = await client.design(id);
+    expect(
+      (opened.design.architecture?.studio?.elements[0]?.settings as Record<string, unknown>)
+        .requestTimeoutMs,
+    ).toBe(99999999);
+    expect(opened.findings).toContainEqual(
+      expect.objectContaining({
+        code: "CONFIG_INVALID",
+        message: "Too big: expected number to be <=300000",
+        target: { path: ["architecture", "studio", "elements", 0, "settings", "requestTimeoutMs"] },
+      }),
+    );
+    // The edit the Options form sends, with a value in bounds, is saved.
+    const fixed = await client.edit(
+      id,
+      2,
+      buildStudioCommand(opened.design, {
+        type: "edit",
+        element: "links",
+        settings: { ...settings, requestTimeoutMs: 5000 } as never,
+      }).ops,
+    );
+    expect(fixed.status).toBe(200);
+    expect(fixed.body.findings).toEqual([]);
+    // Undo puts the old value back, and it still opens.
+    const undone = await client.undo(id, 3);
+    expect(undone.status).toBe(200);
+    expect(
+      (undone.body.design.architecture.studio.elements[0].settings as Record<string, unknown>)
+        .requestTimeoutMs,
+    ).toBe(99999999);
+  });
 });
 
 describe("operations", () => {

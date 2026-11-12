@@ -74,6 +74,54 @@ export const designSchema = z.discriminatedUnion("schemaVersion", [designV2Schem
 export type DesignDocument = z.output<typeof designSchema>;
 export type DesignDocumentInput = z.input<typeof designSchema>;
 
+type Path = readonly PropertyKey[];
+/** A saved studio setting's number outside its bound: `architecture.studio.<elements|components>.<i>.settings.<key>`. */
+function settingBound(issue: z.core.$ZodIssue) {
+  const [architecture, studio, list, index, settings, key, ...rest] = issue.path;
+  return (
+    (issue.code === "too_big" || issue.code === "too_small") &&
+    issue.origin === "number" &&
+    architecture === "architecture" &&
+    studio === "studio" &&
+    (list === "elements" || list === "components") &&
+    typeof index === "number" &&
+    settings === "settings" &&
+    typeof key === "string" &&
+    rest.length === 0
+  );
+}
+const at = (value: unknown, path: Path) =>
+  path.reduce<unknown>((item, key) => (item as Record<PropertyKey, unknown>)?.[key], value);
+function put(value: unknown, path: Path, next: unknown) {
+  const parent = at(value, path.slice(0, -1)) as Record<PropertyKey, unknown>;
+  parent[path.at(-1) as PropertyKey] = next;
+}
+
+/**
+ * Reads a stored document. A saved setting's number outside its bound (an older design, or a
+ * bound tightened since) is kept as it was, so the design still opens, with that value's
+ * `CONFIG_INVALID` finding, and its own control can put it right (V3-18). Any other problem
+ * fails exactly as `designSchema.parse` does.
+ */
+export function parseStoredDesign(document: unknown): DesignDocument {
+  const first = designSchema.safeParse(document);
+  if (first.success) return first.data;
+  if (!first.error.issues.every(settingBound)) throw first.error;
+  // Parse with each such value at its bound, then put the saved value back.
+  const placeholder = structuredClone(document);
+  for (const issue of first.error.issues)
+    if (issue.code === "too_big" || issue.code === "too_small")
+      put(
+        placeholder,
+        issue.path,
+        Number(issue.code === "too_big" ? issue.maximum : issue.minimum) +
+          (issue.inclusive === false ? (issue.code === "too_big" ? -1 : 1) : 0),
+      );
+  const parsed = designSchema.parse(placeholder);
+  for (const issue of first.error.issues) put(parsed, issue.path, at(document, issue.path));
+  return parsed;
+}
+
 export function emptyDesign(): DesignDocument {
   return { schemaVersion: 2, revision: 0, elements: [], connections: [] };
 }

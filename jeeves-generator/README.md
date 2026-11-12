@@ -473,25 +473,25 @@ Each writer's row in `report.modules` gains `sql` (`[{database, file, schema}]`,
 it writes), and a stub store's `provisioned` text says `SELECT on published` and names the
 stub's own schema.
 
-**Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind
-the stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
+**Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind the
+stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
 `databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
-`execute`), `queuePublisher` (publisher confirms; each message gets a fresh ID), `cacheClient`
-(`get`, `set` with a TTL, `delete`; it reconnects in the background), `objectClient` (`get`,
-`undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
-`httpTarget` (another tile's process at `http://app-<id>:3000`, with no probe or `depends_on`).
-Each client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the
-broker and a confirm channel, `PING`, `HeadBucket` (or, for a write-only key, opening and
-aborting a multipart upload) and cluster health. Each logs one JSON line
+`execute`), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
+names one, as a deduplicating consumer such as the event counter needs, else a fresh ID),
+`cacheClient` (`get`, `set` with a TTL, `delete`; it reconnects in the background), `objectClient`
+(`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
+`httpTarget` (another tile's process at `http://app-<id>:3000`, with no probe or `depends_on`). Each
+client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
+confirm channel, `PING`, `HeadBucket` (or, for a write-only key, opening and aborting a multipart
+upload) and cluster health. Each logs one JSON line
 (`{"event":"probe","tile","client","kind","check","result":"ok"}`); a failure logs the error and
-fails startup, so a healthy process has reached every store it uses with its own credentials.
-The process file builds one client per store before its loops subscribe and its service listens,
-then each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls
-the module it names (a route stub with the caller's input as its request, a library stub with
-none). What isn't provisioned (another provider, an Identity, a CDN or External API, a tile with
-no process, a template's part) is `unavailable(...)`: every call answers "Not implemented:
-<tile> for <module> (<why>)". A stub's own "Not implemented" still answers 501 or goes to
-`.failed`.
+fails startup, so a healthy process has reached every store it uses with its own credentials. The
+process file builds one client per store before its loops subscribe and its service listens, then
+each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls the module
+it names (a route stub with the caller's input as its request, a library stub with none). What isn't
+provisioned (another provider, an Identity, a CDN or External API, a tile with no process, a
+template's part) is `unavailable(...)`: every call answers "Not implemented: <tile> for <module>
+(<why>)". A stub's own "Not implemented" still answers 501 or goes to `.failed`.
 
 **Credentials** are generated at first run, as for templates: `setup.mjs` writes the
 passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import { testInstalledSupport as installed } from "./fixtures/installed-support.ts";
+import { stubStackDesign } from "./fixtures/stub-stack.ts";
 import { runStudioCommands } from "./fixtures/v2-modules.ts";
 import { moduleStatus } from "./module-status.ts";
 import {
@@ -164,6 +165,29 @@ describe("the design review chat runs after each change (V3-09)", () => {
       /^Video details cache in Watch API: Installed template has no actual output consumer/,
     );
     expect(findings(design, "generation")).toEqual([]);
+  });
+
+  it("offers to clear a process's own out-of-range setting, which its control can reach (V3-18)", () => {
+    // The stub stack's Links API runs only stubs, so its process consumes its limits itself.
+    const valid = runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]);
+    const tile = valid.architecture?.studio?.elements.find((item) => item.element === "links-api");
+    if (!tile) throw new Error("No Links API.");
+    // An older saved revision with an out-of-range Request timeout, as V3-10 found.
+    const design = edited(valid, (draft) => {
+      const settings = draft.architecture?.studio?.elements.find(
+        (item) => item.element === tile.element,
+      )?.settings as Record<string, unknown>;
+      settings.requestTimeoutMs = 99999999;
+    });
+    const [finding] = findings(design, "generation");
+    expect(finding).toMatchObject({
+      tile: tile.element,
+      message: expect.stringContaining("Too big"),
+      fix: "Clear it, and the process runs 1000; or set it from 1 to 300000.",
+    });
+    const fixed = fix(design, finding);
+    expect(findings(fixed, "generation")).toEqual([]);
+    expect(fixed.architecture?.studio?.elements).toEqual(valid.architecture?.studio?.elements);
   });
 
   it("finds a store with no writer: an ownerless one (fixed by choosing its owner) and one modules only read", () => {

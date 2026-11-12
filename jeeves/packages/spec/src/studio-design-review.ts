@@ -22,7 +22,10 @@ import type { DesignDocument } from "./design.ts";
 import type { Finding } from "./findings.ts";
 import { designGeneration, generationHost } from "./generation.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
-import type { GenerationInstalledSupport } from "./generation-support.ts";
+import {
+  type GenerationInstalledSupport,
+  generationProcessSettings,
+} from "./generation-support.ts";
 import { guardSignIn, hasModuleSelections } from "./module-generation.ts";
 import { type ModuleStatus, moduleStatusDetails } from "./module-status.ts";
 import { designOwnership } from "./ownership.ts";
@@ -39,7 +42,7 @@ import {
   studioLinkRule,
   studioStoreAccess,
 } from "./studio-links.ts";
-import type { StudioKind } from "./studio-model.ts";
+import type { StudioKind, StudioSettings } from "./studio-model.ts";
 import { moduleLinkSlot, moduleSlots, newModuleIdentity } from "./studio-modules.ts";
 import {
   buildStudioCommand,
@@ -215,7 +218,8 @@ export function designReview(
   // Generation: the resolver's findings, except those a Refused module already names.
   if (installed) {
     const named = new Set(details.flatMap((item) => item.blocking).map((item) => key(item)));
-    for (const item of resolveGeneration(design, installed).findings) {
+    const resolved = resolveGeneration(design, installed);
+    for (const item of resolved.findings) {
       if (named.has(key(item))) continue;
       const path = item.target.path ?? [];
       const selection =
@@ -235,14 +239,42 @@ export function designReview(
         (path[0] === "architecture" && path[2] === "elements" && typeof path[3] === "number"
           ? studio.elements[path[3]]?.element
           : undefined);
-      add({
+      const finding: DesignReviewFinding = {
         check: "generation",
         severity: "fix",
         ...(tile && { tile }),
         ...(module && { module: module.id }),
         message: `${module ? `${module.name} in ${name(module.host)}` : tile ? name(tile) : "Generation"}: ${item.message}`,
         fix: "Change the saved value it names, or remove what it refers to; Generate project shows the same finding.",
-      });
+      };
+      // A process's own setting with a bad saved value (an older design): its control stays
+      // shown, and clearing it runs the process's initial value (V3-18).
+      const control = resolved.settings.find(
+        (decision) =>
+          decision.normalControl &&
+          decision.process &&
+          JSON.stringify(decision.sourcePaths[0]) === JSON.stringify(path),
+      );
+      const setting = control?.input.replace(/^process\./, "");
+      const rule = Object.values(generationProcessSettings)
+        .flat()
+        .find((entry) => entry.setting === setting);
+      const binding = studio.elements.find((entry) => entry.element === control?.process);
+      if (!binding || !setting || !rule) {
+        add(finding);
+        continue;
+      }
+      const settings = { ...binding.settings } as Record<string, unknown>;
+      delete settings[setting];
+      add(
+        withCommands(
+          {
+            ...finding,
+            fix: `Clear it, and the process runs ${rule.initial}; or set it from ${rule.supported.integer.min} to ${rule.supported.integer.max}.`,
+          },
+          [{ type: "edit", element: binding.element, settings: settings as StudioSettings }],
+        ),
+      );
     }
   }
 

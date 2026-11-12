@@ -229,6 +229,31 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     ]);
   });
 
+  it("sends the module's own message ID when it names one, so a repeat is the same message", async () => {
+    // YouTube v3 template gap 6: an event counter's receipt is keyed on the message ID, so a
+    // retried play must go out as the same message.
+    const views = await clients.queuePublisher(testScope(), probe, {
+      queue: "view-events",
+      mode: "topic",
+    });
+    const play = new TextEncoder().encode("play");
+    await views.publish(play, { messageId: "event-1" });
+    await views.publish(play, { messageId: "event-1" });
+    await views.publish(play, { key: "ignored" });
+    const sent = fake.calls.filter((call) => call[0] === "publish");
+    expect(sent.slice(0, 2)).toEqual([
+      ["publish", "play", "event-1"],
+      ["publish", "play", "event-1"],
+    ]);
+    expect(sent[2]?.[2]).toMatch(/^[0-9a-f-]{36}$/);
+    const dependencies = new TextDecoder().decode(
+      bundle.files.find((file) => file.path === "src/modules/dependencies.ts")?.bytes,
+    );
+    expect(dependencies).toContain(
+      "publish(message: Uint8Array, options?: { key?: string; messageId?: string }): Promise<void>;",
+    );
+  });
+
   it("uses a cache with its password, after PING", async () => {
     const cache = await clients.cacheClient(testScope(), probe, { cache: "links-cache" });
     expect(fake.calls.slice(0, 4)).toEqual([

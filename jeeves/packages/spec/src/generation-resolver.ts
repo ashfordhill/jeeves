@@ -876,11 +876,13 @@ export function resolveGeneration(
                 ? "supported"
                 : "fixed",
         ...(rule.userNeed && { userNeed: rule.userNeed }),
+        // An unsupported saved value keeps its control: the control is how it is put right, and
+        // the edit command still accepts only a supported value (V3-18).
         normalControl:
           !!rule.userNeed &&
           !!consumer &&
           runtimeInstalled &&
-          supported &&
+          value !== undefined &&
           !!hostBinding &&
           studioDefinitionStatus(hostBinding.definition, hostBinding.settings.kind) === "known",
       };
@@ -1092,6 +1094,9 @@ export function resolveGeneration(
   });
   // A structurally invalid model must never reach a renderer. Unsupported/uninstalled source
   // can still yield a partial diagnostic model, but complete stays false.
+  const processes = generation.processes
+    ? normalizedProcesses(design, normalized, settings)
+    : undefined;
   const model: NormalizedGeneration | undefined = findings.some(isStructural)
     ? undefined
     : {
@@ -1100,23 +1105,28 @@ export function resolveGeneration(
         ...(generation.preset && { preset: structuredClone(generation.preset) }),
         selections: normalized,
         localAdapterTreatments,
-        ...(generation.processes && {
-          processes: normalizedProcesses(design, normalized, settings),
-        }),
+        ...(processes && { processes }),
       };
-  if (model?.processes) {
+  if (processes)
     settings.push(
-      ...processSettings(
-        design,
-        model.processes,
-        settings,
-        runtimeInstalled && !!installed.processes,
-      ),
+      ...processSettings(design, processes, settings, runtimeInstalled && !!installed.processes),
     );
+  if (model?.processes) {
     const delivery = normalizedDelivery(design);
     if (delivery.length) model.delivery = delivery;
   }
-  if (!model) for (const decision of settings) decision.normalControl = false;
+  // A refused model hides every control, except one whose own saved value a finding names (out of
+  // range, unsupported, or disagreeing with its mirror): that control is the way to fix it, by
+  // mouse and by chat (V3-18). Everything else waits until the model resolves.
+  if (!model) {
+    const named = new Set(
+      findings.flatMap((item) => (item.target.path ? [JSON.stringify(item.target.path)] : [])),
+    );
+    for (const decision of settings)
+      decision.normalControl =
+        decision.normalControl &&
+        decision.sourcePaths.some((path) => named.has(JSON.stringify(path)));
+  }
   return freezeRecord({
     model,
     findings,
@@ -1167,7 +1177,7 @@ function processSettings(
             supported: rule.supported,
             consumer: `tile-process.${rule.setting}`,
             outputPaths: [`src/processes/${process.tile}.ts`],
-            status: "supported",
+            status: supports(rule.supported, value.value) ? "supported" : "unsupported",
             userNeed: rule.userNeed,
             normalControl:
               installed &&

@@ -23,10 +23,16 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 | Statement timeout | SQL client of a Data access or Lifecycle writer | 1–300000 ms |
 
 Controls additionally require an authoritative saved source field and the installed template's
-matching consumer/output paths. TTL is edited on the cache tile; its traced reader mirror changes
-in the same atomic command. Worker concurrency mirrors behave the same way. A mirror has no second
-editor. SQL settings are edited on the module that reads that database for the template: its
-bound Data access, or the Lifecycle writer, which is its lifecycle template's own SQL source. Normal controls never expose
+matching consumer/output paths. A saved value outside its bound or its template's supported values
+(an older or hand-made design) keeps its own control, showing the value and the reason, so the
+Options form or chat's `edit` puts it right; only a supported value is accepted. While it is
+invalid, Generate project refuses and the design's other controls wait. Chat's review offers to
+clear a process's own setting (the process then runs its initial value).
+
+TTL is edited on the cache tile; its traced reader mirror changes in the same atomic command. Worker
+concurrency mirrors behave the same way. A mirror has no second editor. SQL settings are edited on
+the module that reads that database for the template: its bound Data access, or the Lifecycle
+writer, which is its lifecycle template's own SQL source. Normal controls never expose
 weights/mappings, IDs, exact versions, grants, arbitrary config, L1/negative caching, Go/tus/cloud
 alternatives, provider choices or media internals. Historical modules remain inspectable and
 renameable; arbitrary module/kind replacement requires explicit custom source work.

@@ -1,7 +1,65 @@
-# Jeeves
+# Jeeves <!-- omit from toc -->
 
-## V2
+- [11/11/2026](#11112026)
+  - [YouTube V3](#youtube-v3)
+  - [Birds-Eye Viewership](#birds-eye-viewership)
+  - [Measurements](#measurements)
+  - [UI Improvements](#ui-improvements)
+    - [Simple vs Detailed view](#simple-vs-detailed-view)
+- [V1](#v1)
+  - [Strategy](#strategy)
+    - [YouTube V2 (11/9/2026)](#youtube-v2-1192026)
+    - [YouTube V1](#youtube-v1)
+      - [Diagrams](#diagrams)
+      - [Features](#features)
+      - [Missing features:](#missing-features)
+      - [Lines of Code](#lines-of-code)
+- [Archive](#archive)
+  - [V0](#v0)
+    - [Notes](#notes)
+  - [Mattermost example](#mattermost-example)
+    - [C1](#c1)
+    - [C2](#c2)
+    - [C3](#c3)
+  - [Planned Features](#planned-features)
+  - [AI methods](#ai-methods)
+  - [Challenges](#challenges)
+  - [UI/UX of generated apps](#uiux-of-generated-apps)
 
+
+## 11/11/2026
+
+### YouTube V3
+
+Added sign in/identity aspect for viewers, not just publishers. This involved a favorites addition as well. Thought it would be good to address this issue where only the producers had an 'identity'. That'll be an issue for the 'Marketplace' application where there will be buyers and sellers.
+
+### Birds-Eye Viewership            
+
+Ideally you wouldn't craft a diagram from scratch - even if you probably had superior system design skills, it would be difficult to think of the path for every little piece without investing a significant amount of time.
+
+**It'd probably be easier to review an agent's attempt at diagramming a detailed prompt from the user rather than have a user build a system diagram from scratch**. Then you can find issues or missing details and have the agent fix it. You could also remove or add things yourself and have the agent calculate judgement or suggestions based on your actions.
+
+I'm not sure that I like the idea of all these paths touching 1 Tile, the video metadata database.  
+
+<p align="center"><img src=".docs/youtube-v3/metadata-lots-of-connections.gif" width="800"/></p>
+
+ 
+Is this a cause for concern? Software principles tell me yes. Maybe this is an issue. Maybe I'll ask an agent to investigate. Would I have been able to see this easily without diagrams or with narrow-scoped diagrams? **Visual representations of systems help find oversights, redundancy and design smells**. They can also provide an efficient way of getting a newcomer understand what they're walking into instead of throwing them a bunch of repositories and text.
+
+### Measurements
+
+I'll be relying on trialing multiple types of projects to be generated with Jeeves diagrams and utilizing the following measurements:
+
+- num tokens to get a YouTube clone via just prompting
+- num tokens get a YouTube clone with Jeeves generations + prompting
+  - Taking note of tokens used for Jeeves chat agent helping with diagramming
+
+The lines of code with Jeeves coverage is no longer an immediate concern so I won't bother looking at that, though I'll probably revisit the count at a later stage in the project:
+
+<p align="center"><img src=".docs/youtube-v2/loc-metrics.png" width="400"/></p>
+
+
+---
 
 ### UI Improvements
 
@@ -12,8 +70,6 @@
 Now can view modules inside of a tile/template piece. 
 
 Detailed view also shows connections/arrows at a more granular level to see the flow a bit better.
-
-
 
 ## V1
 
@@ -70,17 +126,6 @@ Then I need to stress test traffic to make sure these are fairly robust - enough
 There will be more projects to test. I would like to build personal projects qrwty and dropshipping once my case studies look solid.
 
 Creating UI templates is something I will look into - there are existing tools but I would prefer a custom style. For the copycat projects like YouTube I want to see if I can get an agent to make a UI look like YouTube.
-
-**Future Benchmarks**
-
-I want to test # tokens used:
-
-- To get a YouTube clone via just prompting
-- To get a YouTube clone with Jeeves generations + prompting
-
-I also want to see if there's any benefit as far as being able to use cheaper models.
-
-For less objective benchmarks I'll be making notes of the apps, reviewing their source code and finding bugs, then try to give a quality comparison. Though this is subjective, if there are substantial seeming differences then I think it's a useful metric.
 
 
 #### YouTube V1
@@ -148,7 +193,7 @@ By maintaining a diagram-based source of truth, we can reduce the amount of unpr
 
 ![](.docs/mvp-flow.gif)
 
-## Mattermost example
+### Mattermost example
 
 ```sh
 docker pull ghcr.io/ashfordhill/jeeves:latest
@@ -157,16 +202,16 @@ docker run --rm --name jeeves -p 4300:4300 ghcr.io/ashfordhill/jeeves:latest
 
 Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 
-### C1
+#### C1
 <p align="center"><img src=".docs/mattermost-c1.png" width="600"/></p>
 
-### C2
+#### C2
 <p align="center"><img src=".docs/mattermost-c2.png" width="600"/></p>
 
-### C3
+#### C3
 <p align="center"><img src=".docs/mattermost-c3.png" width="600"/></p>
 
-## Planned Features
+### Planned Features
 
 - A chat helper on the side to help guide C2 and C3 design decisions
 
@@ -181,7 +226,7 @@ Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 
 - Deployment target configurations (cloud or local, containerization, Kubernetes)
 
-## AI methods
+### AI methods
 
 - I have access to about 70k of GPT tokens through a friend, which enables me to plan on Astra 6 max without worrying about cost, at least until December 31st. It still always falls short of executing very large goals and needs hammering.
   - Code generation handled by **Sol 6.1** (`codex CLI`) and **DeepSeek v4.1 Flash 1017** (`opencode`) and **Opus 5.5** (`claude CLI`), though sometimes I will use Fable or Astra for a bit of code generation out of curiosity. So far I don't think it's worth the higher cost; leave as planning models.
@@ -194,7 +239,7 @@ Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 
 - For UI-based work, I tell the agent to stop fussing about unit and Playwright tests until the future. For the most part, even economic LLMs generate decent code that I'll manually evaluate from a UI/UX POV. Agents seem to spend an awful lot of time generating unit tests that don't provide a lot of value but end up eating into tokens and time. I don't need a unit test to confirm a button is clicking - I'm gonna assume the LLM can take care of a simple task like that. I also have grown to really despise unit testing getting spammed everywhere.
 
-## Challenges
+### Challenges
 
 - My own limited system architecture knowledge. Ideally I would have decades of experience under my belt and be able to tell whether a design is 'good' from peeking at the diagrams, but I'm not there. Leaning on AI judgement more than I'd like to for some of this. Hoping to learn through this.
 
@@ -204,7 +249,7 @@ Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 
 - Jeeves is a really large scope project, though once the foundation is decent, extending the C2 and C3 component libraries with new pieces should hopefully not be too bad
 
-## UI/UX of generated apps
+### UI/UX of generated apps
 
 C4 modelling doesn't cover UI design; `'How does the page look? Where does the video player go? What are the page routes?'` It's still alright to vibe-code this for the most part, but getting a custom 'feel' of your own proprietary app requires a lot of prompt massaging since AI-generated web applications kind of all look the same after a while. 
 

@@ -3,12 +3,12 @@ import {
   type DesignDocument,
   designBlueprint,
   designBlueprintV3,
-  designSchema,
   emptyDesign,
   emptyLayout,
   type Finding,
   type LayoutDocument,
   type OperationInput,
+  parseStoredDesign,
   type Rekey,
   renamedIds,
   validateDesign,
@@ -255,7 +255,7 @@ export class DesignService {
 
       const snapshot = kind === "undo" ? target.before : target.after;
       const design: DesignDocument = {
-        ...designSchema.parse(snapshot),
+        ...parseStoredDesign(snapshot),
         revision: project.revision + 1,
       };
       // Findings are recomputed: validation may have changed since the snapshot was taken.
@@ -350,8 +350,9 @@ export class DesignService {
         ),
       );
     if (!row) throw new Error(`project ${project.id} has no revision ${project.revision}`);
-    // Only studio documents are stored; anything else fails loudly here.
-    const document = designSchema.parse(row.document);
+    // Only studio documents are stored; anything else fails loudly here. A saved setting's number
+    // outside its bound still opens, with its finding, so its control can put it right.
+    const document = parseStoredDesign(row.document);
     return { document, findings: this.findings(document) };
   }
 

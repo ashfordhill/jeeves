@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import type { DesignDocument } from "./design.ts";
-import { emptyDesign } from "./design.ts";
+import { designSchema, emptyDesign, parseStoredDesign } from "./design.ts";
 import { searchStackDesign } from "./fixtures/search-stack.ts";
 import { signInStackCommands } from "./fixtures/sign-in-stack.ts";
 import { stubStackDesign } from "./fixtures/stub-stack.ts";
@@ -153,6 +153,105 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
       "process.requestTimeoutMs",
       "process.concurrencyLimit",
     ]);
+  });
+
+  it("keeps an out-of-range value's own control, so mouse and chat can put it right (V3-18)", () => {
+    // An older saved revision whose Request timeout is out of range: the schema refuses it, so
+    // the resolver has no model. Before V3-18 that hid every control, this one included, and
+    // neither the Options form nor chat's edit could reach the value.
+    const valid = runStudioCommands(stubStackDesign(), [on]);
+    const design = structuredClone(valid);
+    const tile = settingsOf(design, "links-api");
+    if (!tile) throw new Error("No Links API.");
+    tile.requestTimeoutMs = 99999999;
+    const index = design.architecture?.studio?.elements.findIndex(
+      (row) => row.element === "links-api",
+    );
+    const path = ["architecture", "studio", "elements", index, "settings", "requestTimeoutMs"];
+    const resolved = resolveGeneration(design, installed);
+    expect(resolved.model).toBeUndefined();
+    expect(resolved.findings).toContainEqual(
+      expect.objectContaining({ code: "CONFIG_INVALID", target: { path } }),
+    );
+    // Only the control the finding names is shown (the Options form and chat's editableSettings
+    // both read this list), with the saved value; everything else waits for a valid design.
+    expect(normalGenerationControls(design, installed)).toEqual([
+      expect.objectContaining({
+        process: "links-api",
+        input: "process.requestTimeoutMs",
+        value: 99999999,
+        origin: "source",
+        status: "unsupported",
+        sourcePaths: [path],
+        normalControl: true,
+      }),
+    ]);
+    expect(controls(design, "visit-worker")).toEqual([]);
+    // Another out-of-range value is refused, as for any control; one in range puts it right.
+    expect(() => edit(design, "links-api", { requestTimeoutMs: 400000 })).toThrow();
+    const fixed = edit(design, "links-api", { requestTimeoutMs: 5000 });
+    expect(resolveGeneration(fixed, installed).findings).toEqual([]);
+    expect(process(fixed, "links-api")?.http?.requestTimeoutMs).toMatchObject({
+      value: 5000,
+      origin: "tile",
+    });
+    expect(controls(fixed, "links-api")).toEqual([
+      ["process.requestTimeoutMs", 5000, "source"],
+      ["process.concurrencyLimit", 1000, "descriptor-default"],
+    ]);
+    // Clearing it works too: the process runs the initial value again.
+    const cleared = edit(design, "links-api", { requestTimeoutMs: undefined });
+    expect(settingsOf(cleared, "links-api")).toEqual(settingsOf(valid, "links-api"));
+    expect(resolveGeneration(cleared, installed).findings).toEqual([]);
+  });
+
+  it("opens a stored design whose only problem is a setting's number out of bounds", () => {
+    const valid = runStudioCommands(stubStackDesign(), [on]);
+    const stored = structuredClone(valid);
+    const links = settingsOf(stored, "links-api");
+    const worker = settingsOf(stored, "visit-worker");
+    if (!links || !worker) throw new Error("No tiles.");
+    links.requestTimeoutMs = 99999999;
+    worker.concurrency = 0;
+    // Both values are kept as saved; everything else parses as usual.
+    const opened = parseStoredDesign(JSON.parse(JSON.stringify(stored)));
+    expect(opened).toEqual(stored);
+    expect(designSchema.safeParse(stored).success).toBe(false);
+    // Any other problem still fails as the schema does: an unknown field, a wrong type, a bad ID.
+    const extra = structuredClone(stored) as unknown as { elements: { extra?: boolean }[] };
+    if (extra.elements[0]) extra.elements[0].extra = true;
+    expect(() => parseStoredDesign(extra)).toThrow();
+    const typed = structuredClone(valid);
+    const text = settingsOf(typed, "links-api");
+    if (text) text.requestTimeoutMs = "slow";
+    expect(() => parseStoredDesign(typed)).toThrow();
+    expect(() => parseStoredDesign({ ...valid, elements: [{ id: "Bad ID", name: "x" }] })).toThrow();
+    expect(parseStoredDesign(valid)).toEqual(valid);
+  });
+
+  it("keeps a template's out-of-range control too, and puts its mirror right in the same step", () => {
+    const valid = runStudioCommands(v2ModuleDesign(), [on]);
+    const design = structuredClone(valid);
+    const cache = settingsOf(design, "metadata-cache");
+    if (!cache) throw new Error("No cache.");
+    cache.ttlSeconds = 99999999;
+    expect(resolveGeneration(design, installed).model).toBeUndefined();
+    expect(
+      normalGenerationControls(design, installed).map((item) => [item.input, item.value]),
+    ).toEqual([["cache.ttlSeconds", 99999999]]);
+    const fixed = edit(design, "metadata-cache", { ttlSeconds: 7200 });
+    const resolved = resolveGeneration(fixed, installed);
+    // The model is back, with only the findings the valid design has (this test's registry lists
+    // no policy consumers).
+    expect(resolved.findings).toEqual(resolveGeneration(valid, installed).findings);
+    expect(
+      resolved.model?.selections.find((item) => item.inputs["cache.ttlSeconds"] !== undefined)
+        ?.inputs["cache.ttlSeconds"],
+    ).toBe(7200);
+    // Every control is back.
+    expect(normalGenerationControls(fixed, installed)).toHaveLength(
+      normalGenerationControls(valid, installed).length,
+    );
   });
 
   it("works out what each CDN fronts, only while on", () => {
