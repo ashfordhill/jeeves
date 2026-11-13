@@ -68,6 +68,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
         "  // Visit consumer: a loop on visits--visit-worker.",
         "  await startModuleLoop(scope, loopLog, config.loops[0], (message) =>",
         '    visitConsumer(dependencies["visit-consumer"], message),',
+        '    brokerState(config.tile, failure, "broker consume visits--visit-worker"),',
         "  );",
         "  scope.ready();",
       ].join("\n"),
@@ -280,7 +281,9 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(lifecycle).toContain(
       "loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), {",
     );
-    expect(lifecycle).toContain('openPublisher: () => publisher(s, "publication", scope),');
+    expect(lifecycle).toContain(
+      'openPublisher: () => publisher(s, "publication", scope, brokerState(config.tile, failure, "broker publish publication-events")),',
+    );
     expect(lifecycle).toContain(
       '"destinations": [\n            "jobs",\n            "publication"',
     );
@@ -289,7 +292,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       media.indexOf("await startMediaWorker({"),
     );
     expect(media).toContain(
-      "loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), consumerHooks),",
+      'loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), { ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-queue") }),',
     );
     expect(text(v2, "src/processes/view-counter.ts")).toContain(
       'counter: createEventCounter(binding.tables, watchHooks(counterSumHooks(), loopLog, "counter-sum")),',

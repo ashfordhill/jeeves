@@ -1465,7 +1465,8 @@ the mapping is written). Two modules in one tile that consume the same topic eac
 subscriber queue, so each receives every message. A message that reaches "Not implemented" goes
 to its queue's `.failed` at once with one log line (a template's too, with no retries), and the
 process stays healthy; a stub's own error is retried 5 times with backoff before `.failed`. A
-process that loses its broker stops (exit 1, no restart) until `pnpm start`. Every database, cache, queue, object storage and search index a stub links to is
+process that loses its broker keeps running: its broker publishers and consumers reconnect every
+5 s, a publish fails at once while the broker is away, and consumers resubscribe when it is back. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked
 once at startup; a store on another provider isn't provisioned, and the stack isn't runnable.
 Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,

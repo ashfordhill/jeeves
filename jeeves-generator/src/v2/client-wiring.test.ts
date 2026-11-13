@@ -372,7 +372,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         '    "links-cache": await cacheClient(scope, probe, { cache: "links-cache" }),',
         '    "links-db": await databaseClient(scope, probe, { tile: config.tile, resource: "links-db" }),',
         '    "stats-api": httpTarget("http://app-stats-api:3000"),',
-        '    "visits": await queuePublisher(scope, probe, { queue: "visits", mode: "topic" }),',
+        '    "visits": await queuePublisher(scope, probe, { queue: "visits", mode: "topic" }, brokerState(config.tile, failure, "broker publish visits")),',
         "  };",
       ].join("\n"),
     );

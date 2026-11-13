@@ -91,6 +91,9 @@ const notImplementedAnswer = (what: string) =>
   `501 ${text(`Not implemented: ${what}`)} until its hooks are written`;
 export const resources = "../features/service-resources.ts";
 export const tileProcess = "../runtime/tile-process.ts";
+/** A broker publisher's or consumer's state hook (`brokerState` in tile-process.ts): one failure
+ * line naming `what` when the broker is lost, one info line when it is back. */
+export const brokerState = (what: string) => `brokerState(config.tile, failure, ${text(what)})`;
 const tileHttp = "../runtime/tile-http.ts";
 
 /** The hooks file: a factory over the template's generic resources; every member throws. */
@@ -470,6 +473,7 @@ function ownedMultipart(
       { from: "../runtime/transaction.ts", name: "transaction" },
       { from: "../runtime/transaction.ts", name: "Tx", type: true },
       { from: tileHttp, name: "notImplementedRoutes" },
+      { from: tileProcess, name: "brokerState" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -526,7 +530,7 @@ function ownedMultipart(
       "    }),",
       `    onFailure: (what, error, extra) => failure(\`\${what} ${lead.module}\`, error, extra),`,
       "  });",
-      `  const jobs = await publisher(s, "jobs", scope);`,
+      `  const jobs = await publisher(s, "jobs", scope, ${brokerState(`broker publish ${jobs}`)});`,
       "  scope.own(() => jobs.close());",
       "  scope.transport(jobs);",
       `  const relay = startRelay(createOutbox(binding.outbox, "jobs", hooks.job), db, jobs, {`,

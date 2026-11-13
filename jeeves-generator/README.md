@@ -500,10 +500,14 @@ than the template's generic `MALFORMED_MESSAGE` or retrying to `RETRY_EXHAUSTED`
 template's own (the media worker's `INVALID_MEDIA`) is kept. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
-and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process
-except a lost broker connection: any process holding one (a loop, or a publisher) drains and
-exits 1, and stays exited (no restart policy) while the edge answers 503 for it; `pnpm start`
-brings the broker and it back, resubscribed, with the `.failed` messages kept. `pnpm stop` cancels
+and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process, a
+lost broker connection included: each broker publisher and consumer (`createPublisher`,
+`createConsumer` in `src/runtime/amqp.ts`) keeps one connection at a time and, once it is lost,
+opens a new one every 5 s until one opens, while the process keeps serving what doesn't need the
+broker. While the broker is away a publish fails at once, so a request that publishes answers 503;
+a consumer stops acknowledging, settles the messages in hand (they return to their queue and are
+delivered again) and resubscribes once they are settled and the broker is back, keeping the
+`.failed` messages. A broker that is down when a process starts still fails its startup. `pnpm stop` cancels
 each subscription, cuts a retry wait short (the message is republished for its next attempt) and
 settles the message in hand before closing; undelivered messages stay in their queue.
 `src/runtime/tile-loop.ts` holds the loop and its handlers, `tile-http.ts` the 501 wrapper and
@@ -527,6 +531,11 @@ What writes it, as its `what`:
 - a failed or corrupt cache read and a failed cache fill: `cache read <module>`,
   `cache fill <module>`; the cache lost (Valkey unreachable, a command failed or timed out):
   `cache <module>`;
+- the broker lost by a publisher or a consumer (a closed connection or channel, a cancelled
+  subscription, a failed republish or ack): `broker publish <id>`, the topic's exchange or the
+  work queue, and `broker consume <queue>`. When it is back, an info line on stdout:
+  `{"level":"info","event":"broker",…,"state":"available"}` (`tile`, `what`, `state`), also once
+  at startup;
 - a failed multipart start and a failed provider abort after it: `multipart start <module>`,
   `multipart abort <module>`, each with `upload`;
 - a Video HLS failure report that can't be built: `failure report <module>`, with `message` (the
@@ -535,7 +544,7 @@ What writes it, as its `what`:
 The answers, retries and what is kept stay as they were. `runProcess` (`process.ts`) also writes
 three lines on stderr, each `{"level":"error","event":…,"error":…}` in the same form:
 `startup-failed` when startup throws (before `Application startup failed`), `process-failed` when
-the process fails with an error (a lost broker connection), and `drain-failed` for each drain that
+the process fails with an error (the media worker's own `onFatal`), and `drain-failed` for each drain that
 throws while stopping (the process then exits 1).
 
 **Provisioning for stubs** (contract §6). With the option on, every store or channel a stub
@@ -611,7 +620,8 @@ stub's own schema.
 stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
 `databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
 `execute`), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
-names one, as a deduplicating consumer such as the event counter needs, else a fresh ID),
+names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
+reconnects every 5 s after a lost broker),
 `cacheClient` (`get`, `set` with a TTL, `delete`; it reconnects in the background), `objectClient`
 (`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
 `httpTarget` (another tile's process at `http://app-<id>:3000`, with no probe or `depends_on`). Each

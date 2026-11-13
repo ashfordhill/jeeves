@@ -13061,3 +13061,86 @@ images; not investigated. The owner's dirty paths (`.jeeves-feedback/`, the `Zon
 files, the two mode changes) stay untouched and unstaged.
 **For the next unit.** BR01 of `docs/plans/broker-reconnect/units.md`, then BR02, then GS07 and
 GS09 of `docs/plans/generated-system-tests/units.md`.
+
+## 2026-11-13 — BR01: The broker client reconnects
+
+**What changed.**
+- `amqp.ts.template`: exports `BrokerState`. `createPublisher(binding, destination, { onState })`
+  and `createConsumer(binding, { …, onState })` hold one connection generation at a time. A lost
+  generation (its connection or channel closes other than through `close()`; for the consumer also
+  a cancelled subscription or its runner failing a republish or ack) reports `unavailable` once,
+  with the close's error or else the first `error` the connection or channel emitted; a new one
+  opens 5 s later, again every 5 s, and `available` is reported when it opens (once at startup;
+  a throwing hook changes nothing). Publisher: no generation, `publish` rejects at once with
+  `Broker unavailable`; one in flight rejects by its confirm deadline; `close()` clears the timer,
+  settles pending publishes and closes the current generation, and one still opening is closed
+  as soon as it opens. Consumer: each generation has its own `createDeliveryRunner` (the caller's
+  `onFatal` is never passed or called); a lost one's runner `fatal`s (no ack, drains), and the next
+  opens no sooner than 5 s after the loss and only after that drain; `close()` cancels, drains and
+  closes as before, or during an outage waits for the lost drain and opens nothing. `closed`
+  resolves only after `close()`, always `{ fatal: false }`. A first connect that fails still
+  rejects and leaves no timer.
+- `delivery.ts.template`, `tile-loop.ts.template`, `module-clients.ts.template`: the three comments.
+  `tile-process.ts.template`: `brokerState` as the plan writes it. Threaded `onState`:
+  `publisher(s, field, _scope, onState?)` and `consumer`'s hooks (`service-resources.ts.template`),
+  `loopConsumer`'s hooks and `startModuleLoop(scope, log, loop, entry, onState?, broker)` (its
+  `onFatal: scope.fail` replaced), `queuePublisher(scope, log, binding, onState?)`.
+- Wiring: `http-wiring.ts` exports `brokerState(what)`, the emitted call; the upload's jobs
+  publisher gets `broker publish <id>`. `loop-wiring.ts`: each template's `loopConsumer` gets
+  `onState: brokerState(config.tile, failure, "broker consume <queue>")` (the transcoder's as
+  `{ ...consumerHooks, onState: … }`), the lifecycle's and transcoder's `publisher` calls get
+  `broker publish <id>`, and each stub loop's `startModuleLoop` gets `broker consume <queue>`.
+  `client-wiring.ts`: each `queuePublisher` call gets `broker publish <queue>`. Each such process
+  imports `brokerState` from `tile-process.ts`. `startMediaWorker`'s own `onFatal: scope.fail`
+  and every `scope.transport(…)` line stay.
+- Tests: new `amqp.test.ts` (11: the plan's 1–10, test 4 in both orders of drain and 5 s, plus
+  the `brokerState` lines). Updated, being emitted broker-client lines this unit changes or a
+  fake that recorded the process's fail hook reaching the publisher: `client-wiring.test.ts`
+  "builds every stub's dependencies from real clients, one probe each" (the `queuePublisher`
+  line); `loop-wiring.test.ts` "runs a loop for each consumer stub, in a worker or beside HTTP
+  routes" (the `startModuleLoop` block gains its `brokerState` line) and "starts each template's
+  worker in its process, with its hooks watched" (the publication `publisher` and the
+  transcoder's `loopConsumer` lines); `module-clients.test.ts` "publishes to a topic's exchange or
+  a work queue, with confirms and a fresh message ID" (records the `onState` passed instead of
+  `typeof hooks.onFatal`, and its comment). No test asserted that a lost broker ends the process.
+- Docs: `jeeves-generator/README.md` (the consume-loops paragraph, the Failure lines list,
+  `process-failed`'s example, `queuePublisher`), `docs/studio.md` (the sentence on a process that
+  loses its broker), `docs/template-gaps.md` (Fixed in BR01).
+
+**Checks.** `pnpm check` before any change: exit 0, 113 files, 890 tests. After: exit 0, 114 files,
+901 tests (lint's one info is older). Rule 7: `processes-off.test.ts` failed as expected;
+`pins:update`, and the listed paths (frozen-v2 and v2-module-design) were `.jeeves/manifest.json`,
+`src/features/service-resources.ts`, `src/runtime/amqp.ts` and `src/runtime/delivery.ts`; the
+stub stack unchanged. `amqp.test.ts` run on HEAD's `amqp.ts.template` (a temporary copy, deleted):
+8 of 11 failed, the startup, line and wiring tests pass on both. `pnpm test:e2e` (native): 74
+passed (4.7 min). `pnpm --filter @jeeves/web build`: exit 0. Done when: the grep lists only
+`loop-wiring.ts:424`, `startMediaWorker`'s own `onFatal`. Extra: the v3 design exported to the
+scratchpad, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build` (tsc on
+amqplib 2.2.0's own types): exit 0; deleted. No Docker resource was created.
+**Differences from the plan.**
+- `startModuleLoop` takes `onState` as its fifth parameter, before the optional `broker` (no caller
+  passes one), so emitted calls don't name the broker. `publisher` keeps its `scope` parameter as
+  `_scope`, now unused, so its calls are unchanged.
+- The `unavailable` error: amqplib closes channels without an error and emits the cause as `error`
+  first, so the client keeps the first `error` of a generation and reports it when `close` brings
+  none, else `AMQP publisher unavailable` / `AMQP consumer unavailable`.
+- `close()` doesn't wait for a generation still opening (a connect can hang); it is closed as soon
+  as it opens, and a consumer opening during `close()` doesn't subscribe. A loss while a consumer
+  generation is subscribing fails that attempt.
+- Test 10 exports `field-projects/youtube/v3/inputs/design.json` with `loadLocalV2Registry()`:
+  `youtube.test.ts`'s `loadLocalV2Dependencies` refuses the v3 design (INVALID_LOCAL_CONTRIBUTION,
+  a module that writes a database needs its tile's login).
+- The assertion updates above include emitted lines without `onFatal: scope.fail` (the
+  `queuePublisher`, `startModuleLoop` and publication `publisher` lines): step 5 changes each.
+**Noticed.** `media-worker.ts` (not this unit's) still passes `{ onFatal: fail }` to `openPublisher`
+(the emitted lambda ignores it) and `onFatal: fail` in its consumer hooks, and watches `closed` for
+`fatal`: dead paths now. Its abort on a lost transport no longer fires, so during an outage a job
+in hand runs on (to its 20-minute deadline) and its consumer resubscribes only once it settles.
+`tile-loop.test.ts`'s template-loop test still passes `{ onFatal: scope.fail }` to `loopConsumer`
+on its fake consumer, and `ConsumerHooks.onFatal` stays in the type that `createConsumer` takes;
+both unchanged and passing. The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier`
+files, the two mode changes) stay untouched and unstaged. No uncommitted changes under
+`field-projects/`.
+**For the next unit.** BR02: `field-projects/youtube/v4` still has the old `amqp.ts`, `delivery.ts`,
+`tile-loop.ts`, `tile-process.ts`, `service-resources.ts` and process files; regenerating it brings
+the `brokerState` lines (`broker publish <id>`, `broker consume <queue>`) to each broker process.

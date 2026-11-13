@@ -47,7 +47,7 @@ const fakes: Record<string, string> = {
   "./amqp.ts": `${check}
     export async function createPublisher(binding, destination, hooks) {
       await outcome("open", undefined);
-      record("createPublisher", binding.passwordSecret, destination, typeof hooks.onFatal);
+      record("createPublisher", binding.passwordSecret, destination, hooks.onState);
       return {
         closed: new Promise(() => {}),
         close: async () => record("close"),
@@ -204,23 +204,31 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
 
   it("publishes to a topic's exchange or a work queue, with confirms and a fresh message ID", async () => {
     const scope = testScope();
-    const topic = await clients.queuePublisher(scope, probe, { queue: "visits", mode: "topic" });
-    const work = await clients.queuePublisher(scope, probe, {
-      queue: "uploaded",
-      mode: "work-queue",
-    });
+    const onState = () => {};
+    const topic = await clients.queuePublisher(
+      scope,
+      probe,
+      { queue: "visits", mode: "topic" },
+      onState,
+    );
+    const work = await clients.queuePublisher(
+      scope,
+      probe,
+      { queue: "uploaded", mode: "work-queue" },
+      onState,
+    );
     await topic.publish(new TextEncoder().encode("a"), { key: "ignored" });
     await work.publish(new TextEncoder().encode("b"));
     const calls = fake.calls.filter((call) => call[0] !== "open");
     expect(calls.slice(0, 2)).toEqual([
-      ["createPublisher", "broker-password", { exchange: "visits", routingKey: "" }, "function"],
-      ["createPublisher", "broker-password", { exchange: "", routingKey: "uploaded" }, "function"],
+      ["createPublisher", "broker-password", { exchange: "visits", routingKey: "" }, onState],
+      ["createPublisher", "broker-password", { exchange: "", routingKey: "uploaded" }, onState],
     ]);
     expect(calls[2]?.slice(0, 2)).toEqual(["publish", "a"]);
     expect(calls[3]?.slice(0, 2)).toEqual(["publish", "b"]);
     expect(calls[2]?.[2]).toMatch(/^[0-9a-f-]{36}$/);
     expect(calls[2]?.[2]).not.toBe(calls[3]?.[2]);
-    // The publisher drains with the process, and a lost broker fails it.
+    // The publisher drains with the process; a lost broker is told to its state hook.
     expect(scope.owned).toHaveLength(2);
     expect(scope.transports).toHaveLength(2);
     expect(lines.map((line) => [line.client, line.check, line.result])).toEqual([

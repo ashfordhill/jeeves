@@ -26,5 +26,5 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 | The cache read turns its cache off for the life of the process after one stalled cache call | Fixed in PF07 |
 | The event counter keeps one receipt row per event for ever | Open |
 | The outbox relay sends at most 10 rows about once a second | Open |
-| A process that loses its broker exits and is not restarted | Open; a deployment's restart policy covers it |
+| A process that loses its broker exits and is not restarted | Fixed in BR01 |
 | Host names are compiled into the export for local Compose | Open; deployment is outside Jeeves |

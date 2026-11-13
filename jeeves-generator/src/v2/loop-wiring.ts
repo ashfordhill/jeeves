@@ -8,6 +8,7 @@ import { assetLifecycleSchema } from "./asset-lifecycle.ts";
 import { outboxSchema, receiptSchema } from "./durability.ts";
 import { eventCounterPersistence } from "./event-counter.ts";
 import {
+  brokerState,
   camel,
   hooksFile,
   indexHooks,
@@ -22,6 +23,7 @@ import {
   service,
   text,
   throws,
+  tileProcess,
   uploadLifecycle,
 } from "./http-wiring.ts";
 import { subscriberQueue } from "./local-contract.ts";
@@ -91,13 +93,16 @@ type Builder = (
   index: number,
 ) => ProcessMount;
 /** Each mounted template's consumer reads its loop row: queue, `.failed`, concurrency, retries.
- * The lines of its `openConsumer`, with the media worker's own hooks or `onFatal`. */
-const consumer = (index: number, hooks?: string) => {
+ * The lines of its `openConsumer`, with the media worker's own hooks, and its broker state hook. */
+const consumer = (index: number, queue: string, hooks?: string) => {
   const open = `      loopConsumer(${loopLine(index)}, templateHandler(loopLog, ${loopLine(index)}, handle),`;
+  const onState = `onState: ${brokerState(`broker consume ${queue}`)}`;
   return hooks
-    ? [`${open} ${hooks}),`]
-    : [`${open} {`, "        onFatal: scope.fail,", "      }),"];
+    ? [`${open} { ...${hooks}, ${onState} }),`]
+    : [`${open} {`, `        ${onState},`, "      }),"];
 };
+/** What a process that opens a broker client imports for its state hook. */
+const brokerStateImport = { from: tileProcess, name: "brokerState" };
 
 /** Asset lifecycle: the worker on its tables (in its upload's schema), its results subscriber and,
  * when bound, its publication relay through the shared outbox. */
@@ -166,6 +171,7 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
       { from: tileLoop, name: "loopConsumer" },
       { from: tileLoop, name: "templateHandler" },
       { from: tileLoop, name: "watchHooks" },
+      brokerStateImport,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -185,12 +191,12 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
       "    pool: db,",
       "    lifecycle,",
       "    openConsumer: (handle) =>",
-      ...consumer(index),
+      ...consumer(index, loop.queue),
       ...(publication
         ? [
             "    publication: {",
             "      outbox: lifecycle.publications!,",
-            `      openPublisher: () => publisher(s, "publication", scope),`,
+            `      openPublisher: () => publisher(s, "publication", scope, ${brokerState(`broker publish ${publication}`)}),`,
             "    },",
           ]
         : []),
@@ -364,6 +370,7 @@ const videoHls: Builder = (process, selection, lead, selections, index) => {
     resource(selection, field),
   );
   const [originals = "", outputs = ""] = fields;
+  const results = resource(selection, "results");
   const loop = templateQueue({ process, selections }, selection, lead, "jobs", 1);
   const codec = (name: string, signature: string, comment: string) => [
     `    /** ${comment} */`,
@@ -391,6 +398,7 @@ const videoHls: Builder = (process, selection, lead, selections, index) => {
       { from: tileLoop, name: "loopConsumer" },
       { from: tileLoop, name: "templateHandler" },
       { from: tileLoop, name: "watchHooks" },
+      brokerStateImport,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -409,9 +417,9 @@ const videoHls: Builder = (process, selection, lead, selections, index) => {
       "      results: { client: objects(s), bucket: outputs, owns: hooks.results.owns },",
       "      sha256Metadata: binding.sha256Metadata,",
       "    }),",
-      `    openPublisher: () => publisher(s, "results", scope),`,
+      `    openPublisher: () => publisher(s, "results", scope, ${brokerState(`broker publish ${results}`)}),`,
       "    openConsumer: ({ handle, ...consumerHooks }) =>",
-      ...consumer(index, "consumerHooks"),
+      ...consumer(index, loop.queue, "consumerHooks"),
       `    onSkippedReport: (error, messageId) => failure(${text(`failure report ${lead.module}`)}, error, { message: messageId }),`,
       "    onFatal: scope.fail,",
       "  });",
@@ -516,6 +524,7 @@ const eventCounter: Builder = (process, selection, lead, selections, index) => {
       { from: tileLoop, name: "loopConsumer" },
       { from: tileLoop, name: "templateHandler" },
       { from: tileLoop, name: "watchHooks" },
+      brokerStateImport,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -529,7 +538,7 @@ const eventCounter: Builder = (process, selection, lead, selections, index) => {
       "    pool: db,",
       `    counter: createEventCounter(binding.tables, watchHooks(${hooks}(), loopLog, ${text(lead.module)})),`,
       "    openConsumer: (handle) =>",
-      ...consumer(index),
+      ...consumer(index, loop.queue),
       "  });",
       ...own("worker"),
       "})();",
@@ -602,6 +611,7 @@ const searchProjection: Builder = (process, selection, lead, selections, index) 
       { from: tileLoop, name: "watchHooks" },
       { from: tileSearch, name: "openSearchIndex" },
       { from: tileSearch, name: "startSearchIndexWorker" },
+      brokerStateImport,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks.factory },
     ],
     setup: [
@@ -619,7 +629,7 @@ const searchProjection: Builder = (process, selection, lead, selections, index) 
       "    index,",
       "    hooks,",
       "    openConsumer: (handle) =>",
-      ...consumer(index),
+      ...consumer(index, loop.queue),
       "  });",
       ...own("worker"),
       "})();",
@@ -738,12 +748,14 @@ function stubLoops(
   return {
     imports: [
       { from: tileLoop, name: "startModuleLoop" },
+      ...(loops.length ? [brokerStateImport] : []),
       { from: from(paths.module), name: entry },
     ],
     setup: loops.flatMap((loop, offset) => [
       `// ${line(module.name)}: a loop on ${loop.queue}.`,
       `await startModuleLoop(scope, loopLog, ${loopLine(first + offset)}, (message) =>`,
       `  ${entry}(dependencies[${text(id)}], message),`,
+      `  ${brokerState(`broker consume ${loop.queue}`)},`,
       ");",
     ]),
     configure: [],

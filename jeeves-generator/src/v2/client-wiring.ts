@@ -5,7 +5,16 @@ import {
   studioComponentTargetKind,
   studioDefinitions,
 } from "@jeeves/spec";
-import { type Import, line, type ProcessMount, pascal, service, text } from "./http-wiring.ts";
+import {
+  brokerState,
+  type Import,
+  line,
+  type ProcessMount,
+  pascal,
+  service,
+  text,
+  tileProcess,
+} from "./http-wiring.ts";
 import { localDatabase, localLogin, type StubStore, stubStores } from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs.ts";
 import type { V2ProcessReport } from "./registry.ts";
@@ -34,7 +43,7 @@ function storeClient(store: StubStore): Client {
       return {
         key,
         section: "queue",
-        call: `await queuePublisher(scope, probe, { queue: ${resource}, mode: ${text(store.mode ?? "work-queue")} })`,
+        call: `await queuePublisher(scope, probe, { queue: ${resource}, mode: ${text(store.mode ?? "work-queue")} }, ${brokerState(`broker publish ${store.resource}`)})`,
       };
     case "cache":
       return {
@@ -187,6 +196,9 @@ export function stubClients(
       }[client.section],
     });
   if (probed) imports.push({ from: clients, name: "createProbeLog" });
+  // A queue's publisher reports a lost and a returned broker through the failure log.
+  if (list.some((client) => client.section === "queue"))
+    imports.push({ from: tileProcess, name: "brokerState" });
   const provisioned = stores.filter((store) => !store.unsupported);
   return {
     sections,

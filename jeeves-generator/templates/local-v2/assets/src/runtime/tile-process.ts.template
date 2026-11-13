@@ -80,3 +80,11 @@ export function createFailureLog(tile: string): FailureLog {
   const log = createProcessLog(tile, "error", "failure");
   return (what, error, extra = {}) => log(what, { what, error: describeError(error), ...extra });
 }
+
+/** A broker client's state hook: one failure line when it is lost, one info line when it is back. */
+export function brokerState(tile: string, failure: FailureLog, what: string) {
+  return (state: "available" | "unavailable", error?: unknown) =>
+    state === "unavailable"
+      ? failure(what, error ?? new Error("Broker unavailable"))
+      : console.log(JSON.stringify({ level: "info", event: "broker", tile, what, state }));
+}
