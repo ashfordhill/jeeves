@@ -11535,3 +11535,60 @@ containers healthy at the start), with PF12's harness unchanged:
 **For the next unit.** PF14 next (independent review). The stack is gone (no `jeeves-pf12` Docker
 state, ports free). The verdicts are in `field-projects/youtube/v4/notes/scenarios.md`, the raw
 outputs in `evidence/pf12/` and `evidence/pf13/`.
+
+## 2026-11-12 — PF14: Independent review
+
+**What changed.**
+
+- New `docs/plans/production-foundations/review.md`: the owner summary (12 lines); D1–D8 (D1
+  and D6 Partly, D3 Delivered with leftovers, the rest Delivered); a verdict for each of PF01–PF13
+  (all as planned); what went wrong in PF12 and PF13, most serious first, with the template each
+  points at; 16 follow-ups, 8 marked for an owner decision; the doc fix; and the checks.
+- `docs/studio.md`, Chat: the tool table listed six of chat's eleven tools after "chat now has
+  eleven:", so `jeeves/PLAN.md`'s "listed in the studio guide" was false. It now has rows for
+  `describeStudioDefinition`, `describeStudioPattern`, `validateDesign`, `declareReviewScope`
+  and `askUser`, from `chat/tools.ts`'s descriptions.
+- No code changed: no defect inside a unit met step 4's bar (a failing test, under 40 lines).
+  `service-resources.ts`'s `positiveReader` has no caller in any generated process, and the
+  other notes are cleanups or decisions.
+
+**Checks.**
+
+- Step 2: `update:v2 … field-projects/youtube/v4/app --check` exit 0; `refused` [], create 0,
+  replace 0, unchanged 96, keep 11; `keepChanged` []; `override` the four paths v4's notes list;
+  `remove` []; `orphan` []. So v4 is on the final templates.
+- check: passed before any change and after (105 files, 820 tests; Biome 733 files, only the
+  older `useTemplate` info in `local.mjs`).
+- e2e: `pnpm test:e2e` 73 passed before the doc edits (4.8 min) and after them (5.7 min); no
+  reruns.
+- build: passed, both times.
+- evals: `pnpm eval:chat` exit 0, both times, with PF03's and PF05's scores (good 100/100/100
+  and 100; patterns 86.3/98.2/98.2; bad 1.7/18.5/18.5 and 5).
+- Reruns: every grep PF01–PF05 name prints nothing, also with `command grep`; PF11's design
+  hash, 31-file byte check (`"differ":[]`) and four override `cmp`s; a fresh `export:v2` of
+  v4's design equals `v4/generated/` (112 files; the scratch export is deleted). Each unit's
+  handoff entry and HUMAN_FEEDBACK line was appended without editing earlier ones, and no unit
+  touched the rule 4 paths.
+
+**Differences from the plan.**
+
+- Step 5 asks for PF12's and PF13's failed steps; no step was marked Failed (F2a and F2b only
+  asked for a record), so the review ranks what went wrong against D1 and says so.
+- The four checks ran twice: before the doc edits, and in order after them.
+
+**Noticed.**
+
+- The coordinator's pointers, each checked: the `.readiness-*` CSS, `onTarget`'s branches and
+  `create-example.ts`'s header (PF04); `docs/chat-tool-schemas.md` and `service.ts`'s
+  `operation:` selection (PF05); `linkRuleText`'s two-mode branch (PF03); `positiveReader`
+  (PF06); the failure log's per-`what` limit (PF08); `update:v2`'s empty folder (PF10); the
+  `useTemplate` info. All are follow-ups in the review.
+- Also: the generated `Dockerfile` sets no `USER`; `pnpm start` runs the application services at
+  their default scale; T1's samples last about 0.5 s each; no database, object storage, search
+  or identity outage ran. The generated system tests plan (`28a9fd7`, not reviewed as a unit)
+  overlaps follow-ups 1, 9 and 15 (its GS07 covers the PostgreSQL and broker faults).
+- `jeeves_e2e` holds only its two older projects.
+
+**For the next unit.** The plan is done. What comes next is the owner's choice (the review's
+follow-ups 1–4); `AGENTS.md` and `jeeves/PLAN.md` still name production foundations as the
+active plan.

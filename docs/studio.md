@@ -712,11 +712,16 @@ the tools, whose schemas total about 37 KB (44 KB as OpenAI's strict tools, down
 | Tool | Gives |
 | --- | --- |
 | `listStudioDefinitions` | The eleven tile kinds a new tile can be, each with its label; the tile types with their kinds and defaults; the module catalog (each kind's slots, the tiles that hold it, what it becomes there, Template, Part of a template or Stub, as the `+` menu groups it, and its one-line description); the link table (generated from `studioLinkRules`); the caps; the lane canvas and kind notes; the warnings sentence. |
+| `describeStudioDefinition` | One kind's source schema and historical defaults: preserved design intent, not editable choices (`getDesign`'s `editableSettings` are the normal controls). |
 | `getDesign` | The design compactly, as the canvas draws it: the actions with their entries and the tiles each lane reaches; each tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, each link's slot, status and why); the status counts; Runnable processes; `editableSettings` (the only normal settings, each naming its tile or module and setting); the design's findings and warnings, with readiness findings only counted (notSpecified). |
 | `listStudioPatterns` | The seven curated patterns `applyPattern` builds, with what each makes, its templates and each argument with its default ([patterns](studio-patterns.md#curated-module-patterns)); and the four reviewed guidance records. The defaults are neutral placeholders (Records, Login, Jobs), never a study's names, so a design's names come from the person. |
+| `describeStudioPattern` | One reviewed guidance record: its roles, required relationships, variants, checklist, sources, a topology-only example and the obligations no template implements. |
 | `applyPattern` | One pattern as one validated batch, names and links filled in from its arguments; `preview: true` dry-runs it (what would change, every module's status with why, what would be left) and keeps nothing. Every step is a command the mouse could send; one refused step refuses the whole pattern. |
 | `applyStudioCommands` | Chat's commands, or with `preview: true` a dry run of them: the lane commands (`addAction`, `renameAction`, `removeAction`, `addTile` after a tile or a lane's action, `linkTiles`, `removeTile`, `removeLink`, `setEntryLane`), `editTile`, `setSetting`, `editSystem`, `editConnection` (label only), the module commands (`addModule`, `connectModule`, `disconnectModule`, `removeModule`, `editModule`) and `setRunnableProcesses`. |
+| `validateDesign` | The design's findings and warnings, with readiness findings only counted (notSpecified). |
+| `declareReviewScope` | This turn's review scope: guidance pattern and checklist IDs, assumptions and custom obligations (below); nothing is saved. |
 | `reviewDesign` | The staged changes, every module's status, and what is left (below), with the design's findings (readiness findings only counted), assumptions and unsupported obligations. |
+| `askUser` | One focused question with clickable choices; it ends the turn. |
 
 Every accepted `applyStudioCommands` or `applyPattern` returns an **automatic review**: how many
 modules are in each status, the ones that aren't templates with why, and every finding left.
