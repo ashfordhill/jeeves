@@ -1,5 +1,6 @@
-// The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
-// rail toggles in the app header and Pointer, Connect, Fit and Detailed | Simple on the canvas
+// The Design tab: the chat rail, the lane canvas and the inspector rail, with Export diagram, Undo,
+// Redo, the rail toggles and Generate project in the app header and Pointer, Connect, Fit and
+// Detailed | Simple on the canvas
 // (the mode is view state; the view is a per-project browser preference, Detailed by default;
 // the selection carries across both). The selected tile's tabs add tiles (`creation.tsx`), and the
 // `+` in a tile or in the inspector's Modules section adds modules (`ModuleMenu.tsx`, one
@@ -333,45 +334,79 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     redo: !historyBusy && !failed && redoable && !hasDraft,
   };
   historyEnabled.current = history;
+  // Two groups in the top bar: Export diagram beside Design | Settings, and on the right Undo,
+  // Redo, the rail toggles and Generate project. Below 1100px Export diagram shows its icon only.
   const header = (
-    <div className="studio-header-actions lane-header-actions">
-      <button
-        type="button"
-        title="Undo"
-        aria-label="Undo"
-        disabled={!history.undo}
-        onClick={() => void useProject.getState().undo()}
-      >
-        <IconArrowBackUp size={18} />
-      </button>
-      <button
-        type="button"
-        title="Redo"
-        aria-label="Redo"
-        disabled={!history.redo}
-        onClick={() => void useProject.getState().redo()}
-      >
-        <IconArrowForwardUp size={18} />
-      </button>
-      <button
-        type="button"
-        title={preferences.chatOpen ? "Collapse chat" : "Open chat"}
-        aria-label={preferences.chatOpen ? "Collapse chat" : "Open chat"}
-        aria-pressed={preferences.chatOpen}
-        onClick={() => toggle("chatOpen")}
-      >
-        <IconMessageCircle size={18} />
-      </button>
-      <button
-        type="button"
-        title={preferences.inspectorOpen ? "Collapse inspector" : "Open inspector"}
-        aria-label={preferences.inspectorOpen ? "Collapse inspector" : "Open inspector"}
-        aria-pressed={preferences.inspectorOpen}
-        onClick={() => toggle("inspectorOpen")}
-      >
-        <IconLayoutSidebarRight size={18} />
-      </button>
-    </div>
+    <>
+      <div className="studio-header-start">
+        <button
+          type="button"
+          className="diagram-export-trigger"
+          title={
+            hasDraft || failed || historyBusy
+              ? "Finish saving edits before exporting"
+              : "Export diagram"
+          }
+          aria-label="Export diagram"
+          disabled={hasDraft || failed || historyBusy}
+          onClick={() => setExportOpen(true)}
+        >
+          <IconDownload size={18} />
+          <span className="diagram-export-label">Export diagram</span>
+        </button>
+      </div>
+      <div className="studio-header-actions lane-header-actions">
+        <button
+          type="button"
+          title="Undo"
+          aria-label="Undo"
+          disabled={!history.undo}
+          onClick={() => void useProject.getState().undo()}
+        >
+          <IconArrowBackUp size={18} />
+        </button>
+        <button
+          type="button"
+          title="Redo"
+          aria-label="Redo"
+          disabled={!history.redo}
+          onClick={() => void useProject.getState().redo()}
+        >
+          <IconArrowForwardUp size={18} />
+        </button>
+        <button
+          type="button"
+          title={preferences.chatOpen ? "Collapse chat" : "Open chat"}
+          aria-label={preferences.chatOpen ? "Collapse chat" : "Open chat"}
+          aria-pressed={preferences.chatOpen}
+          onClick={() => toggle("chatOpen")}
+        >
+          <IconMessageCircle size={18} />
+        </button>
+        <button
+          type="button"
+          title={preferences.inspectorOpen ? "Collapse inspector" : "Open inspector"}
+          aria-label={preferences.inspectorOpen ? "Collapse inspector" : "Open inspector"}
+          aria-pressed={preferences.inspectorOpen}
+          onClick={() => toggle("inspectorOpen")}
+        >
+          <IconLayoutSidebarRight size={18} />
+        </button>
+        <button
+          type="button"
+          className="generate-project-trigger"
+          title={
+            generationBlocked
+              ? "Finish saving edits before generating"
+              : "Generate experimental project"
+          }
+          disabled={generationBlocked}
+          onClick={() => setGenerationOpen(true)}
+        >
+          Generate project
+        </button>
+      </div>
+    </>
   );
 
   return (
@@ -494,31 +529,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
               </button>
             ))}
           </fieldset>
-          <button
-            type="button"
-            className="diagram-export-trigger"
-            title={
-              hasDraft || failed || historyBusy
-                ? "Finish saving edits before exporting"
-                : "Export diagram"
-            }
-            disabled={hasDraft || failed || historyBusy}
-            onClick={() => setExportOpen(true)}
-          >
-            <IconDownload size={18} /> Export diagram
-          </button>
-          <button
-            type="button"
-            title={
-              generationBlocked
-                ? "Finish saving edits before generating"
-                : "Generate experimental project"
-            }
-            disabled={generationBlocked}
-            onClick={() => setGenerationOpen(true)}
-          >
-            Generate project
-          </button>
         </div>
         {notice ? (
           <div className="studio-notice" role={notice.tone === "error" ? "alert" : "status"}>

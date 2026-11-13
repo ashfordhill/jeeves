@@ -77,7 +77,10 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
 
     // Generate project → Preview, by mouse: v2's seven installed templates, the Creator check's
     // sign-in (V3-06: the Auth guard leads its own template), the two stubs, and no finding.
-    await tool(page, "Generate project").click();
+    await page
+      .getByRole("banner")
+      .getByRole("button", { name: "Generate project", exact: true })
+      .click();
     const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
     const listed = dialog
       .getByRole("list", { name: "Generated modules", exact: true })

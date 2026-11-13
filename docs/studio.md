@@ -202,7 +202,8 @@ tall: the fit shows the shape, and reading the rows takes about 0.6.
 
 ## Diagram PNG export
 
-Click **Export diagram** in the canvas toolbar, then **PNG**. The download contains the full
+Click **Export diagram** in the top bar, beside Design and Settings, then **PNG**. Below 1100px of
+window width the button shows only its download icon. The download contains the full
 saved diagram in the current view, including offscreen tiles, their names, kind labels and icons,
 all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
 visual reference (D2: a recorded hash, not a gate), `9332ea16…89bd` (3008×2752) since the kind
@@ -317,11 +318,13 @@ On the grid (`alignLayout` in `jeeves/packages/board`, run on every layout):
   no tiles and widens no gaps. Crowded gaps can still retain shared runs.
 
 Drag empty paper to pan, with either tool; the wheel zooms, and zooming out stops a little below
-the fit. The toolbar has two tools, **Pointer** (V, an arrow; a click selects) and **Connect** (C,
-a link icon; a drag from a tile links it to another, [Connect mode](#connect-mode)), then **Fit**
-and **Detailed | Simple** ([Detailed view](#detailed-view)). Escape returns to Pointer. The mode
-is view state: it is never saved, has no history and changes no design, revision or blueprint.
-The canvas fits when it opens; Fit refits, and never zooms in past 100%. The camera follows the
+the fit. The canvas toolbar has two tools, **Pointer** (V, an arrow; a click selects) and
+**Connect** (C, a link icon; a drag from a tile links it to another, [Connect mode](#connect-mode)),
+then **Fit** and **Detailed | Simple** ([Detailed view](#detailed-view)). Escape returns to
+Pointer. The mode is view state: it is never saved, has no history and changes no design, revision
+or blueprint. **Export diagram** and **Generate project** are in the top bar, on the Design tab
+only: Export diagram beside Design and Settings, and Generate project, the yellow button, on the
+right after Undo, Redo and the chat and inspector toggles. The canvas fits when it opens; Fit refits, and never zooms in past 100%. The camera follows the
 canvas:
 
 - While the camera is fitted (since the canvas opened, or since Fit), it refits at once whenever
@@ -1299,7 +1302,8 @@ Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).
 
 ## Experimental project export
 
-Use **Generate project** in the canvas toolbar, then **Preview scaffold**. Explicit schema3
+Use **Generate project** (the yellow button on the right of the top bar), then **Preview
+scaffold**. Explicit schema3
 `generation` selects local-v2 assembly from the current saved source and the actual installed
 registry. Unknown refs, invalid bindings and unsupported settings refuse export; names never select
 code. Known declarations without implementations export as explicit custom gaps.

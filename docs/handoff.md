@@ -12038,3 +12038,49 @@ mixes with a literal `#000` (older). `jeeves_e2e` holds "TinyURL · studio study
 `field-projects/`; the owner's dirty paths stay untouched and unstaged.
 **For the next unit.** UI03 can start. The menus are `CanvasMenu.tsx`, built in `Workspace.tsx`;
 UI04's `--row-line` and UI13's `--panel` should replace `.canvas-menu`'s border and fill.
+
+## 2026-11-13 — UI03: Export and Generate move to the top bar
+
+**What changed.**
+- `Workspace.tsx`: the header portalled to `#studio-header-controls` is two groups: a new
+  `.studio-header-start` holding **Export diagram** (class `diagram-export-trigger`, now with
+  `aria-label="Export diagram"` and its label in a `.diagram-export-label` span), and
+  `.studio-header-actions` holding Undo, Redo, the chat and inspector toggles and then **Generate
+  project** (new class `generate-project-trigger`). Titles, disabled rules, `onClick`s and text are
+  unchanged. The canvas toolbar keeps Pointer, Connect, Fit and Detailed | Simple.
+- `studio.css`: `.studio-header-start` and the header button look for both groups; Export diagram
+  gap 5px, weight 800; below 1100px (`max-width: 1099.98px`) `.diagram-export-label` hides; Generate
+  project is `--yellow` on `--on-yellow` with a 2px `--on-yellow` border, weight 900 and
+  `0 3px 0 var(--btn-shadow)`. The view switch's divider is on its left only.
+- `diagram-export.css`: the old `.studio-tools .diagram-export-trigger` rule is gone.
+- E2E: `v2-rebuild.spec.ts` and `v3-build.spec.ts` click Generate project in
+  `page.getByRole("banner")` instead of the toolbar's `tool(...)`.
+- Docs: `docs/studio.md` (Diagram PNG export, the canvas toolbar paragraph, Experimental project
+  export).
+
+**Checks.** `pnpm check` before any change: 106 files, 824 tests passed. After: exit 0, 106 files,
+824 tests passed (lint's one info is older, in `jeeves-generator/templates/`). `pnpm test:e2e`
+(native): 73 passed (4.5 min); after the divider change, rerun with the mouse spec present: 75
+passed (4.5 min). `pnpm --filter @jeeves/web build`: exit 0. Mouse check (`ui03-check.spec.ts`,
+then deleted): 2 passed, 1440×900 and 1280×800, no page error. The header's buttons read Design,
+Settings, Export diagram, Undo, Redo, chat, inspector, Generate project, the project menu, left to
+right in one row; the toolbar holds exactly Pointer, Connect, Fit, Detailed, Simple; Generate
+project's fill is `--yellow`, 2px border, weight 900; both dialogs open from the header by mouse
+and close; on the Settings tab neither button exists, and both return on Design. At 1000px wide the
+label hides, the icon and the name stay, and the button still opens its dialog; at 1101px the
+label shows. The fixture deleted its projects. Four screenshots in
+`docs/plans/ui-refresh/evidence/ui03/` (1440 and 1280, light and dark) match
+`preview/top-bar-*.png`: Export diagram outlined beside the tabs, Generate project the one yellow
+button before the project menu.
+**Differences from the plan.**
+- Export diagram's `.diagram-export-trigger` rule moved from `diagram-export.css` into `studio.css`
+  (it matched only inside `.studio-tools`).
+- `.studio-view-toggle`'s `border-inline` became `border-inline-start` (and no right padding): with
+  Export diagram gone its right divider dangled at the toolbar's end; the preview draws none there.
+- Generate project needed a class for its look: `generate-project-trigger`.
+**Noticed.** The header buttons sit 5px apart; the preview spaces them a little wider, which the
+plan doesn't ask for. `jeeves_e2e` still holds "TinyURL · studio study" and "E2E Every kind"; left
+alone. No uncommitted changes under `jeeves-generator/` or `field-projects/`; the owner's dirty
+paths stay untouched and unstaged.
+**For the next unit.** UI04 can start. The header groups are `.studio-header-start` and
+`.studio-header-actions` in `studio.css`; Generate project is `.generate-project-trigger`.

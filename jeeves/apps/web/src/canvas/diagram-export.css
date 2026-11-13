@@ -17,13 +17,6 @@
 .diagram-export-options [role="alert"] {
   color: var(--minus);
 }
-.studio-tools .diagram-export-trigger {
-  align-items: center;
-  gap: 5px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 800;
-}
 .diagram-capture-host {
   position: fixed;
   top: 0;

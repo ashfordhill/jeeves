@@ -36,7 +36,10 @@ test("designs YouTube v3 from a blank project by mouse", async ({ page }, testIn
     await buildV3(page, id, log);
 
     // Runnable processes, by its checkbox in Generate project: one more revision.
-    await tool(page, "Generate project").click();
+    await page
+      .getByRole("banner")
+      .getByRole("button", { name: "Generate project", exact: true })
+      .click();
     log.clicks += 1;
     const dialog = page.getByRole("dialog", { name: "Generate experimental project" });
     const box = dialog.getByRole("checkbox", { name: "Runnable processes" });
