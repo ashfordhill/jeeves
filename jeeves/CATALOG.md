@@ -34,24 +34,29 @@ when the user or nothing is selected. People, external systems and their relatio
 
 Sixteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 
-| Kind | Name | Label | Tile type | What it is |
-| --- | --- | --- | --- | --- |
-| `service` | Microservice | Service | Service (default) | One independently deployed application. |
-| `worker` | Worker service | Worker | Service | A background application, typically after a queue. |
-| `redirect` | Redirect | Redirect | Service | A public redirect service with lookup store and cache shortcuts. |
-| `identity` | Identity | Identity | Service | One service integrating an existing identity provider (starts with OIDC). |
-| `notification` | Notifications | Notifications | Service | One service with email delivery intent (starts with Resend). |
-| `billing` | Billing | Billing | Service | One service with a payment provider choice (starts with Stripe). |
-| `uploads` | Uploads | Uploads | Service | One service taking large uploads into object storage; its transfer is signed URLs to storage (the default) or through the service with tus. |
-| `gateway` | Gateway | Gateway | API (default) | An entry point routing requests to internal services (starts with Traefik). |
-| `cdn` | CDN | CDN | API | Content delivery in front of an application or object store (starts with Cloudflare); can resize images on request. |
-| `database` | Database | Database | Database (default) | A logical store; engine and provider are separate choices. |
-| `search` | Search index | Search index | Database | A derived search index. |
-| `cache` | Cache | Cache | Cache | A logical cache with an optional TTL. |
-| `queue` | Message channel | Queue or Topic | Queue | One shared channel between publishers and consumers; it needs an owner. A work queue gives each message to one consumer; a topic copies it to every subscriber. |
-| `object-store` | Object storage | Object storage | Storage | A byte store with access intent. |
-| `external-api` | External API | External API | External | An external integration boundary, named for the provider. |
-| `browser` | Browser app | Browser app | none | Browser assets, standalone or served by an application. Not offered on the lane canvas. |
+| Kind | Name | Label | Icon | Tile type | What it is |
+| --- | --- | --- | --- | --- | --- |
+| `service` | Microservice | Service | `server` | Service (default) | One independently deployed application. |
+| `worker` | Worker service | Worker | `gear` | Service | A background application, typically after a queue. |
+| `redirect` | Redirect | Redirect | `turn` | Service | A public redirect service with lookup store and cache shortcuts. |
+| `identity` | Identity | Identity | `key` | Service | One service integrating an existing identity provider (starts with OIDC). |
+| `notification` | Notifications | Notifications | `bell` | Service | One service with email delivery intent (starts with Resend). |
+| `billing` | Billing | Billing | `card` | Service | One service with a payment provider choice (starts with Stripe). |
+| `uploads` | Uploads | Uploads | `cloud-up` | Service | One service taking large uploads into object storage; its transfer is signed URLs to storage (the default) or through the service with tus. |
+| `gateway` | Gateway | Gateway | `fork` | API (default) | An entry point routing requests to internal services (starts with Traefik). |
+| `cdn` | CDN | CDN | `globe` | API | Content delivery in front of an application or object store (starts with Cloudflare); can resize images on request. |
+| `database` | Database | Database | `cylinder` | Database (default) | A logical store; engine and provider are separate choices. |
+| `search` | Search index | Search index | `magnifier` | Database | A derived search index. |
+| `cache` | Cache | Cache | `bolt` | Cache | A logical cache with an optional TTL. |
+| `queue` | Message channel | Queue or Topic | `channel` | Queue | One shared channel between publishers and consumers; it needs an owner. A work queue gives each message to one consumer; a topic copies it to every subscriber. |
+| `object-store` | Object storage | Object storage | `bucket` | Storage | A byte store with access intent. |
+| `external-api` | External API | External API | `plug` | External | An external integration boundary, named for the provider. |
+| `browser` | Browser app | Browser app | `browser` | none | Browser assets, standalone or served by an application. Not offered on the lane canvas. |
+
+**Icon** (`visual.icon`) names one of the studio's hand-drawn glyphs, `STUDIO_GLYPHS` in
+[`studio-glyphs.ts`](apps/web/src/studio/studio-glyphs.ts), which `StudioIcon` draws with a dark
+outline, the kind's family colour as its accent and one light fill; module kinds name glyphs from
+the same set.
 
 **Label** is the short kind a tile shows under its name (`label`, read through `studioKindLabel`).
 A message channel's is **Queue** when its `mode` is `work-queue` and **Topic** otherwise, the
@@ -297,24 +302,24 @@ slots and generation: `studioComponentDefinitions` in
 
 | Kind | Name | Icon | Hosts | Slots: target · use | Generation |
 | --- | --- | --- | --- | --- | --- |
-| `rate-limiter` | Rate limiter | `shield` | any | store: Cache · read & write | Stub |
+| `rate-limiter` | Rate limiter | `gauge` | any | store: Cache · read & write | Stub |
 | `cache-reader` | Cache reader | `bolt` | any | cache: Cache · read & write; loader: a Data access in its tile | Lead of `positive-cache-read` |
-| `id-generator` | ID generator | `repeat` | any | store: Database or Cache · read & write | Stub |
-| `redirect-responder` | Redirect responder | `route` | any | none: can't connect | Stub |
-| `event-publisher` | Event publisher | `plug-connected` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
-| `event-consumer` | Event consumer | `plug` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
-| `data-access` | Data access | `database` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
-| `auth-guard` | Auth guard | `lock` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
-| `external-call` | External call | `world` | any | target: External API, an application or Identity · request | Stub |
+| `id-generator` | ID generator | `hash` | any | store: Database or Cache · read & write | Stub |
+| `redirect-responder` | Redirect responder | `turn` | any | none: can't connect | Stub |
+| `event-publisher` | Event publisher | `megaphone` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
+| `event-consumer` | Event consumer | `inbox` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
+| `data-access` | Data access | `cylinder` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
+| `auth-guard` | Auth guard | `shield` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
+| `external-call` | External call | `box-out` | any | target: External API, an application or Identity · request | Stub |
 | `custom` | Custom | `puzzle` | any | uses: any tile, many | Stub |
-| `multipart-uploads` | Multipart uploads | `cloud-upload` | Uploads, Service | objects: Object storage · read & write | Lead of `owned-multipart` |
-| `lifecycle-writer` | Lifecycle writer | `progress-check` | Worker | state: Database · read & write | Lead of `asset-lifecycle` |
-| `video-encoder` | Video encoder | `movie` | Worker | originals: Object storage · read | Lead of `video-hls` |
-| `video-packager` | Video packager | `stack-2` | Worker | outputs: Object storage · write | Part of `video-hls` |
-| `video-thumbnailer` | Video thumbnailer | `photo` | Worker | outputs: Object storage · write | Part of `video-hls` |
-| `event-counter` | Event counter | `sum` | Worker | none: can't connect | Lead of `event-counter` |
-| `index-writer` | Index writer | `list-search` | Worker | index: Search index · write | Lead of `search-projection`; hooks `mapping`, `document`, `event` |
-| `search-query` | Search query | `search` | Service | index: Search index · read | Lead of `search-query` (needs an Index writer on its index); hooks `preset`, `hit` |
+| `multipart-uploads` | Multipart uploads | `cloud-up` | Uploads, Service | objects: Object storage · read & write | Lead of `owned-multipart` |
+| `lifecycle-writer` | Lifecycle writer | `pie` | Worker | state: Database · read & write | Lead of `asset-lifecycle` |
+| `video-encoder` | Video encoder | `play` | Worker | originals: Object storage · read | Lead of `video-hls` |
+| `video-packager` | Video packager | `parcel` | Worker | outputs: Object storage · write | Part of `video-hls` |
+| `video-thumbnailer` | Video thumbnailer | `picture` | Worker | outputs: Object storage · write | Part of `video-hls` |
+| `event-counter` | Event counter | `counter` | Worker | none: can't connect | Lead of `event-counter` |
+| `index-writer` | Index writer | `index-card` | Worker | index: Search index · write | Lead of `search-projection`; hooks `mapping`, `document`, `event` |
+| `search-query` | Search query | `magnifier` | Service | index: Search index · read | Lead of `search-query` (needs an Index writer on its index); hooks `preset`, `hit` |
 | `favorites` | Favorites | `star` | Service | state: Database · read & write; items: a Data access in its tile (optional) | Lead of `favorites` |
 
 - **Hosts:** "any" is a Service, Worker or Uploads tile, and existing Redirect, Notifications

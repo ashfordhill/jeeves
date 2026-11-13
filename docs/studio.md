@@ -43,7 +43,7 @@ handle it: its **lane entries**. A user never reaches a store or a third party d
 does that for it. Actions are design intent: they generate no code, and tell the reader (and a
 future generator's frontend templates) which user flow each service serves.
 
-- **Tiles** are 128×128: a 56px top band with the kind's icon in its family colour, then the name
+- **Tiles** are 128×128: a 56px top band with the kind's icon, then the name
   in up to two lines and, at the bottom in small grey type, the tile's **kind label**
   (`studioKindLabel`): Service, Worker, Uploads, Identity, Database, Search index, Cache, Object
   storage, Queue or Topic, CDN, External API (and Gateway, Redirect, Notifications, Billing on
@@ -55,6 +55,11 @@ future generator's frontend templates) which user flow each service serves.
   above a name plate. An **action tile** is 128×128 and yellow: its lane icon in a round light
   badge and its name in large dark type (smaller for a long name), so it reads as the start of a
   flow, not as a service. Actions and the user have no kind label.
+- **Icons.** Every tile kind and module kind has one of the studio's hand-drawn glyphs
+  (`StudioIcon`, [CATALOG](../jeeves/CATALOG.md#tile-kinds-c2)): a dark outline, its family colour
+  as the accent and one light fill, the same outline in both themes. A module that is the same idea
+  as a tile shares its glyph (Data access and Database, Search query and Search index). Consume and
+  Produce keep their lane icons.
 - **Queue or Topic.** A message channel (the `queue` kind) is labelled by its mode
   (`settings.mode`): **Queue** for a work queue, **Topic** otherwise (the generation contract's
   default). A queue gives each message to one consumer: one transcoder takes each upload job. A
@@ -210,12 +215,12 @@ Click **Export diagram** in the top bar, beside Design and Settings, then **PNG*
 window width the button shows only its download icon. The download contains the full
 saved diagram in the current view, including offscreen tiles, their names, kind labels and icons,
 all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
-visual reference (D2: a recorded hash, not a gate), `7966fa4b…7cb7` (3008×2752). A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
+visual reference (D2: a recorded hash, not a gate), `d64b88c5…0fae` (3008×2752). A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
 and their lines the relationship each drawn line belongs to. No control is drawn: a container's
-footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `29ed909d…afca`,
+footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `cb8e8172…2f0e`,
 3840×3392). It uses the same HTML faces, SVG
 lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin,
-in the light tile colours whatever the studio's theme. Inspector details and the legend
+in the light tile and icon colours whatever the studio's theme. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
 The image shows canonical process and resource tiles, retaining every relationship identity.

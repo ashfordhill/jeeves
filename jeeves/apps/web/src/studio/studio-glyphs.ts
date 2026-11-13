@@ -1,0 +1,54 @@
+// The studio's glyphs: inner SVG markup on a 24 by 24 grid, drawn for the UI refresh (2026-11-12).
+// Classes: `a` accent fill, `c` light fill, `i` ink detail on a fill, `af`/`cf`/`ik` fills with no
+// outline, `so` then `sa` or `sc` an outlined accent or light stroke, `ck` a light stroke, `b` a
+// heavier stroke. `StudioIcon` styles them.
+export const STUDIO_GLYPHS: Readonly<Record<string, string>> = {
+  server:
+    "<rect class='a' x='3.5' y='4' width='17' height='7' rx='2.3'/><rect class='c' x='3.5' y='13' width='17' height='7' rx='2.3'/><circle class='ik' cx='7.2' cy='7.5' r='1.1'/><circle class='ik' cx='7.2' cy='16.5' r='1.1'/><path class='i' d='M11.5 7.5h5.5M11.5 16.5h5.5'/>",
+  browser:
+    "<rect class='c' x='3' y='4.5' width='18' height='15' rx='2.6'/><path class='a' d='M3 9.6V7.1a2.6 2.6 0 0 1 2.6-2.6h12.8A2.6 2.6 0 0 1 21 7.1v2.5z'/><circle class='ik' cx='6.3' cy='7.1' r='.9'/><circle class='ik' cx='9' cy='7.1' r='.9'/>",
+  gear: "<circle cx='12' cy='12' r='8.6' fill='none' stroke='var(--ic-ink)' stroke-width='3.8' stroke-dasharray='4.4 2.355' stroke-dashoffset='.6'/><circle cx='12' cy='12' r='8.6' fill='none' stroke='var(--fam)' stroke-width='2' stroke-dasharray='3.2 3.555'/><circle class='a' cx='12' cy='12' r='6.6'/><circle class='c' cx='12' cy='12' r='2.4'/>",
+  card: "<rect class='cf' x='2.5' y='5.5' width='19' height='13' rx='2.6'/><rect class='af' x='2.5' y='8.4' width='19' height='3.4'/><rect class='i' x='2.5' y='5.5' width='19' height='13' rx='2.6'/><path class='i' d='M6 15h4'/>",
+  turn: "<path class='so' d='M5.5 18.5v-5a4.5 4.5 0 0 1 4.5-4.5h8.6M15.2 5.2 19 9l-3.8 3.8'/><path class='sa' d='M5.5 18.5v-5a4.5 4.5 0 0 1 4.5-4.5h8.6M15.2 5.2 19 9l-3.8 3.8'/><circle class='c' cx='5.5' cy='18.8' r='2.4'/>",
+  bell: "<circle class='c' cx='12' cy='18.8' r='2.2'/><path class='a' d='M12 3.5A5.5 5.5 0 0 0 6.5 9v3.2c0 1.2-.5 2.3-1.3 3.1l-.7.7v1.5h15V16l-.7-.7a4.4 4.4 0 0 1-1.3-3.1V9A5.5 5.5 0 0 0 12 3.5z'/>",
+  key: "<path class='so' d='M12 12h8.8M17.3 12v3M20.6 12v2'/><path class='sc' d='M12 12h8.8M17.3 12v3M20.6 12v2'/><circle class='a' cx='8' cy='12' r='4.8'/><circle class='c' cx='8' cy='12' r='1.5'/>",
+  "cloud-up":
+    "<path class='a' d='M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.6a4 4 0 0 1-.5 7.9z'/><path class='i b' d='M12 17v-5.6M9.6 13.6 12 11.2l2.4 2.4'/>",
+  fork: "<path class='so' d='M3.6 12H9M9 12c3.2 0 3-5.5 6.6-5.5h4M9 12c3.2 0 3 5.5 6.6 5.5h4'/><path class='sa' d='M3.6 12H9M9 12c3.2 0 3-5.5 6.6-5.5h4M9 12c3.2 0 3 5.5 6.6 5.5h4'/><circle class='c' cx='8.4' cy='12' r='2.6'/>",
+  cylinder:
+    "<path class='c' d='M4.5 6.5v11c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3v-11z'/><path class='i' d='M4.5 12c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3'/><ellipse class='a' cx='12' cy='6.5' rx='7.5' ry='3'/>",
+  bolt: "<path class='a' d='M13.6 2.6 5 13.6h5.8l-1.4 7.8L19 10.2h-6.1z'/>",
+  channel:
+    "<rect class='c' x='2.5' y='7.2' width='19' height='9.6' rx='4.8'/><circle class='a' cx='7.4' cy='12' r='1.7' style='stroke-width:1.2'/><circle class='a' cx='12' cy='12' r='1.7' style='stroke-width:1.2'/><circle class='a' cx='16.6' cy='12' r='1.7' style='stroke-width:1.2'/>",
+  bucket:
+    "<path class='a' d='M4.5 7.2 6.3 19a1.8 1.8 0 0 0 1.8 1.5h7.8a1.8 1.8 0 0 0 1.8-1.5l1.8-11.8z'/><ellipse class='c' cx='12' cy='7' rx='7.5' ry='2.8'/>",
+  magnifier:
+    "<path class='so' d='M16 16l4.2 4.2'/><path class='sa' d='M16 16l4.2 4.2'/><circle class='a' cx='10.4' cy='10.4' r='7'/><circle class='c' cx='10.4' cy='10.4' r='3.9'/>",
+  globe:
+    "<circle class='a' cx='12' cy='12' r='8.6'/><path class='c' d='M12 3.4c2.6 2.3 3.9 5.2 3.9 8.6s-1.3 6.3-3.9 8.6c-2.6-2.3-3.9-5.2-3.9-8.6s1.3-6.3 3.9-8.6z'/><path class='i' d='M3.4 12h17.2'/>",
+  plug: "<rect class='c' x='8.3' y='3.6' width='2.4' height='7' rx='1.2'/><rect class='c' x='13.3' y='3.6' width='2.4' height='7' rx='1.2'/><rect class='c' x='10.8' y='16.5' width='2.4' height='5.2' rx='1.2'/><path class='a' d='M6.8 9.5h10.4V13a5.2 5.2 0 0 1-10.4 0z'/>",
+  gauge:
+    "<path class='a' d='M3.4 17a8.6 8.6 0 0 1 17.2 0z'/><path class='i b' d='M12 17l4.2-5.6'/><circle class='c' cx='12' cy='17' r='1.7'/>",
+  hash: "<rect class='a' x='3.5' y='3.5' width='17' height='17' rx='4.2'/><path class='i' d='M9.8 7.6 8.6 16.4M15.4 7.6l-1.2 8.8M7 10.2h10.4M6.6 13.8H17'/>",
+  megaphone:
+    "<path class='c' d='M7.4 14 8.9 19.4h3L10.6 15z'/><path class='a' d='M4 9.8v4.4l3.2.6 9.3 4.2V5L7.2 9.2z'/><path class='so' d='M19.6 9.6a3.8 3.8 0 0 1 0 4.8'/><path class='sa' d='M19.6 9.6a3.8 3.8 0 0 1 0 4.8'/>",
+  inbox:
+    "<path class='c' d='M3.5 13.5 6 7.5h12l2.5 6v5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z'/><path class='a' d='M3.5 13.5h5a3.5 3.5 0 0 0 7 0h5v5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z'/><path class='so' d='M12 3.4v6M9.6 7.2 12 9.6l2.4-2.4'/><path class='sa' d='M12 3.4v6M9.6 7.2 12 9.6l2.4-2.4'/>",
+  shield:
+    "<path class='a' d='M12 3 4.6 6v5.4c0 4.7 3 8.1 7.4 9.6 4.4-1.5 7.4-4.9 7.4-9.6V6z'/><path class='ck' d='M8.6 11.9l2.4 2.4 4.5-4.7'/>",
+  "box-out":
+    "<rect class='a' x='3.8' y='7' width='13.2' height='13.2' rx='2.5'/><path class='so' d='M11.4 12.6l8-8M14.8 4.6h4.6v4.6'/><path class='sc' d='M11.4 12.6l8-8M14.8 4.6h4.6v4.6'/>",
+  puzzle:
+    "<circle class='a' cx='10' cy='7' r='2.7'/><circle class='a' cx='17.6' cy='14.4' r='2.7'/><rect class='a' x='3.8' y='8.2' width='12.4' height='12.4' rx='2.2'/><rect class='af' x='8.3' y='7' width='3.4' height='2.3'/><rect class='af' x='15' y='12.7' width='2.3' height='3.4'/>",
+  pie: "<circle class='c' cx='12' cy='12' r='8.5'/><path class='a' d='M12 3.5a8.5 8.5 0 1 1-8.5 8.5H12z'/>",
+  play: "<rect class='a' x='3' y='5' width='18' height='14' rx='3.2'/><path class='c' d='M10 8.8v6.4l5.2-3.2z'/>",
+  parcel:
+    "<path class='a' d='M4 8.5 12 5l8 3.5v8L12 20l-8-3.5z'/><path class='c' d='M4 8.5 12 5l8 3.5-8 3.5z'/><path class='i' d='M12 12v8'/>",
+  picture:
+    "<rect class='c' x='3' y='4.5' width='18' height='15' rx='2.6'/><path class='a' d='M3.6 17.4 9 11.4l3.4 3.9 2.6-2.6 5.4 4.9a2.6 2.6 0 0 1-2 1.9H5.6a2.6 2.6 0 0 1-2-2.1z'/><circle class='ik' cx='15.8' cy='8.8' r='1.5'/>",
+  counter:
+    "<rect class='a' x='2.5' y='5.8' width='19' height='12.4' rx='3'/><rect class='c' x='5' y='8.4' width='4' height='7.2' rx='1.1' style='stroke-width:1.3'/><rect class='c' x='10' y='8.4' width='4' height='7.2' rx='1.1' style='stroke-width:1.3'/><rect class='c' x='15' y='8.4' width='4' height='7.2' rx='1.1' style='stroke-width:1.3'/>",
+  "index-card":
+    "<rect class='c' x='3.5' y='4' width='13.5' height='16' rx='2.2'/><path class='i' d='M6.8 8.4h6.9M6.8 11.8h6.9M6.8 15.2h3'/><circle class='a' cx='17.4' cy='16.6' r='4.1'/><path class='i' d='M17.4 14.6v4M15.4 16.6h4'/>",
+  star: "<path class='a' d='M12 3.2l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.5l6-.8z'/>",
+};

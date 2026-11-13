@@ -1,71 +1,21 @@
 /**
- * Tabler icons named by the kinds' visuals (`visual.icon`) and the module kinds
- * (`studioComponentVisuals`). Unknown names fall back to a box.
+ * The studio's own glyphs (`STUDIO_GLYPHS`), named by the kinds' visuals (`visual.icon`) and the
+ * module kinds (`studioComponentVisuals`): a dark outline, the family's accent fill (`--fam`, from
+ * the nearest `data-family`) and one light fill, styled by `studio-icon.css`. An unknown name falls
+ * back to Tabler's box, and no name to a question mark.
  */
-import {
-  type Icon,
-  IconArchive,
-  IconArrowsSplit,
-  IconBolt,
-  IconBox,
-  IconBrowser,
-  IconCloudUpload,
-  IconCpu,
-  IconCreditCard,
-  IconDatabase,
-  IconList,
-  IconListSearch,
-  IconLock,
-  IconMail,
-  IconMovie,
-  IconPhoto,
-  IconPlug,
-  IconPlugConnected,
-  IconProgressCheck,
-  IconPuzzle,
-  IconQuestionMark,
-  IconRepeat,
-  IconRoute,
-  IconSearch,
-  IconServer,
-  IconShield,
-  IconStack2,
-  IconStar,
-  IconSum,
-  IconWorld,
-} from "@tabler/icons-react";
-
-const ICONS: Record<string, Icon> = {
-  browser: IconBrowser,
-  database: IconDatabase,
-  server: IconServer,
-  archive: IconArchive,
-  "arrows-split": IconArrowsSplit,
-  bolt: IconBolt,
-  "cloud-upload": IconCloudUpload,
-  cpu: IconCpu,
-  "credit-card": IconCreditCard,
-  list: IconList,
-  "list-search": IconListSearch,
-  lock: IconLock,
-  mail: IconMail,
-  movie: IconMovie,
-  photo: IconPhoto,
-  plug: IconPlug,
-  "plug-connected": IconPlugConnected,
-  "progress-check": IconProgressCheck,
-  puzzle: IconPuzzle,
-  repeat: IconRepeat,
-  route: IconRoute,
-  search: IconSearch,
-  shield: IconShield,
-  "stack-2": IconStack2,
-  star: IconStar,
-  sum: IconSum,
-  world: IconWorld,
-};
+import { IconBox, IconQuestionMark } from "@tabler/icons-react";
+import { STUDIO_GLYPHS } from "./studio-glyphs.ts";
+import "./studio-icon.css";
 
 export function StudioIcon({ name, size = 20 }: { name: string | undefined; size?: number }) {
-  const Glyph = name ? (ICONS[name] ?? IconBox) : IconQuestionMark;
-  return <Glyph size={size} stroke={2} aria-hidden />;
+  if (!name) return <IconQuestionMark size={size} stroke={2} aria-hidden />;
+  const glyph = Object.hasOwn(STUDIO_GLYPHS, name) ? STUDIO_GLYPHS[name] : undefined;
+  if (glyph === undefined) return <IconBox size={size} stroke={2} aria-hidden />;
+  return (
+    <svg className="studio-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static artwork bundled with the app. */}
+      <g dangerouslySetInnerHTML={{ __html: glyph }} />
+    </svg>
+  );
 }

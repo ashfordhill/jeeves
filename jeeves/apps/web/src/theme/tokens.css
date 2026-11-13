@@ -34,7 +34,8 @@
   --off-ink: #8f2a22;
   /* Tile faces: the top band of a tile that takes modules and of every other tile, the User tile
      and its figure, Consume and Produce and their word, the borders inside a tile (the band,
-     module rows) and around menus, and the light fill of an action's badge. */
+     module rows) and around menus. Icons: the glyphs' outline and their light fill, which is also
+     an action's badge. */
   --cap-host: #b4d9f6;
   --cap-plain: #bfe8dc;
   --user-fill: #e3d9f8;
@@ -42,6 +43,7 @@
   --action-fill: #f6c945;
   --action-ink: #071c28;
   --row-line: #8fa5b1;
+  --ic-ink: #071c28;
   --ic-fill: #fdfeff;
   --select-ring: rgba(26, 143, 212, 0.5);
   --banner: #d4f0f8;
@@ -91,6 +93,7 @@
   --action-fill: #e6bb4a;
   --action-ink: #071c28;
   --row-line: #4f7285;
+  --ic-ink: #071c28;
   --ic-fill: #dcebf2;
   --select-ring: rgba(126, 182, 224, 0.65);
   --banner: #1e3f4e;
@@ -112,6 +115,7 @@
   --action-fill: #f6c945;
   --action-ink: #071c28;
   --row-line: #8fa5b1;
+  --ic-ink: #071c28;
   --ic-fill: #fdfeff;
 }
 
@@ -413,59 +417,110 @@ body,
   color: var(--status-ink);
 }
 
-/* Capability colors belong to the shared theme, independently of legacy editor mounting. */
+/* Capability colors belong to the shared theme, independently of legacy editor mounting.
+   --type-color colours a family's text and borders; --fam is its icons' accent fill. */
 [data-family] {
   --type-color: #637687;
+  --fam: #37b8aa;
 }
 [data-family="api"] {
   --type-color: #2676bd;
+  --fam: #46a0e6;
 }
 [data-family="client"] {
   --type-color: #8053b7;
+  --fam: #9d74da;
 }
 [data-family="endpoint"] {
   --type-color: #087e80;
+  --fam: #37b8aa;
 }
 [data-family="domain"] {
   --type-color: #5a60b6;
+  --fam: #37b8aa;
 }
 [data-family="data"] {
   --type-color: #a36b10;
+  --fam: #f4ba36;
 }
 [data-family="worker"] {
   --type-color: #b05c20;
+  --fam: #f28f3d;
 }
 [data-family="messaging"] {
   --type-color: #b44d78;
+  --fam: #ea6c9f;
+}
+[data-family="external"] {
+  --fam: #93a8b8;
 }
 [data-family="system"] {
   --type-color: #337787;
+  --fam: #37b8aa;
+}
+:root[data-theme="dark"] [data-family] {
+  --fam: #5fd0c2;
 }
 :root[data-theme="dark"] [data-family="api"] {
   --type-color: #75b9f4;
+  --fam: #6bb6f2;
 }
 :root[data-theme="dark"] [data-family="client"] {
   --type-color: #c1a0ef;
+  --fam: #b99cf0;
 }
 :root[data-theme="dark"] [data-family="endpoint"] {
   --type-color: #60d2c9;
+  --fam: #5fd0c2;
 }
 :root[data-theme="dark"] [data-family="domain"] {
   --type-color: #a7abf4;
+  --fam: #5fd0c2;
 }
 :root[data-theme="dark"] [data-family="data"] {
   --type-color: #e8c276;
+  --fam: #f2c65e;
 }
 :root[data-theme="dark"] [data-family="worker"] {
   --type-color: #f4ad7b;
+  --fam: #f5a05e;
 }
 :root[data-theme="dark"] [data-family="messaging"] {
   --type-color: #ec9fbd;
+  --fam: #f08db5;
 }
-:root[data-theme="dark"] [data-family="external"],
+:root[data-theme="dark"] [data-family="external"] {
+  --type-color: #b7cad8;
+  --fam: #a9bccb;
+}
 :root[data-theme="dark"] [data-family="person"] {
   --type-color: #b7cad8;
+  --fam: #5fd0c2;
 }
 :root[data-theme="dark"] [data-family="system"] {
   --type-color: #8dc5d1;
+  --fam: #5fd0c2;
+}
+
+/* An export's icons keep their light accents whatever the studio's theme. */
+:root .diagram-capture-host .board.board-snapshot [data-family] {
+  --fam: #37b8aa;
+}
+:root .diagram-capture-host .board.board-snapshot [data-family="api"] {
+  --fam: #46a0e6;
+}
+:root .diagram-capture-host .board.board-snapshot [data-family="client"] {
+  --fam: #9d74da;
+}
+:root .diagram-capture-host .board.board-snapshot [data-family="data"] {
+  --fam: #f4ba36;
+}
+:root .diagram-capture-host .board.board-snapshot [data-family="worker"] {
+  --fam: #f28f3d;
+}
+:root .diagram-capture-host .board.board-snapshot [data-family="messaging"] {
+  --fam: #ea6c9f;
+}
+:root .diagram-capture-host .board.board-snapshot [data-family="external"] {
+  --fam: #93a8b8;
 }

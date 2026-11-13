@@ -59,7 +59,7 @@ type ValueAt<T, P extends PropertyKey> = T extends unknown
   : never;
 export type StudioFieldGroup = "General" | "Options" | "Connections";
 export type StudioVisual = {
-  /** A StudioIcon (Tabler) name; no external image or logo request. */
+  /** A StudioIcon glyph name (the web app's `STUDIO_GLYPHS`); no external image or logo request. */
   icon: string;
   /** Existing adaptive data-family theme color, including its dark-mode value. */
   color: "api" | "client" | "worker" | "data" | "messaging" | "external" | "generic";
@@ -384,7 +384,7 @@ export const studioDefinitions = Object.freeze({
     description: "An independently executed background application.",
     classification: applicationClassification,
     role: "worker",
-    visual: { icon: "cpu", color: "worker", shape: "worker" },
+    visual: { icon: "gear", color: "worker", shape: "worker" },
     fields: [
       ...general,
       ...codedApplication("worker"),
@@ -408,7 +408,7 @@ export const studioDefinitions = Object.freeze({
     description: "One Billing service with a payment integration choice.",
     classification: applicationClassification,
     role: "application",
-    visual: { icon: "credit-card", color: "api", shape: "service" },
+    visual: { icon: "card", color: "api", shape: "service" },
     fields: [
       ...general,
       ...codedApplication("billing"),
@@ -434,7 +434,7 @@ export const studioDefinitions = Object.freeze({
     description: "One public Redirect service with identity-backed lookup dependencies.",
     classification: applicationClassification,
     role: "application",
-    visual: { icon: "route", color: "api", shape: "service" },
+    visual: { icon: "turn", color: "api", shape: "service" },
     fields: [
       ...general,
       ...codedApplication("redirect"),
@@ -469,7 +469,7 @@ export const studioDefinitions = Object.freeze({
     description: "One notification application with email delivery integration intent.",
     classification: applicationClassification,
     role: "application",
-    visual: { icon: "mail", color: "api", shape: "service" },
+    visual: { icon: "bell", color: "api", shape: "service" },
     fields: [
       ...general,
       ...codedApplication("notification"),
@@ -495,7 +495,7 @@ export const studioDefinitions = Object.freeze({
     description: "One application integrating an existing identity provider.",
     classification: applicationClassification,
     role: "application",
-    visual: { icon: "lock", color: "api", shape: "service" },
+    visual: { icon: "key", color: "api", shape: "service" },
     fields: [
       ...general,
       ...codedApplication("identity"),
@@ -522,7 +522,7 @@ export const studioDefinitions = Object.freeze({
       "One service that takes large uploads into object storage; its transfer says how the bytes travel.",
     classification: applicationClassification,
     role: "application",
-    visual: { icon: "cloud-upload", color: "api", shape: "service" },
+    visual: { icon: "cloud-up", color: "api", shape: "service" },
     fields: [
       ...general,
       ...codedApplication("uploads"),
@@ -549,7 +549,7 @@ export const studioDefinitions = Object.freeze({
     description: "One entry point that routes client requests to internal services.",
     classification: applicationClassification,
     role: "application",
-    visual: { icon: "arrows-split", color: "api", shape: "service" },
+    visual: { icon: "fork", color: "api", shape: "service" },
     fields: [
       ...general,
       execution,
@@ -584,7 +584,7 @@ export const studioDefinitions = Object.freeze({
     description: "One logical authoritative store; engine and provider are separate choices.",
     classification: dataClassification,
     role: "data",
-    visual: { icon: "database", color: "data", shape: "cylinder" },
+    visual: { icon: "cylinder", color: "data", shape: "cylinder" },
     fields: [
       ...general,
       owner(),
@@ -660,7 +660,7 @@ export const studioDefinitions = Object.freeze({
     description: "One shared logical channel, owned explicitly, between publishers and consumers.",
     classification: dataClassification,
     role: "messaging",
-    visual: { icon: "list", color: "messaging", shape: "channel" },
+    visual: { icon: "channel", color: "messaging", shape: "channel" },
     fields: [
       ...general,
       owner(true),
@@ -702,7 +702,7 @@ export const studioDefinitions = Object.freeze({
     description: "A logical byte store with explicit access intent.",
     classification: dataClassification,
     role: "data",
-    visual: { icon: "archive", color: "data", shape: "stack" },
+    visual: { icon: "bucket", color: "data", shape: "stack" },
     fields: [
       ...general,
       owner(),
@@ -734,7 +734,7 @@ export const studioDefinitions = Object.freeze({
     description: "A logical derived search index with engine and hosting intent.",
     classification: dataClassification,
     role: "data",
-    visual: { icon: "search", color: "data", shape: "cylinder" },
+    visual: { icon: "magnifier", color: "data", shape: "cylinder" },
     fields: [
       ...general,
       owner(),
@@ -768,7 +768,7 @@ export const studioDefinitions = Object.freeze({
     description: "External content delivery with an explicit existing origin.",
     classification: externalClassification,
     role: "integration",
-    visual: { icon: "world", color: "external", shape: "integration" },
+    visual: { icon: "globe", color: "external", shape: "integration" },
     fields: [
       ...general,
       {

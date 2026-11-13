@@ -12153,3 +12153,71 @@ untouched and unstaged.
 **For the next unit.** UI05 can start; `--ic-fill` already exists in both theme blocks and in the
 export block in `tokens.css`. The band is `.lane-tile-cap` in `Tile.tsx`, the icon
 `.lane-tile-icon` (36px) inside it.
+
+## 2026-11-13 — UI05: One icon set
+
+**What changed.**
+- New `jeeves/apps/web/src/studio/studio-glyphs.ts`: `assets/studio-glyphs.ts.txt` copied as is, then
+  `pnpm format` (it joined short entries onto one line). 30 glyphs.
+- `StudioIcon.tsx`: same signature. A name in `STUDIO_GLYPHS` renders `<svg className="studio-icon"
+  width height viewBox="0 0 24 24" aria-hidden>` with the glyph in a `<g dangerouslySetInnerHTML>`
+  (the `biome-ignore` reason as `HumanFigure`'s); an unknown name falls back to `IconBox`, no name to
+  `IconQuestionMark`; the 27 other Tabler imports are gone. It imports the new `studio-icon.css`
+  (the preview's `.ic` rules with `.studio-icon` in place of `.ic`).
+- `tokens.css`: `--ic-ink` in both theme blocks and in the export block; `--fam` on every
+  `[data-family]` rule (light and dark, the Shared values table); a dark `[data-family]` base rule
+  for "every other family"; a light `[data-family="external"]` rule; the dark external/person rule
+  split in two (person takes the generic `--fam`); export-only rules that keep the light `--fam`
+  values on `.diagram-capture-host .board.board-snapshot [data-family…]`.
+- `packages/spec`: the icon names of `studio-definitions.ts` (`visual.icon`) and
+  `studio-modules.ts` (`studioComponentVisuals`) renamed as the plan's two tables; colour families
+  unchanged; `StudioVisual.icon`'s comment no longer says Tabler.
+- `canvas.css`: `color: var(--type-color…)` removed from `.lane-tile-icon`, `.lane-container-icon`,
+  `.lane-container-row-icon`, `.lane-module-menu-icon`, `.lane-fan-icon` and `.lane-module-icon`.
+  `LaneIcon` and the toolbar stay Tabler.
+- Tests: `StudioIcon.test.tsx` rewritten (every kind's and module kind's icon is a key of
+  `STUDIO_GLYPHS`; a known name renders `.studio-icon`; an unknown name the box, none the question
+  mark). `e2e/spawn.spec.ts`'s every-kind test asserted `svg.tabler-icon-<name>`, exactly the
+  Tabler icons this unit replaces: it now finds one `svg.studio-icon` per new tile and compares its
+  markup with the glyph of the new name.
+- Docs: `jeeves/CATALOG.md` (an Icon column in the kinds table, the module table's icons, a note on
+  `STUDIO_GLYPHS`); `docs/studio.md` (an Icons bullet, the export's icon colours, the two YouTube
+  export hashes); `jeeves/PLAN.md` (`studio/`'s glyph files).
+
+**Checks.** `pnpm check` before any change: exit 0, 106 files, 825 tests. After: exit 0, 106 files,
+827 tests (lint's one info is older). Step 4's grep found only `StudioIcon.tsx` and the two spec
+files being edited. `pnpm test:e2e` (native, with the mouse spec present): 77 passed (73 + 4,
+5.2 min). `pnpm --filter @jeeves/web build`: exit 0. Mouse check (`ui05-check.spec.ts`, then
+deleted): 4 passed, 1440×900 and 1280×800, no page error. A blank project given every link-fan kind
+by mouse, and a YouTube study, in light and then dark: every tile's glyph is its kind's (36px in
+Simple and on a plain tile in Detailed, 22px in a container's header), every module row's its
+kind's (16px, YouTube's 20 rows), no fallback icon on the board; the Service's and the Worker's
+module menus together show all 19 module kinds' glyphs at 20px; every outline computes to `#071c28`
+in both themes (no white outline), each accent to its family's `--fam` and each light fill to
+`--ic-fill`. A fresh YouTube study exports Simple `d64b88c5…0fae` (3008×2752) and Detailed
+`cb8e8172…2f0e` (3840×3392), the same from light and dark and at both sizes. The spec deleted its
+projects; `jeeves_e2e` again holds only "TinyURL · studio study" and "E2E Every kind". Six images
+in `docs/plans/ui-refresh/evidence/ui05/` (every kind in Simple, YouTube in Detailed zoomed in, a
+Service's module menu; light and dark) match `preview/icons-light.png` and `icons-dark.png`.
+**Differences from the plan.**
+- "The eleven `.ic …` rules" are the preview's eleven lines 80–90 (13 selectors: line 84 holds
+  three); all were copied.
+- Step 3's `--fam` needed three rules the file lacked: a dark base `[data-family]` rule, a light
+  `external` rule, and the dark `external`/`person` rule split so only External takes `#a9bccb`. The
+  export block gets `--fam` rules too (rule 7: in `tokens.css`, not `diagram-export.css`), or a
+  dark-mode export draws dark accents.
+- `StudioIcon` checks `Object.hasOwn(STUDIO_GLYPHS, name)`, so a name such as `toString` still
+  falls back to the box.
+- CATALOG's kinds table had no icon column; one was added.
+- `spawn.spec.ts` imports `STUDIO_GLYPHS` from `src/` to compare a tile's markup.
+**Noticed.** `describeStudioDefinition` (chat) spreads each definition, so its `visual.icon` values
+now carry the new names; no eval case, test or snapshot pins them, and recorded reports under
+`docs/evals/` keep the old ones. YouTube's Multipart uploads, Segmenter and encoder, Packager,
+Thumbnailer and Index writer are Custom modules, so they draw the puzzle. Five older wrappers still
+set `color: var(--type-color…)` on an icon (`.lane-inspector-icon`, `.lane-inspector-back-icon`,
+`.lane-inspector-title > svg`, `.lane-remove-list li > svg`, `.lane-kind-icon`); the glyphs ignore
+it. `diagram-export.css` holds literal `--type-color` export values (older). No uncommitted changes
+under `jeeves-generator/` or `field-projects/`; the owner's dirty paths stay untouched and
+unstaged.
+**For the next unit.** UI06 can start. Glyphs read `--fam` from the nearest `data-family`
+(`tokens.css`); `--sfam` is not added yet.

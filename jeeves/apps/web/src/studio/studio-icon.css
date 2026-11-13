@@ -1,0 +1,74 @@
+/* The studio glyphs (StudioIcon.tsx): a 24 grid, an ink outline, one accent fill (the nearest
+   data-family's --fam) and one light fill. */
+.studio-icon {
+  flex: none;
+  overflow: visible;
+}
+.studio-icon .i {
+  fill: none;
+  stroke: var(--ic-ink);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .a {
+  fill: var(--fam);
+  stroke: var(--ic-ink);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .c {
+  fill: var(--ic-fill);
+  stroke: var(--ic-ink);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .af {
+  fill: var(--fam);
+}
+.studio-icon .cf {
+  fill: var(--ic-fill);
+}
+.studio-icon .ik {
+  fill: var(--ic-ink);
+}
+.studio-icon .al {
+  fill: none;
+  stroke: var(--fam);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .b {
+  stroke-width: 2.1;
+}
+.studio-icon .so {
+  fill: none;
+  stroke: var(--ic-ink);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .sa {
+  fill: none;
+  stroke: var(--fam);
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .sc {
+  fill: none;
+  stroke: var(--ic-fill);
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-icon .ck {
+  fill: none;
+  stroke: var(--ic-fill);
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

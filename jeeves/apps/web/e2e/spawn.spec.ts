@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { STUDIO_GLYPHS } from "../src/studio/studio-glyphs.ts";
 import {
   createStudy,
   design,
@@ -19,6 +20,14 @@ import {
 } from "./studio.ts";
 
 const LINK_TAB = "Add linked tile";
+
+/** A studio glyph's markup as the browser writes it out inside an SVG group. */
+const drawnGlyph = (page: Page, name: string) =>
+  page.evaluate((markup) => {
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.innerHTML = markup;
+    return group.innerHTML;
+  }, STUDIO_GLYPHS[name] ?? "");
 /** The link fan's eleven kinds by row (application, data, messaging, edge), as named in it. */
 const FAN = [
   ["Microservice", "Worker service", "Uploads", "Identity"],
@@ -289,16 +298,16 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
     // A new message channel is a work queue, so its label reads Queue.
     const plan: [from: string, name: string, kind: string, icon: string, label: string][] = [
       ["Consume", "Microservice", "service", "server", "Service"],
-      ["Consume", "Uploads", "uploads", "cloud-upload", "Uploads"],
-      ["Consume", "Identity", "identity", "lock", "Identity"],
-      ["Consume", "CDN", "cdn", "world", "CDN"],
-      ["Microservice", "Database", "database", "database", "Database"],
-      ["Microservice", "Search index", "search", "search", "Search index"],
+      ["Consume", "Uploads", "uploads", "cloud-up", "Uploads"],
+      ["Consume", "Identity", "identity", "key", "Identity"],
+      ["Consume", "CDN", "cdn", "globe", "CDN"],
+      ["Microservice", "Database", "database", "cylinder", "Database"],
+      ["Microservice", "Search index", "search", "magnifier", "Search index"],
       ["Microservice", "Cache", "cache", "bolt", "Cache"],
-      ["Microservice", "Object storage", "object-store", "archive", "Object storage"],
-      ["Uploads", "Message channel", "queue", "list", "Queue"],
+      ["Microservice", "Object storage", "object-store", "bucket", "Object storage"],
+      ["Uploads", "Message channel", "queue", "channel", "Queue"],
       ["Uploads", "External API", "external-api", "plug", "External API"],
-      ["Message channel", "Worker service", "worker", "cpu", "Worker"],
+      ["Message channel", "Worker service", "worker", "gear", "Worker"],
     ];
     for (const [index, [from, name, kind, icon, label]] of plan.entries()) {
       await tile(page, from).click({ position: { x: 20, y: 12 } });
@@ -308,9 +317,9 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
       // Detailed a tile that can hold modules is a container, even with none yet.
       const added = tile(page, name);
       await expect(added).toHaveClass(/selected/);
-      await expect(
-        added.locator(`:is(.lane-tile-icon, .lane-container-icon) svg.tabler-icon-${icon}`),
-      ).toHaveCount(1);
+      const glyph = added.locator(":is(.lane-tile-icon, .lane-container-icon) svg.studio-icon");
+      await expect(glyph).toHaveCount(1);
+      expect(await glyph.locator("g").innerHTML()).toBe(await drawnGlyph(page, icon));
       await expect(added.locator(":is(.lane-tile-kind, .lane-container-kind)")).toHaveText(label);
       await expect(added.locator(".lane-container")).toHaveCount(
         ["service", "uploads", "worker"].includes(kind) ? 1 : 0,

@@ -97,7 +97,6 @@
 .lane-tile-icon {
   display: flex;
   flex: 0 0 36px;
-  color: var(--type-color);
 }
 
 .lane-tile-name {
@@ -178,7 +177,6 @@
 .lane-container-icon {
   display: flex;
   flex: 0 0 22px;
-  color: var(--type-color);
 }
 
 /* The name and, below it, the kind label. */
@@ -274,7 +272,6 @@
 .lane-container-row-icon {
   display: flex;
   flex: 0 0 16px;
-  color: var(--type-color);
 }
 
 .lane-container-row-name {
@@ -568,7 +565,6 @@
 .lane-module-menu-icon {
   display: flex;
   margin-top: 1px;
-  color: var(--type-color, var(--ink));
 }
 
 .lane-module-menu-text {
@@ -740,10 +736,9 @@
   font-size: 15px;
 }
 
-/* A link fan item's kind icon, in its kind's colour; an action's in plain ink. */
+/* A link fan item's kind icon; an action's in plain ink. */
 .lane-fan-icon {
   display: flex;
-  color: var(--type-color);
 }
 
 .lane-fan-action {
@@ -1099,7 +1094,6 @@
   display: flex;
   grid-row: span 3;
   margin-top: 1px;
-  color: var(--type-color, var(--ink));
 }
 
 .lane-module-card > strong {
