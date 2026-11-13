@@ -12221,3 +12221,95 @@ under `jeeves-generator/` or `field-projects/`; the owner's dirty paths stay unt
 unstaged.
 **For the next unit.** UI06 can start. Glyphs read `--fam` from the nearest `data-family`
 (`tokens.css`); `--sfam` is not added yet.
+
+## 2026-11-13 — UI06: Module menu, module cards and plain words
+
+**What changed.**
+- `studio/module-status.ts`: `generationWords` (the plan's three words and meanings);
+  `moduleStatusLine` says Generated (`template`), You write it (`stub`, `custom`) or Refused, with
+  the same details. The `moduleGenerationLabels` re-export is gone (the studio no longer shows it).
+- New `studio/module-groups.ts`: `moduleGroups` (Requests `api`, Data `data`, Events `messaging`,
+  Files & media `worker`, Custom `generic`; kinds in `studioComponentKinds` order) and
+  `moduleGroupOf(kind)`; `module-groups.test.ts` checks every kind is in exactly one group.
+- `canvas/ModuleMenu.tsx`: `moduleMenuGroups` returns `{ label, family, items }`, each item with its
+  `generation` (no `status` or `color`); new exported `GenerationDot` (13px, `title` = the word).
+  The menu draws a `fieldset` per group (`data-family`; a `legend` with a `--fam` square), cards two
+  to a row (`repeat(auto-fit, minmax(190px, 1fr))`, as the preview: a lone card takes the row), each
+  card name (15px, 900) + dot, then the 15px icon + one cut line; the accessible description is
+  "<word>. <description>"; a three-line legend under the last group. The old status headings and
+  their CSS are gone; placement, focus and closing are unchanged.
+- `canvas/TileInspector.tsx` (`ModuleCards`): the same card (group family, `--sfam` fill, name
+  first) with a `--badge` pill (dot and word, from `moduleGeneration(kind, hostKind)`), then the
+  icon, the kind and the description on one cut line (`.lane-module-icon`, `.lane-module-kind`,
+  `.lane-module-description` kept).
+- The module page (`InspectorForm.tsx`) shows the new words through `moduleStatusLine`; only its
+  comment changed. `canvas/GenerationModules.tsx` (Generate project's Modules list) now takes its
+  label from the spec's `moduleStatusLabels`, so it keeps Template, Stub, Custom and Refused.
+- `canvas.css`: the menu and card rules (border `--row-line`, hover border `--ink`, no mixed fills),
+  `.lane-generation-dot`, `.lane-generation-pill`, `.lane-module-menu-legend` (`--hairline` rule);
+  `.lane-module-list` gets `grid-template-columns: minmax(0, 1fr)` so a cut line can't widen a card.
+- `tokens.css`: `--badge` and `--hairline` in both theme blocks; `--sfam` on every `[data-family]`
+  rule, light, dark and the export block's.
+- Tests: `ModuleMenu.test.tsx` (groups, families, generations, dots, legend, the new description),
+  `module-status.test.ts` (the words, `generationWords`). E2E: `module-authoring.spec.ts` (the menu
+  helper reads each card's dot title; SERVICE and WORKER in the new menu order and words; the
+  module page's "You write it", "GeneratedCache read", "GeneratedFavorites"; the Generate dialog's
+  "Stub…" matches stay), `module-menu.spec.ts` (the group names; see Differences), `modules.spec.ts`
+  (see Differences).
+- Docs: `docs/studio.md` (Adding a module, the inspector's Modules, the module page, chat's
+  `listStudioDefinitions` row, the Generate dialog's words), `jeeves/CATALOG.md` (the module menu),
+  `jeeves/PLAN.md` (`ModuleMenu.tsx`), `docs/glossary.md` (the one new row).
+
+**Checks.** `pnpm check` before any change: exit 0, 106 files, 827 tests. After: exit 0, 107 files,
+830 tests (lint's one info is older, in `jeeves-generator/templates/`). `pnpm test:e2e` (native,
+with the mouse spec present): first run 74 passed, 1 failed: `module-menu.spec.ts:60` "It sits
+beside the tile, not over it, on the board": the new Microservice menu is 780px tall and the board
+at 1440×900 is 808px, so by the unchanged rule (`size.h <= board.h - 32`) it opens over a rail.
+Rerun alone: failed the same way. With that test's window set to 1440×1000: passed alone; full
+rerun 75 passed (73 + 2, 5.1 min). `pnpm --filter @jeeves/web build`: exit 0. Mouse check
+(`ui06-check.spec.ts`, then deleted): 2 passed, 1440×900 and 1280×800, no page error. On a YouTube
+study, light then dark: Watch API's menu (board `+`) and the Transcoder's (inspector `+`) show
+their groups in order, each heading's square its `--fam`, every card its group's `data-family`,
+`--sfam` fill and `--fam` border, the name 15px/900, one 15px glyph, a one-line description, the
+dot's generation and title as `moduleGeneration` gives, and the three-line legend over a
+`--hairline` rule; `--badge` and `--hairline` compute to the plan's values. Both tiles' inspector
+cards have their group's fill, a `--badge` pill with the right word, and one line. A module from
+each group was added by mouse (Watch API: External call, ID generator, Event consumer, Custom;
+Search API: Multipart uploads; Transcoder: Rate limiter, ID generator, Event publisher, Video
+packager, Custom); each page opened with its name focused and read You write it, Generated or
+Refused by its status; Watch API's pages read Refused and You write it; Generate project's list
+read only Refused and Stub. Menu sizes: Microservice 780px (fits at 1440×900; scrolls 8px at
+1280×800), Worker 843px (fits at 1440×900; scrolls 75px at 1280×800). The spec deleted its
+projects; `jeeves_e2e` holds only "TinyURL · studio study" and "E2E Every kind". Six images in
+`docs/plans/ui-refresh/evidence/ui06/` (Watch API's menu at 1440, the Transcoder's at 1280, Watch
+API's cards at 1440; light and dark) match `preview/module-menu-*.png` and the module cards of
+`preview/inspector-*.png`.
+**Differences from the plan.**
+- `moduleStatusLine` also fed Generate project's Modules list; the unit's Tests keep that dialog's
+  matches, so `GenerationModules.tsx` reads the spec's `moduleStatusLabels` for its word.
+- Within a group the kinds follow `studioComponentKinds`, as step 2 says; the plan's table and the
+  preview list some in another order (Requests: Rate limiter, Redirect responder, Auth guard,
+  External call; Data: Cache reader, ID generator, Data access, Lifecycle writer, Event counter,
+  Index writer, Search query, Favorites).
+- `module-menu.spec.ts:60` now runs at 1440×1000: its "on the board" check assumed a menu short
+  enough for an 808px board, which the preview's taller cards are not; every assertion is kept.
+- `modules.spec.ts` checked a two-line description clamp, exactly the card layout this unit
+  replaces; it now checks the one cut line (`.lane-module-text`) and two cards' pill words.
+- `--sfam` is also in the export block's family rules (light values), though nothing on the board
+  uses it yet. The menu's border is `--row-line` (the preview's `--pop-line`); its fill stays
+  `--cream` until UI13's `--panel`.
+- The mouse check added Multipart uploads to Search API: Watch API refuses it (an existing rule:
+  "Watch API has two Data access modules on databases").
+**Noticed.** The owner's commit `09b4bee` ("push 11/12 & part 11/13", 09:57, already on
+`origin/main`) took in this unit's code, tests, docs, evidence and HUMAN_FEEDBACK line while the
+checks ran, together with the temporary `ui06-check.spec.ts`; this unit's commit deletes that spec
+and adds this entry. The preview's card sizes make a Microservice's menu open over a rail at
+1440×900 and both menus scroll at 1280×800 (the legend is below the fold there); the owner may want
+a tighter menu. `docs/design-playbook.md`'s V3-03 lesson still says to group the menu by Template,
+Part, Stub (a dated entry; not edited). `.lane-module-status[data-status="refused"] strong` mixes
+yellow with transparent in both themes (older; the module page was to stay unchanged). The modes
+of `jeeves/scripts/e2e-docker.sh` and `docs/plans/production-foundations/evidence/pf13/f3-catch.sh`
+show as changed and are not this unit's; left untouched and unstaged.
+**For the next unit.** UI07 can start. `--badge`, `--hairline` and `--sfam` are in `tokens.css`;
+the module cards are `ModuleCards` in `TileInspector.tsx`, the dot is `GenerationDot` in
+`ModuleMenu.tsx`, and the groups are `studio/module-groups.ts`.
