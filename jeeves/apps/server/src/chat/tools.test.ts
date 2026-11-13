@@ -221,7 +221,7 @@ describe("studio chat tools", () => {
     ]);
     expect(design.tiles).toHaveLength(8);
     const redirect = design.tiles.find((t: { id: string }) => t.id === "redirect");
-    expect(redirect).toMatchObject({ type: "service", kind: "redirect" });
+    expect(redirect).toMatchObject({ type: "service", kind: "service" });
     // A link into a store says whether it writes (from the store's owner) or reads.
     expect(
       redirect.links.map(

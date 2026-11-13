@@ -283,7 +283,7 @@ describe("module commands", () => {
     expect(moduleStatus(next, "redirect-cache-reader")).toMatchObject({
       status: "refused",
       reason:
-        "The link from Redirect service to URL database uses Service identity, which its template can't use; 14 other saved values can't be used either.",
+        "The link from Redirect service to URL database uses Service identity, which its template can't use; 12 other saved values can't be used either.",
     });
     // A design whose modules make no template gets no ownership.
     const marketplace = studioArchitectureExample("studio-marketplace").design;

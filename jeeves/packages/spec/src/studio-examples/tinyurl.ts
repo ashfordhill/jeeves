@@ -44,7 +44,7 @@ const description =
 
 export const TINYURL_STUDIO_EXAMPLE = {
   id: "studio-tinyurl",
-  version: "3.2.0",
+  version: "3.3.0",
   name: "TinyURL · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -248,7 +248,7 @@ export function tinyurlStudioExample() {
         description:
           "Resolves short codes on the hot path, cache first, answers 302 and publishes the click.",
         settings: {
-          kind: "redirect",
+          kind: "service",
           execution: "docker",
           language: "go",
           exposure: "public",
@@ -257,8 +257,6 @@ export function tinyurlStudioExample() {
           autoscaleOn: "requests-per-second",
           requestTimeoutMs: 250,
           concurrencyLimit: 5000,
-          lookupStoreConnection: "redirect-db",
-          lookupCacheConnection: "redirect-cache",
         },
       },
       {

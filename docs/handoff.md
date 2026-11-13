@@ -11943,3 +11943,35 @@ two v3.2 → v3.3 sentences in `docs/studio.md` and `jeeves/PLAN.md` that the fi
 **Checks.** None (docs only).
 **For the next unit.** Rerun UI01 from the start of its section. The units still run in order,
 UI01 → UI14; after UI14 the owner wants BR01, BR02, GS07 and GS09, in that order.
+
+## 2026-11-13 — UI01: The built-in studies use no legacy kind
+
+**What changed.**
+- `tinyurl.ts` (3.3.0): the Redirect service is a Service, with no lookup store or cache setting.
+- `marketplace.ts` (1.4.0): Payments is a Service (no Stripe provider) and calls a new External
+  API tile, **Stripe API** (payments), through `payments-stripe`, placed after `payments-write`.
+  The header and `entries` comments are updated (42 bends, 7,552px).
+- The six unit tests and the two e2e tests the plan names (`canvas.spec.ts`: 21 tiles, 24 lines
+  and arrows; `module-authoring.spec.ts`: the Redirect service's module menu holds 13 items).
+- Docs: `docs/studio.md` (size and fit tables, fit sentences, versions, the marketplace sketch,
+  counts, layout sentence, Tiles row, blueprint counts, "only new copies are v3.3"),
+  `jeeves/CATALOG.md` (versions, Payments, counts, "No built-in study uses a legacy kind."),
+  `docs/studio-blueprint.md` (3.3.0), `jeeves/PLAN.md` (v3.3).
+**Checks.** `pnpm check` before any change: 106 files, 823 tests passed; after: 106 files, 823
+tests passed. `pnpm test:e2e` (native): 73 passed (4.5 min). `pnpm --filter @jeeves/web build`:
+exit 0. Mouse check (`ui01-check.spec.ts`, then deleted): 4 passed, TinyURL and Marketplace at
+1440×900 and 1280×800, no page error. TinyURL's Redirect service reads Service, its inspector is
+Microservice settings with no Lookup store or Lookup cache; Marketplace's Payments reads Service,
+Stripe API reads External API, the `payments-stripe` line is drawn, no warning mark; the saved
+designs hold `service`, `external-api` and the `calls` link. Both projects it made were deleted.
+No screenshots: the unit names no preview image.
+**Differences from the plan.** None. The CATALOG paragraph and the marketplace header comment
+were rewrapped to the same words.
+**Noticed.** `jeeves_e2e` holds one project, "E2E Every kind" (from `spawn.spec.ts`, created
+2026-11-12 23:03, before this run); left alone. No uncommitted changes under `jeeves-generator/`
+or `field-projects/`. The owner's dirty paths stay untouched and unstaged. `docs/studio-settings.md`
+and `jeeves/CATALOG.md` still describe the Redirect and Billing kinds' own fields; those are true
+of the kinds, which stay.
+**For the next unit.** UI02 can start. Neither study now has a legacy-kind tile, so a check of
+the Redirect or Billing kind needs a tile switched to it first (as `studio-lane-commands.test.ts`
+and `studio-operations.test.ts` now do).

@@ -169,8 +169,8 @@ on a fresh layout:
 | --- | --- | ---: | --- | ---: | ---: |
 | TinyURL extended | Simple | 12 | 1,024×832 | 2,752 | 0 |
 | | Detailed | 12 | 1,280×896 | 3,136 | 1 |
-| Marketplace | Simple | 23 | 1,280×1,472 | 6,912 | 1 |
-| | Detailed | 25 | 1,568×1,632 | 8,896 | 4 |
+| Marketplace | Simple | 24 | 1,280×1,632 | 7,552 | 1 |
+| | Detailed | 26 | 1,568×1,632 | 9,056 | 5 |
 | YouTube | Simple | 25 | 1,504×1,376 | 8,864 | 1 |
 | | Detailed | 26 | 1,920×1,696 | 12,800 | 4 |
 | YouTube v2 field design | Simple | 27 | 1,920×1,297 | 10,080 | 3 |
@@ -185,7 +185,7 @@ the others measured in the browser):
 | --- | --- | ---: | ---: | ---: | ---: |
 | TinyURL extended | Simple | 0.67 | 0.56 | 0.59 | 0.45 |
 | | Detailed | 0.62 | 0.44 | 0.55 | 0.35 |
-| Marketplace | Simple | 0.37 | 0.37 | 0.32 | 0.32 |
+| Marketplace | Simple | 0.33 | 0.33 | 0.29 | 0.29 |
 | | Detailed | 0.33 | 0.33 | 0.29 | 0.28 |
 | YouTube | Simple | 0.39 | 0.38 | 0.35 | 0.30 |
 | | Detailed | 0.32 | 0.29 | 0.28 | 0.23 |
@@ -339,8 +339,8 @@ as the rails open and close ([Size and fit](#size-and-fit) has both views):
 | 1280×800 | 0.59 | 0.59 | 0.59 | 0.45 |
 
 The extended TinyURL study draws 1,024×832px and fits by height unless both rails are open. The marketplace study
-(1,280×1,472px) is taller than it is wide, so it fits by height whichever rails are open: 0.37 at
-1440×900 and 0.32 at 1280×800. The YouTube study (1,504×1,376px) fits by height with at most one
+(1,280×1,632px) is taller than it is wide, so it fits by height whichever rails are open: 0.33 at
+1440×900 and 0.29 at 1280×800. The YouTube study (1,504×1,376px) fits by height with at most one
 rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
@@ -819,7 +819,7 @@ if a name or module describes the behavior. No review claims a runtime template 
 
 ## The TinyURL study
 
-The extended design-only study, `studio-tinyurl@3.2.0` ([factory](../jeeves/packages/spec/src/studio-examples/tinyurl.ts)),
+The extended design-only study, `studio-tinyurl@3.3.0` ([factory](../jeeves/packages/spec/src/studio-examples/tinyurl.ts)),
 is a read-heavy URL shortener built from four published designs and one open-source shortener:
 
 - HelloInterview, [Design Bit.ly](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly)
@@ -877,11 +877,11 @@ The study stores no layout. Its [blueprint](studio-blueprint.md#example) has two
 entries, four services, four resources, no externals, seven connections (each link into a store
 marked `write` or `read`) and all nine components, with nothing omitted and no findings. Projects
 made from earlier versions keep their own design (a lane with entries reads with its default
-action, Consume or Produce); only new copies are v3.2.
+action, Consume or Produce); only new copies are v3.3.
 
 ## The marketplace study
 
-`studio-marketplace@1.3.0` ([factory](../jeeves/packages/spec/src/studio-examples/marketplace.ts)) is a
+`studio-marketplace@1.4.0` ([factory](../jeeves/packages/spec/src/studio-examples/marketplace.ts)) is a
 multi-seller marketplace with Etsy's core functionality, designed as clean microservices rather
 than copied from Etsy. Its core flows, and the tiles that carry them:
 
@@ -942,28 +942,29 @@ UPLOAD (writes)
                     ⇡ Payments → Catalog database                       (reads prices)
                                ⇢ Order events ⇢ Order recorder → Orders database
                                → Payments database
+                               → Stripe API                             (takes payments, pays sellers)
                     ⇡ Cart service → Cart store
 ```
 
 Each store has one writer, its owner: the Shop service writes the Catalog database (shops and
 listings), Product images and Listing events; the Search indexer the Search index; Payments the
 Payments database and Order events; the Order recorder the Orders database; the Cart service the
-Cart store. Every other link into a store reads. In all: the user, two actions and seventeen
-tiles, and 23 links (the user's two lines, seven lane entries, four of them upload, and fourteen
+Cart store. Every other link into a store reads. In all: the user, two actions and eighteen
+tiles, and 24 links (the user's two lines, seven lane entries, four of them upload, and fifteen
 connections), four of which are asynchronous (publication and consumption of listing and
 paid-order events); the workers' store writes are solid. Every service is TypeScript on Docker; the study has no C1 people or
 relationships and no package. The Search index, the Orders database and Product images, which both
 lanes reach, sit in the shared band, one row: Product images right after the Image CDN and the
 Shop service, the Search index right above the Search indexer that writes it, and the Orders
-database right after the Order recorder ([Layout](#layout-and-navigation)). Every one of its 5,184
-entry and link orders, laid out with real ELK, crosses at least once; this entry order crosses
-once, where the Storefront API's read passes the Orders service's (36 bends), and Payments' link
-to Order events before its Payments database draws the shortest lines (6,912px in all, the longest
-the Orders service's read, 896px). The Shop service's link order doesn't change the drawing.
+database right after the Order recorder ([Layout](#layout-and-navigation)). Every one of the
+5,184 entry and link orders it had before the Stripe API tile, laid out with real ELK, crossed at
+least once. This order crosses once (42 bends, 7,552px of lines in all, the longest the Orders
+service's read, 896px); Payments' link to the Stripe API comes last, and an earlier place draws
+longer lines. The Shop service's link order doesn't change the drawing.
 
 | Part | Content |
 | --- | --- |
-| Tiles | Orders service, Storefront API, Shop service and Cart service (microservices, public); Identity (OpenID Connect); Payments (Billing, Stripe, public: Stripe calls its webhook); Search indexer and Order recorder (workers, scaled on queue lag); Image CDN (Cloudflare, origin Product images, image resizing on request); Product images (Cloudflare R2, public through the CDN); Search index (OpenSearch); Catalog database (PostgreSQL, partitioned by `shop_id`), Payments database and Orders database (PostgreSQL); Listing events and Order events (topics); Cart store (Redis, a cart expires a week after its last change, no eviction). |
+| Tiles | Orders service, Storefront API, Shop service and Cart service (microservices, public); Identity (OpenID Connect); Payments (a microservice, public: Stripe calls its webhook); Stripe API (External API, payments); Search indexer and Order recorder (workers, scaled on queue lag); Image CDN (Cloudflare, origin Product images, image resizing on request); Product images (Cloudflare R2, public through the CDN); Search index (OpenSearch); Catalog database (PostgreSQL, partitioned by `shop_id`), Payments database and Orders database (PostgreSQL); Listing events and Order events (topics); Cart store (Redis, a cart expires a week after its last change, no eviction). |
 | Modules | Orders service: order reader. Storefront API: listing search. Shop service: listing writer, photo uploader and listing publisher (outbox in the catalog database). Search indexer: listing consumer and index writer. Payments: cart pricer, Stripe checkout (one Checkout Session per order, the order as its transfer group), webhook handler, seller payouts (Stripe Connect onboarding and transfers), payment records and order publisher (outbox in the payments database). Order recorder: paid-order consumer and order writer. Cart service: cart store client. |
 
 Design decisions, where the sources leave a choice:
@@ -1008,7 +1009,7 @@ Product images already on R2 behind the Cloudflare CDN. The Search index stays a
 Meilisearch) service.
 
 The study stores no layout. Its blueprint has two actions, seven entries, eight services, nine
-resources, no externals, fourteen connections (each link into a store marked `write` or `read`) and all sixteen
+resources, one external (the Stripe API), fifteen connections (each link into a store marked `write` or `read`) and all sixteen
 components, with nothing omitted and no findings.
 
 ## The YouTube study
@@ -1202,7 +1203,7 @@ and all twenty components, with nothing omitted and no findings.
   zooming in helps; a fitted camera refits by itself.
 - A menu or fan stays where it opened: the wheel and a resize close it rather than move it.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
-  marketplace study (seventeen tiles, 1,472px tall) fits at 0.37 at 1440×900 and 0.32 at
+  marketplace study (eighteen tiles, 1,632px tall) fits at 0.33 at 1440×900 and 0.29 at
   1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
   and the bands read, but tile names are about 5px and need the wheel to read.
 - The lane bands cost height. A band's rows hold only its own tiles, so a column the shared band

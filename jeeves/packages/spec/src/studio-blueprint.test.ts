@@ -72,13 +72,18 @@ describe("designBlueprint", () => {
     expect(validateDesign(design)).toEqual([]);
     const blueprint = designBlueprint(design, "Marketplace");
     expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
-    expect(blueprint).toMatchObject({ blueprint: 2, findings: [], externals: [], omitted: [] });
+    expect(blueprint).toMatchObject({
+      blueprint: 2,
+      findings: [],
+      externals: [{ id: "stripe", name: "Stripe API", category: "payments" }],
+      omitted: [],
+    });
     expect(blueprint.services.map((s) => [s.id, s.kind, s.components.length])).toEqual([
       ["cart", "service", 1],
       ["identity", "identity", 0],
       ["order-recorder", "worker", 2],
       ["orders", "service", 1],
-      ["payments", "billing", 6],
+      ["payments", "service", 6],
       ["search-indexer", "worker", 2],
       ["shop", "service", 3],
       ["storefront", "service", 1],
@@ -128,7 +133,7 @@ describe("designBlueprint", () => {
       "shop-listings": "publish",
       "storefront-search": "read",
     });
-    // The CDN resizes photos on request; the Payments service is Billing with Stripe.
+    // The CDN resizes photos on request; Payments is a Service that calls Stripe.
     expect(blueprint.resources.find((r) => r.id === "image-cdn")?.settings).toEqual({
       kind: "cdn",
       provider: "cloudflare",
@@ -136,8 +141,11 @@ describe("designBlueprint", () => {
       imageResizing: "on-request",
     });
     expect(blueprint.services.find((s) => s.id === "payments")?.settings).toMatchObject({
-      kind: "billing",
-      provider: "stripe",
+      kind: "service",
+    });
+    expect(blueprint.connections.find((c) => c.id === "payments-stripe")).toMatchObject({
+      from: { id: "payments", kind: "service" },
+      to: { id: "stripe", kind: "external" },
     });
   });
 

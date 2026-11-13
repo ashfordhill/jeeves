@@ -400,9 +400,9 @@ test("looking, hovering and cancelled drags change neither the design nor the bl
   tinyurl: id,
 }) => {
   const before = { design: await saved(page, id), blueprint: await blueprint(page, id) };
-  // The older Redirect service kind takes modules too: its menu, opened and closed.
+  // The Redirect service is a Service: its module menu, opened and closed.
   await tile(page, "Redirect service").getByRole("button", { name: PLUS }).click();
-  await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(10);
+  await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(13);
   await page.keyboard.press("Escape");
   await expect(moduleMenu(page)).toHaveCount(0);
 

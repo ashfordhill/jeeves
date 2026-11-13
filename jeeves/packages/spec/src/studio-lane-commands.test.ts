@@ -576,11 +576,11 @@ describe("removeTile and removeLink", () => {
 describe("changeKind", () => {
   it("switches within the tile type with fresh settings, and refuses a kind that breaks a link", () => {
     const design = tinyurl();
-    const switched = run(design, { type: "changeKind", element: "redirect", kind: "service" });
+    const switched = run(design, { type: "changeKind", element: "redirect", kind: "redirect" });
     expect(switched.ops).toEqual(["setStudio"]);
     expect(binding(switched.design, "redirect")).toMatchObject({
-      definition: { id: "studio-service" },
-      settings: createStudioSettings("service"),
+      definition: { id: "studio-redirect" },
+      settings: createStudioSettings("redirect"),
     });
 
     const change = (element: string, kind: StudioModel["elements"][0]["settings"]["kind"]) =>
@@ -594,7 +594,7 @@ describe("changeKind", () => {
     expect(change("url-db", "search")).toBe(
       "Link reader in Redirect service can't use a search index; remove its link to URL database first.",
     );
-    expect(change("redirect", "redirect")).toBe("Redirect service is already a redirect service.");
+    expect(change("redirect", "service")).toBe("Redirect service is already a service.");
   });
 });
 

@@ -20,8 +20,8 @@
  * - ByteByteGo, Educative: the payment service keeps its own database (Payments database).
  * - Stripe Connect, separate charges and transfers: one payment per order across several sellers,
  *   a webhook when it completes ("logging the sale in a database"), then a transfer to each
- *   seller's connected account; Stripe pays the sellers out (Payments, a Billing service with
- *   Stripe, publishes each paid order).
+ *   seller's connected account; Stripe pays the sellers out (Payments, a Service that calls the
+ *   Stripe API, publishes each paid order).
  * - Cloudflare's and AWS's image-delivery reference architectures: only originals are stored and
  *   the CDN resizes on request, caching each size (Product images; Image CDN with Image resizing
  *   on request). So no thumbnail worker.
@@ -76,7 +76,7 @@ const description =
 
 export const MARKETPLACE_STUDIO_EXAMPLE = {
   id: "studio-marketplace",
-  version: "1.3.0",
+  version: "1.4.0",
   name: "Marketplace · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -268,13 +268,13 @@ const actions: StudioLaneAction[] = [
 ];
 /**
  * Browse reaches the Storefront API, the Orders service and the Image CDN; Buy & sell reaches the
- * Shop service, Identity, Payments and the Cart service. Of the 5,184 entry and link orders
- * (entries, and the Shop service's and Payments' links), laid out with real ELK with the stores
- * beside their users, every one crosses at least once; this entry order crosses once (the
- * Storefront API's read passing the Orders service's) with 36 bends, the Search index right
- * above the Search indexer that writes it and the Orders database right after the Order
- * recorder. Payments' link to Order events comes before its Payments database (connections
- * below), which keeps the lines shortest (6,912px in all, the longest the Orders service's read,
+ * Shop service, Identity, Payments and the Cart service. Of the 5,184 entry and link orders the
+ * study had before the Stripe API tile (entries, and the Shop service's and Payments' links), laid
+ * out with real ELK with the stores beside their users, every one crosses at least once. This
+ * entry order crosses once with 42 bends, the Search index right above the Search indexer that
+ * writes it and the Orders database right after the Order recorder. Payments' link to Order events
+ * comes before its Payments database and its link to the Stripe API comes last (connections
+ * below): earlier places draw longer lines (7,552px in all, the longest the Orders service's read,
  * 896px). The Shop service's link order doesn't change the drawing.
  */
 const entries: StudioEntry[] = [
@@ -412,17 +412,22 @@ export function marketplaceStudioExample() {
         description:
           "The checkout: prices the cart, takes one Stripe payment and pays each seller their share. Sellers set up payouts here.",
         settings: {
-          kind: "billing",
+          kind: "service",
           execution: "docker",
           language: "typescript",
           exposure: "public",
-          provider: "stripe",
           minReplicas: 2,
           maxReplicas: 6,
           autoscaleOn: "cpu",
           requestTimeoutMs: 10000,
           concurrencyLimit: 200,
         },
+      },
+      {
+        id: "stripe",
+        name: "Stripe API",
+        description: "Stripe Checkout and Connect: takes each payment and pays the sellers out.",
+        settings: { kind: "external-api", category: "payments", provider: "unspecified" },
       },
       {
         id: "payments-db",
@@ -551,6 +556,14 @@ export function marketplaceStudioExample() {
         to: "payments-db",
         kind: "uses-database",
         planned: call("Writes payments and payout accounts", "SQL"),
+        settings: {},
+      },
+      {
+        id: "payments-stripe",
+        from: "payments",
+        to: "stripe",
+        kind: "calls",
+        planned: call("Opens checkouts and pays sellers", "HTTPS"),
         settings: {},
       },
       {

@@ -53,13 +53,13 @@ test("New project offers the marketplace study", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await createStudy(page, "E2E Marketplace", "Marketplace · studio study", "Simple");
   try {
-    // The user, Browse and Buy & sell and seventeen tiles; the user's two lines, seven lane
-    // entries (four upload) and fourteen connections, four dashed (publish and consume for
+    // The user, Browse and Buy & sell and eighteen tiles; the user's two lines, seven lane
+    // entries (four upload) and fifteen connections, four dashed (publish and consume for
     // listing and paid-order events). Worker store writes stay solid.
-    await expect(tiles(page)).toHaveCount(20);
-    await expect(lines(page)).toHaveCount(23);
+    await expect(tiles(page)).toHaveCount(21);
+    await expect(lines(page)).toHaveCount(24);
     await expect(dashedLines(page)).toHaveCount(4);
-    await expect(page.locator(".board-line-arrow")).toHaveCount(23);
+    await expect(page.locator(".board-line-arrow")).toHaveCount(24);
     await expect(page.locator(".board-chip")).toHaveCount(0);
     // No design warnings in a study.
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);

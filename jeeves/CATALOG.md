@@ -68,7 +68,7 @@ A provider chosen on a kind is that service's integration, not a separate tile: 
 Stripe needs no External tile for Stripe. **External API tiles are for third parties no kind
 covers.** Chat's `listStudioDefinitions` says the same. Neither the link fan nor chat adds a new
 tile of the legacy kinds (Gateway, Redirect, Notifications, Billing); a new payment flow is a
-Service that calls its provider as an External API.
+Service that calls its provider as an External API. No built-in study uses a legacy kind.
 
 ## Tile types and the link fan
 
@@ -452,7 +452,7 @@ not prove architecture quality or runtime behavior; live-model evidence remains 
 
 New project offers three studies, described in the [studio guide](../docs/studio.md).
 
-**Extended TinyURL** (`studio-tinyurl@3.2.0`, the default, design only) is built from published designs
+**Extended TinyURL** (`studio-tinyurl@3.3.0`, the default, design only) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
 redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
 front of one URL database that only the Shorten service writes, and click analytics through a
@@ -462,15 +462,15 @@ eight tiles, twelve links (the user's two lines, three entries and seven connect
 components
 ([guide](../docs/studio.md#the-tinyurl-study)).
 
-**Marketplace** (`studio-marketplace@1.3.0`) is a multi-seller marketplace with Etsy's core
+**Marketplace** (`studio-marketplace@1.4.0`) is a multi-seller marketplace with Etsy's core
 functionality as clean microservices (Educative, System Design Handbook, ByteByteGo's payment
 system, Online Boutique, eShop, Stripe Connect, and Cloudflare's and AWS's image delivery). The
 Shop service is the only writer of the catalog and its photos, and publishes listing changes that a
-worker indexes for the Storefront API; an Image CDN resizes photos on request; Payments (Billing
-with Stripe) prices the cart, takes one payment per order and pays each seller through Stripe
-Connect, and publishes paid orders that a worker records for the Orders service; a Cart service
-keeps carts in Redis; Identity signs everyone in. Two actions (Browse; Buy & sell), seventeen
-tiles, 23 links (the user's two lines, seven entries, four of them upload, and fourteen
+worker indexes for the Storefront API; an Image CDN resizes photos on request; Payments (a Service
+that calls the Stripe API) prices the cart, takes one payment per order and pays each seller
+through Stripe Connect, and publishes paid orders that a worker records for the Orders service; a
+Cart service keeps carts in Redis; Identity signs everyone in. Two actions (Browse; Buy & sell),
+eighteen tiles, 24 links (the user's two lines, seven entries, four of them upload, and fifteen
 connections) and sixteen components
 ([guide](../docs/studio.md#the-marketplace-study)).
 

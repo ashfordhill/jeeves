@@ -262,8 +262,13 @@ describe("preconfigured kinds and languages", () => {
       stored.architecture.studio.elements.find((b: { element: string }) => b.element === id)
         .settings;
     setting("shorten").language = "csharp";
-    setting("redirect").language = "unspecified";
     setting("analytics").language = "python";
+    // A tile of the older Redirect kind, whose pair is Go then TypeScript.
+    const redirect = stored.architecture.studio.elements.find(
+      (b: { element: string }) => b.element === "redirect",
+    );
+    redirect.definition.id = "studio-redirect";
+    redirect.settings = { ...createStudioSettings("redirect"), language: "unspecified" };
     const settings = (design: DesignDocument, id: string) =>
       studio(design).elements.find((b) => b.element === id)?.settings;
     const design = designSchema.parse(stored);

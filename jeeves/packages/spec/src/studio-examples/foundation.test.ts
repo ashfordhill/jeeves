@@ -25,7 +25,17 @@ describe("versioned foundation study and complete atomic seed", () => {
     },
   );
   it("keeps the extended identity and goal intact and chooses a distinct narrow v3 default", () => {
-    expect(studioArchitectureExample("studio-tinyurl").design).toEqual(legacy.design);
+    // NC01's saved design, except that its Redirect service is now a plain Service (3.3.0).
+    const expected = JSON.parse(JSON.stringify(legacy.design));
+    expected.architecture.studio.origin.example.version = "3.3.0";
+    const redirect = expected.architecture.studio.elements.find(
+      (x: { element: string }) => x.element === "redirect",
+    );
+    redirect.definition.id = "studio-service";
+    redirect.settings.kind = "service";
+    delete redirect.settings.lookupStoreConnection;
+    delete redirect.settings.lookupCacheConnection;
+    expect(studioArchitectureExample("studio-tinyurl").design).toEqual(expected);
     expect(DEFAULT_STUDIO_EXAMPLE_ID).toBe("studio-tinyurl");
     const design = studioArchitectureExample("studio-tinyurl-foundation").design;
     expect(design.schemaVersion).toBe(3);

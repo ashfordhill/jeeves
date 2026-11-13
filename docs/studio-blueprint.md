@@ -11,7 +11,7 @@ through operations; the blueprint is derived on every request and is never store
 
 The `studio-tinyurl-foundation@1.0.0` study, which New project no longer offers, stores complete
 schema-v3 declarations. Its default v2 export deliberately refuses exact scope/ownership/operation
-loss; request `?version=3` for the full study and report. The extended `studio-tinyurl@3.2.0` stays schema2
+loss; request `?version=3` for the full study and report. The extended `studio-tinyurl@3.3.0` stays schema2
 with its prior v2 meaning. Creating either study is a single complete seed/history edit.
 
 Canvas selection, its line highlight and Fit are view state. They neither filter this endpoint

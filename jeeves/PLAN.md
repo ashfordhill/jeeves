@@ -57,7 +57,7 @@ preview/commands and unresolved diagnostics. Selecting scope implements no capab
 
 The vocabulary is finite: sixteen kinds with immutable definitions (`studio-definitions.ts`), nineteen
 module kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
-modules, are in `studio-modules.ts`). The studies offered, TinyURL v3.2 (the default), the marketplace and
+modules, are in `studio-modules.ts`). The studies offered, TinyURL v3.3 (the default), the marketplace and
 YouTube, are built in lanes from published designs (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
