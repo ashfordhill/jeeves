@@ -72,3 +72,51 @@ Do not run global Docker prune or remove unrelated projects. If setup fails, ins
 `failure.log`, stack logs and `cleanup.json` before running again. A failed application invariant
 must be diagnosed; fix a template and export afresh if generated code is at fault. Never repair
 a generated scaffold, replace a real provider with a fake, weaken an assertion or add retries.
+
+## CI and other runners
+
+`.github/workflows/generated-system.yml` runs core on every pull request and push to `main`,
+with manual `core` or `all` selection. It calls the same command as a plain local shell:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm test:generated --suite=core --artifacts=/absolute/new-results-directory
+```
+
+Another CI system needs the pinned Node/pnpm versions, Linux Docker with Compose/Buildx,
+enough room for the provider images, and collection of that results directory. The harness has
+no GitHub environment requirement. Repository installation precedes the standalone exports;
+each exported application still performs its own frozen install and build.
+
+The GitHub adapter caches pnpm downloads using both the repository and exported application's
+lockfiles. Its single Buildx builder reuses content-addressed layers across the fresh exports
+and ordinary restart rebuilds within the job. BuildKit layers are not exported between jobs.
+Neither cache holds provider volumes, runtime files, tokens or application data. Attempts have
+unique artifact directories and upload names. There are no workflow path filters, retries or
+provider definitions in YAML; the existing studio CI remains separate.
+
+The job always attempts the record-based cleanup again. Recovery validates the recorded scope,
+clears any stale completion marker and scrubs existing artifacts with the still-present runtime
+secret values before deleting the runtime. Unreadable secrets or artifact errors fail recovery
+and preserve the runtime for repair; genuinely absent startup secrets are allowed. A fresh
+`sanitized.json` identifies the successfully scrubbed run. `runner-cleanup.json` preserves the
+runner's original removal inventory before that idempotent
+recovery. The adapter prepares an upload folder containing the full run only after successful
+recovery and a matching completion marker. Otherwise it contains only safe outcome metadata;
+raw error operands are not copied into that fallback. `adapter.json` records install/test
+outcomes even if repository setup fails before the runner creates a record. A host failure or forcibly killed job can still prevent final steps;
+use the run record's recovery command on a surviving self-hosted machine.
+The generated step has a 15-minute limit inside the 20-minute job, leaving headroom for the
+three-minute recovery step and artifact collection instead of sharing the harness's full
+20-minute Vitest command deadline.
+
+Missing Docker, provider startup/install failures, changed source during setup, absent fault
+observations and assertion failures are unsuccessful runs. Inspect the summary, phase, final
+observation, container logs and cleanup evidence to distinguish their causes. Keep the source
+stable, use a fresh artifact directory and restore or fix the diagnosed prerequisite before a
+new invocation. Do not rerun a failing invariant until it happens to pass.
+
+Local cost measurements and the controlled-failure proof are recorded in
+[GS03 evidence](../../docs/plans/generated-system-tests/evidence/gs03/README.md). Hosted execution
+is pending until the owner publishes these commits. Verify the first hosted run before making
+its status required; only the owner changes branch protection.

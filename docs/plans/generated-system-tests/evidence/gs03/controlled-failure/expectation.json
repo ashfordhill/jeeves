@@ -1,0 +1,10 @@
+{
+  "originalSha256": "9869b3180ec507120fe39865451e57819466c0c2e687a496b92c20568cb15852",
+  "mutantSha256": "1c5565e30c613bdae45e9905a6d35f65626cc542e3f589fed6a95fc746ec137a",
+  "change": "Only final B01 HTTP expectation changed from total1 to2; poll still requires1.",
+  "exitCode": 1,
+  "passed": 3,
+  "failed": 1,
+  "restoredSha256": "9869b3180ec507120fe39865451e57819466c0c2e687a496b92c20568cb15852",
+  "restored": true
+}

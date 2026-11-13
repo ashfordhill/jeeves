@@ -1,6 +1,7 @@
 import { lstat, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
+import { sanitizeArtifacts } from "./evidence.ts";
 import { command, json, writeJson } from "./process.ts";
 
 export type StackRecord = {
@@ -41,20 +42,40 @@ export async function cleanupRun(recordPath: string) {
   if (
     run.version !== 1 ||
     !/^gs-[a-f0-9-]{36}$/.test(run.id) ||
+    !Array.isArray(run.stacks) ||
     dirname(run.temporary) !== resolve(tmpdir()) ||
     !run.temporary.startsWith(join(resolve(tmpdir()), "jeeves-system-"))
   )
     throw new Error("Refusing invalid cleanup record");
   if ((await lstat(run.temporary).catch(() => undefined))?.isSymbolicLink())
     throw new Error("Symlink runtime refused");
-  const outcomes = [];
+  const temporary = await realpath(run.temporary).catch(() => undefined);
+  if (temporary && temporary !== run.temporary) throw new Error("Runtime path changed");
+  // Preflight every recorded scope before reading secrets or removing any resources.
   for (const stack of run.stacks) {
     if (
       !stack.project.startsWith(`${run.id}-`) ||
       !/^[a-z0-9-]{3,60}$/.test(stack.project) ||
-      !stack.application.startsWith(`${run.temporary}${sep}`)
+      !stack.application.startsWith(`${run.temporary}${sep}`) ||
+      resolve(stack.application) !== stack.application
     )
       throw new Error("Foreign stack in cleanup record");
+    const application = await realpath(stack.application).catch(() => undefined);
+    if (application && !application.startsWith(`${run.temporary}${sep}`))
+      throw new Error("Foreign application path in cleanup record");
+  }
+  const artifacts = dirname(recordPath);
+  const marker = join(artifacts, "sanitized.json");
+  await rm(marker, { force: true });
+  // Recovery must scrub reporter operands while original secret files still exist.
+  // A failure leaves no completion marker and preserves the runtime for another recovery.
+  await sanitizeArtifacts(
+    artifacts,
+    run.stacks.map((stack) => stack.application),
+  );
+  await writeJson(marker, { version: 1, id: run.id, complete: true });
+  const outcomes = [];
+  for (const stack of run.stacks) {
     const before = await inventory(stack.project);
     for (const [kind, ids] of Object.entries(before)) {
       for (const id of ids) {

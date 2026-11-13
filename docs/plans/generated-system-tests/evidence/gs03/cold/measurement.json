@@ -1,0 +1,374 @@
+{
+  "temperature": "cold",
+  "exitCode": 0,
+  "elapsedSeconds": 325.508,
+  "sampleIntervalSeconds": 5,
+  "peakRunningContainers": 27,
+  "peakContainerMemoryBytes": 1102788431,
+  "peakContainerCpuPercent": 455.27,
+  "peakBuilderMemoryBytes": 527119155,
+  "peakCombinedContainerMemoryBytes": 1617010101,
+  "peakCombinedCpuPercent": 459.68,
+  "gnuTime": "\tCommand being timed: \"pnpm test:generated --suite=core --artifacts=/tmp/gs03-cold-confirmed\"\n\tUser time (seconds): 39.42\n\tSystem time (seconds): 44.63\n\tPercent of CPU this job got: 23%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 5:57.67\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 973880\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 4\n\tMinor (reclaiming a frame) page faults: 4815566\n\tVoluntary context switches: 829955\n\tInvoluntary context switches: 39901\n\tSwaps: 0\n\tFile system inputs: 352\n\tFile system outputs: 301640\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 0\n",
+  "samples": [
+    {
+      "elapsedSeconds": 0.0
+    },
+    {
+      "elapsedSeconds": 5.0,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 20321403,
+      "builderCpuPercent": 0.51
+    },
+    {
+      "elapsedSeconds": 11.065,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 19828572,
+      "builderCpuPercent": 0.08
+    },
+    {
+      "elapsedSeconds": 17.132,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 34582036,
+      "builderCpuPercent": 31.4
+    },
+    {
+      "elapsedSeconds": 23.197,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 99446948,
+      "builderCpuPercent": 54.93
+    },
+    {
+      "elapsedSeconds": 29.261,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 150260941,
+      "builderCpuPercent": 5.58
+    },
+    {
+      "elapsedSeconds": 35.33,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 380003942,
+      "builderCpuPercent": 328.3
+    },
+    {
+      "elapsedSeconds": 41.401,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 494089011,
+      "builderCpuPercent": 0.05
+    },
+    {
+      "elapsedSeconds": 47.47,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 494193869,
+      "builderCpuPercent": 0.02
+    },
+    {
+      "elapsedSeconds": 53.567,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0,
+      "builderMemoryBytes": 504994202,
+      "builderCpuPercent": 4.97
+    },
+    {
+      "elapsedSeconds": 59.634,
+      "running": 2,
+      "memoryBytes": 186153698,
+      "cpuPercent": 9.96,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 66.723,
+      "running": 5,
+      "memoryBytes": 260623565,
+      "cpuPercent": 0.56,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.01
+    },
+    {
+      "elapsedSeconds": 73.813,
+      "running": 6,
+      "memoryBytes": 247254220,
+      "cpuPercent": 11.08,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.02
+    },
+    {
+      "elapsedSeconds": 80.907,
+      "running": 9,
+      "memoryBytes": 335647079,
+      "cpuPercent": 10.32,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 88.015,
+      "running": 9,
+      "memoryBytes": 340605797,
+      "cpuPercent": 7.89,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 95.126,
+      "running": 9,
+      "memoryBytes": 341161542,
+      "cpuPercent": 4.28,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.01
+    },
+    {
+      "elapsedSeconds": 102.23,
+      "running": 9,
+      "memoryBytes": 362400448,
+      "cpuPercent": 192.03,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 109.345,
+      "running": 8,
+      "memoryBytes": 310295660,
+      "cpuPercent": 2.77,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.02
+    },
+    {
+      "elapsedSeconds": 116.449,
+      "running": 9,
+      "memoryBytes": 346279641,
+      "cpuPercent": 5.83,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 123.555,
+      "running": 8,
+      "memoryBytes": 386968583,
+      "cpuPercent": 107.47,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 130.661,
+      "running": 9,
+      "memoryBytes": 310976184,
+      "cpuPercent": 4.49,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.02
+    },
+    {
+      "elapsedSeconds": 137.769,
+      "running": 9,
+      "memoryBytes": 349674931,
+      "cpuPercent": 11.72,
+      "builderMemoryBytes": 505308774,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 144.876,
+      "running": 9,
+      "memoryBytes": 346021691,
+      "cpuPercent": 9.12,
+      "builderMemoryBytes": 514221670,
+      "builderCpuPercent": 312.03
+    },
+    {
+      "elapsedSeconds": 152.025,
+      "running": 9,
+      "memoryBytes": 343379281,
+      "cpuPercent": 192.64,
+      "builderMemoryBytes": 516213965,
+      "builderCpuPercent": 1.77
+    },
+    {
+      "elapsedSeconds": 159.15,
+      "running": 11,
+      "memoryBytes": 514133592,
+      "cpuPercent": 65.03,
+      "builderMemoryBytes": 516004250,
+      "builderCpuPercent": 4.16
+    },
+    {
+      "elapsedSeconds": 166.375,
+      "running": 12,
+      "memoryBytes": 518570116,
+      "cpuPercent": 9.95,
+      "builderMemoryBytes": 516004250,
+      "builderCpuPercent": 0.03
+    },
+    {
+      "elapsedSeconds": 173.505,
+      "running": 14,
+      "memoryBytes": 657261071,
+      "cpuPercent": 59.56,
+      "builderMemoryBytes": 516004250,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 180.651,
+      "running": 15,
+      "memoryBytes": 641887898,
+      "cpuPercent": 293.85,
+      "builderMemoryBytes": 516004250,
+      "builderCpuPercent": 0.01
+    },
+    {
+      "elapsedSeconds": 187.878,
+      "running": 9,
+      "memoryBytes": 343411788,
+      "cpuPercent": 12.55,
+      "builderMemoryBytes": 523029709,
+      "builderCpuPercent": 315.38
+    },
+    {
+      "elapsedSeconds": 195.143,
+      "running": 9,
+      "memoryBytes": 342918957,
+      "cpuPercent": 2.44,
+      "builderMemoryBytes": 518311117,
+      "builderCpuPercent": 6.01
+    },
+    {
+      "elapsedSeconds": 202.259,
+      "running": 11,
+      "memoryBytes": 501610448,
+      "cpuPercent": 268.36,
+      "builderMemoryBytes": 518415974,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 209.394,
+      "running": 14,
+      "memoryBytes": 580159277,
+      "cpuPercent": 5.16,
+      "builderMemoryBytes": 518415974,
+      "builderCpuPercent": 0.01
+    },
+    {
+      "elapsedSeconds": 216.563,
+      "running": 15,
+      "memoryBytes": 567370844,
+      "cpuPercent": 23.5,
+      "builderMemoryBytes": 518415974,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 223.707,
+      "running": 15,
+      "memoryBytes": 610362461,
+      "cpuPercent": 66.54,
+      "builderMemoryBytes": 527119155,
+      "builderCpuPercent": 207.66
+    },
+    {
+      "elapsedSeconds": 230.923,
+      "running": 15,
+      "memoryBytes": 561618356,
+      "cpuPercent": 169.65,
+      "builderMemoryBytes": 526804582,
+      "builderCpuPercent": 0.09
+    },
+    {
+      "elapsedSeconds": 238.09,
+      "running": 17,
+      "memoryBytes": 736892028,
+      "cpuPercent": 92.94,
+      "builderMemoryBytes": 523029709,
+      "builderCpuPercent": 3.86
+    },
+    {
+      "elapsedSeconds": 245.291,
+      "running": 17,
+      "memoryBytes": 744399832,
+      "cpuPercent": 5.55,
+      "builderMemoryBytes": 523029709,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 252.469,
+      "running": 20,
+      "memoryBytes": 818469144,
+      "cpuPercent": 244.06,
+      "builderMemoryBytes": 523029709,
+      "builderCpuPercent": 0.01
+    },
+    {
+      "elapsedSeconds": 259.657,
+      "running": 21,
+      "memoryBytes": 834297397,
+      "cpuPercent": 29.44,
+      "builderMemoryBytes": 523029709,
+      "builderCpuPercent": 0.02
+    },
+    {
+      "elapsedSeconds": 266.877,
+      "running": 21,
+      "memoryBytes": 814201439,
+      "cpuPercent": 44.13,
+      "builderMemoryBytes": 517577114,
+      "builderCpuPercent": 295.91
+    },
+    {
+      "elapsedSeconds": 274.334,
+      "running": 21,
+      "memoryBytes": 884656311,
+      "cpuPercent": 455.27,
+      "builderMemoryBytes": 517367398,
+      "builderCpuPercent": 4.41
+    },
+    {
+      "elapsedSeconds": 281.548,
+      "running": 23,
+      "memoryBytes": 987479673,
+      "cpuPercent": 205.11,
+      "builderMemoryBytes": 514221670,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 288.799,
+      "running": 25,
+      "memoryBytes": 1037091997,
+      "cpuPercent": 12.1,
+      "builderMemoryBytes": 514221670,
+      "builderCpuPercent": 0.02
+    },
+    {
+      "elapsedSeconds": 296.052,
+      "running": 27,
+      "memoryBytes": 1102788431,
+      "cpuPercent": 391.99,
+      "builderMemoryBytes": 514221670,
+      "builderCpuPercent": 0.0
+    },
+    {
+      "elapsedSeconds": 303.283,
+      "samplingError": "Command '['docker', 'stats', '--no-stream', '--format', '{{json .}}', '84cb9a46e787', '4f712461f5e6', 'f44f4b57e746', '96b2128eb413', 'b1bdc2514d53', 'ecf730f8be5b', '0070f426157b', '64d22d720383', 'b0fec8cf6eb5', '9bcfdc96d85a', 'a02c2af31cdb', '87d88f0abfd6', 'f719a6ae0d56', '0ada2e64869f', '4a2210748b98', 'ba2300691bb5', '51d503ed4fc7', 'fc47b8342f79', '8a098363f181', 'a6280f98308c', '3b2a1dd578c0', '239c199a1fd4', '19d574d21968', '174f87cde67b', '60a51e95c988']' returned non-zero exit status 1."
+    },
+    {
+      "elapsedSeconds": 310.89,
+      "samplingError": "Command '['docker', 'stats', '--no-stream', '--format', '{{json .}}', 'a02c2af31cdb', '87d88f0abfd6', 'f719a6ae0d56', '0ada2e64869f', '4a2210748b98', 'ba2300691bb5', '51d503ed4fc7', 'fc47b8342f79', '8a098363f181', 'a6280f98308c', '3b2a1dd578c0', '239c199a1fd4', '19d574d21968', '174f87cde67b', '60a51e95c988']' returned non-zero exit status 1."
+    },
+    {
+      "elapsedSeconds": 318.182,
+      "samplingError": "Command '['docker', 'stats', '--no-stream', '--format', '{{json .}}', '3b2a1dd578c0', '239c199a1fd4', '19d574d21968', '174f87cde67b', '60a51e95c988']' returned non-zero exit status 1."
+    }
+  ]
+}

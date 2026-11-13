@@ -1,0 +1,28 @@
+$ pnpm --filter @jeeves/generator test:generated --cleanup /tmp/gs03-workflow-recovery-probe/unreadable-secret/run/run.json
+$ tsx integration/run.ts --cleanup /tmp/gs03-workflow-recovery-probe/unreadable-secret/run/run.json
+node:internal/fs/promises:1345
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: EACCES: permission denied, open '/tmp/jeeves-system-workflow-probe-ypjagkso/1-probe/.runtime/secrets/sentinel'
+    at async open (node:internal/fs/promises:1345:25)
+    at async readFile (node:internal/fs/promises:1996:14)
+    at async sanitizer (/home/ash/github/jeeves/jeeves-generator/integration/harness/evidence.ts:18:22)
+    at async Promise.all (index 0)
+    at async runSanitizer (/home/ash/github/jeeves/jeeves-generator/integration/harness/evidence.ts:49:21)
+    at async sanitizeArtifacts (/home/ash/github/jeeves/jeeves-generator/integration/harness/evidence.ts:35:17)
+    at async cleanupRun (/home/ash/github/jeeves/jeeves-generator/integration/harness/cleanup.ts:72:3)
+    at async <anonymous> (/home/ash/github/jeeves/jeeves-generator/integration/run.ts:14:3) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'open',
+  path: '/tmp/jeeves-system-workflow-probe-ypjagkso/1-probe/.runtime/secrets/sentinel'
+}
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator
+
+[ELIFECYCLE] Command failed with exit code 1.

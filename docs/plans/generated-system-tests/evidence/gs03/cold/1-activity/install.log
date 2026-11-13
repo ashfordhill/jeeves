@@ -1,0 +1,30 @@
+✓ Lockfile passes supply-chain policies (verified 5d ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /tmp/gs03-pnpm-a88acahn/v11
+  Virtual store is at:             node_modules/.pnpm
+Downloading hls.js@1.7.3: 0.00 B/8.00 MB
+Downloading @typescript/typescript-linux-x64@7.0.2: 0.00 B/9.66 MB
+Downloading hls.js@1.7.3: 8.00 MB/8.00 MB, done
+Packages: +109
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 109, reused 0, downloaded 109, added 109, done
+
+dependencies:
++ @aws-sdk/client-s3 3.1156.0
++ @aws-sdk/s3-request-presigner 3.1156.0
++ @opensearch-project/opensearch 3.9.0
++ amqplib 2.2.0
++ fastify 5.12.7
++ hls.js 1.7.3
++ jose 6.2.13
++ pg 8.23.1
++ redis 6.3.0
++ zod 4.5.4
+
+devDependencies:
++ @types/node 24.19.2
++ @types/pg 8.23.1
++ typescript 7.0.2
+
+Done in 1.7s using pnpm v12.16.1

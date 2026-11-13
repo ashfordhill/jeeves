@@ -1,0 +1,14 @@
+[
+  {
+    "network": "bridge",
+    "builder": "gs03-probe-65048a2c94694bac856fa8bd02677442",
+    "exitCode": 0,
+    "elapsedSeconds": 14.363
+  },
+  {
+    "network": "host",
+    "builder": "gs03-probe-914ae467ca9e4d769d956f3193fe5c65",
+    "exitCode": 0,
+    "elapsedSeconds": 13.581
+  }
+]

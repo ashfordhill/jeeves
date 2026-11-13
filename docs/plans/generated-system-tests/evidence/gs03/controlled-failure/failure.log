@@ -1,0 +1,48 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/core-delivery.system.test.ts (3 tests) 184787ms
+   ✓ B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping 86835ms
+   ✓ B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes 64927ms
+   ✓ B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables 33024ms
+ ❯ |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts (1 test | 1 failed) 31864ms
+   × B01: edge publication commits exactly one counter increment and a matching receipt 31864ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts > B01: edge publication commits exactly one counter increment and a matching receipt
+AssertionError: expected { status: 200, body: { …(2) } } to deeply equal { status: 200, body: { …(2) } }
+
+- Expected
++ Received
+
+  {
+    "body": {
+      "aggregateKey": "Activity:A",
+-     "total": "2",
++     "total": "1",
+    },
+    "status": 200,
+  }
+
+ ❯ jeeves-generator/integration/scenarios/core.system.test.ts:28:22
+     26|         (value) => app.record(value),
+     27|       );
+     28|       expect(result).toEqual({ status: 200, body: { aggregateKey, tota…
+       |                      ^
+     29|       expect(
+     30|         await app.sql(
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/core.system.test.ts:6:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 3 passed (4)
+   Start at  23:33:34
+   Duration  216.89s (tests 100%)
+
+JSON report written to /tmp/gs03-controlled-failure/vitest.json
+JUNIT report written to /tmp/gs03-controlled-failure/junit.xml

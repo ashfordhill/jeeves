@@ -1,0 +1,12 @@
+{
+  "id": "gs-4f1bb3a3-f63b-4307-9f67-beaaffd23ccb",
+  "selected": ["core"],
+  "commit": "04f6658475be7e6c335e5a82f848c8ae722dd228",
+  "dirty": "M field-projects/generator-system/README.md\n M jeeves-generator/integration/scenarios/core.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

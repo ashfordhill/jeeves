@@ -1,0 +1,14 @@
+{
+  "mode": "io-failure",
+  "exitCode": 1,
+  "artifactContainsSecret": true,
+  "artifactRedacted": false,
+  "runtimeRemoved": false,
+  "marker": null,
+  "secretSha256": "83e5c056615e7ac10e771e36221770f6e5c501c4676132df68f5b922c7f5827b",
+  "fault": "EACCES from an unreadable existing secret",
+  "failClosed": true,
+  "recoveryExitCode": 0,
+  "runtimeRemovedAfterRecovery": true,
+  "artifactRedactedAfterRecovery": true
+}

@@ -1,0 +1,6 @@
+{
+  "fixture": "activity",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected { status: 200, body: { …(2) } } to deeply equal { status: 200, body: { …(2) } }"
+}

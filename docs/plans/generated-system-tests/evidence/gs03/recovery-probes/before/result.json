@@ -1,0 +1,11 @@
+{
+  "mode": "before",
+  "exitCode": 0,
+  "artifactContainsSecret": true,
+  "artifactRedacted": false,
+  "runtimeRemoved": true,
+  "marker": null,
+  "secretSha256": "fb37fa35be268406d2cfdb272fd0ef8014c0c7fc257159bf0f324a71230073cc",
+  "fault": null,
+  "passed": false
+}

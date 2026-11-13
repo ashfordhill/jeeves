@@ -1,0 +1,21 @@
+{
+  "export": {
+    "exitCode": 0,
+    "elapsedSeconds": 0.467
+  },
+  "builder": "gs03-exact-cba087c761df419db30ee096aef97431",
+  "create": {
+    "exitCode": 0,
+    "elapsedSeconds": 2.979
+  },
+  "build": {
+    "exitCode": 0,
+    "elapsedSeconds": 37.89
+  },
+  "scaffoldUnchanged": true,
+  "remove": {
+    "exitCode": 0,
+    "elapsedSeconds": 2.956
+  },
+  "exportRemoved": true
+}

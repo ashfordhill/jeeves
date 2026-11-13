@@ -1,0 +1,100 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-1",
+      "before": {
+        "containers": [
+          "6153dcaaa7e1",
+          "b0413db64e62",
+          "702cd893a9df",
+          "84cb9a46e787",
+          "4f712461f5e6",
+          "f44f4b57e746",
+          "96b2128eb413",
+          "b1bdc2514d53",
+          "ecf730f8be5b"
+        ],
+        "networks": ["f214d88587da"],
+        "volumes": [
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-1_broker-data",
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-1_postgres-data"
+        ]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-2",
+      "before": {
+        "containers": [
+          "0070f426157b",
+          "64d22d720383",
+          "b0fec8cf6eb5",
+          "9bcfdc96d85a",
+          "a02c2af31cdb",
+          "87d88f0abfd6"
+        ],
+        "networks": ["b6c999068990"],
+        "volumes": [
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-2_broker-data",
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-2_postgres-data"
+        ]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-3",
+      "before": {
+        "containers": [
+          "f719a6ae0d56",
+          "0ada2e64869f",
+          "4a2210748b98",
+          "ba2300691bb5",
+          "51d503ed4fc7",
+          "fc47b8342f79"
+        ],
+        "networks": ["877f88d1b819"],
+        "volumes": [
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-3_broker-data",
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-3_postgres-data"
+        ]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-4",
+      "before": {
+        "containers": [
+          "8a098363f181",
+          "a6280f98308c",
+          "3b2a1dd578c0",
+          "239c199a1fd4",
+          "19d574d21968",
+          "174f87cde67b"
+        ],
+        "networks": ["0101d9f95e11"],
+        "volumes": [
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-4_broker-data",
+          "gs-2b2adf80-f7c5-4707-8448-4eef7f114c5e-4_postgres-data"
+        ]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

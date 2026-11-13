@@ -1,0 +1,15 @@
+{
+  "mode": "after",
+  "exitCode": 0,
+  "artifactContainsSecret": false,
+  "artifactRedacted": true,
+  "runtimeRemoved": true,
+  "marker": {
+    "version": 1,
+    "id": "gs-6878c0d4-01fd-45a5-818e-fd802028fd54",
+    "complete": true
+  },
+  "secretSha256": "b5de8376f4de58e9f1ae82a418b2eaf9fb316c51b713094b7fec2c4833050615",
+  "fault": null,
+  "passed": true
+}

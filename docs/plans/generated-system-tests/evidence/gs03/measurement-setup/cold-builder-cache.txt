@@ -1,0 +1,29 @@
+ID                           RECLAIMABLE   SIZE      LAST ACCESSED
+26kszz38gjyr66yguyd39pc78*   true          8.192kB   About a minute ago
+3coex8qdbimsdxqx7q5g0qxte*   true          8.192kB   52 seconds ago
+4u155pbkj7b0jxpj0vdd3tq71*   true          8.192kB   5 minutes ago
+lxi7ln5dvh2dzppta40av8vzl*   true          8.192kB   About a minute ago
+pr5l9qwgn0wdcn4hofhl0czm8*   true          8.192kB   52 seconds ago
+s6q8g2j7b14v7nvkrowi8gmlt*   true          8.192kB   2 minutes ago
+tccu9njlbz40btf8xovyfrvw8*   true          8.192kB   5 minutes ago
+ub4etdivw6zjx3ludb32y6fnc*   true          8.192kB   2 minutes ago
+lew5h64u8sebe7d5yvbh4wkoy    true          8.285kB   5 minutes ago
+46yfy9wrh1k7sz8rh6cju59lu    true          12.63kB   5 minutes ago
+0qa7rpyro42etk7xv65a1f153    true          20.93kB   5 minutes ago
+u8lk965pu42oq9lblcfaxip6r    true          51.28kB   52 seconds ago
+tiylr9ni7j2zn2ufhokfyno2o    true          70.04kB   5 minutes ago
+hd5c10xsu4ze9mq0ssur8gp6n    true          72.03kB   5 minutes ago
+fybj6oui8pfnsdg8g7ml4xq7g    true          72.94kB   5 minutes ago
+t63eq4s9z7jdwwqle6d8u4krq    true          215.2kB   5 minutes ago
+s5kfwrquqg36qtzrlnkvg3iz7    true          220.2kB   5 minutes ago
+1jhq62ud5u0ufju014ouutku3*   true          340kB     About a minute ago
+2ndaumgwoli5bjwzcx8twu76j*   true          340kB     2 minutes ago
+88k4q8rkas0b49ylaaqk7wjm2*   true          340kB     52 seconds ago
+xzzjrveazynlzsowcir52ytwo*   true          340kB     5 minutes ago
+6fb5lm119o3lru86nl5kxprc1    true          9.041MB   5 minutes ago
+0dj81jsu9i8qgvw7zl3ski2k9    true          113.5MB   5 minutes ago
+m45vuxj8bkwpth4s91a6xz651    true          157MB     5 minutes ago
+z4epfk8el2q668f0xtb24wca0    true          207.1MB   5 minutes ago
+xbbbvwc2izzw6s251we52zm3n    true          244.6MB   5 minutes ago
+Reclaimable:	733.5MB
+Total:		733.5MB

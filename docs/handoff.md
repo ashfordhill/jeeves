@@ -11727,3 +11727,44 @@ Owner changes and the intervening broker-reconnect planning commit remain untouc
 Only `core` exists; B01–B04 are all executable. Keep source stable during generation, preserve
 scoped cleanup, and run Docker topology changes separately from browser checks. GS07 now depends
 on BR01–BR02 as the owner's latest plan amendment says; GS02–GS06 do not.
+
+## 2026-11-13 — GS03: Make the core suite a portable CI job
+
+**What changed.** Added `.github/workflows/generated-system.yml`: PR/push core and manual
+core/all, existing pinned toolchain/actions, frozen installation, lock-keyed pnpm downloads and
+within-job Buildx layer reuse. The ordinary CLI remains CI-independent. A 15-minute generated
+step sits inside a 20-minute job with recovery/upload headroom. Scoped recovery preserves the
+original cleanup inventory; a matching fresh scrub marker gates copying the full run into the
+upload folder, otherwise only safe adapter metadata is uploaded. The narrow harness correction
+validates scopes and scrubs with live secrets before deleting runtime, rejects symlink artifacts
+and propagates unreadable-secret errors. Fixture usage/troubleshooting and compact source,
+cost/failure/probe evidence are under `docs/plans/generated-system-tests/evidence/gs03/`.
+No template, diagram, owned hook/stub, generated scaffold or existing CI workflow changed.
+
+**Checks.** Final-source fresh core 4/4 passed (271.540 s including cleanup), with all 27
+containers, networks, volumes and private runtime removed and a matching scrub marker. Final
+`pnpm check`: 820 tests / 105 files plus lint/typechecks passed; `pnpm test:e2e`: 73/73 passed (4.7 min); web build passed.
+Actionlint syntax/context validation passed. The real controlled wrong-count run had three
+passes and one intended assertion failure, exit 1 and complete 27-container cleanup; the source
+was restored byte-for-byte. Recovery probes retain the pre-fix raw-sentinel failure, corrected
+redaction-before-deletion and EACCES fail-closed behavior. Exact current YAML shell probes show
+no raw run copied on scrub failure, then successful cleanup after permission repair. Evidence
+formatting preserved 68 parsed JSON values. Final logs: `/tmp/gs03-final-core-command.log`,
+`/tmp/gs03-check-final.log`, `/tmp/gs03-e2e-final.log`, `/tmp/gs03-web-build-final.log`.
+
+**Differences from the plan.** The first empty-builder attempt stalled at the unchanged npm
+global install and hit its existing 240 s build deadline. Its failed setup/cleanup remains
+recorded. Bounded probes and one exact empty-cache export/Compose build then succeeded; one
+instrumented cold/warm validation passed 4/4 each. The original stall remains unexplained,
+not fixed or silently retried. Cold/warm costs precede the harness privacy correction; current
+source is covered by the final core/checks. CI recovery exposed the existing sanitizer-order/
+unreadable-secret defect, fixed in the harness rather than generated code.
+
+**Noticed.** Local CLI wall cost was about six minutes cold and 5.2 minutes warm; cache,
+sampling and differing clock scopes are explicit in the evidence. Completed stacks remain
+until outer cleanup (27 containers); review sequential per-stack cleanup before GS06 expands
+providers. Hosted execution is pending publication; no push or branch-protection change.
+
+**For the next unit.** GS04 adds Wiring and its implemented manual suite choice. Preserve the
+scrub-marker upload guard and separate generated/Docker and browser phases. GS07 still requires
+BR01–BR02; no broker-reconnect or UI unit was taken over. Owner working-tree changes are intact.

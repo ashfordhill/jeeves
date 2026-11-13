@@ -1,0 +1,7 @@
+actionlint 1.7.7
+Official release: https://github.com/rhysd/actionlint/releases/tag/v1.7.7
+Archive SHA256: 023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757
+Verified against official release checksums before execution.
+Command: /tmp/gs03-actionlint/actionlint -shellcheck='' .github/workflows/generated-system.yml
+Exit: 0; no syntax/context diagnostics.
+Shellcheck unavailable and explicitly disabled; hosted execution pending.

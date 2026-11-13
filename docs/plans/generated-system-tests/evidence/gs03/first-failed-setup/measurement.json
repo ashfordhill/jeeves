@@ -1,0 +1,361 @@
+{
+  "temperature": "cold",
+  "exitCode": 1,
+  "elapsedSeconds": 302.436,
+  "sampleIntervalSeconds": 5,
+  "peakRunningContainers": 2,
+  "peakContainerMemoryBytes": 188565422,
+  "peakContainerCpuPercent": 58.66,
+  "gnuTime": "Command exited with non-zero status 1\n\tCommand being timed: \"pnpm test:generated --suite=core --artifacts=/tmp/gs03-cold\"\n\tUser time (seconds): 0.84\n\tSystem time (seconds): 1.91\n\tPercent of CPU this job got: 0%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 5:32.41\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 99432\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 174607\n\tVoluntary context switches: 31268\n\tInvoluntary context switches: 124\n\tSwaps: 0\n\tFile system inputs: 0\n\tFile system outputs: 816\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 1\n",
+  "samples": [
+    {
+      "elapsedSeconds": 0.001
+    },
+    {
+      "elapsedSeconds": 5.001,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 10.021,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 15.039,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 20.059,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 25.077,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 30.096,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 35.114,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 40.131,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 45.151,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 50.169,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 55.188,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 60.207,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 65.224,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 70.241,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 75.262,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 80.279,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 85.297,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 90.316,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 95.334,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 100.354,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 105.374,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 110.393,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 115.411,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 120.431,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 125.451,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 130.47,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 135.488,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 140.507,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 145.527,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 150.544,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 155.564,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 160.584,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 165.601,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 170.619,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 175.638,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 180.656,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 185.674,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 190.694,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 195.71,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 200.727,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 205.746,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 210.765,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 215.783,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 220.802,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 225.821,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 230.84,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 235.857,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 240.875,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 245.893,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 250.928,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 255.966,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 261.003,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 266.078,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 271.114,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 276.166,
+      "running": 0,
+      "memoryBytes": 0,
+      "cpuPercent": 0
+    },
+    {
+      "elapsedSeconds": 281.209,
+      "running": 2,
+      "memoryBytes": 188565422,
+      "cpuPercent": 30.72
+    },
+    {
+      "elapsedSeconds": 288.28,
+      "running": 2,
+      "memoryBytes": 184842977,
+      "cpuPercent": 58.66
+    },
+    {
+      "elapsedSeconds": 295.352,
+      "samplingError": "Command '['docker', 'stats', '--no-stream', '--format', '{{json .}}', '4246a3b3012f', 'fdf521ee6a65', '55aa209b49d5', 'a03ffee82a7d', '5dba39b87b87', '181592fd1b28']' returned non-zero exit status 1."
+    }
+  ]
+}

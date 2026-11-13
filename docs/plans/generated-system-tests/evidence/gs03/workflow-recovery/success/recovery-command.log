@@ -1,0 +1,2 @@
+$ pnpm --filter @jeeves/generator test:generated --cleanup /tmp/gs03-workflow-recovery-probe/success/run/run.json
+$ tsx integration/run.ts --cleanup /tmp/gs03-workflow-recovery-probe/success/run/run.json

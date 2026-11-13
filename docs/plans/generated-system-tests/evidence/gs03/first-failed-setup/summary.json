@@ -1,0 +1,8 @@
+{
+  "id": "gs-6e0842c8-4eb7-43c6-ba11-7d48c3e0abfd",
+  "selected": ["core"],
+  "outcome": "failed",
+  "signal": "SIGTERM",
+  "elapsedMs": 332200,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs03-cold/run.json"
+}

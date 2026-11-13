@@ -1,0 +1,12 @@
+{
+  "id": "gs-6e0842c8-4eb7-43c6-ba11-7d48c3e0abfd",
+  "selected": ["core"],
+  "commit": "04f6658475be7e6c335e5a82f848c8ae722dd228",
+  "dirty": "",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

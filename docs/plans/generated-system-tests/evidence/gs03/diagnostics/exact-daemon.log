@@ -1,0 +1,8 @@
+2026-11-13T05:20:07.306671666Z time="2026-11-13T05:20:07Z" level=info msg="auto snapshotter: using overlayfs"
+2026-11-13T05:20:07.307477041Z time="2026-11-13T05:20:07Z" level=warning msg="using host network as the default"
+2026-11-13T05:20:07.460240619Z time="2026-11-13T05:20:07Z" level=warning msg="failed check for fsverity support" error="enable fsverity failed: operation not supported" path=/var/lib/buildkit/runc-overlayfs/content
+2026-11-13T05:20:07.534202891Z time="2026-11-13T05:20:07Z" level=info msg="found worker \"i8c8uv0t56utf3irgal0swath\", labels=map[org.mobyproject.buildkit.worker.executor:oci org.mobyproject.buildkit.worker.hostname:609fd2538803 org.mobyproject.buildkit.worker.network:host org.mobyproject.buildkit.worker.oci.process-mode:sandbox org.mobyproject.buildkit.worker.selinux.enabled:false org.mobyproject.buildkit.worker.snapshotter:overlayfs], platforms=[linux/amd64 linux/amd64/v2 linux/amd64/v3 linux/amd64/v4 linux/386]"
+2026-11-13T05:20:07.534935870Z time="2026-11-13T05:20:07Z" level=warning msg="skipping containerd worker, as \"/run/containerd/containerd.sock\" does not exist"
+2026-11-13T05:20:07.534941732Z time="2026-11-13T05:20:07Z" level=info msg="found 1 workers, default=\"i8c8uv0t56utf3irgal0swath\""
+2026-11-13T05:20:07.534950640Z time="2026-11-13T05:20:07Z" level=warning msg="currently, only the default worker can be used."
+2026-11-13T05:20:07.620726097Z time="2026-11-13T05:20:07Z" level=info msg="running server on /run/buildkit/buildkitd.sock"

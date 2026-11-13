@@ -6,13 +6,17 @@ export async function sanitizer(application?: string) {
   const secrets: string[] = [];
   if (application) {
     const directory = join(application, ".runtime/secrets");
+    let names: string[];
     try {
-      for (const name of await readdir(directory)) {
-        const value = (await readFile(join(directory, name), "utf8")).trim();
-        if (value) secrets.push(value);
-      }
-    } catch {
-      /* A failed setup may not have created secrets. */
+      names = await readdir(directory);
+    } catch (error) {
+      // A failed startup may not have created a runtime; existing unreadable secrets are errors.
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      names = [];
+    }
+    for (const name of names) {
+      const value = (await readFile(join(directory, name), "utf8")).trim();
+      if (value) secrets.push(value);
     }
   }
   return (value: string) => {
@@ -32,6 +36,7 @@ export async function sanitizeArtifacts(directory: string, applications: string[
   async function walk(path: string): Promise<void> {
     for (const entry of await readdir(path, { withFileTypes: true })) {
       const child = join(path, entry.name);
+      if (entry.isSymbolicLink()) throw new Error("Refusing a symlink in run artifacts");
       if (entry.isDirectory()) await walk(child);
       else if (/\.(?:json|log|xml)$/.test(entry.name))
         await writeFile(child, clean(await readFile(child, "utf8")));

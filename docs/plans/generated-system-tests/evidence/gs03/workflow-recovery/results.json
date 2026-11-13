@@ -1,0 +1,38 @@
+[
+  {
+    "case": "success",
+    "recoveryExitCode": 0,
+    "fullUploadAllowed": true,
+    "copiedRun": true,
+    "uploadContainsSecret": false,
+    "runtimeRemoved": true,
+    "safeAdapter": {
+      "suite": "core",
+      "install": "success",
+      "builder": "success",
+      "generated": "failure",
+      "cleanup": "success",
+      "sanitizedArtifacts": true
+    },
+    "secretSha256": "4c6f433d1855de859f6bf3cf75d5579a5fe927ddc0abaa2127f6ea6a616a36fd"
+  },
+  {
+    "case": "unreadable-secret",
+    "recoveryExitCode": 1,
+    "fullUploadAllowed": false,
+    "copiedRun": false,
+    "uploadContainsSecret": false,
+    "runtimeRemoved": false,
+    "safeAdapter": {
+      "suite": "core",
+      "install": "success",
+      "builder": "success",
+      "generated": "failure",
+      "cleanup": "failure",
+      "sanitizedArtifacts": false
+    },
+    "secretSha256": "18fe30e5dbdf5198de1e99ad220525dbdb60c94e2b23809c89b285f353ea44ee",
+    "staleMarkerRemoved": true,
+    "runtimeRemovedAfterRepair": true
+  }
+]

@@ -1,0 +1,119 @@
+name: Generated system
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Implemented generated backend suite
+        required: true
+        default: core
+        type: choice
+        options: [core, all]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generated-system-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Generated backend behavior
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SELECTED_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'core' }}
+      ARTIFACT_ROOT: ${{ github.workspace }}/test-results/generated-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      ARTIFACTS: ${{ github.workspace }}/test-results/generated-ci/${{ github.run_id }}-${{ github.run_attempt }}/run
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: npm install --global pnpm@12.16.1
+
+      # pnpm must exist before setup-node can locate and cache its download store.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            jeeves-generator/templates/local-v2/assets/pnpm-lock.yaml
+
+      - id: install
+        run: pnpm install --frozen-lockfile
+
+      # Content-addressed layers are reused by fresh exports within this job.
+      # No provider volumes, runtime credentials or application state are cached.
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        id: builder
+
+      - name: Run generated backend behavior
+        id: generated
+        timeout-minutes: 15
+        env:
+          BUILDX_BUILDER: ${{ steps.builder.outputs.name }}
+        run: pnpm test:generated "--suite=$SELECTED_SUITE" "--artifacts=$ARTIFACTS"
+
+      - name: Recover this run's scoped resources
+        id: cleanup
+        if: always()
+        timeout-minutes: 3
+        run: |
+          if [ -f "$ARTIFACTS/run.json" ]; then
+            if [ -f "$ARTIFACTS/cleanup.json" ]; then
+              cp "$ARTIFACTS/cleanup.json" "$ARTIFACTS/runner-cleanup.json"
+            fi
+            pnpm test:generated --cleanup "$ARTIFACTS/run.json"
+            node --input-type=module <<'JS'
+          import { readFile } from 'node:fs/promises';
+          const record = JSON.parse(await readFile(`${process.env.ARTIFACTS}/run.json`, 'utf8'));
+          const marker = JSON.parse(await readFile(`${process.env.ARTIFACTS}/sanitized.json`, 'utf8'));
+          if (marker.version !== 1 || marker.id !== record.id || marker.complete !== true)
+            throw new Error('Sanitized marker does not match this run');
+          JS
+            printf 'sanitized=true\n' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Record adapter outcome
+        if: always()
+        env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          BUILDER_OUTCOME: ${{ steps.builder.outcome }}
+          GENERATED_OUTCOME: ${{ steps.generated.outcome }}
+          CLEANUP_OUTCOME: ${{ steps.cleanup.outcome }}
+          SANITIZED_ARTIFACTS: ${{ steps.cleanup.outputs.sanitized }}
+        run: |
+          node --input-type=module <<'JS'
+          import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+          await mkdir(process.env.ARTIFACT_ROOT, { recursive: true });
+          const upload = `${process.env.ARTIFACT_ROOT}/upload`;
+          await rm(upload, { recursive: true, force: true });
+          await mkdir(upload);
+          const sanitized = process.env.SANITIZED_ARTIFACTS === 'true';
+          await writeFile(`${upload}/adapter.json`, JSON.stringify({
+            suite: process.env.SELECTED_SUITE,
+            install: process.env.INSTALL_OUTCOME,
+            builder: process.env.BUILDER_OUTCOME,
+            generated: process.env.GENERATED_OUTCOME,
+            cleanup: process.env.CLEANUP_OUTCOME,
+            sanitizedArtifacts: sanitized,
+          }, null, 2) + '\n');
+          if (sanitized) await cp(process.env.ARTIFACTS, `${upload}/run`, { recursive: true });
+          JS
+
+      - name: Upload sanitized results
+        if: always()
+        timeout-minutes: 1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SELECTED_SUITE }}
+          path: ${{ env.ARTIFACT_ROOT }}/upload/
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,7 @@
+{
+  "suite": "core",
+  "install": "success",
+  "builder": "success",
+  "generated": "failure",
+  "cleanup": "success"
+}

@@ -1,0 +1,7 @@
+#1 [internal] booting buildkit
+#1 pulling image moby/buildkit:buildx-stable-1
+#1 pulling image moby/buildkit:buildx-stable-1 11.4s done
+#1 creating container buildx_buildkit_gs03-ecb1abda806845d4bf2f3140fffceec70
+#1 creating container buildx_buildkit_gs03-ecb1abda806845d4bf2f3140fffceec70 1.4s done
+#1 DONE 12.8s
+gs03-ecb1abda806845d4bf2f3140fffceec7
