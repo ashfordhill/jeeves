@@ -82,13 +82,21 @@ const marker = () => ({
   })),
 });
 async function fixture(
-  options: { badHash?: boolean; waitEngine?: boolean; closeFailure?: boolean } = {},
+  options: {
+    badHash?: boolean;
+    waitEngine?: boolean;
+    closeFailure?: boolean;
+    /** How the codecs fail to build a `failed` report. */
+    badReport?: "eventId" | "cyclic" | "oversize";
+    onSkippedReport?: (error: unknown, messageId: string | undefined) => void;
+  } = {},
 ) {
   const root = await mkdtemp(join(tmpdir(), "jeeves-media-test-"));
   const events: { id: string; body: { signal: string; payload: unknown } }[] = [];
   const writes: string[] = [],
     closes: string[] = [],
-    deadLetters: string[] = [];
+    deadLetters: string[] = [],
+    terminalCodes: unknown[] = [];
   let current: ReturnType<typeof marker> | null = null,
     sourceReads = 0,
     encodes = 0,
@@ -127,6 +135,7 @@ async function fixture(
   const worker = await startMediaWorker({
     tempRoot: root,
     objects,
+    onSkippedReport: options.onSkippedReport,
     codecs: {
       job(raw: typeof wire, id: string) {
         decodeCount++;
@@ -141,6 +150,8 @@ async function fixture(
         return { attachmentManifest: raw.manifest };
       },
       eventId(_job: unknown, kind: string) {
+        if (kind === "failed" && options.badReport === "eventId")
+          throw new Error("Failure report ID unavailable");
         return `course-clip:${kind}`;
       },
       event(
@@ -153,6 +164,13 @@ async function fixture(
           code?: string;
         },
       ) {
+        if (event.kind === "failed" && options.badReport === "cyclic") {
+          const cyclic: Record<string, unknown> = { signal: event.kind };
+          cyclic.self = cyclic;
+          return cyclic;
+        }
+        if (event.kind === "failed" && options.badReport === "oversize")
+          return { signal: event.kind, padding: "x".repeat(65536) };
         return {
           attachment: job.document,
           signal: event.kind,
@@ -216,8 +234,13 @@ async function fixture(
           async close() {
             closes.push("consumer");
           },
-          async republish(destination: string) {
+          async republish(
+            destination: string,
+            _message: unknown,
+            headers: Record<string, unknown>,
+          ) {
             deadLetters.push(destination);
+            terminalCodes.push(headers["x-terminal-code"]);
           },
           ack() {
             acks++;
@@ -248,6 +271,7 @@ async function fixture(
     writes,
     closes,
     deadLetters,
+    terminalCodes,
     entered,
     deliver,
     corrupt() {
@@ -316,6 +340,48 @@ describe("storage-backed media worker", () => {
     } finally {
       await f.worker.close();
       await rm(f.root, { recursive: true });
+    }
+  });
+
+  it("sends a job to its failed queue when its failure report can't be built, logs it and keeps consuming (PF08)", async () => {
+    const expected = {
+      eventId: /Failure report ID unavailable/,
+      cyclic: /circular/i,
+      oversize: /Media event exceeds bound/,
+    };
+    for (const badReport of ["eventId", "cyclic", "oversize"] as const) {
+      const skipped: [unknown, string | undefined][] = [];
+      const f = await fixture({
+        badHash: true,
+        badReport,
+        onSkippedReport: (error, messageId) => skipped.push([error, messageId]),
+      });
+      let closed = false;
+      void f.worker.closed.then(() => {
+        closed = true;
+      });
+      try {
+        f.deliver();
+        await expect.poll(() => f.stats().acks).toBe(1);
+        expect(f.deadLetters).toEqual(["attachment-jobs.failed"]);
+        expect(f.terminalCodes).toEqual(["INVALID_MEDIA"]);
+        expect(skipped).toHaveLength(1);
+        expect(skipped[0]?.[1]).toBe(wire.request);
+        expect(String(skipped[0]?.[0])).toMatch(expected[badReport]);
+        // Only the job's `started` event was published; no failure report.
+        expect(f.events.map((e) => e.body.signal)).toEqual(["started"]);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        expect(closed).toBe(false);
+        // The next message is handled.
+        f.deliver();
+        await expect.poll(() => f.stats().acks).toBe(2);
+        expect(f.events.map((e) => e.body.signal)).toEqual(["started", "started"]);
+        expect(f.deadLetters).toEqual(["attachment-jobs.failed", "attachment-jobs.failed"]);
+        expect(closed).toBe(false);
+      } finally {
+        await f.worker.close();
+        await rm(f.root, { recursive: true });
+      }
     }
   });
 

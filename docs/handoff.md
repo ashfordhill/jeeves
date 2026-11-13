@@ -11109,3 +11109,88 @@ TinyURL and generation. No other agent's implementation or pins were changed for
 plan defaults to starting GS01 after PF14's review; it records dependencies if the coordinator
 explicitly schedules it earlier. Hosted CI evidence stays pending until its workflow is built
 and the owner publishes it. The root README and unrelated changes were left untouched.
+
+## 2026-11-12 — PF08: One bad item never stops a process
+
+**What changed.**
+
+- `jeeves-generator/templates/local-v2/assets/src/runtime/media-worker.ts.template`: `emit` is
+  split in two. `encode(job, event)` builds the ID (`messageId(options.codecs.eventId(job,
+  event.kind))`), the wire value (`options.codecs.event` with `eventId` and `occurredAt`) and its
+  body (`jsonBody`) and returns `{ id, body }`; `emit` calls it, checks the publisher and
+  publishes. `startMediaWorker` takes `onSkippedReport?: (error, messageId) => void`, called
+  through a guard. `onTerminal`, after the `abort` check, encodes the `failed` event inside
+  `try`/`catch`: a throw calls `onSkippedReport` with the error and `delivery.messageId` and
+  returns (with the plan's comment), so the delivery runner still republishes the message to
+  `.failed` with its `x-terminal-code`, acknowledges it and keeps consuming; otherwise the
+  publisher check and publish run outside that `try`.
+- `multipart.ts.template`: `sweep()` resolves to `{ failed: { uploadId: string; error: unknown
+  }[] }` (the method's and `sweeping`'s types; single flight kept). Each iteration of the
+  durable-cleanup and interrupted-upload loops is in `try`/`catch`: a caught error is pushed with
+  that row's upload ID and the loop goes on. The provider part is unchanged inside a `try`; if it
+  throws with `failed` not empty, the sweep rejects with
+  ``AggregateError([...new Error(`upload <id>: <message>`, { cause }), providerError], "Multipart sweep failed")``,
+  else with the provider error.
+- Wiring: `http-wiring.ts` (the multipart's `initialize` and `started`): `for (const item of
+  (await <name>.multipart.sweep()).failed) failure("sweep <module>", item.error, { upload:
+  item.uploadId });` at start, and the same loop in the `periodic` effect (`async () => { … }`)
+  with PF06's fourth argument. `loop-wiring.ts` (`startMediaWorker({`): `onSkippedReport: (error,
+  messageId) => failure("failure report <module>", error, { message: messageId })`.
+- `jeeves-generator/examples/product-attachment/service.ts.template`: a local `sweep` logs each
+  returned failure with the plan's `console.error(…)` line; it runs at start and in `periodic`.
+- Tests: the plan's four. 1 in `media-worker.test.ts` (the fixture takes `badReport` and
+  `onSkippedReport` and records each republished `x-terminal-code`; the three cases in one
+  test); 2 and 3 in `multipart.test.ts` (the fixture's completion hook can throw for one upload
+  and `unfinished` can throw; a helper leaves two uploads completing); 4 in
+  `http-wiring.test.ts`. Named assertions: `http-wiring.test.ts`'s start-sweep string and both
+  `periodic(` strings; `multipart.test.ts`'s two awaited sweeps now expect `{ failed: [] }`.
+- Docs: `jeeves-generator/README.md` (Multipart: a sweep goes on past an upload it can't finish
+  and logs it, and a failing provider inventory still fails it with an `AggregateError`; Video
+  HLS: the skipped report and the plan's sentence; rule 8: the Failure lines fields add
+  `message`, and the list adds `sweep <module>` with `upload` and `failure report <module>` with
+  `message`); `docs/template-gaps.md` gaps 2 and 5 are `Fixed in PF08`.
+
+**Checks.**
+
+- check: passed before any change (104 files, 776 tests) and after (104 files, 780 tests: 4
+  added), with the frozen v1 pin unchanged. Before the pins were updated, only processes-off's
+  frozen-v2 and v2-module-design failed (and one type error in the new multipart helper, fixed).
+- Pins (rule 7): `pins:update` then the diff listed, for both frozen-v2 and v2-module-design,
+  `.jeeves/manifest.json`, `src/runtime/media-worker.ts` and `src/runtime/multipart.ts`;
+  stub-stack unchanged.
+- Mutation check: with HEAD's two templates, tests 1, 2 and 3 and the updated `{ failed: [] }`
+  assertion fail (4 tests); restored, all pass.
+- Scratch type-checks: v2 built from modules with processes on (106 files) and the product
+  attachment example (62 files), each exported, installed offline from the pnpm store and checked
+  with `tsc -p tsconfig.json --noEmit` against real dependencies: no errors.
+- e2e: `pnpm test:e2e` 73 passed (4.5 min) on the first run; no reruns needed.
+- build: passed.
+
+**Differences from the plan.**
+
+- `http-wiring.test.ts`'s strings were at lines 386–394 (the start sweep, the `periodic` line and
+  the same line in the `tail` list); `multipart.test.ts`'s sweeps at 226–229. Those sweeps didn't
+  read the result; they now assert `{ failed: [] }`.
+- Test 1's three cases run in one test; the codecs misbehave only for kind `failed`, so the
+  job's `started` event is still published, and the job fails for good by a byte-hash mismatch
+  (`INVALID_MEDIA`). Test 4 also checks the transcoder's `onSkippedReport` line.
+- The whole provider part (inventory, the 50-row check, the aborts and the cursor) is in one
+  `try`; each loop's listing query stays outside its per-row `try`.
+- `emit` now builds the body before checking the publisher (the plan's `encode`), so with no
+  publisher a body that can't be built throws its own error first.
+- The README's new sentence is wrapped at about 100 columns like its paragraph.
+
+**Noticed.**
+
+- The failure log keeps one line a second per `what`, so several uploads failing in one sweep
+  write one `sweep <module>` line now and the next carries `suppressed`; the suppressed uploads'
+  IDs aren't logged.
+- If `repo.interrupted`'s listing throws after a cleanup row failed, the sweep rejects with the
+  listing's error alone (the plan names only the provider part).
+- PF06's note still stands: `src/features/service-resources.ts`'s `createPositiveReader` passes
+  no `onFailure`.
+- Another session committed `28a9fd7` (the generated system tests plan, with a handoff entry)
+  during this unit; this entry follows it.
+
+**For the next unit.** PF09 next. Both multipart sweep callers read `.failed`; rule 7's procedure
+worked as written.

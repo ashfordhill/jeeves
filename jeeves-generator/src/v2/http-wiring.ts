@@ -546,9 +546,13 @@ function ownedMultipart(
       `  config.templates[${text(id)}].mounts,`,
       ");",
     ],
-    initialize: [`await ${name}.db.query("SELECT 1");`, `await ${name}.multipart.sweep();`],
+    // An upload the sweep can't finish is logged, and the sweep goes on to the next.
+    initialize: [
+      `await ${name}.db.query("SELECT 1");`,
+      `for (const item of (await ${name}.multipart.sweep()).failed) failure(${text(`sweep ${lead.module}`)}, item.error, { upload: item.uploadId });`,
+    ],
     started: [
-      `periodic(scope, () => ${name}.multipart.sweep(), 30000, (error) => failure(${text(`sweep ${lead.module}`)}, error));`,
+      `periodic(scope, async () => { for (const item of (await ${name}.multipart.sweep()).failed) failure(${text(`sweep ${lead.module}`)}, item.error, { upload: item.uploadId }); }, 30000, (error) => failure(${text(`sweep ${lead.module}`)}, error));`,
     ],
     config: [
       id,

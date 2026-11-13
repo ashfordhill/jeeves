@@ -152,6 +152,8 @@ export async function startMediaWorker<J, R>(options: {
   engine?: (input: VideoHlsInput) => Promise<VideoCompletionMarker>;
   tempRoot?: string;
   onFatal?: (error: unknown) => void;
+  /** Told when a job's failure report can't be built; the job still goes to its failed queue. */
+  onSkippedReport?: (error: unknown, messageId: string | undefined) => void;
 }) {
   const abort = new AbortController();
   let input: MediaTransport | undefined, publisher: MediaPublisher | undefined;
@@ -203,15 +205,27 @@ export async function startMediaWorker<J, R>(options: {
       throw new NonRetryable("MALFORMED_MESSAGE");
     }
   }
-  async function emit(job: J, event: MediaEvent<R>) {
+  /** The event's ID and body, from the application's codecs; throws what they throw. */
+  function encode(job: J, event: MediaEvent<R>) {
     const id = messageId(options.codecs.eventId(job, event.kind));
     const wire = options.codecs.event(job, {
       ...event,
       eventId: id,
       occurredAt: new Date().toISOString(),
     });
+    return { id, body: jsonBody(wire) };
+  }
+  async function emit(job: J, event: MediaEvent<R>) {
+    const { id, body } = encode(job, event);
     if (!publisher) throw new Error("Media publisher unavailable");
-    await publisher.publish(jsonBody(wire), id);
+    await publisher.publish(body, id);
+  }
+  function skipped(error: unknown, id: string | undefined) {
+    try {
+      options.onSkippedReport?.(error, id);
+    } catch {
+      /* The message still goes to its failed queue. */
+    }
   }
   const handle: MessageHandler = async (body, delivery) => {
     const { job, video } = decode(body, delivery.messageId);
@@ -296,13 +310,22 @@ export async function startMediaWorker<J, R>(options: {
           return;
         }
         if (abort.signal.aborted) throw abort.signal.reason;
-        await emit(job, {
-          kind: "failed",
-          code:
-            error instanceof NonRetryable && error.code === "INVALID_MEDIA"
-              ? "INVALID_MEDIA"
-              : "PROCESSING_FAILED",
-        });
+        let report: { id: string; body: Buffer };
+        try {
+          report = encode(job, {
+            kind: "failed",
+            code:
+              error instanceof NonRetryable && error.code === "INVALID_MEDIA"
+                ? "INVALID_MEDIA"
+                : "PROCESSING_FAILED",
+          });
+        } catch (failure) {
+          // A hook that fails while reporting a failure must not stop the worker.
+          skipped(failure, delivery.messageId);
+          return;
+        }
+        if (!publisher) throw new Error("Media publisher unavailable");
+        await publisher.publish(report.body, report.id);
       },
     });
     void input.closed.then((result) => {

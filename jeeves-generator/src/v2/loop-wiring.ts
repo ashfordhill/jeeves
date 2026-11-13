@@ -412,6 +412,7 @@ const videoHls: Builder = (process, selection, lead, selections, index) => {
       `    openPublisher: () => publisher(s, "results", scope),`,
       "    openConsumer: ({ handle, ...consumerHooks }) =>",
       ...consumer(index, "consumerHooks"),
+      `    onSkippedReport: (error, messageId) => failure(${text(`failure report ${lead.module}`)}, error, { message: messageId }),`,
       "    onFatal: scope.fail,",
       "  });",
       ...own("worker"),

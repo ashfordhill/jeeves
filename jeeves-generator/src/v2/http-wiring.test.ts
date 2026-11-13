@@ -383,15 +383,17 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(watch).toContain('const source = pool(scope, s, "source");');
     expect(watch).toContain('await watchCacheReader.source.query("SELECT 1");');
     const upload = text(v2, "src/processes/upload.ts");
-    expect(upload).toContain("await uploadMultipart.multipart.sweep();");
     expect(upload).toContain(
-      'periodic(scope, () => uploadMultipart.multipart.sweep(), 30000, (error) => failure("sweep upload-multipart", error));',
+      'for (const item of (await uploadMultipart.multipart.sweep()).failed) failure("sweep upload-multipart", item.error, { upload: item.uploadId });',
+    );
+    expect(upload).toContain(
+      'periodic(scope, async () => { for (const item of (await uploadMultipart.multipart.sweep()).failed) failure("sweep upload-multipart", item.error, { upload: item.uploadId }); }, 30000, (error) => failure("sweep upload-multipart", error));',
     );
     // Each template's `started` line comes after listening and its periodic work, before ready.
     const tail = (source: string) =>
       source.slice(source.indexOf("await service.start(config.listen);"));
     expect(tail(upload).split("\n").slice(1)).toEqual([
-      '  periodic(scope, () => uploadMultipart.multipart.sweep(), 30000, (error) => failure("sweep upload-multipart", error));',
+      '  periodic(scope, async () => { for (const item of (await uploadMultipart.multipart.sweep()).failed) failure("sweep upload-multipart", item.error, { upload: item.uploadId }); }, 30000, (error) => failure("sweep upload-multipart", error));',
       '  logStarted(config.tile, {"module":"upload-auth","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]});',
       '  logStarted(config.tile, {"module":"upload-multipart","template":"owned-multipart","wiring":"mounted","checks":["jobs publisher open","outbox relay started","SELECT 1 on its state login","sweep at start","sweep every 30 s"]});',
       "  scope.ready();",
@@ -403,6 +405,14 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     );
     expect(tail(text(v2, "src/processes/search.ts"))).toContain(
       'logStarted(config.tile, {"module":"search-query","template":"search-query","wiring":"mounted","checks":["cluster health","index search-index asserted once its mapping is written"]});',
+    );
+  });
+
+  it("logs each upload a sweep can't finish, at start and every 30 s, and each skipped failure report (PF08)", () => {
+    const upload = text(v2, "src/processes/upload.ts");
+    expect(upload.split(".sweep()).failed")).toHaveLength(3);
+    expect(text(v2, "src/processes/transcoder.ts")).toContain(
+      '      onSkippedReport: (error, messageId) => failure("failure report transcoder-encoder", error, { message: messageId }),',
     );
   });
 

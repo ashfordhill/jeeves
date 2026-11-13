@@ -328,9 +328,14 @@ bucket, or why it has none, and Preview shows them.
 - **Multipart uploads** is mounted on its real libraries: its private schema (named from the
   selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in
   migration `100-<selection>.sql`, granted to its host; S3 control and signing clients; the
-  transaction; the jobs publisher and outbox relay; and a sweep at start and every 30 s. Its six
-  operations are mounted at `/modules/<lead>/uploads…`. It needs its tile's Auth guard set to
-  Required (the derivation keeps it a stub otherwise): its hooks factory gets `guard`, and
+  transaction; the jobs publisher and outbox relay; and a sweep at start and every 30 s. A sweep
+  goes on past an upload it can't finish (an expired upload's cleanup, or an interrupted
+  completion whose hook throws) and logs each one, so one bad upload doesn't stop the process
+  starting; the upload stays as it was for the next sweep. A failure listing the provider's
+  unfinished uploads still fails the sweep (at start, the start), with each upload's error
+  beside it in an `AggregateError`. Its six operations are mounted at
+  `/modules/<lead>/uploads…`. It needs its tile's Auth guard set to Required (the derivation
+  keeps it a stub otherwise): its hooks factory gets `guard`, and
   `principal` is `return resources.guard.require(request);`, so a start with a valid token
   reaches `validate` first. When an asset lifecycle names the upload, the upload's process also
   builds that lifecycle (`createAssetLifecycle`, from the lifecycle's own hooks file and the same
@@ -403,7 +408,14 @@ stub loops and mounted templates both consume their row (`startModuleLoop`, `loo
   are `jobs` and `publication`; its tile gets a login and grants, and the upload tile `assets`.
 - **Video HLS** runs `startMediaWorker` on its jobs work queue (concurrency 1) after
   `verifyVideoRuntime()`, with its results publisher and S3 clients; its process uses the `media`
-  image (`target: media`, 21 m stop grace).
+  image (`target: media`, 21 m stop grace). When a job fails for good and its failure report
+  can't be built (`eventId` or `event` throws, or the event doesn't serialize or is over 64 KiB),
+  the worker skips the report and logs it; the message still goes to `.failed` with its code and
+  the worker goes on consuming. A video whose failure report is skipped is not marked failed at
+  once: it stays pending until its ten-minute queue deadline, or processing until its
+  thirty-minute processing deadline, and the lifecycle's next sweep then marks it QUEUE_DEADLINE
+  or PROCESSING_DEADLINE, if that sweep succeeds (its failure hook runs inside the same
+  transaction and can stop it).
 - **Event counter** runs `startCounterWorker` on its events subscriber, on its private schema's
   `receipts` and `totals` and the public view `<schema>_public.totals`.
 - **Search projection** (v3 contract §5) runs the Index writer on its events subscriber
@@ -437,20 +449,23 @@ log.
 `const failure = createFailureLog(config.tile);`. A failure the process survives writes one JSON
 line on stdout, at most once a second for each `what`, with the fields `level` (`error`), `event`
 (`failure`), `tile`, `what`, `error` (the error's name and message, at most 300 characters) and
-`upload` where there is one, for example
+`upload` or `message` where there is one, for example
 `{"level":"error","event":"failure","tile":"watch-api","what":"request GET /modules/watch-cache/:key","error":"TypeError: …"}`.
 What writes it, as its `what`:
 
 - a failed request, any answer of 500 or more but 501 (a 501 has its `not-implemented` line):
   `request <method> <route>`, the route's pattern, or `unmatched`;
-- a failed sweep, multipart's every 30 s and the asset lifecycle's: `sweep <module>`;
+- a failed sweep, multipart's every 30 s and the asset lifecycle's: `sweep <module>`; and each
+  upload a multipart sweep can't finish, at start and every 30 s: `sweep <module>` with `upload`;
 - a failed outbox relay, for each row it defers and for a batch that fails: `outbox relay jobs`
   (multipart) and `outbox relay publication` (asset lifecycle);
 - a failed or corrupt cache read and a failed cache fill: `cache read <module>`,
   `cache fill <module>`; the cache lost (Valkey unreachable, a command failed or timed out):
   `cache <module>`;
 - a failed multipart start and a failed provider abort after it: `multipart start <module>`,
-  `multipart abort <module>`, each with `upload`.
+  `multipart abort <module>`, each with `upload`;
+- a Video HLS failure report that can't be built: `failure report <module>`, with `message` (the
+  job's message ID).
 
 The answers, retries and what is kept stay as they were. `runProcess` (`process.ts`) also writes
 three lines on stderr, each `{"level":"error","event":…,"error":…}` in the same form:

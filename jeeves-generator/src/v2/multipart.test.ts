@@ -71,6 +71,7 @@ async function fixture(
       response: (v: unknown) => v,
       reserve: async () => {},
       complete: async (tx: { query(sql: string, args: unknown[]): Promise<unknown> }, row: Row) => {
+        if (state.completeError?.uploadId === row.uploadId) throw state.completeError.error;
         await tx.query("INSERT INTO docs.jobs VALUES($1)", [row.assetId]);
         return { assetId: row.assetId, accepted: true };
       },
@@ -89,6 +90,8 @@ async function fixture(
     aborts: [] as string[],
     orphanCursor: [] as unknown[],
     createError: undefined as Error | undefined,
+    completeError: undefined as { uploadId: string; error: Error } | undefined,
+    unfinishedError: undefined as Error | undefined,
   };
   const objects = {
     ownsKey: (key: string) => key.startsWith("docs/"),
@@ -124,6 +127,7 @@ async function fixture(
       state.aborts.push(key);
     },
     unfinished: async (cursor: unknown) => {
+      if (state.unfinishedError) throw state.unfinishedError;
       state.orphanCursor.push(cursor);
       return {
         uploads: [
@@ -142,6 +146,24 @@ async function fixture(
     state,
     api: createOwnedMultipart({ repository: repo, transaction: run, objects, onFailure }),
   };
+}
+
+/** Two uploads left completing by an uncertain provider outcome, oldest first. */
+async function interruptedUploads(
+  api: Awaited<ReturnType<typeof fixture>>["api"],
+  state: Awaited<ReturnType<typeof fixture>>["state"],
+): Promise<[string, string]> {
+  const interrupt = async (): Promise<string> => {
+    const { uploadId } = await api.start(alice, file);
+    state.missing = false;
+    state.uncertain = true;
+    await expect(api.complete(uploadId, alice)).rejects.toThrow("Provider outcome uncertain");
+    return uploadId;
+  };
+  const first = await interrupt();
+  const second = await interrupt();
+  state.uncertain = false;
+  return [first, second];
 }
 
 describe("owned signed multipart engine", () => {
@@ -225,8 +247,8 @@ describe("owned signed multipart engine", () => {
       state.truncated = false;
       const first = api.sweep();
       expect(api.sweep()).toBe(first);
-      await first;
-      await api.sweep();
+      expect(await first).toEqual({ failed: [] });
+      expect(await api.sweep()).toEqual({ failed: [] });
       expect(state.aborts.filter((key) => key === "docs/old")).toHaveLength(2);
       expect(state.aborts).not.toContain("other/old");
       expect(state.aborts).not.toContain("docs/new");
@@ -264,6 +286,52 @@ describe("owned signed multipart engine", () => {
       expect(failures).toEqual([
         ["multipart start", new Error("Provider unavailable"), { upload: uploads[0].uploadId }],
       ]);
+    } finally {
+      await db.close();
+    }
+  });
+
+  it("completes the next interrupted upload when one completion throws, and returns that failure (PF08)", async () => {
+    const { db, state, api } = await fixture();
+    try {
+      const [first, second] = await interruptedUploads(api, state);
+      const error = new Error("Completion hook failed");
+      state.completeError = { uploadId: first, error };
+      expect(await api.sweep()).toEqual({ failed: [{ uploadId: first, error }] });
+      expect(
+        (await db.query("SELECT upload_id, state, phase FROM docs.transfers ORDER BY created_at"))
+          .rows,
+      ).toEqual([
+        { upload_id: first, state: "uploading", phase: "completing" },
+        { upload_id: second, state: "completed", phase: "closed" },
+      ]);
+      expect((await db.query("SELECT * FROM docs.jobs")).rows).toHaveLength(1);
+    } finally {
+      await db.close();
+    }
+  });
+
+  it("rejects with each failed upload and then the provider's error when the provider inventory also throws (PF08)", async () => {
+    const { db, state, api } = await fixture();
+    try {
+      const [first] = await interruptedUploads(api, state);
+      const error = new Error("Completion hook failed");
+      const providerError = new Error("Inventory unavailable");
+      state.completeError = { uploadId: first, error };
+      state.unfinishedError = providerError;
+      const rejected = await api.sweep().catch((reason: unknown) => reason);
+      expect(rejected).toBeInstanceOf(AggregateError);
+      expect(rejected).toMatchObject({ message: "Multipart sweep failed" });
+      const { errors } = rejected as AggregateError;
+      expect(errors).toHaveLength(2);
+      expect(errors[0]).toMatchObject({
+        message: `upload ${first}: Completion hook failed`,
+        cause: error,
+      });
+      expect(errors[1]).toBe(providerError);
+      // With no upload failing, the provider's error is the rejection, as before.
+      state.completeError = undefined;
+      await expect(api.sweep()).rejects.toBe(providerError);
     } finally {
       await db.close();
     }

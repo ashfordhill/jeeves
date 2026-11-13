@@ -71,7 +71,20 @@ await runProcess(async (scope) => {
       scope.transport(pub);
       const relay = startRelay(lifecycle.jobs, db, pub);
       scope.own(() => relay.close());
-      await multipart.sweep();
+      // An upload the sweep can't finish is logged, and the sweep goes on to the next.
+      const sweep = async () => {
+        for (const item of (await multipart.sweep()).failed)
+          console.error(
+            JSON.stringify({
+              level: "error",
+              event: "failure",
+              what: "sweep multipart",
+              upload: item.uploadId,
+              error: String(item.error),
+            }),
+          );
+      };
+      await sweep();
       if (role === "inspect") {
         const ready = await transaction(db, (tx) => lifecycle.get(tx, process.argv[3]!));
         if (ready?.state !== "ready" || !ready.result) throw Error("Attachment not ready");
@@ -155,7 +168,7 @@ await runProcess(async (scope) => {
         process.kill(process.pid, "SIGTERM");
         return;
       }
-      periodic(scope, () => multipart.sweep(), 30000);
+      periodic(scope, sweep, 30000);
     } else if (role === "lifecycle") {
       const s = selected("asset-lifecycle"),
         db = pool(scope, s, "state");

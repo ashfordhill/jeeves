@@ -106,7 +106,7 @@ export function createOwnedMultipart<M, R>(options: {
     }
   };
   let orphan: MultipartCursor = {};
-  let sweeping: Promise<void> | undefined;
+  let sweeping: Promise<{ failed: { uploadId: string; error: unknown }[] }> | undefined;
   async function row(id: string, principal: UploadPrincipal) {
     let r = await tx((t) => repo.owned(t, id, principal));
     if (!r) throw new MultipartError(404, "UPLOAD_NOT_FOUND");
@@ -309,32 +309,60 @@ export function createOwnedMultipart<M, R>(options: {
       return { uploadId: id, state: "aborted" as const };
     },
     /** Single-flight, finite work: <=50 durable cleanup +50 interrupted +50 namespace orphans.
-     * A failure retains durable cleanup/cursor state for a later caller; no background timer. */
-    sweep(): Promise<void> {
+     * A failure retains durable cleanup/cursor state for a later caller; no background timer.
+     * An upload that fails is returned in `failed` and the sweep goes on to the next one. */
+    sweep(): Promise<{ failed: { uploadId: string; error: unknown }[] }> {
       if (sweeping) return sweeping;
       sweeping = (async () => {
+        const failed: { uploadId: string; error: unknown }[] = [];
         for (const r of await tx((t) => repo.cleanup(t))) {
-          await tx((t) => repo.close(t, r.uploadId, { subject: r.ownerSubject }, "expired"));
-          if (r.providerUploadId) await abortProvider(r.originalKey, r.providerUploadId);
-          await tx((t) => repo.clearCleanup(t, r.uploadId));
+          try {
+            await tx((t) => repo.close(t, r.uploadId, { subject: r.ownerSubject }, "expired"));
+            if (r.providerUploadId) await abortProvider(r.originalKey, r.providerUploadId);
+            await tx((t) => repo.clearCleanup(t, r.uploadId));
+          } catch (error) {
+            failed.push({ uploadId: r.uploadId, error });
+          }
         }
         for (const i of await tx((t) => repo.interrupted(t))) {
-          const principal = { subject: i.ownerSubject };
-          const r = await row(i.uploadId, principal);
-          if (r.phase === "initiating")
-            await tx((t) => repo.fail(t, r.uploadId, principal, "INITIATION_FAILED"));
-          else if (r.state === "uploading" && r.phase === "completing")
-            await complete(r.uploadId, principal).catch((error) => {
-              if (!(error instanceof MultipartError) || error.statusCode >= 500) throw error;
-            });
+          try {
+            const principal = { subject: i.ownerSubject };
+            const r = await row(i.uploadId, principal);
+            if (r.phase === "initiating")
+              await tx((t) => repo.fail(t, r.uploadId, principal, "INITIATION_FAILED"));
+            else if (r.state === "uploading" && r.phase === "completing")
+              await complete(r.uploadId, principal).catch((error) => {
+                if (!(error instanceof MultipartError) || error.statusCode >= 500) throw error;
+              });
+          } catch (error) {
+            failed.push({ uploadId: i.uploadId, error });
+          }
         }
-        const result = await objects.unfinished(orphan);
-        if (result.uploads.length > 50) throw new Error("Unexpected orphan inventory");
-        for (const upload of result.uploads) {
-          if (objects.ownsKey(upload.key) && upload.initiated.getTime() < Date.now() - RESUME_MS)
-            await abortProvider(upload.key, upload.uploadId);
+        try {
+          const result = await objects.unfinished(orphan);
+          if (result.uploads.length > 50) throw new Error("Unexpected orphan inventory");
+          for (const upload of result.uploads) {
+            if (objects.ownsKey(upload.key) && upload.initiated.getTime() < Date.now() - RESUME_MS)
+              await abortProvider(upload.key, upload.uploadId);
+          }
+          orphan = result.next;
+        } catch (providerError) {
+          if (!failed.length) throw providerError;
+          throw new AggregateError(
+            [
+              ...failed.map(
+                ({ uploadId, error }) =>
+                  new Error(
+                    `upload ${uploadId}: ${error instanceof Error ? error.message : String(error)}`,
+                    { cause: error },
+                  ),
+              ),
+              providerError,
+            ],
+            "Multipart sweep failed",
+          );
         }
-        orphan = result.next;
+        return { failed };
       })().finally(() => {
         sweeping = undefined;
       });
