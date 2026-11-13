@@ -188,7 +188,7 @@ test("offers Anthropic in Settings with a key field, and saves it as the design 
     "claude-haiku-5-5",
   );
   await page.getByRole("button", { name: "Save model" }).click();
-  await expect(page.getByText("Saved to", { exact: false })).toBeVisible();
+  await expect(page.locator(".settings-saved")).toContainText("Saved to");
   const settings = await (await page.request.get("/api/settings")).json();
   expect(settings.roles.designChat).toEqual({ provider: "anthropic", model: "claude-haiku-5-5" });
   // Put the default back for the other specs on this server.

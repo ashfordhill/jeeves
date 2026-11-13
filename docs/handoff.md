@@ -12599,3 +12599,12 @@ unit's; left untouched and unstaged. No uncommitted changes under `jeeves-genera
 `field-projects/`.
 **For the next unit.** UI10 can start. Codex's card is `CodexSignIn` in `SettingsView.tsx`; the
 e2e server's Codex is `e2e/fake-codex.mjs` with a throwaway `CODEX_HOME`.
+
+## 2026-11-13 — UI08 follow-up: one e2e locator
+
+**What changed.** `blueprint-chat.spec.ts`, test `offers Anthropic in Settings…`: the check after
+Save model read `page.getByText("Saved to", { exact: false })`, which since UI08 also matches the
+key footnote ("A key is saved to …") and failed Playwright's strict mode. It now reads
+`page.locator(".settings-saved")` and expects it to contain "Saved to"; the assertion is the same.
+**Checks.** `blueprint-chat` spec alone: 7 passed. No other file changed.
+**For the next unit.** UI10. The full e2e run should be 73/73 again.
