@@ -1,0 +1,109 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T04:23:46.068Z",
+    "value": [
+      {
+        "name": "/gs-edefd615-4057-4a6a-bec6-3d4587a090ee-1-app-activity-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-edefd615-4057-4a6a-bec6-3d4587a090ee-1-app-counter-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-edefd615-4057-4a6a-bec6-3d4587a090ee-1-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-edefd615-4057-4a6a-bec6-3d4587a090ee-1-app-totals-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-edefd615-4057-4a6a-bec6-3d4587a090ee-1-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-edefd615-4057-4a6a-bec6-3d4587a090ee-1-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity:A",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:A",
+      "total": "0"
+    },
+    "elapsedMs": 77
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:A\",\"eventId\":\"activity:one\"}",
+    "status": 202,
+    "body": {
+      "eventId": "activity:one",
+      "aggregateKey": "Activity:A"
+    },
+    "elapsedMs": 21
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity:A",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:A",
+      "total": "0"
+    },
+    "elapsedMs": 16
+  },
+  {
+    "name": "committed total becomes one",
+    "at": "2026-11-13T04:23:46.295Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:A",
+        "total": "0"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity:A",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:A",
+      "total": "1"
+    },
+    "elapsedMs": 9
+  },
+  {
+    "name": "committed total becomes one",
+    "at": "2026-11-13T04:23:46.557Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:A",
+        "total": "1"
+      }
+    }
+  },
+  {
+    "sql": "SELECT scope_key || '|' || event_id || '|' || (result->>'value') FROM increment.receipts ORDER BY event_id",
+    "result": "Activity:A|activity:one|true"
+  },
+  {
+    "sql": "SELECT aggregate_key || '|' || total::text FROM increment.totals",
+    "result": "Activity:A|1"
+  }
+]

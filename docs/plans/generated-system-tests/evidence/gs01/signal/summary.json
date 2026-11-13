@@ -1,0 +1,7 @@
+{
+  "id": "gs-d0614ba4-ba0d-4480-b253-2debbac64ab1",
+  "selected": ["core"],
+  "outcome": "failed",
+  "elapsedMs": 28199,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs01-signal/run.json"
+}

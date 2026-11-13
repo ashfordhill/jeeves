@@ -1,0 +1,44 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts (1 test | 1 failed) 36512ms
+   × B01: edge publication commits exactly one counter increment and a matching receipt 36512ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts > B01: edge publication commits exactly one counter increment and a matching receipt
+AssertionError: expected { status: 200, body: { …(2) } } to deeply equal { status: 200, body: { …(2) } }
+
+- Expected
++ Received
+
+  {
+    "body": {
+      "aggregateKey": "Activity:A",
+-     "total": "2",
++     "total": "1",
+    },
+    "status": 200,
+  }
+
+ ❯ jeeves-generator/integration/scenarios/core.system.test.ts:28:22
+     26|         (value) => app.record(value),
+     27|       );
+     28|       expect(result).toEqual({ status: 200, body: { aggregateKey, tota…
+       |                      ^
+     29|       expect(
+     30|         await app.sql(
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/core.system.test.ts:6:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  22:22:07
+   Duration  36.64s (tests 100%)
+
+JSON report written to /tmp/gs01-deliberate-failure/vitest.json
+JUNIT report written to /tmp/gs01-deliberate-failure/junit.xml

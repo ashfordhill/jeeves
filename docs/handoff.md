@@ -11619,3 +11619,48 @@ was written from reading the code and has not been run.
 
 **For the next unit.** UI01, when the owner says to run the plan. Units go in order; each is one
 fresh agent and one commit.
+
+## 2026-11-12 — GS01: One generated application succeeds end to end
+
+**What changed.** Added the separate `pnpm test:generated` runner/config and the Activity
+fixture, authored with studio commands. Three small mapped extensions complete its publisher,
+read-only totals reader and counter identity hooks; the installed counter owns transactions,
+receipts, totals and its public view. Every invocation freshly exports through the default
+registry, preserves the honest custom gaps/report, verifies mapped ownership and scaffold/
+manifest hashes, installs frozen dependencies and builds outside the workspace, and runs the
+real generated edge/three processes/PostgreSQL/RabbitMQ. Source/fixture hashes, tool/commit
+identity, bounded commands/polls, sanitized JSON/JUnit/HTTP/SQL/log evidence, exact project-label
+cleanup, handled signals and interrupted-run cleanup command are included. No template or
+emitted scaffold was edited. Usage and ownership are in `field-projects/generator-system/README.md`;
+small recorded outcomes are in `docs/plans/generated-system-tests/evidence/gs01/`.
+
+**Checks.** Final fresh B01 passed 1/1 (61.890 s including cleanup): initial zero, confirmed 202,
+eventual one, exact matching receipt and total. A deliberately wrong final count (`2` instead of
+`1`) failed nonzero and cleaned all six containers, network, two volumes and runtime; restored
+expectation passed. SIGTERM after observing six containers also exited nonzero and removed all
+owned resources/descendants; the cleanup CLI's idempotent recovery was checked. Final standard
+checks: `pnpm check` 820/820 in 105 files, `pnpm test:e2e` 73/73 (4.6 min), web build passed.
+The initial `check` also passed; an overlapping repeat hit an existing update test's unchanged
+5 s deadline (819/820), and its isolated check plus quiet full check passed. Initial E2E was
+72/73: the Settings page's module requests failed `net::ERR_NETWORK_CHANGED` while generated
+Compose runs changed Docker networks. Its isolated rerun and quiet full E2E passed. Neither
+assertions, deadlines nor retries changed. Full results/traces and exact commands are retained
+under the `/tmp/gs01-*` paths listed in the evidence's `regression-checks.md`; generated runs in
+`/tmp/gs01-final`, `/tmp/gs01-deliberate-failure` and `/tmp/gs01-signal`.
+
+**Differences from the plan.** No product SQL needed: the installed counter provides the
+required tables/view. An initial receipt assertion expected bare `true`; the documented stored
+wrapper is `{value:true}`, so the final independent SQL assertion checks its `value` plus exact
+aggregate/event identity. The original failure and cleanup remain at `/tmp/gs01-first-run`.
+
+**Noticed.** Run generated suites and browser checks in separate phases: Compose network
+changes can interrupt Chromium module loading. Avoid overlapping image builds with existing
+tight offline-test deadlines. No template defect was exposed; no pin or existing check changed.
+An unrelated owner UI-preview documentation commit advanced HEAD during the unit; it was left
+alone, as were all original owner working-tree changes.
+
+**For the next unit.** GS02 extends the same Activity fixture with B02–B04. Only `core` exists;
+`all` names its implemented suites and future/unknown names fail. Commands are typechecked but
+Docker tests remain outside offline discovery. Preserve per-run project isolation and use reader
+credentials for GS02's permission assertions. No generated stack/runtime remains. Hosted CI is
+not implemented or claimed by this unit (GS03 follows).

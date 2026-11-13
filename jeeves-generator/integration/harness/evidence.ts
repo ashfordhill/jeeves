@@ -1,0 +1,46 @@
+import { readdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+/** Redact both recognizable auth data and every actual runtime secret before retaining output. */
+export async function sanitizer(application?: string) {
+  const secrets: string[] = [];
+  if (application) {
+    const directory = join(application, ".runtime/secrets");
+    try {
+      for (const name of await readdir(directory)) {
+        const value = (await readFile(join(directory, name), "utf8")).trim();
+        if (value) secrets.push(value);
+      }
+    } catch {
+      /* A failed setup may not have created secrets. */
+    }
+  }
+  return (value: string) => {
+    for (const secret of secrets.sort((a, b) => b.length - a.length))
+      value = value.split(secret).join("[REDACTED]");
+    return value
+      .replace(/Bearer\s+[^\s"']+/gi, "Bearer [REDACTED]")
+      .replace(/([?&](?:X-Amz-[^=\s]+|access_token|token)=)[^&\s"']+/gi, "$1[REDACTED]")
+      .replace(/(amqps?:\/\/[^:\s]+:)[^@\s]+@/g, "$1[REDACTED]@")
+      .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[REDACTED JWT]");
+  };
+}
+
+/** Test output can contain assertion operands: sanitize reporters too before any upload. */
+export async function sanitizeArtifacts(directory: string, applications: string[]) {
+  const clean = await runSanitizer(applications);
+  async function walk(path: string): Promise<void> {
+    for (const entry of await readdir(path, { withFileTypes: true })) {
+      const child = join(path, entry.name);
+      if (entry.isDirectory()) await walk(child);
+      else if (/\.(?:json|log|xml)$/.test(entry.name))
+        await writeFile(child, clean(await readFile(child, "utf8")));
+    }
+  }
+  await walk(directory);
+}
+
+export async function runSanitizer(applications: string[]) {
+  const redactors = await Promise.all(applications.map((application) => sanitizer(application)));
+  return (value: string) => redactors.reduce((value, redact) => redact(value), value);
+}

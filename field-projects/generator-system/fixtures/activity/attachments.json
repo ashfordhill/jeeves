@@ -1,0 +1,20 @@
+[
+  {
+    "source": "owned/submit.ts",
+    "destination": "src/modules/activity-api/submit.ts",
+    "role": "stub",
+    "module": "submit"
+  },
+  {
+    "source": "owned/read-total.ts",
+    "destination": "src/modules/totals-api/read-total.ts",
+    "role": "stub",
+    "module": "read-total"
+  },
+  {
+    "source": "owned/increment.hooks.ts",
+    "destination": "src/modules/counter/increment.hooks.ts",
+    "role": "hooks",
+    "module": "increment"
+  }
+]

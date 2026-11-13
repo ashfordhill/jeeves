@@ -1,0 +1,424 @@
+{
+  "schemaVersion": 3,
+  "revision": 18,
+  "elements": [
+    {
+      "id": "activity-api",
+      "name": "Activity API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "events",
+      "name": "Events",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "counter",
+      "name": "Counter",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "totals",
+      "name": "Totals",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "totals-api",
+      "name": "Totals API",
+      "classification": {
+        "kind": "Application"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "activity-events",
+      "kind": "depends-on",
+      "from": {
+        "element": "activity-api"
+      },
+      "to": {
+        "element": "events"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "events-counter",
+      "kind": "depends-on",
+      "from": {
+        "element": "events"
+      },
+      "to": {
+        "element": "counter"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "counter-totals",
+      "kind": "uses-database",
+      "from": {
+        "element": "counter"
+      },
+      "to": {
+        "element": "totals"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "read-totals",
+      "kind": "uses-database",
+      "from": {
+        "element": "totals-api"
+      },
+      "to": {
+        "element": "totals"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Activity",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "activity-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "events",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "activity-api"
+          }
+        },
+        {
+          "element": "counter",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "concurrency": 4,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "totals",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "counter"
+          }
+        },
+        {
+          "element": "totals-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "activity-events",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "events-counter",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "counter-totals",
+          "settings": {}
+        },
+        {
+          "connection": "read-totals",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "submit",
+          "host": "activity-api",
+          "name": "Submit",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "disabled"
+          }
+        },
+        {
+          "id": "consume",
+          "host": "counter",
+          "name": "Consume",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        },
+        {
+          "id": "increment",
+          "host": "counter",
+          "name": "Increment",
+          "settings": {
+            "kind": "event-counter"
+          }
+        },
+        {
+          "id": "write-total",
+          "host": "counter",
+          "name": "Write total",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "id": "read-total",
+          "host": "totals-api",
+          "name": "Read total",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "submit-events",
+          "from": "submit",
+          "to": {
+            "kind": "element",
+            "id": "events",
+            "via": "activity-events"
+          }
+        },
+        {
+          "id": "consume-events",
+          "from": "consume",
+          "to": {
+            "kind": "element",
+            "id": "events",
+            "via": "events-counter"
+          }
+        },
+        {
+          "id": "write-total-totals",
+          "from": "write-total",
+          "to": {
+            "kind": "element",
+            "id": "totals",
+            "via": "counter-totals"
+          }
+        },
+        {
+          "id": "read-total-totals",
+          "from": "read-total",
+          "to": {
+            "kind": "element",
+            "id": "totals",
+            "via": "read-totals"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "entry-activity",
+          "lane": "download",
+          "element": "activity-api"
+        },
+        {
+          "id": "entry-totals",
+          "lane": "download",
+          "element": "totals-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Record activity"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "submit",
+        "target": {
+          "kind": "component",
+          "component": "submit",
+          "host": "activity-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "increment",
+        "target": {
+          "kind": "component",
+          "component": "increment",
+          "host": "counter"
+        },
+        "template": {
+          "id": "event-counter",
+          "version": "0.1.0",
+          "sha256": "ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635"
+        },
+        "binding": {
+          "kind": "event-counter",
+          "state": {
+            "resource": "totals",
+            "connection": "counter-totals"
+          },
+          "events": {
+            "resource": "events",
+            "connection": "events-counter"
+          }
+        }
+      },
+      {
+        "id": "read-total",
+        "target": {
+          "kind": "component",
+          "component": "read-total",
+          "host": "totals-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "counter-owner",
+        "name": "Counter"
+      }
+    ],
+    "roles": [
+      {
+        "element": "counter",
+        "owner": "counter-owner",
+        "kind": "worker"
+      }
+    ],
+    "resources": [
+      {
+        "element": "totals",
+        "authority": "counter-owner",
+        "kind": "source"
+      }
+    ],
+    "grants": [
+      {
+        "role": "counter",
+        "resource": "totals",
+        "access": "read-write"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "counter-totals",
+        "access": "read-write"
+      }
+    ]
+  }
+}

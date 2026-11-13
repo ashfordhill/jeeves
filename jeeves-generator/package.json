@@ -10,7 +10,8 @@
     "export:v2": "tsx src/v2/cli.ts",
     "update:v2": "tsx src/v2/update-cli.ts",
     "benchmark:source": "tsx src/source-loc-cli.ts",
-    "pins:update": "tsx src/v2/fixtures/update-processes-off.ts"
+    "pins:update": "tsx src/v2/fixtures/update-processes-off.ts",
+    "test:generated": "tsx integration/run.ts"
   },
   "dependencies": {
     "@jeeves/spec": "workspace:*",

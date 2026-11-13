@@ -24,6 +24,11 @@
   only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
   projects use `local-v2`.
 
+`pnpm test:generated` separately exports, builds and runs the Activity backend with real
+PostgreSQL, RabbitMQ and generated processes. Its core scenario asserts edge publication,
+a committed count and matching durable receipt; it does not replace the offline or studio
+regression checks. See [system fixture commands and evidence](../field-projects/generator-system/README.md).
+
 The rest of this page is reference.
 
 The separate v2 API now accepts explicit schema3 generation selections. See

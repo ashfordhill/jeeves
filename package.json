@@ -19,7 +19,8 @@
     "test:e2e:docker": "pnpm db:up && jeeves/scripts/e2e-docker.sh",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "eval:chat": "pnpm --filter @jeeves/server exec tsx src/eval/runner.ts",
-    "benchmark:source": "pnpm --filter @jeeves/generator benchmark:source"
+    "benchmark:source": "pnpm --filter @jeeves/generator benchmark:source",
+    "test:generated": "pnpm --filter @jeeves/generator test:generated"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

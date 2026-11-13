@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="0" errors="0" time="41.937872704">
+    <testsuite name="jeeves-generator/integration/scenarios/core.system.test.ts" timestamp="2026-11-13T04:23:47.757Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="0" time="41.937872704">
+        <testcase classname="jeeves-generator/integration/scenarios/core.system.test.ts" name="B01: edge publication commits exactly one counter increment and a matching receipt" time="41.936543733">
+        </testcase>
+    </testsuite>
+</testsuites>

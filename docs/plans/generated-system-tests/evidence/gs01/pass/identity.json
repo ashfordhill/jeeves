@@ -1,0 +1,12 @@
+{
+  "id": "gs-edefd615-4057-4a6a-bec6-3d4587a090ee",
+  "selected": ["core"],
+  "commit": "24c9abbe23093b3bde7d1cb29f3329dd43000bfa",
+  "dirty": "M jeeves-generator/README.md\n M jeeves-generator/package.json\n M jeeves-generator/tsconfig.json\n M package.json\n?? field-projects/generator-system/\n?? jeeves-generator/integration/",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}
