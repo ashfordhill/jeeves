@@ -23,7 +23,7 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 
 | Limit | Status |
 | --- | --- |
-| The cache read turns its cache off for the life of the process after one stalled cache call | Open (PF07) |
+| The cache read turns its cache off for the life of the process after one stalled cache call | Fixed in PF07 |
 | The event counter keeps one receipt row per event for ever | Open |
 | The outbox relay sends at most 10 rows about once a second | Open |
 | A process that loses its broker exits and is not restarted | Open; a deployment's restart policy covers it |

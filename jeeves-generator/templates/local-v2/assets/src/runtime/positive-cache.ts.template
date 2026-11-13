@@ -36,18 +36,30 @@ export function createPositiveReader<I, R>(options: {
   if (!Number.isInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 604800)
     throw new Error("Invalid positive cache TTL");
   const fills = new Map<string, Promise<R | null>>();
-  let usable = !!cache;
-  // Bound even an injected adapter. After a stalled phase disable this reader's cache so
-  // repeated requests cannot accumulate stalled cache calls. The real client also destroys
-  // its socket; arbitrary injected adapters must own cancellation/late completion themselves.
+  let skipUntil = 0;
+  let stalled = 0;
+  // Bound even an injected adapter. A phase past its deadline, or a cache call that rejects,
+  // makes this reader use the database alone for five seconds. A call past its deadline also
+  // keeps the cache unused until that call settles, so a cache that doesn't answer never piles
+  // up calls; once it settles, the cache is tried again after the five seconds. The real client
+  // also destroys its socket; arbitrary injected adapters must own cancellation/late completion
+  // themselves.
   async function phase<T>(effect: () => Promise<T>): Promise<T> {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const call = Promise.resolve().then(effect);
     try {
       return await Promise.race([
-        Promise.resolve().then(effect),
+        call,
         new Promise<never>((_, reject) => {
           timer = setTimeout(() => {
-            usable = false;
+            skipUntil = Date.now() + 5000;
+            stalled += 1;
+            // Promise.race doesn't cancel the call: it stays counted until it settles.
+            call
+              .finally(() => {
+                stalled -= 1;
+              })
+              .catch(() => {});
             reject(new Error("Cache deadline"));
           }, 150);
         }),
@@ -64,27 +76,35 @@ export function createPositiveReader<I, R>(options: {
   }
   const alive = (until: number | null) => until === null || until > Date.now();
   async function read(input: I, key: string): Promise<R | null> {
-    if (cache && usable)
+    if (cache && stalled === 0 && Date.now() >= skipUntil) {
+      let answered = false;
       try {
         const raw = await phase(() => cache.get(key));
+        answered = true;
         if (raw !== null) {
           const record = adapter.codec.parse(JSON.parse(raw));
           if (adapter.eligible(record, input) && alive(expiry(record))) return record;
         }
       } catch (error) {
-        // Corrupt/unavailable cache is optional. The authoritative loader owns its errors.
+        // Corrupt/unavailable cache is optional. The authoritative loader owns its errors. A get
+        // that rejects skips the cache for five seconds; a value that fails to decode is one bad
+        // entry and does not.
+        if (!answered) skipUntil = Date.now() + 5000;
         failed("cache read", error);
       }
+    }
     const raw = await adapter.load(input);
     if (raw === null) return null;
     const record = adapter.codec.parse(raw);
     if (!adapter.eligible(record, input)) return null;
     const until = expiry(record);
     if (!alive(until)) return null;
-    if (cache && usable)
+    if (cache && stalled === 0 && Date.now() >= skipUntil) {
+      let encoded = false;
       try {
         const value = JSON.stringify(record);
         if (value === undefined) throw new Error("Invalid positive record encoding");
+        encoded = true;
         await phase(async () => {
           const now = Date.now();
           const PXAT = Math.min(now + ttlSeconds * 1000, until ?? Number.MAX_SAFE_INTEGER);
@@ -93,9 +113,12 @@ export function createPositiveReader<I, R>(options: {
           if (PXAT - now >= 1000) await cache.set(key, value, { PXAT });
         });
       } catch (error) {
-        // A failed optional fill must preserve a successful authoritative lookup.
+        // A failed optional fill must preserve a successful authoritative lookup. A set that
+        // rejects skips the cache for five seconds.
+        if (encoded) skipUntil = Date.now() + 5000;
         failed("cache fill", error);
       }
+    }
     // Expiry can cross during fill. No expired result is returned, even after fill failure.
     return alive(until) ? record : null;
   }

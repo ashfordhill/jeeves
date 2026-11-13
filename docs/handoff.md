@@ -10998,3 +10998,92 @@ V3-19 scripted report no longer replays (expected), and `pnpm eval:chat` reruns 
 
 **For the next unit.** PF07 next. `pnpm --filter @jeeves/generator pins:update` exists; rule 7's
 procedure worked as written.
+
+## 2026-11-12 — PF07: The cache read recovers
+
+**What changed.**
+
+- `jeeves-generator/templates/local-v2/assets/src/runtime/positive-cache.ts.template`
+  (`createPositiveReader`): `let usable = !!cache;` is now `let skipUntil = 0;` and
+  `let stalled = 0;`. A phase past its 150 ms deadline sets `skipUntil = Date.now() + 5000` and
+  counts its call as stalled until that call settles (`.finally` on the effect's own promise). A
+  `get` or `set` that rejects sets `skipUntil` in the catch that reports it (flags `answered` and
+  `encoded` keep a value that fails to decode, or an invalid encoding, from skipping). Both places
+  use the cache only when `cache && stalled === 0 && Date.now() >= skipUntil`; the comment above
+  `phase` says so. The 150 ms bound, single flight, absolute expiry, "null is never cached" and
+  `onFailure` are unchanged.
+- `valkey.ts.template` (`createValkeyCache`): new `onState?: (state: "available" |
+  "unavailable", error?: unknown) => void`. One client generation at a time (active or
+  connecting), one retry timer, a `closed` flag; every `error` handler, connect result and
+  command result carries its generation and is ignored once it isn't current or the cache is
+  closed. A loss (first connect failing or timing out, an `error` event, a command that times out
+  or rejects) destroys that client, makes `get`/`set` reject with `Cache unavailable`, reports
+  `unavailable` and starts the 5000 ms timer; the timer connects a new client within 500 ms
+  (`available`, or another loss). `onState` is called only on a change, through a guard.
+  `close()` sets `closed`, clears the timer and destroys the current client (active or
+  connecting); a connect that succeeds afterwards destroys its client and reports nothing. The
+  connect/command bounds, `disableOfflineQueue`, `commandsQueueMaxLength: 32`,
+  `reconnectStrategy: false` and the `createClient` options are unchanged.
+- Wiring (`jeeves-generator/src/v2/http-wiring.ts`, the Cache read): `createValkeyCache` gets the
+  plan's `onState`: `unavailable` writes `failure("cache <lead>", error ?? new Error("Cache
+  unavailable"))`, `available` writes `{"level":"info","event":"cache","tile",…,"module":"<lead>","state"}`.
+- Tests (`positive-cache.test.ts`): test 1 in the stalled-phase test (the replaced expectation, a
+  get that never settles across three 5 s intervals, one that settles at 7 s) and a new reader
+  test (ten reads of ten keys after a rejecting get: one cache call, no fill, one `onFailure`,
+  every answer from the loader, the cache again after 5 s; a bad entry keeps the cache). Tests
+  2–8 in a new `describe("emitted Valkey cache reconnects")` with a `withFakeValkey` harness
+  (fake timers, a fake `redis` whose clients emit `error` and take queued connects). Test 9, the
+  existing Valkey test, is unchanged.
+- Docs: `jeeves-generator/README.md` (the Cache reader bullet; rule 8: the Failure lines list
+  names `cache <module>`); `docs/template-gaps.md` (the cache limit is `Fixed in PF07`).
+
+**Checks.**
+
+- check: passed before any change (104 files, 768 tests) and after (104 files, 776 tests: 8
+  added), with the frozen v1 pin unchanged. Before the pins were updated, only processes-off's
+  frozen-v2 and v2-module-design failed.
+- Pins (rule 7): `pins:update` then the diff listed, for both frozen-v2 and v2-module-design,
+  `.jeeves/manifest.json`, `src/runtime/positive-cache.ts` and `src/runtime/valkey.ts`; stub-stack
+  unchanged.
+- Mutation check: with the previous two templates the 2 changed/new reader tests and the 7 new
+  Valkey tests fail (9) and the existing Valkey test passes; removing the stalled count, the
+  decode exception, the rejection skip, the generation check, the change-only report, the
+  `onState` guard or `close()`'s destroy each fails at least one new test.
+- Scratch checks: the stub stack with a cache read and v2 built from modules, exported with
+  processes on, type-check with their own `tsconfig.json` against real dependencies (redis
+  6.3.0, fastify, pg, …; no shims). The emitted `valkey.ts` with real redis 6.3.0 against a small
+  RESP server on 127.0.0.1: down at start reports `unavailable` once and `available` 5 s after
+  the server is up; a server stop reports `unavailable` once (`Socket closed unexpectedly`), two
+  failed retries report nothing, the next reports `available` and `get` answers; after `close()`
+  nothing runs and the process exits.
+- e2e: `pnpm test:e2e` 73 passed (4.7 min) on the first run; no reruns needed.
+- build: passed.
+
+**Differences from the plan.**
+
+- The stalled-phase test's first read has a failed fill, which now skips the cache for 5 s, so
+  the test advances 5 s (`await vi.advanceTimersByTimeAsync(5000)`, commented) before its stalled
+  read; otherwise that read wouldn't call the cache. The named expectation keeps its count (2)
+  with the new comment; no other assertion changed.
+- `createValkeyCache` reads the secret once, as before, and every new client gets the same
+  options. It destroys a client without the old `isOpen` check (redis 6.3.0's `destroy()` is
+  idempotent and also releases a client whose connect failed), inside a guard. A retry whose
+  `createClient` throws starts the timer again.
+- Reads that start together, before a rejection is seen, each call the cache once; the skip
+  applies to reads that start after it, and the failure log's once-a-second limit keeps them to
+  one line.
+
+**Noticed.**
+
+- `src/features/service-resources.ts`'s `createPositiveReader` (a stub's cache client) still
+  passes no `onFailure` (PF06's note), and the stubs' `cacheClient` in `module-clients.ts` has
+  its own reconnect; neither is in this unit.
+- `docs/plans/generated-system-tests/units.md` appeared, untracked, during this unit; it isn't
+  this unit's and was left unstaged. After this unit's e2e run had finished, another
+  `pnpm test:e2e` (started from a Codex session at 19:59) was holding ports 4301/4311; it was
+  left alone.
+- WSL's wall clock jumped about 3.7 s during one scratch run of the RESP probe; a rerun timed by
+  `performance.now()` showed the 5 s retries exactly.
+
+**For the next unit.** PF08 next. The cache read now recovers on its own and logs each change
+(`event: "cache"`, and the `cache <module>` failure line); rule 7's procedure worked as written.

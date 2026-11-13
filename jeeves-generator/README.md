@@ -338,7 +338,12 @@ bucket, or why it has none, and Preview shows them.
   `complete` and `closed` delegate to it, so their "Not implemented" comes from the lifecycle
   hooks they reach (`metadata`, `job.construct`, `response`).
 - **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
-  Valkey cache at `GET /modules/<lead>/:key`; null answers 404.
+  Valkey cache at `GET /modules/<lead>/:key`; null answers 404. While the cache is down it reads
+  the database: a cache call that rejects or passes its 150 ms deadline makes the reader skip the
+  cache for 5 s, and a call that hasn't settled keeps it skipped until it does. The Valkey client
+  (`createValkeyCache`) destroys a lost client and connects a new one every 5 s, and logs each
+  change, starting with the first connect: `{"level":"info","event":"cache",…,"state":"available"}`
+  when the cache is usable, and a `failure` line (`cache <module>`) when it is lost.
 - **Favorites** (v3 contract §3; `local.favorites` emits `src/runtime/favorites.ts`, with
   `transaction.ts` and `durable-sql.ts` from `local.durability`) is mounted on its own table
   `<selection sql>.favorites` (`account` 1–255, `item` 1–200 of `A-Za-z0-9._:-`, `added_at`
@@ -442,7 +447,8 @@ What writes it, as its `what`:
 - a failed outbox relay, for each row it defers and for a batch that fails: `outbox relay jobs`
   (multipart) and `outbox relay publication` (asset lifecycle);
 - a failed or corrupt cache read and a failed cache fill: `cache read <module>`,
-  `cache fill <module>`;
+  `cache fill <module>`; the cache lost (Valkey unreachable, a command failed or timed out):
+  `cache <module>`;
 - a failed multipart start and a failed provider abort after it: `multipart start <module>`,
   `multipart abort <module>`, each with `upload`.
 
