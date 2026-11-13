@@ -6,7 +6,8 @@
 // right-click on a tile or a line goes to `onTileMenu` or `onLineMenu`, which open the
 // workspace's menu (`CanvasMenu.tsx`); a line's is its canonical relationship. A tile or action
 // with a design warning carries a mark (`Warnings.tsx`). Every tile and container shows its kind
-// label (`studioKindLabel`: a message channel's is Queue or Topic, by its mode).
+// label (`studioKindLabel`: a message channel's is Queue or Topic, by its mode), and a tile that
+// can take modules (`moduleKinds`) has the host colour on its band (`host`).
 // Every tile and line carries its lane band (`laneLayoutInput`), so the board stacks download,
 // shared and upload.
 //
@@ -46,6 +47,7 @@ import {
   LANE_ACTOR,
   type LaneGraph,
   laneActionName,
+  moduleKinds,
   studioKindLabel,
   studioWarnings,
 } from "@jeeves/spec";
@@ -170,6 +172,7 @@ export function LaneCanvas({
                   kind={node.kind}
                   name={name(node.id)}
                   label={kindLabel(node.id)}
+                  host={moduleKinds(design, node.id).length > 0}
                   warnings={warnings.get(node.id)}
                 />
               ),

@@ -32,6 +32,17 @@
   /* A missing status, and a menu's Remove item: ink on its fill. */
   --off-bg: #f8dcd8;
   --off-ink: #8f2a22;
+  /* Tile faces: the top band of a tile that takes modules and of every other tile, the User tile
+     and its figure, Consume and Produce and their word, the borders inside a tile (the band,
+     module rows) and around menus, and the light fill of an action's badge. */
+  --cap-host: #b4d9f6;
+  --cap-plain: #bfe8dc;
+  --user-fill: #e3d9f8;
+  --user-ink: #071c28;
+  --action-fill: #f6c945;
+  --action-ink: #071c28;
+  --row-line: #8fa5b1;
+  --ic-fill: #fdfeff;
   --select-ring: rgba(26, 143, 212, 0.5);
   --banner: #d4f0f8;
   --header-height: 56px;
@@ -73,6 +84,14 @@
   --minus: #e06a5e;
   --off-bg: #5d2823;
   --off-ink: #ffcdc6;
+  --cap-host: #2a6690;
+  --cap-plain: #27695c;
+  --user-fill: #b9a8ef;
+  --user-ink: #071c28;
+  --action-fill: #e6bb4a;
+  --action-ink: #071c28;
+  --row-line: #4f7285;
+  --ic-fill: #dcebf2;
   --select-ring: rgba(126, 182, 224, 0.65);
   --banner: #1e3f4e;
   --mantine-color-dimmed: var(--ink-soft);
@@ -81,6 +100,19 @@
 [data-mantine-color-scheme="light"],
 [data-mantine-color-scheme="dark"] {
   --mantine-color-dimmed: var(--ink-soft);
+}
+
+/* A diagram export is always light, whatever the studio's theme: the tile faces' light values on
+   its capture surface (diagram-export.css sets the rest of its light tokens). */
+:root .diagram-capture-host .board.board-snapshot {
+  --cap-host: #b4d9f6;
+  --cap-plain: #bfe8dc;
+  --user-fill: #e3d9f8;
+  --user-ink: #071c28;
+  --action-fill: #f6c945;
+  --action-ink: #071c28;
+  --row-line: #8fa5b1;
+  --ic-fill: #fdfeff;
 }
 
 /* Mantine's default error red is below 4.5:1 on cream; use the theme's own. Set on body so it

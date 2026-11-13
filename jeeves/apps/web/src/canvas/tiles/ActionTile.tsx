@@ -1,5 +1,5 @@
-// An action tile's face: what the user does in a lane. Its lane icon sits in a round badge at the
-// top and its name is one large word below, on the lane's pastel, so it reads as the start of a
+// An action tile's face: what the user does in a lane. Its lane icon sits in a round light badge
+// at the top and its name is one large dark word below, on yellow, so it reads as the start of a
 // flow rather than as a service. The board draws the frame around it.
 import type { StudioLane } from "@jeeves/spec";
 import { LaneIcon } from "../LaneIcon.tsx";

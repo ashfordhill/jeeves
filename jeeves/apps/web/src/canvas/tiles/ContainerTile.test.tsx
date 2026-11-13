@@ -2,7 +2,8 @@
 // (the selection colour) exactly while a line at that port is, whatever selected it. A row that
 // can connect has a dot, filled once connected, as the handle of its board end; the Cache reader's
 // loader is an arrow in the gutter, and a right-click on it (live canvas only) asks for its menu. A
-// container's header and a plain tile's face show the kind label under the name.
+// container's header and a plain tile's face show the kind label under the name, and their band
+// is marked (`data-host`) only when the tile can take modules.
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DetailedRow } from "../detailedView.ts";
@@ -151,9 +152,41 @@ describe("ContainerTile", () => {
     ]);
     cleanup();
     const tile = render(<Tile kind="queue" name="Upload jobs" label="Queue" />).container;
-    expect(text(tile, ".lane-tile > span:not(.lane-tile-icon)")).toEqual(["Upload jobs", "Queue"]);
+    expect(text(tile, ".lane-tile > span:not(.lane-tile-cap)")).toEqual(["Upload jobs", "Queue"]);
     cleanup();
     // A tile without studio settings has no label.
     expect(render(<Tile name="Legacy" />).container.querySelector(".lane-tile-kind")).toBeNull();
+  });
+  it("marks the band of a tile that can take modules, and of no other tile", () => {
+    const band = (container: HTMLElement, selector: string) =>
+      container.querySelector<HTMLElement>(selector)?.dataset.host;
+    const cap = ".lane-tile > .lane-tile-cap";
+    // The band holds the icon.
+    const service = render(<Tile kind="service" name="Shorten API" label="Service" host />);
+    expect(band(service.container, cap)).toBe("true");
+    expect(service.container.querySelector(`${cap} > .lane-tile-icon svg`)).not.toBeNull();
+    cleanup();
+    expect(
+      band(render(<Tile kind="database" name="Links DB" label="Database" />).container, cap),
+    ).toBeUndefined();
+    cleanup();
+    expect(
+      band(
+        render(<Tile kind="database" name="Links DB" label="Database" host={false} />).container,
+        cap,
+      ),
+    ).toBeUndefined();
+    cleanup();
+    const header = ".lane-container > .lane-container-header";
+    expect(
+      band(
+        render(<ContainerTile kind="service" name="Shorten API" rows={rows} addable />).container,
+        header,
+      ),
+    ).toBe("true");
+    cleanup();
+    expect(
+      band(render(<ContainerTile kind="database" name="Links DB" rows={[]} />).container, header),
+    ).toBeUndefined();
   });
 });

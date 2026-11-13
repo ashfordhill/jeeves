@@ -25,7 +25,8 @@
   font-family: "Nunito Variable", Nunito, system-ui, sans-serif;
   font-weight: 600;
 }
-/* Explicit light capture tokens win over the studio's current root theme. */
+/* Explicit light capture tokens win over the studio's current root theme (the tile faces' are in
+   tokens.css). */
 :root .diagram-capture-host .board.board-snapshot {
   --paper: #e8f4fa;
   --cream: #f7fcfe;
@@ -39,8 +40,6 @@
   --board-ink: #071c28;
   --board-tile: #f7fcfe;
   --board-shadow: rgba(7, 28, 40, 0.16);
-  --actor-fill: #cfe8f2;
-  --figure-ink: #122836;
 }
 .diagram-capture-host .board.board-snapshot [data-family] {
   --type-color: #637687;

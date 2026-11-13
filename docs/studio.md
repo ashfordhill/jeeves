@@ -43,15 +43,18 @@ handle it: its **lane entries**. A user never reaches a store or a third party d
 does that for it. Actions are design intent: they generate no code, and tell the reader (and a
 future generator's frontend templates) which user flow each service serves.
 
-- **Tiles** are 128×128: the kind's icon in its family colour, the name in up to two lines and,
-  at the bottom in small grey type, the tile's **kind label** (`studioKindLabel`): Service,
-  Worker, Uploads, Identity, Database, Search index, Cache, Object storage, Queue or Topic, CDN,
-  External API (and Gateway, Redirect, Notifications, Billing on older tiles). So a name needn't
-  repeat its kind: YouTube's "Metadata" is labelled Database. Database, cache, queue and storage
-  tiles are pills; services, APIs and externals are rounded rectangles. The user tile is 128×160.
-  An **action tile** is 128×128 on the user's pastel: its lane icon in a round badge and its name
-  in large type (smaller for a long name), so it reads as the start of a flow, not as a service.
-  Actions and the user have no kind label.
+- **Tiles** are 128×128: a 56px top band with the kind's icon in its family colour, then the name
+  in up to two lines and, at the bottom in small grey type, the tile's **kind label**
+  (`studioKindLabel`): Service, Worker, Uploads, Identity, Database, Search index, Cache, Object
+  storage, Queue or Topic, CDN, External API (and Gateway, Redirect, Notifications, Billing on
+  older tiles). So a name needn't repeat its kind: YouTube's "Metadata" is labelled Database.
+  Database, cache, queue and storage tiles are pills; services, APIs and externals are rounded
+  rectangles. The band is sky blue on a tile that can take modules (a Service, Worker or Uploads,
+  and an older Redirect, Notifications or Billing tile) and mint on every other tile, so the two
+  read apart even zoomed out. The user tile is 128×160, lilac, with the stick figure in dark ink
+  above a name plate. An **action tile** is 128×128 and yellow: its lane icon in a round light
+  badge and its name in large dark type (smaller for a long name), so it reads as the start of a
+  flow, not as a service. Actions and the user have no kind label.
 - **Queue or Topic.** A message channel (the `queue` kind) is labelled by its mode
   (`settings.mode`): **Queue** for a work queue, **Topic** otherwise (the generation contract's
   default). A queue gives each message to one consumer: one transcoder takes each upload job. A
@@ -106,10 +109,11 @@ selection, including an open module, animates every tile to its new place and th
 
 In Detailed, every application tile that can hold modules (a Service, Worker or Uploads, and an
 older Redirect, Notifications or Billing tile), or that has any, is a **container**
-(`detailedView.ts`, `tiles/ContainerTile.tsx`): 256px wide, a 48px header with the kind icon in its
-family colour, the name on one line and the kind label in small grey type below it, above a
-divider, then one framed row per module, 32px apart, in module order, then a 48px footer with a
-small blue **+** centred in it, inside the frame ([Adding a module](#adding-a-module)). A tile with
+(`detailedView.ts`, `tiles/ContainerTile.tsx`): 256px wide, a 48px header on the band colour (sky
+blue; mint on a container that can't take more modules) with the kind icon in its family colour,
+the name on one line and the kind label in small grey type below it, above a divider, then one
+framed row per module, 32px apart, in module order, then a 48px footer with a small blue **+**
+centred in it, inside the frame ([Adding a module](#adding-a-module)). A tile with
 no modules yet is a container holding just its header and the `+` (96px tall). The `+` shows on
 every such container, selected or not, in Pointer mode only; an export draws the footer empty.
 A row shows the module's icon in its family colour and its name, cut short with an ellipsis; the
@@ -206,12 +210,12 @@ Click **Export diagram** in the top bar, beside Design and Settings, then **PNG*
 window width the button shows only its download icon. The download contains the full
 saved diagram in the current view, including offscreen tiles, their names, kind labels and icons,
 all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
-visual reference (D2: a recorded hash, not a gate), `9332ea16…89bd` (3008×2752) since the kind
-labels. A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
+visual reference (D2: a recorded hash, not a gate), `7966fa4b…7cb7` (3008×2752). A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
 and their lines the relationship each drawn line belongs to. No control is drawn: a container's
-footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `21fe8400…9ae1`,
+footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `29ed909d…afca`,
 3840×3392). It uses the same HTML faces, SVG
-lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin. Inspector details and the legend
+lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin,
+in the light tile colours whatever the studio's theme. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
 The image shows canonical process and resource tiles, retaining every relationship identity.

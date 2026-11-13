@@ -12084,3 +12084,72 @@ alone. No uncommitted changes under `jeeves-generator/` or `field-projects/`; th
 paths stay untouched and unstaged.
 **For the next unit.** UI04 can start. The header groups are `.studio-header-start` and
 `.studio-header-actions` in `studio.css`; Generate project is `.generate-project-trigger`.
+
+## 2026-11-13 — UI04: Tile colours
+
+**What changed.**
+- `tokens.css`: `--cap-host`, `--cap-plain`, `--user-fill`, `--user-ink`, `--action-fill`,
+  `--action-ink`, `--row-line` and `--ic-fill` in the light and the dark block, with the plan's
+  values, and a small `:root .diagram-capture-host .board.board-snapshot` block with their light
+  values, so an export stays light in dark mode.
+- `Tile.tsx`: new `host?: boolean`; the icon (now 36px) sits in `.lane-tile-cap` (`data-host`
+  when `host`). `canvas.css`: the band is full width (`align-self: stretch`, `margin: 0 -8px`),
+  56px, `--cap-plain` or `--cap-host`, with a 2px `--row-line` bottom border; `.lane-tile` loses
+  its top padding and its gap, the name has `margin-top: 6px`, the kind label stays pinned to the
+  bottom. The `+` and the warning mark keep their corners, over the band.
+- `LaneCanvas.tsx`: `host={moduleKinds(design, node.id).length > 0}`.
+- `ContainerTile.tsx`: the header has `data-host` when `addable`; `canvas.css`: the header is
+  `--cap-plain`, or `--cap-host` with `data-host`, over a 2px `--row-line` border; a row's border
+  is `var(--row-border) solid var(--row-line)` (1.5px); the header's kind label is
+  `color-mix(in srgb, var(--board-ink) 72%, var(--cap-host))`; a plain tile's keeps its colour.
+- User: `--user-fill`, the figure `--user-ink` (`ActorTile.tsx`), the plate's border `1.5px solid
+  var(--user-ink)`. Actions: `--action-fill`, the word `--action-ink`, the badge `--ic-fill` with a
+  2px `--action-ink` border and an `--action-ink` icon. `--actor-fill` and `--figure-ink` are gone
+  from `canvas.css` and `diagram-export.css`; nothing reads them.
+- `ContainerTile.test.tsx`: a new test (`data-host` on a Service's band and an addable container's
+  header, absent on a Database's band and on a non-addable container's header); the kind-label
+  test's selector excludes `.lane-tile-cap` instead of `.lane-tile-icon`, since the icon now sits
+  in the band.
+- Docs: `docs/studio.md` (the Tiles bullet: band, User, actions; the container's header; the PNG
+  export's two YouTube hashes and its light colours).
+
+**Checks.** `pnpm check` before any change: exit 0, 106 files, 824 tests passed. After: exit 0, 106
+files, 825 tests passed (lint's one info is older). `pnpm test:e2e` (native, with the mouse spec
+present): 77 passed (73 + 4, 4.7 min). `pnpm --filter @jeeves/web build`: exit 0. Mouse check
+(`ui04-check.spec.ts`, then deleted): 4 passed, 1440×900 and 1280×800, no page error. On TinyURL in
+Detailed and Simple, light then dark (the status bar's Dark mode): the three Services' and the
+Analytics worker's bands are `--cap-host`, URL database, URL cache, Click events and Analytics
+store's are `--cap-plain`, every band and row border is `--row-line`; the band is the face's full
+width, 56px, the icon 36px and centred, the name 6px below, the kind label 8px from the bottom; the
+User, its figure and plate border, the actions, their word and badge are the new tokens; the
+selected Simple tile's `+` sits in the band, left of the icon. Exports by mouse from light and from
+dark have the same hash, and their PNGs show the light band, User and action colours exactly at
+sampled points. A fresh YouTube study exports Simple `7966fa4b…7cb7` (3008×2752) and Detailed
+`29ed909d…afca` (3840×3392), the same at both sizes. The fixture and the spec deleted their
+projects. Five images in `docs/plans/ui-refresh/evidence/ui04/` (Detailed and Simple, light and
+dark, at 1440, and a Detailed export made in dark mode) match `preview/tiles-light.png` and
+`tiles-dark.png`: sky blue bands on module hosts, mint on the rest, lilac User with a dark figure
+(dark plate in dark mode), yellow actions with a light badge.
+**Differences from the plan.**
+- `--ic-fill` (the plan's UI05 token) is added here, with the Shared values, because step 5's
+  badge uses it.
+- The export's light values for the new tokens are in `tokens.css` (rule 7), not in
+  `diagram-export.css`'s capture block; without them a dark-mode export drew dark bands and
+  `diagram-export.spec.ts`'s light-equals-dark hash check would fail.
+- The row border keeps `var(--row-border)` (1.5px), which the port marks' insets use. Chrome draws a
+  1.5px border as 1px at a device pixel ratio of 1, as before.
+- The `Tile` test is in `ContainerTile.test.tsx`, where the `Tile` tests already are; there is no
+  `Tile.test.tsx`.
+- No link fan action item read `--actor-fill` or `--figure-ink` (`.lane-fan-action` uses
+  `--board-ink`), so nothing changed there.
+**Noticed.** `.canvas-menu` still uses `--cream` and `color-mix(… var(--line) 45%, transparent)` for
+its border; the plan's steps for this unit don't cover it, so `--row-line` (and UI13's `--panel`)
+are left for a later unit to apply. The yellow warning mark (`--yellow`) sits on the yellow action
+fill with little contrast (its ring is `--board-tile`). In an export, the Detailed view's loader
+arrow (Cache reader → Link reader) shows as a black bar, apparently its 12px transparent hit stroke
+(`.lane-container-loader-hit`, since MA06) drawn opaque; this unit doesn't touch it. `jeeves_e2e` still holds "TinyURL · studio study" and "E2E Every kind"; left alone. No
+uncommitted changes under `jeeves-generator/` or `field-projects/`; the owner's dirty paths stay
+untouched and unstaged.
+**For the next unit.** UI05 can start; `--ic-fill` already exists in both theme blocks and in the
+export block in `tokens.css`. The band is `.lane-tile-cap` in `Tile.tsx`, the icon
+`.lane-tile-icon` (36px) inside it.

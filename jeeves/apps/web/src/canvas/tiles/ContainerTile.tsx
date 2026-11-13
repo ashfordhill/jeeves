@@ -1,5 +1,6 @@
 // A container's face in the Detailed view: a header with the tile's kind icon in its family colour,
-// its name on one line and its kind label in small grey type below it, then one row per module
+// its name on one line and its kind label in small grey type below it, on the band colour (sky blue
+// when the container can take modules, `data-host`, else mint), then one row per module
 // (`DetailedRow`), each centred on its row's port height so the module's lines meet it. A row
 // shows the module's icon in its family colour and its name, cut short with an ellipsis, with the
 // full name as its tooltip. A row with a drawn line has a port mark on that side (`data-ports`), a
@@ -80,7 +81,10 @@ export function ContainerTile({
   rows: readonly DetailedRow[];
   /** The in-process links between its rows (loaders, items). */
   loaders?: readonly DetailedLoader[];
-  /** It can take new modules: its footer holds the `+` (`DetailedContainer.addable`). */
+  /**
+   * It can take new modules: its header is the host colour and its footer holds the `+`
+   * (`DetailedContainer.addable`).
+   */
   addable?: boolean;
   /** Its design warnings, shown as a mark in the header's corner. */
   warnings?: readonly string[];
@@ -102,7 +106,11 @@ export function ContainerTile({
       data-family={visual?.color ?? "generic"}
       style={gutter ? ({ "--row-inset-left": `${gutter}px` } as CSSProperties) : undefined}
     >
-      <div className="lane-container-header" style={{ height: CONTAINER.header - FRAME }}>
+      <div
+        className="lane-container-header"
+        data-host={addable || undefined}
+        style={{ height: CONTAINER.header - FRAME }}
+      >
         <span className="lane-container-icon">
           <StudioIcon name={visual?.icon} size={22} />
         </span>
