@@ -1,0 +1,112 @@
+{
+  "uploads": [
+    {
+      "kind": "fixture",
+      "title": "V3-17 f3: axolotlindigo",
+      "size": 15584953,
+      "uploadId": "40d40ca1-17b0-46d6-9b8e-7984ea2367ac",
+      "videoId": "f3e2ccb1-2fab-4476-9d05-d6141e3edf79",
+      "jobId": "48015fff-b4ea-4b4c-b887-339e7da561b0",
+      "attemptId": "13919542-57d1-49ca-9b37-d8e827cd7a4b",
+      "state": "pending"
+    }
+  ],
+  "log": [
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "uploadId": "40d40ca1-17b0-46d6-9b8e-7984ea2367ac",
+        "assetId": "f3e2ccb1-2fab-4476-9d05-d6141e3edf79",
+        "state": "uploading",
+        "partSize": 5242880,
+        "partCount": 3,
+        "expiresAt": "2026-11-14T03:27:42.014Z"
+      },
+      "request": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1762555020000,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+        "title": "V3-17 f3: axolotlindigo",
+        "description": "V3-17 f3 (fixture)."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/parts/1",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45802/original-videos/upload-api-multipart-uploads/f3e2ccb1-2fab-4476-9d05-d6141e3edf79/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T03:42:42.061Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 1>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+        "size": 5242880
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/parts/2",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45802/original-videos/upload-api-multipart-uploads/f3e2ccb1-2fab-4476-9d05-d6141e3edf79/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T03:42:42.094Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 2>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"8b07cb8adaef2a76957b89cf6a759510\"",
+        "size": 5242880
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/parts/3",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45802/original-videos/upload-api-multipart-uploads/f3e2ccb1-2fab-4476-9d05-d6141e3edf79/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T03:42:42.122Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 3>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\"",
+        "size": 5099193
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/40d40ca1-17b0-46d6-9b8e-7984ea2367ac/complete",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "uploadId": "40d40ca1-17b0-46d6-9b8e-7984ea2367ac",
+        "videoId": "f3e2ccb1-2fab-4476-9d05-d6141e3edf79",
+        "jobId": "48015fff-b4ea-4b4c-b887-339e7da561b0",
+        "attemptId": "13919542-57d1-49ca-9b37-d8e827cd7a4b",
+        "state": "pending"
+      }
+    }
+  ]
+}

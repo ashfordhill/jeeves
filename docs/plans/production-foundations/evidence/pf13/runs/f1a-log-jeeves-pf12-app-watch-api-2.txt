@@ -1,0 +1,2 @@
+2026-11-13T03:22:51.380225906Z {"level":"error","event":"failure","tile":"watch-api","what":"cache watch-api-video-details-cache","error":"Error: Socket closed unexpectedly"}
+2026-11-13T03:22:51.772513611Z {"level":"error","event":"failure","tile":"watch-api","what":"cache read watch-api-video-details-cache","error":"Error: Cache unavailable"}

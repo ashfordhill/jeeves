@@ -1,0 +1,17 @@
+down at 03:29:32.743173420
+down exit=0 at 03:29:39.271983595
+image rm at 03:29:48.116858655
+Untagged: jeeves-pf12-app:latest
+Deleted: sha256:1180ce44293fd89cd6a892188b54359b3e827a80442e6dbbdd8ab399109a7ac7
+Untagged: jeeves-pf12-media:latest
+Deleted: sha256:f4177d3889896225310fa7a68a235b71dd52f8199e6be58fc2c03ee51e00a056
+image rm exit=0
+app copy removed (with .runtime) at 03:29:58.693007793
+after cleanup at 03:30:16.392819824:
+jeeves-pf12 containers: 0
+jeeves-pf12 volumes: 0
+jeeves-pf12 networks: 0
+jeeves-pf12 images: 0
+port 45800 free
+port 45801 free
+port 45802 free

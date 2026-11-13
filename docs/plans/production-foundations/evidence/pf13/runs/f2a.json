@@ -1,0 +1,18 @@
+{
+  "step": "details",
+  "label": "f2a",
+  "args": ["5eae0341-fffb-4bc7-afb4-1fd8004e5a36", "1"],
+  "statuses": [503],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 503,
+      "body": {
+        "error": "UNAVAILABLE",
+        "message": "Service unavailable."
+      }
+    }
+  ]
+}

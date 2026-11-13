@@ -1,0 +1,3 @@
+2026-11-13T03:26:33.433969413Z {"level":"info","event":"started","tile":"account-api","module":"account-api-account-check","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+2026-11-13T03:26:33.434019539Z {"level":"info","event":"started","tile":"account-api","module":"account-api-favorite-videos","template":"favorites","wiring":"mounted","checks":["SELECT 1 on its state login","SELECT 1 on its items login"]}
+2026-11-13T03:26:33.434525559Z Application ready

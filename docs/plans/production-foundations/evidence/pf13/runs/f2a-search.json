@@ -1,0 +1,35 @@
+{
+  "step": "search",
+  "label": "f2a-search",
+  "args": ["pangolinsaffron", "5eae0341-fffb-4bc7-afb4-1fd8004e5a36"],
+  "search": {
+    "status": 200,
+    "found": 1,
+    "afterMs": 473
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/search-api/modules/search-api-video-search?q=pangolinsaffron",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "q": "pangolinsaffron",
+        "page": 1,
+        "pageSize": 20,
+        "total": 1,
+        "hits": [
+          {
+            "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+            "title": "V3-17 f-a: pangolinsaffron",
+            "description": "V3-17 f-a (fixture).",
+            "channel": "creator",
+            "durationSeconds": 20,
+            "publishedAt": "2026-11-13T03:21:52.690Z",
+            "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -11458,3 +11458,80 @@ outside the checkout (`jeeves-pf12`, 45800–45802):
 45801 (identity), 45802 (objects); left running with two copies of each of the eight
 processes, and all 23 containers were healthy at the end. Video A
 `5a074d41-736c-4736-aa05-865edc3f0e2b` (51 views), B `20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04`.
+
+## 2026-11-12 — PF13: Run v4: faults and a throughput sample
+
+**What changed.**
+
+- `field-projects/youtube/v4/notes/scenarios.md`: a "Faults and throughput" section after PF12's
+  (PF12's last sentence now links it): F1a–F3 and T1 with a Verdict column and what was seen,
+  the T1 table beside the machine, the cleanup, and what the faults showed. Every step is
+  **Observed**; F3 was caught on the first upload, so there is no F3b.
+- New `docs/plans/production-foundations/evidence/pf13/`: `README.md` listing the files,
+  `reads.mjs` (the plan's, byte for byte), `f3-catch.sh` (this unit's F3 helper), the Docker
+  inventory at the start and after the cleanup, and `runs/` (harness outputs, step times, `ps`
+  and `docker inspect` outputs, each container's log since each boundary, `pnpm start`'s output,
+  the T1 samples and the cleanup). No code changed.
+
+**Checks.** None named by the unit. The run, on PF12's stack (`jeeves-pf12`, 45800–45802; 23
+containers healthy at the start), with PF12's harness unchanged:
+
+- A `5eae0341-fffb-4bc7-afb4-1fd8004e5a36` (`pangolinsaffron`): ready after 4,060 ms.
+- F1a: details 10 × 200; each Watch copy's log has `"event":"failure"` with
+  `"what":"cache watch-api-video-details-cache"`. F1b: 200, 200; `EXISTS` 1; each log has
+  `"event":"cache"` with `"state":"available"`.
+- F2a: the 12 `app-*` containers that use the broker exited with code 1 (`process-failed`,
+  `AMQP publisher unavailable` or `AMQP consumer unavailable`); both copies of Account and Search
+  and the edge stayed up. Details 503 (the edge's `UNAVAILABLE`); search 200, `found` 1.
+- F2b: `pnpm start` exit 0 in 31.8 s; it removed the eight `-2` copies and `ps` showed 15 healthy,
+  one copy of each process. The scale command again: 23 healthy after 11 s. Plays `settled` 1 =
+  `expected` 1.
+- F3: C `f3e2ccb1-2fab-4476-9d05-d6141e3edf79` (`axolotlindigo`); while `processing`, `docker top`
+  listed `ffmpeg` in Transcoder `-1`, which was killed, then started 5 s later. Copy 2 finished
+  the redelivered job; C ready, search `found` 1, `published.videos` count 1.
+- T1 (one machine: Ryzen 5 7600X, 12 logical CPUs, 31 GiB, WSL2): 4,076 / 4,245 / 4,186 reads/s;
+  p50 9 / 9 / 9, p95 21 / 19 / 19, p99 67 / 65 / 65 ms; `failed` 0 each time.
+- Cleanup: `docker compose --profile '*' down --volumes --remove-orphans` exit 0 (23 containers, 5
+  volumes, the network); `jeeves-pf12-app` and `jeeves-pf12-media` removed; the app copy with its
+  `.runtime`, then the rest of `$SCRATCH`, deleted. No `jeeves-pf12` container, volume, network or
+  image is left, 45800–45802 are free, and the containers, volumes, networks and images equal
+  PF12's "before".
+- Evidence: `command grep -rniE 'bearer|eyJ|password|secret'` finds nothing; no file is over
+  100 KB.
+
+**Differences from the plan.**
+
+- `docker logs` ran with `--timestamps`; F1a's logs stop at F1b's boundary (`--until`), so each
+  file holds only its own step.
+- F1b's `DEL` ran 18.6 s after `docker start` returned (the script slept 15 s).
+- F3 used a helper, `f3-catch.sh`, for the poll, `docker top`, kill and start; while the state was
+  `processing` it ran `docker top` at each poll.
+- The 13 harness JSON files were formatted with `biome format --write`, as in PF11 and PF12; each
+  still parses to the value the harness wrote (13 of 13). `reads.mjs` passes Biome as written.
+- The plan says the T1 numbers are "from one laptop"; this computer's CPU is a desktop part under
+  WSL2, so the notes say "one machine".
+- `pnpm start` rebuilt both images with new IDs; the images they replaced were already gone after
+  `down`, so only the two named images needed removing.
+- Beyond the plan, for the record only: asset rows, `docker inspect` states and image IDs, network
+  I/O, the broker's queues after F3, and a Docker inventory at the start of PF13. No harness
+  script needed a fix.
+
+**Noticed.**
+
+- A broker outage stops every process that uses the broker, Watch too, though its details read
+  needs only the cache and the database (its view-events publisher failing ends the process). With
+  no restart policy (the known limit in `docs/template-gaps.md`) they stay stopped until
+  `pnpm start`. Search, which uses no broker, kept answering.
+- `pnpm start` after a fault returns the stack to one copy of each process: it removes every
+  extra copy, recreates the first ones, rebuilds both images and reruns `setup-migrate` and
+  `setup-broker`. Transcoder `-1` wasn't recreated and kept its earlier media image beside `-2` on
+  the new one.
+- `docker top` showed the Transcoder's `node` and `ffmpeg` running as root in their container.
+- The earlier notes still stand: Complete answers 200 with `pending` (gap 1); upload titles read
+  "V3-17 …"; `pf.mjs`'s `poll` keeps only its last read (so search's `afterMs` 473 and 734 can't
+  be split); `createPositiveReader` passes no `onFailure`; the failure log writes at most one line
+  a second per `what`.
+
+**For the next unit.** PF14 next (independent review). The stack is gone (no `jeeves-pf12` Docker
+state, ports free). The verdicts are in `field-projects/youtube/v4/notes/scenarios.md`, the raw
+outputs in `evidence/pf12/` and `evidence/pf13/`.

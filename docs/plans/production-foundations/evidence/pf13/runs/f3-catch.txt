@@ -1,0 +1,16 @@
+upload at 03:27:41.877693674
+uploaded f3e2ccb1-2fab-4476-9d05-d6141e3edf79 at 03:27:42.202583799
+03:27:42.260467641 state=pending
+03:27:42.823990132 state=pending
+03:27:43.394399147 state=processing
+03:27:43.438903434 ffmpeg in jeeves-pf12-app-transcoder-1:
+root                2461755             2461723             0                   21:25               ?                   00:00:00            /sbin/docker-init -- docker-entrypoint.sh node dist/processes/transcoder.js
+root                2461819             2461755             0                   21:25               ?                   00:00:00            node dist/processes/transcoder.js
+root                2477420             2461819             99                  21:27               ?                   00:00:01            ffmpeg -hide_banner -nostdin -y -protocol_whitelist file,crypto,data -i /tmp/media-job-Wi3Mt8/source
+03:27:43.442356548 docker kill jeeves-pf12-app-transcoder-1
+jeeves-pf12-app-transcoder-1
+03:27:43.997969402 killed; sleeping 5 s
+03:27:49.002763002 docker start jeeves-pf12-app-transcoder-1
+jeeves-pf12-app-transcoder-1
+03:27:49.361260453 started
+result: id=f3e2ccb1-2fab-4476-9d05-d6141e3edf79 killed=jeeves-pf12-app-transcoder-1 lastState=processing at 03:27:49.362329418

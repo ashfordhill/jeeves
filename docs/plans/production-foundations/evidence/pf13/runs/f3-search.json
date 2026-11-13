@@ -1,0 +1,35 @@
+{
+  "step": "search",
+  "label": "f3-search",
+  "args": ["axolotlindigo", "f3e2ccb1-2fab-4476-9d05-d6141e3edf79"],
+  "search": {
+    "status": 200,
+    "found": 1,
+    "afterMs": 734
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/search-api/modules/search-api-video-search?q=axolotlindigo",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "q": "axolotlindigo",
+        "page": 1,
+        "pageSize": 20,
+        "total": 1,
+        "hits": [
+          {
+            "videoId": "f3e2ccb1-2fab-4476-9d05-d6141e3edf79",
+            "title": "V3-17 f3: axolotlindigo",
+            "description": "V3-17 f3 (fixture).",
+            "channel": "creator",
+            "durationSeconds": 20,
+            "publishedAt": "2026-11-13T03:27:46.900Z",
+            "thumbnailUrl": "/cdn/video-delivery/videos/f3e2ccb1-2fab-4476-9d05-d6141e3edf79/48015fff-b4ea-4b4c-b887-339e7da561b0/13919542-57d1-49ca-9b37-d8e827cd7a4b/thumbnail.jpg"
+          }
+        ]
+      }
+    }
+  ]
+}

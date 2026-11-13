@@ -1,0 +1,2 @@
+2026-11-13T03:25:26.240146494Z {"level":"info","event":"started","tile":"search-api","module":"search-api-video-search","template":"search-query","wiring":"mounted","checks":["cluster health","index videos asserted once its mapping is written"]}
+2026-11-13T03:25:26.241053260Z Application ready

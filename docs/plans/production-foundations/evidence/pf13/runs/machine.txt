@@ -1,0 +1,9 @@
+nproc: 12
+model name	: AMD Ryzen 5 7600X 6-Core Processor
+               total        used        free      shared  buff/cache   available
+Mem:     33188683776  7479607296 14227865600   146206720 12201148416 25709076480
+               total        used        free      shared  buff/cache   available
+Mem:            30Gi       7.0Gi        13Gi       139Mi        11Gi        23Gi
+6.6.87.2-microsoft-standard-WSL2
+docker: NCPU=12 MemTotal=33188683776 ServerVersion=29.9.1 OS=Ubuntu 24.04.4 LTS
+v24.21.0

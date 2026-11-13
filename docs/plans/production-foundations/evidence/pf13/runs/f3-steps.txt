@@ -1,0 +1,4 @@
+ready poll at 03:27:55.316054960
+{"step":"ready","label":"f3-ready","args":["f3e2ccb1-2fab-4476-9d05-d6141e3edf79","180"],"ready":{"status":200,"afterMs":42}}
+search at 03:27:55.403202459
+{"step":"search","label":"f3-search","args":["axolotlindigo","f3e2ccb1-2fab-4476-9d05-d6141e3edf79"],"search":{"status":200,"found":1,"afterMs":734}}

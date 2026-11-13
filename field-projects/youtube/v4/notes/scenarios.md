@@ -42,4 +42,44 @@ showed 23 containers, every one healthy, 11 s after the command started.
 `app-*` container's log.
 
 **Not shown by this run:** the details' 404 while a video is not yet ready (above), and a job on
-the second Transcoder copy. Faults and a throughput sample are PF13's.
+the second Transcoder copy. Faults and a throughput sample are PF13's, [below](#faults-and-throughput).
+
+## Faults and throughput
+
+**The run:** PF13, 2026-11-12 (UTC 2026-11-13), on PF12's two-copy stack (23 containers, all
+healthy, at the start), with PF12's harness as it left it. The raw outputs are in the
+[evidence](../../../../docs/plans/production-foundations/evidence/pf13/README.md). No app or
+generated file was changed. **A** for these steps is a new upload (`pangolinsaffron`): its 200s
+as in A2, details 200 after 4,060 ms. Before each fault a boundary was recorded, and each
+container's log was read only since it.
+
+| Step | Verdict | What was seen |
+| --- | --- | --- |
+| F1a Cache stopped | **Observed** | `docker stop jeeves-pf12-cache-hot-metadata-1`; details 10 × 200 (111 ms for all ten). Since the boundary, each Watch copy's log has `"event":"failure"` with `"what":"cache watch-api-video-details-cache"` (`Socket closed unexpectedly`, as the cache went down), then `"what":"cache read watch-api-video-details-cache"` (`Cache unavailable`) on its first read; nothing else in the 19 s the cache was down |
+| F1b Cache back | **Observed** | `docker start`; 0.1 s later both Watch copies logged `"event":"cache"` with `"state":"available"`. `DEL ready-video:v1:<A>` printed 1 (18.6 s after the start); details 200, 200; `EXISTS` printed 1: the read put the key back |
+| F2a Broker stopped | **Observed** | Within 0.11 s of `docker stop jeeves-pf12-local-broker-1`, all 12 `app-*` containers that use the broker **exited** with code 1, each logging `process-failed`: `AMQP publisher unavailable` (both copies of Watch, Upload, Video lifecycle and Transcoder) or `AMQP consumer unavailable` (both copies of Search indexer and View counter). **Stayed up**, healthy: both copies of Account and Search, and the edge. 20 s later `ps -a` still showed the 12 exited. Details answered **503** `{"error":"UNAVAILABLE","message":"Service unavailable."}` from the edge (`app-watch-api could not be resolved`); search answered **200** with A as the one hit (`found` 1) |
+| F2b Broker back | **Observed** | `docker start` the broker, then `pnpm start`: exit 0 in 31.8 s. It rebuilt both images from cached layers (new image IDs), ran `setup-migrate` and `setup-broker` again, **stopped and removed all eight `-2` copies**, recreated seven `-1` copies (Transcoder `-1` was started, on its earlier image) and waited for them: `ps` showed 15 containers, one copy of each process, all healthy. PF12's scale command again: exit 0, 23 healthy 11 s after it started. Plays: `playStatuses` `[202]`, `before` 0, `expected` 1, `after` 1 (after 269 ms), `settled` 1 |
+| F3 Transcoder killed during a job | **Observed** | **C** (`axolotlindigo`) uploaded with the A2 200s. Its state read `pending` twice, then `processing`; at once `docker top` listed `ffmpeg … -i /tmp/media-job-…/source…` (1 s of CPU) in `jeeves-pf12-app-transcoder-1`. `docker kill` it, 5 s, `docker start` (healthy, 0 restarts). C was ready 3.5 s after `docker kill` was sent, while copy 1 was still down: copy 2 took the redelivered job (its network I/O 15.6 MB in, 11.6 MB out; the source is 15.6 MB), under the attempt ID that Complete returned. Ready 200 on the first read; search 200 with C as the one hit (`found` 1); `select count(*) from published.videos where video_id='<C>'` prints 1; every broker queue then held 0 messages |
+| T1 Details reads | **Observed** | Three samples of 2,000 reads of A's details, 50 at a time, through the edge: `failed` 0 each time (table below). Both Watch copies served them (about 3 MB in each) |
+
+| T1 sample | `perSecond` | `p50Ms` | `p95Ms` | `p99Ms` | `failed` |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 4,076 | 9 | 21 | 67 | 0 |
+| 2 | 4,245 | 9 | 19 | 65 | 0 |
+| 3 | 4,186 | 9 | 19 | 65 | 0 |
+
+**Machine:** these numbers are from one machine, the owner's computer, not a cluster: AMD Ryzen
+5 7600X with 12 logical CPUs and 31 GiB memory, under WSL2 (Docker 29.9.1). All 23 containers and
+the load script shared it. There is no pass mark for speed.
+
+**At the end:** 23 containers, all healthy, 0 restarts. The cleanup then removed the stack
+(`down --volumes --remove-orphans`), the images `jeeves-pf12-app` and `jeeves-pf12-media` and the
+app copy with its `.runtime`; the Docker containers, volumes, networks and images equal those
+before PF12.
+
+**Shown by these faults:** the cache read answers through a cache outage and recovers by itself;
+a worker killed during a job loses nothing, and the other copy finishes it. A broker outage
+stops every process that uses the broker, Watch's details reads with it, and they stay stopped
+until `pnpm start` (the known limit "A process that loses its broker exits and is not
+restarted" in [template gaps](../../../../docs/template-gaps.md)); `pnpm start` also returns the
+stack to one copy of each process.

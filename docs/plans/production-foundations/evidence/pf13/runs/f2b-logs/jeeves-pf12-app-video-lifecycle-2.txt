@@ -1,0 +1,2 @@
+2026-11-13T03:26:34.103875794Z {"level":"info","event":"started","tile":"video-lifecycle","module":"video-lifecycle-lifecycle-writer","template":"asset-lifecycle","wiring":"mounted","checks":["sweep at start","publication relay started","subscribed processing-events--video-lifecycle","sweep every 30 s"]}
+2026-11-13T03:26:34.104465260Z Application ready

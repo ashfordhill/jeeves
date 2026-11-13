@@ -1,0 +1,2 @@
+2026-11-13T03:25:25.813300112Z {"level":"info","event":"started","tile":"search-indexer","module":"search-indexer-index-writer","template":"search-projection","wiring":"mounted","checks":["cluster health","index videos asserted once its mapping is written","subscribed publication-events--search-indexer"]}
+2026-11-13T03:25:25.813866077Z Application ready

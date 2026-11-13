@@ -1,0 +1,1 @@
+2026-11-13T03:23:46.267345665Z {"level":"error","event":"process-failed","error":"Error: AMQP consumer unavailable"}

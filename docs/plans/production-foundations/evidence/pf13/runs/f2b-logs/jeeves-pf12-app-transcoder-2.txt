@@ -1,0 +1,2 @@
+2026-11-13T03:26:33.187541981Z {"level":"info","event":"started","tile":"transcoder","module":"transcoder-segmenter-and-encoder","template":"video-hls","wiring":"mounted","checks":["pinned ffmpeg and ffprobe","results publisher open","subscribed upload-jobs"]}
+2026-11-13T03:26:33.189689179Z Application ready

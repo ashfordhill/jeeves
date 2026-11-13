@@ -1,0 +1,7 @@
+2026-11-13T03:26:32.744400185Z {"event":"probe","tile":"watch-api","level":"info","client":"metadata","kind":"database","check":"SELECT 1","result":"ok"}
+2026-11-13T03:26:32.748945709Z {"event":"probe","tile":"watch-api","level":"info","client":"view-counts","kind":"database","check":"SELECT 1","result":"ok"}
+2026-11-13T03:26:32.799569465Z {"event":"probe","tile":"watch-api","level":"info","client":"view-events","kind":"queue","check":"open the broker and a confirm channel","result":"ok"}
+2026-11-13T03:26:32.837488537Z {"level":"info","event":"cache","tile":"watch-api","module":"watch-api-video-details-cache","state":"available"}
+2026-11-13T03:26:32.883028211Z {"level":"info","event":"started","tile":"watch-api","module":"watch-api-viewer-check","template":"verified-identity","wiring":"mounted","checks":["sign-in Optional on every module route"]}
+2026-11-13T03:26:32.883051016Z {"level":"info","event":"started","tile":"watch-api","module":"watch-api-video-details-cache","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+2026-11-13T03:26:32.883597261Z Application ready

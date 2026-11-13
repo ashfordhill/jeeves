@@ -1,0 +1,218 @@
+{
+  "step": "details",
+  "label": "f1a",
+  "args": ["5eae0341-fffb-4bc7-afb4-1fd8004e5a36", "10"],
+  "statuses": [200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5eae0341-fffb-4bc7-afb4-1fd8004e5a36",
+        "publicationVersion": 1,
+        "title": "V3-17 f-a: pangolinsaffron",
+        "description": "V3-17 f-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnail": "videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:21:52.690Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5eae0341-fffb-4bc7-afb4-1fd8004e5a36/0c783943-59e1-4ed9-9cc1-86563226eb96/685d14cc-1e98-4c4b-a265-a306d34b6ec0/thumbnail.jpg"
+      }
+    }
+  ]
+}

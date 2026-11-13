@@ -1,0 +1,2 @@
+2026-11-13T03:26:34.392964462Z {"level":"info","event":"started","tile":"view-counter","module":"view-counter-receipt-and-increment","template":"event-counter","wiring":"mounted","checks":["SELECT 1 on its state login","subscribed view-events--view-counter"]}
+2026-11-13T03:26:34.393576353Z Application ready

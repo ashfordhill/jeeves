@@ -1,0 +1,1 @@
+2026-11-13T03:24:17.098903877Z 2026/11/13 03:24:17 [error] 30#30: *602 app-watch-api could not be resolved (3: Host not found), client: 172.24.0.1, server: , request: "GET /api/watch-api/modules/watch-api-video-details-cache/5eae0341-fffb-4bc7-afb4-1fd8004e5a36 HTTP/1.1", host: "127.0.0.1:45800"
