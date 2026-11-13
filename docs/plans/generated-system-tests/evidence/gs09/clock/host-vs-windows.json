@@ -1,0 +1,10 @@
+{
+  "method": "Two probes 70 s apart (coreutils timeout 70): /proc/uptime, WSL `date +%s.%N`, then Windows [DateTimeOffset]::UtcNow via powershell.exe interop",
+  "clocksource": "tsc (available: tsc hyperv_clocksource_tsc_page hyperv_clocksource_msr acpi_pm); kernel 6.6.87.2-microsoft-standard-WSL2",
+  "probes": [
+    { "uptimeS": 876008.86, "wslWallS": 1794608355.688, "windowsMs": 1794608348588 },
+    { "uptimeS": 876079.1, "wslWallS": 1794608433.085, "windowsMs": 1794608426548 }
+  ],
+  "deltas": { "uptimeS": 70.24, "wslWallS": 77.4, "windowsS": 77.96 },
+  "reading": "WSL wall time follows the Windows clock; the VM's monotonic clock runs about 10% slow and the wall clock is corrected in +3.58 s steps (wall-steps-100s.json). powershell.exe start-up latency (about 0.5 s) bounds the Windows reading's precision."
+}

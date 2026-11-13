@@ -1,0 +1,65 @@
+{
+  "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-2",
+  "ports": [35503, 41285, 35377],
+  "owned": {
+    "src/modules/catalog-api/catalog-read.hooks.ts": "d547a6591a5ec3fb453615062b91108a21cd1dbc5b8dd90651cb71ec20262ffe",
+    "src/modules/catalog-api/catalog-writer.ts": "130c1d08ba9acbefe581559949a889b1afe684b227b4acefaf187a03429bcadd",
+    "infra/postgres/catalog/modules/catalog-writer.sql": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56"
+  },
+  "runtime": {
+    ".runtime/local-setup.json": "f0127daabcfc33310354c89f2985bdf054864091025b3070abf54590e9d39ac6",
+    ".runtime/secrets/cache-catalog-cache": "cdd9931a71ec7222117d000161a9936546c48b69214c39ecee43fd47dbcafda5",
+    ".runtime/secrets/owner-catalog": "0f081fca1c3893f3898f98fb8f3a87ed7d18e9bdd7fba3c8e4ffa444c00eb083",
+    ".runtime/secrets/postgres-admin": "06fb4bc79daaf85224cf46f8539692190a0fc9b5ffe709ed44d2d733ad9f1ece",
+    ".runtime/secrets/sql-catalog--catalog-api": "880ce7c85071f0229e5c0db605333d717e3b00cb0eae64806bdc83d78f2120a0"
+  },
+  "volumes": [
+    {
+      "name": "gs-53fced80-e588-4827-af57-f34d710f4a11-2_cache-catalog-cache",
+      "createdAt": "2026-11-13T16:25:03-06:00",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "21d1c3c710fd660d72485a5c8520330936892ba039bc96cec63574454522ff55",
+        "com.docker.compose.project": "gs-53fced80-e588-4827-af57-f34d710f4a11-2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "cache-catalog-cache"
+      }
+    },
+    {
+      "name": "gs-53fced80-e588-4827-af57-f34d710f4a11-2_postgres-data",
+      "createdAt": "2026-11-13T16:25:03-06:00",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "3f6422029ff9910286918eef403ace25437bc5d94d7a35380bf7485b81f755ca",
+        "com.docker.compose.project": "gs-53fced80-e588-4827-af57-f34d710f4a11-2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      }
+    }
+  ],
+  "data": {
+    "databaseOid": "16386",
+    "relationOid": "16397",
+    "count": 3,
+    "records": [
+      {
+        "id": "draft-a",
+        "title": "Unpublished draft",
+        "state": "draft",
+        "xmin": "744"
+      },
+      {
+        "id": "published-a",
+        "title": "Immutable amber catalog",
+        "state": "published",
+        "xmin": "744"
+      },
+      {
+        "id": "retained-published",
+        "title": "retained-af5ee893-11b2-4fac-9ea8-1a74817d96ec",
+        "state": "published",
+        "xmin": "745"
+      }
+    ]
+  }
+}

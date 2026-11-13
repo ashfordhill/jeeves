@@ -117,7 +117,7 @@ export class Application {
     return result.trim();
   }
   async request(path: string, init: RequestInit = {}) {
-    const started = Date.now();
+    const started = performance.now();
     const response = await fetch(`http://127.0.0.1:${this.stack.ports[0]}${path}`, {
       ...init,
       signal: AbortSignal.timeout(5_000),
@@ -135,7 +135,7 @@ export class Application {
       request: init.body,
       status: response.status,
       body,
-      elapsedMs: Date.now() - started,
+      elapsedMs: Math.round(performance.now() - started),
     });
     return { status: response.status, body };
   }

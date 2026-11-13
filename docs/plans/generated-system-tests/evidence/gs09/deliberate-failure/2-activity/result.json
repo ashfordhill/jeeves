@@ -1,0 +1,6 @@
+{
+  "fixture": "activity",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected [ 'counter:killed', 'counter:seed' ] to deeply equal [ 'counter:seed' ]"
+}

@@ -1,0 +1,313 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T22:41:07.526Z",
+    "value": [
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-catalog-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-fanout-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-internal-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-publisher-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-wiring-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-app-workers-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-cache-catalog-cache-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-local-objects-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-53fced80-e588-4827-af57-f34d710f4a11-12-search-items-index-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "catalogLoads": {
+      "key": "published-a",
+      "count": 0
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 0
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/published-a",
+    "status": 200,
+    "body": {
+      "id": "published-a",
+      "title": "Immutable amber catalog",
+      "state": "published"
+    },
+    "elapsedMs": 16
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 3721,
+      "hits": 2
+    }
+  },
+  {
+    "catalogLoads": {
+      "key": "published-a",
+      "count": 1
+    }
+  },
+  {
+    "cacheHitCount": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/published-a",
+    "status": 200,
+    "body": {
+      "id": "published-a",
+      "title": "Immutable amber catalog",
+      "state": "published"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "cacheHitCount": 3
+  },
+  {
+    "catalogLoads": {
+      "key": "published-a",
+      "count": 1
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 2700,
+      "hits": 5
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 2405,
+      "hits": 7
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 1855,
+      "hits": 9
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 1307,
+      "hits": 11
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 765,
+      "hits": 13
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 224,
+      "hits": 15
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 15
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/published-a",
+    "status": 200,
+    "body": {
+      "id": "published-a",
+      "title": "Immutable amber catalog",
+      "state": "published"
+    },
+    "elapsedMs": 4
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 3702,
+      "hits": 17
+    }
+  },
+  {
+    "catalogLoads": {
+      "key": "published-a",
+      "count": 2
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/missing-a",
+    "status": 404,
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "No record for this key."
+    },
+    "elapsedMs": 3
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:missing-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 17
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/missing-a",
+    "status": 404,
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "No record for this key."
+    },
+    "elapsedMs": 2
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:missing-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 17
+    }
+  },
+  {
+    "catalogLoads": {
+      "key": "missing-a",
+      "count": 2
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/draft-a",
+    "status": 404,
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "No record for this key."
+    },
+    "elapsedMs": 2
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:draft-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 17
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/draft-a",
+    "status": 404,
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "No record for this key."
+    },
+    "elapsedMs": 2
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:draft-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 17
+    }
+  },
+  {
+    "catalogLoads": {
+      "key": "draft-a",
+      "count": 2
+    }
+  },
+  {
+    "sql": "SELECT id||'|'||title||'|'||state FROM published.catalog ORDER BY id",
+    "result": "published-a|Immutable amber catalog|published"
+  },
+  {
+    "method": "POST",
+    "path": "/api/catalog-api/modules/catalog-writer",
+    "request": "{}",
+    "status": 200,
+    "body": [
+      {
+        "id": "published-a",
+        "title": "Immutable amber catalog",
+        "state": "published"
+      }
+    ],
+    "elapsedMs": 9
+  }
+]

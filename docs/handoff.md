@@ -13257,3 +13257,38 @@ in template gaps. (2) Harness polls and B10 use the wall clock; decide a monoton
 windows sit inside the 2 s statement timeout (observed ~1 s). (4) The harness leaves per-run
 image tags. Hosted CI pending publication; no push. `AGENTS.md` still names broker reconnect as
 active (left for the owner, as BR02 did). Owner dirty paths untouched and unstaged.
+
+## 2026-11-13 — GS09: Review of generated system coverage and CI gates
+
+**What changed.** New [review](plans/generated-system-tests/review.md): B01–B10 coverage map
+(tests, templates, provider pins, results, limits), GS07's claims checked, the B10 diagnosis,
+harness review, a deliberate failure, gates, open gaps, next units and owner decisions. Evidence
+in `plans/generated-system-tests/evidence/gs09/`. Harness fixes (no template, generated file,
+fixture, owned file, invariant or bound changed):
+- Monotonic clock: `poll`, `until`, the psql session deadline, fault and request durations, B02's
+  routing bound and `run.ts`'s elapsed time use `performance.now()`; fault boundaries gain
+  `monotonicAt`. B10 keeps the wall clock (Valkey expires by it) and records `monotonicMs` too.
+- Cleanup also removes each stack's built image tags (exact project label and `<project>-` name).
+- `run.ts` fails a selected suite that ran no scenario file (`harness/suites.ts`).
+- New offline test `src/v2/system-harness.test.ts` (4): fails on the old `poll`/`until` (2 of 4),
+  passes now. Fixture README: which suite to run per template, clock note, image cleanup.
+  `AGENTS.md` and `jeeves/PLAN.md`: no active plan. Template gaps: the two GS07 rows annotated.
+
+**Checks.** Docker phase first: `--suite=all` 14/14 in 8 files / 15 stacks (Vitest 1,210.9 s,
+CLI 1,229 s monotonic, 1,366 s wall), releasing 118 containers, 15 networks, 41 volumes and 17
+image tags. Deliberate failure (Counter kill omitted): faults 4/5, exit 1, every stack released,
+scenario restored by hash. Docker containers, volumes, networks and images then equal the
+pre-unit inventory. Then `pnpm check` 115 files / 905 tests; `pnpm test:e2e` 74 passed (4.7 min);
+web build passed. The final source hash equals the `all` run's.
+
+**Findings.** B10's GS07 failure: this WSL2 VM's monotonic clock runs about 10% slower than the
+Windows clock and its wall clock is stepped +3.58 s every 32 s. The wall-clock `poll` deadline was
+a harness defect (fixed). B10's 3 s margins are smaller than the step and Valkey follows the
+same wall clock, so B10 can still fail here when a step lands near a fill or expiry; GS09's own
+run had a step inside fresh-B's window and passed by 826 ms. The PostgreSQL row passes because
+the Counter crashes; that and the immediate template retries are one template unit.
+
+**For the next unit.** No active plan; the owner names the next. Proposed: template workers
+survive a database outage; outages of Garage/OpenSearch/Keycloak and a network partition; record
+the first hosted runs. Hosted CI is pending publication; no push. 83 older `gs-*` image tags
+from GS01–GS08 remain (left for the owner). Owner dirty paths untouched and unstaged.

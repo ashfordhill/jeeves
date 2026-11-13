@@ -1,0 +1,7 @@
+{
+  "id": "gs-53fced80-e588-4827-af57-f34d710f4a11",
+  "selected": ["core", "wiring", "identity", "media", "regeneration", "faults"],
+  "outcome": "passed",
+  "elapsedMs": 1229090,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/run.json"
+}

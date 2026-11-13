@@ -227,11 +227,11 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [tile processes](../docs/plans/tile-processes/units.md),
 [YouTube v3](../docs/plans/youtube-v3/units.md),
 [production foundations](../docs/plans/production-foundations/units.md),
-[UI refresh](../docs/plans/ui-refresh/units.md) and
-[broker reconnect](../docs/plans/broker-reconnect/units.md).
-
-The active plan is GS09, the review unit, of
+[UI refresh](../docs/plans/ui-refresh/units.md),
+[broker reconnect](../docs/plans/broker-reconnect/units.md) and
 [generated system tests](../docs/plans/generated-system-tests/units.md).
+
+There is no active plan; the owner names the next one.
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
 [HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in
 [template gaps](../docs/template-gaps.md).

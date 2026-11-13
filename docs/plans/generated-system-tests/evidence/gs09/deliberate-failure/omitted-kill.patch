@@ -1,0 +1,5 @@
+236c236,237
+<       const killed = await faultContainer(app, "app-counter", worker.Id, "kill");
+---
+>       // GS09 deliberate harness failure: the fault step is omitted.
+>       const killed = { omitted: true };

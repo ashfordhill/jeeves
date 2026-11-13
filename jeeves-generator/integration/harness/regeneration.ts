@@ -37,7 +37,15 @@ export async function expiryBehavior(app: Application, variant: "a" | "b", label
     (value) => app.record(value),
   );
   const loads = await catalogLoads(app, published.id);
+  // Elapsed times stay on the wall clock on purpose: Valkey expires keys by the same host wall
+  // clock, so a forward step moves both. Each observation also carries monotonic time, so a
+  // window a stepped clock cut short shows the step (GS09: this WSL2 host steps +3.58 s / 32 s).
   const started = Date.now();
+  const startedMonotonic = performance.now();
+  const elapsed = () => ({
+    elapsedMs: Date.now() - started,
+    monotonicMs: Math.round(performance.now() - startedMonotonic),
+  });
   assert.deepEqual(await read(app, published.id), { status: 200, body: published });
   const filled = await cacheObservation(app, key);
   assert.deepEqual(JSON.parse(filled.value ?? "null"), published);
@@ -49,12 +57,12 @@ export async function expiryBehavior(app: Application, variant: "a" | "b", label
   assert.deepEqual(await read(app, published.id), { status: 200, body: published });
   assert.equal((await cacheHitCount(app)) - beforeHit, 1, "INFO-only API hit measurement");
   assert.equal(await catalogLoads(app, published.id), loads + 1);
-  let separation: (CacheObservation & { elapsedMs: number }) | undefined;
+  let separation: (CacheObservation & ReturnType<typeof elapsed>) | undefined;
   if (variant === "b") {
     separation = await poll(
       `${label}: B remains cached beyond A's seven-second bound`,
       async () => ({
-        elapsedMs: Date.now() - started,
+        ...elapsed(),
         ...(await cacheObservation(app, key)),
       }),
       (value) => value.value === null || value.elapsedMs >= 7000,
@@ -70,7 +78,7 @@ export async function expiryBehavior(app: Application, variant: "a" | "b", label
   const expired = await poll(
     `${label}: actual provider expiry`,
     async () => ({
-      elapsedMs: Date.now() - started,
+      ...elapsed(),
       ...(await cacheObservation(app, key)),
     }),
     (value) => value.value === null && value.pttl === -2,

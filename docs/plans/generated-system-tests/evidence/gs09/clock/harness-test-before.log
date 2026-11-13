@@ -1,0 +1,40 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/system-harness.test.ts (4 tests | 2 failed) 307ms
+   × a poll keeps its full monotonic deadline when the wall clock steps forward 4ms
+   × until waits for a monotonic instant whatever the wall clock does 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/system-harness.test.ts > a poll keeps its full monotonic deadline when the wall clock steps forward
+Error: Timed out waiting for condition that holds after 400 ms; last observation: 0.07620300000000668
+ ❯ poll integration/harness/process.ts:163:9
+    161|     );
+    162|   } while (Date.now() < deadline);
+    163|   throw new Error(`Timed out waiting for ${name}; last observation: ${…
+       |         ^
+    164| }
+    165|
+ ❯ src/v2/system-harness.test.ts:22:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generator| src/v2/system-harness.test.ts > until waits for a monotonic instant whatever the wall clock does
+AssertionError: expected 0.06013400000000502 to be greater than or equal to 295
+ ❯ src/v2/system-harness.test.ts:55:39
+     53|   offset += step;
+     54|   await until(started + 300);
+     55|   expect(performance.now() - started).toBeGreaterThanOrEqual(295);
+       |                                       ^
+     56| });
+     57|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  16:22:29
+   Duration  421ms (tests 86%, transform 10%, import 3%, worker 1%)
+

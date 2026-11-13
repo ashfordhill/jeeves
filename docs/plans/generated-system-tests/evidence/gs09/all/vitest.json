@@ -1,0 +1,257 @@
+{
+  "numTotalTestSuites": 8,
+  "numPassedTestSuites": 8,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 14,
+  "numPassedTests": 14,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794608644524,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping",
+          "status": "passed",
+          "title": "B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping",
+          "duration": 99276.94604,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes",
+          "status": "passed",
+          "title": "B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes",
+          "duration": 71095.550648,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables",
+          "status": "passed",
+          "title": "B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables",
+          "duration": 39281.527561999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794609095214,
+      "endTime": 1794609322786.5276,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/core-delivery.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B01: edge publication commits exactly one counter increment and a matching receipt",
+          "status": "passed",
+          "title": "B01: edge publication commits exactly one counter increment and a matching receipt",
+          "duration": 38261.049142,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794609949744,
+      "endTime": 1794609988005.049,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/core.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B09 media: a Transcoder killed mid-encode, a jobs relay killed after its confirmed publish, and a broker outage with a job in hand and an intent waiting each yield one publication",
+          "status": "passed",
+          "title": "B09 media: a Transcoder killed mid-encode, a jobs relay killed after its confirmed publish, and a broker outage with a job in hand and an intent waiting each yield one publication",
+          "duration": 166033.994644,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794609326476,
+      "endTime": 1794609492509.9946,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/faults-media.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B06 recovery: immutable reads fall back while the cache is stopped or stalled, then fill and hit again without an API restart",
+          "status": "passed",
+          "title": "B06 recovery: immutable reads fall back while the cache is stopped or stalled, then fill and hit again without an API restart",
+          "duration": 59637.079390000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B09 counter: a worker killed before its SQL commit yields one increment; a committed event delivered again stays one",
+          "status": "passed",
+          "title": "B09 counter: a worker killed before its SQL commit yields one increment; a committed event delivered again stays one",
+          "duration": 55808.731854,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B09 broker: confirmed queued work survives a broker restart; running publishers and consumers reconnect without a process restart",
+          "status": "passed",
+          "title": "B09 broker: confirmed queued work survives a broker restart; running publishers and consumers reconnect without a process restart",
+          "duration": 90750.53042899999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B09 database: PostgreSQL stopping during work gives bounded failures; after restore and the documented restart, accepted work completes once",
+          "status": "passed",
+          "title": "B09 database: PostgreSQL stopping during work gives bounded failures; after restore and the documented restart, accepted work completes once",
+          "duration": 65327.257484,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794608791342,
+      "endTime": 1794609087953.2576,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/faults.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart",
+          "status": "passed",
+          "title": "B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart",
+          "duration": 108901.04336499999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794609826420,
+      "endTime": 1794609935321.0435,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/identity.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B08: signed multipart bytes become real published HLS, searchable once with counts and favorites",
+          "status": "passed",
+          "title": "B08: signed multipart bytes become real published HLS, searchable once with counts and favorites",
+          "duration": 127828.262113,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794609684174,
+      "endTime": 1794609812002.2622,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/media.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "status": "passed",
+          "title": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "duration": 132214.969957,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794608644673,
+      "endTime": 1794608776887.97,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B05: generated module, HTTP, queue, object and search connections return input-dependent results",
+          "status": "passed",
+          "title": "B05: generated module, HTTP, queue, object and search connections return input-dependent results",
+          "duration": 90674.886046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached",
+          "status": "passed",
+          "title": "B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached",
+          "duration": 64971.26137999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794609510516,
+      "endTime": 1794609676913.2615,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/wiring.system.test.ts"
+    }
+  ]
+}

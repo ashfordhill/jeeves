@@ -1,0 +1,21 @@
+{
+  "durationMonotonicS": 100.01782173900001,
+  "wallMinusMonotonicMs": 10753.163256999993,
+  "steps": [
+    {
+      "at": "2026-11-13T22:17:06.996Z",
+      "monotonicS": 12.582,
+      "stepMs": 3587
+    },
+    {
+      "at": "2026-11-13T22:17:42.804Z",
+      "monotonicS": 44.805,
+      "stepMs": 3586
+    },
+    {
+      "at": "2026-11-13T22:18:18.650Z",
+      "monotonicS": 77.07,
+      "stepMs": 3581
+    }
+  ]
+}

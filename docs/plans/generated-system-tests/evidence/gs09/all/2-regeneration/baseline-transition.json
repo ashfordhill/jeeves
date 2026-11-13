@@ -1,0 +1,44 @@
+{
+  "originalManifestHash": "c120a1ff55bf66c38ab3a7bd692ba4fc1e1ad1ff4ffd0a30ad847361b050f22f",
+  "freshBManifestHash": "babdefd713508c8ea35c48482f84a8a0b4fed149e68529b71802098e79376868",
+  "updatedManifestHash": "babdefd713508c8ea35c48482f84a8a0b4fed149e68529b71802098e79376868",
+  "intentionalChanges": [
+    {
+      "path": ".jeeves/inputs/design.json",
+      "ownership": "generator-metadata",
+      "before": "26ac68fa5b0ca89579d5af1d26bea1281bb5e15afbd2203a07137319c2927f18",
+      "after": "3eda7621907c3e5c64b28c0ac69e378c6327243cb684ef2d980e222d0da16e1a"
+    },
+    {
+      "path": ".jeeves/normalized.json",
+      "ownership": "generator-metadata",
+      "before": "ac4f98f9f1375beaf264ae87c6cd1ff7adec36aa5dd6c95f6c0c879171018f5c",
+      "after": "c06f911e3233a835b3869145edc41336ff1d107dee196907042e3bd3d74a591d"
+    },
+    {
+      "path": ".jeeves/report.json",
+      "ownership": "generator-metadata",
+      "before": "2f5dc3b8622747eb89b18a9a96dad03e3cb48772023a66549b665d2bfa5605b9",
+      "after": "364480def290fb152531fdd92175b9efdeb764e707305830a40503fc3a45a380"
+    },
+    {
+      "path": "diagnostics/generation.json",
+      "ownership": "generated-scaffold",
+      "before": "ac4f98f9f1375beaf264ae87c6cd1ff7adec36aa5dd6c95f6c0c879171018f5c",
+      "after": "c06f911e3233a835b3869145edc41336ff1d107dee196907042e3bd3d74a591d"
+    },
+    {
+      "path": "src/features/application-bindings.ts",
+      "ownership": "generated-scaffold",
+      "before": "16f92f1a05bce072df715b225fe57de413411dda4f03b8e618dbf7bc6fe6d3ac",
+      "after": "17bcc868eed50f283a8d4ad31e406f3eec74ed49671bcf653af7baa3cdfd76da"
+    },
+    {
+      "path": "src/features/positive-cache-bindings.ts",
+      "ownership": "generated-scaffold",
+      "before": "ed711b9967da6acbdc29253c36992570032b7aa706013c18cc37beaa30f68752",
+      "after": "1113723bd05a151fdf12677891b444510f386071489871d6a850dc44ffe5ae10"
+    }
+  ],
+  "verifiedAgainstSeparateFreshB": true
+}

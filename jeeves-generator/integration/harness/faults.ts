@@ -17,8 +17,9 @@ export async function faultContainer(
     (await serviceContainers(app, service)).some((row) => row.Id === id),
     "Foreign container refused",
   );
+  // `at` is a wall-clock instant for `docker logs --since`; durations and waits are monotonic.
   const at = new Date().toISOString();
-  const started = Date.now();
+  const started = performance.now();
   const result = await command(
     "docker",
     action === "stop" ? ["stop", "--time", "20", id] : [action, id],
@@ -28,7 +29,8 @@ export async function faultContainer(
     fault: `${service} ${action}`,
     container: id,
     at,
-    elapsedMs: Date.now() - started,
+    monotonicAt: started,
+    elapsedMs: Math.round(performance.now() - started),
     result: result.trim(),
   };
   app.record(boundary);
@@ -269,11 +271,11 @@ export class SqlSession {
     const marker = `gs-session-${randomUUID()}`;
     const start = this.output.length;
     this.child.stdin.write(`${sql}\n\\echo ${marker}\n`);
-    const deadline = Date.now() + timeoutMs;
+    const deadline = performance.now() + timeoutMs;
     while (!this.output.includes(marker, start)) {
       if (this.exitCode !== undefined)
         throw new Error(`${this.label} session ended: ${this.output.slice(start)}`);
-      if (Date.now() > deadline)
+      if (performance.now() > deadline)
         throw new Error(`${this.label} statement deadline: ${this.output.slice(start)}`);
       await new Promise((done) => setTimeout(done, 10));
     }
@@ -332,8 +334,9 @@ export async function processTable(app: Application, service: string, id: string
   return lines;
 }
 
-/** Wait for an instant without claiming anything happened; callers assert what follows. */
+/** Wait for a monotonic instant (`performance.now()`) without claiming anything happened;
+ * callers assert what follows. */
 export async function until(instant: number) {
-  const delay = instant - Date.now();
+  const delay = instant - performance.now();
   if (delay > 0) await new Promise((done) => setTimeout(done, delay));
 }

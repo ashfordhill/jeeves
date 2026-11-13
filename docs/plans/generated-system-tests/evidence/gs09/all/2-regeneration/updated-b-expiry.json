@@ -1,0 +1,33 @@
+{
+  "variant": "b",
+  "bounds": {
+    "initialMinimum": 13000,
+    "maximum": 16000,
+    "expireBy": 19000,
+    "earliestExpiry": 13000
+  },
+  "filled": {
+    "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+    "pttl": 15735,
+    "hits": 2
+  },
+  "separation": {
+    "elapsedMs": 7335,
+    "monotonicMs": 7335,
+    "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+    "pttl": 8399,
+    "hits": 29
+  },
+  "expired": {
+    "elapsedMs": 15756,
+    "monotonicMs": 15756,
+    "value": null,
+    "pttl": -2,
+    "hits": 59
+  },
+  "refilled": {
+    "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+    "pttl": 15736,
+    "hits": 61
+  }
+}

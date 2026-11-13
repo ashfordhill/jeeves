@@ -102,13 +102,13 @@ test("B06 recovery: immutable reads fall back while the cache is stopped or stal
     );
     let loads = await catalogLoads(app, published.id);
     const stoppedReads = [];
-    const outageStart = Date.now();
+    const outageStart = performance.now();
     // Spread over eight seconds so at least one 5 s reconnect attempt meets the stopped cache.
     for (let n = 0; n < 8; n++) {
       await until(outageStart + n * 1000);
       stoppedReads.push(await read());
     }
-    let lastFallback = Date.now();
+    let lastFallback = performance.now();
     app.record({ stoppedReads });
     for (const row of stoppedReads) {
       expect(row).toMatchObject({ status: 200, body: published });
@@ -139,13 +139,13 @@ test("B06 recovery: immutable reads fall back while the cache is stopped or stal
     try {
       loads = await catalogLoads(app, published.id);
       const stalledReads = [];
-      const start = Date.now();
+      const start = performance.now();
       // Spread over eight seconds so at least one 5 s reconnect attempt meets the frozen cache.
       for (let n = 0; n < 8; n++) {
         await until(start + n * 1000);
         stalledReads.push(await read());
       }
-      lastFallback = Date.now();
+      lastFallback = performance.now();
       app.record({ stalledReads });
       for (const row of stalledReads) {
         expect(row).toMatchObject({ status: 200, body: published });
@@ -323,12 +323,12 @@ test("B09 broker: confirmed queued work survives a broker restart; running publi
      * two failed 5 s reconnect attempts; no running process exits. */
     const duringOutage = async (
       label: string,
-      since: string,
+      since: number,
       eventId: string,
       total: number,
       running: Awaited<ReturnType<typeof processStates>>,
     ) => {
-      for (const instant of [Date.now(), Date.parse(since) + 12_000]) {
+      for (const instant of [performance.now(), since + 12_000]) {
         await until(instant);
         const publication = await timed(() => submit(app, aggregate, eventId));
         expect(publication).toMatchObject({ status: 503, body: { error: "UNAVAILABLE" } });
@@ -352,7 +352,13 @@ test("B09 broker: confirmed queued work survives a broker restart; running publi
     const running = await processStates(app);
     const first = await faultContainer(app, "local-broker", broker.Id, "stop");
     await brokerSignals(app, publisher, first.at, false, 15_000);
-    await duringOutage("broker down, consumers stopped", first.at, "broker:outage", 1, running);
+    await duringOutage(
+      "broker down, consumers stopped",
+      first.monotonicAt,
+      "broker:outage",
+      1,
+      running,
+    );
     await faultContainer(app, "local-broker", broker.Id, "start");
     await healthyCopies(app, "local-broker", 1);
     await app.save(
@@ -381,7 +387,7 @@ test("B09 broker: confirmed queued work survives a broker restart; running publi
     await brokerSignals(app, [...publisher, ...consumer], second.at, false, 15_000);
     await duringOutage(
       "broker down, consumer running",
-      second.at,
+      second.monotonicAt,
       "broker:missed",
       phase1.length,
       subscribed,

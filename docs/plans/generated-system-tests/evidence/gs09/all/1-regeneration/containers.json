@@ -1,0 +1,9 @@
+{
+  "containers": ["7c03ad673a47", "61971b7d8c0d", "a8e7decacb24", "5f75c51d79e7"],
+  "networks": ["7354fc3011ec"],
+  "volumes": [
+    "gs-53fced80-e588-4827-af57-f34d710f4a11-1_cache-catalog-cache",
+    "gs-53fced80-e588-4827-af57-f34d710f4a11-1_postgres-data"
+  ],
+  "images": ["gs-53fced80-e588-4827-af57-f34d710f4a11-1-app:latest"]
+}

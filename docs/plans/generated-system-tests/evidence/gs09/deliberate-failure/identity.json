@@ -1,0 +1,12 @@
+{
+  "id": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f",
+  "selected": ["faults"],
+  "commit": "d33e1fe391b7d72bfc6f6879efbadbf0bb1610bc",
+  "dirty": "M field-projects/generator-system/README.md\n M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/cleanup.ts\n M jeeves-generator/integration/harness/faults.ts\n M jeeves-generator/integration/harness/process.ts\n M jeeves-generator/integration/harness/regeneration.ts\n M jeeves-generator/integration/run.ts\n M jeeves-generator/integration/scenarios/core-delivery.system.test.ts\n M jeeves-generator/integration/scenarios/faults.system.test.ts\n?? jeeves-generator/integration/harness/suites.ts\n?? jeeves-generator/src/v2/system-harness.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

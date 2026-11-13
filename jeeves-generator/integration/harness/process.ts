@@ -137,6 +137,8 @@ export async function sourceSnapshot() {
   return { sha256: hash(JSON.stringify(files)), files };
 }
 
+/** Deadlines use the monotonic clock: a stepped wall clock must not cut a wait short.
+ * Observation stamps (`at`) stay wall-clock instants for matching provider logs. */
 export async function poll<T>(
   name: string,
   observe: () => Promise<T>,
@@ -144,7 +146,7 @@ export async function poll<T>(
   timeoutMs = 30_000,
   record?: (value: unknown) => void,
 ): Promise<T> {
-  const deadline = Date.now() + timeoutMs;
+  const deadline = performance.now() + timeoutMs;
   let last: unknown;
   do {
     try {
@@ -157,8 +159,8 @@ export async function poll<T>(
       record?.({ name, at: new Date().toISOString(), error: last });
     }
     await new Promise((done) =>
-      setTimeout(done, Math.min(250, Math.max(0, deadline - Date.now()))),
+      setTimeout(done, Math.min(250, Math.max(0, deadline - performance.now()))),
     );
-  } while (Date.now() < deadline);
+  } while (performance.now() < deadline);
   throw new Error(`Timed out waiting for ${name}; last observation: ${JSON.stringify(last)}`);
 }

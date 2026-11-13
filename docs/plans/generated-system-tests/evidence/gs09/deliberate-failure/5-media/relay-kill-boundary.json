@@ -1,0 +1,37 @@
+{
+  "blocked": {
+    "pid": 169,
+    "usename": "r_metadata__upload_api",
+    "client": "172.24.0.15",
+    "xact_start": "2026-11-13 22:54:29.581806+00",
+    "query_start": "2026-11-13 22:54:29.583834+00",
+    "state": "active",
+    "wait_event_type": "Lock",
+    "wait_event": "advisory",
+    "waited_ms": 178
+  },
+  "downstream": {
+    "queue": "upload-jobs",
+    "messageCount": 1,
+    "consumerCount": 0
+  },
+  "relayKilled": {
+    "fault": "app-upload-api kill",
+    "container": "99d1f4330d0859d325340708e4781d89fe5fd42f738358025537516f5c44c0c9",
+    "at": "2026-11-13T22:54:30.120Z",
+    "monotonicAt": 112665.11169,
+    "elapsedMs": 464,
+    "result": "99d1f4330d0859d325340708e4781d89fe5fd42f738358025537516f5c44c0c9"
+  },
+  "still": {
+    "pid": 169,
+    "usename": "r_metadata__upload_api",
+    "client": "172.24.0.15",
+    "xact_start": "2026-11-13 22:54:29.581806+00",
+    "query_start": "2026-11-13 22:54:29.583834+00",
+    "state": "active",
+    "wait_event_type": "Lock",
+    "wait_event": "advisory",
+    "waited_ms": 1002
+  }
+}

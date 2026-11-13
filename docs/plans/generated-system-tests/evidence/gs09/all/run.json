@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "id": "gs-53fced80-e588-4827-af57-f34d710f4a11",
+  "suite": "all",
+  "temporary": "/tmp/jeeves-system-fyXgNx",
+  "stacks": [
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-1",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-fyXgNx/1-regeneration",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/1-regeneration",
+      "ports": [42929, 36733, 35269]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-2",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-fyXgNx/2-regeneration",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/2-regeneration",
+      "ports": [35503, 41285, 35377]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-3",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-fyXgNx/3-regeneration",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/3-regeneration",
+      "ports": [34533, 35411, 44087]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-4",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/4-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/4-activity",
+      "ports": [43943, 44441, 33915]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-5",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/5-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/5-activity",
+      "ports": [46017, 41143, 33525]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-6",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/6-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/6-activity",
+      "ports": [39117, 46685, 35271]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-7",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/7-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/7-activity",
+      "ports": [42573, 37915, 41957]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-8",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/8-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/8-activity",
+      "ports": [36869, 44759, 46173]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-9",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/9-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/9-activity",
+      "ports": [43461, 44721, 43945]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-10",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-fyXgNx/10-media",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/10-media",
+      "ports": [41745, 43727, 46413]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-11",
+      "fixture": "wiring",
+      "application": "/tmp/jeeves-system-fyXgNx/11-wiring",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/11-wiring",
+      "ports": [44123, 40957, 41773]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-12",
+      "fixture": "wiring",
+      "application": "/tmp/jeeves-system-fyXgNx/12-wiring",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/12-wiring",
+      "ports": [46539, 38581, 41945]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-13",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-fyXgNx/13-media",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/13-media",
+      "ports": [32995, 39073, 46877]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-14",
+      "fixture": "identity",
+      "application": "/tmp/jeeves-system-fyXgNx/14-identity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/14-identity",
+      "ports": [33373, 35761, 41981]
+    },
+    {
+      "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-15",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-fyXgNx/15-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/all/15-activity",
+      "ports": [43445, 45841, 32935]
+    }
+  ]
+}

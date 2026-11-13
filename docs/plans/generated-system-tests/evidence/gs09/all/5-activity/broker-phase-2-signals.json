@@ -1,0 +1,60 @@
+[
+  {
+    "service": "app-activity-api",
+    "what": "broker publish events",
+    "container": "cf63762b829db58ee915f31bce8c23a57c1f21afb5ee0306a1769339ab005344",
+    "failure": {
+      "service": "app-activity-api",
+      "container": "cf63762b829db58ee915f31bce8c23a57c1f21afb5ee0306a1769339ab005344",
+      "at": "2026-11-13T22:29:49.983252961Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "activity-api",
+        "what": "broker publish events",
+        "error": "Error: AMQP publisher unavailable"
+      }
+    },
+    "available": {
+      "service": "app-activity-api",
+      "container": "cf63762b829db58ee915f31bce8c23a57c1f21afb5ee0306a1769339ab005344",
+      "at": "2026-11-13T22:30:10.060782665Z",
+      "entry": {
+        "level": "info",
+        "event": "broker",
+        "tile": "activity-api",
+        "what": "broker publish events",
+        "state": "available"
+      }
+    }
+  },
+  {
+    "service": "app-counter",
+    "what": "broker consume events--counter",
+    "container": "31191c93365d35f0c261f38898bac49bfa5759a13920bccbe86a71faea53cafc",
+    "failure": {
+      "service": "app-counter",
+      "container": "31191c93365d35f0c261f38898bac49bfa5759a13920bccbe86a71faea53cafc",
+      "at": "2026-11-13T22:29:49.984088528Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "counter",
+        "what": "broker consume events--counter",
+        "error": "Error: AMQP consumer unavailable"
+      }
+    },
+    "available": {
+      "service": "app-counter",
+      "container": "31191c93365d35f0c261f38898bac49bfa5759a13920bccbe86a71faea53cafc",
+      "at": "2026-11-13T22:30:10.061410487Z",
+      "entry": {
+        "level": "info",
+        "event": "broker",
+        "tile": "counter",
+        "what": "broker consume events--counter",
+        "state": "available"
+      }
+    }
+  }
+]

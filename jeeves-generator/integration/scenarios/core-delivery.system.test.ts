@@ -131,7 +131,7 @@ test("B02: competing copies commit each repeated identity once and both public A
         const key = `Failover:${service}:${index}`;
         await controlContainer(app, service, target.Id, "stop");
         try {
-          const started = Date.now();
+          const started = performance.now();
           await poll(
             `${service} edge submission and read after copy ${index} stop`,
             () => Promise.all([submit(app, key, `${key}:event`), readTotal(app, key)]),
@@ -139,7 +139,7 @@ test("B02: competing copies commit each repeated identity once and both public A
             routingBoundMs,
             (value) => app.record(value),
           );
-          const observedMs = Date.now() - started;
+          const observedMs = Math.round(performance.now() - started);
           app.record({
             failover: service,
             stopped: target.Id,

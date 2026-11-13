@@ -1,0 +1,16 @@
+{
+  "containers": [
+    "c4ddea0ff0c7",
+    "1856c4b40ec3",
+    "22677ace9282",
+    "605e563b7c3e",
+    "05a8be06f9b8",
+    "7b4356cbb719"
+  ],
+  "networks": ["fb7c32446805"],
+  "volumes": [
+    "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-4_broker-data",
+    "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-4_postgres-data"
+  ],
+  "images": ["gs-07479114-f3c5-45ee-87fd-92f686c31c4f-4-app:latest"]
+}

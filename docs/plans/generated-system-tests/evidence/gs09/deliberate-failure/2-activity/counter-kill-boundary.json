@@ -1,0 +1,31 @@
+{
+  "blocked": {
+    "pid": 93,
+    "client": "172.24.0.5",
+    "xact_start": "2026-11-13 22:49:12.162734+00",
+    "query_start": "2026-11-13 22:49:12.163486+00",
+    "state": "active",
+    "wait_event_type": "Lock",
+    "wait_event": "transactionid",
+    "waited_ms": 4
+  },
+  "delivery": {
+    "queue": "events--counter",
+    "messageCount": 0,
+    "unacknowledged": 1,
+    "consumerCount": 1
+  },
+  "killed": {
+    "omitted": true
+  },
+  "still": {
+    "pid": 93,
+    "client": "172.24.0.5",
+    "xact_start": "2026-11-13 22:49:12.162734+00",
+    "query_start": "2026-11-13 22:49:12.163486+00",
+    "state": "active",
+    "wait_event_type": "Lock",
+    "wait_event": "transactionid",
+    "waited_ms": 606
+  }
+}

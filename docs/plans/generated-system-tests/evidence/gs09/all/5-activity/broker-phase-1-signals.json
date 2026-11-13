@@ -1,0 +1,31 @@
+[
+  {
+    "service": "app-activity-api",
+    "what": "broker publish events",
+    "container": "cf63762b829db58ee915f31bce8c23a57c1f21afb5ee0306a1769339ab005344",
+    "failure": {
+      "service": "app-activity-api",
+      "container": "cf63762b829db58ee915f31bce8c23a57c1f21afb5ee0306a1769339ab005344",
+      "at": "2026-11-13T22:29:18.038107064Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "activity-api",
+        "what": "broker publish events",
+        "error": "Error: AMQP publisher unavailable"
+      }
+    },
+    "available": {
+      "service": "app-activity-api",
+      "container": "cf63762b829db58ee915f31bce8c23a57c1f21afb5ee0306a1769339ab005344",
+      "at": "2026-11-13T22:29:41.692940970Z",
+      "entry": {
+        "level": "info",
+        "event": "broker",
+        "tile": "activity-api",
+        "what": "broker publish events",
+        "state": "available"
+      }
+    }
+  }
+]

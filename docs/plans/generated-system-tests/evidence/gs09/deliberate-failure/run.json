@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "id": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f",
+  "suite": "faults",
+  "temporary": "/tmp/jeeves-system-wUraJs",
+  "stacks": [
+    {
+      "project": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-1",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-wUraJs/1-regeneration",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/deliberate/1-regeneration",
+      "ports": [35265, 41257, 46541]
+    },
+    {
+      "project": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-2",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-wUraJs/2-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/deliberate/2-activity",
+      "ports": [35857, 45549, 45829]
+    },
+    {
+      "project": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-3",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-wUraJs/3-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/deliberate/3-activity",
+      "ports": [39599, 35337, 44733]
+    },
+    {
+      "project": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-4",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-wUraJs/4-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/deliberate/4-activity",
+      "ports": [36131, 38255, 39495]
+    },
+    {
+      "project": "gs-07479114-f3c5-45ee-87fd-92f686c31c4f-5",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-wUraJs/5-media",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/gs09/deliberate/5-media",
+      "ports": [43655, 45885, 45787]
+    }
+  ]
+}

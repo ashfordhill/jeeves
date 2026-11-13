@@ -1,0 +1,25 @@
+{
+  "project": "gs-53fced80-e588-4827-af57-f34d710f4a11-6",
+  "before": {
+    "containers": [
+      "3d3fa60a01c9",
+      "7c5fce529a54",
+      "971d9650c34a",
+      "907052aa9784",
+      "a58a7e7b7b4c",
+      "9a94e826e8dd"
+    ],
+    "networks": ["b284e3e20bb0"],
+    "volumes": [
+      "gs-53fced80-e588-4827-af57-f34d710f4a11-6_broker-data",
+      "gs-53fced80-e588-4827-af57-f34d710f4a11-6_postgres-data"
+    ],
+    "images": ["gs-53fced80-e588-4827-af57-f34d710f4a11-6-app:latest"]
+  },
+  "after": {
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  }
+}

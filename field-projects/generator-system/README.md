@@ -14,10 +14,33 @@ pnpm test:generated --suite=all
 ```
 
 `core`, `wiring`, `identity`, `media`, `regeneration` and `faults` are implemented. Unknown or future suite names fail; `all` prints the implemented
-suites it selects. These Docker/network tests run separately from `pnpm check` and the studio
-E2E tests. Vitest runs files serially, with no test retries and no green skips for unavailable
-Docker, failed setup or missing observations. Setup failures and application assertion failures
-have distinct phases in each stack's `result.json`.
+suites it selects, and fails if any selected suite ran no scenario file. These Docker/network
+tests run separately from `pnpm check` and the studio E2E tests. Vitest runs files serially,
+with no test retries and no green skips for unavailable Docker, failed setup or missing
+observations. Setup failures and application assertion failures have distinct phases in each
+stack's `result.json`.
+
+## Which suite to run
+
+After changing a template, its runtime or its wiring, run each suite that installs it (local
+times are this host's, warm, including cleanup; the [GS09 review](../../docs/plans/generated-system-tests/review.md)
+has the coverage map, costs and gaps):
+
+| Template or area | Suites |
+| --- | --- |
+| Event counter | core, media, faults |
+| Module stubs, module/HTTP/queue/object/search clients | wiring (and every suite: all fixtures use stubs) |
+| Positive cache read | wiring, regeneration, media, faults |
+| Verified identity (sign-in) | identity, media, faults |
+| Favorites | identity, media |
+| Owned multipart, video HLS (FFmpeg), asset lifecycle, outbox | media, faults |
+| Search projection and search query | media (wiring's search is a stub over a seeded index) |
+| Broker client (`amqp.ts`, delivery, tile loop) | core, wiring, media, faults |
+| `update:v2` and settings bindings | regeneration |
+| Harness, Compose/local scripts, Dockerfile, edge | all |
+
+Core takes about 4–5 minutes; wiring, identity, media and regeneration about 2–3 each; faults
+about 8; all about 21–23.
 
 Each run exports the saved diagram through the default registry's `export:v2`, checks the
 installed template selections, attaches only the explicit application-owned map, performs a
@@ -179,6 +202,14 @@ Run generated suites and browser checks in separate phases: changing Compose net
 interrupt Chromium module loading. Keep image builds separate from offline checks too, so they
 do not compete with existing test deadlines.
 
+Waits, deadlines and durations use the monotonic clock (`performance.now()`); wall-clock
+instants are kept only to match provider logs (`docker logs --since`) and database timestamps.
+B10's expiry bounds are the exception: Valkey expires keys by the host's wall clock, so B10
+measures on it and records monotonic time beside each observation. A host whose wall clock
+steps by more than B10's 3 s margins (this WSL2 host steps +3.58 s every 32 s) can fail B10
+when a step lands near a fill or an expiry; the failure message shows the step. Diagnose it as
+the host clock, not by rerunning until it passes.
+
 `integration/author-activity.ts`, `integration/author-wiring.ts`, `integration/author-identity.ts` and `integration/author-regeneration.ts` record the studio commands
 used to author the saved diagrams. They are development helpers, never application runtime
 code. To rebuild the diagrams deliberately:
@@ -198,7 +229,9 @@ JSON credential members) and the private transient identity inputs, bearer token
 Use a fresh artifact directory for each invocation. A source change during setup fails the run.
 
 Each completed stack captures its observations and behavioral result before removing its
-containers, networks and volumes with exact project-label checks. `stack-cleanup.json` retains
+containers, networks, volumes and built image tags with exact project-label checks (a tag is
+removed by its exact `<project>-…` name, an untagged rebuild leftover by ID; provider and base
+images are never touched). `stack-cleanup.json` retains
 the actual removal inventory; the outer cleanup remains idempotent for interruption/recovery.
 Stacks execute sequentially, so expanded suites do not retain completed providers. Private
 application directories, runtime secrets and transient redaction files remain until every global
@@ -261,6 +294,8 @@ stable, use a fresh artifact directory and restore or fix the diagnosed prerequi
 new invocation. Do not rerun a failing invariant until it happens to pass.
 
 Local cost measurements and the controlled-failure proof are recorded in
-[GS03 evidence](../../docs/plans/generated-system-tests/evidence/gs03/README.md). Hosted execution
-is pending until the owner publishes these commits. Verify the first hosted run before making
-its status required; only the owner changes branch protection.
+[GS03 evidence](../../docs/plans/generated-system-tests/evidence/gs03/README.md); the
+[GS09 review](../../docs/plans/generated-system-tests/review.md) recommends core as the PR gate
+and the expanded suites as weekly/manual runs. Hosted execution is pending until the owner
+publishes these commits. Verify the first hosted run before making its status required; only
+the owner changes branch protection.

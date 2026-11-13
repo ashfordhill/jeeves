@@ -6,6 +6,7 @@ import { Application } from "./harness/application.ts";
 import { cleanupRun, type RunRecord } from "./harness/cleanup.ts";
 import { runSanitizer, sanitizeArtifacts } from "./harness/evidence.ts";
 import { command, json, repository, sourceSnapshot, writeJson } from "./harness/process.ts";
+import { implementedSuites, missingSuites } from "./harness/suites.ts";
 
 const args = process.argv.slice(2);
 if (args[0] === "--cleanup") {
@@ -13,7 +14,7 @@ if (args[0] === "--cleanup") {
     throw new Error("Usage: test:generated --cleanup /absolute/run.json");
   await cleanupRun(resolve(args[1]));
 } else {
-  const suites = ["core", "wiring", "identity", "media", "regeneration", "faults"];
+  const suites = implementedSuites;
   let suite = "core";
   let artifacts = "";
   for (const arg of args) {
@@ -38,7 +39,7 @@ if (args[0] === "--cleanup") {
     stacks: [],
   };
   await writeJson(recordPath, run);
-  const started = Date.now();
+  const started = performance.now();
   let interrupted: string | undefined;
   const onInterrupt = (signal: string) => {
     interrupted = signal;
@@ -97,6 +98,15 @@ if (args[0] === "--cleanup") {
     const clean = await runSanitizer(record.stacks.map((stack) => stack.application));
     await writeFile(join(artifacts, "vitest.log"), clean(output));
     console.log(clean(output));
+    // `passWithNoTests: false` fails an empty run; this also fails `all` when one selected
+    // suite's scenario files are gone while the others still pass.
+    const results = await json<{ testResults: { name: string }[] }>(join(artifacts, "vitest.json"));
+    const missing = missingSuites(
+      selected,
+      results.testResults.map((file) => file.name),
+    );
+    if (missing.length)
+      throw new Error(`Selected suites ran no scenario file: ${missing.join(", ")}`);
   } catch (error) {
     failed = error;
     const record = await json<RunRecord>(recordPath);
@@ -141,7 +151,7 @@ if (args[0] === "--cleanup") {
       selected,
       outcome: failed || interrupted ? "failed" : "passed",
       signal: interrupted,
-      elapsedMs: Date.now() - started,
+      elapsedMs: Math.round(performance.now() - started),
       interruptedRunRecovery: `pnpm test:generated --cleanup ${recordPath}`,
     });
     process.off("SIGINT", onInterrupt);
