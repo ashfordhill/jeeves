@@ -36,10 +36,12 @@ test("clicks the link tab, then a kind, to add a linked tile", async ({ page, ti
   await expect(tabs).toHaveAttribute("data-glyph", "link");
   await expect(tile(page, "Redirect service").locator(".lane-container-add")).toHaveCount(1);
   await openFan(page, "Redirect service", LINK_TAB);
-  // All eleven kinds, captioned, a row per group in a fixed order; after a service all fit.
+  // All eleven kinds, captioned, a row per group in a fixed order; after a service all fit but
+  // the Worker, which takes its work only from a queue or topic.
   await expect(fan(page)).toHaveCount(11);
   await expect(page.locator(".board-pull .board-fan-caption")).toHaveText(FAN.flat());
-  await expect(page.locator('.board-pull [aria-disabled="true"]')).toHaveCount(0);
+  await expect(page.locator('.board-pull [aria-disabled="true"]')).toHaveCount(1);
+  await expect(fanItem(page, "Worker service")).toHaveAttribute("aria-disabled", "true");
   const rows = await fan(page).evaluateAll((items) =>
     items.map((item) => (item as HTMLElement).style.top),
   );
@@ -282,7 +284,8 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
     await pickFrom(page, "User", "Add action", "Consume");
     await ready(page);
     // Each kind from a tile it may follow: the action's entries, then a service's stores, then
-    // the Uploads service's queue, external API and worker. A tile links to at most four.
+    // the Uploads service's queue and external API, then the queue's worker. A tile links to at
+    // most four.
     // A new message channel is a work queue, so its label reads Queue.
     const plan: [from: string, name: string, kind: string, icon: string, label: string][] = [
       ["Consume", "Microservice", "service", "server", "Service"],
@@ -295,7 +298,7 @@ test("creates each of the eleven kinds by mouse, with its icon and label, and Un
       ["Microservice", "Object storage", "object-store", "archive", "Object storage"],
       ["Uploads", "Message channel", "queue", "list", "Queue"],
       ["Uploads", "External API", "external-api", "plug", "External API"],
-      ["Uploads", "Worker service", "worker", "cpu", "Worker"],
+      ["Message channel", "Worker service", "worker", "cpu", "Worker"],
     ];
     for (const [index, [from, name, kind, icon, label]] of plan.entries()) {
       await tile(page, from).click({ position: { x: 20, y: 12 } });

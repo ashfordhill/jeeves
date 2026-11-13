@@ -77,9 +77,9 @@ future generator's frontend templates) which user flow each service serves.
   small legend at the lower left shows only the dashed sample, **Async**, with no help text and
   nothing to open (contract question 12); solid is the default reading. It stays at screen size
   and lets the pointer through to the board. Every line of the four studies follows this
-  (`studio-lanes.test.ts`). The link table still allows a direct asynchronous call between
-  applications or an external API, drawn dashed with no channel; no study uses one, and chat's
-  review accepts it, flagging only a style the table refuses for its channel.
+  (`studio-lanes.test.ts`). A dashed line always goes through a Queue or Topic tile; a line
+  between two services, or between a service and an external API, is always a direct call. A
+  Worker is reached only from a Queue or Topic.
 - At a crossing, a small gap separates the routes; shared stems meet at a tile's port. Where
   several routes are equally close to a mouse click, **Choose relationship** lists their
   endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
@@ -514,20 +514,22 @@ The selected tile has a red **X** centred on its top edge (faint until the point
 user has none. The X removes the tile and links each tile before it to each tile after it, wherever
 the [link table](../jeeves/CATALOG.md#lanes-and-links) allows, unless the first already reaches the
 second another way. A restitched link is asynchronous when either link it replaces was, and a lane
-entry passes on to its action. Removing Click events in TinyURL links the Redirect service to the
-Analytics worker directly, asynchronously.
+entry passes on to its action.
 
 An action's X removes the action and its entries, unless that would cut tiles off; then nothing
 changes and the notice names them ("Removing Watch would cut off API."). An action with no
 entries, or whose tiles are also reached another way, goes at once, and the user is selected.
 
 When the restitching can't reach some tiles (a resource doesn't link onward, so nothing replaces
-the links through it), a panel opens at the bottom centre of the canvas instead. It lists the tiles
-that would be cut off, with their icons, and marks them, and the tile itself, with a red dashed
-ring on the board. **Remove N tiles** removes them all; **Cancel**, Escape, clicking empty paper or selecting
-anything else changes nothing. Removing the Redirect service in TinyURL takes the URL cache, Click
-events and the Analytics worker with it ("Remove 4 tiles"), since a lane can't start at a cache or
-a queue. The URL database stays: the Shorten service still writes it.
+the links through it, or the table refuses the replacement), a panel opens at the bottom centre of
+the canvas instead. It lists the tiles that would be cut off, with their icons, and marks them, and
+the tile itself, with a red dashed ring on the board. **Remove N tiles** removes them all;
+**Cancel**, Escape, clicking empty paper or selecting anything else changes nothing. Removing
+Click events in TinyURL takes the Analytics worker with it ("Remove 2 tiles"): a worker takes its
+work only from a queue or topic, so the Redirect service can't link to it directly. Removing the
+Redirect service takes the URL cache, Click events and the Analytics worker with it ("Remove 4
+tiles"), since a lane can't start at a cache or a queue. The URL database stays: the Shorten
+service still writes it.
 
 A selected line has a red X on a stretch of it that no other line shares, or at its middle when
 every stretch is shared. It removes that connection or entry, unless a tile would be cut off;
@@ -764,9 +766,9 @@ possible; those commands are checked against the design before they are offered
   when a service already reaches it), **long-line** (a reader's line to a store whose last user
   is far down a pipeline; advice only, never a tile to shorten it);
 - **line-style:** a line whose style contradicts its channel, redrawn as the link table makes
-  it, with its module links reconnected. A dashed line between applications, which the table
-  allows, is accepted. A line the lanes can't remove first (it is all that reaches its store) is
-  fixed in Source & diagnostics;
+  it, with its module links reconnected. A dashed line between two services or to an external
+  API is flagged too. A line the lanes can't remove first (it is all that reaches its tile) can't
+  be redrawn by mouse or chat, and its fix says so;
 - **warning:** the other design warnings, with what to do.
 
 The service keeps the review in the loop: a fresh `reviewDesign` reaches the model before
@@ -1325,6 +1327,9 @@ and all twenty components, with nothing omitted and no findings.
   click its X), every other lane command on the design is refused with "Fix the lanes first."
   Removing it is saved only when that leaves no lane error, so a design with two such entries, or
   one whose entry is its tile's only way in ("would cut off"), can't be edited at all.
+- A design stored with a dashed line between applications, or a line straight into a Worker, loads
+  and reports it the same way; where removing that line would cut a tile off, no command can repair
+  it.
 - A warning's mark scales with the board: at TinyURL's both-rails fit (0.56) it is about 12px
   across. The system's inspector lists every warning at full size.
 - Keeping the lanes' lines apart is checked on the three studies and the board's own test cases.

@@ -710,7 +710,7 @@ describe("studio chat tools", () => {
     expect(studioLinkRules.map(linkRuleText)).toEqual(
       expect.arrayContaining([
         "Application -> queue: async (Publishes).",
-        "External API -> application: sync or async, default sync (Calls).",
+        "External API -> service, redirect, identity, billing, uploads, gateway: sync (Calls).",
         "User -> action: sync.",
         "Action -> CDN: sync (a lane entry).",
       ]),

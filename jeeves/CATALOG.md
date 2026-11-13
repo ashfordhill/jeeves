@@ -124,28 +124,29 @@ action; its links are its entries), **application** (the Service and API kinds e
 default mode and the connection a new link gets; a pair with no row is refused. A sync link is a
 direct call where the caller waits (solid line); an async link does not wait (dashed line). The
 canvas legend shows only the dashed sample, Async: every study's async link is a queue link.
-Application → application, application → external API and external API → application still
-allow async, a direct call drawn dashed with no channel, which chat's review accepts; it flags a
-line whose style the table refuses for its channel. Style follows each relationship, so a
-worker's store request remains solid after a queue. Target arrowheads mean caller → target for
-requests, including reads, and publisher → channel → consumer for messaging. The connection's
-interaction follows the mode (Request / response or Asynchronous); its security is Private network.
+A line between two applications, or between an application and an external API, is always a
+direct call: to hand work off without waiting, put a Queue or Topic between them (owner,
+2026-11-12). Chat's review flags a stored line whose style the table refuses. Style follows each
+relationship, so a worker's store request remains solid after a queue. Target arrowheads mean
+caller → target for requests, including reads, and publisher → channel → consumer for messaging.
+The connection's interaction follows the mode (Request / response or Asynchronous); its security
+is Private network.
 
 | Source → target | Modes | Default | Connection |
 | --- | --- | --- | --- |
 | user → action | sync | sync | none (the user's line to its action) |
-| action → `service`, `redirect`, `identity`, `notification`, `billing`, `uploads`, `gateway` | sync | sync | an entry |
+| action → `service`, `redirect`, `identity`, `billing`, `uploads`, `gateway` | sync | sync | an entry |
 | action → `cdn` | sync | sync | an entry |
-| application → application | sync, async | sync | calls, "Calls", HTTP |
-| application → `external-api` | sync, async | sync | calls, "Calls", HTTP |
+| application → application (not `worker` or `notification`) | sync | sync | calls, "Calls", HTTP |
+| application → `external-api` | sync | sync | calls, "Calls", HTTP |
 | application → `queue` | async | async | depends-on, "Publishes", Messaging, `channelUse: publish` |
 | application → `database` | sync | sync | uses-database, "Reads & writes", SQL |
 | application → `cache` | sync | sync | uses-database, "Reads & writes", Redis |
 | application → `object-store`, `search` | sync | sync | depends-on, "Uses", HTTP |
 | application → `cdn` | sync | sync | depends-on, "Uses", HTTP |
 | `queue` → application | async | async | depends-on, "Consumes", Messaging, `channelUse: consume` |
-| `external-api` → application | sync, async | sync | calls, "Calls", HTTP |
-| `cdn` → application | sync | sync | calls, "Calls", HTTP |
+| `external-api` → application (not `worker` or `notification`) | sync | sync | calls, "Calls", HTTP |
+| `cdn` → application (not `worker` or `notification`) | sync | sync | calls, "Calls", HTTP |
 | `cdn` → `object-store` | sync | sync | depends-on, "Uses", HTTP |
 
 So the user reaches a store or a third party only through a service; stores are end tiles (no row
@@ -158,6 +159,11 @@ and reports it as a finding ("Produce can't link to Original videos; an action r
 refused. That removal is saved only when it leaves no lane error: a design with two such entries,
 or one whose entry is its tile's only way in (removing it would cut the tile off), takes no edit
 at all (an open owner question).
+
+A Worker (or an older Notifications tile) is reached only from a Queue or Topic: its process answers
+no requests. A design stored with a dashed line between applications or a line straight into a
+Worker loads the same way and reports it; where removing that line would cut a tile off, no command
+can repair it.
 
 **One writer per store.** A link into a store (database, search index, cache, object storage)
 writes when it comes from the store's owner and reads otherwise (`studioStoreAccess(design,
@@ -173,9 +179,9 @@ pair's default: async for queue links, sync otherwise (`studioDefaultLinkMode`;
 is refused, in plain words ("A cache can't link onward.", "Publishing to a queue is asynchronous,
 not a request."). Existing link modes remain preserved source intent; normal line authoring edits only the label.
 
-The table records design intent only. No template-support state is kept: a future code generator
-will mark the tiles and links it has no template for (a badge and a blueprint finding) and never
-refuse them, keeping design intent and template availability apart.
+The table offers only links the generator can use (owner, 2026-11-12): a dashed line always goes
+through a Queue or Topic, and a Worker is reached only from one, because its process answers no
+requests. A gap found in a field project is recorded in [template gaps](../docs/template-gaps.md).
 
 Caps (`laneLimits`): at most 5 outgoing links per tile and 4 entries per lane (per action), and a
 tile has at most one entry. The entry cap was raised from 3 for the marketplace study, whose

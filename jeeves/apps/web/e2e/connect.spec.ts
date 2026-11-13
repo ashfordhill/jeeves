@@ -261,14 +261,21 @@ test("connects containers from anywhere in the Detailed view", async ({ page }) 
     await page.keyboard.press("c");
     // From a module row: the gesture is the container's (tile level).
     const row = page.locator('.lane-container-row[data-module="stats-data"]');
+    // A worker takes its work only from a queue or topic: the tip says so, and Escape cancels.
     await dragOnto(page, row, tile(page, "Analytics worker"));
-    await expect(tile(page, "Analytics worker")).toHaveClass(/is-drop-over/);
+    await expect(page.locator(".board-connect-tip")).toHaveText(
+      "Stats API can't link to Analytics worker. A worker takes its work from a queue or topic. Put one between them.",
+    );
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+    await dragOnto(page, row, tile(page, "Shorten service"));
+    await expect(tile(page, "Shorten service")).toHaveClass(/is-drop-over/);
     await page.mouse.up();
     const added = async () =>
       (await design(page, id)).connections
         .filter((c) => !before.connections.some((old) => old.id === c.id))
         .map((c) => `${c.from.element} ${c.to.element}`);
-    await expect.poll(added).toEqual(["stats-api analytics"]);
+    await expect.poll(added).toEqual(["stats-api shorten"]);
     // A click on a row still opens its module.
     await row.click();
     await expect(

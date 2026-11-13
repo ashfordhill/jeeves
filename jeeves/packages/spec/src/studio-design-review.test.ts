@@ -11,9 +11,11 @@ import {
   type DesignReviewFinding,
   designReview,
 } from "./studio-design-review.ts";
+import { studioArchitectureExample } from "./studio-examples/index.ts";
 import { buildModulePattern, type ModulePattern } from "./studio-module-patterns.ts";
 import type { StudioCommand } from "./studio-operations.ts";
 import { buildSupportedAuthoringCommand } from "./supported-authoring.ts";
+import { validateDesign } from "./validate.ts";
 
 /** Patterns with v3's names (their own defaults are neutral since V3-19). */
 const pattern = (design: DesignDocument, ...steps: ModulePattern[]) =>
@@ -59,6 +61,27 @@ const module = (host: string, id: string, kind: string) =>
   ({ type: "addModule", host, id, kind }) as StudioCommand;
 const connect = (id: string, slot: string, target: { tile: string } | { module: string }) =>
   ({ type: "connectModule", module: id, slot, target }) as StudioCommand;
+/** The TinyURL study with one more saved call, as an old or hand-made design could have. */
+const tinyurlWith = (
+  id: string,
+  from: string,
+  to: string,
+  interaction: "Asynchronous" | "Request / response",
+) =>
+  edited(studioArchitectureExample("studio-tinyurl").design, (draft) => {
+    draft.connections.push({
+      id,
+      kind: "calls",
+      from: { element: from },
+      to: { element: to },
+      planned: { label: "Calls", protocol: "HTTP", interaction, security: "Private network" },
+    });
+    draft.architecture?.studio?.connections.push({ connection: id, settings: {} });
+  });
+const laneMessages = (design: DesignDocument) =>
+  validateDesign(design)
+    .filter((item) => item.code === "LANE_INVALID")
+    .map((item) => item.message);
 
 describe("the design review chat runs after each change (V3-09)", () => {
   it("lists every module's status and names a lead that still needs something, with its fix", () => {
@@ -309,7 +332,7 @@ describe("the design review chat runs after each change (V3-09)", () => {
       commands: [{ type: "removeLink", link: "download-files" }],
     });
     expect(findings(fix(design, reach), "user-reaches-store")).toEqual([]);
-    // A store only the action reaches can't lose its line by command: the fix says where to go.
+    // A store only the action reaches can't lose its line by command: the fix says so.
     const only = entry(
       edited(base, (draft) => {
         draft.connections = draft.connections.filter((item) => item.id !== "api-files");
@@ -322,7 +345,7 @@ describe("the design review chat runs after each change (V3-09)", () => {
     );
     const [alone] = findings(only, "user-reaches-store");
     expect(alone?.commands).toBeUndefined();
-    expect(alone?.fix).toContain("fix it in Source & diagnostics");
+    expect(alone?.fix).toContain("so no mouse or chat command can do it.");
   });
 
   it("flags a long line to a far store as advice, with no command", () => {
@@ -368,27 +391,46 @@ describe("the design review chat runs after each change (V3-09)", () => {
     const fixed = fix(design, style);
     expect(findings(fixed, "line-style")).toEqual([]);
     expect(moduleStatus(fixed, "watch-api-video-details-reader")?.status).toBe("template");
-    // A line its store hangs off can't be removed first: the fix says where to change it.
+    // A line its store hangs off can't be removed first: the fix says no command can redraw it.
     const [alone] = findings(dashed(base, "watch-api-hot-metadata"), "line-style");
     expect(alone?.commands).toBeUndefined();
     expect(alone?.fix).toBe(
-      "Make it solid: removing it would cut Hot metadata off, and the lanes refuse new links while it is there, so fix its interaction in Source & diagnostics.",
+      "Make it solid: removing it would cut Hot metadata off, and the lanes refuse new links while it is there, so no mouse or chat command can redraw it.",
     );
-    // A dashed call between two applications is one the link table allows: accepted.
-    const async = runStudioCommands(base, [
-      {
-        type: "addTile",
-        from: { tile: "watch-api" },
-        side: "after",
-        link: "async",
-        tile: { id: "recommend", name: "Recommendations", kind: "service" },
-        linkId: "watch-api-recommend",
-      },
-    ]);
+    // A dashed call between two applications is refused: it is a direct call.
+    expect(() =>
+      runStudioCommands(base, [
+        {
+          type: "addTile",
+          from: { tile: "watch-api" },
+          side: "after",
+          link: "async",
+          tile: { id: "recommend", name: "Recommendations", kind: "service" },
+          linkId: "watch-api-recommend",
+        },
+      ]),
+    ).toThrow(
+      "A link to a service is a direct call. To hand work off without waiting, put a queue or topic between them.",
+    );
+  });
+
+  it("flags a stored dashed line between two services and redraws it solid", () => {
+    const design = tinyurlWith("stats-shorten", "stats-api", "shorten", "Asynchronous");
+    expect(laneMessages(design).some((message) => message.includes("is a direct call"))).toBe(true);
+    const styles = findings(design, "line-style");
+    expect(styles).toHaveLength(1);
+    expect(styles[0]?.link).toBe("stats-shorten");
+    expect(styles[0]?.commands?.map((item) => item.type)).toEqual(["removeLink", "linkTiles"]);
+  });
+
+  it("reports a stored line straight into a worker, with no line-style finding", () => {
+    const design = tinyurlWith("redirect-analytics", "redirect", "analytics", "Request / response");
     expect(
-      async.connections.find((item) => item.id === "watch-api-recommend")?.planned.interaction,
-    ).toBe("Asynchronous");
-    expect(findings(async, "line-style")).toEqual([]);
+      laneMessages(design).some((message) =>
+        message.includes("takes its work from a queue or topic"),
+      ),
+    ).toBe(true);
+    expect(findings(design, "line-style")).toEqual([]);
   });
 
   it("passes the design warnings on with what to do", () => {

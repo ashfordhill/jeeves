@@ -10697,3 +10697,70 @@ describes the strict-contract layer in Data model, Chat (`declareReviewScope`,
 and PF05 retire those.
 **For the next unit.** PF03 next. `jeeves/PLAN.md` now ends at `## Status`; later units add to it
 only where their change makes a sentence false (rule 8).
+
+## 2026-11-12 — PF03: Remove direct async links and direct calls to a worker
+
+**What changed.**
+
+- `jeeves/packages/spec/src/studio-links.ts`: `either` is gone. Application → application,
+  application → external API and external API → application are sync only. A new `callableKinds`
+  (the application kinds but `worker` and `notification`) limits the targets of application →
+  application, external API → application and CDN → application, and an action no longer enters a
+  Notifications tile. An async link to an application or external API is refused with "A link to …
+  is a direct call. To hand work off without waiting, put a queue or topic between them."; a link
+  into a Worker or Notifications tile with "A worker takes its work from a queue or topic. Put one
+  between them." A queue still feeds a worker.
+- `studio-design-review.ts` (text only): the header comment, and the two fallback fixes now say no
+  mouse or chat command can redraw it / do it. `jeeves/apps/server/src/chat/tools.ts`: the link
+  table's preamble says async always goes through a queue or topic.
+- Effect: removing TinyURL's Click events now takes the Analytics worker with it ("Remove 2
+  tiles") instead of linking Redirect service straight to it.
+- Tests: the 5 new unit tests (2 in `studio-lanes`, 1 in `studio-lane-commands`, 2 in
+  `studio-design-review`); the 14 named unit tests and 5 named e2e tests changed as the plan says.
+- Docs: `jeeves/CATALOG.md` (link table, Worker paragraph, the direct-call sentence, the table's
+  purpose); `docs/studio.md` (Lines, line-style, Limits, and the Removing example, rule 8);
+  `docs/chat-evals.md` (live reports no longer replay).
+
+**Checks.**
+
+- check: passed before any change (106 files, 764 tests). After the code change exactly the 14
+  named tests failed. Final: passed (106 files, 769 tests), including the frozen v1 and
+  processes-off pins, unchanged.
+- e2e: `pnpm test:e2e` 82 passed (6.4 min) on the first run; no reruns needed.
+- build: passed.
+- evals: `pnpm eval:chat` exit 0 with the same scripted scores (good 100/100/100 and 100; patterns
+  86.3/98.2/98.2; bad 1.7/18.5/18.5 and 5). `--report=docs/evals/v3-19/scripted.json` replays
+  identically; `live-codex-sol.json.gz` fails with "Replay context drift", as the plan expects.
+- mouse: `pf03-check.spec.ts` 2 passed (1440×900, 1280×800), no page errors. Its first run failed
+  only on its own selector (in Detailed the queue's lines start at modules), so the TinyURL step
+  now looks in Simple. 4 screenshots in `plans/production-foundations/evidence/pf03/`; the spec
+  and its projects are deleted.
+- `grep -n "either" jeeves/packages/spec/src/studio-links.ts` prints nothing (also `command grep`).
+
+**Differences from the plan.**
+
+- `flags a line whose style contradicts…`: the test sends `addTile` with `link: "async"` (the
+  plan says `linkTiles`); it now expects that refusal to be thrown.
+- `restitch: removing a CDN…`: with `alsoRemove: ["analytics"]` its follow-on assertions (the
+  dashed Redirect → Analytics call and the solid store write after it) can't hold; they now expect
+  no `redirect-analytics` connection or line and no `analytics-write` line.
+- `always list the fan's eleven kinds…`: its full-tile check now leaves out the Worker, which
+  keeps its own pair refusal (the pair is checked before the cap).
+- `keep the fan's list for the canvas…`: Notifications moved from the after-Shorten loop to the
+  after-a-queue loop beside Worker.
+- `remove.spec.ts` keeps its "Redirect service is selected" check; `connect.spec.ts` keeps its
+  `is-drop-over` check, now on Shorten service.
+- New tests 4 and 5 are two tests sharing a `tinyurlWith` helper. Inserted doc paragraphs are
+  wrapped at about 100 columns; the words are the plan's.
+
+**Noticed.**
+
+- `studioEntryKinds`'s comment in `studio-links.ts` ("any Service except a worker, any API") now
+  also excludes Notifications, and CATALOG's `worker` row says "typically after a queue"; left as
+  they are (change nothing else).
+- `linkRuleText`'s two-mode branch in `tools.ts` is now unreachable: no row has two modes.
+- `jeeves_e2e` holds an "E2E Every kind" project created at 23:03 UTC, before this unit began;
+  not deleted.
+
+**For the next unit.** PF04 next. The V3-19 live reports no longer replay (expected); the
+scripted report still does.

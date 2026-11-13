@@ -98,13 +98,14 @@ describe("link rules", () => {
       for (const source of sources)
         for (const target of targets) expected.add(`${source}>${target}:${mode}`);
     };
-    allow(apps, [...apps, "database", "cache", "object-store", "search", "cdn"], "sync");
-    allow(apps, [...apps, "external-api", "queue"], "async");
+    // A worker (and the older Notifications kind) is reached only from a queue.
+    const callable = apps.filter((kind) => kind !== "worker" && kind !== "notification");
+    allow(apps, [...callable, "database", "cache", "object-store", "search", "cdn"], "sync");
+    allow(apps, ["queue"], "async");
     allow(apps, ["external-api"], "sync");
     allow(["queue"], apps, "async");
-    allow(["external-api"], apps, "sync");
-    allow(["external-api"], apps, "async");
-    allow(["cdn"], [...apps, "object-store"], "sync");
+    allow(["external-api"], callable, "sync");
+    allow(["cdn"], [...callable, "object-store"], "sync");
 
     const actual = new Set<string>();
     for (const source of studioKinds)
@@ -135,10 +136,9 @@ describe("link rules", () => {
     expect(link("redirect", "cache", "sync")).toMatchObject({ planned: { protocol: "Redis" } });
     expect(link("service", "search", "sync")).toMatchObject({ kind: "depends-on" });
     expect(link("cdn", "redirect", "sync")).toMatchObject({ kind: "calls" });
-    expect(link("service", "worker", "async")).toMatchObject({
-      kind: "calls",
-      planned: { interaction: "Asynchronous", protocol: "HTTP" },
-    });
+    expect(link("service", "worker", "async")).toBe(
+      "A worker takes its work from a queue or topic. Put one between them.",
+    );
     expect(link("redirect", "queue", "async")).toMatchObject({
       planned: { label: "Publishes", protocol: "Messaging", interaction: "Asynchronous" },
       settings: { channelUse: "publish" },
@@ -160,18 +160,18 @@ describe("link table", () => {
   it("holds the owner's rules as rows with allowed and default modes", () => {
     expect(rows).toEqual([
       "user>action: sync (sync)",
-      "action>service,redirect,identity,notification,billing,uploads,gateway: sync (sync)",
+      "action>service,redirect,identity,billing,uploads,gateway: sync (sync)",
       "action>cdn: sync (sync)",
-      "application>application: sync|async (sync)",
-      "application>external: sync|async (sync)",
+      "application>service,redirect,identity,billing,uploads,gateway: sync (sync)",
+      "application>external: sync (sync)",
       "application>queue: async (async)",
       "application>database: sync (sync)",
       "application>cache: sync (sync)",
       "application>object-store,search: sync (sync)",
       "application>cdn: sync (sync)",
       "queue>application: async (async)",
-      "external>application: sync|async (sync)",
-      "cdn>application: sync (sync)",
+      "external>service,redirect,identity,billing,uploads,gateway: sync (sync)",
+      "cdn>service,redirect,identity,billing,uploads,gateway: sync (sync)",
       "cdn>object-store: sync (sync)",
     ]);
     // Each pair has at most one row, and every row's default is one of its modes.
@@ -221,9 +221,9 @@ describe("link table", () => {
       ok: true,
       value: { settings: { channelUse: "consume" } },
     });
-    expect(studioLinkDefaults("service", "worker")).toMatchObject({
-      ok: true,
-      value: { planned: { interaction: "Request / response" } },
+    expect(studioLinkDefaults("service", "worker")).toEqual({
+      ok: false,
+      message: "A worker takes its work from a queue or topic. Put one between them.",
     });
   });
 
@@ -262,7 +262,9 @@ describe("link table", () => {
     expect(studioLinkRefusal("external-api", "cache")).toBe(
       "An external API can only call an application, not a cache.",
     );
-    expect(studioLinkRefusal("external-api", "billing", "async")).toBeUndefined();
+    expect(studioLinkRefusal("external-api", "billing", "async")).toBe(
+      "A link to a billing service is a direct call. To hand work off without waiting, put a queue or topic between them.",
+    );
     expect(studioLinkRefusal("cdn", "database")).toBe(
       "A CDN fronts only an application or object storage, not a database.",
     );
@@ -272,7 +274,33 @@ describe("link table", () => {
     expect(studioLinkRefusal("gateway", "search", "async")).toBe(
       "A link to a search index is a request; it can't be asynchronous.",
     );
-    expect(studioLinkRefusal("billing", "external-api", "async")).toBeUndefined();
+    expect(studioLinkRefusal("billing", "external-api", "async")).toBe(
+      "A link to an external API is a direct call. To hand work off without waiting, put a queue or topic between them.",
+    );
+  });
+
+  it("refuse a dashed line between applications or to an external API: it is a direct call", () => {
+    const direct = (noun: string) =>
+      `A link to ${noun} is a direct call. To hand work off without waiting, put a queue or topic between them.`;
+    expect(studioLinkRefusal("service", "service", "async")).toBe(direct("a service"));
+    expect(studioLinkRefusal("service", "external-api", "async")).toBe(direct("an external API"));
+    expect(studioLinkRefusal("external-api", "service", "async")).toBe(direct("a service"));
+  });
+
+  it("reach a worker or a Notifications tile only from a queue or topic", () => {
+    expect(studioLinkRule("service", "service")?.modes).toEqual(["sync"]);
+    expect(studioLinkRule("queue", "worker")?.modes).toEqual(["async"]);
+    for (const [source, target] of [
+      ["service", "worker"],
+      ["external-api", "worker"],
+      ["cdn", "worker"],
+      ["service", "notification"],
+      ["action", "notification"],
+    ] as const)
+      expect(studioLinkRule(source, target)).toBeUndefined();
+    expect(studioLinkRefusal("service", "worker")).toBe(
+      "A worker takes its work from a queue or topic. Put one between them.",
+    );
   });
 });
 
@@ -296,16 +324,7 @@ describe("tile types and entries", () => {
       expect(studioLinkFanKinds).not.toContain(kind);
 
     expect([...studioEntryKinds].sort()).toEqual(
-      [
-        "billing",
-        "cdn",
-        "gateway",
-        "identity",
-        "notification",
-        "redirect",
-        "service",
-        "uploads",
-      ].sort(),
+      ["billing", "cdn", "gateway", "identity", "redirect", "service", "uploads"].sort(),
     );
   });
 

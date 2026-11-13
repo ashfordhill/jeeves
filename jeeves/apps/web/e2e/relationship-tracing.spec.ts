@@ -150,6 +150,10 @@ test("removing a selected tile traces its surviving neighbour and Undo restores 
   await tile(page, "Click events")
     .getByRole("button", { name: "Remove Click events", exact: true })
     .click();
+  await page
+    .getByRole("dialog", { name: "Remove Click events" })
+    .getByRole("button", { name: "Remove 2 tiles", exact: true })
+    .click();
   await expect(tile(page, "Click events")).toHaveCount(0);
   await expect(tile(page, "Redirect service")).toHaveClass(/selected/);
   await expect(page.locator(".studio-inspector").getByLabel("Name", { exact: true })).toHaveValue(

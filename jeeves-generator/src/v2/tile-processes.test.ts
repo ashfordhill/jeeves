@@ -267,8 +267,15 @@ describe("local.tile-processes", () => {
         type: "addTile",
         from: { tile: "go" },
         side: "after",
+        tile: { id: "mail-jobs", name: "Mail jobs", kind: "queue" },
+        linkId: "go-mail-jobs",
+      },
+      {
+        type: "addTile",
+        from: { tile: "mail-jobs" },
+        side: "after",
         tile: { id: "mail", name: "Mail", kind: "notification" },
-        linkId: "go-mail",
+        linkId: "mail-jobs-mail",
       },
       {
         type: "addTile",

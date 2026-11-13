@@ -330,3 +330,7 @@ build fair, and why did the cheap model's turns fail? 2.0.0 answers both.
   2 SDK retries; list-price estimates for Haiku 5.5 and Sonnet 5.5 (checked 2026-11-11).
 
 The live results: [V3-19 evals](evals/v3-19/README.md).
+
+Since PF03 changed the link table chat's tools send, the recorded V3-19 live reports no longer
+replay (their requests differ); they stay as the record of that run. `pnpm eval:chat` still runs the
+scripted arms.

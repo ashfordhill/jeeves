@@ -499,22 +499,18 @@ describe("removeTile and removeLink", () => {
     ]);
     expect(connection(removed.design, "cdn-redirect")).toBeUndefined();
 
-    // A queue's removal joins publisher and consumer with an asynchronous call.
-    const direct = run(design, { type: "removeTile", tile: "click-events" }).design;
-    expect(connection(direct, "redirect-analytics")).toMatchObject({
-      kind: "calls",
-      planned: { interaction: "Asynchronous" },
-    });
+    // A queue's removal no longer joins publisher and consumer: a worker is reached only from a
+    // queue or topic, so the Analytics worker it cuts off goes with it.
+    const direct = run(design, {
+      type: "removeTile",
+      tile: "click-events",
+      alsoRemove: ["analytics"],
+    }).design;
+    expect(connection(direct, "redirect-analytics")).toBeUndefined();
     const directGraph = laneGraph(direct);
-    expect(directGraph.edges.find((edge) => edge.id === "redirect-analytics")).toMatchObject({
-      async: true,
-      dashed: true,
-    });
-    // Restitching preserves the store request's own interaction, even after an async call.
-    expect(directGraph.edges.find((edge) => edge.id === "analytics-write")).toMatchObject({
-      async: false,
-      dashed: false,
-    });
+    expect(directGraph.edges.find((edge) => edge.id === "redirect-analytics")).toBeUndefined();
+    // The worker's store request goes with it.
+    expect(directGraph.edges.find((edge) => edge.id === "analytics-write")).toBeUndefined();
 
     // The URL database stays reachable through the Shorten service.
     const unlinked = run(design, { type: "removeLink", link: "redirect-db" }).design;
@@ -555,6 +551,25 @@ describe("removeTile and removeLink", () => {
     });
     expect(studioOf(removed).components?.map((item) => item.host)).not.toContain("redirect");
     expect(studioOf(removed).components?.map((item) => item.host)).not.toContain("analytics");
+  });
+
+  it("removing a queue takes the worker it feeds, never linking the publisher straight to it", () => {
+    const design = tinyurl();
+    expect(planRemoveTile(design, "click-events")).toEqual({
+      ok: true,
+      value: { strands: ["analytics"] },
+    });
+    const removed = run(design, {
+      type: "removeTile",
+      tile: "click-events",
+      alsoRemove: ["analytics"],
+    }).design;
+    expect(removed.elements.some((element) => element.id === "analytics")).toBe(false);
+    expect(
+      removed.connections.some(
+        (item) => item.from.element === "redirect" && item.to.element === "analytics",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -702,8 +717,16 @@ describe("link fan options", () => {
         "edge external-api",
       ],
     );
-    // After a service every kind fits; after a store nothing does.
-    expect(kinds(linkFanOptions(design, { tile: "redirect" }))).toEqual([...studioLinkFanKinds]);
+    // After a service every kind but the Worker fits; after a store nothing does.
+    expect(kinds(linkFanOptions(design, { tile: "redirect" }))).toEqual(
+      studioLinkFanKinds.map((kind) => (kind === "worker" ? "-" : kind)),
+    );
+    expect(linkFanOptions(design, { tile: "redirect" })[1]).toEqual({
+      kind: "worker",
+      group: "application",
+      refusal:
+        "Redirect service can't link to a worker. A worker takes its work from a queue or topic. Put one between them.",
+    });
     expect(linkFanOptions(design, { tile: "url-db" })[0]).toEqual({
       kind: "service",
       group: "application",
@@ -748,7 +771,7 @@ describe("link fan options", () => {
     );
     // From a lane with no action, the options are those of its new action.
     expect(kinds(linkFanOptions(emptyDesign(), { lane: "download" }))).toEqual(kinds(entries));
-    // A full tile (five links) refuses every kind with the cap.
+    // A full tile (five links) refuses every kind with the cap; the Worker keeps its own reason.
     const busy = ["geo", "audit"].reduce(
       (current, id) =>
         run(current, {
@@ -760,9 +783,13 @@ describe("link fan options", () => {
         }).design,
       design,
     );
-    expect(new Set(linkFanOptions(busy, { tile: "redirect" }).map((o) => o.refusal))).toEqual(
-      new Set(["Redirect service already has 5 links; the most is 5."]),
-    );
+    expect(
+      new Set(
+        linkFanOptions(busy, { tile: "redirect" })
+          .filter((o) => o.kind !== "worker")
+          .map((o) => o.refusal),
+      ),
+    ).toEqual(new Set(["Redirect service already has 5 links; the most is 5."]));
   });
 
   it("each offered kind is what addTile adds, and a refused one is refused with the same reason", () => {
@@ -800,7 +827,7 @@ describe("link fan options", () => {
   it("keep the fan's list for the canvas: addTile still takes every tile kind", () => {
     const design = tinyurl();
     // Gateway and the legacy kinds aren't offered, yet existing callers and chat history add them.
-    for (const kind of ["gateway", "billing", "redirect", "notification"] as const) {
+    for (const kind of ["gateway", "billing", "redirect"] as const) {
       expect(studioLinkFanKinds).not.toContain(kind);
       const added = run(design, {
         type: "addTile",
@@ -808,6 +835,17 @@ describe("link fan options", () => {
         side: "after",
         tile: tile(`new-${kind}`, `New ${kind}`, kind),
         linkId: `shorten-new-${kind}`,
+      }).design;
+      expect(binding(added, `new-${kind}`)?.settings.kind).toBe(kind);
+    }
+    // A Worker and the older Notifications tile are added after a queue.
+    for (const kind of ["worker", "notification"] as const) {
+      const added = run(design, {
+        type: "addTile",
+        from: { tile: "click-events" },
+        side: "after",
+        tile: tile(`new-${kind}`, `New ${kind}`, kind),
+        linkId: `click-events-new-${kind}`,
       }).design;
       expect(binding(added, `new-${kind}`)?.settings.kind).toBe(kind);
     }
@@ -855,11 +893,13 @@ describe("connect options", () => {
       tile: laneActionNode("upload"),
       refusal: "Only the user links to Shorten; link Shorten to a tile to give it an entry.",
     });
-    // Forward from Redirect service: a merge into Analytics worker; a second link is refused.
+    // Forward from Redirect service: Analytics worker takes its work only from a queue; a second
+    // link is refused.
     const redirect = connectOptions(design, "redirect");
     expect(redirect.find((option) => option.tile === "analytics")).toEqual({
       tile: "analytics",
-      link: { from: { tile: "redirect" }, to: "analytics", mode: "sync" },
+      refusal:
+        "Redirect service can't link to Analytics worker. A worker takes its work from a queue or topic. Put one between them.",
     });
     expect(redirect.find((option) => option.tile === "url-cache")).toEqual({
       tile: "url-cache",

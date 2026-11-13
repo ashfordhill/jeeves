@@ -11,7 +11,7 @@
  *   for more than one concern), **user-reaches-store**, **long-line** (a line to a far store);
  * - **line-style:** a line whose style contradicts its channel (a dashed line the link table
  *   doesn't allow, or a solid one where it must be dashed); a dashed line between applications,
- *   which the table allows, is accepted;
+ *   or to an external API, is flagged too;
  * - **warning:** the design warnings, with what to do.
  *
  * Commands are checked against the design before they are offered; a fix that would be refused
@@ -430,7 +430,7 @@ export function designReview(
       message: `The user reaches ${name(edge.target)} directly: a service checks every request before a store.`,
       fix: users.length
         ? `Remove the action's line to ${name(edge.target)}: ${list(users.map(name))} already reach${users.length > 1 ? "" : "es"} it.`
-        : `Put a service between them (the action → a service → ${name(edge.target)}). The lanes refuse new links while this line is there, so fix it in Source & diagnostics.`,
+        : `Put a service between them (the action → a service → ${name(edge.target)}). The lanes refuse new links while this line is there, so no mouse or chat command can do it.`,
     };
     add(
       users.length && lane
@@ -521,7 +521,7 @@ export function designReview(
         ? redrawn
         : {
             ...finding,
-            fix: `Make it ${style}: removing it would cut ${to} off, and the lanes refuse new links while it is there, so fix its interaction in Source & diagnostics.`,
+            fix: `Make it ${style}: removing it would cut ${to} off, and the lanes refuse new links while it is there, so no mouse or chat command can redraw it.`,
           },
     );
   }

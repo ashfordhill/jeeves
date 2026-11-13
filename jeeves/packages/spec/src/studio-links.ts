@@ -60,6 +60,11 @@ const roleKinds: Record<StudioLinkRole, readonly StudioLinkEnd[]> = {
   queue: ["queue"],
   store: ["database", "search", "cache", "object-store"],
 };
+/** Application kinds another tile can call directly. A worker (and the older Notifications
+ * kind) answers no requests: it takes its work only from a queue or topic. */
+const callableKinds: readonly StudioKind[] = applicationKinds.filter(
+  (kind) => kind !== "worker" && kind !== "notification",
+);
 
 /** An end's role in the link table; `undefined` for `browser`, which takes no links. */
 export function studioLinkRole(kind: StudioLinkEnd): StudioLinkRole | undefined {
@@ -90,16 +95,15 @@ const calls: StudioLinkConnection = { kind: "calls", label: "Calls", protocol: "
 const uses: StudioLinkConnection = { kind: "depends-on", label: "Uses", protocol: "HTTP" };
 const sync = { modes: ["sync"], defaultMode: "sync" } as const;
 const async = { modes: ["async"], defaultMode: "async" } as const;
-const either = { modes: ["sync", "async"], defaultMode: "sync" } as const;
 
 /**
  * The link table, by source role and target role. Exported so a blueprint can publish it.
  * - The user links only to an action, by request.
  * - An action's links are its lane entries: the kinds in `studioEntryKinds`, by request.
  * - An application links to anything but the user: stores, search and the CDN by request; a
- *   queue asynchronously (publish); an application or external API sync or async.
+ *   queue asynchronously (publish); an application or external API by request.
  * - A queue sits between applications: it feeds only an application, asynchronously (consume).
- * - An external API calls an application, sync or async.
+ * - An external API calls an application, by request.
  * - A CDN fronts an application or object storage, by request.
  * - Stores are end tiles: no row has a store as its source.
  */
@@ -108,12 +112,18 @@ export const studioLinkRules: readonly StudioLinkRule[] = [
   {
     source: "action",
     target: "application",
-    targets: ["service", "redirect", "identity", "notification", "billing", "uploads", "gateway"],
+    targets: ["service", "redirect", "identity", "billing", "uploads", "gateway"],
     ...sync,
   },
   { source: "action", target: "cdn", ...sync },
-  { source: "application", target: "application", ...either, connection: calls },
-  { source: "application", target: "external", ...either, connection: calls },
+  {
+    source: "application",
+    target: "application",
+    targets: callableKinds,
+    ...sync,
+    connection: calls,
+  },
+  { source: "application", target: "external", ...sync, connection: calls },
   {
     source: "application",
     target: "queue",
@@ -158,8 +168,8 @@ export const studioLinkRules: readonly StudioLinkRule[] = [
       settings: { channelUse: "consume" },
     },
   },
-  { source: "external", target: "application", ...either, connection: calls },
-  { source: "cdn", target: "application", ...sync, connection: calls },
+  { source: "external", target: "application", targets: callableKinds, ...sync, connection: calls },
+  { source: "cdn", target: "application", targets: callableKinds, ...sync, connection: calls },
   { source: "cdn", target: "store", targets: ["object-store"], ...sync, connection: uses },
 ];
 
@@ -219,6 +229,8 @@ function pairRefusal(source: StudioLinkEnd, target: StudioLinkEnd): string {
   if (role === "store") return `${Noun(source)} can't link onward.`;
   if (source === "browser" || target === "browser")
     return "Browser apps take no links; the user is the client.";
+  if (target === "worker" || target === "notification")
+    return `${Noun(target)} takes its work from a queue or topic. Put one between them.`;
   if (role === "queue") return `A queue feeds only an application, not ${noun(target)}.`;
   if (target === "queue") return `Only an application publishes to a queue, not ${noun(source)}.`;
   if (role === "external")
@@ -236,6 +248,9 @@ function modeRefusal(rule: StudioLinkRule, target: StudioLinkEnd, mode: StudioLi
   if (rule.source === "queue")
     return "A queue feeds an application asynchronously, not by request.";
   if (rule.target === "queue") return "Publishing to a queue is asynchronous, not a request.";
+  const role = studioLinkRole(target);
+  if (mode === "async" && (role === "application" || role === "external"))
+    return `A link to ${noun(target)} is a direct call. To hand work off without waiting, put a queue or topic between them.`;
   return mode === "async"
     ? `A link to ${noun(target)} is a request; it can't be asynchronous.`
     : `A link to ${noun(target)} is asynchronous, not a request.`;

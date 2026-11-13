@@ -136,7 +136,7 @@ export function linkRuleText(rule: StudioLinkRule): string {
 }
 /** The link table, generated from `studioLinkRules` so the two can't drift. */
 const linkTable = [
-  "Source -> target: modes. A pair not listed is refused. An application is a Service or API kind other than the CDN; a store is a database, search index, cache or object storage. Sync is a direct call where the caller waits (solid); async is sent without waiting (dashed): through a queue or topic, or a direct async call between applications where the table allows it.",
+  "Source -> target: modes. A pair not listed is refused. An application is a Service or API kind other than the CDN; a store is a database, search index, cache or object storage. Sync is a direct call where the caller waits (solid); async is sent without waiting (dashed), always through a queue or topic.",
   ...studioLinkRules.map(linkRuleText),
 ];
 const actionWords = `${studioActionDefaults.download} (download) or ${studioActionDefaults.upload} (upload)`;

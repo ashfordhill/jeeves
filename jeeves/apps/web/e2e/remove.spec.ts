@@ -27,7 +27,7 @@ test("the user's line to an action has no X, and Delete leaves it", async ({
   expect((await design(page, id)).revision).toBe(1);
 });
 
-test("removes a tile with its X, restitches its links and undoes", async ({
+test("removes a tile with its X and the tile it cuts off, and undoes", async ({
   page,
   tinyurl: id,
 }) => {
@@ -35,21 +35,21 @@ test("removes a tile with its X, restitches its links and undoes", async ({
   await tile(page, "Click events")
     .getByRole("button", { name: "Remove Click events", exact: true })
     .click();
+  // A worker takes its work only from a queue, so the Analytics worker goes with Click events.
+  const removal = page.getByRole("dialog", { name: "Remove Click events" });
+  await expect(removal).toContainText("Analytics worker");
+  await removal.getByRole("button", { name: "Remove 2 tiles", exact: true }).click();
 
   await ready(page);
-  await expect(tiles(page)).toHaveCount(10);
-  await expect(lines(page)).toHaveCount(11);
+  await expect(tiles(page)).toHaveCount(9);
+  await expect(lines(page)).toHaveCount(9);
   // The first predecessor (here the Redirect service) is selected.
   await expect(tile(page, "Redirect service")).toHaveClass(/selected/);
   const removed = await design(page, id);
   expect(removed.revision).toBe(2);
   expect(removed.elements.map((e) => e.id)).not.toContain("click-events");
-  // Publisher and consumer are joined by an asynchronous call.
-  expect(removed.connections.find((c) => c.id === "redirect-analytics")).toMatchObject({
-    from: { element: "redirect" },
-    to: { element: "analytics" },
-    planned: { interaction: "Asynchronous" },
-  });
+  expect(removed.elements.map((e) => e.id)).not.toContain("analytics");
+  expect(removed.connections.map((c) => c.id)).not.toContain("redirect-analytics");
 
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(tiles(page)).toHaveCount(11);
@@ -57,5 +57,6 @@ test("removes a tile with its X, restitches its links and undoes", async ({
   const restored = await design(page, id);
   expect(restored.revision).toBe(3);
   expect(restored.elements.map((e) => e.id)).toContain("click-events");
+  expect(restored.elements.map((e) => e.id)).toContain("analytics");
   expect(restored.connections.map((c) => c.id)).not.toContain("redirect-analytics");
 });
