@@ -1,0 +1,17 @@
+down at 20:19:57.562301065
+down exit=0 at 20:20:08.060527666
+image rm at 20:20:08.062166708
+Untagged: jeeves-br02-app:latest
+Deleted: sha256:b7b185fe436738c2cfc1449a81bc594d7c16389bd0159a4d6bd0b12a4ce55a3b
+Untagged: jeeves-br02-media:latest
+Deleted: sha256:d2e27aae0f91993757aa10e710a44df541bb6c4838760333948523451aa4bcf9
+image rm exit=0
+app copy removed (with .runtime) at 20:20:18.689302676
+after cleanup at 20:20:18.691426340:
+jeeves-br02 containers: 0
+jeeves-br02 volumes: 0
+jeeves-br02 networks: 0
+jeeves-br02 images: 0
+port 45820 free
+port 45821 free
+port 45822 free

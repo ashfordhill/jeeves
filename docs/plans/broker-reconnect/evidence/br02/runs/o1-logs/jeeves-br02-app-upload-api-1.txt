@@ -1,0 +1,1 @@
+2026-11-13T20:16:52.571593380Z {"level":"error","event":"failure","tile":"upload-api","what":"broker publish upload-jobs","error":"Error: AMQP publisher unavailable"}

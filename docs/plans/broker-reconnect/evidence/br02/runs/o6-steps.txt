@@ -1,0 +1,11 @@
+boundary 2026-11-13T20:19:12Z
+upload at 20:19:12.087677437
+[{"kind":"fixture","title":"V3-17 o6: quetzalamber","size":15584953,"uploadId":"5c8630ce-7026-4299-8ecc-ad1cb5a0eb20","videoId":"ea3be0f6-326e-4916-ac02-fb5a0c28545f","jobId":"e57f09a6-1099-441b-8085-ebee3b0f186d","attemptId":"2d5a6d17-ebe2-46d0-b292-2cc1c3ce4a4f","state":"pending"}]
+B=ea3be0f6-326e-4916-ac02-fb5a0c28545f
+ready at 20:19:12.394057777
+{"step":"ready","label":"o6-ready","args":["ea3be0f6-326e-4916-ac02-fb5a0c28545f","180"],"ready":{"status":200,"afterMs":4051}}
+search at 20:19:16.474604600
+{"step":"search","label":"o6-search","args":["quetzalamber","ea3be0f6-326e-4916-ac02-fb5a0c28545f"],"search":{"status":200,"found":1,"afterMs":290}}
+published count:
+1
+done at 20:19:16.927179211

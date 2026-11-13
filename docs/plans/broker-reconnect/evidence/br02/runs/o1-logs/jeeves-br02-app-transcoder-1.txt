@@ -1,0 +1,2 @@
+2026-11-13T20:16:52.571570855Z {"level":"error","event":"failure","tile":"transcoder","what":"broker publish processing-events","error":"Error: AMQP publisher unavailable"}
+2026-11-13T20:16:52.571591450Z {"level":"error","event":"failure","tile":"transcoder","what":"broker consume upload-jobs","error":"Error: AMQP consumer unavailable"}

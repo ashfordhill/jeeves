@@ -1,0 +1,15 @@
+{
+  "directory": "/home/ash/github/jeeves/field-projects/youtube/v4/app",
+  "check": true,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 96,
+    "keep": 11
+  },
+  "keepChanged": [],
+  "override": [".gitignore", "compose.yaml", "infra/edge/nginx.conf", "package.json"],
+  "remove": [],
+  "orphan": []
+}

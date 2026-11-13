@@ -4,7 +4,7 @@
 import { localLogins } from "../features/local-bindings.ts";
 import { createPostgres } from "./postgres.ts";
 import { randomUUID } from "node:crypto";
-import { createPublisher } from "./amqp.ts";
+import { createPublisher, type BrokerState } from "./amqp.ts";
 import type {
   CacheClient,
   DatabaseReadWriter,
@@ -102,12 +102,14 @@ const broker = {
   confirmTimeoutMs: 5000,
 };
 /** A work queue or topic a module publishes to, with publisher confirms; each message gets the
- * module's `messageId`, or else a fresh ID, and `key` is not used locally. A lost broker
- * connection fails the process, as a loop's does. Probe: opening the broker and a confirm channel. */
+ * module's `messageId`, or else a fresh ID, and `key` is not used locally. After a lost broker
+ * connection it reconnects every 5 s, telling `onState`, as a loop's consumer does; a publish
+ * while the broker is away fails at once. Probe: opening the broker and a confirm channel. */
 export async function queuePublisher(
   scope: ProcessScope,
   log: ProbeLog,
   binding: { queue: string; mode: "work-queue" | "topic" },
+  onState?: BrokerState,
 ): Promise<QueuePublisher> {
   const topic = binding.mode === "topic";
   let publisher: Awaited<ReturnType<typeof createPublisher>> | undefined;
@@ -118,7 +120,7 @@ export async function queuePublisher(
       publisher = await createPublisher(
         broker,
         { exchange: topic ? binding.queue : "", routingKey: topic ? "" : binding.queue },
-        { onFatal: scope.fail },
+        { onState },
       );
     },
   );

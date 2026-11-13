@@ -14,7 +14,7 @@ import { createOwnedUploads } from "../runtime/owned-upload.ts";
 import { periodic, runProcess } from "../runtime/process.ts";
 import { createTileGuard } from "../runtime/tile-guard.ts";
 import { notImplementedRoutes } from "../runtime/tile-http.ts";
-import { createFailureLog, createNotImplementedLog, logStarted } from "../runtime/tile-process.ts";
+import { brokerState, createFailureLog, createNotImplementedLog, logStarted } from "../runtime/tile-process.ts";
 import { type Tx, transaction } from "../runtime/transaction.ts";
 
 /** Compiled configuration: nothing is read from disk at runtime. */
@@ -186,7 +186,7 @@ await runProcess(async (scope) => {
       }),
       onFailure: (what, error, extra) => failure(`${what} upload-api-multipart-uploads`, error, extra),
     });
-    const jobs = await publisher(s, "jobs", scope);
+    const jobs = await publisher(s, "jobs", scope, brokerState(config.tile, failure, "broker publish upload-jobs"));
     scope.own(() => jobs.close());
     scope.transport(jobs);
     const relay = startRelay(createOutbox(binding.outbox, "jobs", hooks.job), db, jobs, {

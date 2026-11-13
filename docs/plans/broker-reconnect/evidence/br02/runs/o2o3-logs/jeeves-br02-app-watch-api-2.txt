@@ -1,0 +1,1 @@
+2026-11-13T20:17:26.987886840Z {"level":"error","event":"failure","tile":"watch-api","what":"request POST /modules/watch-api-view-publisher/*","error":"Error: Broker unavailable"}

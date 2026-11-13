@@ -14,7 +14,7 @@ import { createPositiveReader } from "../runtime/positive-cache.ts";
 import { runProcess } from "../runtime/process.ts";
 import { createTileGuard } from "../runtime/tile-guard.ts";
 import { notImplementedRoutes, stubRoutes } from "../runtime/tile-http.ts";
-import { createFailureLog, createNotImplementedLog, logStarted } from "../runtime/tile-process.ts";
+import { brokerState, createFailureLog, createNotImplementedLog, logStarted } from "../runtime/tile-process.ts";
 import { createValkeyCache } from "../runtime/valkey.ts";
 
 /** Compiled configuration: nothing is read from disk at runtime. */
@@ -68,7 +68,7 @@ await runProcess(async (scope) => {
   const clients = {
     "metadata": await databaseClient(scope, probe, { tile: config.tile, resource: "metadata" }),
     "view-counts": await databaseClient(scope, probe, { tile: config.tile, resource: "view-counts" }),
-    "view-events": await queuePublisher(scope, probe, { queue: "view-events", mode: "topic" }),
+    "view-events": await queuePublisher(scope, probe, { queue: "view-events", mode: "topic" }, brokerState(config.tile, failure, "broker publish view-events")),
   };
   // Each stub's dependencies: its clients, and a module link calls that module's entry point.
   const dependencies = {} as {

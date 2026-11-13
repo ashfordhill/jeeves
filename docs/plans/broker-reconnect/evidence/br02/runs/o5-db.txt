@@ -1,0 +1,6 @@
+receipts for <E> (a6b8f000-5f93-4277-b2d2-dd6954ba612e):
+1
+all receipts:
+21
+totals:
+047f8e56-cd99-4437-b5b4-fa0c6049cbf9|21

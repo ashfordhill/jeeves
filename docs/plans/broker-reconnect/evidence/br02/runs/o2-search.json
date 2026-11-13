@@ -1,0 +1,35 @@
+{
+  "step": "search",
+  "label": "o2-search",
+  "args": ["narwhalcrimson", "047f8e56-cd99-4437-b5b4-fa0c6049cbf9"],
+  "search": {
+    "status": 200,
+    "found": 1,
+    "afterMs": 480
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/search-api/modules/search-api-video-search?q=narwhalcrimson",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "q": "narwhalcrimson",
+        "page": 1,
+        "pageSize": 20,
+        "total": 1,
+        "hits": [
+          {
+            "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+            "title": "V3-17 r-a: narwhalcrimson",
+            "description": "V3-17 r-a (fixture).",
+            "channel": "creator",
+            "durationSeconds": 20,
+            "publishedAt": "2026-11-13T20:16:04.866Z",
+            "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+          }
+        ]
+      }
+    }
+  ]
+}

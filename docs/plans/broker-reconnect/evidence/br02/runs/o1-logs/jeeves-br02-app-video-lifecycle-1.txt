@@ -1,0 +1,2 @@
+2026-11-13T20:16:52.571510125Z {"level":"error","event":"failure","tile":"video-lifecycle","what":"broker publish publication-events","error":"Error: AMQP publisher unavailable"}
+2026-11-13T20:16:52.571910618Z {"level":"error","event":"failure","tile":"video-lifecycle","what":"broker consume processing-events--video-lifecycle","error":"Error: AMQP consumer unavailable"}

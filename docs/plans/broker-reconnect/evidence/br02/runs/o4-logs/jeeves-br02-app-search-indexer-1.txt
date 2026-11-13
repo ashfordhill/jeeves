@@ -1,0 +1,1 @@
+2026-11-13T20:18:04.939133312Z {"level":"info","event":"broker","tile":"search-indexer","what":"broker consume publication-events--search-indexer","state":"available"}

@@ -1,0 +1,642 @@
+{
+  "step": "plays",
+  "label": "o5",
+  "args": ["047f8e56-cd99-4437-b5b4-fa0c6049cbf9", "20"],
+  "counts": {
+    "before": "1",
+    "expected": "21",
+    "after": "21",
+    "visibleAfterMs": 255,
+    "settled": "21"
+  },
+  "playStatuses": [202],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-view-count-reader/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "views": "1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "0cc25e83-2359-4b3b-8c0c-2cfc6652eff8",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.486Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "0cc25e83-2359-4b3b-8c0c-2cfc6652eff8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "73764895-a40c-4586-b976-7e40c7d8bee8",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.490Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "73764895-a40c-4586-b976-7e40c7d8bee8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "74561196-d47f-45f7-8725-b439d02358e5",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.493Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "74561196-d47f-45f7-8725-b439d02358e5"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "683152da-e48f-404d-8458-67e99f60e340",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.497Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "683152da-e48f-404d-8458-67e99f60e340"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "f65e1589-e908-4d61-874d-c975069e2025",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.501Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "f65e1589-e908-4d61-874d-c975069e2025"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "b889b0ab-0361-45c9-b18f-00b34d585e87",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.505Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "b889b0ab-0361-45c9-b18f-00b34d585e87"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "fb081f96-2d5c-4a2d-8614-86c318e9bd9b",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.507Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "fb081f96-2d5c-4a2d-8614-86c318e9bd9b"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "2f334e0c-ea4b-438a-bf4a-56e971b9023a",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.510Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "2f334e0c-ea4b-438a-bf4a-56e971b9023a"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "da22382f-26a0-43d2-a33c-31ae0165fb12",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.514Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "da22382f-26a0-43d2-a33c-31ae0165fb12"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "bb828e5d-2507-47eb-9a72-1279ecfb8939",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.517Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "bb828e5d-2507-47eb-9a72-1279ecfb8939"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "e99e991a-fd48-4961-b2af-26a89f8307ab",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.520Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "e99e991a-fd48-4961-b2af-26a89f8307ab"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "973e09bc-0baa-4a9a-8495-143a0d85aa42",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.523Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "973e09bc-0baa-4a9a-8495-143a0d85aa42"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "12b521d2-c58e-433f-afcf-24f34435976f",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.525Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "12b521d2-c58e-433f-afcf-24f34435976f"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "746ca382-f869-48a8-9b4d-80f8d21c1405",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.528Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "746ca382-f869-48a8-9b4d-80f8d21c1405"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "7fab9263-a362-46b5-9b1d-a99059c53119",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.531Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "7fab9263-a362-46b5-9b1d-a99059c53119"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "8da5a12d-ab0d-4645-b726-5f76106127e5",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.534Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "8da5a12d-ab0d-4645-b726-5f76106127e5"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "21dc3998-61b0-4e72-947e-e0d136fe59e4",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.537Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "21dc3998-61b0-4e72-947e-e0d136fe59e4"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "2d1943ba-5eda-40a9-bb64-446a3e2e5f41",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.539Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "2d1943ba-5eda-40a9-bb64-446a3e2e5f41"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "a742bd47-203d-47e7-9434-db311f419add",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.541Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "a742bd47-203d-47e7-9434-db311f419add"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "d761a3fe-8f0d-45b4-ac9c-dbbc6c899412",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.544Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "d761a3fe-8f0d-45b4-ac9c-dbbc6c899412"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-view-count-reader/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "views": "21"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "0cc25e83-2359-4b3b-8c0c-2cfc6652eff8",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.802Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "0cc25e83-2359-4b3b-8c0c-2cfc6652eff8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "73764895-a40c-4586-b976-7e40c7d8bee8",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.805Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "73764895-a40c-4586-b976-7e40c7d8bee8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "74561196-d47f-45f7-8725-b439d02358e5",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.807Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "74561196-d47f-45f7-8725-b439d02358e5"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "683152da-e48f-404d-8458-67e99f60e340",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.809Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "683152da-e48f-404d-8458-67e99f60e340"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "f65e1589-e908-4d61-874d-c975069e2025",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.811Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "f65e1589-e908-4d61-874d-c975069e2025"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "b889b0ab-0361-45c9-b18f-00b34d585e87",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.813Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "b889b0ab-0361-45c9-b18f-00b34d585e87"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "fb081f96-2d5c-4a2d-8614-86c318e9bd9b",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.815Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "fb081f96-2d5c-4a2d-8614-86c318e9bd9b"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "2f334e0c-ea4b-438a-bf4a-56e971b9023a",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.818Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "2f334e0c-ea4b-438a-bf4a-56e971b9023a"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "da22382f-26a0-43d2-a33c-31ae0165fb12",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.820Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "da22382f-26a0-43d2-a33c-31ae0165fb12"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "bb828e5d-2507-47eb-9a72-1279ecfb8939",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.825Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "bb828e5d-2507-47eb-9a72-1279ecfb8939"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "e99e991a-fd48-4961-b2af-26a89f8307ab",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.827Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "e99e991a-fd48-4961-b2af-26a89f8307ab"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "973e09bc-0baa-4a9a-8495-143a0d85aa42",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.829Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "973e09bc-0baa-4a9a-8495-143a0d85aa42"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "12b521d2-c58e-433f-afcf-24f34435976f",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.831Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "12b521d2-c58e-433f-afcf-24f34435976f"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "746ca382-f869-48a8-9b4d-80f8d21c1405",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.833Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "746ca382-f869-48a8-9b4d-80f8d21c1405"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "7fab9263-a362-46b5-9b1d-a99059c53119",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.834Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "7fab9263-a362-46b5-9b1d-a99059c53119"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "8da5a12d-ab0d-4645-b726-5f76106127e5",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.836Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "8da5a12d-ab0d-4645-b726-5f76106127e5"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "21dc3998-61b0-4e72-947e-e0d136fe59e4",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.838Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "21dc3998-61b0-4e72-947e-e0d136fe59e4"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "2d1943ba-5eda-40a9-bb64-446a3e2e5f41",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.840Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "2d1943ba-5eda-40a9-bb64-446a3e2e5f41"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "a742bd47-203d-47e7-9434-db311f419add",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.842Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "a742bd47-203d-47e7-9434-db311f419add"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "d761a3fe-8f0d-45b4-ac9c-dbbc6c899412",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T20:18:34.844Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "d761a3fe-8f0d-45b4-ac9c-dbbc6c899412"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-view-count-reader/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "views": "21"
+      }
+    }
+  ]
+}

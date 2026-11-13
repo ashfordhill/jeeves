@@ -3,9 +3,11 @@
 YouTube v4 is [YouTube v3](../../v3/notes/README.md)'s design, unchanged, on the templates after
 PF06–PF08 of the [production foundations plan](../../../../docs/plans/production-foundations/units.md):
 every failure a process survives is logged (PF06), the cache read recovers when its cache stalls
-or goes down (PF07), and one bad item never stops a process (PF08). Its `app/` was made by
-`update:v2` (PF10) from v3's completed app, so every file the application owns is v3's, byte for
-byte, and every generated file is the new export's.
+or goes down (PF07), and one bad item never stops a process (PF08). It also carries BR01 of the
+[broker reconnect plan](../../../../docs/plans/broker-reconnect/units.md): a lost broker stops no
+process, and every broker publisher and consumer reconnects by itself. Its `app/` was made by
+`update:v2` (PF10) from v3's completed app and updated again onto BR01, so every file the
+application owns is v3's, byte for byte, and every generated file is the new export's.
 
 - **Design:** [`inputs/design.json`](../inputs/design.json) and
   [`inputs/blueprint.json`](../inputs/blueprint.json) are copies of v3's inputs: the studio
@@ -27,16 +29,18 @@ byte, and every generated file is the new export's.
 ### `generated/`
 
 `pnpm --filter @jeeves/generator export:v2 "$PWD/field-projects/youtube/v4/inputs/design.json"
-"$PWD/field-projects/youtube/v4/generated"`: 112 files (5,169,159 bytes), 0 findings, 9 required
+"$PWD/field-projects/youtube/v4/generated"`: 112 files (5,177,503 bytes), 0 findings, 9 required
 gaps and `processes.runnable: true`; manifest SHA-256
-`464e381d4ca2d0ecda5576bb14ff5f56e0056ce1ac7b7dc0c05ef97519ef0323`. Biome skips it.
+`76e2526d8082f2e0b132060a498edc8e675f194f68f51b323f7f41b8600a3886`. Biome skips it.
 
-Against v3's `generated/` (the V3-12 export), 21 files differ: `.jeeves/manifest.json`,
-`.jeeves/report.json`, the eight `src/processes/` files, ten `src/runtime/` files (`asset-worker`,
-`http`, `media-worker`, `module-clients`, `multipart`, `outbox`, `positive-cache`, `process`,
-`tile-process` and `valkey`) and `src/modules/dependencies.ts`. `dependencies.ts` and
-`module-clients.ts` now hold v3's gap-6 lines (fixed in the generator in V3-18), so they equal
-v3's `app/` byte for byte. Every hook file, stub body and product SQL file is generated as in v3.
+Against v3's `generated/` (the V3-12 export), 25 files differ: `.jeeves/manifest.json`,
+`.jeeves/report.json`, the eight `src/processes/` files, thirteen `src/runtime/` files (`amqp`,
+`asset-worker`, `delivery`, `http`, `media-worker`, `module-clients`, `multipart`, `outbox`,
+`positive-cache`, `process`, `tile-loop`, `tile-process` and `valkey`),
+`src/features/service-resources.ts` and `src/modules/dependencies.ts`. `dependencies.ts` and
+`module-clients.ts` now hold v3's gap-6 lines (fixed in the generator in V3-18); `dependencies.ts`
+equals v3's `app/` byte for byte, and `module-clients.ts` differs from it only by BR01's
+reconnecting publisher. Every hook file, stub body and product SQL file is generated as in v3.
 
 ### `app/`
 
@@ -72,6 +76,27 @@ Checked after the update:
   `generated/<path>`, so v3's edit stands as it was and no patch was needed.
 - A copy outside the checkout: `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm build`
   and `node --test "test/*.test.ts"` all exit 0, with 19 tests passing.
+
+**Then onto BR01 (BR02).** `generated/` was replaced with a new export of the same design, and
+`app/` updated with the same `update:v2` command, `--check` first. Its output is
+[`update-br02.json`](update-br02.json):
+
+| Result | Count | What |
+| --- | --- | --- |
+| `refused` | 0 | |
+| `create` | 0 | |
+| `replace` | 13 | The 12 files BR01 changes (`src/features/service-resources.ts`; the `search-indexer`, `transcoder`, `upload-api`, `video-lifecycle`, `view-counter` and `watch-api` processes; `amqp`, `delivery`, `module-clients`, `tile-loop` and `tile-process` under `src/runtime/`), and `.jeeves/report.json`. |
+| `unchanged` | 83 | |
+| `keep` | 11 | The hook files, stub bodies and product SQL, as before. |
+| `keepChanged` | 0 | |
+| `override` | 4 | The same four paths. |
+| `remove`, `orphan` | 0 | |
+
+The manifest it wrote equals `generated/`'s byte for byte, and a second `--check` reported 96
+unchanged, 11 kept, the 4 overrides and nothing to replace. The checks above held again: 31
+owned files equal v3's (`"differ":[]`), each override's generated version equals v3's, and a
+copy builds and passes its 19 tests. Its run through a broker outage is in
+[scenarios](scenarios.md#broker-outage-after-br01).
 
 **The four overrides** are v3's V3-16 scaffold edits, so the edge can serve the browser; the
 export serves no browser and has no place for one

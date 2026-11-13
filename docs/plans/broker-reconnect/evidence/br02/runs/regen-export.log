@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/youtube/v4/inputs/design.json /tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/br02/generated
+{
+  directory: '/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/br02/generated',
+  files: 112,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 9
+}

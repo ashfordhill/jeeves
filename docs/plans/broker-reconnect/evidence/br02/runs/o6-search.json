@@ -1,0 +1,35 @@
+{
+  "step": "search",
+  "label": "o6-search",
+  "args": ["quetzalamber", "ea3be0f6-326e-4916-ac02-fb5a0c28545f"],
+  "search": {
+    "status": 200,
+    "found": 1,
+    "afterMs": 290
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/search-api/modules/search-api-video-search?q=quetzalamber",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "q": "quetzalamber",
+        "page": 1,
+        "pageSize": 20,
+        "total": 1,
+        "hits": [
+          {
+            "videoId": "ea3be0f6-326e-4916-ac02-fb5a0c28545f",
+            "title": "V3-17 o6: quetzalamber",
+            "description": "V3-17 o6 (fixture).",
+            "channel": "creator",
+            "durationSeconds": 20,
+            "publishedAt": "2026-11-13T20:19:15.817Z",
+            "thumbnailUrl": "/cdn/video-delivery/videos/ea3be0f6-326e-4916-ac02-fb5a0c28545f/e57f09a6-1099-441b-8085-ebee3b0f186d/2d5a6d17-ebe2-46d0-b292-2cc1c3ce4a4f/thumbnail.jpg"
+          }
+        ]
+      }
+    }
+  ]
+}

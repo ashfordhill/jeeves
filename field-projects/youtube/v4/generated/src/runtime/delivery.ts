@@ -39,7 +39,8 @@ export interface DeliveryTransport<Receipt> {
 }
 
 /** Durable effects remain the handler's responsibility. This provides at-least-once
- * delivery, bounded retry and drain; it provides no reconnect or exactly-once promise. */
+ * delivery, bounded retry and drain on one channel; `createConsumer` reconnects with a new
+ * runner. It makes no exactly-once promise. */
 export interface DeliveryBinding {
   queue: string;
   failedQueue: string;

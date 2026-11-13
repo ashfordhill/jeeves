@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { createConsumer, type BrokerBinding } from "./amqp.ts";
+import { createConsumer, type BrokerBinding, type BrokerState } from "./amqp.ts";
 import {
   NonRetryable,
   type ConsumerHooks,
@@ -141,13 +141,15 @@ export function moduleHandler(
 /**
  * Starts a module's loop on its queue: manual ack, prefetch equal to its concurrency, bounded
  * retry and `<queue>.failed`. Stopping cancels the subscription, cuts a retry wait short and
- * drains the message in hand. A lost broker connection fails the process; nothing else does.
+ * drains the message in hand. After a lost broker connection the consumer reconnects every 5 s,
+ * telling `onState`; nothing here fails the process.
  */
 export async function startModuleLoop(
   scope: ProcessScope,
   log: LoopLog,
   loop: ModuleLoop,
   entry: (message: ModuleMessage) => Promise<void>,
+  onState?: BrokerState,
   broker: BrokerBinding = loopBroker,
 ) {
   const stopping = new AbortController();
@@ -157,7 +159,7 @@ export async function startModuleLoop(
     concurrency: loop.concurrency,
     retryLimit: loop.retryLimit,
     handle: moduleHandler(log, loop, entry, stopping.signal),
-    onFatal: scope.fail,
+    onState,
   });
   scope.own(() => {
     stopping.abort();
@@ -174,7 +176,7 @@ export async function startModuleLoop(
 export function loopConsumer(
   loop: Omit<ModuleLoop, "module">,
   handle: MessageHandler,
-  hooks: ConsumerHooks = {},
+  hooks: ConsumerHooks & { onState?: BrokerState } = {},
   broker: BrokerBinding = loopBroker,
 ) {
   return createConsumer(broker, {

@@ -83,3 +83,37 @@ stops every process that uses the broker, Watch's details reads with it, and the
 until `pnpm start` (the known limit "A process that loses its broker exits and is not
 restarted" in [template gaps](../../../../docs/template-gaps.md)); `pnpm start` also returns the
 stack to one copy of each process.
+
+## Broker outage after BR01
+
+**The run:** BR02 of the [broker reconnect plan](../../../../docs/plans/broker-reconnect/units.md),
+2026-11-13, on a copy of `app/` after its update onto BR01 (`update-br02.json`), outside the
+checkout (`jeeves-br02`, loopback 45820 HTTP, 45821 identity, 45822 objects), with PF12's harness.
+The raw outputs are in the
+[evidence](../../../../docs/plans/broker-reconnect/evidence/br02/README.md). No app or generated
+file was changed for the run. Setup as PF12's: `pnpm first-run` (128 s) and
+`node scripts/accounts.mjs` exit 0, 15 containers healthy. **A** (`narwhalcrimson`): the upload's
+200s as in A2, details 200 after 4,045 ms. PF12's Part B scale command: exit 0, 23 containers
+healthy about 10 s later. Before each step a boundary was recorded, and each container's log was
+read only since it.
+
+| Step | Verdict | What was seen |
+| --- | --- | --- |
+| O1 Broker stopped | **Observed** | `docker stop jeeves-br02-local-broker-1` (0.6 s). 20 s later `ps -a`: all 17 `app-*` containers running and healthy, none exited. Within 65 ms of the stop each of the 12 broker-using containers logged `"event":"failure"` once for each broker client: `broker publish view-events` (both Watch copies), `broker publish upload-jobs` (both Upload copies), `broker publish publication-events` and `broker consume processing-events--video-lifecycle` (both Video lifecycle copies), `broker publish processing-events` and `broker consume upload-jobs` (both Transcoder copies), `broker consume publication-events--search-indexer` and `broker consume view-events--view-counter` (both copies each), with `AMQP publisher unavailable` or `AMQP consumer unavailable`. No further line while the broker was down; Account, Search and the edge logged nothing |
+| O2 Reads during the outage | **Observed** | Details 10 × 200; search 200 with A as the one hit (`found` 1, after 480 ms) |
+| O3 A play during the outage | **Observed** | `curl … -X POST -d '{"eventId":"<E>"}' …/watch-api-view-publisher/<A>` (the exact command is in the evidence): **503** `{"error":"UNAVAILABLE","message":"Service unavailable."}` in 0.012 s. The Watch copy that answered logged `"what":"request POST /modules/watch-api-view-publisher/*"` with `Broker unavailable` |
+| O4 Broker back | **Observed** | `docker start`; 8.4 s later (20:18:04.92–.94) all 16 broker clients logged `"event":"broker"` with `"state":"available"` for the same `what`, and 23 containers were healthy within 10 s of the start. `RestartCount` 0 for every `app-*`; each of the four work queues had its 2 consumers back. `pnpm start` was not run |
+| O5 The play again | **Observed** | The same command with the same `<E>`: **202** (`accepted` true). The count went 0 → 1 within 0.5 s and stayed 1; one receipt for `<E>`. Then `node pf.mjs plays o5 <A> 20`: `playStatuses` `[202]`, `before` 1, `expected` 21, `after` 21 (after 255 ms), `settled` 21; 21 receipts and a total of 21 |
+| O6 A new upload | **Observed** | **B** (`quetzalamber`) uploaded with the A2 200s; details 200 after 4,051 ms; search 200 with B as the one hit (`found` 1); `select count(*) from published.videos where video_id='<B>'` prints 1. Transcoder copy 1 encoded A and B; copy 2 took no job |
+
+**At the end:** 23 containers, all healthy, 0 restarts; no `process-failed` line in any log. The
+only error lines are O1's 16 and O3's one. The cleanup then removed the stack, the images
+`jeeves-br02-app` and `jeeves-br02-media` and the app copy with its `.runtime`; the Docker
+containers, volumes, networks and images equal those before the run.
+
+**Shown by this outage:** with BR01, a lost broker stops no process. Reads that need no broker
+answer throughout, a play answers 503 at once while the broker is away, and each publisher and
+consumer reconnects by itself (here 8.4 s after `docker start`), so the play counts once when it
+is sent again and a new upload goes through, without `pnpm start`. **Not shown:** a job
+in a Transcoder's hands when the broker goes (none was running at O1), and an outbox row waiting
+to be sent.

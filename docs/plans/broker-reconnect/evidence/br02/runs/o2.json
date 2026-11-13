@@ -1,0 +1,218 @@
+{
+  "step": "details",
+  "label": "o2",
+  "args": ["047f8e56-cd99-4437-b5b4-fa0c6049cbf9", "10"],
+  "statuses": [200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "publicationVersion": 1,
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnail": "videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:16:04.866Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/9851b773-6aa3-4d59-a18e-060bc14ed7d7/c9e09e24-0acd-4b50-9af4-c26ee616e3cf/thumbnail.jpg"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+2026-11-13T20:16:52.570322315Z {"level":"error","event":"failure","tile":"view-counter","what":"broker consume view-events--view-counter","error":"Error: AMQP consumer unavailable"}

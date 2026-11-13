@@ -1,0 +1,1 @@
+2026-11-13T20:16:52.571618149Z {"level":"error","event":"failure","tile":"search-indexer","what":"broker consume publication-events--search-indexer","error":"Error: AMQP consumer unavailable"}

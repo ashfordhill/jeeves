@@ -1,0 +1,11 @@
+Timeout: 60.0 seconds ...
+Listing queues for vhost / ...
+name	messages	consumers
+view-events--view-counter.failed	0	0
+publication-events--search-indexer	0	2
+view-events--view-counter	0	2
+publication-events--search-indexer.failed	0	0
+processing-events--video-lifecycle	0	2
+upload-jobs.failed	0	0
+processing-events--video-lifecycle.failed	0	0
+upload-jobs	0	2

@@ -7,7 +7,7 @@ import { createMediaObjects } from "../runtime/media-objects.ts";
 import { startMediaWorker } from "../runtime/media-worker.ts";
 import { runProcess } from "../runtime/process.ts";
 import { createLoopLog, loopConsumer, templateHandler, watchHooks } from "../runtime/tile-loop.ts";
-import { createFailureLog, logStarted } from "../runtime/tile-process.ts";
+import { brokerState, createFailureLog, logStarted } from "../runtime/tile-process.ts";
 
 /** Compiled configuration: nothing is read from disk at runtime. */
 export const config = {
@@ -53,9 +53,9 @@ await runProcess(async (scope) => {
         results: { client: objects(s), bucket: outputs, owns: hooks.results.owns },
         sha256Metadata: binding.sha256Metadata,
       }),
-      openPublisher: () => publisher(s, "results", scope),
+      openPublisher: () => publisher(s, "results", scope, brokerState(config.tile, failure, "broker publish processing-events")),
       openConsumer: ({ handle, ...consumerHooks }) =>
-        loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), consumerHooks),
+        loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), { ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-jobs") }),
       onSkippedReport: (error, messageId) => failure("failure report transcoder-segmenter-and-encoder", error, { message: messageId }),
       onFatal: scope.fail,
     });

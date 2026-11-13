@@ -1,0 +1,2 @@
+2026-11-13T20:18:04.929978806Z {"level":"info","event":"broker","tile":"video-lifecycle","what":"broker publish publication-events","state":"available"}
+2026-11-13T20:18:04.930236261Z {"level":"info","event":"broker","tile":"video-lifecycle","what":"broker consume processing-events--video-lifecycle","state":"available"}

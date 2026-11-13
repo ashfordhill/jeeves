@@ -1,0 +1,32 @@
+{
+  "step": "ready",
+  "label": "o6-ready",
+  "args": ["ea3be0f6-326e-4916-ac02-fb5a0c28545f", "180"],
+  "ready": {
+    "status": 200,
+    "afterMs": 4051
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/ea3be0f6-326e-4916-ac02-fb5a0c28545f",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "ea3be0f6-326e-4916-ac02-fb5a0c28545f",
+        "publicationVersion": 1,
+        "title": "V3-17 o6: quetzalamber",
+        "description": "V3-17 o6 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/ea3be0f6-326e-4916-ac02-fb5a0c28545f/e57f09a6-1099-441b-8085-ebee3b0f186d/2d5a6d17-ebe2-46d0-b292-2cc1c3ce4a4f/master.m3u8",
+        "thumbnail": "videos/ea3be0f6-326e-4916-ac02-fb5a0c28545f/e57f09a6-1099-441b-8085-ebee3b0f186d/2d5a6d17-ebe2-46d0-b292-2cc1c3ce4a4f/thumbnail.jpg",
+        "publishedAt": "2026-11-13T20:19:15.817Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/ea3be0f6-326e-4916-ac02-fb5a0c28545f/e57f09a6-1099-441b-8085-ebee3b0f186d/2d5a6d17-ebe2-46d0-b292-2cc1c3ce4a4f/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/ea3be0f6-326e-4916-ac02-fb5a0c28545f/e57f09a6-1099-441b-8085-ebee3b0f186d/2d5a6d17-ebe2-46d0-b292-2cc1c3ce4a4f/thumbnail.jpg"
+      }
+    }
+  ]
+}

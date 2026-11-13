@@ -10,6 +10,7 @@ import { createObjects } from "../runtime/objects.ts";
 import {
 	createConsumer,
 	createPublisher,
+	type BrokerState,
 	type ConsumerHooks,
 	type MessageHandler,
 } from "../runtime/amqp.ts";
@@ -70,24 +71,27 @@ export const broker = {
 	heartbeatSeconds: 10,
 	confirmTimeoutMs: 5000,
 };
+/** A broker publisher and consumer reconnect after a lost connection, telling `onState`; the
+ * process owns their drains (`scope.own`, `scope.transport`). */
 export function publisher(
 	s: ServiceBinding,
 	field: string,
-	scope: ProcessScope,
+	_scope: ProcessScope,
+	onState?: BrokerState,
 ) {
 	const id = resource(s, field),
 		work = s.inputs[`${field}.mode`] === "work-queue";
 	return createPublisher(
 		broker,
 		{ exchange: work ? "" : id, routingKey: work ? id : "" },
-		{ onFatal: scope.fail },
+		{ onState },
 	);
 }
 export function consumer(
 	s: ServiceBinding,
 	field: string,
 	handle: MessageHandler,
-	hooks: ConsumerHooks = {},
+	hooks: ConsumerHooks & { onState?: BrokerState } = {},
 ) {
 	const id = resource(s, field),
 		work = s.inputs[`${field}.mode`] === "work-queue";

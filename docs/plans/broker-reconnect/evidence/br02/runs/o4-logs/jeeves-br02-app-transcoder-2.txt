@@ -1,0 +1,2 @@
+2026-11-13T20:18:04.938298061Z {"level":"info","event":"broker","tile":"transcoder","what":"broker publish processing-events","state":"available"}
+2026-11-13T20:18:04.939292868Z {"level":"info","event":"broker","tile":"transcoder","what":"broker consume upload-jobs","state":"available"}

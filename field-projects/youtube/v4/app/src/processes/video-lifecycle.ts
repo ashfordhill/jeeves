@@ -6,7 +6,7 @@ import { createAssetLifecycle } from "../runtime/asset-lifecycle.ts";
 import { startAssetLifecycleWorker } from "../runtime/asset-worker.ts";
 import { runProcess } from "../runtime/process.ts";
 import { createLoopLog, loopConsumer, templateHandler, watchHooks } from "../runtime/tile-loop.ts";
-import { createFailureLog, logStarted } from "../runtime/tile-process.ts";
+import { brokerState, createFailureLog, logStarted } from "../runtime/tile-process.ts";
 
 /** Compiled configuration: nothing is read from disk at runtime. */
 export const config = {
@@ -72,11 +72,11 @@ await runProcess(async (scope) => {
       lifecycle,
       openConsumer: (handle) =>
         loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), {
-          onFatal: scope.fail,
+          onState: brokerState(config.tile, failure, "broker consume processing-events--video-lifecycle"),
         }),
       publication: {
         outbox: lifecycle.publications!,
-        openPublisher: () => publisher(s, "publication", scope),
+        openPublisher: () => publisher(s, "publication", scope, brokerState(config.tile, failure, "broker publish publication-events")),
       },
       onSweepError: (error) => failure("sweep video-lifecycle-lifecycle-writer", error),
       onRelayError: (error) => failure("outbox relay publication", error),

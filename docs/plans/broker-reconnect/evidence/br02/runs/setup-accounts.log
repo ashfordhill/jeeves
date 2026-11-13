@@ -1,0 +1,24 @@
+{
+  "realm": "sign-in",
+  "role": "creator",
+  "users": [
+    {
+      "username": "creator",
+      "creator": true,
+      "created": true,
+      "passwordPath": ".runtime/secrets/creator_password"
+    },
+    {
+      "username": "other-creator",
+      "creator": true,
+      "created": true,
+      "passwordPath": ".runtime/secrets/other_creator_password"
+    },
+    {
+      "username": "viewer",
+      "creator": false,
+      "created": true,
+      "passwordPath": ".runtime/secrets/viewer_password"
+    }
+  ]
+}

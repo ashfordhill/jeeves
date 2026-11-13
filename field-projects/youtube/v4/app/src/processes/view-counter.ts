@@ -6,7 +6,7 @@ import { startCounterWorker } from "../runtime/counter-worker.ts";
 import { createEventCounter } from "../runtime/event-counter.ts";
 import { runProcess } from "../runtime/process.ts";
 import { createLoopLog, loopConsumer, templateHandler, watchHooks } from "../runtime/tile-loop.ts";
-import { createFailureLog, logStarted } from "../runtime/tile-process.ts";
+import { brokerState, createFailureLog, logStarted } from "../runtime/tile-process.ts";
 
 /** Compiled configuration: nothing is read from disk at runtime. */
 export const config = {
@@ -57,7 +57,7 @@ await runProcess(async (scope) => {
       counter: createEventCounter(binding.tables, watchHooks(viewCounterReceiptAndIncrementHooks(), loopLog, "view-counter-receipt-and-increment")),
       openConsumer: (handle) =>
         loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), {
-          onFatal: scope.fail,
+          onState: brokerState(config.tile, failure, "broker consume view-events--view-counter"),
         }),
     });
     scope.own(() => worker.close());

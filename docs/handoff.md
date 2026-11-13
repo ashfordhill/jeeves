@@ -13144,3 +13144,73 @@ files, the two mode changes) stay untouched and unstaged. No uncommitted changes
 **For the next unit.** BR02: `field-projects/youtube/v4` still has the old `amqp.ts`, `delivery.ts`,
 `tile-loop.ts`, `tile-process.ts`, `service-resources.ts` and process files; regenerating it brings
 the `brokerState` lines (`broker publish <id>`, `broker consume <queue>`) to each broker process.
+
+## 2026-11-13 — BR02: v4 takes BR01 and survives a broker outage
+
+**What changed.**
+- `field-projects/youtube/v4/generated`: replaced by a new `export:v2` of v4's design (112 files,
+  0 findings, 9 required gaps; manifest SHA-256 `76e2526d…3886`). Git lists only BR01's 12
+  exported files (`src/features/service-resources.ts`; the `search-indexer`, `transcoder`,
+  `upload-api`, `video-lifecycle`, `view-counter` and `watch-api` processes; `amqp`, `delivery`,
+  `module-clients`, `tile-loop` and `tile-process` under `src/runtime/`), `.jeeves/manifest.json`
+  and `.jeeves/report.json`.
+- `field-projects/youtube/v4/app`: `update:v2`, `--check` first, then for real; its output is the
+  new `notes/update-br02.json`: `refused`, `create`, `keepChanged`, `remove` and `orphan` empty,
+  13 replaced (those 12 and `.jeeves/report.json`), 83 unchanged, 11 kept, the four PF11
+  overrides. Git lists only those 13 paths (`generated-scaffold` or `generator-metadata`) and
+  `.jeeves/manifest.json`; no hook, stub body, product SQL or file outside the manifest.
+- `notes/scenarios.md`: the "Broker outage after BR01" table. `notes/README.md`: v4 carries BR01,
+  `update-br02.json`'s counts, the new export's figures, the 25 files that now differ from v3's
+  export, and `module-clients.ts` no longer equal to v3's app.
+- New `docs/plans/broker-reconnect/evidence/br02/` (raw outputs, 141 files, 484 KB, with a
+  `README.md`).
+- `jeeves/PLAN.md` (rule 8): broker reconnect is listed as completed; the active plan is GS07,
+  then GS09.
+
+**Checks.** `pnpm check` before any change: exit 0, 114 files, 901 tests; after: exit 0, 114 files,
+901 tests (lint's one info is older). The v4 copy (step 4): install, build and
+`node --test "test/*.test.ts"` exit 0, 19 of 19 pass; deleted. A second `update:v2 --check`: 96
+unchanged, 11 kept, nothing to replace; PF11's owned-files script `{"checked":31,"differ":[]}`;
+each override's generated version still equals v3's. Outage run (`jeeves-br02`, 45820–45822, two
+copies, 23 healthy), all six **Observed**:
+- O1: 20 s after `docker stop` of the broker, all 17 `app-*` containers running and healthy, none
+  exited. Within 65 ms each of the 12 broker-using containers logged one `failure` per broker
+  client (16 lines, every `what` starting `broker `), and nothing more while the broker was down.
+- O2: details 10 × 200; search 200, `found` 1.
+- O3: the play answered 503 `UNAVAILABLE` in 0.012 s.
+- O4: 8.4 s after `docker start` all 16 clients logged `"event":"broker"`, `"state":"available"`,
+  each with the same `what`; 23 healthy within 10 s; `RestartCount` 0 for every `app-*`; every work
+  queue had 2 consumers again. `pnpm start` was never run.
+- O5: the same `<E>` answered 202 and the count went 0 → 1 (one receipt); 20 plays: `settled` 21 =
+  `expected` 21.
+- O6: B ready after 4,051 ms, `found` 1, `published.videos` count 1.
+
+Then, as PF13: `down --volumes --remove-orphans`, both images removed, the copy deleted;
+containers, volumes, networks and images equal the "before" lists. After the Docker phase:
+`pnpm test:e2e` (native) 74 passed (4.7 min); `pnpm --filter @jeeves/web build` exit 0. No browser
+check: nothing user-visible changed. `jeeves_e2e` holds only "E2E Every kind" and "TinyURL ·
+studio study".
+**Differences from the plan.**
+- `update:v2` prints only counts for `create`, `replace`, `unchanged` and `keep`. I found the 13
+  replaced paths by comparing each new manifest path with the app before the update. They match
+  what Git listed after it.
+- `update-br02.json` was formatted with `pnpm format` from the root, not `biome format --write`
+  (the coordinator allows only `pnpm format`). Same Biome config; whitespace only.
+- Besides the unit's "none", I ran `pnpm check`, e2e and the build (AGENTS.md's regression checks),
+  in a phase after the Docker cleanup.
+**Noticed.**
+- The Transcoder had no job in hand at O1. Both copies' consumers resubscribed with every other
+  client (20:18:04.9). So BR01's noted behaviour, where a job in hand runs on to its 20-minute
+  deadline and resubscribes only after it settles, was not exercised. Nor was an outbox row
+  waiting through the outage.
+- Each client logged `unavailable` once for the 64 s outage (no line per 5 s retry) and
+  `available` once. The O3 play also logged a request failure (`Broker unavailable`).
+- O2's search `found` A on a read 480 ms after the step started (PF13's F2a: 473 ms). `poll` keeps
+  only its last read, so whether an earlier read missed is unknown.
+- `AGENTS.md` still names broker reconnect as the active plan, followed by GS07 and GS09. Rule 8
+  doesn't list `AGENTS.md`, so I left it for the owner or coordinator.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files, the two mode
+  changes) stay untouched and unstaged.
+**For the next unit.** GS07 of `docs/plans/generated-system-tests/units.md` can start. v4 is on
+BR01 and its broker outage evidence is in `docs/plans/broker-reconnect/evidence/br02/`. Untested:
+a Transcoder job in hand during an outage, and the outbox during one.

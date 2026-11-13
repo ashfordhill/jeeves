@@ -1,0 +1,112 @@
+{
+  "uploads": [
+    {
+      "kind": "fixture",
+      "title": "V3-17 r-a: narwhalcrimson",
+      "size": 15584953,
+      "uploadId": "2d62121f-5ab1-4a9b-8041-c49e4c426a5c",
+      "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+      "jobId": "9851b773-6aa3-4d59-a18e-060bc14ed7d7",
+      "attemptId": "c9e09e24-0acd-4b50-9af4-c26ee616e3cf",
+      "state": "pending"
+    }
+  ],
+  "log": [
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "uploadId": "2d62121f-5ab1-4a9b-8041-c49e4c426a5c",
+        "assetId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "state": "uploading",
+        "partSize": 5242880,
+        "partCount": 3,
+        "expiresAt": "2026-11-14T20:16:00.865Z"
+      },
+      "request": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1762555020000,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+        "title": "V3-17 r-a: narwhalcrimson",
+        "description": "V3-17 r-a (fixture)."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/parts/1",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45822/original-videos/upload-api-multipart-uploads/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T20:31:00.892Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 1>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+        "size": 5242880
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/parts/2",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45822/original-videos/upload-api-multipart-uploads/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T20:31:00.924Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 2>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"8b07cb8adaef2a76957b89cf6a759510\"",
+        "size": 5242880
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/parts/3",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45822/original-videos/upload-api-multipart-uploads/047f8e56-cd99-4437-b5b4-fa0c6049cbf9/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T20:31:00.957Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 3>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\"",
+        "size": 5099193
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/2d62121f-5ab1-4a9b-8041-c49e4c426a5c/complete",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "uploadId": "2d62121f-5ab1-4a9b-8041-c49e4c426a5c",
+        "videoId": "047f8e56-cd99-4437-b5b4-fa0c6049cbf9",
+        "jobId": "9851b773-6aa3-4d59-a18e-060bc14ed7d7",
+        "attemptId": "c9e09e24-0acd-4b50-9af4-c26ee616e3cf",
+        "state": "pending"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+2026-11-13T20:16:52.571920157Z {"level":"error","event":"failure","tile":"watch-api","what":"broker publish view-events","error":"Error: AMQP publisher unavailable"}

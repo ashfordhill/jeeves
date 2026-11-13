@@ -1,0 +1,8 @@
+boundary 2026-11-13T20:18:26Z
+count before: {"views":"0"}
+resend at 20:18:26.544294875: curl -sS -o runs/o5-resend-body.json -w '%{http_code} %{time_total}s\n' -X POST -H 'content-type: application/json' -d '{"eventId":"a6b8f000-5f93-4277-b2d2-dd6954ba612e"}' "http://127.0.0.1:$LOCAL_HTTP_PORT/api/watch-api/modules/watch-api-view-publisher/047f8e56-cd99-4437-b5b4-fa0c6049cbf9"
+202 0.012177s
+body: {"eventId":"a6b8f000-5f93-4277-b2d2-dd6954ba612e","accepted":true,"acceptedAt":"2026-11-13T20:18:26.560Z","publicationVersion":1}
+count {"views":"1"} after ~500ms
+count 3 s later: {"views":"1"}
+{"step":"plays","label":"o5","args":["047f8e56-cd99-4437-b5b4-fa0c6049cbf9","20"],"counts":{"before":"1","expected":"21","after":"21","visibleAfterMs":255,"settled":"21"},"playStatuses":[202]}

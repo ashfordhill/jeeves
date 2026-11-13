@@ -1,0 +1,27 @@
+✔ the Transcoder reads the job and binds its source and its attempt's own result prefix (4.56774ms)
+✔ each kind has one stable event ID, the same in the Transcoder and the lifecycle (1.91152ms)
+✔ the lifecycle parses what the Transcoder sends: started, succeeded and failed (4.679414ms)
+✔ a ready video publishes its public record once, bound to its event ID (2.336656ms)
+✔ the index is created at start from the Index writer's mapping: v2's public video mapping, strict (2.445916ms)
+✔ a VideoPublished indexes its public record, without the envelope, at its version (7.786364ms)
+✔ a message that isn't a bound, public VideoPublished is MALFORMED_MESSAGE and indexes nothing (2.574102ms)
+✔ a search uses v1/v2's preset and bounds, and answers each hit with its CDN thumbnail (2.264681ms)
+✔ only a signed-in creator passes principal: 401, then 403 CREATOR_REQUIRED (0.920633ms)
+✔ validate keeps v1's bounds: 413 size, 422 not MP4, 400 otherwise (2.361507ms)
+✔ an original's key is under the template's prefix and names its video and upload (0.369132ms)
+✔ completion builds the job that Upload jobs carries, and both codecs agree on it (2.569603ms)
+✔ completing answers the video and its job; a repeat parses the stored answer (0.751257ms)
+✔ details: a ready video is loaded once, then answered from the cache; others are never cached (3.503807ms)
+✔ details: a cached record must parse, be this video's and keep its delivery URLs (0.355895ms)
+✔ a play of a ready video sends one ViewPlayed with its viewer, its event ID as message ID (1.720015ms)
+✔ the counter counts a play once towards its video, whatever its accept time (0.613855ms)
+✔ a view count is the counter's public total, read fresh (0.659409ms)
+✔ only a ready video, by its canonical ID, may be a favorite (0.301413ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 208.089844
