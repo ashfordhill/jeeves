@@ -65,8 +65,8 @@ available for imports and diagnostics.
 
 ## Profile and persistent requirements
 
-Top-level schema-v3 `scope` remains typed source (`design-scope.ts`), visible read-only under
-**Export diagram → Source & diagnostics → Profile & requirements**. Normal authoring has no
+Top-level schema-v3 `scope` remains typed source (`design-scope.ts`), visible read-only only in
+the full saved source under **Export diagram → Source & diagnostics**. Normal authoring has no
 requirements form. Explicit source/chat commands still require an explicit schema2 upgrade and
 save the whole boundary in one Undo step; pure reads change nothing.
 
@@ -433,10 +433,9 @@ present, with legacy inferred-writer fallback when resource access declarations 
 
 ## Exact operation contracts (schema v3)
 
-Optional top-level `operations` is a finite source allowlist, shown read-only in
-**Export diagram → Source & diagnostics → Operation declarations**. Normal generation authoring
-has no declaration-only operation form. Exact receiver/caller refs and unresolved findings remain
-inspectable; **Select operation <id>** selects that precise binding for chat.
+Optional top-level `operations` is a finite source allowlist, shown read-only only in the full
+saved source under **Export diagram → Source & diagnostics**. Normal generation authoring has no
+declaration-only operation form.
 
 `previewOperations` / `buildOperationsCommand` and chat retain explicit upgrades, structural
 refusals, exact contract checks, history and Undo. Fixed operation deadlines must agree with

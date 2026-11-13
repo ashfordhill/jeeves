@@ -9,9 +9,9 @@ without substituting a frozen baseline. The active
 separate from the studio; its partial report grants no strict readiness or runtime credit. The studio writes
 through operations; the blueprint is derived on every request and is never stored or edited.
 
-The new default `studio-tinyurl-foundation@1.0.0` stores complete schema-v3 declarations. Its
-default v2 export deliberately refuses exact scope/ownership/operation loss; request
-`?version=3` for the full study and report. The extended `studio-tinyurl@3.2.0` stays schema2
+The `studio-tinyurl-foundation@1.0.0` study, which New project no longer offers, stores complete
+schema-v3 declarations. Its default v2 export deliberately refuses exact scope/ownership/operation
+loss; request `?version=3` for the full study and report. The extended `studio-tinyurl@3.2.0` stays schema2
 with its prior v2 meaning. Creating either study is a single complete seed/history edit.
 
 Canvas selection, its line highlight and Fit are view state. They neither filter this endpoint
@@ -241,5 +241,5 @@ settings. Logical-owner projection, role/deployable narration and declaration-on
 operation/ownership forms are absent from normal authoring. This presentation does not change the
 source or this API: v3 retains every ownership, operation, scope, legacy setting and generation
 selection; v2 still refuses semantic loss. **Export diagram → Source & diagnostics** provides exact
-source JSON, read-only declarations and unchanged strict readiness with precise target selection.
+source JSON and read-only ownership/access, whose owner buttons select a logical owner for chat.
 Experimental generation support and strict TinyURL/runtime evidence remain distinct.

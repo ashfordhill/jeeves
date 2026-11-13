@@ -9,11 +9,10 @@ import {
 import { YOUTUBE_STUDIO_EXAMPLE, youtubeStudioExample } from "./youtube.ts";
 
 export { studioStudySeedOperations } from "./seed.ts";
-export const DEFAULT_STUDIO_EXAMPLE_ID = TINYURL_FOUNDATION_STUDIO_EXAMPLE.id;
+export const DEFAULT_STUDIO_EXAMPLE_ID = TINYURL_STUDIO_EXAMPLE.id;
 
 /** Chooser presentation does not change the older study's source, goal or saved designs. */
 export const studioArchitectureExamples = Object.freeze([
-  TINYURL_FOUNDATION_STUDIO_EXAMPLE,
   { ...TINYURL_STUDIO_EXAMPLE, name: "TinyURL · extended study (design only)" },
   MARKETPLACE_STUDIO_EXAMPLE,
   YOUTUBE_STUDIO_EXAMPLE,

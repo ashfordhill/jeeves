@@ -1,4 +1,5 @@
 /** Shared steps for the studio smoke specs. Each spec works on its own new TinyURL project. */
+import { studioArchitectureExample, studioStudySeedOperations } from "@jeeves/spec";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 
 /** The lane canvas has laid out and taken its camera. */
@@ -108,6 +109,24 @@ export async function createStudy(
   const id = project();
   if (!id) throw new Error("No project in the URL.");
   if (view === "Simple") await showView(page, "Simple");
+  return id;
+}
+
+/** A new project holding the TinyURL foundation study, which New project no longer offers. */
+export async function createFoundation(page: Page, name: string): Promise<string> {
+  const created = await page.request.post("/api/projects", { data: { name } });
+  expect(created.status()).toBe(201);
+  const id = (await created.json()).project.id as string;
+  const seeded = await page.request.post(`/api/projects/${id}/operations`, {
+    data: {
+      baseRevision: 0,
+      source: "canvas",
+      ops: studioStudySeedOperations(studioArchitectureExample("studio-tinyurl-foundation").design),
+    },
+  });
+  expect(seeded.ok(), await seeded.text()).toBe(true);
+  await page.goto(`/?project=${id}`);
+  await ready(page);
   return id;
 }
 
@@ -300,8 +319,7 @@ export const test = base.extend<{ tinyurl: string }>({
   tinyurl: async ({ page }, use) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
-    // These existing graph/settings tests deliberately exercise the extended schema2 study.
-    // The new foundation's default and complete v3 seed are covered in foundation.spec.ts.
+    // The extended TinyURL study is New project's default.
     const id = await createStudy(
       page,
       "E2E TinyURL extended",

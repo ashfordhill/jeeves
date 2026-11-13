@@ -1,5 +1,7 @@
 # Snapshot compatibility report
 
+> **Retired (owner, 2026-11-12).** The studio no longer shows or edits these declarations. A schema-3 design may still carry them: they are parsed, validated and exported in blueprint 3, so this page stays as their reference.
+
 **Export diagram → Source & diagnostics → Compatibility report**, blueprint v3 `readiness` and chat `readReadiness {}`
 all call `designReadiness` over the same design snapshot. Reads never upgrade, save, change Undo
 history or mark a staged review complete. The initial chat context carries only statuses, blocker

@@ -13,24 +13,16 @@ Custom requested behavior can be recorded as an unresolved requirement; it suppl
 Generate uses that same executing registry. Attachment does not certify runtime behavior or
 strict TinyURL readiness.
 
-Open **Export diagram → Source & diagnostics → Compatibility report** to see four separate results for the saved
-snapshot: design validity, exact contracts, implementation availability and exact output evidence.
-Expand a blocker list and use its mouse buttons to select the exact role/resource, relationship,
-owner or operation for chat. Report, selection and Fit never save or upgrade the design.
-There is no strict contract-compatible product template/evidence registry; strict availability
-stays unavailable and evidence none. Experimental partial export grants no strict readiness credit.
-The [report guide](studio-readiness.md) explains its exact composition identity and limitations.
-
 ## Projects
 
 The project menu (top right) lists recent projects and opens **New project**, the project browser
 (search, rename, delete) and rename. New project offers:
 
-- **Architecture study**: a copy of a study, chosen in the **Study** list: the
-  [TinyURL foundation study](#the-tinyurl-foundation-study) (the default; a fresh installation starts with one),
-  the extended [TinyURL study](#the-tinyurl-study) (design only), the
-  [marketplace study](#the-marketplace-study) or the [YouTube study](#the-youtube-study). The
-  project name follows the chosen study until you type over it.
+- **Architecture study**: a copy of a study, chosen in the **Study** list: the extended
+  [TinyURL study](#the-tinyurl-study) (design only; the default, and a fresh installation starts
+  with one), the [marketplace study](#the-marketplace-study) or the
+  [YouTube study](#the-youtube-study). The project name follows the chosen study until you type
+  over it.
 - **Blank architecture**: an empty design.
 
 The last opened project reopens on the next visit; its ID is in the URL.
@@ -140,7 +132,7 @@ Every other tile keeps its Simple view size and face.
   authored, and decides nothing that is generated.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
-  the clicked one thicker with the X. A relationship selected elsewhere (diagnostics, chat, Undo)
+  the clicked one thicker with the X. A relationship selected elsewhere (chat, Undo)
   shows its drawn lines the same way. **Choose relationship** names the modules ("Packager
   (Transcoder) to Transcoded videos") and offers each relationship once, by its drawn line under
   the click; where only one relationship's lines run together, a click selects it without asking.
@@ -221,11 +213,10 @@ The image shows canonical process and resource tiles, retaining every relationsh
 Selection, editing controls and the interactive camera are omitted.
 Export changes no saved design, revision, history, camera or selection.
 
-**Source & diagnostics** opens read-only ownership/access, operation and scope declarations,
-the strict compatibility report and the full saved source. **Download source JSON** preserves
-the complete document, including historical settings and custom declarations. Diagnostic target
-buttons select an exact owner, operation, tile or relationship for chat without changing source.
-This path supplies no declaration forms or extra settings menu.
+**Source & diagnostics** shows, read-only, who owns and may read each store, and the full saved
+source. **Download source JSON** preserves the complete document, including historical settings
+and custom declarations. Its owner buttons select a logical owner for chat without changing
+source. This path supplies no declaration forms or extra settings menu.
 
 Finish saving inspector edits before opening export. Capture checks the complete saved source
 before and after rendering, waits for layout animation and bundled fonts, and refuses a stale
@@ -694,29 +685,12 @@ Optional shortcuts: **Ctrl+Z** (**Cmd+Z** on a Mac) presses Undo, and **Ctrl+Shi
 name, a setting, the chat box) they are left to the browser's own text undo, and while a dialog is
 open (Export diagram, a removal's confirmation, Choose relationship) they do nothing.
 
-## Profile and requirements
-
-**Export diagram → Source & diagnostics → Profile & requirements** shows the saved scope.
-Finite requirements and custom obligations remain preserved, including missing targets and strict
-blockers. Normal authoring has no declaration-only requirements form. Feature attachment supplies
-its versioned source facts explicitly; reading never upgrades a project. Explicit source commands
-and chat `configureDesignScope` retain validation, atomic history and the v3 export boundary.
-See the [allowlist](studio-settings.md#profile-and-persistent-requirements).
-
 ## Logical owners, roles and access
 
-Canonical service/worker tiles show their names and kinds directly. No logical-owner cards,
-role/deployable subtitles, role-expansion banner or collapse controls precede useful settings.
-This presentation changes no owner, role, resource, grant, dependency or operation declaration.
-The automatic lane layout and canonical connection identities are unchanged.
-
-**Export diagram → Source & diagnostics → Ownership & access** retains exact declarations and
-owner selection for chat. Full source retains legacy inferred writers separately. These are
-read-only diagnostics; module commands derive the declarations their templates need atomically.
-Explicit source/chat commands retain the [finite validation rules](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
-Removal previews still name affected declarations and operation bindings; one Undo restores the
-whole edit. Missing projection sources refuse rather than silently reclassify a store. View,
-selection, Fit and export change no saved semantic data or revision.
+Module commands derive who owns each store and who may read it; generation reads that.
+**Export diagram → Source & diagnostics** shows it read-only, with the saved source. Removal
+previews still name the declarations a removal affects, and one Undo restores them; moving an
+entry that would clear operation bindings asks first.
 
 ## Chat
 
@@ -837,38 +811,6 @@ jobs, committed publication to search, pending-order/payment coordination) stay 
 `describeStudioPattern`, and `declareReviewScope` selects their checklist IDs and custom
 requirements for **this turn only**. Checks without typed contracts say **not specified**, even
 if a name or module describes the behavior. No review claims a runtime template or verification.
-
-## The TinyURL foundation study
-
-`studio-tinyurl-foundation@1.0.0` is the fresh-install default and chooser preselection. It is a
-new study, with a distinct source/goal identity, not an upgrade of existing projects. Create
-(authenticated) and Follow (public) reach the canonical **Create link** and **Resolve link**
-process tiles, which retain their shared `links-runtime` declaration.
-The Links database is authoritative PostgreSQL; the Links cache is an owned positive projection.
-Inspect authority, source/projection intent and role grants through **Source & diagnostics**.
-
-Create commits immutable HTTP(S) destinations and retained results durably. Resolve reads the
-primary on cache miss/outage, enforces optional expiry, and declares 307/no-store outcomes. Cache
-entries have a 300-second cap clamped to expiry; no negative or HTTP-response cache is declared.
-The existing exact records define deadlines, retries, idempotency and failure behavior in detail;
-these are declarations, with no implemented backend. The report is **valid / complete /
-unavailable / none**; generation remains ineligible because artifacts/verifier are unavailable.
-
-The chooser description and read-only scope diagnostics show the exclusions: analytics, destination
-changes, disable management, reputation, quotas and custom slugs. Including a required excluded
-feature or a custom obligation blocks the narrow profile. No module prose supplies implementation.
-
-Study creation uses one complete, version-aware ordinary operation batch: explicit schema upgrade,
-scope, graph/architecture, authority/grants/dependencies and operation/caller/cache declarations.
-It saves once, reloads exactly, and one Undo returns to the empty schema2 design. A failed seed
-deletes only its newly created project. Requested, remembered and newest existing projects retain
-selection; the default is created only when there is no project. Blueprint v2 refuses v3-only
-semantics at their exact paths; request v3 to retain the full study.
-
-Topology warnings use valid declared authority, role, write request and matching grant where
-those facts are present. Missing write permission still warns; a legacy inferred writer cannot
-fill a missing explicit grant. Designs without resource access declarations retain legacy warning
-behavior. These checks establish design intent, not runtime authorization.
 
 ## The TinyURL study
 
@@ -1341,18 +1283,6 @@ and all twenty components, with nothing omitted and no findings.
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).
 
-
-## Named API operation responsibilities
-
-**Export diagram → Source & diagnostics → Operation declarations** retains exact Create/Resolve
-receiver and caller refs, bindings and unresolved findings. **Select operation <id>** selects that
-binding for chat; selecting its parent tile or another relationship clears the operation selection.
-There are no unrelated TinyURL operation forms or operation subtitles on normal process tiles.
-
-Source and chat declarations retain their finite validators, explicit schema upgrade, atomic
-history and precise removal/transfer previews. Unsupported historical settings and unknown exact
-refs remain preserved and unresolved. Strict TinyURL implementation/evidence remains unavailable;
-experimental YouTube support does not certify these contracts. [Contract details](studio-contracts.md).
 
 ## Experimental project export
 

@@ -10764,3 +10764,72 @@ only where their change makes a sentence false (rule 8).
 
 **For the next unit.** PF04 next. The V3-19 live reports no longer replay (expected); the
 scripted report still does.
+
+## 2026-11-12 — PF04: Retire the strict-contract surface: web app and default study
+
+**What changed.**
+
+- Web app: deleted `studio/DesignScopeForm.tsx`, `OwnershipForm.tsx`, `OperationsForm.tsx`,
+  `ResolveFields.tsx`, `design-scope.css` and `ownership.css` (nothing imported them), then
+  `ReadinessReport.tsx` and `OperationsSummary.tsx`. **Source & diagnostics** now holds, in order:
+  `Saved schema v… · revision …. Read-only: the saved source, and who owns and may read each
+  store.`, **Download source JSON**, the ownership summary and **Full saved source**.
+  `Workspace.tsx` has no operation selection any more (`operationPick`, `selectedOperation`, the
+  `target.operation` branch and its chat reference are gone); the status reads `Selected logical
+  owner for chat · <id>`. Owner selection, removal previews and the entry-move dialog are unchanged.
+- `studio-examples/index.ts`: `DEFAULT_STUDIO_EXAMPLE_ID` is `studio-tinyurl`; New project lists
+  three studies, TinyURL · extended study (design only) preselected, then Marketplace and YouTube.
+  The foundation keeps its switch case and `tinyurl-foundation.ts`, so its projects still open.
+- Tests: deleted the e2e specs `design-scope`, `foundation`, `operations`, `readiness` and
+  `resolve` (8 tests), `operations.ts`, `selectOperation` in `source.ts` and the detailed-view
+  foundation test; added `createFoundation` to `studio.ts`, used by `diagram-export.spec.ts`'s PNG
+  owner test; the `tinyurl` fixture's comment; the four unit tests changed as the plan says.
+- Docs: `docs/studio.md` (the report paragraph, Projects, the PNG export's diagnostics paragraph,
+  Logical owners; deleted Profile and requirements, The TinyURL foundation study and Named API
+  operation responsibilities); a Retired banner on `studio-contracts.md` and `studio-readiness.md`;
+  `jeeves/CATALOG.md` (Studies, the four sections, the diagnostics sentences, new
+  `### Legacy declarations`); `jeeves/PLAN.md` Data model. Rule 8: `docs/studio.md` (diagnostics
+  no longer select a relationship), `docs/studio-settings.md` (scope and operations show only in
+  the full saved source), `docs/studio-blueprint.md` (the foundation is not the default; what
+  diagnostics provides), `jeeves/PLAN.md` Blueprint (no inspector readiness report).
+
+**Checks.**
+
+- check: passed before any change (106 files, 769 tests) and after (106 files, 769 tests), with
+  the frozen v1 and processes-off pins unchanged.
+- e2e: `pnpm test:e2e` 73 passed (5.5 min) on the first run (82 before, less the 9 deleted tests).
+- build: passed.
+- mouse: `pf04-check.spec.ts` 2 passed (1440×900, 1280×800), no page errors: New project →
+  Architecture study preselects TinyURL · extended study (design only) and lists exactly three
+  studies; Create renders the TinyURL tiles; Source & diagnostics holds exactly the paragraph, the
+  download button, Ownership & access and Full saved source, and none of the retired texts. 4
+  screenshots in `plans/production-foundations/evidence/pf04/`; the spec and its projects are
+  deleted.
+- `grep -rn "ReadinessReport\|OperationsSummary\|DesignScopeForm\|selectedOperation" jeeves/apps/web/src`
+  prints nothing (also `command grep`); step 1's grep listed only lines inside the four forms.
+
+**Differences from the plan.**
+
+- `SourceDiagnostics`'s doc comment said "strict reports"; it now names the source and the
+  ownership summary.
+- `diagram-export.spec.ts` also imports `createFoundation`.
+- The mouse spec ran its two sizes in order (`test.describe.configure({ mode: "default" })`),
+  since each deletes the projects that appeared while it ran.
+- Inserted doc paragraphs are wrapped at about 100 columns; the plan's sentences are kept, except
+  where `docs/studio.md`'s Projects bullet and `PLAN.md`'s Data model sentence say the plan's
+  facts in the surrounding sentence's form.
+
+**Noticed.**
+
+- `studio.css` keeps the `.readiness-*` rules (report, stages, eligibility, blockers, targets),
+  now unused. `Workspace.tsx`'s `onTarget` keeps its connection and element branches, which only
+  the deleted report used; nothing calls them now.
+- `docs/studio.md`'s Chat section and `PLAN.md`'s Chat still describe the declaration tools, and
+  the server still accepts an `operation:` chat selection; PF05's.
+- `create-example.ts`'s header comment still says the seed includes v3 scope, ownership and
+  operation declarations (true only of the foundation); not changed.
+- `jeeves_e2e` still holds "E2E Every kind" (and the 2026-11-06 "TinyURL · studio study" that
+  `createStudy` opens first); neither got in the way.
+
+**For the next unit.** PF05 next. Chat still offers `declareReviewScope`, `configureDesignScope`,
+`configureOperations`, `configureOwnership` and `readReadiness`; the web app shows none of them.

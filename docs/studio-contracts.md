@@ -1,5 +1,7 @@
 # Finite operation contracts
 
+> **Retired (owner, 2026-11-12).** The studio no longer shows or edits these declarations. A schema-3 design may still carry them: they are parsed, validated and exported in blueprint 3, so this page stays as their reference.
+
 NC03/NC04 add declarative Create link and Resolve link contracts plus one positive-cache policy. There is no HTTP runtime, auth verifier, adapter,
 generator, template manifest or runtime evidence. Existing studies and saved projects are never upgraded by reading them.
 

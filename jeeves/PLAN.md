@@ -57,7 +57,7 @@ preview/commands and unresolved diagnostics. Selecting scope implements no capab
 
 The vocabulary is finite: sixteen kinds with immutable definitions (`studio-definitions.ts`), nineteen
 module kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
-modules, are in `studio-modules.ts`). The studies, TinyURL foundation v1 (the default), extended TinyURL v3.2, the marketplace and
+modules, are in `studio-modules.ts`). The studies offered, TinyURL v3.2 (the default), the marketplace and
 YouTube, are built in lanes from published designs (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
@@ -179,8 +179,8 @@ omissions and findings, at default `blueprint: 2`. Explicit `?version=3` include
 (from the store's owner) or reads (one writer per store, derived from the owner). It is derived
 per request, `no-store`, and is the only
 interface a future code generator should read. V3 also includes the shared deterministic
-`readiness` report and its complete canonical composition subject/hash. The inspector and
-read-only chat tool use the same function; compact chat context contains only statuses/counts/hash.
+`readiness` report and its complete canonical composition subject/hash. The read-only chat tool
+uses the same function; compact chat context contains only statuses/counts/hash.
 See [studio blueprint](../docs/studio-blueprint.md) and [readiness](../docs/studio-readiness.md).
 
 ## API

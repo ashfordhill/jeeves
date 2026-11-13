@@ -26,8 +26,8 @@ describe("versioned foundation study and complete atomic seed", () => {
   );
   it("keeps the extended identity and goal intact and chooses a distinct narrow v3 default", () => {
     expect(studioArchitectureExample("studio-tinyurl").design).toEqual(legacy.design);
-    expect(DEFAULT_STUDIO_EXAMPLE_ID).toBe("studio-tinyurl-foundation");
-    const design = studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID).design;
+    expect(DEFAULT_STUDIO_EXAMPLE_ID).toBe("studio-tinyurl");
+    const design = studioArchitectureExample("studio-tinyurl-foundation").design;
     expect(design.schemaVersion).toBe(3);
     expect(design.elements).toHaveLength(4);
     expect(design.connections).toHaveLength(3);
@@ -58,14 +58,14 @@ describe("versioned foundation study and complete atomic seed", () => {
     const original = emptyDesign(),
       snapshot = structuredClone(original);
     const result = applyOperations(original, [
-      ...studioStudySeedOperations(studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID).design),
+      ...studioStudySeedOperations(studioArchitectureExample("studio-tinyurl-foundation").design),
       { op: "disconnect", id: "missing" },
     ]);
     expect(result.ok).toBe(false);
     expect(original).toEqual(snapshot);
   });
   it.each(["custom", "excluded"])("retains required %s extras as contract blockers", (mode) => {
-    const design = studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID).design;
+    const design = studioArchitectureExample("studio-tinyurl-foundation").design;
     if (design.schemaVersion !== 3) throw new Error();
     if (mode === "custom")
       design.scope.customRequirements.push({

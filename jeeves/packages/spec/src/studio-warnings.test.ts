@@ -29,11 +29,15 @@ const warnings = (design: DesignDocument) =>
 
 describe("design warnings", () => {
   it("studies have no topology warnings; the foundation retains its honest verifier gaps", () => {
-    for (const study of studioArchitectureExamples) {
-      const design = studioArchitectureExample(study.id).design;
+    const ids: string[] = [
+      ...studioArchitectureExamples.map((study) => study.id),
+      "studio-tinyurl-foundation",
+    ];
+    for (const id of ids) {
+      const design = studioArchitectureExample(id).design;
       expect(studioWarnings(design)).toEqual([]);
       expect(validateDesign(design).filter(isStructural)).toEqual([]);
-      if (study.id !== "studio-tinyurl-foundation") expect(validateDesign(design)).toEqual([]);
+      if (id !== "studio-tinyurl-foundation") expect(validateDesign(design)).toEqual([]);
       else
         expect(validateDesign(design).every((x) => x.message.includes("auth verifier"))).toBe(true);
     }

@@ -370,6 +370,7 @@ describe("IDs follow names", () => {
     );
     const designs: (readonly [string, DesignDocument])[] = [
       ...studies,
+      ["TinyURL foundation", studioArchitectureExample("studio-tinyurl-foundation").design],
       ["frozen v2", frozenV2Design()],
       ["v2 modules", v2ModuleDesign()],
       ["mouse", mouseDesign()],

@@ -1,6 +1,16 @@
 import type { Page } from "@playwright/test";
 import { exportPng } from "./export.ts";
-import { clickLine, createStudy, dragPaper, expect, lines, ready, test, tile } from "./studio.ts";
+import {
+  clickLine,
+  createFoundation,
+  createStudy,
+  dragPaper,
+  expect,
+  lines,
+  ready,
+  test,
+  tile,
+} from "./studio.ts";
 
 const view = (page: Page) =>
   page.locator(".lane-canvas .board").evaluate((board) => ({
@@ -58,7 +68,7 @@ test("PNG contains full YouTube routes after mouse selection, pan, zoom and dark
 test("canonical process export retains ownership; stale revisions, missing fonts and cancelled captures refuse downloads", async ({
   page,
 }) => {
-  const id = await createStudy(page, "E2E PNG owner");
+  const id = await createFoundation(page, "E2E PNG owner");
   let switched: string | undefined;
   try {
     const before = await (await page.request.get(`/api/projects/${id}/design`)).json();

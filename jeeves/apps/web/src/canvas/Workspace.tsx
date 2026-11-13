@@ -25,7 +25,6 @@ import {
   laneGraph,
   moduleKinds,
   operationChanges,
-  operationSelectionReference,
   ownerSelectionReference,
   type StudioComponentKind,
   type StudioLane,
@@ -134,12 +133,8 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [exportOpen, setExportOpen] = useState(false);
   const [generationOpen, setGenerationOpen] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
-  const [operationPick, setOperationPick] = useState<string>();
   const [ownerPick, setOwnerPick] = useState<string>();
   const ownership = designOwnership(loaded.design);
-  const selectedOperation = designOperations(loaded.design).receivers.find(
-    (x) => x.id === operationPick,
-  );
   const selectedOwner = ownership.owners.find((x) => x.id === ownerPick);
   const board = useRef<BoardHandle>(null);
   const selection = liveSelection(loaded.design, graph, pick);
@@ -151,15 +146,13 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     // Chat messages carry the open module, or the selected element, connection or entry; the
     // user, its actions and its lines to them have no design ID.
     const id = selection.module ?? selection.line ?? selection.tile;
-    const ids = selectedOperation
-      ? [operationSelectionReference(selectedOperation.id)]
-      : selectedOwner
-        ? [ownerSelectionReference(selectedOwner.id)]
-        : id && !id.startsWith("@")
-          ? [id]
-          : [];
+    const ids = selectedOwner
+      ? [ownerSelectionReference(selectedOwner.id)]
+      : id && !id.startsWith("@")
+        ? [id]
+        : [];
     useProject.setState({ architectureSelection: ids });
-  }, [selection.tile, selection.line, selection.module, selectedOwner, selectedOperation]);
+  }, [selection.tile, selection.line, selection.module, selectedOwner]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
   useEffect(() => {
     // A new tile or module opens with its Name field focused, ready to rename.
@@ -213,7 +206,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       next.module !== selection.module
     )
       void formDrafts.flushProject(projectId, true);
-    setOperationPick(undefined);
     setOwnerPick(undefined);
     setPick(next);
     if (next.tile || next.line)
@@ -343,19 +335,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         <SourceDiagnostics
           design={loaded.design}
           projectName={loaded.project.name}
-          selectedOperation={selectedOperation?.id}
           onClose={() => setDiagnosticsOpen(false)}
           onTarget={(target) => {
             setDiagnosticsOpen(false);
-            if (target.operation) {
-              const receiver = designOperations(loaded.design).receivers.find(
-                (item) => item.id === target.operation,
-              );
-              if (receiver) {
-                select({ tile: receiver.role });
-                setOperationPick(receiver.id);
-              }
-            } else if (target.owner) {
+            if (target.owner) {
               select({});
               setOwnerPick(target.owner);
             } else if (target.connection) select({ line: target.connection });
@@ -516,10 +499,9 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
               onSelect={select}
               adding={adding}
             />
-            {selectedOperation || selectedOwner ? (
+            {selectedOwner ? (
               <p className="studio-field-help" role="status">
-                Selected {selectedOperation ? "operation" : "logical owner"} for chat ·{" "}
-                {selectedOperation?.id ?? selectedOwner?.id}
+                Selected logical owner for chat · {selectedOwner.id}
               </p>
             ) : null}
           </aside>

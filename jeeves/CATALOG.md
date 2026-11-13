@@ -452,18 +452,7 @@ not prove architecture quality or runtime behavior; live-model evidence remains 
 
 New project offers three studies, described in the [studio guide](../docs/studio.md).
 
-**TinyURL foundation** (`studio-tinyurl-foundation@1.0.0`, the default) is the bounded schema-v3
-create/resolve design: Create and Follow actions, one Links logical owner, Create link and Resolve
-link canonical API roles sharing an explicit deployable assignment, authoritative PostgreSQL and
-a Links-owned Redis-compatible positive projection. Create has source read-write access for
-commit/reconciliation; Resolve reads the primary and reads/fills the cache. Existing finite
-Create/Resolve/cache records and the exact TinyURL profile are pinned. The verifier is null;
-report: valid / complete / unavailable / none, generation ineligible. Analytics, editable targets,
-disable management, reputation, quotas and custom slugs are visibly excluded; required additions
-block this profile. There are no modules, additional services or runtime artifacts.
-([guide](../docs/studio.md#the-tinyurl-foundation-study)).
-
-**Extended TinyURL** (`studio-tinyurl@3.2.0`, design only) is built from published designs
+**Extended TinyURL** (`studio-tinyurl@3.2.0`, the default, design only) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
 redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
 front of one URL database that only the Shorten service writes, and click analytics through a
@@ -512,26 +501,6 @@ requirements use a mouse disclosure. Two repair batches fit inside the original 
 Neither tool changes persisted settings, contracts, blueprint versions or runtime evidence.
 
 
-## Persistent behavior scope
-
-[`design-scope.ts`](packages/spec/src/design-scope.ts) is the finite schema-v3 scope catalog:
-`tinyurl-create-resolve@1.0.0` selects immutable HTTP(S) destinations, authenticated create,
-public resolve and optional expiry in one public namespace. Custom slugs, destination mutation,
-disable/management, reputation, quotas and exact analytics are excluded. The ten finite rows
-can carry included/excluded, required/advisory intent; required incompatible behavior stays
-saveable with a blocker. Up to eight targeted custom requirements are always unresolved.
-Unknown exact profile references remain unresolved without substitution.
-
-Explicit source commands and narrow chat `configureDesignScope` use
-`previewDesignScope` / `buildDesignScopeCommand`. Preview then explicit upgrade preserves
-schema-v2 projects; one Undo crosses the version boundary. Scope-only chat changes invalidate
-review and count toward its existing two repair batches. RF04 review scope remains turn-only.
-The v3 blueprint retains scope and unresolved contracts; default v2 refuses every v3-only path.
-No owner/API/message contracts, deployables, runtime templates, generator or verification follow
-from profile selection. See [settings](../docs/studio-settings.md#profile-and-persistent-requirements)
-and [blueprint](../docs/studio-blueprint.md#contents-blueprint-3).
-
-
 ## Explicit logical authority and access
 
 [`ownership.ts`](packages/spec/src/ownership.ts) adds optional schema-v3 `ownership`, independently
@@ -550,75 +519,22 @@ custom requirements; surviving projections cannot silently lose their source.
 
 The canvas shows canonical process tiles directly, without owner cards, role/deployable subtitles,
 expansion/collapse actions or fallback narration. The existing lane layout receives the canonical
-graph; view interaction changes no contracts. **Export diagram → Source & diagnostics** retains
-read-only ownership/access, operations, scope and exact source JSON download; normal forms contain
-only identity and useful installed settings. Diagnostic buttons retain exact owner/operation chat
-selection. Removal previews and Undo still preserve declarations.
+graph; view interaction changes no contracts. **Export diagram → Source & diagnostics** shows
+ownership/access read-only, with the saved source and its JSON download; its owner buttons select a
+logical owner for chat. Normal forms contain only identity and useful installed settings. Removal
+previews and Undo still preserve declarations.
 V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new
 row with an exact path. Generic tiles supply no capability, template or runtime verification.
 Exact Create/Resolve operation bindings refine these grants; other operations remain unspecified. Existing presets are unchanged.
 
 
-### Finite Create link contract (NC03)
+### Legacy declarations
 
-`operation-catalog.json` freezes `links-create@1.0.0` with full-definition SHA256 and separate
-request/success/error schema hashes. `operation-contracts.ts` supplies exact bounded refs,
-receiver/caller bindings, validation, preview and the shared mouse/chat command; these are
-separate from generic kinds/modules. The inspector adds an attached named responsibility on the
-same canonical API, with explicit operation selection. Several distinct operations may share an
-API/edge; binding IDs are stable and separate from graph IDs. No operation follows from a label.
-
-The fixed behavior declares verified-principal create, HTTP(S) normalization, optional expiry,
-16-byte random codes with five total attempts, atomic durable success, principal/operation/key
-replay for 24 hours and explicit errors under one 10-second deadline. Unknown exact refs are
-retained/unresolved; known contradictions refuse. [Contract details](../docs/studio-contracts.md).
-`describeOperation` retrieves this exact record; `configureOperations` previews/applies the same
-bounded source declarations. Optional v3 `operations` exports completely; default v2
-refuses each nonempty row. Auth verifiers/templates/runtime evidence remain unavailable. Resolve
-and cache/expiry lookup policy are declared separately by NC04. No presets or owner designs are migrated.
-
-
-### Finite Resolve link and positive cache (NC04)
-
-`resolve-operation-catalog.json` and `cache-policy-catalog.json` freeze `links-resolve@1.0.0`
-and `links-positive-cache@1.0.0`, with actual schema/behavior hashes. Create's NC03 identity is
-unchanged. Public GET `/links/{code}` yields 307 Location or 400/404/410/503, always no-store.
-Stable 410 retains expiry evidence forever; immutable codes/destinations are never reused/edited.
-Primary lookup, same-owner source read and exact cache projection read-and-fill compose with
-Create's durable success. Positive cache caps 300s and clamps every write to record expiry, with
-50 ms cache /1000 ms primary /1200 ms total bounds, 64 actual primary calls shared per instance,
-immediate overload refusal and no L1/negative/retries/HTTP response cache. These are finite
-contract choices, not runtime verification. Settings/modules/CDN contradictions refuse rather
-than migrate. Selected-profile namespace agreement is checked; arbitrary independent namespaces
-remain legal. Unknown exact refs and incomplete declarations stay unresolved. Source commands, chat lookup/configure, preview/history and blueprint share these declarations.
-No preset, saved project, provider adapter, template or backend runtime is added.
-
-### Exact snapshot compatibility report (NC05)
-
-`design-readiness.ts` uses full structural validation, exact profile/contract completeness and
-independent whole-design coverage. The read-only **Export diagram → Source & diagnostics** report, blueprint v3 `readiness` and
-`readReadiness {}` share it; initial chat context carries a compact status/count/hash summary.
-`readiness-subject.ts` exposes the canonical semantic subject with all source settings, grants,
-bindings, deployables and names/prose, excluding only revision/origin and external layout/UI.
-`tinyurl-readiness-profile.json` pins the actual local profile definition and explicit three v1
-record refs; unrelated future records cannot alter its identity. Create requires read-write
-source intent/grant for retained-result lookup and writes; old write-only declarations remain
-saveable with a targeted contract gap. Concrete verifier availability remains a separate gap.
-
-`readiness-artifacts.ts` checks host-only pinned manifest/content/expected-output-receipt/evidence
-inputs, never a model/user manifest. A manifest supports one exact composition; positive paths
-exist only in isolated tests. Generation eligibility excludes output evidence to permit first
-generation, and never implies verification. Product availability is unavailable; evidence is
-none. [Report fields, hash rules and trust limits](../docs/studio-readiness.md).
-
-NC14 checks Create's actual source dependency for synchronous SQL/native intent and an internal
-service boundary; known contradictions refuse, unspecified protocol stays unresolved, and unknown
-operation refs acquire no Create semantics. Source diagnostics preserve declared API/worker roles, resource access and legacy inference
-without presenting them as normal generation controls. V3 exports detached
-ownership rows. Trusted suite format v2 additionally pins hash-resolved executable-bundle bytes;
-case names alone identify no code. Frozen operation/cache/profile records are unchanged. See the
-[independent review](../docs/plans/reliable-foundations/nc14-review.md) and the separate
-[future backend plan](../docs/plans/reliable-foundations/backend-first-proof-plan.md).
+A schema-3 design may carry `scope`, `operations` and cache-policy declarations from the retired
+strict-contract work (NC01–NC14, 2026-11-07). They are still parsed, validated and exported in
+blueprint 3, and the studio no longer shows or edits them. The TinyURL foundation study
+(`studio-tinyurl-foundation`) is no longer offered; projects made from it still open. Details:
+[contracts](../docs/studio-contracts.md) and [readiness](../docs/studio-readiness.md).
 
 ### Experimental local-v2 video composition
 

@@ -2,7 +2,6 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  DEFAULT_STUDIO_EXAMPLE_ID,
   designBlueprintV3,
   emptyDesign,
   studioArchitectureExample,
@@ -19,7 +18,7 @@ it("saves the entire new v3 default as one revision, refuses exact v2 losses, re
     service = new DesignService(database.db);
   try {
     const project = await service.createProject("NC06 atomic foundation"),
-      source = studioArchitectureExample(DEFAULT_STUDIO_EXAMPLE_ID).design;
+      source = studioArchitectureExample("studio-tinyurl-foundation").design;
     const failure = await service.edit(project.id, {
       baseRevision: 0,
       source: "canvas",

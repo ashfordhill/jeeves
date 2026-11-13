@@ -41,9 +41,3 @@ export async function openDiagnostics(page: Page) {
   await page.getByRole("button", { name: "Source & diagnostics", exact: true }).click();
   return page.getByRole("dialog", { name: "Source & diagnostics", exact: true });
 }
-export async function selectOperation(page: Page, id: string) {
-  const dialog = await openDiagnostics(page);
-  await dialog.getByText(/^Operation declarations ·/).click();
-  await dialog.getByRole("button", { name: `Select operation ${id}`, exact: true }).click();
-  await expect(dialog).toBeHidden();
-}
