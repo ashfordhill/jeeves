@@ -400,9 +400,12 @@ The pure helpers for the inspector, chat and Generate are:
   selection covers it) or **Refused** (why), and its unconnected slots.
 
 On the canvas and in the inspector the module `+` menu offers `moduleKinds`, grouped by what each
-kind can generate in that tile: **Template** for a lead, **Part of a template** for a part, but
-**Stub** where the template doesn't allow the tile's kind (a Cache reader in a Worker); a pick
-runs `addModule`. A
+kind does (`moduleGroups` in `apps/web/src/studio/module-groups.ts`: **Requests**, **Data**,
+**Events**, **Files & media**, **Custom**, each in one colour family). Each kind's card has a dot
+for what it can generate in that tile (`moduleGeneration`), in the studio's words: **Generated**
+for a lead, **Building block** for a part, but **You write it** where the template doesn't allow
+the tile's kind (a Cache reader in a Worker) and for a stub kind; chat keeps Template, Part of a
+template and Stub. A pick runs `addModule`. A
 row has a dot when its kind has slots, filled when `moduleSlots` has a link; a drag from it may
 end where `moduleConnectOptions` gives a command, and runs it. The **Disconnect** item of a
 right-click menu on a module's drawn line or on an in-process link's gutter arrow (a loader,

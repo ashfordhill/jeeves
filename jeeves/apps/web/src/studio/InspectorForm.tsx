@@ -381,7 +381,10 @@ function ComponentDraftForm({
   );
 }
 
-/** What the module generates: Template with its template, or Stub, Custom or Refused and why. */
+/**
+ * What the module generates, in the studio's words: Generated with its template, You write it
+ * with what its template still needs, or Refused and why.
+ */
 function ModuleStatusLine({ status }: { status: NonNullable<ReturnType<typeof moduleStatus>> }) {
   const { label, detail } = moduleStatusLine(status);
   return (

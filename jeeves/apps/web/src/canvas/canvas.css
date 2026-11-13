@@ -468,18 +468,21 @@
   left: 8px;
 }
 
-/* The module menu, on <body> at screen size: a title, then a group per status (Template, Part of
-   a template, Stub), its kinds two to a row, each with its icon, name and one-line description. */
+/* The module menu, on <body> at screen size, as the UI refresh preview draws it: a title, then a
+   group per job (Requests, Data, Events, Files & media, Custom: a square in the group's --fam and
+   its name), its cards two to a row (a lone card takes the row), then the legend of the dots. */
 .lane-module-menu {
   position: fixed;
   z-index: 4100;
+  display: grid;
+  gap: 10px;
   box-sizing: border-box;
   width: 468px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
   overflow: auto;
-  padding: 10px 12px 12px;
-  border: 2px solid color-mix(in srgb, var(--line) 45%, transparent);
+  padding: 12px;
+  border: 2px solid var(--row-line);
   border-radius: 14px;
   background: var(--cream);
   color: var(--ink);
@@ -488,7 +491,7 @@
 }
 
 .lane-module-menu-title {
-  margin: 0 2px 6px;
+  margin: 0;
   color: var(--ink-soft);
   font-size: 12px;
   font-weight: 700;
@@ -496,7 +499,7 @@
 
 .lane-module-menu-title strong {
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .lane-module-menu-group {
@@ -506,95 +509,111 @@
   border: 0;
 }
 
-.lane-module-menu-group + .lane-module-menu-group {
-  margin-top: 8px;
-}
-
-/* A group's status, in the module page's pill (Template in the plus colour). */
 .lane-module-menu-heading {
-  display: inline-block;
-  margin: 0 0 5px 2px;
-  float: left;
-  padding: 0 7px;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  color: var(--ink-soft);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 17px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.lane-module-menu-heading[data-generation="lead"] {
-  color: var(--plus);
+.lane-module-menu-heading::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--ic-ink);
+  border-radius: 3px;
+  background: var(--fam);
 }
 
 .lane-module-menu-items {
-  clear: left;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 6px;
 }
 
-.lane-module-menu-item {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  column-gap: 8px;
+/* A module card, in the menu and in the inspector: its group's solid fill and border; the name
+   and, at the right, the generation dot (in the inspector, the dot and its word in a pill); then
+   the icon and one line of description, cut with an ellipsis. */
+.lane-module-menu-item,
+.lane-module-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-sizing: border-box;
+  width: 100%;
   min-width: 0;
   margin: 0;
-  padding: 6px 8px 7px 7px;
-  border: 1px solid color-mix(in srgb, var(--line) 30%, transparent);
-  border-radius: 8px;
-  background: var(--paper);
+  padding: 8px 10px 9px;
+  border: 1.5px solid var(--fam);
+  border-radius: 10px;
+  background: var(--sfam);
   color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
-.lane-module-menu-item:hover {
-  border-color: var(--type-color, var(--ink-soft));
-  background: color-mix(in srgb, var(--type-color, var(--ink)) 9%, var(--paper));
+.lane-module-menu-item:hover,
+.lane-module-card:hover {
+  border-color: var(--ink);
 }
 
-.lane-module-menu-item:focus-visible {
+.lane-module-menu-item:focus-visible,
+.lane-module-card:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 1px;
 }
 
-.lane-module-menu-icon {
+.lane-module-top {
   display: flex;
-  margin-top: 1px;
-}
-
-.lane-module-menu-text {
-  display: grid;
-  gap: 1px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
 }
 
-.lane-module-menu-text strong {
+.lane-module-top strong {
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.lane-module-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: color-mix(in srgb, var(--ink) 78%, var(--sfam));
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.3;
 }
 
-.lane-module-menu-description {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  color: var(--ink-soft);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.35;
+.lane-module-menu-icon,
+.lane-module-icon {
+  display: flex;
+  flex: none;
 }
 
-/* The status is the group's heading; it stays in the item's description for assistive tech. */
+.lane-module-menu-description,
+.lane-module-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The dot's word is in the card's title; it starts the item's description for assistive tech. */
 .lane-module-menu-status {
   position: absolute;
   width: 1px;
@@ -602,6 +621,75 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Who writes the code: full for Generated, the left half for Building block, empty (with a soft
+   ring) for You write it. */
+.lane-generation-dot {
+  display: block;
+  flex: none;
+  box-sizing: border-box;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--plus);
+  border-radius: 50%;
+  background: var(--badge);
+}
+
+.lane-generation-dot[data-generation="lead"] {
+  background: var(--plus);
+}
+
+.lane-generation-dot[data-generation="part"] {
+  background: linear-gradient(90deg, var(--plus) 50%, var(--badge) 50%);
+}
+
+.lane-generation-dot[data-generation="stub"] {
+  border-color: var(--ink-soft);
+}
+
+/* An inspector card's dot and its word. */
+.lane-generation-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 5px;
+  border-radius: 999px;
+  background: var(--badge);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Under the last group: each dot, its word and what it means. */
+.lane-module-menu-legend {
+  display: grid;
+  gap: 4px;
+  margin: 2px 0 0;
+  padding: 9px 2px 0;
+  border-top: 1.5px solid var(--hairline);
+  list-style: none;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.lane-module-menu-legend li {
+  display: grid;
+  grid-template-columns: 13px minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+}
+
+.lane-module-menu-legend .lane-generation-dot {
+  margin-top: 1px;
+}
+
+.lane-module-menu-legend b {
+  color: var(--ink);
+  font-weight: 900;
 }
 
 /* The inspector's `+`, centred under the Modules cards. */
@@ -1063,62 +1151,16 @@
    rail too. */
 .lane-module-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.lane-module-card {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 10px;
-  row-gap: 1px;
-  width: 100%;
-  border: 1px solid color-mix(in srgb, var(--line) 30%, transparent);
-  border-radius: 8px;
-  padding: 8px 10px 9px 9px;
-  background: var(--paper);
-  color: var(--ink);
-  font: inherit;
-  text-align: left;
-  overflow-wrap: anywhere;
-  cursor: pointer;
-}
-
-.lane-module-card:hover {
-  border-color: var(--type-color, var(--ink-soft));
-}
-
-.lane-module-icon {
-  display: flex;
-  grid-row: span 3;
-  margin-top: 1px;
-}
-
-.lane-module-card > strong {
-  font-size: 13px;
-  line-height: 1.3;
-}
-
-.lane-module-kind {
-  color: var(--ink-soft);
-  font-size: 12px;
-}
-
-.lane-module-description {
-  display: -webkit-box;
-  margin-top: 2px;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-/* A module page's status under its kind: a small word (Template in the plus colour, Refused on a
-   yellow wash, Stub and Custom plain), then the template's name or the reason in plain words. */
+/* A module page's status under its kind: a small word (Generated in the plus colour, Refused on a
+   yellow wash, You write it plain), then the template's name or the reason in plain words. Generate
+   project's Modules list uses it too, in the generator's words. */
 .lane-module-status {
   display: flex;
   flex-wrap: wrap;

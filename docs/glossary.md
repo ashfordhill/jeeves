@@ -9,6 +9,7 @@
 | Module | A part inside an application tile (a *component* in the saved design). It is the unit of generated code. |
 | Template | Generated, working code for one mechanism (sign-in, multipart upload, cache read). Its *lead* module selects it once its *parts* are connected. |
 | Stub | A module with no complete template. It exports as a typed file that throws "Not implemented" until written. |
+| Generated, Building block, You write it | The studio's words for a module that leads a template, is part of one, or is a stub. |
 | Hook file | `src/modules/<tile>/<lead>.hooks.ts`: the product decisions a template asks for. The application's own. |
 | Scaffold | Every generated file that is not a hook file, a stub body or a product SQL file. Never edited by hand. |
 | Selection | The saved record that a template or a stub generates a module (`generation.selections`). |

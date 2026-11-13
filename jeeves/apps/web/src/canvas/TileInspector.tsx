@@ -8,6 +8,7 @@
 import {
   type DesignDocument,
   type StudioComponent,
+  type StudioKind,
   studioComponentDefinitions,
   studioComponentVisuals,
   studioDefinitions,
@@ -16,44 +17,67 @@ import {
 import { IconArrowLeft } from "@tabler/icons-react";
 import { type RefObject, useLayoutEffect, useRef } from "react";
 import { ComponentForm, TargetInspector } from "../studio/InspectorForm.tsx";
+import { moduleGroupOf } from "../studio/module-groups.ts";
+import { generationWords, moduleGeneration } from "../studio/module-status.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
-import { ModuleAddButton, type ModuleAdding } from "./ModuleMenu.tsx";
+import { GenerationDot, ModuleAddButton, type ModuleAdding } from "./ModuleMenu.tsx";
 import { WarningList } from "./Warnings.tsx";
 
-/** A tile's modules as cards: icon, name, kind and a two-line description. A click opens one. */
+/**
+ * A tile's modules as cards, as the module menu draws them (its kind's group's colours): the name,
+ * and in a pill the dot and word for what its kind can generate in the tile; then its icon, its
+ * kind and its Description on one line. A click opens one.
+ */
 function ModuleCards({
   modules,
+  host,
   list,
   onOpen,
 }: {
   modules: readonly StudioComponent[];
+  /** The tile's kind. */
+  host: StudioKind | undefined;
   list: RefObject<HTMLUListElement | null>;
   onOpen: (id: string) => void;
 }) {
   return (
     <ul ref={list} className="lane-module-list" aria-label="Modules">
       {modules.map((item) => {
-        const visual = studioComponentVisuals[item.settings.kind];
+        const kind = item.settings.kind;
+        const generation = host ? moduleGeneration(kind, host) : undefined;
         return (
           <li key={item.id}>
             <button
               type="button"
               className="lane-module-card"
               data-module={item.id}
-              data-family={visual.color}
+              data-family={moduleGroupOf(kind).family}
               aria-label={`Open ${item.name}`}
               onClick={() => onOpen(item.id)}
             >
-              <span className="lane-module-icon">
-                <StudioIcon name={visual.icon} size={20} />
+              <span className="lane-module-top">
+                <strong>{item.name}</strong>
+                {generation ? (
+                  <span className="lane-generation-pill" data-generation={generation}>
+                    <GenerationDot generation={generation} />
+                    {generationWords[generation].word}
+                  </span>
+                ) : null}
               </span>
-              <strong>{item.name}</strong>
-              <small className="lane-module-kind">
-                {studioComponentDefinitions[item.settings.kind].name}
-              </small>
-              {item.description ? (
-                <span className="lane-module-description">{item.description}</span>
-              ) : null}
+              <span className="lane-module-line">
+                <span className="lane-module-icon">
+                  <StudioIcon name={studioComponentVisuals[kind].icon} size={15} />
+                </span>
+                <span className="lane-module-text">
+                  <span className="lane-module-kind">{studioComponentDefinitions[kind].name}</span>
+                  {item.description ? (
+                    <>
+                      {" · "}
+                      <span className="lane-module-description">{item.description}</span>
+                    </>
+                  ) : null}
+                </span>
+              </span>
             </button>
           </li>
         );
@@ -89,6 +113,8 @@ export function TileInspector({
     (item) => item.host === id,
   );
   const module = open ? modules.find((item) => item.id === open) : undefined;
+  const kind = design.architecture?.studio?.elements.find((item) => item.element === id)?.settings
+    .kind;
   const groups = adding?.groups(id);
   const shown = module?.id;
   const list = useRef<HTMLUListElement>(null);
@@ -108,8 +134,6 @@ export function TileInspector({
     if (document.activeElement === document.body) card?.focus({ preventScroll: true });
   }, [shown]);
   if (module) {
-    const kind = design.architecture?.studio?.elements.find((item) => item.element === id)?.settings
-      .kind;
     const visual = kind ? studioDefinitions[kind].visual : undefined;
     // Each page is its own scroller, so a module opens at its top.
     return (
@@ -152,7 +176,7 @@ export function TileInspector({
           modules.length || groups?.length ? (
             <>
               {modules.length ? (
-                <ModuleCards modules={modules} list={list} onOpen={onModule} />
+                <ModuleCards modules={modules} host={kind} list={list} onOpen={onModule} />
               ) : null}
               {adding && groups?.length ? (
                 <div className="lane-module-list-add">

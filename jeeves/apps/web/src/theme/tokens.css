@@ -45,6 +45,9 @@
   --row-line: #8fa5b1;
   --ic-ink: #071c28;
   --ic-fill: #fdfeff;
+  /* Behind a dot or a small pill on a coloured card; dividers inside rails and menus. */
+  --badge: #ffffff;
+  --hairline: #cfe0e8;
   --select-ring: rgba(26, 143, 212, 0.5);
   --banner: #d4f0f8;
   --header-height: 56px;
@@ -95,6 +98,8 @@
   --row-line: #4f7285;
   --ic-ink: #071c28;
   --ic-fill: #dcebf2;
+  --badge: #0f1d26;
+  --hairline: #2a4554;
   --select-ring: rgba(126, 182, 224, 0.65);
   --banner: #1e3f4e;
   --mantine-color-dimmed: var(--ink-soft);
@@ -418,109 +423,138 @@ body,
 }
 
 /* Capability colors belong to the shared theme, independently of legacy editor mounting.
-   --type-color colours a family's text and borders; --fam is its icons' accent fill. */
+   --type-color colours a family's text and borders; --fam is its icons' accent fill and a group's
+   marker; --sfam is the solid fill of a card in that family. */
 [data-family] {
   --type-color: #637687;
   --fam: #37b8aa;
+  --sfam: #d0efea;
 }
 [data-family="api"] {
   --type-color: #2676bd;
   --fam: #46a0e6;
+  --sfam: #d7eafb;
 }
 [data-family="client"] {
   --type-color: #8053b7;
   --fam: #9d74da;
+  --sfam: #eadffa;
 }
 [data-family="endpoint"] {
   --type-color: #087e80;
   --fam: #37b8aa;
+  --sfam: #d0efea;
 }
 [data-family="domain"] {
   --type-color: #5a60b6;
   --fam: #37b8aa;
+  --sfam: #d0efea;
 }
 [data-family="data"] {
   --type-color: #a36b10;
   --fam: #f4ba36;
+  --sfam: #fbeecb;
 }
 [data-family="worker"] {
   --type-color: #b05c20;
   --fam: #f28f3d;
+  --sfam: #fde4cf;
 }
 [data-family="messaging"] {
   --type-color: #b44d78;
   --fam: #ea6c9f;
+  --sfam: #fbdde9;
 }
 [data-family="external"] {
   --fam: #93a8b8;
+  --sfam: #e4ebf0;
 }
 [data-family="system"] {
   --type-color: #337787;
   --fam: #37b8aa;
+  --sfam: #d0efea;
 }
 :root[data-theme="dark"] [data-family] {
   --fam: #5fd0c2;
+  --sfam: #185b54;
 }
 :root[data-theme="dark"] [data-family="api"] {
   --type-color: #75b9f4;
   --fam: #6bb6f2;
+  --sfam: #1d4d73;
 }
 :root[data-theme="dark"] [data-family="client"] {
   --type-color: #c1a0ef;
   --fam: #b99cf0;
+  --sfam: #46357a;
 }
 :root[data-theme="dark"] [data-family="endpoint"] {
   --type-color: #60d2c9;
   --fam: #5fd0c2;
+  --sfam: #185b54;
 }
 :root[data-theme="dark"] [data-family="domain"] {
   --type-color: #a7abf4;
   --fam: #5fd0c2;
+  --sfam: #185b54;
 }
 :root[data-theme="dark"] [data-family="data"] {
   --type-color: #e8c276;
   --fam: #f2c65e;
+  --sfam: #5c4812;
 }
 :root[data-theme="dark"] [data-family="worker"] {
   --type-color: #f4ad7b;
   --fam: #f5a05e;
+  --sfam: #6a3b17;
 }
 :root[data-theme="dark"] [data-family="messaging"] {
   --type-color: #ec9fbd;
   --fam: #f08db5;
+  --sfam: #642d49;
 }
 :root[data-theme="dark"] [data-family="external"] {
   --type-color: #b7cad8;
   --fam: #a9bccb;
+  --sfam: #3b4d59;
 }
 :root[data-theme="dark"] [data-family="person"] {
   --type-color: #b7cad8;
   --fam: #5fd0c2;
+  --sfam: #185b54;
 }
 :root[data-theme="dark"] [data-family="system"] {
   --type-color: #8dc5d1;
   --fam: #5fd0c2;
+  --sfam: #185b54;
 }
 
-/* An export's icons keep their light accents whatever the studio's theme. */
+/* An export keeps its light family colours (--fam, --sfam) whatever the studio's theme. */
 :root .diagram-capture-host .board.board-snapshot [data-family] {
   --fam: #37b8aa;
+  --sfam: #d0efea;
 }
 :root .diagram-capture-host .board.board-snapshot [data-family="api"] {
   --fam: #46a0e6;
+  --sfam: #d7eafb;
 }
 :root .diagram-capture-host .board.board-snapshot [data-family="client"] {
   --fam: #9d74da;
+  --sfam: #eadffa;
 }
 :root .diagram-capture-host .board.board-snapshot [data-family="data"] {
   --fam: #f4ba36;
+  --sfam: #fbeecb;
 }
 :root .diagram-capture-host .board.board-snapshot [data-family="worker"] {
   --fam: #f28f3d;
+  --sfam: #fde4cf;
 }
 :root .diagram-capture-host .board.board-snapshot [data-family="messaging"] {
   --fam: #ea6c9f;
+  --sfam: #fbdde9;
 }
 :root .diagram-capture-host .board.board-snapshot [data-family="external"] {
   --fam: #93a8b8;
+  --sfam: #e4ebf0;
 }

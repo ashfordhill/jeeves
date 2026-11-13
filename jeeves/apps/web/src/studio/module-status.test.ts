@@ -1,8 +1,8 @@
 // The words for what a module generates: a kind's place in a tile's module fan, and a module's
-// status line on its page.
+// status line on its page, in the studio's words (Generated, Building block, You write it).
 import { type ModuleStatus, studioComponentKinds } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
-import { moduleGeneration, moduleStatusLine } from "./module-status.ts";
+import { generationWords, moduleGeneration, moduleStatusLine } from "./module-status.ts";
 
 describe("moduleGeneration", () => {
   it("names a lead or part only where its template allows the tile, else a stub", () => {
@@ -40,6 +40,18 @@ describe("moduleGeneration", () => {
   });
 });
 
+describe("generationWords", () => {
+  it("words each generation in the studio's words, with what it means", () => {
+    expect(Object.keys(generationWords)).toEqual(["lead", "part", "stub"]);
+    expect(Object.values(generationWords).map((item) => item.word)).toEqual([
+      "Generated",
+      "Building block",
+      "You write it",
+    ]);
+    expect(generationWords.stub.meaning).toBe("An empty, typed file for your own code.");
+  });
+});
+
 describe("moduleStatusLine", () => {
   const base: ModuleStatus = {
     module: "watch-cache",
@@ -49,13 +61,13 @@ describe("moduleStatusLine", () => {
     status: "template",
     unconnected: [],
   };
-  it("gives the template's name, or the reason", () => {
+  it("says Generated, You write it or Refused, with the template's name or the reason", () => {
     expect(moduleStatusLine({ ...base, template: "positive-cache-read" })).toEqual({
-      label: "Template",
+      label: "Generated",
       detail: "Cache read",
     });
     expect(moduleStatusLine({ ...base, status: "stub", reason: "Needs a cache." })).toEqual({
-      label: "Stub",
+      label: "You write it",
       detail: "Needs a cache.",
     });
     expect(
@@ -71,9 +83,9 @@ describe("moduleStatusLine", () => {
       detail:
         "The link from Watch API to Metadata database uses Service identity, which its template can't use.",
     });
-    expect(moduleStatusLine({ ...base, status: "custom" })).toEqual({ label: "Custom" });
+    expect(moduleStatusLine({ ...base, status: "custom" })).toEqual({ label: "You write it" });
     expect(moduleStatusLine({ ...base, kind: "favorites", template: "favorites" })).toEqual({
-      label: "Template",
+      label: "Generated",
       detail: "Favorites",
     });
   });

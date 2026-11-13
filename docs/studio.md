@@ -427,18 +427,31 @@ nothing. On the board the menu opens beside the tile, never over it: below it wh
 else on its right, left or above, inside the canvas, or over a rail when the canvas has no room
 beside the tile (only a window too small for it on every side lets it cover part of the tile). From the inspector it pops out to the left of the rail, level with the `+`. It is drawn
 at screen size, whatever the zoom, and lists the module kinds that tile allows
-([catalog](../jeeves/CATALOG.md#components-c3)) under what each can generate in that tile, two to a
-row, each with its icon, its name and its one-line description ("Data access · Reads and writes one
-database."):
+([catalog](../jeeves/CATALOG.md#components-c3)) grouped by what they do (`module-groups.ts`), in
+catalog order within a group: **Requests** (Rate limiter, Redirect responder, Auth guard, External
+call), **Data** (Cache reader, ID generator, Data access, Lifecycle writer, Event counter, Index
+writer, Search query, Favorites), **Events** (Event publisher, Event consumer), **Files & media**
+(Multipart uploads, Video encoder, Video packager, Video thumbnailer) and **Custom**. Each group has
+a heading (a small square in its family colour and its name) over its cards, two to a row (a lone
+card takes the whole row). A card has its group's solid fill and border, its name and, at the
+right, a dot for who writes the code in that tile; under them its icon and its one-line
+description, cut with an ellipsis (the card's tooltip has the whole line). A legend under the
+last group explains the dots:
 
-| Group | Means | A Microservice's | A Worker service's |
-| --- | --- | --- | --- |
-| **Template** | It leads an installed template once its connections are made | Cache reader, Auth guard, Multipart uploads, Search query, Favorites | Lifecycle writer, Video encoder, Event counter, Index writer |
-| **Part of a template** | It fills a connection of a template led by another module in the tile | Event publisher, Data access | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
-| **Stub** | It is generated as a typed stub there | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
+| Dot | Word | Means | A Microservice's | A Worker service's |
+| --- | --- | --- | --- | --- |
+| Full | **Generated** | It leads an installed template once its connections are made: Jeeves writes working code, and you fill in one short hooks file | Cache reader, Auth guard, Multipart uploads, Search query, Favorites | Lifecycle writer, Video encoder, Event counter, Index writer |
+| Half | **Building block** | It fills a connection of a template led by another module in the tile: generated once that module is connected to it, until then yours to write | Event publisher, Data access | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
+| Empty | **You write it** | It is generated as an empty, typed stub there, for your own code | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
 
-An Uploads tile offers 11 kinds, a Microservice 13 and a Worker service 16; a Worker service's
-menu fits on screen at 1280×800. **Click a kind** to add a module of it, named after the kind
+These are the studio's words (`generationWords` in `module-status.ts`), on the menu, the
+inspector's module cards and the module page; chat, the generator's reports and Generate project's
+Modules list keep the spec's words (Template, Part of a template, Stub). An Uploads tile
+offers 11 kinds, a Microservice 13 and a Worker service 16. A Microservice's menu is about 780px
+tall and a Worker service's about 840px: on a canvas shorter than the menu plus 32px it opens over
+a rail beside the tile (a Microservice's does at 1440×900), and in a window shorter than the menu
+plus 32px (1280×800) it scrolls inside itself.
+**Click a kind** to add a module of it, named after the kind
 ("Data access", then "Data access 2"), at the end of the tile's modules (`addModule`). Its page
 opens in the inspector with its Name field ready to type over; the tile is selected, and in the
 Detailed view the container grows a row, its `+` moving down under it. A new module is
@@ -577,9 +590,11 @@ this order:
    unchanged. A saved number outside its bound (an older design) still opens: its own field shows
    the value and the reason, and only that field shows until a value in range is saved
    ([settings](studio-settings.md#normal-feature-configuration)).
-4. **Modules**, when the tile has modules or can hold them: a stack of cards, each one button
-   ("Open <module>") with the module's icon in its family colour, its name, its kind and the
-   first two lines of its Description, then the blue **+** centred under them. The `+` opens the
+4. **Modules**, when the tile has modules or can hold them: a stack of cards drawn as the module
+   menu draws them, in the colours of the kind's group, each one button ("Open <module>"): its
+   name and, at the right, a pill with the dot and word for what its kind generates in the tile
+   (Generated, Building block or You write it); then its icon, its kind and its Description on
+   one line, cut with an ellipsis. The blue **+** is centred under them. The `+` opens the
    same module menu as the board's, out to the left of the rail
    ([Adding a module](#adding-a-module)).
 
@@ -591,15 +606,16 @@ details.
   [ownership](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3).
 - A module's card, or its row in the [Detailed view](#detailed-view), opens its page in place of
   the tile's, again one page with no tabs: a **Back to <tile>** row (the tile's icon and name), a
-  header with the module's icon, Name (the title) and kind, then **what it generates**: Template
-  with the template's name ("Template · Cache read"), Stub with what its template still needs
-  ("Needs a Data access as its loader.") or why it has none ("No template in Watch API uses
-  it."), Refused with the kept value that blocks it, or Custom when no generation declaration
-  covers it yet (a study's modules before any module command). Then any readiness findings, Description,
+  header with the module's icon, Name (the title) and kind, then **what it generates**, in the
+  menu's words: Generated with the template's name ("Generated · Cache read"), You write it with
+  what its template still needs ("Needs a Data access as its loader.") or why it has none ("No
+  template in Watch API uses it."), Refused with the kept value that blocks it, or You write it
+  with no reason when no generation declaration covers it yet (a Custom status: a study's modules
+  before any module command). Then any readiness findings, Description,
   **Options** only for the settings a template consumes (Pool size and Statement timeout on a
   Data access in a template, and on a Lifecycle writer, its template's SQL settings; **Sign-in**,
-  Required or Optional, on an Auth guard once it verifies an Identity, "Template · Sign-in";
-  none on Favorites, whose bounds are fixed: "Template · Favorites" beside an Auth guard set to
+  Required or Optional, on an Auth guard once it verifies an Identity, "Generated · Sign-in";
+  none on Favorites, whose bounds are fixed: "Generated · Favorites" beside an Auth guard set to
   Required, else "Needs an Auth guard set to Required in <tile>."), and
   **Remove module** at the bottom (`removeModule`, which
   re-derives the tile's generation). It lists no links: a module's links follow its tile's drawn
@@ -731,7 +747,7 @@ the tools, whose schemas total about 37 KB (44 KB as OpenAI's strict tools, down
 
 | Tool | Gives |
 | --- | --- |
-| `listStudioDefinitions` | The eleven tile kinds a new tile can be, each with its label; the tile types with their kinds and defaults; the module catalog (each kind's slots, the tiles that hold it, what it becomes there, Template, Part of a template or Stub, as the `+` menu groups it, and its one-line description); the link table (generated from `studioLinkRules`); the caps; the lane canvas and kind notes; the warnings sentence. |
+| `listStudioDefinitions` | The eleven tile kinds a new tile can be, each with its label; the tile types with their kinds and defaults; the module catalog (each kind's slots, the tiles that hold it, what it becomes there, Template, Part of a template or Stub, which the `+` menu's dot shows as Generated, Building block or You write it, and its one-line description); the link table (generated from `studioLinkRules`); the caps; the lane canvas and kind notes; the warnings sentence. |
 | `describeStudioDefinition` | One kind's source schema and historical defaults: preserved design intent, not editable choices (`getDesign`'s `editableSettings` are the normal controls). |
 | `getDesign` | The design compactly, as the canvas draws it: the actions with their entries and the tiles each lane reaches; each tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, each link's slot, status and why); the status counts; Runnable processes; `editableSettings` (the only normal settings, each naming its tile or module and setting); the design's findings and warnings, with readiness findings only counted (notSpecified). |
 | `listStudioPatterns` | The seven curated patterns `applyPattern` builds, with what each makes, its templates and each argument with its default ([patterns](studio-patterns.md#curated-module-patterns)); and the four reviewed guidance records. The defaults are neutral placeholders (Records, Login, Jobs), never a study's names, so a design's names come from the person. |
@@ -1323,8 +1339,9 @@ are generated before product-specific completion. It has no runtime verification
 certification, and no unfinished application processes start unless Runnable processes is on.
 
 The dialog's **Modules** list shows every module of the design, before any preview: its name,
-its tile and what it generates, in the module page's words (Template with the template's name,
-or Stub, Custom or Refused with the reason). Preview returns the same list. A lead with its
+its tile and what it generates, in the generator's words (Template with the template's name, or
+Stub, Custom or Refused with the reason, where the module page says Generated or You write it).
+Preview returns the same list. A lead with its
 parts connected exports its installed template exactly as the same template selected on its tile
 would, and the lead and its parts read Template. A module without a complete template exports as
 a typed stub under `src/modules/<tile>/`, which throws "Not implemented" until you write it; each

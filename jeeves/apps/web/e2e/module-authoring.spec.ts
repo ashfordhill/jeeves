@@ -1,7 +1,7 @@
 /**
- * Modules on tiles (MA06, V3-03): the `+` inside a tile opens the menu of the module kinds it
- * allows, grouped Template, Part of a template and Stub; a picked kind becomes a module that opens
- * with its name focused. In the Detailed view a row that can connect has a dot: in Connect mode a drag
+ * Modules on tiles (MA06, V3-03, UI06): the `+` inside a tile opens the menu of the module kinds
+ * it allows, grouped by what they do, each with a dot for Generated, Building block or You write
+ * it; a picked kind becomes a module that opens with its name focused. In the Detailed view a row that can connect has a dot: in Connect mode a drag
  * from it runs `connectModule`, the Cache reader's loader is a row→row drag drawn as a gutter
  * arrow (so is Favorites' items), and the right-click menu of a module's line or arrow runs
  * `disconnectModule`.
@@ -27,14 +27,14 @@ import {
 
 const PLUS = "Add module";
 const LINK_TAB = "Add linked tile";
-/** The open menu's kinds, each with its group's status: [name, status]. */
+/** The open menu's kinds, each with its dot's word: [name, word]. */
 const menuKinds = (page: Page) =>
   moduleMenu(page)
     .getByRole("menuitem")
     .evaluateAll((items) =>
       items.map((item) => [
         item.getAttribute("aria-label"),
-        item.closest("fieldset")?.querySelector("legend")?.textContent,
+        item.querySelector(".lane-generation-dot")?.getAttribute("title"),
       ]),
     );
 const inspector = (page: Page) => page.locator(".studio-inspector");
@@ -67,39 +67,42 @@ const modules = async (page: Page, id: string, host: string) =>
 const moduleLinks = async (page: Page, id: string) =>
   (await saved(page, id)).architecture.studio.componentConnections ?? [];
 
-/** The menu's kinds for a Service and a Worker: [name, status] by Template, Part, Stub. */
+/**
+ * The menu's kinds for a Service and a Worker, in menu order (Requests, Data, Events, Files &
+ * media, Custom): [name, word].
+ */
 const SERVICE = [
-  ["Cache reader", "Template"],
-  ["Auth guard", "Template"],
-  ["Multipart uploads", "Template"],
-  ["Search query", "Template"],
-  ["Favorites", "Template"],
-  ["Event publisher", "Part of a template"],
-  ["Data access", "Part of a template"],
-  ["Rate limiter", "Stub"],
-  ["ID generator", "Stub"],
-  ["Redirect responder", "Stub"],
-  ["Event consumer", "Stub"],
-  ["External call", "Stub"],
-  ["Custom", "Stub"],
+  ["Rate limiter", "You write it"],
+  ["Redirect responder", "You write it"],
+  ["Auth guard", "Generated"],
+  ["External call", "You write it"],
+  ["Cache reader", "Generated"],
+  ["ID generator", "You write it"],
+  ["Data access", "Building block"],
+  ["Search query", "Generated"],
+  ["Favorites", "Generated"],
+  ["Event publisher", "Building block"],
+  ["Event consumer", "You write it"],
+  ["Multipart uploads", "Generated"],
+  ["Custom", "You write it"],
 ];
 const WORKER = [
-  ["Lifecycle writer", "Template"],
-  ["Video encoder", "Template"],
-  ["Event counter", "Template"],
-  ["Index writer", "Template"],
-  ["Event publisher", "Part of a template"],
-  ["Event consumer", "Part of a template"],
-  ["Data access", "Part of a template"],
-  ["Video packager", "Part of a template"],
-  ["Video thumbnailer", "Part of a template"],
-  ["Rate limiter", "Stub"],
-  ["Cache reader", "Stub"],
-  ["ID generator", "Stub"],
-  ["Redirect responder", "Stub"],
-  ["Auth guard", "Stub"],
-  ["External call", "Stub"],
-  ["Custom", "Stub"],
+  ["Rate limiter", "You write it"],
+  ["Redirect responder", "You write it"],
+  ["Auth guard", "You write it"],
+  ["External call", "You write it"],
+  ["Cache reader", "You write it"],
+  ["ID generator", "You write it"],
+  ["Data access", "Building block"],
+  ["Lifecycle writer", "Generated"],
+  ["Event counter", "Generated"],
+  ["Index writer", "Generated"],
+  ["Event publisher", "Building block"],
+  ["Event consumer", "Building block"],
+  ["Video encoder", "Generated"],
+  ["Video packager", "Building block"],
+  ["Video thumbnailer", "Building block"],
+  ["Custom", "You write it"],
 ];
 /** Kinds whose rows can't connect: no dot. */
 const NO_DOT = ["Redirect responder", "Event counter"];
@@ -167,8 +170,8 @@ test("adds a module of every menu kind to a Service and a Worker by mouse", asyn
     await expect(service.locator(".board-tab")).toHaveAttribute("aria-label", LINK_TAB);
     const plus = service.locator(".lane-tile-add");
     await expect(plus).toHaveAttribute("aria-label", PLUS);
-    // Its menu: the thirteen kinds a Service allows, grouped by Template, Part of a template and
-    // Stub, each named and described, all on screen.
+    // Its menu: the thirteen kinds a Service allows, grouped by what they do, each named, with its
+    // dot, and described, all on screen.
     await plus.click();
     await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(SERVICE.length);
     expect(await menuKinds(page)).toEqual(SERVICE);
@@ -184,7 +187,7 @@ test("adds a module of every menu kind to a Service and a Worker by mouse", asyn
     // Every kind, in the Simple view: each is one step and opens unconnected, as a stub.
     for (const [index, [kind]] of SERVICE.entries()) {
       await addModule(page, "Microservice", kind as string);
-      await expect(status(page).locator("strong")).toHaveText("Stub");
+      await expect(status(page).locator("strong")).toHaveText("You write it");
       await expect
         .poll(async () => (await modules(page, id, "microservice")).length)
         .toBe(index + 1);
@@ -372,7 +375,7 @@ test("the Cache reader's loader is a row-to-row drag, drawn as a gutter arrow", 
     // The reader now leads its template.
     await row(page, reader).getByRole("button").click();
     await expect(status(page)).toHaveAttribute("data-status", "template");
-    await expect(status(page)).toHaveText("TemplateCache read");
+    await expect(status(page)).toHaveText("GeneratedCache read");
 
     // The arrow's menu, titled with the link, disconnects the loader.
     const at = await arrowPoint(arrow);
@@ -577,9 +580,9 @@ test("Favorites is a Template beside a Required Auth guard; its items are a row-
     await expect(tile(page, "Database 2")).toHaveClass(/selected/);
     await ready(page);
     await tile(page, "Microservice").click();
-    // The + lists Favorites under Template, with its one line.
+    // The + lists Favorites as Generated, with its one line.
     await tile(page, "Microservice").locator(".lane-tile-add").click();
-    expect(await menuKinds(page)).toContainEqual(["Favorites", "Template"]);
+    expect(await menuKinds(page)).toContainEqual(["Favorites", "Generated"]);
     await expect(
       moduleMenu(page).getByRole("menuitem", { name: "Favorites", exact: true }),
     ).toContainText("Keeps each signed-in account's favorite items.");
@@ -614,7 +617,7 @@ test("Favorites is a Template beside a Required Auth guard; its items are a row-
     await ready(page);
     await open(favorites, "Favorites");
     await expect(status(page)).toHaveAttribute("data-status", "template");
-    await expect(status(page)).toHaveText("TemplateFavorites");
+    await expect(status(page)).toHaveText("GeneratedFavorites");
     const before = await saved(page, id);
 
     // Its items: from its dot onto the Data access row of its own tile, drawn as a gutter arrow.
@@ -638,7 +641,7 @@ test("Favorites is a Template beside a Required Auth guard; its items are a row-
     // The Data access is now its part.
     await open(data, "Data access");
     await expect(status(page)).toHaveAttribute("data-status", "template");
-    await expect(status(page)).toHaveText("TemplateFavorites");
+    await expect(status(page)).toHaveText("GeneratedFavorites");
 
     // Sign-in Optional: Favorites waits for Required again; Undo brings it back.
     await open(guard, "Auth guard");

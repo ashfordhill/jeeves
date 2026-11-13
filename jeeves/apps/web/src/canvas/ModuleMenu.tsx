@@ -1,11 +1,12 @@
 // Adding a module, from the board and from the inspector, with one `+` (`ModuleAddButton`), one
 // menu (`ModuleMenu`) and one command (`addModule`). The `+` toggles the menu: the module kinds
-// the tile allows (`moduleKinds`), grouped by what each can generate in that tile (Template, Part
-// of a template, Stub, from `moduleGeneration`), each with its icon, its name and its one-line
-// description; its group is its status, which its accessible description repeats. A pick adds a
-// module of that kind named after it (`addModule`); the caller then opens it. A second click on
-// the `+`, a press anywhere else, the wheel, a resize or Escape closes the menu, and picks
-// nothing.
+// the tile allows (`moduleKinds`), grouped by what each does (`moduleGroups`: Requests, Data,
+// Events, Files & media, Custom), each a card in its group's colours with its name, a dot for what
+// it can generate in that tile (Generated, Building block or You write it, from
+// `moduleGeneration`), its icon and its one-line description; the dot's word starts its accessible
+// description, and a legend under the last group explains the three dots. A pick adds a module of
+// that kind named after it (`addModule`); the caller then opens it. A second click on the `+`, a
+// press anywhere else, the wheel, a resize or Escape closes the menu, and picks nothing.
 //
 // On the board (`placement: "board"`) the menu sits beside the tile the `+` is in, below it when
 // there is room, else on its right, left or above, inside the board; when the board has no room
@@ -36,58 +37,72 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { commitAction } from "../studio/actions.ts";
+import { moduleGroups } from "../studio/module-groups.ts";
 import {
+  generationWords,
   moduleGeneration,
-  moduleGenerationLabels,
   moduleGenerationOrder,
 } from "../studio/module-status.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 
-type Generation = (typeof moduleGenerationOrder)[number];
+/** What a module kind can generate in a tile: the lead of a template, a part of one, or a stub. */
+export type Generation = (typeof moduleGenerationOrder)[number];
 
 /** One module kind in the menu. */
 export type ModuleMenuItem = {
   kind: StudioComponentKind;
   name: string;
   description: string;
-  /** What it generates in this tile, in words ("Template"). */
-  status: string;
-  icon: string;
-  color: string;
-};
-/** The kinds that generate one way in this tile, under that word. */
-export type ModuleMenuGroup = {
+  /** What it can generate in this tile. */
   generation: Generation;
+  icon: string;
+};
+/** The kinds of one group (`moduleGroups`) that this tile allows, in its colour family. */
+export type ModuleMenuGroup = {
   label: string;
+  family: string;
   items: readonly ModuleMenuItem[];
 };
 
 /**
- * The module kinds a tile of kind `host` allows, grouped by what each can generate there
- * (Template, Part of a template, Stub, in that order), in catalog order within a group. Groups with
- * no kind are left out.
+ * The module kinds a tile of kind `host` allows, grouped by what each does (`moduleGroups`, in
+ * its order, catalog order within a group), each with what it can generate there. Groups with no
+ * kind are left out.
  */
 export function moduleMenuGroups(
   kinds: readonly StudioComponentKind[],
   host: StudioKind,
 ): ModuleMenuGroup[] {
-  return moduleGenerationOrder.flatMap((generation) => {
-    const items = kinds
-      .filter((kind) => moduleGeneration(kind, host) === generation)
+  return moduleGroups.flatMap((group) => {
+    const items = group.kinds
+      .filter((kind) => kinds.includes(kind))
       .map((kind): ModuleMenuItem => {
         const { name, description } = studioComponentDefinitions[kind];
-        const visual = studioComponentVisuals[kind];
         return {
           kind,
           name,
           description,
-          status: moduleGenerationLabels[generation],
-          icon: visual.icon,
-          color: visual.color,
+          generation: moduleGeneration(kind, host),
+          icon: studioComponentVisuals[kind].icon,
         };
       });
-    return items.length ? [{ generation, label: moduleGenerationLabels[generation], items }] : [];
+    return items.length ? [{ label: group.label, family: group.family, items }] : [];
   });
+}
+
+/**
+ * Who writes a module's code, as a dot (D6): full for Generated, the left half for Building block,
+ * empty for You write it. Its title is the word.
+ */
+export function GenerationDot({ generation }: { generation: Generation }) {
+  return (
+    <span
+      className="lane-generation-dot"
+      data-generation={generation}
+      title={generationWords[generation].word}
+      aria-hidden
+    />
+  );
 }
 
 /**
@@ -236,7 +251,10 @@ function menuPlace(
   return onBoard && onBoard.covers <= inWindow.covers ? onBoard.at : inWindow.at;
 }
 
-/** The menu itself: a title, then each group under its word, its kinds two to a row. */
+/**
+ * The menu itself: a title, then each group under its name, its cards two to a row, then the
+ * legend of the dots.
+ */
 function ModuleMenu({
   id,
   name,
@@ -314,39 +332,53 @@ function ModuleMenu({
         Add module to <strong>{name}</strong>
       </p>
       {groups.map((group) => (
-        <fieldset key={group.generation} className="lane-module-menu-group">
-          <legend className="lane-module-menu-heading" data-generation={group.generation}>
-            {group.label}
-          </legend>
+        <fieldset key={group.label} className="lane-module-menu-group" data-family={group.family}>
+          <legend className="lane-module-menu-heading">{group.label}</legend>
           <div className="lane-module-menu-items">
-            {group.items.map((item) => (
-              <button
-                key={item.kind}
-                type="button"
-                role="menuitem"
-                className="lane-module-menu-item"
-                data-kind={item.kind}
-                data-family={item.color}
-                aria-label={item.name}
-                aria-describedby={`${ids}-${item.kind}`}
-                title={`${item.name} · ${item.status}\n${item.description}`}
-                onClick={() => onPick(item.kind)}
-              >
-                <span className="lane-module-menu-icon">
-                  <StudioIcon name={item.icon} size={20} />
-                </span>
-                <span className="lane-module-menu-text">
-                  <strong>{item.name}</strong>
-                  <span id={`${ids}-${item.kind}`} className="lane-module-menu-description">
-                    <span className="lane-module-menu-status">{item.status}. </span>
-                    {item.description}
+            {group.items.map((item) => {
+              const { word } = generationWords[item.generation];
+              return (
+                <button
+                  key={item.kind}
+                  type="button"
+                  role="menuitem"
+                  className="lane-module-menu-item"
+                  data-kind={item.kind}
+                  data-family={group.family}
+                  aria-label={item.name}
+                  aria-describedby={`${ids}-${item.kind}`}
+                  title={`${item.name} · ${word}\n${item.description}`}
+                  onClick={() => onPick(item.kind)}
+                >
+                  <span className="lane-module-top">
+                    <strong>{item.name}</strong>
+                    <GenerationDot generation={item.generation} />
                   </span>
-                </span>
-              </button>
-            ))}
+                  <span className="lane-module-line">
+                    <span className="lane-module-menu-icon">
+                      <StudioIcon name={item.icon} size={15} />
+                    </span>
+                    <span id={`${ids}-${item.kind}`} className="lane-module-menu-description">
+                      <span className="lane-module-menu-status">{word}. </span>
+                      {item.description}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </fieldset>
       ))}
+      <ul className="lane-module-menu-legend">
+        {moduleGenerationOrder.map((generation) => (
+          <li key={generation}>
+            <GenerationDot generation={generation} />
+            <span>
+              <b>{generationWords[generation].word}.</b> {generationWords[generation].meaning}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>,
     document.body,
   );

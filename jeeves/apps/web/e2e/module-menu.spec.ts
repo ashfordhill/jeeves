@@ -62,6 +62,8 @@ test("an empty Service is a container with a + at its bottom; it toggles the men
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
+  // A board with room for a Service's menu (about 780px tall, UI06) beside the tile.
+  await page.setViewportSize({ width: 1440, height: 1000 });
   const id = await blankService(page, "E2E Module plus");
   try {
     // In Detailed the new, empty Service is a container: its header, no rows and its `+`, at the
@@ -88,7 +90,7 @@ test("an empty Service is a container with a + at its bottom; it toggles the men
       await moduleMenu(page)
         .locator("legend")
         .evaluateAll((items) => items.map((item) => item.textContent)),
-    ).toEqual(["Template", "Part of a template", "Stub"]);
+    ).toEqual(["Requests", "Data", "Events", "Files & media", "Custom"]);
     // It sits beside the tile, not over it, on the board.
     expect(overlaps(await box(moduleMenu(page)), frame)).toBe(false);
     expect(inside(await box(moduleMenu(page)), await box(page.locator(".lane-canvas")))).toBe(true);

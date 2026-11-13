@@ -58,7 +58,8 @@ test("module cards open a module page; Back, other selections, Remove and Undo r
     const card = (module: string) =>
       inspector.getByRole("button", { name: `Open ${module}`, exact: true });
 
-    // The Transcoder's five modules are cards: icon, name, kind and a two-line description.
+    // The Transcoder's five modules are cards: the name and, in a pill, the dot and word for what
+    // the kind generates there; then the icon, the kind and the description on one cut line.
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
     await tile(page, "Transcoder").click();
     await expect(cards).toHaveCount(5);
@@ -74,13 +75,17 @@ test("module cards open a module page; Back, other selections, Remove and Undo r
     await expect(card(encoder).locator(".lane-module-icon svg")).toHaveCount(1);
     await expect(card(encoder).locator(".lane-module-kind")).toHaveText("Custom");
     await expect(card("Job consumer").locator(".lane-module-kind")).toHaveText("Event consumer");
+    await expect(card(encoder).locator(".lane-generation-pill")).toHaveText("You write it");
+    await expect(card("Job consumer").locator(".lane-generation-pill")).toHaveText(
+      "Building block",
+    );
     const clamp = await card(encoder)
-      .locator(".lane-module-description")
+      .locator(".lane-module-text")
       .evaluate((node) => ({
         lines: Math.round(node.clientHeight / Number.parseFloat(getComputedStyle(node).lineHeight)),
-        cut: node.scrollHeight > node.clientHeight,
+        cut: node.scrollWidth > node.clientWidth,
       }));
-    expect(clamp).toEqual({ lines: 2, cut: true });
+    expect(clamp).toEqual({ lines: 1, cut: true });
 
     // A card opens the module's page in place of the tile's: Back, header, Description, Remove.
     await card(encoder).click();

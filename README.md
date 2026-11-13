@@ -3,6 +3,10 @@
 - [11/11/2026](#11112026)
   - [YouTube V3](#youtube-v3)
   - [Birds-Eye Viewership](#birds-eye-viewership)
+  - [Chat Agent Diagram Generation](#chat-agent-diagram-generation)
+    - [Podcast](#podcast)
+    - [Video](#video)
+    - [Spec](#spec)
   - [Measurements](#measurements)
   - [UI Improvements](#ui-improvements)
     - [Simple vs Detailed view](#simple-vs-detailed-view)
@@ -45,6 +49,45 @@ I'm not sure that I like the idea of all these paths touching 1 Tile, the video 
 
  
 Is this a cause for concern? Software principles tell me yes. Maybe this is an issue. Maybe I'll ask an agent to investigate. Would I have been able to see this easily without diagrams or with narrow-scoped diagrams? **Visual representations of systems help find oversights, redundancy and design smells**. They can also provide an efficient way of getting a newcomer understand what they're walking into instead of throwing them a bunch of repositories and text.
+
+### Chat Agent Diagram Generation
+
+> Task carried out by agents, so bullets are also writen by agents. Wanted any differences pointed out between models and their designs on a given prompt
+
+#### Podcast
+
+| Luna (gpt-6-luna) · 92.4 | Sol (gpt-6.1-sol) · 84.7 | Haiku 5.5 · 94.4 | Sonnet 5.5 · 100 |
+| :---: | :---: | :---: | :---: |
+| <img src=".docs/chat-agent-diagrams/podcast-luna.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/podcast-sol.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/podcast-haiku.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/podcast-sonnet.png" width="100%"/> |
+
+- Sonnet: the only full marks. Listeners can optionally sign in on the Episode API.
+- Haiku: kept most of the patterns' generic names (Ingest API, Records, Jobs, Processor, Outputs). No optional listener sign-in.
+- Luna: two identity tiles (hosts and listeners) and no CDN; the Episode API reads audio straight from storage. No optional listener sign-in.
+- Sol: splits listening into three services (Episode pages → Playback, Followed shows), with the CDN behind Playback. No lifecycle worker, so episodes reach search from the upload service before processing finishes.
+
+#### Video
+
+| Luna (gpt-6-luna) · 100 | Sol (gpt-6.1-sol) · 100 | Haiku 5.5 · 100 | Sonnet 5.5 · 100 |
+| :---: | :---: | :---: | :---: |
+| <img src=".docs/chat-agent-diagrams/video-luna.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/video-sol.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/video-haiku.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/video-sonnet.png" width="100%"/> |
+
+- All four have the same 21 tiles; they differ in names and one link.
+- Sol and Sonnet: the favorites service also reads the video records, to check a video can be favorited. Luna and Haiku skip that link.
+- Haiku: generic pattern names left in (Records, Jobs, Results, Lifecycle, Login).
+- Luna: viewers sign in through "Creator Identity", a name that only fits creators.
+
+#### Spec
+
+| Luna (gpt-6-luna) · 99.4 | Sol (gpt-6.1-sol) · 100 | Haiku 5.5 · 100 | Sonnet 5.5 · 100 |
+| :---: | :---: | :---: | :---: |
+| <img src=".docs/chat-agent-diagrams/spec-luna.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/spec-sol.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/spec-haiku.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/spec-sonnet.png" width="100%"/> |
+
+- The brief names every tile, so all four match the reference's 21 tiles and 25 links almost exactly.
+- Luna: missing the Publish → Sign-in link.
+- Haiku: names the search index "Videos index" instead of "Videos".
+- Sol and Sonnet: identical to the reference.
+
+> /end agent code
 
 ### Measurements
 
