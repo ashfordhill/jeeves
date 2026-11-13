@@ -224,9 +224,9 @@ Click **Export diagram** in the top bar, beside Design and Settings, then **PNG*
 window width the button shows only its download icon. The download contains the full
 saved diagram in the current view, including offscreen tiles, their names, kind labels and icons,
 all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
-visual reference (D2: a recorded hash, not a gate), `d64b88c5…0fae` (3008×2752). A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
+visual reference (D2: a recorded hash, not a gate), `799a8582…59a5` (3008×2752). A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
 and their lines the relationship each drawn line belongs to. No control is drawn: a container's
-footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `cb8e8172…2f0e`,
+footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `bd04165a…8f7b`,
 3840×3392). It uses the same HTML faces, SVG
 lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin,
 in the light tile and icon colours whatever the studio's theme. Inspector details and the legend

@@ -447,11 +447,6 @@ body,
   background: var(--minus);
 }
 
-/* See shell/StatusBadge.tsx. Dark mode keeps Mantine's own light-variant text color. */
-[data-mantine-color-scheme="light"] .status-badge {
-  color: var(--status-ink);
-}
-
 /* Capability colors belong to the shared theme, independently of legacy editor mounting.
    --type-color colours a family's text and borders; --fam is its icons' accent fill and a group's
    marker; --sfam is the solid fill of a card in that family. */

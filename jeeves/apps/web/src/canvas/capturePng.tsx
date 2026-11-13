@@ -41,6 +41,34 @@ async function captureFonts(signal: AbortSignal) {
   ).join("\n");
 }
 
+/** The paint of an SVG shape that a stylesheet may set. */
+const SVG_PAINT = [
+  "fill",
+  "stroke",
+  "stroke-width",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-dasharray",
+  "fill-opacity",
+  "stroke-opacity",
+  "opacity",
+];
+
+/**
+ * html-to-image deep-clones an SVG's descendants without the stylesheet rules that paint them, so a
+ * shape painted by its class (the studio glyphs, the loader arrow's transparent hit stroke) would
+ * draw black. Copies each one's computed paint onto it first, keeping any inline value.
+ */
+function inlineSvgPaint(root: Element) {
+  for (const shape of root.querySelectorAll("svg *")) {
+    if (!(shape instanceof SVGElement)) continue;
+    const css = getComputedStyle(shape);
+    for (const name of SVG_PAINT)
+      if (!shape.style.getPropertyValue(name))
+        shape.style.setProperty(name, css.getPropertyValue(name));
+  }
+}
+
 /** Same React Flow tile and SVG line renderers, mounted offscreen at their resolved board scale. */
 export async function capturePng(
   snapshot: BoardSnapshot,
@@ -91,6 +119,7 @@ export async function capturePng(
     }
     if (!drawn) throw new Error("Some diagram tiles or routes did not render. PNG export stopped.");
     await frame();
+    inlineSvgPaint(surface);
     const canvas = await toCanvas(surface, {
       width: bounds.w,
       height: bounds.h,

@@ -43,6 +43,7 @@ export default defineConfig({
         ),
         JEEVES_HOME: mkdtempSync(join(tmpdir(), "jeeves-e2e-")),
         OPENAI_API_KEY: "",
+        ANTHROPIC_API_KEY: "",
         // Codex is a stand-in that signs no one in, with a login directory of its own: the server
         // never runs the real `codex` or sees the login in ~/.codex, so Codex reads as signed out.
         JEEVES_CODEX_PATH: fileURLToPath(new URL("./apps/web/e2e/fake-codex.mjs", import.meta.url)),

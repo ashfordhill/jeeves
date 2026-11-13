@@ -13016,3 +13016,48 @@ No uncommitted changes under `jeeves-generator/` or `field-projects/`.
 **For the next unit.** UI14 can start: the surfaces are `--chrome`, `--paper`, `--panel` and
 `--cream` in `tokens.css`; Mantine's palette is in `mantineTheme.ts`; the open questions above
 (link tab, rings, dark `--blue`, user bubble) are for the review.
+
+## 2026-11-13 — UI14: Independent review
+
+**What changed.**
+- New `docs/plans/ui-refresh/review.md`: D1–D13 checked in the running app at 1440×900 and
+  1280×800 in both themes, the coordinator's ledger item by item, the seams, the fixes and 14
+  follow-ups (7 for the owner: 1–6 and 13). Six images in `docs/plans/ui-refresh/evidence/ui14/`.
+- Defect fixed: since UI05 every studio glyph in an exported PNG was a solid black shape, and the
+  Detailed loader arrow a black bar (since MA06). html-to-image deep-clones an SVG without the
+  stylesheet rules that paint its shapes. `canvas/capturePng.tsx`: `inlineSvgPaint` copies each
+  SVG shape's computed fill, stroke and opacity inline before the capture (inline values kept).
+  New test in `e2e/diagram-export.spec.ts`: TinyURL's Detailed PNG has no black pixel and shows
+  the data and api accents. `docs/studio.md`'s two YouTube export hashes follow (`799a8582…59a5`,
+  `bd04165a…8f7b`).
+- `jeeves/playwright.config.ts`: the e2e server gets `ANTHROPIC_API_KEY: ""`, as `OPENAI_API_KEY`.
+- Dead leftovers removed: `ownStretchMidpoint` (`board/src/layout/polyline.ts`, no caller),
+  `shell/StatusBadge.tsx` and its `.status-badge` rule in `tokens.css` (no user); the Anthropic
+  adapter's header comment no longer says the key is never stored.
+- `AGENTS.md` and `jeeves/PLAN.md`: the active plan is broker reconnect, followed by GS07 and GS09
+  of generated system tests; PLAN.md lists production foundations and UI refresh as completed.
+
+**Checks.** Before: `pnpm check` exit 0, 113 files, 890 tests; `pnpm test:e2e` 73 passed (4.7
+min); web build exit 0; `ui14-check.spec.ts` (alone, one worker, with this unit's two fixes set
+aside) 2 passed, export hashes TinyURL `6f5b7d4f…`, YouTube `d64b88c5…`/`cb8e8172…` as documented.
+After: `pnpm check` exit 0, 113 files, 890 tests (lint's one info is older); `pnpm test:e2e` 74
+passed (4.7 min, without the review spec); web build exit 0; the review spec 2 passed, no page
+error, no soft failure. The new export test failed first (12,441 black pixels) and passes now;
+`blueprint-chat`'s Anthropic test with a made-up `ANTHROPIC_API_KEY` in the shell failed before
+the config fix and passed after. The review spec created and deleted "E2E UI14 TinyURL" and
+"E2E UI14 YouTube" projects, wrote and removed a made-up catalogue file in the e2e server's
+throwaway home, saved and removed a made-up Anthropic key and put the design-chat role back; it is
+deleted. `jeeves_e2e` holds only "E2E Every kind" and "TinyURL · studio study". No model was
+called and models.dev was never fetched.
+**Differences from the plan.** Rule 6's six-screenshot cap kept for the committed evidence; the
+other screenshots the comparison used stayed in the scratchpad. Step 5: the owner named the next
+plans, so the sentence changed. Ruled: UI06's 1440×1000 window in `module-menu.spec.ts` is not a
+weakening (every assertion and the placement rule unchanged); the menu's height is an owner
+question.
+**Noticed.** UI05's evidence and Resolution line said the glyphs show in exports; no unit had
+looked at the exported PNG itself (the hash checks compared light with dark, both black). The
+chat transcript prints the scripted reply twice ("Renamed Redirect to Redirector."), as in UI12's
+images; not investigated. The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier`
+files, the two mode changes) stay untouched and unstaged.
+**For the next unit.** BR01 of `docs/plans/broker-reconnect/units.md`, then BR02, then GS07 and
+GS09 of `docs/plans/generated-system-tests/units.md`.

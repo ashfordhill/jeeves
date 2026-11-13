@@ -120,3 +120,43 @@ test("canonical process export retains ownership; stale revisions, missing fonts
     await page.request.delete(`/api/projects/${id}`);
   }
 });
+
+test("PNG draws the studio glyphs in their colours and no black shape (the loader arrow, an icon)", async ({
+  page,
+  tinyurl: _id,
+}) => {
+  // TinyURL's Detailed view: Service headers, database, cache and topic tiles, module rows, and the
+  // Cache reader's loader arrow in the Redirect service's gutter.
+  const { png } = await exportPng(page);
+  const counts = await page.evaluate(async (base64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${base64}`;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("No PNG decoder");
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, img.width, img.height).data;
+    const near = (i: number, [r, g, b]: number[]) =>
+      Math.abs((data[i] ?? 0) - (r ?? 0)) <= 8 &&
+      Math.abs((data[i + 1] ?? 0) - (g ?? 0)) <= 8 &&
+      Math.abs((data[i + 2] ?? 0) - (b ?? 0)) <= 8;
+    let black = 0;
+    let dataAccent = 0;
+    let apiAccent = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      if (near(i, [0, 0, 0])) black += 1;
+      // The light `--fam` accents of the data and api families (tokens.css's export block).
+      if (near(i, [0xf4, 0xba, 0x36])) dataAccent += 1;
+      if (near(i, [0x46, 0xa0, 0xe6])) apiAccent += 1;
+    }
+    return { black, dataAccent, apiAccent };
+  }, png.toString("base64"));
+  // Nothing on the board is black: the ink is #071c28. A glyph or the loader's hit stroke that
+  // lost its stylesheet in the capture fills black.
+  expect(counts.black).toBe(0);
+  expect(counts.dataAccent).toBeGreaterThan(200);
+  expect(counts.apiAccent).toBeGreaterThan(200);
+});

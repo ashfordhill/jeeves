@@ -224,10 +224,13 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [reliable foundations](../docs/plans/reliable-foundations/units.md),
 [UI overhaul](../docs/plans/ui-overhaul/units.md),
 [module authoring](../docs/plans/module-authoring/units.md),
-[tile processes](../docs/plans/tile-processes/units.md) and
-[YouTube v3](../docs/plans/youtube-v3/units.md).
+[tile processes](../docs/plans/tile-processes/units.md),
+[YouTube v3](../docs/plans/youtube-v3/units.md),
+[production foundations](../docs/plans/production-foundations/units.md) and
+[UI refresh](../docs/plans/ui-refresh/units.md).
 
-The active plan is [production foundations](../docs/plans/production-foundations/units.md).
+The active plan is [broker reconnect](../docs/plans/broker-reconnect/units.md), followed by GS07
+and GS09 of [generated system tests](../docs/plans/generated-system-tests/units.md).
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
 [HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in
 [template gaps](../docs/template-gaps.md).

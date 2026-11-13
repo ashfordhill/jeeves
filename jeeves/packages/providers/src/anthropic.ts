@@ -5,7 +5,8 @@
  * The tools' canonical JSON Schemas are sent as they are: unlike OpenAI's strict mode, nothing
  * constrains the arguments, so the chat tools check every call themselves.
  *
- * The key comes from `ANTHROPIC_API_KEY` in the caller's environment and is never stored.
+ * The adapter uses only the key it is given; the server reads it from `ANTHROPIC_API_KEY` or from
+ * the key saved in Settings.
  */
 import Anthropic, {
   APIConnectionError,

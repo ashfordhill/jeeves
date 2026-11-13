@@ -97,7 +97,8 @@ database when their work calls for it.
   an Advanced dumping ground. Mouse, chat and generation must share supported choices.
 - Prefer generic template mechanisms and reusable feature packs across field projects and other
   apps. Keep product policy in narrow adapters. Follow the assigned unit in the active plan,
-  [production foundations](docs/plans/production-foundations/units.md); do not execute later units.
+  [broker reconnect](docs/plans/broker-reconnect/units.md), followed by GS07 and GS09 of
+  [generated system tests](docs/plans/generated-system-tests/units.md); do not execute later units.
 - Keep design intent, template availability and verification evidence distinct.
 - Field-project LOC benchmarks measure **backend code only**. Exclude all UI/frontend code,
   including UI under `src/`, until the owner expands the measure after adding a UI builder.
