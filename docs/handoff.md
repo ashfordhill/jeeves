@@ -13292,3 +13292,15 @@ the Counter crashes; that and the immediate template retries are one template un
 survive a database outage; outages of Garage/OpenSearch/Keycloak and a network partition; record
 the first hosted runs. Hosted CI is pending publication; no push. 83 older `gs-*` image tags
 from GS01–GS08 remain (left for the owner). Owner dirty paths untouched and unstaged.
+
+## 2026-11-13 — Plan: store outage (SO01–SO03)
+
+Planning only; no code changed. The owner asked to fix GS09's first next unit. New
+[plan](plans/store-outage/units.md): SO01 gives the template pool an `error` listener and makes
+the delivery runner treat an unreachable store (socket codes, SQLSTATE class 08 and 57P01–57P03,
+`pg`'s lost-connection messages) as a 5 s wait that keeps the attempt, so an outage never sends
+accepted work to `.failed`; SO02 makes B09's database row assert that no worker exits and nothing
+reaches `.failed`, without a restart; SO03 reviews. `AGENTS.md` and `jeeves/PLAN.md` name it as
+the active plan.
+**Checks.** None (docs only). Written from the code at `7bef25f`; read, not run.
+**For the next unit.** SO01.

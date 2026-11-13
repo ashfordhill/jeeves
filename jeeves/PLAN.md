@@ -231,7 +231,7 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [broker reconnect](../docs/plans/broker-reconnect/units.md) and
 [generated system tests](../docs/plans/generated-system-tests/units.md).
 
-There is no active plan; the owner names the next one.
+The active plan is [store outage](../docs/plans/store-outage/units.md) (SO01–SO03).
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
 [HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in
 [template gaps](../docs/template-gaps.md).
