@@ -1373,7 +1373,10 @@ action first. Source changes, stale canvas revisions, failed asset loading and c
 refuse; close/switch disposes pending work. The dialog footer keeps both mouse actions reachable
 at 1280×800. Nothing changes the design, revision, history, layout, camera or preferences.
 Extract into a new directory and follow README; secrets/data are provisioned later. ZIP details
-and API/error limits are documented in the generator guide.
+and API/error limits are documented in the generator guide. The ZIP is for a new directory;
+`pnpm --filter @jeeves/generator update:v2` regenerates into an existing export, rewriting its
+generated files and keeping the application's own
+([updating an existing export](../jeeves-generator/README.md#updating-an-existing-export)).
 
 The local-v2 generator emits reusable mechanisms and the video feature. YouTube-specific
 adapters, public schemas, service construction and edge composition are removed from active

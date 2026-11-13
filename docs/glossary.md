@@ -18,6 +18,8 @@
 | Study | A built-in example design that New project offers. |
 | Field project | A real application built from a Jeeves export to test the templates (`field-projects/`). |
 | Template gap | Something a template could not do, found in a field project ([list](template-gaps.md)). |
+| Override | A generated file the application keeps as its own, listed in `.jeeves/overrides.json` with a reason. Each one is a template gap. |
+| Update | Regenerating into an existing export with `update:v2`. |
 
 ## Version names
 

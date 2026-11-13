@@ -14,6 +14,9 @@
   writer's product SQL file.
 - **Commands:** `pnpm --filter @jeeves/generator export:v2 <design.json> <new directory>`. The
   studio's Generate project dialog produces the same files as a ZIP.
+  `pnpm --filter @jeeves/generator update:v2 <design.json> <existing export> [--check]`
+  regenerates into an existing export in place
+  ([updating an existing export](#updating-an-existing-export)).
 - **Not provided:** deployment to anything but local Compose, a browser UI, and load or runtime
   certification.
 - **Legacy:** the frozen `youtube-local-v1` profile (the sections from API to Preserving work)
@@ -146,6 +149,63 @@ exclusive/symlink-refusing export. The independent build and bounded startup evi
 [field FP03a evidence](../field-projects/youtube/v1/notes/evidence/fp03a/README.md). Field business
 scenarios remain separate and unmeasured; no functional credit comes from placeholder handlers.
 
+## Updating an existing export
+
+```
+pnpm --filter @jeeves/generator update:v2 /path/design.json /absolute/existing-directory [--check]
+```
+
+`update:v2` assembles the design and regenerates it into a directory that `export:v2` or an
+earlier update wrote. The directory's `.jeeves/manifest.json` records what was generated. It
+prints the result as JSON: `refused`, the `counts` of `create`, `replace`, `unchanged` and
+`keep`, and the paths in `keepChanged`, `override`, `remove` and `orphan`. It exits 1 when
+`refused` is not empty. In code, `updateDirectory(bundle, directory, { check })` does the same
+with what `assembleV2` returns, and the pure `planUpdate` decides each file.
+
+- **Rewritten:** a generated file (every file but the application's own, `.jeeves/` metadata
+  included) is created when it is missing, `unchanged` when it already has the new bytes, and
+  replaced when it still has the bytes the old manifest recorded. One the new export no longer
+  has is removed when unedited.
+- **Kept:** the application's own files (hook files, stub bodies and product SQL) are never
+  overwritten or removed. A missing one is created, and one that already has the new bytes is
+  `unchanged`. One whose template bytes didn't change is `keep`. One whose template bytes
+  changed is `keepChanged`, and its new bytes go to `.jeeves/generated/<path>` to compare with
+  yours. One the export no longer has is `orphan` and stays where it is. Files neither manifest
+  lists are never touched.
+- **Refused:** a generated file edited by hand, a file in the way of a new generated path, an
+  edited generated file the export dropped, an application's file the new export would make
+  generated (`ownership changed: <path>`), and an override that is in neither manifest and has no
+  file (`unknown override: <path>`). `refused` names each one. Put the file back, or list it as
+  an override; either way the edit is a [template gap](../docs/template-gaps.md).
+
+**Preflight.** Before anything changes, and also with `--check`, the update refuses a path that
+is not an absolute directory, free of symlinks, holding a v2 manifest (`Not a Jeeves v2 export`),
+an invalid `.jeeves/manifest.json` or `.jeeves/overrides.json`, two paths that differ only in
+case or a file that would become a directory, and a symlink, a target that is not a regular file
+or a parent that is not a directory on any path it reads or writes (`Unsafe update path:
+<path>`). A refused or unsafe update changes nothing. Otherwise it writes each file to a
+temporary file beside it and renames it over the target, so a stopped update never leaves a
+half-written file, and writes `.jeeves/manifest.json` last. It touches no file outside the two
+manifests and the overrides, except `.jeeves/manifest.json` and files under
+`.jeeves/generated/`.
+
+**`.jeeves/overrides.json`** lists generated files the application keeps as its own:
+
+```json
+{ "overrides": [{ "path": "compose.yaml", "reason": "…" }] }
+```
+
+Each `reason` is a non-empty string, and no path is under `.jeeves/`. An override is never
+rewritten or recreated, and every update writes its new bytes to `.jeeves/generated/<path>`. An
+edited override the export no longer has is `orphan`, update after update.
+
+**`.jeeves/generated/`** holds those shadows. A shadow stays across updates, and keeps a changed
+file of yours `keepChanged`, until your file equals the new bytes or you delete the shadow to
+accept your file as it is (an override's shadow comes back while it stays listed). The update
+deletes the shadows it no longer needs, and the folder once it is empty.
+
+**`--check`** runs the preflight and prints the same result, and writes nothing.
+
 ## Jeeves preview and ZIP download
 
 The canvas **Generate project → Preview scaffold → Download project ZIP** flow dispatches explicitly:
@@ -224,9 +284,9 @@ dependency-only registry). For each stub module it writes:
 
 Stubs import no template library and, with Runnable processes off, provision nothing, so a
 stub-only export installs and builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
-Existing preservation applies: export writes only to a new directory, and `planFileWrites`
-refuses an edited `<module>.ts` with `EXISTING_OUTPUT_CHANGED`; export afresh and carry your
-bodies over.
+Export writes only to a new directory, and `planFileWrites` refuses an edited `<module>.ts` with
+`EXISTING_OUTPUT_CHANGED`; [`update:v2`](#updating-an-existing-export) regenerates into an
+existing export and keeps your bodies.
 
 `.jeeves/report.json` gains `modules` only when the design has a module-level selection, so
 tile-level reports keep their shape. Each row has the module, its name, host, kind, status

@@ -11246,3 +11246,89 @@ worked as written.
 **For the next unit.** PF10 next. `planUpdate` is exported from `@jeeves/generator`; it expects
 `disk` to hold hashes only for files that exist and `pendingShadows` as paths relative to the app
 root (without `.jeeves/generated/`).
+
+## 2026-11-12 — PF10: `update:v2`: regenerate into an existing app
+
+**What changed.**
+
+- `jeeves-generator/src/update.ts`: `updateDirectory(bundle, directory, { check })` (`bundle`
+  typed as `ReturnType<typeof assembleV2>`) and its `UpdateResult`, beside PF09's `planUpdate`.
+  It does steps 1–8 in the plan's order: the export's root and manifest format (`Not a Jeeves v2
+  export: <directory>`), the manifest's `files` (`Invalid .jeeves/manifest.json`), the overrides
+  file (`Invalid .jeeves/overrides.json`), the pending shadows under `.jeeves/generated/`, then
+  the preflight (`assertDistinctPaths` over the union of `next` and `previous`; an `lstat` of
+  each path and its parents, `Unsafe update path: <path>`), the disk hashes and `planUpdate`. A
+  refused plan or `check` returns without writing. Otherwise it writes each `create`/`replace`,
+  deletes each `remove`, writes each shadow, deletes the pending shadows not kept and writes
+  `.jeeves/manifest.json` last; every write is a temporary file beside the target
+  (`.<name>.<hex>.jeeves-update`, exclusive, no-follow, synced) renamed over it.
+- `jeeves-generator/src/v2/update-cli.ts` and `"update:v2": "tsx src/v2/update-cli.ts"` in
+  `jeeves-generator/package.json`: assembles with `loadLocalV2Registry()`, prints the result as
+  JSON and sets `process.exitCode = 1` when `refused` is not empty.
+- `jeeves-generator/src/update.test.ts`: a `updateDirectory` block exporting the stub stack
+  (`canonicalJson(stubStackDesign())`) with `exportNewDirectory` into a fresh directory under
+  the OS temp directory per test, removed after each: the plan's tests 1–10, plus a check of the
+  paths' ownerships and one for invalid manifest records and overrides files (12 tests).
+- Docs: `jeeves-generator/README.md` (`## Updating an existing export` after `## Preserving work
+  and remaining export work`; the command in `## Current state`; the module stubs' "export
+  afresh and carry your bodies over" sentence now points at `update:v2`), `docs/studio.md`
+  (Experimental project export: the ZIP is for a new directory, `update:v2` regenerates into an
+  existing export) and `docs/glossary.md` (**Override**, **Update**).
+
+**Checks.**
+
+- check: passed before any change (105 files, 808 tests) and after (105 files, 820 tests: 12
+  added), with the frozen v1 pin and the processes-off pins unchanged (no template edited). Lint
+  reports only the older `useTemplate` info in `templates/local-v2/assets/scripts/local.mjs`.
+- Mutation check (scratch copy, restored byte-identical): dropping the refused or the `check`
+  early return, the target or the parent `lstat` check, the union `assertDistinctPaths`, the
+  manifest write, the shadow write, the stale-shadow delete, the pending-shadow listing or the
+  `remove` delete, or leaving a temporary file behind, each fails at least one new test.
+- CLI by hand on a scratch export of the stub stack (removed after): `--check` passes through
+  `pnpm --filter`, prints 51 `unchanged` and exits 0; an edited `tsconfig.json` is refused with
+  exit 1 and a deleted file stays deleted; listed in `.jeeves/overrides.json` the update creates
+  the deleted file, keeps `tsconfig.json` and writes its shadow; no temporary file is left.
+- e2e: `pnpm test:e2e` 73 passed (4.7 min) on the first run; no reruns needed.
+- build: passed.
+
+**Differences from the plan.**
+
+- "A real directory" is read as an absolute path whose `realpath` is itself (so a symlinked
+  ancestor refuses too, as export's parent check does), with a real `.jeeves/` directory. A
+  manifest that isn't JSON is also `Not a Jeeves v2 export`.
+- The manifest check also refuses a record for `.jeeves/manifest.json`, `.jeeves/overrides.json`
+  or anything under `.jeeves/generated/`, which the update writes itself. A symlinked or
+  non-regular `.jeeves/overrides.json` or `.jeeves/generated` is `Unsafe update path`.
+- `shadows` isn't known before `planUpdate`, so the preflight `lstat`s
+  `.jeeves/generated/<path>` for every pending shadow, every override and every extension path
+  in `next` (each shadow the update could write), and `.jeeves/manifest.json`.
+- After deleting shadows, the update removes empty directories under `.jeeves/generated/`, and
+  the folder itself once empty. A `replace` keeps the file's permission bits; a created file is
+  0644.
+- Test 8: the added `src/runtime` record already makes the stub stack's manifest invalid (it
+  lists `src/runtime/local.ts`), so the test then also drops `src/runtime/local.ts` from the old
+  manifest to reach the union check (`OUTPUT_COLLISION at src/runtime`). Both throw before
+  anything is written.
+- Beyond the list: test 2 also removes a generated file the export dropped and checks an
+  unlisted file and that no temporary file is left; test 4 also checks a shadow goes once the
+  file has the generated bytes again; test 6 also refuses a relative path, a symlink to an export
+  and another manifest format; test 7 also refuses a symlinked parent directory.
+- The CLI takes `--check` in any position; `reason` must be a non-empty string as written (a
+  string of spaces passes).
+
+**Noticed.**
+
+- `pnpm --filter` runs the script in `jeeves-generator/`, so a relative design path resolves
+  from there (as for `export:v2`), and pnpm prints a `$ tsx …` line before the JSON unless run
+  as `pnpm --silent --filter @jeeves/generator update:v2 …`.
+- A removed generated file can leave an empty directory in the app; the update prunes only under
+  `.jeeves/generated/`. A process killed between a temporary file's creation and its rename
+  leaves that `.<name>.<hex>.jeeves-update` file beside the target.
+- The earlier notes still stand: `src/features/service-resources.ts`'s `createPositiveReader`
+  passes no `onFailure`, and the failure log's once-a-second limit logs only the first failed
+  upload's ID in one sweep.
+
+**For the next unit.** PF11 next. Run `update:v2` only on a copy in scratch, with `--check` first:
+the directory must be absolute and symlink-free and hold the export's `.jeeves/manifest.json`; a
+hand-edited generated file is refused by path, to restore or list in `.jeeves/overrides.json`
+with a reason (each one is a template gap).

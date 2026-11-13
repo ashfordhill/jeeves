@@ -1,5 +1,30 @@
-import { describe, expect, it } from "vitest";
-import { type ManifestFile, planUpdate, type UpdateActionKind } from "./update.ts";
+import {
+  lstat,
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  readlink,
+  realpath,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { stubStackDesign } from "../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
+import { loadLocalV2Registry } from "../templates/local-v2/index.ts";
+import { exportNewDirectory } from "./export.ts";
+import { canonicalJson, sha256 } from "./json.ts";
+import {
+  type ManifestFile,
+  planUpdate,
+  type UpdateActionKind,
+  type UpdateResult,
+  updateDirectory,
+} from "./update.ts";
+import { assembleV2 } from "./v2/assemble.ts";
 
 const NEW = "sha-new",
   OLD = "sha-old",
@@ -366,5 +391,332 @@ describe("planUpdate", () => {
         shadows: [],
       });
     });
+  });
+});
+
+describe("updateDirectory", () => {
+  const bundle = assembleV2(
+    { designJson: canonicalJson(stubStackDesign()) },
+    loadLocalV2Registry(),
+  );
+  const files = bundle.manifest.files.length;
+  const stub = "src/modules/links-api/redirector.ts",
+    deleted = "scripts/status.mjs",
+    older = "compose.yaml",
+    edited = "tsconfig.json",
+    replaced = "README.md";
+  const generated = (path: string) => {
+    const file = bundle.files.find((item) => item.path === path);
+    if (!file) throw new Error(`No generated ${path}`);
+    return Buffer.from(file.bytes);
+  };
+  const quiet: UpdateResult = {
+    directory: "",
+    check: false,
+    refused: [],
+    counts: { create: 0, replace: 0, unchanged: files, keep: 0 },
+    keepChanged: [],
+    override: [],
+    remove: [],
+    orphan: [],
+  };
+  let scratch = "";
+  beforeEach(async () => {
+    scratch = await realpath(await mkdtemp(join(tmpdir(), "jeeves-update-test-")));
+  });
+  afterEach(async () => {
+    await rm(scratch, { recursive: true, force: true });
+  });
+
+  it("names files of the stub stack with the ownership the tests assume", () => {
+    const ownership = (path: string) =>
+      bundle.manifest.files.find((file) => file.path === path)?.ownership;
+    expect(ownership(stub)).toBe("generated-extension");
+    for (const path of [deleted, older, edited, replaced])
+      expect(ownership(path)).toBe("generated-scaffold");
+  });
+
+  const exported = async () => {
+    const directory = join(scratch, "app");
+    await exportNewDirectory(bundle.files, directory);
+    return directory;
+  };
+  /** Every file and symlink under the directory: its SHA-256, or where the link points. */
+  const snapshot = async (directory: string) => {
+    const found: Record<string, string> = {};
+    const walk = async (relative: string) => {
+      for (const item of await readdir(join(directory, relative), { withFileTypes: true })) {
+        const path = relative ? `${relative}/${item.name}` : item.name;
+        if (item.isDirectory()) await walk(path);
+        else if (item.isSymbolicLink())
+          found[path] = `symlink ${await readlink(join(directory, path))}`;
+        else found[path] = sha256(await readFile(join(directory, path)));
+      }
+    };
+    await walk("");
+    return found;
+  };
+  const editManifest = async (directory: string, edit: (files: ManifestFile[]) => void) => {
+    const path = join(directory, ".jeeves/manifest.json");
+    const manifest = JSON.parse(await readFile(path, "utf8"));
+    edit(manifest.files);
+    await writeFile(path, `${JSON.stringify(manifest)}\n`);
+  };
+  const setHash = (directory: string, path: string, hash: string) =>
+    editManifest(directory, (records) => {
+      const record = records.find((item) => item.path === path);
+      if (!record) throw new Error(`No record for ${path}`);
+      record.sha256 = hash;
+    });
+  /** The scaffold file changed as an older export left it: a replace. */
+  const makeOlder = async (directory: string) => {
+    await writeFile(join(directory, older), "older bytes\n");
+    await setHash(directory, older, sha256("older bytes\n"));
+  };
+  const overrides = (directory: string, ...paths: string[]) =>
+    writeFile(
+      join(directory, ".jeeves/overrides.json"),
+      JSON.stringify({ overrides: paths.map((path) => ({ path, reason: "template gap" })) }),
+    );
+  const update = (directory: string, check = false) =>
+    updateDirectory(bundle, directory, { check });
+  const read = (directory: string, path: string) => readFile(join(directory, path));
+  const exists = (directory: string, path: string) =>
+    lstat(join(directory, path)).then(
+      () => true,
+      () => false,
+    );
+
+  it("1. leaves an export unchanged when the design is the same", async () => {
+    const directory = await exported();
+    const before = await snapshot(directory);
+    expect(await update(directory)).toEqual({ ...quiet, directory });
+    expect(await snapshot(directory)).toEqual(before);
+  });
+
+  it("2. keeps a stub body, recreates a deleted file and replaces an older one", async () => {
+    const directory = await exported();
+    await writeFile(join(directory, stub), "export const mine = true;\n");
+    await rm(join(directory, deleted));
+    await makeOlder(directory);
+    await writeFile(join(directory, "notes.md"), "the application's own\n");
+    // A generated file the new export no longer has.
+    await writeFile(join(directory, "src/dropped.ts"), "export {};\n");
+    await editManifest(directory, (records) => {
+      records.push({
+        path: "src/dropped.ts",
+        sha256: sha256("export {};\n"),
+        ownership: "generated-scaffold",
+      });
+    });
+    expect(await update(directory)).toEqual({
+      ...quiet,
+      directory,
+      counts: { create: 1, replace: 1, unchanged: files - 3, keep: 1 },
+      remove: ["src/dropped.ts"],
+    });
+    expect(await read(directory, stub)).toEqual(Buffer.from("export const mine = true;\n"));
+    expect(await read(directory, deleted)).toEqual(generated(deleted));
+    expect(await read(directory, older)).toEqual(generated(older));
+    expect(await read(directory, "notes.md")).toEqual(Buffer.from("the application's own\n"));
+    expect(await read(directory, ".jeeves/manifest.json")).toEqual(
+      generated(".jeeves/manifest.json"),
+    );
+    // No temporary file is left behind.
+    expect(Object.keys(await snapshot(directory)).sort()).toEqual(
+      [...bundle.files.map((file) => file.path), "notes.md"].sort(),
+    );
+  });
+
+  it("3. refuses a hand-edited generated file and changes nothing", async () => {
+    const directory = await exported();
+    await writeFile(join(directory, edited), "{}\n");
+    await rm(join(directory, deleted));
+    await makeOlder(directory);
+    const before = await snapshot(directory);
+    expect(await update(directory)).toEqual({
+      ...quiet,
+      directory,
+      refused: [edited],
+      counts: { create: 1, replace: 1, unchanged: files - 3, keep: 0 },
+    });
+    expect(await snapshot(directory)).toEqual(before);
+  });
+
+  it("4. keeps an override and writes its new bytes under .jeeves/generated", async () => {
+    const directory = await exported();
+    await writeFile(join(directory, edited), "{}\n");
+    await overrides(directory, edited);
+    expect(await update(directory)).toEqual({
+      ...quiet,
+      directory,
+      counts: { create: 0, replace: 0, unchanged: files - 1, keep: 0 },
+      override: [edited],
+    });
+    expect(await read(directory, edited)).toEqual(Buffer.from("{}\n"));
+    expect(await read(directory, `.jeeves/generated/${edited}`)).toEqual(generated(edited));
+    // Once the file equals the generated bytes again, its shadow goes.
+    await writeFile(join(directory, edited), generated(edited));
+    await overrides(directory);
+    expect(await update(directory)).toEqual({ ...quiet, directory });
+    expect(await exists(directory, ".jeeves/generated")).toBe(false);
+  });
+
+  it("5. writes nothing with check", async () => {
+    const directory = await exported();
+    await rm(join(directory, deleted));
+    await makeOlder(directory);
+    await writeFile(join(directory, stub), "export const mine = true;\n");
+    await setHash(directory, stub, sha256("an older stub\n"));
+    const before = await snapshot(directory);
+    expect(await update(directory, true)).toEqual({
+      ...quiet,
+      directory,
+      check: true,
+      counts: { create: 1, replace: 1, unchanged: files - 3, keep: 0 },
+      keepChanged: [stub],
+    });
+    expect(await snapshot(directory)).toEqual(before);
+  });
+
+  it("6. refuses a directory that is not a Jeeves v2 export", async () => {
+    const empty = join(scratch, "empty");
+    await mkdir(empty);
+    await expect(update(empty)).rejects.toThrow(`Not a Jeeves v2 export: ${empty}`);
+    const directory = await exported();
+    await expect(update("app")).rejects.toThrow("Not a Jeeves v2 export: app");
+    await symlink(directory, join(scratch, "link"));
+    await expect(update(join(scratch, "link"))).rejects.toThrow("Not a Jeeves v2 export");
+    await writeFile(join(directory, ".jeeves/manifest.json"), '{"format":"jeeves-v1"}\n');
+    await expect(update(directory)).rejects.toThrow(`Not a Jeeves v2 export: ${directory}`);
+  });
+
+  it("7. refuses a symlink in place of a file before writing anything", async () => {
+    const directory = await exported();
+    await makeOlder(directory);
+    // Followed, the link's target would make the README a replace.
+    await writeFile(join(scratch, "outside.txt"), "outside\n");
+    await rm(join(directory, replaced));
+    await symlink(join(scratch, "outside.txt"), join(directory, replaced));
+    await setHash(directory, replaced, sha256("outside\n"));
+    await expect(update(directory)).rejects.toThrow(`Unsafe update path: ${replaced}`);
+    expect(await read(directory, older)).toEqual(Buffer.from("older bytes\n"));
+    expect(await readFile(join(scratch, "outside.txt"), "utf8")).toBe("outside\n");
+    // A symlinked parent directory is refused too.
+    await rm(join(directory, replaced));
+    await writeFile(join(directory, replaced), generated(replaced));
+    await rm(join(directory, "scripts"), { recursive: true });
+    await mkdir(join(scratch, "scripts"));
+    await symlink(join(scratch, "scripts"), join(directory, "scripts"));
+    await expect(update(directory)).rejects.toThrow("Unsafe update path: scripts/");
+    expect(await read(directory, older)).toEqual(Buffer.from("older bytes\n"));
+    expect(await readdir(join(scratch, "scripts"))).toEqual([]);
+  });
+
+  it("8. refuses a manifest record that is a directory of a generated file", async () => {
+    const directory = await exported();
+    await makeOlder(directory);
+    await editManifest(directory, (records) => {
+      records.push({
+        path: "src/runtime",
+        sha256: "0".repeat(64),
+        ownership: "generated-scaffold",
+      });
+    });
+    await expect(update(directory)).rejects.toThrow("Invalid .jeeves/manifest.json");
+    // Without the files under it, the old manifest is valid but collides with the new one.
+    await editManifest(directory, (records) => {
+      records.splice(
+        records.findIndex((record) => record.path === "src/runtime/local.ts"),
+        1,
+      );
+    });
+    await expect(update(directory)).rejects.toThrow("OUTPUT_COLLISION at src/runtime");
+    expect(await read(directory, older)).toEqual(Buffer.from("older bytes\n"));
+  });
+
+  it("9. keeps a pending shadow across updates until the application deletes it", async () => {
+    const directory = await exported();
+    await writeFile(join(directory, stub), "export const mine = true;\n");
+    await setHash(directory, stub, sha256("an older stub\n"));
+    const keepChanged = {
+      ...quiet,
+      directory,
+      counts: { create: 0, replace: 0, unchanged: files - 1, keep: 0 },
+      keepChanged: [stub],
+    };
+    expect(await update(directory)).toEqual(keepChanged);
+    expect(await read(directory, `.jeeves/generated/${stub}`)).toEqual(generated(stub));
+    expect(await update(directory)).toEqual(keepChanged);
+    expect(await read(directory, `.jeeves/generated/${stub}`)).toEqual(generated(stub));
+    await rm(join(directory, `.jeeves/generated/${stub}`));
+    expect(await update(directory)).toEqual({
+      ...quiet,
+      directory,
+      counts: { create: 0, replace: 0, unchanged: files - 1, keep: 1 },
+    });
+    expect(await read(directory, stub)).toEqual(Buffer.from("export const mine = true;\n"));
+    // Once no shadow is left, the folder goes too.
+    expect(await exists(directory, ".jeeves/generated")).toBe(false);
+  });
+
+  it("10. keeps an edited override the export no longer has, twice", async () => {
+    const directory = await exported();
+    await editManifest(directory, (records) => {
+      records.push({
+        path: "extra.txt",
+        sha256: sha256("from an older export\n"),
+        ownership: "generated-scaffold",
+      });
+    });
+    await writeFile(join(directory, "extra.txt"), "the application's\n");
+    await overrides(directory, "extra.txt");
+    const orphan = { ...quiet, directory, orphan: ["extra.txt"] };
+    expect(await update(directory)).toEqual(orphan);
+    expect(await update(directory)).toEqual(orphan);
+    expect(await read(directory, "extra.txt")).toEqual(Buffer.from("the application's\n"));
+    expect(await exists(directory, ".jeeves/generated")).toBe(false);
+  });
+
+  it("refuses an invalid manifest or overrides file before writing anything", async () => {
+    const directory = await exported();
+    await makeOlder(directory);
+    const manifest = await readFile(join(directory, ".jeeves/manifest.json"), "utf8");
+    const record = (value: object) => async () => {
+      await writeFile(join(directory, ".jeeves/manifest.json"), manifest);
+      await editManifest(directory, (records) => {
+        records.push(value as ManifestFile);
+      });
+    };
+    for (const setUp of [
+      record({ path: "a.txt", sha256: "A".repeat(64), ownership: "generated-scaffold" }),
+      record({ path: "a.txt", sha256: "0".repeat(64), ownership: "scaffold" }),
+      record({ path: "../a.txt", sha256: "0".repeat(64), ownership: "generated-scaffold" }),
+      record({ path: "COMPOSE.yaml", sha256: "0".repeat(64), ownership: "generated-scaffold" }),
+      record({
+        path: ".jeeves/generated/a.txt",
+        sha256: "0".repeat(64),
+        ownership: "generated-scaffold",
+      }),
+    ]) {
+      await setUp();
+      await expect(update(directory)).rejects.toThrow("Invalid .jeeves/manifest.json");
+    }
+    await writeFile(join(directory, ".jeeves/manifest.json"), manifest);
+    for (const value of [
+      { overrides: [{ path: edited, reason: "" }] },
+      { overrides: [{ path: ".jeeves/report.json", reason: "mine" }] },
+      {
+        overrides: [
+          { path: edited, reason: "mine" },
+          { path: edited, reason: "again" },
+        ],
+      },
+      { override: [] },
+    ]) {
+      await writeFile(join(directory, ".jeeves/overrides.json"), JSON.stringify(value));
+      await expect(update(directory)).rejects.toThrow("Invalid .jeeves/overrides.json");
+    }
+    expect(await read(directory, older)).toEqual(Buffer.from("older bytes\n"));
   });
 });
