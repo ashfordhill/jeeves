@@ -1,0 +1,431 @@
+{
+  "step": "details",
+  "label": "b1",
+  "args": ["5a074d41-736c-4736-aa05-865edc3f0e2b", "20"],
+  "statuses": [
+    200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+    200
+  ],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "publicationVersion": 1,
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnail": "videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:10:38.676Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/5a074d41-736c-4736-aa05-865edc3f0e2b/a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0/e0a15c31-25b0-4511-a4fb-04d60c0bc011/thumbnail.jpg"
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "step": "favorites",
+  "label": "b1-fav-4",
+  "args": ["5a074d41-736c-4736-aa05-865edc3f0e2b"],
+  "listed": true,
+  "log": [
+    {
+      "method": "PUT",
+      "path": "/api/account-api/modules/account-api-favorite-videos/items/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "viewer",
+      "status": 200,
+      "body": {
+        "itemId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "addedAt": "2026-11-13T03:12:37.249541Z"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/account-api/modules/account-api-favorite-videos/items/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "viewer",
+      "status": 200,
+      "body": {
+        "itemId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "addedAt": "2026-11-13T03:12:37.249541Z"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/account-api/modules/account-api-favorite-videos/items",
+      "who": "viewer",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "itemId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+            "addedAt": "2026-11-13T03:12:37.249541Z"
+          }
+        ],
+        "next": null
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/account-api/modules/account-api-favorite-videos/items/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "viewer",
+      "status": 204,
+      "body": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/account-api/modules/account-api-favorite-videos/items/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 401,
+      "body": {
+        "error": "SIGN_IN_REQUIRED",
+        "message": "Sign in to continue."
+      }
+    }
+  ]
+}

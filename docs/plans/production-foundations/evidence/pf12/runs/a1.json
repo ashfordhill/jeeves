@@ -1,0 +1,102 @@
+{
+  "step": "signin",
+  "label": "a1",
+  "args": [],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-viewer-check/me",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "signedIn": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-viewer-check/me",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "signedIn": true,
+        "subject": "dd1afe1b-1096-4b97-8516-767f150a70c1",
+        "username": "creator"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-viewer-check/me",
+      "who": "viewer",
+      "status": 200,
+      "body": {
+        "signedIn": true,
+        "subject": "f8b4cb72-08d7-47dc-9ab8-00584b80d5d3",
+        "username": "viewer"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload-api/modules/upload-api-creator-check/me",
+      "who": "anonymous",
+      "status": 401,
+      "body": {
+        "error": "SIGN_IN_REQUIRED",
+        "message": "Sign in to continue."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload-api/modules/upload-api-creator-check/me",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "signedIn": true,
+        "subject": "dd1afe1b-1096-4b97-8516-767f150a70c1",
+        "username": "creator"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/upload-api/modules/upload-api-creator-check/me",
+      "who": "viewer",
+      "status": 200,
+      "body": {
+        "signedIn": true,
+        "subject": "f8b4cb72-08d7-47dc-9ab8-00584b80d5d3",
+        "username": "viewer"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/account-api/modules/account-api-account-check/me",
+      "who": "anonymous",
+      "status": 401,
+      "body": {
+        "error": "SIGN_IN_REQUIRED",
+        "message": "Sign in to continue."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/account-api/modules/account-api-account-check/me",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "signedIn": true,
+        "subject": "dd1afe1b-1096-4b97-8516-767f150a70c1",
+        "username": "creator"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/account-api/modules/account-api-account-check/me",
+      "who": "viewer",
+      "status": 200,
+      "body": {
+        "signedIn": true,
+        "subject": "f8b4cb72-08d7-47dc-9ab8-00584b80d5d3",
+        "username": "viewer"
+      }
+    }
+  ]
+}

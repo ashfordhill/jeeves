@@ -1,0 +1,112 @@
+{
+  "uploads": [
+    {
+      "kind": "fixture",
+      "title": "V3-17 a2: quokkamber",
+      "size": 15584953,
+      "uploadId": "0ef70573-48d4-450b-ba81-34f8ba28189e",
+      "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "jobId": "a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0",
+      "attemptId": "e0a15c31-25b0-4511-a4fb-04d60c0bc011",
+      "state": "pending"
+    }
+  ],
+  "log": [
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "uploadId": "0ef70573-48d4-450b-ba81-34f8ba28189e",
+        "assetId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "state": "uploading",
+        "partSize": 5242880,
+        "partCount": 3,
+        "expiresAt": "2026-11-14T03:10:35.061Z"
+      },
+      "request": {
+        "fileName": "youtube-v1-fixture.mp4",
+        "size": 15584953,
+        "contentType": "video/mp4",
+        "lastModified": 1762555020000,
+        "sha256": "1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9",
+        "title": "V3-17 a2: quokkamber",
+        "description": "V3-17 a2 (fixture)."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/0ef70573-48d4-450b-ba81-34f8ba28189e/parts/1",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45802/original-videos/upload-api-multipart-uploads/5a074d41-736c-4736-aa05-865edc3f0e2b/0ef70573-48d4-450b-ba81-34f8ba28189e/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T03:25:35.091Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 1>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"e427bb2dfe46a881a30ee35141a58952\"",
+        "size": 5242880
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/0ef70573-48d4-450b-ba81-34f8ba28189e/parts/2",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45802/original-videos/upload-api-multipart-uploads/5a074d41-736c-4736-aa05-865edc3f0e2b/0ef70573-48d4-450b-ba81-34f8ba28189e/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T03:25:35.127Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 2>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"8b07cb8adaef2a76957b89cf6a759510\"",
+        "size": 5242880
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/0ef70573-48d4-450b-ba81-34f8ba28189e/parts/3",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "url": "http://127.0.0.1:45802/original-videos/upload-api-multipart-uploads/5a074d41-736c-4736-aa05-865edc3f0e2b/0ef70573-48d4-450b-ba81-34f8ba28189e/source.mp4?<signature>",
+        "expiresAt": "2026-11-13T03:25:35.163Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "<signed URL, part 3>",
+      "who": "signed URL",
+      "status": 200,
+      "body": {
+        "etag": "\"5c1c354824c855e2e3c37f79b1e904e2\"",
+        "size": 5099193
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/0ef70573-48d4-450b-ba81-34f8ba28189e/complete",
+      "who": "creator",
+      "status": 200,
+      "body": {
+        "uploadId": "0ef70573-48d4-450b-ba81-34f8ba28189e",
+        "videoId": "5a074d41-736c-4736-aa05-865edc3f0e2b",
+        "jobId": "a6b988d1-22bf-47f0-b8c5-ea4caebaa3b0",
+        "attemptId": "e0a15c31-25b0-4511-a4fb-04d60c0bc011",
+        "state": "pending"
+      }
+    }
+  ]
+}

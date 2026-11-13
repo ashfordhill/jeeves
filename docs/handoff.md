@@ -11395,3 +11395,66 @@ with a reason (each one is a template gap).
 **For the next unit.** PF12 next. Run v4 from a copy of `field-projects/youtube/v4/app` outside
 the checkout; it builds and passes its 19 offline tests, and its `compose.yaml` is v3's app's,
 byte for byte.
+
+## 2026-11-12 — PF12: Run v4: acceptance by API, then two copies
+
+**What changed.**
+
+- New `field-projects/youtube/v4/notes/scenarios.md`: Part A and Part B with a Verdict column
+  and what was seen. Every step is **Observed**; A2's details 404s before ready were not
+  recorded (below).
+- New `docs/plans/production-foundations/evidence/pf12/`: `README.md` listing the files, the
+  Docker inventory before and after, `pf.mjs` and `env.sh` as used, and `runs/` (81 files: every
+  harness output, the setup logs, the `ps` outputs, database reads and `docker stats` network
+  I/O). No code changed.
+
+**Checks.** None named by the unit. The run, on `git archive` of v4's `app/` at `8e6bfbc`
+outside the checkout (`jeeves-pf12`, 45800–45802):
+
+- Setup: install, build, `pnpm first-run` (131 s, building both images) and
+  `node scripts/accounts.mjs` exit 0; 15 containers healthy.
+- A1 `me`: 200 with each token; anonymous Watch 200 `{"signedIn":false}`, Upload and Account 401.
+  A2: upload 200s, ready 200 after 4,055 ms (video A). A3: 200, 200, `EXISTS` 1. A4: 202,
+  before 0, after 1, settled 1. A5: `found` 1. A6: PUT 200, GET 200, listed, DELETE 204,
+  anonymous PUT 401.
+- Scale-up exit 0; 23 containers healthy 11 s after it started. B1: details 20 × 200; 20
+  searches `found` 1; 20 favorites runs as in A6. B2: with either Watch copy stopped, 20 × 200
+  each time. B3: 100 POSTs 202, before 1, expected 51, after 51, settled 51 (51 receipts). B4:
+  video B ready after 4,050 ms, `found` 1, `published.videos` count 1.
+- At the end: 23 containers healthy, 0 restarts, no "error" line in any `app-*` log. The
+  Docker inventory adds only `jeeves-pf12` containers, volumes, network and images.
+- Evidence: `command grep -rniE 'bearer|eyJ|password|secret'` finds only variable names in
+  `pf.mjs` and the password file paths in `setup-accounts.log`; no file is over 100 KB.
+
+**Differences from the plan.**
+
+- Biome lints JSON under `docs/`, so the 55 harness JSON files were formatted with `biome format
+  --write` (as PF11 did for `update.json`); each still parses to the value the harness wrote
+  (`isDeepStrictEqual`, 55 of 55). `pf.mjs` passes Biome as written.
+- Beyond the plan's steps, for the record only: reads of the assets, outbox and receipts
+  tables, `docker stats` network I/O, `docker inspect` health in B2, a log scan, and three
+  anonymous search reads by `curl` after A5 (not saved). In B2, `-2` was stopped right after
+  `-1` was started, as written, while `-1` was still `starting`.
+- No harness script needed a fix.
+
+**Noticed.**
+
+- `pf.mjs`'s `poll` drops every read but the last, so A2's and B4's details 404s before ready
+  are not in the evidence, and `afterMs` includes the read's own time (A5's 989 ms; B1's
+  searches found A on the first read in 27–37 ms).
+- Requests reached both copies of Watch, Search, Account and the View counter (network I/O),
+  but both encodes ran on Transcoder copy 1; copy 2 took no job.
+- Complete still answers 200 with `state: "pending"` (template gap 1, as in v3). The harness's
+  upload titles still read "V3-17 <label>: <word>".
+- `env.sh`'s `INVALID` names `$S/media/invalid.mp4`, which the unit doesn't copy; it isn't
+  there.
+- The earlier notes still stand: `src/features/service-resources.ts`'s `createPositiveReader`
+  passes no `onFailure`, and the failure log's once-a-second limit logs only the first failed
+  upload's ID in one sweep.
+
+**For the next unit.** PF13 next. `$SCRATCH` is
+`/tmp/claude-1000/-home-ash-github-jeeves/e55b10ca-9a72-457b-abfd-a20d5b67e92b/scratchpad/pf`
+(`app/`, `harness/`, `media/`, `runs/`, `env.sh`); project `jeeves-pf12`, ports 45800 (HTTP),
+45801 (identity), 45802 (objects); left running with two copies of each of the eight
+processes, and all 23 containers were healthy at the end. Video A
+`5a074d41-736c-4736-aa05-865edc3f0e2b` (51 views), B `20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04`.

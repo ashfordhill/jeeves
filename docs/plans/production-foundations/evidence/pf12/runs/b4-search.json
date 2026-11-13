@@ -1,0 +1,35 @@
+{
+  "step": "search",
+  "label": "b4-search",
+  "args": ["wombatcobalt", "20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04"],
+  "search": {
+    "status": 200,
+    "found": 1,
+    "afterMs": 1028
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/search-api/modules/search-api-video-search?q=wombatcobalt",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "q": "wombatcobalt",
+        "page": 1,
+        "pageSize": 20,
+        "total": 1,
+        "hits": [
+          {
+            "videoId": "20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04",
+            "title": "V3-17 b4: wombatcobalt",
+            "description": "V3-17 b4 (fixture).",
+            "channel": "creator",
+            "durationSeconds": 20,
+            "publishedAt": "2026-11-13T03:14:51.176Z",
+            "thumbnailUrl": "/cdn/video-delivery/videos/20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04/1f381a9b-4c5c-4e8a-a13e-2bfa37e378ca/8a3271d1-f464-4eb8-819b-dabac2199098/thumbnail.jpg"
+          }
+        ]
+      }
+    }
+  ]
+}

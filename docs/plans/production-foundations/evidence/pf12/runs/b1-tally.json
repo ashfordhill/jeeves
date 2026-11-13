@@ -1,0 +1,11 @@
+{
+  "favorites PUT /api/account-api/modules/account-api-favorite-videos/items/<A> [viewer] 200": 20,
+  "favorites GET /api/account-api/modules/account-api-favorite-videos/items/<A> [viewer] 200": 20,
+  "favorites GET /api/account-api/modules/account-api-favorite-videos/items [viewer] 200": 20,
+  "favorites DELETE /api/account-api/modules/account-api-favorite-videos/items/<A> [viewer] 204": 20,
+  "favorites PUT /api/account-api/modules/account-api-favorite-videos/items/<A> [anonymous] 401": 20,
+  "listed=true": 20,
+  "search GET /api/search-api/modules/search-api-video-search?q=… [anonymous] 200": 20,
+  "found=1 status=200": 20,
+  "details GET /api/watch-api/modules/watch-api-video-details-cache/<A> [anonymous] 200": 20
+}

@@ -1,0 +1,32 @@
+{
+  "step": "ready",
+  "label": "b4-ready",
+  "args": ["20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04"],
+  "ready": {
+    "status": 200,
+    "afterMs": 4050
+  },
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-video-details-cache/20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "videoId": "20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04",
+        "publicationVersion": 1,
+        "title": "V3-17 b4: wombatcobalt",
+        "description": "V3-17 b4 (fixture).",
+        "channel": "creator",
+        "durationSeconds": 20,
+        "manifest": "videos/20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04/1f381a9b-4c5c-4e8a-a13e-2bfa37e378ca/8a3271d1-f464-4eb8-819b-dabac2199098/master.m3u8",
+        "thumbnail": "videos/20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04/1f381a9b-4c5c-4e8a-a13e-2bfa37e378ca/8a3271d1-f464-4eb8-819b-dabac2199098/thumbnail.jpg",
+        "publishedAt": "2026-11-13T03:14:51.176Z",
+        "visibility": "public",
+        "state": "ready",
+        "manifestUrl": "/cdn/video-delivery/videos/20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04/1f381a9b-4c5c-4e8a-a13e-2bfa37e378ca/8a3271d1-f464-4eb8-819b-dabac2199098/master.m3u8",
+        "thumbnailUrl": "/cdn/video-delivery/videos/20c9fdd3-5f7b-45fd-b266-9b1d8baf4a04/1f381a9b-4c5c-4e8a-a13e-2bfa37e378ca/8a3271d1-f464-4eb8-819b-dabac2199098/thumbnail.jpg"
+      }
+    }
+  ]
+}

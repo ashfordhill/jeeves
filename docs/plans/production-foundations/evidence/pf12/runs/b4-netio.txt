@@ -1,0 +1,6 @@
+jeeves-pf12-app-search-indexer-1	37.4kB / 30.4kB
+jeeves-pf12-app-search-indexer-2	20.3kB / 16.1kB
+jeeves-pf12-app-transcoder-1	31.3MB / 23.1MB
+jeeves-pf12-app-transcoder-2	11.3kB / 8.78kB
+jeeves-pf12-app-video-lifecycle-1	140kB / 221kB
+jeeves-pf12-app-video-lifecycle-2	74.8kB / 116kB

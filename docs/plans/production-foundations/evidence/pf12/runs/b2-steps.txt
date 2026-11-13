@@ -1,0 +1,18 @@
+03:13:13
+jeeves-pf12-app-watch-api-1
+03:13:13
+{"step":"details","label":"b2-1","args":["5a074d41-736c-4736-aa05-865edc3f0e2b","20"],"statuses":[200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200]}
+03:13:25
+jeeves-pf12-app-watch-api-1
+/jeeves-pf12-app-watch-api-1 running starting
+/jeeves-pf12-app-watch-api-2 running healthy
+03:13:25
+jeeves-pf12-app-watch-api-2
+03:13:25
+/jeeves-pf12-app-watch-api-1 running starting
+/jeeves-pf12-app-watch-api-1 running healthy
+{"step":"details","label":"b2-2","args":["5a074d41-736c-4736-aa05-865edc3f0e2b","20"],"statuses":[200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200]}
+03:13:37
+jeeves-pf12-app-watch-api-2
+/jeeves-pf12-app-watch-api-1 running healthy exit=0 restarts=0
+/jeeves-pf12-app-watch-api-2 running healthy exit=0 restarts=0

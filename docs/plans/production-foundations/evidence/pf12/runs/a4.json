@@ -1,0 +1,72 @@
+{
+  "step": "plays",
+  "label": "a4",
+  "args": ["5a074d41-736c-4736-aa05-865edc3f0e2b", "1"],
+  "counts": {
+    "before": "0",
+    "expected": "1",
+    "after": "1",
+    "visibleAfterMs": 255,
+    "settled": "1"
+  },
+  "playStatuses": [202],
+  "log": [
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-view-count-reader/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "views": "0"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "24fdd2b3-4e89-4637-bac1-23d1172bc770",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T03:11:11.989Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "24fdd2b3-4e89-4637-bac1-23d1172bc770"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-view-count-reader/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "views": "1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/watch-api/modules/watch-api-view-publisher/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 202,
+      "body": {
+        "eventId": "24fdd2b3-4e89-4637-bac1-23d1172bc770",
+        "accepted": true,
+        "acceptedAt": "2026-11-13T03:11:12.250Z",
+        "publicationVersion": 1
+      },
+      "request": {
+        "eventId": "24fdd2b3-4e89-4637-bac1-23d1172bc770"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/watch-api/modules/watch-api-view-count-reader/5a074d41-736c-4736-aa05-865edc3f0e2b",
+      "who": "anonymous",
+      "status": 200,
+      "body": {
+        "views": "1"
+      }
+    }
+  ]
+}

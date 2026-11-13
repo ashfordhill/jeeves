@@ -1,0 +1,564 @@
+$ node scripts/build-browser.mjs && node scripts/local.mjs first-run
+Browser built into dist-public/.
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-media Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Building 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-media Built 
+ Image jeeves-pf12-app Built 
+ Image jeeves-pf12-app Built 
+#1 [internal] load local bake definitions
+#1 reading from stdin 6.79kB done
+#1 DONE 0.0s
+
+#2 [app-transcoder internal] load build definition from Dockerfile
+#2 DONE 0.0s
+
+#2 [app-account-api internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.65kB done
+#2 DONE 0.1s
+
+#3 [setup-migrate internal] load metadata for docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 0.4s
+
+#4 [setup-broker internal] load .dockerignore
+#4 transferring context: 72B done
+#4 DONE 0.1s
+
+#5 [app-transcoder internal] load build context
+#5 DONE 0.0s
+
+#6 [app-view-counter internal] load build context
+#6 transferring context: 411.53kB 0.0s done
+#6 transferring context: 411.53kB 0.0s done
+#6 DONE 0.1s
+
+#7 [app-search-indexer app  1/10] FROM docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#7 resolve docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.1s done
+#7 DONE 0.1s
+
+#5 [app-transcoder internal] load build context
+#5 transferring context: 418.51kB 0.0s done
+#5 DONE 0.1s
+
+#8 [app-search-indexer app  2/10] WORKDIR /app
+#8 CACHED
+
+#9 [app-search-indexer app  3/10] RUN npm install --global pnpm@12.16.1
+#9 CACHED
+
+#10 [app-search-indexer app  4/10] COPY package.json pnpm-lock.yaml ./
+#10 CACHED
+
+#11 [app-search-indexer app  5/10] RUN pnpm install --frozen-lockfile --ignore-scripts
+#11 CACHED
+
+#12 [app-transcoder app  6/10] COPY tsconfig.json ./
+#12 CACHED
+
+#13 [setup-storage app  7/10] COPY src ./src
+#13 DONE 0.3s
+
+#14 [app-view-counter app  8/10] RUN pnpm build
+#14 0.640 $ tsc -p tsconfig.json
+#14 DONE 1.3s
+
+#15 [app-transcoder app  9/10] COPY scripts ./scripts
+#15 DONE 4.0s
+
+#16 [app-account-api app 10/10] COPY infra ./infra
+#16 DONE 0.5s
+
+#17 [app-upload-api] exporting to image
+#17 exporting layers
+#17 ...
+
+#18 [app-transcoder ffmpeg 3/4] COPY ffmpeg-os.lock ./ffmpeg-os.lock
+#18 CACHED
+
+#19 [app-transcoder ffmpeg 2/4] WORKDIR /build
+#19 CACHED
+
+#20 [app-transcoder ffmpeg 4/4] RUN rm /etc/apt/sources.list.d/debian.sources && printf 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20261024T000000Z bookworm main\ndeb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20261024T000000Z bookworm-security main\n' > /etc/apt/sources.list  && apt-get update -o APT::Update::Error-Mode=any  && apt-get download ffmpeg=7:5.1.9-0+deb12u1  && echo '2ba8ead87657c123ce6de2de5ecdbc1fb4ead9a4b317b85b8ec41e16c890fe01  ffmpeg_7%3a5.1.9-0+deb12u1_amd64.deb' | sha256sum -c -  && rm ffmpeg_*.deb  && apt-get install -y --no-install-recommends ffmpeg=7:5.1.9-0+deb12u1  && dpkg-query -W -f='${Package}=${Version}\n' | LC_ALL=C sort > /tmp/ffmpeg-os.lock  && diff -u ffmpeg-os.lock /tmp/ffmpeg-os.lock  && test "$(dpkg-query -W -f='${Version}' ffmpeg)" = '7:5.1.9-0+deb12u1'  && rm -rf /var/lib/apt/lists/*
+#20 CACHED
+
+#21 [app-transcoder media 1/2] WORKDIR /app
+#21 CACHED
+
+#22 [app-transcoder app  4/10] COPY package.json pnpm-lock.yaml ./
+#22 CACHED
+
+#23 [app-transcoder app  9/10] COPY scripts ./scripts
+#23 CACHED
+
+#24 [app-transcoder app  5/10] RUN pnpm install --frozen-lockfile --ignore-scripts
+#24 CACHED
+
+#25 [app-transcoder app  6/10] COPY tsconfig.json ./
+#25 CACHED
+
+#26 [app-transcoder app  8/10] RUN pnpm build
+#26 CACHED
+
+#8 [app-transcoder app  2/10] WORKDIR /app
+#8 CACHED
+
+#9 [app-transcoder app  3/10] RUN npm install --global pnpm@12.16.1
+#9 CACHED
+
+#27 [app-transcoder app  7/10] COPY src ./src
+#27 CACHED
+
+#28 [app-transcoder app 10/10] COPY infra ./infra
+#28 CACHED
+
+#29 [app-transcoder media 2/2] COPY --from=app /app /app
+#29 DONE 3.5s
+
+#17 [app-upload-api] exporting to image
+#17 exporting layers 2.3s done
+#17 exporting manifest sha256:34fffb2203810471b248d8af7ba996c0b4fbb5b80a7485c28eda2d900fca9dfc 0.7s done
+#17 exporting config sha256:2e60d5da5c2ab3852e366b203123706e7b38f270340d87443cae8f97fb0fe44a 0.8s done
+#17 exporting attestation manifest sha256:296e747a491c0df2fca9dc87ed056b7dfff638fe15575cc723dd4912c3603236
+#17 exporting attestation manifest sha256:296e747a491c0df2fca9dc87ed056b7dfff638fe15575cc723dd4912c3603236 1.1s done
+#17 exporting manifest list sha256:ac08bbc72b5cf095d6b14d7cefeeb0a068f509e83edf99e9a7ef395831f62ea8
+#17 exporting manifest list sha256:ac08bbc72b5cf095d6b14d7cefeeb0a068f509e83edf99e9a7ef395831f62ea8 0.7s done
+#17 naming to docker.io/library/jeeves-pf12-app:latest
+#17 naming to docker.io/library/jeeves-pf12-app:latest 0.3s done
+#17 unpacking to docker.io/library/jeeves-pf12-app:latest
+#17 ...
+
+#30 [app-search-api] exporting to image
+#30 exporting layers 2.3s done
+#30 exporting manifest sha256:05d81008983c5e6ba2b3bc7d7923de0396c1db456240424acef140e39fafec0c 0.6s done
+#30 exporting config sha256:a6b45aa0eb823107583e63423954c1fba347ff03b67df1fb6db2b89ef6f0a390 0.8s done
+#30 exporting attestation manifest sha256:f0c5404d5b1804a248ad701f079961c2f1e2d40a35165c770d971705ca11ba03 1.0s done
+#30 exporting manifest list sha256:e617b86fc2ffddaec3f3095370e0a2541c32359be5c92b0187bdd3cdae933fad 0.8s done
+#30 naming to docker.io/library/jeeves-pf12-app:latest 0.2s done
+#30 ...
+
+#31 [setup-storage] exporting to image
+#31 exporting layers 2.4s done
+#31 exporting manifest sha256:a9992760917a3d04e9c025b7e9a4ffe0ba79ad8082818e91d7321c23f8f75206 0.5s done
+#31 exporting config sha256:67d057f68d149e5e76bfabdb94168be7a1a52206c435e289436eeeb9f671c677 0.8s done
+#31 exporting attestation manifest sha256:90595af74e2006182f365aeff8d2a3d638307530403370fe378a024cc6091ad8 1.0s done
+#31 exporting manifest list sha256:a16e4dcc1a4af3920274472ebc4c14ece657a74c4e9b71b10d4b64883ecd257d 0.8s done
+#31 naming to docker.io/library/jeeves-pf12-app:latest 0.2s done
+#31 ...
+
+#32 [setup-broker] exporting to image
+#32 exporting layers 2.2s done
+#32 exporting manifest sha256:16d403e0df336d982fddf74b6c4e5a89144a68e29b1c85b4f6883fa6ef035f75 0.5s done
+#32 exporting config sha256:bb4ee946e0ceb7ead36ab9be4e94ddba55914ea0a751fea75e392524fab73cfe 0.8s done
+#32 exporting attestation manifest sha256:0afc63c256e1f9735125867dc95683e5d5911409a970e823570a26d2e7caffc0 1.3s done
+#32 exporting manifest list sha256:3954c3c562c12aefed33cd310b49574121c41b3b6b3f63b87665b8ff8e77c038 0.7s done
+#32 naming to docker.io/library/jeeves-pf12-app:latest 0.7s done
+#32 ...
+
+#33 [app-account-api] exporting to image
+#33 exporting layers 2.3s done
+#33 exporting manifest sha256:d0b6074ff9f26d8923fe5e3fb39e49fd07f24ec2cab3493032f2c9c9141f69ae 0.6s done
+#33 exporting config sha256:6a0f045bf8391849bb913f74cebfb873d832220cca3dfedbb6551ab425176643 0.8s done
+#33 exporting attestation manifest sha256:75ed1c928261c1a2953deaca5db1b5e5e3adf74b6373257d44b8a1f39f5e1a16 1.1s done
+#33 exporting manifest list sha256:d69b7a7f02fde716605e108641d3b7c007fa37ea11bee69e900662a0a8f44d17 0.8s done
+#33 naming to docker.io/library/jeeves-pf12-app:latest 0.3s done
+#33 ...
+
+#34 [setup-migrate] exporting to image
+#34 exporting layers 2.3s done
+#34 exporting manifest sha256:8349e616a24200944364bf6bfa240cfb0edf0d15ee7d57fa96763768d8a203a6 0.6s done
+#34 exporting config sha256:0603fde93af53e2df17890935a41ab52d48365eb864b2941710ab09c082d87ca 0.8s done
+#34 exporting attestation manifest sha256:d81953ad6af815b257eaf9c728599538adf74852f0ce026a97276c8d4113cc1e 1.0s done
+#34 exporting manifest list sha256:58f1e268cde419ed5806b3ba1bb971dc5641161e234809f3ff68de501fe79339 0.8s done
+#34 naming to docker.io/library/jeeves-pf12-app:latest 0.2s done
+#34 ...
+
+#35 [app-search-indexer] exporting to image
+#35 exporting layers 2.4s done
+#35 exporting manifest sha256:3afa0fa832ef9f1da7194d102eed594961f1cf6bb66d866744541058d98fe540 0.7s done
+#35 exporting config sha256:4d3dd0d8ef2de4981935ddb655550601cec2c192e2100fd71729afa333255d39 0.8s done
+#35 exporting attestation manifest sha256:a114f2730595a370e6ad93157e82102c2a54313ce75808caec4254569e1457de 1.0s done
+#35 exporting manifest list sha256:43b330a6226e36bbcb1a13fb61f6fa5b1f684eef091fe524c9f43c7e5b9b9ebc 0.8s done
+#35 naming to docker.io/library/jeeves-pf12-app:latest 0.2s done
+#35 ...
+
+#36 [app-view-counter] exporting to image
+#36 exporting layers 2.3s done
+#36 exporting manifest sha256:f5e40a15e5023697a4f5d0466cbef2e138cc40e80c3bc903e6ff34b4f589be88 0.7s done
+#36 exporting config sha256:41b40da41473e4c4d1a90836d7f8b2e100b301727bbf345fb2e2b81df3e5aa56 0.8s done
+#36 exporting attestation manifest sha256:c83096f4055632c0e052e00c576af72b6e4cb7235074c7b323bc75868c571aac 1.0s done
+#36 exporting manifest list sha256:cfdd850f1f8571335abc68d666d3eb47beee4abfd3ae9246873bc626f56bd717 0.8s done
+#36 naming to docker.io/library/jeeves-pf12-app:latest 0.2s done
+#36 ...
+
+#37 [app-watch-api] exporting to image
+#37 exporting layers 2.3s done
+#37 exporting manifest sha256:aa916d9158aeccb907fed5029b3d53c26f78173694dcac420a33b5e180cfc534 0.6s done
+#37 exporting config sha256:848cc628a2db1ba4f639727e9ccdcaa63e6921c940b3339515bfa2a635240013 0.8s done
+#37 exporting attestation manifest sha256:e4c9a77eea8a5dc62980a03cd3556002c5dddbed8d91fc635a69dfb16a20aa6e 1.0s done
+#37 exporting manifest list sha256:c1d3c77cf8973085c4d4bb9875d7291c10d3eb1db9a19aff5d25ae4451e972b7 0.8s done
+#37 naming to docker.io/library/jeeves-pf12-app:latest 0.1s done
+#37 ...
+
+#38 [app-video-lifecycle] exporting to image
+#38 exporting layers 2.3s done
+#38 exporting manifest sha256:2d2baa6f66b46f770046af7f44966bb92a73ae38e176ef222acdbaa0bf87fc60 0.6s done
+#38 exporting config sha256:eb68e84d9290e6a3c69bf3fc2e2700a20bbb8b47e65aeee7c282397639b729e3 0.8s done
+#38 exporting attestation manifest sha256:797e9c0153e6d748ede1a6d5bb66b91be9c3a330b7648bd5c10032fe4d1c06f9 1.1s done
+#38 exporting manifest list sha256:c8238bdbc17132e5e078d6129d06c775f5366affeafe50626c3c40e17a32d0cd 0.7s done
+#38 naming to docker.io/library/jeeves-pf12-app:latest 0.3s done
+#38 ...
+
+#39 [app-transcoder] exporting to image
+#39 exporting layers 6.4s done
+#39 exporting manifest sha256:27cea75a6782da7d9a40cb070bc9ea14fc9fc64ed9a668d1bc57116e7adc2112 0.2s done
+#39 exporting config sha256:616ab979c972e83181255b657da650a915256f6bcfe627052187b0e27a8f71db 0.1s done
+#39 exporting attestation manifest sha256:48759242785fbc22e8b134d3a69eb06e3a6161f9403cbde6425f0450f81272cc
+#39 exporting attestation manifest sha256:48759242785fbc22e8b134d3a69eb06e3a6161f9403cbde6425f0450f81272cc 0.1s done
+#39 exporting manifest list sha256:0ea3c5bcfd7a90ef4c6cf4c50af5c8fc6b41749b054a4a8d443a27acf3425c3a
+#39 exporting manifest list sha256:0ea3c5bcfd7a90ef4c6cf4c50af5c8fc6b41749b054a4a8d443a27acf3425c3a 0.1s done
+#39 naming to docker.io/library/jeeves-pf12-media:latest
+#39 naming to docker.io/library/jeeves-pf12-media:latest 0.1s done
+#39 unpacking to docker.io/library/jeeves-pf12-media:latest
+#39 unpacking to docker.io/library/jeeves-pf12-media:latest 3.8s done
+#39 DONE 11.1s
+
+#17 [app-upload-api] exporting to image
+#17 ...
+
+#33 [app-account-api] exporting to image
+#33 unpacking to docker.io/library/jeeves-pf12-app:latest 10.9s done
+#33 DONE 18.2s
+
+#31 [setup-storage] exporting to image
+#31 unpacking to docker.io/library/jeeves-pf12-app:latest 10.8s done
+#31 DONE 18.3s
+
+#17 [app-upload-api] exporting to image
+#17 unpacking to docker.io/library/jeeves-pf12-app:latest 11.1s done
+#17 ...
+
+#36 [app-view-counter] exporting to image
+#36 unpacking to docker.io/library/jeeves-pf12-app:latest 10.9s done
+#36 DONE 18.3s
+
+#30 [app-search-api] exporting to image
+#30 unpacking to docker.io/library/jeeves-pf12-app:latest 10.9s done
+#30 DONE 18.3s
+
+#34 [setup-migrate] exporting to image
+#34 unpacking to docker.io/library/jeeves-pf12-app:latest 10.9s done
+#34 DONE 18.4s
+
+#37 [app-watch-api] exporting to image
+#37 unpacking to docker.io/library/jeeves-pf12-app:latest 10.9s done
+#37 DONE 18.3s
+
+#35 [app-search-indexer] exporting to image
+#35 unpacking to docker.io/library/jeeves-pf12-app:latest 11.0s done
+#35 DONE 18.5s
+
+#17 [app-upload-api] exporting to image
+#17 DONE 18.5s
+
+#38 [app-video-lifecycle] exporting to image
+#38 unpacking to docker.io/library/jeeves-pf12-app:latest 11.3s done
+#38 ...
+
+#32 [setup-broker] exporting to image
+#32 unpacking to docker.io/library/jeeves-pf12-app:latest 11.6s done
+#32 DONE 18.7s
+
+#38 [app-video-lifecycle] exporting to image
+#38 DONE 18.8s
+
+#40 [app-transcoder] resolving provenance for metadata file
+#40 ...
+
+#41 [app-upload-api] resolving provenance for metadata file
+#41 ...
+
+#42 [app-watch-api] resolving provenance for metadata file
+#42 DONE 7.6s
+
+#43 [app-account-api] resolving provenance for metadata file
+#43 DONE 8.4s
+
+#44 [app-view-counter] resolving provenance for metadata file
+#44 ...
+
+#40 [app-transcoder] resolving provenance for metadata file
+#40 DONE 13.2s
+
+#45 [setup-broker] resolving provenance for metadata file
+#45 DONE 11.3s
+
+#46 [setup-migrate] resolving provenance for metadata file
+#46 DONE 5.2s
+
+#47 [app-video-lifecycle] resolving provenance for metadata file
+#47 DONE 10.4s
+
+#48 [setup-storage] resolving provenance for metadata file
+#48 DONE 4.9s
+
+#44 [app-view-counter] resolving provenance for metadata file
+#44 DONE 4.6s
+
+#41 [app-upload-api] resolving provenance for metadata file
+#41 DONE 8.2s
+
+#49 [app-search-api] resolving provenance for metadata file
+#49 DONE 7.1s
+
+#50 [app-search-indexer] resolving provenance for metadata file
+#50 DONE 9.2s
+ Volume jeeves-pf12_search-videos Creating 
+ Volume jeeves-pf12_search-videos Creating 
+ Volume jeeves-pf12_postgres-data Creating 
+ Volume jeeves-pf12_postgres-data Creating 
+ Network jeeves-pf12_default Creating 
+ Network jeeves-pf12_default Creating 
+ Volume jeeves-pf12_objects-data Creating 
+ Volume jeeves-pf12_objects-data Creating 
+ Volume jeeves-pf12_cache-hot-metadata Creating 
+ Volume jeeves-pf12_cache-hot-metadata Creating 
+ Volume jeeves-pf12_broker-data Creating 
+ Volume jeeves-pf12_broker-data Creating 
+ Volume jeeves-pf12_search-videos Created 
+ Volume jeeves-pf12_search-videos Created 
+ Volume jeeves-pf12_postgres-data Created 
+ Volume jeeves-pf12_postgres-data Created 
+ Volume jeeves-pf12_broker-data Created 
+ Volume jeeves-pf12_broker-data Created 
+ Volume jeeves-pf12_objects-data Created 
+ Volume jeeves-pf12_objects-data Created 
+ Network jeeves-pf12_default Created 
+ Network jeeves-pf12_default Created 
+ Container jeeves-pf12-search-videos-1 Creating 
+ Container jeeves-pf12-local-objects-1 Creating 
+ Container jeeves-pf12-local-postgres-1 Creating 
+ Container jeeves-pf12-local-broker-1 Creating 
+ Volume jeeves-pf12_cache-hot-metadata Created 
+ Volume jeeves-pf12_cache-hot-metadata Created 
+ Container jeeves-pf12-cache-hot-metadata-1 Creating 
+ Container jeeves-pf12-search-videos-1 Created 
+ Container jeeves-pf12-local-objects-1 Created 
+ Container jeeves-pf12-cache-hot-metadata-1 Created 
+ Container jeeves-pf12-local-postgres-1 Created 
+ Container jeeves-pf12-local-broker-1 Created 
+ Container jeeves-pf12-local-postgres-1 Starting 
+ Container jeeves-pf12-local-broker-1 Starting 
+ Container jeeves-pf12-cache-hot-metadata-1 Starting 
+ Container jeeves-pf12-local-objects-1 Starting 
+ Container jeeves-pf12-search-videos-1 Starting 
+ Container jeeves-pf12-local-postgres-1 Started 
+ Container jeeves-pf12-local-broker-1 Started 
+ Container jeeves-pf12-cache-hot-metadata-1 Started 
+ Container jeeves-pf12-local-objects-1 Started 
+ Container jeeves-pf12-search-videos-1 Started 
+ Container jeeves-pf12-cache-hot-metadata-1 Waiting 
+ Container jeeves-pf12-local-objects-1 Waiting 
+ Container jeeves-pf12-search-videos-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-cache-hot-metadata-1 Healthy 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-local-objects-1 Healthy 
+ Container jeeves-pf12-search-videos-1 Healthy 
+ Container jeeves-pf12-setup-migrate-run-14493bdc3b0e Creating 
+ Container jeeves-pf12-setup-migrate-run-14493bdc3b0e Created 
+Applied infra/postgres/favorites/000-foundation.sql
+Applied infra/postgres/favorites/100-account-api-favorite-videos.sql
+Applied infra/postgres/favorites/modules/account-api-favorite-videos.sql
+Applied infra/postgres/metadata/000-foundation.sql
+Applied infra/postgres/metadata/100-upload-api-multipart-uploads.sql
+Applied infra/postgres/metadata/100-video-lifecycle-lifecycle-writer.sql
+Applied infra/postgres/metadata/modules/upload-api-upload-state-writer.sql
+Applied infra/postgres/metadata/modules/video-lifecycle-lifecycle-writer.sql
+Applied infra/postgres/view-counts/000-foundation.sql
+Applied infra/postgres/view-counts/100-view-counter-receipt-and-increment.sql
+Applied infra/postgres/view-counts/modules/view-counter-count-writer.sql
+Applied infra/postgres/sign-in/000-foundation.sql
+Migrations current; setup-only owners and exact runtime credentials preserved.
+ Container jeeves-pf12-local-postgres-1 Running 
+ Container jeeves-pf12-identity-sign-in-1 Creating 
+ Container jeeves-pf12-identity-sign-in-1 Created 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-identity-sign-in-1 Starting 
+ Container jeeves-pf12-identity-sign-in-1 Started 
+ Container jeeves-pf12-identity-sign-in-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-identity-sign-in-1 Healthy 
+[2m2026-11-13T03:09:29.894932Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:29.938169Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.021586Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.070136Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.154617Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.198243Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.331844Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.374169Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.460216Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.502133Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.582343Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.626120Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.707139Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.754137Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.836000Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:30.878153Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:30.961033Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:31.002211Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:31.084858Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:31.126145Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+[2m2026-11-13T03:09:31.210848Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:31.254140Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+ Container jeeves-pf12-setup-storage-run-1ddf72b84b29 Creating 
+ Container jeeves-pf12-setup-storage-run-1ddf72b84b29 Created 
+[2m2026-11-13T03:09:32.639240Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connected to 172.24.0.5:3901, negotiating handshake...
+[2m2026-11-13T03:09:32.686133Z[0m [32m INFO[0m [2mgarage_net::netapp[0m[2m:[0m Connection established to cd24462861d5ec31
+Selected storage buckets/keys configured; owner permission revoked after CORS.
+ Container jeeves-pf12-setup-broker-run-6b76d9dba842 Creating 
+ Container jeeves-pf12-setup-broker-run-6b76d9dba842 Created 
+Selected durable broker declarations asserted without reset.
+ Container jeeves-pf12-cache-hot-metadata-1 Running 
+ Container jeeves-pf12-search-videos-1 Running 
+ Container jeeves-pf12-identity-sign-in-1 Running 
+ Container jeeves-pf12-local-postgres-1 Running 
+ Container jeeves-pf12-local-broker-1 Running 
+ Container jeeves-pf12-local-objects-1 Running 
+ Container jeeves-pf12-app-account-api-1 Creating 
+ Container jeeves-pf12-app-search-api-1 Creating 
+ Container jeeves-pf12-app-watch-api-1 Creating 
+ Container jeeves-pf12-app-video-lifecycle-1 Creating 
+ Container jeeves-pf12-app-transcoder-1 Creating 
+ Container jeeves-pf12-app-search-indexer-1 Creating 
+ Container jeeves-pf12-app-upload-api-1 Creating 
+ Container jeeves-pf12-app-view-counter-1 Creating 
+ Container jeeves-pf12-app-transcoder-1 Created 
+ Container jeeves-pf12-app-watch-api-1 Created 
+ Container jeeves-pf12-app-video-lifecycle-1 Created 
+ Container jeeves-pf12-app-upload-api-1 Created 
+ Container jeeves-pf12-app-search-api-1 Created 
+ Container jeeves-pf12-app-view-counter-1 Created 
+ Container jeeves-pf12-app-search-indexer-1 Created 
+ Container jeeves-pf12-app-account-api-1 Created 
+ Container jeeves-pf12-app-edge-1 Creating 
+ Container jeeves-pf12-app-edge-1 Created 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-search-videos-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-search-videos-1 Waiting 
+ Container jeeves-pf12-local-objects-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-search-videos-1 Healthy 
+ Container jeeves-pf12-app-search-api-1 Starting 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-local-objects-1 Healthy 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-app-transcoder-1 Starting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-local-objects-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-identity-sign-in-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-app-video-lifecycle-1 Starting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-cache-hot-metadata-1 Waiting 
+ Container jeeves-pf12-identity-sign-in-1 Waiting 
+ Container jeeves-pf12-identity-sign-in-1 Waiting 
+ Container jeeves-pf12-search-videos-1 Healthy 
+ Container jeeves-pf12-app-search-indexer-1 Starting 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-app-view-counter-1 Starting 
+ Container jeeves-pf12-app-search-api-1 Started 
+ Container jeeves-pf12-local-objects-1 Healthy 
+ Container jeeves-pf12-cache-hot-metadata-1 Healthy 
+ Container jeeves-pf12-identity-sign-in-1 Healthy 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-identity-sign-in-1 Healthy 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-app-upload-api-1 Starting 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-identity-sign-in-1 Healthy 
+ Container jeeves-pf12-app-watch-api-1 Starting 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-app-account-api-1 Starting 
+ Container jeeves-pf12-app-transcoder-1 Started 
+ Container jeeves-pf12-app-video-lifecycle-1 Started 
+ Container jeeves-pf12-app-search-indexer-1 Started 
+ Container jeeves-pf12-app-view-counter-1 Started 
+ Container jeeves-pf12-app-upload-api-1 Started 
+ Container jeeves-pf12-app-watch-api-1 Started 
+ Container jeeves-pf12-app-account-api-1 Started 
+ Container jeeves-pf12-app-upload-api-1 Waiting 
+ Container jeeves-pf12-app-watch-api-1 Waiting 
+ Container jeeves-pf12-local-objects-1 Waiting 
+ Container jeeves-pf12-app-account-api-1 Waiting 
+ Container jeeves-pf12-app-search-api-1 Waiting 
+ Container jeeves-pf12-local-objects-1 Healthy 
+ Container jeeves-pf12-app-search-api-1 Healthy 
+ Container jeeves-pf12-app-upload-api-1 Healthy 
+ Container jeeves-pf12-app-watch-api-1 Healthy 
+ Container jeeves-pf12-app-account-api-1 Healthy 
+ Container jeeves-pf12-app-edge-1 Starting 
+ Container jeeves-pf12-app-edge-1 Started 
+ Container jeeves-pf12-app-account-api-1 Waiting 
+ Container jeeves-pf12-search-videos-1 Waiting 
+ Container jeeves-pf12-local-postgres-1 Waiting 
+ Container jeeves-pf12-app-upload-api-1 Waiting 
+ Container jeeves-pf12-app-watch-api-1 Waiting 
+ Container jeeves-pf12-identity-sign-in-1 Waiting 
+ Container jeeves-pf12-app-edge-1 Waiting 
+ Container jeeves-pf12-app-transcoder-1 Waiting 
+ Container jeeves-pf12-app-view-counter-1 Waiting 
+ Container jeeves-pf12-app-search-api-1 Waiting 
+ Container jeeves-pf12-app-video-lifecycle-1 Waiting 
+ Container jeeves-pf12-local-objects-1 Waiting 
+ Container jeeves-pf12-app-search-indexer-1 Waiting 
+ Container jeeves-pf12-cache-hot-metadata-1 Waiting 
+ Container jeeves-pf12-local-broker-1 Waiting 
+ Container jeeves-pf12-app-search-indexer-1 Healthy 
+ Container jeeves-pf12-local-broker-1 Healthy 
+ Container jeeves-pf12-local-objects-1 Healthy 
+ Container jeeves-pf12-app-account-api-1 Healthy 
+ Container jeeves-pf12-cache-hot-metadata-1 Healthy 
+ Container jeeves-pf12-app-upload-api-1 Healthy 
+ Container jeeves-pf12-app-view-counter-1 Healthy 
+ Container jeeves-pf12-app-search-api-1 Healthy 
+ Container jeeves-pf12-app-video-lifecycle-1 Healthy 
+ Container jeeves-pf12-app-transcoder-1 Healthy 
+ Container jeeves-pf12-app-watch-api-1 Healthy 
+ Container jeeves-pf12-identity-sign-in-1 Healthy 
+ Container jeeves-pf12-search-videos-1 Healthy 
+ Container jeeves-pf12-local-postgres-1 Healthy 
+ Container jeeves-pf12-app-edge-1 Healthy 
+Local providers initialized (Compose jeeves-pf12); private credentials and volume identities retained. Application readiness remains in .jeeves/report.json.
+first-run exit=0
