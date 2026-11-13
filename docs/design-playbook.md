@@ -1781,3 +1781,16 @@ review full of readiness "errors" (profiles, contracts) sent models off configur
 
 With these, the second pass's early cases went from 0 to 99.4 (Luna's spec build) and from 5.8
 to 100 (Sol's podcast brief); the [V3-19 evals](evals/v3-19/README.md) have the full results.
+
+## 2026-11-13 UI13: a dark theme needs its own ramp, not the light theme turned down
+
+The owner's first look at the UI refresh preview found dark mode muddy, for two reasons that hold
+for any dark canvas. The canvas, the rails and the tiles were within a hair of each other, so
+nothing separated; and every Mantine control used Mantine's neutral grey, which has no place among
+Jeeves' steel blues. The fix is a four-step ramp, each surface one step lighter than the one it
+sits on: bars `#071219`, canvas `#0f1d26`, rails, menus and dialogs `#172a35`, tiles and cards
+`#213a48`, with grid dots `#27414f` so the paper reads. Mantine gets a dark palette built from the
+same ramp, and text boxes are inset (the canvas colour with a `#3d5d6d` edge) rather than raised.
+A coloured fill made by mixing a colour into the dark background or `transparent` comes out as a
+grey-brown wash; give each family a solid, deeper shade of its own colour instead (`--sfam`). Keep
+icon outlines dark in both themes: the owner turned down white outlines on the first preview.

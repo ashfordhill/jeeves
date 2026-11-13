@@ -21,7 +21,11 @@ export function GenerationModules({ design }: { design: DesignDocument }) {
           return (
             <li key={status.module}>
               {status.name} <span className="studio-field-help">in {tile(status.host)}</span>
-              <p className="lane-module-status" data-status={status.status}>
+              <p
+                className="lane-module-status"
+                data-status={status.status}
+                data-family={status.status === "refused" ? "data" : undefined}
+              >
                 <strong>{label}</strong>
                 {detail ? <span>{detail}</span> : null}
               </p>

@@ -37,7 +37,7 @@
   list-style: none;
 }
 
-/* One card per provider, as the preview's `.prov`. --cream is the rail and menu fill. */
+/* One card per provider, as the preview's `.prov`, on the rails' and menus' --panel. */
 .settings-provider {
   display: flex;
   flex-direction: column;
@@ -45,7 +45,7 @@
   padding: 13px 14px;
   border: 2px solid var(--hairline);
   border-radius: 14px;
-  background: var(--cream);
+  background: var(--panel);
 }
 
 .settings-provider-head {
@@ -179,7 +179,7 @@
   padding: 0 10px;
   border: 1.5px solid var(--control-line);
   border-radius: 8px;
-  background: var(--cream);
+  background: var(--panel);
   color: var(--ink);
   cursor: pointer;
   font: inherit;

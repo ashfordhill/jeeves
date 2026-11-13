@@ -13,6 +13,14 @@ Custom requested behavior can be recorded as an unresolved requirement; it suppl
 Generate uses that same executing registry. Attachment does not certify runtime behavior or
 strict TinyURL readiness.
 
+The status bar's **Dark mode** button switches the theme (kept in the browser). In the dark theme
+the surfaces step up from the bars to the canvas, then the rails, menus, popovers, the canvas
+toolbar, the legend and dialogs (`--panel`), then tiles and cards (`--cream`); Mantine's controls
+use a dark palette built from the same ramp, and text boxes are inset (`--control` with a
+`--control-line` edge) in both themes. Cards, chips, pills and warnings are filled with solid
+shades of their colour family, not a colour over `transparent`, and icons keep their dark outline.
+The tokens are in `jeeves/apps/web/src/theme/tokens.css` and the palette in `mantineTheme.ts`.
+
 ## Projects
 
 The project menu (top right) lists recent projects and opens **New project**, the project browser

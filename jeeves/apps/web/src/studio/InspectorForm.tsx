@@ -388,7 +388,11 @@ function ComponentDraftForm({
 function ModuleStatusLine({ status }: { status: NonNullable<ReturnType<typeof moduleStatus>> }) {
   const { label, detail } = moduleStatusLine(status);
   return (
-    <p className="lane-module-status" data-status={status.status}>
+    <p
+      className="lane-module-status"
+      data-status={status.status}
+      data-family={status.status === "refused" ? "data" : undefined}
+    >
       <strong>{label}</strong>
       {detail ? <span>{detail}</span> : null}
     </p>

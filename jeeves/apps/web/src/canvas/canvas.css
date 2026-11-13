@@ -8,6 +8,7 @@
   --board-line: var(--line);
   --board-ink: var(--ink);
   --board-tile: var(--cream);
+  --board-panel: var(--panel);
   --board-shadow: var(--btn-shadow);
   --board-select: var(--blue);
   --board-plus: var(--plus);
@@ -25,6 +26,10 @@
   /* The dark theme's blue is too close to its line colour for a selected tile's lines to stand
      out; the board selects in a more saturated blue. */
   --board-select: #3d9cf0;
+  /* The removal's confirm button takes the Remove item's solid deep red and its light ink, as
+     the right-click menu does. */
+  --board-remove-active: var(--off-bg);
+  --board-remove-ink: var(--off-ink);
 }
 
 .lane-canvas {
@@ -47,7 +52,7 @@
   padding: 9px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--cream);
+  background: var(--panel);
   color: var(--ink);
   box-shadow: var(--chip-shadow);
   font-size: 12px;
@@ -279,21 +284,16 @@
   font-weight: 700;
 }
 
-/* The open module: filled and ringed in the selection colour. The dark paper needs a stronger fill
-   for the open row to read as filled. */
+/* The open module: ringed in the selection colour and filled with the solid sky blue of a tile
+   that takes modules. */
 .lane-container-row[data-mark="open"] {
-  --mark-fill: 32%;
   border-color: var(--board-select);
-  background: color-mix(in srgb, var(--board-select) var(--mark-fill), var(--board-paper));
+  background: var(--cap-host);
   box-shadow: 0 0 0 2px var(--board-select);
 }
 
 .lane-container-row[data-mark="open"] .lane-container-row-name {
   font-weight: 800;
-}
-
-:root[data-theme="dark"] .lane-container-row[data-mark="open"] {
-  --mark-fill: 55%;
 }
 
 /* A row's connection dot, centred on its right edge: hollow while none of its slots is connected,
@@ -484,7 +484,7 @@
   padding: 12px;
   border: 2px solid var(--row-line);
   border-radius: 14px;
-  background: var(--cream);
+  background: var(--panel);
   color: var(--ink);
   box-shadow: 0 8px 24px var(--btn-shadow);
   font-size: 12px;
@@ -707,9 +707,9 @@
   min-width: 190px;
   max-width: 420px;
   padding: 5px;
-  border: 2px solid color-mix(in srgb, var(--line) 45%, transparent);
+  border: 2px solid var(--row-line);
   border-radius: 14px;
-  background: var(--cream);
+  background: var(--panel);
   color: var(--ink);
   box-shadow: 0 8px 24px var(--btn-shadow);
 }
@@ -934,12 +934,11 @@
 }
 
 /* The inspector page's Options, Connections and Modules headings, each starting a section below a
-   rule. The rule
-   mixes the line colour, so it shows on the dark rail too. */
+   hairline rule. */
 .studio-selection-summary .lane-inspector-section {
   margin: 18px 0 10px;
   padding-top: 14px;
-  border-top: 1px solid color-mix(in srgb, var(--line) 30%, transparent);
+  border-top: 1px solid var(--hairline);
   font-size: 13px;
 }
 
@@ -1227,9 +1226,8 @@
   font-weight: 700;
 }
 
-/* The Modules section: a stack of cards (icon, name, kind and a two-line description), each one
-   button that opens its module. The border mixes the line colour, so cards keep an edge on the dark
-   rail too. */
+/* The Modules section: a stack of module cards (`.lane-module-card`), each one button that opens
+   its module. */
 .lane-module-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1239,9 +1237,9 @@
   list-style: none;
 }
 
-/* A module page's status under its kind: a small word (Generated in the plus colour, Refused on a
-   yellow wash, You write it plain), then the template's name or the reason in plain words. Generate
-   project's Modules list uses it too, in the generator's words. */
+/* A module page's status under its kind: a small word (Generated in the plus colour, Refused on the
+   yellow family's solid --sfam, You write it plain), then the template's name or the reason in
+   plain words. Generate project's Modules list uses it too, in the generator's words. */
 .lane-module-status {
   display: flex;
   flex-wrap: wrap;
@@ -1267,7 +1265,7 @@
 
 .lane-module-status[data-status="refused"] strong {
   border-color: var(--yellow);
-  background: color-mix(in srgb, var(--yellow) 22%, transparent);
+  background: var(--sfam);
   color: var(--ink);
 }
 
@@ -1293,7 +1291,8 @@
   box-shadow: 0 0 0 2px var(--board-tile);
 }
 
-/* The inspector's list of warnings: the yellow of the mark, the message in plain words. */
+/* The inspector's list of warnings: the yellow of the mark on the yellow family's solid --sfam
+   (the list is `data-family="data"`), the message in plain words. */
 .lane-warnings {
   list-style: none;
   margin: 8px 0;
@@ -1309,7 +1308,7 @@
   padding: 6px 8px;
   border-radius: 6px;
   border: 1px solid var(--yellow);
-  background: color-mix(in srgb, var(--yellow) 14%, transparent);
+  background: var(--sfam);
   color: var(--ink);
 }
 .lane-warnings li > svg {

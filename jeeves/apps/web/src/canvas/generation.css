@@ -38,10 +38,18 @@
   gap: 12px;
   justify-content: flex-end;
 }
+/* The preview's `.btn`, steel in both themes rather than the browser's grey. */
 .generation-actions button {
   padding: 7px 12px;
+  border: 1.5px solid var(--control-line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
   cursor: pointer;
 }
 .generation-actions button:disabled {
+  opacity: 0.45;
   cursor: default;
 }

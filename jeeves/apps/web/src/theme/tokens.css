@@ -1,7 +1,9 @@
 /**
  * Light/dark tokens and shell chrome, adapted from automation-pitch
  * (src/app/styles/tokens.css, StatusBar.css). App sets document.documentElement.dataset.theme.
- * --chrome is the header and status bar (blue steel); --paper is the icy board stage.
+ * --chrome is the header and status bar (blue steel); --paper is the icy board stage; --panel is
+ * the rails, menus, popovers, the canvas toolbar, the legend and dialogs; --cream is tiles and
+ * cards. In the dark theme the four make one ramp, each step lighter than the last.
  * --ink is board copy. --chrome-ink is ice type on the steel frame.
  */
 :root,
@@ -11,6 +13,7 @@
   --ink: #071c28;
   --ink-soft: #123a50;
   --line: #123a50;
+  --panel: #f7fcfe;
   --cream: #f7fcfe;
   --chrome: #0c3349;
   --chrome-btn: #f7fcfe;
@@ -72,15 +75,16 @@
 }
 
 :root[data-theme="dark"] {
-  --paper: #152833;
+  --paper: #0f1d26;
   --paper-deep: color-mix(in srgb, var(--paper) 88%, var(--chrome));
-  --ink: #e8f4fa;
-  --ink-soft: #b7d4e0;
-  --line: #7eabc0;
-  --cream: #1e3340;
-  --chrome: #071820;
-  --chrome-btn: #1e3340;
-  --chrome-well: #040f14;
+  --ink: #eaf5fa;
+  --ink-soft: #a8c5d2;
+  --line: #7ea8bc;
+  --panel: #172a35;
+  --cream: #213a48;
+  --chrome: #071219;
+  --chrome-btn: #213a48;
+  --chrome-well: #03090d;
   --chrome-line: #3db8d9;
   --chrome-ink: #f3fbfe;
   --chrome-ink-soft: color-mix(in srgb, var(--chrome-ink) 72%, var(--chrome-line));
@@ -88,13 +92,13 @@
   --shadow: 0 6px 0 rgba(0, 0, 0, 0.28);
   --chip-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
   --btn-shadow: rgba(0, 0, 0, 0.38);
-  --yellow: #e2b84a;
+  --yellow: #e6bb4a;
   --data: #3ee0d0;
   --blue: #7eb6e0;
   --blue-deep: #a8d0ee;
-  --grid-dot: #11242e;
-  --plus: #3ea66a;
-  --minus: #e06a5e;
+  --grid-dot: #27414f;
+  --plus: #46b877;
+  --minus: #ee7b6f;
   --ok-bg: #1d5a3c;
   --ok-ink: #c4f2d8;
   --off-bg: #5d2823;
@@ -115,12 +119,25 @@
   --well: #0f1d26;
   --select-ring: rgba(126, 182, 224, 0.65);
   --banner: #1e3f4e;
-  --mantine-color-dimmed: var(--ink-soft);
 }
 
 [data-mantine-color-scheme="light"],
 [data-mantine-color-scheme="dark"] {
   --mantine-color-dimmed: var(--ink-soft);
+}
+
+/* Mantine's dialogs and dropdowns (menus, popovers, a combobox's list) are --panel, as the rails. */
+.mantine-Modal-content,
+.mantine-Modal-header,
+.mantine-Popover-dropdown {
+  background-color: var(--panel);
+}
+
+/* Mantine's text boxes are --control with a --control-line edge in both themes, so they read as
+   inset. Set through Mantine's own input variables, so focus and an error still colour the edge. */
+[data-mantine-color-scheme] .mantine-Input-wrapper[data-variant="default"] {
+  --input-bg: var(--control);
+  --input-bd: var(--control-line);
 }
 
 /* A diagram export is always light, whatever the studio's theme: the tile faces' light values on

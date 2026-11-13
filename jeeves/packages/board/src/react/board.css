@@ -10,6 +10,8 @@
   --board-line: #123a50;
   --board-ink: #071c28;
   --board-tile: #f7fcfe;
+  /* Panels over the board: the removal HUD and the line chooser. */
+  --board-panel: #f7fcfe;
   --board-shadow: rgba(7, 28, 40, 0.16);
   --board-select: #1a8fd4;
   --board-plus: #1e8a62;
@@ -160,7 +162,7 @@
   z-index: 10;
   box-sizing: border-box;
   width: min(420px, calc(100% - 32px));
-  background: var(--board-tile);
+  background: var(--board-panel);
   color: var(--board-ink);
   border: 3px solid var(--board-line);
   border-radius: 14px;
@@ -369,7 +371,7 @@
   padding: 0;
   border: 3px solid var(--board-line);
   border-radius: 14px;
-  background: color-mix(in srgb, var(--board-tile) 82%, transparent);
+  background: var(--board-tile);
   box-shadow: 0 4px 0 var(--board-shadow);
   color: var(--board-ink);
   font-family: inherit;
@@ -392,9 +394,10 @@
   display: flex;
 }
 
+/* Greyed: the dots' colour for its frame, the paper for its face. */
 .board-fan-item[aria-disabled="true"] {
-  border-color: color-mix(in srgb, var(--board-line) 40%, transparent);
-  background: color-mix(in srgb, var(--board-tile) 55%, transparent);
+  border-color: var(--board-dot);
+  background: var(--board-paper);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -413,9 +416,9 @@
 .board-fan-panel {
   position: absolute;
   box-sizing: border-box;
-  border: 2px solid color-mix(in srgb, var(--board-line) 35%, transparent);
+  border: 2px solid var(--board-dot);
   border-radius: 18px;
-  background: color-mix(in srgb, var(--board-paper) 97%, transparent);
+  background: var(--board-paper);
   box-shadow: 0 8px 24px var(--board-shadow);
   pointer-events: none;
 }
@@ -429,8 +432,9 @@
   outline-offset: 2px;
 }
 
-/* A grid fan captions every item: its name under the box, on a light backing so it reads over
-   the board. The cell is `FAN_CELL` (104 × 92) and the caption line `FAN_CAPTION_H` in fan.ts. */
+/* A grid fan captions every item: its name under the box, on the tile's solid fill so it reads
+   over the board. The cell is `FAN_CELL` (104 × 92) and the caption line `FAN_CAPTION_H` in
+   fan.ts. */
 .board-fan-caption {
   position: absolute;
   top: calc(100% + 4px);
@@ -439,7 +443,7 @@
   max-width: 100px;
   padding: 1px 4px;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--board-tile) 88%, transparent);
+  background: var(--board-tile);
   color: var(--board-ink);
   font-size: 12px;
   font-weight: 700;
@@ -510,7 +514,7 @@
   padding: 12px;
   border: 1px solid var(--board-line);
   border-radius: 8px;
-  background: var(--board-tile);
+  background: var(--board-panel);
   box-shadow: 0 4px 12px var(--board-shadow);
   font-size: 13px;
 }

@@ -12910,3 +12910,109 @@ unit's; left untouched and unstaged, as are `.jeeves-feedback/` and the `Zone.Id
 uncommitted changes under `jeeves-generator/` or `field-projects/`.
 **For the next unit.** UI13 can start: `--well` already has its dark value; the chips use
 `--control`/`--control-line` and the panel `--well` with a `--hairline` border.
+
+## 2026-11-13 — UI13: Dark mode
+
+**What changed.**
+- `theme/tokens.css`: the dark block takes step 1's values (`--chrome #071219`, `--chrome-well
+  #03090d`, `--paper #0f1d26`, `--cream #213a48`, `--chrome-btn #213a48`, `--ink #eaf5fa`,
+  `--ink-soft #a8c5d2`, `--line #7ea8bc`, `--yellow #e6bb4a`, `--plus #46b877`, `--minus #ee7b6f`,
+  `--grid-dot #27414f`; `--chrome-line` was already `#3db8d9`). New `--panel` (`#f7fcfe` /
+  `#172a35`). Mantine's `.mantine-Modal-content`, `-Modal-header` and `-Popover-dropdown` (menus,
+  the project menu, the known-hosts list) are `--panel`; Mantine text boxes get `--input-bg:
+  var(--control)` and `--input-bd: var(--control-line)`.
+- `theme/mantineTheme.ts`: `colors.dark` is step 3's ten values.
+- Step 2, `--cream` → `--panel`: `.studio-rail`, `.studio-tools`, `.lane-line-legend`,
+  `.studio-notice`, `.studio-draft-feedback > div`, `.lane-module-menu`, `.canvas-menu` (border
+  `--row-line`), `.chat-model-menu`, `.chat-model-button`, `.settings-provider`, `.settings-button`,
+  `.configuration-dialog-footer` (was `--mantine-color-body`), and the board's removal HUD and line
+  chooser through a new `--board-panel` (board.css default `#f7fcfe`; canvas.css maps it to
+  `--panel`). Kept `--cream` (tiles and cards): `--board-tile`, `.lane-kind`,
+  `.diagram-export-options button`, `.chat-file`, `.empty-view`, the chips' overridden base and the
+  view switch's focus outline.
+- Step 4, mixed fills and borders made solid: the open module row (`--board-select` into
+  `--board-paper`) → `--cap-host`; `.canvas-menu` border → `--row-line`; `.lane-inspector-section`,
+  `.chat-composer` and `.studio-view-toggle` rules → `--hairline`; `.chat-file` border →
+  `--row-line`; the Refused pill, `.lane-warnings li`, `.chat-chip` and `.chat-question` (yellow
+  into `transparent` or `--cream`) → `--sfam` of the yellow family, with `data-family="data"` on
+  `Warnings.tsx`'s list, the refused status line (`InspectorForm.tsx`, `GenerationModules.tsx`) and
+  `ChatPanel.tsx`'s changed row and question; board.css: `.board-fan-item` and
+  `.board-fan-caption` (tile into `transparent`) → `--board-tile`, the disabled fan item and
+  `.board-fan-panel` → `--board-paper` with a `--board-dot` border. Also see-through, though not a
+  `color-mix`: the pressed New project choice (`--mantine-color-cyan-light`) → `--banner`, and
+  `.generation-actions` buttons (the browser's grey, its disabled fill see-through) → the
+  preview's `.btn` (`--panel`, `--control-line`, 8px). Kept: text-colour mixes, shades mixed with
+  white, black or ink (`--module-add`, its hover, `--board-remove-active` in light, the confirm's
+  border), `--paper-deep` and `--chrome-ink-soft`.
+- Step 5: deleted the open row's `--mark-fill` and its dark override, the dark block's
+  `--mantine-color-dimmed` (the palette's `dark-2` is `--ink-soft`), and the unused `.readiness-*`
+  rules in `studio.css`. In the dark board block, the removal's confirm button takes `--off-bg` /
+  `--off-ink`.
+- Earlier units' leftovers: the right-click menu is `--panel` with a `--row-line` border; the
+  Refused pill is solid; the known-hosts dropdown is `--panel` with the palette's `#3d5d6d` edge
+  (`settings-hosts-*` images); the export block needed no change (below).
+- Docs: `docs/studio.md` (a paragraph on the themes), `docs/design-playbook.md` (a UI13 entry on
+  the dark ramp).
+
+**Checks.** `pnpm check` before any change: exit 0, 113 files, 890 tests. After: exit 0, 113 files,
+890 tests (lint's one info is older). `pnpm test:e2e` (native, without the mouse spec): 73 passed
+(4.9 min), `diagram-export.spec.ts` included. `pnpm --filter @jeeves/web build`: exit 0. Mouse
+check (`ui13-check.spec.ts`, run alone after the others, serial, then deleted): 2 passed, 1440×900
+and 1280×800, no page error; `/api/settings` read `fakeModel: true` and a `jeeves-e2e-` home. It
+wrote a made-up catalogue file there, saved a made-up Anthropic key and picked Claude Haiku, sent
+"Rename the redirect service to Redirector" by mouse, then exported TinyURL's Detailed view in light
+and in dark: the same PNG (`6f5b7d4f…e06d`) at both sizes, so the capture block still covers every
+token the export draws. Then, dark then light: the Design tab (Detailed, Simple), the module menu
+from Shorten service's `+`, the tile's inspector (connections, module card), Link writer opened
+from its row, the right-click menu and the removal panel of Click events (Cancel), New project with
+a choice pressed, Export diagram, Generate project, the chat with the model menu open, Settings and
+the known-hosts list. Each screen logged its computed surfaces (dark: bars `rgb(7, 18, 25)`,
+canvas `rgb(15, 29, 38)`, rails, toolbar, legend, menus, dialogs, dropdowns and cards
+`rgb(23, 42, 53)`, tiles `rgb(33, 58, 72)`, text boxes `rgb(15, 29, 38)` with a `rgb(61, 93, 109)`
+edge; light: rails `rgb(247, 252, 254)`, text boxes white with `rgb(157, 182, 195)`) and every
+visible fill or border with an alpha between 0 and 1: across 52 screens only Mantine's modal
+overlay (a scrim). The four yellow washes computed `rgb(92, 72, 18)` in dark and
+`rgb(251, 238, 203)` in light. A second temporary spec (`ui13-focus.spec.ts`, run alone, then
+deleted) checked a plain Mantine text box, New project's Project name: its edge turns from
+`rgb(157, 182, 195)` to Mantine's cyan `rgb(21, 170, 191)` on focus in light, and from
+`rgb(61, 93, 109)` to `rgb(12, 133, 153)` in dark (the error edge's rule outranks the new one; not
+run). Everything was put
+back (default role, no key, no catalogue file); `jeeves_e2e` holds only "E2E Every kind" and
+"TinyURL · studio study". 30 images in `docs/plans/ui-refresh/evidence/ui13/` (every screen at
+1440 in both themes, the Design tab and chat at 1280) match `preview/tiles-`, `module-menu-`,
+`inspector-`, `top-bar-`, `chat-` and `settings-dark.png`; the light ones match the earlier units'
+light evidence except as listed below. No model was called and models.dev was never fetched.
+**Differences from the plan.**
+- Step 3's text boxes are set through Mantine's own variables in `tokens.css`, not as `Input`
+  `styles` in `mantineTheme.ts`: Mantine applies theme `styles` inline, so an inline
+  `borderColor` would override the focus edge (Mantine's only focus mark on a text box), the error
+  edge and Settings' blue focus edge. The resting values are the plan's.
+- Step 2 also covers Mantine's dialogs and dropdowns, the dialog footer, the removal HUD and the
+  line chooser (dialogs and popovers by the rule); light dialogs and dropdowns go from white to
+  `#f7fcfe`.
+- Step 4 names no selection-blue token, so the open row takes `--cap-host`, within a few shades of
+  the old mix in both themes. The yellow washes take the yellow family's `--sfam`, which needs the
+  `data-family="data"` attribute on five elements.
+- Not named: the removal's Remove N tiles button. Step 1's `--minus` put its `#fff5f5` label at
+  3.9:1 on the 80%-black mix; in dark it now uses `--off-bg` / `--off-ink`, as the right-click
+  menu. The pressed New project choice and the Generate dialog's buttons were see-through or
+  browser grey.
+- Light changes besides text boxes (Mantine's input edge, gray `#ced4da` → `#9db6c3`): the white
+  dialogs and dropdowns above, lighter hairline rules (inspector sections, composer, view switch),
+  the yellow washes slightly yellower (`#fbeecb`), the open row `#a6d4ee` → `#b4d9f6`, opaque fan
+  items, a `--banner` pressed choice, and steel Generate buttons.
+**Noticed.** Still mixed, outside step 4's list: the link tab's fill (`--board-link`, `--data`
+55% into `--paper-deep`, opaque) and two dashed rings at 55% (`.board-connect-ends rect`,
+`.is-drop-target` outline); Mantine's own light variants (the New project error `Alert`, the
+project browser's red `subtle` icon hover) are alpha fills. Dark `--blue` stays `#7eb6e0` (step 1
+doesn't list it; the preview's is `#3d9cf0`, which the board already selects in). The chat's user
+bubble is `--banner`, where the preview draws `--chrome`. The inspector's native fields
+(Description) are `--paper` with a `--grid-dot` edge, not `--control`. `canvas.css` still holds
+literal colours (`#3d9cf0`, `rgba(0, 0, 0, 0.45)`, `#fff`, `#000`, `#071c28`) from before. The
+modes of `jeeves/scripts/e2e-docker.sh` and
+`docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged, as are `.jeeves-feedback/` and the `Zone.Identifier` files.
+No uncommitted changes under `jeeves-generator/` or `field-projects/`.
+**For the next unit.** UI14 can start: the surfaces are `--chrome`, `--paper`, `--panel` and
+`--cream` in `tokens.css`; Mantine's palette is in `mantineTheme.ts`; the open questions above
+(link tab, rings, dark `--blue`, user bubble) are for the review.

@@ -123,9 +123,10 @@
   padding: 1px 2px;
 }
 
+/* A changed tile: the yellow family's solid --sfam (the row is `data-family="data"`). */
 .chat-chip {
   padding: 1px 9px;
-  background: color-mix(in srgb, var(--yellow) 30%, var(--cream));
+  background: var(--sfam);
 }
 
 .chat-file-remove:focus-visible {
@@ -139,7 +140,7 @@
   gap: 4px;
   max-width: 100%;
   padding: 1px 8px;
-  border: 2px solid color-mix(in srgb, var(--line) 40%, transparent);
+  border: 2px solid var(--row-line);
   border-radius: 8px;
   background: var(--cream);
   font-size: 12px;
@@ -166,12 +167,13 @@
   cursor: pointer;
 }
 
+/* The model's question: a yellow edge on the yellow family's solid --sfam (`data-family="data"`). */
 .chat-question {
   margin: 0;
   padding: 8px 10px 10px;
   border: 2px solid var(--yellow);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--yellow) 14%, var(--cream));
+  background: var(--sfam);
 }
 
 .chat-question legend {
@@ -285,7 +287,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 14px 12px;
-  border-top: 2px solid color-mix(in srgb, var(--line) 30%, transparent);
+  border-top: 2px solid var(--hairline);
 }
 
 /* The model button on the left; Attach and Send on the right. */
@@ -317,7 +319,7 @@
   padding: 0 8px 0 10px;
   border: 1.5px solid var(--control-line);
   border-radius: 8px;
-  background: var(--cream);
+  background: var(--panel);
   color: var(--ink);
   cursor: pointer;
   font: inherit;
@@ -378,7 +380,7 @@
   padding: 6px;
   border: 2px solid var(--row-line);
   border-radius: 14px;
-  background: var(--cream);
+  background: var(--panel);
   color: var(--ink);
   box-shadow: 0 8px 24px var(--btn-shadow);
 }

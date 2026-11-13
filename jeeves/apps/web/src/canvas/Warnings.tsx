@@ -36,7 +36,7 @@ export function WarningList({
 }) {
   if (!warnings.length) return null;
   return (
-    <ul className="lane-warnings" aria-label="Warnings">
+    <ul className="lane-warnings" aria-label="Warnings" data-family="data">
       {warnings.map((item) => (
         <li key={`${item.rule} ${item.node}`}>
           <IconAlertTriangle size={14} aria-hidden />

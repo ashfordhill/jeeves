@@ -93,7 +93,7 @@ function ChangedItems({ ids }: { ids: string[] }) {
   );
   if (present.length === 0) return null;
   return (
-    <div className="chat-changed">
+    <div className="chat-changed" data-family="data">
       <span className="chat-changed-all">Changed:</span>
       {present.map((id) => (
         <span key={id} className="chat-chip">
@@ -129,7 +129,7 @@ function UndoTurn({ operationId }: { operationId: number }) {
 function QuestionCard({ question, active }: { question: ChatQuestion; active: boolean }) {
   const send = useChat((s) => s.send);
   return (
-    <fieldset className="chat-question" disabled={!active}>
+    <fieldset className="chat-question" disabled={!active} data-family="data">
       <legend>{question.question}</legend>
       <div className="chat-choices">
         {question.choices.map((choice) => (
