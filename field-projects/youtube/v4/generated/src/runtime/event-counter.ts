@@ -1,0 +1,70 @@
+import { durableIdentity, jsonPayload, qualifiedRelation } from "./durable-sql.ts";
+import { validateCounterTables, type CounterTables } from "./counter-sql.ts";
+import { createReceipts } from "./receipts.ts";
+import { type Tx } from "./transaction.ts";
+
+export interface CounterAdapter<Event> {
+  /** Decode the raw application envelope and bind its transport ID here, once.
+   * Canonicalize domain identities (e.g. UUIDs) here; generic text keys preserve case. */
+  event(input: unknown, messageId?: string): Event;
+  aggregateKey(event: Event): string;
+  eventId(event: Event): string;
+  /** Meaningful event data only. Omit regenerated transport timestamps unused by counting. */
+  identity(event: Event): unknown;
+}
+export interface CounterEvent {
+  readonly aggregateKey: string;
+  readonly eventId: string;
+  readonly identity: unknown;
+}
+function counterEvent(input: unknown, eventId?: string): CounterEvent {
+  const value = input as CounterEvent;
+  const result = {
+    aggregateKey: durableIdentity(value.aggregateKey),
+    eventId: durableIdentity(value.eventId),
+    identity: JSON.parse(jsonPayload(value.identity)) as unknown,
+  };
+  if (eventId !== undefined && result.eventId !== eventId) throw new Error("Counter event mismatch");
+  return result;
+}
+/** No qualification, arbitrary amount or network effect: every accepted event adds exactly one.
+ * Caller owns the transaction, so receipt and increment commit before delivery acknowledgement. */
+export function createEventCounter<Event>(binding: CounterTables, adapter: CounterAdapter<Event>) {
+  validateCounterTables(binding);
+  const totals = qualifiedRelation(binding.totals);
+  const receipts = createReceipts(binding.receipts, {
+    // This is an internal normalized envelope, never the application's wire codec a second time.
+    payload: counterEvent,
+    result: (value: unknown) => {
+      if (value !== true) throw new Error("Invalid counter receipt result");
+      return true as const;
+    },
+  });
+  return {
+    parse(input: unknown, messageId?: string): CounterEvent {
+      if (messageId !== undefined) durableIdentity(messageId);
+      const event = adapter.event(input, messageId);
+      return counterEvent({
+        aggregateKey: adapter.aggregateKey(event),
+        eventId: adapter.eventId(event),
+        identity: adapter.identity(event),
+      }, messageId);
+    },
+    async record(tx: Tx, event: CounterEvent): Promise<boolean> {
+      const result = await receipts.withEffect(
+        tx,
+        { scopeKey: event.aggregateKey, eventId: event.eventId, payload: event },
+        async (sameTx, parsed) => {
+          if (parsed.aggregateKey !== event.aggregateKey) throw new Error("Counter aggregate mismatch");
+          await sameTx.query(
+            `INSERT INTO ${totals} AS counts(aggregate_key,total) VALUES($1,1) ON CONFLICT(aggregate_key) DO UPDATE SET total=counts.total+1`,
+            [parsed.aggregateKey],
+          );
+          return true;
+        },
+      );
+      return result.applied;
+    },
+  };
+}
+export { createTotalReader } from "./counter-read.ts";

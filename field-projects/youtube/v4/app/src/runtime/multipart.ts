@@ -1,0 +1,374 @@
+import type { VerifiedPrincipal } from "./identity.ts";
+import type { OwnedUploadRepository, UploadPrincipal, UploadRecord } from "./owned-upload.ts";
+import type { Tx } from "./transaction.ts";
+
+export const PART_SIZE = 5 * 1024 * 1024;
+export const MAX_UPLOAD_SIZE = 256 * 1024 * 1024;
+export const SIGNED_URL_SECONDS = 900;
+const RESUME_MS = 86400000;
+export class MultipartError extends Error {
+  readonly statusCode: number;
+  readonly code: string;
+  constructor(statusCode: number, code: string) {
+    super(code);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.name = "MultipartError";
+  }
+}
+export interface UploadPart {
+  partNumber: number;
+  size: number;
+  etag: string;
+}
+export type MultipartCursor = { key?: string; uploadId?: string };
+export interface MultipartObjects<M, R> {
+  create(upload: UploadRecord<M, R>): Promise<string>;
+  sign(upload: UploadRecord<M, R>, partNumber: number, seconds: number): Promise<string>;
+  parts(
+    upload: UploadRecord<M, R>,
+    marker?: string,
+  ): Promise<{
+    parts: UploadPart[];
+    truncated: boolean;
+    next?: string;
+  }>;
+  complete(upload: UploadRecord<M, R>, parts: UploadPart[]): Promise<void>;
+  head(upload: UploadRecord<M, R>): Promise<{
+    size?: number;
+    etag?: string;
+    assetId?: string;
+    uploadId?: string;
+    sha256?: string;
+    expectedSize?: string;
+  }>;
+  abort(key: string, providerUploadId: string): Promise<void>;
+  /** The adapter restricts this inventory to its trusted namespace. Core still bounds each page. */
+  unfinished(cursor: MultipartCursor): Promise<{
+    uploads: { key: string; uploadId: string; initiated: Date }[];
+    next: MultipartCursor;
+  }>;
+  ownsKey(key: string): boolean;
+  missing(error: unknown): boolean;
+}
+export type UploadTransaction = <T>(effect: (tx: Tx) => Promise<T>) => Promise<T>;
+const conflict = () => new MultipartError(409, "UPLOAD_CONFLICT");
+const closed = () => new MultipartError(410, "UPLOAD_CLOSED");
+const mismatch = () => new MultipartError(409, "UPLOAD_MISMATCH");
+export function validateParts(parts: UploadPart[], size: number): void {
+  if (
+    !Number.isSafeInteger(size) ||
+    size < 1 ||
+    size > MAX_UPLOAD_SIZE ||
+    parts.length !== Math.ceil(size / PART_SIZE) ||
+    parts.some(
+      (p, i) =>
+        p.partNumber !== i + 1 ||
+        typeof p.etag !== "string" ||
+        !p.etag.length ||
+        p.size !== Math.min(PART_SIZE, size - i * PART_SIZE),
+    )
+  )
+    throw new MultipartError(409, "INCOMPLETE_PARTS");
+}
+/** Public transport snapshot; no provider identity, object key or owner subject is disclosed. */
+export function uploadView<M, R>(r: UploadRecord<M, R>, parts: UploadPart[] = []) {
+  return {
+    uploadId: r.uploadId,
+    assetId: r.assetId,
+    metadata: r.metadata,
+    state: r.state,
+    phase: r.phase,
+    file: { ...r.file },
+    createdAt: r.createdAt.toISOString(),
+    expiresAt: r.expiresAt.toISOString(),
+    failureCode: r.failureCode,
+    partSize: PART_SIZE,
+    partCount: Math.ceil(r.file.size / PART_SIZE),
+    parts,
+  };
+}
+/** Network effects are deliberately outside SQL transactions. A completing row survives an
+ * uncertain provider/SQL outcome; replay verifies Head before committing the application hook. */
+export function createOwnedMultipart<M, R>(options: {
+  repository: OwnedUploadRepository<M, R>;
+  transaction: UploadTransaction;
+  objects: MultipartObjects<M, R>;
+  /** Told of a failure the engine survives: a failed start or provider abort. */
+  onFailure?: (what: string, error: unknown, extra?: Record<string, unknown>) => void;
+}) {
+  const { repository: repo, transaction: tx, objects } = options;
+  const failed = (what: string, error: unknown, extra?: Record<string, unknown>) => {
+    try {
+      options.onFailure?.(what, error, extra);
+    } catch {
+      /* The answer does not change. */
+    }
+  };
+  let orphan: MultipartCursor = {};
+  let sweeping: Promise<{ failed: { uploadId: string; error: unknown }[] }> | undefined;
+  async function row(id: string, principal: UploadPrincipal) {
+    let r = await tx((t) => repo.owned(t, id, principal));
+    if (!r) throw new MultipartError(404, "UPLOAD_NOT_FOUND");
+    if (r.state === "uploading" && r.expiresAt <= r.dbNow) {
+      await tx((t) => repo.close(t, id, principal, "expired"));
+      r = await tx((t) => repo.owned(t, id, principal));
+      if (!r) throw new MultipartError(404, "UPLOAD_NOT_FOUND");
+    }
+    return r;
+  }
+  function active(r: UploadRecord<M, R>) {
+    if (r.state === "expired" || r.state === "aborted") throw closed();
+    if (r.state !== "uploading" || r.phase !== "active" || !r.providerUploadId) throw conflict();
+  }
+  async function abortProvider(key: string, providerId: string) {
+    try {
+      await objects.abort(key, providerId);
+    } catch (error) {
+      if (!objects.missing(error)) throw error;
+    }
+  }
+  async function parts(r: UploadRecord<M, R>) {
+    if (!r.providerUploadId) throw conflict();
+    const inventory: UploadPart[] = [];
+    let marker: string | undefined;
+    for (let page = 0; page < 3; page++) {
+      const result = await objects.parts(r, marker);
+      for (const p of result.parts) {
+        if (
+          !Number.isSafeInteger(p.partNumber) ||
+          p.partNumber < 1 ||
+          !Number.isSafeInteger(p.size) ||
+          p.size < 0 ||
+          typeof p.etag !== "string" ||
+          !p.etag
+        )
+          throw conflict();
+        inventory.push(p);
+      }
+      if (inventory.length > Math.ceil(MAX_UPLOAD_SIZE / PART_SIZE))
+        throw new MultipartError(409, "PARTS_LIMIT");
+      if (!result.truncated) return inventory.sort((a, b) => a.partNumber - b.partNumber);
+      if (!result.next || result.next === marker) break;
+      marker = result.next;
+    }
+    throw new MultipartError(409, "PARTS_LIMIT");
+  }
+  async function complete(id: string, principal: UploadPrincipal): Promise<R> {
+    let r = await row(id, principal);
+    if (r.completeResponse !== null) return r.completeResponse;
+    if (r.phase !== "completing") active(r);
+    let inventory: UploadPart[] | null;
+    try {
+      inventory = await parts(r);
+    } catch (error) {
+      if (!objects.missing(error)) throw error;
+      if (r.phase !== "completing") {
+        await tx((t) => repo.fail(t, id, principal, "UPLOAD_MISMATCH"));
+        throw mismatch();
+      }
+      inventory = null;
+    }
+    if (inventory) {
+      try {
+        validateParts(inventory, r.file.size);
+      } catch (error) {
+        await tx((t) => repo.reopenIncomplete(t, id, principal));
+        throw error;
+      }
+    }
+    const begun = await tx((t) => repo.beginComplete(t, id, principal));
+    if (begun.outcome === "duplicate") return begun.upload.completeResponse!;
+    if (begun.outcome === "expired") throw closed();
+    if (begun.outcome !== "completing") throw conflict();
+    r = begun.upload;
+    if (inventory) {
+      try {
+        await objects.complete(r, inventory);
+      } catch (error) {
+        if (!objects.missing(error)) throw error;
+      }
+    }
+    let head: Awaited<ReturnType<typeof objects.head>>;
+    try {
+      head = await objects.head(r);
+    } catch (error) {
+      if (!objects.missing(error)) throw error;
+      await tx((t) => repo.fail(t, id, principal, "UPLOAD_MISMATCH"));
+      throw mismatch();
+    }
+    if (
+      head.size !== r.file.size ||
+      head.assetId !== r.assetId ||
+      head.uploadId !== r.uploadId ||
+      head.sha256 !== r.file.sha256 ||
+      head.expectedSize !== String(r.file.size) ||
+      !head.etag
+    ) {
+      await tx((t) => repo.fail(t, id, principal, "UPLOAD_MISMATCH"));
+      throw mismatch();
+    }
+    const result = await tx((t) =>
+      repo.complete(t, id, principal, {
+        key: r.originalKey,
+        size: head.size!,
+        sha256: r.file.sha256,
+        etag: head.etag!,
+      }),
+    );
+    if (result.outcome === "completed" || result.outcome === "duplicate") return result.response;
+    if (result.outcome === "expired") throw closed();
+    throw conflict();
+  }
+  const api = {
+    async start(principal: VerifiedPrincipal, input: unknown) {
+      // Content/metadata validation and completion/reservation hooks belong to repo's binding.
+      const saved = await tx((t) => repo.reserve(t, principal, input));
+      let providerId: string | undefined;
+      try {
+        if (!objects.ownsKey(saved.originalKey)) throw new Error("Unbound original namespace");
+        providerId = await objects.create(saved);
+        if (!providerId) throw new Error("Missing provider identity");
+        const stored = await tx((t) =>
+          repo.saveProvider(t, saved.uploadId, principal, providerId!),
+        );
+        if (stored.outcome !== "active") throw conflict();
+      } catch (error) {
+        failed("multipart start", error, { upload: saved.uploadId });
+        // If SQL is unavailable, retain initiating uncertainty; bounded reconciliation can retry.
+        try {
+          await tx((t) => repo.fail(t, saved.uploadId, principal, "INITIATION_FAILED"));
+        } finally {
+          if (providerId)
+            await abortProvider(saved.originalKey, providerId).catch((abort: unknown) =>
+              failed("multipart abort", abort, { upload: saved.uploadId }),
+            );
+        }
+        throw new MultipartError(503, "INITIATION_FAILED");
+      }
+      return {
+        uploadId: saved.uploadId,
+        assetId: saved.assetId,
+        state: "uploading" as const,
+        partSize: PART_SIZE,
+        partCount: Math.ceil(saved.file.size / PART_SIZE),
+        expiresAt: saved.expiresAt.toISOString(),
+      };
+    },
+    async list(principal: UploadPrincipal) {
+      const rows = await tx((t) => repo.recent(t, principal));
+      return {
+        uploads: rows.map((r) => ({
+          uploadId: r.uploadId,
+          assetId: r.assetId,
+          metadata: r.metadata,
+          state: r.state,
+          createdAt: r.createdAt.toISOString(),
+          failureCode: r.failureCode,
+        })),
+      };
+    },
+    async status(id: string, principal: UploadPrincipal) {
+      let r = await row(id, principal);
+      if (r.phase === "completing" && r.state === "uploading") {
+        await complete(id, principal).catch((error) => {
+          if (!(error instanceof MultipartError) || error.statusCode >= 500) throw error;
+        });
+        r = await row(id, principal);
+      }
+      let inventory: UploadPart[] = [];
+      if (r.state === "uploading" && r.phase === "active") {
+        try {
+          inventory = await parts(r);
+        } catch (error) {
+          if (!objects.missing(error)) throw error;
+          await tx((t) => repo.fail(t, id, principal, "UPLOAD_MISMATCH"));
+          r = await row(id, principal);
+        }
+      }
+      return uploadView(r, inventory);
+    },
+    async sign(id: string, principal: UploadPrincipal, number: number) {
+      const r = await row(id, principal);
+      active(r);
+      if (!Number.isInteger(number) || number < 1 || number > Math.ceil(r.file.size / PART_SIZE))
+        throw new MultipartError(400, "PART_NUMBER");
+      return {
+        url: await objects.sign(r, number, SIGNED_URL_SECONDS),
+        expiresAt: new Date(Date.now() + SIGNED_URL_SECONDS * 1000).toISOString(),
+      };
+    },
+    complete,
+    async abort(id: string, principal: UploadPrincipal) {
+      const r = await row(id, principal);
+      const result = await tx((t) => repo.close(t, id, principal, "aborted"));
+      if (result.outcome === "expired") throw closed();
+      if (result.outcome !== "aborted") throw conflict();
+      if (r.providerUploadId) await abortProvider(r.originalKey, r.providerUploadId);
+      await tx((t) => repo.clearCleanup(t, id));
+      return { uploadId: id, state: "aborted" as const };
+    },
+    /** Single-flight, finite work: <=50 durable cleanup +50 interrupted +50 namespace orphans.
+     * A failure retains durable cleanup/cursor state for a later caller; no background timer.
+     * An upload that fails is returned in `failed` and the sweep goes on to the next one. */
+    sweep(): Promise<{ failed: { uploadId: string; error: unknown }[] }> {
+      if (sweeping) return sweeping;
+      sweeping = (async () => {
+        const failed: { uploadId: string; error: unknown }[] = [];
+        for (const r of await tx((t) => repo.cleanup(t))) {
+          try {
+            await tx((t) => repo.close(t, r.uploadId, { subject: r.ownerSubject }, "expired"));
+            if (r.providerUploadId) await abortProvider(r.originalKey, r.providerUploadId);
+            await tx((t) => repo.clearCleanup(t, r.uploadId));
+          } catch (error) {
+            failed.push({ uploadId: r.uploadId, error });
+          }
+        }
+        for (const i of await tx((t) => repo.interrupted(t))) {
+          try {
+            const principal = { subject: i.ownerSubject };
+            const r = await row(i.uploadId, principal);
+            if (r.phase === "initiating")
+              await tx((t) => repo.fail(t, r.uploadId, principal, "INITIATION_FAILED"));
+            else if (r.state === "uploading" && r.phase === "completing")
+              await complete(r.uploadId, principal).catch((error) => {
+                if (!(error instanceof MultipartError) || error.statusCode >= 500) throw error;
+              });
+          } catch (error) {
+            failed.push({ uploadId: i.uploadId, error });
+          }
+        }
+        try {
+          const result = await objects.unfinished(orphan);
+          if (result.uploads.length > 50) throw new Error("Unexpected orphan inventory");
+          for (const upload of result.uploads) {
+            if (objects.ownsKey(upload.key) && upload.initiated.getTime() < Date.now() - RESUME_MS)
+              await abortProvider(upload.key, upload.uploadId);
+          }
+          orphan = result.next;
+        } catch (providerError) {
+          if (!failed.length) throw providerError;
+          throw new AggregateError(
+            [
+              ...failed.map(
+                ({ uploadId, error }) =>
+                  new Error(
+                    `upload ${uploadId}: ${error instanceof Error ? error.message : String(error)}`,
+                    { cause: error },
+                  ),
+              ),
+              providerError,
+            ],
+            "Multipart sweep failed",
+          );
+        }
+        return { failed };
+      })().finally(() => {
+        sweeping = undefined;
+      });
+      return sweeping;
+    },
+  };
+  return api;
+}
+export type OwnedMultipart<M, R> = ReturnType<typeof createOwnedMultipart<M, R>>;

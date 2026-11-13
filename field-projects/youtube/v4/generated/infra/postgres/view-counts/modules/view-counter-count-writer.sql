@@ -1,0 +1,17 @@
+-- Count writer, a Data access, in View counter writes View counts: its product tables and published views.
+-- Write them here. Export never overwrites your edits: export afresh and carry them over.
+-- first-run and start run this file every time, after the template migrations and views, as
+-- the setup-only owner o_view_counts of d_view_counts, in one transaction with search_path m_view_counter_count_writer:
+-- unqualified names land in schema m_view_counter_count_writer. Keep it re-runnable (IF NOT EXISTS, CREATE OR
+-- REPLACE), with no BEGIN or COMMIT. A failure rolls the database back, and setup names this file.
+--
+-- Its own tables, in m_view_counter_count_writer: only r_view_counts__view_counter (View counter) selects, inserts, updates and deletes.
+-- What others may read goes in views in published (CREATE OR REPLACE VIEW published.<name> AS ...),
+-- which every login on this database may select:
+--   r_view_counts__view_counter (View counter)
+--   r_view_counts__watch_api (Watch API)
+-- Template tables it may read, by qualified name:
+--   view_counter_receipt_and_increment.receipts
+--   view_counter_receipt_and_increment.totals
+-- Template views:
+--   view_counter_receipt_and_increment_public.totals

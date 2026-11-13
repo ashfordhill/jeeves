@@ -1,0 +1,6235 @@
+{
+  "blueprint": 3,
+  "revision": 171,
+  "system": {
+    "name": "YouTube",
+    "description": ""
+  },
+  "actions": [
+    {
+      "lane": "download",
+      "name": "Watch"
+    },
+    {
+      "lane": "upload",
+      "name": "Publish"
+    }
+  ],
+  "entries": [
+    {
+      "lane": "download",
+      "action": "Watch",
+      "element": "account-api"
+    },
+    {
+      "lane": "download",
+      "action": "Watch",
+      "element": "search-api"
+    },
+    {
+      "lane": "download",
+      "action": "Watch",
+      "element": "video-delivery"
+    },
+    {
+      "lane": "download",
+      "action": "Watch",
+      "element": "watch-api"
+    },
+    {
+      "lane": "upload",
+      "action": "Publish",
+      "element": "sign-in"
+    },
+    {
+      "lane": "upload",
+      "action": "Publish",
+      "element": "upload-api"
+    }
+  ],
+  "services": [
+    {
+      "id": "account-api",
+      "name": "Account API",
+      "definition": {
+        "id": "studio-service",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "service",
+      "settings": {
+        "kind": "service",
+        "language": "typescript",
+        "exposure": "public",
+        "requestTimeoutMs": 1000,
+        "concurrencyLimit": 1000,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "account-api-account-check",
+          "name": "Account check",
+          "purpose": "Allows only signed-in accounts.",
+          "kind": "auth-guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          },
+          "thirdParty": [
+            "Identity service"
+          ],
+          "requires": []
+        },
+        {
+          "id": "account-api-favorite-videos",
+          "name": "Favorite videos",
+          "purpose": "Keeps each account's favorite videos.",
+          "kind": "favorites",
+          "settings": {
+            "kind": "favorites"
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": []
+        },
+        {
+          "id": "account-api-video-reader",
+          "name": "Video reader",
+          "purpose": "Reads which videos are public.",
+          "kind": "data-access",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "Data access needs a database connection."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "search-api",
+      "name": "Search API",
+      "definition": {
+        "id": "studio-service",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "service",
+      "settings": {
+        "kind": "service",
+        "language": "typescript",
+        "exposure": "public",
+        "requestTimeoutMs": 1000,
+        "concurrencyLimit": 1000,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "search-api-video-search",
+          "name": "Video search",
+          "purpose": "Searches published videos.",
+          "kind": "search-query",
+          "settings": {
+            "kind": "search-query"
+          },
+          "thirdParty": [
+            "OpenSearch"
+          ],
+          "requires": []
+        }
+      ]
+    },
+    {
+      "id": "search-indexer",
+      "name": "Search indexer",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "worker",
+      "settings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 4,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "search-indexer-index-writer",
+          "name": "Index writer",
+          "purpose": "Adds published videos to the search index.",
+          "kind": "index-writer",
+          "settings": {
+            "kind": "index-writer"
+          },
+          "thirdParty": [
+            "OpenSearch"
+          ],
+          "requires": []
+        },
+        {
+          "id": "search-indexer-video-publication-consumer",
+          "name": "Video publication consumer",
+          "purpose": "Receives newly published videos.",
+          "kind": "event-consumer",
+          "settings": {
+            "kind": "event-consumer"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event consumer needs a consume connection from a queue."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sign-in",
+      "name": "Sign-in",
+      "definition": {
+        "id": "studio-identity",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "identity",
+      "settings": {
+        "kind": "identity",
+        "language": "typescript",
+        "exposure": "public",
+        "provider": "oidc",
+        "execution": "docker"
+      },
+      "components": []
+    },
+    {
+      "id": "transcoder",
+      "name": "Transcoder",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "worker",
+      "settings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 1,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "transcoder-job-consumer",
+          "name": "Job consumer",
+          "purpose": "Takes the next processing job.",
+          "kind": "event-consumer",
+          "settings": {
+            "kind": "event-consumer"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event consumer needs a consume connection from a queue."
+            }
+          ]
+        },
+        {
+          "id": "transcoder-packager",
+          "name": "Packager",
+          "purpose": "Stores the stream's segments and playlists.",
+          "kind": "video-packager",
+          "settings": {
+            "kind": "video-packager"
+          },
+          "thirdParty": [
+            "FFmpeg"
+          ],
+          "requires": []
+        },
+        {
+          "id": "transcoder-processing-result-publisher",
+          "name": "Processing result publisher",
+          "purpose": "Announces whether processing succeeded.",
+          "kind": "event-publisher",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "disabled"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event publisher needs a publish connection to a queue."
+            }
+          ]
+        },
+        {
+          "id": "transcoder-segmenter-and-encoder",
+          "name": "Segmenter and encoder",
+          "purpose": "Encodes the video into streamable renditions.",
+          "kind": "video-encoder",
+          "settings": {
+            "kind": "video-encoder"
+          },
+          "thirdParty": [
+            "FFmpeg"
+          ],
+          "requires": []
+        },
+        {
+          "id": "transcoder-thumbnailer",
+          "name": "Thumbnailer",
+          "purpose": "Creates the video's thumbnails.",
+          "kind": "video-thumbnailer",
+          "settings": {
+            "kind": "video-thumbnailer"
+          },
+          "thirdParty": [
+            "FFmpeg"
+          ],
+          "requires": []
+        }
+      ]
+    },
+    {
+      "id": "upload-api",
+      "name": "Upload API",
+      "definition": {
+        "id": "studio-uploads",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "uploads",
+      "settings": {
+        "kind": "uploads",
+        "language": "typescript",
+        "exposure": "public",
+        "requestTimeoutMs": 5000,
+        "concurrencyLimit": 500,
+        "transfer": "signed-url",
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "upload-api-creator-check",
+          "name": "Creator check",
+          "purpose": "Allows only signed-in creators.",
+          "kind": "auth-guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          },
+          "thirdParty": [
+            "Identity service"
+          ],
+          "requires": []
+        },
+        {
+          "id": "upload-api-job-outbox-publisher",
+          "name": "Job outbox publisher",
+          "purpose": "Queues a processing job once an upload completes.",
+          "kind": "event-publisher",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "enabled"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event publisher needs a publish connection to a queue."
+            },
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "A transactional outbox needs a database connection."
+            }
+          ]
+        },
+        {
+          "id": "upload-api-multipart-uploads",
+          "name": "Multipart uploads",
+          "purpose": "Uploads large videos in resumable parts.",
+          "kind": "multipart-uploads",
+          "settings": {
+            "kind": "multipart-uploads"
+          },
+          "thirdParty": [
+            "S3-compatible storage"
+          ],
+          "requires": []
+        },
+        {
+          "id": "upload-api-upload-state-writer",
+          "name": "Upload state writer",
+          "purpose": "Records each upload's progress.",
+          "kind": "data-access",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "Data access needs a database connection."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "video-lifecycle",
+      "name": "Video lifecycle",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "worker",
+      "settings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 4,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "video-lifecycle-lifecycle-writer",
+          "name": "Lifecycle writer",
+          "purpose": "Updates each video's processing state.",
+          "kind": "lifecycle-writer",
+          "settings": {
+            "kind": "lifecycle-writer",
+            "poolSize": 10,
+            "statementTimeoutMs": 2000
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": []
+        },
+        {
+          "id": "video-lifecycle-processing-consumer",
+          "name": "Processing consumer",
+          "purpose": "Receives processing results.",
+          "kind": "event-consumer",
+          "settings": {
+            "kind": "event-consumer"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event consumer needs a consume connection from a queue."
+            }
+          ]
+        },
+        {
+          "id": "video-lifecycle-video-publication-publisher",
+          "name": "Video publication publisher",
+          "purpose": "Announces videos that are ready to watch.",
+          "kind": "event-publisher",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "enabled"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event publisher needs a publish connection to a queue."
+            },
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "A transactional outbox needs a database connection."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "view-counter",
+      "name": "View counter",
+      "definition": {
+        "id": "studio-worker",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "worker",
+      "settings": {
+        "kind": "worker",
+        "language": "typescript",
+        "concurrency": 8,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "view-counter-count-writer",
+          "name": "Count writer",
+          "purpose": "Stores view totals.",
+          "kind": "data-access",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "Data access needs a database connection."
+            }
+          ]
+        },
+        {
+          "id": "view-counter-receipt-and-increment",
+          "name": "Receipt and increment",
+          "purpose": "Counts each view event once.",
+          "kind": "event-counter",
+          "settings": {
+            "kind": "event-counter"
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": []
+        },
+        {
+          "id": "view-counter-view-consumer",
+          "name": "View consumer",
+          "purpose": "Receives view events.",
+          "kind": "event-consumer",
+          "settings": {
+            "kind": "event-consumer"
+          },
+          "thirdParty": [
+            "Kafka",
+            "Amazon SQS",
+            "Redis Streams"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "queue"
+              ],
+              "reason": "An event consumer needs a consume connection from a queue."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "watch-api",
+      "name": "Watch API",
+      "definition": {
+        "id": "studio-service",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "service",
+      "settings": {
+        "kind": "service",
+        "language": "typescript",
+        "exposure": "public",
+        "requestTimeoutMs": 1000,
+        "concurrencyLimit": 2000,
+        "execution": "docker"
+      },
+      "components": [
+        {
+          "id": "watch-api-video-details-cache",
+          "name": "Video details cache",
+          "purpose": "Serves video details from the cache.",
+          "kind": "cache-reader",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "stampede": "single-flight"
+          },
+          "thirdParty": [
+            "Redis",
+            "Memcached"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "cache"
+              ],
+              "reason": "A cache reader needs a cache connection."
+            }
+          ]
+        },
+        {
+          "id": "watch-api-video-details-reader",
+          "name": "Video details reader",
+          "purpose": "Reads public video details.",
+          "kind": "data-access",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 50,
+            "readRouting": "primary",
+            "statementTimeoutMs": 500
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "Data access needs a database connection."
+            }
+          ]
+        },
+        {
+          "id": "watch-api-view-count-reader",
+          "name": "View count reader",
+          "purpose": "Reads a video's view count.",
+          "kind": "data-access",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          },
+          "thirdParty": [
+            "PostgreSQL"
+          ],
+          "requires": [
+            {
+              "kinds": [
+                "database"
+              ],
+              "reason": "Data access needs a database connection."
+            }
+          ]
+        },
+        {
+          "id": "watch-api-view-publisher",
+          "name": "View publisher",
+          "purpose": "Reports each play of a ready video as an event, with the viewer when signed in.",
+          "kind": "custom",
+          "settings": {
+            "kind": "custom"
+          },
+          "thirdParty": [],
+          "requires": []
+        },
+        {
+          "id": "watch-api-viewer-check",
+          "name": "Viewer check",
+          "purpose": "Lets watchers sign in; others watch anonymously.",
+          "kind": "auth-guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "optional"
+          },
+          "thirdParty": [
+            "Identity service"
+          ],
+          "requires": []
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "favorites",
+      "name": "Favorites",
+      "definition": {
+        "id": "studio-database",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "database",
+      "settings": {
+        "kind": "database",
+        "engine": "postgresql",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "account-api"
+      }
+    },
+    {
+      "id": "hot-metadata",
+      "name": "Hot metadata",
+      "definition": {
+        "id": "studio-cache",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "cache",
+      "settings": {
+        "kind": "cache",
+        "engine": "redis-compatible",
+        "provider": "self-hosted",
+        "ttlSeconds": 3601
+      },
+      "owner": {
+        "kind": "element",
+        "id": "watch-api"
+      }
+    },
+    {
+      "id": "metadata",
+      "name": "Metadata",
+      "definition": {
+        "id": "studio-database",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "database",
+      "settings": {
+        "kind": "database",
+        "engine": "postgresql",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "watch-api"
+      }
+    },
+    {
+      "id": "original-videos",
+      "name": "Original videos",
+      "definition": {
+        "id": "studio-object-store",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "object-store",
+      "settings": {
+        "kind": "object-store",
+        "provider": "self-hosted",
+        "access": "private"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "upload-api"
+      }
+    },
+    {
+      "id": "processing-events",
+      "name": "Processing events",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "queue",
+      "settings": {
+        "kind": "queue",
+        "mode": "topic",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "transcoder"
+      }
+    },
+    {
+      "id": "publication-events",
+      "name": "Publication events",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "queue",
+      "settings": {
+        "kind": "queue",
+        "mode": "topic",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "video-lifecycle"
+      }
+    },
+    {
+      "id": "transcoded-videos",
+      "name": "Transcoded videos",
+      "definition": {
+        "id": "studio-object-store",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "object-store",
+      "settings": {
+        "kind": "object-store",
+        "provider": "self-hosted",
+        "access": "public"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "transcoder"
+      }
+    },
+    {
+      "id": "upload-jobs",
+      "name": "Upload jobs",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "queue",
+      "settings": {
+        "kind": "queue",
+        "mode": "work-queue",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "upload-api"
+      }
+    },
+    {
+      "id": "video-delivery",
+      "name": "Video delivery",
+      "definition": {
+        "id": "studio-cdn",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "cdn",
+      "settings": {
+        "kind": "cdn",
+        "provider": "cloudflare"
+      }
+    },
+    {
+      "id": "videos",
+      "name": "Videos",
+      "definition": {
+        "id": "studio-search",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "search",
+      "settings": {
+        "kind": "search",
+        "engine": "opensearch",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "search-api"
+      }
+    },
+    {
+      "id": "view-counts",
+      "name": "View counts",
+      "definition": {
+        "id": "studio-database",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "database",
+      "settings": {
+        "kind": "database",
+        "engine": "postgresql",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "watch-api"
+      }
+    },
+    {
+      "id": "view-events",
+      "name": "View events",
+      "definition": {
+        "id": "studio-queue",
+        "version": "1.0.0",
+        "status": "known"
+      },
+      "kind": "queue",
+      "settings": {
+        "kind": "queue",
+        "mode": "topic",
+        "provider": "self-hosted"
+      },
+      "owner": {
+        "kind": "element",
+        "id": "watch-api"
+      }
+    }
+  ],
+  "externals": [],
+  "groups": [],
+  "connections": [
+    {
+      "id": "account-api-database",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "account-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "favorites"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "account-api-metadata",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "account-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "metadata"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "account-api-sign-in",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "account-api"
+      },
+      "to": {
+        "kind": "service",
+        "id": "sign-in"
+      },
+      "action": "Calls",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network"
+    },
+    {
+      "id": "processing-events-worker-service",
+      "source": "design",
+      "from": {
+        "kind": "resource",
+        "id": "processing-events"
+      },
+      "to": {
+        "kind": "service",
+        "id": "video-lifecycle"
+      },
+      "action": "Consumes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "consume"
+    },
+    {
+      "id": "publication-events-worker-service",
+      "source": "design",
+      "from": {
+        "kind": "resource",
+        "id": "publication-events"
+      },
+      "to": {
+        "kind": "service",
+        "id": "search-indexer"
+      },
+      "action": "Consumes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "consume"
+    },
+    {
+      "id": "search-api-search-index",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "search-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "videos"
+      },
+      "action": "Uses",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "search-indexer-videos",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "search-indexer"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "videos"
+      },
+      "action": "Uses",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "transcoder-message-channel",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "transcoder"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "processing-events"
+      },
+      "action": "Publishes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "publish"
+    },
+    {
+      "id": "transcoder-object-storage",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "transcoder"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "transcoded-videos"
+      },
+      "action": "Uses",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "transcoder-original-videos",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "transcoder"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "original-videos"
+      },
+      "action": "Uses",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "upload-api-message-channel",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "upload-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "upload-jobs"
+      },
+      "action": "Publishes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "publish"
+    },
+    {
+      "id": "upload-api-metadata",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "upload-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "metadata"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "upload-api-object-storage",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "upload-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "original-videos"
+      },
+      "action": "Uses",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "upload-api-sign-in",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "upload-api"
+      },
+      "to": {
+        "kind": "service",
+        "id": "sign-in"
+      },
+      "action": "Calls",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network"
+    },
+    {
+      "id": "upload-jobs-worker-service",
+      "source": "design",
+      "from": {
+        "kind": "resource",
+        "id": "upload-jobs"
+      },
+      "to": {
+        "kind": "service",
+        "id": "transcoder"
+      },
+      "action": "Consumes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "consume"
+    },
+    {
+      "id": "video-delivery-transcoded-videos",
+      "source": "design",
+      "from": {
+        "kind": "resource",
+        "id": "video-delivery"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "transcoded-videos"
+      },
+      "action": "Uses",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "video-lifecycle-message-channel",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "video-lifecycle"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "publication-events"
+      },
+      "action": "Publishes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "publish"
+    },
+    {
+      "id": "video-lifecycle-metadata",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "video-lifecycle"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "metadata"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "view-counter-view-counts",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "view-counter"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "view-counts"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "read"
+    },
+    {
+      "id": "view-events-worker-service",
+      "source": "design",
+      "from": {
+        "kind": "resource",
+        "id": "view-events"
+      },
+      "to": {
+        "kind": "service",
+        "id": "view-counter"
+      },
+      "action": "Consumes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "consume"
+    },
+    {
+      "id": "watch-api-cache",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "watch-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "hot-metadata"
+      },
+      "action": "Reads & writes",
+      "protocol": "Redis",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "watch-api-database",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "watch-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "metadata"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "watch-api-database-2",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "watch-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "view-counts"
+      },
+      "action": "Reads & writes",
+      "protocol": "SQL",
+      "interaction": "Request / response",
+      "security": "Private network",
+      "access": "write"
+    },
+    {
+      "id": "watch-api-message-channel",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "watch-api"
+      },
+      "to": {
+        "kind": "resource",
+        "id": "view-events"
+      },
+      "action": "Publishes",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "security": "Private network",
+      "channelUse": "publish"
+    },
+    {
+      "id": "watch-api-sign-in",
+      "source": "design",
+      "from": {
+        "kind": "service",
+        "id": "watch-api"
+      },
+      "to": {
+        "kind": "service",
+        "id": "sign-in"
+      },
+      "action": "Calls",
+      "protocol": "HTTP",
+      "interaction": "Request / response",
+      "security": "Private network"
+    }
+  ],
+  "componentLinks": [
+    {
+      "id": "account-api-account-check-sign-in",
+      "service": "account-api",
+      "from": "account-api-account-check",
+      "to": {
+        "kind": "element",
+        "id": "sign-in",
+        "via": "account-api-sign-in"
+      }
+    },
+    {
+      "id": "account-api-favorite-videos-account-api-video-reader",
+      "service": "account-api",
+      "from": "account-api-favorite-videos",
+      "to": {
+        "kind": "component",
+        "id": "account-api-video-reader"
+      }
+    },
+    {
+      "id": "account-api-favorite-videos-favorites",
+      "service": "account-api",
+      "from": "account-api-favorite-videos",
+      "to": {
+        "kind": "element",
+        "id": "favorites",
+        "via": "account-api-database"
+      }
+    },
+    {
+      "id": "account-api-video-reader-metadata",
+      "service": "account-api",
+      "from": "account-api-video-reader",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "account-api-metadata"
+      }
+    },
+    {
+      "id": "search-api-video-search-videos",
+      "service": "search-api",
+      "from": "search-api-video-search",
+      "to": {
+        "kind": "element",
+        "id": "videos",
+        "via": "search-api-search-index"
+      }
+    },
+    {
+      "id": "search-indexer-index-writer-videos",
+      "service": "search-indexer",
+      "from": "search-indexer-index-writer",
+      "to": {
+        "kind": "element",
+        "id": "videos",
+        "via": "search-indexer-videos"
+      }
+    },
+    {
+      "id": "search-indexer-video-publication-consumer-publication-events",
+      "service": "search-indexer",
+      "from": "search-indexer-video-publication-consumer",
+      "to": {
+        "kind": "element",
+        "id": "publication-events",
+        "via": "publication-events-worker-service"
+      }
+    },
+    {
+      "id": "transcoder-job-consumer-upload-jobs",
+      "service": "transcoder",
+      "from": "transcoder-job-consumer",
+      "to": {
+        "kind": "element",
+        "id": "upload-jobs",
+        "via": "upload-jobs-worker-service"
+      }
+    },
+    {
+      "id": "transcoder-packager-transcoded-videos",
+      "service": "transcoder",
+      "from": "transcoder-packager",
+      "to": {
+        "kind": "element",
+        "id": "transcoded-videos",
+        "via": "transcoder-object-storage"
+      }
+    },
+    {
+      "id": "transcoder-processing-result-publisher-processing-events",
+      "service": "transcoder",
+      "from": "transcoder-processing-result-publisher",
+      "to": {
+        "kind": "element",
+        "id": "processing-events",
+        "via": "transcoder-message-channel"
+      }
+    },
+    {
+      "id": "transcoder-segmenter-and-encoder-original-videos",
+      "service": "transcoder",
+      "from": "transcoder-segmenter-and-encoder",
+      "to": {
+        "kind": "element",
+        "id": "original-videos",
+        "via": "transcoder-original-videos"
+      }
+    },
+    {
+      "id": "transcoder-thumbnailer-transcoded-videos",
+      "service": "transcoder",
+      "from": "transcoder-thumbnailer",
+      "to": {
+        "kind": "element",
+        "id": "transcoded-videos",
+        "via": "transcoder-object-storage"
+      }
+    },
+    {
+      "id": "upload-api-creator-check-sign-in",
+      "service": "upload-api",
+      "from": "upload-api-creator-check",
+      "to": {
+        "kind": "element",
+        "id": "sign-in",
+        "via": "upload-api-sign-in"
+      }
+    },
+    {
+      "id": "upload-api-job-outbox-publisher-metadata",
+      "service": "upload-api",
+      "from": "upload-api-job-outbox-publisher",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "upload-api-metadata"
+      }
+    },
+    {
+      "id": "upload-api-job-outbox-publisher-upload-jobs",
+      "service": "upload-api",
+      "from": "upload-api-job-outbox-publisher",
+      "to": {
+        "kind": "element",
+        "id": "upload-jobs",
+        "via": "upload-api-message-channel"
+      }
+    },
+    {
+      "id": "upload-api-multipart-uploads-original-videos",
+      "service": "upload-api",
+      "from": "upload-api-multipart-uploads",
+      "to": {
+        "kind": "element",
+        "id": "original-videos",
+        "via": "upload-api-object-storage"
+      }
+    },
+    {
+      "id": "upload-api-upload-state-writer-metadata",
+      "service": "upload-api",
+      "from": "upload-api-upload-state-writer",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "upload-api-metadata"
+      }
+    },
+    {
+      "id": "video-lifecycle-lifecycle-writer-metadata",
+      "service": "video-lifecycle",
+      "from": "video-lifecycle-lifecycle-writer",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "video-lifecycle-metadata"
+      }
+    },
+    {
+      "id": "video-lifecycle-processing-consumer-processing-events",
+      "service": "video-lifecycle",
+      "from": "video-lifecycle-processing-consumer",
+      "to": {
+        "kind": "element",
+        "id": "processing-events",
+        "via": "processing-events-worker-service"
+      }
+    },
+    {
+      "id": "video-lifecycle-video-publication-publisher-metadata",
+      "service": "video-lifecycle",
+      "from": "video-lifecycle-video-publication-publisher",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "video-lifecycle-metadata"
+      }
+    },
+    {
+      "id": "video-lifecycle-video-publication-publisher-publication-events",
+      "service": "video-lifecycle",
+      "from": "video-lifecycle-video-publication-publisher",
+      "to": {
+        "kind": "element",
+        "id": "publication-events",
+        "via": "video-lifecycle-message-channel"
+      }
+    },
+    {
+      "id": "view-counter-count-writer-view-counts",
+      "service": "view-counter",
+      "from": "view-counter-count-writer",
+      "to": {
+        "kind": "element",
+        "id": "view-counts",
+        "via": "view-counter-view-counts"
+      }
+    },
+    {
+      "id": "view-counter-view-consumer-view-events",
+      "service": "view-counter",
+      "from": "view-counter-view-consumer",
+      "to": {
+        "kind": "element",
+        "id": "view-events",
+        "via": "view-events-worker-service"
+      }
+    },
+    {
+      "id": "watch-api-video-details-cache-hot-metadata",
+      "service": "watch-api",
+      "from": "watch-api-video-details-cache",
+      "to": {
+        "kind": "element",
+        "id": "hot-metadata",
+        "via": "watch-api-cache"
+      }
+    },
+    {
+      "id": "watch-api-video-details-cache-watch-api-video-details-reader",
+      "service": "watch-api",
+      "from": "watch-api-video-details-cache",
+      "to": {
+        "kind": "component",
+        "id": "watch-api-video-details-reader"
+      }
+    },
+    {
+      "id": "watch-api-video-details-reader-metadata",
+      "service": "watch-api",
+      "from": "watch-api-video-details-reader",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "watch-api-database"
+      }
+    },
+    {
+      "id": "watch-api-view-count-reader-view-counts",
+      "service": "watch-api",
+      "from": "watch-api-view-count-reader",
+      "to": {
+        "kind": "element",
+        "id": "view-counts",
+        "via": "watch-api-database-2"
+      }
+    },
+    {
+      "id": "watch-api-view-publisher-metadata",
+      "service": "watch-api",
+      "from": "watch-api-view-publisher",
+      "to": {
+        "kind": "element",
+        "id": "metadata",
+        "via": "watch-api-database"
+      }
+    },
+    {
+      "id": "watch-api-view-publisher-view-events",
+      "service": "watch-api",
+      "from": "watch-api-view-publisher",
+      "to": {
+        "kind": "element",
+        "id": "view-events",
+        "via": "watch-api-message-channel"
+      }
+    },
+    {
+      "id": "watch-api-viewer-check-sign-in",
+      "service": "watch-api",
+      "from": "watch-api-viewer-check",
+      "to": {
+        "kind": "element",
+        "id": "sign-in",
+        "via": "watch-api-sign-in"
+      }
+    }
+  ],
+  "omitted": [],
+  "findings": [
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "No exact behavior profile is selected; application behavior remains unspecified.",
+      "target": {
+        "path": [
+          "scope",
+          "profile",
+          "profile-unspecified"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Included and excluded behavior requirements are unspecified.",
+      "target": {
+        "path": [
+          "scope",
+          "profile",
+          "requirements-unspecified"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "API and failure contracts are unspecified; explicit ownership declarations are reported separately. Names, labels and modules establish no behavior.",
+      "target": {
+        "path": [
+          "scope",
+          "contract",
+          "contracts-unspecified"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Projection hot-metadata records source intent only; population, freshness and failure contracts are not specified.",
+      "target": {
+        "element": "hot-metadata",
+        "path": [
+          "ownership",
+          "resources",
+          0
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Projection videos records source intent only; population, freshness and failure contracts are not specified.",
+      "target": {
+        "element": "videos",
+        "path": [
+          "ownership",
+          "resources",
+          3
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary watch-api → metadata has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "watch-api",
+        "path": [
+          "ownership",
+          "grants",
+          0,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary account-api → metadata has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "account-api",
+        "path": [
+          "ownership",
+          "grants",
+          5,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary transcoder → original-videos has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "transcoder",
+        "path": [
+          "ownership",
+          "grants",
+          8,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Dependency watch-api-database-2 has unspecified access intent; its legacy inferred access is not a grant.",
+      "target": {
+        "connection": "watch-api-database-2",
+        "path": [
+          "ownership",
+          "dependencies",
+          "watch-api-database-2"
+        ]
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          0,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          1,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          2,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          3,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          4,
+          "template"
+        ],
+        "element": "view-counter"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          5,
+          "template"
+        ],
+        "element": "search-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          6,
+          "template"
+        ],
+        "element": "account-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          7,
+          "template"
+        ],
+        "element": "account-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          8,
+          "template"
+        ],
+        "element": "upload-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          9,
+          "template"
+        ],
+        "element": "upload-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          10,
+          "template"
+        ],
+        "element": "transcoder"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          11,
+          "template"
+        ],
+        "element": "video-lifecycle"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          12,
+          "template"
+        ],
+        "element": "search-indexer"
+      }
+    }
+  ],
+  "sourceSchemaVersion": 3,
+  "ownership": {
+    "owners": [
+      {
+        "id": "account-api-owner",
+        "name": "Account API"
+      },
+      {
+        "id": "search-api-owner",
+        "name": "Search API"
+      },
+      {
+        "id": "sign-in-owner",
+        "name": "Sign-in"
+      },
+      {
+        "id": "transcoder-owner",
+        "name": "Transcoder"
+      },
+      {
+        "id": "upload-api-owner",
+        "name": "Upload API"
+      },
+      {
+        "id": "view-counter-owner",
+        "name": "View counter"
+      },
+      {
+        "id": "watch-api-owner",
+        "name": "Watch API"
+      }
+    ],
+    "roles": [
+      {
+        "element": "account-api",
+        "owner": "account-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "search-api",
+        "owner": "search-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "search-indexer",
+        "owner": "search-api-owner",
+        "kind": "worker"
+      },
+      {
+        "element": "sign-in",
+        "owner": "sign-in-owner",
+        "kind": "api"
+      },
+      {
+        "element": "transcoder",
+        "owner": "transcoder-owner",
+        "kind": "worker"
+      },
+      {
+        "element": "upload-api",
+        "owner": "upload-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "video-lifecycle",
+        "owner": "upload-api-owner",
+        "kind": "worker"
+      },
+      {
+        "element": "view-counter",
+        "owner": "view-counter-owner",
+        "kind": "worker"
+      },
+      {
+        "element": "watch-api",
+        "owner": "watch-api-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "favorites",
+        "authority": "account-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "hot-metadata",
+        "authority": "watch-api-owner",
+        "kind": "projection",
+        "source": "metadata"
+      },
+      {
+        "element": "metadata",
+        "authority": "upload-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "original-videos",
+        "authority": "upload-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "transcoded-videos",
+        "authority": "transcoder-owner",
+        "kind": "source"
+      },
+      {
+        "element": "videos",
+        "authority": "search-api-owner",
+        "kind": "projection",
+        "source": "metadata"
+      },
+      {
+        "element": "view-counts",
+        "authority": "view-counter-owner",
+        "kind": "source"
+      }
+    ],
+    "grants": [
+      {
+        "role": "account-api",
+        "resource": "favorites",
+        "access": "read-write"
+      },
+      {
+        "role": "account-api",
+        "resource": "metadata",
+        "access": "read",
+        "boundary": "published-read"
+      },
+      {
+        "role": "search-api",
+        "resource": "videos",
+        "access": "read"
+      },
+      {
+        "role": "search-indexer",
+        "resource": "videos",
+        "access": "read-write"
+      },
+      {
+        "role": "transcoder",
+        "resource": "original-videos",
+        "access": "read",
+        "boundary": "published-read"
+      },
+      {
+        "role": "transcoder",
+        "resource": "transcoded-videos",
+        "access": "read-write"
+      },
+      {
+        "role": "upload-api",
+        "resource": "metadata",
+        "access": "read-write"
+      },
+      {
+        "role": "upload-api",
+        "resource": "original-videos",
+        "access": "read-write"
+      },
+      {
+        "role": "video-lifecycle",
+        "resource": "metadata",
+        "access": "read-write"
+      },
+      {
+        "role": "view-counter",
+        "resource": "view-counts",
+        "access": "read-write"
+      },
+      {
+        "role": "watch-api",
+        "resource": "hot-metadata",
+        "access": "read-write"
+      },
+      {
+        "role": "watch-api",
+        "resource": "metadata",
+        "access": "read",
+        "boundary": "published-read"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "account-api-database",
+        "access": "read-write"
+      },
+      {
+        "connection": "account-api-metadata",
+        "access": "read"
+      },
+      {
+        "connection": "search-api-search-index",
+        "access": "read"
+      },
+      {
+        "connection": "search-indexer-videos",
+        "access": "read-write"
+      },
+      {
+        "connection": "transcoder-object-storage",
+        "access": "read-write"
+      },
+      {
+        "connection": "transcoder-original-videos",
+        "access": "read"
+      },
+      {
+        "connection": "upload-api-metadata",
+        "access": "read-write"
+      },
+      {
+        "connection": "upload-api-object-storage",
+        "access": "read-write"
+      },
+      {
+        "connection": "video-lifecycle-metadata",
+        "access": "read-write"
+      },
+      {
+        "connection": "view-counter-view-counts",
+        "access": "read-write"
+      },
+      {
+        "connection": "watch-api-cache",
+        "access": "read-write"
+      },
+      {
+        "connection": "watch-api-database",
+        "access": "read"
+      }
+    ]
+  },
+  "ownershipStatus": "declared",
+  "ownershipFindings": [
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Projection hot-metadata records source intent only; population, freshness and failure contracts are not specified.",
+      "target": {
+        "element": "hot-metadata",
+        "path": [
+          "ownership",
+          "resources",
+          0
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Projection videos records source intent only; population, freshness and failure contracts are not specified.",
+      "target": {
+        "element": "videos",
+        "path": [
+          "ownership",
+          "resources",
+          3
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary watch-api → metadata has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "watch-api",
+        "path": [
+          "ownership",
+          "grants",
+          0,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary account-api → metadata has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "account-api",
+        "path": [
+          "ownership",
+          "grants",
+          5,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary transcoder → original-videos has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "transcoder",
+        "path": [
+          "ownership",
+          "grants",
+          8,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Dependency watch-api-database-2 has unspecified access intent; its legacy inferred access is not a grant.",
+      "target": {
+        "connection": "watch-api-database-2",
+        "path": [
+          "ownership",
+          "dependencies",
+          "watch-api-database-2"
+        ]
+      }
+    }
+  ],
+  "operations": {
+    "receivers": [],
+    "calls": []
+  },
+  "operationFindings": [],
+  "operationCatalog": [
+    {
+      "id": "links-create",
+      "version": "1.0.0",
+      "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+    },
+    {
+      "id": "links-resolve",
+      "version": "1.0.0",
+      "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+    },
+    {
+      "id": "links-positive-cache",
+      "version": "1.0.0",
+      "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a"
+    }
+  ],
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "watch-api-viewer-check",
+        "target": {
+          "kind": "component",
+          "component": "watch-api-viewer-check",
+          "host": "watch-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "watch-api-viewer-check"
+          }
+        }
+      },
+      {
+        "id": "watch-api-video-details-cache",
+        "target": {
+          "kind": "component",
+          "component": "watch-api-video-details-cache",
+          "host": "watch-api"
+        },
+        "template": {
+          "id": "positive-cache-read",
+          "version": "0.1.0",
+          "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c"
+        },
+        "binding": {
+          "kind": "positive-cache-read",
+          "source": {
+            "resource": "metadata",
+            "connection": "watch-api-database"
+          },
+          "cache": {
+            "resource": "hot-metadata",
+            "connection": "watch-api-cache"
+          }
+        }
+      },
+      {
+        "id": "watch-api-view-count-reader",
+        "target": {
+          "kind": "component",
+          "component": "watch-api-view-count-reader",
+          "host": "watch-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "watch-api-view-publisher",
+        "target": {
+          "kind": "component",
+          "component": "watch-api-view-publisher",
+          "host": "watch-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "view-counter-receipt-and-increment",
+        "target": {
+          "kind": "component",
+          "component": "view-counter-receipt-and-increment",
+          "host": "view-counter"
+        },
+        "template": {
+          "id": "event-counter",
+          "version": "0.1.0",
+          "sha256": "ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635"
+        },
+        "binding": {
+          "kind": "event-counter",
+          "state": {
+            "resource": "view-counts",
+            "connection": "view-counter-view-counts"
+          },
+          "events": {
+            "resource": "view-events",
+            "connection": "view-events-worker-service"
+          }
+        }
+      },
+      {
+        "id": "search-api-video-search",
+        "target": {
+          "kind": "component",
+          "component": "search-api-video-search",
+          "host": "search-api"
+        },
+        "template": {
+          "id": "search-query",
+          "version": "0.1.0",
+          "sha256": "013de6d4c984a46be6ee1b26ad43ce240b42cd9fe96dbe086f72749e63abb624"
+        },
+        "binding": {
+          "kind": "search-query",
+          "index": {
+            "resource": "videos",
+            "connection": "search-api-search-index"
+          }
+        }
+      },
+      {
+        "id": "account-api-account-check",
+        "target": {
+          "kind": "component",
+          "component": "account-api-account-check",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "account-api-account-check"
+          }
+        }
+      },
+      {
+        "id": "account-api-favorite-videos",
+        "target": {
+          "kind": "component",
+          "component": "account-api-favorite-videos",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "favorites",
+          "version": "0.1.0",
+          "sha256": "f3c7a75b1ee3a94fff16e2e84f63ee3ac65f6125e995454efe442c1ec84304e8"
+        },
+        "binding": {
+          "kind": "favorites",
+          "state": {
+            "resource": "favorites",
+            "connection": "account-api-database"
+          },
+          "identity": {
+            "element": "sign-in",
+            "guard": "account-api-account-check"
+          },
+          "items": {
+            "resource": "metadata",
+            "connection": "account-api-metadata"
+          }
+        }
+      },
+      {
+        "id": "upload-api-creator-check",
+        "target": {
+          "kind": "component",
+          "component": "upload-api-creator-check",
+          "host": "upload-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "upload-api-creator-check"
+          }
+        }
+      },
+      {
+        "id": "upload-api-multipart-uploads",
+        "target": {
+          "kind": "component",
+          "component": "upload-api-multipart-uploads",
+          "host": "upload-api"
+        },
+        "template": {
+          "id": "owned-multipart",
+          "version": "0.1.0",
+          "sha256": "c5c035bbf4f6a75edb612506f8d26aca03e90df528647f999362a97142e3b2c7"
+        },
+        "binding": {
+          "kind": "owned-multipart",
+          "state": {
+            "resource": "metadata",
+            "connection": "upload-api-metadata"
+          },
+          "objects": {
+            "resource": "original-videos",
+            "connection": "upload-api-object-storage"
+          },
+          "identity": {
+            "element": "sign-in",
+            "guard": "upload-api-creator-check"
+          },
+          "jobs": {
+            "resource": "upload-jobs",
+            "connection": "upload-api-message-channel"
+          }
+        }
+      },
+      {
+        "id": "transcoder-segmenter-and-encoder",
+        "target": {
+          "kind": "component",
+          "component": "transcoder-segmenter-and-encoder",
+          "host": "transcoder"
+        },
+        "template": {
+          "id": "video-hls",
+          "version": "0.1.0",
+          "sha256": "4af9b570774b6d4c590806b3fd66fe0492dc18651d73c464544f26a78340acdb"
+        },
+        "binding": {
+          "kind": "video-hls",
+          "originals": {
+            "resource": "original-videos",
+            "connection": "transcoder-original-videos"
+          },
+          "outputs": {
+            "resource": "transcoded-videos",
+            "connection": "transcoder-object-storage"
+          },
+          "jobs": {
+            "resource": "upload-jobs",
+            "connection": "upload-jobs-worker-service"
+          },
+          "results": {
+            "resource": "processing-events",
+            "connection": "transcoder-message-channel"
+          }
+        }
+      },
+      {
+        "id": "video-lifecycle-lifecycle-writer",
+        "target": {
+          "kind": "component",
+          "component": "video-lifecycle-lifecycle-writer",
+          "host": "video-lifecycle"
+        },
+        "template": {
+          "id": "asset-lifecycle",
+          "version": "0.1.0",
+          "sha256": "01f968341b295c089bc200a0528559d5d4522fcf0dd76fbcd7929340c5d0d186"
+        },
+        "binding": {
+          "kind": "asset-lifecycle",
+          "upload": "upload-api-multipart-uploads",
+          "state": {
+            "resource": "metadata",
+            "connection": "video-lifecycle-metadata"
+          },
+          "results": {
+            "resource": "processing-events",
+            "connection": "processing-events-worker-service"
+          },
+          "publication": {
+            "resource": "publication-events",
+            "connection": "video-lifecycle-message-channel"
+          }
+        }
+      },
+      {
+        "id": "search-indexer-index-writer",
+        "target": {
+          "kind": "component",
+          "component": "search-indexer-index-writer",
+          "host": "search-indexer"
+        },
+        "template": {
+          "id": "search-projection",
+          "version": "0.1.0",
+          "sha256": "5e81e6a9752692577618d092e301b79aa6131679605e8cccf409cf26d2616ae3"
+        },
+        "binding": {
+          "kind": "search-projection",
+          "index": {
+            "resource": "videos",
+            "connection": "search-indexer-videos"
+          },
+          "events": {
+            "resource": "publication-events",
+            "connection": "publication-events-worker-service"
+          }
+        }
+      }
+    ]
+  },
+  "generationFindings": [
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          0,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          1,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          2,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          3,
+          "template"
+        ],
+        "element": "watch-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          4,
+          "template"
+        ],
+        "element": "view-counter"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          5,
+          "template"
+        ],
+        "element": "search-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          6,
+          "template"
+        ],
+        "element": "account-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          7,
+          "template"
+        ],
+        "element": "account-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          8,
+          "template"
+        ],
+        "element": "upload-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          9,
+          "template"
+        ],
+        "element": "upload-api"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          10,
+          "template"
+        ],
+        "element": "transcoder"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          11,
+          "template"
+        ],
+        "element": "video-lifecycle"
+      }
+    },
+    {
+      "code": "NEEDS_TEMPLATE",
+      "severity": "error",
+      "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+      "target": {
+        "path": [
+          "generation",
+          "selections",
+          12,
+          "template"
+        ],
+        "element": "search-indexer"
+      }
+    }
+  ],
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "profileStatus": "unspecified",
+  "unresolvedRequirements": [
+    {
+      "source": "contract",
+      "id": "contracts-unspecified",
+      "requirement": "API and failure contracts are unspecified; explicit ownership declarations are reported separately. Names, labels and modules establish no behavior.",
+      "criticality": "required"
+    },
+    {
+      "source": "profile",
+      "id": "profile-unspecified",
+      "requirement": "No exact behavior profile is selected; application behavior remains unspecified.",
+      "criticality": "required"
+    },
+    {
+      "source": "profile",
+      "id": "requirements-unspecified",
+      "requirement": "Included and excluded behavior requirements are unspecified.",
+      "criticality": "required"
+    }
+  ],
+  "legacyOwnership": "resources[].owner is the legacy inferred writer; ownership.resources[].authority is explicit logical authority",
+  "roleMeaning": "services contain canonical application tiles; declared roles are not independent logical owners or necessarily separate processes",
+  "legacyAccess": "inferred-from-ownership; not a declared operation grant",
+  "templateAvailability": "none",
+  "runtimeVerification": "none",
+  "readiness": {
+    "report": 1,
+    "composition": {
+      "domain": "jeeves.tinyurl.composition.v1",
+      "sha256": "e5ae9ea1e2573cd0928113ccb39a8956bfd1e4341aaa6677426370e4cd08d01a",
+      "profile": null,
+      "subject": {
+        "connections": [
+          {
+            "from": {
+              "element": "account-api"
+            },
+            "id": "account-api-database",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "favorites"
+            }
+          },
+          {
+            "from": {
+              "element": "account-api"
+            },
+            "id": "account-api-metadata",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "metadata"
+            }
+          },
+          {
+            "from": {
+              "element": "account-api"
+            },
+            "id": "account-api-sign-in",
+            "kind": "calls",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Calls",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "sign-in"
+            }
+          },
+          {
+            "from": {
+              "element": "processing-events"
+            },
+            "id": "processing-events-worker-service",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Consumes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "video-lifecycle"
+            }
+          },
+          {
+            "from": {
+              "element": "publication-events"
+            },
+            "id": "publication-events-worker-service",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Consumes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "search-indexer"
+            }
+          },
+          {
+            "from": {
+              "element": "search-api"
+            },
+            "id": "search-api-search-index",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Uses",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "videos"
+            }
+          },
+          {
+            "from": {
+              "element": "search-indexer"
+            },
+            "id": "search-indexer-videos",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Uses",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "videos"
+            }
+          },
+          {
+            "from": {
+              "element": "transcoder"
+            },
+            "id": "transcoder-message-channel",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Publishes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "processing-events"
+            }
+          },
+          {
+            "from": {
+              "element": "transcoder"
+            },
+            "id": "transcoder-object-storage",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Uses",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "transcoded-videos"
+            }
+          },
+          {
+            "from": {
+              "element": "transcoder"
+            },
+            "id": "transcoder-original-videos",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Uses",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "original-videos"
+            }
+          },
+          {
+            "from": {
+              "element": "upload-api"
+            },
+            "id": "upload-api-message-channel",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Publishes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "upload-jobs"
+            }
+          },
+          {
+            "from": {
+              "element": "upload-api"
+            },
+            "id": "upload-api-metadata",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "metadata"
+            }
+          },
+          {
+            "from": {
+              "element": "upload-api"
+            },
+            "id": "upload-api-object-storage",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Uses",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "original-videos"
+            }
+          },
+          {
+            "from": {
+              "element": "upload-api"
+            },
+            "id": "upload-api-sign-in",
+            "kind": "calls",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Calls",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "sign-in"
+            }
+          },
+          {
+            "from": {
+              "element": "upload-jobs"
+            },
+            "id": "upload-jobs-worker-service",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Consumes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "transcoder"
+            }
+          },
+          {
+            "from": {
+              "element": "video-delivery"
+            },
+            "id": "video-delivery-transcoded-videos",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Uses",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "transcoded-videos"
+            }
+          },
+          {
+            "from": {
+              "element": "video-lifecycle"
+            },
+            "id": "video-lifecycle-message-channel",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Publishes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "publication-events"
+            }
+          },
+          {
+            "from": {
+              "element": "video-lifecycle"
+            },
+            "id": "video-lifecycle-metadata",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "metadata"
+            }
+          },
+          {
+            "from": {
+              "element": "view-counter"
+            },
+            "id": "view-counter-view-counts",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "view-counts"
+            }
+          },
+          {
+            "from": {
+              "element": "view-events"
+            },
+            "id": "view-events-worker-service",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Consumes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "view-counter"
+            }
+          },
+          {
+            "from": {
+              "element": "watch-api"
+            },
+            "id": "watch-api-cache",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "Redis",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "hot-metadata"
+            }
+          },
+          {
+            "from": {
+              "element": "watch-api"
+            },
+            "id": "watch-api-database",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "metadata"
+            }
+          },
+          {
+            "from": {
+              "element": "watch-api"
+            },
+            "id": "watch-api-database-2",
+            "kind": "uses-database",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Reads & writes",
+              "protocol": "SQL",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "view-counts"
+            }
+          },
+          {
+            "from": {
+              "element": "watch-api"
+            },
+            "id": "watch-api-message-channel",
+            "kind": "depends-on",
+            "planned": {
+              "interaction": "Asynchronous",
+              "label": "Publishes",
+              "protocol": "Messaging",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "view-events"
+            }
+          },
+          {
+            "from": {
+              "element": "watch-api"
+            },
+            "id": "watch-api-sign-in",
+            "kind": "calls",
+            "planned": {
+              "interaction": "Request / response",
+              "label": "Calls",
+              "protocol": "HTTP",
+              "security": "Private network"
+            },
+            "to": {
+              "element": "sign-in"
+            }
+          }
+        ],
+        "context": {
+          "nodes": [],
+          "relationships": []
+        },
+        "contracts": [
+          {
+            "id": "links-create",
+            "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f",
+            "version": "1.0.0"
+          },
+          {
+            "id": "links-positive-cache",
+            "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a",
+            "version": "1.0.0"
+          },
+          {
+            "id": "links-resolve",
+            "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a",
+            "version": "1.0.0"
+          }
+        ],
+        "domain": "jeeves.tinyurl.composition.v1",
+        "elements": [
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "account-api",
+            "name": "Account API"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "search-api",
+            "name": "Search API"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "search-indexer",
+            "name": "Search indexer"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "sign-in",
+            "name": "Sign-in"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "transcoder",
+            "name": "Transcoder"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "upload-api",
+            "name": "Upload API"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "video-lifecycle",
+            "name": "Video lifecycle"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "view-counter",
+            "name": "View counter"
+          },
+          {
+            "classification": {
+              "kind": "Application"
+            },
+            "id": "watch-api",
+            "name": "Watch API"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "favorites",
+            "name": "Favorites"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "hot-metadata",
+            "name": "Hot metadata"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "metadata",
+            "name": "Metadata"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "original-videos",
+            "name": "Original videos"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "processing-events",
+            "name": "Processing events"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "publication-events",
+            "name": "Publication events"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "transcoded-videos",
+            "name": "Transcoded videos"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "upload-jobs",
+            "name": "Upload jobs"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "videos",
+            "name": "Videos"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "view-counts",
+            "name": "View counts"
+          },
+          {
+            "classification": {
+              "kind": "Data store"
+            },
+            "id": "view-events",
+            "name": "View events"
+          },
+          {
+            "classification": {
+              "kind": "External system"
+            },
+            "id": "video-delivery",
+            "name": "Video delivery"
+          }
+        ],
+        "generation": {
+          "processes": true,
+          "runtime": {
+            "id": "local-runtime",
+            "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+            "version": "0.1.0"
+          },
+          "selections": [
+            {
+              "binding": {
+                "identity": {
+                  "element": "sign-in",
+                  "guard": "watch-api-viewer-check"
+                },
+                "kind": "verified-identity"
+              },
+              "id": "watch-api-viewer-check",
+              "target": {
+                "component": "watch-api-viewer-check",
+                "host": "watch-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "verified-identity",
+                "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "cache": {
+                  "connection": "watch-api-cache",
+                  "resource": "hot-metadata"
+                },
+                "kind": "positive-cache-read",
+                "source": {
+                  "connection": "watch-api-database",
+                  "resource": "metadata"
+                }
+              },
+              "id": "watch-api-video-details-cache",
+              "target": {
+                "component": "watch-api-video-details-cache",
+                "host": "watch-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "positive-cache-read",
+                "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "kind": "module-stub"
+              },
+              "id": "watch-api-view-count-reader",
+              "target": {
+                "component": "watch-api-view-count-reader",
+                "host": "watch-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "module-stub",
+                "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "kind": "module-stub"
+              },
+              "id": "watch-api-view-publisher",
+              "target": {
+                "component": "watch-api-view-publisher",
+                "host": "watch-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "module-stub",
+                "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "events": {
+                  "connection": "view-events-worker-service",
+                  "resource": "view-events"
+                },
+                "kind": "event-counter",
+                "state": {
+                  "connection": "view-counter-view-counts",
+                  "resource": "view-counts"
+                }
+              },
+              "id": "view-counter-receipt-and-increment",
+              "target": {
+                "component": "view-counter-receipt-and-increment",
+                "host": "view-counter",
+                "kind": "component"
+              },
+              "template": {
+                "id": "event-counter",
+                "sha256": "ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "index": {
+                  "connection": "search-api-search-index",
+                  "resource": "videos"
+                },
+                "kind": "search-query"
+              },
+              "id": "search-api-video-search",
+              "target": {
+                "component": "search-api-video-search",
+                "host": "search-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "search-query",
+                "sha256": "013de6d4c984a46be6ee1b26ad43ce240b42cd9fe96dbe086f72749e63abb624",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "identity": {
+                  "element": "sign-in",
+                  "guard": "account-api-account-check"
+                },
+                "kind": "verified-identity"
+              },
+              "id": "account-api-account-check",
+              "target": {
+                "component": "account-api-account-check",
+                "host": "account-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "verified-identity",
+                "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "identity": {
+                  "element": "sign-in",
+                  "guard": "account-api-account-check"
+                },
+                "items": {
+                  "connection": "account-api-metadata",
+                  "resource": "metadata"
+                },
+                "kind": "favorites",
+                "state": {
+                  "connection": "account-api-database",
+                  "resource": "favorites"
+                }
+              },
+              "id": "account-api-favorite-videos",
+              "target": {
+                "component": "account-api-favorite-videos",
+                "host": "account-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "favorites",
+                "sha256": "f3c7a75b1ee3a94fff16e2e84f63ee3ac65f6125e995454efe442c1ec84304e8",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "identity": {
+                  "element": "sign-in",
+                  "guard": "upload-api-creator-check"
+                },
+                "kind": "verified-identity"
+              },
+              "id": "upload-api-creator-check",
+              "target": {
+                "component": "upload-api-creator-check",
+                "host": "upload-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "verified-identity",
+                "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "identity": {
+                  "element": "sign-in",
+                  "guard": "upload-api-creator-check"
+                },
+                "jobs": {
+                  "connection": "upload-api-message-channel",
+                  "resource": "upload-jobs"
+                },
+                "kind": "owned-multipart",
+                "objects": {
+                  "connection": "upload-api-object-storage",
+                  "resource": "original-videos"
+                },
+                "state": {
+                  "connection": "upload-api-metadata",
+                  "resource": "metadata"
+                }
+              },
+              "id": "upload-api-multipart-uploads",
+              "target": {
+                "component": "upload-api-multipart-uploads",
+                "host": "upload-api",
+                "kind": "component"
+              },
+              "template": {
+                "id": "owned-multipart",
+                "sha256": "c5c035bbf4f6a75edb612506f8d26aca03e90df528647f999362a97142e3b2c7",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "jobs": {
+                  "connection": "upload-jobs-worker-service",
+                  "resource": "upload-jobs"
+                },
+                "kind": "video-hls",
+                "originals": {
+                  "connection": "transcoder-original-videos",
+                  "resource": "original-videos"
+                },
+                "outputs": {
+                  "connection": "transcoder-object-storage",
+                  "resource": "transcoded-videos"
+                },
+                "results": {
+                  "connection": "transcoder-message-channel",
+                  "resource": "processing-events"
+                }
+              },
+              "id": "transcoder-segmenter-and-encoder",
+              "target": {
+                "component": "transcoder-segmenter-and-encoder",
+                "host": "transcoder",
+                "kind": "component"
+              },
+              "template": {
+                "id": "video-hls",
+                "sha256": "4af9b570774b6d4c590806b3fd66fe0492dc18651d73c464544f26a78340acdb",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "kind": "asset-lifecycle",
+                "publication": {
+                  "connection": "video-lifecycle-message-channel",
+                  "resource": "publication-events"
+                },
+                "results": {
+                  "connection": "processing-events-worker-service",
+                  "resource": "processing-events"
+                },
+                "state": {
+                  "connection": "video-lifecycle-metadata",
+                  "resource": "metadata"
+                },
+                "upload": "upload-api-multipart-uploads"
+              },
+              "id": "video-lifecycle-lifecycle-writer",
+              "target": {
+                "component": "video-lifecycle-lifecycle-writer",
+                "host": "video-lifecycle",
+                "kind": "component"
+              },
+              "template": {
+                "id": "asset-lifecycle",
+                "sha256": "01f968341b295c089bc200a0528559d5d4522fcf0dd76fbcd7929340c5d0d186",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "binding": {
+                "events": {
+                  "connection": "publication-events-worker-service",
+                  "resource": "publication-events"
+                },
+                "index": {
+                  "connection": "search-indexer-videos",
+                  "resource": "videos"
+                },
+                "kind": "search-projection"
+              },
+              "id": "search-indexer-index-writer",
+              "target": {
+                "component": "search-indexer-index-writer",
+                "host": "search-indexer",
+                "kind": "component"
+              },
+              "template": {
+                "id": "search-projection",
+                "sha256": "5e81e6a9752692577618d092e301b79aa6131679605e8cccf409cf26d2616ae3",
+                "version": "0.1.0"
+              }
+            }
+          ],
+          "version": 1
+        },
+        "operations": {
+          "calls": [],
+          "receivers": []
+        },
+        "ownership": {
+          "dependencies": [
+            {
+              "access": "read",
+              "connection": "account-api-metadata"
+            },
+            {
+              "access": "read",
+              "connection": "search-api-search-index"
+            },
+            {
+              "access": "read",
+              "connection": "transcoder-original-videos"
+            },
+            {
+              "access": "read",
+              "connection": "watch-api-database"
+            },
+            {
+              "access": "read-write",
+              "connection": "account-api-database"
+            },
+            {
+              "access": "read-write",
+              "connection": "search-indexer-videos"
+            },
+            {
+              "access": "read-write",
+              "connection": "transcoder-object-storage"
+            },
+            {
+              "access": "read-write",
+              "connection": "upload-api-metadata"
+            },
+            {
+              "access": "read-write",
+              "connection": "upload-api-object-storage"
+            },
+            {
+              "access": "read-write",
+              "connection": "video-lifecycle-metadata"
+            },
+            {
+              "access": "read-write",
+              "connection": "view-counter-view-counts"
+            },
+            {
+              "access": "read-write",
+              "connection": "watch-api-cache"
+            }
+          ],
+          "grants": [
+            {
+              "access": "read",
+              "boundary": "published-read",
+              "resource": "metadata",
+              "role": "account-api"
+            },
+            {
+              "access": "read",
+              "boundary": "published-read",
+              "resource": "metadata",
+              "role": "watch-api"
+            },
+            {
+              "access": "read",
+              "boundary": "published-read",
+              "resource": "original-videos",
+              "role": "transcoder"
+            },
+            {
+              "access": "read",
+              "resource": "videos",
+              "role": "search-api"
+            },
+            {
+              "access": "read-write",
+              "resource": "favorites",
+              "role": "account-api"
+            },
+            {
+              "access": "read-write",
+              "resource": "hot-metadata",
+              "role": "watch-api"
+            },
+            {
+              "access": "read-write",
+              "resource": "metadata",
+              "role": "upload-api"
+            },
+            {
+              "access": "read-write",
+              "resource": "metadata",
+              "role": "video-lifecycle"
+            },
+            {
+              "access": "read-write",
+              "resource": "original-videos",
+              "role": "upload-api"
+            },
+            {
+              "access": "read-write",
+              "resource": "transcoded-videos",
+              "role": "transcoder"
+            },
+            {
+              "access": "read-write",
+              "resource": "videos",
+              "role": "search-indexer"
+            },
+            {
+              "access": "read-write",
+              "resource": "view-counts",
+              "role": "view-counter"
+            }
+          ],
+          "owners": [
+            {
+              "id": "account-api-owner",
+              "name": "Account API"
+            },
+            {
+              "id": "search-api-owner",
+              "name": "Search API"
+            },
+            {
+              "id": "sign-in-owner",
+              "name": "Sign-in"
+            },
+            {
+              "id": "transcoder-owner",
+              "name": "Transcoder"
+            },
+            {
+              "id": "upload-api-owner",
+              "name": "Upload API"
+            },
+            {
+              "id": "view-counter-owner",
+              "name": "View counter"
+            },
+            {
+              "id": "watch-api-owner",
+              "name": "Watch API"
+            }
+          ],
+          "resources": [
+            {
+              "authority": "account-api-owner",
+              "element": "favorites",
+              "kind": "source"
+            },
+            {
+              "authority": "search-api-owner",
+              "element": "videos",
+              "kind": "projection",
+              "source": "metadata"
+            },
+            {
+              "authority": "transcoder-owner",
+              "element": "transcoded-videos",
+              "kind": "source"
+            },
+            {
+              "authority": "upload-api-owner",
+              "element": "metadata",
+              "kind": "source"
+            },
+            {
+              "authority": "upload-api-owner",
+              "element": "original-videos",
+              "kind": "source"
+            },
+            {
+              "authority": "view-counter-owner",
+              "element": "view-counts",
+              "kind": "source"
+            },
+            {
+              "authority": "watch-api-owner",
+              "element": "hot-metadata",
+              "kind": "projection",
+              "source": "metadata"
+            }
+          ],
+          "roles": [
+            {
+              "element": "account-api",
+              "kind": "api",
+              "owner": "account-api-owner"
+            },
+            {
+              "element": "search-api",
+              "kind": "api",
+              "owner": "search-api-owner"
+            },
+            {
+              "element": "search-indexer",
+              "kind": "worker",
+              "owner": "search-api-owner"
+            },
+            {
+              "element": "sign-in",
+              "kind": "api",
+              "owner": "sign-in-owner"
+            },
+            {
+              "element": "transcoder",
+              "kind": "worker",
+              "owner": "transcoder-owner"
+            },
+            {
+              "element": "upload-api",
+              "kind": "api",
+              "owner": "upload-api-owner"
+            },
+            {
+              "element": "video-lifecycle",
+              "kind": "worker",
+              "owner": "upload-api-owner"
+            },
+            {
+              "element": "view-counter",
+              "kind": "worker",
+              "owner": "view-counter-owner"
+            },
+            {
+              "element": "watch-api",
+              "kind": "api",
+              "owner": "watch-api-owner"
+            }
+          ]
+        },
+        "resolvedProfile": null,
+        "scope": {
+          "customRequirements": [],
+          "profile": null,
+          "requirements": []
+        },
+        "sourceSchemaVersion": 3,
+        "studio": {
+          "actions": [
+            {
+              "lane": "download",
+              "name": "Watch"
+            },
+            {
+              "lane": "upload",
+              "name": "Publish"
+            }
+          ],
+          "componentConnections": [
+            {
+              "from": "account-api-account-check",
+              "id": "account-api-account-check-sign-in",
+              "to": {
+                "id": "sign-in",
+                "kind": "element",
+                "via": "account-api-sign-in"
+              }
+            },
+            {
+              "from": "account-api-favorite-videos",
+              "id": "account-api-favorite-videos-account-api-video-reader",
+              "to": {
+                "id": "account-api-video-reader",
+                "kind": "component"
+              }
+            },
+            {
+              "from": "account-api-favorite-videos",
+              "id": "account-api-favorite-videos-favorites",
+              "to": {
+                "id": "favorites",
+                "kind": "element",
+                "via": "account-api-database"
+              }
+            },
+            {
+              "from": "account-api-video-reader",
+              "id": "account-api-video-reader-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "account-api-metadata"
+              }
+            },
+            {
+              "from": "search-api-video-search",
+              "id": "search-api-video-search-videos",
+              "to": {
+                "id": "videos",
+                "kind": "element",
+                "via": "search-api-search-index"
+              }
+            },
+            {
+              "from": "search-indexer-index-writer",
+              "id": "search-indexer-index-writer-videos",
+              "to": {
+                "id": "videos",
+                "kind": "element",
+                "via": "search-indexer-videos"
+              }
+            },
+            {
+              "from": "search-indexer-video-publication-consumer",
+              "id": "search-indexer-video-publication-consumer-publication-events",
+              "to": {
+                "id": "publication-events",
+                "kind": "element",
+                "via": "publication-events-worker-service"
+              }
+            },
+            {
+              "from": "transcoder-job-consumer",
+              "id": "transcoder-job-consumer-upload-jobs",
+              "to": {
+                "id": "upload-jobs",
+                "kind": "element",
+                "via": "upload-jobs-worker-service"
+              }
+            },
+            {
+              "from": "transcoder-packager",
+              "id": "transcoder-packager-transcoded-videos",
+              "to": {
+                "id": "transcoded-videos",
+                "kind": "element",
+                "via": "transcoder-object-storage"
+              }
+            },
+            {
+              "from": "transcoder-processing-result-publisher",
+              "id": "transcoder-processing-result-publisher-processing-events",
+              "to": {
+                "id": "processing-events",
+                "kind": "element",
+                "via": "transcoder-message-channel"
+              }
+            },
+            {
+              "from": "transcoder-segmenter-and-encoder",
+              "id": "transcoder-segmenter-and-encoder-original-videos",
+              "to": {
+                "id": "original-videos",
+                "kind": "element",
+                "via": "transcoder-original-videos"
+              }
+            },
+            {
+              "from": "transcoder-thumbnailer",
+              "id": "transcoder-thumbnailer-transcoded-videos",
+              "to": {
+                "id": "transcoded-videos",
+                "kind": "element",
+                "via": "transcoder-object-storage"
+              }
+            },
+            {
+              "from": "upload-api-creator-check",
+              "id": "upload-api-creator-check-sign-in",
+              "to": {
+                "id": "sign-in",
+                "kind": "element",
+                "via": "upload-api-sign-in"
+              }
+            },
+            {
+              "from": "upload-api-job-outbox-publisher",
+              "id": "upload-api-job-outbox-publisher-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "upload-api-metadata"
+              }
+            },
+            {
+              "from": "upload-api-job-outbox-publisher",
+              "id": "upload-api-job-outbox-publisher-upload-jobs",
+              "to": {
+                "id": "upload-jobs",
+                "kind": "element",
+                "via": "upload-api-message-channel"
+              }
+            },
+            {
+              "from": "upload-api-multipart-uploads",
+              "id": "upload-api-multipart-uploads-original-videos",
+              "to": {
+                "id": "original-videos",
+                "kind": "element",
+                "via": "upload-api-object-storage"
+              }
+            },
+            {
+              "from": "upload-api-upload-state-writer",
+              "id": "upload-api-upload-state-writer-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "upload-api-metadata"
+              }
+            },
+            {
+              "from": "video-lifecycle-lifecycle-writer",
+              "id": "video-lifecycle-lifecycle-writer-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "video-lifecycle-metadata"
+              }
+            },
+            {
+              "from": "video-lifecycle-processing-consumer",
+              "id": "video-lifecycle-processing-consumer-processing-events",
+              "to": {
+                "id": "processing-events",
+                "kind": "element",
+                "via": "processing-events-worker-service"
+              }
+            },
+            {
+              "from": "video-lifecycle-video-publication-publisher",
+              "id": "video-lifecycle-video-publication-publisher-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "video-lifecycle-metadata"
+              }
+            },
+            {
+              "from": "video-lifecycle-video-publication-publisher",
+              "id": "video-lifecycle-video-publication-publisher-publication-events",
+              "to": {
+                "id": "publication-events",
+                "kind": "element",
+                "via": "video-lifecycle-message-channel"
+              }
+            },
+            {
+              "from": "view-counter-count-writer",
+              "id": "view-counter-count-writer-view-counts",
+              "to": {
+                "id": "view-counts",
+                "kind": "element",
+                "via": "view-counter-view-counts"
+              }
+            },
+            {
+              "from": "view-counter-view-consumer",
+              "id": "view-counter-view-consumer-view-events",
+              "to": {
+                "id": "view-events",
+                "kind": "element",
+                "via": "view-events-worker-service"
+              }
+            },
+            {
+              "from": "watch-api-video-details-cache",
+              "id": "watch-api-video-details-cache-hot-metadata",
+              "to": {
+                "id": "hot-metadata",
+                "kind": "element",
+                "via": "watch-api-cache"
+              }
+            },
+            {
+              "from": "watch-api-video-details-cache",
+              "id": "watch-api-video-details-cache-watch-api-video-details-reader",
+              "to": {
+                "id": "watch-api-video-details-reader",
+                "kind": "component"
+              }
+            },
+            {
+              "from": "watch-api-video-details-reader",
+              "id": "watch-api-video-details-reader-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "watch-api-database"
+              }
+            },
+            {
+              "from": "watch-api-view-count-reader",
+              "id": "watch-api-view-count-reader-view-counts",
+              "to": {
+                "id": "view-counts",
+                "kind": "element",
+                "via": "watch-api-database-2"
+              }
+            },
+            {
+              "from": "watch-api-view-publisher",
+              "id": "watch-api-view-publisher-metadata",
+              "to": {
+                "id": "metadata",
+                "kind": "element",
+                "via": "watch-api-database"
+              }
+            },
+            {
+              "from": "watch-api-view-publisher",
+              "id": "watch-api-view-publisher-view-events",
+              "to": {
+                "id": "view-events",
+                "kind": "element",
+                "via": "watch-api-message-channel"
+              }
+            },
+            {
+              "from": "watch-api-viewer-check",
+              "id": "watch-api-viewer-check-sign-in",
+              "to": {
+                "id": "sign-in",
+                "kind": "element",
+                "via": "watch-api-sign-in"
+              }
+            }
+          ],
+          "components": [
+            {
+              "description": "Adds published videos to the search index.",
+              "host": "search-indexer",
+              "id": "search-indexer-index-writer",
+              "name": "Index writer",
+              "settings": {
+                "kind": "index-writer"
+              }
+            },
+            {
+              "description": "Allows only signed-in accounts.",
+              "host": "account-api",
+              "id": "account-api-account-check",
+              "name": "Account check",
+              "settings": {
+                "credential": "jwt",
+                "kind": "auth-guard",
+                "signIn": "required"
+              }
+            },
+            {
+              "description": "Allows only signed-in creators.",
+              "host": "upload-api",
+              "id": "upload-api-creator-check",
+              "name": "Creator check",
+              "settings": {
+                "credential": "jwt",
+                "kind": "auth-guard",
+                "signIn": "required"
+              }
+            },
+            {
+              "description": "Announces videos that are ready to watch.",
+              "host": "video-lifecycle",
+              "id": "video-lifecycle-video-publication-publisher",
+              "name": "Video publication publisher",
+              "settings": {
+                "kind": "event-publisher",
+                "outbox": "enabled"
+              }
+            },
+            {
+              "description": "Announces whether processing succeeded.",
+              "host": "transcoder",
+              "id": "transcoder-processing-result-publisher",
+              "name": "Processing result publisher",
+              "settings": {
+                "kind": "event-publisher",
+                "outbox": "disabled"
+              }
+            },
+            {
+              "description": "Counts each view event once.",
+              "host": "view-counter",
+              "id": "view-counter-receipt-and-increment",
+              "name": "Receipt and increment",
+              "settings": {
+                "kind": "event-counter"
+              }
+            },
+            {
+              "description": "Creates the video's thumbnails.",
+              "host": "transcoder",
+              "id": "transcoder-thumbnailer",
+              "name": "Thumbnailer",
+              "settings": {
+                "kind": "video-thumbnailer"
+              }
+            },
+            {
+              "description": "Encodes the video into streamable renditions.",
+              "host": "transcoder",
+              "id": "transcoder-segmenter-and-encoder",
+              "name": "Segmenter and encoder",
+              "settings": {
+                "kind": "video-encoder"
+              }
+            },
+            {
+              "description": "Keeps each account's favorite videos.",
+              "host": "account-api",
+              "id": "account-api-favorite-videos",
+              "name": "Favorite videos",
+              "settings": {
+                "kind": "favorites"
+              }
+            },
+            {
+              "description": "Lets watchers sign in; others watch anonymously.",
+              "host": "watch-api",
+              "id": "watch-api-viewer-check",
+              "name": "Viewer check",
+              "settings": {
+                "credential": "jwt",
+                "kind": "auth-guard",
+                "signIn": "optional"
+              }
+            },
+            {
+              "description": "Queues a processing job once an upload completes.",
+              "host": "upload-api",
+              "id": "upload-api-job-outbox-publisher",
+              "name": "Job outbox publisher",
+              "settings": {
+                "kind": "event-publisher",
+                "outbox": "enabled"
+              }
+            },
+            {
+              "description": "Reads a video's view count.",
+              "host": "watch-api",
+              "id": "watch-api-view-count-reader",
+              "name": "View count reader",
+              "settings": {
+                "kind": "data-access",
+                "readRouting": "primary"
+              }
+            },
+            {
+              "description": "Reads public video details.",
+              "host": "watch-api",
+              "id": "watch-api-video-details-reader",
+              "name": "Video details reader",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 50,
+                "readRouting": "primary",
+                "statementTimeoutMs": 500
+              }
+            },
+            {
+              "description": "Reads which videos are public.",
+              "host": "account-api",
+              "id": "account-api-video-reader",
+              "name": "Video reader",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 10,
+                "readRouting": "primary",
+                "statementTimeoutMs": 2000
+              }
+            },
+            {
+              "description": "Receives newly published videos.",
+              "host": "search-indexer",
+              "id": "search-indexer-video-publication-consumer",
+              "name": "Video publication consumer",
+              "settings": {
+                "kind": "event-consumer"
+              }
+            },
+            {
+              "description": "Receives processing results.",
+              "host": "video-lifecycle",
+              "id": "video-lifecycle-processing-consumer",
+              "name": "Processing consumer",
+              "settings": {
+                "kind": "event-consumer"
+              }
+            },
+            {
+              "description": "Receives view events.",
+              "host": "view-counter",
+              "id": "view-counter-view-consumer",
+              "name": "View consumer",
+              "settings": {
+                "kind": "event-consumer"
+              }
+            },
+            {
+              "description": "Records each upload's progress.",
+              "host": "upload-api",
+              "id": "upload-api-upload-state-writer",
+              "name": "Upload state writer",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 10,
+                "readRouting": "primary",
+                "statementTimeoutMs": 2000
+              }
+            },
+            {
+              "description": "Reports each play of a ready video as an event, with the viewer when signed in.",
+              "host": "watch-api",
+              "id": "watch-api-view-publisher",
+              "name": "View publisher",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "description": "Searches published videos.",
+              "host": "search-api",
+              "id": "search-api-video-search",
+              "name": "Video search",
+              "settings": {
+                "kind": "search-query"
+              }
+            },
+            {
+              "description": "Serves video details from the cache.",
+              "host": "watch-api",
+              "id": "watch-api-video-details-cache",
+              "name": "Video details cache",
+              "settings": {
+                "kind": "cache-reader",
+                "pattern": "cache-aside",
+                "stampede": "single-flight"
+              }
+            },
+            {
+              "description": "Stores the stream's segments and playlists.",
+              "host": "transcoder",
+              "id": "transcoder-packager",
+              "name": "Packager",
+              "settings": {
+                "kind": "video-packager"
+              }
+            },
+            {
+              "description": "Stores view totals.",
+              "host": "view-counter",
+              "id": "view-counter-count-writer",
+              "name": "Count writer",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 10,
+                "readRouting": "primary",
+                "statementTimeoutMs": 2000
+              }
+            },
+            {
+              "description": "Takes the next processing job.",
+              "host": "transcoder",
+              "id": "transcoder-job-consumer",
+              "name": "Job consumer",
+              "settings": {
+                "kind": "event-consumer"
+              }
+            },
+            {
+              "description": "Updates each video's processing state.",
+              "host": "video-lifecycle",
+              "id": "video-lifecycle-lifecycle-writer",
+              "name": "Lifecycle writer",
+              "settings": {
+                "kind": "lifecycle-writer",
+                "poolSize": 10,
+                "statementTimeoutMs": 2000
+              }
+            },
+            {
+              "description": "Uploads large videos in resumable parts.",
+              "host": "upload-api",
+              "id": "upload-api-multipart-uploads",
+              "name": "Multipart uploads",
+              "settings": {
+                "kind": "multipart-uploads"
+              }
+            }
+          ],
+          "connections": [
+            {
+              "connection": "account-api-database",
+              "settings": {}
+            },
+            {
+              "connection": "account-api-metadata",
+              "settings": {}
+            },
+            {
+              "connection": "account-api-sign-in",
+              "settings": {}
+            },
+            {
+              "connection": "processing-events-worker-service",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "publication-events-worker-service",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "search-api-search-index",
+              "settings": {}
+            },
+            {
+              "connection": "search-indexer-videos",
+              "settings": {}
+            },
+            {
+              "connection": "transcoder-message-channel",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "transcoder-object-storage",
+              "settings": {}
+            },
+            {
+              "connection": "transcoder-original-videos",
+              "settings": {}
+            },
+            {
+              "connection": "upload-api-message-channel",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "upload-api-metadata",
+              "settings": {}
+            },
+            {
+              "connection": "upload-api-object-storage",
+              "settings": {}
+            },
+            {
+              "connection": "upload-api-sign-in",
+              "settings": {}
+            },
+            {
+              "connection": "upload-jobs-worker-service",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "video-delivery-transcoded-videos",
+              "settings": {}
+            },
+            {
+              "connection": "video-lifecycle-message-channel",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "video-lifecycle-metadata",
+              "settings": {}
+            },
+            {
+              "connection": "view-counter-view-counts",
+              "settings": {}
+            },
+            {
+              "connection": "view-events-worker-service",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "watch-api-cache",
+              "settings": {}
+            },
+            {
+              "connection": "watch-api-database",
+              "settings": {}
+            },
+            {
+              "connection": "watch-api-database-2",
+              "settings": {}
+            },
+            {
+              "connection": "watch-api-message-channel",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "watch-api-sign-in",
+              "settings": {}
+            }
+          ],
+          "elements": [
+            {
+              "definition": {
+                "id": "studio-cache",
+                "version": "1.0.0"
+              },
+              "element": "hot-metadata",
+              "owner": {
+                "id": "watch-api",
+                "kind": "element"
+              },
+              "settings": {
+                "engine": "redis-compatible",
+                "kind": "cache",
+                "provider": "self-hosted",
+                "ttlSeconds": 3601
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-cdn",
+                "version": "1.0.0"
+              },
+              "element": "video-delivery",
+              "settings": {
+                "kind": "cdn",
+                "provider": "cloudflare"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-database",
+                "version": "1.0.0"
+              },
+              "element": "favorites",
+              "owner": {
+                "id": "account-api",
+                "kind": "element"
+              },
+              "settings": {
+                "engine": "postgresql",
+                "kind": "database",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-database",
+                "version": "1.0.0"
+              },
+              "element": "metadata",
+              "owner": {
+                "id": "watch-api",
+                "kind": "element"
+              },
+              "settings": {
+                "engine": "postgresql",
+                "kind": "database",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-database",
+                "version": "1.0.0"
+              },
+              "element": "view-counts",
+              "owner": {
+                "id": "watch-api",
+                "kind": "element"
+              },
+              "settings": {
+                "engine": "postgresql",
+                "kind": "database",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-identity",
+                "version": "1.0.0"
+              },
+              "element": "sign-in",
+              "settings": {
+                "execution": "docker",
+                "exposure": "public",
+                "kind": "identity",
+                "language": "typescript",
+                "provider": "oidc"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-object-store",
+                "version": "1.0.0"
+              },
+              "element": "original-videos",
+              "owner": {
+                "id": "upload-api",
+                "kind": "element"
+              },
+              "settings": {
+                "access": "private",
+                "kind": "object-store",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-object-store",
+                "version": "1.0.0"
+              },
+              "element": "transcoded-videos",
+              "owner": {
+                "id": "transcoder",
+                "kind": "element"
+              },
+              "settings": {
+                "access": "public",
+                "kind": "object-store",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "element": "processing-events",
+              "owner": {
+                "id": "transcoder",
+                "kind": "element"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "topic",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "element": "publication-events",
+              "owner": {
+                "id": "video-lifecycle",
+                "kind": "element"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "topic",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "element": "upload-jobs",
+              "owner": {
+                "id": "upload-api",
+                "kind": "element"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "work-queue",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "element": "view-events",
+              "owner": {
+                "id": "watch-api",
+                "kind": "element"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "topic",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-search",
+                "version": "1.0.0"
+              },
+              "element": "videos",
+              "owner": {
+                "id": "search-api",
+                "kind": "element"
+              },
+              "settings": {
+                "engine": "opensearch",
+                "kind": "search",
+                "provider": "self-hosted"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-service",
+                "version": "1.0.0"
+              },
+              "element": "account-api",
+              "settings": {
+                "concurrencyLimit": 1000,
+                "execution": "docker",
+                "exposure": "public",
+                "kind": "service",
+                "language": "typescript",
+                "requestTimeoutMs": 1000
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-service",
+                "version": "1.0.0"
+              },
+              "element": "search-api",
+              "settings": {
+                "concurrencyLimit": 1000,
+                "execution": "docker",
+                "exposure": "public",
+                "kind": "service",
+                "language": "typescript",
+                "requestTimeoutMs": 1000
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-service",
+                "version": "1.0.0"
+              },
+              "element": "watch-api",
+              "settings": {
+                "concurrencyLimit": 2000,
+                "execution": "docker",
+                "exposure": "public",
+                "kind": "service",
+                "language": "typescript",
+                "requestTimeoutMs": 1000
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-uploads",
+                "version": "1.0.0"
+              },
+              "element": "upload-api",
+              "settings": {
+                "concurrencyLimit": 500,
+                "execution": "docker",
+                "exposure": "public",
+                "kind": "uploads",
+                "language": "typescript",
+                "requestTimeoutMs": 5000,
+                "transfer": "signed-url"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "element": "search-indexer",
+              "settings": {
+                "concurrency": 4,
+                "execution": "docker",
+                "kind": "worker",
+                "language": "typescript"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "element": "transcoder",
+              "settings": {
+                "concurrency": 1,
+                "execution": "docker",
+                "kind": "worker",
+                "language": "typescript"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "element": "video-lifecycle",
+              "settings": {
+                "concurrency": 4,
+                "execution": "docker",
+                "kind": "worker",
+                "language": "typescript"
+              }
+            },
+            {
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "element": "view-counter",
+              "settings": {
+                "concurrency": 8,
+                "execution": "docker",
+                "kind": "worker",
+                "language": "typescript"
+              }
+            }
+          ],
+          "entries": [
+            {
+              "element": "account-api",
+              "id": "download-microservice-3",
+              "lane": "download"
+            },
+            {
+              "element": "search-api",
+              "id": "download-microservice-2",
+              "lane": "download"
+            },
+            {
+              "element": "sign-in",
+              "id": "upload-identity",
+              "lane": "upload"
+            },
+            {
+              "element": "upload-api",
+              "id": "upload-uploads",
+              "lane": "upload"
+            },
+            {
+              "element": "video-delivery",
+              "id": "download-cdn",
+              "lane": "download"
+            },
+            {
+              "element": "watch-api",
+              "id": "download-microservice",
+              "lane": "download"
+            }
+          ],
+          "packages": [],
+          "version": 1
+        },
+        "system": {
+          "description": "",
+          "name": "YouTube"
+        }
+      }
+    },
+    "designValidity": {
+      "status": "valid",
+      "blockers": []
+    },
+    "contractCompleteness": {
+      "status": "incomplete",
+      "blockers": [
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of account-api is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "account-api"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of favorites is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "favorites"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of hot-metadata is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "hot-metadata"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of metadata is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "metadata"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of original-videos is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "original-videos"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of processing-events is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "processing-events"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of publication-events is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "publication-events"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of search-api is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "search-api"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of search-indexer is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "search-indexer"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of sign-in is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "sign-in"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of transcoded-videos is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "transcoded-videos"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of transcoder is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "transcoder"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of upload-api is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "upload-api"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of upload-jobs is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "upload-jobs"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of video-delivery is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "video-delivery"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of video-lifecycle is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "video-lifecycle"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of videos is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "videos"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of view-counter is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "view-counter"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of view-counts is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "view-counts"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of view-events is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "view-events"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Behavior of watch-api is outside the finite Create/Resolve composition; a generic tile supplies no contract.",
+          "target": {
+            "element": "watch-api"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection account-api-database has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "account-api-database"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection account-api-metadata has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "account-api-metadata"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection account-api-sign-in has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "account-api-sign-in"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection processing-events-worker-service has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "processing-events-worker-service"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection publication-events-worker-service has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "publication-events-worker-service"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection search-api-search-index has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "search-api-search-index"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection search-indexer-videos has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "search-indexer-videos"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection transcoder-message-channel has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "transcoder-message-channel"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection transcoder-object-storage has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "transcoder-object-storage"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection transcoder-original-videos has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "transcoder-original-videos"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection upload-api-message-channel has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "upload-api-message-channel"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection upload-api-metadata has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "upload-api-metadata"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection upload-api-object-storage has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "upload-api-object-storage"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection upload-api-sign-in has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "upload-api-sign-in"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection upload-jobs-worker-service has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "upload-jobs-worker-service"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection video-delivery-transcoded-videos has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "video-delivery-transcoded-videos"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection video-lifecycle-message-channel has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "video-lifecycle-message-channel"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection video-lifecycle-metadata has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "video-lifecycle-metadata"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection view-counter-view-counts has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "view-counter-view-counts"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection view-events-worker-service has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "view-events-worker-service"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection watch-api-cache has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "watch-api-cache"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection watch-api-database has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "watch-api-database"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection watch-api-database-2 has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "watch-api-database-2"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection watch-api-message-channel has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "watch-api-message-channel"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Connection watch-api-sign-in has no exact represented operation or bound store dependency.",
+          "target": {
+            "connection": "watch-api-sign-in"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Entry download-cdn has no exact operation expectation.",
+          "target": {
+            "element": "video-delivery",
+            "path": [
+              "architecture",
+              "studio",
+              "entries",
+              "download-cdn"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Entry download-microservice has no exact operation expectation.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "architecture",
+              "studio",
+              "entries",
+              "download-microservice"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Entry download-microservice-2 has no exact operation expectation.",
+          "target": {
+            "element": "search-api",
+            "path": [
+              "architecture",
+              "studio",
+              "entries",
+              "download-microservice-2"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Entry download-microservice-3 has no exact operation expectation.",
+          "target": {
+            "element": "account-api",
+            "path": [
+              "architecture",
+              "studio",
+              "entries",
+              "download-microservice-3"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Entry upload-identity has no exact operation expectation.",
+          "target": {
+            "element": "sign-in",
+            "path": [
+              "architecture",
+              "studio",
+              "entries",
+              "upload-identity"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Entry upload-uploads has no exact operation expectation.",
+          "target": {
+            "element": "upload-api",
+            "path": [
+              "architecture",
+              "studio",
+              "entries",
+              "upload-uploads"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Generation declarations are outside the strict finite TinyURL Create/Resolve composition.",
+          "target": {
+            "path": [
+              "generation"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner account-api-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "account-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner search-api-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "search-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner sign-in-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "sign-in-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner transcoder-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "transcoder-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner upload-api-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "upload-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner view-counter-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "view-counter-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Logical owner watch-api-owner has no represented operation responsibilities.",
+          "target": {
+            "owner": "watch-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module account-api-account-check has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "account-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "account-api-account-check"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module account-api-favorite-videos has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "account-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "account-api-favorite-videos"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module account-api-video-reader has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "account-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "account-api-video-reader"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module search-api-video-search has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "search-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "search-api-video-search"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module search-indexer-index-writer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "search-indexer",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "search-indexer-index-writer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module search-indexer-video-publication-consumer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "search-indexer",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "search-indexer-video-publication-consumer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module transcoder-job-consumer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "transcoder",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "transcoder-job-consumer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module transcoder-packager has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "transcoder",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "transcoder-packager"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module transcoder-processing-result-publisher has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "transcoder",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "transcoder-processing-result-publisher"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module transcoder-segmenter-and-encoder has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "transcoder",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "transcoder-segmenter-and-encoder"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module transcoder-thumbnailer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "transcoder",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "transcoder-thumbnailer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module upload-api-creator-check has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "upload-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "upload-api-creator-check"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module upload-api-job-outbox-publisher has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "upload-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "upload-api-job-outbox-publisher"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module upload-api-multipart-uploads has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "upload-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "upload-api-multipart-uploads"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module upload-api-upload-state-writer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "upload-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "upload-api-upload-state-writer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module video-lifecycle-lifecycle-writer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "video-lifecycle",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "video-lifecycle-lifecycle-writer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module video-lifecycle-processing-consumer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "video-lifecycle",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "video-lifecycle-processing-consumer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module video-lifecycle-video-publication-publisher has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "video-lifecycle",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "video-lifecycle-video-publication-publisher"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module view-counter-count-writer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "view-counter",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "view-counter-count-writer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module view-counter-receipt-and-increment has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "view-counter",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "view-counter-receipt-and-increment"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module view-counter-view-consumer has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "view-counter",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "view-counter-view-consumer"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module watch-api-video-details-cache has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "watch-api-video-details-cache"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module watch-api-video-details-reader has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "watch-api-video-details-reader"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module watch-api-view-count-reader has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "watch-api-view-count-reader"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module watch-api-view-publisher has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "watch-api-view-publisher"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Module watch-api-viewer-check has no represented finite behavior on its bound operation dependency.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "architecture",
+              "studio",
+              "components",
+              "watch-api-viewer-check"
+            ]
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource favorites has no supported source/cache dependency.",
+          "target": {
+            "element": "favorites",
+            "owner": "account-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource hot-metadata has no supported source/cache dependency.",
+          "target": {
+            "element": "hot-metadata",
+            "owner": "watch-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource metadata has no supported source/cache dependency.",
+          "target": {
+            "element": "metadata",
+            "owner": "upload-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource original-videos has no supported source/cache dependency.",
+          "target": {
+            "element": "original-videos",
+            "owner": "upload-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource transcoded-videos has no supported source/cache dependency.",
+          "target": {
+            "element": "transcoded-videos",
+            "owner": "transcoder-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource videos has no supported source/cache dependency.",
+          "target": {
+            "element": "videos",
+            "owner": "search-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Resource view-counts has no supported source/cache dependency.",
+          "target": {
+            "element": "view-counts",
+            "owner": "view-counter-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role account-api has no supported operation behavior.",
+          "target": {
+            "element": "account-api",
+            "owner": "account-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role search-api has no supported operation behavior.",
+          "target": {
+            "element": "search-api",
+            "owner": "search-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role search-indexer has no supported operation behavior.",
+          "target": {
+            "element": "search-indexer",
+            "owner": "search-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role sign-in has no supported operation behavior.",
+          "target": {
+            "element": "sign-in",
+            "owner": "sign-in-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role transcoder has no supported operation behavior.",
+          "target": {
+            "element": "transcoder",
+            "owner": "transcoder-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role upload-api has no supported operation behavior.",
+          "target": {
+            "element": "upload-api",
+            "owner": "upload-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role video-lifecycle has no supported operation behavior.",
+          "target": {
+            "element": "video-lifecycle",
+            "owner": "upload-api-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role view-counter has no supported operation behavior.",
+          "target": {
+            "element": "view-counter",
+            "owner": "view-counter-owner"
+          }
+        },
+        {
+          "code": "BEHAVIOR_UNREPRESENTED",
+          "message": "Role watch-api has no supported operation behavior.",
+          "target": {
+            "element": "watch-api",
+            "owner": "watch-api-owner"
+          }
+        },
+        {
+          "code": "CONFIG_REQUIRED",
+          "message": "Dependency watch-api-database-2 has unspecified access intent; its legacy inferred access is not a grant.",
+          "target": {
+            "connection": "watch-api-database-2",
+            "path": [
+              "ownership",
+              "dependencies",
+              "watch-api-database-2"
+            ]
+          }
+        },
+        {
+          "code": "CONFIG_REQUIRED",
+          "message": "Projection hot-metadata records source intent only; population, freshness and failure contracts are not specified.",
+          "target": {
+            "element": "hot-metadata",
+            "path": [
+              "ownership",
+              "resources",
+              0
+            ]
+          }
+        },
+        {
+          "code": "CONFIG_REQUIRED",
+          "message": "Projection videos records source intent only; population, freshness and failure contracts are not specified.",
+          "target": {
+            "element": "videos",
+            "path": [
+              "ownership",
+              "resources",
+              3
+            ]
+          }
+        },
+        {
+          "code": "CONFIG_REQUIRED",
+          "message": "Published-read boundary account-api → metadata has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+          "target": {
+            "element": "account-api",
+            "path": [
+              "ownership",
+              "grants",
+              5,
+              "boundary"
+            ]
+          }
+        },
+        {
+          "code": "CONFIG_REQUIRED",
+          "message": "Published-read boundary transcoder → original-videos has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+          "target": {
+            "element": "transcoder",
+            "path": [
+              "ownership",
+              "grants",
+              8,
+              "boundary"
+            ]
+          }
+        },
+        {
+          "code": "CONFIG_REQUIRED",
+          "message": "Published-read boundary watch-api → metadata has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+          "target": {
+            "element": "watch-api",
+            "path": [
+              "ownership",
+              "grants",
+              0,
+              "boundary"
+            ]
+          }
+        },
+        {
+          "code": "REQUIREMENT_UNRESOLVED",
+          "message": "API and failure contracts are unspecified; explicit ownership declarations are reported separately. Names, labels and modules establish no behavior.",
+          "target": {
+            "path": [
+              "scope",
+              "contract",
+              "contracts-unspecified"
+            ]
+          }
+        },
+        {
+          "code": "REQUIREMENT_UNRESOLVED",
+          "message": "Included and excluded behavior requirements are unspecified.",
+          "target": {
+            "path": [
+              "scope",
+              "profile",
+              "requirements-unspecified"
+            ]
+          }
+        },
+        {
+          "code": "REQUIREMENT_UNRESOLVED",
+          "message": "No exact behavior profile is selected; application behavior remains unspecified.",
+          "target": {
+            "path": [
+              "scope",
+              "profile",
+              "profile-unspecified"
+            ]
+          }
+        }
+      ]
+    },
+    "implementationAvailability": {
+      "status": "unavailable",
+      "blockers": [
+        {
+          "code": "MANIFEST_UNAVAILABLE",
+          "message": "No trusted pinned template manifest is available. Product templates, dependencies and auth verifiers have no registry.",
+          "target": {
+            "path": [
+              "artifacts"
+            ]
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              6,
+              "template"
+            ],
+            "element": "account-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              7,
+              "template"
+            ],
+            "element": "account-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              5,
+              "template"
+            ],
+            "element": "search-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              12,
+              "template"
+            ],
+            "element": "search-indexer"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              10,
+              "template"
+            ],
+            "element": "transcoder"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              8,
+              "template"
+            ],
+            "element": "upload-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              9,
+              "template"
+            ],
+            "element": "upload-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              11,
+              "template"
+            ],
+            "element": "video-lifecycle"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              4,
+              "template"
+            ],
+            "element": "view-counter"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              0,
+              "template"
+            ],
+            "element": "watch-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              1,
+              "template"
+            ],
+            "element": "watch-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              2,
+              "template"
+            ],
+            "element": "watch-api"
+          }
+        },
+        {
+          "code": "NEEDS_TEMPLATE",
+          "message": "Declared template only; an installed implementation must be resolved by the generation host.",
+          "target": {
+            "path": [
+              "generation",
+              "selections",
+              3,
+              "template"
+            ],
+            "element": "watch-api"
+          }
+        }
+      ]
+    },
+    "runtimeEvidence": {
+      "status": "none",
+      "blockers": [
+        {
+          "code": "RUNTIME_EVIDENCE_NONE",
+          "message": "No trusted evidence for an exact generated output is available. Declarations and generation eligibility do not verify runtime behavior.",
+          "target": {
+            "path": [
+              "artifacts"
+            ]
+          }
+        }
+      ]
+    },
+    "generationEligible": false,
+    "advisories": [],
+    "limits": [
+      "Static declaration checks do not execute HTTP, auth, storage, cache, clocks, concurrency or cancellation.",
+      "Product has no template, dependency, auth-verifier or evidence registry, no generated output and no runtime runner. Trusted positive artifact resolution is exercised only in isolated tests.",
+      "A manifest supports one exact pinned semantic composition. It does not certify all settings or deployments of reusable templates.",
+      "Names, labels and prose do not establish behavior. Required custom or excluded-profile behavior remains unresolved; advisory requirements are listed separately.",
+      "Evidence time is evaluated against the independently pinned receipt window; this deterministic report does not read the current clock."
+    ]
+  }
+}

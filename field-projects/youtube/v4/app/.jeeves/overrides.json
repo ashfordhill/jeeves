@@ -1,0 +1,8 @@
+{
+  "overrides": [
+    { "path": ".gitignore", "reason": "Ignores the built browser (template gap 8)." },
+    { "path": "compose.yaml", "reason": "The edge mounts the built browser (template gap 8)." },
+    { "path": "infra/edge/nginx.conf", "reason": "The edge serves the browser at / (template gap 8)." },
+    { "path": "package.json", "reason": "first-run and start build the browser first (template gap 8)." }
+  ]
+}

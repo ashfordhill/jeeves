@@ -1,0 +1,2 @@
+// Explicit normalized clients/index and topic subscriber; no SQL credential.
+export const searchBindings = {"search-api-video-search":{"host":"search-api","index":{"endpoint":"http://search-videos:9200","resource":"videos"}},"search-indexer-index-writer":{"events":{"exchange":"publication-events","failedQueue":"publication-events--search-indexer.failed","queue":"publication-events--search-indexer","resource":"publication-events"},"host":"search-indexer","index":{"endpoint":"http://search-videos:9200","resource":"videos"}}} as const;

@@ -1,0 +1,38 @@
+-- Lifecycle writer in Video lifecycle writes Metadata: its product tables and published views.
+-- Write them here. Export never overwrites your edits: export afresh and carry them over.
+-- first-run and start run this file every time, after the template migrations and views, as
+-- the setup-only owner o_metadata of d_metadata, in one transaction with search_path m_video_lifecycle_lifecycle_writer:
+-- unqualified names land in schema m_video_lifecycle_lifecycle_writer. Keep it re-runnable (IF NOT EXISTS, CREATE OR
+-- REPLACE), with no BEGIN or COMMIT. A failure rolls the database back, and setup names this file.
+--
+-- Its own tables, in m_video_lifecycle_lifecycle_writer: only r_metadata__video_lifecycle (Video lifecycle) selects, inserts, updates and deletes.
+-- What others may read goes in views in published (CREATE OR REPLACE VIEW published.<name> AS ...),
+-- which every login on this database may select:
+--   r_metadata__account_api (Account API)
+--   r_metadata__upload_api (Upload API)
+--   r_metadata__video_lifecycle (Video lifecycle)
+--   r_metadata__watch_api (Watch API)
+-- Template tables it may read, by qualified name:
+--   upload_api_multipart_uploads.assets
+--   upload_api_multipart_uploads.outbox
+--   upload_api_multipart_uploads.receipts
+--   upload_api_multipart_uploads.uploads
+-- Template views:
+--   none
+
+-- published.videos (V3-14): the public, ready-only projection of the lifecycle's assets, as v2's
+-- asset_public.ready. Only the lifecycle makes a video ready, so this file owns it. Watch's details
+-- and its View publisher, and Favorites' eligibility, read it; Search reads the index instead.
+-- No owner, upload, job, failure, state or count is in it, and a video is in it only once ready.
+CREATE OR REPLACE VIEW published.videos WITH (security_barrier = true) AS
+SELECT asset_id AS video_id,
+  metadata->>'title' AS title,
+  metadata->>'description' AS description,
+  metadata->>'channel' AS channel,
+  (result->>'durationSeconds')::double precision AS duration_seconds,
+  result->>'manifest' AS manifest,
+  result->>'thumbnail' AS thumbnail,
+  ready_at AS published_at,
+  publication_version
+FROM upload_api_multipart_uploads.assets
+WHERE state = 'ready';

@@ -11332,3 +11332,66 @@ root (without `.jeeves/generated/`).
 the directory must be absolute and symlink-free and hold the export's `.jeeves/manifest.json`; a
 hand-edited generated file is refused by path, to restore or list in `.jeeves/overrides.json`
 with a reason (each one is a template gap).
+
+## 2026-11-12 — PF11: YouTube v4: v3 regenerated onto the new templates
+
+**What changed.**
+
+- New `field-projects/youtube/v4/`: `inputs/design.json` and `blueprint.json` copied from v3
+  (design SHA-256 `9762df41…3813f`, as the plan says); `generated/`, the fresh `export:v2` of that
+  design (112 files, 0 findings, 9 required gaps, manifest SHA-256 `464e381d…0323`; against v3's
+  `generated/`, 21 files differ: the manifest, the report, the eight `src/processes/` files, ten
+  `src/runtime/` files and `src/modules/dependencies.ts`).
+- `v4/app/`: v3's 129 tracked app files (`git archive`), plus the plan's
+  `.jeeves/overrides.json` (the four gap-8 scaffold edits with their reasons), then `update:v2`.
+  It replaced 18 files (17 in `src/processes/` and `src/runtime/`, and `.jeeves/report.json`),
+  kept 11 (the hook files, stub bodies and product SQL v3 wrote), left 78 unchanged, kept the 4
+  overrides with their new generated versions under `.jeeves/generated/`, and wrote
+  `.jeeves/manifest.json` (equal to `generated/`'s). No `node_modules`, `dist` or other build
+  output is in it.
+- `v4/notes/update.json` (the update's output), `v4/notes/README.md` (what v4 is, the counts, the
+  overrides, how to run it, v3's diagrams) and `v4/notes/custom-paths.md` (v3's, unchanged below a
+  v4 section on `.jeeves/overrides.json` and `.jeeves/generated/`).
+- `tooling/biome.config.json`: the plan's three v4 exclusions.
+
+**Checks.**
+
+- check: passed before any change (105 files, 820 tests) and after (105 files, 820 tests; Biome
+  663 files, only the older `useTemplate` info in `local.mjs`), pins unchanged (no template or
+  fixture edited).
+- Step 5's `--check`: `refused` empty on the first run (exit 0), so no gap-6 copy was needed.
+  Step 6: `refused` empty, `override` the four paths; counts create 0, replace 18, unchanged 78,
+  keep 11; `keepChanged`, `remove` and `orphan` empty. The byte check printed
+  `{"checked":31,"differ":[]}` and exited 0.
+- Step 7: all four `cmp`s equal (`.gitignore`, `compose.yaml`, `infra/edge/nginx.conf`,
+  `package.json`), so no patch; the `--check` again: `refused` empty, 96 unchanged, 11 kept, the
+  4 overrides.
+- Step 8 (scratch copy, deleted after): `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm
+  build` and `node --test "test/*.test.ts"` exit 0; 19 tests, 19 pass.
+- Also: `diff -rq generated app` in v4 lists v3's custom paths except `dependencies.ts` and
+  `module-clients.ts` (both equal v4's export now), plus `.jeeves/overrides.json` and
+  `.jeeves/generated`.
+
+**Differences from the plan.**
+
+- Biome formats JSON outside the plan's three exclusions, so `notes/update.json` failed lint as
+  printed (the `override` array on four lines). It was formatted with `biome check --write` on
+  that one file; its JSON is the same as the saved output (checked with `isDeepStrictEqual`).
+- The update's output was taken with `pnpm --silent --filter …` so the file holds only the JSON;
+  the step 5 outputs are kept in scratch only (the plan names no place for them).
+- `custom-paths.md`'s v3 links to `README.md#template-gaps-found-while-completing-app` now resolve
+  to v4's README, which has no such section; the new top section says they mean v3's notes and
+  links them, and v3's text is otherwise unchanged.
+
+**Noticed.**
+
+- `update.json` records the absolute `directory` (`/home/ash/github/jeeves/…/v4/app`).
+- `docs/template-gaps.md` gap 8 still says "v3 edits four scaffold files instead"; v4 keeps the
+  same four as overrides, so the sentence stays true.
+- The earlier notes still stand: `src/features/service-resources.ts`'s `createPositiveReader`
+  passes no `onFailure`, and the failure log's once-a-second limit logs only the first failed
+  upload's ID in one sweep.
+
+**For the next unit.** PF12 next. Run v4 from a copy of `field-projects/youtube/v4/app` outside
+the checkout; it builds and passes its 19 offline tests, and its `compose.yaml` is v3's app's,
+byte for byte.

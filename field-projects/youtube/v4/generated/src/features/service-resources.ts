@@ -1,0 +1,133 @@
+import { selections } from "./application-bindings.ts";
+import { localLogins } from "./local-bindings.ts";
+
+import { createPostgres } from "../runtime/postgres.ts";
+
+
+import { createObjects } from "../runtime/objects.ts";
+
+
+import {
+	createConsumer,
+	createPublisher,
+	type ConsumerHooks,
+	type MessageHandler,
+} from "../runtime/amqp.ts";
+
+import type { ProcessScope } from "../runtime/process.ts";
+
+import { createPositiveReader, type PositiveReadAdapter, type PositiveCache } from "../runtime/positive-cache.ts";
+
+export type ServiceBinding = {
+	id: string;
+	kind: string;
+	host: string;
+	identity?: string;
+	inputs: Record<string, string | number>;
+	resources: Record<string, string>;
+};
+export function selected(kind: string, id?: string): ServiceBinding {
+	const rows = selections.filter(
+		(s) => s.kind === kind && (!id || s.id === id),
+	);
+	if (rows.length !== 1) throw Error("Expected one selected responsibility");
+	return rows[0]!;
+}
+export function input(s: ServiceBinding, key: string): number {
+	const value = s.inputs[key];
+	if (typeof value !== "number") throw Error(`Missing consumed setting ${key}`);
+	return value;
+}
+export function resource(s: ServiceBinding, field: string): string {
+	const id = s.resources[field];
+	if (!id) throw Error(`Missing selected resource ${field}`);
+	return id;
+}
+
+export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
+	const login = localLogins.find(
+		(l) => l.resource === resource(s, field) && l.host === s.host,
+	);
+	if (!login) throw Error("Missing contributed login");
+	const client = createPostgres({
+		hostname: "local-postgres",
+		port: 5432,
+		login,
+		poolSize: input(s, `${field}.poolSize`),
+		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),
+		connectionTimeoutMs: 2000,
+	});
+	scope.own(() => client.end());
+	return client;
+}
+
+
+export const broker = {
+	hostname: "local-broker",
+	port: 5672,
+	username: "runtime",
+	passwordSecret: "broker-password",
+	heartbeatSeconds: 10,
+	confirmTimeoutMs: 5000,
+};
+export function publisher(
+	s: ServiceBinding,
+	field: string,
+	scope: ProcessScope,
+) {
+	const id = resource(s, field),
+		work = s.inputs[`${field}.mode`] === "work-queue";
+	return createPublisher(
+		broker,
+		{ exchange: work ? "" : id, routingKey: work ? id : "" },
+		{ onFatal: scope.fail },
+	);
+}
+export function consumer(
+	s: ServiceBinding,
+	field: string,
+	handle: MessageHandler,
+	hooks: ConsumerHooks = {},
+) {
+	const id = resource(s, field),
+		work = s.inputs[`${field}.mode`] === "work-queue";
+	const queue = work ? id : `${id}--${s.host}`;
+	return createConsumer(broker, {
+		queue,
+		failedQueue: `${queue}.failed`,
+		concurrency: input(s, "host.concurrency"),
+		retryLimit: input(s, `${field}.retryLimit`),
+		handle,
+		...hooks,
+	});
+}
+
+
+export function objects(
+	s: ServiceBinding,
+	endpoint = "http://local-objects:3900",
+) {
+	return createObjects({
+		endpoint,
+		region: "garage",
+		credentialSecret: `s3-${s.host}`,
+	});
+}
+
+
+export function httpSettings(s: ServiceBinding) {
+	return {
+		requestTimeoutMs: input(s, "host.requestTimeoutMs"),
+		concurrencyLimit: input(s, "host.concurrencyLimit"),
+	};
+}
+
+/** Product completion supplies the record codec, eligibility and authoritative loader. */
+export function positiveReader<I, R>(
+  s: ServiceBinding,
+  adapter: PositiveReadAdapter<I, R>,
+  cache?: PositiveCache,
+) {
+  return createPositiveReader({ adapter, cache, ttlSeconds: input(s, "cache.ttlSeconds") });
+}
+
