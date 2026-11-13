@@ -1,7 +1,8 @@
 /**
- * Provider keys and the provider and model per role. Keys come from the environment or
- * `~/.jeeves/config.json` (saved there from Settings) and never leave this process: the API reports
- * only whether a key is set and where from. The choice per role is stored in the same file.
+ * Provider keys, the custom endpoint, and the provider and model per role. Keys come from the
+ * environment or `~/.jeeves/config.json` (saved there from Settings) and never leave this process:
+ * the API reports only whether a key is set and where from. The custom endpoint (a name, a base URL
+ * and a key) and the choice per role are stored in the same file.
  */
 
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -30,6 +31,14 @@ const savedKeySchema = z.looseObject({ apiKey: z.string().optional() }).optional
 const configFileSchema = z.looseObject({
   openai: savedKeySchema,
   anthropic: savedKeySchema,
+  /** The custom endpoint; it is set up only when all three are there. */
+  custom: z
+    .looseObject({
+      name: z.string().optional(),
+      baseUrl: z.string().optional(),
+      apiKey: z.string().optional(),
+    })
+    .optional(),
   /** Roles that no longer exist (planner, coding) are ignored and dropped on the next save. */
   roles: z.looseObject({ designChat: roleModelSchema.optional() }).optional(),
   /** Older files: a model name per role, always on the role's default provider. */
@@ -39,6 +48,38 @@ type ConfigFile = z.infer<typeof configFileSchema>;
 
 export const rolesPatchSchema = z.partialRecord(roleEnum, roleModelSchema);
 export type RolesPatch = z.infer<typeof rolesPatchSchema>;
+
+/** A loopback host, where plain `http://` is allowed: the request never leaves this computer. */
+const LOOPBACK_HOST = /^(localhost|127(\.\d{1,3}){3}|\[::1\])$/i;
+
+/**
+ * Why a custom endpoint's base URL can't be saved, or `undefined` when it can: it must be
+ * `https://`, or `http://` on a loopback host, with no key or query in it.
+ */
+export function baseUrlProblem(value: string): string | undefined {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return "Enter the base URL, such as https://api.example.com/v1.";
+  }
+  if (url.username || url.password) return "Put the key in the key field, not in the base URL.";
+  if (url.search || url.hash) return "The base URL takes no query or fragment.";
+  if (url.protocol === "https:") return undefined;
+  if (url.protocol === "http:" && LOOPBACK_HOST.test(url.hostname)) return undefined;
+  return "The base URL must start with https://, or http:// for a host on this computer (localhost, 127.0.0.1 or [::1]).";
+}
+
+/**
+ * The custom endpoint as Settings saves it. The key is 8 to 400 characters, as other keys are;
+ * `setCustomEndpoint` also checks the base URL (`baseUrlProblem`).
+ */
+export const customEndpointSchema = z.strictObject({
+  name: z.string().trim().min(1).max(40),
+  baseUrl: z.string().trim().min(1).max(400),
+  apiKey: z.string().trim().min(8).max(400),
+});
+export type CustomEndpoint = z.infer<typeof customEndpointSchema>;
 
 export type KeySource = "env" | "file";
 
@@ -70,7 +111,7 @@ export type ProviderStatus = Pick<
   status: string;
   /**
    * How to set it up, when it isn't ready and its card can't do it. None today: OpenAI's and
-   * Anthropic's cards take a key, and Codex's signs in.
+   * Anthropic's cards take a key, Codex's signs in, and the custom endpoint's takes all three.
    */
   help: string | null;
   /** Where its API key comes from; `null` without one, or for a provider that takes none. */
@@ -80,6 +121,8 @@ export type ProviderStatus = Pick<
 export type SettingsView = {
   configPath: string;
   providers: ProviderStatus[];
+  /** The custom endpoint's name and base URL (never its key), or `null` when it isn't set up. */
+  custom: { name: string; baseUrl: string } | null;
   roles: Record<ModelRole, RoleModel>;
   /** Set when the server replays a scripted fake model instead of calling a provider. */
   fakeModel: boolean;
@@ -126,6 +169,38 @@ export class Settings {
     const { apiKey: _removed, ...kept } = saved;
     const { [id]: _section, ...others } = config;
     this.write(Object.keys(kept).length > 0 ? { ...others, [id]: kept } : others);
+  }
+
+  /** The custom endpoint, when its name, base URL and key are all saved. */
+  customEndpoint(): CustomEndpoint | undefined {
+    const saved = this.read().custom;
+    const name = saved?.name?.trim();
+    const baseUrl = saved?.baseUrl?.trim();
+    const apiKey = saved?.apiKey?.trim();
+    return name && baseUrl && apiKey ? { name, baseUrl, apiKey } : undefined;
+  }
+
+  /**
+   * Saves the custom endpoint's name, base URL and key together, keeping the rest of the file.
+   * Throws `SettingsError` for a base URL it can't take; nothing is saved then.
+   */
+  setCustomEndpoint(endpoint: CustomEndpoint): void {
+    const { name, baseUrl, apiKey } = customEndpointSchema.parse(endpoint);
+    const problem = baseUrlProblem(baseUrl);
+    if (problem) throw new SettingsError(problem);
+    const config = this.read();
+    this.write({ ...config, custom: { ...config.custom, name, baseUrl, apiKey } });
+  }
+
+  /** Removes the custom endpoint's name, base URL and key, keeping everything else in the file. */
+  removeCustomEndpoint(): void {
+    const config = this.read();
+    const saved = config.custom;
+    if (!saved) return;
+    const { name: _name, baseUrl: _baseUrl, apiKey: _apiKey, ...kept } = saved;
+    if (Object.keys(kept).length === Object.keys(saved).length) return;
+    const { custom: _section, ...others } = config;
+    this.write(Object.keys(kept).length > 0 ? { ...others, custom: kept } : others);
   }
 
   private key(id: KeyProviderId): { key: string; source: KeySource } | undefined {
@@ -177,6 +252,13 @@ export class Settings {
         keySource: key?.source ?? null,
       };
     }
+    if (id === "custom") {
+      // The card's fields are the setup.
+      const endpoint = this.customEndpoint();
+      return endpoint
+        ? { ready: true, status: `${endpoint.name} · key saved`, help: null, keySource: "file" }
+        : { ready: false, status: "Not set up", help: null, keySource: null };
+    }
     // Codex's card signs in itself (Sign in with ChatGPT runs `codex login`), so no help line.
     return this.codexLoggedIn()
       ? { ready: true, status: "Logged in", help: null, keySource: null }
@@ -195,9 +277,15 @@ export class Settings {
         defaultModelAllowed: p.defaultModelAllowed,
         ...this.providerStatus(p.id),
       })),
+      custom: this.customView(),
       roles: this.roles(),
       fakeModel: this.fakeModel,
     };
+  }
+
+  private customView(): SettingsView["custom"] {
+    const endpoint = this.customEndpoint();
+    return endpoint ? { name: endpoint.name, baseUrl: endpoint.baseUrl } : null;
   }
 
   private read(): ConfigFile {

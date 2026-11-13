@@ -191,8 +191,9 @@ Responses API with `OPENAI_API_KEY`; suggested `gpt-5.4-mini`, `gpt-5.4`, `gpt-5
 `gpt-6.1-sol`, any name accepted), `codex` (the Codex CLI's own login; suggested `gpt-6-astra`,
 `gpt-6.1-sol`, `gpt-5.5`, `gpt-5.3-codex`, an empty name for its default) and, since V3-19,
 `anthropic` (the Messages API with `ANTHROPIC_API_KEY` from the environment only; suggested
-`claude-haiku-5-5`, `claude-sonnet-5-5`, `claude-opus-5-5`). One provider per command, since the
-API needs the key set and Codex needs it unset:
+`claude-haiku-5-5`, `claude-sonnet-5-5`, `claude-opus-5-5`). The catalog's `custom` endpoint is
+refused before any request: its key is only in the config file, which the runner never reads. One
+provider per command, since the API needs the key set and Codex needs it unset:
 
 ```sh
 env -u OPENAI_API_KEY -u CODEX_API_KEY pnpm eval:chat --suite=design --live --allow-paid-api \

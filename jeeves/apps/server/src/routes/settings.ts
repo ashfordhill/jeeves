@@ -3,6 +3,7 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import type { CodexLogin } from "../codex-login.ts";
 import {
+  customEndpointSchema,
   isKeyProvider,
   type KeyProviderId,
   rolesPatchSchema,
@@ -20,15 +21,19 @@ function keyProvider(id: string): { id: KeyProviderId } | Refusal {
   const info = providerInfo(id);
   if (!info) return { status: 404, code: "NOT_FOUND", message: `Provider "${id}" not found.` };
   if (!isKeyProvider(info.id)) {
-    return { status: 422, code: "KEY_NOT_SUPPORTED", message: `${info.name} doesn't take a key.` };
+    const message =
+      info.auth.type === "endpoint"
+        ? `${info.name}'s key is saved with its name and base URL.`
+        : `${info.name} doesn't take a key.`;
+    return { status: 422, code: "KEY_NOT_SUPPORTED", message };
   }
   return { id: info.id };
 }
 
 /**
- * Provider status (never the keys), a provider's saved key, Codex's sign-in, and the provider and
- * model per role. A key goes in and never comes back out: every answer is `settings.view()`, or a
- * Codex login's state.
+ * Provider status (never the keys), a provider's saved key, the custom endpoint, Codex's sign-in,
+ * and the provider and model per role. A key goes in and never comes back out: every answer is
+ * `settings.view()`, or a Codex login's state.
  */
 export const settingsRoutes: FastifyPluginAsyncZod<{
   settings: Settings;
@@ -61,6 +66,24 @@ export const settingsRoutes: FastifyPluginAsyncZod<{
       return settings.view();
     },
   );
+
+  // The custom endpoint: a name, a base URL (https://, or http:// on a loopback host) and a key.
+  app.put("/settings/custom", { schema: { body: customEndpointSchema } }, async (req, reply) => {
+    try {
+      settings.setCustomEndpoint(req.body);
+    } catch (err) {
+      if (err instanceof SettingsError) {
+        return reply.code(422).send({ code: "INVALID_ENDPOINT", message: err.message });
+      }
+      throw err;
+    }
+    return settings.view();
+  });
+
+  app.delete("/settings/custom", async () => {
+    settings.removeCustomEndpoint();
+    return settings.view();
+  });
 
   // Sign in with ChatGPT: `codex login`, whose sign-in page the person finishes in a browser.
   app.post("/settings/codex/login", async () => codexLogin.start());

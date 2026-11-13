@@ -1,9 +1,17 @@
 /**
- * Settings: connections first, one card per provider (its status, then a key field, or Codex's
- * sign-in), then the design chat's model. A saved key is never shown again: the field is emptied
- * after a save and never refilled, and the API never answers with a key.
+ * Settings: connections first, one card per provider (its status, then a key field, Codex's
+ * sign-in, or the custom endpoint's name, base URL and key), then the design chat's model. A saved
+ * key is never shown again: the field is emptied after a save and never refilled, and the API never
+ * answers with a key.
  */
-import { Autocomplete, Button, Loader, NativeSelect, PasswordInput } from "@mantine/core";
+import {
+  Autocomplete,
+  Button,
+  Loader,
+  NativeSelect,
+  PasswordInput,
+  TextInput,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
 import {
   api,
@@ -174,6 +182,181 @@ function KeyField({
   );
 }
 
+/** The longest name the server keeps for the custom endpoint. */
+const ENDPOINT_NAME_MAX = 40;
+
+/**
+ * The custom endpoint: with none saved, its name, base URL and key, and **Save**; once saved, the
+ * name and base URL, the key as dots, **Replace** (the three fields again, the key empty, with
+ * **Cancel**) and **Remove**. The server checks the base URL and says why it can't take one.
+ */
+function EndpointField({
+  provider,
+  endpoint,
+  onSettings,
+}: {
+  provider: ProviderStatus;
+  endpoint: Settings["custom"];
+  onSettings: (next: Settings) => void;
+}) {
+  const [name, setName] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [key, setKey] = useState("");
+  const [replacing, setReplacing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const run = async (call: () => Promise<Settings>, done?: () => void) => {
+    setBusy(true);
+    setError(undefined);
+    try {
+      const next = await call();
+      done?.();
+      onSettings(next);
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const alert = error ? (
+    <span className="settings-error" role="alert">
+      {error}
+    </span>
+  ) : null;
+
+  if (endpoint && !replacing) {
+    return (
+      <div className="settings-endpoint">
+        <div className="settings-key">
+          <span className="settings-key-saved settings-endpoint-name" title={endpoint.name}>
+            <span className="settings-endpoint-value">{endpoint.name}</span>
+          </span>
+          <span className="settings-key-saved settings-endpoint-url" title={endpoint.baseUrl}>
+            <span className="settings-endpoint-value">{endpoint.baseUrl}</span>
+          </span>
+        </div>
+        <div className="settings-key">
+          <span className="settings-key-saved">
+            <span className="settings-key-dots" aria-hidden="true">
+              ••••••••••••••••
+            </span>
+            Saved
+          </span>
+          <button
+            type="button"
+            className="settings-button"
+            aria-label={`Replace ${provider.name}`}
+            onClick={() => {
+              setName(endpoint.name);
+              setBaseUrl(endpoint.baseUrl);
+              setKey("");
+              setError(undefined);
+              setReplacing(true);
+            }}
+          >
+            Replace
+          </button>
+          <button
+            type="button"
+            className="settings-button"
+            data-tone="danger"
+            aria-label={`Remove ${provider.name}`}
+            disabled={busy}
+            onClick={() =>
+              void run(
+                () => api.removeCustomEndpoint(),
+                () => {
+                  setName("");
+                  setBaseUrl("");
+                },
+              )
+            }
+          >
+            Remove
+          </button>
+          {alert}
+        </div>
+      </div>
+    );
+  }
+
+  const input = { name: name.trim(), baseUrl: baseUrl.trim(), apiKey: key.trim() };
+  return (
+    <form
+      className="settings-endpoint"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!input.name || !input.baseUrl || !input.apiKey) {
+          setError("Enter a name, a base URL and a key.");
+          return;
+        }
+        if (input.apiKey.length < KEY_LENGTH.min || input.apiKey.length > KEY_LENGTH.max) {
+          setError(`A key is ${KEY_LENGTH.min} to ${KEY_LENGTH.max} characters.`);
+          return;
+        }
+        void run(
+          () => api.setCustomEndpoint(input),
+          () => {
+            setKey("");
+            setReplacing(false);
+          },
+        );
+      }}
+    >
+      <div className="settings-key">
+        <TextInput
+          className="settings-key-input settings-endpoint-name"
+          aria-label="Endpoint name"
+          placeholder="Name, such as DeepSeek"
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={ENDPOINT_NAME_MAX}
+          value={name}
+          onChange={(event) => setName(event.currentTarget.value)}
+        />
+        <TextInput
+          className="settings-key-input settings-endpoint-url"
+          aria-label="Base URL"
+          placeholder="https://api.example.com/v1"
+          autoComplete="off"
+          spellCheck={false}
+          value={baseUrl}
+          onChange={(event) => setBaseUrl(event.currentTarget.value)}
+        />
+      </div>
+      <div className="settings-key">
+        <PasswordInput
+          className="settings-key-input"
+          aria-label={`${provider.name} key`}
+          placeholder="Paste a key"
+          autoComplete="off"
+          spellCheck={false}
+          value={key}
+          onChange={(event) => setKey(event.currentTarget.value)}
+        />
+        <button type="submit" className="settings-button" data-tone="primary" disabled={busy}>
+          Save
+        </button>
+        {replacing ? (
+          <button
+            type="button"
+            className="settings-button"
+            onClick={() => {
+              setKey("");
+              setError(undefined);
+              setReplacing(false);
+            }}
+          >
+            Cancel
+          </button>
+        ) : null}
+        {alert}
+      </div>
+    </form>
+  );
+}
+
 /** How often a card waiting for a browser sign-in asks whether it has finished. */
 const SIGN_IN_POLL_MS = 2000;
 
@@ -302,12 +485,17 @@ function CodexSignIn({
   );
 }
 
-/** One provider: its name and status pill, one line of help, then its key field or sign-in. */
+/**
+ * One provider: its name and status pill, one line of help, then its key field, sign-in or
+ * endpoint fields.
+ */
 function ProviderCard({
   provider,
+  endpoint,
   onSettings,
 }: {
   provider: ProviderStatus;
+  endpoint: Settings["custom"];
   onSettings: (next: Settings) => void;
 }) {
   const { auth } = provider;
@@ -326,6 +514,8 @@ function ProviderCard({
       </p>
       {auth.type === "api-key" ? (
         <KeyField provider={provider} auth={auth} onSettings={onSettings} />
+      ) : auth.type === "endpoint" ? (
+        <EndpointField provider={provider} endpoint={endpoint} onSettings={onSettings} />
       ) : (
         <CodexSignIn provider={provider} command={auth.command} onSettings={onSettings} />
       )}
@@ -452,7 +642,12 @@ export function SettingsView() {
         ) : null}
         <ul className="settings-providers">
           {settings.providers.map((p) => (
-            <ProviderCard key={p.id} provider={p} onSettings={setSettings} />
+            <ProviderCard
+              key={p.id}
+              provider={p}
+              endpoint={settings.custom}
+              onSettings={setSettings}
+            />
           ))}
         </ul>
         <p className="settings-help">

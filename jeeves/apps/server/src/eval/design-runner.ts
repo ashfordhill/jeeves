@@ -198,6 +198,9 @@ export function liveProvider(choice: RoleModel): ModelProvider {
     if (!apiKey) throw new Error("ANTHROPIC_API_KEY is absent; no requests sent");
     return createAnthropicProvider({ apiKey, maxRetries: liveRetries.anthropic ?? 2 });
   }
+  // Its key lives only in the config file, which the runner never reads.
+  if (choice.provider === "custom")
+    throw new Error("The eval runner doesn't run the custom endpoint; no requests sent");
   if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY)
     throw new Error("Run Codex with OPENAI_API_KEY and CODEX_API_KEY unset in this subprocess");
   return createCodexModelProvider(

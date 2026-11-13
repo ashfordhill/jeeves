@@ -75,11 +75,13 @@ export type ChatEvent =
 
 export type ModelRole = "designChat";
 
-export type ProviderId = "openai" | "codex" | "anthropic";
+export type ProviderId = "openai" | "codex" | "anthropic" | "custom";
 
 export type ProviderAuth =
   | { type: "api-key"; envVar: string; configKey: string }
-  | { type: "cli-login"; command: string };
+  | { type: "cli-login"; command: string }
+  /** The custom endpoint: a name, a base URL and a key, saved together. */
+  | { type: "endpoint" };
 
 export type ProviderStatus = {
   id: ProviderId;
@@ -109,9 +111,14 @@ export type CodexLoginState =
   /** `message` is the login's last output line. */
   | { state: "failed"; message: string };
 
+/** What Settings saves for the custom endpoint. The key goes in and never comes back. */
+export type CustomEndpointInput = { name: string; baseUrl: string; apiKey: string };
+
 export type SettingsView = {
   configPath: string;
   providers: ProviderStatus[];
+  /** The custom endpoint's name and base URL, or `null` when it isn't set up. */
+  custom: { name: string; baseUrl: string } | null;
   roles: Record<ModelRole, RoleModel>;
   fakeModel: boolean;
 };
@@ -222,6 +229,12 @@ export const api = {
 
   removeKey: (id: ProviderId) =>
     request<SettingsView>(`/settings/providers/${id}/key`, { method: "DELETE" }),
+
+  /** Saves or replaces the custom endpoint (all three at once). The answer never holds the key. */
+  setCustomEndpoint: (endpoint: CustomEndpointInput) =>
+    request<SettingsView>("/settings/custom", { method: "PUT", body: JSON.stringify(endpoint) }),
+
+  removeCustomEndpoint: () => request<SettingsView>("/settings/custom", { method: "DELETE" }),
 
   /** Starts `codex login` on the server (or answers with the one running). */
   codexSignIn: () => request<CodexLoginState>("/settings/codex/login", { method: "POST" }),

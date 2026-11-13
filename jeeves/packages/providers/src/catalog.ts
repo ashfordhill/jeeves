@@ -4,7 +4,7 @@
  */
 import type { ModelRole } from "./types.ts";
 
-export type ProviderId = "openai" | "codex" | "anthropic";
+export type ProviderId = "openai" | "codex" | "anthropic" | "custom";
 
 export type ProviderAuth =
   /**
@@ -13,7 +13,12 @@ export type ProviderAuth =
    */
   | { type: "api-key"; envVar: string; configKey: string }
   /** The provider's own CLI login, e.g. `codex login`. Jeeves never sees the credentials. */
-  | { type: "cli-login"; command: string };
+  | { type: "cli-login"; command: string }
+  /**
+   * An OpenAI-compatible host: a name, a base URL and a key, saved together in
+   * `~/.jeeves/config.json` (`custom`) from Settings.
+   */
+  | { type: "endpoint" };
 
 export type ProviderInfo = {
   id: ProviderId;
@@ -50,6 +55,14 @@ export const providerCatalog: readonly ProviderInfo[] = [
     description: "Claude on Anthropic's Messages API, billed to your Anthropic API key.",
     auth: { type: "api-key", envVar: "ANTHROPIC_API_KEY", configKey: "anthropic" },
     suggestedModels: ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"],
+    defaultModelAllowed: false,
+  },
+  {
+    id: "custom",
+    name: "Custom endpoint",
+    description: "Any OpenAI-compatible host, billed to that host's key.",
+    auth: { type: "endpoint" },
+    suggestedModels: [],
     defaultModelAllowed: false,
   },
 ];

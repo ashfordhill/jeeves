@@ -124,7 +124,8 @@
   font-size: 13px;
 }
 
-.settings-key-input .mantine-PasswordInput-innerInput::placeholder {
+.settings-key-input .mantine-PasswordInput-innerInput::placeholder,
+.settings-key-input .mantine-TextInput-input::placeholder {
   color: var(--ink-soft);
 }
 
@@ -147,6 +148,30 @@
 .settings-key-dots {
   color: var(--ink);
   letter-spacing: 0.04em;
+}
+
+/* The custom endpoint: its name and base URL on one row, then the key's row. */
+.settings-endpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.settings-endpoint-name {
+  flex: 0 1 34%;
+  min-width: 0;
+}
+
+.settings-endpoint-url {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.settings-endpoint-value {
+  overflow: hidden;
+  color: var(--ink);
+  text-overflow: ellipsis;
 }
 
 .settings-key-env {

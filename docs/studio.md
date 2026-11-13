@@ -847,8 +847,8 @@ sent with each message, so "Add a cache after the selected service" works; the u
 and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
 SVG). Token counts and provider-reported cost appear only when complete. The model and provider
-are chosen in **Settings**: OpenAI's API, Codex's own login, or (V3-19) Anthropic's API. Chat and
-the inspector collapse and resize independently.
+are chosen in **Settings**: OpenAI's API, Codex's own login, (V3-19) Anthropic's API, or a custom
+OpenAI-compatible endpoint. Chat and the inspector collapse and resize independently.
 
 **Settings.** Connections is one card per provider: its name, a status pill (green when it can be
 used, red when not) and one line about it. OpenAI's and Anthropic's cards take an API key: paste
@@ -864,8 +864,16 @@ until Codex is signed in. If the login fails, or no one finishes it within 10 mi
 shows Codex's last line and "or run `codex login` in a terminal". Signed in, the card reads
 **Logged in** and offers **Sign out** (`codex logout`). The server runs the Codex executable named
 by `JEEVES_CODEX_PATH`, else `codex` from the PATH, and never reads Codex's credentials: it only
-checks that Codex's login file exists (`$CODEX_HOME/auth.json`, else `~/.codex/auth.json`). Below
-Connections, the Models card picks the design chat's provider and model.
+checks that Codex's login file exists (`$CODEX_HOME/auth.json`, else `~/.codex/auth.json`). The
+**Custom endpoint** card connects any host that speaks OpenAI's Chat Completions API: type a name,
+the base URL (requests go to `<base URL>/chat/completions`) and a key, then click **Save**. The base
+URL must start with `https://`, or `http://` for a host on this computer (`localhost`, `127.0.0.1`
+or `[::1]`), and holds no key or query; the server says why it refuses one. Saved, the pill reads
+**`<name>` · key saved** and the card shows the name, the base URL and the key as dots, with
+**Replace** (the three fields again, the key empty, with **Cancel**) and **Remove**. The three are
+saved together in `~/.jeeves/config.json` (`custom`); with none saved the pill reads **Not set up**.
+Below Connections, the Models card picks the design chat's provider and model; the custom endpoint
+has no model list, so type its model name.
 
 OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,
 defaults and explicit owner clearing. Codex constrains the outer answer only: its inner argument
@@ -873,7 +881,10 @@ JSON strings still need server validation. Its preamble tells the model the Jeev
 through `toolCalls` and are always available that way (V3-19: a smaller model sometimes looked
 for them in Codex's own tool list and told the person it couldn't make changes). Anthropic gets
 the canonical schemas as they are, with adaptive thinking at medium effort and prompt caching;
-nothing constrains its arguments either.
+nothing constrains its arguments either. The custom endpoint goes through the Vercel AI SDK's
+OpenAI-compatible provider: the canonical schemas as they are, text streamed, no images, and the
+SDK never runs a tool. Reasoning text a host returns is not kept, so a host that needs it sent back
+with tool results doesn't work yet.
 Every provider uses the same canonical commands and validators. See [tool argument schemas](chat-tool-schemas.md) for the audited subset and limits;
 strict arguments alone establish no architecture or runtime guarantee.
 

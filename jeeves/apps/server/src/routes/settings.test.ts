@@ -42,7 +42,9 @@ describe("settings", () => {
       ["openai", false, "No key"],
       ["codex", false, "Not logged in"],
       ["anthropic", false, "No key"],
+      ["custom", false, "Not set up"],
     ]);
+    expect(initial.custom).toBeNull();
 
     const res = await app.inject({
       method: "PUT",
@@ -319,6 +321,160 @@ describe("provider keys", () => {
     expect(res.statusCode).toBe(500);
     expect(res.body).toContain("is not valid JSON");
     for (const text of [res.body, ...lines]) expect(text).not.toContain(FAKE_KEY);
+  });
+});
+
+// A made-up host: nothing here sends a request to it.
+const ENDPOINT = {
+  name: "Example host",
+  baseUrl: "https://llm.example.invalid/v1",
+  apiKey: FAKE_KEY,
+};
+
+describe("custom endpoint", () => {
+  it("saves, replaces and removes the endpoint, and never shows its key", async () => {
+    const { app, file, lines } = loggedApp();
+    writeFileSync(file, JSON.stringify({ extra: 1, openai: { apiKey: OTHER_KEY } }), {
+      mode: 0o644,
+    });
+    chmodSync(file, 0o644);
+    const bodies: string[] = [];
+    const send = async (method: "PUT" | "DELETE", payload?: Record<string, string>) => {
+      const res = await app.inject({
+        method,
+        url: "/settings/custom",
+        ...(payload && { payload }),
+      });
+      bodies.push(res.body);
+      expect(res.statusCode, res.body).toBe(200);
+      return res.json();
+    };
+
+    // Save: trimmed, mode 0600, the rest of the file kept.
+    const saved = await send("PUT", {
+      name: " Example host ",
+      baseUrl: " https://llm.example.invalid/v1 ",
+      apiKey: ` ${FAKE_KEY} `,
+    });
+    expect(row(saved, "custom")).toEqual({
+      ready: true,
+      status: "Example host · key saved",
+      keySource: "file",
+    });
+    expect(saved.custom).toEqual({
+      name: "Example host",
+      baseUrl: "https://llm.example.invalid/v1",
+    });
+    expect(statSync(file).mode & 0o777).toBe(0o600);
+    expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({
+      extra: 1,
+      openai: { apiKey: OTHER_KEY },
+      custom: ENDPOINT,
+    });
+    expect(new Settings(dirname(file), {}).customEndpoint()).toEqual(ENDPOINT);
+
+    // Replace: all three at once.
+    const replaced = await send("PUT", {
+      name: "Local model",
+      baseUrl: "http://localhost:11434/v1",
+      apiKey: "sk-test-not-a-real-key-2222",
+    });
+    expect(row(replaced, "custom").status).toBe("Local model · key saved");
+    expect(JSON.parse(readFileSync(file, "utf8")).custom).toEqual({
+      name: "Local model",
+      baseUrl: "http://localhost:11434/v1",
+      apiKey: "sk-test-not-a-real-key-2222",
+    });
+
+    // Remove: only the endpoint goes; removing it again changes nothing.
+    const removed = await send("DELETE");
+    expect(row(removed, "custom")).toEqual({ ready: false, status: "Not set up", keySource: null });
+    expect(removed.custom).toBeNull();
+    expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({
+      extra: 1,
+      openai: { apiKey: OTHER_KEY },
+    });
+    await send("DELETE");
+    expect(statSync(file).mode & 0o777).toBe(0o600);
+
+    // No answer and no log line holds a key.
+    bodies.push((await app.inject({ method: "GET", url: "/settings" })).body);
+    expect(lines.length).toBeGreaterThan(0);
+    for (const text of [...bodies, ...lines]) {
+      for (const key of [FAKE_KEY, OTHER_KEY, "sk-test-not-a-real-key-2222"]) {
+        expect(text).not.toContain(key);
+      }
+    }
+  });
+
+  it("takes https://, or http:// only on a loopback host", async () => {
+    const { app, file, lines } = loggedApp();
+    const put = async (baseUrl: string) =>
+      app.inject({ method: "PUT", url: "/settings/custom", payload: { ...ENDPOINT, baseUrl } });
+    for (const baseUrl of [
+      "https://llm.example.invalid/v1",
+      "https://llm.example.invalid:8443",
+      "http://localhost:11434/v1",
+      "http://127.0.0.1:8080/v1",
+      "http://[::1]:1234/v1",
+    ]) {
+      const res = await put(baseUrl);
+      expect(res.statusCode, baseUrl).toBe(200);
+      expect(res.json().custom.baseUrl).toBe(baseUrl);
+    }
+    for (const [baseUrl, message] of [
+      ["http://llm.example.invalid/v1", "must start with https://"],
+      ["http://10.0.0.5:8080/v1", "must start with https://"],
+      ["ftp://llm.example.invalid/v1", "must start with https://"],
+      ["llm.example.invalid/v1", "Enter the base URL"],
+      ["https://user:secret@llm.example.invalid/v1", "not in the base URL"],
+      ["https://llm.example.invalid/v1?key=secret", "no query or fragment"],
+    ] as const) {
+      const res = await put(baseUrl);
+      expect(res.statusCode, baseUrl).toBe(422);
+      expect(res.json().code).toBe("INVALID_ENDPOINT");
+      expect(res.json().message, baseUrl).toContain(message);
+      expect(res.body).not.toContain(FAKE_KEY);
+    }
+    // The last good one is still saved.
+    expect(JSON.parse(readFileSync(file, "utf8")).custom.baseUrl).toBe("http://[::1]:1234/v1");
+
+    // All three are needed: a name, a base URL, and a key of 8 to 400 characters.
+    for (const payload of [
+      { ...ENDPOINT, name: "  " },
+      { ...ENDPOINT, baseUrl: " " },
+      { ...ENDPOINT, apiKey: "sk-test" },
+      { ...ENDPOINT, apiKey: `sk-${"x".repeat(398)}` },
+      { name: ENDPOINT.name, baseUrl: ENDPOINT.baseUrl },
+    ]) {
+      const res = await app.inject({ method: "PUT", url: "/settings/custom", payload });
+      expect(res.statusCode, JSON.stringify(payload)).toBe(400);
+    }
+    // The custom endpoint's key goes with its endpoint, not through the key route.
+    const keyRoute = await app.inject({
+      method: "PUT",
+      url: "/settings/providers/custom/key",
+      payload: { key: FAKE_KEY },
+    });
+    expect(keyRoute.statusCode).toBe(422);
+    expect(keyRoute.json().code).toBe("KEY_NOT_SUPPORTED");
+    for (const line of lines) expect(line).not.toContain(FAKE_KEY);
+  });
+
+  it("gives the design chat the endpoint once it is set up", () => {
+    const settings = new Settings(home(), {});
+    settings.setRoles({ designChat: { provider: "custom", model: "example-model" } });
+    expect(providerModels(settings)("designChat")).toEqual({
+      error: "No custom endpoint is set up. Add one in Settings.",
+    });
+    settings.setCustomEndpoint(ENDPOINT);
+    const chat = providerModels(settings)("designChat");
+    expect("provider" in chat && chat.provider.id).toBe("custom");
+    expect("model" in chat && chat.model).toBe("example-model");
+    // A model name is needed: the endpoint has no default.
+    expect(() => settings.setRoles({ designChat: { provider: "custom", model: "" } })).toThrow(
+      "Enter a model name.",
+    );
   });
 });
 

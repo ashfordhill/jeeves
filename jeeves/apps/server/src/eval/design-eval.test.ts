@@ -198,4 +198,14 @@ describe("the live comparison's configuration", () => {
     }
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it("refuses the custom endpoint, whose key only Settings has", () => {
+    expect(parseModels("custom:example-model")).toEqual([
+      { provider: "custom", model: "example-model" },
+    ]);
+    expect(() => liveProvider({ provider: "custom", model: "example-model" })).toThrow(
+      "The eval runner doesn't run the custom endpoint; no requests sent",
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });

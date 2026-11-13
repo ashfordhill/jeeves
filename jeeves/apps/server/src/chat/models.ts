@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import {
   createAnthropicProvider,
   createCodexModelProvider,
+  createCompatibleProvider,
   createFakeProvider,
   createOpenAIProvider,
   providerInfo,
@@ -32,6 +33,18 @@ export function providerModels(settings: Settings, codexPath?: string): ModelSou
         const key = settings.anthropicKey()?.key;
         if (!key) return { error: "No Anthropic API key is set. Add one in Settings." };
         return { provider: createAnthropicProvider({ apiKey: key }), model };
+      }
+      case "custom": {
+        const endpoint = settings.customEndpoint();
+        if (!endpoint) return { error: "No custom endpoint is set up. Add one in Settings." };
+        return {
+          provider: createCompatibleProvider({
+            name: endpoint.name,
+            baseURL: endpoint.baseUrl,
+            apiKey: endpoint.apiKey,
+          }),
+          model,
+        };
       }
       case "codex":
         if (!settings.codexLoggedIn()) {

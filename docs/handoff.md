@@ -12608,3 +12608,116 @@ key footnote ("A key is saved to …") and failed Playwright's strict mode. It n
 `page.locator(".settings-saved")` and expects it to contain "Saved to"; the assertion is the same.
 **Checks.** `blueprint-chat` spec alone: 7 passed. No other file changed.
 **For the next unit.** UI10. The full e2e run should be 73/73 again.
+
+## 2026-11-13 — UI10: A custom endpoint
+
+**What changed.**
+- Packages: `jeeves/packages/providers` gains `ai` **7.0.158** (published 2026-10-30T15:38Z) and
+  `@ai-sdk/openai-compatible` **3.0.82** (2026-10-30T15:38Z), pinned exactly: the newest of each at
+  least 14 days old at install (2026-11-13T17:11Z; 7.0.159 came out at 22:18Z that day, 3.0.83 on
+  2026-11-02). Both use
+  `@ai-sdk/provider` 4.0.35 and `@ai-sdk/provider-utils` 5.0.72; zod is the repo's 4.5.4.
+- New `packages/providers/src/compatible.ts`: `createCompatibleProvider({ name, baseURL, apiKey,
+  fetch? })`, a stateless `ModelProvider` with ID `custom` on the SDK's `createOpenAICompatible`
+  (`includeUsage: true`) and `streamText`. Instructions are `instructions`; each user message is a
+  user message (text parts only); consecutive assistant text and tool calls are one assistant
+  message; each tool result is a tool message for its call (`toCompatibleMessages`); opaque items
+  of any provider are dropped. Tools go as `tool({ description, inputSchema: jsonSchema(...) })` with
+  no `execute`, so the SDK (one step by default) returns the calls unrun. The response gives
+  `text`, `toolCalls` (arguments as JSON; an unparseable call keeps the host's text), `items`,
+  `usage` (input, output, and cached input only when the host reports `cached_tokens`; `null`
+  without usage) and `stop`. Text streams through `onEvent`. Errors: a `RetryError` is unwrapped to
+  its last `APICallError`; 401/403 `auth`, 429 `rate-limit` (or `quota` on `insufficient_quota`),
+  5xx and no status `unavailable`, other 4xx `bad-request`, an abort "The request was cancelled.";
+  messages name the endpoint and never quote the key. Capabilities: tools, streaming, usage; no
+  image input. The SDK's default `onError` (which prints) is replaced by a no-op; errors come from
+  the stream's `error` parts.
+- `catalog.ts`: `ProviderId` gains `custom` ("Custom endpoint", "Any OpenAI-compatible host, billed
+  to that host's key.", `auth: { type: "endpoint" }`, no suggested models, no default model).
+- `apps/server/src/settings.ts`: the config file may hold `custom: { name, baseUrl, apiKey }`.
+  `customEndpoint()` (all three, or `undefined`), `setCustomEndpoint()` (throws `SettingsError` with
+  `baseUrlProblem()`'s reason) and `removeCustomEndpoint()` (only those three fields; the rest of the
+  file kept; 0600 as every write). `baseUrlProblem`: `https://`, or `http://` on `localhost`,
+  `127.x.x.x` or `[::1]`; no user or password, query or fragment. `customEndpointSchema`: name 1–40,
+  base URL 1–400, key 8–400 characters, trimmed. Status "`<name>` · key saved" (`keySource:
+  "file"`) or "Not set up". `SettingsView.custom` is `{ name, baseUrl }` or `null`, never the key.
+- `routes/settings.ts`: `PUT /settings/custom` (400 for the shape, 422 `INVALID_ENDPOINT` with the
+  URL reason) and `DELETE /settings/custom`, both answering `settings.view()`. The key route
+  refuses `custom` (422 `KEY_NOT_SUPPORTED`, "Custom endpoint's key is saved with its name and base
+  URL."). `chat/models.ts` builds the provider from the saved endpoint, else "No custom endpoint is
+  set up. Add one in Settings."
+- `eval/design-runner.ts`: `liveProvider` refuses `custom` before any request (it would otherwise
+  have fallen through to Codex).
+- Web: `project/api.ts` (`ProviderId`, `ProviderAuth`'s `endpoint`, `SettingsView.custom`,
+  `CustomEndpointInput`, `api.setCustomEndpoint`, `api.removeCustomEndpoint`).
+  `settings/SettingsView.tsx`: `EndpointField` on the custom card: Endpoint name and Base URL
+  (Mantine `TextInput`) on one row, the key (`PasswordInput`) and **Save** below; saved, the name and
+  base URL in boxes, the key as dots and "Saved", **Replace** (the fields again with the name and
+  URL kept, the key empty, and **Cancel**) and **Remove**. An empty field or a key outside 8–400
+  characters gets an error before sending; the server's URL reason shows as the alert.
+  `settings.css`: `.settings-endpoint`, `-endpoint-name`, `-endpoint-url`, `-endpoint-value`, and
+  the placeholder rule covers `TextInput`. No new colour or token.
+- Tests: new `compatible.test.ts` (8, a fake `fetch` replaying Chat Completions SSE bodies: a text
+  reply with the request's URL, bearer key, system message, tools and `stream_options`; a streamed
+  reply through `onEvent` stopping at `length`; a tool call streamed in pieces and its follow-up
+  round on the wire (assistant `tool_calls`, a `tool` message, the opaque item dropped); usage with
+  cached tokens; a 401 (not retried, key not quoted); a 429 after the SDK's two retries
+  (`retry-after-ms: 0`) and an `insufficient_quota` 429; an image refused; the message mapping).
+  `routes/settings.test.ts` (3: save, replace, remove with 0600, the file kept and no key in any
+  answer or log line; the URL rule, the field lengths and the key route's 422; the chat provider).
+  `eval/design-eval.test.ts` (1: the runner refuses `custom`).
+- Docs: `docs/studio.md` (Chat's provider list, the Custom endpoint card, the adapter paragraph),
+  `jeeves/PLAN.md` (diagram, `settings.ts`, `packages/providers`, Providers, Settings, the API
+  table), `jeeves/CATALOG.md` (a Custom endpoint row), `docs/chat-evals.md` (the runner refuses
+  `custom`).
+
+**Checks.** `pnpm check` before any change: exit 0, 109 files, 855 tests. After: exit 0, 110 files,
+867 tests (lint's one info is older; no test printed an SDK warning). `pnpm test:e2e` (native,
+without the mouse spec): 73 passed (4.7 min). `pnpm --filter @jeeves/web build`: exit 0. Mouse
+check (`ui10-check.spec.ts`, run alone, then deleted): first run failed on the spec's own locator
+(`getByText("Saved", { exact: true })` against a box whose text is the dots plus "Saved"; the
+failure screenshot showed the saved card correctly); with the locator fixed: 2 passed, 1440×900
+and 1280×800, no page error. It checked `/api/settings`'s `configPath` is a `jeeves-e2e-`
+directory, not `~/.jeeves`. Light then dark at 1440, dark then light at 1280: the pill read Not set
+up (`--off-bg`/`--off-ink`, card border `--hairline`, fields `--control`/`--control-line`, Save
+`--yellow`); a made-up name, `http://llm.example.invalid/v1` and a made-up key, typed and saved by
+mouse, were refused with "The base URL must start with https://…" in `--minus` and nothing saved;
+`https://llm.example.invalid/v1` saved: the pill read "Example host · key saved"
+(`--ok-bg`/`--ok-ink`), the card the name and base URL, the dots and Saved, Remove in `--minus`;
+the config file held all three at 0600, and neither the page's HTML nor `/api/settings` held the
+key; Replace showed the name and URL kept and the key empty, Cancel went back; Remove brought back
+Not set up, empty fields and a file without `custom`. The page sent nothing to the made-up host,
+and no model was called. No project was created; `jeeves_e2e` holds only "TinyURL · studio study"
+and "E2E Every kind". Six images in `docs/plans/ui-refresh/evidence/ui10/` (refused and saved at
+1440, Replace at 1280; light and dark) match the Custom endpoint card of
+`preview/settings-light.png` and `-dark.png`, apart from UI11's host list; the key shows only as
+dots. **A live turn needs the owner's key and go-ahead** (Settings → Custom endpoint, then pick
+Custom endpoint and type a model name in the Models card); none was tried.
+**Differences from the plan.**
+- The fake `fetch` replays hand-written Chat Completions bodies in the shape OpenAI-compatible hosts
+  stream, not bodies recorded from a live host (that would be a paid call).
+- `SettingsView` gains `custom: { name, baseUrl }`, so the saved card can show them; the key is
+  never in it.
+- The base URL rule also refuses a user or password, a query or a fragment (a key could hide there,
+  and the view returns the URL); a refused URL answers 422 `INVALID_ENDPOINT` with a plain reason
+  rather than the schema's 400, whose message Fastify prefixes with `body/baseUrl`. The name is 1 to
+  40 characters and the key 8 to 400, as the other keys.
+- The card has **Replace** and **Cancel** besides Save and Remove, as the preview's saved card and
+  UI08's key field have them.
+- The plan's step 3 adds a fourth provider, so `settings.test.ts`'s first test, which lists every
+  provider, now lists `["custom", false, "Not set up"]` too and checks `custom` is `null`.
+- `eval/design-runner.ts` was not named: with `custom` in the catalog, `--models=custom:…` would
+  otherwise have run Codex; it now stops before any request.
+- The adapter takes no `maxRetries`; the SDK's default of 2 applies, as OpenAI's adapter's default.
+**Noticed.** A host that needs its reasoning text sent back with tool results (some reasoning
+models) is a known limit: reasoning parts are not kept. The custom endpoint takes no image, so a
+chat turn with an image attachment fails with "doesn't support imageInput". The SDK sends
+`stream_options: { include_usage: true }`; a host that refuses that field would need a setting.
+`ai` brings `@ai-sdk/gateway` and `@vercel/oidc`, used only when a model is named by string (never
+here). The modes of `jeeves/scripts/e2e-docker.sh` and
+`docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged. No uncommitted changes under `jeeves-generator/` or
+`field-projects/`.
+**For the next unit.** UI11 can start: the custom card is `EndpointField` in `SettingsView.tsx`
+(Endpoint name and Base URL `TextInput`s; UI11's known hosts can fill them), the adapter is
+`createCompatibleProvider` in `packages/providers/src/compatible.ts`.
