@@ -11592,3 +11592,30 @@ outputs in `evidence/pf12/` and `evidence/pf13/`.
 **For the next unit.** The plan is done. What comes next is the owner's choice (the review's
 follow-ups 1–4); `AGENTS.md` and `jeeves/PLAN.md` still name production foundations as the
 active plan.
+
+## 2026-11-12 — Plan: UI refresh (UI01–UI14)
+
+**What changed.** Docs only. `docs/plans/ui-refresh/units.md` is the build plan for the owner's
+UI refresh: 14 units (the studies' legacy kinds, right-click menus, the top bar, tile colours, the
+icon set, the module menu and its words, inspector connections, provider keys, Sign in with
+ChatGPT, a custom endpoint, the model picker, usage chips, dark mode, a review). Its colours and
+icons are the ones the owner signed off in `preview.md`; their source is in `assets/`
+(`preview-source.html.txt`, `studio-glyphs.ts.txt`). A new entry in `docs/HUMAN_FEEDBACK.md`.
+
+**Checks.** None on this checkout: only Markdown and `.txt` files changed. UI01's source and
+unit-test edits were tried on a scratch copy at `904819e`, where `pnpm check` passed (105 files,
+820 tests); its e2e run there was cut short with two failures, which UI01 names. Every other unit
+was written from reading the code and has not been run.
+
+**Differences from the plan.** Not a unit.
+
+**Noticed.**
+
+- Another plan's uncommitted work was in the tree when this was committed (`jeeves-generator/`,
+  `field-projects/generator-system/`, the root `package.json`); none of it is staged here.
+- `AGENTS.md` and `jeeves/PLAN.md` still name production foundations as the active plan.
+- The scratch e2e run used `jeeves_e2e`; the one project it left was deleted, so the database
+  holds its two older projects again.
+
+**For the next unit.** UI01, when the owner says to run the plan. Units go in order; each is one
+fresh agent and one commit.

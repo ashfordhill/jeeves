@@ -1,0 +1,507 @@
+<title>Jeeves UI Refresh</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+/* Layout: one reading column; every mock is drawn twice, in Jeeves' own light and dark tokens,
+   whatever theme this page is viewed in. */
+:root {
+  --pg-bg: #eef6fa; --pg-fg: #0b2230; --pg-soft: #3f5d6d; --pg-card: #ffffff; --pg-line: #c3d7e1;
+  --pg-steel: #0c3349; --pg-yellow: #e8c14a; --pg-cyan: #1a8fd4;
+  --font: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --pg-bg: #0b161d; --pg-fg: #e6f2f7; --pg-soft: #9fbccb; --pg-card: #13232d; --pg-line: #2a4352;
+  --pg-steel: #5ec8e8; --pg-yellow: #e2b84a; --pg-cyan: #6bb6f2; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --pg-bg: #0b161d; --pg-fg: #e6f2f7; --pg-soft: #9fbccb; --pg-card: #13232d; --pg-line: #2a4352;
+  --pg-steel: #5ec8e8; --pg-yellow: #e2b84a; --pg-cyan: #6bb6f2; color-scheme: dark }
+
+body { background: var(--pg-bg); color: var(--pg-fg); font-family: var(--font); font-weight: 600; font-size: 15px; line-height: 1.5; }
+.page { max-width: 1120px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 44px; }
+h1 { margin: 0; font-size: 30px; font-weight: 900; letter-spacing: .01em; text-wrap: balance; }
+h2 { margin: 0; font-size: 21px; font-weight: 900; text-wrap: balance; }
+h3 { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--pg-soft); }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--pg-soft); }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.calls { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; padding: 0; margin: 0; list-style: none; }
+.calls li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 12px 14px; border: 2px solid var(--pg-line); border-radius: 12px; background: var(--pg-card); }
+.calls b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--pg-yellow); color: #071c28; font-weight: 900; }
+.calls span { min-width: 0; }
+.calls em { font-style: normal; color: var(--pg-soft); }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px; align-items: start; }
+.stack { display: grid; gap: 14px; }
+.pane { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.scroll { overflow-x: auto; border-radius: 14px; border: 2px solid var(--pg-line); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figure img { display: block; border-radius: 12px; border: 2px solid var(--pg-line); max-width: 100%; height: auto; }
+.note { font-size: 13.5px; color: var(--pg-soft); }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .88em; padding: 1px 5px; border-radius: 5px; background: color-mix(in srgb, var(--pg-fg) 9%, transparent); }
+
+/* ---------- Jeeves tokens, fixed per pane ---------- */
+.jv { font-family: var(--font); font-weight: 600; color: var(--ink); background: var(--paper); }
+.jv[data-jv="light"] {
+  --paper: #e8f4fa; --panel: #f7fcfe; --tile: #f7fcfe; --ink: #071c28; --ink-soft: #123a50; --line: #123a50;
+  --chrome: #0c3349; --chrome-well: #07202d; --chrome-line: #5ec8e8; --chrome-ink: #f3fbfe;
+  --yellow: #e8c14a; --on-yellow: #071c28; --blue: #1a8fd4; --plus: #1e8a62; --minus: #b23a30; --grid-dot: #aabec8;
+  --tile-shadow: rgba(7, 28, 40, .16); --pop-shadow: 0 8px 24px rgba(7, 28, 40, .18);
+  --cap-host: #b4d9f6; --cap-plain: #bfe8dc; --user-fill: #e3d9f8; --action-fill: #f6c945; --action-ink: #071c28;
+  --control: #ffffff; --control-line: #9db6c3; --hairline: #cfe0e8;
+  --ic-ink: #071c28; --ic-fill: #fdfeff; --user-ink: #071c28;
+  --s-api: #d7eafb; --s-worker: #fde4cf; --s-data: #fbeecb; --s-messaging: #fbdde9; --s-external: #e4ebf0; --s-generic: #d0efea; --s-client: #eadffa;
+  --row-line: #8fa5b1; --pop-line: #8fa5b1; --well: #edf6fa;
+  --ok-bg: #d3efe0; --ok-ink: #135c41; --off-bg: #f8dcd8; --off-ink: #8f2a22; --badge: #ffffff;
+  --f-api: #46a0e6; --f-worker: #f28f3d; --f-data: #f4ba36; --f-messaging: #ea6c9f; --f-external: #93a8b8; --f-generic: #37b8aa; --f-client: #9d74da;
+  --add: #3aa0e6;
+}
+.jv[data-jv="dark"] {
+  --paper: #0f1d26; --panel: #172a35; --tile: #213a48; --ink: #eaf5fa; --ink-soft: #a8c5d2; --line: #7ea8bc;
+  --chrome: #071219; --chrome-well: #03090d; --chrome-line: #3db8d9; --chrome-ink: #f3fbfe;
+  --yellow: #e6bb4a; --on-yellow: #071c28; --blue: #3d9cf0; --plus: #46b877; --minus: #ee7b6f; --grid-dot: #27414f;
+  --tile-shadow: rgba(0, 0, 0, .42); --pop-shadow: 0 10px 28px rgba(0, 0, 0, .5);
+  --cap-host: #2a6690; --cap-plain: #27695c; --user-fill: #b9a8ef; --action-fill: #e6bb4a; --action-ink: #071c28;
+  --control: #0f1d26; --control-line: #3d5d6d; --hairline: #2a4554;
+  --ic-ink: #071c28; --ic-fill: #dcebf2; --user-ink: #071c28;
+  --s-api: #1d4d73; --s-worker: #6a3b17; --s-data: #5c4812; --s-messaging: #642d49; --s-external: #3b4d59; --s-generic: #185b54; --s-client: #46357a;
+  --row-line: #4f7285; --pop-line: #4f7285; --well: #0f1d26;
+  --ok-bg: #1d5a3c; --ok-ink: #c4f2d8; --off-bg: #5d2823; --off-ink: #ffcdc6; --badge: #0f1d26;
+  --f-api: #6bb6f2; --f-worker: #f5a05e; --f-data: #f2c65e; --f-messaging: #f08db5; --f-external: #a9bccb; --f-generic: #5fd0c2; --f-client: #b99cf0;
+  --add: #3d9cf0;
+}
+[data-fam="api"] { --fam: var(--f-api); --sfam: var(--s-api) } [data-fam="worker"] { --fam: var(--f-worker); --sfam: var(--s-worker) }
+[data-fam="data"] { --fam: var(--f-data); --sfam: var(--s-data) } [data-fam="messaging"] { --fam: var(--f-messaging); --sfam: var(--s-messaging) }
+[data-fam="external"] { --fam: var(--f-external); --sfam: var(--s-external) } [data-fam="generic"] { --fam: var(--f-generic); --sfam: var(--s-generic) }
+[data-fam="client"] { --fam: var(--f-client); --sfam: var(--s-client) }
+.tag { align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--pg-soft); }
+
+/* icons: 24 grid, ink outline, one accent fill, one light fill */
+.ic { flex: none; overflow: visible; }
+.ic .i { fill: none; stroke: var(--ic-ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.ic .a { fill: var(--fam); stroke: var(--ic-ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.ic .c { fill: var(--ic-fill); stroke: var(--ic-ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.ic .af { fill: var(--fam); } .ic .cf { fill: var(--ic-fill); } .ic .ik { fill: var(--ic-ink); }
+.ic .al { fill: none; stroke: var(--fam); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.ic .b { stroke-width: 2.1; }
+.ic .so { fill: none; stroke: var(--ic-ink); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.ic .sa { fill: none; stroke: var(--fam); stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.ic .sc { fill: none; stroke: var(--ic-fill); stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.ic .ck { fill: none; stroke: var(--ic-fill); stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- canvas mock ---------- */
+.cvwrap { padding: 26px 28px 30px; background-image: radial-gradient(var(--grid-dot) 1.2px, transparent 1.3px); background-size: 16px 16px; background-color: var(--paper); min-width: 1056px; box-sizing: border-box; }
+.cv { position: relative; width: 1000px; height: 410px; }
+.cv svg.wires { position: absolute; inset: 0; overflow: visible; }
+.wires path { fill: none; stroke: var(--line); stroke-width: 2.75; stroke-linejoin: round; stroke-linecap: round; }
+.wires .dash { stroke-dasharray: 7 6; }
+.tile { position: absolute; box-sizing: border-box; border: 3px solid var(--line); border-radius: 14px; background: var(--tile); color: var(--ink); box-shadow: 0 5px 0 var(--tile-shadow); overflow: hidden; }
+.tile.pill { border-radius: 32px; }
+.tile.sel { box-shadow: 0 0 0 4px var(--blue); }
+.row3 .tile { position: relative; }
+.face { display: flex; flex-direction: column; align-items: center; height: 100%; text-align: center; }
+.face .cap { flex: 0 0 56px; width: 100%; display: flex; align-items: center; justify-content: center; background: var(--cap-plain); border-bottom: 2px solid var(--row-line); }
+.face.host .cap { background: var(--cap-host); }
+.face .nm { margin-top: 6px; padding: 0 6px; font-size: 14px; font-weight: 800; line-height: 1.2; }
+.face .kd { margin: auto 0 6px; font-size: 12px; font-weight: 700; line-height: 15px; color: color-mix(in srgb, var(--ink) 62%, var(--tile)); }
+.cont .head { height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: var(--cap-host); border-bottom: 2px solid var(--row-line); }
+.cont .head div { display: flex; flex-direction: column; min-width: 0; text-align: left; }
+.cont .head b { font-size: 15px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cont .head small { font-size: 12px; font-weight: 700; line-height: 15px; color: color-mix(in srgb, var(--ink) 72%, var(--cap-host)); }
+.cont .rows { display: grid; gap: 4px; padding: 8px 10px 0; }
+.cont .rw { height: 26px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; padding: 0 7px; border: 1.5px solid var(--row-line); border-radius: 7px; background: var(--paper); font-size: 14px; font-weight: 700; white-space: nowrap; }
+.cont .foot { height: 38px; display: flex; align-items: center; justify-content: center; }
+.plus { width: 26px; height: 26px; box-sizing: border-box; display: grid; place-items: center; border: 2px solid var(--line); border-radius: 8px; background: var(--add); color: #fff; font-size: 19px; font-weight: 900; line-height: 1; }
+.actor { display: flex; flex-direction: column; height: 100%; box-sizing: border-box; padding: 12px 8px 8px; background: var(--user-fill); }
+.actor .fig { flex: 1; display: grid; place-items: center; }
+.actor .fig svg { stroke: var(--user-ink); }
+.actor .plate { padding: 4px 6px; border: 1.5px solid var(--user-ink); border-radius: 8px; background: var(--tile); font-size: 15px; font-weight: 800; text-align: center; }
+.action { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 100%; background: var(--action-fill); color: var(--action-ink); }
+.action .badge { width: 36px; height: 36px; display: grid; place-items: center; border: 2px solid var(--action-ink); border-radius: 50%; background: #fdfeff; }
+.action .badge svg { stroke: var(--action-ink); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.action b { font-size: 22px; font-weight: 900; line-height: 1.1; }
+.row3 { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; margin-top: 30px; }
+.row3 > div { display: flex; flex-direction: column; gap: 8px; }
+.row3 .lbl { font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+.alt .action { background: var(--chrome); color: var(--chrome-ink); }
+.alt .action .badge { border-color: var(--chrome-line); background: var(--chrome-well); }
+.alt .action .badge svg { stroke: var(--chrome-ink); }
+
+/* ---------- icon sheet ---------- */
+.sheet { padding: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; border-radius: 14px; }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px 8px; border: 2px solid var(--hairline); border-radius: 12px; background: var(--tile); text-align: center; }
+.cell .sm { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 800; line-height: 1.2; }
+.cell small { font-size: 11px; font-weight: 700; color: var(--ink-soft); line-height: 1.25; }
+
+/* ---------- popovers, rails, cards ---------- */
+.stage { padding: 18px; border-radius: 14px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.pop { box-sizing: border-box; border: 2px solid var(--pop-line); border-radius: 14px; background: var(--panel); box-shadow: var(--pop-shadow); }
+.menu { width: 468px; max-width: 100%; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.menu > p { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.menu > p strong { color: var(--ink); font-weight: 900; }
+.grp { display: flex; flex-direction: column; gap: 6px; }
+.grp h4 { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.grp h4::before { content: ""; width: 9px; height: 9px; border-radius: 3px; background: var(--fam); border: 1.5px solid var(--ic-ink); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; }
+.mcard { min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 8px 10px 9px; border: 1.5px solid var(--fam); border-radius: 10px; background: var(--sfam); color: var(--ink); text-align: left; }
+.mcard .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mcard strong { font-size: 15px; font-weight: 900; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gen { flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 900; line-height: 1; color: var(--ink); }
+.gen.pill { padding: 3px 8px 3px 5px; border-radius: 999px; background: var(--badge); }
+.gdot { flex: none; width: 13px; height: 13px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--plus); background: var(--badge); }
+.gdot[data-g="lead"] { background: var(--plus); }
+.gdot[data-g="part"] { background: linear-gradient(90deg, var(--plus) 50%, var(--badge) 50%); }
+.gdot[data-g="stub"] { border-color: var(--ink-soft); }
+.legend { display: grid; gap: 4px; margin: 2px 0 0; padding: 9px 2px 0; border-top: 1.5px solid var(--hairline); list-style: none; font-size: 11.5px; line-height: 1.35; color: var(--ink-soft); }
+.legend li { display: grid; grid-template-columns: 13px minmax(0, 1fr); gap: 7px; align-items: start; }
+.legend .gdot { margin-top: 1px; }
+.legend b { color: var(--ink); font-weight: 900; }
+.mcard .ds { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; line-height: 1.3; color: color-mix(in srgb, var(--ink) 78%, var(--sfam)); }
+.mcard .ds span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rail { width: 330px; max-width: 100%; box-sizing: border-box; border: 2px solid var(--hairline); border-radius: 12px; background: var(--panel); overflow: hidden; display: flex; flex-direction: column; }
+.rail-h { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--hairline); font-size: 16px; font-weight: 900; }
+.rail-b { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+.back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 7px; border: 1.5px solid var(--control-line); border-radius: 999px; background: var(--control); color: var(--ink); font-size: 13px; font-weight: 800; }
+.ttl { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; line-height: 1.2; }
+.sub { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-top: -8px; }
+.sec { font-size: 12px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); padding-top: 10px; border-top: 1px solid var(--hairline); }
+.links { display: grid; gap: 5px; }
+.lnk { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 9px; border: 1.5px solid var(--control-line); border-radius: 9px; background: var(--control); font-size: 14px; font-weight: 800; color: var(--ink); }
+.lnk .dir { font-size: 10px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); width: 34px; }
+.lnk small { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); }
+.lnk span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- top bar ---------- */
+.bar { display: flex; align-items: center; gap: 10px; min-width: 860px; height: 56px; box-sizing: border-box; padding: 0 12px; background: var(--chrome); color: var(--chrome-ink); border-bottom: 3px solid var(--chrome-line); }
+.bar .brand { font-size: 18px; font-weight: 900; }
+.sw { display: inline-flex; padding: 4px; border-radius: 14px; background: var(--chrome-well); }
+.sw span { padding: 7px 12px; font-size: 14px; font-weight: 800; border-radius: 10px; }
+.sw .on { background: var(--yellow); color: var(--on-yellow); }
+.hb { display: inline-flex; align-items: center; gap: 6px; height: 32px; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--chrome-line); border-radius: 8px; background: var(--chrome-well); color: var(--chrome-ink); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.hb.sq { width: 34px; padding: 0; justify-content: center; }
+.hb.on { background: var(--yellow); color: var(--on-yellow); }
+.hb.go { border: 2px solid var(--on-yellow); background: var(--yellow); color: var(--on-yellow); font-weight: 900; box-shadow: 0 3px 0 rgba(0, 0, 0, .28); }
+.hb svg { stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bar .grow { flex: 1; }
+.pj { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 2px solid var(--chrome-line); border-radius: 10px; font-size: 15px; font-weight: 900; white-space: nowrap; }
+.under { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 14px 16px 22px; min-width: 860px; box-sizing: border-box; }
+.tools { display: inline-flex; align-items: center; gap: 4px; padding: 5px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.tools span { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 8px; box-sizing: border-box; border-radius: 6px; font-size: 13px; font-weight: 800; }
+.tools .on { background: var(--yellow); color: var(--on-yellow); }
+.tools i { width: 1px; height: 22px; background: var(--hairline); }
+.ctx { width: 190px; padding: 5px; }
+.ctx small { display: block; padding: 4px 9px 5px; font-size: 11px; font-weight: 800; color: var(--ink-soft); }
+.ctx div { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 8px; font-size: 14px; font-weight: 800; color: var(--off-ink); background: var(--off-bg); }
+.ctx svg { stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- chat ---------- */
+.msg-u { align-self: flex-end; max-width: 86%; padding: 7px 11px; border-radius: 12px 12px 3px 12px; background: var(--chrome); color: var(--chrome-ink); font-size: 14px; }
+.msg-a { font-size: 14px; line-height: 1.45; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border: 1.5px solid var(--control-line); border-radius: 999px; background: var(--control); font-size: 11.5px; font-weight: 800; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip b { color: var(--ink); font-weight: 900; }
+.ring { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(var(--blue) 0 17%, color-mix(in srgb, var(--ink) 18%, transparent) 17% 100%); -webkit-mask: radial-gradient(circle, transparent 3.6px, #000 4px); mask: radial-gradient(circle, transparent 3.6px, #000 4px); }
+.meter { display: flex; flex-direction: column; gap: 6px; padding: 9px 11px; border: 1.5px solid var(--hairline); border-radius: 10px; background: var(--well); }
+.comp { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1.5px solid var(--control-line); border-radius: 12px; background: var(--control); }
+.comp .ph { font-size: 14px; color: var(--ink-soft); min-height: 38px; }
+.comp .acts { display: flex; align-items: center; gap: 6px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; box-sizing: border-box; padding: 0 10px; border: 1.5px solid var(--control-line); border-radius: 8px; background: var(--panel); color: var(--ink); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.btn.pri { border-color: var(--on-yellow); background: var(--yellow); color: var(--on-yellow); }
+.btn.model { min-width: 0; overflow: hidden; }
+.btn.model small { font-weight: 700; color: var(--ink-soft); }
+.btn.danger { color: var(--minus); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--plus); flex: none; }
+.dot.off { background: var(--minus); }
+.picker { width: 330px; max-width: 100%; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.picker h5 { margin: 6px 8px 2px; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+.opt { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 14px; font-weight: 800; }
+.opt.on { background: var(--yellow); color: var(--on-yellow); }
+.opt.on small { color: var(--on-yellow); }
+.opt.dim { opacity: .5; }
+.opt small { font-size: 11px; font-weight: 800; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+/* ---------- settings ---------- */
+.set { width: 560px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.prov { display: flex; flex-direction: column; gap: 9px; padding: 13px 14px; border: 2px solid var(--hairline); border-radius: 14px; background: var(--panel); }
+.prov-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.prov-h b { font-size: 16px; font-weight: 900; }
+.st { display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 900; background: var(--ok-bg); color: var(--ok-ink); }
+.st.off { background: var(--off-bg); color: var(--off-ink); }
+.prov p { font-size: 13px; color: var(--ink-soft); max-width: none; }
+.fld { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.inp { flex: 1 1 180px; min-width: 0; height: 32px; box-sizing: border-box; display: flex; align-items: center; padding: 0 10px; border: 1.5px solid var(--control-line); border-radius: 8px; background: var(--control); font-size: 13px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; }
+.inp.sm { flex: 0 1 150px; }
+
+/* ---------- dark ramp ---------- */
+.ramp { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.sw2 { border-radius: 12px; overflow: hidden; border: 2px solid var(--pg-line); background: var(--pg-card); }
+.sw2 div { height: 46px; display: grid; grid-template-columns: 1fr 1fr; }
+.sw2 div span { display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #eaf5fa; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.sw2 p { padding: 7px 10px 8px; font-size: 12.5px; line-height: 1.35; }
+.sw2 p b { display: block; font-weight: 900; }
+</style>
+
+<div class="page">
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <h3>Preview for sign-off · 12 Nov 2026 · second version · nothing here is built yet</h3>
+    <h1>Jeeves UI refresh</h1>
+    <p class="lede">Each mock is drawn with the exact colours and icons the plan would use, once in Jeeves' light theme and once in its dark theme. Tell me what to change; whatever you leave alone goes into the build plan as shown.</p>
+    <p class="note"><b>Changed after your first look.</b> Dark mode has no white outlines any more: icons keep the same dark outline and fills in both themes, and the User tile keeps a dark figure. Every dark fill is now a solid shade of its own colour family, where the first version mixed a little colour into the background. Template, Part and Stub are now <b>Generated</b>, <b>Building block</b> and <b>You write it</b>, shown as a dot on each card with a three-line legend at the foot of the menu.</p>
+  </header>
+
+  <section>
+    <h2>Six things that need your call</h2>
+    <ul class="calls">
+      <li><b>A</b><span>Tile caps: sky blue for tiles that take modules, mint for tiles that can't. <em>Section 1.</em></span></li>
+      <li><b>B</b><span>User turns lilac; Consume and Produce turn yellow. A steel alternative is shown beside them. <em>Section 1.</em></span></li>
+      <li><b>C</b><span>The icon set: name any glyph you want redrawn. <em>Section 2.</em></span></li>
+      <li><b>D</b><span>Module groups (Requests, Data, Events, Files &amp; media, Custom) and the three words for what Jeeves writes. <em>Section 3.</em></span></li>
+      <li><b>E</b><span>Sign in with Claude is left out: Anthropic's terms don't allow it. <em>Section 7.</em></span></li>
+      <li><b>F</b><span>Model names, context sizes and prices come from models.dev, fetched once a day. <em>Section 6.</em></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>1 · Tiles on the canvas</h2>
+    <p>A tile's top band takes an accent. Tiles that take modules (Service, Worker, Uploads) get one accent and every other tile gets a second, so the two read apart even zoomed out. The user is its own colour, and the two actions are the loudest thing on the board.</p>
+    <div class="pair">
+      <figure><span class="tag">Today · light</span><img alt="Today's TinyURL canvas in the light theme: white tiles, pale blue user and action tiles" src="{{TODAY_LIGHT}}"></figure>
+      <figure><span class="tag">Today · dark</span><img alt="Today's TinyURL canvas in the dark theme" src="{{TODAY_DARK}}"></figure>
+    </div>
+    <div class="stack" id="canvas-mocks"></div>
+  </section>
+
+  <section>
+    <h2>2 · Icons</h2>
+    <p>One hand-drawn set in automation-pitch's manner: an ink outline, one accent fill in the kind's family colour and one light fill. 30 glyphs cover the 16 tile kinds and 19 module kinds; a module that is the same idea as a tile shares its glyph. Each is shown at tile size and at module-row size.</p>
+    <div class="pair" id="icon-mocks"></div>
+  </section>
+
+  <section>
+    <h2>3 · Add-module menu and module cards</h2>
+    <p>Modules are grouped by what they do, not by Template or Stub. The name is the largest thing on a card and the description drops to one quiet line. A dot says who writes the code, in plain words in place of Template, Part of a template and Stub; the legend at the foot of the menu explains the three. The inspector's module cards have room for the word beside the dot.</p>
+    <div class="pair" id="menu-mocks"></div>
+  </section>
+
+  <section>
+    <h2>4 · Inspector: connections and Back</h2>
+    <p>A tile's page lists what calls it and what it calls. A click on a row selects that tile on the board and opens its page, with a Back button to the tile you came from. The board's selection and the inspector's page are one value, so they can't disagree.</p>
+    <div class="pair" id="inspector-mocks"></div>
+  </section>
+
+  <section>
+    <h2>5 · Top bar and right-click</h2>
+    <p>Export diagram sits beside Design and Settings. Generate project is the one yellow button at the top right. The canvas toolbar keeps only Pointer, Connect, Fit and the view switch. No red X anywhere: right-click a tile, a line or a module link, or press Delete.</p>
+    <div class="stack" id="bar-mocks"></div>
+  </section>
+
+  <section>
+    <h2>6 · Chat: model picker and usage</h2>
+    <p>The model is picked in the composer, from every provider that is connected. Above the composer: how full the model's context is, tokens in and out for the conversation, and cost where the provider reports it. Each reply keeps its own small counts.</p>
+    <p class="note">Libraries: model names, context sizes and prices come from <code>models.dev</code>, the open model catalogue OpenCode uses, fetched once a day and cached in <code>~/.jeeves</code>. Each provider's own SDK lists the models your key can use. The picker and chips are Mantine components Jeeves already ships. Custom endpoints use the Vercel AI SDK's OpenAI-compatible provider instead of a hand-written adapter. I'd keep the three existing adapters as they are: they are tuned and covered by the chat evals.</p>
+    <div class="pair" id="chat-mocks"></div>
+  </section>
+
+  <section>
+    <h2>7 · Settings: connections</h2>
+    <p>One card per provider, each with the fastest way to connect it. Keys are saved to <code>~/.jeeves/config.json</code> (readable by you only) and never shown again. The model choice moves to the chat composer, so the Models card goes.</p>
+    <p class="note"><b>Sign in with Claude is not in the plan.</b> Anthropic's Agent SDK page says: "Unless previously approved, Anthropic does not allow third party developers to offer claude.ai login or rate limits for their products, including agents built on the Claude Agent SDK." A Claude subscription therefore can't power Jeeves' chat. The permitted routes are an API key (shown) or a Console sign-in with Anthropic's <code>ant</code> CLI, which bills the same API account and saves only the paste; say if you want that second one.</p>
+    <div class="pair" id="settings-mocks"></div>
+  </section>
+
+  <section>
+    <h2>8 · Dark mode: what was wrong</h2>
+    <p>Two causes. The canvas, the rails and the tiles sat within a hair of each other, so nothing separated. And every Mantine control (text boxes, buttons, menus, dialogs) used Mantine's neutral grey, which clashes with Jeeves' steel blue. The fix is one four-step surface ramp and a Mantine dark palette built from it. Every dark mock above already uses it. Coloured fills in dark mode are solid, deeper shades of the same colour, never the light colour mixed into the background.</p>
+    <div class="ramp">
+      <div class="sw2"><div><span style="background:#071820">#071820</span><span style="background:#071219">#071219</span></div><p><b>Top and bottom bars</b>before → after</p></div>
+      <div class="sw2"><div><span style="background:#152833">#152833</span><span style="background:#0f1d26">#0f1d26</span></div><p><b>Canvas</b>deeper, so tiles lift off it</p></div>
+      <div class="sw2"><div><span style="background:#1e3340">#1e3340</span><span style="background:#172a35">#172a35</span></div><p><b>Rails and menus</b>one step above the canvas</p></div>
+      <div class="sw2"><div><span style="background:#1e3340">#1e3340</span><span style="background:#213a48">#213a48</span></div><p><b>Tiles and cards</b>was the same as the rails</p></div>
+      <div class="sw2"><div><span style="background:#2e2e2e">#2e2e2e</span><span style="background:#0f1d26;box-shadow:inset 0 0 0 2px #3d5d6d">#0f1d26</span></div><p><b>Text boxes and buttons</b>grey → inset steel with a visible edge</p></div>
+      <div class="sw2"><div><span style="background:#11242e">#11242e</span><span style="background:#27414f">#27414f</span></div><p><b>Grid dots</b>were invisible</p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const IC = {
+ "server": "<rect class=\"a\" x=\"3.5\" y=\"4\" width=\"17\" height=\"7\" rx=\"2.3\"/><rect class=\"c\" x=\"3.5\" y=\"13\" width=\"17\" height=\"7\" rx=\"2.3\"/><circle class=\"ik\" cx=\"7.2\" cy=\"7.5\" r=\"1.1\"/><circle class=\"ik\" cx=\"7.2\" cy=\"16.5\" r=\"1.1\"/><path class=\"i\" d=\"M11.5 7.5h5.5M11.5 16.5h5.5\"/>",
+ "browser": "<rect class=\"c\" x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2.6\"/><path class=\"a\" d=\"M3 9.6V7.1a2.6 2.6 0 0 1 2.6-2.6h12.8A2.6 2.6 0 0 1 21 7.1v2.5z\"/><circle class=\"ik\" cx=\"6.3\" cy=\"7.1\" r=\".9\"/><circle class=\"ik\" cx=\"9\" cy=\"7.1\" r=\".9\"/>",
+ "gear": "<circle cx=\"12\" cy=\"12\" r=\"8.6\" fill=\"none\" stroke=\"var(--ic-ink)\" stroke-width=\"3.8\" stroke-dasharray=\"4.4 2.355\" stroke-dashoffset=\".6\"/><circle cx=\"12\" cy=\"12\" r=\"8.6\" fill=\"none\" stroke=\"var(--fam)\" stroke-width=\"2\" stroke-dasharray=\"3.2 3.555\"/><circle class=\"a\" cx=\"12\" cy=\"12\" r=\"6.6\"/><circle class=\"c\" cx=\"12\" cy=\"12\" r=\"2.4\"/>",
+ "card": "<rect class=\"cf\" x=\"2.5\" y=\"5.5\" width=\"19\" height=\"13\" rx=\"2.6\"/><rect class=\"af\" x=\"2.5\" y=\"8.4\" width=\"19\" height=\"3.4\"/><rect class=\"i\" x=\"2.5\" y=\"5.5\" width=\"19\" height=\"13\" rx=\"2.6\"/><path class=\"i\" d=\"M6 15h4\"/>",
+ "turn": "<path class=\"so\" d=\"M5.5 18.5v-5a4.5 4.5 0 0 1 4.5-4.5h8.6M15.2 5.2 19 9l-3.8 3.8\"/><path class=\"sa\" d=\"M5.5 18.5v-5a4.5 4.5 0 0 1 4.5-4.5h8.6M15.2 5.2 19 9l-3.8 3.8\"/><circle class=\"c\" cx=\"5.5\" cy=\"18.8\" r=\"2.4\"/>",
+ "bell": "<circle class=\"c\" cx=\"12\" cy=\"18.8\" r=\"2.2\"/><path class=\"a\" d=\"M12 3.5A5.5 5.5 0 0 0 6.5 9v3.2c0 1.2-.5 2.3-1.3 3.1l-.7.7v1.5h15V16l-.7-.7a4.4 4.4 0 0 1-1.3-3.1V9A5.5 5.5 0 0 0 12 3.5z\"/>",
+ "key": "<path class=\"so\" d=\"M12 12h8.8M17.3 12v3M20.6 12v2\"/><path class=\"sc\" d=\"M12 12h8.8M17.3 12v3M20.6 12v2\"/><circle class=\"a\" cx=\"8\" cy=\"12\" r=\"4.8\"/><circle class=\"c\" cx=\"8\" cy=\"12\" r=\"1.5\"/>",
+ "cloudup": "<path class=\"a\" d=\"M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.6a4 4 0 0 1-.5 7.9z\"/><path class=\"i b\" d=\"M12 17v-5.6M9.6 13.6 12 11.2l2.4 2.4\"/>",
+ "fork": "<path class=\"so\" d=\"M3.6 12H9M9 12c3.2 0 3-5.5 6.6-5.5h4M9 12c3.2 0 3 5.5 6.6 5.5h4\"/><path class=\"sa\" d=\"M3.6 12H9M9 12c3.2 0 3-5.5 6.6-5.5h4M9 12c3.2 0 3 5.5 6.6 5.5h4\"/><circle class=\"c\" cx=\"8.4\" cy=\"12\" r=\"2.6\"/>",
+ "cylinder": "<path class=\"c\" d=\"M4.5 6.5v11c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3v-11z\"/><path class=\"i\" d=\"M4.5 12c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3\"/><ellipse class=\"a\" cx=\"12\" cy=\"6.5\" rx=\"7.5\" ry=\"3\"/>",
+ "bolt": "<path class=\"a\" d=\"M13.6 2.6 5 13.6h5.8l-1.4 7.8L19 10.2h-6.1z\"/>",
+ "channel": "<rect class=\"c\" x=\"2.5\" y=\"7.2\" width=\"19\" height=\"9.6\" rx=\"4.8\"/><circle class=\"a\" cx=\"7.4\" cy=\"12\" r=\"1.7\" style=\"stroke-width:1.2\"/><circle class=\"a\" cx=\"12\" cy=\"12\" r=\"1.7\" style=\"stroke-width:1.2\"/><circle class=\"a\" cx=\"16.6\" cy=\"12\" r=\"1.7\" style=\"stroke-width:1.2\"/>",
+ "bucket": "<path class=\"a\" d=\"M4.5 7.2 6.3 19a1.8 1.8 0 0 0 1.8 1.5h7.8a1.8 1.8 0 0 0 1.8-1.5l1.8-11.8z\"/><ellipse class=\"c\" cx=\"12\" cy=\"7\" rx=\"7.5\" ry=\"2.8\"/>",
+ "magnifier": "<path class=\"so\" d=\"M16 16l4.2 4.2\"/><path class=\"sa\" d=\"M16 16l4.2 4.2\"/><circle class=\"a\" cx=\"10.4\" cy=\"10.4\" r=\"7\"/><circle class=\"c\" cx=\"10.4\" cy=\"10.4\" r=\"3.9\"/>",
+ "globe": "<circle class=\"a\" cx=\"12\" cy=\"12\" r=\"8.6\"/><path class=\"c\" d=\"M12 3.4c2.6 2.3 3.9 5.2 3.9 8.6s-1.3 6.3-3.9 8.6c-2.6-2.3-3.9-5.2-3.9-8.6s1.3-6.3 3.9-8.6z\"/><path class=\"i\" d=\"M3.4 12h17.2\"/>",
+ "plug": "<rect class=\"c\" x=\"8.3\" y=\"3.6\" width=\"2.4\" height=\"7\" rx=\"1.2\"/><rect class=\"c\" x=\"13.3\" y=\"3.6\" width=\"2.4\" height=\"7\" rx=\"1.2\"/><rect class=\"c\" x=\"10.8\" y=\"16.5\" width=\"2.4\" height=\"5.2\" rx=\"1.2\"/><path class=\"a\" d=\"M6.8 9.5h10.4V13a5.2 5.2 0 0 1-10.4 0z\"/>",
+ "gauge": "<path class=\"a\" d=\"M3.4 17a8.6 8.6 0 0 1 17.2 0z\"/><path class=\"i b\" d=\"M12 17l4.2-5.6\"/><circle class=\"c\" cx=\"12\" cy=\"17\" r=\"1.7\"/>",
+ "hash": "<rect class=\"a\" x=\"3.5\" y=\"3.5\" width=\"17\" height=\"17\" rx=\"4.2\"/><path class=\"i\" d=\"M9.8 7.6 8.6 16.4M15.4 7.6l-1.2 8.8M7 10.2h10.4M6.6 13.8H17\"/>",
+ "megaphone": "<path class=\"c\" d=\"M7.4 14 8.9 19.4h3L10.6 15z\"/><path class=\"a\" d=\"M4 9.8v4.4l3.2.6 9.3 4.2V5L7.2 9.2z\"/><path class=\"so\" d=\"M19.6 9.6a3.8 3.8 0 0 1 0 4.8\"/><path class=\"sa\" d=\"M19.6 9.6a3.8 3.8 0 0 1 0 4.8\"/>",
+ "inbox": "<path class=\"c\" d=\"M3.5 13.5 6 7.5h12l2.5 6v5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z\"/><path class=\"a\" d=\"M3.5 13.5h5a3.5 3.5 0 0 0 7 0h5v5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z\"/><path class=\"so\" d=\"M12 3.4v6M9.6 7.2 12 9.6l2.4-2.4\"/><path class=\"sa\" d=\"M12 3.4v6M9.6 7.2 12 9.6l2.4-2.4\"/>",
+ "shield": "<path class=\"a\" d=\"M12 3 4.6 6v5.4c0 4.7 3 8.1 7.4 9.6 4.4-1.5 7.4-4.9 7.4-9.6V6z\"/><path class=\"ck\" d=\"M8.6 11.9l2.4 2.4 4.5-4.7\"/>",
+ "boxout": "<rect class=\"a\" x=\"3.8\" y=\"7\" width=\"13.2\" height=\"13.2\" rx=\"2.5\"/><path class=\"so\" d=\"M11.4 12.6l8-8M14.8 4.6h4.6v4.6\"/><path class=\"sc\" d=\"M11.4 12.6l8-8M14.8 4.6h4.6v4.6\"/>",
+ "puzzle": "<circle class=\"a\" cx=\"10\" cy=\"7\" r=\"2.7\"/><circle class=\"a\" cx=\"17.6\" cy=\"14.4\" r=\"2.7\"/><rect class=\"a\" x=\"3.8\" y=\"8.2\" width=\"12.4\" height=\"12.4\" rx=\"2.2\"/><rect class=\"af\" x=\"8.3\" y=\"7\" width=\"3.4\" height=\"2.3\"/><rect class=\"af\" x=\"15\" y=\"12.7\" width=\"2.3\" height=\"3.4\"/>",
+ "steps": "<circle class=\"c\" cx=\"12\" cy=\"12\" r=\"8.5\"/><path class=\"a\" d=\"M12 3.5a8.5 8.5 0 1 1-8.5 8.5H12z\"/>",
+ "play": "<rect class=\"a\" x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"3.2\"/><path class=\"c\" d=\"M10 8.8v6.4l5.2-3.2z\"/>",
+ "parcel": "<path class=\"a\" d=\"M4 8.5 12 5l8 3.5v8L12 20l-8-3.5z\"/><path class=\"c\" d=\"M4 8.5 12 5l8 3.5-8 3.5z\"/><path class=\"i\" d=\"M12 12v8\"/>",
+ "picture": "<rect class=\"c\" x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2.6\"/><path class=\"a\" d=\"M3.6 17.4 9 11.4l3.4 3.9 2.6-2.6 5.4 4.9a2.6 2.6 0 0 1-2 1.9H5.6a2.6 2.6 0 0 1-2-2.1z\"/><circle class=\"ik\" cx=\"15.8\" cy=\"8.8\" r=\"1.5\"/>",
+ "tally": "<rect class=\"a\" x=\"2.5\" y=\"5.8\" width=\"19\" height=\"12.4\" rx=\"3\"/><rect class=\"c\" x=\"5\" y=\"8.4\" width=\"4\" height=\"7.2\" rx=\"1.1\" style=\"stroke-width:1.3\"/><rect class=\"c\" x=\"10\" y=\"8.4\" width=\"4\" height=\"7.2\" rx=\"1.1\" style=\"stroke-width:1.3\"/><rect class=\"c\" x=\"15\" y=\"8.4\" width=\"4\" height=\"7.2\" rx=\"1.1\" style=\"stroke-width:1.3\"/>",
+ "indexcard": "<rect class=\"c\" x=\"3.5\" y=\"4\" width=\"13.5\" height=\"16\" rx=\"2.2\"/><path class=\"i\" d=\"M6.8 8.4h6.9M6.8 11.8h6.9M6.8 15.2h3\"/><circle class=\"a\" cx=\"17.4\" cy=\"16.6\" r=\"4.1\"/><path class=\"i\" d=\"M17.4 14.6v4M15.4 16.6h4\"/>",
+ "star": "<path class=\"a\" d=\"M12 3.2l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.5l6-.8z\"/>"
+};
+const ic = (name, fam, size = 20) => `<svg class="ic" data-fam="${fam}" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true">${IC[name]}</svg>`;
+const g = (d, size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+const G = {
+  down: "M12 4v10M8 10.5l4 4 4-4M5 19h14", up: "M12 15V5M8 8.5l4-4 4 4M5 19h14",
+  undo: "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3", redo: "M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3",
+  chat: "M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z", side: "M4 5h16v14H4zM15 5v14",
+  export: "M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14", chev: "M6 9l6 6 6-6", trash: "M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3",
+  ptr: "M6 4l12 7-5.5 1.5L10 18z", link: "M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 6 6l-1 1M13.5 17.5l-1 1a4 4 0 0 1-6-6l1-1", fit: "M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4M12 11v2",
+  left: "M19 12H5M11 6l-6 6 6 6", right: "M9 6l6 6-6 6", clip: "M15 7l-6.5 6.5a2.1 2.1 0 0 0 3 3L18 10a4 4 0 0 0-5.7-5.7L5.8 10.8a6 6 0 0 0 8.5 8.5L20 13.5", send: "M4 12l16-8-6 16-2.5-6.5z",
+};
+
+// ---- tiles ----
+const iconTile = (s, o) => `<div class="tile${o.pill ? " pill" : ""}${o.sel ? " sel" : ""}" style="width:128px;height:128px;${s}"><div class="face${o.host ? " host" : ""}"><div class="cap">${ic(o.icon, o.fam, 36)}</div><div class="nm">${o.name}</div><div class="kd">${o.kind}</div></div></div>`;
+const container = (s, o) => `<div class="tile cont${o.sel ? " sel" : ""}" style="width:232px;height:182px;${s}"><div class="head">${ic(o.icon, o.fam, 24)}<div><b>${o.name}</b><small>${o.kind}</small></div></div><div class="rows">${o.rows.map((r) => `<div class="rw">${ic(r[0], r[1], 16)}${r[2]}</div>`).join("")}</div><div class="foot"><span class="plus">+</span></div></div>`;
+const actor = (s) => `<div class="tile" style="width:128px;height:160px;${s}"><div class="actor"><div class="fig"><svg width="52" height="62" viewBox="0 0 52 62" fill="none" stroke-width="3" stroke-linecap="round"><circle cx="26" cy="11" r="7.5"/><path d="M26 19v22M12 28h28M26 41 15 58M26 41l11 17"/></svg></div><div class="plate">User</div></div></div>`;
+const action = (s, lane, name) => `<div class="tile" style="width:128px;height:128px;${s}"><div class="action"><span class="badge">${g(lane === "consume" ? G.down : G.up, 22)}</span><b>${name}</b></div></div>`;
+const at = (x, y) => `left:${x}px;top:${y}px;`;
+const head = (x, y) => `M${x - 8} ${y - 5.5} L${x} ${y} L${x - 8} ${y + 5.5}`;
+const canvas = () => `<div class="cvwrap"><div class="cv">
+  <svg class="wires" viewBox="0 0 1000 410" width="1000" height="410">
+    <path d="M128 192H158V74H190"/><path d="${head(190, 74)}"/>
+    <path d="M128 192H158V310H190"/><path d="${head(190, 310)}"/>
+    <path d="M318 74H380"/><path d="${head(380, 74)}"/>
+    <path d="M508 74H566"/><path d="${head(566, 74)}"/>
+    <path class="dash" d="M798 74H866"/><path d="${head(866, 74)}"/>
+    <path d="M798 120H832V310H866"/><path d="${head(866, 310)}"/>
+    <path d="M318 310H380"/><path d="${head(380, 310)}"/>
+    <path d="M612 310H680"/><path d="${head(680, 310)}"/>
+  </svg>
+  ${actor(at(0, 112))}
+  ${action(at(190, 10), "consume", "Consume")}
+  ${action(at(190, 246), "produce", "Produce")}
+  ${iconTile(at(380, 10), { name: "CDN", kind: "CDN", icon: "globe", fam: "external" })}
+  ${container(at(566, 0), { name: "Redirect service", kind: "Redirect", icon: "turn", fam: "api", rows: [["bolt", "data", "Link cache reader"], ["cylinder", "data", "Link reader"], ["megaphone", "messaging", "Click publisher"]] })}
+  ${iconTile(at(866, 10), { name: "Click events", kind: "Topic", icon: "channel", fam: "messaging", pill: true })}
+  ${container(at(380, 219), { name: "Shorten API", kind: "Service", icon: "server", fam: "api", sel: true, rows: [["gauge", "generic", "Rate limiter"], ["hash", "generic", "ID generator"], ["cylinder", "data", "Link writer"]] })}
+  ${iconTile(at(680, 246), { name: "Links DB", kind: "Database", icon: "cylinder", fam: "data", pill: true })}
+  ${iconTile(at(866, 246), { name: "Link cache", kind: "Cache", icon: "bolt", fam: "data", pill: true })}
+</div>
+<div class="row3">
+  <div><span class="lbl">Simple view · takes modules</span><div style="display:flex;gap:14px">${iconTile("", { name: "Shorten API", kind: "Service", icon: "server", fam: "api", host: true })}${iconTile("", { name: "Analytics worker", kind: "Worker", icon: "gear", fam: "worker", host: true })}</div></div>
+  <div><span class="lbl">Simple view · can't take modules</span><div style="display:flex;gap:14px">${iconTile("", { name: "Sign-in", kind: "Identity", icon: "key", fam: "api" })}${iconTile("", { name: "Originals", kind: "Storage", icon: "bucket", fam: "data", pill: true })}${iconTile("", { name: "URL reputation API", kind: "External API", icon: "plug", fam: "external" })}</div></div>
+  <div class="alt"><span class="lbl">Alternative for B · steel actions</span><div style="display:flex;gap:14px">${action("", "consume", "Consume")}${action("", "produce", "Produce")}</div></div>
+</div></div>`;
+
+// ---- icon sheet ----
+const SHEET = [
+  ["server", "api", "Microservice"], ["gear", "worker", "Worker service"], ["cloudup", "api", "Uploads · Multipart uploads"], ["turn", "api", "Redirect · Redirect responder"],
+  ["key", "api", "Identity"], ["bell", "api", "Notifications"], ["card", "api", "Billing"], ["fork", "api", "Gateway"], ["browser", "client", "Browser app"],
+  ["cylinder", "data", "Database · Data access"], ["bolt", "data", "Cache · Cache reader"], ["channel", "messaging", "Queue · Topic"], ["bucket", "data", "Object storage"],
+  ["magnifier", "data", "Search index · Search query"], ["globe", "external", "CDN"], ["plug", "external", "External API"],
+  ["shield", "generic", "Auth guard"], ["gauge", "generic", "Rate limiter"], ["hash", "generic", "ID generator"], ["boxout", "external", "External call"],
+  ["megaphone", "messaging", "Event publisher"], ["inbox", "messaging", "Event consumer"], ["tally", "data", "Event counter"], ["indexcard", "data", "Index writer"],
+  ["steps", "data", "Lifecycle writer"], ["star", "data", "Favorites"], ["play", "worker", "Video encoder"], ["parcel", "worker", "Video packager"],
+  ["picture", "worker", "Video thumbnailer"], ["puzzle", "generic", "Custom"],
+];
+const sheet = () => `<div class="sheet">${SHEET.map(([n, f, label]) => `<div class="cell">${ic(n, f, 40)}<span class="sm">${ic(n, f, 16)}16px</span><small>${label}</small></div>`).join("")}</div>`;
+
+// ---- module menu ----
+const GEN = { lead: "Generated", part: "Building block", stub: "You write it" };
+const mcard = (name, icon, fam, gen, desc, word) => `<div class="mcard" data-fam="${fam}"><span class="top"><strong>${name}</strong>${word ? `<span class="gen pill"><i class="gdot" data-g="${gen}"></i>${GEN[gen]}</span>` : `<span class="gen" title="${GEN[gen]}"><i class="gdot" data-g="${gen}"></i></span>`}</span><span class="ds">${ic(icon, fam, 15)}<span>${desc}</span></span></div>`;
+const legend = () => `<ul class="legend"><li><i class="gdot" data-g="lead"></i><span><b>Generated.</b> Jeeves writes working code; you fill in one short hooks file.</span></li><li><i class="gdot" data-g="part"></i><span><b>Building block.</b> Generated once a Generated module is connected to it. Until then, you write it.</span></li><li><i class="gdot" data-g="stub"></i><span><b>You write it.</b> An empty, typed file for your own code.</span></li></ul>`;
+const grp = (title, fam, cards) => `<div class="grp" data-fam="${fam}"><h4>${title}</h4><div class="cards">${cards.join("")}</div></div>`;
+const menu = () => `<div class="stage"><div class="pop menu"><p>Add module to <strong>Watch API</strong></p>
+  ${grp("Requests", "api", [mcard("Auth guard", "shield", "api", "lead", "Checks the caller's sign-in."), mcard("Rate limiter", "gauge", "api", "stub", "Rejects requests above a limit."), mcard("Redirect responder", "turn", "api", "stub", "Answers with an HTTP redirect."), mcard("External call", "boxout", "api", "stub", "Calls another service or API.")])}
+  ${grp("Data", "data", [mcard("Data access", "cylinder", "data", "part", "Reads and writes one database."), mcard("Cache reader", "bolt", "data", "lead", "Reads a cache before the database."), mcard("Search query", "magnifier", "data", "lead", "Searches one search index."), mcard("Favorites", "star", "data", "lead", "Keeps each account's favorites."), mcard("ID generator", "hash", "data", "stub", "Allocates unique short IDs.")])}
+  ${grp("Events", "messaging", [mcard("Event publisher", "megaphone", "messaging", "part", "Publishes events."), mcard("Event consumer", "inbox", "messaging", "stub", "Consumes events.")])}
+  ${grp("Files &amp; media", "worker", [mcard("Multipart uploads", "cloudup", "worker", "lead", "Uploads large files in parts.")])}
+  ${grp("Custom", "generic", [mcard("Custom", "puzzle", "generic", "stub", "Your own logic.")])}
+  ${legend()}
+</div></div>`;
+
+// ---- inspector ----
+const lnk = (dir, icon, fam, name, kind, how) => `<div class="lnk"><span class="dir">${dir}</span>${ic(icon, fam, 18)}<span>${name} <small>· ${kind}</small></span><small>${how}</small></div>`;
+const inspector = () => `<div class="stage"><div class="rail"><div class="rail-h">Inspector<span>×</span></div><div class="rail-b">
+  <span class="back">${g(G.left, 14).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"')}${ic("cylinder", "data", 16)}Links DB</span>
+  <div class="ttl">${ic("server", "api", 26)}Shorten API</div><div class="sub">Microservice</div>
+  <div class="sec">Connections</div>
+  <div class="links">
+    ${lnk("From", "boxout", "generic", "Produce", "Action", "calls").replace(/<svg class="ic"[^]*?<\/svg>/, '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V5M8 8.5l4-4 4 4M5 19h14"/></svg>')}
+    ${lnk("To", "cylinder", "data", "Links DB", "Database", "writes")}
+    ${lnk("To", "bolt", "data", "Link cache", "Cache", "writes")}
+    ${lnk("To", "plug", "external", "URL reputation API", "External API", "calls")}
+  </div>
+  <div class="sec">Modules</div>
+  <div class="cards" style="grid-template-columns:1fr">
+    ${mcard("Link writer", "cylinder", "data", "part", "Data access · inserts links on the primary.", true)}
+    ${mcard("Rate limiter", "gauge", "api", "stub", "Limits link creation per API key.", true)}
+  </div>
+</div></div></div>`;
+
+// ---- top bar ----
+const sq = (d, on) => `<span class="hb sq${on ? " on" : ""}">${g(d, 18)}</span>`;
+const bar = () => `<div><div class="bar"><span class="brand">Jeeves</span><span class="sw"><span class="on">Design</span><span>Settings</span></span><span class="hb">${g(G.export, 16)}Export diagram</span><span class="grow"></span>${sq(G.undo)}${sq(G.redo)}${sq(G.chat, true)}${sq(G.side, true)}<span class="hb go">Generate project</span><span class="pj">YouTube v3 ${g(G.chev, 16).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"')}</span></div>
+<div class="under"><span class="tools"><span class="on">${g(G.ptr, 18).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"')}</span><span>${g(G.link, 18).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"')}</span><span>${g(G.fit, 18).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"')}</span><i></i><span class="on">Detailed</span><span>Simple</span></span>
+<div class="pop ctx"><small>Shorten API</small><div>${g(G.trash, 16)}Remove tile</div></div>
+<div class="pop ctx"><small>Shorten API → Links DB</small><div>${g(G.trash, 16)}Remove link</div></div></div></div>`;
+
+// ---- chat ----
+const chip = (label, value) => `<span class="chip">${label}<b>${value}</b></span>`;
+const chat = () => `<div class="stage"><div class="rail"><div class="rail-h">Chat<span>×</span></div><div class="rail-b">
+  <div class="msg-u">Add a cache in front of the links database</div>
+  <div class="msg-a">Added <b>Link cache</b> and a Cache reader in Redirect service. Review: no open findings.</div>
+  <div class="chips">${chip("in ", "41.2k")}${chip("cached ", "36.0k")}${chip("out ", "1.9k")}</div>
+  <div class="meter"><div class="chips"><span class="chip"><span class="ring"></span>Context <b>86k / 500k</b></span>${chip("in ", "1.31M")}${chip("out ", "22k")}${chip("", "$0.84")}</div></div>
+  <div class="comp"><div class="ph">Describe what you want to build or change…</div><div class="acts"><span class="btn model"><span class="dot"></span>GPT-6.1-Sol <small>· Codex</small>${g(G.chev, 14).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"')}</span><span style="flex:1"></span><span class="btn">${g(G.clip, 14).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"')}</span><span class="btn pri">${g(G.send, 14).replace("<svg", '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"')}Send</span></div></div>
+</div></div>
+<div class="pop picker">
+  <h5><span class="dot"></span>Codex · signed in with ChatGPT</h5>
+  <div class="opt on">GPT-6.1-Sol<small>500k</small><small>plan</small></div>
+  <div class="opt">GPT-6-Astra<small>272k</small><small>plan</small></div>
+  <div class="opt">GPT-6-Luna<small>272k</small><small>plan</small></div>
+  <h5><span class="dot"></span>Anthropic API · key saved</h5>
+  <div class="opt">Claude Haiku 5.5<small>1M</small><small>$0.10 / $0.50</small></div>
+  <div class="opt">Claude Sonnet 5.5<small>1M</small><small>$2 / $10</small></div>
+  <div class="opt">Claude Opus 5.5<small>1M</small><small>$4 / $20</small></div>
+  <h5><span class="dot"></span>DeepSeek · custom endpoint</h5>
+  <div class="opt">DeepSeek V4 Pro<small>1M</small><small>$0.66 / $1.98</small></div>
+  <h5><span class="dot off"></span>OpenAI API · no key</h5>
+  <div class="opt dim">Connect it in Settings<small></small><small></small></div>
+</div></div>`;
+
+// ---- settings ----
+const settings = () => `<div class="stage"><div class="set">
+  <div class="prov"><div class="prov-h"><b>Codex</b><span class="st"><span class="dot"></span>Signed in with ChatGPT</span></div><p>Uses your ChatGPT plan through Codex's own login. Jeeves never sees the credentials.</p><div class="fld"><span class="btn danger">Sign out</span></div></div>
+  <div class="prov"><div class="prov-h"><b>Codex</b><span class="st off"><span class="dot off"></span>Not signed in</span><small style="color:var(--ink-soft);font-weight:700">· how the same card looks signed out</small></div><div class="fld"><span class="btn pri">Sign in with ChatGPT</span><span class="chip">Waiting for you to finish in the browser…</span></div></div>
+  <div class="prov"><div class="prov-h"><b>Anthropic API</b><span class="st off"><span class="dot off"></span>No key</span></div><p>Billed to your Anthropic API account.</p><div class="fld"><span class="inp">sk-ant-…  paste a key</span><span class="btn pri">Save key</span></div></div>
+  <div class="prov"><div class="prov-h"><b>OpenAI API</b><span class="st"><span class="dot"></span>Key saved</span></div><div class="fld"><span class="inp">•••••••••••••••• saved 12 Nov</span><span class="btn">Replace</span><span class="btn danger">Remove</span></div></div>
+  <div class="prov"><div class="prov-h"><b>Custom endpoint</b><span class="st"><span class="dot"></span>DeepSeek · key saved</span></div><p>Any OpenAI-compatible host. Pick a known one to fill in its address.</p><div class="fld"><span class="inp sm">DeepSeek ▾</span><span class="inp">https://api.deepseek.com</span></div><div class="fld"><span class="inp">•••••••••••••••• saved 12 Nov</span><span class="btn">Replace</span><span class="btn danger">Remove</span></div></div>
+</div></div>`;
+
+// ---- mount: every mock once per theme ----
+const mount = (id, html, wrapScroll) => {
+  const host = document.getElementById(id);
+  for (const theme of ["light", "dark"]) {
+    const pane = document.createElement("div");
+    pane.className = "pane";
+    pane.innerHTML = `<span class="tag">Proposed · ${theme}</span><div class="${wrapScroll ? "scroll" : ""}"><div class="jv" data-jv="${theme}" style="${wrapScroll ? "" : "border-radius:14px"}">${html}</div></div>`;
+    host.appendChild(pane);
+  }
+};
+mount("canvas-mocks", canvas(), true);
+mount("icon-mocks", sheet(), false);
+mount("menu-mocks", menu(), false);
+mount("inspector-mocks", inspector(), false);
+mount("bar-mocks", bar(), true);
+mount("chat-mocks", chat(), false);
+mount("settings-mocks", settings(), false);
+</script>
