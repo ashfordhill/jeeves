@@ -79,7 +79,6 @@ export type ProviderId = "openai" | "codex" | "anthropic";
 
 export type ProviderAuth =
   | { type: "api-key"; envVar: string; configKey: string }
-  | { type: "env-key"; envVar: string }
   | { type: "cli-login"; command: string };
 
 export type ProviderStatus = {
@@ -93,6 +92,8 @@ export type ProviderStatus = {
   ready: boolean;
   status: string;
   help: string | null;
+  /** Where its API key comes from: the environment, the config file, or none. */
+  keySource: "env" | "file" | null;
 };
 
 export type RoleModel = {
@@ -203,6 +204,16 @@ export const api = {
 
   setRoles: (roles: Partial<Record<ModelRole, RoleModel>>) =>
     request<SettingsView>("/settings/roles", { method: "PUT", body: JSON.stringify(roles) }),
+
+  /** Saves or replaces a provider's API key. The answer never holds a key. */
+  setKey: (id: ProviderId, key: string) =>
+    request<SettingsView>(`/settings/providers/${id}/key`, {
+      method: "PUT",
+      body: JSON.stringify({ key }),
+    }),
+
+  removeKey: (id: ProviderId) =>
+    request<SettingsView>(`/settings/providers/${id}/key`, { method: "DELETE" }),
 };
 
 /** Calls `onLine` for each non-empty line of a newline-delimited stream. */

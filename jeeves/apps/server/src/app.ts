@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import {
   hasZodFastifySchemaValidationErrors,
   serializerCompiler,
@@ -27,7 +27,8 @@ export type AppDeps = {
   settings?: Settings;
   /** Providers for chat. Defaults to the real ones from `settings`. */
   models?: ModelSource;
-  logger?: boolean;
+  /** `true` in the server; tests may pass options with a `stream` to read the log lines. */
+  logger?: FastifyServerOptions["logger"];
 };
 
 /** Builds the API without listening, so tests can use `app.inject`. */

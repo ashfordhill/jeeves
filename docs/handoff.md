@@ -12405,3 +12405,101 @@ unit's; left untouched and unstaged. No uncommitted changes under `jeeves-genera
 `field-projects/`.
 **For the next unit.** UI08 can start. `--control` and `--control-line` are in both theme blocks
 of `tokens.css`, ready for its text boxes.
+
+## 2026-11-13 — UI08: API keys in Settings
+
+**What changed.**
+- `packages/providers/src/catalog.ts`: Anthropic's `auth` is `{ type: "api-key", envVar:
+  "ANTHROPIC_API_KEY", configKey: "anthropic" }`; the `env-key` variant is gone (nothing else used
+  it); the description is "Claude on Anthropic's Messages API, billed to your Anthropic API key."
+- `apps/server/src/settings.ts`: the config file may hold `anthropic.apiKey`. `openaiKey()` and
+  `anthropicKey()` both return `{ key, source }` (one private `key(id)`; the environment wins).
+  `setKey(id, key)` and `removeKey(id)` write only that key and keep the rest of the file (removing
+  the section's last field drops the section; removing a missing key writes nothing).
+  `KeyProviderId`, `isKeyProvider`; `ProviderStatus.keySource` (`"env" | "file" | null`). OpenAI and
+  Anthropic read "Key set in the environment", "Key saved" or "No key", with `help: null` (the
+  card's field is the setup); Codex is unchanged. Every write sets the file to 0600, and a config
+  file that isn't JSON throws "<path> is not valid JSON." (see Differences).
+- `routes/settings.ts`: `PUT /settings/providers/:id/key` (`{ key }`, trimmed, 8 to 400 characters)
+  and `DELETE /settings/providers/:id/key`, both answering `settings.view()`; Codex 422
+  `KEY_NOT_SUPPORTED`, an unknown ID 404 `NOT_FOUND`, a bad length the usual 400.
+- `chat/models.ts`: Anthropic reads `settings.anthropicKey()?.key`; its error is "No Anthropic API
+  key is set. Add one in Settings." `app.ts`: `AppDeps.logger` also takes Fastify's logger options,
+  so a test can read the log lines.
+- Web: `project/api.ts` (`ProviderAuth` without `env-key`, `keySource`, `api.setKey`,
+  `api.removeKey`). `settings/SettingsView.tsx`: Connections is a `.settings-section` holding one
+  `li.settings-provider` card per provider (`ProviderCard`: name, a `.settings-status` pill with a
+  dot, one line, then `KeyField` or Codex's copy row). `KeyField`: with no key, a form with a
+  Mantine `PasswordInput` ("<provider> key", "Paste a key") and **Save key**; with a saved key, a
+  box of dots and "Saved", **Replace** (the box again, empty, with **Cancel**) and **Remove**; with an
+  environment key, "Set by `<VAR>` in the environment" and no buttons. The box is emptied after a
+  save and never refilled; a key outside 8 to 400 characters gets an error on Save key. The
+  footnote says where keys are saved. The Models card is unchanged. `settings.css`: the card,
+  pill, box and button rules from the preview's `.prov`, `.st`, `.inp` and `.btn` (fill `--cream`
+  until UI13's `--panel`). `tokens.css`: `--ok-bg` and `--ok-ink` in both theme blocks.
+- Tests: `routes/settings.test.ts`: save, replace and remove for each provider (trimmed; the file
+  0600 even when it existed at 0644; the rest of the file kept); the environment wins over a saved
+  key; Codex 422 and an unknown 404 for PUT and DELETE; 7 and 401 characters refused, 8 and 400
+  saved; a file that isn't JSON answers 500 without quoting the key; no answer and no log line (a
+  trace-level logger's stream) holds a key; chat's Anthropic error and an Anthropic key from the
+  file. E2E: `blueprint-chat.spec.ts` (see Differences).
+- Docs: `docs/studio.md` (a **Settings** paragraph in Chat, in place of the environment-only
+  sentence), `jeeves/CATALOG.md` (both key rows), `jeeves/PLAN.md` (Providers, Settings and the API
+  table).
+
+**Checks.** `pnpm check` before any change: exit 0, 108 files, 836 tests. After: exit 0, 108 files,
+841 tests (lint's one info is older). `pnpm test:e2e` (native, run without the mouse spec, which
+saves a key on the shared e2e server): 73 passed (4.7 min). `pnpm --filter @jeeves/web build`: exit
+0. Mouse check (`ui08-check.spec.ts`, serial, then deleted): first run, 1440×900 failed in dark,
+reading the key box's border mid-transition just after the theme switch (light had already passed
+save, replace and remove); with the computed colours polled: 2 passed, 1440×900 and 1280×800, no
+page error. `playwright.config.ts` gives the e2e server `JEEVES_HOME = mkdtemp($TMPDIR/jeeves-e2e-)`,
+and the spec first checked `/api/settings`'s `configPath` is there and not under `~/.jeeves`. Light
+then dark: the Anthropic card's pill read No key in `--off-bg`/`--off-ink`, its border `--hairline`,
+its box `--control`/`--control-line`; a made-up key typed and saved by mouse turned the pill to Key
+saved (`--ok-bg`/`--ok-ink`) and left Saved, Replace and Remove; the config file held it at 0600,
+and neither the page's HTML nor `/api/settings` did; Replace showed an empty box; a second made-up
+key saved; Remove brought back No key and an empty box, and the file no longer held a key. No
+project was created; `jeeves_e2e` holds only "TinyURL · studio study" and "E2E Every kind". Six
+images in `docs/plans/ui-refresh/evidence/ui08/` (No key and Key saved at 1440, Replace at 1280;
+light and dark) match the Anthropic and OpenAI cards of `preview/settings-light.png` and
+`-dark.png`; no key is visible in any.
+**Differences from the plan.**
+- Step 5's four tokens: `--off-bg` and `--off-ink` were already in `tokens.css` (UI02), so only
+  `--ok-bg` and `--ok-ink` were added.
+- The step 2 status texts apply to OpenAI too, and both key providers now have no help line: the
+  card shows the description (as the preview's Anthropic card does). OpenAI's old help ("Set
+  OPENAI_API_KEY … or add {"openai": …} to <path>") is gone.
+- Replace opens the box with a Cancel button, so a mistaken Replace can be undone by mouse.
+- For the phase rule that keys are never returned or logged: every write also `chmod`s the file to
+  0600 (`writeFileSync`'s mode applies only when it creates the file), and an unparseable file no
+  longer surfaces `JSON.parse`'s message, which quotes the text around the fault.
+- `app.ts`'s `logger` type was widened for the "no log line" test.
+- `blueprint-chat.spec.ts`'s Anthropic test asserted exactly the environment-only setup this unit
+  replaces (the "No API key" badge, "Jeeves never stores it.", the `export ANTHROPIC_API_KEY=` copy
+  button); it now asserts No key, the new description, an empty "Anthropic API key" box, Save key
+  and no setup-command button, and is renamed "…with a key field…". Its model pick is unchanged.
+  In `settings.test.ts`, the first test's statuses read "No key", and Codex's `providerStatus`
+  expectation gained `keySource: null`.
+- Connections is no longer one `.settings-card`: its provider cards sit on the page, as the preview
+  draws them. The Models card keeps `.settings-card`.
+- `jeeves/README.md` and `docs/glossary.md` never said the Anthropic key is environment-only;
+  neither changed.
+**Noticed.** `packages/providers/src/anthropic.ts`'s header comment still says the key comes from
+`ANTHROPIC_API_KEY` and is never stored; left untouched (the adapters are off-limits), and the
+adapter still uses only the key it is given. `shell/StatusBadge.tsx` is now unused (Settings was
+its only user); left in place. OpenAI's chat error still says to set `OPENAI_API_KEY` or edit the
+config file (step 4 names only Anthropic's). The eval runner still reads keys from the environment
+only, as `docs/chat-evals.md` says. `playwright.config.ts` clears `OPENAI_API_KEY` for the e2e
+server but not `ANTHROPIC_API_KEY`: with that variable set in the shell, the Anthropic e2e test
+would see Key set in the environment. The e2e server inherits `HOME`, so its Codex card shows the
+owner's real Codex login state (Logged in, in the images; only the file's existence is checked).
+Mantine's `PasswordInput` keeps its eye toggle, which shows only what is being typed.
+`.settings-setup`'s and `.settings-models`' borders still mix `--line` with transparent (older).
+The modes of `jeeves/scripts/e2e-docker.sh` and
+`docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged. No uncommitted changes under `jeeves-generator/` or
+`field-projects/`.
+**For the next unit.** UI09 can start. Each provider is a `ProviderCard` in `SettingsView.tsx`
+(Codex keeps its copy row); the pill is `.settings-status[data-ready]`, the buttons
+`.settings-button[data-tone]`; `--ok-*` and `--off-*` are in `tokens.css`.

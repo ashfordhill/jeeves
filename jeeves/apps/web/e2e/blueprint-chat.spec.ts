@@ -165,19 +165,21 @@ test("names a refused command, keeps nothing of its batch, and saves the correct
   await expect(tiles(page)).toHaveCount(11);
 });
 
-test("offers Anthropic in Settings with its environment key, and saves it as the design model", async ({
+test("offers Anthropic in Settings with a key field, and saves it as the design model", async ({
   page,
 }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Settings" }).click();
   const anthropic = page.locator(".settings-providers li").filter({ hasText: "Anthropic API" });
   await expect(anthropic).toBeVisible();
-  // The e2e server has no Anthropic key: the badge says so, and the setup is the variable.
-  await expect(anthropic.getByText("No API key", { exact: true })).toBeVisible();
-  await expect(anthropic.getByText("Jeeves never stores it.", { exact: false })).toBeVisible();
+  // The e2e server has no Anthropic key: the pill says so, and the card offers a key field.
+  await expect(anthropic.getByText("No key", { exact: true })).toBeVisible();
   await expect(
-    anthropic.getByRole("button", { name: "Copy Anthropic API setup command" }),
-  ).toContainText("export ANTHROPIC_API_KEY=");
+    anthropic.getByText("billed to your Anthropic API key.", { exact: false }),
+  ).toBeVisible();
+  await expect(anthropic.getByLabel("Anthropic API key", { exact: true })).toHaveValue("");
+  await expect(anthropic.getByRole("button", { name: "Save key" })).toBeVisible();
+  await expect(anthropic.getByRole("button", { name: /setup command/ })).toHaveCount(0);
   // Pick it and one of its models by mouse, and save.
   await page.getByLabel("Design provider").selectOption({ label: "Anthropic API" });
   await page.getByRole("combobox", { name: "Design model" }).click();

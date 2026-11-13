@@ -29,12 +29,8 @@ export function providerModels(settings: Settings, codexPath?: string): ModelSou
         return { provider: createOpenAIProvider({ apiKey: key.key }), model };
       }
       case "anthropic": {
-        const key = settings.anthropicKey();
-        if (!key)
-          return {
-            error:
-              "No Anthropic API key is set. Set ANTHROPIC_API_KEY in the environment before starting Jeeves.",
-          };
+        const key = settings.anthropicKey()?.key;
+        if (!key) return { error: "No Anthropic API key is set. Add one in Settings." };
         return { provider: createAnthropicProvider({ apiKey: key }), model };
       }
       case "codex":

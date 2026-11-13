@@ -847,9 +847,18 @@ sent with each message, so "Add a cache after the selected service" works; the u
 and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
 SVG). Token counts and provider-reported cost appear only when complete. The model and provider
-are chosen in **Settings**: OpenAI's API, Codex's own login, or (V3-19) Anthropic's API, with
-the key read from `ANTHROPIC_API_KEY` in the environment only and never stored. Chat and the
-inspector collapse and resize independently.
+are chosen in **Settings**: OpenAI's API, Codex's own login, or (V3-19) Anthropic's API. Chat and
+the inspector collapse and resize independently.
+
+**Settings.** Connections is one card per provider: its name, a status pill (green when it can be
+used, red when not) and one line about it. OpenAI's and Anthropic's cards take an API key: paste
+it into the password box and click **Save key**, and the box is emptied. A saved key is never
+shown again: its card reads **Key saved**, with **Replace** (the box again, with **Cancel**) and
+**Remove**. Keys are saved to `~/.jeeves/config.json` (`openai.apiKey`, `anthropic.apiKey`),
+readable by the owner only, and no API answer or log line holds one. A key set in the environment
+(`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) wins over a saved one; its card reads **Key set in the
+environment**, names the variable and has no buttons. Codex's card copies `codex login`. Below
+Connections, the Models card picks the design chat's provider and model.
 
 OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,
 defaults and explicit owner clearing. Codex constrains the outer answer only: its inner argument

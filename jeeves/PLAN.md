@@ -162,12 +162,13 @@ are stored in `files`. Turns, replies, questions, activity and token usage are k
 
 Providers (`packages/providers`): the OpenAI Responses API with an API key sends strict function
 schemas through an audited omission/null codec; server validation remains authoritative.
-The Anthropic Messages API gets the canonical schemas as they are, with the key read from
-`ANTHROPIC_API_KEY` only. Codex through its own CLI login constrains an outer answer containing JSON-string arguments,
+The Anthropic Messages API gets the canonical schemas as they are, with the key from
+`ANTHROPIC_API_KEY` or the config file. Codex through its own CLI login constrains an outer answer containing JSON-string arguments,
 whose inner values are validated by the server. Mock transport checks do not establish live
 API acceptance or model quality; see [tool schemas](../docs/chat-tool-schemas.md).
-Settings (`GET /settings`, `PUT /settings/roles`) choose one design-chat provider
-and model, stored in `~/.jeeves/config.json`. E2E tests set `JEEVES_FAKE_MODEL_SCRIPT` to replay a
+Settings (`GET /settings`, `PUT /settings/roles`, `PUT` and `DELETE /settings/providers/:id/key`)
+choose one design-chat provider and model and save OpenAI's and Anthropic's API keys, all in
+`~/.jeeves/config.json` (mode 0600; a key in the environment wins). No answer holds a key. E2E tests set `JEEVES_FAKE_MODEL_SCRIPT` to replay a
 scripted model.
 
 ## Blueprint
@@ -192,7 +193,7 @@ See [studio blueprint](../docs/studio-blueprint.md) and [readiness](../docs/stud
 | `POST /projects/:id/operations`, `/undo`, `/redo` | Changes and history |
 | `GET/PUT /projects/:id/layout` | Row order and viewport hints (unused by the canvas) |
 | `GET/POST /projects/:id/chat`, `POST /projects/:id/files`, `GET /projects/:id/files/:fileId` | Chat and attachments |
-| `GET /settings`, `PUT /settings/roles` | Providers and the chat model |
+| `GET /settings`, `PUT /settings/roles`, `PUT/DELETE /settings/providers/:id/key` | Providers, their API keys (never returned) and the chat model |
 
 The web app reaches these under `/api` (Vite proxy in development, nginx in the image).
 

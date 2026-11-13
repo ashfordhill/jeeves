@@ -1,12 +1,64 @@
+import { providerInfo } from "@jeeves/providers";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
-import { rolesPatchSchema, type Settings, SettingsError } from "../settings.ts";
+import { z } from "zod";
+import {
+  isKeyProvider,
+  type KeyProviderId,
+  rolesPatchSchema,
+  type Settings,
+  SettingsError,
+} from "../settings.ts";
 
-/** Provider status (never the keys) and the provider and model per role. */
+const providerParams = z.object({ id: z.string() });
+const keyBody = z.strictObject({ key: z.string().trim().min(8).max(400) });
+
+type Refusal = { status: 404 | 422; code: string; message: string };
+
+/** The provider whose key a request names, or why it has none. */
+function keyProvider(id: string): { id: KeyProviderId } | Refusal {
+  const info = providerInfo(id);
+  if (!info) return { status: 404, code: "NOT_FOUND", message: `Provider "${id}" not found.` };
+  if (!isKeyProvider(info.id)) {
+    return { status: 422, code: "KEY_NOT_SUPPORTED", message: `${info.name} doesn't take a key.` };
+  }
+  return { id: info.id };
+}
+
+/**
+ * Provider status (never the keys), a provider's saved key, and the provider and model per role.
+ * A key goes in and never comes back out: every answer is `settings.view()`.
+ */
 export const settingsRoutes: FastifyPluginAsyncZod<{ settings: Settings }> = async (
   app,
   { settings },
 ) => {
   app.get("/settings", async () => settings.view());
+
+  app.put(
+    "/settings/providers/:id/key",
+    { schema: { params: providerParams, body: keyBody } },
+    async (req, reply) => {
+      const provider = keyProvider(req.params.id);
+      if ("status" in provider) {
+        return reply.code(provider.status).send({ code: provider.code, message: provider.message });
+      }
+      settings.setKey(provider.id, req.body.key);
+      return settings.view();
+    },
+  );
+
+  app.delete(
+    "/settings/providers/:id/key",
+    { schema: { params: providerParams } },
+    async (req, reply) => {
+      const provider = keyProvider(req.params.id);
+      if ("status" in provider) {
+        return reply.code(provider.status).send({ code: provider.code, message: provider.message });
+      }
+      settings.removeKey(provider.id);
+      return settings.view();
+    },
+  );
 
   app.put("/settings/roles", { schema: { body: rolesPatchSchema } }, async (req, reply) => {
     try {

@@ -29,7 +29,10 @@
   --grid-dot: #aabec8;
   --plus: #1e8a62;
   --minus: #b23a30;
-  /* A missing status, and a menu's Remove item: ink on its fill. */
+  /* A connected status (a provider's pill); a missing status, and a menu's Remove item: ink on
+     its fill. */
+  --ok-bg: #d3efe0;
+  --ok-ink: #135c41;
   --off-bg: #f8dcd8;
   --off-ink: #8f2a22;
   /* Tile faces: the top band of a tile that takes modules and of every other tile, the User tile
@@ -90,6 +93,8 @@
   --grid-dot: #11242e;
   --plus: #3ea66a;
   --minus: #e06a5e;
+  --ok-bg: #1d5a3c;
+  --ok-ink: #c4f2d8;
   --off-bg: #5d2823;
   --off-ink: #ffcdc6;
   --cap-host: #2a6690;

@@ -1,17 +1,25 @@
 /**
- * Settings: connections first (each provider's status and exact setup command), then
- * the design chat's model. Keys and logins are set up outside the UI; Jeeves never shows them.
+ * Settings: connections first, one card per provider (its status, then a key field, or the
+ * command for a CLI login), then the design chat's model. A saved key is never shown again: the
+ * field is emptied after a save and never refilled, and the API never answers with a key.
  */
-import { Autocomplete, Button, CopyButton, Loader, NativeSelect } from "@mantine/core";
+import {
+  Autocomplete,
+  Button,
+  CopyButton,
+  Loader,
+  NativeSelect,
+  PasswordInput,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
 import {
   api,
   type ModelRole,
+  type ProviderAuth,
   type ProviderStatus,
   type RoleModel,
   type SettingsView as Settings,
 } from "../project/api.ts";
-import { StatusBadge } from "../shell/StatusBadge.tsx";
 import "./settings.css";
 
 const MODEL_ROWS: {
@@ -38,9 +46,181 @@ function modelProblem(provider: ProviderStatus | undefined, model: string) {
   return undefined;
 }
 
-function setupCommand(provider: ProviderStatus): string {
-  if (provider.auth.type === "cli-login") return provider.auth.command;
-  return `export ${provider.auth.envVar}=`;
+const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+/** The length the server accepts, once trimmed. */
+const KEY_LENGTH = { min: 8, max: 400 };
+
+/**
+ * A key provider's field: with no key, a password box and Save key; with a saved key, Saved,
+ * Replace and Remove; with a key from the environment, only where it comes from.
+ */
+function KeyField({
+  provider,
+  auth,
+  onSettings,
+}: {
+  provider: ProviderStatus;
+  auth: Extract<ProviderAuth, { type: "api-key" }>;
+  onSettings: (next: Settings) => void;
+}) {
+  const [value, setValue] = useState("");
+  const [replacing, setReplacing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+
+  if (provider.keySource === "env") {
+    return (
+      <p className="settings-key-env">
+        Set by <code>{auth.envVar}</code> in the environment
+      </p>
+    );
+  }
+
+  const run = async (call: () => Promise<Settings>, done?: () => void) => {
+    setBusy(true);
+    setError(undefined);
+    try {
+      const next = await call();
+      done?.();
+      onSettings(next);
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const alert = error ? (
+    <span className="settings-error" role="alert">
+      {error}
+    </span>
+  ) : null;
+
+  if (provider.keySource === "file" && !replacing) {
+    return (
+      <div className="settings-key">
+        <span className="settings-key-saved">
+          <span className="settings-key-dots" aria-hidden="true">
+            ••••••••••••••••
+          </span>
+          Saved
+        </span>
+        <button
+          type="button"
+          className="settings-button"
+          aria-label={`Replace ${provider.name} key`}
+          onClick={() => {
+            setError(undefined);
+            setReplacing(true);
+          }}
+        >
+          Replace
+        </button>
+        <button
+          type="button"
+          className="settings-button"
+          data-tone="danger"
+          aria-label={`Remove ${provider.name} key`}
+          disabled={busy}
+          onClick={() => void run(() => api.removeKey(provider.id))}
+        >
+          Remove
+        </button>
+        {alert}
+      </div>
+    );
+  }
+
+  const key = value.trim();
+  return (
+    <form
+      className="settings-key"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (key.length < KEY_LENGTH.min || key.length > KEY_LENGTH.max) {
+          setError(`A key is ${KEY_LENGTH.min} to ${KEY_LENGTH.max} characters.`);
+          return;
+        }
+        void run(
+          () => api.setKey(provider.id, key),
+          () => {
+            setValue("");
+            setReplacing(false);
+          },
+        );
+      }}
+    >
+      <PasswordInput
+        className="settings-key-input"
+        aria-label={`${provider.name} key`}
+        placeholder="Paste a key"
+        autoComplete="off"
+        spellCheck={false}
+        value={value}
+        onChange={(event) => setValue(event.currentTarget.value)}
+      />
+      <button type="submit" className="settings-button" data-tone="primary" disabled={busy}>
+        Save key
+      </button>
+      {replacing ? (
+        <button
+          type="button"
+          className="settings-button"
+          onClick={() => {
+            setValue("");
+            setError(undefined);
+            setReplacing(false);
+          }}
+        >
+          Cancel
+        </button>
+      ) : null}
+      {alert}
+    </form>
+  );
+}
+
+/** One provider: its name and status pill, one line of help, then its key field or command. */
+function ProviderCard({
+  provider,
+  onSettings,
+}: {
+  provider: ProviderStatus;
+  onSettings: (next: Settings) => void;
+}) {
+  const { auth } = provider;
+  const help = provider.help ?? provider.description;
+  return (
+    <li className="settings-provider" aria-label={provider.name}>
+      <div className="settings-provider-head">
+        <span className="settings-provider-name">{provider.name}</span>
+        <span className="settings-status" data-ready={provider.ready}>
+          <span className="settings-status-dot" aria-hidden="true" />
+          {provider.status}
+        </span>
+      </div>
+      <p className="settings-connection-help" title={help}>
+        {help}
+      </p>
+      {auth.type === "api-key" ? (
+        <KeyField provider={provider} auth={auth} onSettings={onSettings} />
+      ) : (
+        <CopyButton value={auth.command} timeout={1500}>
+          {({ copied, copy }) => (
+            <button
+              type="button"
+              className="settings-setup"
+              onClick={copy}
+              aria-label={`Copy ${provider.name} setup command`}
+            >
+              <code>{auth.command}</code>
+              <span className="settings-copy">{copied ? "Copied" : "Copy"}</span>
+            </button>
+          )}
+        </CopyButton>
+      )}
+    </li>
+  );
 }
 
 export function SettingsView() {
@@ -152,7 +332,7 @@ export function SettingsView() {
     <div className="settings-view">
       <h1 className="settings-title">Settings</h1>
 
-      <section className="settings-card" aria-labelledby="settings-connections">
+      <section className="settings-section" aria-labelledby="settings-connections">
         <h2 id="settings-connections">Connections</h2>
         {settings.fakeModel ? (
           <p className="settings-note" role="status">
@@ -161,35 +341,13 @@ export function SettingsView() {
           </p>
         ) : null}
         <ul className="settings-providers">
-          {settings.providers.map((p) => {
-            const command = setupCommand(p);
-            return (
-              <li key={p.id}>
-                <span className="settings-provider-name">{p.name}</span>
-                <StatusBadge color={p.ready ? "teal" : "red"}>{p.status}</StatusBadge>
-                <p className="settings-connection-help" title={p.help ?? p.description}>
-                  {p.help ?? p.description}
-                </p>
-                <CopyButton value={command} timeout={1500}>
-                  {({ copied, copy }) => (
-                    <button
-                      type="button"
-                      className="settings-setup"
-                      onClick={copy}
-                      aria-label={`Copy ${p.name} setup command`}
-                    >
-                      <code>{command}</code>
-                      <span className="settings-copy">{copied ? "Copied" : "Copy"}</span>
-                    </button>
-                  )}
-                </CopyButton>
-              </li>
-            );
-          })}
+          {settings.providers.map((p) => (
+            <ProviderCard key={p.id} provider={p} onSettings={setSettings} />
+          ))}
         </ul>
         <p className="settings-help">
-          Keys are read from the environment or <code>{settings.configPath}</code>. They're never
-          shown here or stored in designs.
+          A key is saved to <code>{settings.configPath}</code>, readable by you only, and never
+          shown again or stored in designs. A key set in the environment wins.
         </p>
       </section>
 
