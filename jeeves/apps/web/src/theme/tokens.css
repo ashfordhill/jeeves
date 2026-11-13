@@ -48,6 +48,9 @@
   /* Behind a dot or a small pill on a coloured card; dividers inside rails and menus. */
   --badge: #ffffff;
   --hairline: #cfe0e8;
+  /* Text boxes and rows you can click (an inspector's connections), and their borders. */
+  --control: #ffffff;
+  --control-line: #9db6c3;
   --select-ring: rgba(26, 143, 212, 0.5);
   --banner: #d4f0f8;
   --header-height: 56px;
@@ -100,6 +103,8 @@
   --ic-fill: #dcebf2;
   --badge: #0f1d26;
   --hairline: #2a4554;
+  --control: #0f1d26;
+  --control-line: #3d5d6d;
   --select-ring: rgba(126, 182, 224, 0.65);
   --banner: #1e3f4e;
   --mantine-color-dimmed: var(--ink-soft);

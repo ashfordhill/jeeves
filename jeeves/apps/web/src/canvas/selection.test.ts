@@ -1,6 +1,7 @@
-// The open module is view state that lives only while its host tile and itself exist, and the
-// Detailed view's drawn lines map to and from canonical relationships; an open module marks only
-// its own drawn lines and its own row.
+// The open module is view state that lives only while its host tile and itself exist, the
+// inspector's trail follows renames and drops removed tiles, and the Detailed view's drawn lines
+// map to and from canonical relationships; an open module marks only its own drawn lines and its
+// own row.
 import {
   applyOperations,
   buildStudioCommand,
@@ -17,7 +18,9 @@ import {
   drawnSelection,
   followKeys,
   followSelection,
+  followTrail,
   liveSelection,
+  liveTrail,
 } from "./selection.ts";
 
 const design = studioArchitectureExample("studio-youtube").design;
@@ -90,6 +93,39 @@ describe("a selection after a rename re-keyed IDs", () => {
     expect(back["worker-service"]).toBe("worker-service");
     expect(back["worker-service-custom"]).toBe("worker-service-custom");
     expect(back["video-worker"]).toBe("video-worker~4");
+  });
+});
+
+describe("the inspector's trail", () => {
+  it("follows a rename to the new IDs, as the selection does", () => {
+    const renamed = [
+      { from: "worker-service", to: "video-worker" },
+      { from: "video-worker", to: "media-worker" },
+    ];
+    expect(followTrail(["upload", "worker-service", "@upload"], renamed)).toEqual([
+      "upload",
+      "media-worker",
+      "@upload",
+    ]);
+    const untouched = ["upload", "transcoder"];
+    expect(followTrail(untouched, renamed)).toBe(untouched);
+  });
+
+  it("drops a tile that no longer exists and keeps the rest, the user and actions too", () => {
+    const tinyurl = studioArchitectureExample("studio-tinyurl").design;
+    const removed = applyOperations(
+      tinyurl,
+      buildStudioCommand(tinyurl, { type: "removeTile", tile: "stats-api" }).ops,
+    );
+    if (!removed.ok) throw new Error(removed.errors.map((item) => item.message).join(" "));
+    const trail = ["@actor", "@download", "stats-api", "redirect"];
+    expect(liveTrail(laneGraph(removed.design), trail)).toEqual([
+      "@actor",
+      "@download",
+      "redirect",
+    ]);
+    // Nothing gone: the same trail.
+    expect(liveTrail(laneGraph(tinyurl), trail)).toBe(trail);
   });
 });
 

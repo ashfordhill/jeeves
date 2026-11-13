@@ -933,7 +933,8 @@
   gap: 4px;
 }
 
-/* The inspector page's Options and Modules headings, each starting a section below a rule. The rule
+/* The inspector page's Options, Connections and Modules headings, each starting a section below a
+   rule. The rule
    mixes the line colour, so it shows on the dark rail too. */
 .studio-selection-summary .lane-inspector-section {
   margin: 18px 0 10px;
@@ -1144,6 +1145,86 @@
 
 .lane-inspector-back + .studio-inspector-form {
   margin-top: 0;
+}
+
+/* The trail's Back, to the tile a Connections row left: the inspector's first element, above its
+   page (a module page's own Back sits below it). */
+.lane-inspector-trail {
+  flex: none;
+  padding: 8px 16px 0;
+}
+
+.lane-inspector-trail > .lane-inspector-back {
+  margin-bottom: 4px;
+}
+
+/* A tile's or an action's Connections, as the UI refresh preview draws them: one row per line,
+   incoming first; From or To, the other end's icon, its name and kind, and at the right what the
+   line does. Each row is a button that selects the other end. */
+.lane-connection-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lane-connection {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 9px;
+  border: 1.5px solid var(--control-line);
+  border-radius: 9px;
+  background: var(--control);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lane-connection:hover {
+  border-color: var(--ink);
+}
+
+.lane-connection:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.lane-connection-way {
+  width: 34px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.lane-connection-icon {
+  display: flex;
+  justify-content: center;
+  width: 18px;
+}
+
+.lane-connection-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.lane-connection small {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 700;
 }
 
 /* The Modules section: a stack of cards (icon, name, kind and a two-line description), each one

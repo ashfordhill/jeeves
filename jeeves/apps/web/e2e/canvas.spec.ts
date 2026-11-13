@@ -206,7 +206,8 @@ test("preserves inferred access in source and blueprint without exposing ineffec
   await tile(page, "URL database").click();
   await expect(inspector.getByLabel("Owner", { exact: true })).toHaveCount(0);
   expect(studioStoreAccess(before, "redirect-db")).toBe("read");
-  // The tile lists no connections in words; its relationships are the drawn lines.
+  // No button on the tile's page names a relationship as "A → B"; its Connections rows name the
+  // other end.
   await expect(inspector.getByRole("button", { name: /→/ })).toHaveCount(0);
   await clickLine(page, "redirect-db");
   await expect(inspector.locator(".lane-connection-label")).toHaveText(

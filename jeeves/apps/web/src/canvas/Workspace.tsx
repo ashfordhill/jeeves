@@ -12,7 +12,10 @@
 // to its actions have none. A new selection or revision closes it. Settings and modules are edited
 // in the inspector (`TileInspector.tsx`), an action's name in its own (`ActionInspector`), and an
 // entry's lane in its own (`EntrySummary`).
-// The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
+// The selection (`selection.ts`) is a tile or a line, and with a tile, its open module. A tile's or
+// an action's Connections row selects the other end (`jump`) and puts the tile it left on the trail;
+// while the trail has a tile, a Back to it heads the inspector (`back`). Opening or closing a module
+// of the same tile keeps the trail; every other selection empties it.
 import type { BoardHandle, BoardMode, Point } from "@jeeves/board";
 import {
   applyOperations,
@@ -40,6 +43,7 @@ import {
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
+  IconArrowLeft,
   IconArrowRight,
   IconDownload,
   IconFocusCentered,
@@ -49,7 +53,7 @@ import {
   IconPointer,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
@@ -78,11 +82,13 @@ import { SourceDiagnostics } from "./SourceDiagnostics.tsx";
 import {
   followKeys,
   followSelection,
+  followTrail,
   liveSelection,
+  liveTrail,
   type WorkspaceSelection,
 } from "./selection.ts";
 import { dialogOpen, historyKey, inField } from "./shortcuts.ts";
-import { TileInspector } from "./TileInspector.tsx";
+import { ConnectionList, hasLines, LaneNodeIcon, TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
 
 type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
@@ -115,9 +121,11 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [mode, setMode] = useState<BoardMode>("select");
   const graph = useMemo(() => laneGraph(loaded.design), [loaded.design]);
   const [pick, setPick] = useState<WorkspaceSelection>(() => startsSelected(graph));
-  // A rename that re-keyed IDs (IDs follow names) moves the selection to the new IDs at once,
-  // before anything renders the old ones. The inspector's pages keep their React keys (`keyOf`),
-  // so a field being typed in keeps its focus and draft.
+  // The tiles the Connections rows left, oldest first: view state, never in the design or chat.
+  const [kept, setTrail] = useState<readonly string[]>([]);
+  // A rename that re-keyed IDs (IDs follow names) moves the selection and the trail to the new IDs
+  // at once, before anything renders the old ones. The inspector's pages keep their React keys
+  // (`keyOf`), so a field being typed in keeps its focus and draft.
   const [followed, setFollowed] = useState(() => ({
     renamed: loaded.renamed,
     keys: {} as Readonly<Record<string, string>>,
@@ -130,8 +138,12 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         ? followKeys(followed.keys, renamed, loaded.design.revision)
         : followed.keys,
     });
-    if (renamed?.length) setPick((current) => followSelection(current, renamed));
+    if (renamed?.length) {
+      setPick((current) => followSelection(current, renamed));
+      setTrail((current) => followTrail(current, renamed));
+    }
   }
+  const trail = liveTrail(graph, kept);
   const keyOf = (id: string) => followed.keys[id] ?? id;
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
@@ -203,8 +215,8 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     return () => window.removeEventListener("keydown", shortcut);
   }, []);
 
-  /** Selects a tile (with one of its modules open, or none) or a line, or clears. */
-  const select = (next: WorkspaceSelection) => {
+  /** Selects a tile (with one of its modules open, or none) or a line, or clears, with a trail. */
+  const choose = (next: WorkspaceSelection, nextTrail: readonly string[]) => {
     if (
       next.tile !== selection.tile ||
       next.line !== selection.line ||
@@ -213,10 +225,21 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       void formDrafts.flushProject(projectId, true);
     setOwnerPick(undefined);
     setPick(next);
+    setTrail(nextTrail);
     if (next.tile || next.line)
       setPreferences((current) =>
         current.inspectorOpen ? current : { ...current, inspectorOpen: true },
       );
+  };
+  /** Selects a tile (with one of its modules open, or none) or a line, or clears; no trail. */
+  const select = (next: WorkspaceSelection) => choose(next, []);
+  /** A Connections row: selects `to`, with the selected tile on the trail. */
+  const jump = (to: string) =>
+    choose({ tile: to }, selection.tile ? [...trail, selection.tile] : trail);
+  /** Back: selects the trail's last tile and takes it off. */
+  const backTo = trail.at(-1);
+  const back = () => {
+    if (backTo !== undefined) choose({ tile: backTo }, trail.slice(0, -1));
   };
   const creation = useLaneCreation({
     projectId,
@@ -568,6 +591,9 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 <IconX size={17} />
               </button>
             </div>
+            {backTo !== undefined ? (
+              <TrailBack graph={graph} to={backTo} name={nameOf} onBack={back} />
+            ) : null}
             <Inspector
               key={selection.tile ? keyOf(selection.tile) : (selection.line ?? LANE_ACTOR)}
               loaded={loaded}
@@ -575,6 +601,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
               selection={selection}
               moduleKey={selection.module && keyOf(selection.module)}
               onSelect={select}
+              onModule={(module) => {
+                if (selection.tile) choose({ tile: selection.tile, module }, trail);
+              }}
+              onJump={jump}
               adding={adding}
             />
             {selectedOwner ? (
@@ -590,6 +620,38 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 }
 
 /**
+ * The inspector's first element while the trail has a tile: Back to the last one, drawn as a module
+ * page's Back to its tile (an arrow, the tile's icon and its name).
+ */
+function TrailBack({
+  graph,
+  to,
+  name,
+  onBack,
+}: {
+  graph: LaneGraph;
+  to: string;
+  name: (id: string) => string;
+  onBack: () => void;
+}) {
+  return (
+    <div className="lane-inspector-trail">
+      <button
+        type="button"
+        className="lane-inspector-back"
+        aria-label={`Back to ${name(to)}`}
+        title={`Back to ${name(to)}`}
+        onClick={onBack}
+      >
+        <IconArrowLeft size={16} aria-hidden />
+        <LaneNodeIcon graph={graph} id={to} size={16} className="lane-inspector-back-icon" />
+        <span>{name(to)}</span>
+      </button>
+    </div>
+  );
+}
+
+/**
  * A tile, an action, a connection, an entry, the user's line to an action, or (for the actor and
  * no selection) the system.
  */
@@ -599,6 +661,8 @@ function Inspector({
   selection,
   moduleKey,
   onSelect,
+  onModule,
+  onJump,
   adding,
 }: {
   loaded: Loaded;
@@ -607,6 +671,10 @@ function Inspector({
   /** The open module's page key, which stays when a rename re-keys the module. */
   moduleKey?: string;
   onSelect: (next: WorkspaceSelection) => void;
+  /** Opens one of the selected tile's modules, or (undefined) returns to the tile; keeps the trail. */
+  onModule: (module?: string) => void;
+  /** A Connections row: selects the other end, with a Back to this tile. */
+  onJump: (to: string) => void;
   /** The tiles' module menus and the pick, for the Modules section's `+`. */
   adding: ModuleAdding;
 }) {
@@ -615,17 +683,29 @@ function Inspector({
   const edge = selection.line ? graph.edges.find((item) => item.id === selection.line) : undefined;
   const action = selection.tile ? laneActionOf(selection.tile) : undefined;
   if (action)
-    return <ActionInspector projectId={project.id} design={design} lane={action} name={name} />;
+    return (
+      <ActionInspector
+        projectId={project.id}
+        design={design}
+        graph={graph}
+        lane={action}
+        name={name}
+        onJump={onJump}
+      />
+    );
   if (selection.tile && selection.tile !== LANE_ACTOR)
     return (
       <TileInspector
         projectId={project.id}
         design={design}
+        graph={graph}
         id={selection.tile}
         name={name(selection.tile)}
+        nameOf={name}
         module={selection.module}
         moduleKey={moduleKey}
-        onModule={(module) => onSelect({ tile: selection.tile, module })}
+        onModule={onModule}
+        onJump={onJump}
         adding={adding}
       />
     );
@@ -670,9 +750,13 @@ function Inspector({
     return (
       <div className="studio-selection-summary">
         <h2>Connection</h2>
-        <p>
-          {name(edge.source)} → {name(edge.target)}
-        </p>
+        <EntryPath
+          name={name}
+          graph={graph}
+          from={edge.source}
+          to={edge.target}
+          onSelect={onSelect}
+        />
         <p className="lane-connection-label">{connection?.planned.label}</p>
         <dl className="lane-facts" aria-label="Relationship">
           <dt>Interaction</dt>
@@ -704,7 +788,10 @@ function Inspector({
   );
 }
 
-/** Two buttons joined by an arrow, each selecting its tile: the user or an action, and a tile. */
+/**
+ * Two buttons joined by an arrow, each selecting its tile: a line's two ends (the user or an
+ * action, and a tile; or a connection's two tiles).
+ */
 function EntryPath({
   name,
   graph,
@@ -746,21 +833,27 @@ function EntryPath({
 }
 
 /**
- * A lane action: its name (the word on its tile), its lane (fixed) and its warnings. Its entries
- * are the lines drawn from it; an action with none is flagged by a warning.
+ * A lane action: its name (the word on its tile), its lane (fixed), its warnings, then its
+ * Connections: the user's line to it and its entries, as a tile's are. An action with no entry is
+ * flagged by a warning.
  */
 function ActionInspector({
   projectId,
   design,
+  graph,
   lane,
   name,
+  onJump,
 }: {
   projectId: string;
   design: DesignDocument;
+  graph: LaneGraph;
   lane: StudioLane;
   name: (id: string) => string;
+  onJump: (to: string) => void;
 }) {
   const node = laneActionNode(lane);
+  const idPrefix = useId();
   return (
     <div className="studio-selection-summary">
       <h2 className="lane-inspector-title">
@@ -780,6 +873,14 @@ function ActionInspector({
           {laneNames[lane]}
         </dd>
       </dl>
+      {hasLines(graph, node) ? (
+        <section aria-labelledby={`${idPrefix}-connections`}>
+          <h3 id={`${idPrefix}-connections`} className="lane-inspector-section">
+            Connections
+          </h3>
+          <ConnectionList design={design} graph={graph} id={node} name={name} onJump={onJump} />
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -42,7 +42,7 @@ test("a historical preset design autosaves its useful TTL and pool controls thro
     await ready(page);
     expect(await values()).toEqual({ ttl: 420, mirror: 420 });
     await tile(page, "Watch API").click();
-    // One page in the sketch's order: Name, Description, Options, then Modules.
+    // One page in the sketch's order: Name, Description, Options, Connections, then Modules.
     expect(
       await inspector
         .locator("form label, form h3")
@@ -53,6 +53,7 @@ test("a historical preset design autosaves its useful TTL and pool controls thro
       "Options",
       "Request timeout",
       "Concurrency limit",
+      "Connections",
       "Modules",
     ]);
     // A module's card opens its own page: Back, Name, Description, Options, then Remove module.

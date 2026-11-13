@@ -397,9 +397,9 @@ function ModuleStatusLine({ status }: { status: NonNullable<ReturnType<typeof mo
 
 /**
  * The inspector for a tile's element, or for the system when `element` is undefined: one page
- * with the header (icon, Name, kind), Description, Options when it has fields, and the Modules
- * slot when `modules` is given. A tile's `warnings` sit in its header; the system's follow its
- * Description.
+ * with the header (icon, Name, kind), Description, Options when it has fields, then the
+ * Connections slot when `connections` is given and the Modules slot when `modules` is. A tile's
+ * `warnings` sit in its header; the system's follow its Description.
  */
 export function TargetInspector({
   projectId,
@@ -407,6 +407,7 @@ export function TargetInspector({
   label,
   design,
   warnings,
+  connections,
   modules,
 }: {
   projectId: string;
@@ -415,6 +416,8 @@ export function TargetInspector({
   label: string;
   design: DesignDocument;
   warnings?: ReactNode;
+  /** The Connections section's content: the tile's lines. */
+  connections?: ReactNode;
   /** The Modules section's content. */
   modules?: ReactNode;
 }) {
@@ -428,7 +431,14 @@ export function TargetInspector({
   );
   if (!spec) return null;
   return (
-    <TargetForm spec={spec} design={design} target={target} warnings={warnings} modules={modules} />
+    <TargetForm
+      spec={spec}
+      design={design}
+      target={target}
+      warnings={warnings}
+      connections={connections}
+      modules={modules}
+    />
   );
 }
 
@@ -437,12 +447,14 @@ function TargetForm({
   design,
   target: ref,
   warnings,
+  connections: lines,
   modules,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
   target: InspectorTarget;
   warnings?: ReactNode;
+  connections?: ReactNode;
   modules?: ReactNode;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
@@ -562,6 +574,14 @@ function TargetForm({
             Options
           </h3>
           {options.map((field) => draftField(field))}
+        </section>
+      ) : null}
+      {lines ? (
+        <section aria-labelledby={`${idPrefix}-connections`}>
+          <h3 id={`${idPrefix}-connections`} className="lane-inspector-section">
+            Connections
+          </h3>
+          {lines}
         </section>
       ) : null}
       {modules ? (

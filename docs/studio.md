@@ -95,9 +95,10 @@ future generator's frontend templates) which user flow each service serves.
   drawn; they are cards on their tile's inspector page ([Inspector](#inspector)). C1 people,
   external systems and packages are not shown.
 
-To trace relationships, select: a tile's lines turn blue, and a selected line shows its
-endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
-stays clickable. The highlight ends when the selection does, so clicking empty paper restores the
+To trace relationships, select: a tile's lines turn blue and its inspector lists them as
+Connections rows, each selecting the other end ([Inspector](#inspector)), and a selected line
+shows its endpoints, saved label and interaction in the inspector. Every line stays drawn and
+every tile stays clickable. The highlight ends when the selection does, so clicking empty paper restores the
 plain view; there is no separate mode to leave. Remove a relationship with its line's right-click
 menu, **Remove link**.
 When a removed tile had a neighbour, the selection moves to it. **Fit** frames the whole design.
@@ -590,7 +591,12 @@ this order:
    unchanged. A saved number outside its bound (an older design) still opens: its own field shows
    the value and the reason, and only that field shows until a value in range is saved
    ([settings](studio-settings.md#normal-feature-configuration)).
-4. **Modules**, when the tile has modules or can hold them: a stack of cards drawn as the module
+4. **Connections**, when the tile has any line: one row per line, incoming first, each a button:
+   a small **From** or **To**, the other end's icon, its name and kind, and at the right what the
+   line does, in the blueprint's words (its connection's store access, else its channel use):
+   writes, reads, publishes or consumes, and calls for anything else (a request, an entry, the
+   user's line to an action).
+5. **Modules**, when the tile has modules or can hold them: a stack of cards drawn as the module
    menu draws them, in the colours of the kind's group, each one button ("Open <module>"): its
    name and, at the right, a pill with the dot and word for what its kind generates in the tile
    (Generated, Building block or You write it); then its icon, its kind and its Description on
@@ -598,8 +604,14 @@ this order:
    same module menu as the board's, out to the left of the rail
    ([Adding a module](#adding-a-module)).
 
-The page lists no connections: the drawn lines are the relationships, and selecting one shows its
-details.
+A click on a Connections row selects the other end on the board (a tile, an action or the user)
+and opens its page, with **Back to <tile>** (an arrow, the tile's icon and name) as the
+inspector's first element, above the page. Each further row adds a step; Back returns one step at
+a time. Opening one of the reached tile's modules, or that module's own Back, keeps the trail: the
+module page shows the trail's Back above its own. Any other selection (a click on the board or a
+module row, a warning, a diagnostic, clearing) empties it. The trail follows the new IDs of a
+rename and drops a tile that is gone; like the selection it is view state (`selection.ts`), never
+saved and never sent to chat.
 
 - Ownership, grants and legacy inferred writers remain in source and read-only diagnostics.
   Normal forms do not require a permission matrix or duplicate writer edit. See
@@ -635,7 +647,8 @@ details.
   template can't use; 9 other saved values can't be used either."): the study keeps values no
   control edits, such as its links' Service identity and its replicas. Nothing else changes,
   and Undo returns the study.
-- A line shows endpoints, its saved action and interaction. Only its action label
+- A line shows its two ends as two buttons joined by an arrow, each selecting its tile (as a lane
+  entry's do), then its saved action and interaction. Only its action label
   is normally editable. Transport/security/retry declarations remain in source; new local links
   use HTTP where applicable and Private network explicitly.
 - Select the user (or clear selection) to open the system inspector: its Name, Description, then
@@ -643,8 +656,9 @@ details.
   Templates are reached only through [modules](#adding-a-module); a design that attached the
   retired video or YouTube feature preset stays readable, editable and exportable.
 - An action: its lane icon and name, then its warnings, **Name** (the word on its tile, at most 24
-  characters; it autosaves like a tile's name) and its **Lane** (read-only). Its entries are the
-  lines drawn from it; an action with none has a warning.
+  characters; it autosaves like a tile's name) and its **Lane** (read-only), then
+  **Connections**, as a tile's: From the user, then To each tile its entries reach. Its entries
+  are the lines drawn from it; an action with none has a warning.
 - A lane entry (its line): its action, then the **lane row**: download and upload as icons (the
   name is the tooltip), the current one filled yellow. Clicking the other moves the entry to that
   lane's action; when that lane has no action, or its action already has 4 entries, it is faded

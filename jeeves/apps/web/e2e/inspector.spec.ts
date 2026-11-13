@@ -1,4 +1,7 @@
-/** The tile, system and action inspectors are one page: no tabs, connection lists or Entries. */
+/**
+ * The tile, system and action inspectors are one page: no tabs or Entries; a tile's and an
+ * action's lines are its Connections rows.
+ */
 import type { Locator, Page } from "@playwright/test";
 import {
   clickLine,
@@ -37,12 +40,15 @@ test("a tile is one page: Name, Description and Modules autosave, grow and undo"
   await expect(inspector.getByRole("tablist")).toHaveCount(0);
   await expect(inspector.getByRole("tabpanel")).toHaveCount(0);
   // The Name is the title, printed once; Description replaces Purpose; no Options here, then the
-  // modules. The relationships are the drawn lines, never a list in words.
+  // tile's lines as Connections rows (one per drawn line) and the modules.
   const name = inspector.getByLabel("Name", { exact: true });
   await expect(name).toHaveValue("Redirect service");
   await expect(inspector.getByText("Redirect service", { exact: true })).toHaveCount(0);
   await expect(inspector.getByText(/^(Purpose|Goal)$/)).toHaveCount(0);
-  expect(await outline(inspector)).toEqual(["Name", "Description", "Modules"]);
+  expect(await outline(inspector)).toEqual(["Name", "Description", "Connections", "Modules"]);
+  await expect(
+    inspector.getByRole("list", { name: "Connections", exact: true }).getByRole("button"),
+  ).toHaveCount(4);
   await expect(
     inspector.getByRole("list", { name: "Modules", exact: true }).getByRole("button"),
   ).toHaveCount(4);
@@ -80,12 +86,12 @@ test("a tile is one page: Name, Description and Modules autosave, grow and undo"
   await expect(tile(page, "Redirect service")).toBeVisible();
   await expect(name).toHaveValue("Redirect service");
 
-  // A tile with neither options nor modules is its header and Description.
+  // A tile with neither options nor modules is its header, Description and Connections.
   await tile(page, "URL cache").click();
-  expect(await outline(inspector)).toEqual(["Name", "Description"]);
+  expect(await outline(inspector)).toEqual(["Name", "Description", "Connections"]);
 });
 
-test("the system page: Name, Description, then warnings; actions list no entries", async ({
+test("the system page: Name, Description, then warnings; an action lists its lines", async ({
   page,
   tinyurl: id,
 }) => {
@@ -120,10 +126,22 @@ test("the system page: Name, Description, then warnings; actions list no entries
     .poll(async () => ({ ...(await design(page, id)), revision: 0 }))
     .toEqual({ ...before, revision: 0 });
 
-  // An action keeps its Name, Lane and warnings; its entries are its drawn lines.
+  // An action keeps its Name, Lane and warnings; its lines (the user's, then its entries) are its
+  // Connections rows, with no separate Entries list.
   await tile(page, "Open link").click();
   await expect(inspector.getByLabel("Name", { exact: true })).toHaveValue("Open link");
   await expect(inspector.getByRole("definition")).toContainText("Download");
   await expect(inspector.getByText("Entries", { exact: true })).toHaveCount(0);
-  await expect(inspector.getByRole("button", { name: "Redirect service" })).toHaveCount(0);
+  await expect
+    .poll(() =>
+      inspector
+        .getByRole("list", { name: "Connections", exact: true })
+        .getByRole("button")
+        .evaluateAll((rows) => rows.map((row) => row.getAttribute("aria-label"))),
+    )
+    .toEqual([
+      "From User: calls",
+      "To Stats API, Microservice: calls",
+      "To Redirect service, Microservice: calls",
+    ]);
 });

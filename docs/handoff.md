@@ -12313,3 +12313,95 @@ show as changed and are not this unit's; left untouched and unstaged.
 **For the next unit.** UI07 can start. `--badge`, `--hairline` and `--sfam` are in `tokens.css`;
 the module cards are `ModuleCards` in `TileInspector.tsx`, the dot is `GenerationDot` in
 `ModuleMenu.tsx`, and the groups are `studio/module-groups.ts`.
+
+## 2026-11-13 — UI07: The inspector lists connections, with Back
+
+**What changed.**
+- `canvas/selection.ts`: `followTrail(trail, renamed)` (each tile ID follows a re-key, as the
+  selection's does) and `liveTrail(graph, trail)` (drops an ID that no longer names a node); each
+  returns the same array when nothing changes.
+- `canvas/Workspace.tsx`: a trail of tile IDs beside `pick` (state `kept`, read through
+  `liveTrail`; a rename moves it with `followTrail`). `choose(next, trail)` underlies `select`
+  (empties the trail), `jump(to)` (pushes the selected tile, selects `to`) and `back()` (pops and
+  selects it). The inspector's module cards and a module page's own Back keep the trail
+  (`onModule`); every other selection empties it. `TrailBack`: while the trail has a tile, a
+  `.lane-inspector-back` button "Back to <tile>" (arrow, the tile's icon, its name) in a
+  `.lane-inspector-trail` div between the rail header and the page. `ActionInspector` gets a
+  Connections section (last on its page). A connection's page shows `EntryPath`'s two buttons in
+  place of "A → B".
+- `canvas/TileInspector.tsx`: `connectionWords(design)` (per design, in a `WeakMap`: blueprint
+  connection ID → writes, reads, publishes or consumes, from `access`, else `channelUse`),
+  `LaneNodeIcon` (the user's figure, an action's lane icon, a kind's glyph in its family),
+  `hasLines` and `ConnectionList` (rows incoming first: From or To, icon, name · kind, word; each a
+  button named like "To URL database, Database: writes"; a click calls `onJump` with the other
+  end). `TileInspector` takes `graph`, `nameOf` and `onJump`, and passes the list as
+  `TargetInspector`'s `connections` when the tile has a line.
+- `studio/InspectorForm.tsx`: `TargetInspector` and `TargetForm` take `connections`, drawn as a
+  Connections section (`h3.lane-inspector-section`) directly above Modules.
+- `canvas.css`: `.lane-inspector-trail`; `.lane-connection-list`; `.lane-connection` as the
+  preview's `.lnk` (four-column grid, 6px 9px, `1.5px solid var(--control-line)`, 9px radius,
+  `--control` fill, 14px/800; hover border `--ink`, focus ring `--blue`); `-way` (10px/900
+  uppercase, 34px wide), `-icon`, `-name` (cut with an ellipsis), `small` (11.5px/700
+  `--ink-soft`). `tokens.css`: `--control` and `--control-line` in both theme blocks (the
+  inspector never shows in an export, so no capture-block values).
+- Tests: `selection.test.ts` (the trail follows a rename and drops a removed tile); new
+  `TileInspector.test.tsx` (rows and words for Redirect service, Shorten service, the download
+  action and Analytics worker; a click calls jump with `url-db`, then `@upload`; `connectionWords`
+  reads the schema-3 TinyURL foundation, which `designBlueprint` refuses). E2E: see Differences.
+- Docs: `docs/studio.md` (Inspector: the Connections item, a Back paragraph in place of "The page
+  lists no connections", a line's two buttons, an action's Connections; the tracing paragraph),
+  `jeeves/PLAN.md` (`TileInspector.tsx`'s sentence, which still described a Type list and a
+  Modules tab).
+
+**Checks.** `pnpm check` before any change: exit 0, 107 files, 830 tests. After: exit 0, 108 files,
+836 tests (lint's one info is older, in `jeeves-generator/templates/`). `pnpm test:e2e` (native,
+with the mouse spec present): first run 76 passed, 1 failed: `inspector.spec.ts:94`, where this
+unit's new assertion read the User row's text, which carries the figure SVG's whitespace; it now
+reads the rows' accessible names. Alone: 2 passed. Full rerun: 77 passed (73 + 4, 4.8 min).
+`pnpm --filter @jeeves/web build`: exit 0. Mouse check (`ui07-check.spec.ts`, then deleted): 4
+passed, 1440×900 and 1280×800, no page error. On the TinyURL extended study in Simple, light then
+dark: Shorten service lists "From Shorten · Action, calls" and "To URL database · Database,
+writes", Connections directly above Modules, each row on one line with a `--control` fill and
+`--control-line` border (computed `#ffffff`/`#9db6c3`, then `#0f1d26`/`#3d5d6d`). A click on URL
+database selects it on the board and opens its page with Back to Shorten service as the rail's
+first element under its header; Back returns and leaves no Back; a click on URL cache on the board
+removes it. Two jumps (Shorten service → URL database → Redirect service) stack; a module card of
+Redirect service keeps the trail, its own Back below; Back walks back twice. The Shorten action
+lists From User and To Shorten service; its row jumps and Back returns. The `shorten-db` line's
+page shows Shorten service and URL database as buttons and no "→" text; one selects its tile and
+leaves no Back. Rename: Shorten service renamed Shorten API, a jump reads "Back to Shorten API";
+after Undo it reads "Back to Shorten service" and selects it. The fixtures deleted their projects;
+`jeeves_e2e` holds only "TinyURL · studio study" and "E2E Every kind". Six images in
+`docs/plans/ui-refresh/evidence/ui07/` (Shorten service, and URL database with Back, at 1440; a
+module page under the trail at 1280; light and dark) match the Connections rows and Back of
+`preview/inspector-light.png` and `-dark.png`.
+**Differences from the plan.**
+- The words come from `designBlueprintV3(design).connections`, not `designBlueprint`'s: v2 throws
+  `UnsupportedBlueprintContentError` on any schema-3 design with explicit declarations (the
+  TinyURL foundation study; YouTube v2–v4's field designs), which would crash the inspector. v3's
+  `connections` are v2's (both from `projectLegacyBlueprint`; checked equal on TinyURL and YouTube
+  v1). Memoised per design in a `WeakMap`.
+- Opening a module card of a tile reached by a row, and that module's own Back, keep the trail
+  (the "module row" that empties it is the Detailed board's row); otherwise step 3's module page
+  with both Backs could never show.
+- The trail's Back sits in the rail above the page's scroller (`.lane-inspector-trail`), so it stays
+  in view as the page scrolls; it is drawn as `.lane-inspector-back`, as step 3 says, not as the
+  preview's pill.
+- A row's other end can be the user (on an action's page): its icon is the user's figure and it
+  has no kind; a click selects the user, which opens the system page with Back.
+- On an action's page Connections comes last (after the Lane fact); an action has no Modules.
+- E2E tests that asserted the replaced "no connection list": `inspector.spec.ts` (the file
+  comment; Redirect service's outline gains "Connections" and a 4-row count; URL cache's outline
+  gains "Connections"; the action check, which asserted no "Redirect service" button, now asserts
+  its three rows; the title "actions list no entries" became "an action lists its lines"),
+  `edit-history.spec.ts` (Watch API's outline gains "Connections" before "Modules") and
+  `canvas.spec.ts` (a comment only; its no-"→"-button assertion is unchanged).
+**Noticed.** Chat never sets the workspace's selection, so nothing there empties the trail (the
+plan lists chat among the selections). `.lane-inspector-section`'s rule still mixes `--line` with
+transparent (older; UI13's `--hairline`). The `.lane-entry` buttons (entry and connection pages)
+keep `--paper` and `--grid-dot`, as step 4 reuses them. The modes of `jeeves/scripts/e2e-docker.sh`
+and `docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged. No uncommitted changes under `jeeves-generator/` or
+`field-projects/`.
+**For the next unit.** UI08 can start. `--control` and `--control-line` are in both theme blocks
+of `tokens.css`, ready for its text boxes.
