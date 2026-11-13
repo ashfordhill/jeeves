@@ -1,0 +1,1251 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T21:54:29.084Z",
+    "value": [
+      {
+        "name": "/gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4-app-activity-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4-app-counter-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4-app-totals-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:earlier:0\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:earlier:0",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 8
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:earlier:1\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:earlier:1",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 3
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:earlier:2\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:earlier:2",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Fault:database",
+      "total": "0"
+    },
+    "elapsedMs": 11
+  },
+  {
+    "name": "Fault:database committed total becomes 3",
+    "at": "2026-11-13T21:54:29.244Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Fault:database",
+        "total": "0"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Fault:database",
+      "total": "3"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Fault:database committed total becomes 3",
+    "at": "2026-11-13T21:54:29.497Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Fault:database",
+        "total": "3"
+      }
+    }
+  },
+  {
+    "fault": "local-postgres stop",
+    "container": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+    "at": "2026-11-13T21:54:29.683Z",
+    "elapsedMs": 699,
+    "result": "Flag --time has been deprecated, use --timeout instead\nbf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97"
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:during:0\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:during:0",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 3
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:during:1\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:during:1",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:during:2\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:during:2",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 503,
+    "body": {
+      "error": "UNAVAILABLE",
+      "message": "Service unavailable."
+    },
+    "elapsedMs": 20
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 503,
+    "body": {
+      "error": "UNAVAILABLE",
+      "message": "Service unavailable."
+    },
+    "elapsedMs": 6
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 503,
+    "body": {
+      "error": "UNAVAILABLE",
+      "message": "Service unavailable."
+    },
+    "elapsedMs": 17
+  },
+  {
+    "readsDuringOutage": [
+      {
+        "status": 503,
+        "body": {
+          "error": "UNAVAILABLE",
+          "message": "Service unavailable."
+        },
+        "elapsedMs": 19
+      },
+      {
+        "status": 503,
+        "body": {
+          "error": "UNAVAILABLE",
+          "message": "Service unavailable."
+        },
+        "elapsedMs": 6
+      },
+      {
+        "status": 503,
+        "body": {
+          "error": "UNAVAILABLE",
+          "message": "Service unavailable."
+        },
+        "elapsedMs": 17
+      }
+    ]
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter",
+    "result": {
+      "queue": "events--counter",
+      "messageCount": 3,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter.failed",
+    "result": {
+      "queue": "events--counter.failed",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  },
+  {
+    "name": "the Counter's failure is observed (process exit or failed deliveries)",
+    "at": "2026-11-13T21:54:31.791Z",
+    "value": {
+      "counter": {
+        "service": "app-counter",
+        "id": "8faa64e502958c681469966a21a8809c64cbc201d66642e72490883982873319",
+        "status": "exited",
+        "health": "unhealthy",
+        "restarts": 0,
+        "startedAt": "2026-11-13T21:54:12.998937793Z",
+        "exitCode": 1,
+        "addresses": [""]
+      },
+      "loopErrors": [],
+      "queue": {
+        "queue": "events--counter",
+        "messageCount": 3,
+        "unacknowledged": 0,
+        "consumerCount": 0
+      },
+      "failed": {
+        "queue": "events--counter.failed",
+        "messageCount": 0,
+        "unacknowledged": 0,
+        "consumerCount": 0
+      }
+    }
+  },
+  {
+    "fault": "local-postgres start",
+    "container": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+    "at": "2026-11-13T21:54:32.078Z",
+    "elapsedMs": 354,
+    "result": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "bf7357b0458ea5da8ce4a8b156499e530fff5062367cf4d9e3f5ea8fc098bd97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 408285,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:32.169685473Z",
+          "FinishedAt": "2026-11-13T21:54:29.999322583Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:08.316106762-06:00",
+                "End": "2026-11-13T15:54:08.357810576-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:13.358429653-06:00",
+                "End": "2026-11-13T15:54:13.401559389-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:18.402220308-06:00",
+                "End": "2026-11-13T15:54:18.432327964-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:27.016244244-06:00",
+                "End": "2026-11-13T15:54:27.045228419-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-13T15:54:37.43048743-06:00",
+                "End": "2026-11-13T15:54:37.467192603-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-counter",
+    "containers": [
+      {
+        "id": "0edb8c3b3febafd5692c85f424e4f2345032974833f15e0b0323b3bdfc67bd2a",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 410665,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:54:49.140489104Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:54:54.401545576-06:00",
+                "End": "2026-11-13T15:54:54.449796059-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Fault:database",
+      "total": "6"
+    },
+    "elapsedMs": 8
+  },
+  {
+    "name": "Fault:database committed total becomes 6",
+    "at": "2026-11-13T21:54:55.239Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Fault:database",
+        "total": "6"
+      }
+    }
+  },
+  {
+    "sql": "SELECT event_id||'|'||coalesce(result->>'value','MISSING') FROM increment.receipts WHERE scope_key='Fault:database' ORDER BY event_id",
+    "result": "database:during:0|true\ndatabase:during:1|true\ndatabase:during:2|true\ndatabase:earlier:0|true\ndatabase:earlier:1|true\ndatabase:earlier:2|true"
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Fault:database\",\"eventId\":\"database:after\"}",
+    "status": 202,
+    "body": {
+      "eventId": "database:after",
+      "aggregateKey": "Fault:database"
+    },
+    "elapsedMs": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Fault:database",
+      "total": "6"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Fault:database committed total becomes 7",
+    "at": "2026-11-13T21:54:55.384Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Fault:database",
+        "total": "6"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Fault%3Adatabase",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Fault:database",
+      "total": "7"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Fault:database committed total becomes 7",
+    "at": "2026-11-13T21:54:55.637Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Fault:database",
+        "total": "7"
+      }
+    }
+  },
+  {
+    "sql": "SELECT event_id||'|'||coalesce(result->>'value','MISSING') FROM increment.receipts WHERE scope_key='Fault:database' ORDER BY event_id",
+    "result": "database:after|true\ndatabase:during:0|true\ndatabase:during:1|true\ndatabase:during:2|true\ndatabase:earlier:0|true\ndatabase:earlier:1|true\ndatabase:earlier:2|true"
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter",
+    "result": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  },
+  {
+    "name": "events--counter has 1 consumers and 0 queued messages",
+    "at": "2026-11-13T21:54:56.312Z",
+    "value": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter.failed",
+    "result": {
+      "queue": "events--counter.failed",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  }
+]

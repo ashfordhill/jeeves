@@ -1,0 +1,786 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T21:44:54.613Z",
+    "value": [
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13-app-account-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13-app-viewer-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13-identity-sign-in-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-a",
+    "subject": "860822b0-f13b-4458-82a1-0c5adfb74634",
+    "status": 201
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-b",
+    "subject": "9660b8ec-52ad-4e57-ad78-fce64dd9c993",
+    "status": 201
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-a",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-b",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 6
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 0
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 23
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/viewer-api/modules/viewer-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": false
+    },
+    "elapsedMs": 4
+  },
+  {
+    "method": "GET",
+    "path": "/api/viewer-api/modules/viewer-check/me",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/viewer-api/modules/viewer-check/me",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 17
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": true,
+      "subject": "860822b0-f13b-4458-82a1-0c5adfb74634",
+      "username": "account-a"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/viewer-api/modules/viewer-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": true,
+      "subject": "860822b0-f13b-4458-82a1-0c5adfb74634",
+      "username": "account-a"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": true,
+      "subject": "9660b8ec-52ad-4e57-ad78-fce64dd9c993",
+      "username": "account-b"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/viewer-api/modules/viewer-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": true,
+      "subject": "9660b8ec-52ad-4e57-ad78-fce64dd9c993",
+      "username": "account-b"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next": null
+    },
+    "elapsedMs": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 404,
+    "body": {
+      "error": "NOT_FAVORITE",
+      "message": "This item isn't a favorite."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 200,
+    "body": {
+      "itemId": "amber",
+      "addedAt": "2026-11-13T21:44:55.676870Z"
+    },
+    "elapsedMs": 18
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 200,
+    "body": {
+      "itemId": "amber",
+      "addedAt": "2026-11-13T21:44:55.676870Z"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "sql": "SELECT account||'|'||item||'|'||to_char(added_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') FROM favorite_items.favorites ORDER BY account,item",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|amber|2026-11-13T21:44:55.676870Z"
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 200,
+    "body": {
+      "itemId": "amber",
+      "addedAt": "2026-11-13T21:44:55.676870Z"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "itemId": "amber",
+          "addedAt": "2026-11-13T21:44:55.676870Z"
+        }
+      ],
+      "next": null
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next": null
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 404,
+    "body": {
+      "error": "NOT_FAVORITE",
+      "message": "This item isn't a favorite."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 204,
+    "body": "",
+    "elapsedMs": 2
+  },
+  {
+    "sql": "SELECT account||'|'||item||'|'||to_char(added_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') FROM favorite_items.favorites ORDER BY account,item",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|amber|2026-11-13T21:44:55.676870Z"
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 200,
+    "body": {
+      "itemId": "amber",
+      "addedAt": "2026-11-13T21:44:55.676870Z"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/draft",
+    "status": 404,
+    "body": {
+      "error": "NOT_ELIGIBLE",
+      "message": "This item can't be added to favorites."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/missing",
+    "status": 404,
+    "body": {
+      "error": "NOT_ELIGIBLE",
+      "message": "This item can't be added to favorites."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "sql": "SELECT account||'|'||item||'|'||to_char(added_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') FROM favorite_items.favorites ORDER BY account,item",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|amber|2026-11-13T21:44:55.676870Z"
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/catalog-writer",
+    "status": 200,
+    "body": [
+      {
+        "id": "amber",
+        "title": "Amber lighthouse"
+      },
+      {
+        "id": "violet",
+        "title": "Violet harbor"
+      }
+    ],
+    "elapsedMs": 8
+  },
+  {
+    "sql": "SELECT id FROM published.items ORDER BY id",
+    "result": "amber\nviolet"
+  },
+  {
+    "sql": "SELECT id||'|'||username FROM user_entity WHERE username IN ('account-a','account-b') ORDER BY username",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|account-a\n9660b8ec-52ad-4e57-ad78-fce64dd9c993|account-b"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "identity-sign-in",
+    "containers": [
+      {
+        "id": "fc5634b5b9bc71fa956c3d8fdee1d0b48ac32bb3acb45713d74b0e064436ef91",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 369392,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:45:11.571063163Z",
+          "FinishedAt": "2026-11-13T21:44:58.749974366Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:44:47.048479834-06:00",
+                "End": "2026-11-13T15:44:47.079689294-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:44:55.662724655-06:00",
+                "End": "2026-11-13T15:44:55.693738788-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:45:16.850521523-06:00",
+                "End": "2026-11-13T15:45:16.943293392-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:45:21.944309292-06:00",
+                "End": "2026-11-13T15:45:21.974397021-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:45:30.558237056-06:00",
+                "End": "2026-11-13T15:45:30.590251641-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-account-api",
+    "containers": [
+      {
+        "id": "b0c28434a71f4a7cc754f7ce985f1f29665398b236adc9fdcd62d754e80a587e",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 369904,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:45:19.529509931Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:45:28.395886874-06:00",
+                "End": "2026-11-13T15:45:28.438784763-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:45:33.439676682-06:00",
+                "End": "2026-11-13T15:45:33.482778033-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-viewer-api",
+    "containers": [
+      {
+        "id": "702e5bd08ca8cdae2c368cf6bec8c1f85330e84874bf1912de275cd55c3652ca",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 369813,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:45:19.179873518Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:45:28.036339271-06:00",
+                "End": "2026-11-13T15:45:28.078603874-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:45:33.079266757-06:00",
+                "End": "2026-11-13T15:45:33.125246437-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-edge",
+    "containers": [
+      {
+        "id": "31377772bc54bbec26d95ed5d444bb3b39236dbdd53cad894d30c0b1ea4ea7e8",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 370137,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:45:28.982942408Z",
+          "FinishedAt": "2026-11-13T21:44:56.673311283Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:44:53.968937521-06:00",
+                "End": "2026-11-13T15:44:53.996116254-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:45:34.270544128-06:00",
+                "End": "2026-11-13T15:45:34.30124516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "sql": "SELECT id||'|'||username FROM user_entity WHERE username IN ('account-a','account-b') ORDER BY username",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|account-a\n9660b8ec-52ad-4e57-ad78-fce64dd9c993|account-b"
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-a",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-b",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": true,
+      "subject": "860822b0-f13b-4458-82a1-0c5adfb74634",
+      "username": "account-a"
+    },
+    "elapsedMs": 38
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/account-check/me",
+    "status": 200,
+    "body": {
+      "signedIn": true,
+      "subject": "9660b8ec-52ad-4e57-ad78-fce64dd9c993",
+      "username": "account-b"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "sql": "SELECT account||'|'||item||'|'||to_char(added_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') FROM favorite_items.favorites ORDER BY account,item",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|amber|2026-11-13T21:44:55.676870Z"
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 200,
+    "body": {
+      "itemId": "amber",
+      "addedAt": "2026-11-13T21:44:55.676870Z"
+    },
+    "elapsedMs": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "itemId": "amber",
+          "addedAt": "2026-11-13T21:44:55.676870Z"
+        }
+      ],
+      "next": null
+    },
+    "elapsedMs": 3
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next": null
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "PUT",
+    "path": "/api/account-api/modules/favorite-items/items/violet",
+    "status": 200,
+    "body": {
+      "itemId": "violet",
+      "addedAt": "2026-11-13T21:45:36.513546Z"
+    },
+    "elapsedMs": 17
+  },
+  {
+    "sql": "SELECT account||'|'||item||'|'||to_char(added_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') FROM favorite_items.favorites ORDER BY account,item",
+    "result": "860822b0-f13b-4458-82a1-0c5adfb74634|amber|2026-11-13T21:44:55.676870Z\n9660b8ec-52ad-4e57-ad78-fce64dd9c993|violet|2026-11-13T21:45:36.513546Z"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 204,
+    "body": "",
+    "elapsedMs": 16
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 404,
+    "body": {
+      "error": "NOT_FAVORITE",
+      "message": "This item isn't a favorite."
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next": null
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 204,
+    "body": "",
+    "elapsedMs": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/amber",
+    "status": 404,
+    "body": {
+      "error": "NOT_FAVORITE",
+      "message": "This item isn't a favorite."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next": null
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "GET",
+    "path": "/api/account-api/modules/favorite-items/items/violet",
+    "status": 200,
+    "body": {
+      "itemId": "violet",
+      "addedAt": "2026-11-13T21:45:36.513546Z"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/account-api/modules/favorite-items/items/violet",
+    "status": 204,
+    "body": "",
+    "elapsedMs": 13
+  },
+  {
+    "sql": "SELECT account||'|'||item||'|'||to_char(added_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') FROM favorite_items.favorites ORDER BY account,item",
+    "result": ""
+  }
+]

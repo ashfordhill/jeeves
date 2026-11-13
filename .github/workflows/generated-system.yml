@@ -13,7 +13,7 @@ on:
         required: true
         default: core
         type: choice
-        options: [core, wiring, identity, media, regeneration, all]
+        options: [core, wiring, identity, media, regeneration, faults, all]
 
 permissions:
   contents: read
@@ -26,7 +26,8 @@ jobs:
   core:
     name: Generated backend behavior
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.suite != 'core')) && 40 || 20 }}
+    # core 20 min; one expanded suite 40 min; all (weekly or chosen) 60 min.
+    timeout-minutes: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.suite == 'all')) && 60 || ((github.event_name == 'workflow_dispatch' && inputs.suite != 'core') && 40 || 20) }}
     env:
       SELECTED_SUITE: ${{ github.event_name == 'schedule' && 'all' || (github.event_name == 'workflow_dispatch' && inputs.suite || 'core') }}
       ARTIFACT_ROOT: ${{ github.workspace }}/test-results/generated-ci/${{ github.run_id }}-${{ github.run_attempt }}
@@ -58,7 +59,7 @@ jobs:
 
       - name: Run generated backend behavior
         id: generated
-        timeout-minutes: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.suite != 'core')) && 30 || 15 }}
+        timeout-minutes: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.suite == 'all')) && 50 || ((github.event_name == 'workflow_dispatch' && inputs.suite != 'core') && 30 || 15) }}
         env:
           BUILDX_BUILDER: ${{ steps.builder.outputs.name }}
         run: pnpm test:generated "--suite=$SELECTED_SUITE" "--artifacts=$ARTIFACTS"

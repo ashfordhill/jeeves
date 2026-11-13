@@ -133,10 +133,16 @@ export async function multipartParts(app: Application, upload: Upload, providerU
   return result;
 }
 
-/** Real FFmpeg from the fresh export's pinned media image; no downloaded/owner media. */
-export async function syntheticVideo(app: Application) {
+/** Real FFmpeg from the fresh export's pinned media image; no downloaded/owner media.
+ * `long` is the fault fixture: forty seconds, so an encode lasts long enough to observe and
+ * interrupt; it may be a single part. The default is B08's two-part, four-second input. */
+export async function syntheticVideo(
+  app: Application,
+  variant: "multipart" | "long" = "multipart",
+) {
   const [container] = await serviceContainers(app, "app-transcoder");
   assert(container);
+  const seconds = variant === "long" ? 40 : 4;
   const args = [
     "-hide_banner",
     "-nostdin",
@@ -144,11 +150,11 @@ export async function syntheticVideo(app: Application) {
     "-f",
     "lavfi",
     "-i",
-    "testsrc2=size=1280x720:rate=30:duration=4",
+    `testsrc2=size=1280x720:rate=30:duration=${seconds}`,
     "-f",
     "lavfi",
     "-i",
-    "sine=frequency=440:sample_rate=48000:duration=4",
+    `sine=frequency=440:sample_rate=48000:duration=${seconds}`,
     "-map",
     "0:v:0",
     "-map",
@@ -157,8 +163,7 @@ export async function syntheticVideo(app: Application) {
     "libx264",
     "-preset",
     "ultrafast",
-    "-qp",
-    "0",
+    ...(variant === "long" ? ["-crf", "30"] : ["-qp", "0"]),
     "-threads",
     "1",
     "-pix_fmt",
@@ -178,16 +183,24 @@ export async function syntheticVideo(app: Application) {
     "-movflags",
     "+faststart",
   ];
-  const local = join(app.directory, "synthetic.mp4");
-  await command("docker", ["exec", container.Id, "ffmpeg", ...args, "/tmp/gs-source.mp4"], {
+  const name = variant === "long" ? "synthetic-long" : "synthetic";
+  const source = variant === "long" ? "/tmp/gs-long-source.mp4" : "/tmp/gs-source.mp4";
+  const local = join(app.directory, `${name}.mp4`);
+  await command("docker", ["exec", container.Id, "ffmpeg", ...args, source], {
     timeoutMs: 60_000,
   });
-  await command("docker", ["cp", `${container.Id}:/tmp/gs-source.mp4`, local]);
+  await command("docker", ["cp", `${container.Id}:${source}`, local]);
   const bytes = await readFile(local);
-  assert(
-    bytes.length > 5 * 1024 * 1024 && bytes.length < 30 * 1024 * 1024,
-    "Synthetic video exercises multipart within a 30 MiB bound",
-  );
+  if (variant === "long")
+    assert(
+      bytes.length > 0 && bytes.length < 30 * 1024 * 1024,
+      "Long synthetic video stays within the 30 MiB bound",
+    );
+  else
+    assert(
+      bytes.length > 5 * 1024 * 1024 && bytes.length < 30 * 1024 * 1024,
+      "Synthetic video exercises multipart within a 30 MiB bound",
+    );
   const probe = JSON.parse(
     await command("docker", [
       "exec",
@@ -199,11 +212,11 @@ export async function syntheticVideo(app: Application) {
       "-show_format",
       "-of",
       "json",
-      "/tmp/gs-source.mp4",
+      source,
     ]),
   );
   const image = JSON.parse(await command("docker", ["inspect", container.Id]))[0];
-  await app.save("synthetic-input.json", {
+  await app.save(`${name}-input.json`, {
     args,
     bytes: bytes.length,
     sha256: hash(bytes),

@@ -1,0 +1,43 @@
+{
+  "historyBefore": "ab87fbad516ee5716ee59e2a41738f2b56e97fc2e6c623f226d503146a9d69e8",
+  "historyAfter": "ab87fbad516ee5716ee59e2a41738f2b56e97fc2e6c623f226d503146a9d69e8",
+  "secretsBefore": "aa2e194a026163506ad6cb9d06d649a22335262356d8b42c1478515e89e619c4",
+  "secretsAfter": "aa2e194a026163506ad6cb9d06d649a22335262356d8b42c1478515e89e619c4",
+  "volumesBefore": [
+    {
+      "CreatedAt": "2026-11-13T15:43:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "7bdf52cfca09e13e7a4970a58a1686d264ffa3923a23fb4b36230ad0aa4a3bd2",
+        "com.docker.compose.project": "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      },
+      "Mountpoint": "/var/lib/docker/volumes/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13_postgres-data/_data",
+      "Name": "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13_postgres-data",
+      "Options": null,
+      "Scope": "local"
+    }
+  ],
+  "volumesAfter": [
+    {
+      "CreatedAt": "2026-11-13T15:43:52-06:00",
+      "Driver": "local",
+      "Labels": {
+        "com.docker.compose.config-hash": "7bdf52cfca09e13e7a4970a58a1686d264ffa3923a23fb4b36230ad0aa4a3bd2",
+        "com.docker.compose.project": "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      },
+      "Mountpoint": "/var/lib/docker/volumes/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13_postgres-data/_data",
+      "Name": "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-13_postgres-data",
+      "Options": null,
+      "Scope": "local"
+    }
+  ],
+  "usersBefore": "860822b0-f13b-4458-82a1-0c5adfb74634|account-a\n9660b8ec-52ad-4e57-ad78-fce64dd9c993|account-b",
+  "favorite": {
+    "itemId": "amber",
+    "addedAt": "2026-11-13T21:44:55.676870Z"
+  }
+}

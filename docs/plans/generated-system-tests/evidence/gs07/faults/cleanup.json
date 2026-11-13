@@ -1,0 +1,70 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-2",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-3",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-4",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-42a65d9d-0fb1-44ce-9f37-5102b2501281-5",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

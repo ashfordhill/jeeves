@@ -1,0 +1,27 @@
+{
+  "user": "r_totals__totals_api",
+  "published": [
+    {
+      "aggregate_key": "Activity:security",
+      "total": "1"
+    }
+  ],
+  "denied": [
+    {
+      "sql": "SELECT * FROM increment.receipts",
+      "code": "42501"
+    },
+    {
+      "sql": "SELECT * FROM increment.totals",
+      "code": "42501"
+    },
+    {
+      "sql": "INSERT INTO increment.totals(aggregate_key,total) VALUES('forbidden',1)",
+      "code": "42501"
+    },
+    {
+      "sql": "DELETE FROM increment.receipts WHERE event_id='security:valid'",
+      "code": "42501"
+    }
+  ]
+}

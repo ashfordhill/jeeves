@@ -1,0 +1,235 @@
+{
+  "assets": [
+    {
+      "asset_id": "24e51ca3-ed5a-4c07-a02f-4e4184969fa3",
+      "state": "aborted",
+      "started": false,
+      "failure_code": null,
+      "publication_version": null
+    },
+    {
+      "asset_id": "4854d369-8bd7-4b54-92f8-625a94a799db",
+      "state": "failed",
+      "started": true,
+      "failure_code": "INVALID_MEDIA",
+      "publication_version": null
+    },
+    {
+      "asset_id": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+      "state": "ready",
+      "started": true,
+      "failure_code": null,
+      "publication_version": 1
+    }
+  ],
+  "outbox": [
+    {
+      "event_id": "6bb89077-3754-5e17-9805-083bb515a4f5",
+      "destination": "publication",
+      "intent_key": "publication:b7dfde6a-6bbc-407c-81fb-4cae3bc29e84:1",
+      "sent": true,
+      "attempts": 1,
+      "payload": {
+        "type": "VideoPublished",
+        "state": "ready",
+        "title": "saffronfixture ready",
+        "channel": "account-a",
+        "eventId": "6bb89077-3754-5e17-9805-083bb515a4f5",
+        "videoId": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+        "manifest": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/master.m3u8",
+        "thumbnail": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/thumbnail.jpg",
+        "occurredAt": "2026-11-13T21:42:14.245Z",
+        "visibility": "public",
+        "description": "Deterministic synthetic fixture",
+        "publishedAt": "2026-11-13T21:42:14.245Z",
+        "schemaVersion": 1,
+        "durationSeconds": 4,
+        "publicationVersion": 1
+      }
+    },
+    {
+      "event_id": "cfbdb732-d017-5a10-9d1d-5da21641e303",
+      "destination": "jobs",
+      "intent_key": "job:07164db4-0412-4778-a379-3d07b51f7084",
+      "sent": true,
+      "attempts": 1,
+      "payload": {
+        "type": "VideoProcessingRequested",
+        "jobId": "07164db4-0412-4778-a379-3d07b51f7084",
+        "eventId": "cfbdb732-d017-5a10-9d1d-5da21641e303",
+        "videoId": "4854d369-8bd7-4b54-92f8-625a94a799db",
+        "attemptId": "33b9dc52-a6a7-47b8-855d-1673201968f3",
+        "occurredAt": "2026-11-13T21:42:18.951Z",
+        "originalKey": "upload-api-multipart-uploads/4854d369-8bd7-4b54-92f8-625a94a799db/33c01439-1313-4bd3-9e67-f7c9722be771/source.mp4",
+        "expectedSize": 9216,
+        "schemaVersion": 1,
+        "expectedSha256": "a43288699822cf806962a6cdd17f168e21dbf96cd9894b7e4b5e245a1212476a"
+      }
+    },
+    {
+      "event_id": "e3e8b4f7-d8f3-5268-90e6-3f625386a3cc",
+      "destination": "jobs",
+      "intent_key": "job:80a15575-7a9e-4bae-8ff9-0605a933fc1f",
+      "sent": true,
+      "attempts": 1,
+      "payload": {
+        "type": "VideoProcessingRequested",
+        "jobId": "80a15575-7a9e-4bae-8ff9-0605a933fc1f",
+        "eventId": "e3e8b4f7-d8f3-5268-90e6-3f625386a3cc",
+        "videoId": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+        "attemptId": "e3079154-1b7f-4fc4-b472-3c1e9f7cb016",
+        "occurredAt": "2026-11-13T21:42:11.385Z",
+        "originalKey": "upload-api-multipart-uploads/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/91257026-a05e-4242-a0a1-c8563c80b23e/source.mp4",
+        "expectedSize": 8261230,
+        "schemaVersion": 1,
+        "expectedSha256": "1281fc11ef003049160761d24b5fe9aa4f09927cb9116180a80430a653689da4"
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "scope_key": "video-lifecycle-lifecycle-writer",
+      "event_id": "65415d23-405a-5c10-b4eb-dc4f398a13c3",
+      "payload": {
+        "code": "INVALID_MEDIA",
+        "kind": "failed",
+        "jobId": "07164db4-0412-4778-a379-3d07b51f7084",
+        "assetId": "4854d369-8bd7-4b54-92f8-625a94a799db",
+        "eventId": "65415d23-405a-5c10-b4eb-dc4f398a13c3",
+        "attemptId": "33b9dc52-a6a7-47b8-855d-1673201968f3"
+      },
+      "result": {
+        "value": {
+          "outcome": "failed"
+        }
+      }
+    },
+    {
+      "scope_key": "video-lifecycle-lifecycle-writer",
+      "event_id": "943d3de7-24d3-50a2-90b2-76e108153ef7",
+      "payload": {
+        "kind": "succeeded",
+        "jobId": "80a15575-7a9e-4bae-8ff9-0605a933fc1f",
+        "result": {
+          "marker": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/_complete.json",
+          "prefix": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/",
+          "manifest": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/master.m3u8",
+          "thumbnail": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/thumbnail.jpg",
+          "renditions": [
+            {
+              "width": 640,
+              "height": 360,
+              "playlist": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/360/index.m3u8",
+              "audioCodec": "aac",
+              "videoCodec": "h264"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "playlist": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/720/index.m3u8",
+              "audioCodec": "aac",
+              "videoCodec": "h264"
+            }
+          ],
+          "durationSeconds": 4
+        },
+        "assetId": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+        "eventId": "943d3de7-24d3-50a2-90b2-76e108153ef7",
+        "attemptId": "e3079154-1b7f-4fc4-b472-3c1e9f7cb016"
+      },
+      "result": {
+        "value": {
+          "outcome": "ready"
+        }
+      }
+    },
+    {
+      "scope_key": "video-lifecycle-lifecycle-writer",
+      "event_id": "a4e11686-108a-5e4e-953f-1a14f35a5fa7",
+      "payload": {
+        "kind": "started",
+        "jobId": "07164db4-0412-4778-a379-3d07b51f7084",
+        "assetId": "4854d369-8bd7-4b54-92f8-625a94a799db",
+        "eventId": "a4e11686-108a-5e4e-953f-1a14f35a5fa7",
+        "attemptId": "33b9dc52-a6a7-47b8-855d-1673201968f3"
+      },
+      "result": {
+        "value": {
+          "outcome": "started"
+        }
+      }
+    },
+    {
+      "scope_key": "video-lifecycle-lifecycle-writer",
+      "event_id": "dc85000a-abc4-5cf3-a84a-cf0d8ccaee8d",
+      "payload": {
+        "kind": "started",
+        "jobId": "80a15575-7a9e-4bae-8ff9-0605a933fc1f",
+        "assetId": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+        "eventId": "dc85000a-abc4-5cf3-a84a-cf0d8ccaee8d",
+        "attemptId": "e3079154-1b7f-4fc4-b472-3c1e9f7cb016"
+      },
+      "result": {
+        "value": {
+          "outcome": "started"
+        }
+      }
+    }
+  ],
+  "searchBefore": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "videos",
+        "_id": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+        "_version": 1,
+        "_score": 1,
+        "_source": {
+          "videoId": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+          "publicationVersion": 1,
+          "title": "saffronfixture ready",
+          "description": "Deterministic synthetic fixture",
+          "channel": "account-a",
+          "durationSeconds": 4,
+          "manifest": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/master.m3u8",
+          "thumbnail": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/thumbnail.jpg",
+          "publishedAt": "2026-11-13T21:42:14.245Z",
+          "visibility": "public",
+          "state": "ready"
+        }
+      }
+    ]
+  },
+  "searchAfterReplay": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "videos",
+        "_id": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+        "_version": 1,
+        "_score": 1,
+        "_source": {
+          "videoId": "b7dfde6a-6bbc-407c-81fb-4cae3bc29e84",
+          "publicationVersion": 1,
+          "title": "saffronfixture ready",
+          "description": "Deterministic synthetic fixture",
+          "channel": "account-a",
+          "durationSeconds": 4,
+          "manifest": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/master.m3u8",
+          "thumbnail": "videos/b7dfde6a-6bbc-407c-81fb-4cae3bc29e84/80a15575-7a9e-4bae-8ff9-0605a933fc1f/e3079154-1b7f-4fc4-b472-3c1e9f7cb016/thumbnail.jpg",
+          "publishedAt": "2026-11-13T21:42:14.245Z",
+          "visibility": "public",
+          "state": "ready"
+        }
+      }
+    ]
+  }
+}

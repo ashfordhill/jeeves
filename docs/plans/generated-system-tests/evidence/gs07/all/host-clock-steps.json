@@ -1,0 +1,299 @@
+{
+  "source": "journalctl systemd-resolved \"Clock change detected\" realtime vs monotonic stamps, 21:20-21:50 UTC",
+  "events": [
+    {
+      "at": "2026-11-13T21:20:58.600020+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.252,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:21:34.434306+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:22:10.265342+00:00",
+      "wallSeconds": 35.831,
+      "monotonicSeconds": 32.248,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:22:46.098028+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.247,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:23:21.935528+00:00",
+      "wallSeconds": 35.838,
+      "monotonicSeconds": 32.257,
+      "stepSeconds": 3.58
+    },
+    {
+      "at": "2026-11-13T21:23:57.767394+00:00",
+      "wallSeconds": 35.832,
+      "monotonicSeconds": 32.246,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:24:33.601429+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:25:09.435176+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:25:45.265580+00:00",
+      "wallSeconds": 35.83,
+      "monotonicSeconds": 32.247,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:26:21.102305+00:00",
+      "wallSeconds": 35.837,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.585
+    },
+    {
+      "at": "2026-11-13T21:26:56.934426+00:00",
+      "wallSeconds": 35.832,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.582
+    },
+    {
+      "at": "2026-11-13T21:27:32.769247+00:00",
+      "wallSeconds": 35.835,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:28:08.601796+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.248,
+      "stepSeconds": 3.585
+    },
+    {
+      "at": "2026-11-13T21:28:44.439919+00:00",
+      "wallSeconds": 35.838,
+      "monotonicSeconds": 32.252,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:29:20.271374+00:00",
+      "wallSeconds": 35.831,
+      "monotonicSeconds": 32.249,
+      "stepSeconds": 3.582
+    },
+    {
+      "at": "2026-11-13T21:29:56.106307+00:00",
+      "wallSeconds": 35.835,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:30:31.936991+00:00",
+      "wallSeconds": 35.831,
+      "monotonicSeconds": 32.248,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:31:07.772148+00:00",
+      "wallSeconds": 35.835,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:31:43.605493+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.249,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:32:19.441454+00:00",
+      "wallSeconds": 35.836,
+      "monotonicSeconds": 32.255,
+      "stepSeconds": 3.581
+    },
+    {
+      "at": "2026-11-13T21:32:55.275366+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.248,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:33:31.106429+00:00",
+      "wallSeconds": 35.831,
+      "monotonicSeconds": 32.247,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:34:06.941497+00:00",
+      "wallSeconds": 35.835,
+      "monotonicSeconds": 32.252,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:34:42.775674+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.254,
+      "stepSeconds": 3.581
+    },
+    {
+      "at": "2026-11-13T21:35:18.608698+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.245,
+      "stepSeconds": 3.588
+    },
+    {
+      "at": "2026-11-13T21:35:54.442148+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:36:30.277604+00:00",
+      "wallSeconds": 35.835,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:37:06.110597+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.252,
+      "stepSeconds": 3.581
+    },
+    {
+      "at": "2026-11-13T21:37:41.943656+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.248,
+      "stepSeconds": 3.585
+    },
+    {
+      "at": "2026-11-13T21:38:17.779688+00:00",
+      "wallSeconds": 35.836,
+      "monotonicSeconds": 32.254,
+      "stepSeconds": 3.582
+    },
+    {
+      "at": "2026-11-13T21:38:53.617836+00:00",
+      "wallSeconds": 35.838,
+      "monotonicSeconds": 32.262,
+      "stepSeconds": 3.576
+    },
+    {
+      "at": "2026-11-13T21:39:29.444823+00:00",
+      "wallSeconds": 35.827,
+      "monotonicSeconds": 32.234,
+      "stepSeconds": 3.593
+    },
+    {
+      "at": "2026-11-13T21:40:05.277983+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:40:41.109792+00:00",
+      "wallSeconds": 35.832,
+      "monotonicSeconds": 32.247,
+      "stepSeconds": 3.585
+    },
+    {
+      "at": "2026-11-13T21:41:16.960073+00:00",
+      "wallSeconds": 35.85,
+      "monotonicSeconds": 32.269,
+      "stepSeconds": 3.581
+    },
+    {
+      "at": "2026-11-13T21:41:52.776850+00:00",
+      "wallSeconds": 35.817,
+      "monotonicSeconds": 32.231,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:42:28.610844+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:43:04.447442+00:00",
+      "wallSeconds": 35.837,
+      "monotonicSeconds": 32.251,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:43:40.277618+00:00",
+      "wallSeconds": 35.83,
+      "monotonicSeconds": 32.248,
+      "stepSeconds": 3.582
+    },
+    {
+      "at": "2026-11-13T21:44:16.112069+00:00",
+      "wallSeconds": 35.834,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:44:51.944687+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.25,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:45:27.781745+00:00",
+      "wallSeconds": 35.837,
+      "monotonicSeconds": 32.254,
+      "stepSeconds": 3.583
+    },
+    {
+      "at": "2026-11-13T21:46:03.612878+00:00",
+      "wallSeconds": 35.831,
+      "monotonicSeconds": 32.247,
+      "stepSeconds": 3.585
+    },
+    {
+      "at": "2026-11-13T21:46:39.449131+00:00",
+      "wallSeconds": 35.836,
+      "monotonicSeconds": 32.255,
+      "stepSeconds": 3.581
+    },
+    {
+      "at": "2026-11-13T21:47:15.280360+00:00",
+      "wallSeconds": 35.831,
+      "monotonicSeconds": 32.245,
+      "stepSeconds": 3.586
+    },
+    {
+      "at": "2026-11-13T21:47:51.113507+00:00",
+      "wallSeconds": 35.833,
+      "monotonicSeconds": 32.249,
+      "stepSeconds": 3.584
+    },
+    {
+      "at": "2026-11-13T21:48:26.952120+00:00",
+      "wallSeconds": 35.839,
+      "monotonicSeconds": 32.257,
+      "stepSeconds": 3.582
+    },
+    {
+      "at": "2026-11-13T21:49:02.791431+00:00",
+      "wallSeconds": 35.839,
+      "monotonicSeconds": 32.259,
+      "stepSeconds": 3.581
+    },
+    {
+      "at": "2026-11-13T21:49:38.623495+00:00",
+      "wallSeconds": 35.832,
+      "monotonicSeconds": 32.247,
+      "stepSeconds": 3.585
+    }
+  ]
+}

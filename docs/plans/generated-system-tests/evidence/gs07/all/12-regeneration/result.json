@@ -1,0 +1,6 @@
+{
+  "fixture": "regeneration",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: Timed out waiting for fresh-b: actual provider expiry; last observation: {\"elapsedMs\":15086,\"value\":\"{\\\"id\\\":\\\"published-a\\\",\\\"title\\\":\\\"Immutable amber catalog\\\",\\\"state\\\":\\\"published\\\"}\",\"pttl\":671,\"hits\":59}"
+}

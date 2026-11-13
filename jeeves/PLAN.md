@@ -230,7 +230,7 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [UI refresh](../docs/plans/ui-refresh/units.md) and
 [broker reconnect](../docs/plans/broker-reconnect/units.md).
 
-The active plan is GS07, then GS09, of
+The active plan is GS09, the review unit, of
 [generated system tests](../docs/plans/generated-system-tests/units.md).
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
 [HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in

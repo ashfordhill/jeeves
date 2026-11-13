@@ -1,0 +1,32 @@
+{
+  "project": "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-10",
+  "before": {
+    "containers": [
+      "da50c4524098",
+      "dba725dabae0",
+      "1bfdb8a31439",
+      "294e9473dadc",
+      "b477105ddc3e",
+      "4c4b59c5e7b1",
+      "75c1f65aef5b",
+      "a1e8703f7572",
+      "8654262ce14a",
+      "27ba30075963",
+      "480b2666a035",
+      "fa397127025c"
+    ],
+    "networks": ["804819e40872"],
+    "volumes": [
+      "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-10_broker-data",
+      "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-10_cache-catalog-cache",
+      "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-10_objects-data",
+      "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-10_postgres-data",
+      "gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-10_search-items-index"
+    ]
+  },
+  "after": {
+    "containers": [],
+    "networks": [],
+    "volumes": []
+  }
+}

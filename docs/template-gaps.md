@@ -28,3 +28,5 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 | The outbox relay sends at most 10 rows about once a second | Open |
 | A process that loses its broker exits and is not restarted | Fixed in BR01 |
 | Host names are compiled into the export for local Compose | Open; deployment is outside Jeeves |
+| A template's database pool (`pool` in `service-resources.ts`) has no error listener, unlike a stub's: when PostgreSQL ends its idle connections the process exits, and `pnpm start` brings it back. Seen for the Event counter in GS07 | Open |
+| A mounted template retries a failed message at once (stub loops wait 250 ms doubling): during a store outage a worker whose process stays up could use its retries in moments and send accepted messages to `.failed` | Open; from the code, not run (GS07) |

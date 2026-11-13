@@ -13214,3 +13214,46 @@ studio study".
 **For the next unit.** GS07 of `docs/plans/generated-system-tests/units.md` can start. v4 is on
 BR01 and its broker outage evidence is in `docs/plans/broker-reconnect/evidence/br02/`. Untested:
 a Transcoder job in hand during an outage, and the outbox during one.
+
+## 2026-11-13 — GS07: Generated backends recover from real failures
+
+**What changed.** New `--suite=faults` (`faults.system.test.ts`, `faults-media.system.test.ts`)
+and `harness/faults.ts`: scoped `docker stop/start/kill/pause/unpause` on label-checked
+containers, held psql sessions, process continuity (ID, start time, restarts) and per-client
+`broker` failure → `"state":"available"` checks. It reuses the Regeneration (catalog), Activity
+and Media fixtures unchanged. B06 recovery: cache stopped, then frozen; reads answer from
+PostgreSQL within 1.5 s; after restore a cleared key refills and hits, no API restart. B09: a
+Counter killed while its increment waits on a held row commits once after restart; a committed
+event replayed through RabbitMQ stays one; five confirmed queued events survive a 12 s broker
+outage, 503s are bounded, reads answer, running publisher and consumer reconnect with no
+restart; PostgreSQL stopping during work leaves accepted work queued and `pnpm start` completes
+it once; Media: Transcoder killed mid-FFmpeg, jobs relay killed after its confirmed publish (a
+one-row trigger gate on a harness advisory lock), and a broker outage with a job in hand and an
+outbox intent waiting (BR02's two open items) each give one publication. `syntheticVideo` gained
+a 40 s `long` variant (B08's default input unchanged). `run.ts` gives `all` 40 min (one suite
+keeps 20); the workflow offers `faults` and gives `all` a 50-min step/60-min job. Docs: fixture
+README, two template-gap known limits, `jeeves/PLAN.md` (active: GS09), and
+[evidence](plans/generated-system-tests/evidence/gs07/README.md).
+
+**Checks.** Final `faults` 5/5 (Vitest 420.4 s, CLI 7:49.7; an earlier full run on the previous
+source also 5/5); `core` 4/4 (238.1 s, 4:24.9). `pnpm check` 114 files, 901 tests; `pnpm test:e2e`
+74 passed (4.7 min); web build and actionlint passed. Phases serial. Every stack scope empty;
+Docker containers, volumes, networks and image tags equal the pre-unit inventory after removing
+this unit's 38 run image tags. Each row's injection, boundary and outcome is in the evidence.
+
+**Differences from the plan.** One `all` run (previous source) passed 13/14; GS08's B10 failed:
+this host steps its wall clock +3.58 s every 32.25 s monotonic (WSL2 sync, journal evidence), and
+one step skipped B10's last expiry observation 30 ms past its `Date.now()` deadline. Retained, not
+rerun, B10 untouched. My own durations then moved to `performance.now()`. The `all` bound change
+follows from adding faults (a passing `all` ≈ 1,175 s vs the old 1,200 s). The broker row's
+precondition-stopped Counter is resumed after the restart; it lost no connection, and phase 2
+shows a running consumer recovering without restart. Development iterations ran single tests
+through a scratchpad runner; all passed.
+
+**For GS09 / owner.** (1) The Counter exits on PostgreSQL loss (unhandled pool `'error'`, unlike
+stub pools); that exit is why accepted work waits. Not run: an idle-pool outage, where from the
+code a worker that stays up retries at once and could send accepted work to `.failed`. Both are
+in template gaps. (2) Harness polls and B10 use the wall clock; decide a monotonic fix. (3) Kill
+windows sit inside the 2 s statement timeout (observed ~1 s). (4) The harness leaves per-run
+image tags. Hosted CI pending publication; no push. `AGENTS.md` still names broker reconnect as
+active (left for the owner, as BR02 did). Owner dirty paths untouched and unstaged.

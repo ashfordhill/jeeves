@@ -1,0 +1,597 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T21:43:20.828Z",
+    "value": [
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-12-app-catalog-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-12-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-12-cache-catalog-cache-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-12-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": null,
+      "pttl": -2,
+      "hits": 0
+    }
+  },
+  {
+    "name": "fresh-b: initially absent cache entry",
+    "at": "2026-11-13T21:43:21.156Z",
+    "value": {
+      "value": null,
+      "pttl": -2,
+      "hits": 0
+    }
+  },
+  {
+    "catalogLoads": {
+      "key": "published-a",
+      "count": 0
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/published-a",
+    "status": 200,
+    "body": {
+      "id": "published-a",
+      "title": "Immutable amber catalog",
+      "state": "published"
+    },
+    "elapsedMs": 31
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 15732,
+      "hits": 2
+    }
+  },
+  {
+    "cacheHitCount": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/catalog-api/modules/catalog-read/published-a",
+    "status": 200,
+    "body": {
+      "id": "published-a",
+      "title": "Immutable amber catalog",
+      "state": "published"
+    },
+    "elapsedMs": 4
+  },
+  {
+    "cacheHitCount": 3
+  },
+  {
+    "catalogLoads": {
+      "key": "published-a",
+      "count": 1
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 14829,
+      "hits": 5
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:22.433Z",
+    "value": {
+      "elapsedMs": 938,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 14829,
+      "hits": 5
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 14293,
+      "hits": 7
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:22.976Z",
+    "value": {
+      "elapsedMs": 1463,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 14293,
+      "hits": 7
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 13756,
+      "hits": 9
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:23.506Z",
+    "value": {
+      "elapsedMs": 2007,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 13756,
+      "hits": 9
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 13215,
+      "hits": 11
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:24.048Z",
+    "value": {
+      "elapsedMs": 2536,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 13215,
+      "hits": 11
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 12680,
+      "hits": 13
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:24.582Z",
+    "value": {
+      "elapsedMs": 3078,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 12680,
+      "hits": 13
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 12148,
+      "hits": 15
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:25.112Z",
+    "value": {
+      "elapsedMs": 3612,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 12148,
+      "hits": 15
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 11615,
+      "hits": 17
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:25.644Z",
+    "value": {
+      "elapsedMs": 4142,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 11615,
+      "hits": 17
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 11086,
+      "hits": 19
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:26.175Z",
+    "value": {
+      "elapsedMs": 4674,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 11086,
+      "hits": 19
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 10551,
+      "hits": 21
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:26.709Z",
+    "value": {
+      "elapsedMs": 5206,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 10551,
+      "hits": 21
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 10016,
+      "hits": 23
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:27.244Z",
+    "value": {
+      "elapsedMs": 5740,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 10016,
+      "hits": 23
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 9481,
+      "hits": 25
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:27.780Z",
+    "value": {
+      "elapsedMs": 6275,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 9481,
+      "hits": 25
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 8949,
+      "hits": 27
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:28.313Z",
+    "value": {
+      "elapsedMs": 6810,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 8949,
+      "hits": 27
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 8418,
+      "hits": 29
+    }
+  },
+  {
+    "name": "fresh-b: B remains cached beyond A's seven-second bound",
+    "at": "2026-11-13T21:43:28.843Z",
+    "value": {
+      "elapsedMs": 7343,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 8418,
+      "hits": 29
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 8135,
+      "hits": 31
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:29.127Z",
+    "value": {
+      "elapsedMs": 7623,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 8135,
+      "hits": 31
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 7606,
+      "hits": 33
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:29.654Z",
+    "value": {
+      "elapsedMs": 8158,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 7606,
+      "hits": 33
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 7075,
+      "hits": 35
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:30.185Z",
+    "value": {
+      "elapsedMs": 8685,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 7075,
+      "hits": 35
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 6544,
+      "hits": 37
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:30.718Z",
+    "value": {
+      "elapsedMs": 9216,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 6544,
+      "hits": 37
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 6006,
+      "hits": 39
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:31.255Z",
+    "value": {
+      "elapsedMs": 9748,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 6006,
+      "hits": 39
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 5469,
+      "hits": 41
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:31.792Z",
+    "value": {
+      "elapsedMs": 10285,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 5469,
+      "hits": 41
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 4946,
+      "hits": 43
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:32.315Z",
+    "value": {
+      "elapsedMs": 10822,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 4946,
+      "hits": 43
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 4413,
+      "hits": 45
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:32.847Z",
+    "value": {
+      "elapsedMs": 11346,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 4413,
+      "hits": 45
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 3880,
+      "hits": 47
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:33.380Z",
+    "value": {
+      "elapsedMs": 11877,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 3880,
+      "hits": 47
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 3346,
+      "hits": 49
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:33.915Z",
+    "value": {
+      "elapsedMs": 12410,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 3346,
+      "hits": 49
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 2815,
+      "hits": 51
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:34.446Z",
+    "value": {
+      "elapsedMs": 12946,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 2815,
+      "hits": 51
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 2278,
+      "hits": 53
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:34.983Z",
+    "value": {
+      "elapsedMs": 13476,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 2278,
+      "hits": 53
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 1744,
+      "hits": 55
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:35.517Z",
+    "value": {
+      "elapsedMs": 14013,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 1744,
+      "hits": 55
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 1206,
+      "hits": 57
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:36.056Z",
+    "value": {
+      "elapsedMs": 14547,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 1206,
+      "hits": 57
+    }
+  },
+  {
+    "cacheObservation": {
+      "key": "catalog:published-a",
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 671,
+      "hits": 59
+    }
+  },
+  {
+    "name": "fresh-b: actual provider expiry",
+    "at": "2026-11-13T21:43:36.590Z",
+    "value": {
+      "elapsedMs": 15086,
+      "value": "{\"id\":\"published-a\",\"title\":\"Immutable amber catalog\",\"state\":\"published\"}",
+      "pttl": 671,
+      "hits": 59
+    }
+  }
+]

@@ -13,7 +13,7 @@ if (args[0] === "--cleanup") {
     throw new Error("Usage: test:generated --cleanup /absolute/run.json");
   await cleanupRun(resolve(args[1]));
 } else {
-  const suites = ["core", "wiring", "identity", "media", "regeneration"];
+  const suites = ["core", "wiring", "identity", "media", "regeneration", "faults"];
   let suite = "core";
   let artifacts = "";
   for (const arg of args) {
@@ -79,11 +79,13 @@ if (args[0] === "--cleanup") {
       },
     });
     if (interrupted) throw new Error(`Interrupted by ${interrupted}`);
+    // One suite keeps its 20-minute bound. `all` runs every suite serially (faults included
+    // since GS07, about 23 minutes locally), so it has twice that; no test deadline changes.
     const output = await command(
       "pnpm",
       ["exec", "vitest", "run", "--config", "jeeves-generator/integration/vitest.config.ts"],
       {
-        timeoutMs: 1_200_000,
+        timeoutMs: suite === "all" ? 2_400_000 : 1_200_000,
         env: {
           JEEVES_SYSTEM_RECORD: recordPath,
           JEEVES_SYSTEM_SUITES: selected.join(","),

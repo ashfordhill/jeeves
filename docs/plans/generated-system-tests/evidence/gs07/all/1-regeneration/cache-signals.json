@@ -1,0 +1,260 @@
+{
+  "stopLost": [
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:33.693353495Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache catalog-read",
+        "error": "Error: Socket closed unexpectedly"
+      }
+    }
+  ],
+  "stop": [
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:33.693353495Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache catalog-read",
+        "error": "Error: Socket closed unexpectedly"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:34.231222887Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache read catalog-read",
+        "error": "Error: Cache unavailable"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:34.231251922Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:35.231441223Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:36.232663731Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:37.231362997Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:38.230730153Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:39.230863811Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:39.231800305Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache fill catalog-read",
+        "error": "Error: Cache unavailable"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:40.231130518Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:41.230983104Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:43.704630871Z",
+      "entry": {
+        "level": "info",
+        "event": "cache",
+        "tile": "catalog-api",
+        "module": "catalog-read",
+        "state": "available"
+      }
+    }
+  ],
+  "stall": [
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:48.849666463Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache read catalog-read",
+        "error": "Error: Cache deadline"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:48.849706472Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:48.850051239Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache catalog-read",
+        "error": "Error: Cache deadline"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:49.700075626Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:50.699434753Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:51.699666160Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:52.700220434Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:57.281386078Z",
+      "entry": {
+        "level": "error",
+        "event": "failure",
+        "tile": "catalog-api",
+        "what": "cache read catalog-read",
+        "error": "Error: Cache unavailable"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:57.281425447Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:57.283398120Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:57.284523792Z",
+      "entry": {
+        "event": "catalog-load",
+        "key": "published-a"
+      }
+    },
+    {
+      "service": "app-catalog-api",
+      "container": "6d64118bdfc9bb463428d9e7a3efd6ca38e8d6a35fa12b114d89ced7a84f4893",
+      "at": "2026-11-13T21:26:57.549821740Z",
+      "entry": {
+        "level": "info",
+        "event": "cache",
+        "tile": "catalog-api",
+        "module": "catalog-read",
+        "state": "available"
+      }
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T21:33:17.434Z",
+    "value": [
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-6-app-activity-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-6-app-counter-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-6-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-6-app-totals-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-6-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-9903aa10-98c1-48f6-b171-1fe44f24e9e1-6-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:old:1\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:old:1",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 8
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:old:2\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:old:2",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 3
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:old:3\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:old:3",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Arestart",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:restart",
+      "total": "0"
+    },
+    "elapsedMs": 10
+  },
+  {
+    "name": "Activity:restart committed total becomes 3",
+    "at": "2026-11-13T21:33:17.507Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:restart",
+        "total": "0"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Arestart",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:restart",
+      "total": "3"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Activity:restart committed total becomes 3",
+    "at": "2026-11-13T21:33:17.760Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:restart",
+        "total": "3"
+      }
+    }
+  },
+  {
+    "sql": "SELECT event_id||'|'||coalesce(result->>'value','MISSING') FROM increment.receipts WHERE scope_key='Activity:restart' ORDER BY event_id",
+    "result": "restart:old:1|true\nrestart:old:2|true\nrestart:old:3|true"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-counter",
+    "containers": [
+      {
+        "id": "52fa70f151aa558f2e2ff9ef70ec01e3fd28c8ea32a1a9a7e3b120e9d5b0d4c4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 282331,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:33:05.272725416Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:33:10.543064294-06:00",
+                "End": "2026-11-13T15:33:10.587797156-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:33:15.589112513-06:00",
+                "End": "2026-11-13T15:33:15.63305814-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "boundary": "app-counter stop",
+    "at": "2026-11-13T21:33:18.420Z",
+    "container": "52fa70f151aa558f2e2ff9ef70ec01e3fd28c8ea32a1a9a7e3b120e9d5b0d4c4",
+    "result": "Flag --time has been deprecated, use --timeout instead\n52fa70f151aa558f2e2ff9ef70ec01e3fd28c8ea32a1a9a7e3b120e9d5b0d4c4"
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter",
+    "result": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  },
+  {
+    "name": "events--counter has 0 consumers and 0 queued messages",
+    "at": "2026-11-13T21:33:18.980Z",
+    "value": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:queued:0\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:queued:0",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:queued:1\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:queued:1",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:queued:2\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:queued:2",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:queued:3\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:queued:3",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:queued:4\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:queued:4",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 1
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter",
+    "result": {
+      "queue": "events--counter",
+      "messageCount": 5,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  },
+  {
+    "name": "events--counter has 0 consumers and 5 queued messages",
+    "at": "2026-11-13T21:33:19.649Z",
+    "value": {
+      "queue": "events--counter",
+      "messageCount": 5,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Arestart",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:restart",
+      "total": "3"
+    },
+    "elapsedMs": 3
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-counter",
+    "containers": [
+      {
+        "id": "49f8d8194830a6a0cd098982734e811994a84bb0c8ece57dd2520bacc753f4d1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 285658,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-13T21:33:41.730205164Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-13T15:33:46.993277267-06:00",
+                "End": "2026-11-13T15:33:47.038586688-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-13T15:33:52.039207229-06:00",
+                "End": "2026-11-13T15:33:52.085107017-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Arestart",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:restart",
+      "total": "8"
+    },
+    "elapsedMs": 11
+  },
+  {
+    "name": "Activity:restart committed total becomes 8",
+    "at": "2026-11-13T21:33:53.256Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:restart",
+        "total": "8"
+      }
+    }
+  },
+  {
+    "sql": "SELECT event_id||'|'||coalesce(result->>'value','MISSING') FROM increment.receipts WHERE scope_key='Activity:restart' ORDER BY event_id",
+    "result": "restart:old:1|true\nrestart:old:2|true\nrestart:old:3|true\nrestart:queued:0|true\nrestart:queued:1|true\nrestart:queued:2|true\nrestart:queued:3|true\nrestart:queued:4|true"
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:restart\",\"eventId\":\"restart:new\"}",
+    "status": 202,
+    "body": {
+      "eventId": "restart:new",
+      "aggregateKey": "Activity:restart"
+    },
+    "elapsedMs": 7
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Arestart",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:restart",
+      "total": "8"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Activity:restart committed total becomes 9",
+    "at": "2026-11-13T21:33:53.383Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:restart",
+        "total": "8"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Arestart",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:restart",
+      "total": "9"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Activity:restart committed total becomes 9",
+    "at": "2026-11-13T21:33:53.635Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:restart",
+        "total": "9"
+      }
+    }
+  },
+  {
+    "sql": "SELECT event_id||'|'||coalesce(result->>'value','MISSING') FROM increment.receipts WHERE scope_key='Activity:restart' ORDER BY event_id",
+    "result": "restart:new|true\nrestart:old:1|true\nrestart:old:2|true\nrestart:old:3|true\nrestart:queued:0|true\nrestart:queued:1|true\nrestart:queued:2|true\nrestart:queued:3|true\nrestart:queued:4|true"
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter",
+    "result": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  },
+  {
+    "name": "events--counter has 1 consumers and 0 queued messages",
+    "at": "2026-11-13T21:33:54.315Z",
+    "value": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  }
+]
