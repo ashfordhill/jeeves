@@ -11087,3 +11087,25 @@ procedure worked as written.
 
 **For the next unit.** PF08 next. The cache read now recovers on its own and logs each change
 (`event: "cache"`, and the `cache <module>` failure line); rule 7's procedure worked as written.
+
+## 2026-11-12 — Generated system tests: build plan
+
+**What changed.** Added [the generated system testing plan](plans/generated-system-tests/units.md),
+nine sequential units for freshly exported standalone backends with real providers. GS01–GS03
+deliver the small Activity application, duplicate/concurrent delivery and restart checks, and a
+portable CLI/GitHub Actions job. Later units cover stub connections/cache, identity/favorites,
+the real media/search composition, observed faults, regeneration and coverage review. The plan
+defines fixture ownership, independent assertions, source identities, bounded waits, artifacts
+and scoped cleanup. Documentation only; no implementation unit started or active plan edited.
+
+**Checks.** All 14 local plan links resolve; whitespace and code fences checked. `pnpm check`
+first saw two processes-off pin failures while PF07 was changing the cache templates (774 passed,
+2 failed). After that agent updated its pins, the rerun passed: 104 files, 776 tests, lint and
+typechecks. `pnpm test:e2e` passed all 73 tests (4.6 min), after PF07's run released ports
+4301/4311. Web build passed. No new UI or separate mouse check; the normal browser suite exercised
+TinyURL and generation. No other agent's implementation or pins were changed for this plan.
+
+**For the next unit.** PF08 remains next in the active production-foundations sequence. This
+plan defaults to starting GS01 after PF14's review; it records dependencies if the coordinator
+explicitly schedules it earlier. Hosted CI evidence stays pending until its workflow is built
+and the owner publishes it. The root README and unrelated changes were left untouched.
