@@ -10,8 +10,10 @@ import { ChatService, type ModelSource } from "./chat/service.ts";
 import { type CodexLogin, createCodexLogin } from "./codex-login.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
+import { createModelCatalog, type ModelCatalog } from "./model-catalog.ts";
 import { chatRoutes } from "./routes/chat.ts";
 import { generationRoutes } from "./routes/generation.ts";
+import { modelRoutes } from "./routes/models.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { jeevesHome, Settings } from "./settings.ts";
@@ -31,6 +33,11 @@ export type AppDeps = {
   models?: ModelSource;
   /** Settings' Sign in with ChatGPT. Defaults to running `codex` from the PATH. */
   codexLogin?: CodexLogin;
+  /**
+   * The chat's model picker: models.dev's catalogue, kept in `JEEVES_HOME`. Defaults to fetching
+   * it, unless the server replays a scripted model (`JEEVES_FAKE_MODEL_SCRIPT`).
+   */
+  modelCatalog?: ModelCatalog;
   /** `true` in the server; tests may pass options with a `stream` to read the log lines. */
   logger?: FastifyServerOptions["logger"];
 };
@@ -43,6 +50,11 @@ export function buildApp({
   settings = new Settings(jeevesHome()),
   models = providerModels(settings),
   codexLogin = createCodexLogin({ spawn, env: process.env }),
+  modelCatalog = createModelCatalog({
+    home: jeevesHome(),
+    fetch: process.env.JEEVES_FAKE_MODEL_SCRIPT ? null : fetch,
+    now: Date.now,
+  }),
   logger = false,
 }: AppDeps): FastifyInstance {
   const app = Fastify({ logger });
@@ -82,6 +94,7 @@ export function buildApp({
   app.register(generationRoutes, { service: design });
   app.register(chatRoutes, { chat });
   app.register(settingsRoutes, { settings, codexLogin });
+  app.register(modelRoutes, { settings, catalog: modelCatalog });
   // A login still waiting for the browser doesn't outlive the server.
   app.addHook("onClose", async () => codexLogin.stop());
 

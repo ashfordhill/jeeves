@@ -167,8 +167,8 @@ test("names a refused command, keeps nothing of its batch, and saves the correct
 
 test("offers Anthropic in Settings with a key field, and saves it as the design model", async ({
   page,
+  tinyurl: _project,
 }) => {
-  await page.goto("/");
   await page.getByRole("tab", { name: "Settings" }).click();
   const anthropic = page.locator(".settings-providers li").filter({ hasText: "Anthropic API" });
   await expect(anthropic).toBeVisible();
@@ -180,19 +180,30 @@ test("offers Anthropic in Settings with a key field, and saves it as the design 
   await expect(anthropic.getByLabel("Anthropic API key", { exact: true })).toHaveValue("");
   await expect(anthropic.getByRole("button", { name: "Save key" })).toBeVisible();
   await expect(anthropic.getByRole("button", { name: /setup command/ })).toHaveCount(0);
-  // Pick it and one of its models by mouse, and save.
-  await page.getByLabel("Design provider").selectOption({ label: "Anthropic API" });
-  await page.getByRole("combobox", { name: "Design model" }).click();
-  await page.getByRole("option", { name: "claude-haiku-5-5", exact: true }).click();
-  await expect(page.getByRole("combobox", { name: "Design model" })).toHaveValue(
-    "claude-haiku-5-5",
-  );
-  await page.getByRole("button", { name: "Save model" }).click();
-  await expect(page.locator(".settings-saved")).toContainText("Saved to");
+  // The chat's model picker lists a provider's models once it is connected: save a made-up key.
+  await anthropic.getByLabel("Anthropic API key", { exact: true }).fill("sk-ant-e2e-made-up-key");
+  await anthropic.getByRole("button", { name: "Save key" }).click();
+  await expect(anthropic.getByText("Key saved", { exact: true })).toBeVisible();
+  // Pick it and one of its models by mouse in the chat composer, which saves it.
+  await page.getByRole("tab", { name: "Design" }).click();
+  const open = page.getByRole("button", { name: "Open chat" });
+  if (await open.isVisible()) await open.click();
+  const picker = page.getByRole("button", { name: /^Design model:/ });
+  const haiku = page
+    .locator('.chat-model-group[data-provider="anthropic"]')
+    .getByRole("menuitemradio", { name: "claude-haiku-5-5", exact: true });
+  await picker.click();
+  await haiku.click();
+  await expect(picker).toHaveAccessibleName("Design model: claude-haiku-5-5, Anthropic API");
+  await picker.click();
+  await expect(haiku).toHaveAttribute("aria-checked", "true");
+  await picker.click();
+  await expect(haiku).toBeHidden();
   const settings = await (await page.request.get("/api/settings")).json();
   expect(settings.roles.designChat).toEqual({ provider: "anthropic", model: "claude-haiku-5-5" });
-  // Put the default back for the other specs on this server.
+  // Put the default back, and remove the made-up key, for the other specs on this server.
   await page.request.put("/api/settings/roles", {
     data: { designChat: { provider: "openai", model: "gpt-5.4-mini" } },
   });
+  await page.request.delete("/api/settings/providers/anthropic/key");
 });

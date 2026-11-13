@@ -1,52 +1,21 @@
 /**
- * Settings: connections first, one card per provider (its status, then a key field, Codex's
- * sign-in, or the custom endpoint's name, base URL and key), then the design chat's model. A saved
- * key is never shown again: the field is emptied after a save and never refilled, and the API never
- * answers with a key.
+ * Settings: one card per provider (its status, then a key field, Codex's sign-in, or the custom
+ * endpoint's name, base URL and key). The design chat's model is picked in the chat composer. A
+ * saved key is never shown again: the field is emptied after a save and never refilled, and the API
+ * never answers with a key.
  */
-import {
-  Autocomplete,
-  Button,
-  Loader,
-  NativeSelect,
-  PasswordInput,
-  TextInput,
-} from "@mantine/core";
+import { Autocomplete, Loader, PasswordInput, TextInput } from "@mantine/core";
+import { IconChevronDown } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import {
   api,
   type CodexLoginState,
-  type ModelRole,
+  type KnownHost,
   type ProviderAuth,
   type ProviderStatus,
-  type RoleModel,
   type SettingsView as Settings,
 } from "../project/api.ts";
 import "./settings.css";
-
-const MODEL_ROWS: {
-  role: ModelRole;
-  label: string;
-  providerLabel: string;
-  description: string;
-}[] = [
-  {
-    role: "designChat",
-    label: "Design model",
-    providerLabel: "Design provider",
-    description: "Edits the design from the Chat tab.",
-  },
-];
-
-function same(a: RoleModel, b: RoleModel) {
-  return a.provider === b.provider && a.model.trim() === b.model.trim();
-}
-
-function modelProblem(provider: ProviderStatus | undefined, model: string) {
-  if (!provider) return "Pick a provider.";
-  if (!model.trim() && !provider.defaultModelAllowed) return "Enter a model name.";
-  return undefined;
-}
 
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -188,7 +157,9 @@ const ENDPOINT_NAME_MAX = 40;
 /**
  * The custom endpoint: with none saved, its name, base URL and key, and **Save**; once saved, the
  * name and base URL, the key as dots, **Replace** (the three fields again, the key empty, with
- * **Cancel**) and **Remove**. The server checks the base URL and says why it can't take one.
+ * **Cancel**) and **Remove**. The name field lists the known hosts (models.dev's providers with a
+ * base URL); picking one fills the name and the base URL. The server checks the base URL and says
+ * why it can't take one.
  */
 function EndpointField({
   provider,
@@ -205,6 +176,21 @@ function EndpointField({
   const [replacing, setReplacing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [hosts, setHosts] = useState<KnownHost[]>([]);
+
+  useEffect(() => {
+    let live = true;
+    // Without the list (offline, no catalogue yet) the name is typed.
+    api
+      .knownHosts()
+      .then((next) => {
+        if (live) setHosts(next);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const run = async (call: () => Promise<Settings>, done?: () => void) => {
     setBusy(true);
@@ -305,15 +291,23 @@ function EndpointField({
       }}
     >
       <div className="settings-key">
-        <TextInput
+        <Autocomplete
           className="settings-key-input settings-endpoint-name"
           aria-label="Endpoint name"
           placeholder="Name, such as DeepSeek"
           autoComplete="off"
           spellCheck={false}
           maxLength={ENDPOINT_NAME_MAX}
+          data={hosts.map((host) => host.name)}
+          maxDropdownHeight={260}
+          rightSection={hosts.length > 0 ? <IconChevronDown size={14} aria-hidden /> : null}
+          rightSectionPointerEvents="none"
           value={name}
-          onChange={(event) => setName(event.currentTarget.value)}
+          onChange={(next) => setName(next.slice(0, ENDPOINT_NAME_MAX))}
+          onOptionSubmit={(picked) => {
+            const host = hosts.find((h) => h.name === picked);
+            if (host) setBaseUrl(host.baseUrl);
+          }}
         />
         <TextInput
           className="settings-key-input settings-endpoint-url"
@@ -525,18 +519,12 @@ function ProviderCard({
 
 export function SettingsView() {
   const [settings, setSettings] = useState<Settings>();
-  const [roles, setRoles] = useState<Record<ModelRole, RoleModel>>();
   const [error, setError] = useState<string>();
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     api
       .settings()
-      .then((s) => {
-        setSettings(s);
-        setRoles(s.roles);
-      })
+      .then(setSettings)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
   }, []);
 
@@ -548,85 +536,13 @@ export function SettingsView() {
       </div>
     );
   }
-  if (!settings || !roles) {
+  if (!settings) {
     return (
       <div className="view-loading" role="status">
         <Loader size="sm" /> Loading settings…
       </div>
     );
   }
-
-  const providerOf = (id: string) => settings.providers.find((p) => p.id === id);
-  const allRoles = MODEL_ROWS.map((row) => row.role);
-  const changed = allRoles.filter((role) => !same(roles[role], settings.roles[role]));
-  const valid = allRoles.every(
-    (role) => !modelProblem(providerOf(roles[role].provider), roles[role].model),
-  );
-  const update = (role: ModelRole, next: RoleModel) => {
-    setSaved(false);
-    setRoles({ ...roles, [role]: next });
-  };
-  const providerOptions = settings.providers.map((p) => ({ value: p.id, label: p.name }));
-  const roleFields = (role: ModelRole, providerLabel: string) => {
-    const choice = roles[role];
-    const provider = providerOf(choice.provider);
-    return (
-      <div className="settings-role-fields">
-        <NativeSelect
-          label={providerLabel}
-          value={choice.provider}
-          data={providerOptions}
-          onChange={(event) => {
-            const next = providerOf(event.currentTarget.value);
-            if (!next) return;
-            // A model name rarely carries over between providers.
-            update(role, {
-              provider: next.id,
-              model: next.id === choice.provider ? choice.model : "",
-            });
-          }}
-        />
-        <Autocomplete
-          label={`${providerLabel.replace(" provider", "")} model`}
-          value={choice.model}
-          data={provider?.suggestedModels ?? []}
-          placeholder={provider?.defaultModelAllowed ? `${provider.name}'s default` : undefined}
-          error={modelProblem(provider, choice.model)}
-          onChange={(model) =>
-            update(role, {
-              ...choice,
-              model,
-            })
-          }
-        />
-      </div>
-    );
-  };
-
-  const save = async () => {
-    setSaving(true);
-    setError(undefined);
-    try {
-      const next = await api.setRoles(
-        Object.fromEntries(
-          changed.map((role) => [
-            role,
-            {
-              provider: roles[role].provider,
-              model: roles[role].model.trim(),
-            },
-          ]),
-        ),
-      );
-      setSettings(next);
-      setRoles(next.roles);
-      setSaved(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <div className="settings-view">
@@ -654,55 +570,6 @@ export function SettingsView() {
           A key is saved to <code>{settings.configPath}</code>, readable by you only, and never
           shown again or stored in designs. A key set in the environment wins.
         </p>
-      </section>
-
-      <section className="settings-card" aria-labelledby="settings-models">
-        <h2 id="settings-models">Models</h2>
-        <form
-          className="settings-models"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void save();
-          }}
-        >
-          {MODEL_ROWS.map(({ role, label, providerLabel, description }) => {
-            const choice = roles[role];
-            const provider = providerOf(choice.provider);
-            return (
-              <fieldset key={role} className="settings-role">
-                <legend>{label}</legend>
-                <p className="settings-help">{description}</p>
-                {roleFields(role, providerLabel)}
-                {provider && !provider.ready && !settings.fakeModel ? (
-                  <p className="settings-warning">
-                    {provider.name} isn't set up yet ({provider.status}). See Connections above.
-                  </p>
-                ) : null}
-              </fieldset>
-            );
-          })}
-
-          <div className="settings-actions">
-            <Button
-              type="submit"
-              color="cyan.9"
-              disabled={changed.length === 0 || !valid}
-              loading={saving}
-            >
-              Save model
-            </Button>
-            {saved && changed.length === 0 ? (
-              <span className="settings-saved" role="status">
-                Saved to {settings.configPath}
-              </span>
-            ) : null}
-            {error ? (
-              <span className="settings-error" role="alert">
-                {error}
-              </span>
-            ) : null}
-          </div>
-        </form>
       </section>
     </div>
   );

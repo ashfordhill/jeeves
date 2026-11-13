@@ -114,6 +114,32 @@ export type CodexLoginState =
 /** What Settings saves for the custom endpoint. The key goes in and never comes back. */
 export type CustomEndpointInput = { name: string; baseUrl: string; apiKey: string };
 
+/** One model in the chat's picker; numbers are `null` when models.dev doesn't know them. */
+export type ModelOption = {
+  id: string;
+  name: string;
+  /** Tokens. */
+  contextWindow: number | null;
+  /** US dollars per million input and output tokens. */
+  inputPrice: number | null;
+  outputPrice: number | null;
+};
+
+/** One provider's section in the picker. */
+export type ProviderModels = {
+  id: ProviderId;
+  name: string;
+  ready: boolean;
+  status: string;
+  models: ModelOption[];
+};
+
+/** `GET /models`, as `apps/server/src/model-catalog.ts` builds it. */
+export type ModelsView = { selected: RoleModel; providers: ProviderModels[] };
+
+/** A host the custom endpoint's card can fill in (a models.dev provider with a base URL). */
+export type KnownHost = { id: string; name: string; baseUrl: string };
+
 export type SettingsView = {
   configPath: string;
   providers: ProviderStatus[];
@@ -216,6 +242,11 @@ export const api = {
   fileUrl: (id: string, fileId: string) => `/api/projects/${id}/files/${fileId}`,
 
   settings: () => request<SettingsView>("/settings"),
+
+  /** The design chat's model and every provider's models, for the chat's model picker. */
+  models: () => request<ModelsView>("/models"),
+
+  knownHosts: () => request<{ hosts: KnownHost[] }>("/models/hosts").then((r) => r.hosts),
 
   setRoles: (roles: Partial<Record<ModelRole, RoleModel>>) =>
     request<SettingsView>("/settings/roles", { method: "PUT", body: JSON.stringify(roles) }),

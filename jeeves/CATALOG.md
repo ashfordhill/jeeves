@@ -445,8 +445,8 @@ explicit support gaps through the actual chat tool loop. These are design refere
 template or verification is available. Current kind defaults and link rules still come from
 their existing catalogs, and unsupported lifecycle returns do not authorize workaround services.
 
-The design chat uses one provider and model chosen in Settings
-([`packages/providers`](packages/providers/src/catalog.ts)):
+The design chat uses one provider and model, chosen in the chat composer's model picker and
+connected in Settings ([`packages/providers`](packages/providers/src/catalog.ts)):
 
 | Provider | Credentials | Tool argument constraints |
 | --- | --- | --- |

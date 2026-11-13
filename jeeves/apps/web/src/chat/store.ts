@@ -1,10 +1,17 @@
 /**
- * Design chat state: the project's turns, the turn being streamed, the message draft, and files
- * staged for the next message. A finished turn's design is handed to the project store, so the
- * canvas shows the edit.
+ * Design chat state: the project's turns, the turn being streamed, the message draft, files
+ * staged for the next message, and the model picker's models. A finished turn's design is handed
+ * to the project store, so the canvas shows the edit.
  */
 import { create } from "zustand";
-import { api, type ChatActivity, type ChatTurn, type FileInfo } from "../project/api.ts";
+import {
+  api,
+  type ChatActivity,
+  type ChatTurn,
+  type FileInfo,
+  type ModelsView,
+  type RoleModel,
+} from "../project/api.ts";
 import { useProject } from "../project/store.ts";
 
 /** Accepted attachments, by extension, with the media type they're sent as. */
@@ -51,6 +58,10 @@ type ChatState = {
   staged: StagedFile[];
   /** Problem sending (not a failed turn, which is shown in the turn itself). */
   error?: string;
+  /** The model picker: the design chat's model and every provider's models. */
+  models?: ModelsView;
+  /** Why the picker's models couldn't be read, or a pick couldn't be saved. */
+  modelsError?: string;
 
   load(projectId: string): Promise<void>;
   setDraft(draft: string): void;
@@ -58,6 +69,9 @@ type ChatState = {
   unstage(key: number): void;
   /** Sends the draft (or `text`, e.g. a clicked choice) with the staged files. */
   send(text?: string): Promise<void>;
+  loadModels(): Promise<void>;
+  /** Saves the design chat's model (`PUT /settings/roles`); the next message uses it. */
+  pickModel(choice: RoleModel): Promise<void>;
 };
 
 let stageKey = 0;
@@ -85,6 +99,27 @@ export const useChat = create<ChatState>()((set, get) => ({
 
   setDraft(draft) {
     set({ draft });
+  },
+
+  async loadModels() {
+    try {
+      set({ models: await api.models(), modelsError: undefined });
+    } catch (error) {
+      set({ modelsError: message(error) });
+    }
+  },
+
+  async pickModel(choice) {
+    try {
+      const next = await api.setRoles({ designChat: choice });
+      const models = get().models;
+      set({
+        modelsError: undefined,
+        ...(models ? { models: { ...models, selected: next.roles.designChat } } : {}),
+      });
+    } catch (error) {
+      set({ modelsError: message(error) });
+    }
   },
 
   async attach(files) {

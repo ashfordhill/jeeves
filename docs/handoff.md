@@ -12721,3 +12721,117 @@ unit's; left untouched and unstaged. No uncommitted changes under `jeeves-genera
 **For the next unit.** UI11 can start: the custom card is `EndpointField` in `SettingsView.tsx`
 (Endpoint name and Base URL `TextInput`s; UI11's known hosts can fill them), the adapter is
 `createCompatibleProvider` in `packages/providers/src/compatible.ts`.
+
+## 2026-11-13 — UI11: The model catalogue and the picker in chat
+
+**What changed.**
+- New `apps/server/src/model-catalog.ts`: `createModelCatalog({ home, fetch, now })`. `providers()`
+  reads `https://models.dev/api.json` (5-second `AbortSignal.timeout`) when the catalogue in hand is
+  24 hours old and models.dev wasn't asked in the last 24 hours, shares one request between callers,
+  and writes `{ fetchedAt, providers }` to `<home>/models-dev.json` (via a temporary file). Kept per
+  model: `id`, `name`, `limit.context`, `cost.input`, `cost.output`, `tool_call` and `release_date`.
+  Offline, a non-200 or a malformed reply keeps the file's catalogue (or none); `fetch: null` never
+  fetches. Also `parseModelsDev`, `codexModels(codexHome)` (`models_cache.json`'s `visibility:
+  "list"` models: `slug`, `display_name`, `context_window`), `modelsView(settings, catalog)` and
+  `knownHosts(catalogue)`.
+- New `routes/models.ts`: `GET /models` → `{ selected, providers: [{ id, name, ready, status, models:
+  [{ id, name, contextWindow, inputPrice, outputPrice }] }] }`. OpenAI and Anthropic: models.dev's
+  `openai`/`anthropic` models that take tools, newest first, at most 12, then `suggestedModels`,
+  then the selected model (once each; a listed ID keeps its models.dev details). Codex: its
+  `models_cache.json` (`Settings.codexHome()`: `CODEX_HOME`, else `~/.codex`), else
+  `suggestedModels`. Custom: the models.dev provider whose `api` is its base URL, else `[]`.
+  `GET /models/hosts` → `{ hosts: [{ id, name, baseUrl }] }`: models.dev providers whose `api`
+  passes `baseUrlProblem`, by name.
+- `settings.ts`: `codexHome()` (`codexLoggedIn()` uses it). `app.ts`: `AppDeps.modelCatalog` (default
+  fetches unless `JEEVES_FAKE_MODEL_SCRIPT`), `modelRoutes` registered. `main.ts`: the catalogue
+  with `fetch: null` when a script is replayed. `test-support.ts`: `buildTestApp`'s catalogue never
+  fetches (empty, throwaway home).
+- Web: `project/api.ts` (`ModelOption`, `ProviderModels`, `ModelsView`, `KnownHost`, `api.models`,
+  `api.knownHosts`). `chat/store.ts`: `models`, `modelsError`, `loadModels()`, `pickModel()` (`PUT
+  /settings/roles` with `designChat`). New `chat/ModelPicker.tsx`: a Mantine `Menu` (`top-start`,
+  330 px) opened by the composer's left button (status dot, the model's name, `· provider`, chevron;
+  `aria-label` "Design model: <name>, <provider>"); one `.chat-model-group` per provider headed by
+  "<name> · <status>" with a dot; models as `Menu.RadioItem`s (`aria-checked`), each with its
+  context (`128k`, `1M`) and "$in / $out" where known, the selected one `--yellow`/`--on-yellow`; a
+  provider that isn't ready has one disabled "Connect it in Settings"; the custom endpoint with no
+  models.dev list has a "Custom endpoint model" field and **Use**. Each opening reloads the lists.
+  `ChatPanel.tsx`: the action row is the picker, then Attach (now icon-only, `aria-label` "Attach")
+  and Send. `design-view.css`: `.chat-model-*` rules (no new token; the menu is `--cream` with a
+  `--row-line` border, as `.canvas-menu`).
+- `settings/SettingsView.tsx`: the Models card, `MODEL_ROWS`, `same`, `modelProblem` and their state
+  are deleted. `EndpointField`'s name is a Mantine `Autocomplete` of the known hosts (typed names
+  still work); picking one fills the name and the base URL. `settings.css`: the Models card's rules
+  (`.settings-card`, `-models`, `-actions`, `-saved`, `-role*`, `-warning`) deleted; the
+  placeholder rule covers `Autocomplete`.
+- Tests: new `model-catalog.test.ts` (6: one shared request and one a day, the kept fields in the
+  file, a restart reading the file, offline with and without a file and a timeout, five malformed
+  replies, `fetch: null`, field parsing), `routes/models.test.ts` (5: statuses and no key in the
+  answer, OpenAI's and Anthropic's lists with the cap and the selected model, Codex from a made-up
+  `models_cache.json` in a temp `CODEX_HOME`, the custom endpoint by base URL, the known hosts),
+  `chat/store.test.ts` (2: a pick calls `PUT /settings/roles`; a refused pick keeps the model).
+- E2E: `blueprint-chat.spec.ts`'s "offers Anthropic in Settings…" asserted exactly the Models card
+  this unit replaces; its pick now uses the composer picker with the same expectations (the card's
+  No key, description, empty key field and Save key; then `claude-haiku-5-5` picked by mouse and
+  `roles.designChat` = Anthropic/`claude-haiku-5-5`). A provider that isn't connected offers no
+  models, so it first saves a made-up key by mouse on the card (and deletes it at the end), and it
+  uses the `tinyurl` fixture, because the picker is in a project's chat. The "Saved to" check
+  became the button's new name and the row's `aria-checked`.
+- Docs: `docs/studio.md` (Chat: the model picker; Settings: known hosts, no Models card),
+  `jeeves/PLAN.md` (`model-catalog.ts`, `routes/` and `chat/`, the Settings paragraph, the API
+  table), `jeeves/CATALOG.md` (where the model is chosen), and two comments in
+  `packages/providers/src/catalog.ts`. `docs/studio-settings.md` doesn't describe the model choice.
+
+**Checks.** `pnpm check` before any change: exit 0, 110 files, 867 tests. After: exit 0, 112 files,
+880 tests (lint's one info is older). The moved Anthropic test alone: 1 passed. `pnpm test:e2e`
+(native, without the mouse spec): 73 passed (4.8 min). `pnpm --filter @jeeves/web build`: exit 0.
+Mouse check (`ui11-check.spec.ts`, run alone after the others, then deleted): 2 passed, 1440×900
+and 1280×800, no page error; `/api/settings` read `fakeModel: true` and a `jeeves-e2e-` home. As the
+e2e server starts, the button read "gpt-5.4-mini · OpenAI API" with a `--minus` dot, left of Attach
+and Send on one row; the menu's headings read "OpenAI API · No key", "Codex · Not logged in",
+"Anthropic API · No key", "Custom endpoint · Not set up", each with one disabled "Connect it in
+Settings" (menu `--cream`, border `--row-line`, button border `--control-line`). Then, with a
+made-up catalogue file written to that home (the server never fetched), a made-up Anthropic key and
+a custom endpoint on the made-up host: Anthropic listed three models with `1M` and `$0.10 / $0.50`,
+`$2 / $10`, `$4 / $20`, the custom endpoint "Example Pro" `1M $0.66 / $1.98`; a click on it closed
+the menu, the button read "Example Pro · Custom endpoint" with a `--plus` dot and the role was
+saved; reopened, its row was `--yellow`/`--on-yellow` and `aria-checked`. A pick of Claude Haiku
+saved Anthropic. With an unknown host the custom section showed the model field: "made-up-model"
+typed and **Use** clicked saved it. Settings had no Models heading, Save model, Design provider or
+Design model; the custom card's name field listed "Example host", whose pick filled the name and
+`https://llm.example.invalid/v1`. Light then dark each time; everything was put back (default role,
+no key, no endpoint, no catalogue file). Six images in `docs/plans/ui-refresh/evidence/ui11/`
+(picked and hosts at 1440, unconnected at 1280; light and dark) match the picker in
+`preview/chat-light.png` and `-dark.png`. No project was left; `jeeves_e2e` holds only "TinyURL ·
+studio study" and "E2E Every kind". No model was called and models.dev was never fetched.
+**Differences from the plan.**
+- The catalogue also keeps `release_date`: step 2's "newest first" needs it. The file holds the kept
+  fields and `fetchedAt`, not models.dev's whole reply.
+- "At most once every 24 hours" counts a failed request too, so an offline server asks again a day
+  later (or after a restart); until a file is read, each call looks for one.
+- The known hosts come from a new `GET /models/hosts`, so `GET /models` keeps the plan's shape.
+- The custom endpoint's models.dev list uses OpenAI's and Anthropic's rule (takes tools, newest
+  first, at most 12), and the base URL match ignores trailing slashes. A typed model has **Use**.
+- Codex: a `models_cache.json` that lists no model counts as unreadable (suggested models). Codex's
+  and the custom endpoint's lists don't add the selected model (the plan adds it for OpenAI and
+  Anthropic only); the button always shows it.
+- "The button shows the scripted model": the e2e server's design model is the default
+  `gpt-5.4-mini` on OpenAI API, which the script answers in place of; the button shows that, with a
+  red dot (no OpenAI key there).
+- Section headings are "<name> · <status>" as step 3 says, not the preview's "signed in with
+  ChatGPT" / "DeepSeek · custom endpoint". Codex rows show no "plan" (the preview's word): the server
+  can't tell a ChatGPT sign-in from an API-key login without reading `auth.json`.
+- Attach is icon-only, as the preview draws it, so the model button fits the 300 px rail; Send
+  keeps its colour (the preview's is yellow).
+**Noticed.** The real models.dev reply was never fetched here (no network in checks); the parser
+follows its published shape (`{ <provider>: { id, name, api?, models: { <id>: { … } } } }`), and
+the lists fall back to the suggested models if it differs. **The owner's dev server fetches it on
+the first picker or Settings opening** (then once a day). Dark mode: the known-hosts dropdown is Mantine's grey (UI13's
+palette). At the default 300 px rail a long model name leaves the provider as "· …"; the tooltip and
+accessible name hold both. Some models.dev base URLs hold placeholders (an account ID) and are
+offered as they are. `chat/models.ts`'s unreachable default case still says "Pick another provider
+in Settings". The modes of `jeeves/scripts/e2e-docker.sh` and
+`docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged. No uncommitted changes under `jeeves-generator/` or
+`field-projects/`.
+**For the next unit.** UI12 can start: the picker is `chat/ModelPicker.tsx`, and `useChat`'s
+`models` holds the selected model's `contextWindow` and prices from `GET /models`.

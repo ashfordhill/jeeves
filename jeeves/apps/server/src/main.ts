@@ -6,6 +6,7 @@ import { failInterruptedTurns } from "./chat/service.ts";
 import { createCodexLogin } from "./codex-login.ts";
 import { loadConfig } from "./config.ts";
 import { connectDb, ensureDatabase } from "./db/client.ts";
+import { createModelCatalog } from "./model-catalog.ts";
 import { jeevesHome, Settings } from "./settings.ts";
 
 const { version } = JSON.parse(
@@ -31,6 +32,12 @@ const app = buildApp({
   settings,
   models: fakeScript ? fakeModels(fakeScript) : providerModels(settings, codexPath),
   codexLogin: createCodexLogin({ ...(codexPath ? { codexPath } : {}), spawn, env: process.env }),
+  // The model picker's catalogue never fetches models.dev while a scripted model is replayed.
+  modelCatalog: createModelCatalog({
+    home: jeevesHome(),
+    fetch: fakeScript ? null : fetch,
+    now: Date.now,
+  }),
   logger: true,
 });
 

@@ -1,6 +1,6 @@
 /**
- * The providers Jeeves knows about, for the Settings picker. The design chat picks a
- * provider and a model; each provider here is a `ModelProvider` (chat with tools).
+ * The providers Jeeves knows about, for Settings and the chat's model picker. The design chat
+ * picks a provider and a model; each provider here is a `ModelProvider` (chat with tools).
  */
 import type { ModelRole } from "./types.ts";
 
@@ -25,7 +25,7 @@ export type ProviderInfo = {
   name: string;
   description: string;
   auth: ProviderAuth;
-  /** Model names offered in the picker. Free text is still accepted. */
+  /** Model names the chat's picker offers besides models.dev's. Free text is still accepted. */
   suggestedModels: string[];
   /** `true` when an empty model name means "the provider's own default". */
   defaultModelAllowed: boolean;

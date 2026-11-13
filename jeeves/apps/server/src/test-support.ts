@@ -9,6 +9,7 @@ import { type AppDeps, buildApp } from "./app.ts";
 import { type Clock, type CodexSpawn, createCodexLogin } from "./codex-login.ts";
 import { type Db, migrationsFolder } from "./db/client.ts";
 import * as schema from "./db/schema.ts";
+import { createModelCatalog } from "./model-catalog.ts";
 import { Settings } from "./settings.ts";
 
 /**
@@ -24,7 +25,8 @@ export async function openTestDb(dataDir?: string) {
 
 /**
  * `models` and `settings` default to "no provider configured" in a throwaway directory. Codex's
- * sign-in never runs `codex` unless a test passes its own (fake) `codexLogin`.
+ * sign-in never runs `codex` unless a test passes its own (fake) `codexLogin`, and the model
+ * catalogue never fetches (an empty catalogue in its own throwaway directory).
  */
 export function buildTestApp(db: Db, deps: Partial<AppDeps> = {}) {
   return buildApp({
@@ -37,6 +39,11 @@ export function buildTestApp(db: Db, deps: Partial<AppDeps> = {}) {
         throw new Error("A test ran codex without a fake spawn.");
       },
       env: {},
+    }),
+    modelCatalog: createModelCatalog({
+      home: mkdtempSync(join(tmpdir(), "jeeves-catalog-")),
+      fetch: null,
+      now: Date.now,
     }),
     ...deps,
   });

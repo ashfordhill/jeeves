@@ -210,10 +210,14 @@ export class Settings {
     return fromFile ? { key: fromFile, source: "file" } : undefined;
   }
 
+  /** Codex's own directory: `$CODEX_HOME`, else `~/.codex`. */
+  codexHome(): string {
+    return this.env.CODEX_HOME ?? join(this.env.HOME ?? homedir(), ".codex");
+  }
+
   /** Whether `codex login` has stored credentials (Codex reads them itself). */
   codexLoggedIn(): boolean {
-    const codexHome = this.env.CODEX_HOME ?? join(this.env.HOME ?? homedir(), ".codex");
-    return existsSync(join(codexHome, "auth.json")) || !!this.env.CODEX_API_KEY?.trim();
+    return existsSync(join(this.codexHome(), "auth.json")) || !!this.env.CODEX_API_KEY?.trim();
   }
 
   roles(): Record<ModelRole, RoleModel> {

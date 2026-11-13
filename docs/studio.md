@@ -846,9 +846,26 @@ follow their names, as the inspector does ([Names and IDs](#inspector)); results
 sent with each message, so "Add a cache after the selected service" works; the user, an action
 and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
-SVG). Token counts and provider-reported cost appear only when complete. The model and provider
-are chosen in **Settings**: OpenAI's API, Codex's own login, (V3-19) Anthropic's API, or a custom
-OpenAI-compatible endpoint. Chat and the inspector collapse and resize independently.
+SVG). Token counts and provider-reported cost appear only when complete. Chat and the inspector
+collapse and resize independently.
+
+**The model picker.** The composer's left button shows the design chat's model, its provider and a
+dot (green when that provider is connected, red when not); a click opens one section per provider
+(OpenAI's API, Codex's own login, Anthropic's API, the custom endpoint), headed by its name and
+status. Each model shows, where they are known, its context size (`128k`, `1M`) and its prices per
+million tokens (input / output); the selected one is yellow. A provider that isn't connected shows one
+greyed row, **Connect it in Settings**. A click on a model saves it as the design model
+(`PUT /settings/roles`, in `~/.jeeves/config.json`), and the next message uses it. OpenAI and
+Anthropic list [models.dev](https://models.dev)'s models of theirs that take tools, newest first, at
+most 12, then their suggested models and the selected one. Codex lists the models in its own
+`models_cache.json` (`$CODEX_HOME`, else `~/.codex`) that Codex shows, else its suggested ones. The
+custom endpoint lists the models of the models.dev provider whose base URL is its own; for any
+other host the section takes a typed model name and **Use**. The server reads
+`https://models.dev/api.json` at most once a day (5-second timeout) and keeps what it needs (each
+model's ID, name, context size, prices, tool use and release date) in `~/.jeeves/models-dev.json`;
+offline it uses that file; with none, OpenAI and Anthropic list only their suggested models and the
+custom endpoint takes a typed name. A server replaying a scripted model (`JEEVES_FAKE_MODEL_SCRIPT`)
+never fetches it.
 
 **Settings.** Connections is one card per provider: its name, a status pill (green when it can be
 used, red when not) and one line about it. OpenAI's and Anthropic's cards take an API key: paste
@@ -872,8 +889,9 @@ or `[::1]`), and holds no key or query; the server says why it refuses one. Save
 **`<name>` · key saved** and the card shows the name, the base URL and the key as dots, with
 **Replace** (the three fields again, the key empty, with **Cancel**) and **Remove**. The three are
 saved together in `~/.jeeves/config.json` (`custom`); with none saved the pill reads **Not set up**.
-Below Connections, the Models card picks the design chat's provider and model; the custom endpoint
-has no model list, so type its model name.
+The name field lists the known hosts (models.dev's providers with a base URL the card takes); a
+click on one fills the name and the base URL. The design chat's model is picked in the chat
+composer ([the model picker](#chat)), not in Settings.
 
 OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,
 defaults and explicit owner clearing. Codex constrains the outer answer only: its inner argument

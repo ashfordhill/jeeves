@@ -1,6 +1,6 @@
 import { applyOperations, validateDesign } from "@jeeves/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChatEvent, ChatTurn } from "../project/api.ts";
+import type { ChatEvent, ChatTurn, ModelsView, RoleModel } from "../project/api.ts";
 import { canUndo, useProject } from "../project/store.ts";
 import { fakeApi, serviceOps, TEST_PROJECT } from "../test-api.ts";
 import { mediaTypeOf, useChat } from "./store.ts";
@@ -28,10 +28,49 @@ const ndjson = (events: ChatEvent[]) =>
     headers: { "content-type": "application/x-ndjson" },
   });
 
+const models: ModelsView = {
+  selected: { provider: "openai", model: "gpt-5.4-mini" },
+  providers: [
+    {
+      id: "openai",
+      name: "OpenAI API",
+      ready: false,
+      status: "No key",
+      models: [
+        {
+          id: "gpt-5.4-mini",
+          name: "gpt-5.4-mini",
+          contextWindow: null,
+          inputPrice: null,
+          outputPrice: null,
+        },
+      ],
+    },
+    {
+      id: "anthropic",
+      name: "Anthropic API",
+      ready: true,
+      status: "Key saved",
+      models: [
+        {
+          id: "claude-haiku-5-5",
+          name: "Claude Haiku 5.5",
+          contextWindow: 1_000_000,
+          inputPrice: 0.1,
+          outputPrice: 0.5,
+        },
+      ],
+    },
+  ],
+};
+
 describe("chat store", () => {
   let api: ReturnType<typeof fakeApi>;
   let posted: unknown[];
   let chatResponse: () => Response;
+  /** What the picker sent to `PUT /settings/roles`, and the role the fake server keeps. */
+  let roles: unknown[];
+  let designChat: RoleModel;
 
   beforeEach(async () => {
     api = fakeApi();
@@ -60,10 +99,19 @@ describe("chat store", () => {
         { type: "done", turn: done, state },
       ]);
     };
+    roles = [];
+    designChat = models.selected;
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const path = new URL(String(input), "http://localhost").pathname;
+        if (path === "/api/models") return Response.json({ ...models, selected: designChat });
+        if (path === "/api/settings/roles" && init?.method === "PUT") {
+          const body = JSON.parse(String(init.body));
+          roles.push(body);
+          designChat = body.designChat;
+          return Response.json({ roles: { designChat } });
+        }
         if (path === `/api/projects/${TEST_PROJECT}/chat`) {
           if (init?.method !== "POST") return Response.json({ turns: [] });
           posted.push(JSON.parse(String(init.body)));
@@ -81,6 +129,8 @@ describe("chat store", () => {
       draft: "",
       staged: [],
       error: undefined,
+      models: undefined,
+      modelsError: undefined,
     });
     await useChat.getState().load(TEST_PROJECT);
   });
@@ -130,6 +180,32 @@ describe("chat store", () => {
     await useChat.getState().send("No accounts");
     expect(posted).toMatchObject([{ message: "No accounts" }]);
     expect(useChat.getState().draft).toBe("half-typed");
+  });
+
+  it("loads the picker's models and saves a pick as the design model", async () => {
+    await useChat.getState().loadModels();
+    expect(useChat.getState().models).toEqual(models);
+
+    await useChat.getState().pickModel({ provider: "anthropic", model: "claude-haiku-5-5" });
+    expect(roles).toEqual([{ designChat: { provider: "anthropic", model: "claude-haiku-5-5" } }]);
+    expect(useChat.getState().models?.selected).toEqual({
+      provider: "anthropic",
+      model: "claude-haiku-5-5",
+    });
+    expect(useChat.getState().modelsError).toBeUndefined();
+    // The next message goes as before: the server reads the saved model for each turn.
+    await useChat.getState().send("Add a service");
+    expect(posted).toMatchObject([{ message: "Add a service" }]);
+  });
+
+  it("says why a pick wasn't saved, and keeps the model it had", async () => {
+    await useChat.getState().loadModels();
+    vi.mocked(fetch).mockImplementationOnce(async () =>
+      Response.json({ message: "designChat: Enter a model name." }, { status: 422 }),
+    );
+    await useChat.getState().pickModel({ provider: "anthropic", model: "" });
+    expect(useChat.getState().modelsError).toBe("designChat: Enter a model name.");
+    expect(useChat.getState().models?.selected).toEqual(models.selected);
   });
 
   it("knows which files it accepts", () => {

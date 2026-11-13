@@ -1,7 +1,7 @@
 /**
  * Design chat in the studio rail: the conversation, streamed replies, `askUser` choice
- * cards, what each turn changed, an Undo button per turn, and a composer with file attachments.
- * Everything works by mouse; Ctrl/Cmd+Enter also sends.
+ * cards, what each turn changed, an Undo button per turn, and a composer with the model picker
+ * and file attachments. Everything works by mouse; Ctrl/Cmd+Enter also sends.
  */
 import { Button, FileButton, Loader, Textarea } from "@mantine/core";
 import {
@@ -17,6 +17,7 @@ import {
 import { useEffect, useRef } from "react";
 import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../project/api.ts";
 import { useProject } from "../project/store.ts";
+import { ModelPicker } from "./ModelPicker.tsx";
 import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
 
 const EXAMPLES = [
@@ -276,21 +277,26 @@ function Composer() {
         }}
       />
       <div className="chat-composer-actions">
+        <ModelPicker />
         <FileButton onChange={(files) => void attach(files)} accept={ACCEPT_ATTRIBUTE} multiple>
           {(props) => (
             <Button
               {...props}
+              className="chat-attach"
               size="xs"
+              px={8}
               variant="default"
-              leftSection={<IconPaperclip size={14} aria-hidden />}
+              aria-label="Attach"
+              title="Attach a Markdown brief, a text file or an image"
               disabled={busy}
             >
-              Attach
+              <IconPaperclip size={14} aria-hidden />
             </Button>
           )}
         </FileButton>
         <Button
           type="submit"
+          className="chat-send"
           size="xs"
           color="cyan.9"
           leftSection={<IconSend size={14} aria-hidden />}
