@@ -11932,3 +11932,14 @@ default)". No uncommitted changes under `jeeves-generator/` or `field-projects/`
 dirty paths stay untouched and unstaged.
 **For the next unit.** UI01 is not done. Revise its step 4 for this test, then rerun UI01 before
 UI02.
+
+## 2026-11-13 — Plan: UI01 amended after its first run
+
+Planning only; no code changed. UI01's first run stopped as its step 4 told it to: TinyURL's
+Redirect service, now a Service, offers 13 modules, and `module-authoring.spec.ts` expected the
+Redirect kind's 10. The plan's step 4 now changes that test (the comment and `toHaveCount(13)`).
+Step 2 gives the new `marketplace.ts` entries comment (42 bends, 7,552px), and step 5 adds the
+two v3.2 → v3.3 sentences in `docs/studio.md` and `jeeves/PLAN.md` that the first run found.
+**Checks.** None (docs only).
+**For the next unit.** Rerun UI01 from the start of its section. The units still run in order,
+UI01 → UI14; after UI14 the owner wants BR01, BR02, GS07 and GS09, in that order.

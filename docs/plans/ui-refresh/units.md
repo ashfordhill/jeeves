@@ -224,6 +224,23 @@ and this connection directly after the `payments-write` connection:
       },
 ```
 
+Replace the doc comment directly above `const entries: StudioEntry[] = [` (from `/**` to ` */`)
+with:
+
+```ts
+/**
+ * Browse reaches the Storefront API, the Orders service and the Image CDN; Buy & sell reaches the
+ * Shop service, Identity, Payments and the Cart service. Of the 5,184 entry and link orders the
+ * study had before the Stripe API tile (entries, and the Shop service's and Payments' links), laid
+ * out with real ELK with the stores beside their users, every one crosses at least once. This
+ * entry order crosses once with 42 bends, the Search index right above the Search indexer that
+ * writes it and the Orders database right after the Order recorder. Payments' link to Order events
+ * comes before its Payments database and its link to the Stripe API comes last (connections
+ * below): earlier places draw longer lines (7,552px in all, the longest the Orders service's read,
+ * 896px). The Shop service's link order doesn't change the drawing.
+ */
+```
+
 The tile must be named **Stripe API**, not Stripe: `apps/server/src/eval/design-leak.test.ts`
 treats every study tile name as a design name, and chat's own text already holds the word Stripe.
 The link must come after `payments-write`: earlier places draw longer lines and fail
@@ -270,12 +287,21 @@ The link must come after `payments-write`: earlier places draw longer lines and 
 Do not edit `fixtures/nc01-schema2.json`. With these edits `pnpm check` passed on a scratch copy
 (105 files, 820 tests).
 
-**4. E2E.** In `jeeves/apps/web/e2e/canvas.spec.ts`, test `New project offers the marketplace
-study`: 20 tiles → 21, 23 lines → 24, 23 arrows → 24, and its comment's "seventeen tiles" and
-"fourteen connections" → "eighteen" and "fifteen". On a scratch run that was cut short,
-`module-authoring.spec.ts`'s `looking, hovering and cancelled drags change neither the design nor
-the blueprint` also failed and the cause was not found: rerun it alone. If it fails because of this
-unit, stop as in rule 2.
+**4. E2E.** Two tests change.
+
+- `jeeves/apps/web/e2e/canvas.spec.ts`, test `New project offers the marketplace study`: 20 tiles →
+  21, 23 lines → 24, 23 arrows → 24, and its comment's "seventeen tiles" and "fourteen connections"
+  → "eighteen" and "fifteen".
+- `jeeves/apps/web/e2e/module-authoring.spec.ts`, test `looking, hovering and cancelled drags change
+  neither the design nor the blueprint` (amended 2026-11-13, after UI01's first run stopped here):
+  the comment `// The older Redirect service kind takes modules too: its menu, opened and closed.`
+  becomes `// The Redirect service is a Service: its module menu, opened and closed.`, and the
+  `toHaveCount(10)` two lines below it becomes `toHaveCount(13)`. As a Service the tile offers the
+  Service's 13 module kinds, not the Redirect kind's 10 (`moduleKinds` in `studio-modules.ts`). If
+  any other assertion in that test then fails, stop as in rule 2.
+
+`pnpm check` now counts 106 files and 823 tests before and after this unit (the GS units added
+three tests after the plan was written).
 
 **5. Docs.** Measured on a scratch copy with real ELK, by the method that reproduces the documented
 TinyURL and YouTube numbers:
@@ -309,6 +335,8 @@ TinyURL and YouTube numbers:
   payment flow is a Service that calls its provider as an External API." add "No built-in study
   uses a legacy kind."
 - `docs/studio-blueprint.md`: `studio-tinyurl@3.2.0` → `3.3.0`.
+- `docs/studio.md`: "only new copies are v3.2." → "only new copies are v3.3.".
+- `jeeves/PLAN.md`: "TinyURL v3.2 (the default)" → "TinyURL v3.3 (the default)".
 
 **Mouse check.** New project → TinyURL: the Redirect service's label reads **Service**, and its
 inspector has no Lookup store or Lookup cache field. New project → Marketplace · studio study:
