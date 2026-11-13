@@ -1,0 +1,7 @@
+{
+  "id": "gs-b0abcbbe-6285-4d00-bc04-bd5ff8846ec6",
+  "selected": ["core"],
+  "outcome": "failed",
+  "elapsedMs": 215226,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs02-first/run.json"
+}

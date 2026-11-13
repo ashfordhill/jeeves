@@ -21,16 +21,29 @@ runtime files, three allocated loopback ports and a unique Compose project. Noth
 checkout is mounted into application containers. The original report keeps its required custom
 gaps: attaching hooks supplies application code, not a generator attestation of completeness.
 
-The Activity fixture has a public event publisher, a work queue, an installed receipt counter
-and a public read-only totals reader. Its three small owned files validate/publish an activity,
-decode its identity and read the generated public view. The generated template owns receipt
-transactions, counting, AMQP delivery and permissions. A 202 means RabbitMQ confirmed the
-publication; the publisher has no transactional outbox guarantee. No product SQL is needed for
+The Activity fixture has a public event publisher, a topic with one Counter subscriber queue,
+an installed receipt counter and a public read-only totals reader. Its three small owned files
+validate/publish an activity, decode its identity and read the generated public view. The generated
+template owns receipt transactions, counting, AMQP delivery and permissions. A 202 means
+RabbitMQ confirmed the publication; the publisher has no transactional outbox guarantee. No product SQL is needed for
 this fixture because the counter supplies its own private tables and public view.
 
 | Behavior | Executable test | Observations |
 | --- | --- | --- |
 | B01 | `core.system.test.ts` | Initial zero through edge; confirmed submission; eventual one through edge; exact private receipt and total from PostgreSQL |
+| B02 | `core-delivery.system.test.ts` | Two workers each process alone with their own real database connection; two broker consumers then handle 200 confirmed submissions for 50 identities, yielding exactly 50 receipts/increments after ready and unacknowledged deliveries drain; either copy of either public API may stop |
+| B03 | `core-delivery.system.test.ts` | Completed totals and five confirmed queued events survive ordinary stop/start with identical runtime history and volume identities; a new event still succeeds |
+| B04 | `core-delivery.system.test.ts` | Malformed bytes reach `events--counter.failed` with `MALFORMED_MESSAGE`; the next valid event succeeds; the actual reader login can read the published view but private reads/writes fail with PostgreSQL `42501` |
+
+The counter's installed policy selects the topic; both Counter copies compete on its single
+`events--counter` queue. This does not prove fanout or a separate work queue. Public API failover
+allows transient edge responses while nginx refreshes names (10 s), and asserts a joint
+submission/read recovery within 15 s after each stopped copy. Poll observations retain transient
+responses; repeated submissions use the same stable identity. The edge stays single.
+
+Run generated suites and browser checks in separate phases: changing Compose networks can
+interrupt Chromium module loading. Keep image builds separate from offline checks too, so they
+do not compete with existing test deadlines.
 
 `integration/author-activity.ts` records the studio commands used to author the saved diagram.
 It is a development helper, never application runtime code. To rebuild the diagram deliberately:

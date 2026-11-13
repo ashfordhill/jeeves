@@ -1,0 +1,6 @@
+{
+  "fixture": "activity",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected [ '172.24.0.9' ] to deeply equal [ '172.24.0.6', '172.24.0.9' ]"
+}

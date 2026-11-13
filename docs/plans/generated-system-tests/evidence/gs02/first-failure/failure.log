@@ -1,0 +1,44 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/core-delivery.system.test.ts (3 tests | 1 failed) 140990ms
+   × B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping 38558ms
+   ✓ B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes 68446ms
+   ✓ B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables 33985ms
+ ✓ |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts (1 test) 32060ms
+   ✓ B01: edge publication commits exactly one counter increment and a matching receipt 32059ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/core-delivery.system.test.ts > B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping
+AssertionError: expected [ '172.24.0.9' ] to deeply equal [ '172.24.0.6', '172.24.0.9' ]
+
+- Expected
++ Received
+
+  [
+-   "172.24.0.6",
+    "172.24.0.9",
+  ]
+
+ ❯ jeeves-generator/integration/scenarios/core-delivery.system.test.ts:52:25
+     50|       )
+     51|     ).split("\n");
+     52|     expect(connections).toEqual(addresses);
+       |                         ^
+     53|     await app.save("worker-connections.json", { addresses, connections…
+     54|
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/core-delivery.system.test.ts:22:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 3 passed (4)
+   Start at  22:41:59
+   Duration  173.26s (tests 100%)
+
+JSON report written to /tmp/gs02-first/vitest.json
+JUNIT report written to /tmp/gs02-first/junit.xml

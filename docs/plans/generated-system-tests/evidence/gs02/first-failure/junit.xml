@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="4" failures="1" errors="0" time="173.049801774">
+    <testsuite name="jeeves-generator/integration/scenarios/core-delivery.system.test.ts" timestamp="2026-11-13T04:45:14.128Z" hostname="BASEMENT-PC" tests="3" failures="1" errors="0" skipped="0" time="140.990232452">
+        <testcase classname="jeeves-generator/integration/scenarios/core-delivery.system.test.ts" name="B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping" time="38.558063213">
+            <failure message="expected [ &apos;172.24.0.9&apos; ] to deeply equal [ &apos;172.24.0.6&apos;, &apos;172.24.0.9&apos; ]" type="AssertionError">
+AssertionError: expected [ &apos;172.24.0.9&apos; ] to deeply equal [ &apos;172.24.0.6&apos;, &apos;172.24.0.9&apos; ]
+
+- Expected
++ Received
+
+  [
+-   &quot;172.24.0.6&quot;,
+    &quot;172.24.0.9&quot;,
+  ]
+
+ ❯ jeeves-generator/integration/scenarios/core-delivery.system.test.ts:52:25
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/core-delivery.system.test.ts:22:3
+            </failure>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/core-delivery.system.test.ts" name="B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes" time="68.44586819">
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/core-delivery.system.test.ts" name="B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables" time="33.985255637">
+        </testcase>
+    </testsuite>
+    <testsuite name="jeeves-generator/integration/scenarios/core.system.test.ts" timestamp="2026-11-13T04:45:14.129Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="0" time="32.059569322">
+        <testcase classname="jeeves-generator/integration/scenarios/core.system.test.ts" name="B01: edge publication commits exactly one counter increment and a matching receipt" time="32.058831761">
+        </testcase>
+    </testsuite>
+</testsuites>

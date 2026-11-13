@@ -1,0 +1,158 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T04:55:40.299Z",
+    "value": [
+      {
+        "name": "/gs-8104b2ed-e66a-4d7f-814b-8951ae39b561-3-app-activity-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-8104b2ed-e66a-4d7f-814b-8951ae39b561-3-app-counter-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-8104b2ed-e66a-4d7f-814b-8951ae39b561-3-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-8104b2ed-e66a-4d7f-814b-8951ae39b561-3-app-totals-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-8104b2ed-e66a-4d7f-814b-8951ae39b561-3-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-8104b2ed-e66a-4d7f-814b-8951ae39b561-3-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "broker": "state",
+    "queue": "events--counter",
+    "result": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  },
+  {
+    "name": "events--counter has 1 consumers and 0 queued messages",
+    "at": "2026-11-13T04:55:40.985Z",
+    "value": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "malformed",
+    "queue": "events--counter",
+    "result": {
+      "confirmed": true
+    }
+  },
+  {
+    "broker": "failed",
+    "queue": "events--counter.failed",
+    "result": {
+      "messageId": "malformed:one",
+      "body": "{\"aggregateKey\":",
+      "headers": {
+        "x-delivery-attempt": 1,
+        "x-terminal-code": "MALFORMED_MESSAGE"
+      }
+    }
+  },
+  {
+    "name": "malformed delivery reaches the exact failed queue",
+    "at": "2026-11-13T04:55:41.495Z",
+    "value": {
+      "messageId": "malformed:one",
+      "body": "{\"aggregateKey\":",
+      "headers": {
+        "x-delivery-attempt": 1,
+        "x-terminal-code": "MALFORMED_MESSAGE"
+      }
+    }
+  },
+  {
+    "sql": "SELECT count(*) FROM increment.receipts",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM increment.totals",
+    "result": "0"
+  },
+  {
+    "method": "POST",
+    "path": "/api/activity-api/modules/submit",
+    "request": "{\"aggregateKey\":\"Activity:security\",\"eventId\":\"security:valid\"}",
+    "status": 202,
+    "body": {
+      "eventId": "security:valid",
+      "aggregateKey": "Activity:security"
+    },
+    "elapsedMs": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Asecurity",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:security",
+      "total": "0"
+    },
+    "elapsedMs": 13
+  },
+  {
+    "name": "Activity:security committed total becomes 1",
+    "at": "2026-11-13T04:55:41.767Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:security",
+        "total": "0"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/totals-api/modules/read-total?aggregate=Activity%3Asecurity",
+    "status": 200,
+    "body": {
+      "aggregateKey": "Activity:security",
+      "total": "1"
+    },
+    "elapsedMs": 2
+  },
+  {
+    "name": "Activity:security committed total becomes 1",
+    "at": "2026-11-13T04:55:42.020Z",
+    "value": {
+      "status": 200,
+      "body": {
+        "aggregateKey": "Activity:security",
+        "total": "1"
+      }
+    }
+  },
+  {
+    "sql": "SELECT event_id||'|'||coalesce(result->>'value','MISSING') FROM increment.receipts WHERE scope_key='Activity:security' ORDER BY event_id",
+    "result": "security:valid|true"
+  },
+  {
+    "sql": "SELECT aggregate_key||'|'||total FROM increment.totals",
+    "result": "Activity:security|1"
+  }
+]

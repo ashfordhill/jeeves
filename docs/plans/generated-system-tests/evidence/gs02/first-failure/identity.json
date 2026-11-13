@@ -1,0 +1,12 @@
+{
+  "id": "gs-b0abcbbe-6285-4d00-bc04-bd5ff8846ec6",
+  "selected": ["core"],
+  "commit": "6b3aac8b2be514c6fe106558b40d0b7bf70edf29",
+  "dirty": "?? jeeves-generator/integration/harness/activity.ts\n?? jeeves-generator/integration/scenarios/core-delivery.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

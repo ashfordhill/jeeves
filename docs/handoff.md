@@ -11685,3 +11685,45 @@ paragraph that told the harness to restart processes now asserts that none exite
 review yet.
 **For the next unit.** Run BR01 only when no other unit is working in `jeeves-generator/`. GS01
 is done and GS02 was in progress when this was written; GS02–GS06 don't depend on BR01.
+
+## 2026-11-12 — GS02: Duplicate delivery, two copies and restart persistence
+
+**What changed.** Added `core-delivery.system.test.ts` with B02–B04 and focused Activity
+harness probes. Two Counter copies each commit alone with independently observed PostgreSQL
+client addresses, then two real broker consumers handle 200 confirmed submissions for 50
+identities (initial plus three repeats, concurrency eight). Ready and unacknowledged deliveries
+drain before exact 50-total/receipt assertions. Two copies of each public API survive either
+copy stopping; joint submission/read recovery is measured and asserted within 15 s, with
+transients retained. Ordinary stop/start preserves runtime history, volume identities, earlier
+and queued effects; malformed delivery reaches the exact failed queue/code and a later valid
+event succeeds; the actual reader login can read the public view but private reads/writes fail.
+The fixture README now lists B01–B04 and accurately describes the existing topic/subscriber
+queue. No diagram, owned body, template, generated scaffold or pin changed. Compact local
+results are in `docs/plans/generated-system-tests/evidence/gs02/`.
+
+**Checks.** Fresh core 4/4 passed (216.01 s Vitest, 265.239 s including cleanup); all four
+projects' containers, networks and volumes were removed and temporary runtime/export deleted.
+Final `pnpm check`: lint/typechecks and 820 tests / 105 files passed; `pnpm test:e2e`: 73/73
+passed in 4.7 min; web build passed. No browser reruns. Complete logs:
+`/tmp/gs02-check-final.log`, `/tmp/gs02-e2e.log`, `/tmp/gs02-web-build.log`; full generated
+artifacts `/tmp/gs02-resume-core`. An initial lint-only check required formatting copied
+JSON evidence; 25 parsed JSON values and compressed observation bytes were verified against
+the original artifacts. Generated suites and browser/offline checks ran in separate phases.
+
+**Differences from the plan.** The first B02 run assumed both workers' startup SQL connections
+would remain open; the default pool can expire idle connections after 10 s. Its failed result,
+other three passing tests and complete cleanup remain at `/tmp/gs02-first` and in the evidence.
+The corrected observation checks each worker immediately after its own committed event and
+retains proof of distinct connections. No durable invariant was weakened. The installed counter
+already selects a topic with one subscriber queue; the README's old “work queue” wording was
+corrected rather than changing that policy. Fanout and a separate work queue remain GS04.
+
+**Noticed.** The runner retains completed stacks until its outer cleanup (27 containers across
+this passing core run). GS03's cost measurement and GS06's expanded sequential stacks should
+review per-stack cleanup; no lifecycle scope expansion here. No template defect was exposed.
+Owner changes and the intervening broker-reconnect planning commit remain untouched.
+
+**For the next unit.** GS03 adds the portable core CI adapter and cold/warm measurements.
+Only `core` exists; B01–B04 are all executable. Keep source stable during generation, preserve
+scoped cleanup, and run Docker topology changes separately from browser checks. GS07 now depends
+on BR01–BR02 as the owner's latest plan amendment says; GS02–GS06 do not.
