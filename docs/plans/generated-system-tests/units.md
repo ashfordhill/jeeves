@@ -352,6 +352,8 @@ scheduled and manual runs for the expanded suites, executing stacks sequentially
 
 **Deliver:** B06 recovery and B09; `--suite=faults`, reusing the existing fixtures.
 Read PF12/PF13/PF14 evidence first; convert useful observations into assertions.
+Runs after [broker reconnect](../broker-reconnect/units.md) BR01–BR02 (owner, 2026-11-12); read
+BR02's evidence too.
 
 | Fault | Required observation and invariant |
 | --- | --- |
@@ -359,13 +361,14 @@ Read PF12/PF13/PF14 evidence first; convert useful observations into assertions.
 | Counter dies before SQL commit | Hold the relevant total row with a separate PostgreSQL transaction; submit an event; observe that worker's query blocked and the broker delivery unacknowledged. Kill that worker, release the lock, recover, and assert one increment and one receipt. |
 | Committed event delivered again | Replay the committed event through RabbitMQ; the durable effect stays one. Label this duplicate-delivery proof, not a crash between commit and ack. |
 | Outbox relay dies after publish confirmation | In the media fixture, install a temporary PostgreSQL fault gate that blocks the relay's `sent_at` update, using a trigger waiting on a harness-held advisory lock. Submit work through the real API, observe the blocked update and downstream delivery, then kill the relay's process. Release/remove the gate and restart the process. The committed pending intent must be relayed again and eventually marked sent, with one durable downstream publication/effect. |
-| Broker stop/start with queued accepted work | Stop consumers, submit confirmed messages and observe them in the real queue; restart the broker, recover application processes and assert every accepted identity's effect exactly once. During the outage assert bounded failure for unavailable publication, not unconditional acceptance. |
+| Broker stop/start with queued accepted work | Stop consumers, submit confirmed messages and observe them in the real queue; restart the broker without restarting any application process, and assert every accepted identity's effect exactly once. During the outage assert bounded failure for unavailable publication (503), not unconditional acceptance, and that reads which don't need the broker keep answering. |
 | PostgreSQL unavailable during work | Observe request/worker failure within configured bounds; restore the database and perform the documented process recovery. Accepted work eventually completes once; a new request succeeds. |
 | Transcoder dies while encoding | Observe the job processing and FFmpeg running in the identified container before killing it. After recovery, obtain one publication and valid output; failed/partial output was never publicly ready. |
 
-Current AMQP loss stops affected processes. The harness explicitly restarts them after restoring
-the broker and reports that step. Do not install a production restart policy or claim automatic
-reconnection. A request whose response is lost has an uncertain outcome: retry its same stable
+After BR01, a process that loses the broker stays up and reconnects by itself. The harness never
+restarts an application process after a broker fault: it asserts that none exited or restarted,
+and that each broker client logged its `broker` failure line and then `"state":"available"`. Do
+not install a production restart policy. A request whose response is lost has an uncertain outcome: retry its same stable
 identity and assert one final effect, rather than calling it definitely accepted or rejected.
 
 For a precise interruption test, run only one copy of the targeted relay/worker; keep its

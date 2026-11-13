@@ -11664,3 +11664,24 @@ alone, as were all original owner working-tree changes.
 Docker tests remain outside offline discovery. Preserve per-run project isolation and use reader
 credentials for GS02's permission assertions. No generated stack/runtime remains. Hosted CI is
 not implemented or claimed by this unit (GS03 follows).
+
+## 2026-11-12 — Plan: broker reconnect (BR01–BR02) and a GS07 amendment
+
+Planning only; no code changed. The owner decided review follow-up 1: generated services
+reconnect to the broker instead of exiting. New [plan](plans/broker-reconnect/units.md): BR01
+makes `createPublisher` and `createConsumer` keep one connection generation, report each change
+through `onState` (logged by a new `brokerState` helper as a `broker …` failure line and an
+`event: "broker"` info line), fail publishes at once while the broker is away, and resubscribe
+after the in-hand deliveries drain; `closed` resolves only on purpose, so `runProcess` never sees
+a broker loss. Startup is unchanged. BR02 moves v4 onto BR01 with `update:v2` and reruns PF13's
+broker outage in Docker (two copies), expecting no exits, 200 reads, 503 plays, and recovery
+without `pnpm start`.
+
+**What changed.** New `docs/plans/broker-reconnect/units.md`. In
+`docs/plans/generated-system-tests/units.md`, GS07 now runs after BR01–BR02, its broker row
+restarts no application process and asserts 503 publication and continued reads, and the
+paragraph that told the harness to restart processes now asserts that none exited or restarted.
+**Checks.** None (docs only). The plan was written from the code at `24c9abb`; no independent
+review yet.
+**For the next unit.** Run BR01 only when no other unit is working in `jeeves-generator/`. GS01
+is done and GS02 was in progress when this was written; GS02–GS06 don't depend on BR01.
