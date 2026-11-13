@@ -1,0 +1,20 @@
+[
+  {
+    "source": "owned/favorite-items.hooks.ts",
+    "destination": "src/modules/account-api/favorite-items.hooks.ts",
+    "role": "hooks",
+    "module": "favorite-items"
+  },
+  {
+    "source": "owned/catalog-writer.ts",
+    "destination": "src/modules/account-api/catalog-writer.ts",
+    "role": "stub",
+    "module": "catalog-writer"
+  },
+  {
+    "source": "owned/catalog.sql",
+    "destination": "infra/postgres/catalog/modules/catalog-writer.sql",
+    "role": "sql",
+    "module": "catalog-writer"
+  }
+]

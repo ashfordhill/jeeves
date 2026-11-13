@@ -1,0 +1,7 @@
+{
+  "id": "gs-d44ae600-8626-4c37-9fb8-9ed8a043800e",
+  "selected": ["core"],
+  "outcome": "passed",
+  "elapsedMs": 283045,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs05-core-final/run.json"
+}

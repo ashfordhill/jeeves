@@ -11805,3 +11805,37 @@ retry, weakened assertion, timeout change or template gap was introduced.
 no broker or UI unit was taken over. Completed stacks still await outer sanitization/cleanup
 (26 retained containers for Wiring); review sequential resource cleanup before GS06 expansion.
 Hosted CI remains pending publication. All unrelated owner changes are preserved and unstaged.
+
+## 2026-11-13 — GS05: Real identity and favorites
+
+**What changed.** Added the command-authored Identity fixture and `--suite=identity`, also in
+manual CI. Three mapped owned files supply eligibility, a catalog stub and published-items SQL.
+B07 provisions two disposable users through real Keycloak admin APIs, signs in with maintained
+typed PKCE source and checks required/optional guards, invalid signatures, idempotent favorites,
+account isolation, ineligible items and exact durable rows. Ordinary stop/start retains the
+runtime/history, secret hashes, volume, both accounts/passwords and favorite creation time;
+fresh sign-ins and mutations still succeed. No template, generated scaffold, pin, historical
+field app or studio UI changed. [Evidence](plans/generated-system-tests/evidence/gs05/README.md).
+
+**Checks.** Fresh Identity 1/1 passed (121.212 s including cleanup); core 4/4 passed (283.045 s).
+`pnpm check`: lint/typechecks and 823 tests / 106 files; `pnpm test:e2e`: 73/73 (4.7 min); web
+build and actionlint passed. Three focused privacy tests and a real recovery probe passed.
+All phases were serial. Independent exact-label audits confirm every pass/failure/probe scope
+empty and private temporary directories removed. Runs: `/tmp/gs05-identity-confirmed`,
+`/tmp/gs05-core-final`; logs: `/tmp/gs05-check-final.log`, `/tmp/gs05-e2e-final.log`,
+`/tmp/gs05-web-build-final.log`.
+
+**Differences from the plan.** The first observer incorrectly expected `code` instead of the
+HTTP contract's `error`; its nonzero result remains. The next run passed application assertions
+but exposed evidence capture corruption: public realm strings `true`/`false` were replaced as
+JSON literals. Both failures and cleanup remain under the evidence folder. Structured JSON
+redaction now preserves scalar types, and truncated reporters receive text scrubbing. Actual
+JSON credentials and transient OAuth passwords/verifiers/codes/tokens remain protected by a
+private mode-0600 sibling under the mode-0700 run directory, kept through global/recovery scrub.
+The probe proves opaque-value redaction in request/failure/JSON/JUnit data and EACCES fail-closed
+recovery before deletion. No template gap, retry or weakened invariant was introduced.
+
+**For the next unit.** GS06 adds Media; review expanded sequential-stack resource use while
+retaining private redaction inputs until global reporter scrub. Completed stacks still await
+outer cleanup. GS07 requires BR01–BR02; no broker or UI work was taken over. Hosted CI remains
+pending owner publication. All unrelated owner changes remain unstaged and untouched.

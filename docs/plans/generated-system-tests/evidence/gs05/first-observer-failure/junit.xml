@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="69.064902213">
+    <testsuite name="jeeves-generator/integration/scenarios/identity.system.test.ts" timestamp="2026-11-13T06:54:12.088Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="69.064902213">
+        <testcase classname="jeeves-generator/integration/scenarios/identity.system.test.ts" name="B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart" time="69.064267393">
+            <failure message="expected { error: &apos;NOT_ELIGIBLE&apos;, …(1) } to match object { code: &apos;NOT_ELIGIBLE&apos; }
+(2 matching properties omitted from actual)" type="AssertionError">
+AssertionError: expected { error: &apos;NOT_ELIGIBLE&apos;, …(1) } to match object { code: &apos;NOT_ELIGIBLE&apos; }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   &quot;code&quot;: &quot;NOT_ELIGIBLE&quot;,
++   &quot;error&quot;: &quot;NOT_ELIGIBLE&quot;,
++   &quot;message&quot;: &quot;This item can&apos;t be added to favorites.&quot;,
+  }
+
+ ❯ jeeves-generator/integration/scenarios/identity.system.test.ts:82:28
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/identity.system.test.ts:16:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

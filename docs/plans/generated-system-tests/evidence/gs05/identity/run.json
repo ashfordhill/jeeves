@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-18ed6c37-3ed4-4371-ac17-c8484130bd92",
+  "suite": "identity",
+  "temporary": "/tmp/jeeves-system-phBZPz",
+  "stacks": [
+    {
+      "project": "gs-18ed6c37-3ed4-4371-ac17-c8484130bd92-1",
+      "fixture": "identity",
+      "application": "/tmp/jeeves-system-phBZPz/1-identity",
+      "artifacts": "/tmp/gs05-identity-confirmed/1-identity",
+      "ports": [39867, 43339, 33701]
+    }
+  ]
+}

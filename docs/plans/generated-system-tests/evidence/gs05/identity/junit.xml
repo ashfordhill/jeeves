@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="0" errors="0" time="102.216293098">
+    <testsuite name="jeeves-generator/integration/scenarios/identity.system.test.ts" timestamp="2026-11-13T07:01:13.176Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="0" time="102.216293098">
+        <testcase classname="jeeves-generator/integration/scenarios/identity.system.test.ts" name="B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart" time="102.215601795">
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -1,0 +1,6 @@
+{
+  "fixture": "identity",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "SyntaxError: Unexpected token 'R', ...\"ignedIn\":[REDACTED]}\"... is not valid JSON"
+}

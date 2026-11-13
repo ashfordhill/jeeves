@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-5b2fe8f7-c71a-4dcf-98cc-85459fb7cc77",
+  "suite": "identity",
+  "temporary": "/tmp/jeeves-system-V4SShB",
+  "stacks": [
+    {
+      "project": "gs-5b2fe8f7-c71a-4dcf-98cc-85459fb7cc77-1",
+      "fixture": "identity",
+      "application": "/tmp/jeeves-system-V4SShB/1-identity",
+      "artifacts": "/tmp/gs05-identity-final/1-identity",
+      "ports": [42419, 45005, 37763]
+    }
+  ]
+}

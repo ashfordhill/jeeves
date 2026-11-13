@@ -13,7 +13,7 @@ if (args[0] === "--cleanup") {
     throw new Error("Usage: test:generated --cleanup /absolute/run.json");
   await cleanupRun(resolve(args[1]));
 } else {
-  const suites = ["core", "wiring"];
+  const suites = ["core", "wiring", "identity"];
   let suite = "core";
   let artifacts = "";
   for (const arg of args) {

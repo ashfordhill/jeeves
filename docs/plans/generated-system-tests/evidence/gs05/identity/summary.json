@@ -1,0 +1,7 @@
+{
+  "id": "gs-18ed6c37-3ed4-4371-ac17-c8484130bd92",
+  "selected": ["identity"],
+  "outcome": "passed",
+  "elapsedMs": 121212,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs05-identity-confirmed/run.json"
+}

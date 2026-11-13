@@ -7,7 +7,7 @@ import { assertSafeOutputPath } from "../../src/files.ts";
 import type { assembleV2 } from "../../src/v2/assemble.ts";
 import type { RunRecord, StackRecord } from "./cleanup.ts";
 import { inventory } from "./cleanup.ts";
-import { sanitizer } from "./evidence.ts";
+import { sanitizeJson, sanitizer } from "./evidence.ts";
 import { command, hash, json, poll, repository, sourceSnapshot, writeJson } from "./process.ts";
 
 type Report = ReturnType<typeof assembleV2>["report"];
@@ -160,7 +160,7 @@ export class Application {
   }
   async capture() {
     const clean = await sanitizer(this.directory);
-    await this.save("observations.json", JSON.parse(clean(JSON.stringify(this.observations))));
+    await this.save("observations.json", sanitizeJson(this.observations, clean));
     try {
       await this.save("containers.json", await inventory(this.stack.project));
       await writeFile(

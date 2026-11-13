@@ -1,0 +1,7 @@
+{
+  "id": "gs-5b2fe8f7-c71a-4dcf-98cc-85459fb7cc77",
+  "selected": ["identity"],
+  "outcome": "failed",
+  "elapsedMs": 113732,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs05-identity-final/run.json"
+}

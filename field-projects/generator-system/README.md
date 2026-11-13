@@ -6,10 +6,11 @@ From the repository root, with Node 24.21.0, pnpm 12.16.1 and Docker Compose:
 pnpm test:generated
 pnpm test:generated --suite=core --artifacts=/absolute/evidence-directory
 pnpm test:generated --suite=wiring --artifacts=/absolute/new-wiring-results
+pnpm test:generated --suite=identity --artifacts=/absolute/new-identity-results
 pnpm test:generated --suite=all
 ```
 
-`core` and `wiring` are implemented. Unknown or future suite names fail; `all` prints the implemented
+`core`, `wiring` and `identity` are implemented. Unknown or future suite names fail; `all` prints the implemented
 suites it selects. These Docker/network tests run separately from `pnpm check` and the studio
 E2E tests. Vitest runs files serially, with no test retries and no green skips for unavailable
 Docker, failed setup or missing observations. Setup failures and application assertion failures
@@ -77,24 +78,54 @@ Valkey INFO-only keyspace-hit counters immediately around the request (exactly o
 PTTL and actual key removal prove expiry; a second load proves the following request refills it. B06 cache outage and
 recovery remain GS07; this unit establishes normal operation only.
 
+The Identity fixture reuses the studio Favorites graph and Sign-in's Optional guard setting.
+Account API uses Required sign-in and the installed Favorites template. A separate Viewer API
+uses Optional sign-in. Both verify real Keycloak-signed access tokens. The only attachments are
+the eligibility hook, a catalog stub and product SQL publishing two eligible items while excluding
+a draft. The original report retains both required custom gaps; no generated authentication,
+favorites transactions, permissions or runtime code is replaced.
+
+| Behavior | Executable test | Observations |
+| --- | --- | --- |
+| B07 | `identity.system.test.ts` | Local Keycloak admin API creates two disposable accounts; real authorization-code PKCE S256 sign-in reaches both edge guard routes with the expected subjects; missing, malformed and signature-tampered tokens fail Required routes, anonymous Optional succeeds and invalid Optional fails; repeated PUT returns the same creation time and one durable row; GET/list/DELETE follow the documented 200/404/204 contracts; account B cannot read or remove A's favorite; missing/draft items return NOT_ELIGIBLE; ordinary stop/start retains runtime history, secret hashes, volume identity, both user IDs/passwords and the favorite; new sign-ins and writes still work |
+
+Accounts exist only in the disposable generated provider database; this adds no studio account
+feature. The browser flow adapts the archived v3-17 operator harness into maintained typed source,
+with five-second request bounds. Provider observations independently check rows in the generated
+favorites table, the published catalog view and Keycloak's user table. Successful app requests
+use normal signed account tokens; admin credentials only provision users.
+
+Transient passwords, PKCE verifiers/codes/state, OAuth tokens and session cookies are registered
+before use in a mode-0600 private sibling file under the mode-0700 OS temporary run directory.
+No OAuth forms, URLs, headers or response bodies are recorded. The private file survives until
+global reporter sanitization and interrupted-run recovery have scrubbed observations, failures,
+JSON and JUnit; cleanup then removes the entire private temporary directory. Unreadable, malformed
+or symlink redaction inputs fail closed. A disposable probe exercises failure reporters and
+recovery before deletion, including unreadable-input failure and stale-marker removal:
+
+```sh
+pnpm --filter @jeeves/generator exec tsx integration/privacy-probe.ts /absolute/new-privacy-results
+```
+
 Run generated suites and browser checks in separate phases: changing Compose networks can
 interrupt Chromium module loading. Keep image builds separate from offline checks too, so they
 do not compete with existing test deadlines.
 
-`integration/author-activity.ts` and `integration/author-wiring.ts` record the studio commands
+`integration/author-activity.ts`, `integration/author-wiring.ts` and `integration/author-identity.ts` record the studio commands
 used to author the saved diagrams. They are development helpers, never application runtime
 code. To rebuild the diagrams deliberately:
 
 ```sh
 pnpm --filter @jeeves/generator exec tsx integration/author-activity.ts
 pnpm --filter @jeeves/generator exec tsx integration/author-wiring.ts
+pnpm --filter @jeeves/generator exec tsx integration/author-identity.ts
 ```
 
 Evidence defaults to ignored `test-results/generated/<run-id>/`. It contains source and fixture
 hashes, commit/dirty state, tool versions, original manifest/report (gzip), install/build/start
 logs, sanitized HTTP/SQL observations, container state/logs, JUnit/JSON results, final scaffold
 hash verification, summary and cleanup inventory. Runtime secret values (including individual
-JSON credential members), bearer tokens and signed query parameters are redacted; `.runtime` and binary/provider data are never retained.
+JSON credential members) and the private transient identity inputs, bearer tokens and signed query parameters are redacted; `.runtime` and binary/provider data are never retained.
 Use a fresh artifact directory for each invocation. A source change during setup fails the run.
 
 Cleanup removes only containers, networks and volumes whose exact Compose project label
@@ -114,7 +145,7 @@ a generated scaffold, replace a real provider with a fake, weaken an assertion o
 ## CI and other runners
 
 `.github/workflows/generated-system.yml` runs core on every pull request and push to `main`,
-with manual `core`, `wiring` or `all` selection. It calls the same command as a plain local shell:
+with manual `core`, `wiring`, `identity` or `all` selection. It calls the same command as a plain local shell:
 
 ```sh
 pnpm install --frozen-lockfile

@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 3,
+  "revision": 20,
+  "elements": [
+    {
+      "id": "account-api",
+      "name": "Account API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "favorites",
+      "name": "Favorites",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "catalog",
+      "name": "Catalog",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "sign-in",
+      "name": "Sign-in",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "viewer-api",
+      "name": "Viewer API",
+      "classification": {
+        "kind": "Application"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "account-api-favorites",
+      "kind": "uses-database",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "favorites"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-catalog",
+      "kind": "uses-database",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "catalog"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-sign-in",
+      "kind": "calls",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "sign-in"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "viewer-sign-in",
+      "kind": "calls",
+      "from": {
+        "element": "viewer-api"
+      },
+      "to": {
+        "element": "sign-in"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Favorites stack",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "account-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "favorites",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "account-api"
+          }
+        },
+        {
+          "element": "catalog",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "account-api"
+          }
+        },
+        {
+          "element": "sign-in",
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "language": "typescript",
+            "exposure": "public",
+            "provider": "oidc",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "viewer-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "account-api-favorites",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-catalog",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-sign-in",
+          "settings": {}
+        },
+        {
+          "connection": "viewer-sign-in",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "account-check",
+          "host": "account-api",
+          "name": "Account check",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "favorite-items",
+          "host": "account-api",
+          "name": "Favorite items",
+          "settings": {
+            "kind": "favorites"
+          }
+        },
+        {
+          "id": "item-reader",
+          "host": "account-api",
+          "name": "Item reader",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "id": "catalog-writer",
+          "host": "account-api",
+          "name": "Catalog writer",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "id": "viewer-check",
+          "host": "viewer-api",
+          "name": "Viewer check",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "optional"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "account-check-sign-in",
+          "from": "account-check",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "account-api-sign-in"
+          }
+        },
+        {
+          "id": "favorite-items-favorites",
+          "from": "favorite-items",
+          "to": {
+            "kind": "element",
+            "id": "favorites",
+            "via": "account-api-favorites"
+          }
+        },
+        {
+          "id": "item-reader-catalog",
+          "from": "item-reader",
+          "to": {
+            "kind": "element",
+            "id": "catalog",
+            "via": "account-api-catalog"
+          }
+        },
+        {
+          "id": "favorite-items-item-reader",
+          "from": "favorite-items",
+          "to": {
+            "kind": "component",
+            "id": "item-reader"
+          }
+        },
+        {
+          "id": "catalog-writer-catalog",
+          "from": "catalog-writer",
+          "to": {
+            "kind": "element",
+            "id": "catalog",
+            "via": "account-api-catalog"
+          }
+        },
+        {
+          "id": "viewer-check-sign-in",
+          "from": "viewer-check",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "viewer-sign-in"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "download-account-api",
+          "lane": "download",
+          "element": "account-api"
+        },
+        {
+          "id": "download-viewer-api",
+          "lane": "download",
+          "element": "viewer-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Browse"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "account-check",
+        "target": {
+          "kind": "component",
+          "component": "account-check",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "account-check"
+          }
+        }
+      },
+      {
+        "id": "favorite-items",
+        "target": {
+          "kind": "component",
+          "component": "favorite-items",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "favorites",
+          "version": "0.1.0",
+          "sha256": "f3c7a75b1ee3a94fff16e2e84f63ee3ac65f6125e995454efe442c1ec84304e8"
+        },
+        "binding": {
+          "kind": "favorites",
+          "state": {
+            "resource": "favorites",
+            "connection": "account-api-favorites"
+          },
+          "identity": {
+            "element": "sign-in",
+            "guard": "account-check"
+          },
+          "items": {
+            "resource": "catalog",
+            "connection": "account-api-catalog"
+          }
+        }
+      },
+      {
+        "id": "catalog-writer",
+        "target": {
+          "kind": "component",
+          "component": "catalog-writer",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "viewer-check",
+        "target": {
+          "kind": "component",
+          "component": "viewer-check",
+          "host": "viewer-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "viewer-check"
+          }
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "account-api-owner",
+        "name": "Account API"
+      },
+      {
+        "id": "viewer-api-owner",
+        "name": "Viewer API"
+      },
+      {
+        "id": "sign-in-owner",
+        "name": "Sign-in"
+      }
+    ],
+    "roles": [
+      {
+        "element": "account-api",
+        "owner": "account-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "viewer-api",
+        "owner": "viewer-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "sign-in",
+        "owner": "sign-in-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "favorites",
+        "authority": "account-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "catalog",
+        "authority": "account-api-owner",
+        "kind": "source"
+      }
+    ],
+    "grants": [
+      {
+        "role": "account-api",
+        "resource": "favorites",
+        "access": "read-write"
+      },
+      {
+        "role": "account-api",
+        "resource": "catalog",
+        "access": "read"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "account-api-favorites",
+        "access": "read-write"
+      },
+      {
+        "connection": "account-api-catalog",
+        "access": "read"
+      }
+    ]
+  }
+}

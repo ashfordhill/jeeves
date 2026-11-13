@@ -11,7 +11,7 @@ on:
         required: true
         default: core
         type: choice
-        options: [core, wiring, all]
+        options: [core, wiring, identity, all]
 
 permissions:
   contents: read

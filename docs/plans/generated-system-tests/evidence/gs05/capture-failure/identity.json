@@ -1,0 +1,12 @@
+{
+  "id": "gs-5b2fe8f7-c71a-4dcf-98cc-85459fb7cc77",
+  "selected": ["identity"],
+  "commit": "6b80f04e623631e58e5d365d5e64cdc2a86f0c41",
+  "dirty": "M field-projects/generator-system/README.md\n M jeeves-generator/integration/harness/evidence.ts\n M jeeves-generator/integration/run.ts\n?? field-projects/generator-system/fixtures/identity/\n?? jeeves-generator/integration/author-identity.ts\n?? jeeves-generator/integration/harness/identity.ts\n?? jeeves-generator/integration/privacy-probe.ts\n?? jeeves-generator/integration/scenarios/identity.system.test.ts\n?? jeeves-generator/src/v2/system-evidence.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-13",
+  "identity": {
+    "outcome": "passed",
+    "tests": 1,
+    "vitestSeconds": 102.216,
+    "totalMs": 121212,
+    "artifacts": "/tmp/gs05-identity-confirmed",
+    "log": "/tmp/gs05-identity-confirmed-command.log",
+    "sha256": "23573e86186b5649e5bc654d05ed4ab86716989a07a6cbc55de79c4b7e3dc6b9"
+  },
+  "core": {
+    "outcome": "passed",
+    "tests": 4,
+    "vitestSeconds": 232.83,
+    "totalMs": 283045,
+    "artifacts": "/tmp/gs05-core-final",
+    "log": "/tmp/gs05-core-final-command.log",
+    "sha256": "aa955b0dff409968726ce8a2bf750a30f1efd53af0418fc6741b89c71029cf23"
+  },
+  "check": {
+    "outcome": "passed",
+    "tests": 823,
+    "files": 106,
+    "lint": true,
+    "typechecks": true,
+    "vitestSeconds": 52.23,
+    "log": "/tmp/gs05-check-final.log",
+    "sha256": "3856004af18d1873ea18bcf888f66fa495c6906420546c595102f45a324c863e"
+  },
+  "e2e": {
+    "outcome": "passed",
+    "tests": 73,
+    "reportedDuration": "4.7m",
+    "dockerAndBrowserPhasesSerial": true,
+    "log": "/tmp/gs05-e2e-final.log",
+    "sha256": "91840f2382761134ae10924cbd147ed2f4c59406d834ce355b48bab0f02173a3"
+  },
+  "webBuild": {
+    "outcome": "passed",
+    "log": "/tmp/gs05-web-build-final.log",
+    "sha256": "d95faabd95cb4456688d910f0fc3edfbb363239d9d9c1cea7c99fbf25ef5a412"
+  },
+  "workflow": {
+    "outcome": "passed",
+    "command": "/tmp/gs03-actionlint/actionlint -shellcheck= .github/workflows/generated-system.yml",
+    "log": "/tmp/gs05-workflow-validation.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "privacy": {
+    "offlineTests": 3,
+    "offlineLog": "/tmp/gs05-privacy-unit-final.log",
+    "recoveryArtifacts": "/tmp/gs05-privacy-final",
+    "recoveryOutcome": "passed",
+    "currentIdentityJsonDocumentsParseable": 14,
+    "probeHasSixOpaqueCredentialCategories": true,
+    "partialReporterAndUnreadableInputCovered": true
+  },
+  "failureEvidence": {
+    "firstObserver": "first-observer-failure/",
+    "postrestartCapture": "capture-failure/",
+    "originalNonzeroExitsRetained": true,
+    "malformedOriginalReporterJsonRetainedAsGzip": true
+  },
+  "limits": {
+    "hostedCI": "pending owner publication",
+    "studioUIChanged": false,
+    "templateChanges": false,
+    "generatedScaffoldChanges": false,
+    "pinChanges": false,
+    "stackLifecycle": "retained until global reporter sanitization and cleanup",
+    "laterUnitsNotExecuted": true
+  }
+}

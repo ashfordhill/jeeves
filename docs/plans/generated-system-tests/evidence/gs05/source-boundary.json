@@ -1,0 +1,29 @@
+{
+  "identityAndCoreSourceIdentical": true,
+  "sourceSha256": "11be489faac7336e33e4bc0ef7d242dad0acf2e0e83daf679d62eb4d0f9a3e50",
+  "threeIdentityExportsOriginalManifestAndReportByteIdentical": true,
+  "priorPublicMetadataRedaction": {
+    "oldKey": "jeeves/packages/spec/src/fixtures/[REDACTED]-stack.ts",
+    "currentKey": "jeeves/packages/spec/src/fixtures/sign-in-stack.ts",
+    "sameSourceHash": "aebc02be46f4ab500bff71677dde4b64224fc3e41abdd68b4977a542111ddb6e",
+    "explanation": "Prior sanitizer replaced public realm name sign-in in metadata keys; no spec file changed."
+  },
+  "observedSanitizedEvidenceDifferences": {
+    "first-to-capture": ["jeeves-generator/integration/scenarios/identity.system.test.ts"],
+    "capture-to-identity": [
+      "jeeves-generator/integration/harness/application.ts",
+      "jeeves-generator/integration/harness/evidence.ts",
+      "jeeves-generator/src/v2/system-evidence.test.ts",
+      "jeeves/packages/spec/src/fixtures/[REDACTED]-stack.ts",
+      "jeeves/packages/spec/src/fixtures/sign-in-stack.ts"
+    ]
+  },
+  "actualImplementationChanges": {
+    "first-to-capture": ["jeeves-generator/integration/scenarios/identity.system.test.ts"],
+    "capture-to-identity": [
+      "jeeves-generator/integration/harness/application.ts",
+      "jeeves-generator/integration/harness/evidence.ts",
+      "jeeves-generator/src/v2/system-evidence.test.ts"
+    ]
+  }
+}

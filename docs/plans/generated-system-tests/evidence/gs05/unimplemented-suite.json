@@ -1,0 +1,6 @@
+{
+  "requested": "media",
+  "exitCode": 1,
+  "artifactsCreated": false,
+  "implemented": ["core", "wiring", "identity"]
+}

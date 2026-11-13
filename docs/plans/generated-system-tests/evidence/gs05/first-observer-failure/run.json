@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-8db18d26-9cb6-40de-aa34-afd98d1a5c1d",
+  "suite": "identity",
+  "temporary": "/tmp/jeeves-system-7580hn",
+  "stacks": [
+    {
+      "project": "gs-8db18d26-9cb6-40de-aa34-afd98d1a5c1d-1",
+      "fixture": "identity",
+      "application": "/tmp/jeeves-system-7580hn/1-identity",
+      "artifacts": "/tmp/gs05-identity-first/1-identity",
+      "ports": [45821, 36249, 44283]
+    }
+  ]
+}

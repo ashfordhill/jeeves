@@ -1,0 +1,126 @@
+[
+  {
+    "run": "/tmp/gs05-identity-first",
+    "temporaryRemoved": true,
+    "matchingScrubMarker": true,
+    "scopes": [
+      {
+        "project": "gs-8db18d26-9cb6-40de-aa34-afd98d1a5c1d-1",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      }
+    ],
+    "removed": {
+      "containers": 5,
+      "networks": 1,
+      "volumes": 1
+    }
+  },
+  {
+    "run": "/tmp/gs05-identity-final",
+    "temporaryRemoved": true,
+    "matchingScrubMarker": true,
+    "scopes": [
+      {
+        "project": "gs-5b2fe8f7-c71a-4dcf-98cc-85459fb7cc77-1",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      }
+    ],
+    "removed": {
+      "containers": 5,
+      "networks": 1,
+      "volumes": 1
+    }
+  },
+  {
+    "run": "/tmp/gs05-identity-confirmed",
+    "temporaryRemoved": true,
+    "matchingScrubMarker": true,
+    "scopes": [
+      {
+        "project": "gs-18ed6c37-3ed4-4371-ac17-c8484130bd92-1",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      }
+    ],
+    "removed": {
+      "containers": 5,
+      "networks": 1,
+      "volumes": 1
+    }
+  },
+  {
+    "run": "/tmp/gs05-core-final",
+    "temporaryRemoved": true,
+    "matchingScrubMarker": true,
+    "scopes": [
+      {
+        "project": "gs-d44ae600-8626-4c37-9fb8-9ed8a043800e-1",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      },
+      {
+        "project": "gs-d44ae600-8626-4c37-9fb8-9ed8a043800e-2",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      },
+      {
+        "project": "gs-d44ae600-8626-4c37-9fb8-9ed8a043800e-3",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      },
+      {
+        "project": "gs-d44ae600-8626-4c37-9fb8-9ed8a043800e-4",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      }
+    ],
+    "removed": {
+      "containers": 27,
+      "networks": 4,
+      "volumes": 8
+    }
+  },
+  {
+    "run": "/tmp/gs05-privacy-final",
+    "temporaryRemoved": true,
+    "matchingScrubMarker": true,
+    "scopes": [
+      {
+        "project": "gs-7c58de09-3f38-4e22-bd12-53c3523de09a-1",
+        "actualAfter": {
+          "containers": [],
+          "networks": [],
+          "volumes": []
+        }
+      }
+    ],
+    "removed": {
+      "containers": 0,
+      "networks": 0,
+      "volumes": 0
+    }
+  }
+]

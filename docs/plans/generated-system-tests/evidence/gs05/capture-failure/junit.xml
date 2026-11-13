@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="98.290668882">
+    <testsuite name="jeeves-generator/integration/scenarios/identity.system.test.ts" timestamp="2026-11-13T06:56:44.987Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="98.290668882">
+        <testcase classname="jeeves-generator/integration/scenarios/identity.system.test.ts" name="B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart" time="98.290072981">
+            <failure message="Unexpected token &apos;R&apos;, ...&quot;ignedIn&quot;:[REDACTED]}&quot;... is not valid JSON" type="SyntaxError">
+SyntaxError: Unexpected token &apos;R&apos;, ...&quot;ignedIn&quot;:[REDACTED]}&quot;... is not valid JSON
+ ❯ Application.capture jeeves-generator/integration/harness/application.ts:163:47
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:313:5
+ ❯ jeeves-generator/integration/scenarios/identity.system.test.ts:16:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

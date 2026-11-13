@@ -1,0 +1,21 @@
+{
+  "outcome": "passed",
+  "categories": [
+    "password",
+    "verifier",
+    "authorization-code",
+    "access-token",
+    "refresh-token",
+    "cookie"
+  ],
+  "formats": ["failure.log", "observations.json", "vitest.json", "junit.xml", "interrupted.log"],
+  "inputSha256": "251ff1303078c169b6735dc72077a25448aae15f148d07c4dc85c70dd657a879",
+  "outputSha256": "b6908a08c4c6fff7c9d313ca71373a7f97d6c95ae1a5f846f01874d2c9110d90",
+  "privateMode": "600",
+  "privateDirectoryMode": "700",
+  "secretsRemoved": true,
+  "safeObservationPreserved": true,
+  "unreadablePrivateInputFailsClosed": true,
+  "staleMarkerRemoved": true,
+  "recoveryBeforeDeletion": true
+}

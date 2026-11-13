@@ -1,0 +1,24 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-8db18d26-9cb6-40de-aa34-afd98d1a5c1d-1",
+      "before": {
+        "containers": [
+          "5db7d2d90e08",
+          "45f419c3b984",
+          "db79de939861",
+          "bc911290063b",
+          "922ec8acb928"
+        ],
+        "networks": ["1a933f1a44eb"],
+        "volumes": ["gs-8db18d26-9cb6-40de-aa34-afd98d1a5c1d-1_postgres-data"]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

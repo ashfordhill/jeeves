@@ -1,0 +1,6 @@
+{
+  "fixture": "identity",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected { error: 'NOT_ELIGIBLE', …(1) } to match object { code: 'NOT_ELIGIBLE' }\n(2 matching properties omitted from actual)"
+}
