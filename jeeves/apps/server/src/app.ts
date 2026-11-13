@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import {
   hasZodFastifySchemaValidationErrors,
@@ -6,6 +7,7 @@ import {
 } from "fastify-type-provider-zod";
 import { providerModels } from "./chat/models.ts";
 import { ChatService, type ModelSource } from "./chat/service.ts";
+import { type CodexLogin, createCodexLogin } from "./codex-login.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
 import { chatRoutes } from "./routes/chat.ts";
@@ -27,6 +29,8 @@ export type AppDeps = {
   settings?: Settings;
   /** Providers for chat. Defaults to the real ones from `settings`. */
   models?: ModelSource;
+  /** Settings' Sign in with ChatGPT. Defaults to running `codex` from the PATH. */
+  codexLogin?: CodexLogin;
   /** `true` in the server; tests may pass options with a `stream` to read the log lines. */
   logger?: FastifyServerOptions["logger"];
 };
@@ -38,6 +42,7 @@ export function buildApp({
   version,
   settings = new Settings(jeevesHome()),
   models = providerModels(settings),
+  codexLogin = createCodexLogin({ spawn, env: process.env }),
   logger = false,
 }: AppDeps): FastifyInstance {
   const app = Fastify({ logger });
@@ -76,7 +81,9 @@ export function buildApp({
   app.register(projectRoutes, { service: design });
   app.register(generationRoutes, { service: design });
   app.register(chatRoutes, { chat });
-  app.register(settingsRoutes, { settings });
+  app.register(settingsRoutes, { settings, codexLogin });
+  // A login still waiting for the browser doesn't outlive the server.
+  app.addHook("onClose", async () => codexLogin.stop());
 
   return app;
 }

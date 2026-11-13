@@ -857,7 +857,14 @@ shown again: its card reads **Key saved**, with **Replace** (the box again, with
 **Remove**. Keys are saved to `~/.jeeves/config.json` (`openai.apiKey`, `anthropic.apiKey`),
 readable by the owner only, and no API answer or log line holds one. A key set in the environment
 (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) wins over a saved one; its card reads **Key set in the
-environment**, names the variable and has no buttons. Codex's card copies `codex login`. Below
+environment**, names the variable and has no buttons. Codex's card signs in with Codex's own
+login: **Sign in with ChatGPT** runs `codex login` on the server and shows **Finish signing in in
+your browser**, with a link to the sign-in page Codex prints; the card checks every 2 seconds
+until Codex is signed in. If the login fails, or no one finishes it within 10 minutes, the card
+shows Codex's last line and "or run `codex login` in a terminal". Signed in, the card reads
+**Logged in** and offers **Sign out** (`codex logout`). The server runs the Codex executable named
+by `JEEVES_CODEX_PATH`, else `codex` from the PATH, and never reads Codex's credentials: it only
+checks that Codex's login file exists (`$CODEX_HOME/auth.json`, else `~/.codex/auth.json`). Below
 Connections, the Models card picks the design chat's provider and model.
 
 OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,

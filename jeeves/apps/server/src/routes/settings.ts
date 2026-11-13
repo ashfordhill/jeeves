@@ -1,6 +1,7 @@
 import { providerInfo } from "@jeeves/providers";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
+import type { CodexLogin } from "../codex-login.ts";
 import {
   isKeyProvider,
   type KeyProviderId,
@@ -25,13 +26,14 @@ function keyProvider(id: string): { id: KeyProviderId } | Refusal {
 }
 
 /**
- * Provider status (never the keys), a provider's saved key, and the provider and model per role.
- * A key goes in and never comes back out: every answer is `settings.view()`.
+ * Provider status (never the keys), a provider's saved key, Codex's sign-in, and the provider and
+ * model per role. A key goes in and never comes back out: every answer is `settings.view()`, or a
+ * Codex login's state.
  */
-export const settingsRoutes: FastifyPluginAsyncZod<{ settings: Settings }> = async (
-  app,
-  { settings },
-) => {
+export const settingsRoutes: FastifyPluginAsyncZod<{
+  settings: Settings;
+  codexLogin: CodexLogin;
+}> = async (app, { settings, codexLogin }) => {
   app.get("/settings", async () => settings.view());
 
   app.put(
@@ -59,6 +61,21 @@ export const settingsRoutes: FastifyPluginAsyncZod<{ settings: Settings }> = asy
       return settings.view();
     },
   );
+
+  // Sign in with ChatGPT: `codex login`, whose sign-in page the person finishes in a browser.
+  app.post("/settings/codex/login", async () => codexLogin.start());
+  app.get("/settings/codex/login", async () => codexLogin.state());
+
+  app.post("/settings/codex/logout", async (_req, reply) => {
+    try {
+      await codexLogin.signOut();
+    } catch (err) {
+      return reply
+        .code(502)
+        .send({ code: "CODEX_LOGOUT_FAILED", message: err instanceof Error ? err.message : "" });
+    }
+    return settings.view();
+  });
 
   app.put("/settings/roles", { schema: { body: rolesPatchSchema } }, async (req, reply) => {
     try {

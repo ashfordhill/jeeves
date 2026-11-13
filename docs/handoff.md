@@ -12503,3 +12503,99 @@ unit's; left untouched and unstaged. No uncommitted changes under `jeeves-genera
 **For the next unit.** UI09 can start. Each provider is a `ProviderCard` in `SettingsView.tsx`
 (Codex keeps its copy row); the pill is `.settings-status[data-ready]`, the buttons
 `.settings-button[data-tone]`; `--ok-*` and `--off-*` are in `tokens.css`.
+
+## 2026-11-13 — UI09: Sign in with ChatGPT
+
+**What changed.**
+- New `apps/server/src/codex-login.ts`: `createCodexLogin({ codexPath, spawn, env, clock })`.
+  `start()` spawns `<codexPath> login` (default `codex`) with `env`, reads stdout and stderr line by
+  line (terminal colour codes stripped) and answers with the first `https://` URL, or after 10 s
+  with `waiting` and no URL; a second `start()` while one runs answers with that login's state. A
+  zero exit goes back to `idle`, a non-zero one is `failed` with the last output line, a spawn error
+  is `failed` with "Couldn't run <codexPath>: …"; after 10 minutes the process is killed (`failed`,
+  "The sign-in timed out after 10 minutes."). `signOut()` runs `<codexPath> logout` (killed after
+  10 s) and rejects with its last line on failure. `stop()` kills a running login. Nothing reads
+  Codex's files.
+- `routes/settings.ts`: `POST /settings/codex/login` (→ `start()`), `GET /settings/codex/login` (→
+  `state()`), `POST /settings/codex/logout` (→ `settings.view()`, or 502 `CODEX_LOGOUT_FAILED` with
+  the message). `app.ts`: `AppDeps.codexLogin` (default: `codex` from the PATH with the real
+  `spawn`), and an `onClose` hook that stops a running login. `main.ts`: one `codexPath`
+  (`JEEVES_CODEX_PATH`) for both `providerModels` and `createCodexLogin`.
+- `settings.ts`: Codex's `help` is `null` signed out too (the card now signs in; the old line said to
+  run `codex login` in a terminal). Status texts are unchanged (Logged in, Not logged in).
+- Web: `project/api.ts` (`CodexLoginState`, `api.codexSignIn`, `codexSignInState`, `codexSignOut`).
+  `settings/SettingsView.tsx`: Codex's copy row is replaced by `CodexSignIn`: signed out, **Sign in
+  with ChatGPT** (yellow); a click shows the chip "Finish signing in in your browser" and the URL as a
+  link (new tab), then asks `GET /settings` and `GET /settings/codex/login` every 2 s until Codex is
+  ready (then **Sign out**) or the login is no longer waiting; a failure shows its message
+  (`role="alert"`) and "or run `codex login` in a terminal". Signed in, **Sign out** (red text).
+  `settings.css`: `.settings-setup` and `.settings-copy` removed; `.settings-login`,
+  `-login-wait` (the preview's `.chip`: `--control`, `--control-line`), `-login-fallback`,
+  `-login-link` (`--blue-deep`), `-login-error` (`--minus`).
+- E2E isolation: `jeeves/playwright.config.ts` gives the e2e server `JEEVES_CODEX_PATH` =
+  `jeeves/apps/web/e2e/fake-codex.mjs` (new, mode 755, kept: a Node script that reads and writes no
+  file; `login` prints a made-up `https://auth.example.invalid/…` URL, waits 8 s and exits 1 with
+  "The e2e stand-in for Codex signs no one in."; anything else exits 1), `CODEX_HOME` =
+  `mkdtemp($TMPDIR/jeeves-e2e-codex-)` and `CODEX_API_KEY` = "". The e2e server's Codex is therefore
+  signed out and never the real binary.
+- Tests: new `codex-login.test.ts` (12, fake `spawn` and fake clock: URL on stdout, on stderr across
+  chunks, `waiting` without a URL at 10 s, one process for two starts, a non-zero exit's last line,
+  exit 0 → idle, the 10-minute kill, a spawn error and a throwing spawn, `codex` by default,
+  `stop()`, `signOut` runs `logout`, a failed and a hung logout). `routes/settings.test.ts` (2: the
+  three routes through a fake codex and a throwaway `CODEX_HOME`; a test app without a fake never
+  spawns). `test-support.ts`: `buildTestApp`'s default `codexLogin` throws instead of spawning;
+  `FakeCodexProcess`, `fakeCodexSpawn`, `fakeClock`.
+- Docs: `docs/studio.md` (Settings), `jeeves/CATALOG.md` (Codex's credentials row), `jeeves/PLAN.md`
+  (`codex-login.ts`, the routes, the API table).
+
+**Checks.** `pnpm check` before any change: exit 0, 108 files, 841 tests. After: exit 0, 109 files,
+855 tests (lint's one info is older). `pnpm test:e2e` (native, without the mouse spec): 72 passed,
+1 failed: `blueprint-chat.spec.ts:168` ("offers Anthropic in Settings…"), a strict-mode violation:
+`getByText("Saved to")` matches both the Models card's "Saved to …" status and UI08's footnote "A
+key is saved to …". Alone: failed the same way. With this unit's work set aside (my diff saved,
+reversed, the test run, the diff re-applied and compared byte for byte): failed the same way at
+`321b910`, so it predates this unit; the test is not changed here (see Noticed). `pnpm --filter
+@jeeves/web build`: exit 0. Mouse check (`ui09-check.spec.ts`, serial, then deleted): 2 passed,
+1440×900 and 1280×800, no page error. It first checked `/api/settings` reads Codex as Not logged
+in with no help (the isolated `CODEX_HOME`). On Settings: the Codex card's pill read Not logged in
+(`data-ready="false"`), no copy row, no `codex login` text and no Sign out; **Sign in with
+ChatGPT** had the `--yellow` fill; a click showed "Finish signing in in your browser" (chip border
+`--control-line`, fill `--control`) and the stand-in's URL as a `target="_blank"` link in
+`--blue-deep`; about 8 s later the card showed "The e2e stand-in for Codex signs no one in." in
+`--minus` and "or run `codex login` in a terminal", the chip and link gone, the button back, and
+`GET /settings/codex/login` read `failed`. Light then dark at 1440, dark then light at 1280. No
+project was created; `jeeves_e2e` holds only "TinyURL · studio study" and "E2E Every kind". No
+fake or real Codex process was left running, and `~/.codex/auth.json` still exists (checked with
+`ls` only; never read). Six images in `docs/plans/ui-refresh/evidence/ui09/` (waiting and failed;
+light and dark) match the signed-out Codex card of `preview/settings-light.png` and `-dark.png`.
+The real sign-in and Sign out were not tried: **they are for the owner to try** (Settings → Codex
+→ Sign in with ChatGPT, on the dev server, which runs the real `codex`).
+**Differences from the plan.**
+- `createCodexLogin` also takes an optional `clock` (the phase rule: inject the clock), and the
+  app's `onClose` hook calls a `stop()` the plan doesn't name, so a login doesn't outlive the server
+  (its 10-minute timer dies with it).
+- A timed-out login's message is "The sign-in timed out after 10 minutes." rather than its last
+  output line (which would be the URL text). A spawn error's is "Couldn't run <codexPath>: <error>".
+- `failed` carries `message`; the routes answer `{ state, url? }` or `{ state, message }`.
+- The card stops asking once the login is no longer `waiting`: `failed`, or `idle` without a
+  sign-in (Codex exited 0 but its login file isn't there), not only on `failed`.
+- `codex logout` failing answers 502 `CODEX_LOGOUT_FAILED`, shown on the card.
+- Codex's signed-out help line ("Run `codex login` in a terminal …, then reload this page.") is now
+  `null`, so the card shows the provider description, as UI08 did for the key providers; the terminal
+  command appears only as the failure's fallback. `ProviderStatus.help` is now `null` for every
+  provider.
+- The preview's pill words ("Signed in with ChatGPT", "Not signed in") were not adopted: the plan
+  says `settings.view()` already reports the sign-in, and a Codex login may also be an API key.
+**Noticed.** `blueprint-chat.spec.ts:168` fails at `321b910` (UI08's footnote "A key is saved to"
+also matches its case-insensitive `getByText("Saved to")`); a locator such as
+`page.locator(".settings-saved")` would fix it without weakening it, but this unit doesn't name the
+test. Chat's Codex error still says "Run `codex login` in a terminal, then try again"
+(`chat/models.ts`; not named by this unit). With `CODEX_API_KEY` set, Codex reads Logged in and Sign
+out runs `codex logout`, which can't unset the variable. Chat's Codex provider uses the SDK's own
+Codex binary when `JEEVES_CODEX_PATH` is unset, while the sign-in runs `codex` from the PATH (as the
+plan says); both read the same `CODEX_HOME`/`~/.codex`. The modes of `jeeves/scripts/e2e-docker.sh`
+and `docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged. No uncommitted changes under `jeeves-generator/` or
+`field-projects/`.
+**For the next unit.** UI10 can start. Codex's card is `CodexSignIn` in `SettingsView.tsx`; the
+e2e server's Codex is `e2e/fake-codex.mjs` with a throwaway `CODEX_HOME`.

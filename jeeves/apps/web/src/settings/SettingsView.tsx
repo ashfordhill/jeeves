@@ -1,19 +1,13 @@
 /**
- * Settings: connections first, one card per provider (its status, then a key field, or the
- * command for a CLI login), then the design chat's model. A saved key is never shown again: the
- * field is emptied after a save and never refilled, and the API never answers with a key.
+ * Settings: connections first, one card per provider (its status, then a key field, or Codex's
+ * sign-in), then the design chat's model. A saved key is never shown again: the field is emptied
+ * after a save and never refilled, and the API never answers with a key.
  */
-import {
-  Autocomplete,
-  Button,
-  CopyButton,
-  Loader,
-  NativeSelect,
-  PasswordInput,
-} from "@mantine/core";
+import { Autocomplete, Button, Loader, NativeSelect, PasswordInput } from "@mantine/core";
 import { useEffect, useState } from "react";
 import {
   api,
+  type CodexLoginState,
   type ModelRole,
   type ProviderAuth,
   type ProviderStatus,
@@ -180,7 +174,135 @@ function KeyField({
   );
 }
 
-/** One provider: its name and status pill, one line of help, then its key field or command. */
+/** How often a card waiting for a browser sign-in asks whether it has finished. */
+const SIGN_IN_POLL_MS = 2000;
+
+/**
+ * Codex's sign-in. Signed out, **Sign in with ChatGPT** runs `codex login` on the server and links
+ * the sign-in page it prints; the card then asks every 2 seconds until Codex is signed in or the
+ * login fails, when it shows why and the terminal command. Signed in, **Sign out**.
+ */
+function CodexSignIn({
+  provider,
+  command,
+  onSettings,
+}: {
+  provider: ProviderStatus;
+  command: string;
+  onSettings: (next: Settings) => void;
+}) {
+  const [login, setLogin] = useState<CodexLoginState>({ state: "idle" });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const waiting = !provider.ready && login.state === "waiting";
+
+  useEffect(() => {
+    if (!waiting) return;
+    let live = true;
+    const timer = window.setInterval(() => {
+      void Promise.all([api.settings(), api.codexSignInState()])
+        .then(([next, state]) => {
+          if (!live) return;
+          setError(undefined);
+          const signedIn = next.providers.find((p) => p.id === provider.id)?.ready ?? false;
+          if (signedIn || state.state !== "waiting") onSettings(next);
+          setLogin(signedIn ? { state: "idle" } : state);
+        })
+        .catch((e: unknown) => {
+          if (live) setError(errorText(e));
+        });
+    }, SIGN_IN_POLL_MS);
+    return () => {
+      live = false;
+      window.clearInterval(timer);
+    };
+  }, [waiting, provider.id, onSettings]);
+
+  const run = async (call: () => Promise<void>) => {
+    setBusy(true);
+    setError(undefined);
+    try {
+      await call();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const alert = error ? (
+    <span className="settings-error" role="alert">
+      {error}
+    </span>
+  ) : null;
+
+  if (provider.ready) {
+    return (
+      <div className="settings-key">
+        <button
+          type="button"
+          className="settings-button"
+          data-tone="danger"
+          disabled={busy}
+          onClick={() =>
+            void run(async () => {
+              const next = await api.codexSignOut();
+              setLogin({ state: "idle" });
+              onSettings(next);
+            })
+          }
+        >
+          Sign out
+        </button>
+        {alert}
+      </div>
+    );
+  }
+
+  return (
+    <div className="settings-login">
+      <div className="settings-key">
+        <button
+          type="button"
+          className="settings-button"
+          data-tone="primary"
+          disabled={busy}
+          onClick={() => void run(async () => setLogin(await api.codexSignIn()))}
+        >
+          Sign in with ChatGPT
+        </button>
+        {login.state === "waiting" ? (
+          <span className="settings-login-wait" role="status">
+            Finish signing in in your browser
+          </span>
+        ) : null}
+        {login.state === "failed" ? (
+          <span className="settings-login-fallback">
+            or run <code>{command}</code> in a terminal
+          </span>
+        ) : null}
+        {alert}
+      </div>
+      {login.state === "waiting" && login.url ? (
+        <a
+          className="settings-login-link"
+          href={login.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={login.url}
+        >
+          {login.url}
+        </a>
+      ) : null}
+      {login.state === "failed" ? (
+        <p className="settings-login-error" role="alert">
+          {login.message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** One provider: its name and status pill, one line of help, then its key field or sign-in. */
 function ProviderCard({
   provider,
   onSettings,
@@ -205,19 +327,7 @@ function ProviderCard({
       {auth.type === "api-key" ? (
         <KeyField provider={provider} auth={auth} onSettings={onSettings} />
       ) : (
-        <CopyButton value={auth.command} timeout={1500}>
-          {({ copied, copy }) => (
-            <button
-              type="button"
-              className="settings-setup"
-              onClick={copy}
-              aria-label={`Copy ${provider.name} setup command`}
-            >
-              <code>{auth.command}</code>
-              <span className="settings-copy">{copied ? "Copied" : "Copy"}</span>
-            </button>
-          )}
-        </CopyButton>
+        <CodexSignIn provider={provider} command={auth.command} onSettings={onSettings} />
       )}
     </li>
   );

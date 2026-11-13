@@ -68,7 +68,10 @@ export type ProviderStatus = Pick<
   ready: boolean;
   /** One line about its credentials, e.g. "Key saved". */
   status: string;
-  /** How to set it up, when it isn't ready and the card has no key field (a CLI login). */
+  /**
+   * How to set it up, when it isn't ready and its card can't do it. None today: OpenAI's and
+   * Anthropic's cards take a key, and Codex's signs in.
+   */
   help: string | null;
   /** Where its API key comes from; `null` without one, or for a provider that takes none. */
   keySource: KeySource | null;
@@ -174,14 +177,10 @@ export class Settings {
         keySource: key?.source ?? null,
       };
     }
+    // Codex's card signs in itself (Sign in with ChatGPT runs `codex login`), so no help line.
     return this.codexLoggedIn()
       ? { ready: true, status: "Logged in", help: null, keySource: null }
-      : {
-          ready: false,
-          status: "Not logged in",
-          help: "Run `codex login` in a terminal (a ChatGPT plan or an API key both work), then reload this page.",
-          keySource: null,
-        };
+      : { ready: false, status: "Not logged in", help: null, keySource: null };
   }
 
   view(): SettingsView {

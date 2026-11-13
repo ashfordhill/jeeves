@@ -1,13 +1,23 @@
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { DEFAULT_ROLE_MODELS } from "@jeeves/providers";
 import { describe, expect, it } from "vitest";
 import { providerModels } from "../chat/models.ts";
 import { modelLabel } from "../chat/service.ts";
+import { createCodexLogin } from "../codex-login.ts";
 import type { Db } from "../db/client.ts";
 import { Settings } from "../settings.ts";
-import { buildTestApp } from "../test-support.ts";
+import { buildTestApp, fakeClock, fakeCodexSpawn } from "../test-support.ts";
 
 const home = () => mkdtempSync(join(tmpdir(), "jeeves-settings-"));
 
@@ -309,5 +319,88 @@ describe("provider keys", () => {
     expect(res.statusCode).toBe(500);
     expect(res.body).toContain("is not valid JSON");
     for (const text of [res.body, ...lines]) expect(text).not.toContain(FAKE_KEY);
+  });
+});
+
+describe("Codex sign-in", () => {
+  it("signs in with `codex login` and out with `codex logout`, through a fake codex", async () => {
+    // A throwaway CODEX_HOME: the fake writes and removes only its own auth.json there.
+    const codexHome = home();
+    const authFile = join(codexHome, "auth.json");
+    const url = "https://auth.example.invalid/oauth/authorize?client_id=jeeves-test";
+    let logoutCode = 0;
+    const fake = fakeCodexSpawn((child, [command]) => {
+      setImmediate(() => {
+        if (command === "login") {
+          child.print("stdout", `Open this URL to sign in:\n${url}\n`);
+          return;
+        }
+        if (logoutCode === 0) rmSync(authFile, { force: true });
+        else child.print("stderr", "Error: could not log out\n");
+        child.exit(logoutCode);
+      });
+    });
+    const env = { CODEX_HOME: codexHome };
+    const app = buildTestApp({} as Db, {
+      settings: new Settings(home(), env),
+      codexLogin: createCodexLogin({
+        codexPath: "/opt/fake/codex",
+        spawn: fake.spawn,
+        env,
+        clock: fakeClock().clock,
+      }),
+    });
+    const codex = async () =>
+      row((await app.inject({ method: "GET", url: "/settings" })).json(), "codex");
+    expect(await codex()).toEqual({ ready: false, status: "Not logged in", keySource: null });
+    expect((await app.inject({ method: "GET", url: "/settings/codex/login" })).json()).toEqual({
+      state: "idle",
+    });
+
+    const started = await app.inject({ method: "POST", url: "/settings/codex/login" });
+    expect(started.statusCode).toBe(200);
+    expect(started.json()).toEqual({ state: "waiting", url });
+    expect((await app.inject({ method: "GET", url: "/settings/codex/login" })).json()).toEqual({
+      state: "waiting",
+      url,
+    });
+    // The person finishes in the browser: Codex saves its login and exits.
+    writeFileSync(authFile, "{}");
+    fake.children[0]?.exit(0);
+    expect((await app.inject({ method: "GET", url: "/settings/codex/login" })).json()).toEqual({
+      state: "idle",
+    });
+    expect(await codex()).toEqual({ ready: true, status: "Logged in", keySource: null });
+
+    logoutCode = 1;
+    const refused = await app.inject({ method: "POST", url: "/settings/codex/logout" });
+    expect(refused.statusCode).toBe(502);
+    expect(refused.json()).toEqual({
+      code: "CODEX_LOGOUT_FAILED",
+      message: "Error: could not log out",
+    });
+    logoutCode = 0;
+    const out = await app.inject({ method: "POST", url: "/settings/codex/logout" });
+    expect(out.statusCode).toBe(200);
+    expect(row(out.json(), "codex")).toEqual({
+      ready: false,
+      status: "Not logged in",
+      keySource: null,
+    });
+    expect(existsSync(authFile)).toBe(false);
+    expect(fake.calls.map((c) => [c.command, ...c.args])).toEqual([
+      ["/opt/fake/codex", "login"],
+      ["/opt/fake/codex", "logout"],
+      ["/opt/fake/codex", "logout"],
+    ]);
+  });
+
+  it("never runs codex from a test app without a fake", async () => {
+    const app = buildTestApp({} as Db);
+    const res = await app.inject({ method: "POST", url: "/settings/codex/login" });
+    expect(res.json()).toEqual({
+      state: "failed",
+      message: "Couldn't run codex: A test ran codex without a fake spawn.",
+    });
   });
 });

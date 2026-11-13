@@ -101,6 +101,14 @@ export type RoleModel = {
   model: string;
 };
 
+/** Settings' Sign in with ChatGPT: the server's `codex login`. */
+export type CodexLoginState =
+  | { state: "idle" }
+  /** `url` is the sign-in page Codex printed, once it has. */
+  | { state: "waiting"; url?: string }
+  /** `message` is the login's last output line. */
+  | { state: "failed"; message: string };
+
 export type SettingsView = {
   configPath: string;
   providers: ProviderStatus[];
@@ -214,6 +222,13 @@ export const api = {
 
   removeKey: (id: ProviderId) =>
     request<SettingsView>(`/settings/providers/${id}/key`, { method: "DELETE" }),
+
+  /** Starts `codex login` on the server (or answers with the one running). */
+  codexSignIn: () => request<CodexLoginState>("/settings/codex/login", { method: "POST" }),
+
+  codexSignInState: () => request<CodexLoginState>("/settings/codex/login"),
+
+  codexSignOut: () => request<SettingsView>("/settings/codex/logout", { method: "POST" }),
 };
 
 /** Calls `onLine` for each non-empty line of a newline-delimited stream. */
