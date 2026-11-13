@@ -136,6 +136,35 @@ describe("emitted positive cache reader", () => {
     }
   });
 
+  it("tells onFailure of a corrupt cached value and a failed fill, and still answers from the loader", async () => {
+    const failures: [string, unknown][] = [];
+    const a = adapter(),
+      cache = emptyCache();
+    cache.get.mockResolvedValue("{not json");
+    cache.set.mockRejectedValue(new Error("Fill unavailable"));
+    const read = createPositiveReader({
+      adapter: a,
+      ttlSeconds: 60,
+      cache,
+      onFailure: (what: string, error: unknown) => failures.push([what, error]),
+    });
+    expect(await read("guide")).toEqual(document());
+    expect(a.load).toHaveBeenCalledTimes(1);
+    expect(failures.map(([what]) => what)).toEqual(["cache read", "cache fill"]);
+    expect(failures[0]?.[1]).toBeInstanceOf(SyntaxError);
+    expect(failures[1]?.[1]).toEqual(new Error("Fill unavailable"));
+    // An onFailure that throws changes nothing.
+    const guarded = createPositiveReader({
+      adapter: a,
+      ttlSeconds: 60,
+      cache,
+      onFailure: () => {
+        throw new Error("Log unavailable");
+      },
+    });
+    expect(await guarded("guide")).toEqual(document());
+  });
+
   it("clamps absolute expiry without rounding up, skips subsecond fills and rechecks after filling", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(100000);

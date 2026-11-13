@@ -384,12 +384,14 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(watch).toContain('await watchCacheReader.source.query("SELECT 1");');
     const upload = text(v2, "src/processes/upload.ts");
     expect(upload).toContain("await uploadMultipart.multipart.sweep();");
-    expect(upload).toContain("periodic(scope, () => uploadMultipart.multipart.sweep(), 30000);");
+    expect(upload).toContain(
+      'periodic(scope, () => uploadMultipart.multipart.sweep(), 30000, (error) => failure("sweep upload-multipart", error));',
+    );
     // Each template's `started` line comes after listening and its periodic work, before ready.
     const tail = (source: string) =>
       source.slice(source.indexOf("await service.start(config.listen);"));
     expect(tail(upload).split("\n").slice(1)).toEqual([
-      "  periodic(scope, () => uploadMultipart.multipart.sweep(), 30000);",
+      '  periodic(scope, () => uploadMultipart.multipart.sweep(), 30000, (error) => failure("sweep upload-multipart", error));',
       '  logStarted(config.tile, {"module":"upload-auth","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]});',
       '  logStarted(config.tile, {"module":"upload-multipart","template":"owned-multipart","wiring":"mounted","checks":["jobs publisher open","outbox relay started","SELECT 1 on its state login","sweep at start","sweep every 30 s"]});',
       "  scope.ready();",

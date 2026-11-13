@@ -10912,3 +10912,89 @@ scripted report still does.
 
 **For the next unit.** PF06 next. Chat's toolset is the eleven in `tools.test.ts`; the recorded
 V3-19 scripted report no longer replays (expected), and `pnpm eval:chat` reruns its arms.
+
+## 2026-11-12 — PF06: Every failure is logged
+
+**What changed.**
+
+- Pin updater: `jeeves-generator/src/v2/fixtures/update-processes-off.ts` (the plan's code) and
+  the generator's `pins:update` script. Run before any template change it printed
+  `{ 'frozen-v2': 72, 'v2-module-design': 77, 'stub-stack': 52 }` and left
+  `processes-off.json` byte-identical.
+- Templates (`jeeves-generator/templates/local-v2/assets/src/runtime/`):
+  `tile-process.ts` adds `describeError`, `FailureLog` and `createFailureLog` (the plan's code:
+  one `{"level":"error","event":"failure","tile","what","error",…extra}` line on stdout, at most
+  once a second per `what`). `http.ts`: `createHttpService` takes `onFailure`; its error handler
+  calls it, guarded, with `request <method> <route pattern | unmatched>` before replying, for an
+  `HttpError` of 500 or more but 501 and for any other error that isn't a 400/413/415. Answers are
+  unchanged. `process.ts`: `startup-failed` (before `Application startup failed`),
+  `process-failed` (`fail(error)` with an error) and `drain-failed` lines on stderr, the error in
+  the 300-character form; `periodic` takes `onFailure`, guarded. `outbox.ts`: `relayBatch`
+  returns `errors` (each per-row error, in order); `startRelay` passes each to `onError` through
+  the same guard as a failed batch. `asset-worker.ts`: `onRelayError`, guarded, for the
+  publication relay; sweeps keep `onSweepError`. `positive-cache.ts`: `onFailure`, guarded, with
+  `cache read` and `cache fill`. `multipart.ts`: `onFailure`, guarded: `multipart start` with
+  `{ upload }` before `INITIATION_FAILED` is recorded, and `multipart abort` instead of the
+  discarded provider-abort error; `start` still answers 503 `INITIATION_FAILED`.
+- Wiring (`jeeves-generator/src/v2/`): every process file imports `createFailureLog` and creates
+  `const failure = createFailureLog(config.tile);` first inside `runProcess`; an HTTP process
+  passes `onFailure: failure`. Cache read: ``onFailure: (what, error) => failure(`${what} <lead>`,
+  error)``. Multipart: the same with `extra`, the jobs relay's
+  `{ onError: (error) => failure("outbox relay jobs", error) }`, and the sweep's `periodic` gets
+  `(error) => failure("sweep <lead>", error)`. Asset lifecycle: `onSweepError` (`sweep <lead>`)
+  and `onRelayError` (`outbox relay publication`).
+- Tests: the plan's nine. 1, 2, 5 and 9 in `tile-processes.test.ts` (the real `http.ts` on a
+  small fake Fastify, as `positive-cache.test.ts` fakes redis; `runProcess` with its ready marker
+  moved to a temporary directory, its signal listeners and the exit code restored after each
+  test); 3 in `durability.test.ts`; 4 in `tile-loop.test.ts` beside the `started` line; 6 in
+  `asset-lifecycle.test.ts` (fake timers, a stand-in pool, lifecycle and outbox); 7 in
+  `positive-cache.test.ts`; 8 in `multipart.test.ts` (its fixture takes `onFailure` and a
+  `createError`). The two named assertions: `durability.test.ts`'s `relayBatch` result gains
+  `errors: [new Error("confirm lost")]`; `http-wiring.test.ts`'s two `periodic(` strings gain the
+  fourth argument.
+- Docs: `jeeves-generator/README.md` (Runnable processes: a **Failure lines** paragraph, and
+  `tile-process.ts` holds the failure log); `docs/template-gaps.md` gap 3's Status.
+
+**Checks.**
+
+- check: passed before any change (104 files, 759 tests) and after (104 files, 768 tests: 9
+  added), with the frozen v1 pin unchanged. Before the pins were updated exactly three named
+  failures appeared (the `relayBatch` result, the `periodic` strings, and processes-off's
+  frozen-v2 and v2-module-design).
+- Pins (rule 7): `pins:update` then the diff listed, for both frozen-v2 and v2-module-design,
+  `.jeeves/manifest.json`, `src/runtime/asset-worker.ts`, `http.ts`, `multipart.ts`, `outbox.ts`,
+  `positive-cache.ts` and `process.ts`, all in the unit's list; stub-stack unchanged.
+- Mutation check: removing each new behaviour from the seven templates failed the 8 new runtime
+  tests and the updated `relayBatch` assertion (9 failures); restored, all pass.
+- Scratch type-check: the YouTube v3 design exported with these templates, type-checked with its
+  `tsconfig.json` (real `fastify`, `pg` and Node types; amqplib, redis, the AWS SDK, OpenSearch,
+  jose and hls.js shimmed as `any`): no error in any process file or changed runtime file; the
+  only errors come from the shims.
+- e2e: `pnpm test:e2e` 73 passed (4.7 min) on the first run; no reruns needed.
+- build: passed.
+
+**Differences from the plan.**
+
+- `tile-processes.ts` now emits `src/runtime/tile-process.ts` for every export with processes
+  (before: with an HTTP process, a loop or a stub's clients), since every process file imports
+  `createFailureLog` from it. A design with only idle workers and no clients was the only case
+  without it.
+- `process.ts` writes its three lines through a local, guarded `logError` (it doesn't import
+  `tile-process.ts`, which isn't emitted beside every `process.ts`), on stderr as
+  `Application startup failed` is. `fail(error)` logs when `error !== undefined`.
+- `multipart abort` also carries `{ upload }`. The jobs relay's options are written over three
+  lines in the process file, and the `failure` line has a comment above it.
+- Test 5 also checks the `startup-failed` line; test 1 checks the 503's own answer for each case.
+- No other emitted-string assertion needed changing.
+
+**Noticed.**
+
+- `src/features/service-resources.ts`'s `createPositiveReader` (a stub's cache client) passes no
+  `onFailure` (not in this unit's file list), so a stub's cache failures stay silent.
+- A completion stopped by a failing hook during the startup sweep (gap 2) now writes a
+  `startup-failed` line with the reason; gap 2's Status already says so and is unchanged.
+- A lost broker connection reaches `process-failed` through each transport's `onFatal:
+  scope.fail`; `scope.transport`'s own close carries no error.
+
+**For the next unit.** PF07 next. `pnpm --filter @jeeves/generator pins:update` exists; rule 7's
+procedure worked as written.

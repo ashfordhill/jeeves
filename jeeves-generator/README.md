@@ -425,7 +425,32 @@ brings the broker and it back, resubscribed, with the `.failed` messages kept. `
 each subscription, cuts a retry wait short (the message is republished for its next attempt) and
 settles the message in hand before closing; undelivered messages stay in their queue.
 `src/runtime/tile-loop.ts` holds the loop and its handlers, `tile-http.ts` the 501 wrapper and
-route stubs, and `tile-process.ts` `NotImplemented`, the log and the `started` line.
+route stubs, and `tile-process.ts` `NotImplemented`, the log, the `started` line and the failure
+log.
+
+**Failure lines.** Each process file creates one failure log,
+`const failure = createFailureLog(config.tile);`. A failure the process survives writes one JSON
+line on stdout, at most once a second for each `what`, with the fields `level` (`error`), `event`
+(`failure`), `tile`, `what`, `error` (the error's name and message, at most 300 characters) and
+`upload` where there is one, for example
+`{"level":"error","event":"failure","tile":"watch-api","what":"request GET /modules/watch-cache/:key","error":"TypeError: …"}`.
+What writes it, as its `what`:
+
+- a failed request, any answer of 500 or more but 501 (a 501 has its `not-implemented` line):
+  `request <method> <route>`, the route's pattern, or `unmatched`;
+- a failed sweep, multipart's every 30 s and the asset lifecycle's: `sweep <module>`;
+- a failed outbox relay, for each row it defers and for a batch that fails: `outbox relay jobs`
+  (multipart) and `outbox relay publication` (asset lifecycle);
+- a failed or corrupt cache read and a failed cache fill: `cache read <module>`,
+  `cache fill <module>`;
+- a failed multipart start and a failed provider abort after it: `multipart start <module>`,
+  `multipart abort <module>`, each with `upload`.
+
+The answers, retries and what is kept stay as they were. `runProcess` (`process.ts`) also writes
+three lines on stderr, each `{"level":"error","event":…,"error":…}` in the same form:
+`startup-failed` when startup throws (before `Application startup failed`), `process-failed` when
+the process fails with an error (a lost broker connection), and `drain-failed` for each drain that
+throws while stopping (the process then exits 1).
 
 **Provisioning for stubs** (contract §6). With the option on, every store or channel a stub
 links to is provisioned for its tile. The resolver works the facts out as it reads the design:

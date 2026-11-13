@@ -5,6 +5,16 @@ export interface ProcessScope {
 	fail(error?: unknown): void;
 	ready(): void;
 }
+/** One error line when startup, the process or a drain fails: why, as the error's name and
+ * message in at most 300 characters. Writing it never throws. */
+function logError(event: string, error: unknown) {
+	try {
+		const why = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+		console.error(JSON.stringify({ level: "error", event, error: why.slice(0, 300) }));
+	} catch {
+		/* The drain still runs. */
+	}
+}
 /** One process owns its readiness and ordered drains. Register dependencies before dependents;
  * reverse close stops admission/consumers/timers before publishers, clients and pools. */
 export async function runProcess(
@@ -23,7 +33,8 @@ export async function runProcess(
 			for (const drain of drains.reverse()) {
 				try {
 					await drain();
-				} catch {
+				} catch (error) {
+					logError("drain-failed", error);
 					failed = true;
 				}
 			}
@@ -44,7 +55,8 @@ export async function runProcess(
 				}
 			});
 		},
-		fail() {
+		fail(error) {
+			if (error !== undefined) logError("process-failed", error);
 			failed = true;
 			stopping = true;
 			rmSync(marker, { force: true });
@@ -68,9 +80,10 @@ export async function runProcess(
 	starting = Promise.resolve().then(() => start(scope));
 	try {
 		await starting;
-	} catch {
+	} catch (error) {
 		failed = true;
 		await close();
+		logError("startup-failed", error);
 		console.error("Application startup failed");
 	}
 }
@@ -78,13 +91,20 @@ export function periodic(
 	scope: ProcessScope,
 	effect: () => Promise<unknown>,
 	ms: number,
+	onFailure?: (error: unknown) => void,
 ) {
 	let timer: ReturnType<typeof setTimeout> | undefined,
 		stopped = false,
 		running = Promise.resolve<unknown>(undefined);
 	const tick = () => {
 		running = effect()
-			.catch(() => {})
+			.catch((error: unknown) => {
+				try {
+					onFailure?.(error);
+				} catch {
+					/* The next tick still runs. */
+				}
+			})
 			.finally(() => {
 				if (!stopped) timer = setTimeout(tick, ms);
 			});

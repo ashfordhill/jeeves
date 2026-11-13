@@ -1,10 +1,14 @@
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   type DesignDocument,
   emptyDesign,
   generationExportBlockers,
   type StudioCommand,
 } from "@jeeves/spec";
-import { describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import {
   moduleAuthored,
@@ -119,6 +123,18 @@ describe("local.tile-processes", () => {
     expect(idle).toContain("const idle = setInterval(() => {}, 2 ** 30);");
     expect(idle).toContain("scope.own(() => clearInterval(idle));");
     expect(idle).not.toContain("loopLog");
+  });
+
+  it("gives every process one failure log, and passes it to the HTTP service", () => {
+    const http = text(bundle, "src/processes/links-api.ts");
+    expect(http).toMatch(
+      /import \{[^}]*createFailureLog[^}]*\} from "\.\.\/runtime\/tile-process\.ts";/,
+    );
+    expect(http).toContain("  const failure = createFailureLog(config.tile);");
+    expect(http).toContain("    onFailure: failure,");
+    const worker = text(bundle, "src/processes/visit-worker.ts");
+    expect(worker).toContain("  const failure = createFailureLog(config.tile);");
+    expect(worker).not.toContain("onFailure: failure");
   });
 
   it("composes one healthy-on-marker service per tile, with no restart policy or ports", () => {
@@ -304,5 +320,192 @@ describe("local.tile-processes", () => {
     ).toContainEqual(["generation", "processes"]);
     const partial = assemble(design, dependencies);
     expect(processesOf(partial)).toEqual({ runnable: false, tiles: [] });
+  });
+});
+
+// The exact emitted HTTP service and process runtime. Only Fastify is replaced, by the little of
+// it the service uses: `inject` runs a route's handler and gives what it throws to the error
+// handler. The ready marker moves to a temporary directory.
+const fakeFastify = `export default function Fastify() {
+  const routes = new Map();
+  let errorHandler, notFound;
+  const app = {
+    get(url, handler) { routes.set("GET " + url, handler); },
+    addHook() {},
+    setErrorHandler(handler) { errorHandler = handler; },
+    setNotFoundHandler(handler) { notFound = handler; },
+    route(route) { routes.set(route.method + " " + route.url, route.handler); },
+    async listen() { return "http://fake"; },
+    async close() {},
+    async inject({ method, url }) {
+      const handler = routes.get(method + " " + url);
+      const request = { method, url, routeOptions: { url: handler ? url : undefined } };
+      const reply = {
+        statusCode: 200,
+        code(status) { this.statusCode = status; return this; },
+        send(payload) { this.payload = payload; return this; },
+      };
+      try {
+        reply.payload = await (handler ?? notFound).call(app, request, reply);
+      } catch (error) {
+        errorHandler(error, request, reply);
+      }
+      return { statusCode: reply.statusCode, json: () => reply.payload };
+    },
+  };
+  return app;
+}`;
+const markerDirectory = mkdtempSync(join(tmpdir(), "jeeves-process-"));
+const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
+const runtimeUrls = new Map<string, string>();
+function runtimeUrl(name: string): string {
+  const old = runtimeUrls.get(name);
+  if (old) return old;
+  const source = readFileSync(
+    new URL(`../../templates/local-v2/assets/src/runtime/${name}.ts.template`, import.meta.url),
+    "utf8",
+  );
+  const url = dataUrl(
+    stripTypeScriptTypes(source)
+      .replace(
+        /from "\.\/(.+)\.ts"/g,
+        (_match, dependency: string) => `from "${runtimeUrl(dependency)}"`,
+      )
+      .replace('from "fastify"', `from "${dataUrl(fakeFastify)}"`)
+      .replace('"/tmp/application-ready"', JSON.stringify(join(markerDirectory, "ready"))),
+  );
+  runtimeUrls.set(name, url);
+  return url;
+}
+const httpRuntime = await import(runtimeUrl("http"));
+const processRuntime = await import(runtimeUrl("process"));
+type Failure = [what: string, error: unknown];
+
+describe("emitted HTTP service and process runtime", () => {
+  const signals = ["SIGTERM", "SIGINT"] as const;
+  const listening = Object.fromEntries(signals.map((name) => [name, process.listeners(name)]));
+  const exitCode = process.exitCode;
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    // runProcess listens for signals and sets the exit code: give this worker its own back.
+    for (const name of signals)
+      for (const listener of process.listeners(name))
+        if (!listening[name]?.includes(listener)) process.removeListener(name, listener);
+    process.exitCode = exitCode;
+  });
+  afterAll(() => rmSync(markerDirectory, { recursive: true, force: true }));
+
+  const service = (onFailure: (what: string, error: unknown) => void) =>
+    httpRuntime.createHttpService({
+      id: "watch-api",
+      settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+      configure: (routes: { route(route: unknown): void }) => {
+        const fails = (url: string, error: unknown) =>
+          routes.route({
+            method: "GET",
+            url,
+            handler: async () => {
+              throw error;
+            },
+          });
+        fails("/boom", new Error("boom"));
+        fails("/missing", new httpRuntime.HttpError(404, "NOT_FOUND", "No record for this key."));
+        fails("/busy", new httpRuntime.HttpError(503, "OVERLOADED", "Service is busy."));
+        fails("/unwritten", new httpRuntime.HttpError(501, "NOT_IMPLEMENTED", "Not implemented."));
+      },
+      initialize: async () => {},
+      onFailure,
+    });
+  const answers = {
+    "/boom": [503, { error: "UNAVAILABLE", message: "Service unavailable." }],
+    "/missing": [404, { error: "NOT_FOUND", message: "No record for this key." }],
+    "/busy": [503, { error: "OVERLOADED", message: "Service is busy." }],
+    "/unwritten": [501, { error: "NOT_IMPLEMENTED", message: "Not implemented." }],
+  };
+  type Service = { inject(request: unknown): Promise<{ statusCode: number; json(): unknown }> };
+  const get = async (http: Service, url: string) => {
+    const response = await http.inject({ method: "GET", url });
+    return [response.statusCode, response.json()];
+  };
+
+  it("tells onFailure of a failed request (an error or a 5xx but 501), and never changes an answer", async () => {
+    const failures: Failure[] = [];
+    const http = await service((what, error) => failures.push([what, error]));
+    await http.start({ host: "127.0.0.1", port: 3000 });
+    expect(await get(http, "/boom")).toEqual(answers["/boom"]);
+    expect(failures).toEqual([["request GET /boom", new Error("boom")]]);
+    expect(await get(http, "/missing")).toEqual(answers["/missing"]);
+    expect(await get(http, "/unwritten")).toEqual(answers["/unwritten"]);
+    expect(failures).toHaveLength(1);
+    expect(await get(http, "/busy")).toEqual(answers["/busy"]);
+    expect(failures.map(([what]) => what)).toEqual(["request GET /boom", "request GET /busy"]);
+    expect(failures[1]?.[1]).toMatchObject({ statusCode: 503, code: "OVERLOADED" });
+    await http.close();
+    // An onFailure that throws changes no answer.
+    const throwing = await service(() => {
+      throw new Error("log unavailable");
+    });
+    await throwing.start({ host: "127.0.0.1", port: 3000 });
+    for (const [url, answer] of Object.entries(answers))
+      expect(await get(throwing, url)).toEqual(answer);
+    await throwing.close();
+  });
+
+  it("periodic tells onFailure of a rejected effect and keeps ticking", async () => {
+    vi.useFakeTimers();
+    const drains: (() => Promise<void>)[] = [];
+    const scope = { own: (drain: () => Promise<void>) => drains.push(drain) };
+    const failures: unknown[] = [];
+    let ticks = 0;
+    processRuntime.periodic(
+      scope,
+      async () => {
+        ticks += 1;
+        throw new Error(`sweep ${ticks}`);
+      },
+      30000,
+      (error: unknown) => failures.push(error),
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    expect(failures).toEqual([new Error("sweep 1")]);
+    await vi.advanceTimersByTimeAsync(30000);
+    expect(failures).toEqual([new Error("sweep 1"), new Error("sweep 2")]);
+    for (const drain of drains) await drain();
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(ticks).toBe(2);
+  });
+
+  it("runProcess writes why startup, the process or a drain failed", async () => {
+    const lines: unknown[] = [];
+    vi.spyOn(console, "error").mockImplementation((line: string) => {
+      lines.push(line.startsWith("{") ? JSON.parse(line) : line);
+    });
+    type Scope = { own(drain: () => void): void; fail(error?: unknown): void };
+    await processRuntime.runProcess(async (scope: Scope) => scope.fail(new Error("x")));
+    await vi.waitFor(() => expect(process.exitCode).toBe(1));
+    expect(lines).toEqual([{ level: "error", event: "process-failed", error: "Error: x" }]);
+    // A drain that throws, on SIGTERM: one drain-failed line, and the exit code is 1.
+    lines.length = 0;
+    process.exitCode = undefined;
+    const before = process.listeners("SIGTERM");
+    await processRuntime.runProcess(async (scope: Scope) =>
+      scope.own(() => {
+        throw new Error("pool stuck");
+      }),
+    );
+    const stop = process.listeners("SIGTERM").find((listener) => !before.includes(listener));
+    stop?.("SIGTERM");
+    await vi.waitFor(() => expect(process.exitCode).toBe(1));
+    expect(lines).toEqual([{ level: "error", event: "drain-failed", error: "Error: pool stuck" }]);
+    // A failed startup says why, then the existing line.
+    lines.length = 0;
+    await processRuntime.runProcess(async () => {
+      throw new TypeError("no database");
+    });
+    expect(lines).toEqual([
+      { level: "error", event: "startup-failed", error: "TypeError: no database" },
+      "Application startup failed",
+    ]);
   });
 });

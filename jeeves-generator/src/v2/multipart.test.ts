@@ -38,7 +38,9 @@ const file = {
   sha256: "a".repeat(64),
 };
 type Row = { uploadId: string; assetId: string; originalKey: string; file: typeof file };
-async function fixture() {
+async function fixture(
+  onFailure?: (what: string, error: unknown, extra?: Record<string, unknown>) => void,
+) {
   const db = new PGlite();
   await db.exec(
     ownedUploadSchema({ schema: "docs", table: "transfers" }) +
@@ -86,11 +88,13 @@ async function fixture() {
     created: 0,
     aborts: [] as string[],
     orphanCursor: [] as unknown[],
+    createError: undefined as Error | undefined,
   };
   const objects = {
     ownsKey: (key: string) => key.startsWith("docs/"),
     missing: (error: Error) => error.name === "NoSuchUpload",
     create: async () => {
+      if (state.createError) throw state.createError;
       state.created++;
       return "provider-1";
     },
@@ -136,7 +140,7 @@ async function fixture() {
     run,
     repo,
     state,
-    api: createOwnedMultipart({ repository: repo, transaction: run, objects }),
+    api: createOwnedMultipart({ repository: repo, transaction: run, objects, onFailure }),
   };
 }
 
@@ -241,6 +245,25 @@ describe("owned signed multipart engine", () => {
         ),
       ).toThrow();
       expect(() => validateParts([{ partNumber: 1, size: 12, etag: "e" }], 268435457)).toThrow();
+    } finally {
+      await db.close();
+    }
+  });
+
+  it("reports a failed start with its error and upload, and still answers 503 INITIATION_FAILED", async () => {
+    const failures: unknown[][] = [];
+    const { db, state, api } = await fixture((...failure) => failures.push(failure));
+    try {
+      state.createError = new Error("Provider unavailable");
+      await expect(api.start(alice, file)).rejects.toMatchObject({
+        statusCode: 503,
+        code: "INITIATION_FAILED",
+      });
+      const { uploads } = await api.list(alice);
+      expect(uploads).toMatchObject([{ state: "failed", failureCode: "INITIATION_FAILED" }]);
+      expect(failures).toEqual([
+        ["multipart start", new Error("Provider unavailable"), { upload: uploads[0].uploadId }],
+      ]);
     } finally {
       await db.close();
     }

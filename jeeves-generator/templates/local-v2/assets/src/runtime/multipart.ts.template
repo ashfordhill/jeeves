@@ -94,8 +94,17 @@ export function createOwnedMultipart<M, R>(options: {
   repository: OwnedUploadRepository<M, R>;
   transaction: UploadTransaction;
   objects: MultipartObjects<M, R>;
+  /** Told of a failure the engine survives: a failed start or provider abort. */
+  onFailure?: (what: string, error: unknown, extra?: Record<string, unknown>) => void;
 }) {
   const { repository: repo, transaction: tx, objects } = options;
+  const failed = (what: string, error: unknown, extra?: Record<string, unknown>) => {
+    try {
+      options.onFailure?.(what, error, extra);
+    } catch {
+      /* The answer does not change. */
+    }
+  };
   let orphan: MultipartCursor = {};
   let sweeping: Promise<void> | undefined;
   async function row(id: string, principal: UploadPrincipal) {
@@ -224,12 +233,16 @@ export function createOwnedMultipart<M, R>(options: {
           repo.saveProvider(t, saved.uploadId, principal, providerId!),
         );
         if (stored.outcome !== "active") throw conflict();
-      } catch {
+      } catch (error) {
+        failed("multipart start", error, { upload: saved.uploadId });
         // If SQL is unavailable, retain initiating uncertainty; bounded reconciliation can retry.
         try {
           await tx((t) => repo.fail(t, saved.uploadId, principal, "INITIATION_FAILED"));
         } finally {
-          if (providerId) await abortProvider(saved.originalKey, providerId).catch(() => {});
+          if (providerId)
+            await abortProvider(saved.originalKey, providerId).catch((abort: unknown) =>
+              failed("multipart abort", abort, { upload: saved.uploadId }),
+            );
         }
         throw new MultipartError(503, "INITIATION_FAILED");
       }

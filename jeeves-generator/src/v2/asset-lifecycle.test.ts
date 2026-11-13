@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import { PGlite } from "@electric-sql/pglite";
 import { designSchema } from "@jeeves/spec";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import {
   generationSelectionsFixture,
@@ -519,6 +519,70 @@ describe("emitted fixed asset lifecycle", () => {
       expect(events).toEqual(["sweep", "consume", "close"]);
     } finally {
       await f.db.close();
+    }
+  });
+
+  it("tells onSweepError of a failed sweep and onRelayError of a failed publication relay; a throwing callback stops neither", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      // No SQL runs: the lifecycle and the publication outbox are stand-ins.
+      const pool = {
+        connect: async () => ({ query: async () => ({ rows: [], rowCount: 0 }), release() {} }),
+      };
+      const transport = () => {
+        let finish!: (result: { fatal: boolean }) => void;
+        const closed = new Promise<{ fatal: boolean }>((resolve) => {
+          finish = resolve;
+        });
+        return { closed, close: async () => finish({ fatal: false }) };
+      };
+      let sweeps = 0,
+        relays = 0;
+      const sweepErrors: unknown[] = [],
+        relayErrors: unknown[] = [];
+      const worker = await startAssetLifecycleWorker({
+        pool,
+        lifecycle: {
+          parse() {},
+          apply: async () => {},
+          sweep: async () => {
+            sweeps += 1;
+            if (sweeps > 1) throw new Error(`Sweep ${sweeps} failed`);
+            return 0;
+          },
+        },
+        openConsumer: async () => transport(),
+        publication: {
+          outbox: {
+            relayBatch: async () => {
+              relays += 1;
+              throw new Error("Relay unavailable");
+            },
+          },
+          openPublisher: async () => ({ ...transport(), publish: async () => {} }),
+        },
+        onSweepError: (error: unknown) => {
+          sweepErrors.push(error);
+          throw new Error("Log unavailable");
+        },
+        onRelayError: (error: unknown) => {
+          relayErrors.push(error);
+          throw new Error("Log unavailable");
+        },
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(relayErrors).toEqual([new Error("Relay unavailable")]);
+      expect(sweepErrors).toEqual([]);
+      await vi.advanceTimersByTimeAsync(30000);
+      expect(sweepErrors).toEqual([new Error("Sweep 2 failed")]);
+      await vi.advanceTimersByTimeAsync(30000);
+      expect(sweepErrors).toEqual([new Error("Sweep 2 failed"), new Error("Sweep 3 failed")]);
+      expect(relays).toBeGreaterThan(2);
+      expect(relayErrors).toHaveLength(relays);
+      await worker.close();
+      expect(await worker.closed).toEqual({ fatal: false });
+    } finally {
+      vi.useRealTimers();
     }
   });
 

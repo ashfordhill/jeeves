@@ -194,6 +194,8 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
             "    },",
           ]
         : []),
+      `    onSweepError: (error) => failure(${text(`sweep ${lead.module}`)}, error),`,
+      `    onRelayError: (error) => failure("outbox relay publication", error),`,
       "  });",
       ...own("worker"),
       "})();",

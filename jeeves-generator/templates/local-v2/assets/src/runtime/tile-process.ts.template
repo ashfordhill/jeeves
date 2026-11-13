@@ -69,3 +69,14 @@ export function createNotImplementedLog(tile: string): NotImplementedLog {
   const log = createProcessLog(tile, "warn", "not-implemented");
   return (entry) => log(`${entry.module}\u0000${entry.what}`, entry);
 }
+
+/** An error in one line, for a log: its name and message, at most 300 characters. */
+export function describeError(error: unknown): string {
+  return (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).slice(0, 300);
+}
+export type FailureLog = (what: string, error: unknown, extra?: Record<string, unknown>) => void;
+/** One JSON line for a failure the process survives, at most once a second per `what`. */
+export function createFailureLog(tile: string): FailureLog {
+  const log = createProcessLog(tile, "error", "failure");
+  return (what, error, extra = {}) => log(what, { what, error: describeError(error), ...extra });
+}

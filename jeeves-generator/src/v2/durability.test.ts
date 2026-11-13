@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import { PGlite } from "@electric-sql/pglite";
 import { designSchema } from "@jeeves/spec";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   generationSelectionsFixture,
   generationSourceFixture,
@@ -217,6 +217,7 @@ describe("emitted transactional durability", () => {
         selected: 1,
         sent: 0,
         deferred: 1,
+        errors: [new Error("confirm lost")],
       });
       const row = (
         await db.query(
@@ -261,6 +262,57 @@ describe("emitted transactional durability", () => {
           .rows,
       ).toEqual([{ event_id: "a" }]);
       await expect(outbox.relayBatch(pool, failed, 26)).rejects.toThrow("Invalid outbox batch");
+    } finally {
+      await db.close();
+    }
+  });
+
+  it("returns the error that deferred each row and passes it to the relay's onError", async () => {
+    const { db, pool } = await database();
+    try {
+      for (const id of ["a", "b"])
+        await transaction(pool, (tx: unknown) =>
+          outbox.enqueue(tx, { eventId: id, intentKey: id, payload: { id, amount: 1 } }),
+        );
+      // The same outbox whose codec refuses one stored row.
+      const strict = createOutbox(relation, "document-jobs", (input: unknown, eventId: string) => {
+        if (eventId === "b") throw new Error("Invalid stored payload");
+        return payload(input, eventId);
+      });
+      const ids: string[] = [];
+      const publisher = {
+        publish: async (_bytes: Uint8Array, id: string) => {
+          ids.push(id);
+        },
+      };
+      expect(await strict.relayBatch(pool, publisher, 10)).toEqual({
+        selected: 2,
+        sent: 1,
+        deferred: 1,
+        errors: [new Error("Invalid stored payload")],
+      });
+      expect(ids).toEqual(["a"]);
+      expect(
+        (
+          await db.query(
+            "SELECT event_id,attempts,sent_at IS NULL AS unsent FROM ledger_private.intents ORDER BY event_id",
+          )
+        ).rows,
+      ).toEqual([
+        { event_id: "a", attempts: 1, unsent: false },
+        { event_id: "b", attempts: 1, unsent: true },
+      ]);
+      await db.exec(
+        "UPDATE ledger_private.intents SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE event_id='b'",
+      );
+      const errors: unknown[] = [];
+      const runner = startRelay(strict, pool, publisher, {
+        onError: (error: unknown) => errors.push(error),
+      });
+      await vi.waitFor(() => expect(errors.length).toBeGreaterThan(0));
+      expect(errors[0]).toEqual(new Error("Invalid stored payload"));
+      await runner.close();
+      expect(ids).toEqual(["a"]);
     } finally {
       await db.close();
     }

@@ -16,6 +16,8 @@ export async function createHttpService(options: {
   settings: HttpSettings;
   configure: (routes: HttpRoutes) => void | Promise<void>;
   initialize: () => Promise<void>;
+  /** Told of each failed request: a 5xx other than 501, or an error that isn't a client error. */
+  onFailure?: (what: string, error: unknown) => void;
 }) {
   const admission = createAdmission(options.settings);
   const app = Fastify({ logger: false, bodyLimit: 65536 });
@@ -30,14 +32,26 @@ export async function createHttpService(options: {
     reply.header("Cache-Control", "no-store");
     return payload;
   });
-  app.setErrorHandler((error, _request, reply) => {
+  app.setErrorHandler((error, request, reply) => {
+    const failed = () => {
+      try {
+        options.onFailure?.(
+          `request ${request.method} ${request.routeOptions?.url ?? "unmatched"}`,
+          error,
+        );
+      } catch {
+        /* The answer does not change. */
+      }
+    };
     if (error instanceof HttpError) {
+      if (error.statusCode >= 500 && error.statusCode !== 501) failed();
       reply.code(error.statusCode).send({ error: error.code, message: error.message });
       return;
     }
     const status =
       error && typeof error === "object" && "statusCode" in error ? error.statusCode : undefined;
     const clientError = status === 400 || status === 413 || status === 415;
+    if (!clientError) failed();
     reply.code(clientError ? status : 503).send({
       error: clientError ? "INVALID_REQUEST" : "UNAVAILABLE",
       message: clientError ? "Invalid request." : "Service unavailable.",

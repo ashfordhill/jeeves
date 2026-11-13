@@ -22,8 +22,17 @@ export function createPositiveReader<I, R>(options: {
   /** Required: pass the emitted binding's authoritative cache tile setting. No default. */
   ttlSeconds: number;
   cache?: PositiveCache;
+  /** Told when the optional cache fails: a failed or corrupt cached read, or a failed fill. */
+  onFailure?: (what: "cache read" | "cache fill", error: unknown) => void;
 }) {
   const { adapter, cache, ttlSeconds } = options;
+  const failed = (what: "cache read" | "cache fill", error: unknown) => {
+    try {
+      options.onFailure?.(what, error);
+    } catch {
+      /* The read goes on as it would without the cache. */
+    }
+  };
   if (!Number.isInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 604800)
     throw new Error("Invalid positive cache TTL");
   const fills = new Map<string, Promise<R | null>>();
@@ -62,8 +71,9 @@ export function createPositiveReader<I, R>(options: {
           const record = adapter.codec.parse(JSON.parse(raw));
           if (adapter.eligible(record, input) && alive(expiry(record))) return record;
         }
-      } catch {
+      } catch (error) {
         // Corrupt/unavailable cache is optional. The authoritative loader owns its errors.
+        failed("cache read", error);
       }
     const raw = await adapter.load(input);
     if (raw === null) return null;
@@ -82,8 +92,9 @@ export function createPositiveReader<I, R>(options: {
           // be returned. Absolute atomic expiry prevents transport delay extending its life.
           if (PXAT - now >= 1000) await cache.set(key, value, { PXAT });
         });
-      } catch {
+      } catch (error) {
         // A failed optional fill must preserve a successful authoritative lookup.
+        failed("cache fill", error);
       }
     // Expiry can cross during fill. No expired result is returned, even after fill failure.
     return alive(until) ? record : null;

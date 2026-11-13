@@ -63,7 +63,7 @@ const consumers: Consumer[] = [];
 (globalThis as { tileLoopConsumers?: Consumer[] }).tileLoopConsumers = consumers;
 const loop = await import(moduleUrl("tile-loop"));
 const { NonRetryable } = await import(moduleUrl("delivery"));
-const { NotImplemented, logStarted } = await import(moduleUrl("tile-process"));
+const { NotImplemented, createFailureLog, logStarted } = await import(moduleUrl("tile-process"));
 
 const visits = {
   module: "visit-consumer",
@@ -523,6 +523,26 @@ describe("emitted started line", () => {
         wiring: "mounted",
         checks: ["SELECT 1 on its state login", "subscribed view-events--view-counter"],
       }),
+    ]);
+  });
+});
+
+describe("emitted failure line", () => {
+  it("logs what failed and why, once a second for each", () => {
+    const failure = createFailureLog("t");
+    failure("x", new Error("y"));
+    failure("x", new Error("y"));
+    failure("multipart start upload-multipart", new TypeError("z".repeat(400)), { upload: "u-1" });
+    expect(lines).toEqual([
+      { level: "error", event: "failure", tile: "t", what: "x", error: "Error: y" },
+      {
+        level: "error",
+        event: "failure",
+        tile: "t",
+        what: "multipart start upload-multipart",
+        error: `TypeError: ${"z".repeat(289)}`,
+        upload: "u-1",
+      },
     ]);
   });
 });

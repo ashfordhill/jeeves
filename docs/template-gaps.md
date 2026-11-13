@@ -8,7 +8,7 @@ gap changes its Status.
 | --- | --- | --- | --- |
 | 1 | Multipart's status, list and complete can't carry the video's state; complete answers 200, not 202 | v3 (V3-13) | Open |
 | 2 | A completion stopped by a failing hook fails the next start, with no reason | v3 (V3-13) | Open (PF06 logs the reason; PF08 keeps startup going) |
-| 3 | The outbox relay retries a failing codec silently, for ever | v3 (V3-13) | Open (PF06 logs each failure) |
+| 3 | The outbox relay retries a failing codec silently, for ever | v3 (V3-13) | Open: still retried for ever, now logged (PF06) |
 | 4 | Lifecycle and Transcoder hooks get no key prefix | v3 (V3-13) | Open |
 | 5 | A hook that throws while the Transcoder reports a failure stops the Transcoder | v3 (V3-14) | Open (PF08) |
 | 6 | A stub's queue publisher can't name its message ID | v3 (V3-15) | Fixed in V3-18 |

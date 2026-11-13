@@ -158,17 +158,17 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       );
       // The views the mounted templates publish, which another owner's stub may read.
       const views = all.flatMap((mount) => mount.local.views ?? []);
-      // The stubs' clients answer "Not implemented" through the core scaffold too.
       const clients = moduleClients(model, asset);
       return {
         files: [
           ...processes.map((process) => entryFile(process, mounts.get(process.tile) ?? [])),
           ...all.flatMap((mount) => (mount.hooks ? [mount.hooks.file] : [])),
-          // "Not implemented", the 501 wrapper and the loops, beside the processes that use them.
+          // "Not implemented" and the failure log (every process and the stubs' clients use
+          // them), the 501 wrapper and the loops, beside the processes that use them.
           ...[
             ...(http || looping
               ? [scaffolds.core, scaffolds.entry]
-              : clients.length
+              : processes.length
                 ? [scaffolds.core]
                 : []),
             ...(http ? [scaffolds.http] : []),
@@ -310,6 +310,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   const imports = importLines([
     ...(http ? [{ from: "../runtime/http.ts", name: "createHttpService" }] : []),
     { from: "../runtime/process.ts", name: "runProcess" },
+    { from: "../runtime/tile-process.ts", name: "createFailureLog" },
     ...(routed ? [{ from: "../runtime/tile-process.ts", name: "createNotImplementedLog" }] : []),
     ...(started.length ? [{ from: "../runtime/tile-process.ts", name: "logStarted" }] : []),
     ...(loops.length ? [{ from: "../runtime/tile-loop.ts", name: "createLoopLog" }] : []),
@@ -318,6 +319,8 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   const configure = block("configure");
   const initialize = block("initialize");
   const logs = [
+    "  // A failure the process survives writes one error line, at most once a second for each.",
+    "  const failure = createFailureLog(config.tile);",
     ...(routed
       ? [
           '  // "Not implemented" answers 501 with one log line per module and hook a second.',
@@ -340,6 +343,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         "  const service = await createHttpService({",
         "    id: config.tile,",
         "    settings: config.settings,",
+        "    onFailure: failure,",
         ...(configure.length
           ? [
               `    configure: (${guard ? "open" : "routes"}) => {`,

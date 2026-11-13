@@ -24,6 +24,7 @@ export async function startAssetLifecycleWorker<Publication>(options: {
     openPublisher(): Promise<LifecyclePublisher>;
   };
   onSweepError?: (error: unknown) => void;
+  onRelayError?: (error: unknown) => void;
 }) {
   let input: LifecycleConsumer | undefined, publisher: LifecyclePublisher | undefined;
   let relay: ReturnType<typeof startRelay<Publication>> | undefined;
@@ -64,6 +65,13 @@ export async function startAssetLifecycleWorker<Publication>(options: {
       /* Drain continues. */
     }
   }
+  function relayFailed(error: unknown) {
+    try {
+      options.onRelayError?.(error);
+    } catch {
+      /* The relay continues. */
+    }
+  }
   function tick() {
     sweeping = transaction(options.pool, (tx) => options.lifecycle.sweep(tx))
       .catch(notify)
@@ -87,7 +95,7 @@ export async function startAssetLifecycleWorker<Publication>(options: {
     if (options.publication) {
       publisher = await options.publication.openPublisher();
       relay = startRelay(options.publication.outbox, options.pool, publisher, {
-        onError: notify,
+        onError: relayFailed,
       });
     }
     input = await options.openConsumer(handle);

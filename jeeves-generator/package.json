@@ -8,7 +8,8 @@
     "typecheck": "tsc -p .",
     "export:new": "tsx src/cli.ts",
     "export:v2": "tsx src/v2/cli.ts",
-    "benchmark:source": "tsx src/source-loc-cli.ts"
+    "benchmark:source": "tsx src/source-loc-cli.ts",
+    "pins:update": "tsx src/v2/fixtures/update-processes-off.ts"
   },
   "dependencies": {
     "@jeeves/spec": "workspace:*",
