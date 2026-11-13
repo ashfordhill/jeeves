@@ -1,8 +1,8 @@
 # UI refresh: preview
 
-**Status:** a proposal, drawn on 2026-11-12 (second version). Nothing here is built. The build plan
-(`units.md`, not written yet) will take its colours, icons and layouts from this once the owner has
-answered the open calls below.
+**Status:** signed off by the owner on 2026-11-12 ("I like everything in the artifact"), as its
+second version. Nothing here is built. The [build plan](units.md) takes its colours, icons and
+layouts from this.
 
 Each mock is drawn with the colours and icons the plan would use, once in the light theme and once
 in the dark theme. The images were rendered from the
@@ -19,7 +19,7 @@ in the dark theme. The images were rendered from the
 - Dark mode has no white icon outlines, and every coloured fill is a solid shade of its own colour
   family (feedback on the first version).
 
-## Open calls
+## Calls, all accepted as shown
 
 | | Call | Section |
 | --- | --- | --- |
@@ -30,8 +30,9 @@ in the dark theme. The images were rendered from the
 | E | Sign in with Claude is left out; a Console sign-in through Anthropic's `ant` CLI is the permitted alternative | 7 |
 | F | Model names, context sizes and prices come from models.dev, fetched once a day | 6 |
 
-Also open: whether "white highlights" covered the light steel frames around tiles in dark mode, and
-whether the new words replace Template and Stub in chat and on the module page too.
+The light steel frames around tiles in dark mode stay as drawn. The new words replace Template and
+Stub in the menu, on module cards and on the module page; chat's tool output and the generator's
+reports keep Template and Stub.
 
 ## 1 · Tiles on the canvas
 
