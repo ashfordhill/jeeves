@@ -334,3 +334,6 @@ The live results: [V3-19 evals](evals/v3-19/README.md).
 Since PF03 changed the link table chat's tools send, the recorded V3-19 live reports no longer
 replay (their requests differ); they stay as the record of that run. `pnpm eval:chat` still runs the
 scripted arms.
+
+Since PF05 changed chat's tools and context, the recorded scripted report
+(`docs/evals/v3-19/scripted.json`) no longer replays either; `pnpm eval:chat` reruns its arms.

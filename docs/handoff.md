@@ -10833,3 +10833,82 @@ scripted report still does.
 
 **For the next unit.** PF05 next. Chat still offers `declareReviewScope`, `configureDesignScope`,
 `configureOperations`, `configureOwnership` and `readReadiness`; the web app shows none of them.
+
+## 2026-11-12 — PF05: Retire the strict-contract surface: chat
+
+**What changed.**
+
+- `jeeves/apps/server/src/chat/tools.ts`: chat has 11 tools. `configureDesignScope`,
+  `configureOwnership`, `describeOperation`, `configureOperations` and `readReadiness` are gone
+  (schemas, descriptions, `dispatch` cases, the private `configureOperations`,
+  `configureOwnership` and `configureScope`, and the three preview fields);
+  `isWorkspaceMutation` ends `return false;` after the apply-tools branch. `designSummary` (so
+  `getDesign` and each turn's context) drops `readiness`, `persistentScope`,
+  `availableProfileDefault`, `declaredOperations`, `operationFindings`, `availableOperations`,
+  `availableCachePolicies`, `declaredOwnership`, `ownershipFindings` and `ownershipMeaning`, and
+  lists findings through `designFindings` (readiness only counted, `notSpecified`); each link's
+  `access`/`declaredAccess` and `accessNote` stay. `validateDesign` returns
+  `designFindings(…)` and logs "Checked the design's findings". `reviewWithModules` drops
+  `ownership`, `operations` and `persistentScope`, lists only non-readiness findings with a
+  `notSpecified` count, and keeps only the turn's own obligations. The turn context has no
+  "Selected operation bindings" line; "Selected logical owners" stays. `INSTRUCTIONS`, both
+  `leftNote`s and the `getDesign`, `validateDesign` and `reviewDesign` descriptions as the plan
+  says; the 23 imports that became unused are removed.
+- Effect: the final review and the reply's counts no longer include readiness findings or a
+  saved profile's requirements. `service.ts` is unchanged: it still checks an `operation:`
+  selection, which the context no longer shows.
+- Tests: deleted the 4 named tests in `chat.test.ts`, 4 in `openai-tools.test.ts`, 1 in
+  `tools.test.ts`, and `routes/foundation-chat.test.ts` and `routes/readiness.test.ts`; changed
+  the operation-selection and forced-review tests in `chat.test.ts`, the strict tool count (11)
+  and the toolset list; added `names no strict-contract tool and keeps the retired declarations
+  out of what chat reads`. `ownership.test.ts`, `operation-contracts.test.ts` and
+  `resolve-contracts.test.ts` keep their mouse/API half (titles say `mouse`); Biome removed the
+  imports that became unused.
+- Docs: the plan's edits to `docs/studio.md` (Chat), `docs/chat-tool-schemas.md`,
+  `docs/chat-evals.md`, `docs/studio-settings.md`, `jeeves/CATALOG.md`, `docs/studio-contracts.md`,
+  `docs/studio-readiness.md` and `jeeves/PLAN.md` (Chat). Rule 8: `docs/studio-settings.md`
+  (complete ownership replacements and the operations commands no longer name chat),
+  `docs/studio-blueprint.md` (the chat review counts readiness findings and reports the turn's
+  own obligations), `jeeves/PLAN.md` Blueprint (chat does not read the readiness report).
+
+**Checks.**
+
+- check: passed before any change (106 files, 769 tests) and after (104 files, 759 tests: 11
+  deleted, 1 added), with the frozen v1 and processes-off pins unchanged.
+- e2e: `pnpm test:e2e` 73 passed (5.6 min) on the first run.
+- build: passed.
+- evals: `pnpm eval:chat` exit 0 with the same scripted scores as PF03 (good 100/100/100 and
+  100; patterns 86.3/98.2/98.2; bad 1.7/18.5/18.5 and 5). `--report=docs/evals/v3-19/scripted.json`
+  now fails with "Replay context drift in scripted-good/v3-build round 1", as the new
+  `chat-evals.md` sentence says (offline; nothing sent, report unchanged).
+- mouse: `pf05-check.spec.ts` 2 passed (1440×900, 1280×800), no page errors: New project's
+  TinyURL study renders its tiles; Close chat, then Open chat by mouse shows the Chat rail with
+  its Message input (typed into and cleared, nothing sent) and Send. 2 screenshots in
+  `plans/production-foundations/evidence/pf05/`; the spec is deleted and its projects with it
+  (`jeeves_e2e` holds only the two earlier projects).
+- The "Done when" grep prints nothing (also `command grep`).
+
+**Differences from the plan.**
+
+- `designSummary`'s doc comment ("the declarations the configure tools edit") and
+  `reviewWithModules`' comment ("The readiness findings stay below") now describe the design's
+  findings with readiness only counted.
+- `resolve-contracts.test.ts`: the `describeOperation` loop over `workspace` went with the other
+  `workspace` statements; `positiveCachePolicy` stays (used later), `resolveLinkOperation` went.
+- Inserted doc paragraphs are wrapped at about 100 columns; CATALOG's ownership paragraph was
+  rewrapped after its replacement (words unchanged).
+
+**Noticed.**
+
+- `docs/chat-tool-schemas.md` (not in rule 8's list) still says the configure tools keep their
+  `baseRevision` (V3-19 paragraph) and describes `operation:<binding-id>` selection in context;
+  left as the record beside the new "Five tools have since been removed" paragraph.
+- `service.ts` still accepts and refuses `operation:` selections, though nothing sends one and
+  the context no longer carries it. The bodies of `docs/studio-contracts.md` and
+  `docs/studio-readiness.md` still describe the chat tools under their Retired notes.
+- PF04's leftovers (`.readiness-*` CSS, `onTarget`'s connection/element branches,
+  `create-example.ts`'s header) and PF03's unreachable two-mode branch of `linkRuleText` are
+  unchanged.
+
+**For the next unit.** PF06 next. Chat's toolset is the eleven in `tools.test.ts`; the recorded
+V3-19 scripted report no longer replays (expected), and `pnpm eval:chat` reruns its arms.

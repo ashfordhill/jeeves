@@ -8,18 +8,16 @@ import {
   designOperations,
   operationContractsSchema,
   positiveCachePolicy,
-  resolveLinkOperation,
 } from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { resolveFixtureSeedOps } from "../../../../packages/spec/src/fixtures/nc04-compatible.ts";
 import fixture from "../../../../packages/spec/src/fixtures/nc04-resolve-v1.json" with {
   type: "json",
 };
-import { Workspace } from "../chat/tools.ts";
 import { DesignService } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 
-it("persists exact resolve mouse/chat commands, policy edits/unknowns, stale refusal and one-step deletion Undo over disk reload", async () => {
+it("persists exact resolve mouse commands, policy edits/unknowns, stale refusal and one-step deletion Undo over disk reload", async () => {
   const dir = mkdtempSync(join(tmpdir(), "jeeves-nc04-db-"));
   let database = await openTestDb(dir),
     app = buildTestApp(database.db);
@@ -33,33 +31,13 @@ it("persists exact resolve mouse/chat commands, policy edits/unknowns, stale ref
     });
     if (!seed.ok) throw new Error(JSON.stringify(seed));
     const before = seed.state.design,
-      operations = operationContractsSchema.parse(fixture),
-      workspace = new Workspace(before),
-      args = { baseRevision: before.revision, action: "preview", operations };
-    expect(JSON.parse(workspace.run("configureOperations", JSON.stringify(args))).canApply).toBe(
-      true,
-    );
-    expect(
-      JSON.parse(workspace.run("configureOperations", JSON.stringify({ ...args, action: "apply" })))
-        .ok,
-    ).toBe(true);
-    expect(workspace.pending).toEqual(buildOperationsCommand(before, { operations }).ops);
+      operations = operationContractsSchema.parse(fixture);
     const saved = await service.edit(project.id, {
       baseRevision: before.revision,
       source: "canvas",
-      ops: workspace.pending,
+      ops: buildOperationsCommand(before, { operations }).ops,
     });
     if (!saved.ok) throw new Error(JSON.stringify(saved));
-    expect(saved.state.design).toEqual(workspace.working);
-    for (const ref of [resolveLinkOperation.ref, positiveCachePolicy.ref])
-      expect(JSON.parse(workspace.run("describeOperation", JSON.stringify({ ref })))).toMatchObject(
-        {
-          status: "known",
-          record: { ref },
-          templateAvailability: "none",
-          runtimeVerification: "none",
-        },
-      );
     expect((await app.inject({ url: `/projects/${project.id}/blueprint` })).statusCode).toBe(422);
     expect(
       (await app.inject({ url: `/projects/${project.id}/blueprint?version=3` })).json(),

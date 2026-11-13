@@ -17,11 +17,10 @@ import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-owners
 import fixture from "../../../../packages/spec/src/fixtures/nc03-create-v1.json" with {
   type: "json",
 };
-import { Workspace } from "../chat/tools.ts";
 import { DesignService } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 
-it("persists exact mouse/chat operation parity, refusals/conflicts and reload/history with one Undo across upgrade and deletion", async () => {
+it("persists exact mouse operation parity, refusals/conflicts and reload/history with one Undo across upgrade and deletion", async () => {
   const dir = mkdtempSync(join(tmpdir(), "jeeves-nc03-db-"));
   let database = await openTestDb(dir),
     app = buildTestApp(database.db);
@@ -43,26 +42,14 @@ it("persists exact mouse/chat operation parity, refusals/conflicts and reload/hi
     });
     if (!seed.ok) throw new Error();
     const before = seed.state.design,
-      operations = operationContractsSchema.parse(fixture),
-      args = { baseRevision: before.revision, action: "preview", operations, upgrade: true },
-      chat = new Workspace(before);
-    expect(
-      JSON.parse(chat.run("configureOperations", JSON.stringify({ ...args, action: "apply" }))).ok,
-    ).toBe(false);
-    expect(JSON.parse(chat.run("configureOperations", JSON.stringify(args))).canApply).toBe(true);
-    expect(chat.pending).toEqual([]);
-    expect(
-      JSON.parse(chat.run("configureOperations", JSON.stringify({ ...args, action: "apply" }))).ok,
-    ).toBe(true);
+      operations = operationContractsSchema.parse(fixture);
     const mouseOps = buildOperationsCommand(before, { operations, upgrade: true }).ops;
-    expect(chat.pending).toEqual(mouseOps);
     const saved = await service.edit(project.id, {
       baseRevision: before.revision,
       source: "canvas",
       ops: mouseOps,
     });
     if (!saved.ok) throw new Error(JSON.stringify(saved));
-    expect(saved.state.design).toEqual(chat.working);
     const defaultExport = await app.inject({ url: `/projects/${project.id}/blueprint` });
     expect(defaultExport.statusCode).toBe(422);
     expect(defaultExport.json().unsupported.map((x: { path: unknown }) => x.path)).toEqual([

@@ -10,24 +10,14 @@
 import type { ToolDefinition } from "@jeeves/providers";
 import {
   applyOperations,
-  buildDesignScopeCommand,
   buildModulePattern,
-  buildOperationsCommand,
-  buildOwnershipCommand,
   buildSupportedAuthoringCommand,
-  contractRecords,
   type DesignDocument,
   type DesignReviewFinding,
-  type DesignScope,
   designGeneration,
-  designOperations,
   designOwnership,
-  designReadiness,
   designReview,
-  designScope,
-  designScopeCommandSchema,
   emptyReviewScope,
-  exactContractRefSchema,
   type Finding,
   findingCatalog,
   type GenerationInstalledSupport,
@@ -51,15 +41,6 @@ import {
   moduleTemplateNames,
   normalGenerationControls,
   type OperationInput,
-  operationContractFindings,
-  operationRecords,
-  operationsCommandSchema,
-  ownershipCommandSchema,
-  ownershipFindings,
-  previewDesignScope,
-  previewOperations,
-  previewOwnership,
-  profileStatus,
   type Rekey,
   renamedIds,
   reviewScopeProblem,
@@ -70,9 +51,7 @@ import {
   type StudioLinkRole,
   type StudioLinkRule,
   type StudioReviewScope,
-  sameContractRef,
   selectedLogicalOwners,
-  selectedOperationBindings,
   studioActionDefaults,
   studioActions,
   studioChanges,
@@ -96,8 +75,6 @@ import {
   studioTileTypes,
   studioWarningSentence,
   tileTypeOf,
-  tinyurlDesignScope,
-  unresolvedDesignScope,
   validateDesign,
 } from "@jeeves/spec";
 import { z } from "zod";
@@ -155,7 +132,7 @@ Work in a loop: plan, apply, review, fix.
 - Plan: getDesign shows the design as the canvas draws it, with each module's status. listStudioDefinitions says what a new tile and a module can be, the link table and the caps. listStudioPatterns lists curated patterns (an upload pipeline, a cached read path, counting from events, search fed by events, sign-in, favorites, a store with one writer) with their arguments.
 - Apply: applyPattern applies a pattern as one validated batch; applyStudioCommands applies commands. Apply directly: nothing is saved until the turn ends, and every accepted change returns what is left. Add preview: true only to try something you are unsure of; it keeps nothing. A refused call changes nothing and names each command to fix and how: correct those and send the call again.
 - Review: every accepted change returns an automatic review; its left list is what is left in the design, each finding naming its tile or module and a fix, often as commands. reviewDesign gives the whole review.
-- Fix: apply the fixes for findings marked fix, or say why one stays. Findings marked check are advice to confirm. Readiness findings (a behavior profile, contracts, ownership declarations) are not design errors: leave them unless the person asks.
+- Fix: apply the fixes for findings marked fix, or say why one stays. Findings marked check are advice to confirm. Readiness findings are only counted (notSpecified): they are not design errors, so leave them.
 
 A turn has at most 16 responses, and a turn that runs out saves nothing. So batch: send independent calls together in one response (several applyPattern calls, or one applyStudioCommands with many commands), and finish in a few steps.
 
@@ -171,27 +148,11 @@ Rules:
 const MAX_COMMANDS = 50;
 
 const schemas = {
-  describeOperation: z.strictObject({ ref: exactContractRefSchema }),
-  configureOperations: z.strictObject({
-    baseRevision: z.int().nonnegative(),
-    action: z.enum(["preview", "apply"]),
-    ...operationsCommandSchema.shape,
-  }),
   listStudioDefinitions: z.strictObject({}),
   describeStudioDefinition: z.strictObject({ kind: studioKindSchema }),
   listStudioPatterns: z.strictObject({}),
   describeStudioPattern: z.strictObject({ id: studioPatternIdSchema }),
   getDesign: z.strictObject({}),
-  configureDesignScope: z.strictObject({
-    baseRevision: z.int().nonnegative(),
-    action: z.enum(["preview", "apply"]),
-    ...designScopeCommandSchema.shape,
-  }),
-  configureOwnership: z.strictObject({
-    baseRevision: z.int().nonnegative(),
-    action: z.enum(["preview", "apply"]),
-    ...ownershipCommandSchema.shape,
-  }),
   applyStudioCommands: z.strictObject({
     preview: z.boolean().optional(),
     commands: z.array(chatCommandSchema).min(1).max(MAX_COMMANDS),
@@ -201,7 +162,6 @@ const schemas = {
     pattern: modulePatternSchema,
   }),
   validateDesign: z.strictObject({}),
-  readReadiness: z.strictObject({}),
   declareReviewScope: studioReviewScopeSchema,
   reviewDesign: z.strictObject({}),
   askUser: z.strictObject({
@@ -228,10 +188,6 @@ const parsers: Record<ToolName, z.ZodType> = {
   applyPattern: schemas.applyPattern.extend({ baseRevision: z.unknown().optional() }),
 };
 const descriptions: Record<ToolName, string> = {
-  describeOperation:
-    "Read an exact immutable Create/Resolve operation or positive-cache policy with schema/behavior hashes, outcomes and fixed bounds. Use an exact ref from getDesign.availableOperations or availableCachePolicies before binding one with configureOperations. Unknown exact refs remain unresolved, with no substitution. No HTTP runtime or verifier is supplied.",
-  configureOperations:
-    "Preview then stage a complete bounded replacement of exact API receiver implementations and entry/service-call expectations. Read describeOperation first. Preserve unrelated rows and unknown refs. Apply must match the latest preview; explicit v3 upgrade for legacy designs. Bind canonical element/lane/connection IDs and real role/edge endpoints, refine source read/write and cache read-and-fill grants, and retain unknown refs as unresolved. Never infer capabilities from tile names or modules, or treat raw headers as verified principals; operations belong to the same role/owner and add no service. Known auth/idempotency/schema/timeout contradictions refuse. Templates/runtime evidence remain none; Create verifier availability is separate.",
   listStudioDefinitions:
     "List what a new tile can be (the link fan's eleven kinds, each with its label), the tile types with their kinds and defaults, the module catalog (each kind's slots, the tiles that hold it, what it becomes there: Template, Part of a template or Stub, and its one-line description), the link table, the caps, the design warnings and notes on preconfigured kinds. Design only; none supplies a runtime or verification.",
   describeStudioDefinition:
@@ -241,21 +197,16 @@ const descriptions: Record<ToolName, string> = {
   describeStudioPattern:
     "Read one reviewed guidance record: roles, required relationships, variants, invariant/failure checklist, sources, topology-only example and precise unsupported implementation obligations. Read its support limitations and obligations before proposing commands. Examples marked commands are topology-only starting points; examples marked obligation describe unsupported lifecycle contracts and must not become fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. No runtime template or verification is supplied.",
   getDesign:
-    "Read the design compactly, as the canvas draws it: baseRevision; the system; the actions (lane, name, entries and the tiles each lane reaches); every tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, slots' links, and status: template, stub, custom or refused, with why); whether Runnable processes is on; editableSettings, the only normal settings; findings and warnings; and the persistent scope, ownership and operation declarations the configure tools edit.",
-  configureDesignScope:
-    "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true; omission never upgrades. Preserve unknown profile versions and existing custom requirements unless asked to replace them. Required custom slugs, mutable destinations, disable/management, reputation, quotas or exact analytics block tinyurl-create-resolve@1.0.0: retain the requirement instead of erasing it or claiming support. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
-  configureOwnership:
-    "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Existing element IDs identify roles; co-deployment grants nothing; no owners or grants follow from names, modules or packages. Cache read and fill needs read-write. Foreign writes refuse; foreign reads need a deliberate published-read contract or an owned projection. Module commands derive the ownership their templates need. Declarations only: operation bindings are separate and runtime authorization is unavailable.",
+    "Read the design compactly, as the canvas draws it: baseRevision; the system; the actions (lane, name, entries and the tiles each lane reaches); every tile in lane order with its kind and label, settings, links (sync or async, and whether a link into a store writes or reads) and modules (kind, slots' links, and status: template, stub, custom or refused, with why); whether Runnable processes is on; editableSettings, the only normal settings; and the design's findings and warnings, with readiness findings only counted (notSpecified).",
   applyStudioCommands: `Apply commands with the canvas's own command builder and validation, or with preview: true see what they would leave without keeping them. The commands: ${chatCommandTypes.map((type) => chatCommandShapes[type]).join("; ")}. A new tile is one of listStudioDefinitions.tileKinds, linked after a tile or from a lane; IDs follow names, so leave id and linkId out unless you need a particular one. Without link, a new link takes its pair's default mode. A design with no system starts with addAction or addTile passing system {name}. owner is the tile that writes a store. A module command derives every module's generation and the ownership it needs in the same step; a target {module} fills an in-process slot such as a Cache reader's loader or Favorites' items. setRunnableProcesses turns Runnable processes on for export, as Generate project's checkbox does (a design built from modules only). removeTile's alsoRemove names only tiles the person wants removed. The batch is all or nothing: a refusal names each command to fix, what is wrong and the shape it takes, and nothing is kept. Accepted changes in a turn commit once, as one Undo step; the result lists renamed IDs and an automatic review of what is left.`,
   applyPattern:
     "Apply one curated pattern from listStudioPatterns as one validated batch: pattern {id, ...its arguments}; preview: true shows what it would leave without keeping it. A tile argument reuses an existing tile named so (by ID or name), or names a new one; give the names the person uses, since the defaults are neutral placeholders. Every step is a command the mouse could send, checked with the same builder; one refused step refuses the whole pattern and nothing changes. The result lists the tiles and modules added and an automatic review of what is left.",
-  validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
-  readReadiness:
-    "Read the same snapshot compatibility report as the mouse and blueprint v3: design validity, exact contract completeness, implementation availability and exact-output runtime evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
+  validateDesign:
+    "Read the design's findings and warnings, with readiness findings only counted (notSpecified). Findings do not establish runtime support.",
   declareReviewScope:
     "Explicitly replace this turn's review scope: selected guidance pattern/checklist IDs, assumptions and custom unsupported obligations. Retrieval does not select scope; select variant checks (such as finite stock) only when they apply, and use an empty checklist for topology-only scope. Never a persistent design setting or capability contract. Retrieve the guidance record before selecting its IDs.",
   reviewDesign:
-    "Review all staged changes without saving: what changed, every module's status with why, what is left (each finding names its tile or module, says fix or check, and gives a concrete fix, often as commands: modules that still need something, needed slots left unconnected, generation findings, a store with no writer, a worker writing stores for more than one concern, the user reaching a store, a long line to a far store, line styles that contradict their channel, and the design warnings), the readiness findings, declared assumptions and unsupported obligations, which stay not specified. Later edits or scope changes make it stale. A fresh review is sent back before edits commit; you may repair at most two response batches after receiving one.",
+    "Review all staged changes without saving: what changed, every module's status with why, what is left (each finding names its tile or module, says fix or check, and gives a concrete fix, often as commands: modules that still need something, needed slots left unconnected, generation findings, a store with no writer, a worker writing stores for more than one concern, the user reaching a store, a long line to a far store, line styles that contradict their channel, and the design warnings), the design's findings with readiness findings only counted, declared assumptions and unsupported obligations, which stay not specified. Later edits or scope changes make it stale. A fresh review is sent back before edits commit; you may repair at most two response batches after receiving one.",
   askUser: "Ask a focused question with clickable choices, then end the turn.",
 };
 
@@ -277,17 +228,7 @@ export function isWorkspaceMutation(name: string, rawArguments: string): boolean
       return true;
     }
   }
-  if (
-    name !== "configureDesignScope" &&
-    name !== "configureOwnership" &&
-    name !== "configureOperations"
-  )
-    return false;
-  try {
-    return JSON.parse(rawArguments)?.action !== "preview";
-  } catch {
-    return true;
-  }
+  return false;
 }
 
 const caps = {
@@ -418,7 +359,8 @@ function editableSetting(design: DesignDocument, control: GenerationSettingDecis
 /**
  * The design as chat sees it, compactly: the actions with their lanes, entries and tiles, then
  * every tile in lane order with its kind and label, settings, outgoing links (sync or async) and
- * modules with their statuses, then the declarations the configure tools edit.
+ * modules with their statuses, then the design's findings and warnings, with readiness findings
+ * only counted.
  */
 function designSummary(
   design: DesignDocument,
@@ -430,7 +372,6 @@ function designSummary(
   const elements = new Map(design.elements.map((item) => [item.id, item]));
   const bindings = new Map(studio?.elements.map((item) => [item.element, item]));
   const connections = new Map(design.connections.map((item) => [item.id, item]));
-  const readiness = designReadiness(design);
   const declared = designOwnership(design).dependencies;
   /** A link into a store: `write` from its owner, `read` otherwise (one writer per store). */
   const accessOf = (id: string) => {
@@ -533,46 +474,10 @@ function designSummary(
     editableSettings: normalGenerationControls(design, installed).map((control) =>
       editableSetting(design, control),
     ),
-    findings: findings.filter((item) => !isDesignWarning(item)),
-    /** Designs that look wrong but are allowed; resolve the ones this turn caused. */
-    warnings: findings.filter(isDesignWarning).map((item) => item.message),
-    readiness: {
-      compositionSha256: readiness.composition.sha256,
-      generationEligible: readiness.generationEligible,
-      ...Object.fromEntries(
-        (
-          [
-            "designValidity",
-            "contractCompleteness",
-            "implementationAvailability",
-            "runtimeEvidence",
-          ] as const
-        ).map((stage) => [
-          stage,
-          { status: readiness[stage].status, blockers: readiness[stage].blockers.length },
-        ]),
-      ),
-      detailTool: "readReadiness",
-    },
-    persistentScope: {
-      ...designScope(design),
-      profileStatus: profileStatus(designScope(design)),
-      unresolved: unresolvedDesignScope(design),
-    },
-    availableProfileDefault: tinyurlDesignScope(),
-    declaredOperations: designOperations(design),
+    ...designFindings(findings),
     ...(tileLevel && generation
       ? { declaredGeneration: generation, generationFindings: generationFindings(design) }
       : {}),
-    operationFindings: operationContractFindings(design),
-    availableOperations: operationRecords.map((x) => ({ ...x.ref, name: x.definition.name })),
-    availableCachePolicies: contractRecords
-      .filter((x) => !operationRecords.some((record) => sameContractRef(record.ref, x.ref)))
-      .map((x) => ({ ...x.ref, name: x.definition.name })),
-    declaredOwnership: designOwnership(design),
-    ownershipFindings: ownershipFindings(design),
-    ownershipMeaning:
-      "Logical owners, canonical roles, authority and explicit grants are declarations only. Legacy store owner/access remains separate and inferred; operation bindings are declared separately. Co-deployment grants nothing.",
     availability:
       "Only editableSettings are normal controls. Other source settings are preserved intent; exact-output runtime verification remains separate.",
   };
@@ -584,7 +489,7 @@ export function turnContext(
   findings: readonly Finding[],
   selection: readonly string[],
 ) {
-  return `[Jeeves] Studio context.\nCurrent design:\n${JSON.stringify(designSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}\nSelected logical owners (owner:<id> names one logical owner, distinct from element/connection IDs and from its roles; preserve its ID on rename): ${JSON.stringify(selectedLogicalOwners(design, selection))}\nSelected operation bindings (operation:<id> names one exact receiver binding, distinct from role/owner IDs; a parent selection selects no operation): ${JSON.stringify(selectedOperationBindings(design, selection))}`;
+  return `[Jeeves] Studio context.\nCurrent design:\n${JSON.stringify(designSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}\nSelected logical owners (owner:<id> names one logical owner, distinct from element/connection IDs and from its roles; preserve its ID on rename): ${JSON.stringify(selectedLogicalOwners(design, selection))}`;
 }
 
 /**
@@ -649,9 +554,6 @@ export class Workspace {
   /** Changes to commands or scope invalidate an earlier review, including within one response. */
   generation = 0;
   reviewedGeneration = -1;
-  private operationsPreview: { generation: number; operations: string } | undefined;
-  private ownershipPreview: { generation: number; ownership: string } | undefined;
-  private scopePreview: { generation: number; scope: string } | undefined;
 
   review() {
     this.reviewedGeneration = this.generation;
@@ -736,29 +638,6 @@ export class Workspace {
           ...designSummary(this.working, validateDesign(this.working), this.installed),
           baseRevision: this.base.revision,
         };
-      case "describeOperation": {
-        const { ref } = parsed.data as z.infer<typeof schemas.describeOperation>;
-        this.log(tool, true, "Read exact operation catalog reference");
-        const record = contractRecords.find((x) => sameContractRef(ref, x.ref));
-        return record
-          ? {
-              status: "known",
-              record,
-              templateAvailability: "none",
-              runtimeVerification: "none",
-            }
-          : {
-              status: "unresolved",
-              ref,
-              note: "No exact local operation or cache policy record; no substitution.",
-            };
-      }
-      case "configureOperations":
-        return this.configureOperations(parsed.data as z.infer<typeof schemas.configureOperations>);
-      case "configureOwnership":
-        return this.configureOwnership(parsed.data as z.infer<typeof schemas.configureOwnership>);
-      case "configureDesignScope":
-        return this.configureScope(parsed.data as z.infer<typeof schemas.configureDesignScope>);
       case "listStudioPatterns":
         this.log(tool, true, "Listed the curated patterns and reviewed guidance");
         return {
@@ -796,11 +675,8 @@ export class Workspace {
       case "reviewDesign":
         return this.review();
       case "validateDesign":
-        this.log(tool, true, "Checked design readiness");
-        return { findings: validateDesign(this.working) };
-      case "readReadiness":
-        this.log(tool, true, "Read exact composition compatibility and evidence gaps");
-        return designReadiness(this.working);
+        this.log(tool, true, "Checked the design's findings");
+        return designFindings(validateDesign(this.working));
       case "askUser":
         this.question = parsed.data as z.infer<typeof schemas.askUser>;
         this.log(tool, true, "Asked a question");
@@ -811,175 +687,6 @@ export class Workspace {
         );
       case "applyPattern":
         return this.applyPattern(parsed.data as z.infer<typeof schemas.applyPattern>);
-    }
-  }
-
-  private configureOperations(input: z.infer<typeof schemas.configureOperations>): unknown {
-    const tool = "configureOperations";
-    const refuse = (error: string) => {
-      this.log(tool, false, error);
-      return { ok: false, error, note: "Nothing changed for this call." };
-    };
-    if (input.baseRevision !== this.base.revision)
-      return refuse("Revision conflict. Read getDesign before preparing operations.");
-    try {
-      const preview = previewOperations(this.working, input.operations);
-      if (input.action === "preview") {
-        this.operationsPreview = {
-          generation: this.generation,
-          operations: JSON.stringify(input.operations),
-        };
-        this.log(
-          tool,
-          true,
-          "Previewed exact operation implementations and caller expectations; nothing saved",
-        );
-        return { ok: true, ...preview };
-      }
-      if (
-        this.operationsPreview?.generation !== this.generation ||
-        this.operationsPreview.operations !== JSON.stringify(input.operations)
-      )
-        return refuse(
-          "Preview these exact operations declarations and affected bindings against the current working design before applying.",
-        );
-      if (!preview.canApply)
-        return refuse(
-          preview.findings
-            .filter((item) => item.code !== "CONFIG_REQUIRED")
-            .map((item) => item.message)
-            .join(" "),
-        );
-      const batch = buildOperationsCommand(this.working, {
-        operations: input.operations,
-        upgrade: input.upgrade,
-      });
-      if (!batch.ops.length) return { ok: true, note: "Operations unchanged; no edit prepared." };
-      const result = applyOperations(this.working, batch.ops);
-      if (!result.ok) return refuse(result.errors.map((item) => item.message).join(" "));
-      this.working = result.design;
-      this.pending.push(...batch.ops);
-      this.generation++;
-      this.log(tool, true, "Prepared exact operation bindings as part of one turn commit");
-      return {
-        ok: true,
-        ...preview,
-        note: "Prepared declarations, not saved. Known operation intent is declared. Auth verifier, template and runtime verification remain unavailable.",
-      };
-    } catch (error) {
-      return refuse(error instanceof Error ? error.message : String(error));
-    }
-  }
-
-  private configureOwnership(input: z.infer<typeof schemas.configureOwnership>): unknown {
-    const tool = "configureOwnership";
-    const refuse = (error: string) => {
-      this.log(tool, false, error);
-      return { ok: false, error, note: "Nothing changed for this call." };
-    };
-    if (input.baseRevision !== this.base.revision)
-      return refuse("Revision conflict. Read getDesign before preparing ownership.");
-    try {
-      const preview = previewOwnership(this.working, input.ownership);
-      if (input.action === "preview") {
-        this.ownershipPreview = {
-          generation: this.generation,
-          ownership: JSON.stringify(input.ownership),
-        };
-        this.log(
-          tool,
-          true,
-          "Previewed logical owners, roles, grants and dependent changes; nothing saved",
-        );
-        return { ok: true, ...preview };
-      }
-      if (
-        this.ownershipPreview?.generation !== this.generation ||
-        this.ownershipPreview.ownership !== JSON.stringify(input.ownership)
-      )
-        return refuse(
-          "Preview these exact ownership declarations and affected bindings against the current working design before applying.",
-        );
-      if (!preview.canApply)
-        return refuse(
-          preview.findings
-            .filter((item) => item.code !== "CONFIG_REQUIRED")
-            .map((item) => item.message)
-            .join(" "),
-        );
-      const batch = buildOwnershipCommand(this.working, {
-        ownership: input.ownership,
-        upgrade: input.upgrade,
-      });
-      if (!batch.ops.length) return { ok: true, note: "Ownership unchanged; no edit prepared." };
-      const result = applyOperations(this.working, batch.ops);
-      if (!result.ok) return refuse(result.errors.map((item) => item.message).join(" "));
-      this.working = result.design;
-      this.pending.push(...batch.ops);
-      this.generation++;
-      this.log(tool, true, "Prepared explicit ownership and access as part of one turn commit");
-      return {
-        ok: true,
-        ...preview,
-        note: "Prepared declarations, not saved. No operation binding, template or runtime authorization is supplied.",
-      };
-    } catch (error) {
-      return refuse(error instanceof Error ? error.message : String(error));
-    }
-  }
-
-  private configureScope({
-    baseRevision,
-    action,
-    scope,
-    upgrade,
-  }: {
-    baseRevision: number;
-    action: "preview" | "apply";
-    scope: DesignScope;
-    upgrade: boolean;
-  }): unknown {
-    const tool = "configureDesignScope";
-    const refuse = (error: string) => {
-      this.log(tool, false, error);
-      return { ok: false, error, note: "Nothing changed for this call." };
-    };
-    if (baseRevision !== this.base.revision)
-      return refuse("Revision conflict. Read getDesign before preparing requirements.");
-    if (action === "preview") {
-      this.scopePreview = { generation: this.generation, scope: JSON.stringify(scope) };
-      this.log(tool, true, "Previewed persistent profile and requirements; nothing saved");
-      return { ok: true, ...previewDesignScope(this.working, scope) };
-    }
-    if (
-      this.working.schemaVersion === 2 &&
-      (this.scopePreview?.generation !== this.generation ||
-        this.scopePreview.scope !== JSON.stringify(scope))
-    )
-      return refuse(
-        "Preview this exact scope against the current working design before explicitly upgrading it.",
-      );
-    try {
-      const batch = buildDesignScopeCommand(this.working, { scope, upgrade });
-      if (!batch.ops.length)
-        return { ok: true, note: "Persistent scope unchanged; no edit prepared." };
-      const result = applyOperations(this.working, batch.ops);
-      if (!result.ok) return refuse(result.errors.map((item) => item.message).join(" "));
-      this.working = result.design;
-      this.pending.push(...batch.ops);
-      this.generation++;
-      this.log(
-        tool,
-        true,
-        "Prepared persistent profile and requirements as part of one turn commit",
-      );
-      return {
-        ok: true,
-        ...previewDesignScope(this.working, scope),
-        note: "Prepared, not saved. Profile selection supplies no capability contracts, templates or runtime verification.",
-      };
-    } catch (error) {
-      return refuse(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -1322,15 +1029,26 @@ export function reviewWithModules(
   scope: StudioReviewScope,
   installed: GenerationInstalledSupport,
 ) {
-  const review = reviewStudioDesign(base, working, scope);
+  const {
+    findings,
+    obligations,
+    ownership: _ownership,
+    operations: _operations,
+    persistentScope: _persistentScope,
+    ...review
+  } = reviewStudioDesign(base, working, scope);
   const left = designReview(working, installed);
-  // What is left comes first: a model reads the top. The readiness findings stay below.
+  const readiness = findings.filter(isReadiness);
+  // What is left comes first: a model reads the top. The design's findings stay below.
   return {
     left: chatFindings(working, left.findings),
     leftNote: left.findings.some((item) => item.severity === "fix")
-      ? "left is what to fix or check in the design: fix each finding marked fix (its commands are checked against this design), or say why it stays. findings below are readiness (profiles, contracts, ownership declarations), not design errors: leave them unless the person asks."
-      : "Nothing in the design to fix (left lists any advice to check). findings below are readiness (profiles, contracts, ownership declarations), not design errors: leave them unless the person asks.",
+      ? "left is what to fix or check in the design: fix each finding marked fix (its commands are checked against this design), or say why it stays. findings below are the design's validation findings; readiness findings are only counted (notSpecified)."
+      : "Nothing in the design to fix (left lists any advice to check). findings below are the design's validation findings; readiness findings are only counted (notSpecified).",
     moduleStatuses: left.modules,
     ...review,
+    findings: findings.filter((item) => !isReadiness(item)),
+    ...(readiness.length && { notSpecified: designFindings(readiness).notSpecified }),
+    obligations: obligations.filter((item) => "pattern" in item || "targetPresent" in item),
   };
 }

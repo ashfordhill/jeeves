@@ -1,24 +1,7 @@
 /** Real tool schemas + mocked Responses transport + the authoritative Workspace command path. */
 import { createOpenAIProvider, type ModelItem, toOpenAIInput } from "@jeeves/providers";
-import {
-  buildOperationsCommand,
-  buildOwnershipCommand,
-  createLinkOperation,
-  designBlueprintV3,
-  emptyDesign,
-  operationContractsSchema,
-  ownershipSchema,
-  positiveCachePolicy,
-  studioArchitectureExample,
-  tinyurlDesignScope,
-} from "@jeeves/spec";
+import { emptyDesign, studioArchitectureExample } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
-import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-ownership-v1.json" with {
-  type: "json",
-};
-import operationFixture from "../../../../packages/spec/src/fixtures/nc03-create-v1.json" with {
-  type: "json",
-};
 import { toolDefinitions, Workspace } from "./tools.ts";
 
 const tools = toolDefinitions();
@@ -59,231 +42,10 @@ function transport(rounds: Call[][]) {
 }
 const request = (items: ModelItem[] = []) => ({ model: "mock", instructions: "", tools, items });
 
-import { compatibleResolveDesign } from "../../../../packages/spec/src/fixtures/nc04-compatible.ts";
-import resolveFixture from "../../../../packages/spec/src/fixtures/nc04-resolve-v1.json" with {
-  type: "json",
-};
-
 const execute = (workspace: Workspace, calls: { name: string; arguments: string }[]) =>
   calls.map((call) => JSON.parse(workspace.run(call.name, call.arguments)));
 
 describe("strict OpenAI studio tools", () => {
-  it("round-trips the resolve union, null policy/connection and unknown exact policy through actual strict wire/history", async () => {
-    const base = compatibleResolveDesign(),
-      workspace = new Workspace(base),
-      operations = operationContractsSchema.parse(resolveFixture),
-      binding = operations.receivers[1]?.binding;
-    if (binding?.kind !== "resolve-link") throw new Error();
-    binding.cachePolicy = null;
-    binding.cacheConnection = null;
-    const args = { baseRevision: base.revision, action: "preview", operations },
-      apply = { ...args, action: "apply" };
-    const { provider, requests } = transport([
-      [{ name: "configureOperations", arguments: wire("configureOperations", args) }],
-      [{ name: "configureOperations", arguments: wire("configureOperations", apply) }],
-      [],
-    ]);
-    let items: ModelItem[] = [];
-    for (const expected of [args, apply]) {
-      const response = await provider.respond(request(items));
-      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(expected);
-      const [result] = execute(workspace, response.toolCalls);
-      expect(result.ok).toBe(true);
-      items = [
-        ...items,
-        ...response.items,
-        {
-          type: "tool-result",
-          callId: response.toolCalls[0]?.callId ?? "",
-          output: JSON.stringify(result),
-        },
-      ];
-    }
-    expect(workspace.pending).toEqual(buildOperationsCommand(base, { operations }).ops);
-    await provider.respond(request(items));
-    const replay = JSON.parse(
-      String(requests[2]?.input.find((x) => x.type === "function_call")?.arguments),
-    );
-    expect(replay.upgrade).toBeNull();
-    expect(replay.operations.receivers[1].binding).toEqual(binding);
-    binding.cacheConnection = "redirect-cache";
-    binding.cachePolicy = { ...positiveCachePolicy.ref, version: "99.0.0", sha256: "a".repeat(64) };
-    const raw = wire("configureOperations", { ...args, operations });
-    expect(JSON.parse(raw).operations.receivers[1].binding.cachePolicy).toEqual(
-      binding.cachePolicy,
-    );
-    const bad = JSON.parse(raw);
-    bad.operations.receivers[1].binding.successRetentionHours = null;
-    const invalid = transport([[{ name: "configureOperations", arguments: JSON.stringify(bad) }]]);
-    await expect(invalid.provider.respond(request())).rejects.toThrow();
-  });
-  it("transmits exact tagged operation refs, nullable verifier/retention, omission defaults and canonical history; refuses unknown fields", async () => {
-    const base = structuredClone(studioArchitectureExample("studio-tinyurl").design);
-    const shorten = base.architecture?.studio?.elements.find((x) => x.element === "shorten");
-    if (!shorten || !("requestTimeoutMs" in shorten.settings)) throw new Error();
-    shorten.settings.requestTimeoutMs = 10000;
-    const workspace = new Workspace(base),
-      operations = operationContractsSchema.parse(operationFixture);
-    if (!operations.receivers[0]) throw new Error();
-    if (operations.receivers[0].binding.kind !== "create-link") throw new Error();
-    operations.receivers[0].binding.successRetentionHours = null;
-    const args = { baseRevision: base.revision, action: "preview", operations },
-      apply = { ...args, action: "apply", upgrade: true };
-    const { provider, requests } = transport([
-      [{ name: "configureOperations", arguments: wire("configureOperations", args) }],
-      [{ name: "configureOperations", arguments: wire("configureOperations", apply) }],
-      [],
-    ]);
-    let items: ModelItem[] = [];
-    for (const expected of [args, apply]) {
-      const response = await provider.respond(request(items));
-      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(expected);
-      const [result] = execute(workspace, response.toolCalls);
-      expect(result.ok).toBe(true);
-      items = [
-        ...items,
-        ...response.items,
-        {
-          type: "tool-result",
-          callId: response.toolCalls[0]?.callId ?? "",
-          output: JSON.stringify(result),
-        },
-      ];
-    }
-    expect(workspace.pending).toEqual(
-      buildOperationsCommand(base, { operations, upgrade: true }).ops,
-    );
-    await provider.respond(request(items));
-    const replay = JSON.parse(
-      String(requests[2]?.input.find((x) => x.type === "function_call")?.arguments),
-    );
-    expect(replay.upgrade).toBeNull();
-    expect(replay.operations.receivers[0].binding.authVerifier).toBeNull();
-    expect(replay.operations.receivers[0].binding.successRetentionHours).toBeNull();
-    expect(replay.operations.receivers[0].id).toBe("create-link");
-    expect(
-      JSON.parse(
-        workspace.run("describeOperation", JSON.stringify({ ref: createLinkOperation.ref })),
-      ).status,
-    ).toBe("known");
-    expect(
-      JSON.parse(
-        workspace.run(
-          "describeOperation",
-          JSON.stringify({ ref: { ...createLinkOperation.ref, sha256: "d".repeat(64) } }),
-        ),
-      ).status,
-    ).toBe("unresolved");
-    const encoded = JSON.parse(wire("configureOperations", apply));
-    encoded.operations.receivers[0].binding.extra = "refuse";
-    const { provider: invalid } = transport([
-      [{ name: "configureOperations", arguments: JSON.stringify(encoded) }],
-    ]);
-    await expect(invalid.respond(request())).rejects.toThrow();
-  });
-  it("transmits bounded ownership with omitted deployables/boundaries, defaults, canonical history and atomic grant refusal", async () => {
-    const base = studioArchitectureExample("studio-tinyurl").design,
-      workspace = new Workspace(base),
-      ownership = ownershipSchema.parse(ownershipFixture);
-    delete ownership.roles[0]?.deployable;
-    const args = { baseRevision: base.revision, action: "preview", ownership };
-    const apply = { ...args, action: "apply", upgrade: true };
-    const { provider, requests } = transport([
-      [{ name: "configureOwnership", arguments: wire("configureOwnership", args) }],
-      [{ name: "configureOwnership", arguments: wire("configureOwnership", apply) }],
-      [],
-    ]);
-    let items: ModelItem[] = [];
-    for (const expected of [args, apply]) {
-      const response = await provider.respond(request(items));
-      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(expected);
-      const [result] = execute(workspace, response.toolCalls);
-      expect(result.ok).toBe(true);
-      items = [
-        ...items,
-        ...response.items,
-        {
-          type: "tool-result",
-          callId: response.toolCalls[0]?.callId ?? "",
-          output: JSON.stringify(result),
-        },
-      ];
-    }
-    expect(workspace.pending).toEqual(
-      buildOwnershipCommand(base, { ownership, upgrade: true }).ops,
-    );
-    await provider.respond(request(items));
-    const first = JSON.parse(
-      String(requests[2]?.input.find((x) => x.type === "function_call")?.arguments),
-    );
-    expect(first.upgrade).toBeNull();
-    expect(first.ownership.roles[0].deployable).toBeNull();
-    expect(first.ownership.grants[0].boundary).toBeNull();
-    expect(() =>
-      wire("configureOwnership", { ...args, ownership: { ...ownership, owners: null } }),
-    ).toThrow();
-    const before = designBlueprintV3(workspace.working),
-      bad = structuredClone(ownership);
-    bad.dependencies[0] = { connection: "shorten-db", access: "read-write" };
-    expect(
-      JSON.parse(workspace.run("configureOwnership", JSON.stringify({ ...apply, ownership: bad })))
-        .ok,
-    ).toBe(false);
-    expect(designBlueprintV3(workspace.working)).toEqual(before);
-    const encoded = JSON.parse(wire("configureOwnership", apply));
-    encoded.ownership.roles[0].extra = "refuse";
-    const { provider: invalid } = transport([
-      [{ name: "configureOwnership", arguments: JSON.stringify(encoded) }],
-    ]);
-    await expect(invalid.respond(request())).rejects.toThrow();
-  });
-
-  it("transmits persistent scope with exact nullable references, omission defaults and canonical history replay", async () => {
-    const workspace = new Workspace(emptyDesign());
-    const scope = tinyurlDesignScope();
-    scope.customRequirements.push({
-      id: "custom-rule",
-      requirement: "Define tenant policy",
-      criticality: "required",
-    });
-    const preview = { baseRevision: 0, action: "preview", scope };
-    const missingUpgrade = { ...preview, action: "apply" };
-    const apply = { ...missingUpgrade, upgrade: true };
-    const { provider, requests } = transport(
-      [preview, missingUpgrade, apply]
-        .map((args) => [
-          { name: "configureDesignScope", arguments: wire("configureDesignScope", args) },
-        ])
-        .concat([[]]),
-    );
-    let items: ModelItem[] = [];
-    for (const [index, args] of [preview, missingUpgrade, apply].entries()) {
-      const response = await provider.respond(request(items));
-      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(args);
-      const [result] = execute(workspace, response.toolCalls);
-      expect(result.ok).toBe(index !== 1);
-      items = [
-        ...items,
-        ...response.items,
-        {
-          type: "tool-result",
-          callId: response.toolCalls[0]?.callId ?? "",
-          output: JSON.stringify(result),
-        },
-      ];
-    }
-    expect(workspace.working).toMatchObject({ schemaVersion: 3, scope });
-    await provider.respond(request(items));
-    const firstWire = JSON.parse(
-      String(requests[3]?.input.find((item) => item.type === "function_call")?.arguments),
-    );
-    expect(firstWire).toMatchObject({
-      upgrade: null,
-      scope: { customRequirements: [{ element: null, connection: null }] },
-    });
-    const noProfile = { ...preview, scope: { ...scope, profile: null } };
-    expect(JSON.parse(wire("configureDesignScope", noProfile)).scope.profile).toBeNull();
-  });
   it("transmits every current schema as strict, preserves nested commands/defaults, and replays wire history", async () => {
     const args = {
       commands: [
@@ -366,7 +128,7 @@ describe("strict OpenAI studio tools", () => {
     );
     expect(requests[1]?.input[0]).toMatchObject({ type: "function_call", arguments: encoded });
     expect(requests[0]?.tools).toEqual(requests[1]?.tools);
-    expect(requests[0]?.tools).toHaveLength(16);
+    expect(requests[0]?.tools).toHaveLength(11);
     // Inspect the actual HTTP body recursively, including all settings/module/scope unions.
     function inspect(schema: Record<string, unknown>) {
       expect(schema).not.toHaveProperty("oneOf");

@@ -227,6 +227,10 @@ emitted wire schemas:
 | All sixteen tools, strict | | | | 44,362 (was 113,238) |
 | All sixteen tools, canonical | | | | 37,317 (was 86,382) |
 
+Five tools have since been removed (`configureDesignScope`, `configureOwnership`,
+`describeOperation`, `configureOperations`, `readReadiness`): chat has eleven. The sizes above
+were measured with sixteen.
+
 The command union lost the tile settings union (`edit`'s 17 KB of canonical schema: a setting
 is now `setSetting {tile or module, setting, value}`, checked on the server against the target's
 normal controls), the commands chat always refused (`changeKind`, `createComponent`,

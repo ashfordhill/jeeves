@@ -510,12 +510,12 @@ or projection classification; projections name a different declared source and r
 for population/freshness/failure. Role grants and actual store-connection requests independently
 select `read`, `write` or `read-write`. Co-deployment and package membership grant nothing.
 
-`previewOwnership` / `buildOwnershipCommand` back explicit source commands and the
-narrow `configureOwnership` chat tool; preview is pure, apply is atomic/revision protected and one
-Undo. Contradictory grants and foreign writes refuse; foreign reads need deliberate published-read
-intent or an owned projection. Missing declarations stay saveable/unresolved. The marker does not
-implement a published contract or runtime ACL. Complete removal/transfer previews preserve unrelated
-custom requirements; surviving projections cannot silently lose their source.
+`previewOwnership` / `buildOwnershipCommand` back explicit source commands; preview is pure, apply
+is atomic/revision protected and one Undo. Contradictory grants and foreign writes refuse; foreign
+reads need deliberate published-read intent or an owned projection. Missing declarations stay
+saveable/unresolved. The marker does not implement a published contract or runtime ACL. Complete
+removal/transfer previews preserve unrelated custom requirements; surviving projections cannot
+silently lose their source.
 
 The canvas shows canonical process tiles directly, without owner cards, role/deployable subtitles,
 expansion/collapse actions or fallback narration. The existing lane layout receives the canonical
@@ -532,7 +532,7 @@ Exact Create/Resolve operation bindings refine these grants; other operations re
 
 A schema-3 design may carry `scope`, `operations` and cache-policy declarations from the retired
 strict-contract work (NC01–NC14, 2026-11-07). They are still parsed, validated and exported in
-blueprint 3, and the studio no longer shows or edits them. The TinyURL foundation study
+blueprint 3, and neither the studio nor chat shows or edits them. The TinyURL foundation study
 (`studio-tinyurl-foundation`) is no longer offered; projects made from it still open. Details:
 [contracts](../docs/studio-contracts.md) and [readiness](../docs/studio-readiness.md).
 

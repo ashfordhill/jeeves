@@ -1,6 +1,5 @@
 import {
   applyOperations,
-  buildDesignScopeCommand,
   buildModulePattern,
   buildStudioCommand,
   buildSupportedAuthoringCommand,
@@ -13,7 +12,6 @@ import {
   studioArchitectureExample,
   studioLinkRules,
   studioWarningSentence,
-  tinyurlDesignScope,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
@@ -32,6 +30,7 @@ import {
   isWorkspaceMutation,
   linkRuleText,
   toolDefinitions,
+  turnContext,
   Workspace,
 } from "./tools.ts";
 
@@ -58,69 +57,45 @@ const addCache = (baseRevision: number) => ({
 });
 
 describe("studio chat tools", () => {
-  it("shares persistent scope commands with mouse edits and requires a fresh explicit upgrade preview", () => {
-    const base = tinyurl();
-    const workspace = new Workspace(base);
-    const scope = tinyurlDesignScope();
-    scope.customRequirements.push({
-      id: "custom-rule",
-      requirement: "Define tenant policy",
-      criticality: "required",
-      element: "shorten",
-    });
-    const args = { baseRevision: base.revision, scope, upgrade: true };
-    expect(run(workspace, "configureDesignScope", { ...args, action: "apply" }).ok).toBe(false);
-    expect(run(workspace, "configureDesignScope", { ...args, action: "preview" }).ok).toBe(true);
-    expect(workspace.pending).toEqual([]);
-    expect(
-      run(workspace, "configureDesignScope", { ...args, action: "apply", upgrade: undefined }).ok,
-    ).toBe(false);
-    expect(
-      run(workspace, "configureDesignScope", { ...args, action: "apply", baseRevision: 0 }).ok,
-    ).toBe(false);
-    expect(run(workspace, "configureDesignScope", { ...args, action: "apply" }).ok).toBe(true);
-    const mouse = applyOperations(
-      base,
-      buildDesignScopeCommand(base, { scope, upgrade: true }).ops,
-    );
-    if (!mouse.ok) throw new Error(JSON.stringify(mouse.errors));
-    expect(workspace.working).toEqual(mouse.design);
-    expect(workspace.pending).toEqual(buildDesignScopeCommand(base, { scope, upgrade: true }).ops);
-    const review = run(workspace, "reviewDesign");
-    expect(review.changes).toContainEqual(expect.objectContaining({ type: "scope" }));
-    expect(review.persistentScope).toMatchObject({ ...scope, persistence: "saved design" });
-    expect(review.scope.persistence).toBe("this turn only");
-    expect(review.obligations).toContainEqual(
-      expect.objectContaining({ source: "custom", id: "custom-rule", status: "not specified" }),
-    );
-    const generation = workspace.generation;
-    const edited = structuredClone(scope);
-    edited.customRequirements = edited.customRequirements.map((item) => ({
-      ...item,
-      requirement: "Refine tenant policy",
-    }));
-    run(workspace, "configureDesignScope", { ...args, action: "apply", scope: edited });
-    expect(workspace.generation).toBe(generation + 1);
-    expect(workspace.reviewedGeneration).toBeLessThan(workspace.generation);
-    expect(run(workspace, "getDesign").persistentScope.customRequirements).toEqual(
-      edited.customRequirements,
-    );
+  it("names no strict-contract tool and keeps the retired declarations out of what chat reads", () => {
+    const removed = [
+      "configureDesignScope",
+      "configureOwnership",
+      "describeOperation",
+      "configureOperations",
+      "readReadiness",
+    ];
+    expect(toolDefinitions().filter((tool) => removed.includes(tool.name))).toEqual([]);
+    // The foundation study declares a profile, ownership and operations.
+    const design = {
+      ...studioArchitectureExample("studio-tinyurl-foundation").design,
+      revision: 3,
+    };
+    const summary = run(new Workspace(design), "getDesign");
+    for (const key of ["readiness", "persistentScope", "declaredOperations", "declaredOwnership"])
+      expect(summary).not.toHaveProperty(key);
+    const review = run(new Workspace(design), "reviewDesign");
+    for (const key of ["persistentScope", "operations", "ownership"])
+      expect(review).not.toHaveProperty(key);
+    const readiness = ["NEEDS_TEMPLATE", "CONFIG_REQUIRED", "ARCHITECTURE_UNBOUND"];
+    const checked = run(new Workspace(design), "validateDesign");
+    for (const findings of [summary.findings, review.findings, checked.findings])
+      expect(findings.filter((item: { code: string }) => readiness.includes(item.code))).toEqual(
+        [],
+      );
+    expect(checked.notSpecified).toMatch(/readiness findings? .*not design errors/);
+    expect(turnContext(design, [], [])).not.toContain("Selected operation bindings");
   });
   it("offers exactly the finite studio toolset", () => {
     expect(toolDefinitions().map((t) => t.name)).toEqual([
-      "describeOperation",
-      "configureOperations",
       "listStudioDefinitions",
       "describeStudioDefinition",
       "listStudioPatterns",
       "describeStudioPattern",
       "getDesign",
-      "configureDesignScope",
-      "configureOwnership",
       "applyStudioCommands",
       "applyPattern",
       "validateDesign",
-      "readReadiness",
       "declareReviewScope",
       "reviewDesign",
       "askUser",

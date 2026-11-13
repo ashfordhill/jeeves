@@ -146,7 +146,6 @@ call. An unknown command type (such as the retired `create`) is refused with the
 commands. `declareReviewScope` replaces only turn-local assumptions, checklist selection and
 custom obligations; these are not saved application requirements. `reviewDesign` previews
 staged additions, updates and removals, findings and precise **not specified** obligations.
-Persistent scope uses a separate bounded `configureDesignScope` tool shared with the mouse form; unknown refs/custom requirements stay unresolved. Schema v2 requires a read-only preview and explicit upgrade.
 
 After commands or scope change, a fresh review must reach a subsequent model request before
 commit, even when the model ends its response. Two repair response batches fit inside the
@@ -179,8 +178,8 @@ omissions and findings, at default `blueprint: 2`. Explicit `?version=3` include
 (from the store's owner) or reads (one writer per store, derived from the owner). It is derived
 per request, `no-store`, and is the only
 interface a future code generator should read. V3 also includes the shared deterministic
-`readiness` report and its complete canonical composition subject/hash. The read-only chat tool
-uses the same function; compact chat context contains only statuses/counts/hash.
+`readiness` report and its complete canonical composition subject/hash. Chat does not read the
+report; what chat reads counts readiness findings only (`notSpecified`).
 See [studio blueprint](../docs/studio-blueprint.md) and [readiness](../docs/studio-readiness.md).
 
 ## API

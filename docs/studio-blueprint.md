@@ -208,7 +208,7 @@ read. Its head, and three of its connections (a publish, a read and a write):
 
 
 Chat turn-only preview/review scope and assumptions are conversation metadata, distinct from persistent `scope` in v3. The review
-reuses these findings and checks declared finite Create/Resolve signatures and positive-cache policy and reports remaining behavior contracts as **not specified**; it does not
+reuses these findings, with readiness findings only counted, and reports the turn's own obligations as **not specified**; it does not
 change blueprint version 2 or certify application completeness, template support or runtime
 behavior. A worker's outgoing call/publication/store dependency only expresses topology.
 

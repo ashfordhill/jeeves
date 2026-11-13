@@ -14,11 +14,10 @@ import { expect, it } from "vitest";
 import fixture from "../../../../packages/spec/src/fixtures/nc02-ownership-v1.json" with {
   type: "json",
 };
-import { Workspace } from "../chat/tools.ts";
 import { DesignService } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 
-it("saves mouse/chat equal declarations once, persists reload and refuses stale/atomic edits with exact cross-version Undo", async () => {
+it("saves mouse equal declarations once, persists reload and refuses stale/atomic edits with exact cross-version Undo", async () => {
   const dir = mkdtempSync(join(tmpdir(), "jeeves-nc02-db-"));
   let database = await openTestDb(dir),
     app = buildTestApp(database.db);
@@ -37,16 +36,8 @@ it("saves mouse/chat equal declarations once, persists reload and refuses stale/
     });
     if (!seed.ok) throw new Error();
     const before = seed.state.design,
-      ownership = ownershipSchema.parse(fixture),
-      args = { baseRevision: before.revision, action: "preview", ownership, upgrade: true };
-    const chat = new Workspace(before);
-    expect(JSON.parse(chat.run("configureOwnership", JSON.stringify(args))).canApply).toBe(true);
-    expect(chat.pending).toEqual([]);
-    expect(
-      JSON.parse(chat.run("configureOwnership", JSON.stringify({ ...args, action: "apply" }))).ok,
-    ).toBe(true);
+      ownership = ownershipSchema.parse(fixture);
     const mouseOps = buildOwnershipCommand(before, { ownership, upgrade: true }).ops;
-    expect(chat.pending).toEqual(mouseOps);
 
     const saved = await service.edit(project.id, {
       baseRevision: before.revision,
@@ -54,7 +45,6 @@ it("saves mouse/chat equal declarations once, persists reload and refuses stale/
       ops: mouseOps,
     });
     if (!saved.ok) throw new Error(JSON.stringify(saved));
-    expect(saved.state.design).toEqual(chat.working);
     const lossy = await app.inject({ url: `/projects/${project.id}/blueprint` });
     expect(lossy.statusCode).toBe(422);
     expect(lossy.json().unsupported.map((x: { path: unknown }) => x.path)).toContainEqual([

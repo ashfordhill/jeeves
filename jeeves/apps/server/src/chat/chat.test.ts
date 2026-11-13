@@ -8,16 +8,11 @@ import {
 } from "@jeeves/providers";
 import {
   buildStudioCommand,
-  createLinkOperation,
   type DesignDocument,
   designOperations,
-  designOwnership,
-  designReadiness,
-  designScopeSchema,
   emptyOwnership,
   operationContractsSchema,
   ownershipSchema,
-  positiveCachePolicy,
   studioArchitectureExample,
   studioPatternIds,
   studioPatterns,
@@ -30,15 +25,10 @@ import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-owners
 import operationFixture from "../../../../packages/spec/src/fixtures/nc03-create-v1.json" with {
   type: "json",
 };
-import { resolveFixtureSeedOps } from "../../../../packages/spec/src/fixtures/nc04-compatible.ts";
-import resolveFixture from "../../../../packages/spec/src/fixtures/nc04-resolve-v1.json" with {
-  type: "json",
-};
 import type { Db } from "../db/client.ts";
 import { DesignService, type EditInput } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 import { rasterizeSvg } from "./files.ts";
-import scopeFixture from "./fixtures/nc01-scope-v1.json" with { type: "json" };
 import {
   type ChatEvent,
   ChatService,
@@ -59,73 +49,6 @@ beforeAll(async () => {
   ({ db, close } = await openTestDb());
 });
 
-it("bounds persistent scope repairs, allows preview after exhaustion and saves scope-only edits as one Undo", async () => {
-  const initial = designScopeSchema.parse(scopeFixture.scope);
-  const scoped = (requirement: string) => ({
-    ...initial,
-    customRequirements: [{ id: "custom-rule", requirement, criticality: "required" as const }],
-  });
-  const configure = (action: "preview" | "apply", scope = initial) => ({
-    name: "configureDesignScope",
-    arguments: { baseRevision: 0, action, scope, upgrade: true },
-  });
-  const review = { name: "reviewDesign", arguments: {} };
-  const h = harness([
-    { toolCalls: [configure("preview"), configure("apply"), review] },
-    { toolCalls: [configure("apply", scoped("First repair")), review] },
-    { toolCalls: [configure("apply", scoped("Second repair")), review] },
-    {
-      toolCalls: [
-        configure("apply", scoped("Forbidden third repair")),
-        configure("preview", scoped("Preview remains read-only")),
-      ],
-    },
-    { text: "Saved the scope with unresolved contracts." },
-  ]);
-  try {
-    const id = await h.project();
-    const { turn, state } = await h.chat(
-      id,
-      "Select the narrow TinyURL profile and save my requirements.",
-    );
-    expect(turn.error).toBeNull();
-    expect(state.design).toMatchObject({
-      schemaVersion: 3,
-      revision: 1,
-      scope: scoped("Second repair"),
-    });
-    expect(
-      turn.activity.filter((item) => item.tool === "configureDesignScope" && !item.ok),
-    ).toContainEqual(
-      expect.objectContaining({
-        summary: expect.stringContaining("2 review repair passes are used"),
-      }),
-    );
-    expect(
-      turn.activity.filter(
-        (item) => item.tool === "configureDesignScope" && item.summary.startsWith("Previewed"),
-      ),
-    ).toHaveLength(2);
-    expect(turn.reply).toContain("one Undo step");
-    expect(h.requests).toHaveLength(5);
-    const outputs = h.requests
-      .at(-1)
-      ?.items.filter((item) => item.type === "tool-result")
-      .map((item) => (item.type === "tool-result" ? JSON.parse(item.output) : null));
-    expect(outputs).toContainEqual(
-      expect.objectContaining({ note: expect.stringContaining("Preview only") }),
-    );
-    const undo = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
-    expect(undo.body.design).toEqual({
-      schemaVersion: 2,
-      revision: 2,
-      elements: [],
-      connections: [],
-    });
-  } finally {
-    await h.app.close();
-  }
-});
 afterAll(async () => {
   await close();
 });
@@ -205,195 +128,6 @@ const operationSeedOps = () => {
     { op: "setArchitecture", architecture: seed.architecture },
   ];
 };
-it("bounds resolve repairs through actual ChatService and leaves policy lookup/preview available afterward", async () => {
-  const initial = operationContractsSchema.parse(resolveFixture),
-    variants = [0, 1, 2].map((index) => {
-      const m = structuredClone(initial),
-        binding = m.receivers[1]?.binding;
-      if (binding?.kind !== "resolve-link") throw new Error();
-      binding.cachePolicy =
-        index === 0
-          ? null
-          : {
-              ...positiveCachePolicy.ref,
-              version: `${index + 1}.0.0`,
-              sha256: String(index).repeat(64),
-            };
-      return m;
-    });
-  const configure = (action: "preview" | "apply", operations = initial) => ({
-      name: "configureOperations",
-      arguments: { baseRevision: 1, action, operations },
-    }),
-    review = { name: "reviewDesign", arguments: {} };
-  const h = harness([
-    { toolCalls: [configure("preview"), configure("apply"), review] },
-    ...variants
-      .slice(0, 2)
-      .map((m) => ({ toolCalls: [configure("preview", m), configure("apply", m), review] })),
-    {
-      toolCalls: [
-        configure("preview", variants[2]),
-        configure("apply", variants[2]),
-        configure("preview", variants[2]),
-        { name: "describeOperation", arguments: { ref: positiveCachePolicy.ref } },
-        { name: "readReadiness", arguments: {} },
-      ],
-    },
-    { text: "Saved resolve declarations. Runtime unavailable." },
-  ]);
-  try {
-    const id = await h.project();
-    expect(
-      (
-        await h.call("POST", `/projects/${id}/operations`, {
-          baseRevision: 0,
-          ops: resolveFixtureSeedOps(),
-        })
-      ).status,
-    ).toBe(200);
-    const before = (await h.design(id)).design;
-    const { turn, state } = await h.chat(id, "Declare public resolve and its cache policy");
-    expect(turn.error).toBeNull();
-    expect(designOperations(state.design)).toEqual(variants[1]);
-    expect(h.requests).toHaveLength(5);
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({
-        tool: "configureOperations",
-        ok: false,
-        summary: expect.stringContaining("2 review repair passes are used"),
-      }),
-    );
-    expect(
-      turn.activity.filter(
-        (x) => x.tool === "configureOperations" && x.summary.startsWith("Previewed"),
-      ),
-    ).toHaveLength(5);
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({ tool: "describeOperation", ok: true }),
-    );
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({ tool: "readReadiness", ok: true }),
-    );
-    const finalRequest = h.requests[4];
-    const readCall = finalRequest?.items.find(
-      (item) => item.type === "tool-call" && item.name === "readReadiness",
-    );
-    const readResult =
-      readCall?.type === "tool-call"
-        ? finalRequest?.items.find(
-            (item) => item.type === "tool-result" && item.callId === readCall.callId,
-          )
-        : undefined;
-    if (readResult?.type !== "tool-result") throw new Error("Expected post-budget report result");
-    expect(JSON.parse(readResult.output)).toEqual(designReadiness(state.design));
-    const undo = await h.call("POST", `/projects/${id}/undo`, {
-      baseRevision: state.design.revision,
-    });
-    expect(undo.body.design).toEqual({ ...before, revision: undo.body.design.revision });
-  } finally {
-    await h.app.close();
-  }
-});
-it("bounds actual operation repairs, preserves read-only lookup/preview and commits exact operation details as one Undo", async () => {
-  const initial = operationContractsSchema.parse(operationFixture),
-    ownership = ownershipSchema.parse(ownershipFixture),
-    first = structuredClone(initial),
-    second = structuredClone(initial),
-    forbidden = structuredClone(initial);
-  if (!first.receivers[0] || !second.receivers[0] || !forbidden.receivers[0]) throw new Error();
-  if (
-    first.receivers[0].binding.kind !== "create-link" ||
-    second.receivers[0].binding.kind !== "create-link" ||
-    forbidden.receivers[0].binding.kind !== "create-link"
-  )
-    throw new Error();
-  first.receivers[0].binding.successRetentionHours = null;
-  second.receivers[0].binding.authVerifier = {
-    id: "future-verifier",
-    version: "1.0.0",
-    sha256: "e".repeat(64),
-  };
-  forbidden.receivers[0].binding.successRetentionHours = null;
-  const configure = (action: "preview" | "apply", operations = initial) => ({
-      name: "configureOperations",
-      arguments: { baseRevision: 1, action, operations },
-    }),
-    review = { name: "reviewDesign", arguments: {} };
-  const h = harness([
-    {
-      toolCalls: [
-        { name: "describeOperation", arguments: { ref: createLinkOperation.ref } },
-        {
-          name: "configureOwnership",
-          arguments: { baseRevision: 1, action: "preview", ownership, upgrade: true },
-        },
-        {
-          name: "configureOwnership",
-          arguments: { baseRevision: 1, action: "apply", ownership, upgrade: true },
-        },
-        configure("preview"),
-        configure("apply"),
-        review,
-      ],
-    },
-    { toolCalls: [configure("preview", first), configure("apply", first), review] },
-    { toolCalls: [configure("preview", second), configure("apply", second), review] },
-    {
-      toolCalls: [
-        configure("preview", forbidden),
-        configure("apply", forbidden),
-        configure("preview", forbidden),
-        { name: "describeOperation", arguments: { ref: createLinkOperation.ref } },
-      ],
-    },
-    { text: "Saved Create link declarations with the unavailable verifier still unresolved." },
-  ]);
-  try {
-    const id = await h.project();
-    expect(
-      (
-        await h.call("POST", `/projects/${id}/operations`, {
-          baseRevision: 0,
-          ops: operationSeedOps(),
-        })
-      ).status,
-    ).toBe(200);
-    const before = (await h.design(id)).design;
-    const { turn, state } = await h.chat(
-      id,
-      "Declare authenticated Create link with exact entry binding.",
-    );
-    expect(turn.error).toBeNull();
-    expect(designOperations(state.design)).toEqual(second);
-    expect(h.requests).toHaveLength(5);
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({
-        tool: "configureOperations",
-        ok: false,
-        summary: expect.stringContaining("2 review repair passes are used"),
-      }),
-    );
-    expect(
-      turn.activity.filter(
-        (x) => x.tool === "configureOperations" && x.summary.startsWith("Previewed"),
-      ),
-    ).toHaveLength(5);
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({
-        tool: "reviewDetail",
-        summary: expect.stringContaining("Saved operation added · receivers/create-link"),
-      }),
-    );
-    expect(turn.reply).toContain("one Undo step");
-    const undo = await h.call("POST", `/projects/${id}/undo`, {
-      baseRevision: state.design.revision,
-    });
-    expect(undo.body.design).toEqual({ ...before, revision: undo.body.design.revision });
-  } finally {
-    await h.app.close();
-  }
-});
 it("carries one explicit operation selection into actual context/history, preserves rename and refuses removed/malformed bindings", async () => {
   const h = harness([
     { text: "Inspecting only the selected operation." },
@@ -431,8 +165,8 @@ it("carries one explicit operation selection into actual context/history, preser
       .map(textOf)
       .find((x) => x.startsWith("[Jeeves] Studio context"));
     expect(context).toContain(`Selected identities: ["${reference}"]`);
-    expect(context).toContain("Selected operation bindings");
-    expect(context).toContain(`"binding":{"id":"${binding.id}"`);
+    expect(context).not.toContain("Selected operation bindings");
+    expect(context).not.toContain(`"binding":{"id":"${binding.id}"`);
     await h.call("POST", `/projects/${id}/operations`, {
       baseRevision: first.state.design.revision,
       ops: [{ op: "updateElement", id: "shorten", name: "Link creator" }],
@@ -475,63 +209,6 @@ it("carries one explicit operation selection into actual context/history, preser
         (x: { selection: string[] }) => x.selection,
       ),
     ).toEqual([[reference], [reference]]);
-  } finally {
-    await h.app.close();
-  }
-});
-
-it("bounds actual ownership repairs, permits previews after exhaustion, and saves exact declaration details as one Undo", async () => {
-  const ownership = (name: string) => ({ ...emptyOwnership(), owners: [{ id: "links", name }] });
-  const configure = (action: "preview" | "apply", name: string) => ({
-    name: "configureOwnership",
-    arguments: { baseRevision: 0, action, ownership: ownership(name), upgrade: true },
-  });
-  const review = { name: "reviewDesign", arguments: {} };
-  const h = harness([
-    { toolCalls: [configure("preview", "Links"), configure("apply", "Links"), review] },
-    { toolCalls: [configure("preview", "Links one"), configure("apply", "Links one"), review] },
-    { toolCalls: [configure("preview", "Links two"), configure("apply", "Links two"), review] },
-    {
-      toolCalls: [
-        configure("preview", "Forbidden three"),
-        configure("apply", "Forbidden three"),
-        configure("preview", "Read only remains"),
-      ],
-    },
-    { text: "Saved declarations; operation and runtime contracts remain unspecified." },
-  ]);
-  try {
-    const id = await h.project();
-    const { turn, state } = await h.chat(id, "Declare one Links owner.");
-    expect(turn.error).toBeNull();
-    expect(designOwnership(state.design)).toEqual(ownership("Links two"));
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({
-        tool: "configureOwnership",
-        ok: false,
-        summary: expect.stringContaining("2 review repair passes are used"),
-      }),
-    );
-    expect(
-      turn.activity.filter(
-        (x) => x.tool === "configureOwnership" && x.summary.startsWith("Previewed"),
-      ),
-    ).toHaveLength(5);
-    expect(turn.activity).toContainEqual(
-      expect.objectContaining({
-        tool: "reviewDetail",
-        summary: expect.stringContaining(
-          'Saved ownership added · owners/links: {"before":null,"after":{"id":"links","name":"Links two"}}',
-        ),
-      }),
-    );
-    expect(h.requests).toHaveLength(5);
-    expect(turn.reply).toContain("one Undo step");
-    const undo = await h.call("POST", `/projects/${id}/undo`, {
-      baseRevision: state.design.revision,
-    });
-    expect(undo.body.design.schemaVersion).toBe(2);
-    expect(undo.body.design).not.toHaveProperty("ownership");
   } finally {
     await h.app.close();
   }
@@ -1055,14 +732,14 @@ describe("proposed-design review in ChatService", () => {
   it("forces review when the model ends, invalidates it after later commands, and saves warnings", async () => {
     const h = harness((request, round) => {
       if (round === 0)
-        return { toolCalls: [apply(firstUpload), { name: "readReadiness", arguments: {} }] };
+        return { toolCalls: [apply(firstUpload), { name: "getDesign", arguments: {} }] };
       if (round === 1) return { text: "Finished." }; // No explicit review call.
       if (round === 2) {
         expect(toolOutput(request).findings[0].target).toEqual({ element: "uploads" });
         return {
           toolCalls: [
             apply({ type: "edit", element: "uploads", name: "Still missing storage" }),
-            { name: "readReadiness", arguments: {} },
+            { name: "getDesign", arguments: {} },
           ],
         };
       }
@@ -1084,7 +761,7 @@ describe("proposed-design review in ChatService", () => {
     );
     expect(turn.reply).toContain("Unresolved: 1 design finding");
     expect(turn.activity.filter((item) => item.tool === "reviewDesign")).toHaveLength(2);
-    expect(turn.activity.filter((item) => item.tool === "readReadiness")).toHaveLength(2);
+    expect(turn.activity.filter((item) => item.tool === "getDesign")).toHaveLength(2);
     expect(turn.activity.find((item) => item.tool === "reviewDetail")?.summary).toContain(
       "has no storage relationship",
     );

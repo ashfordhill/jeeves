@@ -87,8 +87,7 @@ profile. Removing the profile preserves its requirement declarations.
 Preview shows the exact unresolved contracts and the v3 export boundary. A changed design
 invalidates the preview before save. Profile selection never converts names, labels or modules
 into contracts. Profile selection supplies no ownership/API/message contract, template manifest or runtime. Explicit ownership declarations remain typed source below.
-Chat's `configureDesignScope` uses the canonical source command and validation; RF04
-`declareReviewScope` remains turn-only metadata. See [blueprint](studio-blueprint.md).
+RF04 `declareReviewScope` is turn-only review metadata; chat does not edit the saved scope. See [blueprint](studio-blueprint.md).
 
 The new `studio-tinyurl-foundation@1.0.0` study explicitly stores these scope defaults, complete
 ownership/access and operation/cache declarations in schema v3 as one seed edit. This does not
@@ -411,7 +410,7 @@ freshness/failure and runtime-authorization findings; it supplies no API bypass 
 Missing legacy declarations/grants remain saveable readiness gaps, never inferred permission.
 
 `cleanOwnershipChange` clears dependent grants/requests for explicit owner/role/authority removals
-or transfers; `previewOwnership` reports every affected row. Complete chat replacements must explicitly retain
+or transfers; `previewOwnership` reports every affected row. Complete replacements must explicitly retain
 or remove those rows; contradictions refuse. Canonical tile deletion cleans its role/authority,
 grants and removed-edge requests; removing a source used by a surviving projection refuses.
 Relationship removal drops its request and retains the independent role grant. One Undo restores
@@ -437,7 +436,7 @@ Optional top-level `operations` is a finite source allowlist, shown read-only on
 saved source under **Export diagram → Source & diagnostics**. Normal generation authoring has no
 declaration-only operation form.
 
-`previewOperations` / `buildOperationsCommand` and chat retain explicit upgrades, structural
+`previewOperations` / `buildOperationsCommand` retain explicit upgrades, structural
 refusals, exact contract checks, history and Undo. Fixed operation deadlines must agree with
 existing source settings; unsupported historical intent requires explicit source work. Nothing
 rewrites a preserved timeout, policy or verifier on read. Removal/transfer previews name exact
