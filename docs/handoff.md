@@ -12835,3 +12835,78 @@ unit's; left untouched and unstaged. No uncommitted changes under `jeeves-genera
 `field-projects/`.
 **For the next unit.** UI12 can start: the picker is `chat/ModelPicker.tsx`, and `useChat`'s
 `models` holds the selected model's `contextWindow` and prices from `GET /models`.
+
+## 2026-11-13 — UI12: Usage chips in chat
+
+**What changed.**
+- Server: `db/schema.ts`'s `ChatUsage` gains `contextTokens?`. `chat/service.ts`: each model
+  response that reports usage sets it to that response's input plus output tokens, and one that
+  doesn't clears it; the turn's usage carries it when its last response reported usage. No
+  migration (the column is JSON).
+- Web: `project/api.ts` (`ChatTurn.usage.contextTokens`). `chat/ChatPanel.tsx`: the `Usage`
+  paragraph is now `TurnUsage`, Mantine `Badge` chips **in**, **cached** (when reported and not more
+  than the input) and **out**, written by `tokenCount` (`950`, `1.9k`, `41.2k`, `128k`, `1.31M`);
+  hidden as before when a turn's usage is null, not `known`, or not whole numbers. New `UsagePanel`
+  above the composer (`role="note"`, "Conversation usage"): **Context** `<used> / <window>` with an
+  SVG ring, where used is the newest turn's `contextTokens` and the window the selected model's
+  `contextWindow` in `useChat().models` (both written by the picker's `contextLabel`, `86k / 500k`);
+  with no window, `Context 86k` and no ring; with no `contextTokens` on the newest turn, no Context
+  chip. Then the totals **in** and **out** of the turns that show chips, then the cost (`costLabel`:
+  `$0.84`, `<$0.01`) only when every turn has a `costUsd`. Hidden until a turn shows chips. The
+  chat's scroll-to-newest effect also runs when that window changes.
+- `theme/tokens.css`: `--well` (`#edf6fa` / `#0f1d26`). `project/design-view.css`: `.chat-usage`,
+  `.chat-meter` (`--well`, `--hairline` border), `.chat-usage-chip` (`--control` fill,
+  `--control-line` border, the preview's `.chip` sizes) and `.chat-usage-ring*` (`--blue` over a
+  `--hairline` track).
+- Tests: `chat.test.ts` (1: `contextTokens` is the last response's 1480, not the sum 2530; a last
+  response without usage leaves it out). New `ChatPanel.test.tsx` (9: the number formats; the
+  chips' numbers; no cached chip when unreported or more than the input; no chip for null,
+  incomplete or invalid usage; the panel's context, ring, totals and cost; hidden with no usage; no
+  ring or window without the window or for a model the list doesn't hold, and the selected
+  provider's window; no Context chip without `contextTokens`; no cost unless every turn has one).
+- Docs: `docs/studio.md` (Chat: a **Usage** paragraph; the sentence "Token counts and
+  provider-reported cost appear only when complete." removed).
+
+**Checks.** `pnpm check` before any change: exit 0, 112 files, 880 tests. After: exit 0, 113 files,
+890 tests (lint's one info is older). `pnpm test:e2e` (native, without the mouse spec): 73 passed
+(4.8 min); after the scroll fix below, again 73 passed (4.8 min). `pnpm --filter @jeeves/web build`:
+exit 0 (both times). Mouse check (`ui12-check.spec.ts`, run alone after the others, serial, then
+deleted): 2 passed, 1440×900 and 1280×800, no page error; `/api/settings`'s home was a
+`jeeves-e2e-` directory. Before any message: no panel and no chip. After "Rename the redirect
+service to Redirector" sent by mouse (three scripted responses): the API's usage was
+`{ known: true, inputTokens: 300, outputTokens: 60, contextTokens: 120 }`; the turn's chips read
+"in 300", "out 60"; the panel "Context 120", "in 300", "out 60", no ring (no catalogue, so no
+window). Then a made-up `models-dev.json` (gpt-5.4-mini, 400k) in that home; opening and closing
+the picker by mouse reloaded the models and the panel read "Context 120 / 400k" with the ring, and
+the turn's Undo stayed fully in view. At 1280 the same, with the catalogue already in hand. Light
+and dark each time; the catalogue file was deleted after; the fixture deleted its projects
+(`jeeves_e2e` holds only "E2E Every kind" and "TinyURL · studio study"). Six images in
+`docs/plans/ui-refresh/evidence/ui12/` (no window at 1440, ring at 1440 and 1280; light and dark)
+match the chips and the `--well` panel of `preview/chat-light.png` and `-dark.png`. No model was
+called and models.dev was never fetched.
+**Differences from the plan.**
+- **The scripted model reports usage.** `createFakeProvider` gives every step without `usage` 100
+  input and 20 output tokens, and `fixtures/chat/e2e-script.json` sets none, so a scripted turn
+  shows chips and the panel (before this unit it showed "300 input tokens · 60 output tokens").
+  The mouse check therefore checked the absent case before any message, and the shown case after
+  one, instead of "absent with the scripted model". The script and the fake are unchanged.
+- The per-turn cost (formerly "· $… USD reported") is no longer under each reply: the plan's chips
+  are in, cached and out. The cost shows in the panel when every turn reported one.
+- The ring is an SVG arc (`--blue` on a `--hairline` track) instead of the preview's conic gradient
+  with `color-mix(… transparent)` and a mask (rule 7).
+- The panel is `role="note"`: Biome refuses `role="group"` on a `div` (it wants a `fieldset`).
+- "A turn has usage", and the totals, count the turns that show chips (complete counts). The Context
+  chip uses the newest turn's `contextTokens` even when that turn's counts are incomplete (its last
+  response did report usage).
+- Token chips have one decimal under 100k (`22.0k`, where the preview's panel draws `22k`); the
+  Context chip uses the picker's `contextLabel`, so it reads `86k / 500k` as the preview does.
+- Not named: the scroll-to-newest effect in `ChatPanel` also depends on the panel's window. The
+  first screenshots showed the panel wrapping to two lines when the window arrived after the turn,
+  hiding the newest turn's Undo button.
+**Noticed.** At 120 of 400k the ring is all track (0.03%). Dark mode: the rail and chips still sit on
+today's dark ramp (UI13's). The modes of `jeeves/scripts/e2e-docker.sh` and
+`docs/plans/production-foundations/evidence/pf13/f3-catch.sh` show as changed and are not this
+unit's; left untouched and unstaged, as are `.jeeves-feedback/` and the `Zone.Identifier` files. No
+uncommitted changes under `jeeves-generator/` or `field-projects/`.
+**For the next unit.** UI13 can start: `--well` already has its dark value; the chips use
+`--control`/`--control-line` and the panel `--well` with a `--hairline` border.

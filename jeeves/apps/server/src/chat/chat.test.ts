@@ -962,6 +962,39 @@ describe("proposed-design review in ChatService", () => {
     expect(result.state).toEqual(before);
   });
 
+  it("keeps the last response's tokens as the turn's context size, not the sum", async () => {
+    const h = harness([
+      {
+        toolCalls: [{ name: "listStudioDefinitions", arguments: {} }],
+        usage: { inputTokens: 1000, outputTokens: 50 },
+      },
+      { text: "Nothing to change.", usage: { inputTokens: 1400, outputTokens: 80 } },
+    ]);
+    const id = await h.project();
+    const { turn } = await h.chat(id, "What can I add?");
+    expect(h.requests).toHaveLength(2);
+    expect(turn.usage).toEqual({
+      inputTokens: 2400,
+      outputTokens: 130,
+      known: true,
+      contextTokens: 1480,
+    });
+    const [saved] = (await h.call("GET", `/projects/${id}/chat`)).body.turns as ChatTurn[];
+    expect(saved?.usage?.contextTokens).toBe(1480);
+
+    // A last response without usage leaves the context size out.
+    const unreported = harness([
+      {
+        toolCalls: [{ name: "listStudioDefinitions", arguments: {} }],
+        usage: { inputTokens: 1000, outputTokens: 50 },
+      },
+      { text: "Nothing to change.", usage: null },
+    ]);
+    const other = await unreported.project();
+    const result = await unreported.chat(other, "What can I add?");
+    expect(result.turn.usage).toEqual({ inputTokens: 1000, outputTokens: 50, known: false });
+  });
+
   it("attributes only the chat snapshot when a canvas edit follows its commit", async () => {
     class InterleavedDesign extends DesignService {
       override async edit(projectId: string, input: EditInput) {

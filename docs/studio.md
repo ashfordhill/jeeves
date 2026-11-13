@@ -846,8 +846,7 @@ follow their names, as the inspector does ([Names and IDs](#inspector)); results
 sent with each message, so "Add a cache after the selected service" works; the user, an action
 and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
-SVG). Token counts and provider-reported cost appear only when complete. Chat and the inspector
-collapse and resize independently.
+SVG). Chat and the inspector collapse and resize independently.
 
 **The model picker.** The composer's left button shows the design chat's model, its provider and a
 dot (green when that provider is connected, red when not); a click opens one section per provider
@@ -866,6 +865,17 @@ model's ID, name, context size, prices, tool use and release date) in `~/.jeeves
 offline it uses that file; with none, OpenAI and Anthropic list only their suggested models and the
 custom endpoint takes a typed name. A server replaying a scripted model (`JEEVES_FAKE_MODEL_SCRIPT`)
 never fetches it.
+
+**Usage.** Under each reply, chips show its tokens: **in**, **cached** (when the provider reports
+it) and **out**, written as `950`, `41.2k` or `1.31M`. A turn whose counts aren't complete (one of
+its model responses reported none) shows no chips. Above the composer, a panel shows **Context**
+`<used> / <window>` with a ring for the share used: used is the input plus output tokens of the
+newest turn's last model response (kept as the turn's `contextTokens`), and the window is the
+selected model's context size from the picker. When the window isn't known, only the used count
+shows, without the ring; when the newest turn's last response reported no tokens, there is no
+Context chip. Then come the conversation's tokens **in** and **out** (the turns with complete
+counts), then its cost in US dollars, only when every turn reported one. The panel is hidden until
+a turn has usage.
 
 **Settings.** Connections is one card per provider: its name, a status pill (green when it can be
 used, red when not) and one line about it. OpenAI's and Anthropic's cards take an API key: paste

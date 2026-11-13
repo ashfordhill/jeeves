@@ -243,6 +243,8 @@ export class ChatService {
     let costRounds = 0;
     let cachedInputTokens = 0;
     let costUsd = 0;
+    /** The last response's input plus output tokens; `undefined` when it reported no usage. */
+    let contextTokens: number | undefined;
     let reply = "";
     let operationId: number | null = null;
     let committedState: DesignState | null = null;
@@ -340,8 +342,10 @@ export class ChatService {
           receivedUsage = true;
           usage.inputTokens += response.usage.inputTokens;
           usage.outputTokens += response.usage.outputTokens;
+          contextTokens = response.usage.inputTokens + response.usage.outputTokens;
         } else {
           usage.known = false;
+          contextTokens = undefined;
         }
         items.push(...response.items);
 
@@ -502,6 +506,7 @@ export class ChatService {
             ...usage,
             ...(cachedRounds === responseRounds && { cachedInputTokens }),
             ...(costRounds === responseRounds && { costUsd }),
+            ...(contextTokens !== undefined && { contextTokens }),
           }
         : null,
       model,

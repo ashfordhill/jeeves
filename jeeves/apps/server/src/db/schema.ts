@@ -125,6 +125,11 @@ export type ChatUsage = {
   known: boolean;
   cachedInputTokens?: number;
   costUsd?: number;
+  /**
+   * How full the model's context was at the end of the turn: the input plus output tokens of the
+   * turn's last model response, when that response reported usage.
+   */
+  contextTokens?: number;
 };
 
 /**

@@ -1,9 +1,10 @@
 /**
  * Design chat in the studio rail: the conversation, streamed replies, `askUser` choice
- * cards, what each turn changed, an Undo button per turn, and a composer with the model picker
- * and file attachments. Everything works by mouse; Ctrl/Cmd+Enter also sends.
+ * cards, what each turn changed, each turn's token chips, an Undo button per turn, the
+ * conversation's usage panel, and a composer with the model picker and file attachments.
+ * Everything works by mouse; Ctrl/Cmd+Enter also sends.
  */
-import { Button, FileButton, Loader, Textarea } from "@mantine/core";
+import { Badge, Button, FileButton, Loader, Textarea } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowBackUp,
@@ -14,10 +15,10 @@ import {
   IconSend,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
-import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../project/api.ts";
+import { type ReactNode, useEffect, useRef } from "react";
+import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo, ModelsView } from "../project/api.ts";
 import { useProject } from "../project/store.ts";
-import { ModelPicker } from "./ModelPicker.tsx";
+import { contextLabel, ModelPicker } from "./ModelPicker.tsx";
 import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
 
 const EXAMPLES = [
@@ -153,29 +154,195 @@ function UserMessage({ message, files }: { message: string; files: FileInfo[] })
   );
 }
 
-function Usage({ usage }: { usage: ChatTurn["usage"] }) {
-  if (
-    !usage?.known ||
-    ![usage.inputTokens, usage.outputTokens].every(
-      (value) => Number.isSafeInteger(value) && value >= 0,
-    )
-  )
-    return null;
+/** A token count: a whole number, zero or more. */
+const isCount = (value: unknown): value is number =>
+  typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+
+/** A token count as a chip writes it: `950`, `1.9k`, `41.2k`, `128k`, `1.31M`. */
+export function tokenCount(tokens: number): string {
+  if (tokens < 1000) return String(tokens);
+  const thousands = tokens / 1000;
+  if (thousands < 99.95) return `${thousands.toFixed(1)}k`;
+  if (thousands < 999.5) return `${Math.round(thousands)}k`;
+  return `${(tokens / 1_000_000).toFixed(2)}M`;
+}
+
+/** US dollars as the usage panel writes them: `$0.84`, `$12.30`, `<$0.01`. */
+export function costLabel(usd: number): string {
+  return usd > 0 && usd < 0.01 ? "<$0.01" : `$${usd.toFixed(2)}`;
+}
+
+/** A context size, `86k` or `1M`, as the model picker writes the window. */
+const contextSize = (tokens: number) => contextLabel(tokens) ?? String(tokens);
+
+type TurnCounts = { input: number; output: number; cached?: number };
+
+/** A turn's tokens, or `null` when the turn has no complete counts (no chips then). */
+export function turnCounts(usage: ChatTurn["usage"]): TurnCounts | null {
+  if (!usage?.known || !isCount(usage.inputTokens) || !isCount(usage.outputTokens)) return null;
+  const cached = usage.cachedInputTokens;
+  return {
+    input: usage.inputTokens,
+    output: usage.outputTokens,
+    ...(isCount(cached) && cached <= usage.inputTokens ? { cached } : {}),
+  };
+}
+
+/** One chip: a quiet label and a bold value (Mantine `Badge`). */
+function UsageChip({
+  label,
+  value,
+  title,
+  ring,
+}: {
+  label?: string;
+  value: string;
+  title: string;
+  ring?: ReactNode;
+}) {
   return (
-    <p className="chat-hint" role="note" aria-label="Model token usage">
-      {usage.inputTokens.toLocaleString()} input tokens
-      {usage.cachedInputTokens !== undefined &&
-      Number.isSafeInteger(usage.cachedInputTokens) &&
-      usage.cachedInputTokens >= 0 &&
-      usage.cachedInputTokens <= usage.inputTokens
-        ? ` (${usage.cachedInputTokens.toLocaleString()} cached)`
-        : ""}
-      {" · "}
-      {usage.outputTokens.toLocaleString()} output tokens
-      {usage.costUsd !== undefined && Number.isFinite(usage.costUsd) && usage.costUsd >= 0
-        ? ` · $${usage.costUsd.toLocaleString(undefined, { maximumSignificantDigits: 6 })} USD reported`
-        : ""}
-    </p>
+    <Badge className="chat-usage-chip" variant="default" leftSection={ring} title={title}>
+      {label ? `${label} ` : null}
+      <b>{value}</b>
+    </Badge>
+  );
+}
+
+/** Under a reply: its input, cached input (when reported) and output tokens. */
+export function TurnUsage({ usage }: { usage: ChatTurn["usage"] }) {
+  const counts = turnCounts(usage);
+  if (!counts) return null;
+  return (
+    <div className="chat-usage" role="note" aria-label="Model token usage">
+      <UsageChip
+        label="in"
+        value={tokenCount(counts.input)}
+        title={`${counts.input.toLocaleString()} input tokens`}
+      />
+      {counts.cached !== undefined ? (
+        <UsageChip
+          label="cached"
+          value={tokenCount(counts.cached)}
+          title={`${counts.cached.toLocaleString()} of them cached`}
+        />
+      ) : null}
+      <UsageChip
+        label="out"
+        value={tokenCount(counts.output)}
+        title={`${counts.output.toLocaleString()} output tokens`}
+      />
+    </div>
+  );
+}
+
+/** How much of the context window is used, as a filled arc. */
+function ContextRing({ used, size }: { used: number; size: number }) {
+  // Tenths of a percent, at most the whole ring.
+  const percent = Math.min(100, Math.round((used * 1000) / size) / 10);
+  return (
+    <svg className="chat-usage-ring" viewBox="0 0 14 14" width={14} height={14} aria-hidden="true">
+      <circle className="chat-usage-ring-track" cx={7} cy={7} r={5.4} />
+      <circle
+        className="chat-usage-ring-used"
+        cx={7}
+        cy={7}
+        r={5.4}
+        pathLength={100}
+        strokeDasharray={`${percent} 100`}
+        transform="rotate(-90 7 7)"
+      />
+    </svg>
+  );
+}
+
+export type ConversationUsage = {
+  /** The newest turn's `contextTokens`, and the selected model's window; `null` when unknown. */
+  context: number | null;
+  contextWindow: number | null;
+  input: number;
+  output: number;
+  /** The sum of every turn's cost; `null` unless every turn reported one. */
+  cost: number | null;
+};
+
+/**
+ * The usage panel's numbers: the newest turn's context and the selected model's window, the
+ * totals of the turns with complete counts, and the cost when every turn reported one. `null`
+ * while no turn has complete counts (the panel is hidden then).
+ */
+export function conversationUsage(
+  turns: readonly ChatTurn[],
+  models: ModelsView | undefined,
+): ConversationUsage | null {
+  const counted = turns.flatMap((turn) => turnCounts(turn.usage) ?? []);
+  if (counted.length === 0) return null;
+  const newest = turns.at(-1)?.usage?.contextTokens;
+  const selected = models?.selected;
+  const limit = selected
+    ? models.providers
+        .find((provider) => provider.id === selected.provider)
+        ?.models.find((model) => model.id === selected.model)?.contextWindow
+    : undefined;
+  const costs = turns.map((turn) => turn.usage?.costUsd);
+  const everyCost = costs.every(
+    (cost): cost is number => typeof cost === "number" && Number.isFinite(cost) && cost >= 0,
+  );
+  return {
+    context: isCount(newest) ? newest : null,
+    contextWindow: isCount(limit) && limit > 0 ? limit : null,
+    input: counted.reduce((sum, counts) => sum + counts.input, 0),
+    output: counted.reduce((sum, counts) => sum + counts.output, 0),
+    cost: everyCost ? costs.reduce<number>((sum, cost) => sum + (cost ?? 0), 0) : null,
+  };
+}
+
+/**
+ * Above the composer: how full the context is (with a ring when the model's window is known),
+ * the conversation's tokens in and out, and its cost when every turn reported one. Hidden until
+ * a turn has usage.
+ */
+export function UsagePanel({
+  turns,
+  models,
+}: {
+  turns: readonly ChatTurn[];
+  models: ModelsView | undefined;
+}) {
+  const usage = conversationUsage(turns, models);
+  if (!usage) return null;
+  const { context, contextWindow: limit } = usage;
+  return (
+    <div className="chat-meter" role="note" aria-label="Conversation usage">
+      {context !== null ? (
+        <UsageChip
+          label="Context"
+          value={
+            limit === null
+              ? contextSize(context)
+              : `${contextSize(context)} / ${contextSize(limit)}`
+          }
+          title={
+            limit === null
+              ? `${context.toLocaleString()} tokens in the last response`
+              : `${context.toLocaleString()} of the model's ${limit.toLocaleString()} tokens`
+          }
+          ring={limit === null ? undefined : <ContextRing used={context} size={limit} />}
+        />
+      ) : null}
+      <UsageChip
+        label="in"
+        value={tokenCount(usage.input)}
+        title={`${usage.input.toLocaleString()} input tokens in this conversation`}
+      />
+      <UsageChip
+        label="out"
+        value={tokenCount(usage.output)}
+        title={`${usage.output.toLocaleString()} output tokens in this conversation`}
+      />
+      {usage.cost !== null ? (
+        <UsageChip value={costLabel(usage.cost)} title="US dollars, as the provider reported" />
+      ) : null}
+    </div>
   );
 }
 
@@ -192,7 +359,7 @@ function TurnView({ turn, latest }: { turn: ChatTurn; latest: boolean }) {
           </p>
         ) : null}
         <ChangedItems ids={turn.changed} />
-        <Usage usage={turn.usage} />
+        <TurnUsage usage={turn.usage} />
         {turn.question ? <QuestionCard question={turn.question} active={latest} /> : null}
         {turn.operationId !== null ? (
           <div className="chat-turn-actions">
@@ -317,19 +484,22 @@ export function ChatPanel() {
   const live = useChat((s) => s.live);
   const error = useChat((s) => s.error);
   const setDraft = useChat((s) => s.setDraft);
+  const models = useChat((s) => s.models);
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (projectId) void load(projectId);
   }, [projectId, load]);
 
-  // Keep the newest message in view as turns arrive and replies stream.
+  // Keep the newest message in view as turns arrive and replies stream, and when the usage
+  // panel grows because the model's context window has arrived.
   const liveLength = live ? live.reply.length + live.activity.length : -1;
+  const contextWindow = conversationUsage(turns, models)?.contextWindow ?? null;
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when content grows
   useEffect(() => {
     const el = scroller.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [turns.length, liveLength]);
+  }, [turns.length, liveLength, contextWindow]);
 
   return (
     <section className="chat-panel" aria-label="Design chat">
@@ -363,6 +533,7 @@ export function ChatPanel() {
           </ol>
         </div>
       </div>
+      <UsagePanel turns={turns} models={models} />
       {error ? (
         <p className="chat-error chat-send-error" role="alert">
           <IconAlertTriangle size={14} aria-hidden /> {error}

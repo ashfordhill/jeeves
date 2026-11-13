@@ -60,6 +60,8 @@ export type ChatTurn = {
     known: boolean;
     cachedInputTokens?: number;
     costUsd?: number;
+    /** The input plus output tokens of the turn's last model response, when it reported them. */
+    contextTokens?: number;
   } | null;
   model: string | null;
   error: string | null;
