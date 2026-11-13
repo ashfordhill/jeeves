@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-6c29e59b-19a3-48fd-b6b7-e148a6c29c88",
+  "temporary": "/tmp/jeeves-system-qRnhhj",
+  "suite": "privacy-probe",
+  "stacks": [
+    {
+      "project": "gs-6c29e59b-19a3-48fd-b6b7-e148a6c29c88-1",
+      "application": "/tmp/jeeves-system-qRnhhj/1-identity",
+      "artifacts": "/tmp/gs08-privacy-final",
+      "fixture": "identity",
+      "ports": []
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "id": "gs-ad830864-16ce-4ac4-857b-5914121baf02",
+  "selected": ["regeneration"],
+  "outcome": "passed",
+  "elapsedMs": 149962,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs08-regeneration-corrected/run.json"
+}

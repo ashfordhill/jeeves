@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 3,
+  "revision": 13,
+  "elements": [
+    {
+      "id": "catalog-api",
+      "name": "Catalog API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "catalog",
+      "name": "Catalog",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "catalog-cache",
+      "name": "Catalog cache",
+      "classification": {
+        "kind": "Data store"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "catalog-api-catalog",
+      "kind": "uses-database",
+      "from": {
+        "element": "catalog-api"
+      },
+      "to": {
+        "element": "catalog"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "catalog-api-catalog-cache",
+      "kind": "uses-database",
+      "from": {
+        "element": "catalog-api"
+      },
+      "to": {
+        "element": "catalog-cache"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Regeneration",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "catalog-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "catalog",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "catalog-api"
+          }
+        },
+        {
+          "element": "catalog-cache",
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "redis-compatible",
+            "provider": "self-hosted",
+            "ttlSeconds": 4
+          },
+          "owner": {
+            "kind": "element",
+            "id": "catalog-api"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "catalog-api-catalog",
+          "settings": {}
+        },
+        {
+          "connection": "catalog-api-catalog-cache",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "catalog-read",
+          "host": "catalog-api",
+          "name": "Catalog read",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "stampede": "single-flight"
+          }
+        },
+        {
+          "id": "catalog-source",
+          "host": "catalog-api",
+          "name": "Catalog source",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "id": "catalog-writer",
+          "host": "catalog-api",
+          "name": "Catalog writer",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "catalog-read-catalog-cache",
+          "from": "catalog-read",
+          "to": {
+            "kind": "element",
+            "id": "catalog-cache",
+            "via": "catalog-api-catalog-cache"
+          }
+        },
+        {
+          "id": "catalog-source-catalog",
+          "from": "catalog-source",
+          "to": {
+            "kind": "element",
+            "id": "catalog",
+            "via": "catalog-api-catalog"
+          }
+        },
+        {
+          "id": "catalog-read-catalog-source",
+          "from": "catalog-read",
+          "to": {
+            "kind": "component",
+            "id": "catalog-source"
+          }
+        },
+        {
+          "id": "catalog-writer-catalog",
+          "from": "catalog-writer",
+          "to": {
+            "kind": "element",
+            "id": "catalog",
+            "via": "catalog-api-catalog"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "entry-catalog-api",
+          "lane": "download",
+          "element": "catalog-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Read catalog"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "catalog-read",
+        "target": {
+          "kind": "component",
+          "component": "catalog-read",
+          "host": "catalog-api"
+        },
+        "template": {
+          "id": "positive-cache-read",
+          "version": "0.1.0",
+          "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c"
+        },
+        "binding": {
+          "kind": "positive-cache-read",
+          "source": {
+            "resource": "catalog",
+            "connection": "catalog-api-catalog"
+          },
+          "cache": {
+            "resource": "catalog-cache",
+            "connection": "catalog-api-catalog-cache"
+          }
+        }
+      },
+      {
+        "id": "catalog-writer",
+        "target": {
+          "kind": "component",
+          "component": "catalog-writer",
+          "host": "catalog-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "catalog-api-owner",
+        "name": "Catalog API"
+      }
+    ],
+    "roles": [
+      {
+        "element": "catalog-api",
+        "owner": "catalog-api-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "catalog",
+        "authority": "catalog-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "catalog-cache",
+        "authority": "catalog-api-owner",
+        "kind": "projection",
+        "source": "catalog"
+      }
+    ],
+    "grants": [
+      {
+        "role": "catalog-api",
+        "resource": "catalog",
+        "access": "read"
+      },
+      {
+        "role": "catalog-api",
+        "resource": "catalog-cache",
+        "access": "read-write"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "catalog-api-catalog",
+        "access": "read"
+      },
+      {
+        "connection": "catalog-api-catalog-cache",
+        "access": "read-write"
+      }
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "historyBefore": "7193d17392c5a03247ceae1cc847ad4c0939ae8eb453595c312c882611e2c58d",
+  "historyAfter": "7193d17392c5a03247ceae1cc847ad4c0939ae8eb453595c312c882611e2c58d",
+  "volumesBefore": [
+    {
+      "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2_broker-data",
+      "createdAt": "2026-11-13T02:23:11-06:00",
+      "labels": {
+        "com.docker.compose.config-hash": "7073e297602c9d93486c1d9db87d0705a88fa15ab7751d9578488cd413d00102",
+        "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "broker-data"
+      }
+    },
+    {
+      "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2_postgres-data",
+      "createdAt": "2026-11-13T02:23:11-06:00",
+      "labels": {
+        "com.docker.compose.config-hash": "1a22f449a5a0f35b83b4a8ca172ead7218846c909295a556c771d2e1b0b7ff40",
+        "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      }
+    }
+  ],
+  "volumesAfter": [
+    {
+      "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2_broker-data",
+      "createdAt": "2026-11-13T02:23:11-06:00",
+      "labels": {
+        "com.docker.compose.config-hash": "7073e297602c9d93486c1d9db87d0705a88fa15ab7751d9578488cd413d00102",
+        "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "broker-data"
+      }
+    },
+    {
+      "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2_postgres-data",
+      "createdAt": "2026-11-13T02:23:11-06:00",
+      "labels": {
+        "com.docker.compose.config-hash": "1a22f449a5a0f35b83b4a8ca172ead7218846c909295a556c771d2e1b0b7ff40",
+        "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2",
+        "com.docker.compose.version": "5.6.0",
+        "com.docker.compose.volume": "postgres-data"
+      }
+    }
+  ],
+  "queued": [
+    "restart:queued:0",
+    "restart:queued:1",
+    "restart:queued:2",
+    "restart:queued:3",
+    "restart:queued:4"
+  ],
+  "earlier": ["restart:old:1", "restart:old:2", "restart:old:3"]
+}

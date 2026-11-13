@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "gs-ad830864-16ce-4ac4-857b-5914121baf02",
+  "suite": "regeneration",
+  "temporary": "/tmp/jeeves-system-uUg8m4",
+  "stacks": [
+    {
+      "project": "gs-ad830864-16ce-4ac4-857b-5914121baf02-1",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-uUg8m4/1-regeneration",
+      "artifacts": "/tmp/gs08-regeneration-corrected/1-regeneration",
+      "ports": [41795, 35003, 41527]
+    },
+    {
+      "project": "gs-ad830864-16ce-4ac4-857b-5914121baf02-2",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-uUg8m4/2-regeneration",
+      "artifacts": "/tmp/gs08-regeneration-corrected/2-regeneration",
+      "ports": [45013, 33283, 38443]
+    }
+  ]
+}

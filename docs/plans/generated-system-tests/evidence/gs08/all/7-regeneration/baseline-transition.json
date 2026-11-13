@@ -1,0 +1,44 @@
+{
+  "originalManifestHash": "0e25a973b2f2124f9ea69cbd34fd4aa59796bbaebd405b4ae4767b921b89dd0d",
+  "freshBManifestHash": "ee8dee49c455eac582b73b4d25b212c490798c9ded0bdc243878615b82171d90",
+  "updatedManifestHash": "ee8dee49c455eac582b73b4d25b212c490798c9ded0bdc243878615b82171d90",
+  "intentionalChanges": [
+    {
+      "path": ".jeeves/inputs/design.json",
+      "ownership": "generator-metadata",
+      "before": "26ac68fa5b0ca89579d5af1d26bea1281bb5e15afbd2203a07137319c2927f18",
+      "after": "3eda7621907c3e5c64b28c0ac69e378c6327243cb684ef2d980e222d0da16e1a"
+    },
+    {
+      "path": ".jeeves/normalized.json",
+      "ownership": "generator-metadata",
+      "before": "ac4f98f9f1375beaf264ae87c6cd1ff7adec36aa5dd6c95f6c0c879171018f5c",
+      "after": "c06f911e3233a835b3869145edc41336ff1d107dee196907042e3bd3d74a591d"
+    },
+    {
+      "path": ".jeeves/report.json",
+      "ownership": "generator-metadata",
+      "before": "f5c4486c57cc4638fa6562bbafdbc70bc8ff1a6314b1135f615eb94e6b2ca58f",
+      "after": "1665d0ceaa5ec36819d144cb4f81d5fce98292f4f25d08c38f05d985be305336"
+    },
+    {
+      "path": "diagnostics/generation.json",
+      "ownership": "generated-scaffold",
+      "before": "ac4f98f9f1375beaf264ae87c6cd1ff7adec36aa5dd6c95f6c0c879171018f5c",
+      "after": "c06f911e3233a835b3869145edc41336ff1d107dee196907042e3bd3d74a591d"
+    },
+    {
+      "path": "src/features/application-bindings.ts",
+      "ownership": "generated-scaffold",
+      "before": "16f92f1a05bce072df715b225fe57de413411dda4f03b8e618dbf7bc6fe6d3ac",
+      "after": "17bcc868eed50f283a8d4ad31e406f3eec74ed49671bcf653af7baa3cdfd76da"
+    },
+    {
+      "path": "src/features/positive-cache-bindings.ts",
+      "ownership": "generated-scaffold",
+      "before": "ed711b9967da6acbdc29253c36992570032b7aa706013c18cc37beaa30f68752",
+      "after": "1113723bd05a151fdf12677891b444510f386071489871d6a850dc44ffe5ae10"
+    }
+  ],
+  "verifiedAgainstSeparateFreshB": true
+}

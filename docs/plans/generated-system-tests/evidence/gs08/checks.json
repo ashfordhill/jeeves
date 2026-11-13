@@ -1,0 +1,43 @@
+{
+  "sourceSha256": "6be301d0515b9985b762080858ad304e67e133a454b37bd43c2496f182cb2bc8",
+  "generatedAll": {
+    "outcome": "passed",
+    "tests": 9,
+    "files": 6,
+    "freshStacks": 10,
+    "vitestSeconds": 757.73,
+    "cliSecondsIncludingFinalCleanup": 833.227,
+    "regenerationTestSeconds": 127.892
+  },
+  "check": {
+    "outcome": "passed",
+    "tests": 823,
+    "files": 106
+  },
+  "e2e": {
+    "outcome": "passed",
+    "tests": 73,
+    "reportedMinutes": 4.7,
+    "retries": 0
+  },
+  "webBuild": {
+    "outcome": "passed"
+  },
+  "actionlint": {
+    "outcome": "passed",
+    "version": "1.7.7"
+  },
+  "cleanupAudit": {
+    "outcome": "passed",
+    "records": 4,
+    "scopes": 14,
+    "allRemovedContainers": 81,
+    "allRemovedNetworks": 10,
+    "allRemovedVolumes": 28
+  },
+  "privacyProbe": "passed",
+  "publicRecovery": "passed",
+  "phaseExecution": "serial",
+  "timeoutsChanged": false,
+  "hostedExecution": "pending owner publication"
+}

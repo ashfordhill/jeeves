@@ -198,15 +198,20 @@ export async function createApplication(fixture: string) {
   return app;
 }
 
-export async function setupApplication(app: Application, templates: string[]) {
+export async function setupApplication(
+  app: Application,
+  templates: string[],
+  designFile = "design.json",
+) {
   const fixture = join(repository, "field-projects/generator-system/fixtures", app.stack.fixture);
+  assertSafeOutputPath(designFile);
   const before = await sourceSnapshot();
   await app.save("source-before.json", before);
   const runSource = await json<{ sha256: string }>(join(dirname(app.runPath), "source.json"));
   assert.equal(before.sha256, runSource.sha256, "Source changed since run began");
   const exported = await command(
     "pnpm",
-    ["--filter", "@jeeves/generator", "export:v2", join(fixture, "design.json"), app.directory],
+    ["--filter", "@jeeves/generator", "export:v2", join(fixture, designFile), app.directory],
     { timeoutMs: 60_000 },
   );
   await writeFile(join(app.stack.artifacts, "export.log"), exported);
@@ -300,11 +305,12 @@ export async function withApplication(
   fixture: string,
   templates: string[],
   behavior: (app: Application) => Promise<void>,
+  designFile = "design.json",
 ) {
   const app = await createApplication(fixture);
   let failed: unknown;
   try {
-    await setupApplication(app, templates);
+    await setupApplication(app, templates, designFile);
     await behavior(app);
   } catch (error) {
     failed = error;

@@ -8,10 +8,11 @@ pnpm test:generated --suite=core --artifacts=/absolute/evidence-directory
 pnpm test:generated --suite=wiring --artifacts=/absolute/new-wiring-results
 pnpm test:generated --suite=identity --artifacts=/absolute/new-identity-results
 pnpm test:generated --suite=media --artifacts=/absolute/new-media-results
+pnpm test:generated --suite=regeneration --artifacts=/absolute/new-regeneration-results
 pnpm test:generated --suite=all
 ```
 
-`core`, `wiring`, `identity` and `media` are implemented. Unknown or future suite names fail; `all` prints the implemented
+`core`, `wiring`, `identity`, `media` and `regeneration` are implemented. Unknown or future suite names fail; `all` prints the implemented
 suites it selects. These Docker/network tests run separately from `pnpm check` and the studio
 E2E tests. Vitest runs files serially, with no test retries and no green skips for unavailable
 Docker, failed setup or missing observations. Setup failures and application assertion failures
@@ -116,6 +117,26 @@ required invariants. All normal application operations use account tokens; admin
 provider setup/observation. [GS06 evidence](../../docs/plans/generated-system-tests/evidence/gs06/README.md)
 records cold/warm boundaries, costs and scoped cleanup.
 
+The Regeneration fixture is the command-authored catalog-only portion of Wiring: one public
+API, PostgreSQL and Valkey, with the same three mapped hook/stub/SQL attachments byte for byte.
+`design.json` sets a four-second TTL; `design-b.json` derives from it through one edit command
+setting sixteen seconds. `provenance.json` saves the authoring commands and owned-source hashes.
+Neither the authoring helper nor another provider topology is part of the running application.
+
+| Behavior | Executable test | Observations |
+| --- | --- | --- |
+| B10 | `regeneration.system.test.ts` | Separate fresh A and B exports fill/hit/expire/refill against real Valkey; B stays live after A's seven-second expiry bound. A stops, public `update:v2 --check` is read-only, public update applies B, and ordinary `pnpm start` resumes with the original project, ports, exact runtime/history/secret hashes and volume identities. Exact owned-file hashes, database/relation IDs, row count and data including row transaction IDs survive; a random extra published row absent from product SQL proves this is retained state. Updated A demonstrates B expiry, and a final read-only update check requires zero scaffold replacements. |
+
+Expiry bounds are specified in the scenario independently of generated bindings. INFO-only
+counters bracket API hits; GET/PTTL observations are kept outside that bracket. Missing/draft
+records remain uncached. The first independent B export supplies the new scaffold oracle: every
+updated non-owned file and the exact new manifest must match it before the harness changes its
+baseline. Original A/B manifests/reports remain in their stack evidence; `baseline-transition.json`
+lists the intentional setting-driven changes. Final scaffold checks remain enabled. This covers
+the compatible TTL setting change, not arbitrary topology or schema migrations.
+[GS08 evidence](../../docs/plans/generated-system-tests/evidence/gs08/README.md) records the
+failed authoring input, independent fresh exports, update/preservation observations and checks.
+
 Transient passwords, PKCE verifiers/codes/state, OAuth tokens and session cookies are registered
 before use in a mode-0600 private sibling file under the mode-0700 OS temporary run directory.
 No OAuth forms, URLs, headers or response bodies are recorded. The private file survives until
@@ -132,7 +153,7 @@ Run generated suites and browser checks in separate phases: changing Compose net
 interrupt Chromium module loading. Keep image builds separate from offline checks too, so they
 do not compete with existing test deadlines.
 
-`integration/author-activity.ts`, `integration/author-wiring.ts` and `integration/author-identity.ts` record the studio commands
+`integration/author-activity.ts`, `integration/author-wiring.ts`, `integration/author-identity.ts` and `integration/author-regeneration.ts` record the studio commands
 used to author the saved diagrams. They are development helpers, never application runtime
 code. To rebuild the diagrams deliberately:
 
@@ -140,6 +161,7 @@ code. To rebuild the diagrams deliberately:
 pnpm --filter @jeeves/generator exec tsx integration/author-activity.ts
 pnpm --filter @jeeves/generator exec tsx integration/author-wiring.ts
 pnpm --filter @jeeves/generator exec tsx integration/author-identity.ts
+pnpm --filter @jeeves/generator exec tsx integration/author-regeneration.ts
 ```
 
 Evidence defaults to ignored `test-results/generated/<run-id>/`. It contains source and fixture
@@ -170,7 +192,7 @@ a generated scaffold, replace a real provider with a fake, weaken an assertion o
 ## CI and other runners
 
 `.github/workflows/generated-system.yml` runs core on every pull request and push to `main`,
-with weekly scheduled `all` and manual `core`, `wiring`, `identity`, `media` or `all` selection. It calls the same command as a plain local shell:
+with weekly scheduled `all` and manual `core`, `wiring`, `identity`, `media`, `regeneration` or `all` selection. It calls the same command as a plain local shell:
 
 ```sh
 pnpm install --frozen-lockfile

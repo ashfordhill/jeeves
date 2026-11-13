@@ -13,7 +13,7 @@ on:
         required: true
         default: core
         type: choice
-        options: [core, wiring, identity, media, all]
+        options: [core, wiring, identity, media, regeneration, all]
 
 permissions:
   contents: read

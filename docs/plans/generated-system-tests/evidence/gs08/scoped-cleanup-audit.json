@@ -1,0 +1,149 @@
+{
+  "runs": [
+    {
+      "run": "/tmp/gs08-regeneration-first",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-24fb2503-0f03-48a5-894d-19f98abee897-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs08-regeneration-corrected",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-ad830864-16ce-4ac4-857b-5914121baf02-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-ad830864-16ce-4ac4-857b-5914121baf02-2",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs08-all-final",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-3",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-4",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-6",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-8",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-9",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-10",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs08-privacy-final",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-6c29e59b-19a3-48fd-b6b7-e148a6c29c88-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    }
+  ],
+  "fullAllRemoved": {
+    "containers": 81,
+    "networks": 10,
+    "volumes": 28
+  }
+}

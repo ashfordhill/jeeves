@@ -1,0 +1,6 @@
+{
+  "fixture": "regeneration",
+  "phase": "setup",
+  "outcome": "failed",
+  "error": "Error: pnpm --filter exit 1\n$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/regeneration/design-b.json /tmp/jeeves-system-7MkbgJ/1-regeneration\n/home/ash/github/jeeves/jeeves-generator/src/json.ts:17\n  throw new GeneratorRefusal(code, path, message);\n        ^\n\nGeneratorRefusal: INVALID_LOCAL_CONTRIBUTION at catalog-cache: Contribution requires an actual selected local resource of the matching kind.\n    at refuse (/home/ash/github/jeeves/jeeves-generator/src/json.ts:17:9)\n    at required (/home/ash/github/jeeves/jeeves-generator/src/v2/local.ts:327:7)\n    at renderFoundation (/home/ash/github/jeeves/jeeves-generator/src/v2/local.ts:851:14)\n    at Object.render (/home/ash/github/jeeves/jeeves-generator/src/v2/local.ts:140:26)\n    at assembleV2 (/home/ash/github/jeeves/jeeves-generator/src/v2/assemble.ts:65:30)\n    at <anonymous> (/home/ash/github/jeeves/jeeves-generator/src/v2/cli.ts:12:16) {\n  code: 'INVALID_LOCAL_CONTRIBUTION',\n  path: 'catalog-cache'\n}\n\nNode.js v24.21.0\n[ELIFECYCLE] Command failed with exit code 1.\nError: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL\n\n  × \"pnpm recursive run\" failed in /home/ash/github/jeeves/jeeves-generator\n\n"
+}

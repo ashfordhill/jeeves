@@ -1,0 +1,31 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-ad830864-16ce-4ac4-857b-5914121baf02-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-ad830864-16ce-4ac4-857b-5914121baf02-2",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

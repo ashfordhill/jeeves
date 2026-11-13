@@ -1,0 +1,15 @@
+{
+  "addresses": ["172.24.0.10", "172.24.0.6"],
+  "proofs": [
+    {
+      "container": "ab5d32c01c6fa1688a52aa7f797fe41cdd89861e9f5448631d25a26e3c689b0e",
+      "aggregate": "Worker:alone:1",
+      "connections": ["172.24.0.10"]
+    },
+    {
+      "container": "6ccfda92afaa00f1fe89284b8e93a544d445f20b462fb881c8843d6569dc9f3c",
+      "aggregate": "Worker:alone:0",
+      "connections": ["172.24.0.6"]
+    }
+  ]
+}

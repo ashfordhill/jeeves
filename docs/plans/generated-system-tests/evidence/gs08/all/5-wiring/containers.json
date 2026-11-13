@@ -1,0 +1,24 @@
+{
+  "containers": [
+    "8c8ed77e2086",
+    "c20806d8080f",
+    "3e331364ce78",
+    "c0e992f49d73",
+    "269b1d75dde9",
+    "b9bbf4683540",
+    "737f9e1b13a1",
+    "3025df1aeedc",
+    "6655a4f525e8",
+    "3cf837c4cf46",
+    "5597c2827a64",
+    "6b58cb4b58c9"
+  ],
+  "networks": ["72b96afbe842"],
+  "volumes": [
+    "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5_broker-data",
+    "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5_cache-catalog-cache",
+    "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5_objects-data",
+    "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5_postgres-data",
+    "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5_search-items-index"
+  ]
+}

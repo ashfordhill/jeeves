@@ -11876,3 +11876,32 @@ Docker and browser phases separate. Hosted CI remains pending publication; no pu
 dirty paths remain untouched and unstaged.
 Coordinator sequencing: GS08 is the next eligible unit while GS07 awaits BR01–BR02 ownership
 and completion; GS06 stops here and executes none of those units.
+
+
+## 2026-11-13 — GS08: TTL behavior and in-place regeneration
+
+**What changed.** Added the command-authored catalog-only Regeneration fixture and
+`--suite=regeneration` / manual CI choice. Saved A/B differ only in revision and TTL (4 → 16 s);
+three exact Wiring hook/stub/SQL copies remain report-owned. B10 independently runs fresh B and
+A, stops A, plans/applies public `update:v2`, and resumes through unmodified `pnpm start`. Owned
+hashes, runtime/history/secrets, ports, original volumes, database/relation OIDs and all three
+rows/xmin survive, including a random row absent from seed SQL. Updated A proves B's expiry;
+final update check requires zero replacements. Every new scaffold byte/manifest matches separate
+fresh B before the intentional baseline transition. No template, generated scaffold, pin,
+historical app or studio UI changed. [Evidence](plans/generated-system-tests/evidence/gs08/README.md).
+
+**Checks.** Final all passed 9/9 in six files / ten stacks (CLI 833.227 s including cleanup;
+Vitest 757.73 s, B10 127.892 s), within existing budgets. `pnpm check`: lint/typechecks and
+823 tests / 106 files; native E2E 73/73 (4.7 min); web build and actionlint passed. Heavy phases
+were serial. Four-record/fourteen-scope audits confirm matching scrub markers, no resources and
+removed private directories; all released 81 containers, ten networks and 28 volumes. Public
+recovery and privacy probe passed. Runs: `/tmp/gs08-all-final`, `/tmp/gs08-regeneration-corrected`;
+logs: `/tmp/gs08-{check,e2e,web-build}-final.log`.
+
+**Differences and next work.** The first authored B also reset its provider, so export refused
+before resources existed; exact failed input/helper hashes, nonzero result and cleanup are kept.
+The corrected pilot passed; final source tightens only diagram-delta/evidence/type observations,
+with the source boundary recorded. No template gap, retry, weakened assertion or timeout change.
+GS07 awaits BR01–BR02 completion and ownership; GS09 review remains pending. No broker, fault or
+UI work was taken over. Hosted execution remains pending publication; no push. Owner dirty paths
+remain untouched and unstaged. GS08 stops here.

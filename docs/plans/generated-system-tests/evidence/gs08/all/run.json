@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "id": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5",
+  "suite": "all",
+  "temporary": "/tmp/jeeves-system-b5vPeC",
+  "stacks": [
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-1",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-b5vPeC/1-activity",
+      "artifacts": "/tmp/gs08-all-final/1-activity",
+      "ports": [32919, 34949, 38707]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-2",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-b5vPeC/2-activity",
+      "artifacts": "/tmp/gs08-all-final/2-activity",
+      "ports": [46833, 34753, 39757]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-3",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-b5vPeC/3-activity",
+      "artifacts": "/tmp/gs08-all-final/3-activity",
+      "ports": [44577, 41947, 32995]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-4",
+      "fixture": "wiring",
+      "application": "/tmp/jeeves-system-b5vPeC/4-wiring",
+      "artifacts": "/tmp/gs08-all-final/4-wiring",
+      "ports": [37603, 36199, 42363]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-5",
+      "fixture": "wiring",
+      "application": "/tmp/jeeves-system-b5vPeC/5-wiring",
+      "artifacts": "/tmp/gs08-all-final/5-wiring",
+      "ports": [41745, 40251, 34015]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-6",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-b5vPeC/6-regeneration",
+      "artifacts": "/tmp/gs08-all-final/6-regeneration",
+      "ports": [36805, 33669, 44227]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-b5vPeC/7-regeneration",
+      "artifacts": "/tmp/gs08-all-final/7-regeneration",
+      "ports": [40451, 37851, 34337]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-8",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-b5vPeC/8-media",
+      "artifacts": "/tmp/gs08-all-final/8-media",
+      "ports": [42405, 38437, 44891]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-9",
+      "fixture": "identity",
+      "application": "/tmp/jeeves-system-b5vPeC/9-identity",
+      "artifacts": "/tmp/gs08-all-final/9-identity",
+      "ports": [33381, 33927, 46861]
+    },
+    {
+      "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-10",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-b5vPeC/10-activity",
+      "artifacts": "/tmp/gs08-all-final/10-activity",
+      "ports": [38305, 44415, 34949]
+    }
+  ]
+}

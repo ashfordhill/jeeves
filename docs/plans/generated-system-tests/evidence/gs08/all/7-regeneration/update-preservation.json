@@ -1,0 +1,133 @@
+{
+  "before": {
+    "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+    "ports": [40451, 37851, 34337],
+    "owned": {
+      "src/modules/catalog-api/catalog-read.hooks.ts": "d547a6591a5ec3fb453615062b91108a21cd1dbc5b8dd90651cb71ec20262ffe",
+      "src/modules/catalog-api/catalog-writer.ts": "130c1d08ba9acbefe581559949a889b1afe684b227b4acefaf187a03429bcadd",
+      "infra/postgres/catalog/modules/catalog-writer.sql": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56"
+    },
+    "runtime": {
+      ".runtime/local-setup.json": "6fbb31d057bef4edca0847b7b7810506eb7cd0f9f2fbef43269dca593c4f1af8",
+      ".runtime/secrets/cache-catalog-cache": "ee0986d3a4ca206c5b2ba0acf0ba37fcad5773e613317289c6f0d15b18d24a3e",
+      ".runtime/secrets/owner-catalog": "a75c0bbba7e412800d4b09470a95ba159ba5f1ab69634701412f463928d4d58d",
+      ".runtime/secrets/postgres-admin": "aebaddfa8884baf235377656ee9e5e46ad8d63917ea7b2a15f622a5089ef9fdd",
+      ".runtime/secrets/sql-catalog--catalog-api": "c5bcec29599cb6f178381ae810db9259a8496dab235b10937fc8bf9afe12530e"
+    },
+    "volumes": [
+      {
+        "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7_cache-catalog-cache",
+        "createdAt": "2026-11-13T02:28:42-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "84d1d326cdfedb7b544fcb929ed4d53519d4a570ec6cd8ce682b6acd23612f37",
+          "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-catalog-cache"
+        }
+      },
+      {
+        "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7_postgres-data",
+        "createdAt": "2026-11-13T02:28:42-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "ba062490c632521a28231fc2504e83de9fc04b235eaa2a8c59081f8b53860918",
+          "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      }
+    ]
+  },
+  "after": {
+    "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+    "ports": [40451, 37851, 34337],
+    "owned": {
+      "src/modules/catalog-api/catalog-read.hooks.ts": "d547a6591a5ec3fb453615062b91108a21cd1dbc5b8dd90651cb71ec20262ffe",
+      "src/modules/catalog-api/catalog-writer.ts": "130c1d08ba9acbefe581559949a889b1afe684b227b4acefaf187a03429bcadd",
+      "infra/postgres/catalog/modules/catalog-writer.sql": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56"
+    },
+    "runtime": {
+      ".runtime/local-setup.json": "6fbb31d057bef4edca0847b7b7810506eb7cd0f9f2fbef43269dca593c4f1af8",
+      ".runtime/secrets/cache-catalog-cache": "ee0986d3a4ca206c5b2ba0acf0ba37fcad5773e613317289c6f0d15b18d24a3e",
+      ".runtime/secrets/owner-catalog": "a75c0bbba7e412800d4b09470a95ba159ba5f1ab69634701412f463928d4d58d",
+      ".runtime/secrets/postgres-admin": "aebaddfa8884baf235377656ee9e5e46ad8d63917ea7b2a15f622a5089ef9fdd",
+      ".runtime/secrets/sql-catalog--catalog-api": "c5bcec29599cb6f178381ae810db9259a8496dab235b10937fc8bf9afe12530e"
+    },
+    "volumes": [
+      {
+        "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7_cache-catalog-cache",
+        "createdAt": "2026-11-13T02:28:42-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "84d1d326cdfedb7b544fcb929ed4d53519d4a570ec6cd8ce682b6acd23612f37",
+          "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-catalog-cache"
+        }
+      },
+      {
+        "name": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7_postgres-data",
+        "createdAt": "2026-11-13T02:28:42-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "ba062490c632521a28231fc2504e83de9fc04b235eaa2a8c59081f8b53860918",
+          "com.docker.compose.project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      }
+    ]
+  },
+  "dataBefore": {
+    "databaseOid": "16386",
+    "relationOid": "16397",
+    "count": 3,
+    "records": [
+      {
+        "id": "draft-a",
+        "title": "Unpublished draft",
+        "state": "draft",
+        "xmin": "744"
+      },
+      {
+        "id": "published-a",
+        "title": "Immutable amber catalog",
+        "state": "published",
+        "xmin": "744"
+      },
+      {
+        "id": "retained-published",
+        "title": "retained-311bef69-63fd-41c8-b763-15324232c1e2",
+        "state": "published",
+        "xmin": "745"
+      }
+    ]
+  },
+  "dataAfter": {
+    "databaseOid": "16386",
+    "relationOid": "16397",
+    "count": 3,
+    "records": [
+      {
+        "id": "draft-a",
+        "title": "Unpublished draft",
+        "state": "draft",
+        "xmin": "744"
+      },
+      {
+        "id": "published-a",
+        "title": "Immutable amber catalog",
+        "state": "published",
+        "xmin": "744"
+      },
+      {
+        "id": "retained-published",
+        "title": "retained-311bef69-63fd-41c8-b763-15324232c1e2",
+        "state": "published",
+        "xmin": "745"
+      }
+    ]
+  },
+  "planWasReadOnly": true
+}

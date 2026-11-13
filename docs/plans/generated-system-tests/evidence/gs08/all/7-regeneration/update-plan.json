@@ -1,0 +1,15 @@
+{
+  "directory": "/tmp/jeeves-system-b5vPeC/7-regeneration",
+  "check": true,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 6,
+    "unchanged": 37,
+    "keep": 3
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

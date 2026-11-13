@@ -1,0 +1,12 @@
+{
+  "id": "gs-ad830864-16ce-4ac4-857b-5914121baf02",
+  "selected": ["regeneration"],
+  "commit": "3f4be47641823250eb96c34378f6c418e6e6e933",
+  "dirty": "M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/run.ts\n?? field-projects/generator-system/fixtures/regeneration/\n?? jeeves-generator/integration/author-regeneration.ts\n?? jeeves-generator/integration/harness/regeneration.ts\n?? jeeves-generator/integration/scenarios/regeneration.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

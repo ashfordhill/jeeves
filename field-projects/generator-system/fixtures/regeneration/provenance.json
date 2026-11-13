@@ -1,0 +1,150 @@
+{
+  "commands": [
+    {
+      "type": "addAction",
+      "lane": "download",
+      "name": "Read catalog",
+      "system": {
+        "name": "Regeneration"
+      }
+    },
+    {
+      "type": "addTile",
+      "from": {
+        "lane": "download"
+      },
+      "side": "after",
+      "tile": {
+        "id": "catalog-api",
+        "name": "Catalog API",
+        "kind": "service"
+      },
+      "linkId": "entry-catalog-api"
+    },
+    {
+      "type": "addTile",
+      "from": {
+        "tile": "catalog-api"
+      },
+      "side": "after",
+      "tile": {
+        "id": "catalog",
+        "name": "Catalog",
+        "kind": "database"
+      },
+      "linkId": "catalog-api-catalog"
+    },
+    {
+      "type": "addTile",
+      "from": {
+        "tile": "catalog-api"
+      },
+      "side": "after",
+      "tile": {
+        "id": "catalog-cache",
+        "name": "Catalog cache",
+        "kind": "cache"
+      },
+      "linkId": "catalog-api-catalog-cache"
+    },
+    {
+      "type": "edit",
+      "element": "catalog-cache",
+      "settings": {
+        "kind": "cache",
+        "engine": "redis-compatible",
+        "provider": "unspecified",
+        "ttlSeconds": 4
+      }
+    },
+    {
+      "type": "addModule",
+      "host": "catalog-api",
+      "id": "catalog-read",
+      "name": "Catalog read",
+      "kind": "cache-reader"
+    },
+    {
+      "type": "addModule",
+      "host": "catalog-api",
+      "id": "catalog-source",
+      "name": "Catalog source",
+      "kind": "data-access"
+    },
+    {
+      "type": "addModule",
+      "host": "catalog-api",
+      "id": "catalog-writer",
+      "name": "Catalog writer",
+      "kind": "data-access"
+    },
+    {
+      "type": "connectModule",
+      "module": "catalog-read",
+      "slot": "cache",
+      "target": {
+        "tile": "catalog-cache"
+      }
+    },
+    {
+      "type": "connectModule",
+      "module": "catalog-source",
+      "slot": "database",
+      "target": {
+        "tile": "catalog"
+      }
+    },
+    {
+      "type": "connectModule",
+      "module": "catalog-read",
+      "slot": "loader",
+      "target": {
+        "module": "catalog-source"
+      }
+    },
+    {
+      "type": "connectModule",
+      "module": "catalog-writer",
+      "slot": "database",
+      "target": {
+        "tile": "catalog"
+      }
+    },
+    {
+      "type": "setRunnableProcesses",
+      "on": true
+    }
+  ],
+  "change": [
+    {
+      "type": "edit",
+      "element": "catalog-cache",
+      "settings": {
+        "kind": "cache",
+        "engine": "redis-compatible",
+        "provider": "self-hosted",
+        "ttlSeconds": 16
+      }
+    }
+  ],
+  "owned": [
+    {
+      "source": "field-projects/generator-system/fixtures/wiring/owned/catalog-read.hooks.ts",
+      "sha256": "d547a6591a5ec3fb453615062b91108a21cd1dbc5b8dd90651cb71ec20262ffe",
+      "destination": "owned/catalog-read.hooks.ts",
+      "module": "catalog-read"
+    },
+    {
+      "source": "field-projects/generator-system/fixtures/wiring/owned/catalog-writer.ts",
+      "sha256": "130c1d08ba9acbefe581559949a889b1afe684b227b4acefaf187a03429bcadd",
+      "destination": "owned/catalog-writer.ts",
+      "module": "catalog-writer"
+    },
+    {
+      "source": "field-projects/generator-system/fixtures/wiring/owned/catalog.sql",
+      "sha256": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56",
+      "destination": "owned/catalog.sql",
+      "module": "catalog-writer"
+    }
+  ]
+}

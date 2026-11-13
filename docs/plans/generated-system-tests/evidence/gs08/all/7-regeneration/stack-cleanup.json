@@ -1,0 +1,16 @@
+{
+  "project": "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7",
+  "before": {
+    "containers": ["ddac24423bf3", "816b8f3f200a", "c7b0accf7f60", "7fc290a3fd21"],
+    "networks": ["570620efb824"],
+    "volumes": [
+      "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7_cache-catalog-cache",
+      "gs-aee1dfce-1baf-4e62-92ed-cb305b0b54d5-7_postgres-data"
+    ]
+  },
+  "after": {
+    "containers": [],
+    "networks": [],
+    "volumes": []
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-24fb2503-0f03-48a5-894d-19f98abee897",
+  "suite": "regeneration",
+  "temporary": "/tmp/jeeves-system-7MkbgJ",
+  "stacks": [
+    {
+      "project": "gs-24fb2503-0f03-48a5-894d-19f98abee897-1",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-7MkbgJ/1-regeneration",
+      "artifacts": "/tmp/gs08-regeneration-first/1-regeneration",
+      "ports": [43035, 44303, 41469]
+    }
+  ]
+}

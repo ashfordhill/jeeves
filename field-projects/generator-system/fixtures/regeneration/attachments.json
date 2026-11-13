@@ -1,0 +1,20 @@
+[
+  {
+    "source": "owned/catalog-read.hooks.ts",
+    "destination": "src/modules/catalog-api/catalog-read.hooks.ts",
+    "role": "hooks",
+    "module": "catalog-read"
+  },
+  {
+    "source": "owned/catalog-writer.ts",
+    "destination": "src/modules/catalog-api/catalog-writer.ts",
+    "role": "stub",
+    "module": "catalog-writer"
+  },
+  {
+    "source": "owned/catalog.sql",
+    "destination": "infra/postgres/catalog/modules/catalog-writer.sql",
+    "role": "sql",
+    "module": "catalog-writer"
+  }
+]

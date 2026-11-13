@@ -1,0 +1,90 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/catalog/modules/catalog-writer.sql",
+      "ownership": "generated-extension",
+      "sha256": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56"
+    },
+    {
+      "path": "infra/postgres/fanout-db/modules/audit.sql",
+      "ownership": "generated-extension",
+      "sha256": "2f44b01097d335c878bf82dbc95a7c8468fa93cd4f982ea3432d20cf55363874"
+    },
+    {
+      "path": "infra/postgres/fanout-db/modules/notify.sql",
+      "ownership": "generated-extension",
+      "sha256": "2f44b01097d335c878bf82dbc95a7c8468fa93cd4f982ea3432d20cf55363874"
+    },
+    {
+      "path": "infra/postgres/work-db/modules/work.sql",
+      "ownership": "generated-extension",
+      "sha256": "2f44b01097d335c878bf82dbc95a7c8468fa93cd4f982ea3432d20cf55363874"
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-read.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "d547a6591a5ec3fb453615062b91108a21cd1dbc5b8dd90651cb71ec20262ffe"
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-writer.ts",
+      "ownership": "generated-extension",
+      "sha256": "130c1d08ba9acbefe581559949a889b1afe684b227b4acefaf187a03429bcadd"
+    },
+    {
+      "path": "src/modules/fanout/audit.ts",
+      "ownership": "generated-extension",
+      "sha256": "cc12be3b03def914f7300be0ce4ac56b18a29ee96e161b8637ce5f52ff36699f"
+    },
+    {
+      "path": "src/modules/fanout/notify.ts",
+      "ownership": "generated-extension",
+      "sha256": "7d389502cdf828989dea60eafdf4e9fba7b92d7d61392821cc571f6128ae34a8"
+    },
+    {
+      "path": "src/modules/internal-api/transform.ts",
+      "ownership": "generated-extension",
+      "sha256": "6cd2396b28c2fec448fba807ebd08779ad0521e7b77862061e053969c82ea95b"
+    },
+    {
+      "path": "src/modules/publisher-api/publish.ts",
+      "ownership": "generated-extension",
+      "sha256": "b90e6d6245ac06562da238fbe0391b2bd2ed6d1413346edc0c1d10980f170d7a"
+    },
+    {
+      "path": "src/modules/wiring-api/echo.ts",
+      "ownership": "generated-extension",
+      "sha256": "afa9e6e23e02eeccca9310ffff1fb62afda1957e42e8793cc3dac915015836e8"
+    },
+    {
+      "path": "src/modules/wiring-api/external-call.ts",
+      "ownership": "generated-extension",
+      "sha256": "8fe941543e841fda2abd7b79caa64c2aac4dfc55ce338f6f5356847505b5aa05"
+    },
+    {
+      "path": "src/modules/wiring-api/find-item.ts",
+      "ownership": "generated-extension",
+      "sha256": "a8655aa762455a5ea846dad0f2c26e4103158f400463baa31177eaafb4dfea8e"
+    },
+    {
+      "path": "src/modules/wiring-api/forward.ts",
+      "ownership": "generated-extension",
+      "sha256": "38d42417fba54633bd4e6db25ddbdbf5c3dc3fb477ea5415c46409202dd910db"
+    },
+    {
+      "path": "src/modules/wiring-api/internal-call.ts",
+      "ownership": "generated-extension",
+      "sha256": "b2ea9532055032f9c6bdb5cf1bec54e75b168a1ad180942b3887611e349bafe9"
+    },
+    {
+      "path": "src/modules/wiring-api/object-roundtrip.ts",
+      "ownership": "generated-extension",
+      "sha256": "98d7585a50b9374bfcc3c88521c9b7f00f530869942bd26ce984802a8cbb265d"
+    },
+    {
+      "path": "src/modules/workers/work.ts",
+      "ownership": "generated-extension",
+      "sha256": "03e91b6a9aebb22bd1d3520039d36584c0494bd2b583dadb023df5f98bc10ea3"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

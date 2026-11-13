@@ -1,0 +1,184 @@
+{
+  "numTotalTestSuites": 6,
+  "numPassedTestSuites": 6,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 9,
+  "numPassedTests": 9,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794558081879,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping",
+          "status": "passed",
+          "title": "B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping",
+          "duration": 93477.222045,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes",
+          "status": "passed",
+          "title": "B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes",
+          "duration": 69661.858763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables",
+          "status": "passed",
+          "title": "B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables",
+          "duration": 37629.78219,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794558082021,
+      "endTime": 1794558298844.7822,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/core-delivery.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B01: edge publication commits exactly one counter increment and a matching receipt",
+          "status": "passed",
+          "title": "B01: edge publication commits exactly one counter increment and a matching receipt",
+          "duration": 36050.046258999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794558870848,
+      "endTime": 1794558906898.0461,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/core.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart",
+          "status": "passed",
+          "title": "B07: real PKCE identity guards, isolated idempotent favorites and user identities survive restart",
+          "duration": 107541.714955,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794558751493,
+      "endTime": 1794558859034.7148,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/identity.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B08: signed multipart bytes become real published HLS, searchable once with counts and favorites",
+          "status": "passed",
+          "title": "B08: signed multipart bytes become real published HLS, searchable once with counts and favorites",
+          "duration": 132018.694291,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794558606264,
+      "endTime": 1794558738282.6943,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/media.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "status": "passed",
+          "title": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "duration": 127891.487804,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794558469467,
+      "endTime": 1794558597358.4878,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B05: generated module, HTTP, queue, object and search connections return input-dependent results",
+          "status": "passed",
+          "title": "B05: generated module, HTTP, queue, object and search connections return input-dependent results",
+          "duration": 88905.73921,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached",
+          "status": "passed",
+          "title": "B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached",
+          "duration": 63913.126824000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794558301883,
+      "endTime": 1794558463497.1267,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/wiring.system.test.ts"
+    }
+  ]
+}
