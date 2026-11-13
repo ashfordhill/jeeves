@@ -11194,3 +11194,55 @@ and the owner publishes it. The root README and unrelated changes were left unto
 
 **For the next unit.** PF09 next. Both multipart sweep callers read `.failed`; rule 7's procedure
 worked as written.
+
+## 2026-11-12 — PF09: Plan an update of an existing export
+
+**What changed.**
+
+- New `jeeves-generator/src/update.ts`, exported from `src/index.ts` (`export * from
+  "./update.ts";`): the plan's `UpdateActionKind`, `UpdateAction`, `ManifestFile` and the pure
+  `planUpdate({ next, previous, disk, overrides, pendingShadows })`, returning `{ actions,
+  refused, shadows }`. `generated-extension` is extension; every other ownership is generated. It
+  applies the ownership rule first (`edited`, refused as `ownership changed: <path>`), then rows
+  G1–G6 and E1–E4 for `next`, R1–R5 for paths only in `previous`, and U1/U2 for overrides in
+  neither. `actions` is sorted by path; `refused` lists the `edited` paths in path order, then
+  `unknown override: <path>` in path order; `shadows` is every `override` and `keep-changed`
+  path. It reads nothing from disk, writes nothing and doesn't mutate its inputs.
+- New `jeeves-generator/src/update.test.ts` (28 tests): one case per row (18, plus a check that
+  the table has 18), the equal-byte collision (G3), an override over equal hashes (G1, R2), a
+  deleted overridden file (`override`, not `create`), the ownership rule before an override, the
+  three `refused` forms and their order, `shadows` (a pending shadow whose file now equals `N` is
+  `unchanged` and not listed), the sort order, and the two consecutive plans (a) and (b).
+- No template, pin or doc changed: the unit names no docs, and no sentence became false (the
+  generator README still says export writes only to a new directory, which stays true until an
+  update command exists).
+
+**Checks.**
+
+- check: passed before any change (104 files, 780 tests) and after (105 files, 808 tests: 28
+  added), with the frozen v1 pin and the processes-off pins unchanged.
+- Mutation check (scratch, restored byte-identical): dropping the ownership rule, G1, G3, the
+  pending-shadow condition, R2's override, U1, the unknown-override sort or the override shadow,
+  sorting by `localeCompare`, or putting G4 before G3 each fails at least one new test.
+- e2e: `pnpm test:e2e` 73 passed (4.7 min) on the first run; no reruns needed.
+- build: passed.
+
+**Differences from the plan.**
+
+- Biome puts one union member per line, so `UpdateActionKind`'s group comments sit on their own
+  lines above each group instead of after it.
+- Paths sort in code-point order (as `v2Compare` and the manifest do); the sort test pins it
+  (`src/Z.ts` before `src/a.ts`). The unknown overrides in `refused` are sorted by path too.
+- One test beyond the plan's list: the ownership rule wins over an override (with
+  `generator-metadata` as the new ownership).
+
+**Noticed.**
+
+- A path listed twice in `next` or `previous` counts once (the last); manifests don't repeat paths.
+- The earlier notes still stand: `src/features/service-resources.ts`'s `createPositiveReader`
+  passes no `onFailure`, and the failure log's once-a-second limit logs only the first failed
+  upload's ID in one sweep.
+
+**For the next unit.** PF10 next. `planUpdate` is exported from `@jeeves/generator`; it expects
+`disk` to hold hashes only for files that exist and `pendingShadows` as paths relative to the app
+root (without `.jeeves/generated/`).

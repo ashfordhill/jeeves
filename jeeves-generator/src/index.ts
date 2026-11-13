@@ -7,6 +7,7 @@ export * from "./input.ts";
 export { canonicalJson, GeneratorRefusal, sha256 } from "./json.ts";
 export * from "./local.ts";
 export * from "./profile.ts";
+export * from "./update.ts";
 export * from "./v2/assemble.ts";
 export * from "./v2/asset-lifecycle.ts";
 export * from "./v2/composition.ts";
