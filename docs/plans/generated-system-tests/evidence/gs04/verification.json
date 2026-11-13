@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-13",
+  "check": {
+    "outcome": "passed",
+    "log": "/tmp/gs04-check-final.log",
+    "sha256": "82ada55ac92325c727afac8fab657d94d60afa1116d69c07083a9011eaf85739",
+    "tests": 820,
+    "files": 105,
+    "lint": true,
+    "typechecks": true,
+    "vitestSeconds": 52.24
+  },
+  "e2e": {
+    "outcome": "passed",
+    "log": "/tmp/gs04-e2e.log",
+    "sha256": "03376c19b476dd0f2733154453d03507def4ec9be7bf531a7d6ae335c2dd28ea",
+    "tests": 73,
+    "reportedDuration": "4.7m",
+    "dockerAndBrowserPhasesSeparate": true
+  },
+  "webBuild": {
+    "outcome": "passed",
+    "log": "/tmp/gs04-web-build.log",
+    "sha256": "24ffdc285f6f87df3bc9db420d93736ee3ea6d13339e2042d61ecb908585bbb2"
+  },
+  "workflow": {
+    "outcome": "passed",
+    "log": "/tmp/gs04-workflow-validation.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tool": "/tmp/gs03-actionlint/actionlint",
+    "command": "actionlint -shellcheck= .github/workflows/generated-system.yml"
+  },
+  "unimplementedSuite": {
+    "outcome": "passed",
+    "log": "/tmp/gs04-unimplemented-suite.log",
+    "sha256": "9e0cc1f38e73fa2b63704a9e2b6daf78ee558d8559a07fbd2974435972b97e03",
+    "expectedExit": 1,
+    "artifactsCreated": false,
+    "implemented": ["core", "wiring"]
+  },
+  "evidence": {
+    "parsedJsonValuesPreservedDuringFormatting": 49,
+    "compressedObservationsMatchOriginalBytes": true,
+    "originalReportManifestMatchOriginalBytes": true,
+    "noFileOver100KB": true
+  },
+  "limits": {
+    "hostedCI": "pending publication",
+    "studioUIChanged": false,
+    "templateChanges": false,
+    "sourceBoundary": "source-boundary.json",
+    "cacheRecovery": "GS07",
+    "stackLifecycle": "retained until outer sanitization and cleanup"
+  }
+}

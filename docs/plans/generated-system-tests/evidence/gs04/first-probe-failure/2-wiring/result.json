@@ -1,0 +1,6 @@
+{
+  "fixture": "wiring",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected 3 to be 2 // Object.is equality"
+}

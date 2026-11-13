@@ -1,0 +1,39 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/wiring.system.test.ts (2 tests | 1 failed) 134325ms
+   ✓ B05: generated module, HTTP, queue, object and search connections return input-dependent results 83229ms
+   × B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached 51095ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/wiring.system.test.ts > B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached
+AssertionError: expected 3 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ jeeves-generator/integration/scenarios/wiring.system.test.ts:278:34
+    276|   const hit = await cacheObservation(app, key);
+    277|   // Observation GET contributes one hit as well; the intervening HTTP…
+    278|   expect(hit.hits - filled.hits).toBe(2);
+       |                                  ^
+    279|   expect(await catalogLoads(app, "published-a")).toBe(1);
+    280|   expect(hit.pttl).toBeLessThan(filled.pttl);
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/wiring.system.test.ts:255:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  00:21:59
+   Duration  134.47s (tests 100%)
+
+JSON report written to /tmp/gs04-wiring-first/vitest.json
+JUNIT report written to /tmp/gs04-wiring-first/junit.xml

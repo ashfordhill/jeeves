@@ -11768,3 +11768,40 @@ providers. Hosted execution is pending publication; no push or branch-protection
 **For the next unit.** GS04 adds Wiring and its implemented manual suite choice. Preserve the
 scrub-marker upload guard and separate generated/Docker and browser phases. GS07 still requires
 BR01–BR02; no broker-reconnect or UI unit was taken over. Owner working-tree changes are intact.
+
+## 2026-11-13 — GS04: Stub clients and immutable cache reads
+
+**What changed.** Added the command-authored Wiring fixture, explicit owned attachment map and
+`--suite=wiring` (also a manual workflow choice). B05 exercises generated module/internal HTTP,
+topic fanout to two subscriber modules, a separate work queue with two competing copies, object
+write/readback and scoped denial, and a real mapped/seeded search index. The small owned external
+adapter uses bounded fetch to a separately managed project-labelled HTTP fixture; no installed
+external API client is claimed. B06 normal proves an immutable published catalog's exact cache
+value, four-second expiry, actual hit without another authoritative load, refill and uncached
+missing/draft records. No mutable Activity totals are cached. The harness now redacts individual
+string values from JSON secret files; a disposable probe confirms redaction and unchanged
+fail-closed recovery. No template, generated scaffold, pin, historical field app or studio UI
+changed. [Evidence](plans/generated-system-tests/evidence/gs04/README.md) records coverage and limits.
+
+**Checks.** Current Wiring 2/2 passed (169.601 s including cleanup); core 4/4 passed (270.459 s).
+`pnpm check`: lint/typechecks and 820 tests / 105 files passed; `pnpm test:e2e`: 73/73 passed
+(4.7 min); web build and actionlint syntax/context check passed. Docker and browser phases were
+serial. Wiring removed 26 containers, two networks, ten volumes and private runtime; core
+removed 27 containers, four networks, eight volumes and runtime, with matching scrub markers
+and empty exact project inventories. Full runs: `/tmp/gs04-wiring-confirmed`, `/tmp/gs04-core-final`;
+standard logs: `/tmp/gs04-check-final.log`, `/tmp/gs04-e2e.log`, `/tmp/gs04-web-build.log`.
+
+**Differences from the plan.** The initial B06 observer expected hit delta two, but Valkey PTTL
+also counts a lookup: its real failed result and cleanup remain at `/tmp/gs04-wiring-first`.
+The corrected observer uses INFO alone around HTTP and requires exactly one new hit, with all
+value/load/expiry assertions retained. After the first corrected Wiring pass and core pass,
+review moved refill readback ahead of slow Compose log inspection; current Wiring passed again.
+Only that observation order differs from core's source, and original generated reports,
+manifests and owned/scaffold hashes are identical. Source boundary/patch are retained. The first
+repository check stopped on copied JSON formatting; all 49 parsed values were preserved. No test
+retry, weakened assertion, timeout change or template gap was introduced.
+
+**For the next unit.** GS05 adds Identity. B06 cache recovery remains GS07, after BR01–BR02;
+no broker or UI unit was taken over. Completed stacks still await outer sanitization/cleanup
+(26 retained containers for Wiring); review sequential resource cleanup before GS06 expansion.
+Hosted CI remains pending publication. All unrelated owner changes are preserved and unstaged.

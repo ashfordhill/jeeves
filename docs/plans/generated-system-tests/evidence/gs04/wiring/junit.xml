@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="2" failures="0" errors="0" time="132.592163655">
+    <testsuite name="jeeves-generator/integration/scenarios/wiring.system.test.ts" timestamp="2026-11-13T06:36:38.315Z" hostname="BASEMENT-PC" tests="2" failures="0" errors="0" skipped="0" time="132.592163655">
+        <testcase classname="jeeves-generator/integration/scenarios/wiring.system.test.ts" name="B05: generated module, HTTP, queue, object and search connections return input-dependent results" time="77.700311769">
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/wiring.system.test.ts" name="B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached" time="54.890983632">
+        </testcase>
+    </testsuite>
+</testsuites>

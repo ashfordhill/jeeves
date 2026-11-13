@@ -17,6 +17,18 @@ export async function sanitizer(application?: string) {
     for (const name of names) {
       const value = (await readFile(join(directory, name), "utf8")).trim();
       if (value) secrets.push(value);
+      // Object-store credentials are JSON. Reporter operands may print individual members or
+      // pretty-print the object, so the original file bytes alone do not cover those forms.
+      const strings = (part: unknown): void => {
+        if (typeof part === "string" && part) secrets.push(part);
+        else if (part && typeof part === "object")
+          for (const member of Object.values(part)) strings(member);
+      };
+      try {
+        strings(JSON.parse(value));
+      } catch {
+        /* Plain-text secrets are already included. */
+      }
     }
   }
   return (value: string) => {

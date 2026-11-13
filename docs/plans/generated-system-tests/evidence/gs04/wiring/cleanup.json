@@ -1,0 +1,71 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-1",
+      "before": {
+        "containers": [
+          "bd84ed82ffe3",
+          "c60a4efad0e0",
+          "4a84a8c93e99",
+          "6afd75a01642",
+          "a84ce4cf4f25",
+          "d40e55f4598c",
+          "2a3dc1107793",
+          "780ac8f867f0",
+          "a62ed8e39261",
+          "4a1f5df5831e",
+          "5712115580fa",
+          "b2ebff1ecac1",
+          "a20dd698c1b4",
+          "31552cb5519b"
+        ],
+        "networks": ["5ec55bd746f7"],
+        "volumes": [
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-1_broker-data",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-1_cache-catalog-cache",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-1_objects-data",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-1_postgres-data",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-1_search-items-index"
+        ]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-2",
+      "before": {
+        "containers": [
+          "33c644830335",
+          "cceced371f4a",
+          "4babe639ce22",
+          "ddbf537ec1bb",
+          "5407d528c9d4",
+          "2d9a5d7653ea",
+          "120fd91e4dc2",
+          "496f62c05e94",
+          "9c3b85b6c769",
+          "b634a4407e55",
+          "00a47ae6e670",
+          "c8809ae76bf6"
+        ],
+        "networks": ["768e523b60db"],
+        "volumes": [
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-2_broker-data",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-2_cache-catalog-cache",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-2_objects-data",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-2_postgres-data",
+          "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2-2_search-items-index"
+        ]
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

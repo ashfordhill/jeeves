@@ -1,0 +1,6 @@
+{
+  "coreAndPriorWiring": "5ee7b042673886fd4a3cb28fe11ff6971cd9d412c804320a018097c6fa46496c",
+  "currentWiring": "9871b9172f02ced9a70fc1165e0400c0cbbe04d4dd2d5bb89cd18f6eab7a0db3",
+  "changedFiles": ["jeeves-generator/integration/scenarios/wiring.system.test.ts"],
+  "reason": "Cache refill value observation moved before slow Compose log inspection; assertions, TTL, bounds, generated/owned application inputs unchanged."
+}

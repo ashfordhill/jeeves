@@ -1,0 +1,12 @@
+--- wiring-before-observation-order.ts
++++ wiring-current.ts
+@@ -262,8 +262,8 @@
+       7000,
+     );
+     expect(await read("published-a")).toEqual({ status: 200, body: expected });
++    expect(JSON.parse((await cacheObservation(app, key)).value ?? "null")).toEqual(expected);
+     expect(await catalogLoads(app, "published-a")).toBe(2);
+-    expect(JSON.parse((await cacheObservation(app, key)).value ?? "null")).toEqual(expected);
+     for (const id of ["missing-a", "draft-a"]) {
+       for (let attempt = 0; attempt < 2; attempt++) {
+         expect((await read(id)).status).toBe(404);

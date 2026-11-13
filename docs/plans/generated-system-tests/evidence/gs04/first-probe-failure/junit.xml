@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="2" failures="1" errors="0" time="134.325061514">
+    <testsuite name="jeeves-generator/integration/scenarios/wiring.system.test.ts" timestamp="2026-11-13T06:24:28.688Z" hostname="BASEMENT-PC" tests="2" failures="1" errors="0" skipped="0" time="134.325061514">
+        <testcase classname="jeeves-generator/integration/scenarios/wiring.system.test.ts" name="B05: generated module, HTTP, queue, object and search connections return input-dependent results" time="83.228729751">
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/wiring.system.test.ts" name="B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached" time="51.09539186">
+            <failure message="expected 3 to be 2 // Object.is equality" type="AssertionError">
+AssertionError: expected 3 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ jeeves-generator/integration/scenarios/wiring.system.test.ts:278:34
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:308:5
+ ❯ jeeves-generator/integration/scenarios/wiring.system.test.ts:255:2
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

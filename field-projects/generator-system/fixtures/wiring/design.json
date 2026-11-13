@@ -1,0 +1,1231 @@
+{
+  "schemaVersion": 3,
+  "revision": 53,
+  "elements": [
+    {
+      "id": "wiring-api",
+      "name": "Wiring API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "catalog-api",
+      "name": "Catalog API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "publisher-api",
+      "name": "Publisher API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "catalog",
+      "name": "Catalog",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "catalog-cache",
+      "name": "Catalog cache",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "objects",
+      "name": "Objects",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "items-index",
+      "name": "Items index",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "internal-api",
+      "name": "Internal API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "vault",
+      "name": "Vault",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "partner",
+      "name": "Partner",
+      "classification": {
+        "kind": "External system"
+      }
+    },
+    {
+      "id": "broadcasts",
+      "name": "Broadcasts",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "fanout",
+      "name": "Fanout",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "fanout-db",
+      "name": "Fanout database",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "jobs",
+      "name": "Jobs",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "workers",
+      "name": "Workers",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "work-db",
+      "name": "Work database",
+      "classification": {
+        "kind": "Data store"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "catalog-api-catalog",
+      "kind": "uses-database",
+      "from": {
+        "element": "catalog-api"
+      },
+      "to": {
+        "element": "catalog"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "catalog-api-catalog-cache",
+      "kind": "uses-database",
+      "from": {
+        "element": "catalog-api"
+      },
+      "to": {
+        "element": "catalog-cache"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "wiring-api-objects",
+      "kind": "depends-on",
+      "from": {
+        "element": "wiring-api"
+      },
+      "to": {
+        "element": "objects"
+      },
+      "planned": {
+        "label": "Uses",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "wiring-api-items-index",
+      "kind": "depends-on",
+      "from": {
+        "element": "wiring-api"
+      },
+      "to": {
+        "element": "items-index"
+      },
+      "planned": {
+        "label": "Uses",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "wiring-api-internal-api",
+      "kind": "calls",
+      "from": {
+        "element": "wiring-api"
+      },
+      "to": {
+        "element": "internal-api"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "internal-api-vault",
+      "kind": "depends-on",
+      "from": {
+        "element": "internal-api"
+      },
+      "to": {
+        "element": "vault"
+      },
+      "planned": {
+        "label": "Uses",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "wiring-api-partner",
+      "kind": "calls",
+      "from": {
+        "element": "wiring-api"
+      },
+      "to": {
+        "element": "partner"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "publisher-api-broadcasts",
+      "kind": "depends-on",
+      "from": {
+        "element": "publisher-api"
+      },
+      "to": {
+        "element": "broadcasts"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "broadcasts-fanout",
+      "kind": "depends-on",
+      "from": {
+        "element": "broadcasts"
+      },
+      "to": {
+        "element": "fanout"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "fanout-fanout-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "fanout"
+      },
+      "to": {
+        "element": "fanout-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "publisher-api-jobs",
+      "kind": "depends-on",
+      "from": {
+        "element": "publisher-api"
+      },
+      "to": {
+        "element": "jobs"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "jobs-workers",
+      "kind": "depends-on",
+      "from": {
+        "element": "jobs"
+      },
+      "to": {
+        "element": "workers"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "workers-work-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "workers"
+      },
+      "to": {
+        "element": "work-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Wiring",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "wiring-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "catalog-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "publisher-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "catalog",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "catalog-api"
+          }
+        },
+        {
+          "element": "catalog-cache",
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "redis-compatible",
+            "provider": "self-hosted",
+            "ttlSeconds": 4
+          },
+          "owner": {
+            "kind": "element",
+            "id": "catalog-api"
+          }
+        },
+        {
+          "element": "objects",
+          "definition": {
+            "id": "studio-object-store",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "object-store",
+            "provider": "unspecified",
+            "access": "private"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "wiring-api"
+          }
+        },
+        {
+          "element": "items-index",
+          "definition": {
+            "id": "studio-search",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "search",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "wiring-api"
+          }
+        },
+        {
+          "element": "internal-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "vault",
+          "definition": {
+            "id": "studio-object-store",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "object-store",
+            "provider": "unspecified",
+            "access": "private"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "internal-api"
+          }
+        },
+        {
+          "element": "partner",
+          "definition": {
+            "id": "studio-external-api",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "external-api",
+            "category": "generic",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "element": "broadcasts",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "publisher-api"
+          }
+        },
+        {
+          "element": "fanout",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "fanout-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "fanout"
+          }
+        },
+        {
+          "element": "jobs",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "publisher-api"
+          }
+        },
+        {
+          "element": "workers",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "work-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "workers"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "catalog-api-catalog",
+          "settings": {}
+        },
+        {
+          "connection": "catalog-api-catalog-cache",
+          "settings": {}
+        },
+        {
+          "connection": "wiring-api-objects",
+          "settings": {}
+        },
+        {
+          "connection": "wiring-api-items-index",
+          "settings": {}
+        },
+        {
+          "connection": "wiring-api-internal-api",
+          "settings": {}
+        },
+        {
+          "connection": "internal-api-vault",
+          "settings": {}
+        },
+        {
+          "connection": "wiring-api-partner",
+          "settings": {}
+        },
+        {
+          "connection": "publisher-api-broadcasts",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "broadcasts-fanout",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "fanout-fanout-db",
+          "settings": {}
+        },
+        {
+          "connection": "publisher-api-jobs",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "jobs-workers",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "workers-work-db",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "echo",
+          "host": "wiring-api",
+          "name": "Echo",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "id": "forward",
+          "host": "wiring-api",
+          "name": "Forward",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "stampede": "single-flight"
+          }
+        },
+        {
+          "id": "internal-call",
+          "host": "wiring-api",
+          "name": "Internal call",
+          "settings": {
+            "kind": "external-call",
+            "circuitBreaker": "disabled"
+          }
+        },
+        {
+          "id": "external-call",
+          "host": "wiring-api",
+          "name": "External call",
+          "settings": {
+            "kind": "external-call",
+            "circuitBreaker": "disabled"
+          }
+        },
+        {
+          "id": "object-roundtrip",
+          "host": "wiring-api",
+          "name": "Object roundtrip",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "find-item",
+          "host": "wiring-api",
+          "name": "Find item",
+          "settings": {
+            "kind": "search-query"
+          }
+        },
+        {
+          "id": "publish",
+          "host": "publisher-api",
+          "name": "Publish",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "catalog-read",
+          "host": "catalog-api",
+          "name": "Catalog read",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "stampede": "single-flight"
+          }
+        },
+        {
+          "id": "catalog-source",
+          "host": "catalog-api",
+          "name": "Catalog source",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "id": "catalog-writer",
+          "host": "catalog-api",
+          "name": "Catalog writer",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "id": "transform",
+          "host": "internal-api",
+          "name": "Transform",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "audit",
+          "host": "fanout",
+          "name": "Audit",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "notify",
+          "host": "fanout",
+          "name": "Notify",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "work",
+          "host": "workers",
+          "name": "Work",
+          "settings": {
+            "kind": "custom"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "forward-echo",
+          "from": "forward",
+          "to": {
+            "kind": "component",
+            "id": "echo"
+          }
+        },
+        {
+          "id": "internal-call-internal-api",
+          "from": "internal-call",
+          "to": {
+            "kind": "element",
+            "id": "internal-api",
+            "via": "wiring-api-internal-api"
+          }
+        },
+        {
+          "id": "external-call-partner",
+          "from": "external-call",
+          "to": {
+            "kind": "element",
+            "id": "partner",
+            "via": "wiring-api-partner"
+          }
+        },
+        {
+          "id": "object-roundtrip-objects",
+          "from": "object-roundtrip",
+          "to": {
+            "kind": "element",
+            "id": "objects",
+            "via": "wiring-api-objects"
+          }
+        },
+        {
+          "id": "find-item-items-index",
+          "from": "find-item",
+          "to": {
+            "kind": "element",
+            "id": "items-index",
+            "via": "wiring-api-items-index"
+          }
+        },
+        {
+          "id": "publish-broadcasts",
+          "from": "publish",
+          "to": {
+            "kind": "element",
+            "id": "broadcasts",
+            "via": "publisher-api-broadcasts"
+          }
+        },
+        {
+          "id": "publish-jobs",
+          "from": "publish",
+          "to": {
+            "kind": "element",
+            "id": "jobs",
+            "via": "publisher-api-jobs"
+          }
+        },
+        {
+          "id": "catalog-read-catalog-cache",
+          "from": "catalog-read",
+          "to": {
+            "kind": "element",
+            "id": "catalog-cache",
+            "via": "catalog-api-catalog-cache"
+          }
+        },
+        {
+          "id": "catalog-source-catalog",
+          "from": "catalog-source",
+          "to": {
+            "kind": "element",
+            "id": "catalog",
+            "via": "catalog-api-catalog"
+          }
+        },
+        {
+          "id": "catalog-read-catalog-source",
+          "from": "catalog-read",
+          "to": {
+            "kind": "component",
+            "id": "catalog-source"
+          }
+        },
+        {
+          "id": "catalog-writer-catalog",
+          "from": "catalog-writer",
+          "to": {
+            "kind": "element",
+            "id": "catalog",
+            "via": "catalog-api-catalog"
+          }
+        },
+        {
+          "id": "transform-vault",
+          "from": "transform",
+          "to": {
+            "kind": "element",
+            "id": "vault",
+            "via": "internal-api-vault"
+          }
+        },
+        {
+          "id": "audit-broadcasts",
+          "from": "audit",
+          "to": {
+            "kind": "element",
+            "id": "broadcasts",
+            "via": "broadcasts-fanout"
+          }
+        },
+        {
+          "id": "audit-fanout-db",
+          "from": "audit",
+          "to": {
+            "kind": "element",
+            "id": "fanout-db",
+            "via": "fanout-fanout-db"
+          }
+        },
+        {
+          "id": "notify-broadcasts",
+          "from": "notify",
+          "to": {
+            "kind": "element",
+            "id": "broadcasts",
+            "via": "broadcasts-fanout"
+          }
+        },
+        {
+          "id": "notify-fanout-db",
+          "from": "notify",
+          "to": {
+            "kind": "element",
+            "id": "fanout-db",
+            "via": "fanout-fanout-db"
+          }
+        },
+        {
+          "id": "work-jobs",
+          "from": "work",
+          "to": {
+            "kind": "element",
+            "id": "jobs",
+            "via": "jobs-workers"
+          }
+        },
+        {
+          "id": "work-work-db",
+          "from": "work",
+          "to": {
+            "kind": "element",
+            "id": "work-db",
+            "via": "workers-work-db"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "entry-wiring-api",
+          "lane": "download",
+          "element": "wiring-api"
+        },
+        {
+          "id": "entry-catalog-api",
+          "lane": "download",
+          "element": "catalog-api"
+        },
+        {
+          "id": "entry-publisher-api",
+          "lane": "download",
+          "element": "publisher-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Exercise wiring"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "echo",
+        "target": {
+          "kind": "component",
+          "component": "echo",
+          "host": "wiring-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "forward",
+        "target": {
+          "kind": "component",
+          "component": "forward",
+          "host": "wiring-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "internal-call",
+        "target": {
+          "kind": "component",
+          "component": "internal-call",
+          "host": "wiring-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "external-call",
+        "target": {
+          "kind": "component",
+          "component": "external-call",
+          "host": "wiring-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "object-roundtrip",
+        "target": {
+          "kind": "component",
+          "component": "object-roundtrip",
+          "host": "wiring-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "find-item",
+        "target": {
+          "kind": "component",
+          "component": "find-item",
+          "host": "wiring-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "publish",
+        "target": {
+          "kind": "component",
+          "component": "publish",
+          "host": "publisher-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "catalog-read",
+        "target": {
+          "kind": "component",
+          "component": "catalog-read",
+          "host": "catalog-api"
+        },
+        "template": {
+          "id": "positive-cache-read",
+          "version": "0.1.0",
+          "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c"
+        },
+        "binding": {
+          "kind": "positive-cache-read",
+          "source": {
+            "resource": "catalog",
+            "connection": "catalog-api-catalog"
+          },
+          "cache": {
+            "resource": "catalog-cache",
+            "connection": "catalog-api-catalog-cache"
+          }
+        }
+      },
+      {
+        "id": "catalog-writer",
+        "target": {
+          "kind": "component",
+          "component": "catalog-writer",
+          "host": "catalog-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "transform",
+        "target": {
+          "kind": "component",
+          "component": "transform",
+          "host": "internal-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "audit",
+        "target": {
+          "kind": "component",
+          "component": "audit",
+          "host": "fanout"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "notify",
+        "target": {
+          "kind": "component",
+          "component": "notify",
+          "host": "fanout"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "work",
+        "target": {
+          "kind": "component",
+          "component": "work",
+          "host": "workers"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "catalog-api-owner",
+        "name": "Catalog API"
+      }
+    ],
+    "roles": [
+      {
+        "element": "catalog-api",
+        "owner": "catalog-api-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "catalog",
+        "authority": "catalog-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "catalog-cache",
+        "authority": "catalog-api-owner",
+        "kind": "projection",
+        "source": "catalog"
+      }
+    ],
+    "grants": [
+      {
+        "role": "catalog-api",
+        "resource": "catalog",
+        "access": "read"
+      },
+      {
+        "role": "catalog-api",
+        "resource": "catalog-cache",
+        "access": "read-write"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "catalog-api-catalog",
+        "access": "read"
+      },
+      {
+        "connection": "catalog-api-catalog-cache",
+        "access": "read-write"
+      }
+    ]
+  }
+}

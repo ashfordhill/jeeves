@@ -1,0 +1,14 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/wiring.system.test.ts (2 tests) 137613ms
+   ✓ B05: generated module, HTTP, queue, object and search connections return input-dependent results 82544ms
+   ✓ B06 normal: immutable published catalog fills, hits and expires in Valkey; absence remains uncached 55068ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  00:25:56
+   Duration  137.76s (tests 100%)
+
+JSON report written to /tmp/gs04-wiring-final/vitest.json
+JUNIT report written to /tmp/gs04-wiring-final/junit.xml

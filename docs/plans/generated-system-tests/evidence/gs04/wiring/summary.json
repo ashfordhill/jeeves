@@ -1,0 +1,7 @@
+{
+  "id": "gs-4d0e2747-66f5-4d74-a29d-5c358ad914e2",
+  "selected": ["wiring"],
+  "outcome": "passed",
+  "elapsedMs": 169601,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs04-wiring-confirmed/run.json"
+}

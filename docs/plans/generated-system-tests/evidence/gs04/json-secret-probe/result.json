@@ -1,0 +1,10 @@
+{
+  "directMembersRedacted": true,
+  "prettyObjectRedacted": true,
+  "bearerAndSignedQueryRedacted": true,
+  "recoveryBeforeRuntimeDeletion": true,
+  "temporaryRemoved": true,
+  "unreadableSecretFailsClosed": true,
+  "staleMarkerCleared": true,
+  "artifacts": "/tmp/gs04-json-evidence-9rK4ra"
+}

@@ -1,0 +1,19 @@
+$ pnpm --filter @jeeves/generator test:generated --suite=identity --artifacts=/tmp/gs04-not-implemented
+$ tsx integration/run.ts --suite=identity --artifacts=/tmp/gs04-not-implemented
+/home/ash/github/jeeves/jeeves-generator/integration/run.ts:25
+    throw new Error(`Suite '${suite}' is not implemented. Implemented: ${suites.join(", ")}`);
+          ^
+
+Error: Suite 'identity' is not implemented. Implemented: core, wiring
+    at <anonymous> (/home/ash/github/jeeves/jeeves-generator/integration/run.ts:25:11)
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator
+
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1,0 +1,12 @@
+{
+  "id": "gs-355d548e-06e2-4324-9e2f-ed84031038ad",
+  "selected": ["wiring"],
+  "commit": "655d4b34bd2e938fdacabe529541ce87a4ad8f82",
+  "dirty": "M field-projects/generator-system/README.md\n M jeeves-generator/integration/harness/evidence.ts\n M jeeves-generator/integration/run.ts\n?? field-projects/generator-system/fixtures/wiring/\n?? jeeves-generator/integration/author-wiring.ts\n?? jeeves-generator/integration/harness/wiring.ts\n?? jeeves-generator/integration/scenarios/wiring.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

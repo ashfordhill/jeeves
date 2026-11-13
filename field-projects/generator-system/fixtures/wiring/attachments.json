@@ -1,0 +1,104 @@
+[
+  {
+    "source": "owned/echo.ts",
+    "destination": "src/modules/wiring-api/echo.ts",
+    "role": "stub",
+    "module": "echo"
+  },
+  {
+    "source": "owned/forward.ts",
+    "destination": "src/modules/wiring-api/forward.ts",
+    "role": "stub",
+    "module": "forward"
+  },
+  {
+    "source": "owned/internal-call.ts",
+    "destination": "src/modules/wiring-api/internal-call.ts",
+    "role": "stub",
+    "module": "internal-call"
+  },
+  {
+    "source": "owned/external-call.ts",
+    "destination": "src/modules/wiring-api/external-call.ts",
+    "role": "stub",
+    "module": "external-call"
+  },
+  {
+    "source": "owned/object-roundtrip.ts",
+    "destination": "src/modules/wiring-api/object-roundtrip.ts",
+    "role": "stub",
+    "module": "object-roundtrip"
+  },
+  {
+    "source": "owned/find-item.ts",
+    "destination": "src/modules/wiring-api/find-item.ts",
+    "role": "stub",
+    "module": "find-item"
+  },
+  {
+    "source": "owned/transform.ts",
+    "destination": "src/modules/internal-api/transform.ts",
+    "role": "stub",
+    "module": "transform"
+  },
+  {
+    "source": "owned/publish.ts",
+    "destination": "src/modules/publisher-api/publish.ts",
+    "role": "stub",
+    "module": "publish"
+  },
+  {
+    "source": "owned/catalog-writer.ts",
+    "destination": "src/modules/catalog-api/catalog-writer.ts",
+    "role": "stub",
+    "module": "catalog-writer"
+  },
+  {
+    "source": "owned/catalog-read.hooks.ts",
+    "destination": "src/modules/catalog-api/catalog-read.hooks.ts",
+    "role": "hooks",
+    "module": "catalog-read"
+  },
+  {
+    "source": "owned/catalog.sql",
+    "destination": "infra/postgres/catalog/modules/catalog-writer.sql",
+    "role": "sql",
+    "module": "catalog-writer"
+  },
+  {
+    "source": "owned/audit.ts",
+    "destination": "src/modules/fanout/audit.ts",
+    "role": "stub",
+    "module": "audit"
+  },
+  {
+    "source": "owned/effects.sql",
+    "destination": "infra/postgres/fanout-db/modules/audit.sql",
+    "role": "sql",
+    "module": "audit"
+  },
+  {
+    "source": "owned/notify.ts",
+    "destination": "src/modules/fanout/notify.ts",
+    "role": "stub",
+    "module": "notify"
+  },
+  {
+    "source": "owned/effects.sql",
+    "destination": "infra/postgres/fanout-db/modules/notify.sql",
+    "role": "sql",
+    "module": "notify"
+  },
+  {
+    "source": "owned/work.ts",
+    "destination": "src/modules/workers/work.ts",
+    "role": "stub",
+    "module": "work"
+  },
+  {
+    "source": "owned/effects.sql",
+    "destination": "infra/postgres/work-db/modules/work.sql",
+    "role": "sql",
+    "module": "work"
+  }
+]
