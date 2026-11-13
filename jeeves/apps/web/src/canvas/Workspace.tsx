@@ -4,12 +4,15 @@
 // the selection carries across both). The selected tile's tabs add tiles (`creation.tsx`), and the
 // `+` in a tile or in the inspector's Modules section adds modules (`ModuleMenu.tsx`, one
 // command); a new tile or module opens with its name focused. Connect mode links tiles, and in the
-// Detailed view modules, by dragging (`connect.ts`), the red X on a tile or line removes it
-// (`removal.tsx`; in connect mode a module line's X disconnects that module); settings and
-// modules are edited in the inspector (`TileInspector.tsx`), an action's name in its own
-// (`ActionInspector`), and an entry's lane in its own (`EntrySummary`).
+// Detailed view modules, by dragging (`connect.ts`). In either mode a right-click opens a small
+// menu at the pointer (`CanvasMenu.tsx`): a tile's **Remove tile**, an action's **Remove action**,
+// a line's **Remove link** (`removal.tsx`), after its module link's own Disconnect item on a
+// Detailed module line, and a loader arrow's **Disconnect** (`connect.ts`); the user and its lines
+// to its actions have none. A new selection or revision closes it. Settings and modules are edited
+// in the inspector (`TileInspector.tsx`), an action's name in its own (`ActionInspector`), and an
+// entry's lane in its own (`EntrySummary`).
 // The selection (`selection.ts`) is a tile or a line, and with a tile, its open module.
-import type { BoardHandle, BoardMode } from "@jeeves/board";
+import type { BoardHandle, BoardMode, Point } from "@jeeves/board";
 import {
   applyOperations,
   buildStudioCommand,
@@ -60,6 +63,7 @@ import { OperationChanges } from "../studio/OperationChanges.tsx";
 import { type CanvasView, useStudioPreferences } from "../studio/preferences.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
+import { CanvasMenu, type CanvasMenuItem } from "./CanvasMenu.tsx";
 import { useLaneConnect } from "./connect.ts";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { ExportDiagram } from "./ExportDiagram.tsx";
@@ -168,8 +172,8 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   // Optional shortcuts (`shortcuts.ts`; mouse remains sufficient): Ctrl/Cmd+Z and
   // Ctrl/Cmd+Shift+Z or Ctrl+Y press the header's Undo and Redo while they are enabled and no
   // dialog is open, V and C the Pointer and Connect buttons, Escape returns to Pointer (once
-  // nothing else, such as a dialog or a drag, took it), and Delete/Backspace the selected tile's
-  // or line's X. None acts while focus is in a field.
+  // nothing else, such as a dialog or a drag, took it), and Delete/Backspace remove the selected
+  // tile or line, as its menu's Remove item does. None acts while focus is in a field.
   const removeSelected = useRef(() => {});
   const historyEnabled = useRef({ undo: false, redo: false });
   useEffect(() => {
@@ -253,14 +257,67 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     projectId,
     design: loaded.design,
     graph,
-    tile: mode === "select" ? selection.tile : undefined,
+    tile: selection.tile,
     onRemoved: (tile) => select(tile ? { tile } : {}),
   });
   removeSelected.current = () => {
     if (mode !== "select") return;
     if (selection.tile) remove(selection.tile);
-    else if (selection.line) removal.onRemoveLine?.(selection.line);
+    else if (selection.line) removal.onRemoveLine(selection.line);
   };
+  // The right-click menu: its place, its title and its items, made for this revision.
+  const [menu, setMenu] = useState<{ at: Point; title: string; items: CanvasMenuItem[] }>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new selection or revision closes it
+  useEffect(
+    () => setMenu(undefined),
+    [selection.tile, selection.line, selection.module, loaded.design.revision],
+  );
+  const nameOf = (id: string) => laneNodeName(loaded.design, graph, id);
+  const tileMenu = (tile: string, at: Point) => {
+    // The user can't be removed: no menu.
+    if (!removal.removable(tile)) {
+      setMenu(undefined);
+      return;
+    }
+    setMenu({
+      at,
+      title: nameOf(tile),
+      items: [
+        {
+          label: laneActionOf(tile) ? "Remove action" : "Remove tile",
+          // As Delete does, on the selected tile, so a confirmation that opens stays with it.
+          onPick: () => {
+            select({ tile });
+            remove(tile);
+          },
+        },
+      ],
+    });
+  };
+  const lineMenu = (line: string, at: Point, disconnect?: { link: string; label: string }) => {
+    const edge = graph.edges.find((item) => item.id === line);
+    // The user's line to an action goes with the action: no menu.
+    if (!edge || edge.source === LANE_ACTOR) {
+      setMenu(undefined);
+      return;
+    }
+    setMenu({
+      at,
+      title: `${nameOf(edge.source)} → ${nameOf(edge.target)}`,
+      items: [
+        ...(disconnect
+          ? [{ label: disconnect.label, onPick: () => disconnectModule(disconnect.link) }]
+          : []),
+        { label: "Remove link", onPick: () => removal.onRemoveLine(line) },
+      ],
+    });
+  };
+  const loaderMenu = (link: string, label: string, at: Point) =>
+    setMenu({
+      at,
+      title: label,
+      items: [{ label: "Disconnect", onPick: () => disconnectModule(link) }],
+    });
   const view = preferences.view;
   const showView = (next: CanvasView) =>
     setPreferences((current) => (current.view === next ? current : { ...current, view: next }));
@@ -384,9 +441,20 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           creation={creation}
           removal={removal}
           connect={connect}
-          onDisconnectModule={disconnectModule}
+          onTileMenu={tileMenu}
+          onLineMenu={lineMenu}
+          onLoaderMenu={loaderMenu}
           adding={adding}
         />
+        {menu ? (
+          <CanvasMenu
+            key={`${menu.at.x},${menu.at.y}`}
+            at={menu.at}
+            title={menu.title}
+            items={menu.items}
+            onClose={() => setMenu(undefined)}
+          />
+        ) : null}
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button
             type="button"

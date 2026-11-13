@@ -11975,3 +11975,66 @@ of the kinds, which stay.
 **For the next unit.** UI02 can start. Neither study now has a legacy-kind tile, so a check of
 the Redirect or Billing kind needs a tile switched to it first (as `studio-lane-commands.test.ts`
 and `studio-operations.test.ts` now do).
+
+## 2026-11-13 — UI02: Right-click menus replace the red X
+
+**What changed.**
+- `@jeeves/board`: no red X. `Board` drops `removable`, `onRemoveTile`, `onRemoveLine` and
+  `LineSpec`'s `removable`/`removeLabel`, and gains `onTileMenu` and `onLineMenu` (React Flow's
+  `onNodeContextMenu`/`onEdgeContextMenu`: no browser menu, the chooser closes, the ID and the
+  pointer go to the caller). `RemoveButton.tsx` and its export, the `.board-remove*` rules, the
+  line X (`BoardLine`), the tile X (`TileChrome`) and the context's `removeLine`/`holdHover`/
+  `releaseHover` are gone; Connect mode's hover colour stays. `board.test.tsx`: the X assertions
+  and the hover-X test are gone; two new tests for the right-clicks.
+- `apps/web`: new `CanvasMenu.tsx` (a Mantine `Menu` on a 1px fixed anchor, the title a
+  `Menu.Label`, `IconTrash` items in `--off-ink` on `--off-bg`, new tokens in both themes).
+  `Workspace.tsx` holds the menu and builds it: a tile's Remove tile or an action's Remove
+  action, a line's `<from> → <to>` with a Detailed module line's own Disconnect item and then
+  Remove link, a loader arrow's Disconnect; none for the User or its lines; a new selection or
+  revision closes it. `LaneCanvas.tsx` takes `onTileMenu`, `onLineMenu` (the canonical ID and, in
+  Detailed, the drawn line's `disconnect`) and `onLoaderMenu`, and passes only `hud` to the board.
+  `ContainerTile.tsx`: `onLoaderMenu` replaces `onDisconnect` (the arrow's `onContextMenu`); its X
+  and `.lane-container-loader-remove` are gone. `removal.tsx` declares its own `Removal` type.
+- E2E: `pickFromMenu` in `studio.ts`; ten specs right-click instead of clicking an X.
+- Docs: `docs/studio.md`, `jeeves/CATALOG.md`, `jeeves/PLAN.md`; comments in `connect.ts`,
+  `detailedView.ts`, `camera.ts`, `polyline.ts`, `LinkGlyph.tsx`.
+
+**Checks.** `pnpm check` before any change: the first run failed one board test (`drags from an
+end's handle…`, no `is-drop-over`) under full load; alone it passed three times, and the full rerun
+passed (106 files, 823 tests). After: 106 files, 824 tests passed (lint's one info is older).
+`pnpm test:e2e` (native): 73 passed (4.5 min). `pnpm --filter @jeeves/web build`: exit 0. Mouse
+check (`ui02-check.spec.ts`, then deleted): 2 passed, 1440×900 and 1280×800, no page error. On
+TinyURL in Detailed and in Simple: right-click Click events → Remove tile → the panel lists the
+Analytics worker → Remove 2 tiles → Undo (design as before); Redirect service → URL database →
+Remove link → Undo; in Detailed the Link reader's line → Disconnect Link reader from URL database
+→ Undo; the User opens no menu; the menu opens at the pointer; `.board-remove` count 0
+throughout. The fixture deleted its projects. Six screenshots in
+`docs/plans/ui-refresh/evidence/ui02/` (tile, Simple line and Detailed module-line menus, light and
+dark) match the menus in `preview/top-bar-*.png`: grey title, trash icon and words in red on a
+pale red fill (deep red in dark). The panel uses `--cream` and the module menu's border until
+UI04's `--row-line` and UI13's `--panel` exist.
+**Differences from the plan.**
+- `onLineMenu`'s line: the selected line when it is among `nearestLines`, else the line React Flow
+  reports under the pointer (drawn on top; the hovered one in Connect mode) when it is among them,
+  else the list's first, else `edge.id`. The plan's "else the list's first" opened the wrong line
+  on a shared bus (`connect.spec.ts`: redirect-db's right-click opened Redirect service → Click
+  events).
+- Remove tile and Remove action select the tile before `remove`, and `useLaneRemoval` gets the
+  selected tile in both modes (it was undefined in Connect), so a confirmation from a right-click
+  on an unselected tile, or in Connect mode, is not dropped at once. Switching to Connect no
+  longer cancels an open confirmation.
+- `LaneCanvas`'s `onDisconnectModule` prop became `onLoaderMenu`; the rows need it.
+- `pickFromMenu` also takes a point: a line's or an arrow's box centre may be paper, so specs pass
+  `linePoint`/`arrowPoint`.
+- `module-authoring.spec.ts` (not in the plan's list of nine) clicked loader and module-line X
+  buttons too; changed the same way. `spawn.spec.ts`: one comment.
+- The loader arrow's `onContextMenu` needs `biome-ignore lint/a11y/noStaticElementInteractions`.
+- `board.test.tsx`'s "keeping its chrome" test gives the tile a tab, so its chrome is the tab.
+**Noticed.** `ownStretchMidpoint` (`layout/polyline.ts`) has no caller now. `DetailedLine.removable`
+is still set on the user's lines, but nothing reads it. `docs/design-playbook.md` (about lines
+1238, 1288 and 1368) still speaks of the X in its lessons. canvas.css's `--board-remove-active`
+mixes with a literal `#000` (older). `jeeves_e2e` holds "TinyURL · studio study" (2026-11-06) and
+"E2E Every kind"; left alone. No uncommitted changes under `jeeves-generator/` or
+`field-projects/`; the owner's dirty paths stay untouched and unstaged.
+**For the next unit.** UI03 can start. The menus are `CanvasMenu.tsx`, built in `Workspace.tsx`;
+UI04's `--row-line` and UI13's `--panel` should replace `.canvas-menu`'s border and fill.

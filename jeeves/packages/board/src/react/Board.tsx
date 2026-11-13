@@ -9,18 +9,18 @@
 // docks at the next slot after its source until ELK lands and the layout animates, and the camera
 // pans just enough to show it.
 // The selected line and the selected tile's lines take the selection colour, drawn over the rest.
-// A removable selected tile (select mode), and a selected line, show a red X; a caller's panel
-// (`hud`, a confirmation) sits at the bottom centre of the board.
+// A right-click on a tile or a line hands it and the pointer to the caller (`onTileMenu`,
+// `onLineMenu`), which opens its own menu there; a caller's panel (`hud`, a confirmation) sits at
+// the bottom centre of the board.
 //
 // Modes: in select mode a click selects and the paper pans. In connect mode a click still
 // selects and the paper still pans, but a drag from a tile draws a new line to another tile
 // (`ConnectDrag.tsx`, with the caller's `canConnect`, `connectRefusal`, `onConnect` and
 // `onConnectRefused`); a tile's content may mark ends of its own inside it (`data-board-end`,
 // such as a container's rows), dragged from their handles and dropped on where the rules know
-// them. Tiles show no chrome, and a line under the pointer turns the selection colour and shows
-// its red X (on the stretch the selected line's X would take) until the pointer leaves it and its
-// X. A drag held near the board's edge pans the camera towards it, as far as the tiles go; the
-// camera is then the user's.
+// them. Tiles show no chrome, and a line under the pointer turns the selection colour until the
+// pointer leaves it. A drag held near the board's edge pans the camera towards it, as far as the
+// tiles go; the camera is then the user's.
 //
 // Hit areas: the host carries the camera's zoom as `--board-zoom` and the smallest hit area an
 // end's handle should keep on screen as `--board-handle-hit` (16px), so a tile's content can keep
@@ -160,10 +160,6 @@ export type LineSpec = {
   group?: string;
   /** A box drawn on the line (phrasing content, such as an icon), kept clear by ELK. */
   chip?: Size & { content: ReactNode };
-  /** `false`: the selected line shows no X (it goes with a tile). Default true. */
-  removable?: boolean;
-  /** The X's accessible name; default "Remove <label>". */
-  removeLabel?: string;
   /** Its band: it shares no run with lines of other bands, except next to a port (`meetAtPorts`). */
   band?: number;
   /** The source's `out` port it leaves from; default: mid-height. */
@@ -215,15 +211,10 @@ export type BoardProps = ConnectRules & {
     tab: string,
     item: string,
   ) => string | undefined | Promise<string | undefined>;
-  /** Whether the selected tile shows a red X (select mode). */
-  removable?: (tile: string) => boolean;
-  /** The selected tile's X was clicked. */
-  onRemoveTile?: (tile: string) => void;
-  /**
-   * A line's X was clicked (the selected line's, or in connect mode the one under the pointer);
-   * without it lines have no X.
-   */
-  onRemoveLine?: (line: string) => void;
+  /** A right-click on a tile: its ID and the pointer, in client pixels. */
+  onTileMenu?: (tile: string, at: Point) => void;
+  /** A right-click on a line: the selected line when it is under the pointer, else the nearest. */
+  onLineMenu?: (line: string, at: Point) => void;
   hud?: TileHud;
   /**
    * The view the tiles and lines show; default one view. Each view keeps its own stability
@@ -233,7 +224,7 @@ export type BoardProps = ConnectRules & {
   view?: string;
   /**
    * Lines drawn in the selection colour and over the rest, as the selected tile's own lines are.
-   * View only: it selects nothing and shows no X.
+   * View only: it selects nothing.
    */
   highlighted?: readonly string[];
   /**
@@ -443,11 +434,8 @@ function lineEdges(
       dashed: l.dashed,
       ...(l.directed ? { directed: true } : {}),
       ...(linked(l) || hovered === l.id ? { linked: true } : {}),
-      ...(hovered === l.id ? { hovered: true } : {}),
       ...(l.label ? { label: l.label } : {}),
       ...(l.chip ? { chip: l.chip.content } : {}),
-      ...(l.removable === false ? { fixed: true } : {}),
-      ...(l.removeLabel !== undefined && { removeLabel: l.removeLabel }),
       bridges: crossingBridges(
         routes[l.id] ?? [],
         ordered
@@ -474,9 +462,8 @@ function Inner({
   connectRefusal,
   onConnect,
   onConnectRefused,
-  removable,
-  onRemoveTile,
-  onRemoveLine,
+  onTileMenu,
+  onLineMenu,
   hud,
   view = "",
   highlighted,
@@ -757,9 +744,8 @@ function Inner({
     [rf],
   );
 
-  /* Connect mode: a drag from a tile, and the line under the pointer (its X shows). The pointer
-     may leave a line for its X, which sits over it: the line stays hovered for a moment, and
-     while the pointer is on the X. */
+  /* Connect mode: a drag from a tile, and the line under the pointer, in the selection colour
+     until a moment after the pointer leaves it. */
   const connecting = useConnectDrag(
     hostRef,
     connectMode && !covering,
@@ -789,25 +775,15 @@ function Inner({
   const source = selected.tile;
   /* A tile with a panel under it shows no chrome; the panel speaks for it. */
   const hudTile = !covering && hud && placed(hud.tile) ? hud.tile : null;
-  const removeTile = source && removable?.(source) ? onRemoveTile : undefined;
   const chromeTile =
-    mode === "select" &&
-    !covering &&
-    source &&
-    source !== hudTile &&
-    (tabs?.length || removeTile) &&
-    placed(source)
+    mode === "select" && !covering && source && source !== hudTile && tabs?.length && placed(source)
       ? source
       : null;
-  const label = (id: string) => drawn.tiles.find((t) => t.id === id)?.label ?? id;
   const chrome = chromeTile ? (
     <TileChrome
       tile={chromeTile}
       size={drawn.sizes[chromeTile] ?? { w: 128, h: 128 }}
       tabs={tabs ?? []}
-      {...(removeTile && {
-        remove: { label: `Remove ${label(chromeTile)}`, onRemove: () => removeTile(chromeTile) },
-      })}
       host={hostRef}
       onPick={(tab, item) => {
         const port = drawn.lines.filter((l) => l.source === chromeTile).length;
@@ -880,21 +856,8 @@ function Inner({
     : [];
 
   const context = useMemo(
-    () => ({
-      layout: shown,
-      selectLine: onSelectLine,
-      ...(onRemoveLine
-        ? {
-            removeLine: (id: string) => {
-              clearTimeout(unhover.current);
-              setHoverLine(undefined);
-              onRemoveLine(id);
-            },
-          }
-        : {}),
-      ...(connectMode ? { holdHover, releaseHover } : {}),
-    }),
-    [shown, connectMode, onSelectLine, onRemoveLine, holdHover, releaseHover],
+    () => ({ layout: shown, selectLine: onSelectLine }),
+    [shown, onSelectLine],
   );
 
   return (
@@ -986,6 +949,29 @@ function Inner({
               setLineChoice(undefined);
               onSelectLine(ids[0] ?? edge.id);
             }
+          }}
+          onNodeContextMenu={(event, node) => {
+            if (!onTileMenu) return;
+            event.preventDefault();
+            setLineChoice(undefined);
+            onTileMenu(node.id, { x: event.clientX, y: event.clientY });
+          }}
+          onEdgeContextMenu={(event, edge) => {
+            if (!onLineMenu) return;
+            event.preventDefault();
+            setLineChoice(undefined);
+            // The lines are found as a click finds them. The selected line wins when it is among
+            // them; on a stretch several lines share, the one under the pointer (drawn on top,
+            // the hovered one in connect mode) comes before the list's first.
+            const point = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
+            const ids = nearestLines(point, routes, 3 / rf.getZoom(), 22);
+            const line =
+              selected.line !== undefined && ids.includes(selected.line)
+                ? selected.line
+                : ids.includes(edge.id)
+                  ? edge.id
+                  : (ids[0] ?? edge.id);
+            onLineMenu(line, { x: event.clientX, y: event.clientY });
           }}
           onPaneClick={() => {
             setLineChoice(undefined);

@@ -1,8 +1,8 @@
 // A container's rows carry port marks only on the sides their drawn lines use, and a mark is lit
 // (the selection colour) exactly while a line at that port is, whatever selected it. A row that
 // can connect has a dot, filled once connected, as the handle of its board end; the Cache reader's
-// loader is an arrow in the gutter whose X (live canvas only) disconnects it. A container's header
-// and a plain tile's face show the kind label under the name.
+// loader is an arrow in the gutter, and a right-click on it (live canvas only) asks for its menu. A
+// container's header and a plain tile's face show the kind label under the name.
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DetailedRow } from "../detailedView.ts";
@@ -89,9 +89,9 @@ describe("ContainerTile", () => {
     const loaders = [
       { link: "cache-data", from: "cache", to: "data", label: "Cache reader to Data access" },
     ];
-    const onDisconnect = vi.fn();
+    const onLoaderMenu = vi.fn();
     const live = render(
-      <ModuleRows value={{ open: "data", lit: [], onOpen: () => {}, onDisconnect }}>
+      <ModuleRows value={{ open: "data", lit: [], onOpen: () => {}, onLoaderMenu }}>
         <ContainerTile kind="service" name="Watch" rows={own} loaders={loaders} />
       </ModuleRows>,
     );
@@ -114,17 +114,23 @@ describe("ContainerTile", () => {
     const arrow = live.container.querySelector<HTMLElement>(".lane-container-loader");
     expect(arrow?.dataset.link).toBe("cache-data");
     expect(arrow?.hasAttribute("data-lit")).toBe(true);
-    expect(screen.getByRole("img", { name: "Cache reader to Data access" })).not.toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Disconnect cache from data" }));
-    expect(onDisconnect).toHaveBeenCalledWith("cache-data");
+    const img = screen.getByRole("img", { name: "Cache reader to Data access" });
+    // A right-click on the arrow asks for its menu, not the browser's or the tile's.
+    expect(fireEvent.contextMenu(img, { clientX: 40, clientY: 90 })).toBe(false);
+    expect(onLoaderMenu).toHaveBeenCalledWith("cache-data", "Cache reader to Data access", {
+      x: 40,
+      y: 90,
+    });
     cleanup();
 
-    // An export draws the arrow but has no X; no loaders, no gutter.
+    // An export draws the arrow, and a right-click on it asks for nothing; no loaders, no gutter.
     const exported = render(
       <ContainerTile kind="service" name="Watch" rows={own} loaders={loaders} />,
     );
     expect(exported.container.querySelectorAll(".lane-container-loader")).toHaveLength(1);
-    expect(exported.container.querySelector(".lane-container-loader-remove")).toBeNull();
+    expect(
+      fireEvent.contextMenu(screen.getByRole("img", { name: "Cache reader to Data access" })),
+    ).toBe(true);
     cleanup();
     const plain = render(<ContainerTile kind="service" name="Watch" rows={own} />);
     expect(

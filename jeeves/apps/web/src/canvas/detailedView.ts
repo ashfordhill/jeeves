@@ -24,7 +24,7 @@
 // module order. An anchored line's ID is the edge ID and its module IDs joined by
 // `LINE_SEPARATOR`, which no design ID contains. The user's lines and the entries attach at the
 // tile level. An anchored line names the module link it shows (`disconnect`: its source module's,
-// else its target module's), which Connect mode's X removes.
+// else its target module's), which its right-click menu offers to disconnect.
 //
 // Rows and in-process links. A row whose kind has slots can take connections (`connects`, a dot
 // at its edge), filled once one of its slots is (`connected`). Of the links between modules of one

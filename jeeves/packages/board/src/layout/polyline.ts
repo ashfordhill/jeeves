@@ -150,7 +150,7 @@ const OWN_STRETCH_MIN = 8;
 /**
  * The middle of the longest straight run of `points` that no polyline in `others` runs along
  * (crossings don't count, only shared runs), or undefined when every run of at least 8px is
- * shared. A line on a shared bus places its X there, on a stretch that is its alone.
+ * shared: on a shared bus, a place on a stretch that is the line's alone.
  */
 export function ownStretchMidpoint(
   points: readonly Point[],

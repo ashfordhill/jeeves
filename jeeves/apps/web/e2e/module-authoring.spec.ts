@@ -3,7 +3,8 @@
  * allows, grouped Template, Part of a template and Stub; a picked kind becomes a module that opens
  * with its name focused. In the Detailed view a row that can connect has a dot: in Connect mode a drag
  * from it runs `connectModule`, the Cache reader's loader is a row→row drag drawn as a gutter
- * arrow (so is Favorites' items), and the X on a module's line or arrow runs `disconnectModule`.
+ * arrow (so is Favorites' items), and the right-click menu of a module's line or arrow runs
+ * `disconnectModule`.
  * Every change is one command and one Undo step; looking, hovering and cancelled drags change
  * nothing.
  */
@@ -17,6 +18,7 @@ import {
   linePoint,
   moduleMenu,
   pickFrom,
+  pickFromMenu,
   ready,
   stillBoard,
   test,
@@ -236,7 +238,7 @@ test("adds a module of every menu kind to a Service and a Worker by mouse", asyn
   expect(errors).toEqual([]);
 });
 
-test("connects a module from its dot, refuses with the reason, and disconnects by its X", async ({
+test("connects a module from its dot, refuses with the reason, and disconnects from its line's menu", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -291,12 +293,8 @@ test("connects a module from its dot, refuses with the reason, and disconnects b
     const drawn = "microservice-database/microservice-data-access";
     await expect(page.locator(`.board .react-flow__edge[data-id="${drawn}"]`)).toHaveCount(1);
 
-    // Its line's X in Connect mode disconnects the module; the tiles' link stays.
-    const at = await linePoint(page, drawn);
-    await page.mouse.move(at.x, at.y, { steps: 4 });
-    const x = page.getByRole("button", { name: "Disconnect Data access from Database" });
-    await expect(x).toBeVisible();
-    await x.click();
+    // Its line's menu disconnects the module; the tiles' link stays.
+    await pickFromMenu(page, await linePoint(page, drawn), "Disconnect Data access from Database");
     await expect(dot(page, module)).not.toHaveAttribute("data-connected");
     const disconnected = await saved(page, id);
     expect(disconnected.revision).toBe(connected.revision + 1);
@@ -376,12 +374,11 @@ test("the Cache reader's loader is a row-to-row drag, drawn as a gutter arrow", 
     await expect(status(page)).toHaveAttribute("data-status", "template");
     await expect(status(page)).toHaveText("TemplateCache read");
 
-    // In Connect mode the arrow under the pointer shows its X, which disconnects the loader.
+    // The arrow's menu, titled with the link, disconnects the loader.
     const at = await arrowPoint(arrow);
-    await page.mouse.move(at.x, at.y, { steps: 4 });
-    const x = page.getByRole("button", { name: "Disconnect Cache reader from Data access" });
-    await expect(x).toBeVisible();
-    await x.click();
+    await page.mouse.click(at.x, at.y, { button: "right" });
+    await expect(page.getByRole("menu")).toContainText("Cache reader to Data access");
+    await page.getByRole("menuitem", { name: "Disconnect", exact: true }).click();
     await expect(arrow).toHaveCount(0);
     await expect(status(page)).toHaveAttribute("data-status", "stub");
     await expect(status(page)).toContainText("Needs");
@@ -432,17 +429,22 @@ test("looking, hovering and cancelled drags change neither the design nor the bl
   if (!paper) throw new Error("No canvas.");
   await page.mouse.move(paper.x + 30, paper.y + paper.height - 80, { steps: 6 });
   await page.mouse.up();
+  // A module's line and the loader arrow, hovered and right-clicked: their menus, closed unpicked.
   const at = await linePoint(page, "redirect-db/redirect-data");
   await page.mouse.move(at.x, at.y, { steps: 4 });
+  await page.mouse.click(at.x, at.y, { button: "right" });
   await expect(
-    page.getByRole("button", { name: "Disconnect Link reader from URL database" }),
+    page.getByRole("menuitem", { name: "Disconnect Link reader from URL database" }),
   ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
   const arrow = page.locator(".board .lane-container-loader");
   const point = await arrowPoint(arrow);
   await page.mouse.move(point.x, point.y, { steps: 4 });
-  await expect(
-    page.getByRole("button", { name: "Disconnect Cache reader from Link reader" }),
-  ).toBeVisible();
+  await page.mouse.click(point.x, point.y, { button: "right" });
+  await expect(page.getByRole("menuitem", { name: "Disconnect", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
   await page.keyboard.press("v");
   await page.getByRole("button", { name: "Simple", exact: true }).click();
   await ready(page);
@@ -652,13 +654,9 @@ test("Favorites is a Template beside a Required Auth guard; its items are a row-
     await undo(page);
     await expect(status(page)).toHaveAttribute("data-status", "template");
 
-    // In Connect mode the arrow's X disconnects the items; Undo returns them.
+    // In Connect mode, as in Pointer, the arrow's menu disconnects the items; Undo returns them.
     await page.keyboard.press("c");
-    const at = await arrowPoint(arrow);
-    await page.mouse.move(at.x, at.y, { steps: 4 });
-    const x = page.getByRole("button", { name: "Disconnect Favorites from Data access" });
-    await expect(x).toBeVisible();
-    await x.click();
+    await pickFromMenu(page, await arrowPoint(arrow), "Disconnect");
     await expect(arrow).toHaveCount(0);
     expect(await moduleLinks(page, id)).toEqual(before.architecture.studio.componentConnections);
     await undo(page);

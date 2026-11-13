@@ -1,5 +1,16 @@
 import type { Page } from "@playwright/test";
-import { clickLine, createStudy, design, expect, lines, showView, test, tile } from "./studio.ts";
+import {
+  clickLine,
+  createStudy,
+  design,
+  expect,
+  linePoint,
+  lines,
+  pickFromMenu,
+  showView,
+  test,
+  tile,
+} from "./studio.ts";
 
 /** The lines drawn in the selection colour: the selected line, or the selected tile's lines. */
 const highlighted = (page: Page) =>
@@ -78,11 +89,9 @@ test("selection traces YouTube relationships, ends when cleared and leaves the d
     await expect(lines(page)).toHaveCount(25);
     expect(await blueprint()).toEqual(before);
 
-    // The selected line's X removes the relationship; one Undo restores it.
+    // The selected line's Remove link removes the relationship; one Undo restores it.
     await clickLine(page, "indexer-write");
-    await page
-      .getByRole("button", { name: "Remove Search indexer to Videos", exact: true })
-      .click();
+    await pickFromMenu(page, await linePoint(page, "indexer-write"), "Remove link");
     await expect(page.locator('.react-flow__edge[data-id="indexer-write"]')).toHaveCount(0);
     await expect(lines(page)).toHaveCount(24);
     expect((await design(page, id)).connections.some((c) => c.id === "indexer-write")).toBe(false);
@@ -147,9 +156,7 @@ test("removing a selected tile traces its surviving neighbour and Undo restores 
   await showView(page, "Simple");
   await tile(page, "Click events").click();
   await expect.poll(() => highlighted(page)).toEqual(await touching(page, "Click events"));
-  await tile(page, "Click events")
-    .getByRole("button", { name: "Remove Click events", exact: true })
-    .click();
+  await pickFromMenu(page, tile(page, "Click events"), "Remove tile");
   await page
     .getByRole("dialog", { name: "Remove Click events" })
     .getByRole("button", { name: "Remove 2 tiles", exact: true })

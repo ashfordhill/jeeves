@@ -15,8 +15,10 @@ import {
   design,
   dragPaper,
   expect,
+  linePoint,
   lines,
   moveOnto,
+  pickFromMenu,
   pull,
   ready,
   test,
@@ -166,10 +168,8 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
     await show(page, "Detailed");
     await expect.poll(() => highlighted(page)).toEqual(WRITES);
 
-    // Its X removes the whole relationship, both drawn lines; one Undo restores it.
-    await page
-      .getByRole("button", { name: "Remove Thumbnailer (Transcoder) to Transcoded videos" })
-      .click();
+    // Its menu's Remove link removes the whole relationship, both drawn lines; one Undo restores it.
+    await pickFromMenu(page, await linePoint(page, WRITES[1] as string), "Remove link");
     await expect(lines(page)).toHaveCount(YOUTUBE_DETAILED_LINES - 2);
     expect((await design(page, id)).connections.some((c) => c.id === "transcoder-write")).toBe(
       false,
@@ -182,18 +182,18 @@ test("Detailed draws YouTube's modules by mouse, maps lines to relationships and
 
     // A removal that would cut a tile off is refused with the reason, as in the Simple view.
     await clickLine(page, "completions-handler/handler-consumer");
-    await page
-      .getByRole("button", {
-        name: "Remove Completion events to Completion consumer (Completion handler)",
-      })
-      .click();
+    await pickFromMenu(
+      page,
+      await linePoint(page, "completions-handler/handler-consumer"),
+      "Remove link",
+    );
     await expect(page.locator(".studio-notice")).toContainText("would cut off Completion handler");
     await expect(lines(page)).toHaveCount(YOUTUBE_DETAILED_LINES);
 
-    // A container has its tile X and pull tabs; a tile added from one is one step, and Undo.
+    // A container has its tile menu and pull tabs; a tile added from one is one step, and Undo.
     await transcoder.click({ position: { x: 20, y: 12 } });
     await expect(transcoder).toHaveClass(/selected/);
-    await transcoder.getByRole("button", { name: "Remove Transcoder", exact: true }).click();
+    await pickFromMenu(page, transcoder, "Remove tile");
     const removal = page.getByRole("dialog", { name: "Remove Transcoder" });
     await expect(removal).toBeVisible();
     await removal.getByRole("button", { name: "Cancel", exact: true }).click();
@@ -280,14 +280,17 @@ test("a module row opens its module and marks only its own row and its own lines
     await expect(row(page, "Packager")).toBeVisible();
     expect(await marks(page)).toEqual({});
 
-    // A row opens its module: the host is selected, with its X, but only the Packager's own line
+    // A row opens its module: the host is selected, with its menu, but only the Packager's own line
     // takes the selection colour (not the Thumbnailer's line of the same relationship) and only
     // its row is marked, not those of the modules it links with inside the Transcoder.
     await row(page, "Packager").click();
     await expect(back).toBeVisible();
     await expect(name).toHaveValue("Packager");
     await expect(transcoder).toHaveClass(/selected/);
-    await expect(transcoder.getByRole("button", { name: "Remove Transcoder" })).toBeVisible();
+    await transcoder.click({ button: "right", position: { x: 20, y: 12 } });
+    await expect(page.getByRole("menuitem", { name: "Remove tile", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toHaveCount(0);
     await expect.poll(() => highlighted(page)).toEqual([WRITES[0]]);
     expect(await marks(page)).toEqual({ "transcoder-packager": "open" });
     await expect(row(page, "Packager")).toHaveAttribute("aria-current", "true");
@@ -498,7 +501,7 @@ test("Choose relationship offers a relationship once, and port marks follow thei
   }
 });
 
-test("a Detailed line's X goes through the relationship declarations confirmation", async ({
+test("a Detailed line's Remove link goes through the relationship declarations confirmation", async ({
   page,
   tinyurl: id,
 }) => {
@@ -510,9 +513,7 @@ test("a Detailed line's X goes through the relationship declarations confirmatio
   await expect(page.locator(".studio-inspector .lane-connection-label")).toHaveText(
     "Reads links on a cache miss",
   );
-  await page
-    .getByRole("button", { name: "Remove Link reader (Redirect service) to URL database" })
-    .click();
+  await pickFromMenu(page, await linePoint(page, "redirect-db/redirect-data"), "Remove link");
   const removal = page.getByRole("dialog", { name: "Remove relationship declarations" });
   await expect(removal).toContainText("dependencies · redirect-db");
   await removal.getByRole("button", { name: "Remove relationship", exact: true }).click();

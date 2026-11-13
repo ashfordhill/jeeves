@@ -1,6 +1,6 @@
 import { buildGenerationPresetCommand } from "@jeeves/spec";
 import { commitSource } from "./source.ts";
-import { createStudy, design, expect, ready, test, tile } from "./studio.ts";
+import { createStudy, design, expect, pickFromMenu, ready, test, tile } from "./studio.ts";
 
 test("a historical preset design autosaves its useful TTL and pool controls through Undo, Redo and reload", async ({
   page,
@@ -194,9 +194,7 @@ test("Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y press Undo and Redo, but not in a field or
   await page.getByRole("button", { name: "Close export diagram" }).click();
   await expect(exporting).toHaveCount(0);
   await tile(page, "Redirect service").click({ position: { x: 20, y: 12 } });
-  await tile(page, "Redirect service")
-    .getByRole("button", { name: "Remove Redirect service", exact: true })
-    .click();
+  await pickFromMenu(page, tile(page, "Redirect service"), "Remove tile");
   const removal = page.getByRole("dialog", { name: "Remove Redirect service" });
   await expect(removal).toBeVisible();
   await page.keyboard.press("Control+z");

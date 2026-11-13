@@ -183,24 +183,21 @@ describe("Board", () => {
     expect(ref.current?.snapshot()?.layout.positions.actor).not.toEqual({ x: -500, y: -500 });
   });
 
-  it("keeps a directed line's hit band and mouse removal", async () => {
+  it("keeps a directed line's hit band and selects it by click", async () => {
     const onSelectLine = vi.fn();
-    const onRemoveLine = vi.fn();
     const engine = createLayoutEngine(fakeElk, { debounceMs: 0 });
-    const board = (selected: BoardProps["selected"]) => (
+    const { container } = render(
       <Board
         tiles={tiles}
         lines={lines}
         engine={engine}
-        selected={selected}
+        selected={{}}
         onSelectTile={() => {}}
         onSelectLine={onSelectLine}
         onClear={() => {}}
-        onRemoveLine={onRemoveLine}
         mode="select"
-      />
+      />,
     );
-    const { container, rerender } = render(board({}));
     await waitFor(() =>
       expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
     );
@@ -210,9 +207,58 @@ describe("Board", () => {
     if (!hit) throw new Error("Missing line hit target");
     fireEvent.click(hit);
     expect(onSelectLine).toHaveBeenCalledWith("publish");
-    rerender(board({ line: "publish" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Remove line" }));
-    expect(onRemoveLine).toHaveBeenCalledWith("publish");
+  });
+
+  it("hands a right-click on a tile to `onTileMenu` with its ID and the pointer", async () => {
+    const onTileMenu = vi.fn();
+    const onSelectTile = vi.fn();
+    const { container } = render(
+      <Board
+        tiles={tiles}
+        lines={lines}
+        engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+        selected={{}}
+        onSelectTile={onSelectTile}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        onTileMenu={onTileMenu}
+        mode="select"
+      />,
+    );
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const redirect = screen.getByRole("group", { name: "Redirect" });
+    // The browser's own menu is prevented; the tile is not selected.
+    expect(fireEvent.contextMenu(redirect, { clientX: 300, clientY: 140 })).toBe(false);
+    expect(onTileMenu).toHaveBeenCalledWith("redirect", { x: 300, y: 140 });
+    expect(onSelectTile).not.toHaveBeenCalled();
+  });
+
+  it("hands a right-click on a line to `onLineMenu` with that line's ID", async () => {
+    const onLineMenu = vi.fn();
+    const { container } = render(
+      <Board
+        tiles={tiles}
+        lines={lines}
+        engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+        selected={{}}
+        onSelectTile={() => {}}
+        onSelectLine={() => {}}
+        onClear={() => {}}
+        onLineMenu={onLineMenu}
+        mode="connect"
+      />,
+    );
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const hit = container.querySelector(
+      '.react-flow__edge[data-id="publish"] .react-flow__edge-interaction',
+    );
+    if (!hit) throw new Error("Missing line hit target");
+    expect(fireEvent.contextMenu(hit, { clientX: 500, clientY: 120 })).toBe(false);
+    expect(onLineMenu).toHaveBeenCalledWith("publish", { x: 500, y: 120 });
   });
 
   it("keeps each view's hints apart, draws the old view until the new one lands, and highlights lines", async () => {
@@ -313,7 +359,6 @@ describe("Board", () => {
       )?.style.stroke;
     expect(ink("entry")).toBe("var(--board-select)");
     expect(container.querySelector(".react-flow__edge.selected")).toBeNull();
-    expect(screen.queryByRole("button", { name: /^Remove/ })).toBeNull();
   });
 
   it("leaves a selected tile's own lines to `highlighted` when asked, keeping its chrome", async () => {
@@ -327,8 +372,7 @@ describe("Board", () => {
         onSelectTile={() => {}}
         onSelectLine={() => {}}
         onClear={() => {}}
-        removable={() => true}
-        onRemoveTile={() => {}}
+        tabs={[{ id: "add", kind: "create", label: "Add after", items: [] }]}
         mode="select"
         {...props}
       />
@@ -347,9 +391,11 @@ describe("Board", () => {
     rerender(board({ selectedTileLines: false, highlighted: ["publish"] }));
     expect(ink("entry")).toBe("var(--board-line)");
     expect(ink("publish")).toBe("var(--board-select)");
-    // The tile is still the selected one, with its X; no line is selected.
+    // The tile is still the selected one, with its tab; no line is selected.
     expect(screen.getByRole("group", { name: "Redirect" }).classList).toContain("selected");
-    expect(screen.getByRole("button", { name: "Remove Redirect" })).toBeTruthy();
+    expect(
+      screen.getByRole("group", { name: "Redirect" }).querySelector(".board-tab"),
+    ).toBeTruthy();
     expect(container.querySelector(".react-flow__edge.selected")).toBeNull();
     rerender(board({ selectedTileLines: false }));
     expect([ink("entry"), ink("publish")]).toEqual(["var(--board-line)", "var(--board-line)"]);
@@ -542,8 +588,6 @@ describe("Board", () => {
           onClear={() => {}}
           mode={mode}
           tabs={[tab]}
-          removable={() => true}
-          onRemoveTile={() => {}}
           canConnect={(from, to) => from === "redirect" && to === "events"}
           connectRefusal={(from, to) => `${from} can't link to ${to}.`}
           onConnect={onConnect}
@@ -573,7 +617,7 @@ describe("Board", () => {
     // Connect mode: no chrome; a drag past a few pixels draws the line and lights the allowed end.
     rerender(board("connect"));
     expect(container.querySelector(".board")?.getAttribute("data-mode")).toBe("connect");
-    expect(node("redirect").querySelector(".board-tab, .board-remove")).toBeNull();
+    expect(node("redirect").querySelector(".board-tab")).toBeNull();
     drag("redirect", "events");
     expect(document.querySelector(".board-connect .board-connect-line line")).not.toBeNull();
     expect(node("events").className).toContain("is-drop-target is-drop-over");
@@ -855,73 +899,6 @@ describe("Board", () => {
     fireEvent.pointerUp(window, { clientX: 1100, clientY: 400 });
     expect(calls).toEqual(["connect redirect events"]);
     expect(document.querySelector(".board-connect")).toBeNull();
-  });
-
-  it("shows a line's X while the pointer is on it in connect mode, never on a fixed line", async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const onRemoveLine = vi.fn();
-    const board = (mode: BoardProps["mode"], fixed = false, removeLabel?: string) => (
-      <Board
-        tiles={tiles}
-        lines={lines.map((line) =>
-          line.id !== "publish"
-            ? line
-            : fixed
-              ? { ...line, removable: false }
-              : removeLabel
-                ? { ...line, removeLabel }
-                : line,
-        )}
-        engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
-        selected={{}}
-        onSelectTile={() => {}}
-        onSelectLine={() => {}}
-        onClear={() => {}}
-        onRemoveLine={onRemoveLine}
-        mode={mode}
-      />
-    );
-    const { container, rerender } = render(board("select"));
-    await waitFor(() =>
-      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
-    );
-    const edge = () =>
-      container.querySelector('.react-flow__edge[data-id="publish"]') as SVGGElement;
-    const x = () => screen.queryByRole("button", { name: "Remove line" });
-    // Select mode: only a selected line has an X.
-    fireEvent.mouseEnter(edge());
-    expect(x()).toBeNull();
-    fireEvent.mouseLeave(edge());
-
-    rerender(board("connect"));
-    fireEvent.mouseEnter(edge());
-    expect(x()).not.toBeNull();
-    // The line takes the selection colour while it is hovered.
-    expect(edge().querySelector<SVGPathElement>(".board-line-dash")?.style.stroke).toBe(
-      "var(--board-select)",
-    );
-    // Leaving the line for its X keeps it; leaving the X ends the hover.
-    fireEvent.mouseLeave(edge());
-    fireEvent.pointerEnter(x() as HTMLElement);
-    await act(() => vi.advanceTimersByTimeAsync(300));
-    expect(x()).not.toBeNull();
-    fireEvent.pointerLeave(x() as HTMLElement);
-    await act(() => vi.advanceTimersByTimeAsync(300));
-    expect(x()).toBeNull();
-    fireEvent.mouseEnter(edge());
-    fireEvent.click(x() as HTMLElement);
-    expect(onRemoveLine).toHaveBeenCalledWith("publish");
-    expect(x()).toBeNull();
-
-    // A line that goes with a tile has no X, hovered or not.
-    rerender(board("connect", true));
-    fireEvent.mouseEnter(edge());
-    expect(x()).toBeNull();
-    // The caller may name what the X does.
-    rerender(board("connect", false, "Disconnect Publisher from Events"));
-    fireEvent.mouseEnter(edge());
-    expect(screen.getByRole("button", { name: "Disconnect Publisher from Events" })).not.toBeNull();
-    vi.useRealTimers();
   });
 
   it("greys a disabled fan item in its own slot, shows its reason and never picks it", async () => {

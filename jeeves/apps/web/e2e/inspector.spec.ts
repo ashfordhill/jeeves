@@ -1,6 +1,15 @@
 /** The tile, system and action inspectors are one page: no tabs, connection lists or Entries. */
 import type { Locator, Page } from "@playwright/test";
-import { clickLine, design, expect, showView, test, tile } from "./studio.ts";
+import {
+  clickLine,
+  design,
+  expect,
+  linePoint,
+  pickFromMenu,
+  showView,
+  test,
+  tile,
+} from "./studio.ts";
 
 /** The page's parts in order: field labels, section headings, the warning list and fieldsets. */
 const outline = (inspector: Locator) =>
@@ -86,9 +95,7 @@ test("the system page: Name, Description, then warnings; actions list no entries
   const before = await design(page, id);
   // Removing the stats read leaves the worker's store unread: one warning.
   await clickLine(page, "stats-read");
-  await page
-    .getByRole("button", { name: "Remove Stats API to Analytics store", exact: true })
-    .click();
+  await pickFromMenu(page, await linePoint(page, "stats-read"), "Remove link");
   // The removal is saved before the page is read: its warning comes from the saved design.
   await expect
     .poll(async () => {

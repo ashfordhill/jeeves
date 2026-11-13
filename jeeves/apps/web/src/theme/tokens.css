@@ -29,6 +29,9 @@
   --grid-dot: #aabec8;
   --plus: #1e8a62;
   --minus: #b23a30;
+  /* A missing status, and a menu's Remove item: ink on its fill. */
+  --off-bg: #f8dcd8;
+  --off-ink: #8f2a22;
   --select-ring: rgba(26, 143, 212, 0.5);
   --banner: #d4f0f8;
   --header-height: 56px;
@@ -68,6 +71,8 @@
   --grid-dot: #11242e;
   --plus: #3ea66a;
   --minus: #e06a5e;
+  --off-bg: #5d2823;
+  --off-ink: #ffcdc6;
   --select-ring: rgba(126, 182, 224, 0.65);
   --banner: #1e3f4e;
   --mantine-color-dimmed: var(--ink-soft);

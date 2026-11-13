@@ -351,7 +351,7 @@
 
 /* The Cache reader's loader: a short arrow in the left gutter, from its row to the Data access
    row, in the line colour (the selection colour while either module is open, or in Connect mode
-   under the pointer, when its X shows). */
+   under the pointer). A right-click on it opens its menu (`CanvasMenu.tsx`). */
 .lane-container-loader {
   position: absolute;
   left: 0;
@@ -382,27 +382,6 @@
   .lane-container-loader:hover
   .lane-container-loader-line {
   stroke: var(--board-select);
-}
-
-.lane-container .lane-container-loader-remove {
-  position: absolute;
-  display: none;
-  width: 24px;
-  height: 24px;
-  border-width: 2px;
-  box-shadow: none;
-  transform: translate(-50%, -50%);
-}
-
-.lane-container-loader-remove svg {
-  width: 14px;
-  height: 14px;
-}
-
-.board[data-mode="connect"]:not([data-connecting])
-  .lane-container-loader:hover
-  .lane-container-loader-remove {
-  display: inline-flex;
 }
 
 /* A selected container's link tab sits just outside its frame, beside the rows, not over them. */
@@ -613,6 +592,46 @@
   display: flex;
   justify-content: center;
   margin-top: 8px;
+}
+
+/* The right-click menu (`CanvasMenu.tsx`), as the UI refresh preview draws it: a panel with a
+   quiet title (the tile, the line's two ends or the arrow) over its items, each a trash icon and
+   its words in the removal colours. The doubled class outranks Mantine's own dropdown rules. */
+.canvas-menu.canvas-menu {
+  box-sizing: border-box;
+  min-width: 190px;
+  max-width: 420px;
+  padding: 5px;
+  border: 2px solid color-mix(in srgb, var(--line) 45%, transparent);
+  border-radius: 14px;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: 0 8px 24px var(--btn-shadow);
+}
+
+.canvas-menu .canvas-menu-title {
+  padding: 4px 9px 5px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.canvas-menu .canvas-menu-item {
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--off-bg);
+  color: var(--off-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.canvas-menu .canvas-menu-item + .canvas-menu-item {
+  margin-top: 4px;
+}
+
+.canvas-menu .canvas-menu-item:is(:hover, :focus-visible, [data-menu-active]) {
+  background: var(--off-bg);
+  box-shadow: inset 0 0 0 2px var(--off-ink);
 }
 
 /* Actor face (ActorColumn proportions): figure on the pastel strip, name plate at the bottom. */
@@ -904,7 +923,7 @@
   cursor: pointer;
 }
 
-/* The X's red, a shade deeper so the label reads in both themes. */
+/* The removal red, a shade deeper so the label reads in both themes. */
 .lane-remove-actions .lane-remove-confirm {
   border-color: color-mix(in srgb, var(--board-remove) 55%, var(--line));
   background: var(--board-remove-active);

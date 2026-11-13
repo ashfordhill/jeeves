@@ -1,7 +1,17 @@
 import { buildOwnershipCommand, designOwnership, previewOwnership } from "@jeeves/spec";
 import { declareLinks } from "./ownership.ts";
 import { openDiagnostics } from "./source.ts";
-import { clickLine, expect, ready, showView, test, tile, tiles } from "./studio.ts";
+import {
+  clickLine,
+  expect,
+  linePoint,
+  pickFromMenu,
+  ready,
+  showView,
+  test,
+  tile,
+  tiles,
+} from "./studio.ts";
 
 test("preserves one source owner, keeps canonical resource selection, refuses excess access and undoes exact removal", async ({
   page,
@@ -67,9 +77,7 @@ test("preserves one source owner, keeps canonical resource selection, refuses ex
   );
   await expect(tile(page, "Redirect service")).toBeVisible();
   expect(await bp()).toEqual(full);
-  await page
-    .getByRole("button", { name: "Remove Redirect service to URL database", exact: true })
-    .click();
+  await pickFromMenu(page, await linePoint(page, "redirect-db"), "Remove link");
   const removal = page.getByRole("dialog", { name: "Remove relationship declarations" });
   await expect(removal).toContainText("dependencies · redirect-db");
   await removal.getByRole("button", { name: "Remove relationship", exact: true }).click();

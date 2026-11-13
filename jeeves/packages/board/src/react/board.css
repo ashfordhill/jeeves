@@ -21,7 +21,8 @@
   --board-tab-peek: 18px;
   --board-scrim: rgba(7, 28, 40, 0.38);
   --board-refuse: #b23a30;
-  /* The red X, its fill under the pointer, and its glyph. */
+  /* The removal red (the dashed ring on tiles a removal takes), a deeper shade and its ink, which
+     a caller's confirm button may use. */
   --board-remove: #c4453a;
   --board-remove-active: #9e3229;
   --board-remove-ink: #fff5f5;
@@ -148,65 +149,9 @@
   cursor: crosshair;
 }
 
-/* Ported from automation-illustrator src/app/styles/tokens.css, `.node-remove-x-btn`,
-   `.tile-remove-x` and `.remove-picker-hud` (0803c4a).
-   The red X: 40px, faint until the pointer or focus is on it. On a tile it sits centred over the
-   top edge; on a line, the line places it. */
-.board-remove {
-  box-sizing: border-box;
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  border-radius: 999px;
-  border: 3px solid color-mix(in srgb, var(--board-remove) 55%, var(--board-line));
-  background: var(--board-remove);
-  color: var(--board-remove-ink);
-  cursor: pointer;
-  opacity: 0.45;
-  box-shadow: 0 4px 0 var(--board-shadow);
-  pointer-events: auto;
-  transition:
-    background 140ms ease,
-    opacity 140ms ease;
-}
-
-.board-remove:hover,
-.board-remove:focus-visible {
-  opacity: 1;
-  background: var(--board-remove-active);
-  outline: none;
-}
-
-.board-remove:focus-visible {
-  outline: 3px solid var(--board-select);
-  outline-offset: 2px;
-}
-
-/* Centred on the top edge, clear of the face's icon (automation-illustrator: -14px). */
-.board-remove-tile {
-  position: absolute;
-  top: -20px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  z-index: 6;
-}
-
-.board-remove-line {
-  position: absolute;
-  pointer-events: all;
-}
-
-.board-chrome[data-pulling] .board-remove {
-  visibility: hidden;
-}
-
-/* A panel about a tile (a removal's confirmation): a HUD at the bottom centre of the board, as
-   automation-illustrator's `.remove-picker-hud` (no status bar under it here). */
+/* Ported from automation-illustrator src/app/styles/tokens.css, `.remove-picker-hud` (0803c4a).
+   A panel about a tile (a removal's confirmation): a HUD at the bottom centre of the board (no
+   status bar under it here). */
 .board-hud {
   position: absolute;
   bottom: 16px;
@@ -228,12 +173,6 @@
 .board .react-flow__node.is-marked .board-tile {
   outline: 3px dashed var(--board-remove);
   outline-offset: 6px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .board-remove {
-    transition: none;
-  }
 }
 
 /* Ported from automation-illustrator src/app/styles/tokens.css, the tile chrome rules (0803c4a).

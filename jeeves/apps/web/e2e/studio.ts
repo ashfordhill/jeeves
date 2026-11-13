@@ -202,6 +202,20 @@ export async function clickLine(page: Page, id: string) {
   await expect(page.locator(`.board .react-flow__edge[data-id="${id}"]`)).toHaveClass(/selected/);
 }
 
+/**
+ * Right-clicks a tile, line or loader arrow and picks an item of the menu that opens. A line or an
+ * arrow is given as a point on it (`linePoint`): the middle of its box may be bare paper.
+ */
+export async function pickFromMenu(
+  page: Page,
+  target: Locator | { x: number; y: number },
+  item: string | RegExp,
+) {
+  if ("click" in target) await target.click({ button: "right" });
+  else await page.mouse.click(target.x, target.y, { button: "right" });
+  await page.getByRole("menuitem", { name: item }).click();
+}
+
 /** The element's box once the camera and layout have stopped moving it. */
 export async function settledBox(target: Locator) {
   let last = "";

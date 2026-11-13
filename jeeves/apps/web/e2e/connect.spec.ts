@@ -1,8 +1,9 @@
 /**
  * Connect mode (MA03): Connect (C) in the canvas toolbar, next to Pointer. A drag from one tile to
  * another links them in the pair's default mode, from where the drag started; a refused end fades
- * with its reason and changes nothing; a hovered line shows its X; a click still selects. The mode
- * is view state: it never reaches the design, its revision or the blueprint.
+ * with its reason and changes nothing; a hovered line takes the selection colour, and its
+ * right-click menu removes it; a click still selects. The mode is view state: it never reaches the
+ * design, its revision or the blueprint.
  */
 import type { Page } from "@playwright/test";
 import {
@@ -14,6 +15,7 @@ import {
   expect,
   linePoint,
   lines,
+  pickFromMenu,
   ready,
   showView,
   test,
@@ -169,7 +171,7 @@ test("a refused end fades with its reason, and nothing changes", async ({ page, 
   expect(await design(page, id)).toEqual(before);
 });
 
-test("removes a line by its hover X, then Undo; the user's lines have none", async ({
+test("removes a line from its menu in Connect mode, then Undo; the user's lines have none", async ({
   page,
   tinyurl: id,
 }) => {
@@ -177,21 +179,19 @@ test("removes a line by its hover X, then Undo; the user's lines have none", asy
   await showView(page, "Simple");
   const before = await design(page, id);
   await page.keyboard.press("c");
-  const x = page.locator(".board-remove-line");
-  await expect(x).toHaveCount(0);
+  const menu = page.getByRole("menu");
+  await expect(menu).toHaveCount(0);
   const at = await linePoint(page, "redirect-db");
   await page.mouse.move(at.x, at.y, { steps: 4 });
-  await expect(x).toHaveAttribute("aria-label", "Remove Redirect service to URL database");
   // The hovered line takes the selection colour, drawn over the rest.
   await expect(
     page.locator('.board .react-flow__edge[data-id="redirect-db"] .react-flow__edge-path'),
   ).toHaveAttribute("style", /--board-select/);
-  // The pointer can leave the line for its X.
-  const box = await x.boundingBox();
-  if (!box) throw new Error("No X.");
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 8 });
-  await expect(x).toHaveCount(1);
-  await x.click();
+  // A right-click opens its menu, titled with its two ends.
+  await page.mouse.click(at.x, at.y, { button: "right" });
+  await expect(menu).toContainText("Redirect service → URL database");
+  await menu.getByRole("menuitem", { name: "Remove link", exact: true }).click();
+  await expect(menu).toHaveCount(0);
   await ready(page);
   await expect(lines(page)).toHaveCount(11);
   await expect(page.locator('.board .react-flow__edge[data-id="redirect-db"]')).toHaveCount(0);
@@ -202,15 +202,14 @@ test("removes a line by its hover X, then Undo; the user's lines have none", asy
   const undone = await design(page, id);
   expect({ ...undone, revision: before.revision }).toEqual(before);
 
-  // The user's line to an action goes with the action: no X.
+  // The user's line to an action goes with the action: no menu.
   const user = await linePoint(page, "@actor-download");
   await page.mouse.move(user.x, user.y, { steps: 4 });
-  await page.waitForTimeout(200);
-  await expect(x).toHaveCount(0);
+  await page.mouse.click(user.x, user.y, { button: "right" });
+  await page.waitForTimeout(300);
+  await expect(menu).toHaveCount(0);
   // A removal that would cut a tile off is refused with the reason, as with Pointer.
-  const clicks = await linePoint(page, "redirect-clicks");
-  await page.mouse.move(clicks.x, clicks.y, { steps: 4 });
-  await x.click();
+  await pickFromMenu(page, await linePoint(page, "redirect-clicks"), "Remove link");
   await expect(notice(page)).toContainText("would cut off Click events and Analytics worker");
   await expect(lines(page)).toHaveCount(12);
 });
@@ -227,8 +226,8 @@ test("a click selects in Connect mode, and dragging empty paper pans in both mod
   await tile(page, "Redirect service").click();
   await expect(tile(page, "Redirect service")).toHaveClass(/selected/);
   await expect(inspector.getByLabel("Name", { exact: true })).toHaveValue("Redirect service");
-  // Connect mode shows no pull tabs and no tile X: a drag from a tile links it.
-  await expect(tile(page, "Redirect service").locator(".board-tab, .board-remove")).toHaveCount(0);
+  // Connect mode shows no pull tabs: a drag from a tile links it.
+  await expect(tile(page, "Redirect service").locator(".board-tab")).toHaveCount(0);
   await clickLine(page, "redirect-cache");
   await expect(inspector.getByRole("heading", { name: "Connection" })).toBeVisible();
   await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });

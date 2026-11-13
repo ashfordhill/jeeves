@@ -78,9 +78,10 @@ future generator's frontend templates) which user flow each service serves.
   decide which one is selected.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
   In Pointer mode the selected tile shows its tabs
-  ([Creating and connecting](#creating-and-connecting)) and a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
-  see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
-  the same blue, with a red X ([Removing](#removing)).
+  ([Creating and connecting](#creating-and-connecting)), and its own lines (in and out) turn the
+  selection blue, drawn over the rest, so you can see which tiles it reaches where lines share a
+  bus. A selected line is drawn on top, thicker, in the same blue. A right-click on a tile or a
+  line opens its menu, in either mode ([Removing](#removing)).
   The [Detailed view](#detailed-view), the default, draws modules (components) inside their
   tiles as rows that open them and, in Connect mode, connect them. In the Simple view they are not
   drawn; they are cards on their tile's inspector page ([Inspector](#inspector)). C1 people,
@@ -89,7 +90,8 @@ future generator's frontend templates) which user flow each service serves.
 To trace relationships, select: a tile's lines turn blue, and a selected line shows its
 endpoints, saved label and interaction in the inspector. Every line stays drawn and every tile
 stays clickable. The highlight ends when the selection does, so clicking empty paper restores the
-plain view; there is no separate mode to leave. Remove a relationship with the selected line's X.
+plain view; there is no separate mode to leave. Remove a relationship with its line's right-click
+menu, **Remove link**.
 When a removed tile had a neighbour, the selection moves to it. **Fit** frames the whole design.
 Selection and Fit change no saved design, revision or blueprint.
 
@@ -132,14 +134,16 @@ Every other tile keeps its Simple view size and face.
   authored, and decides nothing that is generated.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
   chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
-  the clicked one thicker with the X. A relationship selected elsewhere (chat, Undo)
+  the clicked one thicker. A relationship selected elsewhere (chat, Undo)
   shows its drawn lines the same way. **Choose relationship** names the modules ("Packager
   (Transcoder) to Transcoded videos") and offers each relationship once, by its drawn line under
   the click; where only one relationship's lines run together, a click selects it without asking.
-  The X removes the whole relationship, with the same refusals and confirmation as in the
-  Simple view; module links that use it go with it.
-- Containers are tiles: click one's header to select it, and its link tab and X work as on any
-  tile; its `+` works whether it is selected or not. Its link tab sits just outside its frame,
+  A drawn line's right-click menu has **Remove link**, which removes the whole relationship, with
+  the same refusals and confirmation as in the Simple view; module links that use it go with it.
+  On a module's line the menu first offers that module link's own **Disconnect**
+  ([Connect mode](#connect-mode)).
+- Containers are tiles: click one's header to select it, and its link tab and right-click menu
+  work as on any tile; its `+` works whether it is selected or not. Its link tab sits just outside its frame,
   beside its rows rather than over them. In
   Connect mode a drag from a row's dot connects that module, and a drag from anywhere else on a
   container, a row included, links the container ([Connect mode](#connect-mode)).
@@ -150,7 +154,7 @@ Every other tile keeps its Simple view size and face.
   either, its row is filled in the selection colour and ringed, its name bold, and only the lines
   drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
   another module's line of the same relationship). No other row is marked. The tile keeps its link
-  tab and X. Back, another tile or line, or empty paper clears the marks; the Simple view keeps
+  tab. Back, another tile or line, or empty paper clears the marks; the Simple view keeps
   only the tile selected, with all its lines blue. A row reached by keyboard shows a focus
   outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
@@ -345,9 +349,9 @@ rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
 
-In Pointer mode the selected tile shows a tab on its right, for what the lane rules allow there,
-and the red X on its top edge ([Removing](#removing)); a tile that holds modules has its module
-`+` inside it ([Adding a module](#adding-a-module)). Nothing is inserted before a tile, and no tab
+In Pointer mode the selected tile shows a tab on its right, for what the lane rules allow there;
+a tile that holds modules has its module `+` inside it ([Adding a module](#adding-a-module)). A
+tile is removed from its right-click menu ([Removing](#removing)). Nothing is inserted before a tile, and no tab
 sits on a tile's left.
 
 - **The link tab** (the link icon) adds a new tile after the tile and links the two. A tile has it
@@ -449,11 +453,10 @@ onward.").
 - **Release on a refused tile** and the notice gives the same reason; nothing changes. Release
   on paper or on the tile itself, or press Escape during the drag, and nothing happens.
 - A press without a drag is a click: it selects, so the inspector works in Connect mode. Tiles
-  show no tabs, `+` or X there, and the paper still pans.
-- **A line under the pointer** turns the selection blue, is drawn over the rest, and shows its
-  red X where a selected line's X would sit; the pointer can move from the line onto it. The X
-  removes the line as in [Removing](#removing), with the same refusals, confirmation and Undo.
-  The user's line to an action has no X.
+  show no tabs or `+` there, and the paper still pans. A right-click opens the same menus as in
+  Pointer mode ([Removing](#removing)).
+- **A line under the pointer** turns the selection blue and is drawn over the rest; a right-click
+  there opens its menu.
 - In the [Detailed view](#detailed-view) a container is linked from anywhere on it, a row
   included: the link is the tile's, as in the Simple view. A click on a row still opens its
   module.
@@ -476,11 +479,11 @@ onward.").
 - **The Cache reader's loader**, and **Favorites' items**, are a drag from its dot onto a Data
   access row in the same tile; that row stays bright with a dashed outline. Each is drawn as a
   gutter arrow.
-- **A module's line under the pointer** shows an X named "Disconnect <module> from <tile>": it
-  removes that module's connection (`disconnectModule`) and leaves the tiles' link and the other
-  modules' lines. A gutter arrow under the pointer shows the same X. A line no module draws keeps
-  the X that removes the link. In Pointer mode a selected line's X still removes its whole
-  relationship.
+- **A module's line**, right-clicked in either mode, has a menu whose first item is "Disconnect
+  <module> from <tile>": it removes that module's connection (`disconnectModule`) and leaves the
+  tiles' link and the other modules' lines. Its **Remove link** removes the whole relationship. A
+  gutter arrow's menu, titled with its link ("Cache reader to Link reader"), has **Disconnect**,
+  which removes that link.
 - Each connection, and each disconnection, derives the module's generation and ownership in the
   same batch: one undo step.
 
@@ -496,20 +499,26 @@ rules is refused with a notice and changes nothing, whether it comes from the ca
 inspector, chat or the API.
 
 Optional shortcuts: V picks the Pointer, C connects, Escape closes an open fan or module menu
-and cancels a pull or a drag (and otherwise returns to Pointer). Every action works by mouse
-alone.
+and cancels a pull or a drag (and otherwise returns to Pointer); it closes a right-click menu and
+returns to Pointer too. Every action works by mouse alone.
 
 ## Removing
 
-The selected tile has a red **X** centred on its top edge (faint until the pointer is on it); the
-user has none. The X removes the tile and links each tile before it to each tile after it, wherever
-the [link table](../jeeves/CATALOG.md#lanes-and-links) allows, unless the first already reaches the
-second another way. A restitched link is asynchronous when either link it replaces was, and a lane
-entry passes on to its action.
+A right-click on a tile, an action or a line opens a small menu at the pointer, in Pointer and
+Connect mode alike. Its title is the tile's or action's name, or the line's two ends ("Redirect
+service → URL database"), and each item has a trash icon on a pale red fill. A pick, a press
+anywhere else or Escape closes it, and so does any new selection or change to the design. The user
+has no menu, and neither has its line to an action: it goes with the action.
 
-An action's X removes the action and its entries, unless that would cut tiles off; then nothing
-changes and the notice names them ("Removing Watch would cut off API."). An action with no
-entries, or whose tiles are also reached another way, goes at once, and the user is selected.
+A tile's **Remove tile** selects it and removes it, and links each tile before it to each tile
+after it, wherever the [link table](../jeeves/CATALOG.md#lanes-and-links) allows, unless the first
+already reaches the second another way. A restitched link is asynchronous when either link it
+replaces was, and a lane entry passes on to its action.
+
+An action's **Remove action** removes the action and its entries, unless that would cut tiles
+off; then nothing changes and the notice names them ("Removing Watch would cut off API."). An
+action with no entries, or whose tiles are also reached another way, goes at once, and the user
+is selected.
 
 When the restitching can't reach some tiles (a resource doesn't link onward, so nothing replaces
 the links through it, or the table refuses the replacement), a panel opens at the bottom centre of
@@ -522,23 +531,22 @@ Redirect service takes the URL cache, Click events and the Analytics worker with
 tiles"), since a lane can't start at a cache or a queue. The URL database stays: the Shorten
 service still writes it.
 
-A selected line has a red X on a stretch of it that no other line shares, or at its middle when
-every stretch is shared. It removes that connection or entry, unless a tile would be cut off;
-then nothing changes and the notice names the tiles ("Removing the link from Redirect service to
-Click events would cut off Click events and Analytics worker."). The user's line to an action has
-no X: it goes with the action.
+A line's **Remove link** removes that connection or entry, unless a tile would be cut off; then
+nothing changes and the notice names the tiles ("Removing the link from Redirect service to Click
+events would cut off Click events and Analytics worker."). On a stretch several lines share, the
+menu is the selected line's when it is one of them, else that of the line drawn on top there.
 
 After removing a tile, the tile before it is selected (the first one, in lane order; often the
 user); after removing a line, nothing is. The modules, module links and settings that named what
 went are removed with it; a database, cache, storage or queue whose owner went belongs to the
 first application that still links to it. Each removal is one batch and one undo step.
 
-In Connect mode any line under the pointer shows its X ([Connect mode](#connect-mode)); on a
-module's line in the Detailed view it disconnects only that module. The tile X stays a Pointer
-mode control.
+In the Detailed view a module's line offers its module link's own **Disconnect <module> from
+<tile>** before **Remove link**, and a gutter arrow's menu offers **Disconnect**
+([Connect mode](#connect-mode)); each disconnects only that module.
 
-Optional shortcuts: in Pointer mode, Delete or Backspace does what the selected tile's or line's X
-does.
+Optional shortcuts: in Pointer mode, Delete or Backspace does what the selected tile's or line's
+Remove item does.
 
 ## Inspector
 
@@ -1193,8 +1201,8 @@ and all twenty components, with nothing omitted and no findings.
 
 ## Limits
 
-- The fan and the module menu are drawn at screen size beside tiles drawn at the board's zoom,
-  while the tabs, the `+` and the X scale with the board. With both rails open (TinyURL fits at
+- The fan, the module menu and the right-click menu are drawn at screen size beside tiles drawn
+  at the board's zoom, while the tabs and the `+` scale with the board. With both rails open (TinyURL fits at
   0.56 at 1440×900, 0.45 at 1280×800) the tabs are about 22px or 18px, a container's `+` about
   16px or 13px (the Detailed fits are smaller still: about 8–9px for YouTube), tile names are small,
   and the link fan's panel (about 430 by 380px) and the module menu (468px wide) cover nearby
@@ -1243,8 +1251,8 @@ and all twenty components, with nothing omitted and no findings.
   a store joins its other lines just before it (YouTube: the Transcoder's read joins the Upload
   service's write of Original videos). Lines of different lanes meet only in the last 32px before
   a shared tile. Selecting a tile colours its own lines,
-  which shows who reaches what. A click on a shared stretch opens a chooser; when every stretch
-  of a selected line is shared, its X sits at its middle, on the bus.
+  which shows who reaches what. A click on a shared stretch opens a chooser; a right-click there
+  opens the selected line's menu when it is one of them, else that of the line drawn on top.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
@@ -1255,8 +1263,7 @@ and all twenty components, with nothing omitted and no findings.
   Detailed view, whose rows read from about 0.6 zoom. Below 0.5 zoom a dot's grab area is only as
   tall as the row pitch (about 7–12px at the Detailed fits), though 16px wide. A
   selected container's link tab sits just outside its frame, over the first 36px of the lines
-  leaving its middle rows, and its red X sits on the header, over the middle of a long name
-  ("Video lifecycle worker").
+  leaving its middle rows.
 - In Detailed, two rows of one container that write one store come back to it as separate lines
   and can cross each other (YouTube's Packager and Thumbnailer into Transcoded videos; twice in the
   v2 field design). A row's line to a store upstream of its tile loops round the container (v2's
@@ -1271,8 +1278,8 @@ and all twenty components, with nothing omitted and no findings.
   lane or the name in words.
 - A design stored with an entry straight into storage or an external API (YouTube 1.0.0 had one)
   loads unchanged and reports it ("Produce can't link to Original videos; an action reaches a
-  service (not a worker), an API or the CDN."). Until that entry is removed (select its line and
-  click its X), every other lane command on the design is refused with "Fix the lanes first."
+  service (not a worker), an API or the CDN."). Until that entry is removed (its line's right-click
+  menu, Remove link), every other lane command on the design is refused with "Fix the lanes first."
   Removing it is saved only when that leaves no lane error, so a design with two such entries, or
   one whose entry is its tile's only way in ("would cut off"), can't be edited at all.
 - A design stored with a dashed line between applications, or a line straight into a Worker, loads

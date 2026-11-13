@@ -4,13 +4,15 @@
 // reason as the drag's tip and, on release, in the studio notice, and nothing changes. A refused
 // direction is never reversed. From an action the new link is an entry; nothing links onto the
 // user or an action. Each link is one batch and one undo step. Removing a line in this mode is its
-// X (`removal.tsx`).
+// right-click menu's Remove link (`removal.tsx`), as in Pointer mode.
 //
 // In the Detailed view a drag may also start at a module row's dot (the board passes the module's
 // ID): it ends on a tile, or for an in-process slot (the Cache reader's loader, Favorites' items)
 // on a Data access row of the same tile, and runs that module's `connectModule`
-// (`moduleConnectOptions` gives each end's command or the reason it is refused). A module link's X runs `disconnectModule`; the tiles' link stays. Each is
-// one batch and one undo step, with its generation derived in the same step.
+// (`moduleConnectOptions` gives each end's command or the reason it is refused). A module link's
+// Disconnect (the right-click menu of its drawn line or loader arrow) runs `disconnectModule`; the
+// tiles' link stays. Each is one batch and one undo step, with its generation derived in the same
+// step.
 import type { ConnectRules } from "@jeeves/board";
 import {
   buildStudioCommand,

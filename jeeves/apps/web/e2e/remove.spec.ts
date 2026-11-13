@@ -1,6 +1,6 @@
-import { design, expect, lines, ready, test, tile, tiles } from "./studio.ts";
+import { design, expect, lines, pickFromMenu, ready, test, tile, tiles } from "./studio.ts";
 
-test("the user's line to an action has no X, and Delete leaves it", async ({
+test("the user's line to an action has no menu, and Delete leaves it", async ({
   page,
   tinyurl: id,
 }) => {
@@ -17,7 +17,10 @@ test("the user's line to an action has no X, and Delete leaves it", async ({
   await page.mouse.click(point.x, point.y);
   await expect(line).toHaveClass(/selected/);
   await expect(page.getByText("The line goes with the action.")).toBeVisible();
-  await expect(page.locator(".board-remove-line")).toHaveCount(0);
+  // A right-click opens no menu (a menu would show within a moment).
+  await page.mouse.click(point.x, point.y, { button: "right" });
+  await page.waitForTimeout(300);
+  await expect(page.getByRole("menu")).toHaveCount(0);
 
   await page.keyboard.press("Delete");
   // A refusal would show as a notice within a moment; give it the time to appear.
@@ -27,14 +30,12 @@ test("the user's line to an action has no X, and Delete leaves it", async ({
   expect((await design(page, id)).revision).toBe(1);
 });
 
-test("removes a tile with its X and the tile it cuts off, and undoes", async ({
+test("removes a tile from its menu with the tile it cuts off, and undoes", async ({
   page,
   tinyurl: id,
 }) => {
   await tile(page, "Click events").click();
-  await tile(page, "Click events")
-    .getByRole("button", { name: "Remove Click events", exact: true })
-    .click();
+  await pickFromMenu(page, tile(page, "Click events"), "Remove tile");
   // A worker takes its work only from a queue, so the Analytics worker goes with Click events.
   const removal = page.getByRole("dialog", { name: "Remove Click events" });
   await expect(removal).toContainText("Analytics worker");

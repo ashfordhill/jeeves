@@ -1,12 +1,13 @@
-// Removal on the lane canvas, as in automation-illustrator: the selected tile's red X removes it and
-// links its predecessors to its successors wherever the lane rules allow (`removeTile`). When that
-// would cut tiles off, a panel at the bottom centre of the canvas lists them (marked on the board)
-// with **Remove N tiles** and **Cancel**. A selected action's X removes it with its entries
-// (`removeAction`), unless that cuts tiles off; the user has no X, and neither has its line to an
-// action. A selected line's X removes that link (`removeLink`). Each removal is one batch and one
-// undo step; a refusal goes to the studio notice in plain words. Afterwards the removed tile's
-// first predecessor is selected (a removed line leaves nothing selected).
-import { type BoardProps, nextTileAfterRemoval } from "@jeeves/board";
+// Removal on the lane canvas, as in automation-illustrator: a tile's Remove tile (its right-click
+// menu, `Workspace.tsx`) removes it and links its predecessors to its successors wherever the lane
+// rules allow (`removeTile`). When that would cut tiles off, a panel at the bottom centre of the
+// canvas lists them (marked on the board) with **Remove N tiles** and **Cancel**. An action's
+// Remove action removes it with its entries (`removeAction`), unless that cuts tiles off; the user
+// can't be removed, and neither can its line to an action. A line's Remove link removes that link
+// (`removeLink`). Each removal is one batch and one undo step; a refusal goes to the studio notice
+// in plain words. Afterwards the removed tile's first predecessor is selected (a removed line
+// leaves nothing selected).
+import { nextTileAfterRemoval, type TileHud } from "@jeeves/board";
 import {
   applyOperations,
   buildStudioCommand,
@@ -32,7 +33,16 @@ import { OperationChanges } from "../studio/OperationChanges.tsx";
 import { OwnershipChanges } from "../studio/OwnershipChanges.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 
-type Removal = Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
+type Removal = {
+  /** Whether a tile can be removed: every tile and action, not the user. */
+  removable: (tile: string) => boolean;
+  /** Removes a tile or an action, through the confirmation when it takes other tiles. */
+  onRemoveTile: (tile: string) => void;
+  /** Removes a link (a connection or an entry); the user's line to an action goes with it. */
+  onRemoveLine: (line: string) => void;
+  /** The confirmation, while one is open. */
+  hud?: TileHud;
+};
 type Pending = {
   tile: string;
   strands: string[];
@@ -52,13 +62,13 @@ export function useLaneRemoval({
   projectId: string;
   design: DesignDocument;
   graph: LaneGraph;
-  /** The selected tile, if any (none in connect mode). */
+  /** The selected tile, if any, in either mode. */
   tile: string | undefined;
   /** A removal was saved; `next` is the tile to select, if any. */
   onRemoved: (next: string | undefined) => void;
 }): Removal & { remove: (tile: string) => void } {
   const [pending, setPending] = useState<Pending>();
-  // A confirmation belongs to its tile: selecting anything else, or Connect, drops it.
+  // A confirmation belongs to its tile: selecting anything else drops it.
   const open = pending && (pending.line || pending.tile === tile) ? pending : undefined;
   useEffect(() => {
     if (pending && !pending.line && pending.tile !== tile) setPending(undefined);
@@ -176,7 +186,7 @@ export function useLaneRemoval({
     removable: (id) => id !== LANE_ACTOR,
     onRemoveTile: remove,
     onRemoveLine: (line) => {
-      // The user's line to an action goes with the action (no X); Delete leaves it too.
+      // The user's line to an action goes with the action (no menu); Delete leaves it too.
       if (graph.edges.find((edge) => edge.id === line)?.source === LANE_ACTOR) return;
       try {
         const affected = effects({ type: "removeLink", link: line });

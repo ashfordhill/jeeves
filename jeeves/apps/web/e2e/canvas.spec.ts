@@ -6,7 +6,9 @@ import {
   dashedLines,
   design,
   expect,
+  linePoint,
   lines,
+  pickFromMenu,
   showView,
   test,
   tile,
@@ -174,9 +176,7 @@ test("New project offers the YouTube study", async ({ page }) => {
     await expect(read.locator(".react-flow__edge-path")).not.toHaveClass(/is-dashed/);
     await expect(read.locator(".board-line-arrow")).toHaveCount(1);
     expect(await (await page.request.get(`/api/projects/${id}/blueprint`)).json()).toEqual(before);
-    await page
-      .getByRole("button", { name: "Remove Transcoder to Original videos", exact: true })
-      .click();
+    await pickFromMenu(page, await linePoint(page, "transcoder-read"), "Remove link");
     await expect(read).toHaveCount(0);
     expect((await design(page, id)).connections.some((c) => c.id === "transcoder-read")).toBe(
       false,

@@ -17,17 +17,16 @@
 // Each row is a button ("Open <module> in <host>") that opens its module in the inspector, and
 // marks itself while that module is open (`data-mark="open"`); no other row is marked. A port mark
 // takes the selection colour whenever a line at that port does (`data-lit`), whatever selected it,
-// and a loader arrow while either of its modules is open. In Connect mode a loader arrow under the
-// pointer shows its X, which disconnects it. These come from `ModuleRows`, which only the live
-// canvas provides: a diagram export renders the same face in its own root, with no marks and no X,
-// and its rows do nothing. The click stops at the row, as the board's own tile buttons do, so it
-// opens the module instead of selecting the plain tile.
+// and a loader arrow while either of its modules is open. A right-click on a loader arrow asks for
+// its menu (`onLoaderMenu`, whose Disconnect removes that link) instead of the tile's. These come
+// from `ModuleRows`, which only the live canvas provides: a diagram export renders the same face in
+// its own root, with no marks and no menu, and its rows do nothing. The click stops at the row, as
+// the board's own tile buttons do, so it opens the module instead of selecting the plain tile.
 //
 // A container that can take modules (`addable`) has a footer under its rows, and on the live
 // canvas in Pointer mode (`BoardModuleAdding`) a small blue `+` sits centred in it, inside the
 // frame: it toggles the tile's module menu (`ModuleAddButton`), selected or not. An export and
 // Connect mode show none, and the footer stays empty.
-import { RemoveButton } from "@jeeves/board";
 import { type StudioKind, studioComponentVisuals, studioDefinitions } from "@jeeves/spec";
 import { type CSSProperties, createContext, useContext } from "react";
 import { StudioIcon } from "../../studio/StudioIcon.tsx";
@@ -51,13 +50,14 @@ const ADD = 28;
 
 /**
  * The live canvas's module rows: the open module, the ports whose lines are in the selection
- * colour (`DrawnSelection.lit`), how to open one, and how to disconnect a loader arrow.
+ * colour (`DrawnSelection.lit`), how to open one, and a right-click on a loader arrow (its module
+ * link, its label and the pointer, in client pixels).
  */
 export type ModuleRowsState = {
   open?: string;
   lit: readonly string[];
   onOpen: (host: string, module: string) => void;
-  onDisconnect?: (link: string) => void;
+  onLoaderMenu?: (link: string, label: string, at: { x: number; y: number }) => void;
 };
 export const ModuleRows = createContext<ModuleRowsState | undefined>(undefined);
 
@@ -176,26 +176,26 @@ export function ContainerTile({
         } ${y2 - top + HEAD}`;
         const lit = live?.open === loader.from || live?.open === loader.to;
         return (
+          // biome-ignore lint/a11y/noStaticElementInteractions: a right-click on the drawn arrow (its svg is the labelled image) opens the canvas's menu, as on a tile or line
           <div
             key={loader.link}
             className="lane-container-loader"
             data-link={loader.link}
             data-lit={lit || undefined}
             style={{ top, height, width: inset }}
+            onContextMenu={(event) => {
+              const menu = live?.onLoaderMenu;
+              if (!menu) return;
+              event.preventDefault();
+              event.stopPropagation();
+              menu(loader.link, loader.label, { x: event.clientX, y: event.clientY });
+            }}
           >
             <svg width={inset} height={height} role="img" aria-label={loader.label}>
               <path className="lane-container-loader-hit" d={route} />
               <path className="lane-container-loader-line" d={route} />
               <path className="lane-container-loader-line" d={head} />
             </svg>
-            {live?.onDisconnect ? (
-              <RemoveButton
-                className="lane-container-loader-remove"
-                label={`Disconnect ${from.name} from ${to.name}`}
-                onRemove={() => live.onDisconnect?.(loader.link)}
-                style={{ left: x, top: (y1 + y2) / 2 - top }}
-              />
-            ) : null}
           </div>
         );
       })}

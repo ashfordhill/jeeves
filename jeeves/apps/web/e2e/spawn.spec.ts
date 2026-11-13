@@ -62,7 +62,7 @@ test("clicks the link tab, then a kind, to add a linked tile", async ({ page, ti
 });
 
 test("greys the kinds the rules refuse there, with the reason", async ({ page, tinyurl: id }) => {
-  // A store links onward to nothing: no tabs at all, only its X.
+  // A store links onward to nothing: no tabs at all.
   await tile(page, "URL database").click();
   await expect(tile(page, "URL database").locator(".board-tab")).toHaveCount(0);
 

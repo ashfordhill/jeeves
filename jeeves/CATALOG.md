@@ -260,11 +260,12 @@ On the canvas ([studio guide](../docs/studio.md#creating-and-connecting)), the u
 `linkFanOptions` allows at least one kind, and its fan shows all eleven, greyed with the refusal
 where there is one; a pick runs `addTile` with that kind. In Connect mode a drag from a node may end on the tiles
 `connectOptions` gives a link for, and a release there runs its `linkTiles`. Both leave out
-`link`, so the pair's default mode applies. A
-tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
-`alsoRemove`), an action's X runs `removeAction` and a line's X (a selected line's, or in Connect
-mode a hovered one's) runs `removeLink` ([removing](../docs/studio.md#removing)); the user's line
-to an action has no X. The inspector's
+`link`, so the pair's default mode applies. In
+either mode a right-click opens a menu: a tile's **Remove tile** runs `removeTile` (after
+`planRemoveTile`, with the tiles the confirmation listed as `alsoRemove`), an action's **Remove
+action** runs `removeAction` and a line's **Remove link** runs `removeLink`
+([removing](../docs/studio.md#removing)); the user and its line to an action have no menu. The
+inspector's
 normal authoring omits kind replacement; an action's Name runs `renameAction`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
 reason as its tooltip). A new tile is named after its kind and
@@ -398,8 +399,9 @@ kind can generate in that tile: **Template** for a lead, **Part of a template** 
 **Stub** where the template doesn't allow the tile's kind (a Cache reader in a Worker); a pick
 runs `addModule`. A
 row has a dot when its kind has slots, filled when `moduleSlots` has a link; a drag from it may
-end where `moduleConnectOptions` gives a command, and runs it. The X on a module's drawn line or
-on an in-process link's gutter arrow (a loader, Favorites' items) runs `disconnectModule`, and the module page's Remove module runs
+end where `moduleConnectOptions` gives a command, and runs it. The **Disconnect** item of a
+right-click menu on a module's drawn line or on an in-process link's gutter arrow (a loader,
+Favorites' items) runs `disconnectModule`, and the module page's Remove module runs
 `removeModule`.
 
 ## Settings

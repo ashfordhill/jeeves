@@ -1,6 +1,5 @@
 // The link tab's glyph: a chain link, so the tab isn't mistaken for a dashed line. Drawn inline
-// from Tabler's IconLink paths (MIT), as `RemoveButton` draws its X; the ink is `currentColor`
-// (the tab's CSS sets it).
+// from Tabler's IconLink paths (MIT); the ink is `currentColor` (the tab's CSS sets it).
 export function LinkGlyph({ size = 24 }: { size?: number }) {
   return (
     <svg

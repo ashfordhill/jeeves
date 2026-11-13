@@ -134,7 +134,7 @@ export function viewportOnResize(
   return viewportToFitRect(pane, tiles);
 }
 
-/** Room a revealed tile keeps from the pane's edges (screen pixels), for its tabs and X. */
+/** Room a revealed tile keeps from the pane's edges (screen pixels), for its tabs. */
 export const REVEAL_MARGIN = 48;
 
 /**

@@ -16,8 +16,8 @@
 // per item group right of the tab, each item captioned with its name, on one panel kept on the
 // board as a block (`placeGrid`), so it reads over the tiles it covers; where the board is too
 // narrow for it beside the tab it goes beside its own tile (left, below or above), not over it.
-// An item's tip gives its name and, when disabled, the reason. The red X shows only when the
-// caller lets the tile go (`remove`). No path tab, tile pickup or insert silhouette.
+// An item's tip gives its name and, when disabled, the reason. No path tab, tile pickup or insert
+// silhouette.
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -39,7 +39,6 @@ import {
   tileScreenRect,
   underTileOrigin,
 } from "./overlay.ts";
-import { RemoveButton } from "./RemoveButton.tsx";
 import { prefersReducedMotion } from "./useAnimatedLayout.ts";
 
 export const PULL_THRESHOLD = 36;
@@ -95,8 +94,6 @@ export type ChromeProps = {
   tabs: readonly TabSpec[];
   host: RefObject<HTMLElement | null>;
   onPick: (tab: CreateTab, item: string) => void;
-  /** The red X above the tile; none when the tile can't be removed. */
-  remove?: { label: string; onRemove: () => void };
 };
 
 type Hover = { item: string } | null;
@@ -133,13 +130,6 @@ export function TileChrome(props: ChromeProps) {
             <PullTab key={tab.id} tab={tab} chrome={props} onActive={setActive} />
           ))}
         </div>
-      ) : null}
-      {props.remove ? (
-        <RemoveButton
-          className="board-remove-tile"
-          label={props.remove.label}
-          onRemove={props.remove.onRemove}
-        />
       ) : null}
     </div>
   );

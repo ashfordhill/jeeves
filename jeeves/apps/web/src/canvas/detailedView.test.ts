@@ -294,7 +294,7 @@ describe("detailed view projection", () => {
     expect(view.rowOf("shorten-data")).toMatchObject({ index: 0, y: 64 });
     expect(view.rowOf("shorten-data")?.in).toBeUndefined();
     expect(view.rowOf("shorten-data")?.out).toBeUndefined();
-    // The user's line keeps no X; in-process links are not drawn.
+    // The user's line goes with its action; in-process links are not drawn.
     expect(line("@actor-download")).toMatchObject({
       removable: false,
       connection: "@actor-download",
@@ -383,8 +383,8 @@ describe("module rows and links in the Detailed view", () => {
     ]);
     for (const container of view.containers.values())
       if (container.tile !== "redirect") expect(container.loaders, container.tile).toEqual([]);
-    // A module's drawn line names the module link Connect mode's X disconnects; a tile-level line
-    // names none.
+    // A module's drawn line names the module link its right-click menu disconnects; a tile-level
+    // line names none.
     const line = (id: string) => view.lines.find((item) => item.id === id);
     expect(line("redirect-cache/redirect-cache-reader")?.disconnect).toEqual({
       link: "cache-reader-redis",
