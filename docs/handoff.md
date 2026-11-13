@@ -11905,3 +11905,30 @@ with the source boundary recorded. No template gap, retry, weakened assertion or
 GS07 awaits BR01–BR02 completion and ownership; GS09 review remains pending. No broker, fault or
 UI work was taken over. Hosted execution remains pending publication; no push. Owner dirty paths
 remain untouched and unstaged. GS08 stops here.
+
+
+## 2026-11-13 — UI01: blocked
+
+**What changed.** Nothing but this entry. Steps 1–5 were applied exactly as written (`tinyurl.ts`,
+`marketplace.ts`, the six unit tests, `canvas.spec.ts`, `docs/studio.md`, `jeeves/CATALOG.md`,
+`docs/studio-blueprint.md`), then every edit was undone with `git checkout --`. No mouse-check
+spec or evidence file remains.
+**Checks.** Before any change, `pnpm check` passed (106 files, 823 tests). With the edits,
+`pnpm check` passed (106 files, 823 tests; the plan's 105/820 predates the GS units). Native
+`pnpm test:e2e`: 72 passed, 1 failed (4.5 min). Rerun alone, the same test failed the same way.
+The web build and the mouse check were not run.
+**What was found.** `module-authoring.spec.ts:398`, `looking, hovering and cancelled drags change
+neither the design nor the blueprint`, lines 403–405: "The older Redirect service kind takes
+modules too" and it expects TinyURL's Redirect service's module menu to hold 10 items; it holds 13.
+The cause is this unit: `moduleKinds` (`studio-modules.ts`) lists each module kind whose `hosts`
+include the tile's kind, so as a Service the tile offers the Service's 13 kinds, not the Redirect
+kind's 10. The test pins the legacy kind's menu through the TinyURL study, which UI01 removes.
+Step 4 says to stop when this test fails because of the unit, so UI01 stops here. The plan needs
+to name the change: for example 13 with a comment that a Service's menu is checked, and, if the
+Redirect kind's own menu should stay covered, a check on a tile switched to Redirect first.
+**Noticed.** The plan also leaves stale text: `marketplace.ts`'s entries comment (36 bends,
+6,912px), `docs/studio.md` "only new copies are v3.2." and `jeeves/PLAN.md` "TinyURL v3.2 (the
+default)". No uncommitted changes under `jeeves-generator/` or `field-projects/`. The owner's
+dirty paths stay untouched and unstaged.
+**For the next unit.** UI01 is not done. Revise its step 4 for this test, then rerun UI01 before
+UI02.
