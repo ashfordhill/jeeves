@@ -1,0 +1,19 @@
+{
+  "project": "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1",
+  "before": {
+    "containers": ["c5cb55307b37", "fab38f232b67", "0be3a31b7ff1", "c8cfa6585345", "c9b95642b5ce"],
+    "networks": ["b6ca30577fc2"],
+    "volumes": [
+      "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1_broker-data",
+      "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1_cache-hot-metadata",
+      "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1_objects-data",
+      "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1_postgres-data",
+      "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1_search-videos"
+    ]
+  },
+  "after": {
+    "containers": [],
+    "networks": [],
+    "volumes": []
+  }
+}

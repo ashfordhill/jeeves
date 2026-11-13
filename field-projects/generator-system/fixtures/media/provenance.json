@@ -1,0 +1,73 @@
+{
+  "sourceDesign": "field-projects/youtube/v4/inputs/design.json",
+  "designSha256": "9762df418108917c71f42de6190c3c756d1db62dbaeca83653b6e9b6db93813f",
+  "ownershipRecord": "field-projects/youtube/v4/notes/custom-paths.md",
+  "sources": [
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/account-api/account-api-favorite-videos.hooks.ts",
+      "sha256": "6afda8bec52c168ef643af313513135b2d68f7b4a1a3b842575138bd189ab8a9",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/search-api/search-api-video-search.hooks.ts",
+      "sha256": "b48e1f3667d3629e50e055b5d3a078d0ef35de64dac97f2e113fc12264699600",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/search-indexer/search-indexer-index-writer.hooks.ts",
+      "sha256": "764bd14b556b08d0fd9a6fe6c54d59a1dd2e40d159132a525473a5c04e603b37",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/transcoder/transcoder-segmenter-and-encoder.hooks.ts",
+      "sha256": "b881dc4b6b914ecee85455d71d18cc492497f404bb1153954e608d8060dff34a",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/upload-api/upload-api-multipart-uploads.hooks.ts",
+      "sha256": "2b4e4cbfb128bfb80d56bf64078e01a43fd771b84240cb6353e44b72193ab81b",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/video-lifecycle/video-lifecycle-lifecycle-writer.hooks.ts",
+      "sha256": "4a567673b3c041e84f028a58bc522c7f47426dd8ac1d4aafaf37ccc73277c253",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/view-counter/view-counter-receipt-and-increment.hooks.ts",
+      "sha256": "ad0dd4065dbacaf94e507bd287ef9a4b0b54f2df3dbc28746fdc11a045930dbc",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/watch-api/watch-api-video-details-cache.hooks.ts",
+      "sha256": "f0851f71a462aeed2def2ee8bcdbe07b15c30bd899c88b860bd41d14ab3da573",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/watch-api/watch-api-view-count-reader.ts",
+      "sha256": "80ed3c86d8493218fe2960be60f623f28215966e8d47afbf38fb3fc665759c82",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/watch-api/watch-api-view-publisher.ts",
+      "sha256": "8c0471935f26c8379ce4362ce0e9c3559db6cafc343f1e6ea6c45ef9aa1b6038",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/infra/postgres/metadata/modules/video-lifecycle-lifecycle-writer.sql",
+      "sha256": "bbb50dae246faeb1195771d43a5ac17a42d07fe0accc165c25a6b597b1ebd8cd",
+      "ownership": "generated-extension"
+    },
+    {
+      "source": "field-projects/youtube/v4/app/src/modules/video-contract.ts",
+      "sha256": "715122b20cd552b3490826cc1a3903f00ca4a7a91f54ccd53f507a13696e306c",
+      "ownership": "additional application-owned codec per v4 notes/custom-paths.md; folded into lifecycle hook"
+    }
+  ],
+  "adaptations": [
+    "Backend-only saved design; no browser or scaffold overrides",
+    "Shared product codec folded into the reported lifecycle hook; other hooks import that file",
+    "Any verified account can upload; channel uses its verified username",
+    "Historical comments removed; wire envelopes and product SQL retain v4 semantics"
+  ]
+}

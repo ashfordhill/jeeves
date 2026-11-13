@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-72ff39c6-b41b-477f-a8d0-10d92303a33b",
+  "suite": "media",
+  "temporary": "/tmp/jeeves-system-SSilA1",
+  "stacks": [
+    {
+      "project": "gs-72ff39c6-b41b-477f-a8d0-10d92303a33b-1",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-SSilA1/1-media",
+      "artifacts": "/tmp/gs06-warm-confirmed/1-media",
+      "ports": [41113, 45447, 39521]
+    }
+  ]
+}

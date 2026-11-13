@@ -1,0 +1,14 @@
+{
+  "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-4",
+  "resources": {
+    "containers": [],
+    "networks": [],
+    "volumes": []
+  },
+  "privateOAuthInputsPresent": true,
+  "privateInputMode": "600",
+  "privateInputNonempty": true,
+  "runtimeSecretsPresent": true,
+  "temporaryMode": "0o700",
+  "valuesReadOrRetained": false
+}

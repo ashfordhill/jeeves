@@ -1,0 +1,7 @@
+{
+  "id": "gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e",
+  "selected": ["media"],
+  "outcome": "failed",
+  "elapsedMs": 120267,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs06-media-third/run.json"
+}

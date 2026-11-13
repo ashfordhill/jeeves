@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-eba6801c-4859-4240-9a15-c221e89dc202",
+  "temporary": "/tmp/jeeves-system-O1Xahs",
+  "suite": "privacy-probe",
+  "stacks": [
+    {
+      "project": "gs-eba6801c-4859-4240-9a15-c221e89dc202-1",
+      "application": "/tmp/jeeves-system-O1Xahs/1-identity",
+      "artifacts": "/tmp/gs06-privacy-probe",
+      "fixture": "identity",
+      "ports": []
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-654d14f5-473d-40b8-94c8-648c8729f01b",
+  "suite": "media",
+  "temporary": "/tmp/jeeves-system-5cmm1Z",
+  "stacks": [
+    {
+      "project": "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-5cmm1Z/1-media",
+      "artifacts": "/tmp/gs06-media-first/1-media",
+      "ports": [35741, 40073, 33009]
+    }
+  ]
+}

@@ -1,0 +1,2130 @@
+{
+  "architecture": {
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Watch"
+        },
+        {
+          "lane": "upload",
+          "name": "Publish"
+        }
+      ],
+      "componentConnections": [
+        {
+          "from": "watch-api-viewer-check",
+          "id": "watch-api-viewer-check-sign-in",
+          "to": {
+            "id": "sign-in",
+            "kind": "element",
+            "via": "watch-api-sign-in"
+          }
+        },
+        {
+          "from": "watch-api-video-details-cache",
+          "id": "watch-api-video-details-cache-hot-metadata",
+          "to": {
+            "id": "hot-metadata",
+            "kind": "element",
+            "via": "watch-api-cache"
+          }
+        },
+        {
+          "from": "watch-api-video-details-reader",
+          "id": "watch-api-video-details-reader-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "watch-api-database"
+          }
+        },
+        {
+          "from": "watch-api-video-details-cache",
+          "id": "watch-api-video-details-cache-watch-api-video-details-reader",
+          "to": {
+            "id": "watch-api-video-details-reader",
+            "kind": "component"
+          }
+        },
+        {
+          "from": "watch-api-view-count-reader",
+          "id": "watch-api-view-count-reader-view-counts",
+          "to": {
+            "id": "view-counts",
+            "kind": "element",
+            "via": "watch-api-database-2"
+          }
+        },
+        {
+          "from": "watch-api-view-publisher",
+          "id": "watch-api-view-publisher-view-events",
+          "to": {
+            "id": "view-events",
+            "kind": "element",
+            "via": "watch-api-message-channel"
+          }
+        },
+        {
+          "from": "watch-api-view-publisher",
+          "id": "watch-api-view-publisher-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "watch-api-database"
+          }
+        },
+        {
+          "from": "view-counter-view-consumer",
+          "id": "view-counter-view-consumer-view-events",
+          "to": {
+            "id": "view-events",
+            "kind": "element",
+            "via": "view-events-worker-service"
+          }
+        },
+        {
+          "from": "view-counter-count-writer",
+          "id": "view-counter-count-writer-view-counts",
+          "to": {
+            "id": "view-counts",
+            "kind": "element",
+            "via": "view-counter-view-counts"
+          }
+        },
+        {
+          "from": "search-api-video-search",
+          "id": "search-api-video-search-videos",
+          "to": {
+            "id": "videos",
+            "kind": "element",
+            "via": "search-api-search-index"
+          }
+        },
+        {
+          "from": "account-api-account-check",
+          "id": "account-api-account-check-sign-in",
+          "to": {
+            "id": "sign-in",
+            "kind": "element",
+            "via": "account-api-sign-in"
+          }
+        },
+        {
+          "from": "account-api-favorite-videos",
+          "id": "account-api-favorite-videos-favorites",
+          "to": {
+            "id": "favorites",
+            "kind": "element",
+            "via": "account-api-database"
+          }
+        },
+        {
+          "from": "account-api-favorite-videos",
+          "id": "account-api-favorite-videos-account-api-video-reader",
+          "to": {
+            "id": "account-api-video-reader",
+            "kind": "component"
+          }
+        },
+        {
+          "from": "account-api-video-reader",
+          "id": "account-api-video-reader-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "account-api-metadata"
+          }
+        },
+        {
+          "from": "upload-api-creator-check",
+          "id": "upload-api-creator-check-sign-in",
+          "to": {
+            "id": "sign-in",
+            "kind": "element",
+            "via": "upload-api-sign-in"
+          }
+        },
+        {
+          "from": "upload-api-multipart-uploads",
+          "id": "upload-api-multipart-uploads-original-videos",
+          "to": {
+            "id": "original-videos",
+            "kind": "element",
+            "via": "upload-api-object-storage"
+          }
+        },
+        {
+          "from": "upload-api-job-outbox-publisher",
+          "id": "upload-api-job-outbox-publisher-upload-jobs",
+          "to": {
+            "id": "upload-jobs",
+            "kind": "element",
+            "via": "upload-api-message-channel"
+          }
+        },
+        {
+          "from": "upload-api-job-outbox-publisher",
+          "id": "upload-api-job-outbox-publisher-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "upload-api-metadata"
+          }
+        },
+        {
+          "from": "upload-api-upload-state-writer",
+          "id": "upload-api-upload-state-writer-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "upload-api-metadata"
+          }
+        },
+        {
+          "from": "transcoder-job-consumer",
+          "id": "transcoder-job-consumer-upload-jobs",
+          "to": {
+            "id": "upload-jobs",
+            "kind": "element",
+            "via": "upload-jobs-worker-service"
+          }
+        },
+        {
+          "from": "transcoder-segmenter-and-encoder",
+          "id": "transcoder-segmenter-and-encoder-original-videos",
+          "to": {
+            "id": "original-videos",
+            "kind": "element",
+            "via": "transcoder-original-videos"
+          }
+        },
+        {
+          "from": "transcoder-packager",
+          "id": "transcoder-packager-transcoded-videos",
+          "to": {
+            "id": "transcoded-videos",
+            "kind": "element",
+            "via": "transcoder-object-storage"
+          }
+        },
+        {
+          "from": "transcoder-thumbnailer",
+          "id": "transcoder-thumbnailer-transcoded-videos",
+          "to": {
+            "id": "transcoded-videos",
+            "kind": "element",
+            "via": "transcoder-object-storage"
+          }
+        },
+        {
+          "from": "transcoder-processing-result-publisher",
+          "id": "transcoder-processing-result-publisher-processing-events",
+          "to": {
+            "id": "processing-events",
+            "kind": "element",
+            "via": "transcoder-message-channel"
+          }
+        },
+        {
+          "from": "video-lifecycle-processing-consumer",
+          "id": "video-lifecycle-processing-consumer-processing-events",
+          "to": {
+            "id": "processing-events",
+            "kind": "element",
+            "via": "processing-events-worker-service"
+          }
+        },
+        {
+          "from": "video-lifecycle-lifecycle-writer",
+          "id": "video-lifecycle-lifecycle-writer-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "video-lifecycle-metadata"
+          }
+        },
+        {
+          "from": "video-lifecycle-video-publication-publisher",
+          "id": "video-lifecycle-video-publication-publisher-publication-events",
+          "to": {
+            "id": "publication-events",
+            "kind": "element",
+            "via": "video-lifecycle-message-channel"
+          }
+        },
+        {
+          "from": "video-lifecycle-video-publication-publisher",
+          "id": "video-lifecycle-video-publication-publisher-metadata",
+          "to": {
+            "id": "metadata",
+            "kind": "element",
+            "via": "video-lifecycle-metadata"
+          }
+        },
+        {
+          "from": "search-indexer-video-publication-consumer",
+          "id": "search-indexer-video-publication-consumer-publication-events",
+          "to": {
+            "id": "publication-events",
+            "kind": "element",
+            "via": "publication-events-worker-service"
+          }
+        },
+        {
+          "from": "search-indexer-index-writer",
+          "id": "search-indexer-index-writer-videos",
+          "to": {
+            "id": "videos",
+            "kind": "element",
+            "via": "search-indexer-videos"
+          }
+        }
+      ],
+      "components": [
+        {
+          "description": "Lets watchers sign in; others watch anonymously.",
+          "host": "watch-api",
+          "id": "watch-api-viewer-check",
+          "name": "Viewer check",
+          "settings": {
+            "credential": "jwt",
+            "kind": "auth-guard",
+            "signIn": "optional"
+          }
+        },
+        {
+          "description": "Serves video details from the cache.",
+          "host": "watch-api",
+          "id": "watch-api-video-details-cache",
+          "name": "Video details cache",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "stampede": "single-flight"
+          }
+        },
+        {
+          "description": "Reads public video details.",
+          "host": "watch-api",
+          "id": "watch-api-video-details-reader",
+          "name": "Video details reader",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 50,
+            "readRouting": "primary",
+            "statementTimeoutMs": 500
+          }
+        },
+        {
+          "description": "Reads a video's view count.",
+          "host": "watch-api",
+          "id": "watch-api-view-count-reader",
+          "name": "View count reader",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "description": "Reports each play of a ready video as an event, with the viewer when signed in.",
+          "host": "watch-api",
+          "id": "watch-api-view-publisher",
+          "name": "View publisher",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "description": "Receives view events.",
+          "host": "view-counter",
+          "id": "view-counter-view-consumer",
+          "name": "View consumer",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        },
+        {
+          "description": "Counts each view event once.",
+          "host": "view-counter",
+          "id": "view-counter-receipt-and-increment",
+          "name": "Receipt and increment",
+          "settings": {
+            "kind": "event-counter"
+          }
+        },
+        {
+          "description": "Stores view totals.",
+          "host": "view-counter",
+          "id": "view-counter-count-writer",
+          "name": "Count writer",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "description": "Searches published videos.",
+          "host": "search-api",
+          "id": "search-api-video-search",
+          "name": "Video search",
+          "settings": {
+            "kind": "search-query"
+          }
+        },
+        {
+          "description": "Allows only signed-in accounts.",
+          "host": "account-api",
+          "id": "account-api-account-check",
+          "name": "Account check",
+          "settings": {
+            "credential": "jwt",
+            "kind": "auth-guard",
+            "signIn": "required"
+          }
+        },
+        {
+          "description": "Keeps each account's favorite videos.",
+          "host": "account-api",
+          "id": "account-api-favorite-videos",
+          "name": "Favorite videos",
+          "settings": {
+            "kind": "favorites"
+          }
+        },
+        {
+          "description": "Reads which videos are public.",
+          "host": "account-api",
+          "id": "account-api-video-reader",
+          "name": "Video reader",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "description": "Allows only signed-in creators.",
+          "host": "upload-api",
+          "id": "upload-api-creator-check",
+          "name": "Creator check",
+          "settings": {
+            "credential": "jwt",
+            "kind": "auth-guard",
+            "signIn": "required"
+          }
+        },
+        {
+          "description": "Uploads large videos in resumable parts.",
+          "host": "upload-api",
+          "id": "upload-api-multipart-uploads",
+          "name": "Multipart uploads",
+          "settings": {
+            "kind": "multipart-uploads"
+          }
+        },
+        {
+          "description": "Queues a processing job once an upload completes.",
+          "host": "upload-api",
+          "id": "upload-api-job-outbox-publisher",
+          "name": "Job outbox publisher",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "enabled"
+          }
+        },
+        {
+          "description": "Records each upload's progress.",
+          "host": "upload-api",
+          "id": "upload-api-upload-state-writer",
+          "name": "Upload state writer",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "description": "Takes the next processing job.",
+          "host": "transcoder",
+          "id": "transcoder-job-consumer",
+          "name": "Job consumer",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        },
+        {
+          "description": "Encodes the video into streamable renditions.",
+          "host": "transcoder",
+          "id": "transcoder-segmenter-and-encoder",
+          "name": "Segmenter and encoder",
+          "settings": {
+            "kind": "video-encoder"
+          }
+        },
+        {
+          "description": "Stores the stream's segments and playlists.",
+          "host": "transcoder",
+          "id": "transcoder-packager",
+          "name": "Packager",
+          "settings": {
+            "kind": "video-packager"
+          }
+        },
+        {
+          "description": "Creates the video's thumbnails.",
+          "host": "transcoder",
+          "id": "transcoder-thumbnailer",
+          "name": "Thumbnailer",
+          "settings": {
+            "kind": "video-thumbnailer"
+          }
+        },
+        {
+          "description": "Announces whether processing succeeded.",
+          "host": "transcoder",
+          "id": "transcoder-processing-result-publisher",
+          "name": "Processing result publisher",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "disabled"
+          }
+        },
+        {
+          "description": "Receives processing results.",
+          "host": "video-lifecycle",
+          "id": "video-lifecycle-processing-consumer",
+          "name": "Processing consumer",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        },
+        {
+          "description": "Updates each video's processing state.",
+          "host": "video-lifecycle",
+          "id": "video-lifecycle-lifecycle-writer",
+          "name": "Lifecycle writer",
+          "settings": {
+            "kind": "lifecycle-writer",
+            "poolSize": 10,
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "description": "Announces videos that are ready to watch.",
+          "host": "video-lifecycle",
+          "id": "video-lifecycle-video-publication-publisher",
+          "name": "Video publication publisher",
+          "settings": {
+            "kind": "event-publisher",
+            "outbox": "enabled"
+          }
+        },
+        {
+          "description": "Receives newly published videos.",
+          "host": "search-indexer",
+          "id": "search-indexer-video-publication-consumer",
+          "name": "Video publication consumer",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        },
+        {
+          "description": "Adds published videos to the search index.",
+          "host": "search-indexer",
+          "id": "search-indexer-index-writer",
+          "name": "Index writer",
+          "settings": {
+            "kind": "index-writer"
+          }
+        }
+      ],
+      "connections": [
+        {
+          "connection": "watch-api-cache",
+          "settings": {}
+        },
+        {
+          "connection": "watch-api-database",
+          "settings": {}
+        },
+        {
+          "connection": "watch-api-database-2",
+          "settings": {}
+        },
+        {
+          "connection": "watch-api-message-channel",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "view-events-worker-service",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "view-counter-view-counts",
+          "settings": {}
+        },
+        {
+          "connection": "search-api-search-index",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-database",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-metadata",
+          "settings": {}
+        },
+        {
+          "connection": "watch-api-sign-in",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-sign-in",
+          "settings": {}
+        },
+        {
+          "connection": "upload-api-metadata",
+          "settings": {}
+        },
+        {
+          "connection": "upload-api-object-storage",
+          "settings": {}
+        },
+        {
+          "connection": "upload-api-message-channel",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "upload-jobs-worker-service",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "transcoder-original-videos",
+          "settings": {}
+        },
+        {
+          "connection": "transcoder-object-storage",
+          "settings": {}
+        },
+        {
+          "connection": "video-delivery-transcoded-videos",
+          "settings": {}
+        },
+        {
+          "connection": "transcoder-message-channel",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "processing-events-worker-service",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "video-lifecycle-metadata",
+          "settings": {}
+        },
+        {
+          "connection": "video-lifecycle-message-channel",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "publication-events-worker-service",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "search-indexer-videos",
+          "settings": {}
+        },
+        {
+          "connection": "upload-api-sign-in",
+          "settings": {}
+        }
+      ],
+      "elements": [
+        {
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "element": "watch-api",
+          "settings": {
+            "concurrencyLimit": 2000,
+            "execution": "docker",
+            "exposure": "public",
+            "kind": "service",
+            "language": "typescript",
+            "requestTimeoutMs": 1000
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "element": "hot-metadata",
+          "owner": {
+            "id": "watch-api",
+            "kind": "element"
+          },
+          "settings": {
+            "engine": "redis-compatible",
+            "kind": "cache",
+            "provider": "self-hosted",
+            "ttlSeconds": 3601
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "element": "metadata",
+          "owner": {
+            "id": "watch-api",
+            "kind": "element"
+          },
+          "settings": {
+            "engine": "postgresql",
+            "kind": "database",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "element": "view-counts",
+          "owner": {
+            "id": "watch-api",
+            "kind": "element"
+          },
+          "settings": {
+            "engine": "postgresql",
+            "kind": "database",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "element": "view-events",
+          "owner": {
+            "id": "watch-api",
+            "kind": "element"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "element": "view-counter",
+          "settings": {
+            "concurrency": 8,
+            "execution": "docker",
+            "kind": "worker",
+            "language": "typescript"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "element": "search-api",
+          "settings": {
+            "concurrencyLimit": 1000,
+            "execution": "docker",
+            "exposure": "public",
+            "kind": "service",
+            "language": "typescript",
+            "requestTimeoutMs": 1000
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-search",
+            "version": "1.0.0"
+          },
+          "element": "videos",
+          "owner": {
+            "id": "search-api",
+            "kind": "element"
+          },
+          "settings": {
+            "engine": "opensearch",
+            "kind": "search",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-cdn",
+            "version": "1.0.0"
+          },
+          "element": "video-delivery",
+          "settings": {
+            "kind": "cdn",
+            "provider": "cloudflare"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "element": "account-api",
+          "settings": {
+            "concurrencyLimit": 1000,
+            "execution": "docker",
+            "exposure": "public",
+            "kind": "service",
+            "language": "typescript",
+            "requestTimeoutMs": 1000
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "element": "favorites",
+          "owner": {
+            "id": "account-api",
+            "kind": "element"
+          },
+          "settings": {
+            "engine": "postgresql",
+            "kind": "database",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "element": "sign-in",
+          "settings": {
+            "execution": "docker",
+            "exposure": "public",
+            "kind": "identity",
+            "language": "typescript",
+            "provider": "oidc"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-uploads",
+            "version": "1.0.0"
+          },
+          "element": "upload-api",
+          "settings": {
+            "concurrencyLimit": 500,
+            "execution": "docker",
+            "exposure": "public",
+            "kind": "uploads",
+            "language": "typescript",
+            "requestTimeoutMs": 5000,
+            "transfer": "signed-url"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-object-store",
+            "version": "1.0.0"
+          },
+          "element": "original-videos",
+          "owner": {
+            "id": "upload-api",
+            "kind": "element"
+          },
+          "settings": {
+            "access": "private",
+            "kind": "object-store",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "element": "upload-jobs",
+          "owner": {
+            "id": "upload-api",
+            "kind": "element"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "element": "transcoder",
+          "settings": {
+            "concurrency": 1,
+            "execution": "docker",
+            "kind": "worker",
+            "language": "typescript"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-object-store",
+            "version": "1.0.0"
+          },
+          "element": "transcoded-videos",
+          "owner": {
+            "id": "transcoder",
+            "kind": "element"
+          },
+          "settings": {
+            "access": "public",
+            "kind": "object-store",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "element": "processing-events",
+          "owner": {
+            "id": "transcoder",
+            "kind": "element"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "element": "video-lifecycle",
+          "settings": {
+            "concurrency": 4,
+            "execution": "docker",
+            "kind": "worker",
+            "language": "typescript"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "element": "publication-events",
+          "owner": {
+            "id": "video-lifecycle",
+            "kind": "element"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "self-hosted"
+          }
+        },
+        {
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "element": "search-indexer",
+          "settings": {
+            "concurrency": 4,
+            "execution": "docker",
+            "kind": "worker",
+            "language": "typescript"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "element": "watch-api",
+          "id": "download-microservice",
+          "lane": "download"
+        },
+        {
+          "element": "search-api",
+          "id": "download-microservice-2",
+          "lane": "download"
+        },
+        {
+          "element": "video-delivery",
+          "id": "download-cdn",
+          "lane": "download"
+        },
+        {
+          "element": "account-api",
+          "id": "download-microservice-3",
+          "lane": "download"
+        },
+        {
+          "element": "sign-in",
+          "id": "upload-identity",
+          "lane": "upload"
+        },
+        {
+          "element": "upload-api",
+          "id": "upload-uploads",
+          "lane": "upload"
+        }
+      ],
+      "packages": [],
+      "version": 1
+    },
+    "system": {
+      "description": "",
+      "name": "YouTube"
+    }
+  },
+  "connections": [
+    {
+      "from": {
+        "element": "watch-api"
+      },
+      "id": "watch-api-cache",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "Redis",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "hot-metadata"
+      }
+    },
+    {
+      "from": {
+        "element": "watch-api"
+      },
+      "id": "watch-api-database",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "metadata"
+      }
+    },
+    {
+      "from": {
+        "element": "watch-api"
+      },
+      "id": "watch-api-database-2",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "view-counts"
+      }
+    },
+    {
+      "from": {
+        "element": "watch-api"
+      },
+      "id": "watch-api-message-channel",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "view-events"
+      }
+    },
+    {
+      "from": {
+        "element": "view-events"
+      },
+      "id": "view-events-worker-service",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "view-counter"
+      }
+    },
+    {
+      "from": {
+        "element": "view-counter"
+      },
+      "id": "view-counter-view-counts",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "view-counts"
+      }
+    },
+    {
+      "from": {
+        "element": "search-api"
+      },
+      "id": "search-api-search-index",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Uses",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "videos"
+      }
+    },
+    {
+      "from": {
+        "element": "account-api"
+      },
+      "id": "account-api-database",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "favorites"
+      }
+    },
+    {
+      "from": {
+        "element": "account-api"
+      },
+      "id": "account-api-metadata",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "metadata"
+      }
+    },
+    {
+      "from": {
+        "element": "watch-api"
+      },
+      "id": "watch-api-sign-in",
+      "kind": "calls",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Calls",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "sign-in"
+      }
+    },
+    {
+      "from": {
+        "element": "account-api"
+      },
+      "id": "account-api-sign-in",
+      "kind": "calls",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Calls",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "sign-in"
+      }
+    },
+    {
+      "from": {
+        "element": "upload-api"
+      },
+      "id": "upload-api-metadata",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "metadata"
+      }
+    },
+    {
+      "from": {
+        "element": "upload-api"
+      },
+      "id": "upload-api-object-storage",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Uses",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "original-videos"
+      }
+    },
+    {
+      "from": {
+        "element": "upload-api"
+      },
+      "id": "upload-api-message-channel",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "upload-jobs"
+      }
+    },
+    {
+      "from": {
+        "element": "upload-jobs"
+      },
+      "id": "upload-jobs-worker-service",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "transcoder"
+      }
+    },
+    {
+      "from": {
+        "element": "transcoder"
+      },
+      "id": "transcoder-original-videos",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Uses",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "original-videos"
+      }
+    },
+    {
+      "from": {
+        "element": "transcoder"
+      },
+      "id": "transcoder-object-storage",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Uses",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "transcoded-videos"
+      }
+    },
+    {
+      "from": {
+        "element": "video-delivery"
+      },
+      "id": "video-delivery-transcoded-videos",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Uses",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "transcoded-videos"
+      }
+    },
+    {
+      "from": {
+        "element": "transcoder"
+      },
+      "id": "transcoder-message-channel",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "processing-events"
+      }
+    },
+    {
+      "from": {
+        "element": "processing-events"
+      },
+      "id": "processing-events-worker-service",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "video-lifecycle"
+      }
+    },
+    {
+      "from": {
+        "element": "video-lifecycle"
+      },
+      "id": "video-lifecycle-metadata",
+      "kind": "uses-database",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "metadata"
+      }
+    },
+    {
+      "from": {
+        "element": "video-lifecycle"
+      },
+      "id": "video-lifecycle-message-channel",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "publication-events"
+      }
+    },
+    {
+      "from": {
+        "element": "publication-events"
+      },
+      "id": "publication-events-worker-service",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Asynchronous",
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "search-indexer"
+      }
+    },
+    {
+      "from": {
+        "element": "search-indexer"
+      },
+      "id": "search-indexer-videos",
+      "kind": "depends-on",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Uses",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "videos"
+      }
+    },
+    {
+      "from": {
+        "element": "upload-api"
+      },
+      "id": "upload-api-sign-in",
+      "kind": "calls",
+      "planned": {
+        "interaction": "Request / response",
+        "label": "Calls",
+        "protocol": "HTTP",
+        "security": "Private network"
+      },
+      "to": {
+        "element": "sign-in"
+      }
+    }
+  ],
+  "elements": [
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "watch-api",
+      "name": "Watch API"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "hot-metadata",
+      "name": "Hot metadata"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "metadata",
+      "name": "Metadata"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "view-counts",
+      "name": "View counts"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "view-events",
+      "name": "View events"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "view-counter",
+      "name": "View counter"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "search-api",
+      "name": "Search API"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "videos",
+      "name": "Videos"
+    },
+    {
+      "classification": {
+        "kind": "External system"
+      },
+      "id": "video-delivery",
+      "name": "Video delivery"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "account-api",
+      "name": "Account API"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "favorites",
+      "name": "Favorites"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "sign-in",
+      "name": "Sign-in"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "upload-api",
+      "name": "Upload API"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "original-videos",
+      "name": "Original videos"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "upload-jobs",
+      "name": "Upload jobs"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "transcoder",
+      "name": "Transcoder"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "transcoded-videos",
+      "name": "Transcoded videos"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "processing-events",
+      "name": "Processing events"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "video-lifecycle",
+      "name": "Video lifecycle"
+    },
+    {
+      "classification": {
+        "kind": "Data store"
+      },
+      "id": "publication-events",
+      "name": "Publication events"
+    },
+    {
+      "classification": {
+        "kind": "Application"
+      },
+      "id": "search-indexer",
+      "name": "Search indexer"
+    }
+  ],
+  "generation": {
+    "processes": true,
+    "runtime": {
+      "id": "local-runtime",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec",
+      "version": "0.1.0"
+    },
+    "selections": [
+      {
+        "binding": {
+          "identity": {
+            "element": "sign-in",
+            "guard": "watch-api-viewer-check"
+          },
+          "kind": "verified-identity"
+        },
+        "id": "watch-api-viewer-check",
+        "target": {
+          "component": "watch-api-viewer-check",
+          "host": "watch-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "verified-identity",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "cache": {
+            "connection": "watch-api-cache",
+            "resource": "hot-metadata"
+          },
+          "kind": "positive-cache-read",
+          "source": {
+            "connection": "watch-api-database",
+            "resource": "metadata"
+          }
+        },
+        "id": "watch-api-video-details-cache",
+        "target": {
+          "component": "watch-api-video-details-cache",
+          "host": "watch-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "positive-cache-read",
+          "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "kind": "module-stub"
+        },
+        "id": "watch-api-view-count-reader",
+        "target": {
+          "component": "watch-api-view-count-reader",
+          "host": "watch-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "module-stub",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "kind": "module-stub"
+        },
+        "id": "watch-api-view-publisher",
+        "target": {
+          "component": "watch-api-view-publisher",
+          "host": "watch-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "module-stub",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "events": {
+            "connection": "view-events-worker-service",
+            "resource": "view-events"
+          },
+          "kind": "event-counter",
+          "state": {
+            "connection": "view-counter-view-counts",
+            "resource": "view-counts"
+          }
+        },
+        "id": "view-counter-receipt-and-increment",
+        "target": {
+          "component": "view-counter-receipt-and-increment",
+          "host": "view-counter",
+          "kind": "component"
+        },
+        "template": {
+          "id": "event-counter",
+          "sha256": "ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "index": {
+            "connection": "search-api-search-index",
+            "resource": "videos"
+          },
+          "kind": "search-query"
+        },
+        "id": "search-api-video-search",
+        "target": {
+          "component": "search-api-video-search",
+          "host": "search-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "search-query",
+          "sha256": "013de6d4c984a46be6ee1b26ad43ce240b42cd9fe96dbe086f72749e63abb624",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "identity": {
+            "element": "sign-in",
+            "guard": "account-api-account-check"
+          },
+          "kind": "verified-identity"
+        },
+        "id": "account-api-account-check",
+        "target": {
+          "component": "account-api-account-check",
+          "host": "account-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "verified-identity",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "identity": {
+            "element": "sign-in",
+            "guard": "account-api-account-check"
+          },
+          "items": {
+            "connection": "account-api-metadata",
+            "resource": "metadata"
+          },
+          "kind": "favorites",
+          "state": {
+            "connection": "account-api-database",
+            "resource": "favorites"
+          }
+        },
+        "id": "account-api-favorite-videos",
+        "target": {
+          "component": "account-api-favorite-videos",
+          "host": "account-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "favorites",
+          "sha256": "f3c7a75b1ee3a94fff16e2e84f63ee3ac65f6125e995454efe442c1ec84304e8",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "identity": {
+            "element": "sign-in",
+            "guard": "upload-api-creator-check"
+          },
+          "kind": "verified-identity"
+        },
+        "id": "upload-api-creator-check",
+        "target": {
+          "component": "upload-api-creator-check",
+          "host": "upload-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "verified-identity",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "identity": {
+            "element": "sign-in",
+            "guard": "upload-api-creator-check"
+          },
+          "jobs": {
+            "connection": "upload-api-message-channel",
+            "resource": "upload-jobs"
+          },
+          "kind": "owned-multipart",
+          "objects": {
+            "connection": "upload-api-object-storage",
+            "resource": "original-videos"
+          },
+          "state": {
+            "connection": "upload-api-metadata",
+            "resource": "metadata"
+          }
+        },
+        "id": "upload-api-multipart-uploads",
+        "target": {
+          "component": "upload-api-multipart-uploads",
+          "host": "upload-api",
+          "kind": "component"
+        },
+        "template": {
+          "id": "owned-multipart",
+          "sha256": "c5c035bbf4f6a75edb612506f8d26aca03e90df528647f999362a97142e3b2c7",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "jobs": {
+            "connection": "upload-jobs-worker-service",
+            "resource": "upload-jobs"
+          },
+          "kind": "video-hls",
+          "originals": {
+            "connection": "transcoder-original-videos",
+            "resource": "original-videos"
+          },
+          "outputs": {
+            "connection": "transcoder-object-storage",
+            "resource": "transcoded-videos"
+          },
+          "results": {
+            "connection": "transcoder-message-channel",
+            "resource": "processing-events"
+          }
+        },
+        "id": "transcoder-segmenter-and-encoder",
+        "target": {
+          "component": "transcoder-segmenter-and-encoder",
+          "host": "transcoder",
+          "kind": "component"
+        },
+        "template": {
+          "id": "video-hls",
+          "sha256": "4af9b570774b6d4c590806b3fd66fe0492dc18651d73c464544f26a78340acdb",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "kind": "asset-lifecycle",
+          "publication": {
+            "connection": "video-lifecycle-message-channel",
+            "resource": "publication-events"
+          },
+          "results": {
+            "connection": "processing-events-worker-service",
+            "resource": "processing-events"
+          },
+          "state": {
+            "connection": "video-lifecycle-metadata",
+            "resource": "metadata"
+          },
+          "upload": "upload-api-multipart-uploads"
+        },
+        "id": "video-lifecycle-lifecycle-writer",
+        "target": {
+          "component": "video-lifecycle-lifecycle-writer",
+          "host": "video-lifecycle",
+          "kind": "component"
+        },
+        "template": {
+          "id": "asset-lifecycle",
+          "sha256": "01f968341b295c089bc200a0528559d5d4522fcf0dd76fbcd7929340c5d0d186",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "binding": {
+          "events": {
+            "connection": "publication-events-worker-service",
+            "resource": "publication-events"
+          },
+          "index": {
+            "connection": "search-indexer-videos",
+            "resource": "videos"
+          },
+          "kind": "search-projection"
+        },
+        "id": "search-indexer-index-writer",
+        "target": {
+          "component": "search-indexer-index-writer",
+          "host": "search-indexer",
+          "kind": "component"
+        },
+        "template": {
+          "id": "search-projection",
+          "sha256": "5e81e6a9752692577618d092e301b79aa6131679605e8cccf409cf26d2616ae3",
+          "version": "0.1.0"
+        }
+      }
+    ],
+    "version": 1
+  },
+  "ownership": {
+    "dependencies": [
+      {
+        "access": "read",
+        "connection": "watch-api-database"
+      },
+      {
+        "access": "read-write",
+        "connection": "watch-api-cache"
+      },
+      {
+        "access": "read-write",
+        "connection": "view-counter-view-counts"
+      },
+      {
+        "access": "read",
+        "connection": "search-api-search-index"
+      },
+      {
+        "access": "read-write",
+        "connection": "account-api-database"
+      },
+      {
+        "access": "read",
+        "connection": "account-api-metadata"
+      },
+      {
+        "access": "read-write",
+        "connection": "upload-api-metadata"
+      },
+      {
+        "access": "read-write",
+        "connection": "upload-api-object-storage"
+      },
+      {
+        "access": "read",
+        "connection": "transcoder-original-videos"
+      },
+      {
+        "access": "read-write",
+        "connection": "transcoder-object-storage"
+      },
+      {
+        "access": "read-write",
+        "connection": "video-lifecycle-metadata"
+      },
+      {
+        "access": "read-write",
+        "connection": "search-indexer-videos"
+      }
+    ],
+    "grants": [
+      {
+        "access": "read",
+        "boundary": "published-read",
+        "resource": "metadata",
+        "role": "watch-api"
+      },
+      {
+        "access": "read-write",
+        "resource": "hot-metadata",
+        "role": "watch-api"
+      },
+      {
+        "access": "read-write",
+        "resource": "view-counts",
+        "role": "view-counter"
+      },
+      {
+        "access": "read",
+        "resource": "videos",
+        "role": "search-api"
+      },
+      {
+        "access": "read-write",
+        "resource": "favorites",
+        "role": "account-api"
+      },
+      {
+        "access": "read",
+        "boundary": "published-read",
+        "resource": "metadata",
+        "role": "account-api"
+      },
+      {
+        "access": "read-write",
+        "resource": "metadata",
+        "role": "upload-api"
+      },
+      {
+        "access": "read-write",
+        "resource": "original-videos",
+        "role": "upload-api"
+      },
+      {
+        "access": "read",
+        "boundary": "published-read",
+        "resource": "original-videos",
+        "role": "transcoder"
+      },
+      {
+        "access": "read-write",
+        "resource": "transcoded-videos",
+        "role": "transcoder"
+      },
+      {
+        "access": "read-write",
+        "resource": "metadata",
+        "role": "video-lifecycle"
+      },
+      {
+        "access": "read-write",
+        "resource": "videos",
+        "role": "search-indexer"
+      }
+    ],
+    "owners": [
+      {
+        "id": "watch-api-owner",
+        "name": "Watch API"
+      },
+      {
+        "id": "search-api-owner",
+        "name": "Search API"
+      },
+      {
+        "id": "account-api-owner",
+        "name": "Account API"
+      },
+      {
+        "id": "sign-in-owner",
+        "name": "Sign-in"
+      },
+      {
+        "id": "view-counter-owner",
+        "name": "View counter"
+      },
+      {
+        "id": "upload-api-owner",
+        "name": "Upload API"
+      },
+      {
+        "id": "transcoder-owner",
+        "name": "Transcoder"
+      }
+    ],
+    "resources": [
+      {
+        "authority": "watch-api-owner",
+        "element": "hot-metadata",
+        "kind": "projection",
+        "source": "metadata"
+      },
+      {
+        "authority": "upload-api-owner",
+        "element": "metadata",
+        "kind": "source"
+      },
+      {
+        "authority": "view-counter-owner",
+        "element": "view-counts",
+        "kind": "source"
+      },
+      {
+        "authority": "search-api-owner",
+        "element": "videos",
+        "kind": "projection",
+        "source": "metadata"
+      },
+      {
+        "authority": "transcoder-owner",
+        "element": "transcoded-videos",
+        "kind": "source"
+      },
+      {
+        "authority": "account-api-owner",
+        "element": "favorites",
+        "kind": "source"
+      },
+      {
+        "authority": "upload-api-owner",
+        "element": "original-videos",
+        "kind": "source"
+      }
+    ],
+    "roles": [
+      {
+        "element": "watch-api",
+        "kind": "api",
+        "owner": "watch-api-owner"
+      },
+      {
+        "element": "search-api",
+        "kind": "api",
+        "owner": "search-api-owner"
+      },
+      {
+        "element": "account-api",
+        "kind": "api",
+        "owner": "account-api-owner"
+      },
+      {
+        "element": "view-counter",
+        "kind": "worker",
+        "owner": "view-counter-owner"
+      },
+      {
+        "element": "upload-api",
+        "kind": "api",
+        "owner": "upload-api-owner"
+      },
+      {
+        "element": "transcoder",
+        "kind": "worker",
+        "owner": "transcoder-owner"
+      },
+      {
+        "element": "video-lifecycle",
+        "kind": "worker",
+        "owner": "upload-api-owner"
+      },
+      {
+        "element": "search-indexer",
+        "kind": "worker",
+        "owner": "search-api-owner"
+      },
+      {
+        "element": "sign-in",
+        "kind": "api",
+        "owner": "sign-in-owner"
+      }
+    ]
+  },
+  "revision": 171,
+  "schemaVersion": 3,
+  "scope": {
+    "customRequirements": [],
+    "profile": null,
+    "requirements": []
+  }
+}

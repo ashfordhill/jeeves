@@ -1,0 +1,109 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-2",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-3",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-4",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-5",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-6",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-7",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-8",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

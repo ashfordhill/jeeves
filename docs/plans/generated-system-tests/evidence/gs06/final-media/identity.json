@@ -1,0 +1,12 @@
+{
+  "id": "gs-303102f3-e285-4cea-b44b-673ceb4087c8",
+  "selected": ["media"],
+  "commit": "59d1af37d92a4c5b2c8bcb11284d2397ebc0aa81",
+  "dirty": "M field-projects/generator-system/README.md\n M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/cleanup.ts\n M jeeves-generator/integration/run.ts\n?? field-projects/generator-system/fixtures/media/\n?? jeeves-generator/integration/harness/media.ts\n?? jeeves-generator/integration/scenarios/media.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

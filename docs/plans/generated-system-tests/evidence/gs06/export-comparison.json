@@ -1,0 +1,77 @@
+{
+  "coldAndWarmOriginalExportsIdentical": true,
+  "savedDesignParsedValuesEqualV4": true,
+  "runs": [
+    {
+      "run": "cold",
+      "sourceSha256": "0272a8086f90e0d2db7cf12072ee02881152f5222e1818ac94e060299aca8cf6",
+      "reportSha256": "d199ea3ab26ce29fcf1be8bebfdd9830cb1d39a7f6269776d8b144f9fe91d2d3",
+      "manifestSha256": "35abf6c5465ab3e4f469f888d568205a120720d003087bdf1c9f18bb88848fb6",
+      "installedSelections": [
+        "verified-identity",
+        "positive-cache-read",
+        "module-stub",
+        "module-stub",
+        "event-counter",
+        "search-query",
+        "verified-identity",
+        "favorites",
+        "verified-identity",
+        "owned-multipart",
+        "video-hls",
+        "asset-lifecycle",
+        "search-projection"
+      ],
+      "requiredCustomGaps": 9,
+      "applicationComplete": false,
+      "scaffoldUnchanged": true
+    },
+    {
+      "run": "warm",
+      "sourceSha256": "0272a8086f90e0d2db7cf12072ee02881152f5222e1818ac94e060299aca8cf6",
+      "reportSha256": "d199ea3ab26ce29fcf1be8bebfdd9830cb1d39a7f6269776d8b144f9fe91d2d3",
+      "manifestSha256": "35abf6c5465ab3e4f469f888d568205a120720d003087bdf1c9f18bb88848fb6",
+      "installedSelections": [
+        "verified-identity",
+        "positive-cache-read",
+        "module-stub",
+        "module-stub",
+        "event-counter",
+        "search-query",
+        "verified-identity",
+        "favorites",
+        "verified-identity",
+        "owned-multipart",
+        "video-hls",
+        "asset-lifecycle",
+        "search-projection"
+      ],
+      "requiredCustomGaps": 9,
+      "applicationComplete": false,
+      "scaffoldUnchanged": true
+    }
+  ],
+  "allFourOriginalExportsIdentical": true,
+  "fourRunOriginalHashes": [
+    {
+      "run": "cold",
+      "manifestSha256": "35abf6c5465ab3e4f469f888d568205a120720d003087bdf1c9f18bb88848fb6",
+      "reportSha256": "d199ea3ab26ce29fcf1be8bebfdd9830cb1d39a7f6269776d8b144f9fe91d2d3"
+    },
+    {
+      "run": "warm",
+      "manifestSha256": "35abf6c5465ab3e4f469f888d568205a120720d003087bdf1c9f18bb88848fb6",
+      "reportSha256": "d199ea3ab26ce29fcf1be8bebfdd9830cb1d39a7f6269776d8b144f9fe91d2d3"
+    },
+    {
+      "run": "all",
+      "manifestSha256": "35abf6c5465ab3e4f469f888d568205a120720d003087bdf1c9f18bb88848fb6",
+      "reportSha256": "d199ea3ab26ce29fcf1be8bebfdd9830cb1d39a7f6269776d8b144f9fe91d2d3"
+    },
+    {
+      "run": "finalMedia",
+      "manifestSha256": "35abf6c5465ab3e4f469f888d568205a120720d003087bdf1c9f18bb88848fb6",
+      "reportSha256": "d199ea3ab26ce29fcf1be8bebfdd9830cb1d39a7f6269776d8b144f9fe91d2d3"
+    }
+  ]
+}

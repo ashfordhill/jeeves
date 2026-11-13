@@ -1,0 +1,46 @@
+{
+  "builder": "gs06-b8f6255f04144c46838890fa0f91c8da",
+  "privatePnpmStore": "/tmp/gs06-pnpm-1uqizi37",
+  "commit": "59d1af37d92a4c5b2c8bcb11284d2397ebc0aa81",
+  "githubEnvironmentPresent": false,
+  "providerCache": [
+    {
+      "reference": "postgres:17.11-alpine3.23@sha256:bc2701f9a79f9248bcb18743bc9b2c732d9a1d16737ca44a8f577752fc43b61f",
+      "presentBefore": true
+    },
+    {
+      "reference": "rabbitmq:4.4.0-management-alpine@sha256:4841f6384ef8313c3594cd3f2e9f40c10805f8a61c45f08a9a5d9ddea8199267",
+      "presentBefore": true
+    },
+    {
+      "reference": "valkey/valkey:8.1.10-alpine@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "presentBefore": true
+    },
+    {
+      "reference": "dxflrs/garage:v2.4.1@sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020",
+      "presentBefore": true
+    },
+    {
+      "reference": "quay.io/keycloak/keycloak:26.8.1@sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332",
+      "presentBefore": true
+    },
+    {
+      "reference": "opensearchproject/opensearch:3.9.0@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+      "presentBefore": true
+    },
+    {
+      "reference": "nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236",
+      "presentBefore": true
+    }
+  ],
+  "machine": {
+    "cpu": "Architecture:                         x86_64\nCPU op-mode(s):                       32-bit, 64-bit\nAddress sizes:                        48 bits physical, 48 bits virtual\nByte Order:                           Little Endian\nCPU(s):                               12\nOn-line CPU(s) list:                  0-11\nVendor ID:                            AuthenticAMD\nModel name:                           AMD Ryzen 5 7600X 6-Core Processor\nCPU family:                           25\nModel:                                97\nThread(s) per core:                   2\nCore(s) per socket:                   6\nSocket(s):                            1\nStepping:                             2\nBogoMIPS:                             9382.20\nFlags:                                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc cpuid extd_apicid tsc_known_freq pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext perfctr_core ssbd ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx512_bf16 clzero xsaveerptr arat avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm\nHypervisor vendor:                    Microsoft\nVirtualization type:                  full\nL1d cache:                            192 KiB (6 instances)\nL1i cache:                            192 KiB (6 instances)\nL2 cache:                             6 MiB (6 instances)\nL3 cache:                             32 MiB (1 instance)\nNUMA node(s):                         1\nNUMA node0 CPU(s):                    0-11\nVulnerability Gather data sampling:   Not affected\nVulnerability Itlb multihit:          Not affected\nVulnerability L1tf:                   Not affected\nVulnerability Mds:                    Not affected\nVulnerability Meltdown:               Not affected\nVulnerability Mmio stale data:        Not affected\nVulnerability Reg file data sampling: Not affected\nVulnerability Retbleed:               Not affected\nVulnerability Spec rstack overflow:   Vulnerable: Safe RET, no microcode\nVulnerability Spec store bypass:      Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:             Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:             Mitigation; Retpolines; IBPB conditional; IBRS_FW; STIBP always-on; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                  Not affected\nVulnerability Tsx async abort:        Not affected",
+    "docker": "12 33188683776",
+    "memory": [
+      "MemTotal:       32410824 kB",
+      "MemFree:        14110092 kB",
+      "MemAvailable:   28375788 kB"
+    ]
+  },
+  "scope": "Cold means fresh standalone pnpm store and empty dedicated BuildKit builder. Provider images and repository node_modules already exist. Warm reuses only those download/build caches, never provider volumes/runtime."
+}

@@ -11839,3 +11839,40 @@ recovery before deletion. No template gap, retry or weakened invariant was intro
 retaining private redaction inputs until global reporter scrub. Completed stacks still await
 outer cleanup. GS07 requires BR01–BR02; no broker or UI work was taken over. Hosted CI remains
 pending owner publication. All unrelated owner changes remain unstaged and untouched.
+
+
+## 2026-11-13 — GS06: Complete Media and sequential expanded suites
+
+**What changed.** Added backend-only Media/B08 and `--suite=media`, using a separate saved
+PF14-reviewed v4 graph and eleven report-owned hook/stub/SQL attachments. Real signed multipart
+resume/original hash, provider abort, FFmpeg HLS/JPEG delivery, invalid media, lifecycle/outbox,
+publication replay, search exclusions, counts and favorites run as one generated system.
+Completed stacks now capture their behavioral result before exact-label Docker release; private
+runtime/OAuth inputs remain through global reporter scrub. Added manual Media and weekly all
+runs; PR/main stays core. No template, generated scaffold, historical field app, pin or UI changed.
+[Evidence](plans/generated-system-tests/evidence/gs06/README.md) records ownership and limits.
+
+**Checks.** Full all passed 8/8 in five files (core 4, Wiring 2, Identity 1, Media 1). Review then
+added only the Media provider-abort observer; fresh final Media 1/1 requires the real part before
+abort and exact 404 NoSuchUpload afterward. The two-file source boundary is retained, and all
+four Media exports' original manifests/reports are identical. `pnpm check`: lint/typechecks,
+823 tests / 106 files; E2E: 73/73 (4.6 min); web build and actionlint syntax/context passed.
+Heavy phases were serial. Exact-label audits cover nine completed records/sixteen scopes, all
+empty with removed private directories and matching scrub markers; the privacy probe passed.
+The all run released 73 containers/eight networks/24 volumes sequentially, with one active
+project at most; live observations prove private inputs survived early Docker release.
+Logs: `/tmp/gs06-all-final`, `/tmp/gs06-media-final`, `/tmp/gs06-{check,e2e,web-build}-final.log`.
+
+**Differences from the plan.** Four diagnosed owned-SQL/request-observer/negative-case mistakes
+retain their failed results and cleanup. Invalid media's expected terminal job is asserted by
+exact identity/code/attempt, with no unexpected failure messages. No template defect, generated
+repair, retry, skip or timeout change. Cold/warm CLI wall cost was 5:04.27 / 2:41.59 before the
+final abort observer; clock scopes, sampled resources and the exact source boundary are explicit.
+Dedicated measurement builder/store were removed without owner cache/data changes.
+
+**For the next unit.** GS07 requires BR01–BR02 and their recovery evidence. No broker or UI
+work was taken over. Keep private redaction inputs until global/recovery scrub and keep heavy
+Docker and browser phases separate. Hosted CI remains pending publication; no push. All owner
+dirty paths remain untouched and unstaged.
+Coordinator sequencing: GS08 is the next eligible unit while GS07 awaits BR01–BR02 ownership
+and completion; GS06 stops here and executes none of those units.

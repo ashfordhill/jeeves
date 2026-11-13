@@ -1,0 +1,20 @@
+[
+  {
+    "check": "check",
+    "exitCode": 0,
+    "controllerElapsedSeconds": 56.565,
+    "log": "/tmp/gs06-check-final.log"
+  },
+  {
+    "check": "e2e",
+    "exitCode": 0,
+    "controllerElapsedSeconds": 279.724,
+    "log": "/tmp/gs06-e2e-final.log"
+  },
+  {
+    "check": "web-build",
+    "exitCode": 0,
+    "controllerElapsedSeconds": 1.171,
+    "log": "/tmp/gs06-web-build-final.log"
+  }
+]

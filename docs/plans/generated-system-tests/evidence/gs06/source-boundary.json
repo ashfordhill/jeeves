@@ -1,0 +1,18 @@
+{
+  "coldWarmAndAllSourceSha256": "0272a8086f90e0d2db7cf12072ee02881152f5222e1818ac94e060299aca8cf6",
+  "finalMediaSourceSha256": "c13af28ffc50f75b590d4f8db852dd772519639bcbedb96db925622fc6697ab2",
+  "changedSourceFiles": [
+    {
+      "path": "jeeves-generator/integration/harness/media.ts",
+      "before": "9930360fb096b9629506c315049ae5c79fa88a2155f37ce66ecd01f65a60c6cb",
+      "after": "53847f2dcb58ff5a521be51b12b81dca63ea19aaeabfeb5250e186ebc5432673"
+    },
+    {
+      "path": "jeeves-generator/integration/scenarios/media.system.test.ts",
+      "before": "84cf1837f2869c5c961fb3444e8f37e25839633bd8d6e354d779074e6b395d6d",
+      "after": "db8c2f72711cac4a2c4143ac8f70afb2d07dd762d7a9e641947647c597d2e9f9"
+    }
+  ],
+  "scope": "Media-only normal-credential provider ListParts observation before/after abort; no fixture/application/template/lifecycle/shared helper change. All other suites cover shared lifecycle source unchanged; final Media covers the stronger observer. Cold/warm costs precede this observation-only addition.",
+  "allOtherSourceHashesEqual": true
+}

@@ -1,0 +1,7 @@
+{
+  "id": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed",
+  "selected": ["core", "wiring", "identity", "media"],
+  "outcome": "passed",
+  "elapsedMs": 706662,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs06-all-final/run.json"
+}

@@ -1,0 +1,40 @@
+{
+  "observedAt": "2026-11-13T07:44:52Z",
+  "temporaryMode": "0o700",
+  "completedStacks": [
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-1",
+      "applicationPresent": true,
+      "runtimeSecretsPresent": true,
+      "secretFileCount": 5,
+      "resourceInventory": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-2",
+      "applicationPresent": true,
+      "runtimeSecretsPresent": true,
+      "secretFileCount": 5,
+      "resourceInventory": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-3",
+      "applicationPresent": true,
+      "runtimeSecretsPresent": true,
+      "secretFileCount": 5,
+      "resourceInventory": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "purpose": "Completed Docker resources gone; private runtime inputs retained before global reporter scrub. No secret values read/retained."
+}

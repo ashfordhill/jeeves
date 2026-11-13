@@ -1,0 +1,7 @@
+{
+  "id": "gs-61a6add1-7d58-4ff6-adc3-d4e89e945d60",
+  "selected": ["media"],
+  "outcome": "passed",
+  "elapsedMs": 304039,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/gs06-cold-confirmed/run.json"
+}

@@ -1,0 +1,21 @@
+{
+  "builder": "gs06-b8f6255f04144c46838890fa0f91c8da",
+  "builderRemoveExit": 0,
+  "privatePnpmStoreRemoved": true,
+  "resourceDifferences": {
+    "containers": {
+      "added": [],
+      "removed": []
+    },
+    "networks": {
+      "added": [],
+      "removed": []
+    },
+    "volumes": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "beforeInventoryHash": "c70f5d5d7f5c3e150d3c8452a0deb3d642be574999a5a9bd5c01e071439f1d3a",
+  "afterInventoryHash": "c70f5d5d7f5c3e150d3c8452a0deb3d642be574999a5a9bd5c01e071439f1d3a"
+}

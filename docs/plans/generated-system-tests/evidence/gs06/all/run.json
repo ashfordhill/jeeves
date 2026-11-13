@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "id": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed",
+  "suite": "all",
+  "temporary": "/tmp/jeeves-system-vpzqxF",
+  "stacks": [
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-1",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-vpzqxF/1-activity",
+      "artifacts": "/tmp/gs06-all-final/1-activity",
+      "ports": [39353, 40413, 42613]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-2",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-vpzqxF/2-activity",
+      "artifacts": "/tmp/gs06-all-final/2-activity",
+      "ports": [42179, 38633, 36429]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-3",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-vpzqxF/3-activity",
+      "artifacts": "/tmp/gs06-all-final/3-activity",
+      "ports": [41257, 46555, 45047]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-4",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-vpzqxF/4-media",
+      "artifacts": "/tmp/gs06-all-final/4-media",
+      "ports": [32981, 42737, 45391]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-5",
+      "fixture": "wiring",
+      "application": "/tmp/jeeves-system-vpzqxF/5-wiring",
+      "artifacts": "/tmp/gs06-all-final/5-wiring",
+      "ports": [40603, 46593, 46117]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-6",
+      "fixture": "wiring",
+      "application": "/tmp/jeeves-system-vpzqxF/6-wiring",
+      "artifacts": "/tmp/gs06-all-final/6-wiring",
+      "ports": [37405, 45691, 33993]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-7",
+      "fixture": "identity",
+      "application": "/tmp/jeeves-system-vpzqxF/7-identity",
+      "artifacts": "/tmp/gs06-all-final/7-identity",
+      "ports": [41783, 36241, 39383]
+    },
+    {
+      "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-8",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-vpzqxF/8-activity",
+      "artifacts": "/tmp/gs06-all-final/8-activity",
+      "ports": [35801, 40833, 46553]
+    }
+  ]
+}

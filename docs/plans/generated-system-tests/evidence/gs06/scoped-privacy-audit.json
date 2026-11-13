@@ -1,0 +1,198 @@
+{
+  "runs": [
+    {
+      "run": "/tmp/gs06-media-first",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-654d14f5-473d-40b8-94c8-648c8729f01b-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-media-second",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-ad8a5620-fd3a-4102-b84f-7727343915f7-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-media-third",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-media-fourth",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-572e9967-17f4-4c00-a517-670adc1d4b0a-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-media-final",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-303102f3-e285-4cea-b44b-673ceb4087c8-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-cold-confirmed",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-61a6add1-7d58-4ff6-adc3-d4e89e945d60-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-warm-confirmed",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-72ff39c6-b41b-477f-a8d0-10d92303a33b-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-all-final",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-2",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-3",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-4",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-5",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-6",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-7",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        },
+        {
+          "project": "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-8",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    },
+    {
+      "run": "/tmp/gs06-privacy-probe",
+      "markerMatches": true,
+      "privateTemporaryRemoved": true,
+      "projects": [
+        {
+          "project": "gs-eba6801c-4859-4240-9a15-c221e89dc202-1",
+          "inventory": {
+            "containers": [],
+            "networks": [],
+            "volumes": []
+          }
+        }
+      ]
+    }
+  ],
+  "artifactFilesScanned": 333,
+  "rawJwtOrSensitiveSignedQueryMatches": [],
+  "scope": "Independent exact-label audit after completion; scan is pattern-based, complemented by private-sentinel fail-closed recovery proof. No runtime values retained."
+}

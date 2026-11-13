@@ -1,0 +1,151 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-13T07:28:21.386Z",
+    "value": [
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-account-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-search-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-search-indexer-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-transcoder-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-upload-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-video-lifecycle-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-view-counter-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-app-watch-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-cache-hot-metadata-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-identity-sign-in-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-local-objects-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f9e0b1bc-a696-4319-b1f3-8e243df3e42e-1-search-videos-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-a",
+    "subject": "8e9493a0-74f4-4b0c-b0a0-37864be3ed93",
+    "status": 201
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-b",
+    "subject": "30aab57b-dacd-4597-b5e8-f4e2ea7366c9",
+    "status": 201
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-a",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-b",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads",
+    "request": "{}",
+    "status": 401,
+    "body": {
+      "error": "SIGN_IN_REQUIRED",
+      "message": "Sign in to continue."
+    },
+    "elapsedMs": 7
+  },
+  {
+    "boundary": "app-transcoder stop",
+    "at": "2026-11-13T07:28:23.990Z",
+    "container": "31d2965628f265db60cb53728a5596c31f3c926b25c65e0d09a5c1b83eee3f60",
+    "result": "Flag --time has been deprecated, use --timeout instead\n31d2965628f265db60cb53728a5596c31f3c926b25c65e0d09a5c1b83eee3f60"
+  },
+  {
+    "method": "POST",
+    "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads",
+    "request": "{\"fileName\":\"ready.mp4\",\"size\":8261230,\"contentType\":\"video/mp4\",\"lastModified\":0,\"sha256\":\"1281fc11ef003049160761d24b5fe9aa4f09927cb9116180a80430a653689da4\",\"title\":\"saffronfixture ready\",\"description\":\"Deterministic synthetic fixture\"}",
+    "status": 200,
+    "body": {
+      "uploadId": "68032bb9-6143-4fb4-903d-0bbd5bf2d52a",
+      "assetId": "fb9ade89-9b5c-42e0-a94d-40f255e79030",
+      "state": "uploading",
+      "partSize": 5242880,
+      "partCount": 2,
+      "expiresAt": "2026-11-14T07:28:24.017Z"
+    },
+    "elapsedMs": 51
+  },
+  {
+    "method": "POST",
+    "path": "/api/upload-api/modules/upload-api-multipart-uploads/uploads/68032bb9-6143-4fb4-903d-0bbd5bf2d52a/parts/1",
+    "status": 400,
+    "body": {
+      "error": "INVALID_REQUEST",
+      "message": "Invalid request."
+    },
+    "elapsedMs": 3
+  }
+]

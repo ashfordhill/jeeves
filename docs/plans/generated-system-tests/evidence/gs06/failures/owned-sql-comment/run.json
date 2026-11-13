@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-ad8a5620-fd3a-4102-b84f-7727343915f7",
+  "suite": "media",
+  "temporary": "/tmp/jeeves-system-piZ0Xx",
+  "stacks": [
+    {
+      "project": "gs-ad8a5620-fd3a-4102-b84f-7727343915f7-1",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-piZ0Xx/1-media",
+      "artifacts": "/tmp/gs06-media-second/1-media",
+      "ports": [39785, 40815, 37747]
+    }
+  ]
+}

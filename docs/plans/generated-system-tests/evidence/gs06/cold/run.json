@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-61a6add1-7d58-4ff6-adc3-d4e89e945d60",
+  "suite": "media",
+  "temporary": "/tmp/jeeves-system-eJsbvH",
+  "stacks": [
+    {
+      "project": "gs-61a6add1-7d58-4ff6-adc3-d4e89e945d60-1",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-eJsbvH/1-media",
+      "artifacts": "/tmp/gs06-cold-confirmed/1-media",
+      "ports": [33705, 32775, 33373]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-572e9967-17f4-4c00-a517-670adc1d4b0a-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

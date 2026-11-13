@@ -1,0 +1,68 @@
+[
+  {
+    "source": "owned/account-api-favorite-videos.hooks.ts",
+    "destination": "src/modules/account-api/account-api-favorite-videos.hooks.ts",
+    "role": "hooks",
+    "module": "account-api-favorite-videos"
+  },
+  {
+    "source": "owned/search-api-video-search.hooks.ts",
+    "destination": "src/modules/search-api/search-api-video-search.hooks.ts",
+    "role": "hooks",
+    "module": "search-api-video-search"
+  },
+  {
+    "source": "owned/search-indexer-index-writer.hooks.ts",
+    "destination": "src/modules/search-indexer/search-indexer-index-writer.hooks.ts",
+    "role": "hooks",
+    "module": "search-indexer-index-writer"
+  },
+  {
+    "source": "owned/transcoder-segmenter-and-encoder.hooks.ts",
+    "destination": "src/modules/transcoder/transcoder-segmenter-and-encoder.hooks.ts",
+    "role": "hooks",
+    "module": "transcoder-segmenter-and-encoder"
+  },
+  {
+    "source": "owned/upload-api-multipart-uploads.hooks.ts",
+    "destination": "src/modules/upload-api/upload-api-multipart-uploads.hooks.ts",
+    "role": "hooks",
+    "module": "upload-api-multipart-uploads"
+  },
+  {
+    "source": "owned/video-lifecycle-lifecycle-writer.hooks.ts",
+    "destination": "src/modules/video-lifecycle/video-lifecycle-lifecycle-writer.hooks.ts",
+    "role": "hooks",
+    "module": "video-lifecycle-lifecycle-writer"
+  },
+  {
+    "source": "owned/view-counter-receipt-and-increment.hooks.ts",
+    "destination": "src/modules/view-counter/view-counter-receipt-and-increment.hooks.ts",
+    "role": "hooks",
+    "module": "view-counter-receipt-and-increment"
+  },
+  {
+    "source": "owned/watch-api-video-details-cache.hooks.ts",
+    "destination": "src/modules/watch-api/watch-api-video-details-cache.hooks.ts",
+    "role": "hooks",
+    "module": "watch-api-video-details-cache"
+  },
+  {
+    "source": "owned/watch-api-view-count-reader.ts",
+    "destination": "src/modules/watch-api/watch-api-view-count-reader.ts",
+    "role": "stub",
+    "module": "watch-api-view-count-reader"
+  },
+  {
+    "source": "owned/watch-api-view-publisher.ts",
+    "destination": "src/modules/watch-api/watch-api-view-publisher.ts",
+    "role": "stub",
+    "module": "watch-api-view-publisher"
+  },
+  {
+    "source": "owned/video-lifecycle-lifecycle-writer.sql",
+    "destination": "infra/postgres/metadata/modules/video-lifecycle-lifecycle-writer.sql",
+    "role": "sql",
+    "module": "video-lifecycle-lifecycle-writer"
+  }
+]

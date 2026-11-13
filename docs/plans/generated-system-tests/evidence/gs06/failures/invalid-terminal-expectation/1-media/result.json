@@ -1,0 +1,6 @@
+{
+  "fixture": "media",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected { queue: 'upload-jobs.failed', …(3) } to match object { Object (messageCount, unacknowledged) }\n(2 matching properties omitted from actual)"
+}

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-572e9967-17f4-4c00-a517-670adc1d4b0a",
+  "suite": "media",
+  "temporary": "/tmp/jeeves-system-TGj2QA",
+  "stacks": [
+    {
+      "project": "gs-572e9967-17f4-4c00-a517-670adc1d4b0a-1",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-TGj2QA/1-media",
+      "artifacts": "/tmp/gs06-media-fourth/1-media",
+      "ports": [37675, 42155, 37757]
+    }
+  ]
+}

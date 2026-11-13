@@ -1,0 +1,18 @@
+{
+  "containers": [
+    "396dea7add1d",
+    "7a7477390dd8",
+    "8b59a8b34f82",
+    "ece02fd03e93",
+    "d04f2da8afb2",
+    "e6fc7ece1d0a",
+    "bb72c8b46ddb",
+    "5084a41aaad4",
+    "5430577febd0"
+  ],
+  "networks": ["cdb1cb524a9d"],
+  "volumes": [
+    "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-1_broker-data",
+    "gs-68dd1f7e-dffe-43aa-8322-7ef72c2bb9ed-1_postgres-data"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "fixture": "media",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n400 !== 200\n"
+}

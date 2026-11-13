@@ -1,0 +1,60 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/metadata/modules/video-lifecycle-lifecycle-writer.sql",
+      "ownership": "generated-extension",
+      "sha256": "58cddaf0be215e50fa703d3009ecc11f3421d6f61f75a089881f2486095566b4"
+    },
+    {
+      "path": "src/modules/account-api/account-api-favorite-videos.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "ad5bbbf9267bc9b5623889d9eec618e4b471009a8329447e9c1702a0016256dd"
+    },
+    {
+      "path": "src/modules/search-api/search-api-video-search.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "f56cefe15b65e2e381d322a136905ea91fdfaf7bc4793fd2f7e2b95cd2e6963b"
+    },
+    {
+      "path": "src/modules/search-indexer/search-indexer-index-writer.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "a6736db6d8aa847a6fa2ae8d7e33675e30c850a857529e6973f19cb175fc7c1a"
+    },
+    {
+      "path": "src/modules/transcoder/transcoder-segmenter-and-encoder.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "4bca1e6dea552a68f20355e0a8479df03af5b11c37e5ecc17df09cee9694ca56"
+    },
+    {
+      "path": "src/modules/upload-api/upload-api-multipart-uploads.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "d99e3d32a34df135aa5e8d06a61e6238f04306516b0cad1c16f375fba4918f88"
+    },
+    {
+      "path": "src/modules/video-lifecycle/video-lifecycle-lifecycle-writer.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "e252a8ed4e811d890911a21b2f07cf3f975f746d1009e5981ed8b9a65ae8bdb3"
+    },
+    {
+      "path": "src/modules/view-counter/view-counter-receipt-and-increment.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "cf583632b8f0bb2f4cb3dbded379b026adf759d9fda244e47aea3cfaeb352d2f"
+    },
+    {
+      "path": "src/modules/watch-api/watch-api-video-details-cache.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "f7a04ff78a7723b763b9c11d725aca787b3d1f6820c79899404b3294ab1351c4"
+    },
+    {
+      "path": "src/modules/watch-api/watch-api-view-count-reader.ts",
+      "ownership": "generated-extension",
+      "sha256": "a26a895824785f800182f9cea9aea01a5c3bfba8fff2db1dc6ad959534b09e62"
+    },
+    {
+      "path": "src/modules/watch-api/watch-api-view-publisher.ts",
+      "ownership": "generated-extension",
+      "sha256": "22ef5873ad4465e5fa099b6f5c4a183653e119e6ef78020ea6ecb4fb32312468"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

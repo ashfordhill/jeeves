@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-303102f3-e285-4cea-b44b-673ceb4087c8",
+  "suite": "media",
+  "temporary": "/tmp/jeeves-system-VojcGh",
+  "stacks": [
+    {
+      "project": "gs-303102f3-e285-4cea-b44b-673ceb4087c8-1",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-VojcGh/1-media",
+      "artifacts": "/tmp/gs06-media-final/1-media",
+      "ports": [44201, 37953, 36477]
+    }
+  ]
+}

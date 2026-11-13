@@ -1,0 +1,18 @@
+[
+  {
+    "event": "external-request",
+    "method": "POST",
+    "path": "/echo",
+    "body": {
+      "value": "partner-31"
+    }
+  },
+  {
+    "event": "external-request",
+    "method": "POST",
+    "path": "/echo",
+    "body": {
+      "value": "partner-47"
+    }
+  }
+]

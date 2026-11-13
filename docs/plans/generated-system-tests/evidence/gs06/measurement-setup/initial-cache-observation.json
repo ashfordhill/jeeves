@@ -1,0 +1,7 @@
+{
+  "builder": "gs06-b8f6255f04144c46838890fa0f91c8da",
+  "observedBeforeColdBuild": true,
+  "observedThrough": "Initial cold-builder-cache.txt read during the tool session; original measurement.py subsequently overwrote that filename with post-cold inventory.",
+  "initialOutput": "ID        RECLAIMABLE   SIZE      LAST ACCESSED\nReclaimable:\t0B\nTotal:\t\t0B",
+  "supportingEvidence": "builder-create.log.gz creates this new dedicated builder with no cache import; cold app targets report zero cached steps. The cold Media target reuses seven shared app steps created during that same CLI build; warm app/Media report nine/fifteen cached steps."
+}

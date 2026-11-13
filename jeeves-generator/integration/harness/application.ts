@@ -6,7 +6,7 @@ import { gzipSync } from "node:zlib";
 import { assertSafeOutputPath } from "../../src/files.ts";
 import type { assembleV2 } from "../../src/v2/assemble.ts";
 import type { RunRecord, StackRecord } from "./cleanup.ts";
-import { inventory } from "./cleanup.ts";
+import { cleanupStackResources, inventory } from "./cleanup.ts";
 import { sanitizeJson, sanitizer } from "./evidence.ts";
 import { command, hash, json, poll, repository, sourceSnapshot, writeJson } from "./process.ts";
 
@@ -295,7 +295,7 @@ export async function setupApplication(app: Application, templates: string[]) {
   app.phase = "assertion";
 }
 
-/** Per-test capture precedes outer runner cleanup, including setup failures. */
+/** Capture and release each stack; outer cleanup keeps private reporter redactions alive. */
 export async function withApplication(
   fixture: string,
   templates: string[],
@@ -320,5 +320,16 @@ export async function withApplication(
     outcome: failed ? "failed" : "passed",
     error: failed ? (await sanitizer(app.directory))(String(failed)) : undefined,
   });
+  try {
+    await app.save("stack-cleanup.json", await cleanupStackResources(app.stack));
+  } catch (error) {
+    failed ??= error;
+    await app.save("result.json", {
+      fixture,
+      phase: "cleanup",
+      outcome: "failed",
+      error: (await sanitizer(app.directory))(String(failed)),
+    });
+  }
   if (failed) throw failed;
 }
