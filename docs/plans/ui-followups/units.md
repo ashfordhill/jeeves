@@ -16,7 +16,7 @@ agent does only its own unit on `main` in the primary checkout, commits it and s
 | F3 | **The warning mark is orange**, everywhere: `#f28f3d` light, `#f5a05e` dark, dark ink on it. Red stays for removing. |
 | F4 | **Chat never reads icons.** The kind description chat's tools return drops `visual`. |
 | F5 | **The model button shows the model's name only.** The provider is in its tooltip and accessible name, and in the open menu. |
-| F6 | **Plain words in module sentences**, in the studio and in chat alike (the owner chose this over a studio-only layer). The exact sentences are in UF05. The generator's reports, the glossary's Template and Stub entries and the Generate dialog keep their words. |
+| F6 | **Plain words in module sentences**, everywhere they appear (the owner chose "change them everywhere" over a studio-only layer). The exact sentences are in UF05. They reach the studio, chat, the Generate dialog's reasons, the generator's `.jeeves/report.json` and a stub's header comment alike (amended 2026-11-13 after UF05's first run: these share one source). The glossary's Template and Stub entries, the Generate dialog's group headings and the generator's own field names keep their words. |
 | F7 | **CI's unit tests get a time budget** that fits a slower runner. No assertion changes. |
 
 ## Not in this plan
@@ -159,6 +159,41 @@ shows "name · provider"; the open menu still groups by provider.
 **Commit:** `UF04: the model button shows the model's name`.
 
 ### UF05 — Chat reads no icons; module sentences in plain words (F4, F6)
+
+**Amendment (coordinator, 2026-11-13, after the first run `3a5bd92` stopped).** The first run found
+four things the steps below miss. They apply on top of the steps:
+
+- **A. Chat's own describer.** Chat doesn't call the spec's `describeStudioDefinition`. Its tool in
+  `jeeves/apps/server/src/chat/tools.ts` (`case "describeStudioDefinition"`) spreads
+  `studioDefinitions[kind]` itself. Change `const { settingsSchema, ...definition } =
+  studioDefinitions[kind];` to `const { settingsSchema, visual: _visual, ...definition } =
+  studioDefinitions[kind];`. Make step 1's edit to the spec function as well.
+- **B. More sentences**, added to step 2's table (exact old → new):
+
+  | File | Old | New |
+  | --- | --- | --- |
+  | `spec/src/module-status.ts` (`stubReason`, custom) | `Your own logic, with no template.` | `Your own logic: you write it.` |
+  | `spec/src/module-status.ts` (`stubReason`, other stubs) | `` `${definition.name} has no template.` `` | `` `Jeeves doesn't generate a ${definition.name}; you write it.` `` |
+  | `spec/src/module-status.ts` (`blocked`) | `` `${kept}, which its template can't use` `` | `` `${kept}, which its generated code can't use` `` |
+  | `spec/src/module-generation.ts` (projection refusal) | `…but its templates need it as a source of truth.` | `…but what they generate needs it as a source of truth.` |
+  | `spec/src/module-generation.ts` (link refusal) | `` `…, but its template needs ${access}.` `` | `` `…, but its generated code needs ${access}.` `` |
+
+  The step-3 note that the Generate dialog's `Your own logic, with no template.` stays is
+  **withdrawn**: it is `stubReason`'s text and takes the new words (F6).
+- **C. The generator's output changes, and the pins are re-taken.** The reasons are copied into
+  `.jeeves/report.json` (`jeeves-generator/src/v2/assemble.ts`), and a stub's header comment uses
+  its kind's description (`module-stubs.ts`). Re-take the pins by the production foundations pin
+  procedure (its Rule 7). The allowed changed paths are: `.jeeves/report.json` and
+  `.jeeves/manifest.json` in the exports that change, and `src/modules/visit-worker/archiver.ts`
+  in stub-stack (its header comment only). Review each changed path; any other path, or a change
+  other than these sentences and hashes, means stop as in rule 2. Frozen local-v1 output must not
+  change.
+- **D. Tests and docs.** Every assertion of an old sentence takes the new text, including
+  `jeeves-generator/src/v2/generation-v2.test.ts` and `module-authoring.spec.ts:1002`
+  (`StubYour own logic, with no template.` → `StubYour own logic: you write it.`). In
+  `docs/studio.md`, fix the quotes (around lines 630–632 and 794) and the sentence near 633 that
+  says a Custom status shows no reason (it shows one). Leave `docs/design-playbook.md`'s dated
+  lesson alone.
 
 **Steps.**
 
