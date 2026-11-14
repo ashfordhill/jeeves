@@ -13643,3 +13643,52 @@ menu at both sizes, each light and dark); they match `preview/chat-light.png` bu
 **Noticed.** The tooltip is the browser's native `title`, so screenshots don't show it; the check
 reads the attribute while hovered. Owner dirty paths untouched and unstaged.
 **For the next unit.** UF05 of [UI follow-ups](plans/ui-followups/units.md).
+
+## 2026-11-13 — UF05: blocked
+
+**What changed.** Nothing but this entry. Steps 1–4 were applied as written: `visual` dropped in
+both kind descriptions, the six sentences, their assertions and the two `docs/studio.md` quotes.
+`pnpm format`, then `pnpm check`, then everything undone with `git checkout --`. The two temporary
+probe tests are deleted. No mouse spec was written and no project was created.
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests. With the edits:
+`pnpm check` exit 1, 114 / 115 files, 908 / 910 tests. Lint (only the older 2 warnings and 1
+info) and the type checks passed. The two failures are `jeeves-generator/src/v2/processes-off.test.ts`, `keeps
+v2-module-design's export` and `keeps stub-stack's export`. Step 5: no eval case or recorded
+report under `jeeves/apps/server/src/eval` or `docs/evals` has an old sentence. The e2e run, the
+build and the mouse check were not run.
+**What was found.** The new sentences reach the generator's output, which F6 says keeps its words:
+- `.jeeves/report.json`'s `modules[].reason` is the spec's `moduleStatuses` reason
+  (`jeeves-generator/src/v2/assemble.ts:298–324`). It changes in two exports. v2-module-design:
+  View publisher becomes "No Generated module in Watch API uses it, so you write it.". stub-stack:
+  Visit publisher, Upload consumer, Visit consumer and Visit writer change the same way.
+- A stub's header comment uses the kind's description when the module has none
+  (`module-stubs.ts:218`). So stub-stack's generated `src/modules/visit-worker/archiver.ts` would
+  read "// Archiver, a Custom in Visit worker: Your own logic: Jeeves gives you an empty, typed
+  file to fill in.", and `.jeeves/manifest.json` changes with it.
+- Generate project's Modules list (`GenerationModules.tsx`) shows the same reasons beside its
+  Template/Stub labels, so it would read the new sentences too, not only
+  `Your own logic, with no template.`.
+
+To go ahead, re-pin `jeeves-generator/src/v2/fixtures/processes-off.json` and accept the new words
+in reports and stub comments, or keep the generator's words apart (the studio-only layer F6
+declined). Either way, that is the owner's call.
+**Differences from the plan** (for the revision):
+- Chat's `describeStudioDefinition` (`jeeves/apps/server/src/chat/tools.ts:627`) doesn't call the
+  spec function, which has no caller. It spreads `studioDefinitions[kind]`, so `visual` reaches
+  chat, and the step's `visual\|icon` grep finds nothing. It needs
+  `const { settingsSchema, visual: _visual, ...definition } = studioDefinitions[kind];` too. With
+  both changes a probe found no `visual` and no `"icon"` for any kind. No other chat output
+  carries an icon: `catalogSummary` and `designSummary` pick fields by name.
+- Step 3 misses `jeeves/apps/server/src/routes/generation-v2.test.ts:227` ("No template in Shorten
+  service uses it."). Step 3's `its template needs` grep also matches `module-generation.ts:962`
+  ("The link … is declared …, but its template needs …."), which is not the table's role refusal
+  (`:864`).
+- `docs/studio.md` quotes "No template in Watch API uses it." at `:630–632` (across a line break)
+  and at `:794`.
+**Noticed.** Module sentences with "template" that the table leaves out: `module-status.ts:242`
+"<Kind> has no template.", `:232` "…, which its template can't use", and `module-generation.ts:899`
+"…but its templates need it as a source of truth.". `docs/studio.md:633` says a Custom status
+shows "no reason", but the page shows its reason. `docs/design-playbook.md:1420` quotes the old
+stub reason in a dated lesson. Owner dirty paths untouched and unstaged.
+**For the next unit.** UF05 is not done. Revise it (the generator's words and pins, plus the
+points above), then rerun UF05 before UF06.
