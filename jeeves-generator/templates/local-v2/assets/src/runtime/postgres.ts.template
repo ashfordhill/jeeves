@@ -20,6 +20,9 @@ export function createPostgres(options: {
     password: (options.credential ?? readSecret)(options.login.secret),
     max: options.poolSize,
     statement_timeout: options.statementTimeoutMs,
+    // The server enforces statement_timeout (57014); one that stops answering can't. 500 ms later
+    // the client rejects "Query read timeout" and the pool discards that connection.
+    query_timeout: options.statementTimeoutMs + 500,
     connectionTimeoutMillis: options.connectionTimeoutMs,
   });
 }

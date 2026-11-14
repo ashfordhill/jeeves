@@ -14198,3 +14198,90 @@ byte-identical to QRWTY's (`probe-design.json` still `a3b6204f…0505`).
 
 **For the next unit.** QG17. QRWTY's images (R03, Q04) can be rehearsed locally as non-root; a
 stub that writes files must use `/tmp` (`os.tmpdir()`), since `/app` is read-only to `node`.
+
+## 2026-11-14 — QG17: Database calls settle while PostgreSQL stalls
+
+**What changed.**
+- `jeeves-generator/templates/local-v2/assets/src/runtime/postgres.ts.template`: `createPostgres`
+  passes `query_timeout: options.statementTimeoutMs + 500` to `pg.Pool`, with a two-line comment.
+  No other pool option changed. Both callers (`databaseClient` in `module-clients.ts.template`,
+  `pool()` in `service-resources.ts.template`) get the bound through `createPostgres`; neither is
+  edited. `migrate.mjs` and the setup scripts are also unchanged.
+- `jeeves-generator/src/v2/module-clients.test.ts`, 2 new tests. They load the stub stack's exact
+  emitted `src/runtime/postgres.ts` with a fake `pg.Pool` constructor:
+  - the source passes `statement_timeout: options.statementTimeoutMs` and
+    `query_timeout: options.statementTimeoutMs + 500`;
+  - for `statementTimeoutMs: 2000` the pool gets exactly `host`, `port`, `database`, `user`,
+    `password`, `max: 10`, `statement_timeout: 2000`, `query_timeout: 2500` and
+    `connectionTimeoutMillis: 2000`.
+- Pins (`processes-off.json`): `frozen-v2` and `v2-module-design` each changed
+  `src/runtime/postgres.ts` and `.jeeves/manifest.json`. Nothing else changed (`stub-stack` too).
+- Docs:
+  - `jeeves-generator/README.md`, the module clients sentence on `databaseClient`. A query that
+    gets no reply in 2.5 s rejects `Query read timeout`, and the pool discards its connection. A
+    template's pool has the same bound, 500 ms past its statement timeout.
+  - `docs/template-gaps.md` Known limits: SO03's open item 3 (a stalled database) had never been
+    copied. It is now a row, "Fixed in QG17", which says the error isn't an unreachable store. A
+    new Open row records the plan's limit about sockets during a long stall.
+
+**Checks.** All on the final tree.
+- Before any change, at `181bb97`: `pnpm check` exit 0, 115 files / 918 tests.
+- `pnpm check` exit 0: 115 files / 920 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- New tests: 2. On HEAD's template (a scratch repository copy, since deleted) both fail; the
+  file's 9 older tests pass there.
+- Docker phase, after the offline checks:
+  - `pnpm test:generated --suite=core`: 2 files / 4 tests passed (B01–B04).
+  - `--suite=faults`: 2 files / 5 tests passed. This includes B09 database, so a stopped server
+    is still handled as before.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - In both exports the changed paths are exactly `src/runtime/postgres.ts`,
+    `.jeeves/manifest.json` and `.jeeves/report.json`. The report differs only in the
+    registry's source hashes and sizes.
+  - In each `after-*`, the offline frozen install and `pnpm build` both exit 0.
+- Docker proof, on `after-probe`'s built `dist/runtime/postgres.js`:
+  - Setup: one scratch `postgres:17.11-alpine3.23@sha256:bc2701f9…b61f` container, `qg17-pg`, on
+    127.0.0.1:47981. Its password was generated at run time. The `node` script used
+    `databaseClient`'s options (pool 10, 2000 ms statements, 2000 ms connect, the `error`
+    listener) and gave the endpoint and credential directly.
+  - Healthy server: `SELECT pg_sleep(5)` rejects `57014` at 2,011 ms, so the server's
+    `statement_timeout` still wins.
+  - Stall: the script warmed one connection (`totalCount` 1, idle 1), then ran `docker pause`.
+    `SELECT 1` rejects `Query read timeout` at 2,500 ms, and `totalCount` is 0. `pool.end()`
+    resolves at 0 ms. Then `docker unpause`.
+  - Control, the same script on `before-probe`'s build (HEAD's output): `SELECT 1` was still
+    pending at 5,000 ms, with `totalCount` 1. `pool.end()` was still pending at 1,000 ms. Both
+    settled only after `docker unpause`: the query at 6,064 ms and the end 1,063 ms after it began.
+  - Removed: `docker rm -f -v qg17-pg`. The Docker inventory (containers, images, networks,
+    volumes) is the same before the Docker phase and after it, and no `gs-` stack is left. The
+    scratch exports are deleted.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- The new tests are in `module-clients.test.ts`, the file the plan names first. Its stub stack
+  emits `postgres.ts`, and no other test read the emitted file.
+- `docs/studio.md` names Statement timeout only as an Options setting and doesn't say what it
+  does. So it is unchanged, and so are `docs/studio-settings.md` and `jeeves/CATALOG.md`.
+- The Docker proof also has a healthy-server check and a control run on the before export. The
+  first run put the `57014` check after warming the connection. pg-pool discards a client
+  released with an error, so that run's stalled query hit the 2 s connect timeout instead. In the
+  recorded run, the script warms one connection after that check, just before the pause.
+- pg 8.23.1 and its types were checked in `node_modules`, and they match the plan:
+  - `ClientConfig.query_timeout?: number` (`PoolConfig` extends it);
+  - `client.js` rejects `Query read timeout` and destroys the socket only when `pipeline` is on;
+  - pg-pool's `_release` with an error calls `_remove`.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03 review).
+- `Query read timeout` is a plain `Error` with no code, so `unreachable` in `delivery.ts` doesn't
+  match it. A worker whose database stalls now gets that error after 2.5 s and spends an attempt.
+  Before, it waited for as long as the stall lasted. Making it count as unreachable is QG18, which
+  needs the owner (decision 6).
+- Any query error, including a healthy server's `57014`, makes pg-pool discard that connection.
+  This was already so before the unit.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG19. After regeneration, QRWTY's stubs and templates get a query error
+within the statement timeout plus 500 ms when PostgreSQL stalls, and drains don't hang on it.

@@ -385,3 +385,58 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     expect(lines.at(-1)).toMatchObject({ result: "failed", error: "Error: Probe deadline (5 s)" });
   });
 });
+
+// The exact emitted postgres.ts, which both pools (a stub's `databaseClient` and a template's
+// `pool`) are built through, with a fake `pg.Pool` constructor that records its options.
+describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
+  const source = new TextDecoder().decode(
+    bundle.files.find((file) => file.path === "src/runtime/postgres.ts")?.bytes,
+  );
+  const pools: Record<string, unknown>[] = [];
+  (globalThis as { postgresPoolsFake?: unknown[] }).postgresPoolsFake = pools;
+  const pgFake = `export default { Pool: class { constructor(options) { globalThis.postgresPoolsFake.push(options); } } };`;
+  const loaded = import(
+    dataUrl(
+      stripTypeScriptTypes(source).replace(/from "([^"]+)"/g, (match, from: string) =>
+        from === "pg"
+          ? `from "${dataUrl(pgFake)}"`
+          : from === "./local.ts"
+            ? `from "${dataUrl(String(fakes["./local.ts"]))}"`
+            : match,
+      ),
+    )
+  );
+  afterEach(() => {
+    pools.length = 0;
+  });
+
+  it("passes the client a query timeout 500 ms past the statement timeout", () => {
+    expect(source).toContain("statement_timeout: options.statementTimeoutMs,");
+    expect(source).toContain("query_timeout: options.statementTimeoutMs + 500,");
+  });
+
+  it("gives pg.Pool a 2500 ms query timeout for a 2000 ms statement timeout, and changes nothing else", async () => {
+    const { createPostgres } = await loaded;
+    createPostgres({
+      hostname: "local-postgres",
+      port: 5432,
+      login: { database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db" },
+      poolSize: 10,
+      statementTimeoutMs: 2000,
+      connectionTimeoutMs: 2000,
+    });
+    expect(pools).toEqual([
+      {
+        host: "local-postgres",
+        port: 5432,
+        database: "d_links_db",
+        user: "r_links_db__links_api",
+        password: "secret of sql-links-db",
+        max: 10,
+        statement_timeout: 2000,
+        query_timeout: 2500,
+        connectionTimeoutMillis: 2000,
+      },
+    ]);
+  });
+});

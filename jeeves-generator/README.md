@@ -636,7 +636,9 @@ stub's own schema.
 **Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind the
 stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
 `databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
-`execute`), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
+`execute`; a query that gets no reply in 2.5 s, as when PostgreSQL stalls, rejects `Query read
+timeout` and the pool discards its connection, and a template's pool has the same bound, 500 ms
+past its statement timeout), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
 `cacheClient` (`get`, `set` with a TTL, `delete`; it reconnects in the background), `objectClient`
