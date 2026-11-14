@@ -15115,3 +15115,206 @@ endpoint change is the `binding` that `cacheClient` passes, plus `valkey.ts`'s h
 
 **For the next unit.** QG07. Every `OIDC_*` variable a guarded process reads now fails startup by
 name.
+
+## 2026-11-14 — QG07: Pub/Sub channels and stub publishers
+
+**What changed.**
+- **Where the code landed.** At 17:05 the owner's commit `6a21cfc` ("add 11/14 update") took this
+  unit's whole working tree as it then stood: every source, test, doc, pin and asset change below,
+  plus the temporary mouse-check spec. Its later fixes are in this unit's own commit. Nothing was
+  rewritten or amended.
+- Spec:
+  - `generation-resolver.ts`, `stubQueueSettings`: with Runnable processes on, a Queue tile that
+    only stubs use (no selection in `generationTemplateQueues` binds it) gets the normal control
+    `queue.provider`. Its values are `generationStubQueueProvider` (`generation-support.ts`):
+    `unspecified`, `self-hosted`, `google-cloud`, consumed as `stub-channel.provider`. It shows only
+    when `installed.processes` and the runtime are installed. An unsupported saved value (`aws`)
+    keeps the control, `unsupported`.
+  - A queue a template uses gets no control. Its template's `<field>.provider` stays fixed at
+    `self-hosted`, so `google-cloud` there is today's `NEEDS_TEMPLATE` finding.
+- Studio:
+  - `InspectorForm.tsx`: a select offers only its control's supported values (the saved value
+    stays listed), so Provider shows Unspecified, Self-hosted and Google Cloud.
+  - `V2GenerationDetails.tsx`: each process row gains a collapsed **Provisioned as** with each
+    store's `provisioned` text.
+- Generator:
+  - `local-contract.ts`: `stubStores(process, selections)` marks such a queue on Google Cloud
+    `pubsub`. A link that consumes it is the required gap `provider-<module>-<tile>`, "Consuming
+    Pub/Sub is not installed yet.", though its subscription is still provisioned.
+  - `local-contract.ts` also: `pubsubSubscription`, `localPubsub`, and `localEndpoints({pubsub})`,
+    which gives `JEEVES_PUBSUB_PROJECT=local` and `PUBSUB_EMULATOR_HOST=local-pubsub:8085`.
+  - `local.ts`, resources and plan: a `pubsub` resource kind, so the broker never sees it, and a
+    design whose only channels are Pub/Sub ones has no `local-broker`. `infra/local.json` gains
+    `pubsub: {topics, subscriptions}` only when there is one. A consuming tile gets `<topic>--<tile>`
+    (ack 60 s, retry 1–10 s, dead-letter `<topic>--<tile>.failed` after 100 attempts) and a pull
+    subscription `<topic>--<tile>.failed`.
+  - `local.ts`, Compose: `local-pubsub` (the pinned emulator command, healthy by `curl` on 8085, no
+    port) and `setup-pubsub` (`node scripts/pubsub-init.mjs`). A publishing process's service gets
+    the two variables and `depends_on` `local-pubsub`. `pubsubName` refuses names Pub/Sub refuses.
+  - `local.ts`, README: a Pub/Sub paragraph and an endpoints sentence, only with a topic.
+  - `client-wiring.ts`, `tile-processes.ts`, `primitives.ts`, `http-wiring.ts`: a `pubsub` client
+    section, `await pubsubPublisher(scope, probe, { topic })` and `service.pubsub`. The report's
+    `provisioned` reads `Google Cloud Pub/Sub topic <id> (locally the emulator local-pubsub)`, or for
+    a consuming tile its subscription.
+- Assets:
+  - `module-clients.ts.template`, `pubsubPublisher`: `publishMessage({ data, attributes: {
+    messageId } })` resolves only after Pub/Sub's ack. It has `gaxOpts.timeout` 2000 plus its own
+    2000 ms timer (`Publish deadline (2000 ms)`) and at most 1000 outstanding (`Publisher queue
+    full`). The drain waits for outstanding publishes, then `close()`. Probe: `topic.exists()`.
+    `JEEVES_PUBSUB_PROJECT` is checked as QG06 does (a project ID, optionally `<domain>:`).
+  - New `scripts/pubsub-init.mjs` creates missing topics and subscriptions. One that exists with
+    other settings stops setup, naming it.
+  - `scripts/local.mjs` runs `setup-pubsub` with `setup-broker`/`setup-search` at every
+    `first-run`/`start`, before the application.
+  - `providers.json`: the emulator pin.
+  - `package.json`/`pnpm-lock.yaml`: `@google-cloud/pubsub` `6.3.2`.
+- Lock: I resolved it in a scratch copy with `--lockfile-only` and `minimumReleaseAge` 20160.
+  - 79 packages were added (the SDK, `google-gax` 6.14.0, `google-auth-library` 11.3.2,
+    `@grpc/grpc-js` 1.14.7, `protobufjs` 7.6.6, …). No existing package entry changed.
+  - The 6 redis snapshot keys gained the optional peer `@opentelemetry/api@1.9.1`. Redis loads it
+    only in `OpenTelemetry.init()`, which nothing calls.
+  - pnpm 12 also checks the existing lock against the policy. 20 existing entries are under 14
+    days old (`@aws-sdk/*`, `@smithy/*`, `cookie` 2.0.2, `semver` 7.8.6, `thread-stream` 4.2.1,
+    `fast-json-stringify` 7.3.1). I listed every existing entry in `minimumReleaseAgeExclude`, so
+    only new ones were held to it.
+- This unit's commit:
+  - `integration/harness/application.ts` installs with `--frozen-lockfile --ignore-scripts`, the
+    export's own README and Dockerfile command (Differences).
+  - `jeeves-generator/README.md`: `pnpm add --ignore-scripts`.
+  - The temporary spec is removed.
+  - 4 mouse-check screenshots: `docs/plans/qrwty-gaps/evidence/qg07/`.
+- Tests, 16 new:
+  - `stub-queue-provider.test.ts` 4: the control and its values; the edit accepted, with AWS and
+    mode refused; an unsupported value kept on its control; a template's queue with no control and
+    its `events.provider` unsupported.
+  - `pubsub.test.ts` 8: `local-pubsub`, `setup-pubsub`, the publisher's environment, the plan,
+    `local.mjs` ordering, process file, report rows, invariant 8's gap, README, no broker with
+    only Pub/Sub, RabbitMQ unchanged, publisher-only runnable, a template's queue keeping its
+    `stubStores` gap. `pubsub-init.mjs` also runs in Node against a fake client: creates, then
+    creates nothing, refuses each changed setting by name, needs the project.
+  - `module-clients.test.ts` 4, on a fake official client: ack before resolve with `messageId`;
+    2000 ms deadline and 1000 outstanding (fake timers); drain then close; probe and project
+    refusals. Its setup adds the fake and a `pubsub` field to `Calls`.
+- Pins (`processes-off.json`): `.jeeves/manifest.json`, `package.json`, `pnpm-lock.yaml` and
+  `scripts/local.mjs` in `frozen-v2`, `v2-module-design` and `stub-stack`.
+- Docs: `docs/studio-settings.md` (control row, Provider paragraph), `docs/studio.md`,
+  `jeeves/CATALOG.md`, `jeeves-generator/README.md` (table, gap paragraph, Module clients,
+  endpoints, a Pub/Sub paragraph, intro).
+
+**Checks.**
+- `pnpm check`:
+  - At `0a2ee22`, before any change: exit 0, 115 files / 952 tests.
+  - On the final tree: exit 0, 117 files / 968 tests. Biome shows only the older 1 info.
+- New tests on HEAD's templates: I used a scratch clone at `0a2ee22` with its own offline install.
+  All 16 fail there. The spec and publisher tests fail by assertion; `pubsub.test.ts` fails at load,
+  because HEAD refuses the Provider edit. The 20 older `module-clients` tests pass. The clone is
+  deleted, and the checkout's `node_modules` state files are untouched (no scratch path, mtimes
+  12:10).
+- `pnpm test:e2e`:
+  - Run 1: 73 passed, 1 failed. `edit-history.spec.ts` failed in `createStudy` ("Project:" menu not
+    visible, `studio.ts:94`), the known load flake.
+  - Run 2, alone: 76 passed. That is 74 plus the 2 mouse-check tests, whose spec was in place.
+- Web build: exit 0. `pnpm eval:chat` (offline): exit 0, scores as recorded.
+- Mouse check, `qg07-check.spec.ts`, 1440×900 and 1280×800, alone too: 2 passed, no page error.
+  - Steps: Consume → Microservice → Message channel, an Event publisher connected by Connect mode,
+    Runnable processes on.
+  - Message channel's Provider lists exactly Unspecified, Self-hosted, Google Cloud, and Google
+    Cloud saves.
+  - Preview's row reads "Provisioned: Message channel (queue, publish)", and under Provisioned as
+    "Message channel: Google Cloud Pub/Sub topic message-channel (locally the emulator
+    local-pubsub)".
+  - Both projects are deleted (asserted), and the spec is deleted.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `.jeeves/manifest.json`, `.jeeves/report.json`, `package.json`,
+    `pnpm-lock.yaml` and `scripts/local.mjs` (the setup ordering the brief allows).
+  - The report differs by the registry inventory and one `queue.provider` row each (unspecified,
+    supported). Gaps are unchanged (probe 3, r83 11).
+  - Installs and builds:
+    - `after-probe`: the one networked install, `--frozen-lockfile --ignore-scripts`, with
+      `minimumReleaseAge` 20160 and the exclusions in a temporary `pnpm-workspace.yaml`, removed
+      after.
+    - `after-r83`: offline. Both builds exit 0.
+    - The Pub/Sub probe variant and the stub stack with Visits on Google Cloud also build, the
+      latter with both publishers. `tsc` checked them against the SDK's 6.3.2 types.
+  - Re-exported on the final tree, both equal the first after-exports. The scratch exports are
+    deleted.
+- Docker phase, after the offline checks:
+  - `--suite=wiring`, run 1: 2/2 failed at the harness's own `pnpm install --frozen-lockfile`
+    (`ERR_PNPM_IGNORED_BUILDS: protobufjs@7.6.6`), before any container.
+  - `--suite=wiring`, run 2, after the harness alignment: 2/2 passed (B05, B06 normal; 211 s).
+  - `--suite=core`: 4/4 passed (B01–B04; 291 s).
+- Docker proof on the probe variant (Events on Google Cloud, Tally's consume link removed), probe
+  bodies copied. Project `qg07-probe`, ports 47981–47983:
+  - `first-run` exit 0, all healthy. Front logged `"client":"events","kind":"queue","check":"the
+    Pub/Sub topic exists","result":"ok"`; setup created 1; `local-pubsub` has no port.
+  - `qg07-capture` was created through the export's own SDK (`docker compose run setup-pubsub`).
+  - `POST …/front-probe/publish?id=a`: 202 in 0.024 s, and the capture saw attribute
+    `messageId: "a"`.
+  - Emulator paused: 503 in 1.11 s, `DEADLINE`. Front's 1000 ms request timeout answered before
+    the publisher's 2000 ms. Unpaused: `c` 202.
+  - `b2`, sent while paused, also reached the capture: answered 503, delivered once (at least
+    once).
+  - `pnpm start` while running: setup created 0. `pnpm stop` then `pnpm start`: the emulator came
+    back empty, setup created the topic, all healthy, and `d` 202.
+- The same variant with Front's Request timeout at 5000 (`qg07-probe5`, ports 47984–47986): paused,
+  503 in 2.23 s, `{"error":"Error: Publish deadline (2000 ms)","ms":2002}`; unpaused, 202, captured.
+- `pubsub-init.mjs` from the consumed variant against a scoped `qg07-emulator-init` (the pinned
+  image): created 4, then 0. After I recreated `events--tally` with a 30 s ack deadline, it exited 1
+  naming it (`ackDeadlineSeconds, retryPolicy, deadLetterPolicy`).
+- Teardown and inventory:
+  - Each stack: `docker compose --profile '*' down --volumes --remove-orphans` and `docker image rm
+    qg07-probe-app:latest` / `qg07-probe5-app:latest`.
+  - The inventory after equals the one before, apart from arm B's `qrwtyb-local` (12 images
+    rebuilt meanwhile; not touched). No `gs-` or `qg07` resource is left, and `jeeves-postgres-1`
+    is unchanged.
+  - The emulator image existed before (untagged, by digest) and still does. This unit's 3
+    `test-results/generated/` folders are removed.
+
+**Differences from the plan.**
+- **Commit split** (above): the code is in the owner's `6a21cfc`; this commit has the rest.
+- **The harness's install.** `setupApplication` ran `pnpm install --frozen-lockfile` without
+  `--ignore-scripts`, unlike the export's README, Dockerfile and the regeneration proof. The SDK
+  brings `protobufjs`, which has a postinstall script; nothing before had one. pnpm 12 refuses an
+  install that would skip it silently, so every generated-system suite failed at install. The
+  harness now uses the export's command. This is test infrastructure, not emitted output.
+- **`pnpm add`** in any export now needs `--ignore-scripts`; the generator README says so (Rule 8).
+  pnpm 12 ignores `package.json`'s `pnpm` field, so the only declaration is a `pnpm-workspace.yaml`
+  (`allowBuilds: { protobufjs: false }`). I verified it makes plain `install` and `add` pass with
+  the lock unchanged, but it is a new emitted path, so it isn't emitted.
+- A template's queue saved on Google Cloud: its export is refused as at HEAD
+  (`INVALID_LOCAL_CONTRIBUTION` from the template's subscriber; the same with `aws`), not a gap.
+  The brief's "unsupported gap" is tested as the resolver's finding and the stub link's
+  `provider-<module>-<tile>` from `stubStores`.
+- A loop stub on a Pub/Sub topic: its subscription is provisioned (invariant 1; the plan test needs
+  one) and its link is the gap. The loop itself is still the AMQP one, so the stack isn't runnable,
+  as for any other provider. Its service gets no Pub/Sub variables (it builds no Pub/Sub client).
+- One subscription per consuming tile even when several modules in it consume (RabbitMQ gives each
+  module its own queue). The `.failed` inspection subscription has Pub/Sub's defaults.
+- The publisher keeps its own 2000 ms timer beside `gaxOpts.timeout`. The fake-timer test needs it,
+  and the SDK settles later (Q03: 1.94 s for 1500). A publish counts as outstanding until its
+  caller's promise settles.
+- The UI changes (select values, Provisioned as) aren't in Files. The mouse check needed the row to
+  name Pub/Sub, and AGENTS.md needs mouse and chat to share choices.
+- The proof's request-timeout variant is extra, to show the publisher's own 503. The exact variant
+  answers with the admission's.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03). Decision 4 is a note: pins follow the existing convention.
+- **Locally, the client spends about 3.3 s of the 5 s probe bound on a GCE metadata lookup.**
+  google-gax checks the universe domain, which asks ADC, which tries the metadata server; Front's
+  probe passed 3.6 s after start in both stacks. `METADATA_SERVER_DETECTION=none` in the local
+  environment would remove it. Passing `universeDomain` would take the SDK out of emulator mode.
+  Not done: it isn't in invariant 3's variables. For QGR2 or QG08.
+- **Plain `pnpm install` / `pnpm add` without `--ignore-scripts` now fail in every export**
+  (`protobufjs`). Whether exports should carry an application-owned `pnpm-workspace.yaml` with
+  `allowBuilds` needs the owner. QRWTY's Q10a `pnpm add` needs `--ignore-scripts` meanwhile.
+- The asset lock already held 20 entries under 14 days old (above), from before this unit.
+- The process files' "a failed probe fails startup" comment is unchanged (QG04's note).
+- The owner committed `README.md` and `.docs/` work meanwhile (`6a21cfc`, `abe2d8d`, `fe27ab6`,
+  `efca408`). `6a21cfc` also set `jeeves/apps/web/e2e/fake-codex.mjs` to 100644, and the working
+  tree keeps 100755. These, `.docs/qrwty/parallel-agents.png`, `.jeeves-feedback/`, the
+  `Zone.Identifier` files and the two script modes were not touched or staged.
+
+**For the next unit.** QG08. Subscriptions `<topic>--<tile>`, their dead-letter topics and
+`setup-pubsub` exist. The loop stub's gap (`pubsubConsumeGap`) and its AMQP loop are what QG08
+replaces. Its service needs `pubsub` once it builds a Pub/Sub consumer.

@@ -12,7 +12,7 @@
   typed stub.
 - **Yours to write:** each template's `<lead>.hooks.ts`, each stub's `<module>.ts` and each
   writer's product SQL file. `package.json` and `pnpm-lock.yaml` are yours too: add a package
-  your modules use with `pnpm add <name>@<exact version>`.
+  your modules use with `pnpm add --ignore-scripts <name>@<exact version>`.
 - **Commands:** `pnpm --filter @jeeves/generator export:v2 <design.json> <new directory>`. The
   studio's Generate project dialog produces the same files as a ZIP.
   `pnpm --filter @jeeves/generator update:v2 <design.json> <existing export> [--check]`
@@ -105,8 +105,13 @@ Each template file declares `generated-scaffold` or `generated-extension` owners
 contributing design JSON pointers. Initial extension files are still generated output, not
 custom implementation credit. In a v2 export the foundation's `package.json` and
 `pnpm-lock.yaml` are `generated-extension`, with the template's pins: the application adds the
-packages its stubs and hooks use with `pnpm add <name>@<exact version>`, which edits no generated
-file, and the image still installs exactly the lock (`pnpm install --frozen-lockfile`).
+packages its stubs and hooks use with `pnpm add --ignore-scripts <name>@<exact version>`, which
+edits no generated file, and the image still installs exactly the lock (`pnpm install
+--frozen-lockfile --ignore-scripts`). `--ignore-scripts` is needed: the Pub/Sub client's
+`protobufjs` has a postinstall script, which the image never runs, and pnpm 12 refuses an install
+that would skip it silently (`ERR_PNPM_IGNORED_BUILDS`). An application that wants plain `pnpm add`
+can say so in its own `pnpm-workspace.yaml` (`allowBuilds: { protobufjs: false }`), which export
+never writes.
 `.jeeves/` is reserved for the generator. Duplicate paths,
 case collisions, file/directory collisions, traversal, absolute paths and portable reserved names
 refuse the whole assembly. Source paths must exist and belong to the selected declarations

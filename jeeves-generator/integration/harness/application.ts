@@ -268,7 +268,14 @@ export async function setupApplication(
     );
   }
   await app.scaffoldCheck("attached");
-  await app.execute("install", "pnpm", ["install", "--frozen-lockfile"], 180_000);
+  // The export's own install (its README and Dockerfile): no dependency's install script runs,
+  // and pnpm refuses one it would skip unasked (the Pub/Sub client's protobufjs).
+  await app.execute(
+    "install",
+    "pnpm",
+    ["install", "--frozen-lockfile", "--ignore-scripts"],
+    180_000,
+  );
   await app.execute("build", "pnpm", ["build"], 120_000);
   assert.equal(
     (await sourceSnapshot()).sha256,
