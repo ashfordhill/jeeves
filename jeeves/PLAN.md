@@ -232,7 +232,7 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [generated system tests](../docs/plans/generated-system-tests/units.md) and
 [store outage](../docs/plans/store-outage/units.md).
 
-There is no active plan; the owner names the next one. The last to run was
+The active plan is [QRWTY gaps](../docs/plans/qrwty-gaps/units.md) batch 1 (QG01, QG02, QG05, QG17, QG19, QG12, QG11, then the QGR1 review). The last to run was
 [UI follow-ups](../docs/plans/ui-followups/units.md) (UF01–UF06), then the store outage
 amendment (SO04–SO05).
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in

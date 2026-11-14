@@ -13927,3 +13927,13 @@ same paragraph. Only that one occurrence exists, so the edit is the one the Goal
 untouched and unstaged.
 **For the next unit.** No active plan; the owner names the next one. SO06 and SO07 in the
 [store outage review](plans/store-outage/review.md) wait for the owner.
+
+## 2026-11-14 — Plan: QRWTY gaps (QG units), batch 1
+
+Planning only; no code changed. The QRWTY execution coordinator copied the generator-gap briefs
+that QRWTY's Q03 audit, its Fable review and Q03b produced into
+[docs/plans/qrwty-gaps/units.md](plans/qrwty-gaps/units.md), with a batch-1 order of the units that
+need no owner decision (QG01, QG02, QG05, QG17, QG19, QG12, QG11) and a closing review, QGR1.
+`AGENTS.md` and `jeeves/PLAN.md` name it as the active plan.
+**Checks.** None (docs only).
+**For the next unit.** QG01. Owner decisions pending for QG03, QG04, QG06 (and so QG07–QG10), QG18, QG20.
