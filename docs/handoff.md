@@ -14580,3 +14580,9 @@ admin (CREATEDB CREATEROLE), and copies started together run one at a time.
 
 **For the next unit.** QGR1 (review batch 1). After regeneration, QRWTY's managed issuer works by
 setting `OIDC_AUDIENCE` to its tokens' audience; local runs need no change.
+
+## 2026-11-14 — Docs: design-playbook lesson from QRWTY
+
+Coordinator docs entry at the owner's request: `docs/design-playbook.md` gains "check the target's
+required services against the installed templates before drawing" (QRWTY's Pub/Sub and 25 other
+gaps surfaced only after export). No code changed. **For the next unit.** QGR1 (review batch 1).

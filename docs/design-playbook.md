@@ -1794,3 +1794,24 @@ same ramp, and text boxes are inset (the canvas colour with a `#3d5d6d` edge) ra
 A coloured fill made by mixing a colour into the dark background or `transparent` comes out as a
 grey-brown wash; give each family a solid, deeper shade of its own colour instead (`--sfam`). Keep
 icon outlines dark in both themes: the owner turned down white outlines on the first preview.
+
+## 2026-11-14 QRWTY: check the target's required services against the installed templates before drawing
+
+**What happened.** QRWTY's architecture needs GCP's native Pub/Sub for durable click events, raw
+webhook bytes for Stripe signatures, endpoints that point at managed stores, scheduled jobs and an
+application-owned dependency (the Stripe SDK). Q01 drew the diagram first; the canvas offers only
+what generates, so Click events became the nearest installed choice (a RabbitMQ work queue) and
+Q01 recorded "Pub/Sub pending". Only Q03's audit, after the export, listed 26 such gaps, and the
+generator had to grow (the QG units of `docs/plans/qrwty-gaps/`) before the baseline could be frozen.
+
+**Lesson.** Before drawing a design for a named target platform, list the platform services and
+runtime seams it requires and check each against the installed templates and tile options. For each
+one that nothing installed provides: draw the nearest installed choice, record the gap with its
+reason next to the diagram (not only in a later audit), and raise a template unit before the
+export the application will build on. The diagram stays truthful about what generates; the gap list
+says what it can't yet express.
+
+**For chat.** The same check fits the design chat: chat already lists installed tiles, so it can
+report "this design names X; no installed template provides it" as a finding instead of silently
+substituting. That is a chat change (prompt or tool output), so it waits for an owner decision and
+an eval run.
