@@ -232,7 +232,9 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [generated system tests](../docs/plans/generated-system-tests/units.md) and
 [store outage](../docs/plans/store-outage/units.md).
 
-The active plan is [UI follow-ups](../docs/plans/ui-followups/units.md) (UF01–UF06).
+There is no active plan; the owner names the next one. The last to run was
+[UI follow-ups](../docs/plans/ui-followups/units.md) (UF01–UF06), then the store outage
+amendment (SO04–SO05).
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
 [HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in
 [template gaps](../docs/template-gaps.md).

@@ -13867,3 +13867,36 @@ ever, as the doc comment says. A `fetch` timed out by `AbortSignal.timeout` is a
 never unreachable. `field-projects/youtube/v4` keeps the old runtime. Owner dirty paths untouched
 and unstaged.
 **For the next unit.** SO05 reviews SO04. The store outage review's open item 1 is done by SO04.
+
+## 2026-11-13 — SO05: Review the outside-call guard
+
+**What changed.**
+- `docs/plans/store-outage/review.md`: a new "Amendment" section (SO05's review of SO04): the
+  verdict, a checks table (the guard against the amendment, `AggregateError`, `httpTarget`'s
+  pass-through, the pins, the `P0001` fixture, docs), five findings not fixed, three proposed
+  units (SO08 ready; SO06 and SO07 need the owner) and the runs.
+- `AGENTS.md`: the active-plan sentence says there is no active plan now and the owner names the
+  next one; nothing else. `jeeves/PLAN.md`: its matching sentence, naming the plans that ran last.
+- No code, template, test or pin changed.
+
+**Checks.** One round, as nothing was fixed; the tree at `410b177`. `pnpm check` exit 0, 115
+files / 912 tests, Biome 1 info (older). `pnpm test:e2e` (native) 74 passed (4.6 min).
+`pnpm --filter @jeeves/web build` exit 0. Docker phase: `pnpm test:generated --suite=wiring` 2/2
+(Vitest 178.5 s, 198 s wall); the stack released, Docker containers, volumes, networks and image
+tags equal to the pre-unit inventory, the run's `test-results/generated/` folder removed, no
+`jeeves-system-*` temporary folder left. Probes: a temporary `src/v2/so05-probe.test.ts` of the
+emitted `delivery.ts` (5 tests, 5 passed, deleted before the wiring run and the commit) and Node
+24 `fetch` probes against loopback ports and servers (a refused port gives `TypeError "fetch
+failed"` with an `ECONNREFUSED` cause; a server dying before headers gives the same with a
+`SocketError` `UND_ERR_SOCKET` cause; dying mid-body gives `TypeError "terminated"`). Nothing
+user-visible changed, so no browser check.
+**Differences from the plan.** None. The diff range read was `9c0c035..HEAD` (SO03's commit to
+SO04's), taking SO04's hunks only.
+**Noticed.** Recorded in the review's Amendment section: a tile dying mid-request spends an
+attempt (`UND_ERR_SOCKET`, `UND_ERR_CONNECT_TIMEOUT` aren't on the Decision's list); the marked
+call's log line reads "store unreachable" with `TypeError: fetch failed` and no host; the
+unqualified "outside host" sentence in `docs/studio.md` and the generated README; the depth bound
+covers the mark. `field-projects/youtube/v4` keeps the old runtime. Owner dirty paths untouched
+and unstaged.
+**For the next unit.** No active plan; the owner names the next one. The review's proposed units:
+SO08 (docs, ready) can run now; SO06 and SO07 wait for the owner.
