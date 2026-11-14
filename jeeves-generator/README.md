@@ -464,8 +464,9 @@ stub loops and mounted templates both consume their row (`startModuleLoop`, `loo
   the queue). Its `.slots.ts` keeps the slot's descriptor, and the consumed queue's property
   becomes a comment: it is the input, not a dependency. "Not implemented" is terminal at once
   (`NOT_IMPLEMENTED`: the message goes to `<queue>.failed` on its first delivery). Any other
-  error is retried 5 times; before retry *n* the handler waits `min(250 ms × 2^(n−1), 10 s)`
-  (7.75 s over the five), then the message ends in `.failed` as `RETRY_EXHAUSTED`.
+  error but an unreachable store (below) is retried 5 times; before retry *n* the handler waits
+  `min(250 ms × 2^(n−1), 10 s)` (7.75 s over the five), then the message ends in `.failed` as
+  `RETRY_EXHAUSTED`.
 - **Asset lifecycle** runs `startAssetLifecycleWorker` on the results subscriber
   (`<results>--<tile>`, which the processes owner contributes because the template didn't), with
   its publication relay when bound. Its `assets` and `receipts` tables sit in its upload
@@ -497,7 +498,14 @@ terminal at once, other failures retry within its limit (lifecycle 10, video 3, 
 5). A message that reaches a hook that isn't written goes to `.failed` at once as
 `NOT_IMPLEMENTED`, as a stub's does (tile-processes review row 7: a retry can't write it), rather
 than the template's generic `MALFORMED_MESSAGE` or retrying to `RETRY_EXHAUSTED`; a code of the
-template's own (the media worker's `INVALID_MEDIA`) is kept. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
+template's own (the media worker's `INVALID_MEDIA`) is kept. In a stub loop and a mounted
+template alike, an unreachable store waits 5 s and keeps the attempt: when a failure is a lost
+or refused connection (a socket error such as `ECONNREFUSED`, a PostgreSQL SQLSTATE of class 08
+or 57P01–57P03, or `pg`'s "Connection terminated"), the delivery runner (`unreachable` in
+`delivery.ts`) puts the message back on its queue with the same `x-delivery-attempt` 5 s later,
+so an outage never sends it to `.failed`; its line's action reads `store unreachable, retry in
+5000 ms (attempt not counted)`, and `pnpm stop` ends the wait at once, leaving the message in its
+queue. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
 and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process, a

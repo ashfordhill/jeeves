@@ -13304,3 +13304,62 @@ reaches `.failed`, without a restart; SO03 reviews. `AGENTS.md` and `jeeves/PLAN
 the active plan.
 **Checks.** None (docs only). Written from the code at `7bef25f`; read, not run.
 **For the next unit.** SO01.
+
+## 2026-11-13 — SO01: Template workers wait out an unreachable store
+
+**What changed.**
+- `service-resources.ts.template`, `pool()`: `client.on("error", () => {})` after
+  `createPostgres`, with the stub pool's comment, so PostgreSQL ending idle connections no longer
+  ends the process.
+- `delivery.ts.template`: exports `UNREACHABLE_WAIT_MS = 5000` and `unreachable(error)`, the
+  Decision's list exactly (the 8 socket codes, SQLSTATE `08…` and `57P01`–`57P03`, messages
+  starting `Connection terminated` or containing `timeout exceeded when trying to connect`; on
+  the error, its `cause` chain up to five deep, and an `AggregateError`'s `errors`). In
+  `createDeliveryRunner`'s catch, an unreachable error that isn't a `NonRetryable` waits 5 s on
+  an `AbortController` that `close()` (and so `fatal`) aborts; closing or fatal after the wait:
+  return without ack; otherwise republish to `options.queue` with `headers` unchanged, ack;
+  a republish failure calls `fatal`. `onTerminal` is never called for it.
+- `tile-loop.ts.template`: `outcome()` returns `{ retry: true, action: "store unreachable, retry
+  in 5000 ms (attempt not counted)" }` for it; `moduleHandler` then logs that action and rethrows
+  with no `retryDelay` wait; `templateHandler` logs it through `outcome()`.
+- Tests (5 new): `primitives.test.ts` "tells an unreachable store from a failed message" and
+  "waits out an unreachable store, keeping the attempt, and close() ends the wait";
+  `tile-loop.test.ts` "leaves an unreachable store to the runner: one 5 s wait, the attempt not
+  counted" (stub loop, real runner) and "logs an unreachable store as a wait that keeps the
+  attempt, past the template's limit"; `composition.test.ts` "gives a template's database pool
+  an error listener, so an idle connection's error is not fatal". No existing assertion changed.
+- Pins (`processes-off.json`, Rule 7): `frozen-v2` and `v2-module-design` changed on
+  `.jeeves/manifest.json`, `src/features/service-resources.ts`, `src/runtime/delivery.ts`;
+  `stub-stack` unchanged.
+- Docs: `docs/template-gaps.md` (both rows Fixed in SO01), `jeeves-generator/README.md` (the
+  sentence after a mounted template's limits; the loop-stub bullet's "Any other error" now
+  excepts an unreachable store), `docs/studio.md` (one sentence after the stub retry sentence).
+
+**Checks.** `pnpm check` before any change: exit 0, 115 files, 905 tests. After: exit 0, 115
+files, 910 tests (Biome's one info is older). On HEAD's three templates (new ones kept in a
+scratchpad copy, restored and checked by sha256, copy deleted): 5 of 5 new tests fail (missing
+`unreachable` / `UNREACHABLE_WAIT_MS`, retry after 4 s, `RETRY_EXHAUSTED` action, no `error`
+listener), the 21 others in those files pass. `processes-off.test.ts` failed as expected (2)
+before `pins:update`; `assemble.test.ts`'s frozen v1 test passed throughout. `pnpm test:e2e`
+(native): 74 passed (4.8 min). `pnpm --filter @jeeves/web build`: exit 0. Activity fixture
+exported to the scratchpad, `pnpm install --frozen-lockfile --ignore-scripts --offline` and
+`pnpm build` (`tsc`): exit 0; deleted. No Docker suite (SO02).
+**Differences from the plan.**
+- The pins changed on three of the four named paths: no processes-off export emits
+  `src/runtime/tile-loop.ts` (Runnable processes off), so it has no pin to change.
+- `outcome()` and `moduleHandler` share one local test, `storeUnreachable(error)` (`unreachable`
+  and not a `NonRetryable`); `outcome()`'s return is as written.
+- The `pool()` test is a unit test of the emitted helper in `composition.test.ts`, where the
+  emitted `service-resources.ts` is already read: its imports are fakes and the pool is a real
+  `EventEmitter`, as `module-clients.test.ts` checks the stub pool's same line through a fake.
+- `unreachable` applies the five-deep bound to an `AggregateError`'s `errors` too, so a cycle
+  can't recurse for ever.
+- `jeeves/CATALOG.md` has no sentence on a mounted template's retries or `.failed`; unchanged.
+**Noticed.** A message waiting out an outage holds its prefetch slot for 5 s, so a worker cycles
+at most its concurrency in messages every 5 s, each a republish to the back of its queue and an
+ack (order changes, as with today's retries). Its `loop-error` line is rate limited once a second
+per module and queue. `pnpm stop` during the wait leaves the message unacked (back in its queue),
+unlike a `retryDelay` wait, which republishes for the next attempt. `field-projects/youtube/v4`
+still has the old runtime files (not in this plan). Owner dirty paths untouched and unstaged.
+**For the next unit.** SO02: B09's database row can assert the action `store unreachable, retry
+in 5000 ms (attempt not counted)` in the worker's log, no exit, and nothing in `.failed`.

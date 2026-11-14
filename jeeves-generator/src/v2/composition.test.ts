@@ -1,3 +1,4 @@
+import { stripTypeScriptTypes } from "node:module";
 import {
   applyOperations,
   buildGenerationPresetCommand,
@@ -159,5 +160,46 @@ describe("reusable composition before product completion", () => {
         target: { path: ["generation", "selections", index, "template"] },
       }),
     );
+  });
+  it("gives a template's database pool an error listener, so an idle connection's error is not fatal", async () => {
+    const bundle = assembleV2({ designJson: JSON.stringify(attach()) }, registry);
+    // The exact emitted helper; its imports are fakes, and the pool is a real EventEmitter.
+    const fakes: Record<string, string> = {
+      "./application-bindings.ts": "export const selections = [];",
+      "./local-bindings.ts":
+        'export const localLogins = [{ resource: "state-db", host: "worker", user: "r" }];',
+      "../runtime/postgres.ts": `import { EventEmitter } from "node:events";
+        export const createPostgres = (options) =>
+          Object.assign(new EventEmitter(), { options, end: async () => {} });`,
+      "../runtime/objects.ts": "export const createObjects = () => {};",
+      "../runtime/amqp.ts": "export const createConsumer = () => {}, createPublisher = () => {};",
+      "../runtime/positive-cache.ts": "export const createPositiveReader = () => {};",
+    };
+    const dataUrl = (js: string) =>
+      `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
+    const js = stripTypeScriptTypes(read(bundle, "src/features/service-resources.ts")).replace(
+      /from "([^"]+)"/g,
+      (_match, path: string) => `from "${dataUrl(required(fakes[path]))}"`,
+    );
+    const resources = await import(dataUrl(js));
+    const owned: unknown[] = [];
+    const client = resources.pool(
+      { own: (drain: unknown) => owned.push(drain) },
+      {
+        id: "counter",
+        kind: "event-counter",
+        host: "worker",
+        inputs: { "state.poolSize": 4, "state.statementTimeoutMs": 2000 },
+        resources: { state: "state-db" },
+      },
+      "state",
+    );
+    expect(client.options).toMatchObject({ poolSize: 4, statementTimeoutMs: 2000 });
+    expect(owned).toHaveLength(1);
+    expect(client.listenerCount("error")).toBe(1);
+    // An 'error' with no listener throws, which ends the process; this one is consumed.
+    expect(() =>
+      client.emit("error", new Error("terminating connection due to administrator command")),
+    ).not.toThrow();
   });
 });

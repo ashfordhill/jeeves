@@ -178,6 +178,108 @@ describe("emitted runtime primitives", () => {
     expect(events).toEqual(["fatal", "cancel", "close"]);
   });
 
+  it("tells an unreachable store from a failed message", () => {
+    const coded = (code: string) => Object.assign(new Error(code), { code });
+    for (const code of [
+      "ECONNREFUSED",
+      "ECONNRESET",
+      "ENOTFOUND",
+      "EAI_AGAIN",
+      "ETIMEDOUT",
+      "EHOSTUNREACH",
+      "ENETUNREACH",
+      "EPIPE",
+      "08006",
+      "08001",
+      "57P01",
+      "57P03",
+    ])
+      expect(deliveryCore.unreachable(coded(code)), code).toBe(true);
+    for (const message of [
+      "Connection terminated unexpectedly",
+      "timeout exceeded when trying to connect",
+    ])
+      expect(deliveryCore.unreachable(new Error(message)), message).toBe(true);
+    const twoDeep = new Error("query failed", {
+      cause: new Error("client lost", { cause: coded("ECONNRESET") }),
+    });
+    expect(deliveryCore.unreachable(twoDeep)).toBe(true);
+    expect(
+      deliveryCore.unreachable(new AggregateError([new Error("other"), coded("ECONNREFUSED")])),
+    ).toBe(true);
+    for (const error of [
+      coded("57014"),
+      coded("23505"),
+      new Error("boom"),
+      new deliveryCore.NonRetryable("MALFORMED_MESSAGE"),
+    ])
+      expect(deliveryCore.unreachable(error), String(error)).toBe(false);
+  });
+
+  it("waits out an unreachable store, keeping the attempt, and close() ends the wait", async () => {
+    vi.useFakeTimers();
+    try {
+      expect(deliveryCore.UNREACHABLE_WAIT_MS).toBe(5000);
+      const events: unknown[] = [];
+      const onTerminal = vi.fn();
+      const runner = deliveryCore.createDeliveryRunner({
+        queue: "tasks",
+        failedQueue: "tasks.failed",
+        retryLimit: 2,
+        handle: async () => {
+          throw Object.assign(new Error("connect ECONNREFUSED 10.0.0.2:5432"), {
+            code: "ECONNREFUSED",
+          });
+        },
+        onTerminal,
+        transport: {
+          cancel: async () => {
+            events.push("cancel");
+          },
+          republish: async (queue: string, _message: unknown, headers: Record<string, unknown>) => {
+            events.push({ queue, headers });
+          },
+          ack: (receipt: string) => {
+            events.push(`ack:${receipt}`);
+          },
+          close: async () => {
+            events.push("close");
+          },
+        },
+      });
+      // At the retry limit, yet back on its own queue with the same attempt after 5 s.
+      runner.accept({
+        body: Buffer.from("{}"),
+        receipt: "last",
+        headers: { "x-delivery-attempt": 2, trace: "t" },
+        redelivered: true,
+      });
+      await vi.advanceTimersByTimeAsync(4999);
+      expect(events).toEqual([]);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(events).toEqual([
+        { queue: "tasks", headers: { "x-delivery-attempt": 2, trace: "t" } },
+        "ack:last",
+      ]);
+      expect(onTerminal).not.toHaveBeenCalled();
+      // close() during the wait: no timer advances, and nothing is republished or acked.
+      events.length = 0;
+      runner.accept({
+        body: Buffer.from("{}"),
+        receipt: "waiting",
+        headers: { "x-delivery-attempt": 1 },
+        redelivered: false,
+      });
+      await vi.advanceTimersByTimeAsync(10);
+      await runner.close();
+      expect(events).toEqual(["cancel", "close"]);
+      await expect(runner.closed).resolves.toEqual({ fatal: false });
+      expect(onTerminal).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("emits dependencies for selected responsibilities without installing business templates", () => {
     const design = designSchema.parse({
       ...generationSourceFixture(),

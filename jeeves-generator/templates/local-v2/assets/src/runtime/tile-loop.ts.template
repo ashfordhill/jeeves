@@ -2,6 +2,8 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { createConsumer, type BrokerBinding, type BrokerState } from "./amqp.ts";
 import {
   NonRetryable,
+  UNREACHABLE_WAIT_MS,
+  unreachable,
   type ConsumerHooks,
   type Delivery,
   type MessageHandler,
@@ -77,8 +79,15 @@ const describe = (error: unknown) =>
   (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).slice(0, 300);
 const messageId = (delivery: Delivery) =>
   delivery.messageId === undefined ? {} : { messageId: delivery.messageId };
+/** The delivery runner waits out an unreachable store itself and keeps the attempt. */
+const storeUnreachable = (error: unknown) => unreachable(error) && !(error instanceof NonRetryable);
 /** What the delivery runner does with a failed message: retry it, or send it to .failed. */
 function outcome(loop: Pick<ModuleLoop, "failedQueue" | "retryLimit">, error: unknown, delivery: Delivery) {
+  if (storeUnreachable(error))
+    return {
+      retry: true,
+      action: `store unreachable, retry in ${UNREACHABLE_WAIT_MS} ms (attempt not counted)`,
+    };
   const code =
     error instanceof NonRetryable
       ? error.code
@@ -93,7 +102,8 @@ function outcome(loop: Pick<ModuleLoop, "failedQueue" | "retryLimit">, error: un
 /**
  * A module's handler (tile process contract, section 5): each message calls its entry point.
  * "Not implemented" is terminal at once (NOT_IMPLEMENTED: the message goes to .failed) with one
- * log line. Any other error is retried within the loop's limit after `retryDelay(attempt)`, then
+ * log line. An unreachable store waits no `retryDelay` here: the runner waits 5 s and keeps the
+ * attempt. Any other error is retried within the loop's limit after `retryDelay(attempt)`, then
  * ends in .failed as RETRY_EXHAUSTED; `stopping` cuts a wait short.
  */
 export function moduleHandler(
@@ -123,16 +133,17 @@ export function moduleHandler(
         throw new NonRetryable("NOT_IMPLEMENTED");
       }
       const next = outcome(loop, error, delivery);
-      const delay = next.retry ? retryDelay(delivery.deliveryCount) : 0;
+      const waits = next.retry && !storeUnreachable(error);
+      const delay = waits ? retryDelay(delivery.deliveryCount) : 0;
       log.failed({
         module: loop.module,
         queue: loop.queue,
         ...messageId(delivery),
         attempt: delivery.deliveryCount,
         error: describe(error),
-        action: next.retry ? `${next.action} in ${delay} ms` : next.action,
+        action: waits ? `${next.action} in ${delay} ms` : next.action,
       });
-      if (next.retry) await wait(delay, stopping);
+      if (waits) await wait(delay, stopping);
       throw error;
     }
   };

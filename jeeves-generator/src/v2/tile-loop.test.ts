@@ -246,6 +246,38 @@ describe("emitted stub loops (tile process contract, section 5)", () => {
     await scope.stop();
   });
 
+  it("leaves an unreachable store to the runner: one 5 s wait, the attempt not counted", async () => {
+    vi.useFakeTimers();
+    const { scope, consumer } = await started(async () => {
+      throw new Error("Connection terminated unexpectedly");
+    });
+    // The fifth delivery of another error waits 4 s (retryDelay) before its retry; this one
+    // waits only the runner's 5 s and goes back with the same attempt.
+    consumer.deliver("lost", { "x-delivery-attempt": 4 });
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(consumer.events).toEqual([]);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(consumer.events).toEqual([
+      { republish: "visits--visit-worker", receipt: "lost", headers: { "x-delivery-attempt": 4 } },
+      { ack: "lost" },
+    ]);
+    expect(lines).toEqual([
+      {
+        level: "error",
+        event: "loop-error",
+        tile: "visit-worker",
+        module: "visit-consumer",
+        queue: "visits--visit-worker",
+        messageId: "lost",
+        attempt: 5,
+        error: "Error: Connection terminated unexpectedly",
+        action: "store unreachable, retry in 5000 ms (attempt not counted)",
+      },
+    ]);
+    expect(scope.fail).not.toHaveBeenCalled();
+    await scope.stop();
+  });
+
   it("drains on stop: cancels, cuts a retry wait short, settles the message in hand, then closes", async () => {
     vi.useFakeTimers();
     const { scope, consumer } = await started(async () => {
@@ -486,6 +518,31 @@ describe("emitted template loops", () => {
       { ack: "job-1" },
     ]);
     await consumer.close();
+  });
+
+  it("logs an unreachable store as a wait that keeps the attempt, past the template's limit", async () => {
+    const log = loop.createLoopLog("completion-handler");
+    const lost = Object.assign(new Error("terminating connection due to administrator command"), {
+      code: "57P01",
+    });
+    const handle = loop.templateHandler(log, lifecycle, async () => {
+      throw lost;
+    });
+    // Rethrown unchanged, so the runner sees it and waits.
+    await expect(handle(Buffer.from("{}"), delivery(11))).rejects.toBe(lost);
+    expect(lines).toEqual([
+      {
+        level: "error",
+        event: "loop-error",
+        tile: "completion-handler",
+        module: "handler-writer",
+        queue: lifecycle.queue,
+        messageId: "e1",
+        attempt: 11,
+        error: "Error: terminating connection due to administrator command",
+        action: "store unreachable, retry in 5000 ms (attempt not counted)",
+      },
+    ]);
   });
 
   it("logs another failure with what the template's limit does next", async () => {

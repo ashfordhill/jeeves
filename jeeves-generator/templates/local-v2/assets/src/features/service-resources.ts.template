@@ -58,6 +58,8 @@ export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
 		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),
 		connectionTimeoutMs: 2000,
 	});
+	// An idle connection's error is not fatal: the next query reconnects.
+	client.on("error", () => {});
 	scope.own(() => client.end());
 	return client;
 }
