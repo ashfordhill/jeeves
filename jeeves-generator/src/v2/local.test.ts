@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { designSchema, generationRuntime } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
@@ -214,6 +215,36 @@ describe("standalone local foundation", () => {
       const readme = text(bundle, "README.md");
       expect(readme).toContain(`\n\n${own}\n\n`);
       expect(readme.indexOf(own)).toBeGreaterThan(readme.indexOf("Run `pnpm first-run` once"));
+    }
+  });
+
+  it("gives the application its package manifests with the template's bytes (QG03)", async () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    const ownership = (bundle: ReturnType<typeof emit>, path: string) =>
+      bundle.manifest.files.find((f) => f.path === path)?.ownership;
+    for (const bundle of [emit(), processes]) {
+      for (const path of ["package.json", "pnpm-lock.yaml"]) {
+        expect(ownership(bundle, path)).toBe("generated-extension");
+        expect(text(bundle, path)).toBe(
+          await readFile(
+            new URL(`../../templates/local-v2/assets/${path}`, import.meta.url),
+            "utf8",
+          ),
+        );
+      }
+      // The rest of the project stays generated; the image installs exactly the lock.
+      for (const path of ["tsconfig.json", "Dockerfile", "scripts/local.mjs", "compose.yaml"])
+        expect(ownership(bundle, path)).toBe("generated-scaffold");
+      expect(text(bundle, "Dockerfile")).toContain(
+        "COPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile --ignore-scripts\n",
+      );
     }
   });
 

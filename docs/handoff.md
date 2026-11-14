@@ -14648,3 +14648,95 @@ reason for none.
 
 **For the next unit.** Batch 2 starts with QG03. The coordinator may add QG21–QG24 to batch 2's
 order (QG21 and QG22 are independent; QG23 is docs; QG24 after QG06) and put QG25 to the owner.
+
+## 2026-11-14 — QG03: The application owns its package dependencies
+
+**What changed.**
+- `jeeves-generator/src/v2/local.ts`: the foundation emits `package.json` and `pnpm-lock.yaml`
+  as `generated-extension` (every other file in that list stays `generated-scaffold`). Their
+  bytes, the template's pins and the Dockerfile (`COPY package.json pnpm-lock.yaml ./`, `pnpm
+  install --frozen-lockfile --ignore-scripts`) are unchanged; only the manifest's ownership moves.
+  `src/update.ts` needed no change: `planUpdate`'s extension branch already decides a file whose
+  old manifest says generated and new one says the application's (only the reverse is refused).
+- Tests, 7 new:
+  - `src/v2/local.test.ts`: for a processes-off and a processes-on export, both files are
+    `generated-extension` with the template asset's exact bytes; `tsconfig.json`, `Dockerfile`,
+    `scripts/local.mjs` and `compose.yaml` stay scaffold; the Dockerfile still installs the lock.
+  - `src/update.test.ts`, `planUpdate` (4, in their own block so the 18-row table and its count
+    stay as they are): old manifest generated → new extension, unedited `unchanged`; edited
+    `keep`; edited with a template change `keep-changed` and a shadow; edited and still listed as
+    an override (YouTube v4) `keep`. None refused.
+  - `src/update.test.ts`, `updateDirectory` 11: a real export whose manifest records both files as
+    generated (as an older export's does): unedited → quiet update; after a `pnpm add`-style edit
+    of both → `keep` 2, files kept, no shadow; with older template hashes → `keepChanged` both,
+    files kept, the new bytes in `.jeeves/generated/package.json` and `pnpm-lock.yaml`.
+  - `src/update.test.ts`, `updateDirectory` 12: YouTube v4's committed app, `check: true` against
+    `v4/inputs/design.json`: nothing refused, `package.json` no longer an `override` but
+    `keepChanged`, and `.jeeves/` byte-identical after.
+- Pins (`processes-off.json`, `pins:update`): `.jeeves/manifest.json` changed in `frozen-v2`,
+  `v2-module-design` and `stub-stack`; nothing else.
+- Docs: `jeeves-generator/README.md` (Current state "Yours to write"; "Template hook and report";
+  "Updating an existing export", Kept), `docs/glossary.md` (Scaffold).
+
+**Checks.**
+- Before any change, at `d469660`: `pnpm check` exit 0, 115 files / 926 tests.
+- After: `pnpm check` exit 0, 115 files / 933 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e` run 1: 4 failed / 70 passed, all page loads timing out (3 × the `Project:` menu
+  not visible within 5 s, 1 × the board not ready within 20 s) while another repository's stack
+  (Keycloak, Pub/Sub emulator) started beside it, load average 4.8. Run 2, alone: 74 passed
+  (4.8 min). Web build: exit 0.
+- New tests: 7. On HEAD's templates (a scratch clone at `d469660` with its own offline install
+  and the two test files, since deleted) 3 fail at their ownership assertions (`local.test.ts`'s,
+  `updateDirectory` 11 and 12); the 4 `planUpdate` cases pass, since the planner already allowed
+  this. The checkout's `node_modules` state files and `.bin` shims name no scratch path after.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=regeneration`: 1 file / 1
+  test passed (B10, 155 s), first run; its update plan was `replace` 6, `unchanged` 37, `keep` 3
+  with nothing refused, the final check `unchanged` 43, `keep` 3. The Docker inventory after equals
+  the one before apart from arm B's `qrwtyb-local` stack (started and rebuilt meanwhile; not
+  touched). No `gs-` resource is left; this run's `test-results/generated/` folder is removed.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both fixtures: `.jeeves/manifest.json` and `.jeeves/report.json` only. The
+    manifest differs in the two files' `ownership` (`generated-scaffold` → `generated-extension`),
+    the report's hash and the source inventory; the report only in the inventory (`local.ts`
+    57685 → 58048 bytes; the owners' `sourceSha256` `18dbf24d…931b` → `dc9b6881…66fc`). Required
+    gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and
+    `pnpm build` exit 0.
+  - In `after-probe`: `pnpm add stripe@23.1.0` (published 2026-10-29, 16 days old, the latest
+    release; network for this step, including `pnpm view stripe time` to choose it) saved
+    `"stripe": "23.1.0"`; the lock gained only `stripe@23.1.0` (its one peer, `@types/node`, is
+    optional and already pinned). `pnpm build` exit 0. `update:v2 --check` against the same
+    fixture: exit 0, `refused` [], `keep` 2, `unchanged` 54, nothing else; the only files that
+    differ from the manifest are `package.json` and `pnpm-lock.yaml`, and the tree was unchanged
+    after. The scratch exports are deleted.
+- YouTube v4's app, `update:v2 --check` by the CLI (read-only): before the change `replace` 14,
+  `unchanged` 82, `keep` 11, `override` the four PF11 paths; after it the same counts with
+  `package.json` in `keepChanged` and three overrides. `field-projects/` is unchanged.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- "Template hook and report" in `jeeves-generator/README.md` sits in the frozen v1 sections, so
+  its new sentence says "In a v2 export". The v1 profile is unchanged (its test still counts 7
+  extension files).
+- YouTube v4's `package.json` override now reports `keepChanged`, not `override`: the shadow the
+  override left in `.jeeves/generated/package.json` is still pending, so it stays `keepChanged`
+  until v4's file equals the template's or the shadow is deleted. Not refused; the overrides
+  entry now changes nothing. v4 was not edited.
+- `AGENTS.md` is unchanged: the owner's decision ("the application owns its package
+  dependencies; Jeeves keeps its own pins") doesn't say to add "and its package manifests" to
+  its "Hook files, stub bodies and product SQL are the application's own" sentence.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), decided by the owner on 2026-11-14 (decision 1, yes).
+- `pnpm add <name>@<exact version>` saves the exact pin; `pnpm add <name>` alone would save a `^`
+  range, so the README names the exact form.
+- A template that later changes a pin puts its new `package.json` and `pnpm-lock.yaml` under
+  `.jeeves/generated/`; the application merges them, since its install uses the lock as it is.
+- Template gap 8's row still says v3 edits four scaffold files, true for v3. v4 could drop its
+  `package.json` override; that is v4's and the owner's call.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG04. QRWTY can now `pnpm add stripe@<exact version>` in its export
+without an override, and `update:v2` keeps both files.

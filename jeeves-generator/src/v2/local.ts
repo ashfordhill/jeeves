@@ -1049,6 +1049,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         .map((c) => c.emitter),
     ),
   );
+  // The package manifests are the application's own: it adds its packages with `pnpm add`, and
+  // `update:v2` keeps its files, putting the template's new ones under `.jeeves/generated/`.
+  const packageManifests = new Set(["package.json", "pnpm-lock.yaml"]);
   for (const path of [
     "package.json",
     "pnpm-lock.yaml",
@@ -1068,17 +1071,19 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     ...(search.length ? ["scripts/search-init.mjs"] : []),
     ...(model.processes ? ["scripts/products.mjs"] : []),
     "scripts/common.mjs",
-  ])
-    files.push(
-      file(
-        path,
-        path === "scripts/local.mjs" && model.processes
-          ? gateOnProcesses(context.asset(`${assets}${path}`))
-          : path === "scripts/migrate.mjs" && model.processes
-            ? migrateWithProducts(context.asset(`${assets}${path}`))
-            : context.asset(`${assets}${path}`),
-      ),
+  ]) {
+    const emitted = file(
+      path,
+      path === "scripts/local.mjs" && model.processes
+        ? gateOnProcesses(context.asset(`${assets}${path}`))
+        : path === "scripts/migrate.mjs" && model.processes
+          ? migrateWithProducts(context.asset(`${assets}${path}`))
+          : context.asset(`${assets}${path}`),
     );
+    files.push(
+      packageManifests.has(path) ? { ...emitted, ownership: "generated-extension" } : emitted,
+    );
+  }
   const missingHosts = [
     ...new Set([
       ...model.selections.map((s) => s.host),

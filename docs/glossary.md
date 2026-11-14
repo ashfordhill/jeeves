@@ -11,7 +11,7 @@
 | Stub | A module with no complete template. It exports as a typed file that throws "Not implemented" until written. |
 | Generated, Building block, You write it | The studio's words for a module that leads a template, is part of one, or is a stub. |
 | Hook file | `src/modules/<tile>/<lead>.hooks.ts`: the product decisions a template asks for. The application's own. |
-| Scaffold | Every generated file that is not a hook file, a stub body or a product SQL file. Never edited by hand. |
+| Scaffold | Every generated file that is not a hook file, a stub body, a product SQL file, `package.json` or `pnpm-lock.yaml`. Never edited by hand. |
 | Selection | The saved record that a template or a stub generates a module (`generation.selections`). |
 | Runnable processes | The export option that makes each application tile its own process. |
 | Edge | The nginx container that publishes public tiles at `/api/<tile>/` and a CDN at `/cdn/<cdn>/`. |

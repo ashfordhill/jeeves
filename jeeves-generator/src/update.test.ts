@@ -12,6 +12,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { stubStackDesign } from "../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { loadLocalV2Registry } from "../templates/local-v2/index.ts";
@@ -392,6 +393,57 @@ describe("planUpdate", () => {
       });
     });
   });
+
+  describe("a generated file the new export gives the application (QG03)", () => {
+    const manifest = "package.json";
+    const cases: { row: string; input: Input; action: UpdateActionKind; shadows?: string[] }[] = [
+      {
+        row: "unedited, the template's bytes unchanged",
+        input: {
+          next: [extension(manifest, NEW)],
+          previous: [generated(manifest, NEW)],
+          disk: { [manifest]: NEW },
+        },
+        action: "unchanged",
+      },
+      {
+        row: "edited by the application, the template's bytes unchanged",
+        input: {
+          next: [extension(manifest, NEW)],
+          previous: [generated(manifest, NEW)],
+          disk: { [manifest]: HAND },
+        },
+        action: "keep",
+      },
+      {
+        row: "edited by the application, the template's bytes changed",
+        input: {
+          next: [extension(manifest, NEW)],
+          previous: [generated(manifest, OLD)],
+          disk: { [manifest]: HAND },
+        },
+        action: "keep-changed",
+        shadows: [manifest],
+      },
+      {
+        row: "still listed as an override (YouTube v4)",
+        input: {
+          next: [extension(manifest, NEW)],
+          previous: [generated(manifest, NEW)],
+          disk: { [manifest]: HAND },
+          overrides: [manifest],
+        },
+        action: "keep",
+      },
+    ];
+    it.each(cases)("$row", ({ input, action, shadows = [] }) => {
+      expect(plan(input)).toEqual({
+        actions: [{ path: manifest, action }],
+        refused: [],
+        shadows,
+      });
+    });
+  });
 });
 
 describe("updateDirectory", () => {
@@ -676,6 +728,77 @@ describe("updateDirectory", () => {
     expect(await update(directory)).toEqual(orphan);
     expect(await read(directory, "extra.txt")).toEqual(Buffer.from("the application's\n"));
     expect(await exists(directory, ".jeeves/generated")).toBe(false);
+  });
+
+  it("11. keeps the package manifests an older export recorded as generated (QG03)", async () => {
+    const packages = ["package.json", "pnpm-lock.yaml"];
+    for (const path of packages)
+      expect(bundle.manifest.files.find((file) => file.path === path)?.ownership).toBe(
+        "generated-extension",
+      );
+    const directory = await exported();
+    /** The manifest an export before QG03 wrote, with both files generated. */
+    const olderManifest = (hashes: Record<string, string> = {}) =>
+      editManifest(directory, (records) => {
+        for (const record of records)
+          if (packages.includes(record.path)) {
+            record.ownership = "generated-scaffold";
+            record.sha256 = hashes[record.path] ?? record.sha256;
+          }
+      });
+    await olderManifest();
+    expect(await update(directory)).toEqual({ ...quiet, directory });
+    // The application adds a package (`pnpm add`), which edits both.
+    const pkg = JSON.parse(generated("package.json").toString("utf8"));
+    pkg.dependencies["example-sdk"] = "1.2.3";
+    const mine = Buffer.from(`${JSON.stringify(pkg, null, 2)}\n`);
+    const lock = Buffer.concat([generated("pnpm-lock.yaml"), Buffer.from("# example-sdk\n")]);
+    await writeFile(join(directory, "package.json"), mine);
+    await writeFile(join(directory, "pnpm-lock.yaml"), lock);
+    await olderManifest();
+    expect(await update(directory)).toEqual({
+      ...quiet,
+      directory,
+      counts: { create: 0, replace: 0, unchanged: files - 2, keep: 2 },
+    });
+    expect(await read(directory, "package.json")).toEqual(mine);
+    expect(await read(directory, "pnpm-lock.yaml")).toEqual(lock);
+    expect(await exists(directory, ".jeeves/generated")).toBe(false);
+    // A later template changes them: both kept, the template's new bytes beside them.
+    await olderManifest({
+      "package.json": sha256("an older package.json\n"),
+      "pnpm-lock.yaml": sha256("an older lock\n"),
+    });
+    expect(await update(directory)).toEqual({
+      ...quiet,
+      directory,
+      counts: { create: 0, replace: 0, unchanged: files - 2, keep: 0 },
+      keepChanged: packages,
+    });
+    expect(await read(directory, "package.json")).toEqual(mine);
+    expect(await read(directory, "pnpm-lock.yaml")).toEqual(lock);
+    for (const path of packages)
+      expect(await read(directory, `.jeeves/generated/${path}`)).toEqual(generated(path));
+  });
+
+  it("12. checks YouTube v4's app in place with nothing refused (QG03)", async () => {
+    const v4 = new URL("../../field-projects/youtube/v4/", import.meta.url);
+    const app = fileURLToPath(new URL("app", v4));
+    const before = await snapshot(join(app, ".jeeves"));
+    const result = await updateDirectory(
+      assembleV2(
+        { designJson: await readFile(new URL("inputs/design.json", v4), "utf8") },
+        loadLocalV2Registry(),
+      ),
+      app,
+      { check: true },
+    );
+    expect(result.refused).toEqual([]);
+    // Its package.json override (template gap 8) is now the application's own file: kept, with
+    // the shadow the override left still pending.
+    expect(result.override).not.toContain("package.json");
+    expect(result.keepChanged).toContain("package.json");
+    expect(await snapshot(join(app, ".jeeves"))).toEqual(before);
   });
 
   it("refuses an invalid manifest or overrides file before writing anything", async () => {

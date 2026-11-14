@@ -11,7 +11,8 @@
   Event counter, Search indexing, Search query and Favorites. Any other module exports as a
   typed stub.
 - **Yours to write:** each template's `<lead>.hooks.ts`, each stub's `<module>.ts` and each
-  writer's product SQL file.
+  writer's product SQL file. `package.json` and `pnpm-lock.yaml` are yours too: add a package
+  your modules use with `pnpm add <name>@<exact version>`.
 - **Commands:** `pnpm --filter @jeeves/generator export:v2 <design.json> <new directory>`. The
   studio's Generate project dialog produces the same files as a ZIP.
   `pnpm --filter @jeeves/generator update:v2 <design.json> <existing export> [--check]`
@@ -102,7 +103,11 @@ and embedded assets, including standalone locks; see [templates](templates/READM
 
 Each template file declares `generated-scaffold` or `generated-extension` ownership and exact
 contributing design JSON pointers. Initial extension files are still generated output, not
-custom implementation credit. `.jeeves/` is reserved for the generator. Duplicate paths,
+custom implementation credit. In a v2 export the foundation's `package.json` and
+`pnpm-lock.yaml` are `generated-extension`, with the template's pins: the application adds the
+packages its stubs and hooks use with `pnpm add <name>@<exact version>`, which edits no generated
+file, and the image still installs exactly the lock (`pnpm install --frozen-lockfile`).
+`.jeeves/` is reserved for the generator. Duplicate paths,
 case collisions, file/directory collisions, traversal, absolute paths and portable reserved names
 refuse the whole assembly. Source paths must exist and belong to the selected declarations
 (shared project templates can cite any exact declaration).
@@ -171,14 +176,17 @@ with what `assembleV2` returns, and the pure `planUpdate` decides each file.
   included) is created when it is missing, `unchanged` when it already has the new bytes, and
   replaced when it still has the bytes the old manifest recorded. One the new export no longer
   has is removed when unedited.
-- **Kept:** the application's own files (hook files, stub bodies and product SQL) are never
-  overwritten or removed. A missing one is created, and one that already has the new bytes is
-  `unchanged`. One whose template bytes didn't change is `keep`. One whose template bytes
-  changed is `keepChanged`, and its new bytes go to `.jeeves/generated/<path>` to compare with
-  yours. One the export no longer has is `orphan` and stays where it is. Files neither manifest
-  lists are never touched. `compose.override.yaml` beside `compose.yaml` is one: no export writes
-  it, and it is where the application gives its modules their own environment, secrets and
-  services.
+- **Kept:** the application's own files (hook files, stub bodies, product SQL, `package.json`
+  and `pnpm-lock.yaml`) are never overwritten or removed. A missing one is created, and one that
+  already has the new bytes is `unchanged`. One whose template bytes didn't change is `keep`. One
+  whose template bytes changed is `keepChanged`, and its new bytes go to
+  `.jeeves/generated/<path>` to compare with yours (a new template pin lands in
+  `.jeeves/generated/package.json` and `pnpm-lock.yaml` this way). The same holds when the old
+  manifest records one of these files as generated (an older export's package manifests), and an
+  override listed for one changes nothing. One the export no longer has is `orphan` and stays
+  where it is. Files neither manifest lists are never touched. `compose.override.yaml` beside
+  `compose.yaml` is one: no export writes it, and it is where the application gives its modules
+  their own environment, secrets and services.
 - **Refused:** a generated file edited by hand, a file in the way of a new generated path, an
   edited generated file the export dropped, an application's file the new export would make
   generated (`ownership changed: <path>`), and an override that is in neither manifest and has no
