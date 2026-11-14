@@ -39,8 +39,10 @@ The owner answered the plan's decisions for QRWTY's coordinator:
 - **Decision 7 (QG20): yes.** External API and Identity tiles give stubs a configured HTTP client.
 
 Run after batch 1's remaining units (QG12, QG11) and QGR1, in this order: QG03, QG04, QG06, QG24, QG07,
-QG08, QG09, QG10, QG18, QG20, QG21, QG22, QG23, QG25, then **QGR2 — Review batch 2**, written like QGR1 (Fable, xhigh; its
-record is `docs/plans/qrwty-gaps/review-batch2.md`; commit `QGR2: review QRWTY gap batch 2`).
+QG08, QG09, QG10, QG18, QG20, then **QGR2 — Review batch 2**, written like QGR1 (Fable, xhigh; its
+record is `docs/plans/qrwty-gaps/review-batch2.md`; commit `QGR2: review QRWTY gap batch 2`). QGR2's commit is QRWTY arm A's
+frozen generation baseline (QRWTY owner decisions §10). Then QG21, QG22, QG23 and QG25, which [QRWTY lessons](../qrwty-lessons/units.md)'s
+review (QLR1) also covers, and then that plan.
 QG21–QG24 are the QGR1 review's ready units; their briefs are in [review-batch1.md](review-batch1.md) §Proposed units (QG24 after QG06). QG25 (the edge's 502/503/504 carry `Retry-After: 1`): **owner decision 2026-11-14: yes**; its brief is in review-batch1.md §Proposed units, and it also records the Q03 review's F22 note (below) in `docs/template-gaps.md`, since it touches the edge. QG13–QG16 stay deferred.
 
 

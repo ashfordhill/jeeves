@@ -15318,3 +15318,15 @@ name.
 **For the next unit.** QG08. Subscriptions `<topic>--<tile>`, their dead-letter topics and
 `setup-pubsub` exist. The loop stub's gap (`pubsubConsumeGap`) and its AMQP loop are what QG08
 replaces. Its service needs `pubsub` once it builds a Pub/Sub consumer.
+
+## 2026-11-14 — Docs: QRWTY lessons plan (draft) and the batch-2 order
+
+Coordinator docs entry. It adds `docs/plans/qrwty-lessons/`, the JP00 planner's draft Jeeves plan
+QL01–QL13 (analysis, units and owner summary), with the owner's decisions still pending. It also
+sets the qrwty-gaps batch-2 order to QG08, QG09, QG10, QG18, QG20, then QGR2 (arm A's frozen
+baseline), then QG21–QG23 and QG25, then QL.
+
+**Noticed.** QG07's source landed in the owner's commit `6a21cfc`, which took the uncommitted working
+tree while QG07 was mid-unit. `2625d96` holds the rest.
+
+**For the next unit.** QG08.
