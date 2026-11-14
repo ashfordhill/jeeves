@@ -13414,3 +13414,35 @@ dirty paths untouched and unstaged.
 **For the next unit.** SO03 reviews SO01–SO02. Evidence in
 `plans/generated-system-tests/evidence/so02/`; `docs/template-gaps.md` already marks both rows
 fixed in SO01.
+
+## 2026-11-13 — SO03: Review store outage
+
+**What changed.**
+- New [review](plans/store-outage/review.md): the classifier matches the Decision; no other
+  failure path changed; `close()` (and a broker loss) ends a wait at once with no republish or
+  ack; the pins changed only on the three paths SO01 named (no pinned export has `tile-loop.ts`);
+  a one-hour outage probe gives one republish and ack per 5 s with the attempt kept and nothing in
+  `.failed`; duplicates only as with today's retries (broker lost after the copy's confirm and
+  before the ack); `loop-error` stays at most one line a second per loop. SO02's points checked
+  (`connectionsTo` observation only and run-scoped; the three older records are dated and left).
+- Fix: the generated README (`jeeves-generator/src/v2/local.ts`) said a loop's other errors
+  "retry within the loop's limit"; it now adds "an unreachable store waits 5 s and keeps the
+  attempt". Test: one `toContain` in `loop-wiring.test.ts` (failed before, passes after). Emitted
+  only with Runnable processes on, so no pin changed.
+- `AGENTS.md` and `jeeves/PLAN.md` name [UI follow-ups](plans/ui-followups/units.md) as the active
+  plan; `PLAN.md` lists store outage with the completed plans.
+
+**Checks.** Before: `pnpm check` 115 files / 910 tests; `--suite=faults` 5/5 (475.6 s);
+`pnpm test:e2e` 74 passed (4.7 min); web build passed. After: `pnpm check` 115 / 910;
+`--suite=faults` 4/5 (B09 media's broker-outage precondition saw no FFmpeg after the stop; README
+text only changed), rerun 5/5 (469.1 s); `pnpm test:e2e` 74 passed (4.6 min); web build passed.
+Docker inventory equal to before after each run; the runs' `test-results/generated/` folders
+removed. Offline probes ran as a temporary test file, deleted. Nothing user-visible changed, so no
+browser check.
+**Differences from the plan.** None.
+**Noticed.** For the owner: the classifier reads only the error, so a handler's outbound
+`fetch` (or a Garage, OpenSearch or Keycloak call) failing with a socket code waits for ever and
+never reaches `.failed` (review, open 1). B09 media's precondition timing can fail closed
+(open 6). `field-projects/youtube/v4` keeps the old runtime and README sentence. Owner dirty paths
+untouched and unstaged.
+**For the next unit.** UF01 of [UI follow-ups](plans/ui-followups/units.md).

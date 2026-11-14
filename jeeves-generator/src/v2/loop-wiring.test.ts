@@ -138,6 +138,9 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(services["setup-broker"]?.command).toEqual(["node", "scripts/broker-init.mjs"]);
     // The generated README says what a loop does with a message.
     expect(text(stack, "README.md")).toContain("sends the message to `<queue>.failed`");
+    expect(text(stack, "README.md")).toContain(
+      "an unreachable store waits 5 s and keeps the attempt",
+    );
     // Off, nothing is provisioned for stubs.
     expect(json(stackOff, "infra/local.json").broker).toEqual([]);
   });
