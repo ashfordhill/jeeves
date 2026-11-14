@@ -775,7 +775,11 @@ See the [actual interface record](../docs/plans/reliable-foundations/youtube-v2/
 
 Exports use Node 24.21.0/pnpm 12.16.1 and the captured exact v1 dependency/provider pins.
 Rendering never reads mutable v1 files. Install with `pnpm install --frozen-lockfile --ignore-scripts`
-and build with `pnpm build` in the export. Allocate `COMPOSE_PROJECT_NAME`, `LOCAL_HTTP_PORT`,
+and build with `pnpm build` in the export. The `Dockerfile` builds as root, then its `app` image
+(every process and setup container) and `media` image run as the base image's unprivileged `node`
+user (uid 1000). `/app` stays root-owned and readable, so at run time a process writes only under
+`/tmp` (its ready marker, the media worker's job files), and setup writes every secret those
+containers mount with mode 0644. Allocate `COMPOSE_PROJECT_NAME`, `LOCAL_HTTP_PORT`,
 `LOCAL_IDENTITY_PORT`, `LOCAL_OBJECT_PORT` together; all three ports must be distinct, free,
 loopback ports outside the owner/v1 reservations. Run `pnpm first-run` once, `pnpm stop` for
 all profiles and `pnpm start` to retain the exact project, private `.runtime` credentials and

@@ -14113,3 +14113,88 @@ byte-identical to QRWTY's (`probe-design.json` still `a3b6204f…0505`).
 
 **For the next unit.** QG05. QRWTY's own environment, secrets and services go in
 `compose.override.yaml`, now a documented and tested seam; no generated file needs an override.
+
+## 2026-11-14 — QG05: The application image runs as a non-root user
+
+**What changed.**
+- `jeeves-generator/templates/local-v2/assets/Dockerfile`: `USER node` as the line before `CMD` in
+  the `app` stage and after `COPY --from=app /app /app` in the `media` stage. Nothing else, so every
+  build step still runs as root and `/app` stays root-owned. Every process and setup container
+  (built from `app`) and the media worker (`media`) now run as the base image's `node` user, uid 1000.
+- `jeeves-generator/src/v2/local.test.ts`, 1 new test, on the foundation export and on the stub
+  stack with processes on:
+  - the Dockerfile has exactly the stages `app`, `ffmpeg` and `media`;
+  - `app` ends `COPY infra ./infra`, `USER node`, its `CMD`, and `media` ends `COPY --from=app
+    /app /app`, `USER node`, its `CMD`;
+  - there are exactly two `USER` lines, and no `chown` or `chmod`;
+  - no built Compose service sets `user`;
+  - the ready marker is `/tmp/application-ready`.
+- Pins (`processes-off.json`): `frozen-v2`, `v2-module-design` and `stub-stack` each changed
+  `Dockerfile` and `.jeeves/manifest.json`. Nothing else changed.
+- Docs: `jeeves-generator/README.md`, one passage where exports' install and build are described:
+  who the images run as, that `/app` is root-owned, where a process writes, and the 0644 secrets.
+
+**Checks.** All on the final tree.
+- Before any change, at `954e8c4`: `pnpm check` exit 0, 115 files / 917 tests.
+- `pnpm check`, first run: exit 1. One unrelated test failed: `board.test.tsx` › "connects by
+  dragging from a tile, refuses with the reason, and still selects by click" (no `.board-tab` on
+  the selected tile). Run alone it passed, and the next full `pnpm check` exit 0: 115 files /
+  918 tests. Biome shows only the older 1 info. `packages/board` imports no Jeeves code.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- New tests: 1. It fails on HEAD's Dockerfile (a scratch repository copy, since deleted), at the
+  `app` stage's last lines.
+- Docker phase, after the offline checks:
+  - `pnpm test:generated --suite=all`: 8 files, 13 of 14 tests passed (B01–B09, including both
+    media suites, whose FFmpeg job files go under `/tmp`). B10 failed at fresh-A's first expiry:
+    `expiry outside independent bounds: {"elapsedMs":1946,"monotonicMs":1947,…}`, before its
+    update and restart steps ran.
+  - Diagnosis: the host clock. Between the last two recorded observations, `at` advanced 4.107 s
+    while `elapsedMs` advanced 0.522 s. So the wall clock stepped about +3.58 s inside the last
+    Valkey read, after `elapsed()` was taken, and the key, about 1.8 s from expiry, expired at once.
+    That is GS09's documented step on this WSL2 host. A clock probe (wall against monotonic) run
+    during the rerun saw +3582 to +3584 ms steps every 32.2 s.
+  - `pnpm test:generated --suite=regeneration`, run once more, alone, to cover B10's update and
+    restart: 1 file / 1 test passed (140 s). That is the only rerun.
+  - No container log in the `all` run has a file-permission error. The only "permission denied"
+    lines are B04's intended reader-login refusals.
+  - The Docker inventory (containers, images, networks, volumes) is the same before and after.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - In both exports the changed paths are exactly `Dockerfile`, `.jeeves/manifest.json` and
+    `.jeeves/report.json` (the report differs only in the registry's source hashes and sizes;
+    new registry `34d9aadd…30d0`).
+  - In each `after-*`, the offline frozen install and `pnpm build` both exit 0.
+- Docker proof, on `after-probe` with the five probe files at their `generated-extension` paths
+  (`front-internal-grant.sql` has no fixture body and stays generated); project `qg05-probe`,
+  ports 47971–47973:
+  - `pnpm first-run` exit 0 (75 s), 7 services healthy; the setup containers ran from the same
+    image (`Config.User` `node`).
+  - `docker compose --profile '*' exec app-front id -u` prints 1000, and so does `app-tally`.
+    `GET /api/front/modules/front-probe/env` answers `"uid":1000`.
+  - In `app-front`, `/app`, `dist`, `scripts` and `node_modules` are `root:root 755`, and
+    `touch /app/…` is refused. `docker diff` of both app containers shows only
+    `/tmp/application-ready`, beside what Docker mounts (`/run/secrets/*`, `docker-init`). Each
+    secret is mode 644 and readable.
+  - `pnpm stop` exit 0 (4 s); both processes exited 0.
+  - Removed: `docker compose --profile '*' down --volumes --remove-orphans`, then
+    `docker image rm qg05-probe-app:latest`. The probe builds no media image. The scratch exports
+    are deleted.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- The test lives in `local.test.ts` (the plan allows it or `composition.test.ts`). Beyond `USER
+  node` in both stages, it checks the unit's invariants that the emitted files can show.
+- B10 needed one rerun, as recorded above, because of the host clock, not the change.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03).
+- It also answers production foundations review follow-up 11 (containers run as root);
+  `docs/plans/production-foundations/review.md` is a record and is unchanged.
+- In the probe the secrets show as owned by `node` only because the host user is also uid 1000.
+  They are mode 644, so a host user with another uid gives the same access.
+- The `board.test.tsx` failure above is the first one recorded for that test; it may be timing.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG17. QRWTY's images (R03, Q04) can be rehearsed locally as non-root; a
+stub that writes files must use `/tmp` (`os.tmpdir()`), since `/app` is read-only to `node`.

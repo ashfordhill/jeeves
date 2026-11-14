@@ -8,6 +8,7 @@ COPY src ./src
 RUN pnpm build
 COPY scripts ./scripts
 COPY infra ./infra
+USER node
 CMD ["node", "scripts/status.mjs"]
 
 FROM node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS ffmpeg
@@ -27,5 +28,6 @@ RUN rm /etc/apt/sources.list.d/debian.sources && printf 'deb [check-valid-until=
 FROM ffmpeg AS media
 WORKDIR /app
 COPY --from=app /app /app
+USER node
 CMD ["node", "dist/services/media.js"]
 

@@ -216,4 +216,46 @@ describe("standalone local foundation", () => {
       expect(readme.indexOf(own)).toBeGreaterThan(readme.indexOf("Run `pnpm first-run` once"));
     }
   });
+
+  it("runs the app and media images as the base image's non-root node user", () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    for (const bundle of [emit(), processes]) {
+      const dockerfile = text(bundle, "Dockerfile");
+      const stages = Object.fromEntries(
+        dockerfile
+          .split(/^(?=FROM )/m)
+          .map((stage) => [stage.match(/ AS (\w+)\n/)?.[1], stage.trimEnd().split("\n")]),
+      );
+      expect(Object.keys(stages)).toEqual(["app", "ffmpeg", "media"]);
+      // Every build step runs as root first; only the run-time user changes.
+      expect(stages.app.slice(-3)).toEqual([
+        "COPY infra ./infra",
+        "USER node",
+        'CMD ["node", "scripts/status.mjs"]',
+      ]);
+      expect(stages.media.slice(-3)).toEqual([
+        "COPY --from=app /app /app",
+        "USER node",
+        'CMD ["node", "dist/services/media.js"]',
+      ]);
+      expect(dockerfile.match(/^USER /gm)).toHaveLength(2);
+      // /app stays root-owned and readable: nothing changes its owner or mode.
+      expect(dockerfile).not.toMatch(/--chown|--chmod|\bchown\b|\bchmod\b/);
+      // Compose never overrides the image's user for a built service.
+      const compose = JSON.parse(text(bundle, "compose.yaml"));
+      for (const service of Object.values<{ build?: unknown; user?: unknown }>(compose.services))
+        if (service.build) expect(service.user).toBeUndefined();
+    }
+    // At run time a process writes only its ready marker, under /tmp.
+    expect(text(processes, "src/runtime/process.ts")).toContain(
+      'const marker = "/tmp/application-ready";',
+    );
+  });
 });
