@@ -856,18 +856,18 @@ and the user's line to it have no design ID, so selecting one sends nothing. Cha
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
 SVG). Chat and the inspector collapse and resize independently.
 
-**The model picker.** The composer's left button shows the design chat's model, its provider and a
-dot (green when that provider is connected, red when not); a click opens one section per provider
-(OpenAI's API, Codex's own login, Anthropic's API, the custom endpoint), headed by its name and
-status. Each model shows, where they are known, its context size (`128k`, `1M`) and its prices per
-million tokens (input / output); the selected one is yellow. A provider that isn't connected shows one
-greyed row, **Connect it in Settings**. A click on a model saves it as the design model
-(`PUT /settings/roles`, in `~/.jeeves/config.json`), and the next message uses it. OpenAI and
-Anthropic list [models.dev](https://models.dev)'s models of theirs that take tools, newest first, at
-most 12, then their suggested models and the selected one. Codex lists the models in its own
-`models_cache.json` (`$CODEX_HOME`, else `~/.codex`) that Codex shows, else its suggested ones. The
-custom endpoint lists the models of the models.dev provider whose base URL is its own; for any
-other host the section takes a typed model name and **Use**. The server reads
+**The model picker.** The composer's left button shows the design chat's model and a dot (green
+when its provider is connected, red when not); its tooltip names the model and the provider. A
+click opens one section per provider (OpenAI's API, Codex's own login, Anthropic's API, the custom
+endpoint), headed by its name and status. Each model shows, where they are known, its context size
+(`128k`, `1M`) and its prices per million tokens (input / output); the selected one is yellow. A
+provider that isn't connected shows one greyed row, **Connect it in Settings**. A click on a model
+saves it as the design model (`PUT /settings/roles`, in `~/.jeeves/config.json`), and the next
+message uses it. OpenAI and Anthropic list [models.dev](https://models.dev)'s models of theirs that
+take tools, newest first, at most 12, then their suggested models and the selected one. Codex lists
+the models in its own `models_cache.json` (`$CODEX_HOME`, else `~/.codex`) that Codex shows, else
+its suggested ones. The custom endpoint lists the models of the models.dev provider whose base URL
+is its own; for any other host the section takes a typed model name and **Use**. The server reads
 `https://models.dev/api.json` at most once a day (5-second timeout) and keeps what it needs (each
 model's ID, name, context size, prices, tool use and release date) in `~/.jeeves/models-dev.json`;
 offline it uses that file; with none, OpenAI and Anthropic list only their suggested models and the

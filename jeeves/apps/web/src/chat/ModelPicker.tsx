@@ -1,12 +1,12 @@
 /**
  * The chat composer's model button and its menu, as the preview's chat mock draws them. The button
- * shows a dot (green when the design model's provider is connected, red when not), the model's
- * name and its provider. The menu has one section per provider, headed by its name and status,
- * then each model with its context size and its prices per million tokens (input / output) where
- * models.dev knows them; the selected one is on yellow. A provider that isn't connected has one
- * disabled row, "Connect it in Settings"; the custom endpoint, when models.dev doesn't know its
- * host, takes a typed model name. A pick saves through `PUT /settings/roles` and applies to the
- * next message.
+ * shows a dot (green when the design model's provider is connected, red when not) and the model's
+ * name; its tooltip and accessible name add the provider. The menu has one section per provider,
+ * headed by its name and status, then each model with its context size and its prices per million
+ * tokens (input / output) where models.dev knows them; the selected one is on yellow. A provider
+ * that isn't connected has one disabled row, "Connect it in Settings"; the custom endpoint, when
+ * models.dev doesn't know its host, takes a typed model name. A pick saves through
+ * `PUT /settings/roles` and applies to the next message.
  */
 import { Menu, TextInput } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
@@ -193,7 +193,6 @@ export function ModelPicker() {
             aria-hidden="true"
           />
           <span className="chat-model-name">{name}</span>
-          {provider ? <span className="chat-model-provider">· {provider.name}</span> : null}
           <IconChevronDown className="chat-model-chevron" size={14} stroke={2.4} aria-hidden />
         </button>
       </Menu.Target>

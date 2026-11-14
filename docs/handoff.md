@@ -13610,3 +13610,36 @@ cut sooner in ~189px cards; their tooltips keep the whole line. Owner dirty path
 unstaged.
 **For the next unit.** UF04 of [UI follow-ups](plans/ui-followups/units.md). UF02 is done; UF03
 was committed before it.
+
+## 2026-11-13 — UF04: The model button shows the model's name
+
+**What changed.**
+- `ModelPicker.tsx`: the button's `chat-model-provider` span is gone, so it shows the dot, the
+  name and the chevron. Its `aria-label` (`Design model: <name>, <provider>`) and `title`
+  (`<name> · <provider>`) are unchanged; the menu is unchanged. The file's comment says so.
+- `design-view.css`: the `.chat-model-provider` rule is gone; `.chat-model-name` keeps its
+  ellipsis. The two comments that named the provider in the button now don't.
+- `docs/studio.md`: the model picker's first sentence (the button shows the model and the dot; its
+  tooltip names the model and the provider), and the rest of that paragraph rewrapped.
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests. After: `pnpm check`
+exit 0, 115 / 910 (Biome's 2 warnings and 1 info as before, UF02's in `canvas.css` and an older
+one); `pnpm test:e2e` 74 passed (4.7 min); `pnpm --filter @jeeves/web build` exit 0. Mouse
+(`uf04-check.spec.ts`, run on its own after the e2e run, then deleted): 2 passed, 1440×900 and
+1280×800, no page error, light and dark. On the TinyURL extended study the button's children are
+exactly the dot (8px), the name (`gpt-5.4-mini`, 78px, not cut) and the chevron, left to right, in
+a 132×30px button; its text is the name only. Hovered, its `title` is "gpt-5.4-mini · OpenAI API"
+and its accessible name "Design model: gpt-5.4-mini, OpenAI API". The open menu (330×259px) has the
+four provider groups in the server's order, each headed "<name> · <status>". The e2e server has
+no key, so the dot is red (`rgb(178, 58, 48)` / `rgb(238, 123, 111)`). The spec changed no server
+state. Six screenshots in `plans/ui-followups/evidence/uf04/` (the composer at 1440×900, the open
+menu at both sizes, each light and dark); they match `preview/chat-light.png` but for the button's
+"· Codex", which F5 removes. `jeeves_e2e` holds only "E2E Every kind" and "TinyURL · studio study".
+**Differences from the plan.**
+- No test read the provider inside the button: `blueprint-chat.spec.ts` already reads the
+  accessible name, so no test changed.
+- The comments in `ModelPicker.tsx` and `design-view.css` that described the provider in the
+  button were rewritten (Rule 8's spirit; not named).
+**Noticed.** The tooltip is the browser's native `title`, so screenshots don't show it; the check
+reads the attribute while hovered. Owner dirty paths untouched and unstaged.
+**For the next unit.** UF05 of [UI follow-ups](plans/ui-followups/units.md).

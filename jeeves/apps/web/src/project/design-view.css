@@ -309,8 +309,8 @@
   flex: none;
 }
 
-/* The preview's `.btn.model`: a dot, the model's name and, quieter, its provider. It gives up
-   width before Attach and Send do. */
+/* The preview's `.btn.model`: a dot and the model's name (the provider is in its tooltip). It
+   gives up width before Attach and Send do. */
 .chat-model-button {
   display: inline-flex;
   flex: 0 1 auto;
@@ -340,21 +340,11 @@
   outline-offset: 2px;
 }
 
-/* The provider gives up its width before the model's name does. */
+/* A long name ends in an ellipsis. */
 .chat-model-name {
   flex: 0 1 auto;
   min-width: 3ch;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chat-model-provider {
-  flex: 1 1 0;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--ink-soft);
-  font-size: 12px;
-  font-weight: 700;
   text-overflow: ellipsis;
 }
 
