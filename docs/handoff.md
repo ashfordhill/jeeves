@@ -13968,3 +13968,12 @@ it. The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files an
 modes) were not touched or staged.
 **For the next unit.** Once `pnpm check` exits 0 on the tree, QG01 can be assigned again from its
 start.
+
+## 2026-11-14 — Plan fix: Biome skips the QRWTY gap fixtures
+
+The coordinator's fixture commit `38c33ef` added three files that Biome's format check rejects,
+so `pnpm check` failed and QG01 stopped before changing anything (`0bc334b`). `tooling/biome.config.json`
+now excludes `docs/plans/qrwty-gaps/fixtures` (as it excludes field-project inputs), so the fixtures stay
+byte-identical to QRWTY's (`probe-design.json` still `a3b6204f…0505`).
+**Checks.** `pnpm lint`: 0 errors, the older 1 info.
+**For the next unit.** QG01 again, from the start.
