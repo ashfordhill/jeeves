@@ -13363,3 +13363,54 @@ unlike a `retryDelay` wait, which republishes for the next attempt. `field-proje
 still has the old runtime files (not in this plan). Owner dirty paths untouched and unstaged.
 **For the next unit.** SO02: B09's database row can assert the action `store unreachable, retry
 in 5000 ms (attempt not counted)` in the worker's log, no exit, and nothing in `.failed`.
+
+## 2026-11-13 — SO02: The faults suite proves it with a worker that stays up
+
+**What changed.**
+- `faults.system.test.ts`: B09's database row renamed `B09 database: while PostgreSQL is away no
+  worker exits and no accepted event reaches .failed; after restore, accepted work completes once
+  without a restart`. Setup, earlier/during events, the 503-within-1.5 s reads and the final
+  exactly-once assertions kept; the documented `pnpm start` removed (no process restarted).
+  New, each a monotonic `poll` with a deadline: idle case (the Counter's pool holds only idle
+  backends in `pg_stat_activity`, the same client ports `ESTABLISHED` in its own socket table;
+  after the stop PostgreSQL's log ends each pid, then the Counter has closed its side of each or
+  exited; it must be running); during, `loop-error` lines and `.failed` read until two
+  `attempt not counted` lines are first seen ≥ 5 s apart, `.failed` empty, each line attempt 1;
+  `assertNoProcessExited` against `before` at five points from the idle case to the last event;
+  `.failed` empty after restore and at the end; a new event commits.
+- `harness/faults.ts`: `connectionsTo(app, service, port)` reads a running container's
+  `/proc/net/tcp{,6}` (observation only).
+- `field-projects/generator-system/README.md`: the database row, "broker and database rows
+  restart no process", and the idle outage removed from Untested.
+- New [evidence](plans/generated-system-tests/evidence/so02/README.md): `faults/`, `core/`,
+  `old-templates/`, `checks.json`.
+
+**Checks.** Docker phase first, source SHA-256 `edacdd22…` for both: `--suite=faults` 5/5
+(Vitest 478.7 s, CLI 482.5 s monotonic, 8:56.6 wall), `--suite=core` 4/4 (292.3 s, 294.8 s,
+5:27.4). Row times: stop to first failure line 1,847 ms (138 ms after the `during` submissions),
+outage 9,428 ms, start to all six counted 5,535 ms. Against `7bef25f`'s templates: 4/5, the
+database row failed at the idle case (`app-counter exited`; pg-pool's unhandled `57P01` 2.5 ms
+after PostgreSQL's FATAL lines). Then `pnpm check` 115 files / 910 tests; `pnpm test:e2e` 74
+passed (4.7 min); web build passed. Every stack released and runtime removed; Docker containers,
+volumes, networks and image tags equal the pre-unit inventory.
+**Differences from the plan.**
+- "Those four template files": SO01 changed three templates (the fourth pinned path is the
+  manifest). The old-template run replaced those three in the checkout with `7bef25f`'s (the
+  template tree then equalled it; no generated output edited), ran the whole `faults` suite
+  through the real CLI (it selects suites, not tests), then put SO01's back, checked by SHA-256
+  against a scratchpad copy (deleted). Nothing committed with them.
+- The plan leaves the outage length open: PostgreSQL stays away until two waiting lines are first
+  seen one 5 s wait apart, so each delivery has gone back and failed again.
+- "That point" in the idle case is observed (PostgreSQL's per-pid FATAL lines, the Counter's
+  sockets), not timed.
+- One development run of the row alone through a scratchpad copy of `run.ts` with Vitest `-t`
+  (passed, 67.9 s, stack released; copy deleted); after it, the check that the idle ports are open
+  in the Counter's socket table was added, so a blank socket read can't pass.
+**Noticed.** The row depends on PostgreSQL's default `log_line_prefix` (`%m [%p] `) naming each
+backend; a change fails it, never passes it. The faults suite took 478.7 s against GS07's 420.4 s;
+the database row itself is unchanged (64.2 s vs 63.0 s). Older records still describe the old
+row: the GS07 evidence README, GS09's review and the GS plan's B09 row (left as records). Owner
+dirty paths untouched and unstaged.
+**For the next unit.** SO03 reviews SO01–SO02. Evidence in
+`plans/generated-system-tests/evidence/so02/`; `docs/template-gaps.md` already marks both rows
+fixed in SO01.

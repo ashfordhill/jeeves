@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "id": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c",
+  "suite": "faults",
+  "temporary": "/tmp/jeeves-system-3dBHRC",
+  "stacks": [
+    {
+      "project": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c-1",
+      "fixture": "regeneration",
+      "application": "/tmp/jeeves-system-3dBHRC/1-regeneration",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/old-faults/1-regeneration",
+      "ports": [37443, 43481, 41293]
+    },
+    {
+      "project": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c-2",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-3dBHRC/2-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/old-faults/2-activity",
+      "ports": [46675, 34515, 42789]
+    },
+    {
+      "project": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c-3",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-3dBHRC/3-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/old-faults/3-activity",
+      "ports": [44305, 37731, 40411]
+    },
+    {
+      "project": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c-4",
+      "fixture": "activity",
+      "application": "/tmp/jeeves-system-3dBHRC/4-activity",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/old-faults/4-activity",
+      "ports": [41215, 40831, 38553]
+    },
+    {
+      "project": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c-5",
+      "fixture": "media",
+      "application": "/tmp/jeeves-system-3dBHRC/5-media",
+      "artifacts": "/tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/old-faults/5-media",
+      "ports": [43801, 38625, 43447]
+    }
+  ]
+}

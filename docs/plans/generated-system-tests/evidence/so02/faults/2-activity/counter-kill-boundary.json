@@ -1,0 +1,36 @@
+{
+  "blocked": {
+    "pid": 94,
+    "client": "172.24.0.6",
+    "xact_start": "2026-11-14 00:28:14.786947+00",
+    "query_start": "2026-11-14 00:28:14.787666+00",
+    "state": "active",
+    "wait_event_type": "Lock",
+    "wait_event": "transactionid",
+    "waited_ms": 5
+  },
+  "delivery": {
+    "queue": "events--counter",
+    "messageCount": 0,
+    "unacknowledged": 1,
+    "consumerCount": 1
+  },
+  "killed": {
+    "fault": "app-counter kill",
+    "container": "ced898413b58fb00d27db3ecb8e4e32921df7138fd3556e953aeaa22d5dd01a0",
+    "at": "2026-11-14T00:28:15.446Z",
+    "monotonicAt": 108782.318482,
+    "elapsedMs": 453,
+    "result": "ced898413b58fb00d27db3ecb8e4e32921df7138fd3556e953aeaa22d5dd01a0"
+  },
+  "still": {
+    "pid": 94,
+    "client": "172.24.0.6",
+    "xact_start": "2026-11-14 00:28:14.786947+00",
+    "query_start": "2026-11-14 00:28:14.787666+00",
+    "state": "active",
+    "wait_event_type": "Lock",
+    "wait_event": "transactionid",
+    "waited_ms": 1113
+  }
+}

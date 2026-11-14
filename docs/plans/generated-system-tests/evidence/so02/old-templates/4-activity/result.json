@@ -1,0 +1,6 @@
+{
+  "fixture": "activity",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: PostgreSQL ended the Counter's idle connections: app-counter exited\n+ actual - expected\n\n+ 'exited'\n- 'running'\n"
+}

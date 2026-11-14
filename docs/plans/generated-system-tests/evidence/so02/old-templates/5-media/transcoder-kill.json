@@ -1,0 +1,47 @@
+{
+  "caught": {
+    "state": "processing",
+    "ffmpeg": [
+      "root                955368              952624              99                  18:48               ?                   00:00:00            ffmpeg -hide_banner -nostdin -y -protocol_whitelist file,crypto,data -i /tmp/media-job-0ezOxj/source.mp4 -map 0:v:0 -map 0:a:0 -vf scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,setsar=1 -c:v libx264 -preset veryfast -threads 2 -pix_fmt yuv420p -b:v 1000k -maxrate 1000k -bufsize 2000k -force_key_frames expr:gte(t,n_forced*4) -sc_threshold 0 -flags +cgop -c:a aac -b:a 128k -ac 2 -ar 48000 -f hls -hls_time 4 -hls_playlist_type vod -hls_flags independent_segments -hls_segment_filename /tmp/media-job-0ezOxj/output/360/segment%05d.ts /tmp/media-job-0ezOxj/output/360/index.m3u8"
+    ],
+    "details": 404
+  },
+  "killed": {
+    "fault": "app-transcoder kill",
+    "container": "73011e3a359f6d327eaa41141241ef9daf10338806925d3d00f471e9800b67a1",
+    "at": "2026-11-14T00:48:32.503Z",
+    "monotonicAt": 110980.514493,
+    "elapsedMs": 776,
+    "result": "73011e3a359f6d327eaa41141241ef9daf10338806925d3d00f471e9800b67a1"
+  },
+  "recovered": {
+    "asset_id": "2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3",
+    "state": "ready",
+    "failure_code": null,
+    "started_at": "2026-11-14T00:48:32.083504+00:00",
+    "ready_at": "2026-11-14T00:48:40.45+00:00",
+    "result": {
+      "marker": "videos/2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3/18537982-4586-4d49-90fb-31ffa8a5e746/5cde50ab-ea4a-47f1-8719-212d2563da8b/_complete.json",
+      "prefix": "videos/2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3/18537982-4586-4d49-90fb-31ffa8a5e746/5cde50ab-ea4a-47f1-8719-212d2563da8b/",
+      "manifest": "videos/2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3/18537982-4586-4d49-90fb-31ffa8a5e746/5cde50ab-ea4a-47f1-8719-212d2563da8b/master.m3u8",
+      "thumbnail": "videos/2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3/18537982-4586-4d49-90fb-31ffa8a5e746/5cde50ab-ea4a-47f1-8719-212d2563da8b/thumbnail.jpg",
+      "renditions": [
+        {
+          "width": 640,
+          "height": 360,
+          "playlist": "videos/2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3/18537982-4586-4d49-90fb-31ffa8a5e746/5cde50ab-ea4a-47f1-8719-212d2563da8b/360/index.m3u8",
+          "audioCodec": "aac",
+          "videoCodec": "h264"
+        },
+        {
+          "width": 1280,
+          "height": 720,
+          "playlist": "videos/2b6f79cb-7f5b-4db6-963d-5eb9ee521ce3/18537982-4586-4d49-90fb-31ffa8a5e746/5cde50ab-ea4a-47f1-8719-212d2563da8b/720/index.m3u8",
+          "audioCodec": "aac",
+          "videoCodec": "h264"
+        }
+      ],
+      "durationSeconds": 40
+    }
+  }
+}

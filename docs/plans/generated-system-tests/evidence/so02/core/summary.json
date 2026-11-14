@@ -1,0 +1,7 @@
+{
+  "id": "gs-f3dd18d5-dc2f-42c3-82b4-413c3b3df2e2",
+  "selected": ["core"],
+  "outcome": "passed",
+  "elapsedMs": 294842,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/final-core/run.json"
+}

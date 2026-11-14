@@ -1,0 +1,20 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/catalog/modules/catalog-writer.sql",
+      "ownership": "generated-extension",
+      "sha256": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56"
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-read.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "d547a6591a5ec3fb453615062b91108a21cd1dbc5b8dd90651cb71ec20262ffe"
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-writer.ts",
+      "ownership": "generated-extension",
+      "sha256": "130c1d08ba9acbefe581559949a889b1afe684b227b4acefaf187a03429bcadd"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

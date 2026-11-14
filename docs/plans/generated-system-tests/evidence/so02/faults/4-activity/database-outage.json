@@ -1,0 +1,330 @@
+{
+  "before": [
+    {
+      "service": "app-activity-api",
+      "id": "dfa36e4c94b485a1b055a3e1598fef3b1b51ffb176974c4997b1a63d57bdff54",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.738314906Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.6"]
+    },
+    {
+      "service": "app-counter",
+      "id": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.392558728Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.5"]
+    },
+    {
+      "service": "app-edge",
+      "id": "98e889850e306417727ed28bfa787c3ca6cffd5fdbc8703ba5334c8b27a62219",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:31:05.609393708Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.7"]
+    },
+    {
+      "service": "app-totals-api",
+      "id": "18a4beb0c7a4a93eb4cf50f0dea00f2d4cd22b9073bcfe2ed849e3eb4f72a5e3",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.063452879Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.4"]
+    }
+  ],
+  "idle": [
+    {
+      "pid": 93,
+      "client": "172.24.0.5",
+      "port": 35520,
+      "state": "idle"
+    },
+    {
+      "pid": 94,
+      "client": "172.24.0.5",
+      "port": 35534,
+      "state": "idle"
+    },
+    {
+      "pid": 95,
+      "client": "172.24.0.5",
+      "port": 35544,
+      "state": "idle"
+    }
+  ],
+  "held": [
+    {
+      "localPort": 35534,
+      "remotePort": 5432,
+      "state": "ESTABLISHED",
+      "open": true
+    },
+    {
+      "localPort": 35520,
+      "remotePort": 5432,
+      "state": "ESTABLISHED",
+      "open": true
+    },
+    {
+      "localPort": 35544,
+      "remotePort": 5432,
+      "state": "ESTABLISHED",
+      "open": true
+    },
+    {
+      "localPort": 56892,
+      "remotePort": 5432,
+      "state": "TIME_WAIT",
+      "open": false
+    }
+  ],
+  "stopped": {
+    "fault": "local-postgres stop",
+    "container": "b8cfeb0cc0f04ad2973a8b41843ccf3e54b1acf9104bc26f6395f6a3bd2e60ad",
+    "at": "2026-11-14T00:31:16.132Z",
+    "monotonicAt": 271549.650598,
+    "elapsedMs": 591,
+    "result": "Flag --time has been deprecated, use --timeout instead\nb8cfeb0cc0f04ad2973a8b41843ccf3e54b1acf9104bc26f6395f6a3bd2e60ad"
+  },
+  "terminated": [
+    "2026-11-14T00:31:16.204970929Z 2026-11-14 00:31:16.204 UTC [95] FATAL:  terminating connection due to administrator command",
+    "2026-11-14T00:31:16.204996024Z 2026-11-14 00:31:16.204 UTC [94] FATAL:  terminating connection due to administrator command",
+    "2026-11-14T00:31:16.205001263Z 2026-11-14 00:31:16.204 UTC [93] FATAL:  terminating connection due to administrator command"
+  ],
+  "settled": {
+    "counter": {
+      "service": "app-counter",
+      "id": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.392558728Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.5"]
+    },
+    "sockets": [
+      {
+        "localPort": 35534,
+        "remotePort": 5432,
+        "state": "TIME_WAIT",
+        "open": false
+      },
+      {
+        "localPort": 35520,
+        "remotePort": 5432,
+        "state": "TIME_WAIT",
+        "open": false
+      },
+      {
+        "localPort": 35544,
+        "remotePort": 5432,
+        "state": "TIME_WAIT",
+        "open": false
+      },
+      {
+        "localPort": 56892,
+        "remotePort": 5432,
+        "state": "TIME_WAIT",
+        "open": false
+      }
+    ],
+    "sinceStopMs": 949
+  },
+  "counterOutputAtIdle": {
+    "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec": ""
+  },
+  "reads": [
+    {
+      "status": 503,
+      "body": {
+        "error": "UNAVAILABLE",
+        "message": "Service unavailable."
+      },
+      "elapsedMs": 9
+    },
+    {
+      "status": 503,
+      "body": {
+        "error": "UNAVAILABLE",
+        "message": "Service unavailable."
+      },
+      "elapsedMs": 6
+    },
+    {
+      "status": 503,
+      "body": {
+        "error": "UNAVAILABLE",
+        "message": "Service unavailable."
+      },
+      "elapsedMs": 10
+    }
+  ],
+  "waiting": {
+    "failures": [
+      {
+        "service": "app-counter",
+        "container": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+        "at": "2026-11-14T00:31:17.853213907Z",
+        "entry": {
+          "level": "error",
+          "event": "loop-error",
+          "tile": "counter",
+          "module": "increment",
+          "queue": "events--counter",
+          "messageId": "database:during:0",
+          "attempt": 1,
+          "error": "Error: getaddrinfo ENOTFOUND local-postgres",
+          "action": "store unreachable, retry in 5000 ms (attempt not counted)"
+        },
+        "seenMs": 1847
+      },
+      {
+        "service": "app-counter",
+        "container": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+        "at": "2026-11-14T00:31:22.868316236Z",
+        "entry": {
+          "level": "error",
+          "event": "loop-error",
+          "tile": "counter",
+          "module": "increment",
+          "queue": "events--counter",
+          "messageId": "database:during:0",
+          "attempt": 1,
+          "error": "Error: getaddrinfo ENOTFOUND local-postgres",
+          "action": "store unreachable, retry in 5000 ms (attempt not counted)",
+          "suppressed": 2
+        },
+        "seenMs": 7968
+      }
+    ],
+    "notCounted": [
+      {
+        "service": "app-counter",
+        "container": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+        "at": "2026-11-14T00:31:17.853213907Z",
+        "entry": {
+          "level": "error",
+          "event": "loop-error",
+          "tile": "counter",
+          "module": "increment",
+          "queue": "events--counter",
+          "messageId": "database:during:0",
+          "attempt": 1,
+          "error": "Error: getaddrinfo ENOTFOUND local-postgres",
+          "action": "store unreachable, retry in 5000 ms (attempt not counted)"
+        },
+        "seenMs": 1847
+      },
+      {
+        "service": "app-counter",
+        "container": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+        "at": "2026-11-14T00:31:22.868316236Z",
+        "entry": {
+          "level": "error",
+          "event": "loop-error",
+          "tile": "counter",
+          "module": "increment",
+          "queue": "events--counter",
+          "messageId": "database:during:0",
+          "attempt": 1,
+          "error": "Error: getaddrinfo ENOTFOUND local-postgres",
+          "action": "store unreachable, retry in 5000 ms (attempt not counted)",
+          "suppressed": 2
+        },
+        "seenMs": 7968
+      }
+    ],
+    "failed": {
+      "queue": "events--counter.failed",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 0
+    },
+    "queue": {
+      "queue": "events--counter",
+      "messageCount": 0,
+      "unacknowledged": 3,
+      "consumerCount": 1
+    }
+  },
+  "restored": {
+    "fault": "local-postgres start",
+    "container": "b8cfeb0cc0f04ad2973a8b41843ccf3e54b1acf9104bc26f6395f6a3bd2e60ad",
+    "at": "2026-11-14T00:31:25.560Z",
+    "monotonicAt": 280977.841964,
+    "elapsedMs": 351,
+    "result": "b8cfeb0cc0f04ad2973a8b41843ccf3e54b1acf9104bc26f6395f6a3bd2e60ad"
+  },
+  "failedAfterRestore": {
+    "queue": "events--counter.failed",
+    "messageCount": 0,
+    "unacknowledged": 0,
+    "consumerCount": 0
+  },
+  "failedAtEnd": {
+    "queue": "events--counter.failed",
+    "messageCount": 0,
+    "unacknowledged": 0,
+    "consumerCount": 0
+  },
+  "after": [
+    {
+      "service": "app-activity-api",
+      "id": "dfa36e4c94b485a1b055a3e1598fef3b1b51ffb176974c4997b1a63d57bdff54",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.738314906Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.6"]
+    },
+    {
+      "service": "app-counter",
+      "id": "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.392558728Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.5"]
+    },
+    {
+      "service": "app-edge",
+      "id": "98e889850e306417727ed28bfa787c3ca6cffd5fdbc8703ba5334c8b27a62219",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:31:05.609393708Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.7"]
+    },
+    {
+      "service": "app-totals-api",
+      "id": "18a4beb0c7a4a93eb4cf50f0dea00f2d4cd22b9073bcfe2ed849e3eb4f72a5e3",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "startedAt": "2026-11-14T00:30:59.063452879Z",
+      "exitCode": 0,
+      "addresses": ["172.24.0.4"]
+    }
+  ],
+  "times": {
+    "stopToFirstFailureLineMs": 1847,
+    "submittedToFirstFailureLineMs": 138,
+    "outageMs": 9428,
+    "startToAllCountedMs": 5535
+  },
+  "counterOutput": {
+    "655b1a635c87e361701fbe5f909ab302d72f55d8a1343be70300be189b0102ec": "2026-11-14T00:31:17.853213907Z {\"level\":\"error\",\"event\":\"loop-error\",\"tile\":\"counter\",\"module\":\"increment\",\"queue\":\"events--counter\",\"messageId\":\"database:during:0\",\"attempt\":1,\"error\":\"Error: getaddrinfo ENOTFOUND local-postgres\",\"action\":\"store unreachable, retry in 5000 ms (attempt not counted)\"}\n2026-11-14T00:31:22.868316236Z {\"level\":\"error\",\"event\":\"loop-error\",\"tile\":\"counter\",\"module\":\"increment\",\"queue\":\"events--counter\",\"messageId\":\"database:during:0\",\"attempt\":1,\"error\":\"Error: getaddrinfo ENOTFOUND local-postgres\",\"action\":\"store unreachable, retry in 5000 ms (attempt not counted)\",\"suppressed\":2}\n"
+  }
+}

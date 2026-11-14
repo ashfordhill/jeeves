@@ -1,0 +1,20 @@
+{
+  "changedOwned": [
+    {
+      "path": "src/modules/activity-api/submit.ts",
+      "ownership": "generated-extension",
+      "sha256": "059d7f4fe43abe1077cdc3d7c2677f8a769f3b186e2aa3f4c442b6cc20d0aa57"
+    },
+    {
+      "path": "src/modules/counter/increment.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "c6ec8261a01ff52df8b04f487f7da48a1497a15f9ef1fdec72951cc621ffb5b9"
+    },
+    {
+      "path": "src/modules/totals-api/read-total.ts",
+      "ownership": "generated-extension",
+      "sha256": "8294fac869716b0d581a67eb49e67116d475249697f0fda733852e826aa0013b"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

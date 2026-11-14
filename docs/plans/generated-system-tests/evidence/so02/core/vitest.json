@@ -1,0 +1,93 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 2,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 4,
+  "numPassedTests": 4,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794616532714,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping",
+          "status": "passed",
+          "title": "B02: competing copies commit each repeated identity once and both public APIs survive either copy stopping",
+          "duration": 118073.29958600001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes",
+          "status": "passed",
+          "title": "B03: completed totals and confirmed queued events survive ordinary stop/start on the same runtime and volumes",
+          "duration": 79138.73136300001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables",
+          "status": "passed",
+          "title": "B04: malformed delivery is terminal, the next event succeeds and the real reader login cannot access private tables",
+          "duration": 48120.220750999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794616532848,
+      "endTime": 1794616799686.2207,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/core-delivery.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B01: edge publication commits exactly one counter increment and a matching receipt",
+          "status": "passed",
+          "title": "B01: edge publication commits exactly one counter increment and a matching receipt",
+          "duration": 46706.35853,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794616803356,
+      "endTime": 1794616850062.3586,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/core.system.test.ts"
+    }
+  ]
+}

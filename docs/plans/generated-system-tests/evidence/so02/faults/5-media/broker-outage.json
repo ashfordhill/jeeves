@@ -1,0 +1,278 @@
+{
+  "outage": {
+    "fault": "local-broker stop",
+    "container": "d3088c8b143a963edaa2d1517c01c212821a1182ec16aecf36be513d6e0598fd",
+    "at": "2026-11-14T00:34:26.048Z",
+    "monotonicAt": 148593.993916,
+    "elapsedMs": 780,
+    "result": "Flag --time has been deprecated, use --timeout instead\nd3088c8b143a963edaa2d1517c01c212821a1182ec16aecf36be513d6e0598fd"
+  },
+  "deferred": {
+    "event_id": "811d1f61-f23b-5e7a-8627-d446928942fb",
+    "sent": false,
+    "attempts": 1
+  },
+  "settled": {
+    "lines": [
+      {
+        "service": "app-transcoder",
+        "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+        "at": "2026-11-14T00:34:31.322214344Z",
+        "entry": {
+          "level": "error",
+          "event": "loop-error",
+          "tile": "transcoder",
+          "module": "transcoder-segmenter-and-encoder",
+          "queue": "upload-jobs",
+          "messageId": "dfbbf004-5e09-5efc-afec-ecbcc87ee0f1",
+          "attempt": 1,
+          "error": "Error: Broker unavailable",
+          "action": "retry 1 of 3"
+        }
+      }
+    ],
+    "ffmpeg": []
+  },
+  "restored": {
+    "fault": "local-broker start",
+    "container": "d3088c8b143a963edaa2d1517c01c212821a1182ec16aecf36be513d6e0598fd",
+    "at": "2026-11-14T00:34:31.893Z",
+    "monotonicAt": 154438.865898,
+    "elapsedMs": 368,
+    "result": "d3088c8b143a963edaa2d1517c01c212821a1182ec16aecf36be513d6e0598fd"
+  },
+  "signals": [
+    {
+      "service": "app-watch-api",
+      "what": "broker publish view-events",
+      "container": "cd22938154692abbb013da52f0b2aa1dc596c36689951f48155a0d0bf9d89177",
+      "failure": {
+        "service": "app-watch-api",
+        "container": "cd22938154692abbb013da52f0b2aa1dc596c36689951f48155a0d0bf9d89177",
+        "at": "2026-11-14T00:34:26.123633476Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "watch-api",
+          "what": "broker publish view-events",
+          "error": "Error: AMQP publisher unavailable"
+        }
+      },
+      "available": {
+        "service": "app-watch-api",
+        "container": "cd22938154692abbb013da52f0b2aa1dc596c36689951f48155a0d0bf9d89177",
+        "at": "2026-11-14T00:34:36.187743903Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "watch-api",
+          "what": "broker publish view-events",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-upload-api",
+      "what": "broker publish upload-jobs",
+      "container": "e767cab445a876de11977cca0a9e352ef1b20eb66fca00b22d950618cba0d31c",
+      "failure": {
+        "service": "app-upload-api",
+        "container": "e767cab445a876de11977cca0a9e352ef1b20eb66fca00b22d950618cba0d31c",
+        "at": "2026-11-14T00:34:26.124015259Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "upload-api",
+          "what": "broker publish upload-jobs",
+          "error": "Error: AMQP publisher unavailable"
+        }
+      },
+      "available": {
+        "service": "app-upload-api",
+        "container": "e767cab445a876de11977cca0a9e352ef1b20eb66fca00b22d950618cba0d31c",
+        "at": "2026-11-14T00:34:36.187714408Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "upload-api",
+          "what": "broker publish upload-jobs",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-video-lifecycle",
+      "what": "broker publish publication-events",
+      "container": "fd209dd0341d565d69b780cafb0bb75cb7de0f1b4885d9e04a684e5581e838da",
+      "failure": {
+        "service": "app-video-lifecycle",
+        "container": "fd209dd0341d565d69b780cafb0bb75cb7de0f1b4885d9e04a684e5581e838da",
+        "at": "2026-11-14T00:34:26.124062355Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "video-lifecycle",
+          "what": "broker publish publication-events",
+          "error": "Error: AMQP publisher unavailable"
+        }
+      },
+      "available": {
+        "service": "app-video-lifecycle",
+        "container": "fd209dd0341d565d69b780cafb0bb75cb7de0f1b4885d9e04a684e5581e838da",
+        "at": "2026-11-14T00:34:36.183496810Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "video-lifecycle",
+          "what": "broker publish publication-events",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-video-lifecycle",
+      "what": "broker consume processing-events--video-lifecycle",
+      "container": "fd209dd0341d565d69b780cafb0bb75cb7de0f1b4885d9e04a684e5581e838da",
+      "failure": {
+        "service": "app-video-lifecycle",
+        "container": "fd209dd0341d565d69b780cafb0bb75cb7de0f1b4885d9e04a684e5581e838da",
+        "at": "2026-11-14T00:34:26.124243292Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "video-lifecycle",
+          "what": "broker consume processing-events--video-lifecycle",
+          "error": "Error: AMQP consumer unavailable"
+        }
+      },
+      "available": {
+        "service": "app-video-lifecycle",
+        "container": "fd209dd0341d565d69b780cafb0bb75cb7de0f1b4885d9e04a684e5581e838da",
+        "at": "2026-11-14T00:34:36.184051522Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "video-lifecycle",
+          "what": "broker consume processing-events--video-lifecycle",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-transcoder",
+      "what": "broker publish processing-events",
+      "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+      "failure": {
+        "service": "app-transcoder",
+        "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+        "at": "2026-11-14T00:34:26.124076033Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "transcoder",
+          "what": "broker publish processing-events",
+          "error": "Error: AMQP publisher unavailable"
+        }
+      },
+      "available": {
+        "service": "app-transcoder",
+        "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+        "at": "2026-11-14T00:34:36.188352303Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "transcoder",
+          "what": "broker publish processing-events",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-transcoder",
+      "what": "broker consume upload-jobs",
+      "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+      "failure": {
+        "service": "app-transcoder",
+        "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+        "at": "2026-11-14T00:34:26.125220868Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "transcoder",
+          "what": "broker consume upload-jobs",
+          "error": "Error: AMQP consumer unavailable"
+        }
+      },
+      "available": {
+        "service": "app-transcoder",
+        "container": "088a7023ba2ef99079263488289fe962471721e06d2528933178e251f383c1e7",
+        "at": "2026-11-14T00:34:36.377383672Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "transcoder",
+          "what": "broker consume upload-jobs",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-search-indexer",
+      "what": "broker consume publication-events--search-indexer",
+      "container": "fe2ac10711e3ad2c393a4c6b9023c645a945f20f3b0f42b9b5b9344667c4eb57",
+      "failure": {
+        "service": "app-search-indexer",
+        "container": "fe2ac10711e3ad2c393a4c6b9023c645a945f20f3b0f42b9b5b9344667c4eb57",
+        "at": "2026-11-14T00:34:26.124054763Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "search-indexer",
+          "what": "broker consume publication-events--search-indexer",
+          "error": "Error: AMQP consumer unavailable"
+        }
+      },
+      "available": {
+        "service": "app-search-indexer",
+        "container": "fe2ac10711e3ad2c393a4c6b9023c645a945f20f3b0f42b9b5b9344667c4eb57",
+        "at": "2026-11-14T00:34:36.188387162Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "search-indexer",
+          "what": "broker consume publication-events--search-indexer",
+          "state": "available"
+        }
+      }
+    },
+    {
+      "service": "app-view-counter",
+      "what": "broker consume view-events--view-counter",
+      "container": "360c6461fb56c41cdd324b48e91c08980b2154e52ec86a1e91292a0cd9a831f4",
+      "failure": {
+        "service": "app-view-counter",
+        "container": "360c6461fb56c41cdd324b48e91c08980b2154e52ec86a1e91292a0cd9a831f4",
+        "at": "2026-11-14T00:34:26.123778849Z",
+        "entry": {
+          "level": "error",
+          "event": "failure",
+          "tile": "view-counter",
+          "what": "broker consume view-events--view-counter",
+          "error": "Error: AMQP consumer unavailable"
+        }
+      },
+      "available": {
+        "service": "app-view-counter",
+        "container": "360c6461fb56c41cdd324b48e91c08980b2154e52ec86a1e91292a0cd9a831f4",
+        "at": "2026-11-14T00:34:36.188377433Z",
+        "entry": {
+          "level": "info",
+          "event": "broker",
+          "tile": "view-counter",
+          "what": "broker consume view-events--view-counter",
+          "state": "available"
+        }
+      }
+    }
+  ]
+}

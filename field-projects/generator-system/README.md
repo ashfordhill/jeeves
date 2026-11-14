@@ -165,26 +165,26 @@ The faults suite reuses the Regeneration (catalog), Activity and Media fixtures 
 adds no fixture, owned file or provider. Faults are real process and network controls on
 containers discovered by exact project label (`docker stop`, `start`, `kill`, `pause`,
 `unpause`), a held PostgreSQL row lock, and one temporary trigger gate. Each fault's precondition
-is an assertion; an unobserved boundary fails the run. Broker rows restart no application process:
-each running process keeps its container, start time and zero restarts, and each broker client
-logs its `broker` failure line and then `"state":"available"`. Containers stopped before a fault
-as its precondition are judged separately. The precise interruptions run one copy of the
-targeted worker or relay, unlike B02's competing copies.
+is an assertion; an unobserved boundary fails the run. Broker and database rows restart no
+application process: each running process keeps its container, start time and zero restarts, and
+each broker client logs its `broker` failure line and then `"state":"available"`. Containers
+stopped before a fault as its precondition are judged separately. The precise interruptions run
+one copy of the targeted worker or relay, unlike B02's competing copies.
 
 | Behavior | Executable test | Observations |
 | --- | --- | --- |
 | B06 recovery | `faults.system.test.ts` | Catalog cache stopped for eight seconds of reads, then (separately) frozen with `docker pause`: every read answers 200 from PostgreSQL within 1.5 s and counts one authoritative load; the frozen cache's first read waits out its 150 ms deadline. The API logs `cache catalog-read` (lost) and `cache read catalog-read` (failed read), then `"event":"cache","state":"available"` once restored. A cleared key is refilled by one read (exact value, 2–4 s PTTL) and the next read is one INFO-measured hit with no load; the API is never restarted |
 | B09 counter | `faults.system.test.ts` | A harness transaction holds the total row; a submitted event's increment waits behind it (`pg_stat_activity` lock wait from the worker's address) while RabbitMQ shows the delivery unacknowledged. The worker is killed; the same backend, transaction and statement are still waiting after the kill. Releasing the row lets the dead backend end with nothing committed; the delivery returns to the queue; the restarted worker commits exactly one increment and receipt. Then, as duplicate-delivery proof (not a commit/ack crash), the committed envelope is replayed through the real exchange with the worker stopped, observed queued, and consumed: total and receipts unchanged, nothing in `.failed` |
 | B09 broker | `faults.system.test.ts` | Five confirmed events wait in the queue with the Counter stopped (precondition). The broker stops for at least 12 s: submissions answer 503 within 1.5 s and reads 200, at the start and after two failed reconnect attempts; no running process exits. After `docker start`, the queue still holds the five, the 503's identity is resubmitted and counts once, and all accepted identities commit exactly once. A second outage with the Counter running shows publisher and consumer failure/available lines and resubscription without restart |
-| B09 database | `faults.system.test.ts` | PostgreSQL stops right after committed work. Submissions are still accepted (broker only); reads answer 503 within 1.5 s; the Counter's failure is observed (its process exits, its raw output retained). After restore and the README's documented `pnpm start`, every accepted identity commits exactly once and a new request succeeds |
+| B09 database | `faults.system.test.ts` | PostgreSQL stops right after committed work, while the Counter's pool holds idle connections (seen in `pg_stat_activity` and open in the Counter's own socket table). PostgreSQL's log ends each of those backends, and the Counter closes its side and keeps running. Submissions are still accepted (broker only); reads answer 503 within 1.5 s. The Counter logs `store unreachable, retry in 5000 ms (attempt not counted)` with the first attempt, again at least one 5 s wait later, and `.failed` stays empty. After `docker start`, with no process restarted, every accepted identity commits exactly once, `.failed` is still empty and a new request succeeds |
 | B09 media | `faults-media.system.test.ts` | A 40-second synthetic video (pinned FFmpeg, under 30 MiB) keeps an encode observable. (1) The Transcoder is killed while `docker top` shows FFmpeg on the processing job; the job returns to its queue, the restarted worker re-encodes, details stay 404 until ready, delivery is FFprobe-valid and there is exactly one publication. (2) A trigger on the outbox, scoped to that video's `jobs` row and waiting on a harness-held advisory lock, blocks the relay's `sent_at` update after its confirmed publish (job observed queued); the Upload API (the relay's process) is killed, the dead backend ends uncommitted, the gate is removed, the restarted relay sends the intent again and marks it sent; two copies of the job yield one publication. (3) The broker stops while FFmpeg runs another job and a completed upload's intent waits in the outbox: reads answer, a play answers 503, the intent is deferred, the job in hand runs on and fails only its final publish; after `docker start`, all eight broker clients log available, no process restarted, both videos become ready once and the play's identity counts once |
 
 Database gates block execution only: the trigger supplies no effect, retry or deduplication, is
 scoped to one row of the known relation and is dropped (and checked absent) before recovery
-assertions. Untested here: a PostgreSQL outage while a template worker's pool is idle, exact
-consumer commit/ack crash timing, network partitions, Garage, OpenSearch, Keycloak and Valkey
-data loss. [GS07 evidence](../../docs/plans/generated-system-tests/evidence/gs07/README.md)
-records each boundary, duration and limit.
+assertions. Untested here: exact consumer commit/ack crash timing, network partitions, Garage,
+OpenSearch, Keycloak and Valkey data loss. [GS07 evidence](../../docs/plans/generated-system-tests/evidence/gs07/README.md)
+records each boundary, duration and limit; [SO02 evidence](../../docs/plans/generated-system-tests/evidence/so02/README.md)
+records the database row's.
 
 Transient passwords, PKCE verifiers/codes/state, OAuth tokens and session cookies are registered
 before use in a mode-0600 private sibling file under the mode-0700 OS temporary run directory.

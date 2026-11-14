@@ -1,0 +1,43 @@
+{
+  "sourceSha256": "edacdd221c4492e02543d11ffce9d77ce4c3e34cd31d6a8a995874acdfd8e960",
+  "faults": {
+    "outcome": "passed",
+    "tests": 5,
+    "files": 2,
+    "stacks": 5,
+    "vitestSeconds": 478.68,
+    "cliMonotonicSeconds": 482.54,
+    "cliWall": "8:56.57"
+  },
+  "core": {
+    "outcome": "passed",
+    "tests": 4,
+    "files": 2,
+    "stacks": 4,
+    "vitestSeconds": 292.26,
+    "cliMonotonicSeconds": 294.84,
+    "cliWall": "5:27.40"
+  },
+  "oldTemplates": {
+    "templatesOf": "7bef25f",
+    "sourceSha256": "ebd6970e9072a8f0fa00cc263bac31dbc507a16c60e12c51629e02ce779bde09",
+    "outcome": "failed",
+    "tests": 5,
+    "passed": 4,
+    "failed": ["B09 database: PostgreSQL ended the Counter's idle connections: app-counter exited"],
+    "vitestSeconds": 448.44,
+    "cliMonotonicSeconds": 452.26,
+    "cliWall": "8:22.66"
+  },
+  "databaseRow": {
+    "stopToFirstFailureLineMs": 1847,
+    "submittedToFirstFailureLineMs": 138,
+    "outageMs": 9428,
+    "startToAllCountedMs": 5535
+  },
+  "check": { "outcome": "passed", "testFiles": 115, "tests": 910 },
+  "e2e": { "outcome": "passed", "tests": 74, "reportedMinutes": 4.7, "retries": 0 },
+  "webBuild": { "outcome": "passed" },
+  "phaseExecution": "serial: faults, core, faults on the old templates, then check, then e2e, then web build",
+  "dockerInventory": "containers, volumes, networks and image tags equal the pre-unit inventory"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "gs-f00b3c28-b4be-458b-9ea1-73160a56b43c",
+  "selected": ["faults"],
+  "outcome": "failed",
+  "elapsedMs": 452261,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/claude-1000/-home-ash-github-jeeves/25a62ed6-cc60-4bd9-b2cf-35664f59d9c5/scratchpad/old-faults/run.json"
+}

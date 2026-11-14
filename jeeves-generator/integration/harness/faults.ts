@@ -321,6 +321,52 @@ export async function queueDepth(app: Application, service: string, queue: strin
   return result;
 }
 
+const tcpStates: Record<string, string> = {
+  "01": "ESTABLISHED",
+  "02": "SYN_SENT",
+  "03": "SYN_RECV",
+  "04": "FIN_WAIT1",
+  "05": "FIN_WAIT2",
+  "06": "TIME_WAIT",
+  "07": "CLOSE",
+  "08": "CLOSE_WAIT",
+  "09": "LAST_ACK",
+  "0A": "LISTEN",
+  "0B": "CLOSING",
+};
+/** The TCP sockets a service's running container holds to a remote port, read from its own
+ * network namespace (`/proc/net/tcp`). `open` means its process has not closed its side yet
+ * (ESTABLISHED, or CLOSE_WAIT once the peer has closed). Observation only. */
+export async function connectionsTo(app: Application, service: string, remotePort: number) {
+  assert(Number.isInteger(remotePort) && remotePort > 0 && remotePort < 65536);
+  const rows = await inApplication<{ local: string; remote: string; state: string }[]>(
+    app,
+    service,
+    `
+    import {readFileSync} from 'node:fs';
+    const rows=[];
+    for (const file of ['/proc/net/tcp','/proc/net/tcp6']) {
+      let text='';try{text=readFileSync(file,'utf8');}catch{continue;}
+      for (const line of text.trim().split('\\n').slice(1)) {
+        const [,local,remote,state]=line.trim().split(/\\s+/);rows.push({local,remote,state});
+      }
+    }
+    console.log(JSON.stringify(rows));
+  `,
+  );
+  const port = (address: string) => Number.parseInt(address.split(":").pop() ?? "", 16);
+  const result = rows
+    .filter((row) => port(row.remote) === remotePort)
+    .map((row) => ({
+      localPort: port(row.local),
+      remotePort,
+      state: tcpStates[row.state] ?? row.state,
+      open: row.state === "01" || row.state === "08",
+    }));
+  app.record({ connections: { service, remotePort, result, at: new Date().toISOString() } });
+  return result;
+}
+
 /** The process table of one identified container, as `docker top` reports it. */
 export async function processTable(app: Application, service: string, id: string) {
   assert(

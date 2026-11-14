@@ -1,0 +1,12 @@
+{
+  "id": "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98",
+  "selected": ["faults"],
+  "commit": "766944bd023a2f808166d7d9b5e5417a35887811",
+  "dirty": "M jeeves-generator/integration/harness/faults.ts\n M jeeves-generator/integration/scenarios/faults.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

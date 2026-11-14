@@ -1,0 +1,31 @@
+{
+  "containers": [
+    "6edf2f09eda6",
+    "e767cab445a8",
+    "cd2293815469",
+    "360c6461fb56",
+    "e7b6b3cf9dd9",
+    "fd209dd0341d",
+    "fe2ac10711e3",
+    "ec13311f0597",
+    "088a7023ba2e",
+    "a7cb83fda872",
+    "d3088c8b143a",
+    "86e166648cfd",
+    "35f808ac6efc",
+    "2c79edb870a2",
+    "86b8a0af42b7"
+  ],
+  "networks": ["5eb396028d14"],
+  "volumes": [
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5_broker-data",
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5_cache-hot-metadata",
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5_objects-data",
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5_postgres-data",
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5_search-videos"
+  ],
+  "images": [
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5-media:latest",
+    "gs-74f346ef-78e8-4e12-bbbc-7ee6748dbe98-5-app:latest"
+  ]
+}

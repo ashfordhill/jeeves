@@ -6,6 +6,7 @@ import {
   counterQueue,
   healthyCopies,
   inApplication,
+  type QueueState,
   queueBecomes,
   readTotal,
   receiptIds,
@@ -16,6 +17,7 @@ import { type Application, withApplication } from "../harness/application.ts";
 import {
   assertNoProcessExited,
   brokerSignals,
+  connectionsTo,
   faultContainer,
   logsSince,
   onlyContainer,
@@ -413,18 +415,104 @@ test("B09 broker: confirmed queued work survives a broker restart; running publi
   });
 });
 
-test("B09 database: PostgreSQL stopping during work gives bounded failures; after restore and the documented restart, accepted work completes once", async () => {
+test("B09 database: while PostgreSQL is away no worker exits and no accepted event reaches .failed; after restore, accepted work completes once without a restart", async () => {
   await withApplication("activity", activityTemplates, async (app) => {
     const aggregate = "Fault:database";
+    const failedQueue = `${counterQueue}.failed`;
+    // Scenario contract: a delivery whose store is unreachable waits 5 s and goes back to its
+    // queue with its attempt unchanged; the retry limit and .failed are for failed messages.
+    const unreachableWaitMs = 5000;
     const postgres = await onlyContainer(app, "local-postgres");
+    const worker = await onlyContainer(app, "app-counter");
+    const workerAddresses = Object.values(worker.NetworkSettings.Networks).map(
+      (network) => network.IPAddress,
+    );
+    const evidence: Record<string, unknown> = {};
+    const failedIsEmpty = async (label: string) => {
+      const failed = await brokerProbe(app, "state", failedQueue);
+      expect(failed, label).toMatchObject({ messageCount: 0, unacknowledged: 0 });
+      return failed;
+    };
     // Work in progress immediately before the outage.
     const earlier = ["database:earlier:0", "database:earlier:1", "database:earlier:2"];
     for (const id of earlier) expect((await submit(app, aggregate, id)).status).toBe(202);
     await totalBecomes(app, aggregate, earlier.length);
+
+    // Idle case. Precondition: the Counter's pool holds open, idle connections as PostgreSQL stops.
+    type Backend = { pid: number; client: string; port: number; state: string };
+    const idle = await poll(
+      "the Counter's pool holds only idle connections",
+      async () =>
+        JSON.parse(
+          await app.sql(
+            `SELECT coalesce(json_agg(a),'[]') FROM (SELECT pid,host(client_addr) AS client,client_port AS port,state
+               FROM pg_stat_activity WHERE usename='r_totals__counter') a`,
+          ),
+        ) as Backend[],
+      (rows) =>
+        rows.length > 0 &&
+        rows.every((row) => row.state === "idle" && workerAddresses.includes(row.client)),
+      5_000,
+      (value) => app.record(value),
+    );
+    // The same connections, open in the Counter's own network namespace.
+    const held = await connectionsTo(app, "app-counter", 5432);
+    expect(held.filter((socket) => socket.state === "ESTABLISHED").map((s) => s.localPort)).toEqual(
+      expect.arrayContaining(idle.map((row) => row.port)),
+    );
     const before = await processStates(app);
     const stopped = await faultContainer(app, "local-postgres", postgres.Id, "stop");
+    // PostgreSQL ended each of those connections as it shut down; its log names each backend.
+    const ending = (pid: number) =>
+      new RegExp(`\\[${pid}\\] FATAL:\\s+terminating connection due to administrator command`);
+    const postgresLog = await poll(
+      "PostgreSQL ended each idle Counter connection",
+      async () => Object.values(await rawLogsSince(app, "local-postgres", stopped.at)).join(""),
+      (text) => idle.every((row) => ending(row.pid).test(text)),
+      15_000,
+      (value) => app.record(value),
+    );
+    // The Counter has read each ended connection when it has closed its own side: the point at
+    // which an unhandled idle 'error' would have ended its process.
+    const settled = await poll(
+      "the Counter closed its side of each ended connection (or exited)",
+      async () => {
+        const counter = (await processStates(app)).find((row) => row.service === "app-counter");
+        const sockets =
+          counter?.status === "running" ? await connectionsTo(app, "app-counter", 5432) : undefined;
+        return {
+          counter,
+          sockets,
+          sinceStopMs: Math.round(performance.now() - stopped.monotonicAt),
+        };
+      },
+      (value) =>
+        value.counter?.status !== "running" ||
+        (value.sockets !== undefined &&
+          !value.sockets.some(
+            (socket) => socket.open && idle.some((row) => row.port === socket.localPort),
+          )),
+      15_000,
+      (value) => app.record(value),
+    );
+    Object.assign(evidence, {
+      before,
+      idle,
+      held,
+      stopped,
+      terminated: postgresLog
+        .split("\n")
+        .filter((line) => idle.some((row) => ending(row.pid).test(line))),
+      settled,
+      counterOutputAtIdle: await rawLogsSince(app, "app-counter", stopped.at),
+    });
+    await app.save("database-outage.json", evidence);
+    await assertNoProcessExited(app, before, "PostgreSQL ended the Counter's idle connections");
+    await failedIsEmpty("idle connections ended");
+
     const during = ["database:during:0", "database:during:1", "database:during:2"];
     // Publication needs only the broker: these are accepted (confirmed) during the outage.
+    const submitted = performance.now();
     for (const id of during) expect((await submit(app, aggregate, id)).status).toBe(202);
     const reads = [];
     for (let n = 0; n < 3; n++) reads.push(await timed(() => readTotal(app, aggregate)));
@@ -433,47 +521,86 @@ test("B09 database: PostgreSQL stopping during work gives bounded failures; afte
       expect(row.status).toBe(503);
       expect(row.elapsedMs).toBeLessThan(answerBoundMs);
     }
-    const workerFailure = await poll(
-      "the Counter's failure is observed (process exit or failed deliveries)",
+    // PostgreSQL stays away until two waiting lines are seen at least one wait apart, so the
+    // deliveries have gone back to their queue and failed again; .failed is read each time.
+    const firstSeen = new Map<string, number>();
+    const waiting = await poll(
+      "the Counter logged deliveries waiting out the outage, one wait apart",
       async () => {
-        const states = await processStates(app);
-        const counter = states.find((row) => row.service === "app-counter");
         const lines = await logsSince(app, "app-counter", stopped.at);
+        const now = performance.now();
+        const failures = lines
+          .filter((line) => line.entry.event === "loop-error")
+          .map((line) => {
+            const key = `${line.container} ${line.at}`;
+            if (!firstSeen.has(key)) firstSeen.set(key, now);
+            return {
+              ...line,
+              seenMs: Math.round((firstSeen.get(key) ?? now) - stopped.monotonicAt),
+            };
+          });
         return {
-          counter,
-          loopErrors: lines.filter((line) => line.entry.event === "loop-error"),
+          failures,
+          notCounted: failures.filter((line) =>
+            String(line.entry.action).includes("attempt not counted"),
+          ),
+          failed: (await brokerProbe(app, "state", failedQueue)) as QueueState,
           queue: await brokerProbe(app, "state"),
-          failed: await brokerProbe(app, "state", `${counterQueue}.failed`),
         };
       },
-      (value) => value.counter?.status === "exited" || value.loopErrors.length > 0,
-      15_000,
+      (value) => {
+        const seen = value.notCounted.map((line) => line.seenMs);
+        return (
+          value.failed.messageCount + value.failed.unacknowledged > 0 ||
+          (seen.length >= 2 && Math.max(...seen) - Math.min(...seen) >= unreachableWaitMs)
+        );
+      },
+      30_000,
       (value) => app.record(value),
     );
-    const totalsApi = (await processStates(app)).find((row) => row.service === "app-totals-api");
-    await app.save("database-outage.json", {
-      stopped,
-      reads,
-      workerFailure,
-      totalsApi,
-      before,
-      counterOutput: await rawLogsSince(app, "app-counter", stopped.at),
+    expect(waiting.failed, ".failed while PostgreSQL is away").toMatchObject({
+      messageCount: 0,
+      unacknowledged: 0,
     });
-    await faultContainer(app, "local-postgres", postgres.Id, "start");
+    expect(waiting.notCounted.length).toBeGreaterThanOrEqual(1);
+    // Fresh deliveries: each waiting line keeps the first attempt.
+    for (const line of waiting.notCounted)
+      expect(line.entry).toMatchObject({ module: "increment", queue: counterQueue, attempt: 1 });
+    await assertNoProcessExited(app, before, "PostgreSQL away, deliveries waiting");
+
+    const restored = await faultContainer(app, "local-postgres", postgres.Id, "start");
     await healthyCopies(app, "local-postgres", 1);
-    // Documented recovery: a failed process stays exited until `pnpm start` (generated README).
-    await app.execute("documented-recovery", "pnpm", ["start"], 600_000);
-    await healthyCopies(app, "app-counter", 1);
+    // No application process is restarted: the waiting deliveries go back and commit.
     const accepted = [...earlier, ...during].sort();
     await totalBecomes(app, aggregate, accepted.length);
+    const counted = performance.now();
     expect(await receiptIds(app, aggregate)).toEqual(accepted);
+    const failedAfterRestore = await failedIsEmpty("after restore");
+    await assertNoProcessExited(app, before, "accepted work counted without a restart");
     expect((await submit(app, aggregate, "database:after")).status).toBe(202);
     await totalBecomes(app, aggregate, accepted.length + 1);
     expect(await receiptIds(app, aggregate)).toEqual([...accepted, "database:after"].sort());
     await queueBecomes(app, 1, 0);
-    expect(await brokerProbe(app, "state", `${counterQueue}.failed`)).toMatchObject({
-      messageCount: 0,
-      unacknowledged: 0,
+    const failedAtEnd = await failedIsEmpty("after a new event");
+    const after = await assertNoProcessExited(app, before, "a new event after restore");
+    const [first] = waiting.notCounted;
+    Object.assign(evidence, {
+      reads,
+      waiting,
+      restored,
+      failedAfterRestore,
+      failedAtEnd,
+      after,
+      // Monotonic; first-seen times are when a poll first read the line (an upper bound).
+      times: {
+        stopToFirstFailureLineMs: first?.seenMs,
+        submittedToFirstFailureLineMs:
+          first && Math.round(stopped.monotonicAt + first.seenMs - submitted),
+        outageMs: Math.round(restored.monotonicAt - stopped.monotonicAt),
+        startToAllCountedMs: Math.round(counted - restored.monotonicAt),
+      },
+      counterOutput: await rawLogsSince(app, "app-counter", stopped.at),
     });
+    await app.save("database-outage.json", evidence);
   });
 });
