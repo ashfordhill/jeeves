@@ -791,6 +791,13 @@ loopback ports outside the owner/v1 reservations. Run `pnpm first-run` once, `pn
 all profiles and `pnpm start` to retain the exact project, private `.runtime` credentials and
 recorded Docker volume identities. Changed/missing identities refuse. Interrupted storage
 bootstrap requires manual inspection. Migration hash changes refuse without resetting data.
+`scripts/migrate.mjs` holds the advisory lock `local-v2:cluster` on its admin connection from
+before the first role until the last database is done, so copies started at once run one at a
+time. Its admin may be a superuser or, as on a managed PostgreSQL 16 or later, a CREATEDB
+CREATEROLE role: a non-superuser admin grants itself each database owner `WITH INHERIT FALSE, SET
+TRUE`, so it can create the owner's database without using the owner's privileges. Each
+database's `REVOKE ALL … FROM PUBLIC` and `GRANT CONNECT` run as its owner (`SET ROLE`), so
+PUBLIC keeps no CONNECT whichever admin runs it, and a non-superuser admin has none of its own.
 Owners are setup-only; runtime users require explicit relation grants and published readers
 can receive only contributed views. Provider startup is not application readiness.
 

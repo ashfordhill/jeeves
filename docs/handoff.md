@@ -14364,3 +14364,107 @@ down at startup no longer stops the process), QG18 (a client-side query timeout 
 unreachable) and QG20 (configured HTTP client for External API and Identity tiles). The plan gains a
 batch-2 order (QG03, QG04, QG06–QG10, QG18, QG20, then the QGR2 review) after batch 1 finishes.
 **For the next unit.** QG12 (batch 1).
+
+## 2026-11-14 — QG12: Migrations run with a non-superuser admin, one at a time
+
+**What changed.**
+- `jeeves-generator/templates/local-v2/assets/scripts/migrate.mjs`, on the admin connection:
+  - the first statement is `SELECT pg_advisory_lock(hashtext($1))` with `local-v2:cluster`. It is
+    released by `pg_advisory_unlock` after the last database's runtime checks, or by the session's
+    end on an error. So copies started at once run one at a time.
+  - `rolsuper` of `current_user` is read once. When it is false, each database owner role gets
+    `GRANT <owner> TO CURRENT_USER WITH INHERIT FALSE, SET TRUE` (quoted with `quote`) after it is
+    created, or when it already exists. Runtime logins get no such grant.
+  - each database's `REVOKE ALL ON DATABASE … FROM PUBLIC` and `GRANT CONNECT ON DATABASE … TO
+    <login>` run between `SET ROLE <owner>` and `RESET ROLE`, for every admin.
+  - Roles, databases, the owner's transaction, grants, files, history and messages are unchanged.
+    The product step's three anchors still appear once.
+- `jeeves-generator/src/v2/local.test.ts`, 1 new test, on the stub stack with Runnable processes
+  off and on. It checks:
+  - the literal statements on the admin connection, in source order;
+  - the cluster lock comes before `CREATE ROLE`, and its unlock comes after the database loop,
+    just before `admin.end()`;
+  - the conditional owner grant, and a single `SELECT rolsuper` read;
+  - both `ON DATABASE` statements sit between `SET ROLE <owner>` and `RESET ROLE`, after `CREATE
+    DATABASE` and before the owner's connection.
+- Pins (`processes-off.json`): `frozen-v2`, `v2-module-design` and `stub-stack` each changed
+  `scripts/migrate.mjs` and `.jeeves/manifest.json`. Nothing else changed.
+- Docs: `jeeves-generator/README.md`, after "Migration hash changes refuse…". It describes the
+  cluster lock, the non-superuser admin on PostgreSQL 16 or later and its owner grants, and the
+  database-level statements run as the owner.
+
+**Checks.** All on the final tree.
+- Before any change, at `3a0cee3`: `pnpm check` exit 0, 115 files / 922 tests.
+- `pnpm check` exit 0: 115 files / 923 tests. Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- New tests: 1. On HEAD's template it fails at the first assertion (a scratch repository copy
+  with the new test file, since deleted). The file's 5 older tests pass there.
+- Docker phase, after the offline checks:
+  - `pnpm test:generated --suite=core`: 2 files / 4 tests passed (B01–B04).
+  - `--suite=regeneration`: 1 file / 1 test passed (B10, 146 s).
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - In both exports the changed paths are exactly `scripts/migrate.mjs`,
+    `.jeeves/manifest.json` and `.jeeves/report.json`.
+  - The report differs only in the registry's source hashes and sizes: `migrate.mjs` is
+    5477 → 6451 bytes, and the owners' `sourceSha256` values are `8c32fc75…3d0a` →
+    `d12dc6e0…8f44` and `1b19dd8e…c87a` → `3e6ae0ee…2ab0`.
+  - In each `after-*`, the offline frozen install and `pnpm build` both exit 0.
+- Docker proof: QRWTY Q03 step 14, against `after-probe`'s `scripts/migrate.mjs`.
+  - Setup: the probe's SQL and stub bodies were copied to their `generated-extension` paths.
+    Each instance is a scratch `postgres:17.11-alpine3.23@sha256:bc2701f9…b61f` container on
+    127.0.0.1:47961–47965. Every credential was generated at run time.
+  - The command was `env PGHOST=127.0.0.1 PGPORT=… SECRET_DIR=… node scripts/migrate.mjs`.
+  - A "non-superuser" instance has the superuser `bootstrap`, plus
+    `CREATE ROLE postgres LOGIN CREATEDB CREATEROLE` (`rolsuper` f).
+  - Non-superuser, with no manual grant: the first run exits 0 and applies all three migrations.
+    The repeat exits 0, and `local_migrations` is unchanged (3 rows). Only the three product SQL
+    files ran again, as they do at every run.
+  - After both runs, every database's `datacl` is `{o_x=CTc/o_x,r_x=c/o_x}`, with no `=` entry.
+    `has_database_privilege` for `public` and for `postgres` (CONNECT) is false on all three. As
+    the admin's own session, `has_database_privilege(current_user, …, 'CONNECT')` is false, and
+    `psql -d d_store` (and the other two) fails `permission denied for database`. The admin has
+    `pg_has_role(…, 'USAGE')` f and `'SET'` t on each owner (INHERIT FALSE).
+  - Two concurrent first runs both exit 0, on a fresh non-superuser instance and on a fresh
+    superuser one. One run applies the migrations; the other waits, then finds them current. The
+    ACL invariant holds on both instances. A third run on the superuser instance exits 0 and
+    applies nothing new.
+  - Controls, with HEAD's `migrate.mjs` in the same export:
+    - on a fresh non-superuser instance it exits 1 with `must be able to SET ROLE "o_store"`
+      (`42501`), as Q03 found;
+    - on a fresh superuser instance it runs, then repeats. Its state matches the new script's
+      superuser state, all 38 lines identical: database owners and ACLs, roles, memberships,
+      schema, relation and default ACLs in every database, and the applied migrations.
+    - The non-superuser state differs from it only in the admin's membership rows.
+  - Removed: `docker rm -f -v` of the five `qg12-pg-*` containers. The Docker inventory
+    (containers, images, networks, volumes) is the same before the Docker phase and after it, and
+    no `gs-` container is left. The scratch exports, copies and secrets are deleted.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- The new test is in `local.test.ts`, not `product-sql.test.ts`. The plan names the latter only
+  as an example. `local.test.ts` holds the foundation's other emitted-`migrate.mjs` assertions,
+  and the test covers both processes-off and processes-on output.
+- The owner grant runs inside the existing role loop, for logins that are database owners
+  (`owners`, a set of `plan.databases[].owner`). That is "after creating each database owner
+  role (and for an owner role that already exists)".
+- The Docker proof also has the two controls, concurrent runs with a non-superuser admin, and
+  PUBLIC's own `has_database_privilege`. A superuser always has CONNECT, so the admin's CONNECT
+  is asserted only for the non-superuser instances.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03, with the Q03 review's R1).
+- PostgreSQL 16+ also gives a CREATEROLE admin an implicit `ADMIN OPTION` membership (grantor
+  `bootstrap`, INHERIT and SET false) in every role it creates, runtime logins included. The
+  script doesn't make it, and it gives the admin no privileges of those roles. If a cluster sets
+  `createrole_self_grant` to `inherit`, the admin would inherit the owners' privileges. That
+  setting is deployment's.
+- An owner role that another role created needs the admin to hold `ADMIN OPTION` on it.
+  Under PostgreSQL 16's rules the new grant then fails, and the run stops before any database
+  statement. This was not tested; HEAD's script stopped at `CREATE DATABASE` there anyway.
+- The lock waits without a bound. A copy waits for as long as the holder's run takes.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG11. After regeneration, QRWTY's setup runs with a managed PostgreSQL
+admin (CREATEDB CREATEROLE), and copies started together run one at a time.

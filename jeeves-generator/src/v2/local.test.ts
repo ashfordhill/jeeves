@@ -258,4 +258,64 @@ describe("standalone local foundation", () => {
       'const marker = "/tmp/application-ready";',
     );
   });
+
+  it("migrates one copy at a time and completes with a non-superuser admin", () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    for (const bundle of [emit(), processes]) {
+      const script = text(bundle, "scripts/migrate.mjs");
+      // Every statement on the admin connection whose text is a literal, in source order.
+      const admin = [...script.matchAll(/admin\.query\(\s*(["`])(.*?)\1/gs)].map((m) => m[2]);
+      expect(admin).toEqual([
+        "SELECT pg_advisory_lock(hashtext($1))",
+        "SELECT rolsuper FROM pg_roles WHERE rolname = current_user",
+        "SELECT 1 FROM pg_roles WHERE rolname=$1",
+        "SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', $1::text, $2::text) AS sql",
+        `GRANT \${quote(login.user)} TO CURRENT_USER WITH INHERIT FALSE, SET TRUE`,
+        "SELECT pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname=$1",
+        `CREATE DATABASE \${quote(db.database)} OWNER \${quote(db.owner)}`,
+        `SET ROLE \${quote(db.owner)}`,
+        `REVOKE ALL ON DATABASE \${quote(db.database)} FROM PUBLIC`,
+        `GRANT CONNECT ON DATABASE \${quote(db.database)} TO \${quote(login.user)}`,
+        "RESET ROLE",
+        "SELECT pg_advisory_unlock(hashtext($1))",
+      ]);
+      // The cluster lock comes first and is released only after the last database is done.
+      const lock =
+        '  await admin.query("SELECT pg_advisory_lock(hashtext($1))", ["local-v2:cluster"]);\n';
+      expect(script).toContain(`\n${lock}`);
+      expect(script.indexOf("\ntry {\n")).toBeLessThan(script.indexOf(lock));
+      expect(script.indexOf(lock)).toBeLessThan(script.indexOf("CREATE ROLE"));
+      expect(script).toContain(
+        '    }\n  }\n  await admin.query("SELECT pg_advisory_unlock(hashtext($1))", ["local-v2:cluster"]);\n} finally {\n  await admin.end();\n}\n',
+      );
+      // The owner grant is only for a non-superuser admin, and only for database owners.
+      expect(script.match(/SELECT rolsuper/g)).toHaveLength(1);
+      expect(script.indexOf("SELECT rolsuper")).toBeLessThan(script.indexOf("for (const login of"));
+      expect(script).toContain(
+        `    if (!superuser && owners.has(login.user))\n      await admin.query(\`GRANT \${quote(login.user)} TO CURRENT_USER WITH INHERIT FALSE, SET TRUE\`);\n`,
+      );
+      expect(script).toContain("const owners = new Set(plan.databases.map((db) => db.owner));");
+      // Every database-level statement runs as the owner, with nothing else in between.
+      const asOwner = script.slice(
+        script.indexOf(`SET ROLE \${quote(db.owner)}`),
+        script.indexOf('"RESET ROLE"'),
+      );
+      expect(script.match(/ON DATABASE/g)).toHaveLength(2);
+      expect(asOwner.match(/ON DATABASE/g)).toHaveLength(2);
+      expect(asOwner).not.toMatch(/owner\.query|connect\(/);
+      expect(script.indexOf("CREATE DATABASE")).toBeLessThan(
+        script.indexOf(`SET ROLE \${quote(db.owner)}`),
+      );
+      expect(script.indexOf('"RESET ROLE"')).toBeLessThan(
+        script.indexOf("connect(db.database, db.owner"),
+      );
+    }
+  });
 });

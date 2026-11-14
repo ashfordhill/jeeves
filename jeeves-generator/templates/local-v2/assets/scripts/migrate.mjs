@@ -16,6 +16,14 @@ const connect = async (database, user, password) => {
 };
 const admin = await connect("postgres", "postgres", secret("postgres-admin"));
 try {
+  // Copies started at once run one at a time: held until the last database is done.
+  await admin.query("SELECT pg_advisory_lock(hashtext($1))", ["local-v2:cluster"]);
+  // A managed admin (CREATEDB CREATEROLE, not superuser) must be able to SET ROLE to an owner to
+  // create its database; INHERIT FALSE keeps the owner's privileges out of the admin's session.
+  const superuser = (
+    await admin.query("SELECT rolsuper FROM pg_roles WHERE rolname = current_user")
+  ).rows[0].rolsuper;
+  const owners = new Set(plan.databases.map((db) => db.owner));
   for (const login of [
     ...plan.databases.map((db) => ({ user: db.owner, secret: db.secret })),
     ...plan.logins,
@@ -28,6 +36,8 @@ try {
       );
       await admin.query(result.rows[0].sql);
     }
+    if (!superuser && owners.has(login.user))
+      await admin.query(`GRANT ${quote(login.user)} TO CURRENT_USER WITH INHERIT FALSE, SET TRUE`);
   }
   for (const db of plan.databases) {
     const existing = await admin.query(
@@ -38,12 +48,15 @@ try {
       throw new Error(`Database ${db.database} owner differs; preserve and inspect runtime.`);
     if (!existing.rowCount)
       await admin.query(`CREATE DATABASE ${quote(db.database)} OWNER ${quote(db.owner)}`);
+    // As the owner: a non-superuser admin's own REVOKE and GRANT here would be only warnings.
+    await admin.query(`SET ROLE ${quote(db.owner)}`);
     await admin.query(`REVOKE ALL ON DATABASE ${quote(db.database)} FROM PUBLIC`);
     const runtime = [...plan.logins, ...plan.providerLogins].filter(
       (login) => login.database === db.database,
     );
     for (const login of runtime)
       await admin.query(`GRANT CONNECT ON DATABASE ${quote(db.database)} TO ${quote(login.user)}`);
+    await admin.query("RESET ROLE");
     const owner = await connect(db.database, db.owner, secret(db.secret)); // Refuse mismatched existing credentials, never rotate.
     try {
       await owner.query("BEGIN");
@@ -116,6 +129,7 @@ try {
       await check.end();
     }
   }
+  await admin.query("SELECT pg_advisory_unlock(hashtext($1))", ["local-v2:cluster"]);
 } finally {
   await admin.end();
 }
