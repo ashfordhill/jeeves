@@ -13977,3 +13977,77 @@ now excludes `docs/plans/qrwty-gaps/fixtures` (as it excludes field-project inpu
 byte-identical to QRWTY's (`probe-design.json` still `a3b6204f…0505`).
 **Checks.** `pnpm lint`: 0 errors, the older 1 info.
 **For the next unit.** QG01 again, from the start.
+
+## 2026-11-14 — QG01: Route stubs see the exact request bytes and send repeated headers
+
+**What changed.**
+- `templates/local-v2/assets/src/runtime/http.ts.template`: `createHttpService` removes Fastify's
+  default `application/json` and `text/plain` parsers. It adds two `parseAs: "buffer"`,
+  `bodyLimit: 65536` parsers that keep the received bytes on `request.rawBody`. That is a request
+  decoration (`undefined` by default), typed by a `FastifyRequest` augmentation. JSON goes through
+  `app.getDefaultJsonParser("error", "error")`, the defaults, on `body.toString("utf8")`: Fastify
+  5.12.7 types that parser for a string. Text is the UTF-8 string. So values and errors are
+  Fastify's own.
+- `tile-http.ts.template`: `moduleRequest` adds `rawBody`. `stubRoutes` sends an array value as
+  `reply.header(name, [...value])`.
+- `modules/entry.ts.template`: `ModuleRequest.rawBody?: Uint8Array` and
+  `ModuleResponse.headers?: Record<string, string | readonly string[]>`, with the plan's comments.
+- Tests:
+  - `tile-processes.test.ts`, 3 new tests: the emitted `http.ts`, and `tile-http.ts`'s
+    `stubRoutes`, on real Fastify. The fake Fastify gains no-op parser methods, and the loader
+    takes a Fastify.
+  - `tile-guard.test.ts`, 1 new test: the emitted `tile-http.ts` and `entry.ts`.
+- Pins (`processes-off.json`): `frozen-v2` and `v2-module-design` each changed
+  `src/runtime/http.ts` and `.jeeves/manifest.json`. Nothing else changed.
+- Docs: the route stub bullet in `jeeves-generator/README.md`. `docs/studio.md` lists no
+  `ModuleRequest` field, so it is unchanged.
+
+**Checks.** All on the final tree.
+- Before any change, at `8f46066`: `pnpm check` exit 0, 115 files / 912 tests.
+- `pnpm check` exit 0: 115 files / 916 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- Docker phase:
+  - `pnpm test:generated --suite=wiring`: 1 file / 2 tests passed.
+  - `--suite=identity`: 1 file / 1 test passed.
+  - The Docker inventory (containers, images, networks, volumes) is the same before and after,
+    and no `gs-` stack is left.
+- New tests: 4. On HEAD's templates (a scratch repository copy, since deleted), 3 fail:
+  - the bytes kept beside the parsed body;
+  - the stub's array header over HTTP;
+  - the emitted `tile-http.ts` and `entry.ts` test.
+
+  The 4th passes on HEAD by design. It checks that the answers are unchanged: 413 over 64 KiB
+  (JSON and text), 400 for `{"bad":`, 400 for an empty JSON body (on HEAD too), 400 for a
+  `__proto__` key, and 415 for form data.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - In both exports the changed paths are exactly `src/runtime/http.ts`,
+    `src/runtime/tile-http.ts`, `src/modules/entry.ts`, `.jeeves/manifest.json` and
+    `.jeeves/report.json`.
+  - In each `after-*`, the offline frozen install and `pnpm build` both exit 0.
+  - Extra check: a sample stub that reads `request.rawBody` and answers two `Set-Cookie` values.
+    It fails to compile against the before probe (TS2339, TS2322) and compiles against the after
+    probe.
+  - The scratch exports are deleted.
+
+**Differences from the plan.**
+- The new tests load the real Fastify 5.12.7 through `jeeves/apps/server`'s dependency
+  (`createRequire`), because the generator has no Fastify of its own. A test checks that this
+  version equals the export's pin. Only `listen` is replaced: it readies the app without opening a
+  socket, so `inject` runs the real parsers and error handler. No `package.json` or lock file
+  changed.
+- `stubRoutes` uses `Array.isArray(value) ? [...value] : value`, so every value that isn't an
+  array reaches `reply.header` exactly as before.
+- A `text/plain` request with an empty body still runs the parser, as before. Its `body` is `""`
+  and its `rawBody` is an empty buffer. `rawBody` is undefined when Fastify reads no body: GET,
+  HEAD or TRACE, or no `Content-Type` and no bytes.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03).
+- Fastify 5.12.7's `reply.header` already handles a `Set-Cookie` array, so two cookies already
+  reached clients at run time. The gaps were the type (TS2322) and the missing bytes.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG02. After regeneration, QRWTY's stubs can check a signature over
+`request.rawBody` and set several cookies in one answer.

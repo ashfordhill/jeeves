@@ -163,6 +163,56 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
       ["/x", { signedIn: false }],
     ]);
   });
+
+  it("gives a route stub's request the body's bytes, and sends an array header once per value", async () => {
+    const cookies: readonly string[] = ["a=1; Path=/", "b=2; Path=/"];
+    const seen: unknown[] = [];
+    const open = routes();
+    stubRoutes(
+      open,
+      () => {},
+      "probe",
+      async (moduleRequest: unknown) => {
+        seen.push(moduleRequest);
+        return { headers: { "Set-Cookie": cookies, "X-Probe": "one" } };
+      },
+    );
+    const headers: [string, unknown][] = [];
+    const reply = {
+      code: () => reply,
+      header: (name: string, value: unknown) => {
+        headers.push([name, value]);
+        return reply;
+      },
+    };
+    const rawBody = Buffer.from('{"id":"evt_1",  "n": 1.0}');
+    const body = { id: "evt_1", n: 1 };
+    await open.mounted.get("POST /modules/probe/*")?.(
+      { ...request(), method: "POST", params: { "*": "events" }, body, rawBody },
+      reply,
+    );
+    expect(seen).toEqual([
+      {
+        method: "POST",
+        path: "/events",
+        query: {},
+        headers: {},
+        body,
+        rawBody,
+        caller: { signedIn: false },
+      },
+    ]);
+    // Each value in order, from a copy: Fastify may add to the array it is given.
+    expect(headers).toEqual([
+      ["Set-Cookie", ["a=1; Path=/", "b=2; Path=/"]],
+      ["X-Probe", "one"],
+    ]);
+    expect(headers[0]?.[1]).not.toBe(cookies);
+    // The types a stub compiles against.
+    const entryTypes = emitted("src/modules/entry.ts");
+    expect(entryTypes).toContain("  rawBody?: Uint8Array;\n");
+    expect(entryTypes).toContain("  headers?: Record<string, string | readonly string[]>;\n");
+  });
 });
 
 describe("emitted multipart hooks beside a sign-in and an asset lifecycle (V3-06)", () => {

@@ -47,6 +47,7 @@ async function moduleRequest(
     query: request.query as ModuleRequest["query"],
     headers: request.headers,
     body: request.body,
+    rawBody: request.rawBody,
     caller: await caller(request),
   };
 }
@@ -67,7 +68,8 @@ export function stubRoutes(
       async handler(request, reply) {
         const response = await entry(await moduleRequest(request, caller));
         reply.code(response.status ?? 200);
-        for (const [name, value] of Object.entries(response.headers ?? {})) reply.header(name, value);
+        for (const [name, value] of Object.entries(response.headers ?? {}))
+          reply.header(name, Array.isArray(value) ? [...value] : value);
         return response.body;
       },
     });

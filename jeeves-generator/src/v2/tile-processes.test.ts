@@ -1,7 +1,8 @@
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
+import { createRequire, stripTypeScriptTypes } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   type DesignDocument,
   emptyDesign,
@@ -332,6 +333,10 @@ const fakeFastify = `export default function Fastify() {
   const app = {
     get(url, handler) { routes.set("GET " + url, handler); },
     addHook() {},
+    decorateRequest() {},
+    removeContentTypeParser() {},
+    getDefaultJsonParser() { return () => {}; },
+    addContentTypeParser() {},
     setErrorHandler(handler) { errorHandler = handler; },
     setNotFoundHandler(handler) { notFound = handler; },
     route(route) { routes.set(route.method + " " + route.url, route.handler); },
@@ -358,8 +363,9 @@ const fakeFastify = `export default function Fastify() {
 const markerDirectory = mkdtempSync(join(tmpdir(), "jeeves-process-"));
 const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
 const runtimeUrls = new Map<string, string>();
-function runtimeUrl(name: string): string {
-  const old = runtimeUrls.get(name);
+function runtimeUrl(name: string, fastify = fakeFastify): string {
+  const key = `${name}\n${fastify}`;
+  const old = runtimeUrls.get(key);
   if (old) return old;
   const source = readFileSync(
     new URL(`../../templates/local-v2/assets/src/runtime/${name}.ts.template`, import.meta.url),
@@ -369,16 +375,30 @@ function runtimeUrl(name: string): string {
     stripTypeScriptTypes(source)
       .replace(
         /from "\.\/(.+)\.ts"/g,
-        (_match, dependency: string) => `from "${runtimeUrl(dependency)}"`,
+        (_match, dependency: string) => `from "${runtimeUrl(dependency, fastify)}"`,
       )
-      .replace('from "fastify"', `from "${dataUrl(fakeFastify)}"`)
+      .replace('from "fastify"', `from "${dataUrl(fastify)}"`)
       .replace('"/tmp/application-ready"', JSON.stringify(join(markerDirectory, "ready"))),
   );
-  runtimeUrls.set(name, url);
+  runtimeUrls.set(key, url);
   return url;
 }
 const httpRuntime = await import(runtimeUrl("http"));
 const processRuntime = await import(runtimeUrl("process"));
+// The same http.ts and tile-http.ts on Fastify itself, from the Jeeves server, which pins the
+// version the export pins. Only `listen` changes: it readies the app without a socket, so
+// `inject` goes through the real body parsers, routes and error handler.
+const serverRequire = createRequire(
+  new URL("../../../jeeves/apps/server/package.json", import.meta.url),
+);
+const realFastify = `import fastify from ${JSON.stringify(pathToFileURL(serverRequire.resolve("fastify")).href)};
+export default function Fastify(options) {
+  const app = fastify(options);
+  app.listen = async () => { await app.ready(); return "http://injected"; };
+  return app;
+}`;
+const realHttpRuntime = await import(runtimeUrl("http", realFastify));
+const tileHttpRuntime = await import(runtimeUrl("tile-http", realFastify));
 type Failure = [what: string, error: unknown];
 
 describe("emitted HTTP service and process runtime", () => {
@@ -507,5 +527,120 @@ describe("emitted HTTP service and process runtime", () => {
       { level: "error", event: "startup-failed", error: "TypeError: no database" },
       "Application startup failed",
     ]);
+  });
+
+  type Injected = {
+    statusCode: number;
+    headers: Record<string, string | string[] | number | undefined>;
+    json(): unknown;
+  };
+  type RealService = {
+    inject(request: unknown): Promise<Injected>;
+    close(): Promise<void>;
+  };
+  /** The service on real Fastify: one route that records what it receives and, with an entry,
+   * the stub routes of module "probe". */
+  const realService = async (entry?: (request: unknown) => Promise<unknown>) => {
+    const seen: { rawBody: unknown; body: unknown }[] = [];
+    const http: RealService & { start(listen: unknown): Promise<string> } =
+      await realHttpRuntime.createHttpService({
+        id: "front",
+        settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+        configure: (routes: { route(route: unknown): void }) => {
+          routes.route({
+            method: ["GET", "POST"],
+            url: "/seen",
+            handler: async (request: { rawBody?: unknown; body?: unknown }) => {
+              seen.push({ rawBody: request.rawBody, body: request.body });
+              return { ok: true };
+            },
+          });
+          if (entry) tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry);
+        },
+        initialize: async () => {},
+      });
+    await http.start({ host: "127.0.0.1", port: 0 });
+    return { http, seen };
+  };
+  const post = (http: RealService, url: string, type: string, payload: string | Buffer) =>
+    http.inject({ method: "POST", url, headers: { "content-type": type }, payload });
+
+  it("keeps a JSON or text body's bytes as received beside the parsed body", async () => {
+    const pins = JSON.parse(
+      readFileSync(
+        new URL("../../templates/local-v2/assets/package.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    expect(serverRequire("fastify/package.json").version).toBe(pins.dependencies.fastify);
+    const { http, seen } = await realService();
+    const json = Buffer.from('{"id":"evt_1",  "amount": 100,\n "name":"café", "n": 1.0}');
+    expect(json.length).toBe(57);
+    expect((await post(http, "/seen", "application/json", json)).statusCode).toBe(200);
+    // A byte-order mark stays in the bytes; the parsed body is the same as without it.
+    const marked = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from('{"a":1}')]);
+    expect((await post(http, "/seen", "application/json; charset=utf-8", marked)).statusCode).toBe(
+      200,
+    );
+    // Text is not decoded in the bytes, even where it isn't UTF-8.
+    const text = Buffer.concat([Buffer.from("t=1,v1=ab\r\n  café "), Buffer.from([0xff])]);
+    expect((await post(http, "/seen", "text/plain", text)).statusCode).toBe(200);
+    expect((await http.inject({ method: "GET", url: "/seen" })).statusCode).toBe(200);
+    expect(seen).toEqual([
+      { rawBody: json, body: { id: "evt_1", amount: 100, name: "café", n: 1 } },
+      { rawBody: marked, body: { a: 1 } },
+      { rawBody: text, body: text.toString("utf8") },
+      { rawBody: undefined, body: undefined },
+    ]);
+    expect(Buffer.byteLength(JSON.stringify(seen[0]?.body))).toBe(48);
+    await http.close();
+  });
+
+  it("answers a body that is too large, invalid or of another type as before", async () => {
+    const { http, seen } = await realService();
+    const answer = async (type: string, payload: string) => {
+      const response = await post(http, "/seen", type, payload);
+      return [response.statusCode, response.json()];
+    };
+    const invalid = { error: "INVALID_REQUEST", message: "Invalid request." };
+    const large = `{"pad":"${"x".repeat(65537 - 10)}"}`;
+    expect(Buffer.byteLength(large)).toBe(65537);
+    expect(await answer("application/json", large)).toEqual([413, invalid]);
+    expect(await answer("text/plain", "x".repeat(65537))).toEqual([413, invalid]);
+    expect(await answer("application/json", '{"bad":')).toEqual([400, invalid]);
+    expect(await answer("application/json", "")).toEqual([400, invalid]);
+    expect(await answer("application/json", '{"__proto__":{"admin":true}}')).toEqual([
+      400,
+      invalid,
+    ]);
+    expect(await answer("application/x-www-form-urlencoded", "a=1")).toEqual([415, invalid]);
+    expect(seen).toEqual([]);
+    expect(await answer("text/plain", "x".repeat(65536))).toEqual([200, { ok: true }]);
+    await http.close();
+  });
+
+  it("sends each value of a stub's array header on its own line, a string header as before", async () => {
+    const entry = vi.fn(async () => ({
+      status: 201,
+      headers: { "Set-Cookie": ["a=1; Path=/", "b=2; Path=/"], "X-Probe": "one" },
+      body: { ok: true },
+    }));
+    const { http } = await realService(entry);
+    const payload = Buffer.from('{"id":"evt_1",  "amount": 100}');
+    const response = await post(http, "/modules/probe/events", "application/json", payload);
+    expect(response.statusCode).toBe(201);
+    expect(response.headers["set-cookie"]).toEqual(["a=1; Path=/", "b=2; Path=/"]);
+    expect(response.headers["x-probe"]).toBe("one");
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.json()).toEqual({ ok: true });
+    expect(entry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: "POST",
+        path: "/events",
+        body: { id: "evt_1", amount: 100 },
+        rawBody: payload,
+      }),
+    );
+    await http.close();
   });
 });

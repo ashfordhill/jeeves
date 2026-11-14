@@ -16,13 +16,17 @@ export type ModuleRequest = {
   headers: Record<string, string | string[] | undefined>;
   /** Parsed JSON or text, up to 64 KiB; undefined when there is none. */
   body: unknown;
+  /** The body's bytes exactly as received (JSON or text, up to 64 KiB), to check a signature over
+   * them; undefined when there is none. Don't change it. */
+  rawBody?: Uint8Array;
   caller: Caller;
 };
 
 /** What a route stub answers: 200 and no body unless it says otherwise. */
 export type ModuleResponse = {
   status?: number;
-  headers?: Record<string, string>;
+  /** An array sends the header once per value, such as two `Set-Cookie` lines. */
+  headers?: Record<string, string | readonly string[]>;
   body?: unknown;
 };
 

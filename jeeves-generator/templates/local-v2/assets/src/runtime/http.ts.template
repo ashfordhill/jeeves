@@ -2,6 +2,13 @@ import Fastify, { type HTTPMethods, type RouteHandlerMethod } from "fastify";
 import { createAdmission, HttpError, type HttpSettings } from "./admission.ts";
 export { HttpError, type HttpSettings } from "./admission.ts";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    /** The body's bytes as received, for a JSON or text request with a body. */
+    rawBody?: Buffer;
+  }
+}
+
 /** Configure routes before listening. Auth/JWKS and every dependency/effect belong inside
  * the awaited handler. No lifecycle/plugin hooks are exposed outside that handler budget. */
 export interface HttpRoutes {
@@ -21,6 +28,27 @@ export async function createHttpService(options: {
 }) {
   const admission = createAdmission(options.settings);
   const app = Fastify({ logger: false, bodyLimit: 65536 });
+  // JSON and text are read as bytes and kept, so a route can check a signature over them; each
+  // parser gives the value and the errors Fastify's own gives (400 invalid or empty JSON, 413).
+  app.decorateRequest("rawBody", undefined);
+  app.removeContentTypeParser(["application/json", "text/plain"]);
+  const parseJson = app.getDefaultJsonParser("error", "error");
+  app.addContentTypeParser(
+    "application/json",
+    { parseAs: "buffer", bodyLimit: 65536 },
+    (request, body: Buffer, done) => {
+      request.rawBody = body;
+      parseJson(request, body.toString("utf8"), done);
+    },
+  );
+  app.addContentTypeParser(
+    "text/plain",
+    { parseAs: "buffer", bodyLimit: 65536 },
+    (request, body: Buffer, done) => {
+      request.rawBody = body;
+      done(null, body.toString("utf8"));
+    },
+  );
   let state: "uninitialized" | "ready" | "draining" = "uninitialized";
   let starting: Promise<string> | undefined;
   let shutdown: Promise<void> | undefined;

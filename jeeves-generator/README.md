@@ -386,7 +386,12 @@ bucket, or why it has none, and Preview shows them.
 - A **route stub** (any stub in an HTTP tile that consumes no queue) answers any method on
   `/modules/<module id>` and every path below it. Its `<module>.ts` takes
   `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; the types live in the
-  scaffold `src/modules/entry.ts`. `request.caller` is the tile's sign-in caller, and always
+  scaffold `src/modules/entry.ts`. `request.body` is the parsed JSON or text (up to 64 KiB; 400
+  for invalid or empty JSON, 413 over the limit, 415 for any other content type), and
+  `request.rawBody` the same body's bytes exactly as received, to check a signature over them
+  (undefined when there is no body). A `ModuleResponse.headers` value is a string or an array of
+  strings; an array sends the header once per value, such as two `Set-Cookie` lines.
+  `request.caller` is the tile's sign-in caller, and always
   `{signedIn: false}` in a tile with no guard. Its `dependencies` are real clients (provisioning for stubs,
   below). Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
   and get their clients, and are called only through another module's link.
