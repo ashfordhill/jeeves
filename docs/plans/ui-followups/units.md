@@ -64,7 +64,10 @@ Goal and record it.
 ### UF02 — The module menu fits beside its tile (F1)
 
 **Goal.** At 1440×900 and at 1280×800, a Microservice's and a Worker's module menu open beside the
-tile (the placement rule in `ModuleMenu.tsx` is unchanged) and show the legend without scrolling.
+tile without covering it, lie wholly inside the window, and show the legend without scrolling. The
+menu **may cover a side rail** (owner, 2026-11-13, after UF02's first run: at 600px wide it can't
+sit on a 650px board beside a mid-board tile). The placement rule in `ModuleMenu.tsx`, whose
+fallback already places the menu inside the window over a rail, is unchanged.
 
 **Steps.** In `jeeves/apps/web/src/canvas/canvas.css` (menu only: never change
 `.lane-module-card`, the inspector's card):
@@ -87,12 +90,25 @@ tile (the placement rule in `ModuleMenu.tsx` is unchanged) and show the legend w
 
 4. `.lane-module-menu-legend`: `padding: 9px 2px 0` → `padding: 7px 2px 0`; `font-size: 11.5px`
    → `font-size: 11px`.
-5. `jeeves/apps/web/e2e/module-menu.spec.ts`: the test UI06 moved to a 1440×1000 window goes back
-   to 1440×900 (the handoff for UI06 names it), with its assertions unchanged.
+5. `jeeves/apps/web/e2e/module-menu.spec.ts`, test `an empty Service is a container with a + at
+   its bottom; it toggles the menu and adds a module`:
+   - `await page.setViewportSize({ width: 1440, height: 1000 });` → `{ width: 1440, height: 900 }`,
+     and its comment → `// A Service's menu (632px tall, three to a row, UF02) opens beside the tile.`
+   - The comment `// It sits beside the tile, not over it, on the board.` →
+     `// It sits beside the tile, not over it, inside the window; it may cover a rail.`
+   - `expect(inside(await box(moduleMenu(page)), await box(page.locator(".lane-canvas")))).toBe(true);`
+     → `expect(inside(await box(moduleMenu(page)), { x: 0, y: 0, width: 1440, height: 900 })).toBe(true);`
+     (if `inside` takes another box shape, pass the window in that shape).
+   - Every other assertion is unchanged.
 
-Measure both menus at both sizes (their bounding box height, and whether the legend's last item
-is inside the menu's visible box). If either still scrolls or opens over a rail, stop as in rule 2
-and report the four heights; do not pick other values.
+Measure both menus at both sizes: their bounding box, whether it covers the tile, whether it lies
+inside the window, and whether the legend's last item is inside the menu's visible box. If either
+menu scrolls, covers its tile or leaves the window, stop as in rule 2 and report the measurements;
+do not pick other values. Covering a rail is expected and fine. (First run, `0923df1`: both menus
+632px tall and 600px wide at both sizes, no scrolling; they opened over a rail.)
+
+**Docs.** `docs/studio.md` and `jeeves/CATALOG.md` where they say the menu's cards are two to a
+row or that the menu sits on the board.
 
 **Mouse check.** On YouTube v3's Watch API and Transcoder (as UI06's check did), at both sizes and
 in both themes: the menu opens beside the tile, the legend is visible, one module from each group
