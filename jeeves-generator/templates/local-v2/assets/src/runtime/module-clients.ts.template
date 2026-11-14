@@ -280,8 +280,17 @@ export async function searchClient(
 // @search-end
 // @http-start
 /** Another application tile's process inside the network (`http://app-<id>:3000`). It has no
- * probe and no `depends_on`: that process may start after this one. */
+ * probe and no `depends_on`: that process may start after this one. Its failures count as an
+ * unreachable service: a rejected `fetch` is marked `Symbol.for("jeeves.internal-call")`, so a
+ * lost connection to that process waits as a store's does, not as an outside call. */
 export function httpTarget(base: string): HttpTarget {
-  return { request: (path, init) => fetch(new URL(path, base), init) };
+  return {
+    request: (path, init) =>
+      fetch(new URL(path, base), init).catch((error: unknown) => {
+        if (typeof error === "object" && error !== null)
+          Reflect.set(error, Symbol.for("jeeves.internal-call"), true);
+        throw error;
+      }),
+  };
 }
 // @http-end

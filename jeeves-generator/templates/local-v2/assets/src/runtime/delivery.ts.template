@@ -50,6 +50,8 @@ const socketCodes = new Set([
   "ENETUNREACH",
   "EPIPE",
 ]);
+/** Set by `httpTarget` on a failed call to another tile: that call is not an outside one. */
+const internalCall = Symbol.for("jeeves.internal-call");
 /**
  * `unreachable`: whether an error says the store could not be reached, rather than that the
  * message failed. It looks at the error, its `cause` chain (up to five deep) and each of an
@@ -57,11 +59,21 @@ const socketCodes = new Set([
  * EAI_AGAIN, ETIMEDOUT, EHOSTUNREACH, ENETUNREACH, EPIPE), a PostgreSQL SQLSTATE of class 08 or
  * 57P01–57P03, or a `pg` message that starts with "Connection terminated" or contains "timeout
  * exceeded when trying to connect". A statement timeout (57014), a constraint violation or any
- * other error is not unreachable.
+ * other error is not unreachable. Nor is an outside call: on the way, a `TypeError` "fetch
+ * failed" that isn't marked `Symbol.for("jeeves.internal-call")` (as `httpTarget` marks a call to
+ * another tile) answers false at once, so the message keeps the normal retries. An application's
+ * SDK that doesn't use `fetch` still looks like a store; it can throw `NonRetryable` to end a
+ * message.
  */
 export function unreachable(error: unknown): boolean {
   const found = (value: unknown, depth: number): boolean => {
     if (depth > 5 || typeof value !== "object" || value === null) return false;
+    if (
+      value instanceof TypeError &&
+      value.message === "fetch failed" &&
+      Reflect.get(value, internalCall) !== true
+    )
+      return false;
     const { code, message, cause } = value as { code?: unknown; message?: unknown; cause?: unknown };
     if (
       typeof code === "string" &&

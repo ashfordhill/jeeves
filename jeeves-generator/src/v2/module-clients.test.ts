@@ -346,6 +346,34 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     }
   });
 
+  it("marks a failed call to another tile as internal and passes a response through", async () => {
+    const internalCall = Symbol.for("jeeves.internal-call");
+    const response = new Response("ok");
+    const refused = new TypeError("fetch failed", {
+      cause: Object.assign(new Error("connect ECONNREFUSED 10.0.0.3:3000"), {
+        code: "ECONNREFUSED",
+      }),
+    });
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(response)
+      .mockRejectedValueOnce(refused)
+      .mockRejectedValueOnce("not an object");
+    vi.stubGlobal("fetch", fetch);
+    try {
+      const target = clients.httpTarget("http://app-stats-api:3000");
+      expect(await target.request("/modules/stats-search")).toBe(response);
+      expect(Reflect.get(refused, internalCall)).toBeUndefined();
+      await expect(target.request("/modules/stats-search")).rejects.toBe(refused);
+      expect(Reflect.get(refused, internalCall)).toBe(true);
+      // Only an object can carry the mark; anything else is rethrown as it was.
+      await expect(target.request("/modules/stats-search")).rejects.toBe("not an object");
+      expect(fetch).toHaveBeenCalledTimes(3);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("bounds each probe to 5 s", async () => {
     vi.useFakeTimers();
     fake.fail = "health";

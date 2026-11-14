@@ -141,6 +141,9 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     expect(text(stack, "README.md")).toContain(
       "an unreachable store waits 5 s and keeps the attempt",
     );
+    expect(text(stack, "README.md")).toContain(
+      "a failed call to an outside host keeps the normal retries",
+    );
     // Off, nothing is provisioned for stubs.
     expect(json(stackOff, "infra/local.json").broker).toEqual([]);
   });

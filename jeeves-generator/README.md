@@ -505,7 +505,9 @@ or 57P01–57P03, or `pg`'s "Connection terminated"), the delivery runner (`unre
 `delivery.ts`) puts the message back on its queue with the same `x-delivery-attempt` 5 s later,
 so an outage never sends it to `.failed`; its line's action reads `store unreachable, retry in
 5000 ms (attempt not counted)`, and `pnpm stop` ends the wait at once, leaving the message in its
-queue. A failed message logs one JSON line: `not-implemented` (`tile`, `module`,
+queue; a failed call to an outside host keeps the normal retries (a `fetch failed` counts as
+unreachable only when it is `httpTarget`'s call to another tile). A failed message logs one JSON
+line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
 and the next step. Lines are rate limited like the 501s. Nothing in a loop stops the process, a

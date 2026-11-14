@@ -216,6 +216,25 @@ describe("emitted runtime primitives", () => {
       expect(deliveryCore.unreachable(error), String(error)).toBe(false);
   });
 
+  it("tells a failed outside fetch from a call to another tile", () => {
+    const refused = () =>
+      new TypeError("fetch failed", {
+        cause: Object.assign(new Error("x"), { code: "ECONNREFUSED" }),
+      });
+    // An outside call is not a store: it keeps the normal retries.
+    const outside = refused();
+    expect(deliveryCore.unreachable(outside)).toBe(false);
+    // httpTarget marks a call to another tile; that one is unreachable.
+    Reflect.set(outside, Symbol.for("jeeves.internal-call"), true);
+    expect(deliveryCore.unreachable(outside)).toBe(true);
+    // Two causes deep under a pg error, an unmarked failed fetch is still not a store.
+    const pgError = Object.assign(
+      new Error("query failed", { cause: new Error("handler failed", { cause: refused() }) }),
+      { severity: "ERROR", code: "P0001" },
+    );
+    expect(deliveryCore.unreachable(pgError)).toBe(false);
+  });
+
   it("waits out an unreachable store, keeping the attempt, and close() ends the wait", async () => {
     vi.useFakeTimers();
     try {

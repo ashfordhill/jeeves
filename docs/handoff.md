@@ -13807,3 +13807,63 @@ bar at both sizes and the Transcoder's the status bar. Dark `--select-ring` is t
 untouched and unstaged.
 **For the next unit.** The store outage amendment SO04–SO05 under its own plan. UF07–UF09 in
 [review.md](plans/ui-followups/review.md) wait for the owner's answers.
+
+## 2026-11-13 — SO04: A failed outside `fetch` keeps the normal retries
+
+**What changed.**
+- `delivery.ts.template`, `unreachable()`: on the walk (the error, its causes and an
+  `AggregateError`'s `errors`), a `TypeError` whose `message` is exactly `fetch failed` and whose
+  `Symbol.for("jeeves.internal-call")` isn't `true` answers false at once, before its code,
+  message or causes are read. The doc comment says so, and that an application's SDK which doesn't
+  use `fetch` still looks like a store (it can throw `NonRetryable` to end a message).
+- `module-clients.ts.template`, `httpTarget`: `request` is `fetch(new URL(path, base),
+  init).catch(…)`; a rejection with an object gets the symbol set to `true` (`Reflect.set`) and is
+  rethrown, and a resolved response comes back as it was. Its doc comment adds one sentence.
+- Tests (2 new): `primitives.test.ts` "tells a failed outside fetch from a call to another tile"
+  (the plan's `TypeError` false, the same error marked true, and `fetch failed` two causes deep
+  under a pg error false); `module-clients.test.ts` "marks a failed call to another tile as
+  internal and passes a response through" (a fake `fetch` by `vi.stubGlobal`, as the existing test
+  does: the same `Response` back, the rejection marked and rethrown, a non-object rethrown as it
+  was). `loop-wiring.test.ts` gains one `toContain` for the generated README's new words.
+- Pins (Rule 7, `processes-off.json`): `frozen-v2` and `v2-module-design` changed on
+  `.jeeves/manifest.json` and `src/runtime/delivery.ts`; `stub-stack` unchanged.
+- Docs: SO01's and SO03's sentence in `jeeves-generator/README.md`, the generated README
+  (`src/v2/local.ts`) and `docs/studio.md` gains "a failed call to an outside host keeps the
+  normal retries". The [store outage review](plans/store-outage/review.md)'s open item 1 is done
+  here (the review is its record, not edited).
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests. On HEAD's two templates
+(mine kept in a scratchpad copy, restored and checked by SHA-256, copies deleted): 2 of 2 new tests
+fail (`expected true to be false`; `expected undefined to be true`), the 14 others in those files
+pass. HEAD's `local.ts` has no "outside host", so the new `toContain` fails there too. With the
+templates, `processes-off.test.ts` failed 2 (frozen-v2, v2-module-design) before `pins:update`;
+`assemble.test.ts`'s frozen v1 test passed throughout. After: `pnpm format` no fixes; `pnpm check`
+exit 0, 115 files / 912 tests (Biome's one info is older). The wiring fixture exported to the
+scratchpad, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build` (`tsc`):
+exit 0; deleted. `pnpm test:e2e` (native): 74 passed (4.6 min). `pnpm --filter @jeeves/web build`:
+exit 0. Docker phase, source SHA-256 `39731ac5…` for both: `--suite=wiring` 2/2 (Vitest 178.4 s,
+202 s wall; B05's internal call through `httpTarget` and the controlled external endpoint);
+`--suite=faults` 5/5 (470.7 s, 525 s wall; B09 database 62.8 s). Each run's stacks released and
+temporary folder gone; Docker containers, volumes, networks and image tags equal the pre-unit
+inventory; the runs' `test-results/generated/` folders removed. Nothing user-visible changed, so no
+browser check.
+**Differences from the plan.**
+- The pins changed on two of the three allowed paths: no pinned export emits
+  `src/runtime/module-clients.ts` (Runnable processes off), so it has no pin to change.
+- "Return false at once" ends the walk down a cause chain. Inside an `AggregateError`'s `errors`
+  it answers false for that item and the other items are still read (the step names causes only).
+- The test's pg error carries a SQLSTATE that isn't unreachable (`P0001`). An unreachable code on
+  an outer error is read first and answers true, as the walk goes outside in; the step names no code.
+- `Reflect.get`/`Reflect.set` in place of property access: the same result with no casts, and a
+  rejection that can't take the mark is rethrown as it was, not replaced by a `TypeError`.
+- The `loop-wiring.test.ts` line is not in step 3; it proves step 5's generated README words, as
+  SO03's line does.
+**Noticed.** From the code, not run: a marked call to another tile that is away still logs `store
+unreachable, retry in 5000 ms (attempt not counted)` ("store" covers a tile's process). Only a
+socket code on the cause makes a marked call wait: undici's `UND_ERR_SOCKET` (the other process
+dies mid-request) isn't listed and spends an attempt, as before SO04. An outside call through
+another client (axios, an SDK over `node:http`) carries the socket code itself and still waits for
+ever, as the doc comment says. A `fetch` timed out by `AbortSignal.timeout` is a `DOMException`,
+never unreachable. `field-projects/youtube/v4` keeps the old runtime. Owner dirty paths untouched
+and unstaged.
+**For the next unit.** SO05 reviews SO04. The store outage review's open item 1 is done by SO04.
