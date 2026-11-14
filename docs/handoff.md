@@ -13937,3 +13937,34 @@ need no owner decision (QG01, QG02, QG05, QG17, QG19, QG12, QG11) and a closing 
 `AGENTS.md` and `jeeves/PLAN.md` name it as the active plan.
 **Checks.** None (docs only).
 **For the next unit.** QG01. Owner decisions pending for QG03, QG04, QG06 (and so QG07–QG10), QG18, QG20.
+
+## 2026-11-14 — QG01: blocked
+
+**What changed.** Only this entry. No template, generator source, test, pin or doc was edited. No
+export was made, and no Docker resource, project or scratch copy was created.
+**Checks.** Before any change, at `38c33ef`: `pnpm check` exit 1. Biome reported 3 errors and 1
+info (the info is the older `local.mjs:117` `useTemplate`). The 3 errors are all formatter errors
+in the fixtures that `38c33ef` added:
+- `docs/plans/qrwty-gaps/fixtures/probe-design.json` (one minified line);
+- `fixtures/app-code/front-probe.ts`;
+- `fixtures/app-code/front-internal-grant.ts`.
+
+`check` is `lint && typecheck && test`, so I ran the other two alone. `pnpm typecheck` exit 0.
+`pnpm test` passed 115 files / 912 tests. The e2e run, the build, the Docker phase and the
+regeneration proof were not run. Rule 6 (production foundations, unchanged by this plan) says to
+stop when `check` fails before any change.
+**What was found.** SO08 recorded `pnpm check` exit 0 at `59bfbc6`, and `c2c8127` is docs only.
+The fixture commit `38c33ef` is what turned `check` red. Making it green again needs a change
+outside QG01's Files. Two ways, for the coordinator or the owner to choose:
+- (a) Add `"!docs/plans/qrwty-gaps/fixtures"` to `files.includes` in
+  `tooling/biome.config.json`, as the field-project inputs already are. The fixtures stay
+  byte-for-byte QRWTY's, and `probe-design.json` keeps the SHA-256 the plan cites (`a3b6204f…0505`,
+  verified).
+- (b) Run `pnpm format` on them. This rewrites `probe-design.json`, which changes that SHA-256 in
+  the plan and in each unit's brief.
+**Differences from the plan.** None applied.
+**Noticed.** The unit is QRWTY-driven (Q03). I read QG01's section and found no other blocker in
+it. The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+modes) were not touched or staged.
+**For the next unit.** Once `pnpm check` exits 0 on the tree, QG01 can be assigned again from its
+start.
