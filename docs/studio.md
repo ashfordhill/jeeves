@@ -1469,8 +1469,9 @@ subscriber queue, so each receives every message. A message that reaches "Not im
 to its queue's `.failed` at once with one log line (a template's too, with no retries), and the
 process stays healthy; a stub's own error is retried 5 times with backoff before `.failed`. A
 message whose store is unreachable (a lost database connection) waits 5 s and keeps the attempt,
-in a stub's loop and a template's alike, so an outage never sends it to `.failed`; a failed call
-to an outside host keeps the normal retries. A
+in a stub's loop and a template's alike, so an outage never sends it to `.failed`; a failed
+`fetch` to an outside host keeps the normal retries (another HTTP client's socket error still
+waits: see the generator README). A
 process that loses its broker keeps running: its broker publishers and consumers reconnect every
 5 s, a publish fails at once while the broker is away, and consumers resubscribe when it is back. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked

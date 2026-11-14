@@ -13900,3 +13900,30 @@ covers the mark. `field-projects/youtube/v4` keeps the old runtime. Owner dirty 
 and unstaged.
 **For the next unit.** No active plan; the owner names the next one. The review's proposed units:
 SO08 (docs, ready) can run now; SO06 and SO07 wait for the owner.
+
+## 2026-11-13 — SO08: Say which outside calls keep the normal retries
+
+**What changed.**
+- `docs/studio.md`, the loops paragraph: "a failed call to an outside host keeps the normal
+  retries." became "a failed `fetch` to an outside host keeps the normal retries (another HTTP
+  client's socket error still waits: see the generator README)."
+- The generated README (`jeeves-generator/src/v2/local.ts`, Runnable processes only): "a failed
+  call to an outside host keeps the normal retries" became "a failed `fetch` to an outside host
+  keeps the normal retries".
+- `jeeves-generator/src/v2/loop-wiring.test.ts`: the README `toContain` takes the new words.
+- `jeeves-generator/README.md` unchanged: its sentence already carries the qualifier. No template,
+  pin or other test changed (`processes-off.json` untouched).
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 912 tests, Biome 1 info (older).
+The new assertion against the old `local.ts`: `loop-wiring.test.ts` 1 failed / 7 passed; with the
+new words 8 passed. After: `pnpm format` no fixes; `pnpm check` exit 0, 115 files / 912 tests,
+Biome 1 info; `pnpm test:e2e` (native) 74 passed (4.6 min); `pnpm --filter @jeeves/web build`
+exit 0. No Docker suite and no browser check: the unit names none and nothing user-visible in the
+studio changed.
+**Differences from the plan.** The review places the `docs/studio.md` sentence "at the end of the
+loops paragraph"; it ends the unreachable-store sentence, and the broker sentence follows in the
+same paragraph. Only that one occurrence exists, so the edit is the one the Goal means.
+**Noticed.** `field-projects/youtube/v4` keeps the old runtime and README. Owner dirty paths
+untouched and unstaged.
+**For the next unit.** No active plan; the owner names the next one. SO06 and SO07 in the
+[store outage review](plans/store-outage/review.md) wait for the owner.
