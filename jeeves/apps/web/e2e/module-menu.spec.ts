@@ -62,8 +62,8 @@ test("an empty Service is a container with a + at its bottom; it toggles the men
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  // A board with room for a Service's menu (about 780px tall, UI06) beside the tile.
-  await page.setViewportSize({ width: 1440, height: 1000 });
+  // A Service's menu (632px tall, three to a row, UF02) opens beside the tile.
+  await page.setViewportSize({ width: 1440, height: 900 });
   const id = await blankService(page, "E2E Module plus");
   try {
     // In Detailed the new, empty Service is a container: its header, no rows and its `+`, at the
@@ -91,9 +91,11 @@ test("an empty Service is a container with a + at its bottom; it toggles the men
         .locator("legend")
         .evaluateAll((items) => items.map((item) => item.textContent)),
     ).toEqual(["Requests", "Data", "Events", "Files & media", "Custom"]);
-    // It sits beside the tile, not over it, on the board.
+    // It sits beside the tile, not over it, inside the window; it may cover a rail.
     expect(overlaps(await box(moduleMenu(page)), frame)).toBe(false);
-    expect(inside(await box(moduleMenu(page)), await box(page.locator(".lane-canvas")))).toBe(true);
+    expect(inside(await box(moduleMenu(page)), { x: 0, y: 0, width: 1440, height: 900 })).toBe(
+      true,
+    );
     await plus.click();
     await expect(moduleMenu(page)).toHaveCount(0);
     await expect(plus).toHaveAttribute("aria-expanded", "false");

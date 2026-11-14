@@ -441,11 +441,10 @@ catalog order within a group: **Requests** (Rate limiter, Redirect responder, Au
 call), **Data** (Cache reader, ID generator, Data access, Lifecycle writer, Event counter, Index
 writer, Search query, Favorites), **Events** (Event publisher, Event consumer), **Files & media**
 (Multipart uploads, Video encoder, Video packager, Video thumbnailer) and **Custom**. Each group has
-a heading (a small square in its family colour and its name) over its cards, two to a row (a lone
-card takes the whole row). A card has its group's solid fill and border, its name and, at the
-right, a dot for who writes the code in that tile; under them its icon and its one-line
-description, cut with an ellipsis (the card's tooltip has the whole line). A legend under the
-last group explains the dots:
+a heading (a small square in its family colour and its name) over its cards, three to a row. A
+card has its group's solid fill and border, its name and, at the right, a dot for who writes the
+code in that tile; under them its icon and its one-line description, cut with an ellipsis (the
+card's tooltip has the whole line). A legend under the last group explains the dots:
 
 | Dot | Word | Means | A Microservice's | A Worker service's |
 | --- | --- | --- | --- | --- |
@@ -456,10 +455,11 @@ last group explains the dots:
 These are the studio's words (`generationWords` in `module-status.ts`), on the menu, the
 inspector's module cards and the module page; chat, the generator's reports and Generate project's
 Modules list keep the spec's words (Template, Part of a template, Stub). An Uploads tile
-offers 11 kinds, a Microservice 13 and a Worker service 16. A Microservice's menu is about 780px
-tall and a Worker service's about 840px: on a canvas shorter than the menu plus 32px it opens over
-a rail beside the tile (a Microservice's does at 1440×900), and in a window shorter than the menu
-plus 32px (1280×800) it scrolls inside itself.
+offers 11 kinds, a Microservice 13 and a Worker service 16. The menu is 600px wide; a
+Microservice's and a Worker service's are each about 632px tall (seven rows of cards). With both
+rails open the canvas seldom has that much room beside a tile, so at 1440×900 and 1280×800 the
+menu usually opens over a rail beside the tile; it scrolls inside itself only in a window shorter
+than the menu plus 32px.
 **Click a kind** to add a module of it, named after the kind
 ("Data access", then "Data access 2"), at the end of the tile's modules (`addModule`). Its page
 opens in the inspector with its Name field ready to type over; the tile is selected, and in the
@@ -1310,9 +1310,9 @@ and all twenty components, with nothing omitted and no findings.
   at the board's zoom, while the tabs and the `+` scale with the board. With both rails open (TinyURL fits at
   0.56 at 1440×900, 0.45 at 1280×800) the tabs are about 22px or 18px, a container's `+` about
   16px or 13px (the Detailed fits are smaller still: about 8–9px for YouTube), tile names are small,
-  and the link fan's panel (about 430 by 380px) and the module menu (468px wide) cover nearby
-  tiles, never their own (a tab never drops on them, so nothing is lost). Only a canvas too small
-  for the panel on every side of its tile lets it cover part of that tile. Closing a rail or
+  and the link fan's panel (about 430 by 380px) and the module menu (600px wide, often over a
+  rail) cover nearby tiles, never their own (a tab never drops on them, so nothing is lost). Only
+  a canvas too small for the panel on every side of its tile lets it cover part of that tile. Closing a rail or
   zooming in helps; a fitted camera refits by itself.
 - A menu or fan stays where it opened: the wheel and a resize close it rather than move it.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the

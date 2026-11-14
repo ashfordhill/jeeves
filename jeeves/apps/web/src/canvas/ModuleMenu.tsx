@@ -252,7 +252,7 @@ function menuPlace(
 }
 
 /**
- * The menu itself: a title, then each group under its name, its cards two to a row, then the
+ * The menu itself: a title, then each group under its name, its cards three to a row, then the
  * legend of the dots.
  */
 function ModuleMenu({

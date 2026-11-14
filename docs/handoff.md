@@ -13552,3 +13552,61 @@ unit, left. A module's Refused status keeps its yellow edge (a refusal, not a wa
 before UF02 on the coordinator's order; UF02 is still blocked. Owner dirty paths untouched and
 unstaged.
 **For the next unit.** UF04 of [UI follow-ups](plans/ui-followups/units.md).
+
+## 2026-11-13 — UF02: The module menu fits beside its tile
+
+**What changed.**
+- `canvas.css`, the module menu only (`.lane-module-card` untouched): `.lane-module-menu` 600px
+  wide, `gap` 8px, `padding` 10px; `.lane-module-menu-items` `repeat(3, minmax(0, 1fr))`, `gap`
+  5px; a new `.lane-module-menu-item` rule (`gap` 2px, `padding` 6px 8px 7px) and its name at
+  13.5px, after the shared card rule; the legend `padding` 7px 2px 0, 11px. Its comment and
+  `ModuleMenu.tsx`'s now say three to a row. Placement (`menuPlace`, `placeBeside`) is unchanged.
+- `module-menu.spec.ts` (`an empty Service is a container…`): back to 1440×900, and the menu must
+  lie inside the window (1440×900 box) rather than on `.lane-canvas`; the step's two comments.
+  No other assertion changed.
+- `docs/studio.md`: cards three to a row; the menu's size (600px wide, about 632px tall) and that
+  at 1440×900 and 1280×800 it usually opens over a rail; the Limits line says 600px, often over a
+  rail. `jeeves/CATALOG.md` says neither, so unchanged.
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests. After: `pnpm check`
+exit 0, 115 / 910 (Biome: 1 info, older, in a template, and 2 new warnings, below);
+`pnpm test:e2e` 74 passed (4.6 min); `pnpm --filter @jeeves/web build` exit 0. Mouse
+(`uf02-check.spec.ts`, then deleted): 4 passed, 1440×900 and 1280×800, no page error. Every menu
+is 600×632.375px (seven card rows; Microservice groups 4/5/2/1/1, Worker 4/6/2/3/1), never
+scrolls (scrollHeight 628 = clientHeight 628), never covers its tile, lies inside the window, and
+the legend's last item ends 9.6px above the menu's visible bottom, in both themes. Menu boxes
+(x, y), YouTube in Simple with both rails, light and dark alike:
+- Watch API: 1440 (655.6, 16) over the inspector rail; 1280 (588.7, 16) over the inspector rail.
+- Transcoder: 1440 (812.6, 251.6) over the inspector rail; 1280 (51.9, 151.6) over the chat rail.
+- Also measured: Detailed, both rails (Watch API 1440 (655.2, 20.8), 1280 (583.4, 16); Transcoder
+  1440 (797.2, 251.6), 1280 (25.3, 151.6)); Simple, chat collapsed (Watch API 1440 (499, 72) on
+  the canvas, 1280 (428.6, 16); Transcoder 1440 (664.2, 251.6), 1280 (572.5, 151.6)); the e2e's
+  blank Microservice, Detailed (1440 (199, 184.8), 1280 (39, 134.8), over the chat rail). All pass.
+
+By mouse, at both sizes and in both themes, one module from each group (the first card the design
+accepts): Rate limiter, Cache reader, Event publisher, Custom on each tile; Multipart uploads on
+Search API (Watch API refuses it: "Watch API has two Data access modules on databases; Multipart
+uploads needs one"); Video encoder on the Transcoder, then in dark Video packager (a second Video
+encoder is refused: "Job consumer already serves Video encoder…"). Each opened with its Name
+focused. Six screenshots in `plans/ui-followups/evidence/uf02/` match `preview/module-menu-*.png`
+but for three columns. The spec deleted its projects; `jeeves_e2e` holds only "E2E Every kind" and
+"TinyURL · studio study".
+**Differences from the plan.**
+- The two code comments that said two to a row now say three (Rule 8's spirit; not named).
+- Step 3's rule, placed as written after the shared card rule, gives two Biome
+  `noDescendingSpecificity` warnings: `.lane-module-top strong` and `.lane-module-status strong`
+  (the inspector's, later in the file) have lower specificity than
+  `.lane-module-menu-item .lane-module-top strong`. They don't match the same elements and
+  `pnpm check` exits 0; I kept the plan's placement rather than move the rule. Moving the
+  13.5px rule after `.lane-module-status[data-status="refused"] strong` would silence both.
+- Watch API refuses Multipart uploads by a design rule, so that group's add was on Search API
+  (another Microservice), as UI06's check did.
+
+**Noticed.** Covering a rail includes the bars: Watch API's menu (y 16) covers the top bar's right
+end (undo, redo, the rail toggles, Generate project) while open, and the Transcoder's at 1440×900
+the status bar's Dark mode button; a click away closes it. A group's lone card now takes one
+column of three (the preview's Multipart uploads and Custom take the row), and descriptions are
+cut sooner in ~189px cards; their tooltips keep the whole line. Owner dirty paths untouched and
+unstaged.
+**For the next unit.** UF04 of [UI follow-ups](plans/ui-followups/units.md). UF02 is done; UF03
+was committed before it.
