@@ -38,10 +38,10 @@ The owner answered the plan's decisions for QRWTY's coordinator:
 - **Decision 6 (QG18): yes.** A client-side query timeout counts as unreachable.
 - **Decision 7 (QG20): yes.** External API and Identity tiles give stubs a configured HTTP client.
 
-Run after batch 1's remaining units (QG12, QG11) and QGR1, in this order: QG03, QG04, QG06, QG07,
-QG08, QG09, QG10, QG18, QG20, then **QGR2 — Review batch 2**, written like QGR1 (Fable, xhigh; its
+Run after batch 1's remaining units (QG12, QG11) and QGR1, in this order: QG03, QG04, QG06, QG24, QG07,
+QG08, QG09, QG10, QG18, QG20, QG21, QG22, QG23, then **QGR2 — Review batch 2**, written like QGR1 (Fable, xhigh; its
 record is `docs/plans/qrwty-gaps/review-batch2.md`; commit `QGR2: review QRWTY gap batch 2`).
-QG13–QG16 stay deferred.
+QG21–QG24 are the QGR1 review's ready units; their briefs are in [review-batch1.md](review-batch1.md) §Proposed units (QG24 after QG06). QG25 (the edge's 503 carries `Retry-After`) needs the owner. QG13–QG16 stay deferred.
 
 
 Notes from the Q03 review that Q03b left for this copy: record F22 (the edge rewrites `Host` and
