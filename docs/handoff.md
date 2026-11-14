@@ -13475,3 +13475,36 @@ slowest PGlite tests take about 3.8 s on two CPUs here (CI named none). `favorit
 1,001st test keeps its own 60 s. Owner dirty paths untouched and unstaged.
 **For the next unit.** UF02 of [UI follow-ups](plans/ui-followups/units.md). If hosted CI still
 times out after the push, the failing test names say which project needs the budget.
+
+## 2026-11-13 — UF02: blocked
+
+**What changed.** Nothing but this entry. Steps 1–5 were applied exactly as written (`canvas.css`
+menu rules, `module-menu.spec.ts` back to 1440×900, plus the "two to a row" and "468px" sentences
+in `docs/studio.md` and the two comments), measured, then undone with `git checkout --`. The
+temporary `uf02-check.spec.ts` and its screenshots are deleted; its projects were deleted, and
+`jeeves_e2e` holds only "E2E Every kind" and "TinyURL · studio study".
+**Checks.** Before any change, `pnpm check` passed (115 files, 910 tests). With the edits:
+`module-menu.spec.ts` alone 4 passed, 1 failed: `:60` (an empty Service…) at line 96, `inside(menu,
+.lane-canvas)`; rerun alone, failed the same way. Full e2e, the web build and `pnpm check` with the
+edits were not run.
+**What was found.** The height now fits; the 600px width doesn't. Both menus are 600×632.375px at
+both sizes (seven card rows each), the four heights: Service 632.375 and Worker 632.375 at
+1440×900, Service 632.375 and Worker 632.375 at 1280×800. None scrolls; the legend's last item is
+inside the visible box every time, in both themes. The inspector card is unchanged (8px 10px 9px,
+15px name). But by the unchanged rule (`GAP` 12px) the menu needs 612px of board on one side of the
+tile, or 644px above or below, and most tiles don't have it, so it opens beside the tile over a
+rail. Room on the board (left/right/above/below, px), board `+`:
+- `module-menu.spec.ts`'s blank Microservice, Detailed, both rails: 1440×900 (board 810×808)
+  506/48/372/340, over the chat rail (the 468px menu fitted that 506px); 1280×800 (650×708)
+  346/48/322/290, over a rail.
+- YouTube, Simple, both rails: Watch API 290/471/253/507 at 1440, 233/378/233/436 at 1280;
+  Transcoder 447/314/543/217 at 1440, 359/252/465/204 at 1280. All four over a rail.
+- YouTube with chat collapsed (UI06's check): Watch API on the canvas at 1440 (right 627), over a
+  rail at 1280 (372/538); Transcoder over a rail at 1440 (602/463) and 1280 (516/394).
+
+One module from each group was still added by mouse at both sizes, with no page error.
+**Noticed.** At 1280×800 with both rails the board is 650px wide, so a mid-board YouTube tile has
+under 400px on either side: no menu near this width fits beside it there. The Goal needs a
+narrower menu, a different measure of "beside the tile", or another rule; that's the owner's.
+Owner dirty paths untouched and unstaged.
+**For the next unit.** UF02 is not done. Revise its values or Goal, then rerun UF02 before UF03.
