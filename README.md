@@ -67,7 +67,7 @@ UI improvements were a part of the chunk of work executed Friday night - mostly 
 
 **Qrwty diagram**
 
-<p align="center"><img src=".docs/qrwty/qrwty-diagram.png" width="600"/></p>
+<p align="center"><img src=".docs/qrwty/qrwty-diagram.png" width="900"/></p>
 
 
 Some UI improvements I would like:
