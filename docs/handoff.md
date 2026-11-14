@@ -15023,3 +15023,95 @@ endpoint change is the `binding` that `cacheClient` passes, plus `valkey.ts`'s h
 
 **For the next unit.** QG24. The rule and message shape are in place; `OIDC_ISSUER` and
 `OIDC_JWKS_URL` can fail by name in the guard's setup lines.
+
+## 2026-11-14 — QG24: The OIDC variables fail startup by name
+
+**What changed.**
+- `jeeves-generator/src/v2/http-wiring.ts`, `verifiedIdentity`'s setup lines (the guard's
+  `(() => { … })()` inside `runProcess`'s start): a `signInUrl(name)` check reads `OIDC_ISSUER`
+  and `OIDC_JWKS_URL` and returns the value only when `URL.parse` gives it an `http:` or `https:`
+  protocol; otherwise ``throw new Error(`Invalid endpoint ${name}`)``, QG06's shape. The
+  `startup-failed` line names the variable, never its value. The value reaches
+  `createPrincipalVerifier` exactly as set (the issuer is compared with `iss`, so nothing is
+  normalised). The `?? ""` fallbacks are gone. `OIDC_AUDIENCE` keeps QG11's check and message, and
+  is still checked first.
+- Tests, 3 new:
+  - `tile-guard.test.ts`, on the exact emitted Watch API process with the server's Fastify:
+    - Refusals (20 cases): `OIDC_ISSUER` and `OIDC_JWKS_URL` each unset, empty, relative,
+      `/realms/sign-in`, `//issuer.example/…`, `not a url`, `ftp:`, `file:` and `ws:`. Each gives
+      exactly the `startup-failed` line `Error: Invalid endpoint <NAME>` and `Application startup
+      failed`, exit code 1, no app started, and the value appears nowhere in the output.
+      `OIDC_AUDIENCE` unset and empty give QG11's message.
+    - Pass-through: Compose's local shape (an `http:` issuer on a loopback port, the key set at
+      `identity-sign-in:8080`) and a deployed one (`https://accounts.example`, no path; a key-set
+      URL with a query). Each starts, accepts a token from that exact issuer, and refuses one from
+      another (the `https:` test issuer; `https://accounts.example/` with a slash added).
+  - `http-wiring.test.ts`, 1: in both guarded processes of the sign-in stack, no
+    `process.env.OIDC_* ??` fallback is left, `signInUrl` is called for the issuer and key set only,
+    inside `runProcess`, and the `OIDC_*` names read equal the ones the Compose service sets and the
+    report row lists. The unguarded process reads none.
+  - Updated: QG11's emitted-block assertion in `http-wiring.test.ts`. Its issuer and key-set lines
+    are the ones this unit replaces, and the check's lines sit inside the block. Setup only, in
+    `tile-guard.test.ts`: `token` takes an issuer, `run` takes the two URLs, and `run` first drops
+    the signal listeners of earlier runs. Without that, 20 failed starts in one test trip Node's
+    10-listener warning.
+- Pins: none changed. No pinned export has a guard, and `processes-off.test.ts` passes as it is.
+- Docs: `jeeves-generator/README.md`, the sign-in paragraph under Module routes.
+
+**Checks.**
+- Before any change, at `a7c4b0d`: `pnpm check` exit 0, 115 files / 949 tests.
+- After: `pnpm check` exit 0, 115 files / 952 tests. Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed (4.6 min), first run. Web build: exit 0.
+- New tests on HEAD's templates: I used a scratch clone at `a7c4b0d` with its own offline install
+  and the two changed test files. The clone is deleted.
+  - 2 of the 3 new tests fail there. The refusal test gets HEAD's `Error: Invalid verified
+    identity binding`; the `http-wiring` test finds the fallback. The updated QG11 assertion fails
+    too.
+  - The pass-through test passes on HEAD, which accepted those values already. It pins that the
+    check rejects no valid value.
+  - The other 17 tests in the two files pass. The checkout's `node_modules/.modules.yaml`,
+    `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` have the same checksums as before, and
+    no state file or `.bin` shim names a scratch path.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths: in the probe, `src/processes/front.ts`, `.jeeves/manifest.json` and
+    `.jeeves/report.json`. In r83, `src/processes/account-api.ts`, `billing-api.ts` and
+    `link-api.ts`, plus the manifest and report. These are exactly the guarded processes.
+  - Each process differs only by the eight check lines and the two `signInUrl(...)` arguments.
+    In the manifest, only the content hashes of those files and the report changed; every row's
+    owner inventory changed too.
+  - The report differs only in the registry's source inventory: `http-wiring.ts` 45367 → 45876
+    bytes (`8e6a3165…205d`), the owners' `sourceSha256` `c2ba407b…cf32` → `00edd7de…d937` and
+    `607885ad…85c1` → `6d26bd46…f1db`. Required gaps are unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    (`tsc`, so `URL.parse` type-checks on the export's `@types/node` 24.19.2) exit 0. The scratch
+    exports are deleted.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=identity`: 1 file / 1 test
+  passed (B07, 114 s), first run, so no rerun. Its source snapshot has the changed
+  `http-wiring.ts` (`8e6a3165…205d`), and the real jose verified tokens through the new check.
+  - The Docker inventory after equals the one before, line for line. `jeeves-postgres-1` was not
+    touched, and no `gs-` resource is left. This run's `test-results/generated/` folder is removed.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- QG11's message is kept. The brief says it "may become the same shape", but an audience isn't an
+  endpoint, and its message already names the variable. So with all three unset, the audience's
+  line comes first.
+- The URL rule is exactly the brief's: absolute `http:` or `https:`. Unlike QG06's tile URL, it
+  doesn't refuse credentials, a query or a fragment: a key-set URL can carry a query (Azure AD
+  B2C's `?p=<policy>`), and the issuer is compared exactly anyway.
+- The guard's setup runs after the module clients' probes, as QG11's check did. A guarded process
+  with stub clients probes those first, so a missing store fails before a missing `OIDC_*`.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03). The QGR1 review proposed it as ready (finding 6, §Proposed
+  units), to run after QG06.
+- WHATWG URL parsing strips leading and trailing spaces and control characters. So a value with a
+  trailing newline passes the check, and then every token is refused on `iss`, with 401s. QG06's
+  URL rule has the same limit.
+- The process files' comment "a failed probe fails startup" is still inexact for a cache (QG04's
+  note). No edge file changed, so the F22 note is still owed (QG25).
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG07. Every `OIDC_*` variable a guarded process reads now fails startup by
+name.

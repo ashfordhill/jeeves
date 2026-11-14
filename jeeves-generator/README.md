@@ -388,8 +388,10 @@ bucket, or why it has none, and Preview shows them.
   `src/runtime/tile-guard.ts`, emitted when a guard exists) on `createPrincipalVerifier`
   (`OIDC_ISSUER`, the audience in `OIDC_AUDIENCE`, `OIDC_JWKS_URL`, RS256, a 3 s key-set
   timeout, `exp` and `sub` required). A missing or empty `OIDC_AUDIENCE` fails startup
-  (`startup-failed`, naming it). Every module route of the tile is mounted through
-  `guard.routes(...)`: **Required** answers 401
+  (`startup-failed`, naming it), and so does an `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't an
+  absolute `http:` or `https:` URL, with `Invalid endpoint <variable>`, never its value; the
+  issuer is compared with each token's `iss` exactly as it is set. Every module route of the
+  tile is mounted through `guard.routes(...)`: **Required** answers 401
   `{"error":"SIGN_IN_REQUIRED","message":"Sign in to continue."}` without a valid
   `Authorization: Bearer` token; **Optional** treats a request without the header as anonymous
   and still answers 401 for a token that fails verification (a key-set failure included).

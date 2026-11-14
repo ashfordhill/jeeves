@@ -542,12 +542,20 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
           `    const binding = config.templates["${guard}"];`,
           "    // The audience its tokens carry is the deployment's; Compose sets the local client's.",
           '    if (!process.env.OIDC_AUDIENCE) throw new Error("OIDC_AUDIENCE must name the audience of the sign-in tokens.");',
+          "    // So are its issuer and key set (Compose sets the local ones): each an absolute http: or",
+          "    // https: URL, or startup fails naming the variable, never its value.",
+          '    const signInUrl = (name: "OIDC_ISSUER" | "OIDC_JWKS_URL") => {',
+          '      const value = process.env[name] ?? "";',
+          "      const protocol = URL.parse(value)?.protocol;",
+          `      if (protocol !== "http:" && protocol !== "https:") throw new Error(\`Invalid endpoint \${name}\`);`,
+          "      return value;",
+          "    };",
           "    return createTileGuard({",
           "      signIn: binding.signIn,",
           "      verify: createPrincipalVerifier({",
-          '        issuer: process.env.OIDC_ISSUER ?? "",',
+          '        issuer: signInUrl("OIDC_ISSUER"),',
           "        audience: process.env.OIDC_AUDIENCE,",
-          '        jwksUrl: process.env.OIDC_JWKS_URL ?? "",',
+          '        jwksUrl: signInUrl("OIDC_JWKS_URL"),',
           "",
         ].join("\n"),
       );
@@ -559,6 +567,36 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       expect(services[service].environment.OIDC_AUDIENCE).toBe("sign-in-web");
     expect(services["app-video-lifecycle"].environment?.OIDC_AUDIENCE).toBeUndefined();
     expect(text(bundle, "scripts/setup.mjs")).toContain(`clientId: \`\${identity.id}-web\`,`);
+  });
+
+  it("checks each OIDC_* variable it reads before the sign-in is built, and Compose sets them (QG24)", () => {
+    const bundle = assemble(signInStackDesign());
+    const services = json(bundle, "compose.yaml").services;
+    const names = ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"];
+    for (const tile of ["watch-api", "upload-api"]) {
+      const source = text(bundle, `src/processes/${tile}.ts`);
+      // The issuer and key set come only through the URL check: no empty fallback is left.
+      expect(source).not.toMatch(/process\.env\.OIDC_\w+ \?\?/);
+      expect(source.match(/signInUrl\("OIDC_\w+"\)/g)).toEqual([
+        'signInUrl("OIDC_ISSUER")',
+        'signInUrl("OIDC_JWKS_URL")',
+      ]);
+      // Inside the process's start, so a refusal is its `startup-failed` line.
+      expect(source.indexOf("await runProcess(")).toBeLessThan(source.indexOf("signInUrl"));
+      // The variables it reads are exactly those its Compose service sets and its report row lists.
+      expect([...new Set(source.match(/OIDC_[A-Z_]+/g))].sort()).toEqual(names);
+      expect(
+        Object.keys(services[`app-${tile}`].environment)
+          .filter((key) => key.startsWith("OIDC_"))
+          .sort(),
+      ).toEqual(names);
+      const row = rows(bundle).tiles.find((item) => item.tile === tile) as Row & {
+        environment: string[];
+      };
+      expect(row.environment.filter((key) => key.startsWith("OIDC_"))).toEqual(names);
+    }
+    // A process without a sign-in reads none.
+    expect(text(bundle, "src/processes/video-lifecycle.ts")).not.toContain("OIDC_");
   });
 
   it("gives route stubs the request signature with the option on, and changes nothing else", () => {

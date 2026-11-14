@@ -33,10 +33,10 @@ const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).t
 const issuer = "https://issuer.example/realms/sign-in";
 const keys = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const part = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
-/** An RS256 token for audience `aud`, signed by the test key. */
-function token(aud: string) {
+/** An RS256 token for audience `aud` from issuer `iss`, signed by the test key. */
+function token(aud: string, iss = issuer) {
   const exp = Math.floor(Date.now() / 1000) + 300;
-  const input = `${part({ alg: "RS256", typ: "JWT" })}.${part({ iss: issuer, aud, sub: "sub-1", preferred_username: "viewer", exp })}`;
+  const input = `${part({ alg: "RS256", typ: "JWT" })}.${part({ iss, aud, sub: "sub-1", preferred_username: "viewer", exp })}`;
   return `${input}.${sign("RSA-SHA256", Buffer.from(input), keys.privateKey).toString("base64url")}`;
 }
 const serverRequire = createRequire(
@@ -321,13 +321,17 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
   const signals = ["SIGTERM", "SIGINT"] as const;
   const listening = Object.fromEntries(signals.map((name) => [name, process.listeners(name)]));
   const exitCode = process.exitCode;
+  /** Removes the signal listeners the processes started here added. */
+  const dropListeners = () => {
+    for (const name of signals)
+      for (const listener of process.listeners(name))
+        if (!listening[name]?.includes(listener)) process.removeListener(name, listener);
+  };
   afterEach(() => {
     for (const name of names)
       if (saved[name] === undefined) delete process.env[name];
       else process.env[name] = saved[name];
-    for (const name of signals)
-      for (const listener of process.listeners(name))
-        if (!listening[name]?.includes(listener)) process.removeListener(name, listener);
+    dropListeners();
     process.exitCode = exitCode;
     vi.restoreAllMocks();
   });
@@ -335,18 +339,29 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
 
   let runs = 0;
   /** Starts the emitted Watch API process (an Optional sign-in) with `audience` as its
-   * OIDC_AUDIENCE, keeping its console lines; the app is there once it has started. */
-  async function run(audience: string | undefined) {
-    process.env.OIDC_ISSUER = issuer;
-    process.env.OIDC_JWKS_URL = `${issuer}/protocol/openid-connect/certs`;
-    if (audience === undefined) delete process.env.OIDC_AUDIENCE;
-    else process.env.OIDC_AUDIENCE = audience;
+   * OIDC_AUDIENCE and `urls` in place of the test issuer's OIDC_ISSUER and OIDC_JWKS_URL (undefined
+   * unsets one), keeping its console lines; the app is there once it has started. */
+  async function run(
+    audience: string | undefined,
+    urls: Partial<Record<"OIDC_ISSUER" | "OIDC_JWKS_URL", string | undefined>> = {},
+  ) {
+    const environment = {
+      OIDC_ISSUER: issuer,
+      OIDC_JWKS_URL: `${issuer}/protocol/openid-connect/certs`,
+      ...urls,
+      OIDC_AUDIENCE: audience,
+    };
+    for (const [name, value] of Object.entries(environment))
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
     const lines: unknown[] = [];
     const keep = (line: string) => lines.push(line.startsWith("{") ? JSON.parse(line) : line);
     vi.spyOn(console, "log").mockImplementation(keep);
     vi.spyOn(console, "error").mockImplementation(keep);
     const before = apps.length;
     process.exitCode = undefined;
+    // An earlier run here has stopped or failed to start; its listeners would only pile up.
+    dropListeners();
     // A new module each run: the process reads its environment as it starts.
     runs += 1;
     await import(dataUrl(`${compile("src/processes/watch-api.ts")}\n// run ${runs}\n`));
@@ -402,5 +417,61 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
       // It stopped before its HTTP service: no app was started.
       expect(app === undefined).toBe(true);
     }
+  });
+
+  it("fails startup naming each OIDC_* variable that is unset or invalid, never its value (QG24)", async () => {
+    const audience = "OIDC_AUDIENCE must name the audience of the sign-in tokens.";
+    const cases: [name: string, value: string | undefined, error: string][] = [
+      ["OIDC_AUDIENCE", undefined, audience],
+      ["OIDC_AUDIENCE", "", audience],
+    ];
+    // Not an absolute http: or https: URL: unset, empty, relative, without a scheme, or another one.
+    const invalid = [
+      undefined,
+      "",
+      "issuer.example/realms/sign-in",
+      "/realms/sign-in",
+      "//issuer.example/realms/sign-in",
+      "not a url",
+      "ftp://issuer.example/realms/sign-in",
+      "file:///realms/sign-in",
+      "ws://issuer.example/realms/sign-in",
+    ];
+    for (const name of ["OIDC_ISSUER", "OIDC_JWKS_URL"])
+      for (const value of invalid) cases.push([name, value, `Invalid endpoint ${name}`]);
+    for (const [name, value, error] of cases) {
+      const { lines, app } =
+        name === "OIDC_AUDIENCE" ? await run(value) : await run("api://example", { [name]: value });
+      expect(lines).toEqual([
+        { level: "error", event: "startup-failed", error: `Error: ${error}` },
+        "Application startup failed",
+      ]);
+      expect(process.exitCode).toBe(1);
+      expect(app === undefined).toBe(true);
+      if (value) expect(JSON.stringify(lines)).not.toContain(value);
+    }
+  });
+
+  it("passes an http: or https: issuer and key set through as they are given (QG24)", async () => {
+    // Compose's local shape: an http: issuer on a loopback port, the key set at Keycloak's name.
+    const local = "http://127.0.0.1:47922/realms/sign-in";
+    const compose = await run("sign-in-web", {
+      OIDC_ISSUER: local,
+      OIDC_JWKS_URL: "http://identity-sign-in:8080/realms/sign-in/protocol/openid-connect/certs",
+    });
+    expect(compose.lines).toContain("Application ready");
+    expect(await me(compose.app, token("sign-in-web", local))).toEqual(signedIn);
+    expect(await me(compose.app, token("sign-in-web"))).toEqual(refused);
+    await stop();
+    // An issuer without a path is compared as written (no "/" added), and a key set URL may carry
+    // a query, as some providers' do.
+    const bare = "https://accounts.example";
+    const deployed = await run("api://example", {
+      OIDC_ISSUER: bare,
+      OIDC_JWKS_URL: `${bare}/discovery/v2.0/keys?p=sign-in`,
+    });
+    expect(await me(deployed.app, token("api://example", bare))).toEqual(signedIn);
+    expect(await me(deployed.app, token("api://example", `${bare}/`))).toEqual(refused);
+    await stop();
   });
 });
