@@ -187,3 +187,59 @@ PostgreSQL is down; docs and `template-gaps.md`. Fix a small defect only with a 
 before and passes after; record the rest in `docs/plans/store-outage/review.md`. Run
 `pnpm check`, `pnpm test:e2e`, the web build and `--suite=faults` before and after.
 **Commit:** `SO03: review store outage`.
+
+---
+
+## Amendment (owner, 2026-11-13): an outside call is not a store
+
+SO03's follow-up 1: the classifier reads only the error, so a handler whose own `fetch` to an
+outside API fails with a socket code would wait forever and never reach `.failed`. The owner chose
+to keep every provisioned store and service waited out (PostgreSQL, Garage, OpenSearch, Keycloak,
+another tile) and to exclude outside calls. Generated store clients don't use `fetch` (`pg`, the
+AWS SDK, the OpenSearch client); application code calling an outside API usually does. Generated
+code reaches another tile through `httpTarget` (`runtime/module-clients.ts.template`), which uses
+`fetch` too, so it marks its own failures as internal. Units SO04 → SO05 run after the
+[UI follow-ups](../ui-followups/units.md).
+
+### SO04 — A failed outside `fetch` keeps the normal retries
+
+**Steps.**
+
+1. `templates/local-v2/assets/src/runtime/delivery.ts.template`, `unreachable()`: while walking
+   the error and its causes, when an error is a `TypeError` whose `message` is exactly
+   `fetch failed` and whose `Symbol.for("jeeves.internal-call")` property is not `true`, return
+   `false` at once (an outside call is not a store). The doc comment says so, and that an
+   application's SDK which doesn't use `fetch` still looks like a store (it can throw
+   `NonRetryable` to end a message).
+2. `templates/local-v2/assets/src/runtime/module-clients.ts.template`, `httpTarget`:
+   `request: (path, init) => fetch(new URL(path, base), init)` becomes a call that, when `fetch`
+   rejects with an object, sets that object's `Symbol.for("jeeves.internal-call")` to `true` and
+   rethrows it. Its doc comment adds one sentence: its failures count as an unreachable service.
+3. Tests (offline): `unreachable` is false for `new TypeError("fetch failed", { cause:
+   Object.assign(new Error("x"), { code: "ECONNREFUSED" }) })`, and true for the same error once
+   marked; a `fetch failed` two causes deep under a pg error is still false. `httpTarget` marks a
+   rejected `fetch` (inject a fake `fetch` the way the existing module-client tests do; if they
+   can't, test the emitted function as SO01's `composition.test.ts` test does) and passes a
+   resolved response through unchanged.
+4. Pins by Rule 7. Allowed changed paths: `.jeeves/manifest.json`, `src/runtime/delivery.ts`,
+   `src/runtime/module-clients.ts`. Any other: stop as in rule 2.
+5. Docs: the sentence SO01 and SO03 added to `jeeves-generator/README.md`, the generated README
+   (`src/v2/local.ts`) and `docs/studio.md` gains "a failed call to an outside host keeps the
+   normal retries"; `docs/plans/store-outage/review.md` follow-up 1 is not edited (it is the
+   review's record), the handoff says it is done.
+
+**Checks:** `pnpm check`, `pnpm test:e2e`, the web build, then `pnpm test:generated
+--suite=wiring` (internal HTTP and the controlled external endpoint) and `--suite=faults`, the
+Docker suites in their own phase.
+**Commit:** `SO04: a failed outside fetch keeps the normal retries`.
+
+### SO05 — Review the amendment
+
+Read SO04's handoff and `git diff <SO03's commit>..HEAD -- jeeves-generator docs` (UI follow-up
+commits are not yours). Check the guard against the amendment, that `httpTarget` still returns a
+response unchanged, and the pins. Fix a small defect only with a test that fails before and passes
+after; add findings to `docs/plans/store-outage/review.md` under a new "Amendment" heading. Run
+`pnpm check`, `pnpm test:e2e`, the web build and `--suite=wiring`. Then set `AGENTS.md`'s and
+`jeeves/PLAN.md`'s active-plan sentence to say there is no active plan and the owner names the
+next one.
+**Commit:** `SO05: review the outside-call guard`.
