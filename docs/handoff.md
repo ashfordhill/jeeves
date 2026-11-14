@@ -14285,3 +14285,73 @@ stub that writes files must use `/tmp` (`os.tmpdir()`), since `/app` is read-onl
 
 **For the next unit.** QG19. After regeneration, QRWTY's stubs and templates get a query error
 within the statement timeout plus 500 ms when PostgreSQL stalls, and drains don't hang on it.
+
+## 2026-11-14 — QG19: The admission's 503 answers carry Retry-After
+
+**What changed.**
+- `jeeves-generator/templates/local-v2/assets/src/runtime/http.ts.template`: in
+  `setErrorHandler`, an `HttpError` with status 503 sets `Retry-After` to `"1"` unless the reply
+  already has one (`reply.hasHeader("Retry-After")`), with a two-line comment. So the admission's
+  `UNAVAILABLE` (not accepting), `OVERLOADED` (concurrency limit) and `DEADLINE` (request
+  timeout), and a route's or stub's thrown `HttpError(503, …)`, carry `Retry-After: 1`. Status
+  codes, bodies, `onFailure` and the `Cache-Control: no-store` hook are unchanged.
+- `jeeves-generator/src/v2/tile-processes.test.ts`, 2 new tests in the block that loads the
+  emitted `http.ts` and `tile-http.ts` on real Fastify 5.12.7:
+  - the admission's three 503s, on one service with one slot and a 100 ms deadline: a request
+    before start answers `UNAVAILABLE`; a second request while the first holds the slot answers
+    `OVERLOADED`; the held first one answers `DEADLINE`. Each has `retry-after: 1`,
+    `cache-control: no-store` and its unchanged body;
+  - a handler's thrown `HttpError(503)`, on a plain route and through a stub entry, gets
+    `retry-after: 1`; a route that set `Retry-After: 30` before throwing keeps 30; a stub that
+    returns a 503 with `Retry-After: 7` keeps 7; a 404 (no route) and a 400 (invalid JSON) have no
+    `retry-after`.
+  - The fake Fastify used by the older tests gains `header` and `hasHeader` on its reply (a map of
+    lower-cased names), so the existing `/busy` 503 still reaches the error handler. No assertion
+    changed.
+- Pins (`processes-off.json`): `frozen-v2` and `v2-module-design` each changed
+  `src/runtime/http.ts` and `.jeeves/manifest.json`. Nothing else changed (`stub-stack` too).
+- Docs: `jeeves-generator/README.md`, Runnable processes, where an HTTP process's answers are
+  described: the three codes, `Retry-After: 1`, a route's own value, and a stub's returned 503.
+
+**Checks.** All on the final tree.
+- Before any change, at `fd1ea77`: `pnpm check` exit 0, 115 files / 920 tests.
+- `pnpm check` exit 0: 115 files / 922 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- New tests: 2. On HEAD's template (a scratch repository copy with the new test file, since
+  deleted) both fail at their first `retry-after`; the file's 15 older tests pass there, with the
+  extended fake.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=wiring`: 1 file / 2 tests
+  passed (B05, B06; 188 s). The Docker inventory (containers, images, networks, volumes) is the
+  same before and after, and no `gs-` container is left.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - In both exports the changed paths are exactly `src/runtime/http.ts`,
+    `.jeeves/manifest.json` and `.jeeves/report.json`. The report differs only in the
+    registry's source hashes and sizes (owners' `sourceSha256` `53ccf25a…5bca` → `8c32fc75…3d0a`).
+  - In each `after-*`, the offline frozen install and `pnpm build` both exit 0. The scratch
+    exports are deleted.
+- The unit names no Docker proof, and nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- `jeeves-generator/README.md` didn't list the three codes anywhere. The new sentences go where
+  the README says what an HTTP process answers (Runnable processes), and the next sentence's
+  "Each" became "Each process" so it still reads right.
+- The plan's "handler that never resolves" is a handler held on a gate past the 100 ms deadline,
+  then released after the assertions, so `close()` (which drains admitted work) can finish. The
+  tests also cover `OVERLOADED` and the two kept values (a route's own header, a stub's returned
+  503), which the Goal names.
+- Fastify 5.12.7 was checked in `node_modules`: `FastifyReply` has `hasHeader` and `header`, and
+  `lib/error-handler.js` keeps headers set before a throw (it drops only `content-type` and
+  `content-length`), so a route's own `Retry-After` reaches the error handler.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03 review, F23 / R6).
+- Only `HttpError` 503s get the header, as the plan's step says. The error handler's fallback 503
+  for an unknown error (`UNAVAILABLE`, "Service unavailable.") still has none, and so does
+  `GET /healthz`'s 503 and the edge's 503 while a process is down. A stub that returns
+  `{ status: 503 }` without the header gets none either (it never reaches the error handler).
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG12. After regeneration, a QRWTY client can retry the generated
+runtime's own 503s after one second with no product code; a product 503 sets its own value.

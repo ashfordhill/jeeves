@@ -73,6 +73,10 @@ export async function createHttpService(options: {
     };
     if (error instanceof HttpError) {
       if (error.statusCode >= 500 && error.statusCode !== 501) failed();
+      // A 503 (not accepting, at the concurrency limit, past the deadline, or a route's own) says
+      // when to retry: one second, unless the route already set its own Retry-After.
+      if (error.statusCode === 503 && !reply.hasHeader("Retry-After"))
+        reply.header("Retry-After", "1");
       reply.code(error.statusCode).send({ error: error.code, message: error.message });
       return;
     }

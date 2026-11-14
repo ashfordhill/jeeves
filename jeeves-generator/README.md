@@ -331,8 +331,12 @@ published port, `depends_on` only on the providers its templates and stubs use, 
 on the ready marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering
 `GET /healthz` (200 once ready, 503 before and while draining), its module routes, and 404
 elsewhere; any process runs its loops, and a process with nothing to run holds an idle timer.
-Each writes the ready marker through `runProcess` once its loops have subscribed and its HTTP
-service listens; just before it, each mounted or placeholder template logs one `started` line
+Its admission answers a route with 503 `UNAVAILABLE` while it isn't accepting, `OVERLOADED` at
+the Concurrency limit and `DEADLINE` at the Request timeout. These, and an `HttpError` 503 that a
+route throws, carry `Retry-After: 1` unless the route already set its own `Retry-After`; a 503
+that a stub returns as its response keeps the headers it gives. Each process writes the ready
+marker through `runProcess` once its loops have subscribed and its HTTP service listens; just
+before it, each mounted or placeholder template logs one `started` line
 naming what its startup ran (`{"level":"info","event":"started","tile","module","template","wiring",
 "checks"}`, for example `"checks":["sweep at start","publication relay started","subscribed
 completion-events--completion-handler","sweep every 30 s"]`). It drains on SIGTERM in reverse: HTTP admission, then loops, then publishers,

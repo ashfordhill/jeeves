@@ -347,6 +347,9 @@ const fakeFastify = `export default function Fastify() {
       const request = { method, url, routeOptions: { url: handler ? url : undefined } };
       const reply = {
         statusCode: 200,
+        headers: {},
+        hasHeader(name) { return name.toLowerCase() in this.headers; },
+        header(name, value) { this.headers[name.toLowerCase()] = value; return this; },
         code(status) { this.statusCode = status; return this; },
         send(payload) { this.payload = payload; return this; },
       };
@@ -641,6 +644,139 @@ describe("emitted HTTP service and process runtime", () => {
         rawBody: payload,
       }),
     );
+    await http.close();
+  });
+
+  /** A route whose handler waits until `release`, on a service with one slot and a 100 ms
+   * deadline; `entered` resolves once a request reaches the handler. */
+  const heldService = async () => {
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let entered = () => {};
+    const reached = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const http: RealService & { start(listen: unknown): Promise<string> } =
+      await realHttpRuntime.createHttpService({
+        id: "front",
+        settings: { requestTimeoutMs: 100, concurrencyLimit: 1 },
+        configure: (routes: { route(route: unknown): void }) =>
+          routes.route({
+            method: "GET",
+            url: "/held",
+            handler: async () => {
+              entered();
+              await gate;
+              return { ok: true };
+            },
+          }),
+        initialize: async () => {},
+      });
+    return { http, release, reached };
+  };
+  const answer = (response: Injected) => ({
+    status: response.statusCode,
+    retryAfter: response.headers["retry-after"],
+    cacheControl: response.headers["cache-control"],
+    body: response.json(),
+  });
+
+  it("answers the admission's three 503s with Retry-After: 1, their status and body unchanged", async () => {
+    const { http, release, reached } = await heldService();
+    const busy = (error: string, message: string) => ({
+      status: 503,
+      retryAfter: "1",
+      cacheControl: "no-store",
+      body: { error, message },
+    });
+    // Not accepting: before the service starts.
+    expect(answer(await http.inject({ method: "GET", url: "/held" }))).toEqual(
+      busy("UNAVAILABLE", "Service unavailable."),
+    );
+    await http.start({ host: "127.0.0.1", port: 0 });
+    const first = http.inject({ method: "GET", url: "/held" });
+    await reached;
+    // At the concurrency limit: the first request holds the only slot.
+    expect(answer(await http.inject({ method: "GET", url: "/held" }))).toEqual(
+      busy("OVERLOADED", "Service is busy."),
+    );
+    // At the request timeout: the handler still hasn't resolved.
+    expect(answer(await first)).toEqual(
+      busy("DEADLINE", "Request deadline exceeded; check status before retrying."),
+    );
+    release();
+    await http.close();
+  });
+
+  it("gives a handler's thrown 503 Retry-After: 1 unless it set its own, and a 404 or a 400 none", async () => {
+    const { HttpError } = realHttpRuntime;
+    const entry = vi.fn(async (request: { path: string }) => {
+      if (request.path === "/thrown") throw new HttpError(503, "DOWNSTREAM", "Try again.");
+      return { status: 503, headers: { "Retry-After": "7" }, body: { error: "OWN" } };
+    });
+    const http: RealService & { start(listen: unknown): Promise<string> } =
+      await realHttpRuntime.createHttpService({
+        id: "front",
+        settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+        configure: (routes: { route(route: unknown): void }) => {
+          routes.route({
+            method: "GET",
+            url: "/thrown",
+            handler: async () => {
+              throw new HttpError(503, "DOWNSTREAM", "Try again.");
+            },
+          });
+          routes.route({
+            method: "GET",
+            url: "/own",
+            handler: async (
+              _request: unknown,
+              reply: { header(name: string, value: string): unknown },
+            ) => {
+              reply.header("Retry-After", "30");
+              throw new HttpError(503, "DOWNSTREAM", "Try again later.");
+            },
+          });
+          routes.route({ method: "POST", url: "/json", handler: async () => ({ ok: true }) });
+          tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry);
+        },
+        initialize: async () => {},
+      });
+    await http.start({ host: "127.0.0.1", port: 0 });
+    const get = async (url: string) => answer(await http.inject({ method: "GET", url }));
+    const thrown = {
+      status: 503,
+      retryAfter: "1",
+      cacheControl: "no-store",
+      body: { error: "DOWNSTREAM", message: "Try again." },
+    };
+    expect(await get("/thrown")).toEqual(thrown);
+    expect(await get("/modules/probe/thrown")).toEqual(thrown);
+    expect(await get("/own")).toEqual({
+      ...thrown,
+      retryAfter: "30",
+      body: { error: "DOWNSTREAM", message: "Try again later." },
+    });
+    expect(await get("/modules/probe/own")).toEqual({
+      status: 503,
+      retryAfter: "7",
+      cacheControl: "no-store",
+      body: { error: "OWN" },
+    });
+    expect(await get("/nowhere")).toEqual({
+      status: 404,
+      retryAfter: undefined,
+      cacheControl: "no-store",
+      body: { error: "NOT_FOUND", message: "Route not found." },
+    });
+    expect(answer(await post(http, "/json", "application/json", '{"bad":'))).toEqual({
+      status: 400,
+      retryAfter: undefined,
+      cacheControl: "no-store",
+      body: { error: "INVALID_REQUEST", message: "Invalid request." },
+    });
     await http.close();
   });
 });
