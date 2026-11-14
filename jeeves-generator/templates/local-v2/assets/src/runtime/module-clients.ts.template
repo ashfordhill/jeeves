@@ -1,6 +1,7 @@
 // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
 // one per store or channel a tile's stubs use. Export rewrites this file. Each client runs one
-// bounded startup probe that its access allows; a failed probe fails the process's startup.
+// bounded startup probe that its access allows; a failed probe fails the process's startup, but
+// a cache that is down is logged and the process starts without it.
 // @database-import-start
 import { localLogins } from "../features/local-bindings.ts";
 import { createPostgres } from "./postgres.ts";
@@ -10,8 +11,8 @@ import { randomUUID } from "node:crypto";
 import { createPublisher, type BrokerState } from "./amqp.ts";
 // @queue-import-end
 // @cache-import-start
-import { createClient } from "redis";
-import { readSecret } from "./local.ts";
+import { createFailureLog } from "./tile-process.ts";
+import { createValkeyCache } from "./valkey.ts";
 // @cache-import-end
 // @objects-import-start
 import {
@@ -47,10 +48,16 @@ export function unavailable<T extends object>(what: string): T {
   }) as unknown as T;
 }
 
-export type ProbeLog = (entry: Record<string, unknown>) => void;
-/** One JSON line per client probe: `ok` once it passes, or the error before startup fails. */
+/** The probe log; it names its tile, for a client's own lines after startup. */
+export type ProbeLog = ((entry: Record<string, unknown>) => void) & { readonly tile: string };
+/** One JSON line per client probe: `ok` once it passes, `unavailable` for a cache that is down,
+ * or the error before startup fails. */
 export function createProbeLog(tile: string): ProbeLog {
-  return (entry) => console.log(JSON.stringify({ event: "probe", tile, ...entry }));
+  return Object.assign(
+    (entry: Record<string, unknown>) =>
+      console.log(JSON.stringify({ event: "probe", tile, ...entry })),
+    { tile },
+  );
 }
 const describe = (error: unknown) =>
   (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).slice(0, 300);
@@ -156,40 +163,52 @@ export async function queuePublisher(
 }
 // @queue-end
 // @cache-start
-/** A cache (Valkey) with its password. While it is unreachable a command fails at once and the
- * client reconnects in the background. Probe: PING. */
+/** A cache (Valkey) with its password, through the cache read's bounded client
+ * (`createValkeyCache`): a command settles within 150 ms and at most 32 wait; while no client is
+ * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
+ * and a new one tried every 5 s; each change is logged, a `cache <cache>` failure line when it
+ * is lost and an info line when it is available. Closing destroys the client, so a drain never
+ * waits on the cache. Probe: PING; a cache that is down at startup logs `unavailable` and the
+ * process starts without it. */
 export async function cacheClient(
   scope: ProcessScope,
   log: ProbeLog,
   binding: { cache: string },
 ): Promise<CacheClient> {
-  const client = createClient({
-    password: readSecret(`cache-${binding.cache}`),
-    disableOfflineQueue: true,
-    socket: {
-      host: `cache-${binding.cache}`,
-      port: 6379,
-      connectTimeout: 2000,
-      reconnectStrategy: (retries: number) => Math.min(100 * 2 ** retries, 2000),
-    },
+  const failure = createFailureLog(log.tile);
+  const host = `cache-${binding.cache}`;
+  const cache = await createValkeyCache({
+    binding: { hostname: host, port: 6379, secret: host },
+    onState: (state, error) =>
+      state === "unavailable"
+        ? failure(`cache ${binding.cache}`, error ?? new Error("Cache unavailable"))
+        : console.log(
+            JSON.stringify({
+              level: "info",
+              event: "cache",
+              tile: log.tile,
+              cache: binding.cache,
+              state,
+            }),
+          ),
   });
-  client.on("error", () => {});
-  scope.own(() => {
-    if (client.isOpen) client.destroy();
-  });
-  await probed(log, { client: binding.cache, kind: "cache", check: "PING" }, async () => {
-    await client.connect();
-    await client.ping();
-  });
+  scope.own(() => cache.close());
+  const probe = { client: binding.cache, kind: "cache", check: "PING" };
+  try {
+    await cache.ping();
+    log({ level: "info", ...probe, result: "ok" });
+  } catch {
+    log({ level: "warn", ...probe, result: "unavailable" });
+  }
   return {
     async get(key) {
-      return (await client.get(key)) ?? undefined;
+      return (await cache.get(key)) ?? undefined;
     },
     async set(key, value, ttlSeconds) {
-      await client.set(key, value, ttlSeconds ? { EX: ttlSeconds } : undefined);
+      await cache.set(key, value, ttlSeconds ? { EX: ttlSeconds } : undefined);
     },
     async delete(key) {
-      await client.del(key);
+      await cache.delete(key);
     },
   };
 }

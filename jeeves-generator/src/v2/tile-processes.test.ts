@@ -104,6 +104,8 @@ describe("local.tile-processes", () => {
       "src/runtime/tile-http.ts",
       "src/runtime/tile-loop.ts",
       "src/runtime/tile-process.ts",
+      // The stubs' cache (Links cache) uses the cache read's bounded client.
+      "src/runtime/valkey.ts",
     ]);
     expect(paths(off).filter((path) => !paths(bundle).includes(path))).toEqual([]);
     const http = text(bundle, "src/processes/links-api.ts");

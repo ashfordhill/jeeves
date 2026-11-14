@@ -560,7 +560,8 @@ What writes it, as its `what`:
   (multipart) and `outbox relay publication` (asset lifecycle);
 - a failed or corrupt cache read and a failed cache fill: `cache read <module>`,
   `cache fill <module>`; the cache lost (Valkey unreachable, a command failed or timed out):
-  `cache <module>`;
+  `cache <module>`, or `cache <cache>` for a stub's cache client (its info line when the cache is
+  usable, also once at startup, names the `cache` instead of a `module`);
 - the broker lost by a publisher or a consumer (a closed connection or channel, a cancelled
   subscription, a failed republish or ack): `broker publish <id>`, the topic's exchange or the
   work queue, and `broker consume <queue>`. When it is back, an info line on stdout:
@@ -656,14 +657,22 @@ timeout` and the pool discards its connection, and a template's pool has the sam
 past its statement timeout), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
-`cacheClient` (`get`, `set` with a TTL, `delete`; it reconnects in the background), `objectClient`
+`cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
+bounded client, `createValkeyCache` in `src/runtime/valkey.ts`, which the primitives emit when no
+cache read already does: a command settles within 150 ms and at most 32 wait, while no client is
+connected a command fails at once with `Cache unavailable`, a lost or stalled client is destroyed
+and a new one tried every 5 s, and the drain destroys the client, so it never waits on the
+cache), `objectClient`
 (`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
 `httpTarget` (another tile's process at `http://app-<id>:3000`, with no probe or `depends_on`). Each
 client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
 confirm channel, `PING`, `HeadBucket` (or, for a write-only key, opening and aborting a multipart
 upload) and cluster health. Each logs one JSON line
 (`{"event":"probe","tile","client","kind","check","result":"ok"}`); a failure logs the error and
-fails startup, so a healthy process has reached every store it uses with its own credentials. The
+fails startup, so a healthy process has reached every store it uses with its own credentials. A
+cache is the exception: one that is down at startup logs `"level":"warn"` with
+`"result":"unavailable"` (the error is in its `cache <cache>` failure line), and the process
+starts without it; its client connects by itself when the cache is back. The
 process file builds one client per store before its loops subscribe and its service listens, then
 each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls the module
 it names (a route stub with the caller's input as its request, a library stub with none). What isn't

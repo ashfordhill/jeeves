@@ -1,6 +1,9 @@
 import type { DesignDocument, StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
-import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
+import {
+  stubStackDesign,
+  stubStackWithCacheRead,
+} from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import {
   moduleAuthored,
   runStudioCommands,
@@ -469,6 +472,29 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(runtime).toContain("src/runtime/objects.ts");
     for (const library of ["postgres", "amqp", "search", "identity"])
       expect(runtime).not.toContain(`src/runtime/${library}.ts`);
+  });
+
+  it("gives a stub's cache the cache read's bounded client, valkey.ts, written once", () => {
+    const owner = (bundle: Bundle) =>
+      bundle.manifest.files
+        .filter((file) => file.path === "src/runtime/valkey.ts")
+        .map((file) => (file.owner === "assembler" ? file.owner : file.owner.id));
+    const imports = 'import { createValkeyCache } from "./valkey.ts";';
+    // Stubs alone: the runtime primitives write it for the cache client.
+    expect(owner(stack)).toEqual(["local.primitives"]);
+    expect(text(stack, "src/runtime/module-clients.ts")).toContain(imports);
+    expect(text(stack, "src/runtime/module-clients.ts")).not.toContain('from "redis"');
+    // Beside a cache read, its emitter writes it and the stubs' client uses the same file.
+    const both = assemble(runStudioCommands(stubStackWithCacheRead(), [on]));
+    expect(owner(both)).toEqual(["local.positive-cache"]);
+    expect(text(both, "src/runtime/module-clients.ts")).toContain(imports);
+    expect(text(both, "src/runtime/valkey.ts")).toBe(text(stack, "src/runtime/valkey.ts"));
+    // A cache read whose tile's stubs use no cache (v2) keeps its own; the stubs' clients
+    // don't import it.
+    expect(owner(v2)).toEqual(["local.positive-cache"]);
+    expect(text(v2, "src/runtime/module-clients.ts")).not.toContain("valkey");
+    // No stub cache and no cache read (the stub stack with processes off): none.
+    expect(owner(stackOff)).toEqual([]);
   });
 
   it("reports what is provisioned for each process's stubs", () => {

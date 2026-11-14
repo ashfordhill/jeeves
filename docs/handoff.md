@@ -14740,3 +14740,159 @@ order (QG21 and QG22 are independent; QG23 is docs; QG24 after QG06) and put QG2
 
 **For the next unit.** QG04. QRWTY can now `pnpm add stripe@<exact version>` in its export
 without an override, and `update:v2` keeps both files.
+
+## 2026-11-14 — QG04: Stub caches use the bounded Valkey client
+
+**What changed.**
+- `jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template`,
+  `cacheClient`: built on `createValkeyCache` (`./valkey.ts`) instead of its own `redis` client
+  (host and secret `cache-<id>`, port 6379). A command settles within 150 ms: the client is
+  destroyed and the call rejects `Cache deadline`. At most 32 commands queue. While no client is
+  ready a call rejects `Cache unavailable` at once. A new client is tried every 5 s, and the
+  drain's `cache.close()` destroys the client.
+  - Each change logs as the reader's does: a `cache <cache>` failure line through a
+    `createFailureLog` for the tile when the cache is lost, and
+    `{"level":"info","event":"cache","tile","cache","state":"available"}` when it is usable,
+    also at the first connect.
+  - The probe is a bounded `PING` through the same client. It logs `ok` at `info`, or
+    `{"event":"probe",…,"level":"warn","client","kind":"cache","check":"PING","result":"unavailable"}`,
+    and startup goes on (owner decision 3).
+  - `CacheClient` is unchanged: `set(key, value, ttlSeconds?)` sends `{ EX }` or no expiry, and
+    `get` gives `undefined` for a missing key.
+  - `ProbeLog` now carries its `tile`: `createProbeLog(tile)` returns the same function with a
+    `tile` property, which the cache client's own lines name. The header comment says a cache
+    that is down doesn't fail startup.
+- `valkey.ts.template`: `createValkeyCache` returns a `ValkeyCache` declared in the same file. It
+  no longer does `import type` from `positive-cache.ts`, which a stub-only export doesn't have.
+  `ValkeyCache` has `get`, `set` (with `{ PXAT }`, `{ EX }` or no expiry), `delete` (`DEL`) and
+  `ping`, each through the same 150 ms bound, and `close`. The reader's calls and timings are
+  unchanged.
+- `src/v2/primitives.ts`, the emitter that picks the runtime files for stub clients: a stub
+  cache's section now needs `valkey`. So `src/runtime/valkey.ts` is emitted with the stub clients
+  (owner `local.primitives`, source `/generation/processes`). When a cache read is selected,
+  `local.positive-cache` writes it as before and the stubs' client uses that same file; two
+  writers would be refused as a duplicate path.
+- Tests, 5 new:
+  - `module-clients.test.ts`, 3 new tests on the exact emitted `module-clients.ts` and
+    `valkey.ts`, with the fake `redis` and fake timers:
+    - A `get`, `set` (`EX 30`) or `delete` that never answers rejects at 150 ms (not at
+      149 ms) and destroys the client. Every call then rejects `Cache unavailable` until a new
+      client connects 5 s later. Each change writes one failure line or one info line.
+    - A refused first connect, and one stalled to its 500 ms bound: `cacheClient` resolves,
+      logs the `warn`/`unavailable` probe line, sends no `PING`, and connects 5 s later.
+    - The drain destroys the client. Closed while the cache is lost, it tries no new client.
+  - The named `cacheClient` test now records `createClient`'s whole options (32 queued, 500 ms
+    connect, `reconnectStrategy: false`), the probe and info lines, and the `get` calls.
+  - `positive-cache.test.ts`, 1 new: `set` passes `{ PXAT }`, `{ EX: 30 }` or nothing through,
+    `delete` sends `del` and `ping` answers. A stalled `set`, `delete` or `ping` rejects at
+    150 ms and loses its client, as `get` does.
+  - `client-wiring.test.ts`, 1 new:
+    - The stub stack's `valkey.ts` is `local.primitives`'s, and `module-clients.ts` imports it,
+      with no `redis` import.
+    - With a cache read beside it (`stubStackWithCacheRead`): one `valkey.ts`, written by
+      `local.positive-cache`, with the same bytes.
+    - v2's is the reader's, and its clients don't import it. With processes off: none.
+  - `tile-processes.test.ts`: the stub stack's list of added paths gains `src/runtime/valkey.ts`.
+- Pins (`processes-off.json`, `pins:update`): `src/runtime/valkey.ts` and
+  `.jeeves/manifest.json` changed in `frozen-v2` and `v2-module-design`; nothing else changed.
+- Docs: `jeeves-generator/README.md`. In Module clients, the `cacheClient` sentence and the probe
+  sentence's exception for a cache; in the failure log list, `cache <cache>`.
+
+**Checks.** All on the final tree.
+- Before any change, at `6436606`: `pnpm check` exit 0, 115 files / 933 tests.
+- After: `pnpm check` exit 0, 115 files / 938 tests. Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed (4.9 min), first run. Web build: exit 0.
+- New tests: 5. I ran them on HEAD's templates in a scratch clone at `6436606`, with its own
+  offline install and the four changed test files; the clone is deleted. All 5 fail there, and
+  so do the 2 updated assertions. The 48 older tests in those files pass. The checkout's
+  `node_modules` state files and `.bin` shims name no scratch path.
+- Docker phase, after the offline checks, one suite at a time:
+  - `pnpm test:generated --suite=wiring`: 1 file / 2 tests passed (B05, B06 normal; 195 s).
+  - `--suite=faults`, run 1: 3 passed, 2 failed (491 s). Run 2: 5/5 passed (478 s).
+    - B09 media failed case 3's known precondition (`inHandAtOutage` empty).
+    - B06 recovery failed at its "after stall" refill: the next read wasn't a hit. The logs
+      show the refill load at 20:09:08.95 and the next read's load at 20:09:13.38. The harness's
+      `docker exec` and log steps between them took more than the key's 4 s TTL, under arm B's
+      load, so the key had expired and the read loaded from the database.
+    - That application has a cache read and no stub cache. Its `valkey.ts` differs from HEAD's
+      only in the added `delete`/`ping` and the return type. The stop/start case and run 2
+      passed.
+  - `--suite=regeneration`: 1 file / 1 test passed (B10, 143 s), first run.
+  - `--suite=media`: 1 file / 1 test passed (B08, 147 s).
+  - Docker proof, on `after-probe` with the Q03 bodies copied to their `generated-extension`
+    paths. Project `qg04-probe`, ports 47961–47963, `pnpm first-run` exit 0.
+    - Front's startup logged `"event":"cache",…,"state":"available"`, then the `PING` probe `ok`.
+    - `docker pause` of the cache: `GET …/front-probe/cache` answered 503 in 0.169 s (the stub's
+      `Cache deadline`). The next one answered 503 in 0.001 s. `?race` answered 200 with
+      `error Error: Cache unavailable` at 0 ms. After unpause the client was back by itself
+      (`v1`).
+    - Cache paused again, one `GET …/cache` in flight (stop issued 31 ms after it started):
+      `docker stop -t 10` of Front returned in 0.486 s, exit 0. The request answered 503
+      during the drain, 158 ms after it started.
+    - Cache stopped, then Front started:
+      - Front was healthy. It logged the `cache hot` failure line (`getaddrinfo ENOTFOUND
+        cache-hot`) and the `warn`/`unavailable` probe line.
+      - `…/front-probe/redirect` answered 302, and `/cache` 503 at once.
+      - Cache started, Front not restarted: the info line came back, `cache-set` and `/cache`
+        (`v1`) worked, and Front's restart count stayed 0.
+    - First attempt: `curl -o /dev/stdout` truncated the log file at each request, the trap
+      Q03 hit. I fixed the script and reran the whole proof. The surviving tail of the first
+      attempt agrees.
+    - Teardown: `docker compose --profile '*' down --volumes --remove-orphans`, then
+      `docker image rm qg04-probe-app:latest`.
+  - Docker inventory: after the phase it equals the one before, apart from arm B's
+    `qrwtyb-local` stack (removed and rebuilt meanwhile: its containers, network, volume and 12
+    `qrwtyb/*:local` tags with new IDs; I touched none of it).
+    - No `gs-` or `qg04` resource is left, and `jeeves-postgres-1` is unchanged.
+    - My five runs' `test-results/generated/` folders are removed.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both fixtures: `src/runtime/module-clients.ts`, `src/runtime/valkey.ts`
+    (added), `.jeeves/manifest.json` and `.jeeves/report.json`.
+  - The report differs only in the registry's source sizes and hashes: `primitives.ts` 3356 →
+    3678 bytes, `module-clients.ts.template` 10627 → 11669, `valkey.ts.template` 4510 → 5153;
+    the owners' `sourceSha256` `dc9b6881…66fc` → `248f0a15…74be`. Required gaps are unchanged
+    (probe 3, r83 11).
+  - The manifest's new row is `valkey.ts`: `generated-scaffold`, owner `local.primitives`.
+  - In each `after-*`, the offline frozen install and `pnpm build` (`tsc`) both exit 0.
+    Re-exported on the final tree, both equal the first after-exports. The scratch exports are
+    deleted.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- The emitter that selects runtime files for stub clients is `src/v2/primitives.ts`
+  (`clientLibraries`), not `client-wiring.ts` or `tile-processes.ts`. `src/v2/positive-cache.ts`
+  is unchanged. Primitives leaves `valkey.ts` to it when a cache read is selected.
+- `createValkeyCache` also gains `ping()`, so the stub's probe stays a real `PING`; the reader
+  never calls it. The return type is the new `ValkeyCache`, not `PositiveCache & { close }`:
+  `tsc` would fail on the type import from `positive-cache.ts` in a stub-only export.
+- The process file can't change (it is not in Emitted output), and `failure` lives there. So the
+  client writes its lines through its own `createFailureLog(<tile>)`, with the tile from the probe
+  log. The format and the once-a-second limit per `what` are the process log's.
+- The stub's info line names `cache`, not `module`: one client serves every stub of the tile
+  that uses that cache.
+- The unit doesn't name `tile-processes.test.ts`, but its list of added paths is exactly this
+  unit's emitted output, so it gained `src/runtime/valkey.ts`.
+- `docs/studio.md` describes no stub cache, so it is unchanged.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), decided by the owner on 2026-11-14 (decision 3, yes).
+- Two statements still say a failed probe fails startup:
+  - The process file's comment from `client-wiring.ts`: "each probed once before the process is
+    ready; a failed probe fails startup." It is now inexact for a cache. Changing it changes
+    every stub process file, which is outside this unit's Emitted output, so it is a later
+    unit's.
+  - `docs/plans/tile-processes/contract.md` §6 says the same. That is a plan's contract, not a
+    Rule 8 doc.
+- Compose still gives a stub's process `depends_on` its cache healthy. So `first-run` and
+  `pnpm start` wait for the cache, and only a process started on its own (restarted, or started
+  after it stopped) runs without one, as the proof did.
+- Stub caches now pass `createValkeyCache`'s host rule `^[a-z][a-z0-9.-]{0,254}$`. Every
+  `cache-<id>` passes. QG06's R3 amendment changes that rule for environment endpoints.
+- B06 recovery's refill-then-hit step can fail under load: the 4 s TTL can expire during the
+  harness's `docker exec` steps. This is a harness timing limit, not a cache fault.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG06. A stub's cache goes through `createValkeyCache`, so QG06's cache
+endpoint change is the `binding` that `cacheClient` passes, plus `valkey.ts`'s host rule (R3).

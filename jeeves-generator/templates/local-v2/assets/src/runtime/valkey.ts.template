@@ -1,18 +1,29 @@
 import { createClient } from "redis";
 import { readSecret } from "./local.ts";
-import type { PositiveCache } from "./positive-cache.ts";
 
 export type ValkeyBinding = { hostname: string; port: number; secret: string };
 
+/** The bounded cache. The cache read's reader uses `get` and `set` with an absolute expiry
+ * (`{ PXAT }`, its `PositiveCache`); a stub's cache client also uses `set` with seconds
+ * (`{ EX }`) or no expiry, `delete`, and `ping` for its startup probe. */
+export interface ValkeyCache {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string, expiry?: { PXAT: number } | { EX: number }): Promise<unknown>;
+  delete(key: string): Promise<unknown>;
+  ping(): Promise<unknown>;
+  close(): void;
+}
+
 /** Startup cache failure is optional. No offline queue, client reconnect or hidden default
- * endpoint: a lost client is destroyed and a new one connects every five seconds. Use the emitted
- * normalized binding; the caller owns close alongside its HTTP service. */
+ * endpoint: a lost client is destroyed and a new one connects every five seconds. Each command
+ * settles within 150 ms; at most 32 wait. Use the emitted normalized binding; the caller owns
+ * close alongside its HTTP service. */
 export async function createValkeyCache(options: {
   binding: ValkeyBinding;
   credential?: (secret: string) => string;
   /** Told when the cache becomes available or unavailable, starting with the first connect. */
   onState?: (state: "available" | "unavailable", error?: unknown) => void;
-}): Promise<PositiveCache & { close(): void }> {
+}): Promise<ValkeyCache> {
   const { hostname, port, secret } = options.binding;
   if (!/^[a-z][a-z0-9.-]{0,254}$/.test(hostname) || !Number.isInteger(port) || port < 1 || port > 65535)
     throw new Error("Invalid cache endpoint");
@@ -90,7 +101,8 @@ export async function createValkeyCache(options: {
     try {
       await bounded(generation, () => generation.client.connect(), 500);
     } catch {
-      // Lost already; the reader falls back to primary while a command rejects as unavailable.
+      // Lost already: a command rejects as unavailable until a new client connects (the reader
+      // reads its primary meanwhile).
       return;
     }
     if (closed || generation !== current) {
@@ -110,6 +122,8 @@ export async function createValkeyCache(options: {
   return {
     get: (key) => command((client) => client.get(key)),
     set: (key, value, expiry) => command((client) => client.set(key, value, expiry)),
+    delete: (key) => command((client) => client.del(key)),
+    ping: () => command((client) => client.ping()),
     close: () => {
       closed = true;
       clearTimeout(retry);

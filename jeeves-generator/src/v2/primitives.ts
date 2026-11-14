@@ -7,7 +7,7 @@ const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
 const clientLibraries: Record<ClientSection, string[]> = {
   database: ["postgres"],
   queue: ["delivery", "amqp"],
-  cache: [],
+  cache: ["valkey"],
   objects: ["objects"],
   search: ["search"],
   http: [],
@@ -34,7 +34,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       // An HTTP process serves through the shared HTTP service, with or without a template, and a
       // loop stub consumes through the shared consumer.
       // A stub's clients use the libraries of the stores it is provisioned (tile process contract,
-      // section 6); its cache client uses redis itself.
+      // section 6); its cache client uses the cache read's bounded client, valkey.ts.
       for (const process of model.processes ?? []) {
         if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
         if (process.stubs.some((stub) => stub.consumes?.length))
@@ -43,6 +43,10 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
           .sections)
           add(clientLibraries[section], ["generation", "processes"]);
       }
+      // A cache read's emitter (local.positive-cache) writes valkey.ts beside its reader, and a
+      // stub's cache client then uses that same file.
+      if (model.selections.some((selection) => selection.binding.kind === "positive-cache-read"))
+        modules.delete("valkey");
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)
           add(["admission", "http"], selection.sourcePath);

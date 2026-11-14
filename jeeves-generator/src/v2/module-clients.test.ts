@@ -56,16 +56,22 @@ const fakes: Record<string, string> = {
     }`,
   redis: `${check}
     export function createClient(options) {
-      record("createClient", options.password, options.socket.host, options.disableOfflineQueue);
+      record("createClient", options);
+      // A command records its arguments, then answers, fails or (with hang) never answers.
+      const reply = (name, value) => (...args) => {
+        record(name, ...args);
+        if (fake.hang && fake.fail === name) return new Promise(() => {});
+        if (fake.fail === name) return Promise.reject(new Error(name + " refused"));
+        return Promise.resolve(typeof value === "function" ? value(...args) : value);
+      };
       return {
-        isOpen: true,
         on: (event) => record("on", event),
         connect: () => outcome("connect", undefined),
         ping: () => outcome("PING", "PONG"),
         destroy: () => record("destroy"),
-        get: async (key) => (key === "missing" ? null : "value"),
-        set: async (...args) => record("set", ...args),
-        del: async (key) => record("del", key),
+        get: reply("get", (key) => (key === "missing" ? null : "value")),
+        set: reply("set", "OK"),
+        del: reply("del", 1),
       };
     }`,
   "./local.ts": 'export const readSecret = (name) => "secret of " + name;',
@@ -110,6 +116,14 @@ const fakes: Record<string, string> = {
       };
     }`,
 };
+// The stub cache's bounded client: the exact emitted valkey.ts, on the same fake redis.
+fakes["./valkey.ts"] = stripTypeScriptTypes(
+  new TextDecoder().decode(
+    bundle.files.find((file) => file.path === "src/runtime/valkey.ts")?.bytes,
+  ),
+).replace(/from "([^"]+)"/g, (match, from: string) =>
+  fakes[from] ? `from "${dataUrl(fakes[from])}"` : match,
+);
 const tileProcess = dataUrl(
   stripTypeScriptTypes(
     readFileSync(
@@ -144,7 +158,17 @@ function testScope() {
   };
 }
 const lines: Record<string, unknown>[] = [];
-const probe = (entry: Record<string, unknown>) => lines.push(entry);
+const probe = Object.assign((entry: Record<string, unknown>) => lines.push(entry), {
+  tile: "links-api",
+});
+/** What a client wrote to stdout itself (its failure and state lines), parsed. */
+function stdout() {
+  const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+  return {
+    lines: () => spy.mock.calls.map(([line]) => JSON.parse(String(line))),
+    restore: () => spy.mockRestore(),
+  };
+}
 
 describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", () => {
   afterEach(() => {
@@ -263,23 +287,208 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
   });
 
   it("uses a cache with its password, after PING", async () => {
-    const cache = await clients.cacheClient(testScope(), probe, { cache: "links-cache" });
-    expect(fake.calls.slice(0, 4)).toEqual([
-      ["createClient", "secret of cache-links-cache", "cache-links-cache", true],
-      ["on", "error"],
-      ["connect"],
-      ["PING"],
-    ]);
-    expect(await cache.get("key")).toBe("value");
-    expect(await cache.get("missing")).toBeUndefined();
-    await cache.set("key", "value", 60);
-    await cache.set("key", "value");
-    await cache.delete("key");
-    expect(fake.calls.slice(4)).toEqual([
-      ["set", "key", "value", { EX: 60 }],
-      ["set", "key", "value", undefined],
-      ["del", "key"],
-    ]);
+    const out = stdout();
+    try {
+      const cache = await clients.cacheClient(testScope(), probe, { cache: "links-cache" });
+      // The cache read's bounded client: no offline queue or client reconnect, 32 queued at
+      // most, a 500 ms connect.
+      expect(fake.calls.slice(0, 4)).toEqual([
+        [
+          "createClient",
+          {
+            password: "secret of cache-links-cache",
+            disableOfflineQueue: true,
+            commandsQueueMaxLength: 32,
+            socket: {
+              host: "cache-links-cache",
+              port: 6379,
+              connectTimeout: 500,
+              reconnectStrategy: false,
+            },
+          },
+        ],
+        ["on", "error"],
+        ["connect"],
+        ["PING"],
+      ]);
+      expect(lines).toEqual([
+        { level: "info", client: "links-cache", kind: "cache", check: "PING", result: "ok" },
+      ]);
+      expect(out.lines()).toEqual([
+        {
+          level: "info",
+          event: "cache",
+          tile: "links-api",
+          cache: "links-cache",
+          state: "available",
+        },
+      ]);
+      expect(await cache.get("key")).toBe("value");
+      expect(await cache.get("missing")).toBeUndefined();
+      await cache.set("key", "value", 60);
+      await cache.set("key", "value");
+      await cache.delete("key");
+      expect(fake.calls.slice(4)).toEqual([
+        ["get", "key"],
+        ["get", "missing"],
+        ["set", "key", "value", { EX: 60 }],
+        ["set", "key", "value", undefined],
+        ["del", "key"],
+      ]);
+    } finally {
+      out.restore();
+    }
+  });
+
+  it("settles a stalled cache command at 150 ms, then fails at once until a new client connects 5 s later", async () => {
+    vi.useFakeTimers();
+    const out = stdout();
+    try {
+      const cache = await clients.cacheClient(testScope(), probe, { cache: "links-cache" });
+      const created = () => fake.calls.filter((call) => call[0] === "createClient").length;
+      const destroyed = () => fake.calls.filter((call) => call[0] === "destroy").length;
+      // Each of get, set and delete: a command that never answers rejects at its deadline and
+      // destroys the client; until the next one connects, every call fails at once.
+      const stalls = [
+        ["get", () => cache.get("key")],
+        ["set", () => cache.set("key", "value", 30)],
+        ["del", () => cache.delete("key")],
+      ] as const;
+      for (const [index, [name, call]] of stalls.entries()) {
+        fake.fail = name;
+        fake.hang = true;
+        let settled: unknown;
+        const pending = call().catch((error: Error) => {
+          settled = error.message;
+        });
+        await vi.advanceTimersByTimeAsync(149);
+        expect(settled).toBeUndefined();
+        await vi.advanceTimersByTimeAsync(1);
+        await pending;
+        expect(settled).toBe("Cache deadline");
+        expect(destroyed()).toBe(index + 1);
+        fake.fail = undefined;
+        fake.hang = undefined;
+        await expect(cache.get("key")).rejects.toThrow("Cache unavailable");
+        await expect(cache.set("key", "value")).rejects.toThrow("Cache unavailable");
+        await expect(cache.delete("key")).rejects.toThrow("Cache unavailable");
+        await vi.advanceTimersByTimeAsync(4999);
+        expect(created()).toBe(index + 1);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(created()).toBe(index + 2);
+        expect(await cache.get("key")).toBe("value");
+      }
+      // Each loss is one failure line through the failure log, each return one info line.
+      const lost = {
+        level: "error",
+        event: "failure",
+        tile: "links-api",
+        what: "cache links-cache",
+        error: "Error: Cache deadline",
+      };
+      const back = {
+        level: "info",
+        event: "cache",
+        tile: "links-api",
+        cache: "links-cache",
+        state: "available",
+      };
+      expect(out.lines()).toEqual([back, lost, back, lost, back, lost, back]);
+    } finally {
+      out.restore();
+    }
+  });
+
+  it("starts without a cache that is down at startup, logs unavailable and connects 5 s later", async () => {
+    vi.useFakeTimers();
+    const out = stdout();
+    try {
+      // Refused: the first connect fails at once. Stalled (a paused cache): at its 500 ms bound.
+      for (const hang of [false, true]) {
+        fake.calls.length = 0;
+        lines.length = 0;
+        fake.fail = "connect";
+        fake.hang = hang;
+        let started: { get(key: string): Promise<string | undefined> } | undefined;
+        const starting = clients
+          .cacheClient(testScope(), probe, { cache: "links-cache" })
+          .then((cache: typeof started) => {
+            started = cache;
+          });
+        await vi.advanceTimersByTimeAsync(hang ? 499 : 0);
+        if (hang) expect(started).toBeUndefined();
+        await vi.advanceTimersByTimeAsync(hang ? 1 : 0);
+        await starting;
+        if (!started) throw new Error("cacheClient did not start");
+        expect(lines).toEqual([
+          {
+            level: "warn",
+            client: "links-cache",
+            kind: "cache",
+            check: "PING",
+            result: "unavailable",
+          },
+        ]);
+        expect(fake.calls.filter((call) => call[0] === "PING")).toEqual([]);
+        expect(fake.calls.filter((call) => call[0] === "destroy")).toHaveLength(1);
+        await expect(started.get("key")).rejects.toThrow("Cache unavailable");
+        fake.fail = undefined;
+        fake.hang = undefined;
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(fake.calls.filter((call) => call[0] === "createClient")).toHaveLength(2);
+        expect(await started.get("key")).toBe("value");
+      }
+      const back = {
+        level: "info",
+        event: "cache",
+        tile: "links-api",
+        cache: "links-cache",
+        state: "available",
+      };
+      expect(out.lines()).toEqual([
+        {
+          level: "error",
+          event: "failure",
+          tile: "links-api",
+          what: "cache links-cache",
+          error: "Error: connect refused",
+        },
+        back,
+        {
+          level: "error",
+          event: "failure",
+          tile: "links-api",
+          what: "cache links-cache",
+          error: "Error: Cache deadline",
+        },
+        back,
+      ]);
+    } finally {
+      out.restore();
+    }
+  });
+
+  it("destroys the cache client when the process drains, and tries no new one", async () => {
+    vi.useFakeTimers();
+    const out = stdout();
+    try {
+      const scope = testScope();
+      await clients.cacheClient(scope, probe, { cache: "links-cache" });
+      expect(scope.owned).toHaveLength(1);
+      await scope.owned[0]?.();
+      expect(fake.calls.at(-1)).toEqual(["destroy"]);
+      // Closed while lost: the retry is cancelled.
+      fake.calls.length = 0;
+      fake.fail = "connect";
+      const down = testScope();
+      await clients.cacheClient(down, probe, { cache: "links-cache" });
+      fake.fail = undefined;
+      await down.owned[0]?.();
+      await vi.advanceTimersByTimeAsync(20000);
+      expect(fake.calls.filter((call) => call[0] === "createClient")).toHaveLength(1);
+    } finally {
+      out.restore();
+    }
   });
 
   it("checks a bucket with what its key allows, and reads and writes objects", async () => {

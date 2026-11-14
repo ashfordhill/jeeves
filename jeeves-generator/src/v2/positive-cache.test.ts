@@ -404,6 +404,8 @@ type FakeValkeyClient = {
   destroy: ReturnType<typeof vi.fn>;
   get: ReturnType<typeof vi.fn>;
   set: ReturnType<typeof vi.fn>;
+  del: ReturnType<typeof vi.fn>;
+  ping: ReturnType<typeof vi.fn>;
   /** Emits the client's `error` event. */
   fail(error: unknown): void;
 };
@@ -415,6 +417,9 @@ async function withFakeValkey(
     connects: (() => Promise<void>)[];
     open(onState: (state: string, error?: unknown) => void): Promise<{
       get(key: string): Promise<string | null>;
+      set(key: string, value: string, expiry?: { PXAT: number } | { EX: number }): Promise<unknown>;
+      delete(key: string): Promise<unknown>;
+      ping(): Promise<unknown>;
       close(): void;
     }>;
   }) => Promise<void>,
@@ -442,6 +447,8 @@ async function withFakeValkey(
       }),
       get: vi.fn(async () => "value"),
       set: vi.fn(async () => "OK"),
+      del: vi.fn(async () => 1),
+      ping: vi.fn(async () => "PONG"),
     };
     clients.push(client);
     return client;
@@ -614,6 +621,60 @@ describe("emitted Valkey cache reconnects", () => {
       expect(states.map(([state]) => state)).toEqual(["available", "unavailable"]);
       expect(clients).toHaveLength(2);
       await expect(cache.get("key")).rejects.toThrow("Cache unavailable");
+    }));
+
+  it("passes set's expiry through, deletes with DEL, pings, and bounds each like get", () =>
+    withFakeValkey(async ({ clients, open }) => {
+      const { states, onState } = recorder();
+      const cache = await open(onState);
+      // The reader's absolute expiry, a stub's seconds, or none.
+      await cache.set("a", "1", { PXAT: 120000 });
+      await cache.set("b", "2", { EX: 30 });
+      await cache.set("c", "3");
+      await cache.delete("a");
+      await expect(cache.ping()).resolves.toBe("PONG");
+      expect(client(clients, 0).set.mock.calls).toEqual([
+        ["a", "1", { PXAT: 120000 }],
+        ["b", "2", { EX: 30 }],
+        ["c", "3", undefined],
+      ]);
+      expect(client(clients, 0).del.mock.calls).toEqual([["a"]]);
+      // Each of set, delete and ping that never answers rejects at 150 ms and loses its client;
+      // a new one connects 5 s later.
+      for (const [index, name] of (["set", "del", "ping"] as const).entries()) {
+        const current = client(clients, index);
+        current[name].mockImplementationOnce(() => new Promise(() => {}));
+        let settled: unknown;
+        const call =
+          name === "set"
+            ? cache.set("b", "2", { EX: 30 })
+            : name === "del"
+              ? cache.delete("b")
+              : cache.ping();
+        const pending = call.catch((error: Error) => {
+          settled = error.message;
+        });
+        await vi.advanceTimersByTimeAsync(149);
+        expect(settled).toBeUndefined();
+        await vi.advanceTimersByTimeAsync(1);
+        await pending;
+        expect(settled).toBe("Cache deadline");
+        expect(current.destroy).toHaveBeenCalledTimes(1);
+        await expect(cache.delete("b")).rejects.toThrow("Cache unavailable");
+        await expect(cache.ping()).rejects.toThrow("Cache unavailable");
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(clients).toHaveLength(index + 2);
+      }
+      expect(states.map(([state]) => state)).toEqual([
+        "available",
+        "unavailable",
+        "available",
+        "unavailable",
+        "available",
+        "unavailable",
+        "available",
+      ]);
+      cache.close();
     }));
 
   it("keeps get and the reconnect working when onState throws", () =>
