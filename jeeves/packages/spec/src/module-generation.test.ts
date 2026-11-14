@@ -1388,7 +1388,11 @@ describe("module status and older designs", () => {
     );
     expect(reasons).toEqual({
       "upload-multipart": ["stub", "Needs a connection to object storage.", ["objects"]],
-      "upload-limit": ["stub", "Jeeves doesn't generate a Rate limiter; you write it.", ["store"]],
+      "upload-limit": [
+        "stub",
+        "Jeeves doesn't generate Rate limiter modules; you write it.",
+        ["store"],
+      ],
       // A part no lead beside it uses is a normal stub, never told to add a lead or move.
       "watch-views": [
         "stub",

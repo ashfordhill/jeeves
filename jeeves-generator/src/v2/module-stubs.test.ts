@@ -201,7 +201,7 @@ describe("module stubs", () => {
       ["shorten-cache", "stub", ["cache"]],
     ]);
     expect(modules?.find((item) => item.module === "shorten-limit")).toMatchObject({
-      reason: "Jeeves doesn't generate a Rate limiter; you write it.",
+      reason: "Jeeves doesn't generate Rate limiter modules; you write it.",
       files: [
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-limit.slots.ts",

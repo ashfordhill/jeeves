@@ -13761,3 +13761,49 @@ The spec deleted its projects; `jeeves_e2e` holds only "E2E Every kind" and "Tin
 Owner dirty paths untouched and unstaged.
 **For the next unit.** UF06 (review) of [UI follow-ups](plans/ui-followups/units.md). UF01–UF05 are
 done.
+
+## 2026-11-13 — UF06: Review UI follow-ups
+
+**What changed.**
+- [`plans/ui-followups/review.md`](plans/ui-followups/review.md) (new): F1–F7 checked in the running
+  app in both themes at both sizes, the coordinator's ledger item by item, four fixes, six
+  follow-ups and three proposed units (UF07 menu placement, UF08 the dark select ring, UF09 two
+  findings in plain words; all need the owner). Eight screenshots in `evidence/uf06/`.
+- Fixed, each with a test that failed before: `canvas.css` `.lane-module-menu-item:only-child {
+  grid-column: 1 / -1; }`, so a group's lone card takes the row as the preview draws it
+  (`module-menu.spec.ts` asserts the Custom card is as wide as its grid; `docs/studio.md` says so),
+  and the 13.5px menu-name rule moved after the last `strong` rule (Biome's two
+  `noDescendingSpecificity` warnings gone; computed sizes unchanged). `spec/src/module-status.ts`:
+  `Jeeves doesn't generate ${definition.name} modules; you write it.` (no more "a ID generator");
+  `spec/src/studio-components.ts`: Custom is `Your own logic, in an empty, typed file for you to
+  fill in.` (a stub header with one colon). Their assertions in `module-stubs.test.ts`,
+  `chat/tools.test.ts`, `routes/generation-v2.test.ts`, `module-generation.test.ts`,
+  `ModuleMenu.test.tsx` and `module-authoring.spec.ts` take the new text. Pins re-taken
+  (production foundations Rule 7): stub-stack's `.jeeves/manifest.json`, `.jeeves/report.json` and
+  `src/modules/visit-worker/archiver.ts` only (archiver 386 → 380 bytes); each rebuilt file with the
+  old sentences put back hashed to its old pin. v2-module-design and frozen-v2 unchanged.
+
+**Checks.** Before (the tree at `bb164c0`): `pnpm check` exit 0, 115 files / 910 tests, Biome 2
+warnings + 1 info; the mouse spec 2 passed (e2e 74 and build exit 0 are UF05's runs on that tree,
+not reruns). After: `pnpm check` exit 0, 115 / 910, Biome 0 warnings + 1 info; `pnpm test:e2e` 74
+passed (4.6 min, the mouse spec parked outside the folder); `pnpm --filter @jeeves/web build` exit 0;
+`uf06-check.spec.ts` 2 passed (16 s each, 1440×900 and 1280×800, light and dark, no page error),
+then deleted. Fix evidence: the lone-card assertion 387.34px short without the rule, 5 passed
+with it; the six wording tests 6 failed / 70 passed with the old sentences, 76 passed with the new;
+a throwaway `uf06-visual.test.ts` (deleted) found no `visual` or `"icon"` in chat's or the spec's
+kind descriptions for any kind. The spec's projects deleted; one left by a timed-out run was
+deleted by SQL (all dependents cascade); `jeeves_e2e` holds only "E2E Every kind" and "TinyURL ·
+studio study".
+**Differences from the plan.** The Goal's "the Generate dialog still reads Template and Stub": its
+labels are the spec's `moduleStatusLabels`; by mouse the blank project's rows read Stub and the
+TinyURL extended study's Custom (a study before any module command), so no Template row was seen.
+The before e2e and build are UF05's, above.
+**Noticed.** A Microservice in the middle of the window at 1280×800 with both rails (a blank Simple
+project) has no room for the 600×632 menu on any side, and the placement fallback puts it over the
+tile and the top bar's left end; UF02's two YouTube tiles are fine. Watch API's menu covers the top
+bar at both sizes and the Transcoder's the status bar. Dark `--select-ring` is the old blue at 65%
+(an outline, not a fill; left). Two findings still say "stub"/"template" (`studio-validation.ts:338`,
+`studio-design-review.ts:194`). Hosted CI is confirmed only by the owner's push. Owner dirty paths
+untouched and unstaged.
+**For the next unit.** The store outage amendment SO04–SO05 under its own plan. UF07–UF09 in
+[review.md](plans/ui-followups/review.md) wait for the owner's answers.

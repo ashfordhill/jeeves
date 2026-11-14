@@ -441,10 +441,11 @@ catalog order within a group: **Requests** (Rate limiter, Redirect responder, Au
 call), **Data** (Cache reader, ID generator, Data access, Lifecycle writer, Event counter, Index
 writer, Search query, Favorites), **Events** (Event publisher, Event consumer), **Files & media**
 (Multipart uploads, Video encoder, Video packager, Video thumbnailer) and **Custom**. Each group has
-a heading (a small square in its family colour and its name) over its cards, three to a row. A
-card has its group's solid fill and border, its name and, at the right, a dot for who writes the
-code in that tile; under them its icon and its one-line description, cut with an ellipsis (the
-card's tooltip has the whole line). A legend under the last group explains the dots:
+a heading (a small square in its family colour and its name) over its cards, three to a row (a
+lone card takes the whole row). A card has its group's solid fill and border, its name and, at the
+right, a dot for who writes the code in that tile; under them its icon and its one-line
+description, cut with an ellipsis (the card's tooltip has the whole line). A legend under the
+last group explains the dots:
 
 | Dot | Word | Means | A Microservice's | A Worker service's |
 | --- | --- | --- | --- | --- |

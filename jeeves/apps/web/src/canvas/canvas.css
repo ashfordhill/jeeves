@@ -467,7 +467,7 @@
 
 /* The module menu, on <body> at screen size, as the UI refresh preview draws it: a title, then a
    group per job (Requests, Data, Events, Files & media, Custom: a square in the group's --fam and
-   its name), its cards three to a row, then the legend of the dots. */
+   its name), its cards three to a row (a lone card takes the row), then the legend of the dots. */
 .lane-module-menu {
   position: fixed;
   z-index: 4100;
@@ -560,8 +560,8 @@
   gap: 2px;
   padding: 6px 8px 7px;
 }
-.lane-module-menu-item .lane-module-top strong {
-  font-size: 13.5px;
+.lane-module-menu-item:only-child {
+  grid-column: 1 / -1;
 }
 
 .lane-module-menu-item:hover,
@@ -1272,6 +1272,12 @@
   border-color: var(--yellow);
   background: var(--sfam);
   color: var(--ink);
+}
+
+/* A menu card's name is a little smaller than an inspector card's. After every other `strong`
+   rule, so no later, lower-specificity selector follows it. */
+.lane-module-menu-item .lane-module-top strong {
+  font-size: 13.5px;
 }
 
 /* A design warning's mark in a tile's top-right corner (inside a pill's curve too); its tooltip

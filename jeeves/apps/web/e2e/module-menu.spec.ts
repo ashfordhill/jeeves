@@ -91,6 +91,11 @@ test("an empty Service is a container with a + at its bottom; it toggles the men
         .locator("legend")
         .evaluateAll((items) => items.map((item) => item.textContent)),
     ).toEqual(["Requests", "Data", "Events", "Files & media", "Custom"]);
+    // Cards are three to a row; a group's lone card (Custom) takes the whole row.
+    const custom = moduleMenu(page).getByRole("menuitem", { name: "Custom", exact: true });
+    expect(
+      Math.abs((await box(custom)).width - (await box(custom.locator(".."))).width),
+    ).toBeLessThan(1);
     // It sits beside the tile, not over it, inside the window; it may cover a rail.
     expect(overlaps(await box(moduleMenu(page)), frame)).toBe(false);
     expect(inside(await box(moduleMenu(page)), { x: 0, y: 0, width: 1440, height: 900 })).toBe(

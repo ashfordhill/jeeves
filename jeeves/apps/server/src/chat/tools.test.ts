@@ -309,7 +309,7 @@ describe("studio chat tools", () => {
     const shorten = tiles.find((tile) => tile.id === "shorten")?.modules;
     expect(shorten?.find((module) => module.id === "shorten-limit")).toMatchObject({
       status: "stub",
-      reason: "Jeeves doesn't generate a Rate limiter; you write it.",
+      reason: "Jeeves doesn't generate Rate limiter modules; you write it.",
       unconnected: ["store"],
     });
     // A kind its tile can't hold, and a slot it doesn't have, are refused in plain words.

@@ -1000,7 +1000,7 @@ test("Generate project lists each module's status and previews its stubs", async
     await expect(rows.nth(0)).toContainText("Rate limiter in Microservice");
     await expect(rows.nth(0).locator(".lane-module-status")).toHaveAttribute("data-status", "stub");
     await expect(rows.nth(0)).toContainText(
-      "StubJeeves doesn't generate a Rate limiter; you write it.",
+      "StubJeeves doesn't generate Rate limiter modules; you write it.",
     );
     await expect(rows.nth(1)).toContainText("Custom in Microservice");
     await expect(rows.nth(1)).toContainText("StubYour own logic: you write it.");

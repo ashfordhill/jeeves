@@ -77,7 +77,7 @@ describe("moduleMenuGroups", () => {
     expect(custom?.items[0]).toMatchObject({
       kind: "custom",
       name: "Custom",
-      description: "Your own logic: Jeeves gives you an empty, typed file to fill in.",
+      description: "Your own logic, in an empty, typed file for you to fill in.",
       generation: "stub",
       icon: expect.any(String),
     });

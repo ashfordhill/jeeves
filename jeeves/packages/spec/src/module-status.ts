@@ -239,7 +239,7 @@ export function moduleStatusDetails(
     if (generation.kind === "stub")
       return module.settings.kind === "custom"
         ? "Your own logic: you write it."
-        : `Jeeves doesn't generate a ${definition.name}; you write it.`;
+        : `Jeeves doesn't generate ${definition.name} modules; you write it.`;
     if (generation.kind === "lead") {
       const lead = leads.get(module.id);
       if (lead?.missing) return `Needs ${lead.missing}.`;
