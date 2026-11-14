@@ -13446,3 +13446,32 @@ never reaches `.failed` (review, open 1). B09 media's precondition timing can fa
 (open 6). `field-projects/youtube/v4` keeps the old runtime and README sentence. Owner dirty paths
 untouched and unstaged.
 **For the next unit.** UF01 of [UI follow-ups](plans/ui-followups/units.md).
+
+## 2026-11-13 — UF01: Unit tests fit a slower runner
+
+**What changed.**
+- `jeeves-generator/vitest.config.ts`: the generator project's `test` options add
+  `testTimeout: 20_000` and `hookTimeout: 20_000`, under the plan's comment. Nothing else; no test
+  or assertion changed.
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests; on two CPUs
+(`taskset -c 0,1`, Vitest with a JSON reporter writing to the scratchpad) 910 passed, the five tests
+2.4–3.8 s. After: `pnpm check` exit 0, 115 / 910 (Biome's one info is older, in a template);
+`taskset -c 0,1 pnpm check` exit 0, 115 / 910 (tests 118.5 s). The five named tests on two CPUs
+(JSON run), all passed: `update.test.ts` 2. 3,349 ms, `asset-lifecycle` 3,002 ms, `product-sql`
+2,394 ms, `upload-state` 2,347 ms, `favorites` 2,895 ms and 3,286 ms. A temporary probe (a 6 s
+`beforeAll` and a 6 s test in `jeeves-generator/src`, run alone on two CPUs) passed with the change
+and failed `Test timed out in 5000ms` with HEAD's config (mine restored, checked by SHA-256);
+deleted. `pnpm test:e2e` (native): 74 passed (4.7 min). `pnpm --filter @jeeves/web build`: exit 0.
+No mouse check (Rule 6). Hosted CI is not confirmed: the `check` job's `pnpm check` step runs on
+the owner's next push.
+**Differences from the plan.** The comment wraps onto two `//` lines at Biome's 100 columns (one
+line, indented, is 110); its words are as written. The one-line `test` block is now one option per
+line.
+**Noticed.** This machine doesn't reproduce CI's timeouts: on two CPUs the five tests take
+2.3–3.8 s with or without the change, so only hosted CI shows the fix. Vitest's hook default is
+already 10 s; the comment's "5 s" is the test budget. The server project keeps the 5 s default; its
+slowest PGlite tests take about 3.8 s on two CPUs here (CI named none). `favorites.test.ts`'s
+1,001st test keeps its own 60 s. Owner dirty paths untouched and unstaged.
+**For the next unit.** UF02 of [UI follow-ups](plans/ui-followups/units.md). If hosted CI still
+times out after the push, the failing test names say which project needs the budget.
