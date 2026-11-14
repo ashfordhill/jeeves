@@ -22,8 +22,15 @@ const emitted = new TextDecoder().decode(
 );
 const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
 /** Each fake records what it is asked for in `calls`; the database and broker fakes also record
- * the endpoint they were given in `endpoints`. */
-type Calls = { calls: unknown[][]; endpoints: unknown[][]; fail?: string; hang?: boolean };
+ * the endpoint they were given in `endpoints`. The Pub/Sub client's topic exists unless `pubsub`
+ * says not, and `pubsub.publish` answers its publishes when it is set. */
+type Calls = {
+  calls: unknown[][];
+  endpoints: unknown[][];
+  fail?: string;
+  hang?: boolean;
+  pubsub?: { exists?: boolean; publish?: () => Promise<string> };
+};
 const fake: Calls = { calls: [], endpoints: [] };
 (globalThis as { moduleClientsFake?: Calls }).moduleClientsFake = fake;
 const check = `
@@ -79,6 +86,21 @@ const fakes: Record<string, string> = {
       };
     }`,
   "./local.ts": 'export const readSecret = (name) => "secret of " + name;',
+  "@google-cloud/pubsub": `${check}
+    export class PubSub {
+      constructor(options) { record("PubSub", options); }
+      topic(name, options) {
+        record("topic", name, options);
+        return {
+          exists: () => outcome("exists", [fake.pubsub?.exists ?? true]),
+          publishMessage: (message) => {
+            record("publishMessage", Buffer.from(message.data).toString(), message.attributes);
+            return fake.pubsub?.publish ? fake.pubsub.publish() : Promise.resolve("1");
+          },
+        };
+      }
+      async close() { record("close"); }
+    }`,
   "@aws-sdk/client-s3": [
     "AbortMultipartUpload",
     "CreateMultipartUpload",
@@ -857,6 +879,198 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
 
 // The exact emitted postgres.ts, which both pools (a stub's `databaseClient` and a template's
 // `pool`) are built through, with a fake `pg.Pool` constructor that records its options.
+// QG07: the stub stack with Visits on Google Cloud, so its module-clients.ts has the Pub/Sub
+// publisher beside RabbitMQ's (Uploaded's), on the same fakes and a fake official client.
+const pubsubBundle = assembleV2(
+  {
+    designJson: canonicalJson(
+      runStudioCommands(stubStackDesign(), [
+        { type: "setRunnableProcesses", on: true },
+        {
+          type: "edit",
+          element: "visits",
+          settings: { kind: "queue", mode: "topic", provider: "google-cloud" },
+        },
+      ]),
+    ),
+  },
+  loadLocalV2Registry(),
+);
+const pubsubClients = await import(
+  dataUrl(
+    stripTypeScriptTypes(
+      new TextDecoder().decode(
+        pubsubBundle.files.find((file) => file.path === "src/runtime/module-clients.ts")?.bytes,
+      ),
+    ).replace(/from "([^"]+)"/g, (match, from: string) =>
+      from === "./tile-process.ts"
+        ? `from "${tileProcess}"`
+        : fakes[from]
+          ? `from "${dataUrl(fakes[from])}"`
+          : match,
+    ),
+  )
+);
+
+describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
+  beforeEach(() => environment({ ...localEnvironment, JEEVES_PUBSUB_PROJECT: "local" }));
+  afterEach(() => {
+    fake.calls.length = 0;
+    fake.fail = undefined;
+    fake.pubsub = undefined;
+    lines.length = 0;
+    vi.useRealTimers();
+    restoreEnvironment();
+  });
+  const visits = { topic: "visits" };
+  const payload = new TextEncoder().encode("visit");
+  /** Publishes that Pub/Sub acknowledges only when the test calls their `ack`. */
+  function held() {
+    const acks: ((id: string) => void)[] = [];
+    fake.pubsub = { publish: () => new Promise<string>((resolve) => acks.push(resolve)) };
+    return acks;
+  }
+
+  it("resolves only once Pub/Sub acknowledges, with the module's messageId as its attribute", async () => {
+    const scope = testScope();
+    const publisher = await pubsubClients.pubsubPublisher(scope, probe, visits);
+    expect(fake.calls).toEqual([
+      ["PubSub", { projectId: "local" }],
+      ["topic", "visits", { gaxOpts: { timeout: 2000 } }],
+      ["exists"],
+    ]);
+    expect(lines).toEqual([
+      {
+        level: "info",
+        client: "visits",
+        kind: "queue",
+        check: "the Pub/Sub topic exists",
+        result: "ok",
+      },
+    ]);
+    const acks = held();
+    let settled = false;
+    const sent = publisher
+      .publish(payload, { messageId: "a", key: "ignored" })
+      .then((value: unknown) => {
+        settled = true;
+        return value;
+      });
+    expect(fake.calls.at(-1)).toEqual(["publishMessage", "visit", { messageId: "a" }]);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(settled).toBe(false);
+    acks[0]?.("server-1");
+    await expect(sent).resolves.toBeUndefined();
+    // Without one, each message gets a fresh ID.
+    fake.pubsub = undefined;
+    await publisher.publish(payload);
+    await publisher.publish(payload);
+    const ids = fake.calls.slice(-2).map((call) => (call[2] as { messageId: string }).messageId);
+    expect(ids[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(ids[0]).not.toBe(ids[1]);
+    // It drains with the process; it is no broker transport.
+    expect(scope.owned).toHaveLength(1);
+    expect(scope.transports).toHaveLength(0);
+    // RabbitMQ's publisher is emitted beside it, for Uploaded.
+    expect(pubsubClients.queuePublisher).toBeTypeOf("function");
+  });
+
+  it("rejects a publish at 2000 ms, and the next at once while 1000 are outstanding", async () => {
+    vi.useFakeTimers();
+    const publisher = await pubsubClients.pubsubPublisher(testScope(), probe, visits);
+    fake.pubsub = { publish: () => new Promise<string>(() => {}) };
+    let settled = false;
+    const late = publisher.publish(payload).finally(() => {
+      settled = true;
+    });
+    const rejected = expect(late).rejects.toThrow("Publish deadline (2000 ms)");
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    await rejected;
+    const outstanding = Array.from({ length: 1000 }, () =>
+      publisher.publish(payload).catch((error: Error) => error.message),
+    );
+    await expect(publisher.publish(payload)).rejects.toThrow("Publisher queue full");
+    // The refused one never reached Pub/Sub.
+    expect(fake.calls.filter((call) => call[0] === "publishMessage")).toHaveLength(1001);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(new Set(await Promise.all(outstanding))).toEqual(
+      new Set(["Publish deadline (2000 ms)"]),
+    );
+    // Settled publishes free their places.
+    fake.pubsub = undefined;
+    await expect(publisher.publish(payload)).resolves.toBeUndefined();
+  });
+
+  it("waits for outstanding publishes when the process drains, then closes the client", async () => {
+    const scope = testScope();
+    const publisher = await pubsubClients.pubsubPublisher(scope, probe, visits);
+    const acks = held();
+    const sent = publisher.publish(payload, { messageId: "b" });
+    let drained = false;
+    const drain = Promise.resolve(scope.owned[0]?.()).then(() => {
+      drained = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(drained).toBe(false);
+    expect(fake.calls.map((call) => call[0])).not.toContain("close");
+    // Draining, it takes no new publish.
+    await expect(publisher.publish(payload)).rejects.toThrow("Publisher closed");
+    acks[0]?.("server-2");
+    await sent;
+    await drain;
+    expect(fake.calls.at(-1)).toEqual(["close"]);
+  });
+
+  it("fails startup when its topic is missing or can't be checked, and reads its project from the environment", async () => {
+    fake.pubsub = { exists: false };
+    await expect(pubsubClients.pubsubPublisher(testScope(), probe, visits)).rejects.toThrow(
+      "Startup probe failed: queue visits",
+    );
+    expect(lines.at(-1)).toEqual({
+      level: "error",
+      client: "visits",
+      kind: "queue",
+      check: "the Pub/Sub topic exists",
+      result: "failed",
+      error: "Error: Pub/Sub topic visits not found",
+    });
+    fake.pubsub = undefined;
+    fake.fail = "exists";
+    await expect(pubsubClients.pubsubPublisher(testScope(), probe, visits)).rejects.toThrow(
+      "Startup probe failed: queue visits",
+    );
+    expect(lines.at(-1)).toMatchObject({ result: "failed", error: "Error: exists refused" });
+    fake.fail = undefined;
+    // A project ID, optionally domain-scoped; anything else fails by name before any client.
+    for (const value of ["local", "my-project-123", "example.com:my-project"]) {
+      environment({ JEEVES_PUBSUB_PROJECT: value });
+      fake.calls.length = 0;
+      await pubsubClients.pubsubPublisher(testScope(), probe, visits);
+      expect(fake.calls[0]).toEqual(["PubSub", { projectId: value }]);
+    }
+    for (const value of [
+      undefined,
+      "",
+      "Local",
+      "1project",
+      "my_project",
+      "a b",
+      `p${"x".repeat(30)}`,
+    ]) {
+      environment({ JEEVES_PUBSUB_PROJECT: value });
+      fake.calls.length = 0;
+      const error = await pubsubClients.pubsubPublisher(testScope(), probe, visits).then(
+        () => new Error("built"),
+        (thrown: Error) => thrown,
+      );
+      expect(error.message).toBe("Invalid endpoint JEEVES_PUBSUB_PROJECT");
+      expect(fake.calls).toEqual([]);
+    }
+  });
+});
+
 describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
   const source = new TextDecoder().decode(
     bundle.files.find((file) => file.path === "src/runtime/postgres.ts")?.bytes,

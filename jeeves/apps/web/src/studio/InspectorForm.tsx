@@ -473,12 +473,29 @@ function TargetForm({
   const editable = (field: InspectorField) =>
     !field.path.startsWith("settings.") ||
     controls.some((control) => `settings.${control.sourcePaths[0]?.at(-1)}` === field.path);
+  // A select offers only the values its control supports, as chat does (a Queue's Provider); a
+  // saved value it doesn't support stays listed, so the form shows it until it is changed.
+  const supportedChoices = (field: InspectorField): InspectorField => {
+    const control = controls.find(
+      (item) => `settings.${item.sourcePaths[0]?.at(-1)}` === field.path,
+    );
+    if (field.control !== "select" || !control || !("values" in control.supported)) return field;
+    const values: readonly (string | number)[] = control.supported.values;
+    return {
+      ...field,
+      choices: field.choices.filter(
+        (choice) => values.includes(choice.value) || choice.value === control.value,
+      ),
+    } as InspectorField;
+  };
   const fields = (
     definition
       ? // Provider choices are narrowed per engine, so they widen to plain string choices here.
         (studioFieldGroups(settings).flatMap((item) => item.fields) as unknown as InspectorField[])
       : canonical
-  ).filter((field) => field.path !== "owner" && editable(field));
+  )
+    .filter((field) => field.path !== "owner" && editable(field))
+    .map(supportedChoices);
   const name = fields.find((field) => field.path === "element.name");
   const description = fields.find((field) => field.path === "element.description");
   // Options: the kind's installed, useful settings (today only its Options group has any), then

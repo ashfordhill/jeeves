@@ -27,6 +27,7 @@ import {
   generationProcessSettingKinds,
   generationProcessSettings,
   generationProcessShapes,
+  generationStubQueueProvider,
 } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import { sameContractRef } from "./operation-records.ts";
@@ -1110,6 +1111,12 @@ export function resolveGeneration(
   if (processes)
     settings.push(
       ...processSettings(design, processes, settings, runtimeInstalled && !!installed.processes),
+      ...stubQueueSettings(
+        design,
+        processes,
+        normalized,
+        runtimeInstalled && !!installed.processes,
+      ),
     );
   if (model?.processes) {
     const delivery = normalizedDelivery(design);
@@ -1188,6 +1195,78 @@ function processSettings(
       },
     );
   });
+}
+
+/** The Queue tiles a template's selection publishes to or consumes, by element ID: their provider
+ * is the template's, fixed, so a stub's link to one is provisioned as the template's is. */
+export function generationTemplateQueues(
+  selections: readonly NormalizedGenerationSelection[],
+): Set<string> {
+  return new Set(
+    selections.flatMap((selection) =>
+      selection.binding.kind === "module-stub"
+        ? []
+        : selection.resources.flatMap((resource) => (resource.channel ? [resource.element] : [])),
+    ),
+  );
+}
+
+/**
+ * A Queue tile's Provider (QG07): with Runnable processes on, a queue whose every user is a stub
+ * is provisioned by its stubs' processes, so Provider is the queue's normal control, with the
+ * values its processes run (`generationStubQueueProvider`): unspecified or self-hosted (RabbitMQ)
+ * or google-cloud (a Pub/Sub topic). A queue a template uses has no such control.
+ */
+function stubQueueSettings(
+  design: DesignDocument,
+  processes: readonly NormalizedProcess[],
+  selections: readonly NormalizedGenerationSelection[],
+  installed: boolean,
+): GenerationSettingDecision[] {
+  const studio = design.architecture?.studio;
+  const templated = generationTemplateQueues(selections);
+  const users = new Map<string, Set<string>>();
+  for (const process of processes)
+    for (const stub of process.stubs)
+      for (const queue of [
+        ...(stub.consumes ?? []),
+        ...(stub.stores ?? []).filter((store) => store.kind === "queue"),
+      ]) {
+        const tiles = users.get(queue.element) ?? new Set<string>();
+        tiles.add(process.tile);
+        users.set(queue.element, tiles);
+      }
+  return [...users]
+    .filter(([queue]) => !templated.has(queue))
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .flatMap(([queue, tiles]): GenerationSettingDecision[] => {
+      const index = studio?.elements.findIndex((entry) => entry.element === queue) ?? -1;
+      const binding = studio?.elements[index];
+      if (binding?.settings.kind !== "queue") return [];
+      const value = binding.settings.provider;
+      return [
+        {
+          input: "queue.provider",
+          sourcePaths: [["architecture", "studio", "elements", index, "settings", "provider"]],
+          origin: "source",
+          value,
+          supported: generationStubQueueProvider.supported,
+          consumer: "stub-channel.provider",
+          outputPaths: [
+            "compose.yaml",
+            "infra/local.json",
+            "src/runtime/module-clients.ts",
+            ...[...tiles].sort().map((tile) => `src/processes/${tile}.ts`),
+          ],
+          status: supports(generationStubQueueProvider.supported, value)
+            ? "supported"
+            : "unsupported",
+          userNeed: generationStubQueueProvider.userNeed,
+          normalControl:
+            installed && studioDefinitionStatus(binding.definition, "queue") === "known",
+        },
+      ];
+    });
 }
 
 /** Every CDN tile and the object storage it fronts: its links to object storage, then its saved

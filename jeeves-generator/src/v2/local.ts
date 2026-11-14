@@ -7,6 +7,8 @@ import {
 import { jsonFile, pointerPart, refuse } from "../json.ts";
 import {
   localEndpoints,
+  localPubsub,
+  pubsubSubscription,
   type StubStore,
   stubStores,
   stubUnsupported,
@@ -59,6 +61,17 @@ const sqlName = (name: string) => {
 const providerName = (name: string, min = 1, max = 255) => {
   if (name.length < min || name.length > max || !/^[a-z][a-z0-9.-]*$/.test(name))
     refuse("LOCAL_IDENTITY_LIMIT", name, `Provider identity must fit ${min}..${max} characters.`);
+  return name;
+};
+/** A Pub/Sub topic or subscription name (QG07): 3–255 characters, starting with a letter and
+ * never with `goog`; a tile ID's slug and `--`, `.failed` keep to the rest of the rule. */
+const pubsubName = (name: string) => {
+  if (name.length < 3 || name.length > 255 || !/^[a-z]/.test(name) || name.startsWith("goog"))
+    refuse(
+      "LOCAL_IDENTITY_LIMIT",
+      name,
+      "A Pub/Sub topic or subscription name must be 3–255 characters, start with a letter and not start with goog.",
+    );
   return name;
 };
 const sort = <T extends { id: string }>(rows: T[]) => rows.sort((a, b) => v2Compare(a.id, b.id));
@@ -276,18 +289,22 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   // provider is a required unsupported gap. Nothing is written to ownership.
   const stubbed: { host: string; store: StubStore; id: string }[] = [];
   for (const process of model.processes ?? []) {
-    const plan = stubStores(process);
+    const plan = stubStores(process, model.selections);
     gaps.push(...plan.gaps);
     for (const store of plan.stores) {
       if (store.unsupported) continue;
       for (const path of store.sourcePaths) if (!sourcePaths.includes(path)) sourcePaths.push(path);
       const identity = generationLocalIdentity(store.element);
+      // A Pub/Sub topic is its own provider resource (QG07), never the broker's.
+      const kind = store.pubsub ? "pubsub" : store.kind;
       const id =
         store.kind === "object-store"
           ? providerName(identity.local, 3, 63)
-          : providerName(identity.local);
+          : store.pubsub
+            ? pubsubName(identity.local)
+            : providerName(identity.local);
       const existing = resourceMap.get(id);
-      if (existing && (existing.kind !== store.kind || existing.mode !== store.mode))
+      if (existing && (existing.kind !== kind || existing.mode !== store.mode))
         refuse(
           "LOCAL_RESOURCE_CONFLICT",
           id,
@@ -295,7 +312,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         );
       const resource = existing ?? {
         id,
-        kind: store.kind,
+        kind,
         sql: identity.sql,
         public: false,
         ...(store.mode && { mode: store.mode }),
@@ -644,7 +661,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   // database, with SELECT on what another owner publishes when it may only read; a subscriber per
   // consumed topic; a key per bucket with the link's read or write.
   for (const { host, store, id } of stubbed) {
-    const r = required(id, store.kind);
+    const r = required(id, store.pubsub ? "pubsub" : store.kind);
     const access = user(r, host, store.kind === "queue" ? store.access : undefined);
     if (store.kind === "database") {
       addLogin(r, host);
@@ -670,7 +687,8 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
             });
         }
     }
-    if (store.kind === "queue" && store.access === "consume") addSubscriber(r, host);
+    if (store.kind === "queue" && store.access === "consume" && !store.pubsub)
+      addSubscriber(r, host);
     if (
       store.kind === "object-store" &&
       !storage.some((s) => s.resource === r.id && s.host === host)
@@ -684,6 +702,32 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         corsPut: false,
       });
   }
+  // Pub/Sub (QG07): each topic, and for each tile that consumes it a subscription, which the tile's
+  // copies share, with its dead-letter topic and a pull subscription of that name. setup-pubsub
+  // creates them all before any process starts: Pub/Sub keeps a message only for subscriptions
+  // that exist when it is published.
+  const pubsubTopics: string[] = [];
+  const pubsubSubscriptions: Record<string, unknown>[] = [];
+  for (const r of byKind("pubsub")) {
+    pubsubTopics.push(r.id);
+    const consumers = r.users.filter((u) => u.channel === "consume").map((u) => u.host);
+    for (const host of [...new Set(consumers)].sort(v2Compare)) {
+      const subscription = pubsubSubscription(r.id, host);
+      pubsubTopics.push(pubsubName(subscription.failed));
+      pubsubSubscriptions.push(
+        {
+          name: pubsubName(subscription.name),
+          topic: r.id,
+          ackDeadlineSeconds: 60,
+          retryPolicy: { minimumBackoffSeconds: 1, maximumBackoffSeconds: 10 },
+          deadLetterPolicy: { deadLetterTopic: subscription.failed, maxDeliveryAttempts: 100 },
+        },
+        { name: subscription.failed, topic: subscription.failed },
+      );
+    }
+  }
+  pubsubTopics.sort(v2Compare);
+  pubsubSubscriptions.sort((a, b) => v2Compare(String(a.name), String(b.name)));
   for (const db of databases) db.migrations.sort();
   const productSql = productFiles(model, databases, logins, views, grants);
   for (const row of productSql) provenance(row.sourcePaths);
@@ -703,6 +747,22 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       healthcheck: health(["CMD", "rabbitmq-diagnostics", "-q", "ping"]),
     };
   }
+  // The Pub/Sub emulator (QG07): reached only inside the network, and its state lasts only while
+  // it runs, so every start creates the topics and subscriptions again (setup-pubsub).
+  if (pubsubTopics.length)
+    services[localPubsub.service] = {
+      image: pins.pubsub,
+      command: [
+        "gcloud",
+        "beta",
+        "emulators",
+        "pubsub",
+        "start",
+        "--host-port=0.0.0.0:8085",
+        `--project=${localPubsub.project}`,
+      ],
+      healthcheck: health(["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8085/"]),
+    };
   const objects = byKind("object-store").map((r) => ({ id: r.id, public: r.public }));
   if (objects.length) {
     secret("garage.toml");
@@ -792,6 +852,17 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   });
   if (databases.length) services["setup-migrate"] = app("migrate", [...new Set(setupSecrets)]);
   if (broker.length) services["setup-broker"] = app("broker-init", ["broker-password"]);
+  if (pubsubTopics.length) {
+    const setup = app("pubsub-init");
+    services["setup-pubsub"] = {
+      ...setup,
+      environment: {
+        ...setup.environment,
+        JEEVES_PUBSUB_PROJECT: localPubsub.project,
+        PUBSUB_EMULATOR_HOST: localPubsub.host,
+      },
+    };
+  }
   if (search.length) services["setup-search"] = app("search-init");
   if (storage.some((s) => s.corsPut))
     services["setup-storage"] = app("storage-config", [...new Set(storage.map((s) => s.secret))]);
@@ -801,9 +872,11 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       ? "local-postgres"
       : r.kind === "queue"
         ? "local-broker"
-        : r.kind === "object-store"
-          ? "local-objects"
-          : `${r.kind}-${id}`;
+        : r.kind === "pubsub"
+          ? localPubsub.service
+          : r.kind === "object-store"
+            ? "local-objects"
+            : `${r.kind}-${id}`;
   };
   const application: string[] = [];
   const publicHttp = (host: string) =>
@@ -863,6 +936,20 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           );
         credentials.push("broker-password");
       }
+      // A Pub/Sub publisher holds no credential: Application Default Credentials (QG07).
+      if (
+        service.pubsub &&
+        !resources.some(
+          (r) =>
+            r.kind === "pubsub" &&
+            r.users.some((u) => u.host === service.host && u.channel === "publish"),
+        )
+      )
+        refuse(
+          "INVALID_LOCAL_CONTRIBUTION",
+          service.host,
+          "Service needs a selected Pub/Sub topic it publishes to.",
+        );
       const identityBinding = service.identity
         ? identity.find(
             (i) =>
@@ -1004,6 +1091,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     views,
     grants,
     broker,
+    ...(pubsubTopics.length && {
+      pubsub: { topics: pubsubTopics, subscriptions: pubsubSubscriptions },
+    }),
     storage,
     objects,
     search,
@@ -1072,6 +1162,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     "scripts/bootstrap.mjs",
     "scripts/storage-config.mjs",
     ...(search.length ? ["scripts/search-init.mjs"] : []),
+    ...(pubsubTopics.length ? ["scripts/pubsub-init.mjs"] : []),
     ...(model.processes ? ["scripts/products.mjs"] : []),
     "scripts/common.mjs",
   ]) {
@@ -1135,7 +1226,17 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           : "none"
       }`;
     });
-  const endpointsReadme = `\n**Endpoints from the environment.** Each process reads the endpoints it uses from its environment as it builds each client, with no default: \`JEEVES_DATABASE_<ID>_HOST\` (a host, or an absolute Unix socket directory) and \`_PORT\` for each database, \`JEEVES_CACHE_<ID>_HOST\` and \`_PORT\` for each cache, \`JEEVES_BROKER_HOST\` and \`JEEVES_BROKER_PORT\` for the broker, and \`JEEVES_TILE_<ID>_URL\` (absolute \`http:\` or \`https:\`, with no credentials, query or fragment) for each tile its stubs call, where \`<ID>\` is the tile ID upper-cased with \`-\` as \`_\`. A missing or invalid one fails startup with \`Invalid endpoint <variable>\`, never its value. \`compose.yaml\` sets the local values; a deployment sets its own. Object storage and search are still reached at their local names. Each process reads (also \`processes.tiles[].environment\` in .jeeves/report.json):\n\n${processEnvironment.join("\n")}\n`;
+  const endpointsReadme = `\n**Endpoints from the environment.** Each process reads the endpoints it uses from its environment as it builds each client, with no default: \`JEEVES_DATABASE_<ID>_HOST\` (a host, or an absolute Unix socket directory) and \`_PORT\` for each database, \`JEEVES_CACHE_<ID>_HOST\` and \`_PORT\` for each cache, \`JEEVES_BROKER_HOST\` and \`JEEVES_BROKER_PORT\` for the broker, and \`JEEVES_TILE_<ID>_URL\` (absolute \`http:\` or \`https:\`, with no credentials, query or fragment) for each tile its stubs call, where \`<ID>\` is the tile ID upper-cased with \`-\` as \`_\`.${pubsubTopics.length ? " A process that publishes to a Pub/Sub topic reads `JEEVES_PUBSUB_PROJECT`, a Google Cloud project ID (a lowercase letter, then up to 29 lowercase letters, digits or `-`, optionally after `<domain>:`); `compose.yaml` also sets `PUBSUB_EMULATOR_HOST` for the local emulator, which a deployment leaves unset." : ""} A missing or invalid one fails startup with \`Invalid endpoint <variable>\`, never its value. \`compose.yaml\` sets the local values; a deployment sets its own. Object storage and search are still reached at their local names. Each process reads (also \`processes.tiles[].environment\` in .jeeves/report.json):\n\n${processEnvironment.join("\n")}\n`;
+  // Google Cloud Pub/Sub (QG07): what runs, what it promises and what a deployment provides.
+  const pubsubReadme = pubsubTopics.length
+    ? `\n**Google Cloud Pub/Sub.** A queue only stubs use, saved with provider Google Cloud, is a Pub/Sub topic named by the queue's ID (${byKind(
+        "pubsub",
+      )
+        .map((r) => `\`${r.id}\``)
+        .join(
+          ", ",
+        )}). A stub publishes through the official client (\`pubsubPublisher\` in \`src/runtime/module-clients.ts\`): \`publish\` resolves only once Pub/Sub has acknowledged the message, which carries the module's \`messageId\` (else a fresh one) as its \`messageId\` attribute; Pub/Sub gives a resent message a new ID, so a consumer deduplicates on the attribute. A publish fails after 2000 ms, and while 1000 are outstanding the next fails at once. Each publishing process checks at startup that its topic exists and fails without it; it needs \`pubsub.topics.get\` and \`pubsub.topics.publish\` on the topic, through Application Default Credentials (the export holds no key file). Processes never create or change topics or subscriptions. Locally \`local-pubsub\` runs the Pub/Sub emulator, reached only inside the network at \`local-pubsub:8085\`, and \`setup-pubsub\` (\`scripts/pubsub-init.mjs\`) creates every topic and subscription \`infra/local.json\` lists before the processes start, at \`first-run\` and every \`start\`: it creates what is missing and stops, naming it, at one that exists with other settings. Each tile that consumes a topic gets subscription \`<topic>--<tile>\`, which its copies share (another tile gets its own, so each tile gets every message), with a 60 s ack deadline, retries backing off from 1 s to 10 s and dead-letter topic \`<topic>--<tile>.failed\` after 100 delivery attempts, plus a pull subscription \`<topic>--<tile>.failed\` to inspect it; consuming Pub/Sub isn't installed yet, so a loop stub on a topic is a required gap. The emulator keeps nothing across a restart, no topic, subscription or message: a local limit, never a durability claim. A deployment's own infrastructure creates the same topics and subscriptions, and grants the Pub/Sub service agent what a dead-letter policy needs (publish on each \`.failed\` topic, subscribe on its subscription).\n`
+    : "";
   files.push(
     file(
       "README.md",
@@ -1143,7 +1244,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         model.processes
           ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT on the database's \`published\` views and on another owner's template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in schema \`m_<module>\`, so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only its tile's login uses that schema; every login on the database may SELECT what it publishes as views in \`published\`, and nothing else of its tables. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
           : ""
-      }`,
+      }${pubsubReadme}`,
     ),
   );
   return {

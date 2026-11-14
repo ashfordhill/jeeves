@@ -131,7 +131,8 @@ export function V2GenerationDetails({ data }: { data: V2GenerationPreview }) {
 }
 
 /** Each application tile's process: its service, shape, edge path, what it answers, what is
- * provisioned for its stubs and each writer module's own SQL file. */
+ * provisioned for its stubs (and, opened, what each runs as) and each writer module's own SQL
+ * file. */
 function GenerationProcesses({
   processes,
   modules,
@@ -178,6 +179,16 @@ function GenerationProcesses({
               </span>
               <p>{answers.length ? answers.join(", ") : "Idle until stopped"}</p>
               {provisioned.length ? <p>Provisioned: {provisioned.map(store).join(", ")}</p> : null}
+              {provisioned.length ? (
+                <details>
+                  <summary>Provisioned as</summary>
+                  {provisioned.map((item) => (
+                    <p key={`${item.store}:${item.access}`}>
+                      {item.name}: {item.provisioned}
+                    </p>
+                  ))}
+                </details>
+              ) : null}
               {unsupported.length ? (
                 <p>Not provisioned: {unsupported.map(store).join(", ")}</p>
               ) : null}

@@ -79,6 +79,7 @@ const clientSections: readonly ClientSection[] = [
   "database",
   "broker",
   "queue",
+  "pubsub",
   "cache",
   "objects",
   "search",
@@ -161,7 +162,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
           ...clients,
         ],
         processes: processes.map((process) =>
-          reportRow(process, mounts.get(process.tile) ?? [], views),
+          reportRow(process, mounts.get(process.tile) ?? [], model.selections, views),
         ),
       };
     },
@@ -195,6 +196,7 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
       cache: unique(wired.flatMap((item) => item.cache)),
     }),
     ...(wired.some((item) => item.broker) && { broker: true }),
+    ...(wired.some((item) => item.pubsub) && { pubsub: true }),
     ...(calls.length && { calls }),
     ...(wired.some((item) => item.target === "media") && { target: "media" as const }),
     ...(identity[0] && { identity: identity[0] }),
@@ -233,7 +235,8 @@ function settings(process: NormalizedProcess) {
 function reportRow(
   process: NormalizedProcess,
   mounts: readonly ProcessMount[],
-  views: Parameters<typeof stubStoreRows>[1],
+  selections: Parameters<typeof stubStoreRows>[1],
+  views: Parameters<typeof stubStoreRows>[2],
 ): V2ProcessReport {
   const http = process.shape === "http";
   return {
@@ -276,7 +279,7 @@ function reportRow(
           ]
         : [],
     ),
-    stores: stubStoreRows(process, views),
+    stores: stubStoreRows(process, selections, views),
   };
 }
 

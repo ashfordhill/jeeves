@@ -1476,7 +1476,12 @@ waits: see the generator README). A
 process that loses its broker keeps running: its broker publishers and consumers reconnect every
 5 s, a publish fails at once while the broker is away, and consumers resubscribe when it is back. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked
-once at startup; a store on another provider isn't provisioned, and the stack isn't runnable.
+once at startup; a store on another provider isn't provisioned, and the stack isn't runnable. The
+one exception is a Queue or Topic only stubs use, whose **Provider** can be set to Google Cloud
+in its Options or by chat: it is then a Pub/Sub topic, its publishers resolve only once Pub/Sub
+has acknowledged a message (within 2 s), and locally the export runs the Pub/Sub emulator, whose
+setup creates the topic and a subscription per consuming tile at every start; consuming one isn't
+installed yet, so a loop stub on it is a required gap.
 Each process finds its databases, caches, broker and the tiles its stubs call through its
 environment (`JEEVES_*` variables, with no default): the export's `compose.yaml` sets them to the
 local services, its README lists them per process, and a deployment sets its own.
@@ -1488,8 +1493,9 @@ may use its tables, and every tile on that database may read the views it puts i
 (keep the file re-runnable). Preview's **Processes** list shows the edge's paths and each CDN's
 route, then each
 process with its service, shape, edge path, routes and loops ("loop on <queue>"), what is
-provisioned for its stubs ("Provisioned: Links database (database, read-write)") or not ("Not
-provisioned: …"), each writer's file ("Product SQL: Link reader →
+provisioned for its stubs ("Provisioned: Links database (database, read-write)", and under
+**Provisioned as** what each runs as, such as "Visits: Google Cloud Pub/Sub topic visits (locally
+the emulator local-pubsub)") or not ("Not provisioned: …"), each writer's file ("Product SQL: Link reader →
 infra/postgres/links-db/modules/link-reader.sql"), and whether the stack is runnable;
 `first-run` starts the processes only while it is. With it off, the export is exactly as
 before.

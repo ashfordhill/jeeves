@@ -1,5 +1,9 @@
 # Jeeves <!-- omit from toc -->
 
+- [11/14/2026](#11142026)
+  - [qrwty](#qrwty)
+  - [Improving Jeeves](#improving-jeeves)
+    - [UI](#ui)
 - [11/11/2026](#11112026)
   - [YouTube V3](#youtube-v3)
   - [Birds-Eye Viewership](#birds-eye-viewership)
@@ -29,6 +33,47 @@
   - [AI methods](#ai-methods)
   - [Challenges](#challenges)
   - [UI/UX of generated apps](#uiux-of-generated-apps)
+
+
+## 11/14/2026
+
+### qrwty
+
+Generation for a production-level grade deployment of my repo [qrwty](https://www.github.com/ashfordhill/qrwty) has begun.
+
+The plan has 2 phases:
+
+1.  Get qrwty built with a Jeeves diagram and deployed to the qrwty.io domain '
+  - This involves actually using unpaid features/trials of Google Cloud Platform and Stripe, as well as Cloudflare.
+  - Qrwty is designed to horizontally scale its microservices
+  - Although the backend is built in TypeScript; looking into Rust or Go implementations for certain types of microservices as an option for Jeeves code generation could be useful/interesting. Maybe.
+2.  Get qrwty built without a Jeeves diagram and make comparisons
+  - How much time and clarity is Jeeves saving?
+  - Do the Jeeves diagrams and generated code provide value in code organization vs pure prompting?
+
+#1 and #2 are in their own lanes of work unit execution, my favorite style of feeding large scopes of work. At first I had everything in a queue but it was going to take 3 days, so I took a parallel route this time s ince there are 2 different projects being generated.
+
+Qrwty will be getting a UI but I won't be spending time fussing over it because that does not benefit Jeeves and qrwty is not a project I want to pursue. I will be trialing the dropshipping project next once qrwty has been fully evaluated and in an acceptable state.
+
+### Improving Jeeves
+
+I have also started a third lane to work on Jeeves improvements - there's no reason to wait until lanes #1 and #2 are done since #2 doesn't even use Jeeves and #1 only needed to use Jeeves in the beginning.
+
+Lane #1 will be recording any feedback and data that could be used to improve Jeeves in a sort of "lessons learned". I will also be using Astra and Fable to help me find areas of improvement.
+
+#### UI
+
+UI improvements were a part of the chunk of work executed Friday night - mostly just making the diagrams prettier but there were some organizational improvements in the Tiles/options and categories of templates/modules. Though this might seem like a vain difference, it's important to me because I'm less visually engaged when something looks like bland slop vs something that catches my attention. And 'attention is all you need'!
+
+**Qrwty diagram**
+
+<p align="center"><img src=".docs/qrwty/qrwty-diagram.png" width="600"/></p>
+
+
+Some UI improvements I would like:
+
+- The paths/arrows are easy to see once you click on them, since they light up. But from a static diagram, it's hard to see which arrows are which when there is so much overlap
+- 'Generate project' brings up a confusing, AI-sloppish list of things..there is probably a better way of doing this and helping guide the generated output better. Safeguarding against impossible/bad design generations has somewhat been accounted for in the diagramming options themselves..not really sure. Something is yucky here and needs fixin'.
 
 
 ## 11/11/2026

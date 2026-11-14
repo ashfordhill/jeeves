@@ -13,7 +13,8 @@ and designs that attached the video feature stay readable and exportable. Produc
 projections and service composition remain custom work after generation. Historical YouTube declarations
 remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL,
 SQL pool/statement limits on a bound Data access or a Lifecycle writer (Favorites' items Data
-access too), and an Auth guard's Sign-in (Required or Optional). Fixed policies/providers/language and unsupported alternatives
+access too), an Auth guard's Sign-in (Required or Optional), and with Runnable processes on a
+stub-only Queue's Provider (below). Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
 The one export option is **Runnable processes** (`generation.processes`, Generate project's
@@ -22,7 +23,10 @@ Notifications tile then exports as its own process ([export](../docs/studio.md#e
 While it is on, a process tile with no template that consumes them shows its process's own
 limits: Request timeout and Concurrency limit on a Service, Uploads, Redirect or Billing tile, and
 Concurrency on a Worker, which its stub loops run ([process settings](../docs/studio-settings.md)).
-A CDN tile linked to one public object storage is then served at the edge's `/cdn/<cdn id>/`.
+A Queue or Topic that only stubs use then shows **Provider**: Unspecified or Self-hosted (RabbitMQ)
+or Google Cloud (a Pub/Sub topic, with the emulator locally); a queue a template uses keeps its
+template's Self-hosted. A CDN tile linked to one public object storage is then served at the
+edge's `/cdn/<cdn id>/`.
 
 ## C1 context
 
@@ -426,6 +430,8 @@ in [studio settings](../docs/studio-settings.md).
 ## Provider choices
 
 Settings name providers as intent only: they create no box, credential, deployment or API call.
+The one provider that changes generated code is a stub-only Queue's Google Cloud, with Runnable
+processes on: its stubs publish to a Pub/Sub topic ([installed features](#installed-features-and-controls)).
 
 | Area | Choices |
 | --- | --- |

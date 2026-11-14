@@ -15,7 +15,14 @@ import {
   text,
   tileProcess,
 } from "./http-wiring.ts";
-import { localDatabase, localLogin, type StubStore, stubStores } from "./local-contract.ts";
+import {
+  localDatabase,
+  localLogin,
+  localPubsub,
+  pubsubSubscription,
+  type StubStore,
+  stubStores,
+} from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs.ts";
 import type { V2ProcessReport } from "./registry.ts";
 
@@ -23,11 +30,12 @@ const clients = "../runtime/module-clients.ts";
 const entryTypes = "../modules/entry.ts";
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
  * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
- * endpoint, for a stub's publisher and its loops. */
+ * endpoint, for a stub's publisher and its loops; `pubsub` a Pub/Sub topic's publisher (QG07). */
 export type ClientSection =
   | "database"
   | "broker"
   | "queue"
+  | "pubsub"
   | "cache"
   | "objects"
   | "search"
@@ -48,6 +56,13 @@ function storeClient(store: StubStore): Client {
         call: `await databaseClient(scope, probe, { tile: config.tile, resource: ${resource} })`,
       };
     case "queue":
+      // A queue only stubs use, saved on Google Cloud, publishes to its Pub/Sub topic (QG07).
+      if (store.pubsub)
+        return {
+          key,
+          section: "pubsub",
+          call: `await pubsubPublisher(scope, probe, { topic: ${resource} })`,
+        };
       return {
         key,
         section: "queue",
@@ -92,7 +107,7 @@ export function stubClients(
     return selection?.module ? [{ stub, module: selection.module }] : [];
   });
   if (!stubs.length) return { sections };
-  const { stores } = stubStores(process);
+  const { stores } = stubStores(process, selections);
   const built = new Map<string, Client>();
   const use = (client: Client) => {
     if (!built.has(client.key)) built.set(client.key, client);
@@ -200,6 +215,7 @@ export function stubClients(
       name: {
         database: "databaseClient",
         queue: "queuePublisher",
+        pubsub: "pubsubPublisher",
         cache: "cacheClient",
         objects: "objectClient",
         search: "searchClient",
@@ -245,7 +261,8 @@ export function stubClients(
           .filter((store) => store.kind === "object-store")
           .map((s) => s.resource),
         cache: provisioned.filter((store) => store.kind === "cache").map((s) => s.resource),
-        broker: provisioned.some((store) => store.kind === "queue"),
+        broker: provisioned.some((store) => store.kind === "queue" && !store.pubsub),
+        ...(list.some((client) => client.section === "pubsub") && { pubsub: true }),
         calls: list.filter((client) => client.section === "http").map((client) => client.key),
       },
       local: {},
@@ -282,6 +299,13 @@ function provisionedAs(
       ].join("; ")})`;
     }
     case "queue": {
+      if (store.pubsub) {
+        const local = `locally the emulator ${localPubsub.service}`;
+        if (store.access === "publish")
+          return `Google Cloud Pub/Sub topic ${store.resource} (${local})`;
+        const subscription = pubsubSubscription(store.resource, host);
+        return `Google Cloud Pub/Sub subscription ${subscription.name} on topic ${store.resource}, with dead-letter topic ${subscription.failed} and its subscription (${local})`;
+      }
       const queue =
         store.mode === "topic"
           ? store.access === "consume"
@@ -303,9 +327,10 @@ function provisionedAs(
  * provisioned for it, or why it isn't. */
 export function stubStoreRows(
   process: NormalizedProcess,
+  selections: readonly NormalizedGenerationSelection[],
   views: readonly { resource: string; schema?: string; name: string }[],
 ): V2ProcessReport["stores"] {
-  return stubStores(process).stores.map((store) => ({
+  return stubStores(process, selections).stores.map((store) => ({
     store: store.element,
     name: store.name,
     kind: store.kind,

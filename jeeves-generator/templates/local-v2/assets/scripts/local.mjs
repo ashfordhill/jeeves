@@ -194,9 +194,13 @@ const step = (name, run, once = false) => {
   state.pending = null;
   save();
 };
-const setupServices = ["setup-migrate", "setup-broker", "setup-search", "setup-storage"].filter(
-  (name) => Object.hasOwn(JSON.parse(readFileSync("compose.yaml", "utf8")).services, name),
-);
+const setupServices = [
+  "setup-migrate",
+  "setup-broker",
+  "setup-pubsub",
+  "setup-search",
+  "setup-storage",
+].filter((name) => Object.hasOwn(JSON.parse(readFileSync("compose.yaml", "utf8")).services, name));
 const buildServices = [...setupServices, ...plan.application];
 if (buildServices.length) step("build", () => output("build", ...buildServices));
 if (plan.providers.length)
@@ -230,7 +234,9 @@ if (plan.objects.length)
     },
     true,
   );
-for (const name of ["setup-broker", "setup-search"])
+// Every start declares the broker's queues and creates the Pub/Sub topics and subscriptions again
+// (the emulator keeps none across a restart), before any application process starts.
+for (const name of ["setup-broker", "setup-pubsub", "setup-search"])
   if (setupServices.includes(name)) step(name, () => output("run", "--rm", "--no-deps", name));
 if (plan.application.length)
   step("application", () =>

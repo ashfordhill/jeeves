@@ -5,7 +5,7 @@
 - **Input:** a saved schema-3 design (`design.json`) built from modules.
 - **Output:** a standalone Node 24 and TypeScript project for local Docker Compose. With
   Runnable processes on it has one process per application tile, the providers they use
-  (PostgreSQL, RabbitMQ, Valkey, Garage, OpenSearch, Keycloak), an nginx edge, and `.jeeves/`
+  (PostgreSQL, RabbitMQ or the Pub/Sub emulator, Valkey, Garage, OpenSearch, Keycloak), an nginx edge, and `.jeeves/`
   with the manifest and report.
 - **Templates (9):** Sign-in, Multipart upload, Upload lifecycle, Video encoding, Cache read,
   Event counter, Search indexing, Search query and Favorites. Any other module exports as a
@@ -597,6 +597,7 @@ scripts:
 | --- | --- |
 | Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, and SELECT on its `published` views (product tables, below). A stub that writes it also has its own schema there. Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
 | Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
+| Queue saved on Google Cloud, only stubs using it | A Pub/Sub topic with the queue's ID; for each consuming tile a subscription `<topic>--<tile>` (ack deadline 60 s, retries backing off 1–10 s, dead-letter topic `<topic>--<tile>.failed` after 100 attempts) and a pull subscription `<topic>--<tile>.failed`; locally the emulator `local-pubsub` and `setup-pubsub` (`pubsub-init.mjs`), no credential |
 | Cache | `cache-<id>` (Valkey) and its password |
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
 | Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
@@ -605,7 +606,12 @@ Each process gets its credentials, `depends_on` its providers healthy, and has t
 reads set to these local services in its Compose `environment` (Module clients, below). A store whose saved
 provider isn't unspecified or self-hosted, or whose engine isn't unspecified or the local one
 (PostgreSQL, Redis-compatible, OpenSearch), isn't provisioned: a required `unsupported` gap
-`provider-<module>-<tile>`, so the stack isn't runnable. Identity isn't provisioned for stubs
+`provider-<module>-<tile>`, so the stack isn't runnable. The exception is a queue saved on Google
+Cloud that no template binds (`generationTemplateQueues`): it is a Pub/Sub topic, below. Its
+consuming tiles' subscriptions are provisioned, but consuming Pub/Sub isn't installed yet, so a
+loop stub on it is the same gap ("Consuming Pub/Sub is not installed yet."). A queue a template
+binds keeps the template's self-hosted provider, and a stub's link to one saved on Google Cloud
+keeps the gap. Identity isn't provisioned for stubs
 (an Auth guard connected to it is a sign-in template, the tile's only one), and nor are CDN or
 External API tiles.
 
@@ -662,7 +668,8 @@ timeout` and the pool discards its connection, and a template's pool has the sam
 past its statement timeout), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
-`cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
+`pubsubPublisher` (a Pub/Sub topic's publisher on the official client, `@google-cloud/pubsub`
+6.3.2, below), `cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
 bounded client, `createValkeyCache` in `src/runtime/valkey.ts`, which the primitives emit when no
 cache read already does: a command settles within 150 ms and at most 32 wait, while no client is
 connected a command fails at once with `Cache unavailable`, a lost or stalled client is destroyed
@@ -671,8 +678,8 @@ cache), `objectClient`
 (`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
 `httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`). Each
 client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
-confirm channel, `PING`, `HeadBucket` (or, for a write-only key, opening and aborting a multipart
-upload) and cluster health. Each logs one JSON line
+confirm channel, the Pub/Sub topic existing, `PING`, `HeadBucket` (or, for a write-only key,
+opening and aborting a multipart upload) and cluster health. Each logs one JSON line
 (`{"event":"probe","tile","client","kind","check","result":"ok"}`); a failure logs the error and
 fails startup, so a healthy process has reached every store it uses with its own credentials. A
 cache is the exception: one that is down at startup logs `"level":"warn"` with
@@ -695,11 +702,13 @@ when it builds that client, before its probe, with no default (`<ID>` is the til
 | A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT` | `cache-<id>`, `6379` |
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
+| Pub/Sub, for a process that publishes to a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST`) | `local`, `local-pubsub:8085` |
 
 A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
 directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port is an integer
-1–65535; a URL is absolute `http:` or `https:` with no credentials, query or fragment. A missing or
-invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
+1–65535; a URL is absolute `http:` or `https:` with no credentials, query or fragment; a Pub/Sub
+project is a Google Cloud project ID (a lowercase letter, then up to 29 lowercase letters, digits
+or `-`, optionally after `<domain>:`). A missing or invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
 `startup-failed` line. The stubs' clients read theirs in `module-clients.ts`; a template's `pool`
 and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
 its cache through `cacheEndpoint` in `valkey.ts`, whose bounded client checks a host by the same
@@ -711,6 +720,34 @@ lists them, sorted, and the export's README lists them per process. A deployment
 values; local stacks behave as before. Object storage and search are still reached at their local
 names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
 `PGHOST` and `PGPORT`).
+
+**Pub/Sub channels for stubs** (QG07). With Runnable processes on, a Queue tile whose every user
+is a stub has the normal control Provider (`queue.provider`: unspecified, self-hosted or
+google-cloud; [studio settings](../docs/studio-settings.md)). Saved on Google Cloud, it is a Pub/Sub
+topic named by the tile's ID (`StubStore.pubsub`, a `pubsub` resource in `infra/local.json`, never
+the broker's), and a design whose only channels are Pub/Sub ones has no `local-broker`. Each stub
+that publishes to it gets `pubsubPublisher`: `publish(message, { messageId })` calls
+`topic.publishMessage({ data, attributes: { messageId } })` with the module's `messageId` (else a
+fresh UUID) and resolves only once Pub/Sub has acknowledged it, so a consumer deduplicates on the
+attribute (Pub/Sub gives a resent message a new server ID). A publish settles within 2000 ms: the
+client's `gaxOpts.timeout` is 2000 and the publisher rejects `Publish deadline (2000 ms)` itself,
+since the client's default waits far longer for an unreachable service. At most 1000 are outstanding
+per process; the next rejects at once, `Publisher queue full`. The client's default batching
+applies, and `key` is not used. Its probe checks `topic.exists()`; false or an error fails startup.
+The drain waits for outstanding publishes, then closes the client. It runs in
+`JEEVES_PUBSUB_PROJECT` with Application Default Credentials (the export holds no key file), and
+needs `pubsub.topics.get` and `pubsub.topics.publish` on the topic. Processes never create or change
+topics or subscriptions: locally only `setup-pubsub` does, running `scripts/pubsub-init.mjs` at
+`first-run` and every `start` (`local.mjs` runs it after the providers, with `setup-broker` and
+`setup-search`, before the processes), because Pub/Sub keeps a message only for subscriptions that
+exist when it is published and the emulator keeps nothing across a restart. It creates each topic
+and subscription the plan lists that is missing, and stops at one that exists with other settings,
+naming it. `local-pubsub` is the emulator (`gcloud beta emulators pubsub start
+--host-port=0.0.0.0:8085 --project=local`, pinned in `providers.json`), healthy once it answers on
+8085, with no published port. The report's store row says `Google Cloud Pub/Sub topic <id> (locally
+the emulator local-pubsub)`, or for a consuming tile its subscription, and the export's README says
+what a deployment's own infrastructure creates and grants (the Pub/Sub service agent's rights a
+dead-letter policy needs).
 
 **Credentials** are generated at first run, as for templates: `setup.mjs` writes the
 passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is

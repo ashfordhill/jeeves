@@ -21,6 +21,7 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 | TTL | Positive cache reader | 1–604800 seconds |
 | Pool size | SQL client of a Data access or Lifecycle writer | 1–1000 |
 | Statement timeout | SQL client of a Data access or Lifecycle writer | 1–300000 ms |
+| Provider (a Queue only stubs use) | (Runnable processes on) its stubs' processes: RabbitMQ, or a Google Cloud Pub/Sub topic | Unspecified, Self-hosted, Google Cloud |
 
 Controls additionally require an authoritative saved source field and the installed template's
 matching consumer/output paths. A saved value outside its bound or its template's supported values
@@ -34,7 +35,8 @@ concurrency mirrors behave the same way. A mirror has no second editor. SQL sett
 the module that reads that database for the template: its bound Data access, or the Lifecycle
 writer, which is its lifecycle template's own SQL source. Normal controls never expose
 weights/mappings, IDs, exact versions, grants, arbitrary config, L1/negative caching, Go/tus/cloud
-alternatives, provider choices or media internals. Historical modules remain inspectable and
+alternatives, provider choices (apart from a stub-only Queue's, below) or media internals. A select
+offers only its control's supported values, as chat's `editableSettings` lists them. Historical modules remain inspectable and
 renameable; arbitrary module/kind replacement requires explicit custom source work.
 
 `buildSupportedAuthoringCommand` and `normalSettingFields` in
@@ -514,6 +516,17 @@ again. The report lists each process's settings with their origin: `template`, `
 tile's saved value) or `fixed`. Mouse and chat share the controls (`getDesign.editableSettings`
 rows with `process: <tile>` and `input: process.<setting>`). With the option off, nothing shows
 and a saved value is preserved intent.
+
+**A Queue's Provider (QG07).** While Runnable processes is on, a Queue or Topic whose every user is
+a stub (no template binds it) is provisioned by its stubs' processes, so its **Provider** is its
+normal control, offering only **Unspecified**, **Self-hosted** (both RabbitMQ) and **Google Cloud**
+(a Pub/Sub topic: its publishers use the official client, and locally the export runs the Pub/Sub
+emulator). It is consumed as `stub-channel.provider`; mouse and chat share it
+(`getDesign.editableSettings` rows with `input: queue.provider`), and it can't be cleared. A
+Queue a template uses has no such control: its template fixes it at Self-hosted, and any other
+saved value is that template's unsupported setting. A saved value it doesn't support (AWS, an
+older design) keeps the control, unsupported, until it is put right. Consuming Pub/Sub isn't
+installed yet: a loop stub on a Google Cloud queue is a required gap.
 
 Generation preview and ZIP use these same installed consumer contracts. The dialog shows exact
 selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse

@@ -118,6 +118,15 @@ export const generationProcessSettings = {
     userNeed: string;
   }[]
 >;
+/**
+ * A Queue tile's Provider when every user of the queue is a stub, with Runnable processes on
+ * (QG07): its stubs' processes publish through RabbitMQ (unspecified or self-hosted) or to a
+ * Google Cloud Pub/Sub topic. A queue a template uses keeps its template's fixed provider.
+ */
+export const generationStubQueueProvider = {
+  supported: choice("unspecified", "self-hosted", "google-cloud"),
+  userNeed: "Choose where this channel runs: self-hosted RabbitMQ or Google Cloud Pub/Sub.",
+} as const;
 /** The process kinds whose tile settings hold each process setting: Notifications has no
  * Concurrency field, so its loops run the initial one. */
 export const generationProcessSettingKinds: Readonly<

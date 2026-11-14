@@ -11,6 +11,10 @@ import { createPostgres } from "./postgres.ts";
 import { randomUUID } from "node:crypto";
 import { createPublisher, type BrokerState } from "./amqp.ts";
 // @queue-import-end
+// @pubsub-import-start
+import { randomUUID as pubsubMessageId } from "node:crypto";
+import { PubSub } from "@google-cloud/pubsub";
+// @pubsub-import-end
 // @cache-import-start
 import { createFailureLog } from "./tile-process.ts";
 import { createValkeyCache } from "./valkey.ts";
@@ -212,6 +216,73 @@ export async function queuePublisher(
   return { publish: (message, options) => opened.publish(message, options?.messageId ?? randomUUID()) };
 }
 // @queue-end
+// @pubsub-start
+/** A Google Cloud project ID, optionally `<domain>:` scoped: a lowercase letter, then up to 29
+ * lowercase letters, digits or `-`. */
+const pubsubProject = (value: string) =>
+  /^(?:[a-z0-9.-]{1,63}:)?[a-z][a-z0-9-]{0,29}$/.test(value) ? value : undefined;
+/** A publish settles within this (the client's own deadline too), and at most this many are
+ * outstanding in a process. */
+const pubsubDeadlineMs = 2000;
+const pubsubOutstanding = 1000;
+/** A Google Cloud Pub/Sub topic a module publishes to, through the official client, in the project
+ * `JEEVES_PUBSUB_PROJECT` with Application Default Credentials; locally `PUBSUB_EMULATOR_HOST`
+ * points the client at the emulator. `publish` resolves only once Pub/Sub has acknowledged the
+ * message, which carries the module's `messageId` (else a fresh ID) as its `messageId` attribute:
+ * Pub/Sub gives a resent message a new ID, so a consumer deduplicates on the attribute. `key` is not
+ * used. A publish fails after 2000 ms (`Publish deadline`), and while 1000 are outstanding the next
+ * fails at once (`Publisher queue full`), with the client's default batching. Processes never
+ * create or change topics or subscriptions. Closing waits for outstanding publishes, then closes
+ * the client. Probe: the topic exists. */
+export async function pubsubPublisher(
+  scope: ProcessScope,
+  log: ProbeLog,
+  binding: { topic: string },
+): Promise<QueuePublisher> {
+  const client = new PubSub({ projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject) });
+  const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs } });
+  const outstanding = new Set<Promise<unknown>>();
+  let closed = false;
+  scope.own(async () => {
+    closed = true;
+    await Promise.allSettled([...outstanding]);
+    await client.close();
+  });
+  await probed(
+    log,
+    { client: binding.topic, kind: "queue", check: "the Pub/Sub topic exists" },
+    async () => {
+      const [exists] = await topic.exists();
+      if (!exists) throw new Error(`Pub/Sub topic ${binding.topic} not found`);
+    },
+  );
+  return {
+    publish(message, options) {
+      if (closed) return Promise.reject(new Error("Publisher closed"));
+      if (outstanding.size >= pubsubOutstanding)
+        return Promise.reject(new Error("Publisher queue full"));
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const sent: Promise<unknown> = Promise.race([
+        topic.publishMessage({
+          data: Buffer.from(message),
+          attributes: { messageId: options?.messageId ?? pubsubMessageId() },
+        }),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(`Publish deadline (${pubsubDeadlineMs} ms)`)),
+            pubsubDeadlineMs,
+          );
+        }),
+      ]).finally(() => {
+        clearTimeout(timer);
+        outstanding.delete(sent);
+      });
+      outstanding.add(sent);
+      return sent.then(() => undefined);
+    },
+  };
+}
+// @pubsub-end
 // @cache-start
 /** A cache (Valkey) with its password, through the cache read's bounded client
  * (`createValkeyCache`): a command settles within 150 ms and at most 32 wait; while no client is

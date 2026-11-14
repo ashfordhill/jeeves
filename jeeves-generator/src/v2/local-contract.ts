@@ -1,5 +1,6 @@
 import {
   generationLocalIdentity,
+  generationTemplateQueues,
   type NormalizedGenerationSelection,
   type NormalizedProcess,
   type NormalizedStubStore,
@@ -53,6 +54,8 @@ export type V2LocalContribution = {
     sql?: readonly string[];
     storage?: readonly string[];
     broker?: boolean;
+    /** It publishes to a Pub/Sub topic (QG07): `JEEVES_PUBSUB_PROJECT`, and locally the emulator. */
+    pubsub?: boolean;
     cache?: readonly string[];
     /** The application tiles its stubs call, each at `JEEVES_TILE_<ID>_URL`. */
     calls?: readonly string[];
@@ -65,16 +68,26 @@ export type V2LocalContribution = {
 /** An endpoint variable's `<ID>`: the tile ID upper-cased, `-` as `_` (`hot-routes` is
  * `HOT_ROUTES`). */
 export const endpointId = (id: string) => id.toUpperCase().replaceAll("-", "_");
+/** The local Pub/Sub emulator (QG07): its Compose service, its address inside the network and the
+ * project it serves. */
+export const localPubsub = {
+  service: "local-pubsub",
+  host: "local-pubsub:8085",
+  project: "local",
+} as const;
 /**
  * The endpoints a process reads from its environment (QG06), each with its local value: every
  * database and cache it opens (`JEEVES_DATABASE_<ID>_HOST` and `_PORT`, `JEEVES_CACHE_<ID>_HOST`
- * and `_PORT`), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`) and each
- * application tile its stubs call (`JEEVES_TILE_<ID>_URL`). A deployment sets its own values.
+ * and `_PORT`), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`), the
+ * Pub/Sub project when it publishes to a topic (`JEEVES_PUBSUB_PROJECT`, and only locally
+ * `PUBSUB_EMULATOR_HOST`) and each application tile its stubs call (`JEEVES_TILE_<ID>_URL`). A
+ * deployment sets its own values.
  */
 export function localEndpoints(service: {
   sql?: readonly string[];
   cache?: readonly string[];
   broker?: boolean;
+  pubsub?: boolean;
   calls?: readonly string[];
 }): Record<string, string> {
   const rows: [string, string][] = [
@@ -90,6 +103,12 @@ export function localEndpoints(service: {
       ? ([
           ["JEEVES_BROKER_HOST", "local-broker"],
           ["JEEVES_BROKER_PORT", "5672"],
+        ] as [string, string][])
+      : []),
+    ...(service.pubsub
+      ? ([
+          ["JEEVES_PUBSUB_PROJECT", localPubsub.project],
+          ["PUBSUB_EMULATOR_HOST", localPubsub.host],
         ] as [string, string][])
       : []),
     ...(service.calls ?? []).map((id): [string, string] => [
@@ -157,18 +176,37 @@ export type StubStore = {
   mode?: "work-queue" | "topic";
   /** Object storage saved as public: its bucket serves a local website. */
   public?: true;
+  /** A queue only stubs use, saved on Google Cloud (QG07): a Pub/Sub topic, and for a consuming
+   * tile its subscription, instead of RabbitMQ. */
+  pubsub?: true;
   modules: string[];
   sourcePaths: string[];
   /** Why it isn't provisioned: its saved provider or engine isn't the local one. */
   unsupported?: string;
 };
 const widest = (a: StubStore["access"], b: StubStore["access"]) => (a === b ? a : "read-write");
+/** A consuming tile's Pub/Sub subscription on a topic, `<topic>--<tile>`, which copies of the tile
+ * share, and its dead-letter topic `<topic>--<tile>.failed`, with a pull subscription of that name
+ * for inspection (QG07). */
+export const pubsubSubscription = (topic: string, tile: string) => {
+  const name = `${topic}--${generationLocalIdentity(tile).local}`;
+  return { name, failed: `${name}.failed` };
+};
+/** Why a loop stub on a Pub/Sub topic is a required gap (QG07): its subscription is provisioned,
+ * but no consumer runs it yet. */
+export const pubsubConsumeGap = "Consuming Pub/Sub is not installed yet.";
 /**
  * Every store and channel a process's stubs link to, sorted by resource and channel, and a
  * required `unsupported` gap (`provider-<module>-<tile>`) for each link to one that isn't
- * provisioned. Worked out from the resolver's facts; nothing is written to ownership.
+ * provisioned. A queue only stubs use (no selection in `selections` binds it) that is saved on
+ * Google Cloud is a Pub/Sub topic; a link that consumes one is a gap too (`pubsubConsumeGap`).
+ * Worked out from the resolver's facts; nothing is written to ownership.
  */
-export function stubStores(process: NormalizedProcess): { stores: StubStore[]; gaps: V2Gap[] } {
+export function stubStores(
+  process: NormalizedProcess,
+  selections: readonly NormalizedGenerationSelection[],
+): { stores: StubStore[]; gaps: V2Gap[] } {
+  const templated = generationTemplateQueues(selections);
   const rows = new Map<string, StubStore>();
   const gaps = new Map<string, V2Gap>();
   for (const stub of process.stubs) {
@@ -184,14 +222,17 @@ export function stubStores(process: NormalizedProcess): { stores: StubStore[]; g
       ...(stub.stores ?? []),
     ];
     for (const link of links) {
-      const unsupported = stubUnsupported(link);
+      const pubsub =
+        link.kind === "queue" && link.provider === "google-cloud" && !templated.has(link.element);
+      const unsupported = pubsub ? undefined : stubUnsupported(link);
+      const why = unsupported ?? (pubsub && link.access === "consume" ? pubsubConsumeGap : "");
       const gap = `provider-${stub.selection}-${link.element}`;
-      if (unsupported && !gaps.has(gap))
+      if (why && !gaps.has(gap))
         gaps.set(gap, {
           id: gap,
           required: true,
           status: "unsupported",
-          description: unsupported,
+          description: why,
           sourcePaths: [pointer(link.sourcePath)],
         });
       const queue = link.kind === "queue";
@@ -212,6 +253,7 @@ export function stubStores(process: NormalizedProcess): { stores: StubStore[]; g
         ...(link.boundary && { boundary: link.boundary }),
         ...(link.mode && { mode: link.mode }),
         ...(link.objects === "public" && { public: true as const }),
+        ...(pubsub && { pubsub: true as const }),
         modules: [stub.module],
         sourcePaths: [pointer(link.sourcePath)],
         ...(unsupported && { unsupported }),
