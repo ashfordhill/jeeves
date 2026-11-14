@@ -14051,3 +14051,65 @@ byte-identical to QRWTY's (`probe-design.json` still `a3b6204f…0505`).
 
 **For the next unit.** QG02. After regeneration, QRWTY's stubs can check a signature over
 `request.rawBody` and set several cookies in one answer.
+
+## 2026-11-14 — QG02: The application's own Compose override is a documented seam
+
+**What changed.**
+- `jeeves-generator/src/v2/local.ts`: the generated `README.md` gains the plan's **Your own
+  configuration** paragraph, word for word, right after its run instructions (before "Migration
+  owners/admin"). It is in every export, with Runnable processes on or off. No script changed.
+- `jeeves-generator/src/v2/local.test.ts`, 1 new test, on the foundation export and on the stub
+  stack with processes on (whose `scripts/local.mjs` has the substituted gate):
+  - neither the files nor the manifest has `compose.override.yaml`;
+  - `scripts/common.mjs` and `scripts/local.mjs` exist and contain none of `"-f"`, `"--file"`,
+    `"--project-directory"`, `COMPOSE_FILE`;
+  - the composition hash is still `Buffer.concat([readFileSync("compose.yaml"),
+    readFileSync("infra/local.json")])`;
+  - the README has the paragraph as its own paragraph, after "Run `pnpm first-run` once".
+- Pins (`processes-off.json`): `frozen-v2`, `v2-module-design` and `stub-stack` each changed
+  `README.md` and `.jeeves/manifest.json`. Nothing else changed.
+- Docs: `jeeves-generator/README.md`, one sentence in "Updating an existing export" (Kept) and
+  one in "Runnable processes" (running an export).
+
+**Checks.** All on the final tree.
+- Before any change, at `64d0d3b`: `pnpm check` exit 0, 115 files / 916 tests.
+- `pnpm check` exit 0: 115 files / 917 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- New tests: 1. On HEAD's `local.ts` (a scratch repository copy with the new test, since
+  deleted) it fails at the README assertion; its script, manifest and hash assertions pass there,
+  as the invariants were already true.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - In both exports the changed paths are exactly `README.md`, `.jeeves/manifest.json` and
+    `.jeeves/report.json` (the report differs only in the registry's source hashes and sizes).
+  - In each `after-*`, the offline frozen install and `pnpm build` both exit 0.
+- Docker proof, on `after-probe` with the probe bodies at their `generated-extension` paths and
+  QRWTY's `compose.override.yaml` beside `compose.yaml`; project `qg02-probe`, ports
+  47961–47963:
+  - `pnpm first-run` exit 0 (84 s), 7 services healthy.
+  - `docker compose --profile '*' config` shows `PROBE_OVERRIDE` `from-compose-override` on
+    `app-front` only. The container's environment and the stub's `GET
+    /api/front/modules/front-probe/env` show it too.
+  - `pnpm stop` exit 0. The value changed to `changed-after-stop`. `pnpm start` exit 0 (37 s),
+    with no refusal. `app-front` was recreated, and its environment and `/env` show the new value.
+  - Removed: `docker compose --profile '*' down --volumes --remove-orphans`, then
+    `docker image rm qg02-probe-app:latest`. The Docker inventory (containers, images, networks,
+    volumes) is the same before and after. The scratch exports are deleted.
+- The unit names no `test:generated` suite, and nothing in the studio is user-visible, so no
+  mouse check.
+
+**Differences from the plan.**
+- The test also checks a processes-on export and that the composition hash is unchanged
+  (invariants of the unit), so it lives in `local.test.ts` beside the other foundation tests.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03).
+- `pnpm start` and `first-run` run `docker compose up` with the generated services they name
+  (`infra/local.json`), so a service the application adds in its override is merged and stopped by
+  `pnpm stop`, but is started only by its own `docker compose up`, or when a generated service
+  depends on it. That is from the code; I didn't run it.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG05. QRWTY's own environment, secrets and services go in
+`compose.override.yaml`, now a documented and tested seam; no generated file needs an override.

@@ -1,10 +1,15 @@
 import { designSchema, generationRuntime } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
+import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import {
   generationSelectionsFixture,
   generationSourceFixture,
 } from "../../../jeeves/packages/spec/src/fixtures/yv2-selections.ts";
-import { loadLocalV2Dependencies as loadLocalV2Registry } from "../../templates/local-v2/index.ts";
+import {
+  loadLocalV2Registry as loadApplicationRegistry,
+  loadLocalV2Dependencies as loadLocalV2Registry,
+} from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
 import type { V2Emitter } from "./registry.ts";
 
@@ -179,5 +184,36 @@ describe("standalone local foundation", () => {
     });
     expect(text(emit(renamed), "infra/postgres/select/000-foundation.sql")).toContain("REVOKE ALL");
     expect(text(emit(renamed), "infra/local.json")).not.toBe(text(emit(), "infra/local.json"));
+  });
+
+  it("leaves compose.override.yaml to the application and never bypasses Compose's merge", () => {
+    const own =
+      "**Your own configuration.** `compose.override.yaml` beside `compose.yaml` is yours: export never writes it and `update:v2` never touches it. Docker Compose merges it into every command `pnpm first-run`, `start` and `stop` run, so give your modules their own `environment` and `secrets` there, or add a service of your own (for example a scheduler that calls your routes). Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next `pnpm start`.";
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    expect(processes.manifest.processes).toBe(true);
+    for (const bundle of [emit(), processes]) {
+      const paths = bundle.files.map((f) => f.path);
+      expect(paths).not.toContain("compose.override.yaml");
+      expect(bundle.manifest.files.map((f) => f.path)).not.toContain("compose.override.yaml");
+      for (const script of ["scripts/common.mjs", "scripts/local.mjs"]) {
+        expect(paths).toContain(script);
+        for (const bypass of ['"-f"', '"--file"', '"--project-directory"', "COMPOSE_FILE"])
+          expect(text(bundle, script)).not.toContain(bypass);
+      }
+      // The composition hash covers only generated files, so editing the override never refuses start.
+      expect(text(bundle, "scripts/local.mjs")).toContain(
+        'Buffer.concat([readFileSync("compose.yaml"), readFileSync("infra/local.json")])',
+      );
+      const readme = text(bundle, "README.md");
+      expect(readme).toContain(`\n\n${own}\n\n`);
+      expect(readme.indexOf(own)).toBeGreaterThan(readme.indexOf("Run `pnpm first-run` once"));
+    }
   });
 });

@@ -176,7 +176,9 @@ with what `assembleV2` returns, and the pure `planUpdate` decides each file.
   `unchanged`. One whose template bytes didn't change is `keep`. One whose template bytes
   changed is `keepChanged`, and its new bytes go to `.jeeves/generated/<path>` to compare with
   yours. One the export no longer has is `orphan` and stays where it is. Files neither manifest
-  lists are never touched.
+  lists are never touched. `compose.override.yaml` beside `compose.yaml` is one: no export writes
+  it, and it is where the application gives its modules their own environment, secrets and
+  services.
 - **Refused:** a generated file edited by hand, a file in the way of a new generated path, an
   edited generated file the export dropped, an application's file the new export would make
   generated (`ownership changed: <path>`), and an override that is in neither manifest and has no
@@ -705,7 +707,11 @@ lines are in `docker compose --profile '*' logs app-<id>`, and `docker compose -
 local-broker rabbitmqctl list_queues name messages consumers` shows each queue's consumer and
 what reached `.failed`. A process's probe lines are in its log too. `pnpm stop` drains every
 process (exit 0) and `pnpm start` brings them back healthy, with the `.failed` messages,
-credentials and volumes kept.
+credentials and volumes kept. The generated scripts never pass `-f`, `--file` or
+`--project-directory` and never set `COMPOSE_FILE`, so Docker Compose merges the application's own
+`compose.override.yaml` into every call (`local.test.ts` keeps it so). The composition hash covers
+only `compose.yaml` and `infra/local.json`, so an edited override never refuses `start` and applies
+at the next one.
 
 `captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
 hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares
