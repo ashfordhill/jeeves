@@ -141,8 +141,9 @@ describe("curated module patterns (V3-09)", () => {
   it("counts from events: the counter's template, the source's publisher and reader as stubs", () => {
     const { design } = apply(emptyDesign(), { id: "counting" });
     expect(statuses(design)).toEqual({
-      "Read API / Event publisher": "stub: No template in Read API uses it.",
-      "Read API / Totals reader": "stub: No template in Read API uses it.",
+      "Read API / Event publisher":
+        "stub: No Generated module in Read API uses it, so you write it.",
+      "Read API / Totals reader": "stub: No Generated module in Read API uses it, so you write it.",
       "Counter / Event consumer": "template event-counter",
       "Counter / Event counter": "template event-counter",
       "Counter / Totals writer": "template event-counter",
@@ -227,7 +228,8 @@ describe("curated module patterns (V3-09)", () => {
 
   it("gives a store one writer and readers: stubs, a SQL file for the writer and published reads", () => {
     expect(statuses(apply(emptyDesign(), { id: "owned-store" }).design)).toEqual({
-      "Writer API / Entries writer": "stub: No template in Writer API uses it.",
+      "Writer API / Entries writer":
+        "stub: No Generated module in Writer API uses it, so you write it.",
     });
     const { design } = apply(emptyDesign(), {
       id: "owned-store",
@@ -236,9 +238,12 @@ describe("curated module patterns (V3-09)", () => {
       readers: ["Shop API", "Search API"],
     });
     expect(statuses(design)).toEqual({
-      "Catalog API / Catalog writer": "stub: No template in Catalog API uses it.",
-      "Shop API / Catalog reader": "stub: No template in Shop API uses it.",
-      "Search API / Catalog reader": "stub: No template in Search API uses it.",
+      "Catalog API / Catalog writer":
+        "stub: No Generated module in Catalog API uses it, so you write it.",
+      "Shop API / Catalog reader":
+        "stub: No Generated module in Shop API uses it, so you write it.",
+      "Search API / Catalog reader":
+        "stub: No Generated module in Search API uses it, so you write it.",
     });
     expect(moduleStatuses(design)).toHaveLength(3);
     const on = runStudioCommands(design, [{ type: "setRunnableProcesses", on: true }]);

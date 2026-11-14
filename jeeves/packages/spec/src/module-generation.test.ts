@@ -283,7 +283,7 @@ describe("module commands", () => {
     expect(moduleStatus(next, "redirect-cache-reader")).toMatchObject({
       status: "refused",
       reason:
-        "The link from Redirect service to URL database uses Service identity, which its template can't use; 12 other saved values can't be used either.",
+        "The link from Redirect service to URL database uses Service identity, which its generated code can't use; 12 other saved values can't be used either.",
     });
     // A design whose modules make no template gets no ownership.
     const marketplace = studioArchitectureExample("studio-marketplace").design;
@@ -633,7 +633,7 @@ describe("module derivation", () => {
           roles: [{ element: "watch", owner: "watchers", kind: "worker" }],
         },
         watchCache,
-        "Watch API is declared a worker role, but its template needs an API role.",
+        "Watch API is declared a worker role, but what it generates needs an API role.",
       ],
       [
         {
@@ -705,7 +705,7 @@ describe("module derivation", () => {
       expect(moduleStatus(done, id)).toMatchObject({
         status: "refused",
         template: "event-counter",
-        reason: "View counts' engine is mysql, which its template can't use.",
+        reason: "View counts' engine is mysql, which its generated code can't use.",
       });
   });
 
@@ -1368,7 +1368,7 @@ describe("module status and older designs", () => {
     });
     expect(statuses.get("counter-sum")).toMatchObject({
       status: "custom",
-      reason: "No template covers it.",
+      reason: "Jeeves doesn't generate this; you write it.",
     });
   });
 
@@ -1388,10 +1388,18 @@ describe("module status and older designs", () => {
     );
     expect(reasons).toEqual({
       "upload-multipart": ["stub", "Needs a connection to object storage.", ["objects"]],
-      "upload-limit": ["stub", "Rate limiter has no template.", ["store"]],
+      "upload-limit": ["stub", "Jeeves doesn't generate a Rate limiter; you write it.", ["store"]],
       // A part no lead beside it uses is a normal stub, never told to add a lead or move.
-      "watch-views": ["stub", "No template in Watch API uses it.", ["channel", "outbox"]],
-      "watch-consumer": ["stub", "No template in Watch API uses it.", ["channel"]],
+      "watch-views": [
+        "stub",
+        "No Generated module in Watch API uses it, so you write it.",
+        ["channel", "outbox"],
+      ],
+      "watch-consumer": [
+        "stub",
+        "No Generated module in Watch API uses it, so you write it.",
+        ["channel"],
+      ],
       "transcoder-cache": [
         "stub",
         "Needs to be in a service or a redirect service.",

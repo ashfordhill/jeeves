@@ -13692,3 +13692,72 @@ shows "no reason", but the page shows its reason. `docs/design-playbook.md:1420`
 stub reason in a dated lesson. Owner dirty paths untouched and unstaged.
 **For the next unit.** UF05 is not done. Revise it (the generator's words and pins, plus the
 points above), then rerun UF05 before UF06.
+
+## 2026-11-13 — UF05: Chat reads no icons; module sentences in plain words
+
+**What changed.**
+- Chat reads no icons (F4): `describeStudioDefinition` in `spec/src/studio-definitions.ts` and chat's
+  own `describeStudioDefinition` case in `server/src/chat/tools.ts` both leave out `visual`; the
+  spec function's comment says icons and colours are the canvas's, not the model's. No other chat
+  output carries an icon (`catalogSummary` and `designSummary` pick fields by name; module icons
+  live in `studioComponentVisuals`, which chat never reads).
+- The module sentences take the plan's exact words (F6, step 2 and amendment B): Custom's
+  description in `studio-components.ts`; `module-status.ts` (`stubReason`'s Custom and other-stub
+  reasons, "It isn't generated yet.", "No Generated module in <tile> uses it, so you write it.",
+  "Jeeves doesn't generate this; you write it.", and `blocked`'s "…which its generated code can't
+  use"); `module-generation.ts`'s role, projection, access and link refusals.
+- Assertions of the old text take the new: `studio-module-patterns.test.ts`,
+  `module-generation.test.ts`, `ModuleMenu.test.tsx`, `web/src/studio/module-status.test.ts`,
+  `routes/generation-v2.test.ts`, `chat/tools.test.ts`, `jeeves-generator/src/v2/module-stubs.test.ts`
+  and `module-authoring.spec.ts` (the status at :259 and the Generate dialog's two rows).
+- Pins re-taken (amendment C, production foundations Rule 7) in
+  `jeeves-generator/src/v2/fixtures/processes-off.json`. Changed: v2-module-design
+  `.jeeves/report.json`; stub-stack `.jeeves/report.json`, `.jeeves/manifest.json` and
+  `src/modules/visit-worker/archiver.ts`. frozen-v2 is unchanged and the frozen v1 test passes.
+  Review: each changed file was rebuilt, the old sentences put back (and, in the manifest,
+  archiver.ts's old sha256 and size, 386 → 357 bytes), and each then hashed to its old pin, so
+  nothing else moved. The changes are `modules[].reason` (v2-module-design: View publisher;
+  stub-stack: eight stubs) and archiver.ts's header comment, now "// Archiver, a Custom in Visit
+  worker: Your own logic: Jeeves gives you an empty, typed file to fill in.".
+- `docs/studio.md`: the module page's quote and its Custom status (it shows "Jeeves doesn't
+  generate this; you write it.", not no reason), the Refused study quote ("…which its generated
+  code can't use; 9 other…") and the module-status review's stub quote. Follow-ups 4 and 13 of the
+  [UI refresh review](plans/ui-refresh/review.md) are done here; 5 was done by UF04.
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests. With the new sentences
+and the old pins: exit 1, only `processes-off.test.ts`'s v2-module-design and stub-stack (as
+expected). After `pins:update`, `pnpm format` and `pnpm check`: exit 0, 115 / 910 (Biome: the older
+2 warnings in `canvas.css` and 1 info in `local.mjs`). `pnpm test:e2e` 74 passed (4.6 min).
+`pnpm --filter @jeeves/web build` exit 0. Step 5: no eval case or recorded report under
+`server/src/eval` or `docs/evals` has an old sentence or reads `visual`; no eval was run and no
+model called. Mouse (`uf05-check.spec.ts`, then deleted): 2 passed, 1440×900 and 1280×800, light,
+no page error. On a blank project (Consume → Microservice): the menu's Custom card reads "You write
+it. Your own logic: Jeeves gives you an empty, typed file to fill in." (cut by the card's ellipsis;
+its tooltip has it whole); the Custom page "You write it · Your own logic: you write it."; an
+unconnected Data access "No Generated module in Microservice uses it, so you write it."; a Rate
+limiter "Jeeves doesn't generate a Rate limiter; you write it."; Generate project's Modules list the
+same three reasons beside its Stub labels. Six screenshots in `plans/ui-followups/evidence/uf05/`.
+The spec deleted its projects; `jeeves_e2e` holds only "E2E Every kind" and "TinyURL · studio study".
+**Differences from the plan.**
+- Amendment D names `jeeves-generator/src/v2/generation-v2.test.ts`, which doesn't exist; the old
+  sentences were in `jeeves/apps/server/src/routes/generation-v2.test.ts` (as the first run said),
+  so that file changed.
+- Not listed but asserting an old sentence, so changed too: `chat/tools.test.ts:312`,
+  `module-stubs.test.ts:204` ("Rate limiter has no template."), `web/src/studio/module-status.test.ts`
+  (its hand-written Refused reason and the detail it expects) and `module-generation.test.ts`'s
+  role refusal and two `blocked` reasons.
+- `docs/studio.md:655` quotes `blocked`'s sentence; Rule 8 made it change with the code.
+- Prose that isn't a quote stays ("what its template still needs", "generated as a stub until its
+  connections are made"), as do code comments that say "its template needs".
+**Noticed.**
+- The plan's exact `Jeeves doesn't generate a ${definition.name}; you write it.` reads "a ID
+  generator" and "a External call" (also in stub-stack's report). Kept as written; an "an" needs a
+  plan change.
+- archiver.ts's header now has two colons ("Visit worker: Your own logic: Jeeves gives…").
+- Sentences outside the tables still say template or stub: the Custom page's readiness finding "A
+  custom component needs a one-line purpose for its generated stub.", and the review finding "<module>
+  in <tile> can't generate its template: …" (`studio-design-review.ts`).
+- `docs/design-playbook.md:1420` keeps the old stub reason in its dated lesson (amendment D).
+Owner dirty paths untouched and unstaged.
+**For the next unit.** UF06 (review) of [UI follow-ups](plans/ui-followups/units.md). UF01–UF05 are
+done.

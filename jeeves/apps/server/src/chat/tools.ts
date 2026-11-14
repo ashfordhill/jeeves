@@ -624,7 +624,7 @@ export class Workspace {
         };
       case "describeStudioDefinition": {
         const { kind } = parsed.data as z.infer<typeof schemas.describeStudioDefinition>;
-        const { settingsSchema, ...definition } = studioDefinitions[kind];
+        const { settingsSchema, visual: _visual, ...definition } = studioDefinitions[kind];
         this.log(tool, true, `Read studio ${kind} settings`);
         return {
           ...definition,

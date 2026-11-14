@@ -224,7 +224,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         kind: "data-access",
         status: "stub",
         selection: "shorten-links",
-        reason: "No template in Shorten service uses it.",
+        reason: "No Generated module in Shorten service uses it, so you write it.",
         unconnected: [],
       },
       {
@@ -234,7 +234,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         kind: "rate-limiter",
         status: "stub",
         selection: "shorten-limit",
-        reason: "Rate limiter has no template.",
+        reason: "Jeeves doesn't generate a Rate limiter; you write it.",
         unconnected: ["store"],
       },
     ]);

@@ -1123,10 +1123,13 @@ export function studioConnectionFieldGroups(input: {
   });
 }
 
-/** Deterministic JSON metadata; validators stay in the model, defaults remain typed and explicit. */
+/**
+ * Deterministic JSON metadata; validators stay in the model, defaults remain typed and explicit.
+ * Icons and colours are the canvas's, not the model's, so `visual` is left out.
+ */
 export function describeStudioDefinition(ref: DefinitionRef) {
   const definition = resolveStudioDefinition(ref);
   if (!definition) return undefined;
-  const { settingsSchema: _schema, ...description } = definition;
+  const { settingsSchema: _schema, visual: _visual, ...description } = definition;
   return structuredClone(description);
 }

@@ -629,9 +629,10 @@ saved and never sent to chat.
   header with the module's icon, Name (the title) and kind, then **what it generates**, in the
   menu's words: Generated with the template's name ("Generated · Cache read"), You write it with
   what its template still needs ("Needs a Data access as its loader.") or why it has none ("No
-  template in Watch API uses it."), Refused with the kept value that blocks it, or You write it
-  with no reason when no generation declaration covers it yet (a Custom status: a study's modules
-  before any module command). Then any readiness findings, Description,
+  Generated module in Watch API uses it, so you write it."), Refused with the kept value that
+  blocks it, or You write it with "Jeeves doesn't generate this; you write it." when no
+  generation declaration covers it yet (a Custom status: a study's modules before any module
+  command). Then any readiness findings, Description,
   **Options** only for the settings a template consumes (Pool size and Statement timeout on a
   Data access in a template, and on a Lifecycle writer, its template's SQL settings; **Sign-in**,
   Required or Optional, on an Auth guard once it verifies an Identity, "Generated · Sign-in";
@@ -652,7 +653,7 @@ saved and never sent to chat.
 - A module command on a study derives the whole tile's generation. On the TinyURL extended and
   YouTube studies the Cache reader the study already wires then reads **Refused**, as does its
   Data access ("The link from Watch API to Metadata uses Service identity, which its
-  template can't use; 9 other saved values can't be used either."): the study keeps values no
+  generated code can't use; 9 other saved values can't be used either."): the study keeps values no
   control edits, such as its links' Service identity and its replicas. Nothing else changes,
   and Undo returns the study.
 - A line shows its two ends as two buttons joined by an arrow, each selecting its tile (as a lane
@@ -791,7 +792,8 @@ possible; those commands are checked against the design before they are offered
 - **module-status:** a lead that is a Stub because its template still needs something ("Needs an
   Auth guard set to Required in Account API.", fixed by setting the guard's Sign-in), a Refused
   module with the saved value its template can't use, a module not declared yet. A stub that is
-  normal ("No template in Watch API uses it.") is listed in the statuses, not as a finding;
+  normal ("No Generated module in Watch API uses it, so you write it.") is listed in the statuses,
+  not as a finding;
 - **unconnected-slot:** a needed slot with nothing in it, connected through the host's own link
   where it has one, or with a new module or tile for it;
 - **generation:** the resolver's findings, as Generate project shows them, except those a Refused

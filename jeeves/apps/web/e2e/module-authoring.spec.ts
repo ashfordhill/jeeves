@@ -256,7 +256,9 @@ test("connects a module from its dot, refuses with the reason, and disconnects f
     await addModule(page, "Microservice", "Data access");
     // Unconnected is allowed: a stub, with what its template still needs.
     await expect(status(page)).toHaveAttribute("data-status", "stub");
-    await expect(status(page)).toContainText("No template in Microservice uses it.");
+    await expect(status(page)).toContainText(
+      "No Generated module in Microservice uses it, so you write it.",
+    );
 
     await page.getByRole("button", { name: "Detailed", exact: true }).click();
     await ready(page);
@@ -997,9 +999,11 @@ test("Generate project lists each module's status and previews its stubs", async
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(0)).toContainText("Rate limiter in Microservice");
     await expect(rows.nth(0).locator(".lane-module-status")).toHaveAttribute("data-status", "stub");
-    await expect(rows.nth(0)).toContainText("StubRate limiter has no template.");
+    await expect(rows.nth(0)).toContainText(
+      "StubJeeves doesn't generate a Rate limiter; you write it.",
+    );
     await expect(rows.nth(1)).toContainText("Custom in Microservice");
-    await expect(rows.nth(1)).toContainText("StubYour own logic, with no template.");
+    await expect(rows.nth(1)).toContainText("StubYour own logic: you write it.");
     const result = page.waitForResponse((response) =>
       response.url().endsWith("/experimental-generation/preview"),
     );

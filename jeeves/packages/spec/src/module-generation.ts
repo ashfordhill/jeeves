@@ -861,7 +861,7 @@ function deriveOwnership(
     const existing = keptRole(id);
     if (existing && existing.kind !== kind)
       throw new Error(
-        `${sentence(name(id))} is declared ${existing.kind === "worker" ? "a worker" : "an API"} role, but its template needs ${kind === "worker" ? "a worker" : "an API"} role.`,
+        `${sentence(name(id))} is declared ${existing.kind === "worker" ? "a worker" : "an API"} role, but what it generates needs ${kind === "worker" ? "a worker" : "an API"} role.`,
       );
     if (!existing) roles.push({ element: id, owner, kind });
   }
@@ -896,7 +896,7 @@ function deriveOwnership(
         );
       if (!projected && existing.kind === "projection")
         throw new Error(
-          `${sentence(name(store))} is declared a copy of ${name(existing.source)}, but its templates need it as a source of truth.`,
+          `${sentence(name(store))} is declared a copy of ${name(existing.source)}, but what they generate needs it as a source of truth.`,
         );
       if (existing.kind === "projection" && source && existing.source !== source)
         throw new Error(
@@ -936,7 +936,7 @@ function deriveOwnership(
     if (existing) {
       if (!accessAllows(existing.access, pair.access) || (foreign && !existing.boundary))
         throw new Error(
-          `${sentence(name(pair.host))}'s declared access to ${name(pair.store)} doesn't allow what its template needs.`,
+          `${sentence(name(pair.host))}'s declared access to ${name(pair.store)} doesn't allow what its generated code needs.`,
         );
       continue;
     }
@@ -959,7 +959,7 @@ function deriveOwnership(
     if (existing) {
       if (!accessAllows(existing.access, access))
         throw new Error(
-          `The link ${connection} is declared ${existing.access}, but its template needs ${access}.`,
+          `The link ${connection} is declared ${existing.access}, but its generated code needs ${access}.`,
         );
       continue;
     }

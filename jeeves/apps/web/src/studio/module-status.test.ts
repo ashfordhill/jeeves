@@ -76,12 +76,12 @@ describe("moduleStatusLine", () => {
         status: "refused",
         template: "positive-cache-read",
         reason:
-          "The link from Watch API to Metadata database uses Service identity, which its template can't use.",
+          "The link from Watch API to Metadata database uses Service identity, which its generated code can't use.",
       }),
     ).toEqual({
       label: "Refused",
       detail:
-        "The link from Watch API to Metadata database uses Service identity, which its template can't use.",
+        "The link from Watch API to Metadata database uses Service identity, which its generated code can't use.",
     });
     expect(moduleStatusLine({ ...base, status: "custom" })).toEqual({ label: "You write it" });
     expect(moduleStatusLine({ ...base, kind: "favorites", template: "favorites" })).toEqual({

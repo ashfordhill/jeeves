@@ -762,7 +762,7 @@ export const studioComponentDefinitions: {
   }),
   custom: component("custom", {
     name: "Custom",
-    description: "Your own logic, generated as a stub.",
+    description: "Your own logic: Jeeves gives you an empty, typed file to fill in.",
     thirdParty: [],
     browserHost: true,
     hosts: anyHost,

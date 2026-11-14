@@ -229,7 +229,7 @@ export function moduleStatusDetails(
     const kept = keptValue(design, first.target.path);
     if (!kept) return first.message;
     const more = blocking.length - 1;
-    return `${kept}, which its template can't use${
+    return `${kept}, which its generated code can't use${
       more ? `; ${more} other saved value${more > 1 ? "s" : ""} can't be used either` : ""
     }.`;
   };
@@ -238,15 +238,12 @@ export function moduleStatusDetails(
     const generation = definition.generation;
     if (generation.kind === "stub")
       return module.settings.kind === "custom"
-        ? "Your own logic, with no template."
-        : `${definition.name} has no template.`;
+        ? "Your own logic: you write it."
+        : `Jeeves doesn't generate a ${definition.name}; you write it.`;
     if (generation.kind === "lead") {
       const lead = leads.get(module.id);
       if (lead?.missing) return `Needs ${lead.missing}.`;
-      return (
-        plan.refusals.find((item) => item.includes(module.name)) ??
-        "Its template isn't selected yet."
-      );
+      return plan.refusals.find((item) => item.includes(module.name)) ?? "It isn't generated yet.";
     }
     const templates: readonly string[] = generation.templates;
     const beside = plan.leads.filter(
@@ -257,7 +254,7 @@ export function moduleStatusDetails(
     const [other] = beside;
     if (other) return `${sentence(other.lead.name)} doesn't use it.`;
     // A part with no lead beside it is a normal stub: say so, not what it could join.
-    return `No template in ${nameOf(module.host)} uses it.`;
+    return `No Generated module in ${nameOf(module.host)} uses it, so you write it.`;
   };
   return modules.map((module) => {
     const base = {
@@ -288,7 +285,7 @@ export function moduleStatusDetails(
           status: "custom",
           reason: moduleLevel
             ? "Not declared yet; the next module change declares it."
-            : "No template covers it.",
+            : "Jeeves doesn't generate this; you write it.",
         } satisfies ModuleStatus,
         blocking: [],
       };
