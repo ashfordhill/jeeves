@@ -63,6 +63,8 @@ I have also started a third lane (#3) to work on Jeeves improvements - there's n
 
 Lane #1 will be recording any feedback and data that could be used to improve Jeeves in a sort of "lessons learned". I will also be using Astra and Fable to help me find areas of improvement.
 
+<p align="center"><img src=".docs/qrwty/lessons-learned-1.png" width="600"/></p>
+
 #### UI
 
 UI improvements were a part of the chunk of work executed Friday night - mostly just making the diagrams prettier but there were some organizational improvements in the Tiles/options and categories of templates/modules. Though this might seem like a vain difference, it's important to me because I'm less visually engaged when something looks like bland slop vs something that catches my attention. And 'attention is all you need'!
