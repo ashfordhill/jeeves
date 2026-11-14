@@ -44,6 +44,10 @@ export type V2ProcessReport = {
   /** A public HTTP process's path at the edge, `/api/<tile>/`. */
   edge?: string;
   entry: string;
+  /** The variables it reads from its environment, sorted, as its Compose service sets them: its
+   * stores', broker's and called tiles' endpoints (`JEEVES_*`), a sign-in's `OIDC_*`, and what a
+   * template reads (`OBJECT_PUBLIC_ENDPOINT`). */
+  environment: readonly string[];
   settings: readonly {
     setting: string;
     value: number;

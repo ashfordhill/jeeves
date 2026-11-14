@@ -54,11 +54,51 @@ export type V2LocalContribution = {
     storage?: readonly string[];
     broker?: boolean;
     cache?: readonly string[];
+    /** The application tiles its stubs call, each at `JEEVES_TILE_<ID>_URL`. */
+    calls?: readonly string[];
     target?: "app" | "media";
     environment?: Readonly<Record<string, string>>;
     readiness?: boolean;
   }[];
 };
+
+/** An endpoint variable's `<ID>`: the tile ID upper-cased, `-` as `_` (`hot-routes` is
+ * `HOT_ROUTES`). */
+export const endpointId = (id: string) => id.toUpperCase().replaceAll("-", "_");
+/**
+ * The endpoints a process reads from its environment (QG06), each with its local value: every
+ * database and cache it opens (`JEEVES_DATABASE_<ID>_HOST` and `_PORT`, `JEEVES_CACHE_<ID>_HOST`
+ * and `_PORT`), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`) and each
+ * application tile its stubs call (`JEEVES_TILE_<ID>_URL`). A deployment sets its own values.
+ */
+export function localEndpoints(service: {
+  sql?: readonly string[];
+  cache?: readonly string[];
+  broker?: boolean;
+  calls?: readonly string[];
+}): Record<string, string> {
+  const rows: [string, string][] = [
+    ...(service.sql ?? []).flatMap((id): [string, string][] => [
+      [`JEEVES_DATABASE_${endpointId(id)}_HOST`, "local-postgres"],
+      [`JEEVES_DATABASE_${endpointId(id)}_PORT`, "5432"],
+    ]),
+    ...(service.cache ?? []).flatMap((id): [string, string][] => [
+      [`JEEVES_CACHE_${endpointId(id)}_HOST`, `cache-${id}`],
+      [`JEEVES_CACHE_${endpointId(id)}_PORT`, "6379"],
+    ]),
+    ...(service.broker
+      ? ([
+          ["JEEVES_BROKER_HOST", "local-broker"],
+          ["JEEVES_BROKER_PORT", "5672"],
+        ] as [string, string][])
+      : []),
+    ...(service.calls ?? []).map((id): [string, string] => [
+      `JEEVES_TILE_${endpointId(id)}_URL`,
+      `http://app-${id}:3000`,
+    ]),
+  ];
+  return Object.fromEntries(rows.sort(([a], [b]) => v2Compare(a, b)));
+}
 export type V2LocalContributor = (context: V2RenderContext) => V2LocalContribution | undefined;
 
 type Path = readonly (string | number)[];

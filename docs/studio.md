@@ -1477,6 +1477,9 @@ process that loses its broker keeps running: its broker publishers and consumers
 5 s, a publish fails at once while the broker is away, and consumers resubscribe when it is back. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked
 once at startup; a store on another provider isn't provisioned, and the stack isn't runnable.
+Each process finds its databases, caches, broker and the tiles its stubs call through its
+environment (`JEEVES_*` variables, with no default): the export's `compose.yaml` sets them to the
+local services, its README lists them per process, and a deployment sets its own.
 Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
 or a stub with a write link; an Event publisher's outbox doesn't count) gets its own SQL file,
 `infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`

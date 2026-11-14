@@ -5,12 +5,16 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   type DesignDocument,
+  designSchema,
   emptyDesign,
   generationExportBlockers,
   type StudioCommand,
 } from "@jeeves/spec";
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
-import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
+import {
+  stubStackDesign,
+  stubStackWithCacheRead,
+} from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import {
   moduleAuthored,
   runStudioCommands,
@@ -323,6 +327,161 @@ describe("local.tile-processes", () => {
     ).toContainEqual(["generation", "processes"]);
     const partial = assemble(design, dependencies);
     expect(processesOf(partial)).toEqual({ runnable: false, tiles: [] });
+  });
+});
+
+describe("store and tile endpoints come from the environment (QG06)", () => {
+  const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+  const off = assemble(stubStackDesign());
+  const services = (target: Bundle) =>
+    (
+      JSON.parse(text(target, "compose.yaml")) as {
+        services: Record<string, { environment?: Record<string, string> }>;
+      }
+    ).services;
+  const rows = (target: Bundle) =>
+    (target.report as { processes?: { tiles: { service: string; environment: string[] }[] } })
+      .processes?.tiles ?? [];
+  const broker = { JEEVES_BROKER_HOST: "local-broker", JEEVES_BROKER_PORT: "5672" };
+  const linksDb = {
+    JEEVES_DATABASE_LINKS_DB_HOST: "local-postgres",
+    JEEVES_DATABASE_LINKS_DB_PORT: "5432",
+  };
+
+  it("sets exactly the endpoints each process reads in its service, at today's local values", () => {
+    const environment = Object.fromEntries(
+      Object.entries(services(stack))
+        .filter(([name]) => name.startsWith("app-"))
+        .map(([name, service]) => [name, service.environment]),
+    );
+    expect(environment).toEqual({
+      "app-edge": undefined,
+      "app-links-api": {
+        ...broker,
+        JEEVES_CACHE_LINKS_CACHE_HOST: "cache-links-cache",
+        JEEVES_CACHE_LINKS_CACHE_PORT: "6379",
+        ...linksDb,
+        JEEVES_TILE_STATS_API_URL: "http://app-stats-api:3000",
+      },
+      // Its only store is a search index, which is still reached at its local name.
+      "app-stats-api": {},
+      "app-upload-api": broker,
+      "app-visit-worker": { ...broker, ...linksDb },
+    });
+    // Beside a cache read's cache and source login, and a sign-in's OIDC_*.
+    const v3 = assemble(
+      designSchema.parse(
+        JSON.parse(
+          readFileSync(
+            new URL("../../../field-projects/youtube/v3/inputs/design.json", import.meta.url),
+            "utf8",
+          ),
+        ),
+      ),
+    );
+    const watch = services(v3)["app-watch-api"]?.environment ?? {};
+    expect(Object.keys(watch).filter((name) => name.startsWith("JEEVES_CACHE_"))).toEqual([
+      "JEEVES_CACHE_HOT_METADATA_HOST",
+      "JEEVES_CACHE_HOT_METADATA_PORT",
+    ]);
+    expect(watch.JEEVES_CACHE_HOT_METADATA_HOST).toBe("cache-hot-metadata");
+    expect(watch.OIDC_AUDIENCE).toBeDefined();
+    // With processes off there is no process service, so nothing is set.
+    expect(Object.keys(services(off)).filter((name) => name.startsWith("app-"))).toEqual([]);
+  });
+
+  it("reports and documents each process's variables as its service sets them", () => {
+    for (const target of [stack, assemble(runStudioCommands(stubStackWithCacheRead(), [on]))]) {
+      const composed = services(target);
+      expect(rows(target).length).toBeGreaterThan(0);
+      for (const row of rows(target))
+        expect(row.environment, row.service).toEqual(
+          Object.keys(composed[row.service]?.environment ?? {}).sort(),
+        );
+    }
+    expect(rows(stack).map((row) => [row.service, row.environment])).toEqual([
+      [
+        "app-links-api",
+        [
+          "JEEVES_BROKER_HOST",
+          "JEEVES_BROKER_PORT",
+          "JEEVES_CACHE_LINKS_CACHE_HOST",
+          "JEEVES_CACHE_LINKS_CACHE_PORT",
+          "JEEVES_DATABASE_LINKS_DB_HOST",
+          "JEEVES_DATABASE_LINKS_DB_PORT",
+          "JEEVES_TILE_STATS_API_URL",
+        ],
+      ],
+      ["app-stats-api", []],
+      ["app-upload-api", ["JEEVES_BROKER_HOST", "JEEVES_BROKER_PORT"]],
+      [
+        "app-visit-worker",
+        [
+          "JEEVES_BROKER_HOST",
+          "JEEVES_BROKER_PORT",
+          "JEEVES_DATABASE_LINKS_DB_HOST",
+          "JEEVES_DATABASE_LINKS_DB_PORT",
+        ],
+      ],
+    ]);
+    const readme = text(stack, "README.md");
+    expect(readme).toContain(
+      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_TILE_STATS_API_URL`\n- `app-stats-api`: none\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`\n",
+    );
+    expect(readme).toContain("fails startup with `Invalid endpoint <variable>`, never its value");
+    expect(text(off, "README.md")).not.toContain("Endpoints from the environment");
+  });
+
+  it("compiles no database, cache, broker or tile host into a process or its clients", () => {
+    const v3 = assemble(
+      designSchema.parse(
+        JSON.parse(
+          readFileSync(
+            new URL("../../../field-projects/youtube/v3/inputs/design.json", import.meta.url),
+            "utf8",
+          ),
+        ),
+      ),
+    );
+    const designs = [
+      stack,
+      assemble(runStudioCommands(stubStackWithCacheRead(), [on])),
+      assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on])),
+      v3,
+    ];
+    let loops = 0;
+    for (const target of designs)
+      for (const file of target.files) {
+        if (
+          !/^src\/(processes\/|runtime\/module-clients\.ts$|features\/service-resources\.ts$)/.test(
+            file.path,
+          )
+        )
+          continue;
+        const code = new TextDecoder().decode(file.bytes);
+        for (const literal of [
+          /local-postgres/,
+          /local-broker/,
+          /\b5432\b/,
+          /\b5672\b/,
+          /\b6379\b/,
+          /"cache-/,
+          /app-[a-z0-9-]+:3000/,
+        ])
+          expect(code, `${file.path} ${literal}`).not.toMatch(literal);
+        // Every loop passes the broker's endpoint, so none falls back to tile-loop.ts's default.
+        for (const name of ["startModuleLoop(", "loopConsumer("]) {
+          const calls = code.split(name).length - 1;
+          loops += calls;
+          expect(code.split("brokerBinding()").length - 1, file.path).toBeGreaterThanOrEqual(calls);
+        }
+      }
+    expect(loops).toBeGreaterThan(5);
+    // The cache read takes its cache's host and port from the environment, not its bindings.
+    const watch = text(v3, "src/processes/watch-api.ts");
+    expect(watch).toContain(
+      "    binding: { ...cacheEndpoint(binding.resource), secret: binding.secret },",
+    );
   });
 });
 

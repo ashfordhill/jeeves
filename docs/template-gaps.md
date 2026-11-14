@@ -27,7 +27,8 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 | The event counter keeps one receipt row per event for ever | Open |
 | The outbox relay sends at most 10 rows about once a second | Open |
 | A process that loses its broker exits and is not restarted | Fixed in BR01 |
-| Host names are compiled into the export for local Compose | Open; deployment is outside Jeeves |
+| Host names are compiled into the export for local Compose | Fixed in QG06: endpoints come from the environment; values are deployment |
+| Object storage and search endpoints are still compiled into the export (`local-objects`, `search-<id>`) | Open; a later unit can extend QG06's convention |
 | A template's database pool (`pool` in `service-resources.ts`) has no error listener, unlike a stub's: when PostgreSQL ends its idle connections the process exits, and `pnpm start` brings it back. Seen for the Event counter in GS07 | Fixed in SO01 |
 | A mounted template retries a failed message at once (stub loops wait 250 ms doubling): during a store outage a worker whose process stays up could use its retries in moments and send accepted messages to `.failed` | Fixed in SO01: an unreachable store waits 5 s and keeps the attempt |
 | A query on a stalled (not stopped) database never settles: PostgreSQL enforces `statement_timeout` itself, so a paused server can't, and the pool set no client-side bound; the pool's drain waited on that connection too. Seen in SO03 (open item 3) and probed in QRWTY's Q03 review | Fixed in QG17: a query with no reply 500 ms past its statement timeout rejects `Query read timeout`, the pool discards that connection and a drain doesn't wait on it. That error isn't an unreachable store, so a worker's message spends an attempt |

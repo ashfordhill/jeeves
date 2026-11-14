@@ -6,6 +6,8 @@ import { type V2Emitter, v2Compare } from "./registry.ts";
 const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
 const clientLibraries: Record<ClientSection, string[]> = {
   database: ["postgres"],
+  // The broker's endpoint alone needs no library: its publisher and loops bring theirs.
+  broker: [],
   queue: ["delivery", "amqp"],
   cache: ["valkey"],
   objects: ["objects"],

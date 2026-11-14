@@ -14896,3 +14896,130 @@ without an override, and `update:v2` keeps both files.
 
 **For the next unit.** QG06. A stub's cache goes through `createValkeyCache`, so QG06's cache
 endpoint change is the `binding` that `cacheClient` passes, plus `valkey.ts`'s host rule (R3).
+
+## 2026-11-14 — QG06: Store and tile endpoints come from the environment
+
+**What changed.**
+- A generated process reads every database, cache, broker and called-tile endpoint from its
+  environment when it builds that client, before its probe, with no compiled default:
+  `JEEVES_DATABASE_<ID>_HOST`/`_PORT`, `JEEVES_CACHE_<ID>_HOST`/`_PORT`, `JEEVES_BROKER_HOST`/`_PORT`
+  and `JEEVES_TILE_<ID>_URL` (`<ID>`: the tile ID upper-cased, `-` as `_`). A host is 1–253 of
+  `[A-Za-z0-9.-]`, or for a database an absolute path (a socket directory); a port is 1–65535; a
+  URL is absolute `http:`/`https:` with no credentials, query or fragment. Missing or invalid:
+  `Invalid endpoint <variable>` (never the value), so the `startup-failed` line names it.
+  - `module-clients.ts.template`: one reader (`endpoint`, `host`, `port`, `url`) for
+    `databaseClient`, `cacheClient`, `queuePublisher` (through `brokerBinding()`, in a new `broker`
+    section) and `httpTarget`, which now takes `{ tile }`.
+  - `service-resources.ts.template`: `endpointHost`/`endpointPort`; `pool()` reads its database's
+    pair; `export const broker` became `brokerBinding()`, used by `publisher` and `consumer`.
+  - `valkey.ts.template`: `createValkeyCache`'s host check is `^[A-Za-z0-9.-]{1,253}$` (R3), and
+    `cacheEndpoint(cache)` reads a cache read's pair.
+- Generator: `client-wiring.ts` emits `httpTarget({ tile: "<id>" })`, adds the `broker` section for
+  a publisher or a stub loop, and records the tiles a process calls (`service.calls`);
+  `http-wiring.ts`'s cache read binds `{ ...cacheEndpoint(binding.resource), secret }`;
+  `loop-wiring.ts` passes `brokerBinding()` to every `startModuleLoop` (from module-clients) and
+  `loopConsumer` (from service-resources); `local-contract.ts` has `endpointId` and
+  `localEndpoints` (each variable and its local value); `local.ts` sets exactly those in each
+  `app-<id>` service's `environment` beside `OIDC_*`, and the README gains "Endpoints from the
+  environment" with each process's list; `tile-processes.ts` shares `serviceOf` between the
+  contribution and the report, whose rows gain `environment` (sorted, the service's keys);
+  `registry.ts` (that field) and `primitives.ts` (`broker: []`).
+- Tests, 11 new: `module-clients.test.ts` 6 (a database's pair reaches its pool, with
+  `/cloudsql/p:r:i` and a 253-character host; 12 missing or invalid database values refused
+  before any pool or probe; a cache at `10.1.2.3:6380`, a path refused; the broker for a
+  publisher and `brokerBinding()`; `httpTarget`'s URL rule over 10 values; `createValkeyCache`'s
+  R3 rule and `cacheEndpoint("hot-routes")`); `composition.test.ts` 2 (`pool`, `brokerBinding`,
+  `publisher`, `consumer` from the environment, and five refusals); `tile-processes.test.ts` 3
+  (the stub stack's exact per-service environment and v3's cache read; report rows equal each
+  service's keys, and the README list; no `local-postgres`, `local-broker`, `5432`, `5672`,
+  `6379`, `"cache-` or `app-…:3000` in a process, `module-clients.ts` or `service-resources.ts`
+  of four designs, and every loop call has `brokerBinding()`).
+  - Updated assertions that name an emitted endpoint: `client-wiring.test.ts`, the
+    `httpTarget("http://app-stats-api:3000")` line; `module-clients.test.ts`, two
+    `clients.httpTarget(...)` calls; `loop-wiring.test.ts`, the visit worker's `startModuleLoop`
+    block and the transcoder's `loopConsumer` line (each gains `brokerBinding()`).
+  - Setup only: `module-clients.test.ts` sets, before each test, the `JEEVES_*` values the stub
+    stack's emitted `compose.yaml` gives its services, and its database and broker fakes also
+    record the endpoint; `composition.test.ts`'s pool test sets the local values (its loader is
+    now shared).
+- Pins (`processes-off.json`): `.jeeves/manifest.json`, `src/features/service-resources.ts` and
+  `src/runtime/valkey.ts` in `frozen-v2` and `v2-module-design`; nothing else (no pinned export has
+  a process service, so its `compose.yaml`, `README.md` and report are unchanged).
+- Docs: `jeeves-generator/README.md` (the edge paragraph, Provisioning for stubs, Cache reader,
+  Module clients and a new "Endpoints from the environment" paragraph with the table),
+  `docs/studio.md` (where a process finds its stores), `docs/template-gaps.md` (the host-name
+  limit is "Fixed in QG06…"; a new open row: object storage and search are still compiled).
+
+**Checks.**
+- Before any change, at `6152112`: `pnpm check` exit 0, 115 files / 938 tests.
+- After: `pnpm check` exit 0, 115 files / 949 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed (4.9 min), first run. Web build: exit 0.
+- New tests on HEAD's templates (a scratch clone at `6152112`, its own offline install, the five
+  changed test files; deleted after): all 11 new tests fail, and so do the 5 with updated
+  assertions; the other 47 pass. The checkout's `node_modules` state files and `.bin` shims name
+  no scratch path.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Probe changed: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`, `compose.yaml`,
+    `src/features/service-resources.ts`, `src/processes/tally.ts`,
+    `src/runtime/module-clients.ts`, `src/runtime/valkey.ts`. r83: the same without `tally.ts`,
+    with `src/processes/account-api.ts`, `analytics-worker.ts`, `link-api.ts` and
+    `session-api.ts`. All in Emitted output. `front.ts`, `billing-api.ts` and
+    `redirect-service.ts` are unchanged (their client calls are).
+  - `compose.yaml` differs only by added `JEEVES_*` variables on `app-*` services; the report
+    only by `environment` rows and the inventory. Required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, the offline frozen install and `pnpm build` exit 0.
+  - `after-probe`'s built `node dist/processes/tally.js` on the host (`env -i`, `SECRET_DIR` with
+    placeholder files, broker variables set): with `JEEVES_DATABASE_TALLY_DB_HOST=db.invalid`
+    (port 5432) the probe line was `"result":"failed","error":"Error: getaddrinfo ENOTFOUND
+    db.invalid"`, exit 1 in 167 ms; unset, `startup-failed` `Error: Invalid endpoint
+    JEEVES_DATABASE_TALLY_DB_HOST`, exit 1; set to `db invalid`, the same line, with the value
+    nowhere in the output. The scratch exports and secrets are deleted.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=all`: 8 files / 14 tests
+  passed (B01–B10, 1,425 s), first run, so no suite was rerun.
+  - Inventory: after equals before apart from arm B's `qrwtyb-local` stack (its 12 images rebuilt
+    and containers restarted meanwhile; not touched). No `gs-` or `qg06` resource is left;
+    `jeeves-postgres-1` is unchanged. This run's `test-results/generated/` folder is removed.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- Loops: stub loops and the four worker templates consumed through `tile-loop.ts`'s compiled
+  `loopBroker` default, which the brief doesn't name. `tile-loop.ts` isn't in Emitted output, so
+  the process files pass `brokerBinding()` to its existing broker parameter (`loop-wiring.ts`, not
+  in Files; two `loop-wiring.test.ts` assertions updated). `loopBroker` stays, a default no
+  generated process uses.
+- The stub cache uses module-clients' own reader; `cacheEndpoint` serves the cache read. The cache
+  read keeps `positive-cache-bindings.ts` (not in Emitted output) for its secret; that file's
+  `hostname` and `port` are now unused by generated processes.
+- The report row and README list every variable Compose sets for the process (its endpoints,
+  `OIDC_*`, `OBJECT_PUBLIC_ENDPOINT`); `SECRET_DIR`, optional with a default, isn't listed.
+- Validation is per client as it is built, before that client's probe: a later client's missing
+  variable fails startup after an earlier client's probe ran.
+- A port must be canonical decimal (no sign, space or leading zero); a socket path is absolute
+  with no control characters. The brief's test variable `JEEVES_DATABASE_LINKS_HOST` is
+  `JEEVES_DATABASE_LINKS_DB_HOST` here: the stub stack's database is `links-db`.
+- `httpTarget`'s parameter is `{ tile }`, not a base URL.
+- The processes-off README is unchanged: with no process service nothing there sets the
+  variables; the generator README documents `service-resources.ts`'s for application code.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), decided by the owner on 2026-11-14 (decision 2, yes, as amended
+  by R3).
+- A loop stub whose only queue is on another provider reads `JEEVES_BROKER_*`, which its service
+  doesn't set (no broker). Before, it failed at startup too (no broker credential), and that
+  stack isn't runnable.
+- `httpTarget` resolves `new URL(path, base)`, so a base path is dropped: a deployment's
+  `JEEVES_TILE_<ID>_URL` should be an origin.
+- The process files' comment "a failed probe fails startup" is still inexact for a cache
+  (QG04's note); the edge's `nginx.conf` still routes to `app-<id>:3000`. No edge file changed,
+  so the F22 note is still for a later unit.
+- For QG24: the shape is `throw new Error("Invalid endpoint <NAME>")` inside `runProcess`'s
+  start, logged as `startup-failed` `Error: Invalid endpoint <NAME>`.
+- YouTube v4's committed app was not edited; its generated files lag the templates, as after
+  earlier units.
+- The scratchpad also holds earlier sessions' files, and `test-results/generated/` 10 older
+  folders; only this unit's were removed.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QG24. The rule and message shape are in place; `OIDC_ISSUER` and
+`OIDC_JWKS_URL` can fail by name in the guard's setup lines.

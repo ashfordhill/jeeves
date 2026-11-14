@@ -22,11 +22,19 @@ import type { V2ProcessReport } from "./registry.ts";
 const clients = "../runtime/module-clients.ts";
 const entryTypes = "../modules/entry.ts";
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
- * out, so the scaffold imports only the libraries the export has. */
-export type ClientSection = "database" | "queue" | "cache" | "objects" | "search" | "http";
+ * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
+ * endpoint, for a stub's publisher and its loops. */
+export type ClientSection =
+  | "database"
+  | "broker"
+  | "queue"
+  | "cache"
+  | "objects"
+  | "search"
+  | "http";
 
 /** One client a process builds: its key in `clients`, its section and its constructor call. */
-type Client = { key: string; section: ClientSection; call: string };
+type Client = { key: string; section: Exclude<ClientSection, "broker">; call: string };
 
 /** What a store's client is built with, and what its probe checks. */
 function storeClient(store: StubStore): Client {
@@ -156,7 +164,7 @@ export function stubClients(
           use({
             key: target.element,
             section: "http",
-            call: `httpTarget(${text(`http://app-${target.element}:3000`)})`,
+            call: `httpTarget({ tile: ${text(target.element)} })`,
           }),
         ];
       }
@@ -181,6 +189,9 @@ export function stubClients(
   // Every provisioned store gets its client and probe, even one only a library stub uses.
   for (const store of stores)
     if (!store.unsupported && store.access !== "consume") use(storeClient(store));
+  // A publisher and a stub's loop read the broker's endpoint (`brokerBinding`).
+  if (sections.has("queue") || stubs.some(({ stub }) => stub.consumes?.length))
+    sections.add("broker");
   const list = [...built.values()].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   const probed = list.some((client) => client.call.startsWith("await "));
   for (const client of list)
@@ -235,6 +246,7 @@ export function stubClients(
           .map((s) => s.resource),
         cache: provisioned.filter((store) => store.kind === "cache").map((s) => s.resource),
         broker: provisioned.some((store) => store.kind === "queue"),
+        calls: list.filter((client) => client.section === "http").map((client) => client.key),
       },
       local: {},
     },

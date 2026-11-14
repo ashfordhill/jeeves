@@ -59,6 +59,8 @@ export type ProcessMount = {
     storage: string[];
     cache: string[];
     broker: boolean;
+    /** The application tiles its stubs call (`httpTarget`), each at `JEEVES_TILE_<ID>_URL`. */
+    calls?: string[];
     identity?: string;
     environment?: Record<string, string>;
     /** The media image, for a process that runs Video HLS. */
@@ -156,6 +158,7 @@ function positiveCacheRead(
       { from: "../features/positive-cache-bindings.ts", name: "positiveCacheBindings" },
       { from: "../runtime/http.ts", name: "HttpError" },
       { from: "../runtime/positive-cache.ts", name: "createPositiveReader" },
+      { from: "../runtime/valkey.ts", name: "cacheEndpoint" },
       { from: "../runtime/valkey.ts", name: "createValkeyCache" },
       { from: tileHttp, name: "notImplementedRoutes" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
@@ -165,8 +168,10 @@ function positiveCacheRead(
       `const ${name} = await (async () => {`,
       `  const s = selected("positive-cache-read", ${text(id)});`,
       `  const source = pool(scope, s, "source");`,
+      `  const binding = positiveCacheBindings[${text(id)}].cache;`,
       "  const cache = await createValkeyCache({",
-      `    binding: positiveCacheBindings[${text(id)}].cache,`,
+      "    // The cache's endpoint is the environment's: JEEVES_CACHE_<ID>_HOST and _PORT.",
+      "    binding: { ...cacheEndpoint(binding.resource), secret: binding.secret },",
       "    onState: (state, error) =>",
       '      state === "unavailable"',
       `        ? failure(${text(`cache ${lead.module}`)}, error ?? new Error("Cache unavailable"))`,

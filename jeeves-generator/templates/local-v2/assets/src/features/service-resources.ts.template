@@ -44,15 +44,37 @@ export function resource(s: ServiceBinding, field: string): string {
 	if (!id) throw Error(`Missing selected resource ${field}`);
 	return id;
 }
+/** One endpoint from the process's environment (`JEEVES_*`, the tile ID upper-cased with `-` as
+ * `_`), read when its client is built. There is no default: a missing or invalid value fails
+ * startup naming the variable, never the value. A host is 1–253 letters, digits, `.` or `-`, or
+ * for a database an absolute path (a Unix socket directory, as `pg` reads it). */
+export function endpointHost(name: string, socket = false): string {
+	const value = process.env[name];
+	if (
+		value !== undefined &&
+		(/^[A-Za-z0-9.-]{1,253}$/.test(value) ||
+			(socket && value.startsWith("/") && !/[\u0000-\u001f\u007f]/.test(value)))
+	)
+		return value;
+	throw Error(`Invalid endpoint ${name}`);
+}
+/** A port from the environment: an integer 1–65535. */
+export function endpointPort(name: string): number {
+	const value = process.env[name];
+	if (value !== undefined && /^[1-9][0-9]{0,4}$/.test(value) && Number(value) <= 65535)
+		return Number(value);
+	throw Error(`Invalid endpoint ${name}`);
+}
 // @sql-start
+/** A template's pool on its tile's login, at `JEEVES_DATABASE_<ID>_HOST` and `_PORT`. */
 export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
-	const login = localLogins.find(
-		(l) => l.resource === resource(s, field) && l.host === s.host,
-	);
+	const id = resource(s, field);
+	const login = localLogins.find((l) => l.resource === id && l.host === s.host);
 	if (!login) throw Error("Missing contributed login");
+	const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
 	const client = createPostgres({
-		hostname: "local-postgres",
-		port: 5432,
+		hostname: endpointHost(`${database}_HOST`, true),
+		port: endpointPort(`${database}_PORT`),
 		login,
 		poolSize: input(s, `${field}.poolSize`),
 		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),
@@ -65,14 +87,18 @@ export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
 }
 // @sql-end
 // @broker-start
-export const broker = {
-	hostname: "local-broker",
-	port: 5672,
-	username: "runtime",
-	passwordSecret: "broker-password",
-	heartbeatSeconds: 10,
-	confirmTimeoutMs: 5000,
-};
+/** The broker's runtime login at its endpoint, `JEEVES_BROKER_HOST` and `JEEVES_BROKER_PORT`, read
+ * when a publisher or consumer is built (a mounted template's loop passes it to `loopConsumer`). */
+export function brokerBinding() {
+	return {
+		hostname: endpointHost("JEEVES_BROKER_HOST"),
+		port: endpointPort("JEEVES_BROKER_PORT"),
+		username: "runtime",
+		passwordSecret: "broker-password",
+		heartbeatSeconds: 10,
+		confirmTimeoutMs: 5000,
+	};
+}
 /** A broker publisher and consumer reconnect after a lost connection, telling `onState`; the
  * process owns their drains (`scope.own`, `scope.transport`). */
 export function publisher(
@@ -84,7 +110,7 @@ export function publisher(
 	const id = resource(s, field),
 		work = s.inputs[`${field}.mode`] === "work-queue";
 	return createPublisher(
-		broker,
+		brokerBinding(),
 		{ exchange: work ? "" : id, routingKey: work ? id : "" },
 		{ onState },
 	);
@@ -98,7 +124,7 @@ export function consumer(
 	const id = resource(s, field),
 		work = s.inputs[`${field}.mode`] === "work-queue";
 	const queue = work ? id : `${id}--${s.host}`;
-	return createConsumer(broker, {
+	return createConsumer(brokerBinding(), {
 		queue,
 		failedQueue: `${queue}.failed`,
 		concurrency: input(s, "host.concurrency"),

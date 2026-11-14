@@ -69,6 +69,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
         "  await startModuleLoop(scope, loopLog, config.loops[0], (message) =>",
         '    visitConsumer(dependencies["visit-consumer"], message),',
         '    brokerState(config.tile, failure, "broker consume visits--visit-worker"),',
+        "    brokerBinding(),",
         "  );",
         "  scope.ready();",
       ].join("\n"),
@@ -298,7 +299,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       media.indexOf("await startMediaWorker({"),
     );
     expect(media).toContain(
-      'loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), { ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-queue") }),',
+      'loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), { ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-queue") }, brokerBinding()),',
     );
     expect(text(v2, "src/processes/view-counter.ts")).toContain(
       'counter: createEventCounter(binding.tables, watchHooks(counterSumHooks(), loopLog, "counter-sum")),',

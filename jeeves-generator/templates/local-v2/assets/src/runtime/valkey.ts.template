@@ -14,10 +14,28 @@ export interface ValkeyCache {
   close(): void;
 }
 
+/** A host is 1–253 letters, digits, `.` or `-`; a port an integer 1–65535. */
+const validHost = (hostname: string) => /^[A-Za-z0-9.-]{1,253}$/.test(hostname);
+const validPort = (port: number) => Number.isInteger(port) && port >= 1 && port <= 65535;
+
+/** A cache tile's endpoint from the process's environment, `JEEVES_CACHE_<ID>_HOST` and `_PORT`
+ * (`<ID>` the tile ID upper-cased, `-` as `_`), read when its client is built. There is no
+ * default: a missing or invalid value fails naming the variable, never the value. */
+export function cacheEndpoint(cache: string): { hostname: string; port: number } {
+  const name = (part: string) => `JEEVES_CACHE_${cache.toUpperCase().replace(/-/g, "_")}_${part}`;
+  const hostname = process.env[name("HOST")];
+  if (hostname === undefined || !validHost(hostname))
+    throw new Error(`Invalid endpoint ${name("HOST")}`);
+  const port = process.env[name("PORT")];
+  if (port === undefined || !/^[1-9][0-9]{0,4}$/.test(port) || !validPort(Number(port)))
+    throw new Error(`Invalid endpoint ${name("PORT")}`);
+  return { hostname, port: Number(port) };
+}
+
 /** Startup cache failure is optional. No offline queue, client reconnect or hidden default
  * endpoint: a lost client is destroyed and a new one connects every five seconds. Each command
- * settles within 150 ms; at most 32 wait. Use the emitted normalized binding; the caller owns
- * close alongside its HTTP service. */
+ * settles within 150 ms; at most 32 wait. Use the emitted normalized binding, with its host and
+ * port from `cacheEndpoint`; the caller owns close alongside its HTTP service. */
 export async function createValkeyCache(options: {
   binding: ValkeyBinding;
   credential?: (secret: string) => string;
@@ -25,8 +43,7 @@ export async function createValkeyCache(options: {
   onState?: (state: "available" | "unavailable", error?: unknown) => void;
 }): Promise<ValkeyCache> {
   const { hostname, port, secret } = options.binding;
-  if (!/^[a-z][a-z0-9.-]{0,254}$/.test(hostname) || !Number.isInteger(port) || port < 1 || port > 65535)
-    throw new Error("Invalid cache endpoint");
+  if (!validHost(hostname) || !validPort(port)) throw new Error("Invalid cache endpoint");
   const password = (options.credential ?? readSecret)(secret);
   const open = () =>
     createClient({

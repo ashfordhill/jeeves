@@ -6,6 +6,7 @@ import {
 } from "@jeeves/spec";
 import { jsonFile, pointerPart, refuse } from "../json.ts";
 import {
+  localEndpoints,
   type StubStore,
   stubStores,
   stubUnsupported,
@@ -893,6 +894,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           build: { context: ".", target: "media" },
         }),
         secrets: [...new Set(credentials)],
+        // Exactly what its process reads: its endpoints (the local ones), a sign-in's OIDC_*.
         environment: {
           ...service.environment,
           ...(identityBinding && {
@@ -900,6 +902,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
             OIDC_AUDIENCE: `${identityBinding.id}-web`,
             OIDC_JWKS_URL: `http://${identityBinding.service}:8080/realms/${identityBinding.id}/protocol/openid-connect/certs`,
           }),
+          ...localEndpoints(service),
         },
         ...(service.readiness && {
           stop_grace_period: service.target === "media" ? "21m" : "6m",
@@ -1118,12 +1121,27 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         "Selected search providers have no contributed versioned feature mapping/query implementation.",
       sourcePaths,
     });
+  // What each process reads from its environment, as its service sets it (QG06).
+  const processEnvironment = application
+    .filter((name) => name !== "app-edge")
+    .map((name) => {
+      const keys = Object.keys((services[name]?.environment ?? {}) as Record<string, string>);
+      return `- \`${name}\`: ${
+        keys.length
+          ? [...keys]
+              .sort(v2Compare)
+              .map((key) => `\`${key}\``)
+              .join(", ")
+          : "none"
+      }`;
+    });
+  const endpointsReadme = `\n**Endpoints from the environment.** Each process reads the endpoints it uses from its environment as it builds each client, with no default: \`JEEVES_DATABASE_<ID>_HOST\` (a host, or an absolute Unix socket directory) and \`_PORT\` for each database, \`JEEVES_CACHE_<ID>_HOST\` and \`_PORT\` for each cache, \`JEEVES_BROKER_HOST\` and \`JEEVES_BROKER_PORT\` for the broker, and \`JEEVES_TILE_<ID>_URL\` (absolute \`http:\` or \`https:\`, with no credentials, query or fragment) for each tile its stubs call, where \`<ID>\` is the tile ID upper-cased with \`-\` as \`_\`. A missing or invalid one fails startup with \`Invalid endpoint <variable>\`, never its value. \`compose.yaml\` sets the local values; a deployment sets its own. Object storage and search are still reached at their local names. Each process reads (also \`processes.tiles[].environment\` in .jeeves/report.json):\n\n${processEnvironment.join("\n")}\n`;
   files.push(
     file(
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile --ignore-scripts\` then \`pnpm build\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\n**Your own configuration.** \`compose.override.yaml\` beside \`compose.yaml\` is yours: export never writes it and \`update:v2\` never touches it. Docker Compose merges it into every command \`pnpm first-run\`, \`start\` and \`stop\` run, so give your modules their own \`environment\` and \`secrets\` there, or add a service of your own (for example a scheduler that calls your routes). Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next \`pnpm start\`.\n\nMigration owners/admin are mounted only into setup. Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT on the database's \`published\` views and on another owner's template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in schema \`m_<module>\`, so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only its tile's login uses that schema; every login on the database may SELECT what it publishes as views in \`published\`, and nothing else of its tables. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer \`GET /healthz\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT on the database's \`published\` views and on another owner's template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in schema \`m_<module>\`, so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only its tile's login uses that schema; every login on the database may SELECT what it publishes as views in \`published\`, and nothing else of its tables. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
           : ""
       }`,
     ),

@@ -93,16 +93,19 @@ type Builder = (
   index: number,
 ) => ProcessMount;
 /** Each mounted template's consumer reads its loop row: queue, `.failed`, concurrency, retries.
- * The lines of its `openConsumer`, with the media worker's own hooks, and its broker state hook. */
+ * The lines of its `openConsumer`, with the media worker's own hooks, its broker state hook and
+ * the broker's endpoint from the environment (`brokerBinding`). */
 const consumer = (index: number, queue: string, hooks?: string) => {
   const open = `      loopConsumer(${loopLine(index)}, templateHandler(loopLog, ${loopLine(index)}, handle),`;
   const onState = `onState: ${brokerState(`broker consume ${queue}`)}`;
   return hooks
-    ? [`${open} { ...${hooks}, ${onState} }),`]
-    : [`${open} {`, `        ${onState},`, "      }),"];
+    ? [`${open} { ...${hooks}, ${onState} }, brokerBinding()),`]
+    : [`${open} {`, `        ${onState},`, "      }, brokerBinding()),"];
 };
 /** What a process that opens a broker client imports for its state hook. */
 const brokerStateImport = { from: tileProcess, name: "brokerState" };
+/** A mounted template's consumer gets the broker's endpoint from `service-resources.ts`. */
+const templateBroker = { from: resources, name: "brokerBinding" };
 
 /** Asset lifecycle: the worker on its tables (in its upload's schema), its results subscriber and,
  * when bound, its publication relay through the shared outbox. */
@@ -172,6 +175,7 @@ const assetLifecycle: Builder = (process, selection, lead, selections, index) =>
       { from: tileLoop, name: "templateHandler" },
       { from: tileLoop, name: "watchHooks" },
       brokerStateImport,
+      templateBroker,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -399,6 +403,7 @@ const videoHls: Builder = (process, selection, lead, selections, index) => {
       { from: tileLoop, name: "templateHandler" },
       { from: tileLoop, name: "watchHooks" },
       brokerStateImport,
+      templateBroker,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -525,6 +530,7 @@ const eventCounter: Builder = (process, selection, lead, selections, index) => {
       { from: tileLoop, name: "templateHandler" },
       { from: tileLoop, name: "watchHooks" },
       brokerStateImport,
+      templateBroker,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
     setup: [
@@ -612,6 +618,7 @@ const searchProjection: Builder = (process, selection, lead, selections, index) 
       { from: tileSearch, name: "openSearchIndex" },
       { from: tileSearch, name: "startSearchIndexWorker" },
       brokerStateImport,
+      templateBroker,
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks.factory },
     ],
     setup: [
@@ -748,14 +755,18 @@ function stubLoops(
   return {
     imports: [
       { from: tileLoop, name: "startModuleLoop" },
-      ...(loops.length ? [brokerStateImport] : []),
+      ...(loops.length
+        ? [brokerStateImport, { from: "../runtime/module-clients.ts", name: "brokerBinding" }]
+        : []),
       { from: from(paths.module), name: entry },
     ],
+    // Each loop gets the broker's endpoint from the environment (`brokerBinding`).
     setup: loops.flatMap((loop, offset) => [
       `// ${line(module.name)}: a loop on ${loop.queue}.`,
       `await startModuleLoop(scope, loopLog, ${loopLine(first + offset)}, (message) =>`,
       `  ${entry}(dependencies[${text(id)}], message),`,
       `  ${brokerState(`broker consume ${loop.queue}`)},`,
+      "  brokerBinding(),",
       ");",
     ]),
     configure: [],

@@ -1,5 +1,6 @@
 // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
-// one per store or channel a tile's stubs use. Export rewrites this file. Each client runs one
+// one per store or channel a tile's stubs use. Export rewrites this file. Each client reads its
+// endpoint from the environment (`JEEVES_*`; compose.yaml sets the local ones), then runs one
 // bounded startup probe that its access allows; a failed probe fails the process's startup, but
 // a cache that is down is logged and the process starts without it.
 // @database-import-start
@@ -48,6 +49,47 @@ export function unavailable<T extends object>(what: string): T {
   }) as unknown as T;
 }
 
+/** An endpoint's variable, `JEEVES_<KIND>_<ID>_<PART>`: the tile ID upper-cased, `-` as `_`. */
+const variable = (kind: string, id: string, part: string) =>
+  `JEEVES_${kind}_${id.toUpperCase().replace(/-/g, "_")}_${part}`;
+/** One endpoint from the process's environment, read when its client is built and before its
+ * probe. There is no default: a missing or invalid value fails startup naming the variable,
+ * never the value. */
+function endpoint<T>(name: string, parse: (value: string) => T | undefined): T {
+  const value = process.env[name];
+  const parsed = value === undefined ? undefined : parse(value);
+  if (parsed === undefined) throw new Error(`Invalid endpoint ${name}`);
+  return parsed;
+}
+/** A host: 1–253 letters, digits, `.` or `-`; for a database also an absolute path (a Unix
+ * socket directory, as `pg` reads it). */
+const host =
+  (socket = false) =>
+  (value: string) =>
+    /^[A-Za-z0-9.-]{1,253}$/.test(value) ||
+    (socket && value.startsWith("/") && !/[\u0000-\u001f\u007f]/.test(value))
+      ? value
+      : undefined;
+/** A port: an integer 1–65535. */
+const port = (value: string) =>
+  /^[1-9][0-9]{0,4}$/.test(value) && Number(value) <= 65535 ? Number(value) : undefined;
+/** A URL: absolute `http:` or `https:`, with no credentials, query or fragment. */
+const url = (value: string) => {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return undefined;
+  }
+  return (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+    !parsed.username &&
+    !parsed.password &&
+    !value.includes("?") &&
+    !value.includes("#")
+    ? value
+    : undefined;
+};
+
 /** The probe log; it names its tile, for a client's own lines after startup. */
 export type ProbeLog = ((entry: Record<string, unknown>) => void) & { readonly tile: string };
 /** One JSON line per client probe: `ok` once it passes, `unavailable` for a cache that is down,
@@ -87,7 +129,8 @@ async function probed(
 // @database-start
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
  * what another owner publishes when the tile may only read it. Stubs own no tables: a module's
- * own tables need a migration and grants of their own. Probe: SELECT 1. */
+ * own tables need a migration and grants of their own. Its endpoint is
+ * `JEEVES_DATABASE_<ID>_HOST` (a host or a Unix socket directory) and `_PORT`. Probe: SELECT 1. */
 export async function databaseClient(
   scope: ProcessScope,
   log: ProbeLog,
@@ -98,8 +141,8 @@ export async function databaseClient(
   );
   if (!login) throw new Error(`No runtime login for ${binding.resource}`);
   const pool = createPostgres({
-    hostname: "local-postgres",
-    port: 5432,
+    hostname: endpoint(variable("DATABASE", binding.resource, "HOST"), host(true)),
+    port: endpoint(variable("DATABASE", binding.resource, "PORT"), port),
     login,
     poolSize: 10,
     statementTimeoutMs: 2000,
@@ -123,15 +166,21 @@ export async function databaseClient(
   };
 }
 // @database-end
+// @broker-start
+/** The broker's runtime login at its endpoint, `JEEVES_BROKER_HOST` and `JEEVES_BROKER_PORT`, read
+ * when a publisher or a stub's loop is built. */
+export function brokerBinding() {
+  return {
+    hostname: endpoint("JEEVES_BROKER_HOST", host()),
+    port: endpoint("JEEVES_BROKER_PORT", port),
+    username: "runtime",
+    passwordSecret: "broker-password",
+    heartbeatSeconds: 10,
+    confirmTimeoutMs: 5000,
+  };
+}
+// @broker-end
 // @queue-start
-const broker = {
-  hostname: "local-broker",
-  port: 5672,
-  username: "runtime",
-  passwordSecret: "broker-password",
-  heartbeatSeconds: 10,
-  confirmTimeoutMs: 5000,
-};
 /** A work queue or topic a module publishes to, with publisher confirms; each message gets the
  * module's `messageId`, or else a fresh ID, and `key` is not used locally. After a lost broker
  * connection it reconnects every 5 s, telling `onState`, as a loop's consumer does; a publish
@@ -143,6 +192,7 @@ export async function queuePublisher(
   onState?: BrokerState,
 ): Promise<QueuePublisher> {
   const topic = binding.mode === "topic";
+  const broker = brokerBinding();
   let publisher: Awaited<ReturnType<typeof createPublisher>> | undefined;
   await probed(
     log,
@@ -168,17 +218,20 @@ export async function queuePublisher(
  * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
  * and a new one tried every 5 s; each change is logged, a `cache <cache>` failure line when it
  * is lost and an info line when it is available. Closing destroys the client, so a drain never
- * waits on the cache. Probe: PING; a cache that is down at startup logs `unavailable` and the
- * process starts without it. */
+ * waits on the cache. Its endpoint is `JEEVES_CACHE_<ID>_HOST` and `_PORT`. Probe: PING; a cache
+ * that is down at startup logs `unavailable` and the process starts without it. */
 export async function cacheClient(
   scope: ProcessScope,
   log: ProbeLog,
   binding: { cache: string },
 ): Promise<CacheClient> {
   const failure = createFailureLog(log.tile);
-  const host = `cache-${binding.cache}`;
+  const endpoints = {
+    hostname: endpoint(variable("CACHE", binding.cache, "HOST"), host()),
+    port: endpoint(variable("CACHE", binding.cache, "PORT"), port),
+  };
   const cache = await createValkeyCache({
-    binding: { hostname: host, port: 6379, secret: host },
+    binding: { ...endpoints, secret: `cache-${binding.cache}` },
     onState: (state, error) =>
       state === "unavailable"
         ? failure(`cache ${binding.cache}`, error ?? new Error("Cache unavailable"))
@@ -298,11 +351,13 @@ export async function searchClient(
 }
 // @search-end
 // @http-start
-/** Another application tile's process inside the network (`http://app-<id>:3000`). It has no
- * probe and no `depends_on`: that process may start after this one. Its failures count as an
- * unreachable service: a rejected `fetch` is marked `Symbol.for("jeeves.internal-call")`, so a
- * lost connection to that process waits as a store's does, not as an outside call. */
-export function httpTarget(base: string): HttpTarget {
+/** Another application tile's process at `JEEVES_TILE_<ID>_URL` (locally `http://app-<id>:3000`,
+ * inside the network). It has no probe and no `depends_on`: that process may start after this
+ * one. Its failures count as an unreachable service: a rejected `fetch` is marked
+ * `Symbol.for("jeeves.internal-call")`, so a lost connection to that process waits as a store's
+ * does, not as an outside call. */
+export function httpTarget(binding: { tile: string }): HttpTarget {
+  const base = endpoint(variable("TILE", binding.tile, "URL"), url);
   return {
     request: (path, init) =>
       fetch(new URL(path, base), init).catch((error: unknown) => {

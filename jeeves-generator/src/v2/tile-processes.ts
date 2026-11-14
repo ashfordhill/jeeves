@@ -2,7 +2,7 @@ import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
 import { type ClientSection, stubClients, stubStoreRows } from "./client-wiring.ts";
 import { httpMounts, importLines, type ProcessMount } from "./http-wiring.ts";
-import type { V2LocalContribution } from "./local-contract.ts";
+import { localEndpoints, type V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
 import type { V2Emitter, V2ProcessReport, V2RenderContext, V2TemplateFile } from "./registry.ts";
 
@@ -77,6 +77,7 @@ function moduleClients(model: V2RenderContext["model"], asset: V2RenderContext["
 }
 const clientSections: readonly ClientSection[] = [
   "database",
+  "broker",
   "queue",
   "cache",
   "objects",
@@ -113,33 +114,9 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
         edge: model.processes
           .filter((process) => process.shape === "http" && process.exposure === "public")
           .map((process) => ({ host: process.tile })),
-        services: model.processes.map((process) => {
-          const wired = (mounts.get(process.tile) ?? []).map((mount) => mount.service);
-          const identity = unique(wired.flatMap((item) => (item.identity ? [item.identity] : [])));
-          if (identity.length > 1)
-            refuse("LOCAL_IDENTITY_LIMIT", process.tile, "A process verifies one identity.");
-          const environment = Object.assign({}, ...wired.map((item) => item.environment ?? {}));
-          return {
-            host: process.tile,
-            command: ["node", processPaths(process.tile).built],
-            http: false,
-            dependsOn: unique(wired.flatMap((item) => item.dependsOn)),
-            ...(wired.some((item) => item.sql.length) && {
-              sql: unique(wired.flatMap((item) => item.sql)),
-            }),
-            ...(wired.some((item) => item.storage.length) && {
-              storage: unique(wired.flatMap((item) => item.storage)),
-            }),
-            ...(wired.some((item) => item.cache.length) && {
-              cache: unique(wired.flatMap((item) => item.cache)),
-            }),
-            ...(wired.some((item) => item.broker) && { broker: true }),
-            ...(wired.some((item) => item.target === "media") && { target: "media" as const }),
-            ...(identity[0] && { identity: identity[0] }),
-            ...(Object.keys(environment).length && { environment }),
-            readiness: true,
-          };
-        }),
+        services: model.processes.map((process) =>
+          serviceOf(process, mounts.get(process.tile) ?? []),
+        ),
       };
       return contribution;
     },
@@ -191,6 +168,50 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
   };
 }
 
+/** A process's Compose service, from what its mounts need: providers, logins, the tiles its stubs
+ * call and the environment its templates read. */
+function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) {
+  const wired = mounts.map((mount) => mount.service);
+  const identity = unique(wired.flatMap((item) => (item.identity ? [item.identity] : [])));
+  if (identity.length > 1)
+    refuse("LOCAL_IDENTITY_LIMIT", process.tile, "A process verifies one identity.");
+  const environment: Record<string, string> = Object.assign(
+    {},
+    ...wired.map((item) => item.environment ?? {}),
+  );
+  const calls = unique(wired.flatMap((item) => item.calls ?? []));
+  return {
+    host: process.tile,
+    command: ["node", processPaths(process.tile).built],
+    http: false,
+    dependsOn: unique(wired.flatMap((item) => item.dependsOn)),
+    ...(wired.some((item) => item.sql.length) && {
+      sql: unique(wired.flatMap((item) => item.sql)),
+    }),
+    ...(wired.some((item) => item.storage.length) && {
+      storage: unique(wired.flatMap((item) => item.storage)),
+    }),
+    ...(wired.some((item) => item.cache.length) && {
+      cache: unique(wired.flatMap((item) => item.cache)),
+    }),
+    ...(wired.some((item) => item.broker) && { broker: true }),
+    ...(calls.length && { calls }),
+    ...(wired.some((item) => item.target === "media") && { target: "media" as const }),
+    ...(identity[0] && { identity: identity[0] }),
+    ...(Object.keys(environment).length && { environment }),
+    readiness: true,
+  };
+}
+/** The variables a process reads from its environment, sorted, as its Compose service sets them:
+ * its endpoints (QG06), a sign-in's `OIDC_*` and what its templates read. */
+function environmentOf(service: ReturnType<typeof serviceOf>) {
+  return unique([
+    ...Object.keys(service.environment ?? {}),
+    ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
+    ...Object.keys(localEndpoints(service)),
+  ]);
+}
+
 /** The process's settings (v3 contract, section 4): an HTTP process's limits, or a worker's loop
  * concurrency, each from a template on its tile, the tile's own value or fixed. */
 function settings(process: NormalizedProcess) {
@@ -224,6 +245,7 @@ function reportRow(
     ...(process.exposure && { exposure: process.exposure }),
     ...(http && process.exposure === "public" && { edge: `/api/${process.tile}/` }),
     entry: processPaths(process.tile).entry,
+    environment: environmentOf(serviceOf(process, mounts)),
     settings: settings(process),
     routes: http
       ? [

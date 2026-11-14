@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -21,8 +21,10 @@ const emitted = new TextDecoder().decode(
   bundle.files.find((file) => file.path === "src/runtime/module-clients.ts")?.bytes,
 );
 const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
-type Calls = { calls: unknown[][]; fail?: string; hang?: boolean };
-const fake: Calls = { calls: [] };
+/** Each fake records what it is asked for in `calls`; the database and broker fakes also record
+ * the endpoint they were given in `endpoints`. */
+type Calls = { calls: unknown[][]; endpoints: unknown[][]; fail?: string; hang?: boolean };
+const fake: Calls = { calls: [], endpoints: [] };
 (globalThis as { moduleClientsFake?: Calls }).moduleClientsFake = fake;
 const check = `
   const fake = globalThis.moduleClientsFake;
@@ -37,6 +39,7 @@ const fakes: Record<string, string> = {
   "../features/local-bindings.ts": `export const localLogins = [{ resource: "links-db", host: "links-api", database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db--links-api" }];`,
   "./postgres.ts": `${check}
     export function createPostgres(options) {
+      fake.endpoints.push(["postgres", options.hostname, options.port]);
       record("createPostgres", options.login.user, options.poolSize, options.statementTimeoutMs);
       return {
         on: (event) => record("on", event),
@@ -46,6 +49,7 @@ const fakes: Record<string, string> = {
     }`,
   "./amqp.ts": `${check}
     export async function createPublisher(binding, destination, hooks) {
+      fake.endpoints.push(["broker", binding.hostname, binding.port]);
       await outcome("open", undefined);
       record("createPublisher", binding.passwordSecret, destination, hooks.onState);
       return {
@@ -144,6 +148,38 @@ const js = stripTypeScriptTypes(emitted).replace(/from "([^"]+)"/g, (match, from
 );
 const clients = await import(dataUrl(js));
 const { NotImplemented } = await import(tileProcess);
+const valkey = await import(dataUrl(String(fakes["./valkey.ts"])));
+
+// The endpoints each process reads, as the stub stack's emitted compose.yaml sets them (QG06):
+// every client here is built with exactly those, so a variable Compose doesn't set fails.
+const compose = JSON.parse(
+  new TextDecoder().decode(bundle.files.find((file) => file.path === "compose.yaml")?.bytes),
+) as { services: Record<string, { environment?: Record<string, string> }> };
+const localEnvironment: Record<string, string> = Object.assign(
+  {},
+  ...Object.entries(compose.services)
+    .filter(([name]) => name.startsWith("app-"))
+    .map(([, service]) =>
+      Object.fromEntries(
+        Object.entries(service.environment ?? {}).filter(([name]) => name.startsWith("JEEVES_")),
+      ),
+    ),
+);
+const touched = new Map<string, string | undefined>();
+/** Sets (or, with undefined, unsets) environment variables until the test ends. */
+function environment(values: Record<string, string | undefined>) {
+  for (const [name, value] of Object.entries(values)) {
+    if (!touched.has(name)) touched.set(name, process.env[name]);
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  }
+}
+function restoreEnvironment() {
+  for (const [name, value] of touched)
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  touched.clear();
+}
 
 function testScope() {
   const owned: (() => unknown)[] = [];
@@ -171,12 +207,15 @@ function stdout() {
 }
 
 describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", () => {
+  beforeEach(() => environment(localEnvironment));
   afterEach(() => {
     fake.calls.length = 0;
+    fake.endpoints.length = 0;
     fake.fail = undefined;
     fake.hang = undefined;
     lines.length = 0;
     vi.useRealTimers();
+    restoreEnvironment();
   });
 
   it("answers Not implemented for what isn't provisioned, called or through a member", async () => {
@@ -542,7 +581,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     const fetch = vi.fn(async () => new Response("ok"));
     vi.stubGlobal("fetch", fetch);
     try {
-      const target = clients.httpTarget("http://app-stats-api:3000");
+      const target = clients.httpTarget({ tile: "stats-api" });
       await target.request("/modules/stats-search", { method: "POST" });
       expect(fetch).toHaveBeenCalledWith(
         new URL("http://app-stats-api:3000/modules/stats-search"),
@@ -570,7 +609,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       .mockRejectedValueOnce("not an object");
     vi.stubGlobal("fetch", fetch);
     try {
-      const target = clients.httpTarget("http://app-stats-api:3000");
+      const target = clients.httpTarget({ tile: "stats-api" });
       expect(await target.request("/modules/stats-search")).toBe(response);
       expect(Reflect.get(refused, internalCall)).toBeUndefined();
       await expect(target.request("/modules/stats-search")).rejects.toBe(refused);
@@ -592,6 +631,227 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     await vi.advanceTimersByTimeAsync(5000);
     await failed;
     expect(lines.at(-1)).toMatchObject({ result: "failed", error: "Error: Probe deadline (5 s)" });
+  });
+});
+
+describe("store and tile endpoints come from the environment (QG06)", () => {
+  beforeEach(() => environment(localEnvironment));
+  afterEach(() => {
+    fake.calls.length = 0;
+    fake.endpoints.length = 0;
+    fake.fail = undefined;
+    lines.length = 0;
+    restoreEnvironment();
+    vi.unstubAllGlobals();
+  });
+  const links = { tile: "links-api", resource: "links-db" };
+  /** What a client's construction rejects or throws with, for each case's `values` over `base`. */
+  async function refusals(
+    build: () => unknown,
+    cases: readonly [Record<string, string | undefined>, string][],
+    base: Record<string, string> = localEnvironment,
+  ) {
+    const seen: [string, string][] = [];
+    for (const [values, variable] of cases) {
+      environment(base);
+      environment(values);
+      const error = await Promise.resolve()
+        .then(build)
+        .then(
+          () => new Error("built"),
+          (thrown: Error) => thrown,
+        );
+      seen.push([error.message, variable]);
+      // The message names the variable, never its value.
+      for (const value of Object.values(values))
+        if (value) expect(error.message).not.toContain(value);
+    }
+    return seen;
+  }
+  const expected = (cases: readonly [unknown, string][]) =>
+    cases.map(([, variable]) => [`Invalid endpoint ${variable}`, variable]);
+
+  it("passes a database's host and port from its environment to its pool, a Unix socket directory too", async () => {
+    environment({
+      JEEVES_DATABASE_LINKS_DB_HOST: "db.internal",
+      JEEVES_DATABASE_LINKS_DB_PORT: "6432",
+    });
+    await clients.databaseClient(testScope(), probe, links);
+    // A Cloud SQL socket directory, as `pg` reads a host that is an absolute path.
+    environment({ JEEVES_DATABASE_LINKS_DB_HOST: "/cloudsql/p:r:i" });
+    await clients.databaseClient(testScope(), probe, links);
+    environment({
+      JEEVES_DATABASE_LINKS_DB_HOST: "a".repeat(253),
+      JEEVES_DATABASE_LINKS_DB_PORT: "65535",
+    });
+    await clients.databaseClient(testScope(), probe, links);
+    expect(fake.endpoints).toEqual([
+      ["postgres", "db.internal", 6432],
+      ["postgres", "/cloudsql/p:r:i", 6432],
+      ["postgres", "a".repeat(253), 65535],
+    ]);
+    expect(lines.map((line) => line.result)).toEqual(["ok", "ok", "ok"]);
+  });
+
+  it("fails a database client naming its missing or invalid variable, before any probe", async () => {
+    const host = "JEEVES_DATABASE_LINKS_DB_HOST";
+    const port = "JEEVES_DATABASE_LINKS_DB_PORT";
+    const cases: [Record<string, string | undefined>, string][] = [
+      [{ [host]: undefined }, host],
+      [{ [host]: "" }, host],
+      [{ [host]: "db internal" }, host],
+      [{ [host]: "db_internal" }, host],
+      [{ [host]: "a".repeat(254) }, host],
+      [{ [host]: "cloudsql/p:r:i" }, host],
+      [{ [port]: undefined }, port],
+      [{ [port]: "0" }, port],
+      [{ [port]: "65536" }, port],
+      [{ [port]: "05432" }, port],
+      [{ [port]: "5432x" }, port],
+      [{ [port]: "-1" }, port],
+    ];
+    expect(await refusals(() => clients.databaseClient(testScope(), probe, links), cases)).toEqual(
+      expected(cases),
+    );
+    // No pool was created and no probe ran or logged.
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+  });
+
+  it("connects a cache at its environment's host and port; a cache's host is never a path", async () => {
+    const out = stdout();
+    try {
+      environment({
+        JEEVES_CACHE_LINKS_CACHE_HOST: "10.1.2.3",
+        JEEVES_CACHE_LINKS_CACHE_PORT: "6380",
+      });
+      const scope = testScope();
+      await clients.cacheClient(scope, probe, { cache: "links-cache" });
+      expect(fake.calls[0]).toEqual([
+        "createClient",
+        expect.objectContaining({
+          password: "secret of cache-links-cache",
+          socket: expect.objectContaining({ host: "10.1.2.3", port: 6380 }),
+        }),
+      ]);
+      await scope.owned[0]?.();
+      fake.calls.length = 0;
+      lines.length = 0;
+      const host = "JEEVES_CACHE_LINKS_CACHE_HOST";
+      const port = "JEEVES_CACHE_LINKS_CACHE_PORT";
+      const cases: [Record<string, string | undefined>, string][] = [
+        [{ [host]: undefined }, host],
+        [{ [host]: "/run/valkey" }, host],
+        [{ [host]: "cache-links-cache:6379" }, host],
+        [{ [port]: undefined }, port],
+        [{ [port]: "70000" }, port],
+      ];
+      expect(
+        await refusals(
+          () => clients.cacheClient(testScope(), probe, { cache: "links-cache" }),
+          cases,
+        ),
+      ).toEqual(expected(cases));
+      expect(fake.calls).toEqual([]);
+      expect(lines).toEqual([]);
+    } finally {
+      out.restore();
+    }
+  });
+
+  it("opens the broker at its environment's host and port, for a publisher and a stub's loop", async () => {
+    environment({ JEEVES_BROKER_HOST: "mq.internal", JEEVES_BROKER_PORT: "5673" });
+    // What a stub's loop passes to startModuleLoop.
+    expect(clients.brokerBinding()).toEqual({
+      hostname: "mq.internal",
+      port: 5673,
+      username: "runtime",
+      passwordSecret: "broker-password",
+      heartbeatSeconds: 10,
+      confirmTimeoutMs: 5000,
+    });
+    await clients.queuePublisher(testScope(), probe, { queue: "visits", mode: "topic" });
+    expect(fake.endpoints).toEqual([["broker", "mq.internal", 5673]]);
+    fake.calls.length = 0;
+    lines.length = 0;
+    const cases: [Record<string, string | undefined>, string][] = [
+      [{ JEEVES_BROKER_HOST: undefined }, "JEEVES_BROKER_HOST"],
+      [{ JEEVES_BROKER_HOST: "amqp://mq.internal" }, "JEEVES_BROKER_HOST"],
+      [{ JEEVES_BROKER_PORT: "" }, "JEEVES_BROKER_PORT"],
+    ];
+    expect(
+      await refusals(
+        () => clients.queuePublisher(testScope(), probe, { queue: "visits", mode: "topic" }),
+        cases,
+      ),
+    ).toEqual(expected(cases));
+    expect(await refusals(() => clients.brokerBinding(), cases)).toEqual(expected(cases));
+    // Refused before the probe: no broker opened and no probe line.
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+  });
+
+  it("calls another tile at its environment's URL: absolute http or https, no credentials, query or fragment", async () => {
+    const fetch = vi.fn(async () => new Response("ok"));
+    vi.stubGlobal("fetch", fetch);
+    environment({ JEEVES_TILE_STATS_API_URL: "https://stats.internal:8443" });
+    await clients.httpTarget({ tile: "stats-api" }).request("/modules/stats-search");
+    expect(fetch).toHaveBeenCalledWith(
+      new URL("https://stats.internal:8443/modules/stats-search"),
+      undefined,
+    );
+    const name = "JEEVES_TILE_STATS_API_URL";
+    const credentials = ["http://", ["user", "pass"].join(":"), "@stats.internal"].join("");
+    const cases: [Record<string, string | undefined>, string][] = [
+      [{ [name]: undefined }, name],
+      [{ [name]: "" }, name],
+      [{ [name]: "/modules" }, name],
+      [{ [name]: "stats.internal:8443" }, name],
+      [{ [name]: "ftp://stats.internal" }, name],
+      [{ [name]: credentials }, name],
+      [{ [name]: "http://user@stats.internal" }, name],
+      [{ [name]: "http://stats.internal/?a=1" }, name],
+      [{ [name]: "http://stats.internal/?" }, name],
+      [{ [name]: "http://stats.internal/#top" }, name],
+    ];
+    expect(await refusals(() => clients.httpTarget({ tile: "stats-api" }), cases)).toEqual(
+      expected(cases),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("checks a cache endpoint by the same host rule in createValkeyCache, and reads a cache read's by name", async () => {
+    const binding = (hostname: string) => ({ hostname, port: 6379, secret: "cache-hot-routes" });
+    // R3: an address, upper case and the longest name pass the bounded client's own check.
+    for (const hostname of ["10.1.2.3", "Cache-1.Internal", "a".repeat(253)]) {
+      const cache = await valkey.createValkeyCache({ binding: binding(hostname) });
+      cache.close();
+    }
+    expect(
+      fake.calls
+        .filter((call) => call[0] === "createClient")
+        .map((call) => (call[1] as { socket: { host: string } }).socket.host),
+    ).toEqual(["10.1.2.3", "Cache-1.Internal", "a".repeat(253)]);
+    for (const hostname of ["", "a".repeat(254), "cache_hot", "/run/valkey"])
+      await expect(valkey.createValkeyCache({ binding: binding(hostname) })).rejects.toThrow(
+        /^Invalid cache endpoint$/,
+      );
+    // A cache read's process reads its cache's endpoint by the cache's ID (`hot-routes` is
+    // HOT_ROUTES).
+    const hotRoutes = {
+      JEEVES_CACHE_HOT_ROUTES_HOST: "cache.internal",
+      JEEVES_CACHE_HOT_ROUTES_PORT: "6380",
+    };
+    environment(hotRoutes);
+    expect(valkey.cacheEndpoint("hot-routes")).toEqual({ hostname: "cache.internal", port: 6380 });
+    const cases: [Record<string, string | undefined>, string][] = [
+      [{ JEEVES_CACHE_HOT_ROUTES_HOST: undefined }, "JEEVES_CACHE_HOT_ROUTES_HOST"],
+      [{ JEEVES_CACHE_HOT_ROUTES_HOST: "/run/valkey" }, "JEEVES_CACHE_HOT_ROUTES_HOST"],
+      [{ JEEVES_CACHE_HOT_ROUTES_PORT: "6380.5" }, "JEEVES_CACHE_HOT_ROUTES_PORT"],
+    ];
+    expect(await refusals(() => valkey.cacheEndpoint("hot-routes"), cases, hotRoutes)).toEqual(
+      expected(cases),
+    );
   });
 });
 

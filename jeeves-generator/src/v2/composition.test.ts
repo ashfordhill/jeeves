@@ -161,9 +161,10 @@ describe("reusable composition before product completion", () => {
       }),
     );
   });
-  it("gives a template's database pool an error listener, so an idle connection's error is not fatal", async () => {
+  /** The exact emitted service-resources.ts; its imports are fakes, the pool is a real
+   * EventEmitter, and a publisher or consumer answers the binding it was given. */
+  async function emittedResources() {
     const bundle = assembleV2({ designJson: JSON.stringify(attach()) }, registry);
-    // The exact emitted helper; its imports are fakes, and the pool is a real EventEmitter.
     const fakes: Record<string, string> = {
       "./application-bindings.ts": "export const selections = [];",
       "./local-bindings.ts":
@@ -172,7 +173,8 @@ describe("reusable composition before product completion", () => {
         export const createPostgres = (options) =>
           Object.assign(new EventEmitter(), { options, end: async () => {} });`,
       "../runtime/objects.ts": "export const createObjects = () => {};",
-      "../runtime/amqp.ts": "export const createConsumer = () => {}, createPublisher = () => {};",
+      "../runtime/amqp.ts":
+        "export const createConsumer = (binding) => ({ binding }), createPublisher = (binding) => ({ binding });",
       "../runtime/positive-cache.ts": "export const createPositiveReader = () => {};",
     };
     const dataUrl = (js: string) =>
@@ -181,25 +183,117 @@ describe("reusable composition before product completion", () => {
       /from "([^"]+)"/g,
       (_match, path: string) => `from "${dataUrl(required(fakes[path]))}"`,
     );
-    const resources = await import(dataUrl(js));
-    const owned: unknown[] = [];
-    const client = resources.pool(
-      { own: (drain: unknown) => owned.push(drain) },
-      {
-        id: "counter",
-        kind: "event-counter",
-        host: "worker",
-        inputs: { "state.poolSize": 4, "state.statementTimeoutMs": 2000 },
-        resources: { state: "state-db" },
-      },
-      "state",
-    );
-    expect(client.options).toMatchObject({ poolSize: 4, statementTimeoutMs: 2000 });
-    expect(owned).toHaveLength(1);
-    expect(client.listenerCount("error")).toBe(1);
-    // An 'error' with no listener throws, which ends the process; this one is consumed.
-    expect(() =>
-      client.emit("error", new Error("terminating connection due to administrator command")),
-    ).not.toThrow();
+    return import(dataUrl(js));
+  }
+  const counter = {
+    id: "counter",
+    kind: "event-counter",
+    host: "worker",
+    inputs: {
+      "state.poolSize": 4,
+      "state.statementTimeoutMs": 2000,
+      "events.mode": "topic",
+      "events.retryLimit": 3,
+      "host.concurrency": 1,
+    },
+    resources: { state: "state-db", events: "view-events" },
+  };
+  /** Sets (or, with undefined, unsets) environment variables for one test. */
+  function withEnvironment(values: Record<string, string | undefined>) {
+    const saved = Object.fromEntries(Object.keys(values).map((name) => [name, process.env[name]]));
+    const set = (entries: Record<string, string | undefined>) => {
+      for (const [name, value] of Object.entries(entries))
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+    };
+    set(values);
+    return () => set(saved);
+  }
+  const local = {
+    JEEVES_DATABASE_STATE_DB_HOST: "local-postgres",
+    JEEVES_DATABASE_STATE_DB_PORT: "5432",
+    JEEVES_BROKER_HOST: "local-broker",
+    JEEVES_BROKER_PORT: "5672",
+  };
+
+  it("gives a template's database pool an error listener, so an idle connection's error is not fatal", async () => {
+    const resources = await emittedResources();
+    const restore = withEnvironment(local);
+    try {
+      const owned: unknown[] = [];
+      const client = resources.pool(
+        { own: (drain: unknown) => owned.push(drain) },
+        counter,
+        "state",
+      );
+      expect(client.options).toMatchObject({ poolSize: 4, statementTimeoutMs: 2000 });
+      expect(owned).toHaveLength(1);
+      expect(client.listenerCount("error")).toBe(1);
+      // An 'error' with no listener throws, which ends the process; this one is consumed.
+      expect(() =>
+        client.emit("error", new Error("terminating connection due to administrator command")),
+      ).not.toThrow();
+    } finally {
+      restore();
+    }
+  });
+
+  it("opens a template's pool and broker at the endpoints its environment names (QG06)", async () => {
+    const resources = await emittedResources();
+    const scope = { own: () => {} };
+    const restore = withEnvironment({
+      JEEVES_DATABASE_STATE_DB_HOST: "db.internal",
+      JEEVES_DATABASE_STATE_DB_PORT: "6432",
+      JEEVES_BROKER_HOST: "mq.internal",
+      JEEVES_BROKER_PORT: "5673",
+    });
+    try {
+      expect(resources.pool(scope, counter, "state").options).toMatchObject({
+        hostname: "db.internal",
+        port: 6432,
+      });
+      // A Unix socket directory is a database host too.
+      process.env.JEEVES_DATABASE_STATE_DB_HOST = "/cloudsql/p:r:i";
+      expect(resources.pool(scope, counter, "state").options.hostname).toBe("/cloudsql/p:r:i");
+      const broker = {
+        hostname: "mq.internal",
+        port: 5673,
+        username: "runtime",
+        passwordSecret: "broker-password",
+        heartbeatSeconds: 10,
+        confirmTimeoutMs: 5000,
+      };
+      // What a mounted template's loop passes to loopConsumer, and its publisher and consumer.
+      expect(resources.brokerBinding()).toEqual(broker);
+      expect(resources.publisher(counter, "events", scope).binding).toEqual(broker);
+      expect(resources.consumer(counter, "events", async () => {}).binding).toEqual(broker);
+    } finally {
+      restore();
+    }
+  });
+
+  it("fails a template's pool or broker naming its missing or invalid variable, never the value", async () => {
+    const resources = await emittedResources();
+    const cases: [Record<string, string | undefined>, string][] = [
+      [{ JEEVES_DATABASE_STATE_DB_HOST: undefined }, "JEEVES_DATABASE_STATE_DB_HOST"],
+      [{ JEEVES_DATABASE_STATE_DB_HOST: "db internal" }, "JEEVES_DATABASE_STATE_DB_HOST"],
+      [{ JEEVES_DATABASE_STATE_DB_PORT: "65536" }, "JEEVES_DATABASE_STATE_DB_PORT"],
+      // A socket directory is a database's only: the broker's host is a name or an address.
+      [{ JEEVES_BROKER_HOST: "/var/run/rabbitmq" }, "JEEVES_BROKER_HOST"],
+      [{ JEEVES_BROKER_PORT: undefined }, "JEEVES_BROKER_PORT"],
+    ];
+    for (const [values, variable] of cases) {
+      const restore = withEnvironment({ ...local, ...values });
+      try {
+        const build = variable.startsWith("JEEVES_DATABASE")
+          ? () => resources.pool({ own: () => {} }, counter, "state")
+          : () => resources.publisher(counter, "events", { own: () => {} });
+        expect(build).toThrow(new Error(`Invalid endpoint ${variable}`));
+        for (const value of Object.values(values))
+          if (value) expect(() => build()).not.toThrow(value);
+      } finally {
+        restore();
+      }
+    }
   });
 });

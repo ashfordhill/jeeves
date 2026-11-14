@@ -363,7 +363,8 @@ process healthy (and Garage for a CDN route), and healthy on its own `GET /healt
 `app-<id>:3000/` (resolved per request through Docker DNS), answers 503
 `{"error":"UNAVAILABLE","message":"Service unavailable."}` while that process is down, and 404 JSON
 for anything else, so an internal process is reached only inside the network at
-`http://app-<id>:3000`. The edge's own answers are JSON whatever a path's extension (`types { }`).
+`http://app-<id>:3000`, the value Compose gives a calling process's `JEEVES_TILE_<ID>_URL`
+(Module clients, below). The edge's own answers are JSON whatever a path's extension (`types { }`).
 The edge owns the single HTTP port: a service contributing `http: true` beside it refuses, and so
 does a tile whose ID is `edge`.
 
@@ -428,7 +429,8 @@ bucket, or why it has none, and Preview shows them.
   `complete` and `closed` delegate to it, so their "Not implemented" comes from the lifecycle
   hooks they reach (`metadata`, `job.construct`, `response`).
 - **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
-  Valkey cache at `GET /modules/<lead>/:key`; null answers 404. While the cache is down it reads
+  Valkey cache at `GET /modules/<lead>/:key`; null answers 404. The cache's host and port come
+  from `cacheEndpoint` (`valkey.ts`): `JEEVES_CACHE_<ID>_HOST` and `_PORT`, not the bindings file. While the cache is down it reads
   the database: a cache call that rejects or passes its 150 ms deadline makes the reader skip the
   cache for 5 s, and a call that hasn't settled keeps it skipped until it does. The Valkey client
   (`createValkeyCache`) destroys a lost client and connects a new one every 5 s, and logs each
@@ -597,7 +599,8 @@ scripts:
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
 | Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
 
-Each process gets its credentials and `depends_on` its providers healthy. A store whose saved
+Each process gets its credentials, `depends_on` its providers healthy, and has the endpoints it
+reads set to these local services in its Compose `environment` (Module clients, below). A store whose saved
 provider isn't unspecified or self-hosted, or whose engine isn't unspecified or the local one
 (PostgreSQL, Redis-compatible, OpenSearch), isn't provisioned: a required `unsupported` gap
 `provider-<module>-<tile>`, so the stack isn't runnable. Identity isn't provisioned for stubs
@@ -664,7 +667,7 @@ connected a command fails at once with `Cache unavailable`, a lost or stalled cl
 and a new one tried every 5 s, and the drain destroys the client, so it never waits on the
 cache), `objectClient`
 (`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
-`httpTarget` (another tile's process at `http://app-<id>:3000`, with no probe or `depends_on`). Each
+`httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`). Each
 client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
 confirm channel, `PING`, `HeadBucket` (or, for a write-only key, opening and aborting a multipart
 upload) and cluster health. Each logs one JSON line
@@ -679,6 +682,33 @@ it names (a route stub with the caller's input as its request, a library stub wi
 provisioned (another provider, an Identity, a CDN or External API, a tile with no process, a
 template's part) is `unavailable(...)`: every call answers "Not implemented: <tile> for <module>
 (<why>)". A stub's own "Not implemented" still answers 501 or goes to `.failed`.
+
+**Endpoints from the environment.** A process reads each endpoint it uses from its environment
+when it builds that client, before its probe, with no default (`<ID>` is the tile ID upper-cased,
+`-` as `_`, so `hot-routes` is `HOT_ROUTES`):
+
+| Endpoint | Variables | Local value in `compose.yaml` |
+| --- | --- | --- |
+| A Database tile | `JEEVES_DATABASE_<ID>_HOST`, `JEEVES_DATABASE_<ID>_PORT` | `local-postgres`, `5432` |
+| A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT` | `cache-<id>`, `6379` |
+| The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
+| Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
+
+A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
+directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port is an integer
+1–65535; a URL is absolute `http:` or `https:` with no credentials, query or fragment. A missing or
+invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
+`startup-failed` line. The stubs' clients read theirs in `module-clients.ts`; a template's `pool`
+and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
+its cache through `cacheEndpoint` in `valkey.ts`, whose bounded client checks a host by the same
+rule. Every loop passes `brokerBinding()` to `startModuleLoop` or `loopConsumer`, so the compiled
+`loopBroker` in `tile-loop.ts` is only a default no process uses. The foundation sets exactly the
+variables each process reads in its `app-<id>` service's `environment` (`localEndpoints` in
+`local-contract.ts`), beside a sign-in's `OIDC_*`; `processes.tiles[].environment` in the report
+lists them, sorted, and the export's README lists them per process. A deployment sets its own
+values; local stacks behave as before. Object storage and search are still reached at their local
+names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
+`PGHOST` and `PGPORT`).
 
 **Credentials** are generated at first run, as for templates: `setup.mjs` writes the
 passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is
