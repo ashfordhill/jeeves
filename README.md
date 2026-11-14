@@ -59,6 +59,8 @@ Qrwty will be getting a UI but I won't be spending time fussing over it because 
 
 I have also started a third lane (#3) to work on Jeeves improvements - there's no reason to wait until lanes #1 and #2 are done since #2 doesn't even use Jeeves and #1 only needed to use Jeeves in the beginning.
 
+<p align="center"><img src=".docs/qrwty/parallel-agents.png" width="600"/></p>
+
 Lane #1 will be recording any feedback and data that could be used to improve Jeeves in a sort of "lessons learned". I will also be using Astra and Fable to help me find areas of improvement.
 
 #### UI
