@@ -14586,3 +14586,65 @@ setting `OIDC_AUDIENCE` to its tokens' audience; local runs need no change.
 Coordinator docs entry at the owner's request: `docs/design-playbook.md` gains "check the target's
 required services against the installed templates before drawing" (QRWTY's Pub/Sub and 25 other
 gaps surfaced only after export). No code changed. **For the next unit.** QGR1 (review batch 1).
+
+## 2026-11-14 — QGR1: Review QRWTY gap batch 1
+
+**What changed.** Only [docs/plans/qrwty-gaps/review-batch1.md](plans/qrwty-gaps/review-batch1.md)
+(new) and this entry. No code, template, test, pin or other doc changed: the review found no defect
+that a test could show, so nothing was fixed. The record holds the verdict, the checks, each unit
+against its brief, the interactions, nine findings and five proposed units (QG21–QG24 ready, QG25
+needs the owner).
+
+**Checks.** All on `84a766a`, in phases: offline, then e2e and the build, then Docker.
+- `pnpm check` exit 0: 115 files / 926 tests; Biome shows only the older 1 info.
+- `pnpm test:e2e`, run 1, beside this review's four exports, two installs and two builds: 14 failed
+  / 60 passed, every failure the `Project:` menu not visible within 5 s right after `page.goto`
+  (the page didn't load in time under that load). Run 2, alone: 74 passed (4.6 min).
+- Web build: exit 0.
+- `pnpm test:generated --suite=core`: 2 files / 4 tests passed (B01–B04, 282 s). No other suite
+  rerun (the record says why).
+- Regeneration proof across the batch: `probe-design.json` (`a3b6204f…0505`, verified) and
+  `qrwty-r83.json`, exported from a scratch clone at `c2c8127` with its own offline install and
+  from HEAD. The changed paths are exactly the union of the seven **Emitted output** lists (plus
+  `.jeeves/manifest.json` and `.jeeves/report.json`); `compose.yaml` differs only by
+  `OIDC_AUDIENCE` on guarded services, the report only in registry hashes and sizes. Both
+  `after-*` exports install offline and build, exit 0.
+- Pins: `processes-off.json` changed exactly the paths the units listed.
+- Docker proofs rerun, on scratch `postgres:17.11-alpine3.23` containers named `qgr1-pg-*`
+  (ports 47991–47995), credentials generated for the run and deleted:
+  - QG12: a CREATEDB CREATEROLE non-superuser admin completes with no manual grant and on repeat;
+    two concurrent first runs both exit 0 and a third applies nothing; every `datacl` has no `=`
+    entry and the admin has no CONNECT; a superuser admin leaves the same ACL and no membership;
+    an owner role another role created stops the run at `permission denied to grant role` with
+    nothing applied, and passes after the creator's `GRANT … WITH ADMIN OPTION`.
+  - QG17: `query_timeout` 2500 beside `statement_timeout` 2000; a healthy `pg_sleep(5)` rejects
+    `57014` at 2,010 ms; a paused server's `SELECT 1` rejects `Query read timeout` at 2,502 ms
+    with `totalCount` 0 and `pool.end()` in 0 ms; the template's `transaction()` under a stall
+    settles at 5,067 ms (the query, then the `ROLLBACK`) and discards the client.
+  - The Docker inventory before and after differs only in other runs' resources (arm B's
+    `qrwtyb-*`, two `n03-selftest-*`), untouched; no `gs-` or `qgr1-` resource is left.
+- The checkout after QG11's repair: `node_modules`'s state files and `.bin` shims name no scratch
+  path; `pnpm check` passes.
+
+**Differences from the plan.** None. The review fixed nothing because nothing met the bar (a defect
+a test shows); the findings are limits, interactions and wording, each with a proposed unit or a
+reason for none.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03's plan, its review unit).
+- The one finding that matters for QRWTY (medium): the error handler's fallback 503 (any
+  non-`HttpError`, so a stub's dependency error, now including QG17's `Query read timeout`) has no
+  `Retry-After`. Proposed QG21, ready.
+- Secret files are written `mode: 0o644`, which the host umask masks; with umask `027`/`077` and a
+  host uid other than 1000, QG05's `node` can't read them (root could). Proposed QG22, ready.
+- `pnpm start` starts only generated services: an override-only service needs a `depends_on` or
+  the application's own `docker compose up`. Proposed QG23 (docs), ready, with the non-superuser
+  admin's `ADMIN OPTION` precondition.
+- The scratchpad directory this session was given had a near-duplicate name from an earlier
+  mistyped path; the misplaced files were moved into the real one and the stray directory removed.
+- No edge file changed, so the F22 note is still for a later unit (QG25 would be the one).
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** Batch 2 starts with QG03. The coordinator may add QG21–QG24 to batch 2's
+order (QG21 and QG22 are independent; QG23 is docs; QG24 after QG06) and put QG25 to the owner.
