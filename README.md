@@ -44,12 +44,12 @@ Generation for a production-level grade deployment of my repo [qrwty](https://ww
 The plan has 2 phases:
 
 1.  Get qrwty built with a Jeeves diagram and deployed to the qrwty.io domain '
-  - This involves actually using unpaid features/trials of Google Cloud Platform and Stripe, as well as Cloudflare.
-  - Qrwty is designed to horizontally scale its microservices
-  - Although the backend is built in TypeScript; looking into Rust or Go implementations for certain types of microservices as an option for Jeeves code generation could be useful/interesting. Maybe.
+    - This involves actually using unpaid features/trials of Google Cloud Platform and Stripe, as well as Cloudflare.
+    - Qrwty is designed to horizontally scale its microservices
+    - Although the backend is built in TypeScript; looking into Rust or Go implementations for certain types of microservices as an option for Jeeves code generation could be useful/interesting. Maybe.
 2.  Get qrwty built without a Jeeves diagram and make comparisons
-  - How much time and clarity is Jeeves saving?
-  - Do the Jeeves diagrams and generated code provide value in code organization vs pure prompting?
+    - How much time and clarity is Jeeves saving?
+    - Do the Jeeves diagrams and generated code provide value in code organization vs pure prompting?
 
 #1 and #2 are in their own lanes of work unit execution, my favorite style of feeding large scopes of work. At first I had everything in a queue but it was going to take 3 days, so I took a parallel route this time s ince there are 2 different projects being generated.
 
@@ -57,7 +57,7 @@ Qrwty will be getting a UI but I won't be spending time fussing over it because 
 
 ### Improving Jeeves
 
-I have also started a third lane to work on Jeeves improvements - there's no reason to wait until lanes #1 and #2 are done since #2 doesn't even use Jeeves and #1 only needed to use Jeeves in the beginning.
+I have also started a third lane (#3) to work on Jeeves improvements - there's no reason to wait until lanes #1 and #2 are done since #2 doesn't even use Jeeves and #1 only needed to use Jeeves in the beginning.
 
 Lane #1 will be recording any feedback and data that could be used to improve Jeeves in a sort of "lessons learned". I will also be using Astra and Fable to help me find areas of improvement.
 
