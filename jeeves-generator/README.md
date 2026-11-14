@@ -377,8 +377,9 @@ bucket, or why it has none, and Preview shows them.
 - The tile's **sign-in** (v3 contract §2): an Auth guard connected to an Identity selects
   `verified-identity@0.1.0`, and the process builds one `createTileGuard` (the scaffold
   `src/runtime/tile-guard.ts`, emitted when a guard exists) on `createPrincipalVerifier`
-  (`OIDC_ISSUER`, audience `<identity id>-web`, `OIDC_JWKS_URL`, RS256, a 3 s key-set timeout,
-  `exp` and `sub` required). Every module route of the tile is mounted through
+  (`OIDC_ISSUER`, the audience in `OIDC_AUDIENCE`, `OIDC_JWKS_URL`, RS256, a 3 s key-set
+  timeout, `exp` and `sub` required). A missing or empty `OIDC_AUDIENCE` fails startup
+  (`startup-failed`, naming it). Every module route of the tile is mounted through
   `guard.routes(...)`: **Required** answers 401
   `{"error":"SIGN_IN_REQUIRED","message":"Sign in to continue."}` without a valid
   `Authorization: Bearer` token; **Optional** treats a request without the header as anonymous
@@ -598,7 +599,9 @@ External API tiles.
 binds its Identity, which runs as `identity-<id>` with one realm `<id>` and one public PKCE client
 `<id>-web` whose redirect is the edge origin `/`, written once at setup (`setup.mjs`), with the
 admin and database passwords generated into `.runtime/secrets`. Each guarded process gets
-`OIDC_ISSUER` and `OIDC_JWKS_URL` and `depends_on` Keycloak healthy. One Identity per design.
+`OIDC_ISSUER`, `OIDC_AUDIENCE` (`<id>-web`, the audience of that client's tokens) and
+`OIDC_JWKS_URL`, and `depends_on` Keycloak healthy; a deployment sets its own issuer's values.
+One Identity per design.
 
 **Product tables and published views** (v3 contract §1). With the option on, every module that
 writes a database other than through an Event publisher's outbox gets its own SQL file,

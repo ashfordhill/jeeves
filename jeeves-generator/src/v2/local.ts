@@ -897,6 +897,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           ...service.environment,
           ...(identityBinding && {
             OIDC_ISSUER: `http://127.0.0.1:${composeVariable("LOCAL_IDENTITY_PORT")}/realms/${identityBinding.id}`,
+            OIDC_AUDIENCE: `${identityBinding.id}-web`,
             OIDC_JWKS_URL: `http://${identityBinding.service}:8080/realms/${identityBinding.id}/protocol/openid-connect/certs`,
           }),
         },

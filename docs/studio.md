@@ -1459,7 +1459,8 @@ table at `/modules/<favorites>/items`: PUT adds one, DELETE removes it, GET chec
 of the list gives 50 a page, newest first; adding asks its generated `eligible` hook, which
 answers 501 until written and reads the database of its items Data access. The
 Identity then runs as Keycloak, with one realm and one browser client, and the guarded processes
-verify tokens against it. When an asset lifecycle names an upload, that upload's `reserve`,
+verify tokens against it, for the audience their `OIDC_AUDIENCE` names (locally that client's).
+When an asset lifecycle names an upload, that upload's `reserve`,
 `complete` and `closed` hooks are the lifecycle's, so only its own hooks are left to write. In any tile, a stub connected to consume a queue
 runs a loop on it, and the asset lifecycle, Video HLS, event counter and Index writer run their
 workers with a generated `<lead>.hooks.ts` (the Index writer's holds the index's mapping, its

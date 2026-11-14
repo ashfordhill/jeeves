@@ -529,6 +529,38 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     ]);
   });
 
+  it("verifies each sign-in for the audience in OIDC_AUDIENCE, which Compose sets to the local client (QG11)", () => {
+    const bundle = assemble(signInStackDesign());
+    for (const [tile, guard, name] of [
+      ["watch-api", "viewer-check", "viewerCheck"],
+      ["upload-api", "creator-check", "creatorCheck"],
+    ] as const) {
+      const source = text(bundle, `src/processes/${tile}.ts`);
+      expect(source).toContain(
+        [
+          `  const ${name} = (() => {`,
+          `    const binding = config.templates["${guard}"];`,
+          "    // The audience its tokens carry is the deployment's; Compose sets the local client's.",
+          '    if (!process.env.OIDC_AUDIENCE) throw new Error("OIDC_AUDIENCE must name the audience of the sign-in tokens.");',
+          "    return createTileGuard({",
+          "      signIn: binding.signIn,",
+          "      verify: createPrincipalVerifier({",
+          '        issuer: process.env.OIDC_ISSUER ?? "",',
+          "        audience: process.env.OIDC_AUDIENCE,",
+          '        jwksUrl: process.env.OIDC_JWKS_URL ?? "",',
+          "",
+        ].join("\n"),
+      );
+      expect(source).not.toContain("-web");
+    }
+    // Locally the audience is the realm's browser client, whose tokens the guards took before.
+    const services = json(bundle, "compose.yaml").services;
+    for (const service of ["app-watch-api", "app-upload-api"])
+      expect(services[service].environment.OIDC_AUDIENCE).toBe("sign-in-web");
+    expect(services["app-video-lifecycle"].environment?.OIDC_AUDIENCE).toBeUndefined();
+    expect(text(bundle, "scripts/setup.mjs")).toContain(`clientId: \`\${identity.id}-web\`,`);
+  });
+
   it("gives route stubs the request signature with the option on, and changes nothing else", () => {
     const changed = stack.files
       .filter((file) => file.path.startsWith("src/modules/") && !file.path.endsWith(".hooks.ts"))

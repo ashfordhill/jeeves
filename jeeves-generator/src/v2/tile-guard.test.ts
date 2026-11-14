@@ -1,6 +1,10 @@
-import { stripTypeScriptTypes } from "node:module";
-import { posix } from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { generateKeyPairSync, sign } from "node:crypto";
+import { mkdtempSync, rmSync } from "node:fs";
+import { createRequire, stripTypeScriptTypes } from "node:module";
+import { tmpdir } from "node:os";
+import { join, posix } from "node:path";
+import { pathToFileURL } from "node:url";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import { signInStackDesign } from "../../../jeeves/packages/spec/src/fixtures/sign-in-stack.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { canonicalJson } from "../json.ts";
@@ -20,14 +24,72 @@ const emitted = (path: string) => {
 };
 const urls = new Map<string, string>();
 const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
+
+// The two packages an emitted process imports. Fastify is the Jeeves server's, which pins the
+// version the export pins; only `listen` changes: it readies the app without a socket and keeps
+// it, so `inject` reaches the real routes. jose 6.2.13 is the export's, not this workspace's: its
+// stand-in checks what the emitted verifier asks `jwtVerify` for (an RS256 signature by the test
+// key, `iss`, `aud`, `exp` and `sub`) and keeps each audience it was asked to accept.
+const issuer = "https://issuer.example/realms/sign-in";
+const keys = generateKeyPairSync("rsa", { modulusLength: 2048 });
+const part = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
+/** An RS256 token for audience `aud`, signed by the test key. */
+function token(aud: string) {
+  const exp = Math.floor(Date.now() / 1000) + 300;
+  const input = `${part({ alg: "RS256", typ: "JWT" })}.${part({ iss: issuer, aud, sub: "sub-1", preferred_username: "viewer", exp })}`;
+  return `${input}.${sign("RSA-SHA256", Buffer.from(input), keys.privateKey).toString("base64url")}`;
+}
+const serverRequire = createRequire(
+  new URL("../../../jeeves/apps/server/package.json", import.meta.url),
+);
+const packages = {
+  fastify:
+    dataUrl(`import fastify from ${JSON.stringify(pathToFileURL(serverRequire.resolve("fastify")).href)};
+export const apps = [];
+export default function Fastify(options) {
+  const app = fastify(options);
+  app.listen = async () => { await app.ready(); apps.push(app); return "http://injected"; };
+  return app;
+}`),
+  jose: dataUrl(`import { createPublicKey, verify } from "node:crypto";
+const key = createPublicKey(${JSON.stringify(String(keys.publicKey.export({ type: "spki", format: "pem" })))});
+const decode = (text) => JSON.parse(Buffer.from(text, "base64url").toString("utf8"));
+export const audiences = [];
+export const createRemoteJWKSet = () => async () => key;
+export async function jwtVerify(token, _keySet, options) {
+  audiences.push(options.audience);
+  const [head, body, signature] = token.split(".");
+  if (!options.algorithms.includes(decode(head).alg)) throw new Error("unexpected alg");
+  if (!verify("RSA-SHA256", Buffer.from(head + "." + body), key, Buffer.from(signature, "base64url")))
+    throw new Error("signature verification failed");
+  const payload = decode(body);
+  if (payload.iss !== options.issuer) throw new Error('unexpected "iss" claim value');
+  if (![payload.aud].flat().some((aud) => [options.audience].flat().includes(aud)))
+    throw new Error('unexpected "aud" claim value');
+  for (const claim of options.requiredClaims)
+    if (!(claim in payload)) throw new Error("missing required claim " + claim);
+  if (!(payload.exp > Date.now() / 1000)) throw new Error('"exp" claim timestamp check failed');
+  return { payload, protectedHeader: decode(head) };
+}`),
+};
+// A process's ready marker goes to a scratch directory, not /tmp.
+const markerDirectory = mkdtempSync(join(tmpdir(), "jeeves-guard-"));
+function compile(path: string): string {
+  return stripTypeScriptTypes(emitted(path))
+    .replace(
+      /from "(\.\.?\/[^"]+)"/g,
+      (_match, relative: string) => `from "${load(posix.join(posix.dirname(path), relative))}"`,
+    )
+    .replace(
+      /from "(fastify|jose)"/g,
+      (_match, name: keyof typeof packages) => `from "${packages[name]}"`,
+    )
+    .replace('"/tmp/application-ready"', JSON.stringify(join(markerDirectory, "ready")));
+}
 function load(path: string): string {
   const old = urls.get(path);
   if (old) return old;
-  const js = stripTypeScriptTypes(emitted(path)).replace(
-    /from "(\.\.?\/[^"]+)"/g,
-    (_match, relative: string) => `from "${load(posix.join(posix.dirname(path), relative))}"`,
-  );
-  const url = dataUrl(js);
+  const url = dataUrl(compile(path));
   urls.set(path, url);
   return url;
 }
@@ -36,6 +98,9 @@ const { stubRoutes } = await import(load("src/runtime/tile-http.ts"));
 const { multipartUploadsHooks } = await import(
   load("src/modules/upload-api/multipart-uploads.hooks.ts")
 );
+// The apps the Fastify stand-in has started, and the audiences jose's was asked to accept.
+const { apps } = await import(packages.fastify);
+const { audiences } = await import(packages.jose);
 
 type Handler = (request: unknown, reply?: unknown) => Promise<unknown>;
 /** Routes that record what is mounted, by method and URL. */
@@ -244,5 +309,98 @@ describe("emitted multipart hooks beside a sign-in and an asset lifecycle (V3-06
       "Not implemented: validate for Multipart uploads",
     );
     expect(() => hooks.job({}, "e")).toThrow("Not implemented: job for Multipart uploads");
+  });
+});
+
+describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () => {
+  type App = {
+    inject(request: unknown): Promise<{ statusCode: number; json(): unknown }>;
+  };
+  const names = ["OIDC_ISSUER", "OIDC_AUDIENCE", "OIDC_JWKS_URL"] as const;
+  const saved = Object.fromEntries(names.map((name) => [name, process.env[name]]));
+  const signals = ["SIGTERM", "SIGINT"] as const;
+  const listening = Object.fromEntries(signals.map((name) => [name, process.listeners(name)]));
+  const exitCode = process.exitCode;
+  afterEach(() => {
+    for (const name of names)
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    for (const name of signals)
+      for (const listener of process.listeners(name))
+        if (!listening[name]?.includes(listener)) process.removeListener(name, listener);
+    process.exitCode = exitCode;
+    vi.restoreAllMocks();
+  });
+  afterAll(() => rmSync(markerDirectory, { recursive: true, force: true }));
+
+  let runs = 0;
+  /** Starts the emitted Watch API process (an Optional sign-in) with `audience` as its
+   * OIDC_AUDIENCE, keeping its console lines; the app is there once it has started. */
+  async function run(audience: string | undefined) {
+    process.env.OIDC_ISSUER = issuer;
+    process.env.OIDC_JWKS_URL = `${issuer}/protocol/openid-connect/certs`;
+    if (audience === undefined) delete process.env.OIDC_AUDIENCE;
+    else process.env.OIDC_AUDIENCE = audience;
+    const lines: unknown[] = [];
+    const keep = (line: string) => lines.push(line.startsWith("{") ? JSON.parse(line) : line);
+    vi.spyOn(console, "log").mockImplementation(keep);
+    vi.spyOn(console, "error").mockImplementation(keep);
+    const before = apps.length;
+    process.exitCode = undefined;
+    // A new module each run: the process reads its environment as it starts.
+    runs += 1;
+    await import(dataUrl(`${compile("src/processes/watch-api.ts")}\n// run ${runs}\n`));
+    return { lines, app: (apps.length > before ? apps.at(-1) : undefined) as App | undefined };
+  }
+  /** Stops the newest process as SIGTERM does, once its drains have run. */
+  async function stop() {
+    const listener = process.listeners("SIGTERM").at(-1);
+    if (!listener || listening.SIGTERM?.includes(listener)) throw new Error("No process runs");
+    process.removeListener("SIGTERM", listener);
+    listener("SIGTERM");
+    await vi.waitFor(() => expect(process.exitCode).toBe(0));
+  }
+  const me = async (app: App | undefined, bearer: string) => {
+    if (!app) throw new Error("The process did not start");
+    const response = await app.inject({
+      method: "GET",
+      url: "/modules/viewer-check/me",
+      headers: { authorization: `Bearer ${bearer}` },
+    });
+    return [response.statusCode, response.json()];
+  };
+  const signedIn = [200, { signedIn: true, subject: "sub-1", username: "viewer" }];
+  const refused = [401, { error: "SIGN_IN_REQUIRED", message: "Sign in to continue." }];
+
+  it("accepts a token for the audience OIDC_AUDIENCE names and refuses one for another", async () => {
+    audiences.length = 0;
+    const deployed = await run("api://example");
+    expect(deployed.lines).toContain("Application ready");
+    expect(await me(deployed.app, token("api://example"))).toEqual(signedIn);
+    expect(await me(deployed.app, token("sign-in-web"))).toEqual(refused);
+    await stop();
+    // Compose's local value, the browser client's: its tokens pass as before, the other is refused.
+    const local = await run("sign-in-web");
+    expect(await me(local.app, token("sign-in-web"))).toEqual(signedIn);
+    expect(await me(local.app, token("api://example"))).toEqual(refused);
+    await stop();
+    expect(audiences).toEqual(["api://example", "api://example", "sign-in-web", "sign-in-web"]);
+  });
+
+  it("fails startup naming OIDC_AUDIENCE when it is missing or empty", async () => {
+    for (const audience of [undefined, ""]) {
+      const { lines, app } = await run(audience);
+      expect(lines).toEqual([
+        {
+          level: "error",
+          event: "startup-failed",
+          error: "Error: OIDC_AUDIENCE must name the audience of the sign-in tokens.",
+        },
+        "Application startup failed",
+      ]);
+      expect(process.exitCode).toBe(1);
+      // It stopped before its HTTP service: no app was started.
+      expect(app === undefined).toBe(true);
+    }
   });
 });

@@ -14468,3 +14468,115 @@ batch-2 order (QG03, QG04, QG06–QG10, QG18, QG20, then the QGR2 review) after 
 
 **For the next unit.** QG11. After regeneration, QRWTY's setup runs with a managed PostgreSQL
 admin (CREATEDB CREATEROLE), and copies started together run one at a time.
+
+## 2026-11-14 — QG11: The sign-in audience comes from the environment
+
+**What changed.**
+- `jeeves-generator/src/v2/http-wiring.ts`, the Auth guard's setup (`verifiedIdentity`): the
+  verifier's line is `audience: process.env.OIDC_AUDIENCE,`, after
+  `if (!process.env.OIDC_AUDIENCE) throw new Error("OIDC_AUDIENCE must name the audience of the
+  sign-in tokens.");` and a one-line comment. The setup runs inside `runProcess`'s start, so a
+  missing or empty value is `startup-failed` with that message, before the HTTP service. Issuer,
+  JWKS URL, RS256, the 3 s key-set timeout and the `exp`/`sub` checks are unchanged, and so are
+  the process's compiled `config` (its `identity` stays) and `src/runtime/identity.ts`.
+- `jeeves-generator/src/v2/local.ts`: each guarded process's Compose environment gains
+  `OIDC_AUDIENCE: <identity id>-web` beside `OIDC_ISSUER`, the realm's browser client, whose
+  tokens carry that audience (Keycloak's mapper in `setup.mjs`). So local tokens and answers are
+  unchanged.
+- Tests, 3 new:
+  - `http-wiring.test.ts`: on the sign-in stack, both guarded processes (Optional and Required)
+    emit the check and the `audience: process.env.OIDC_AUDIENCE,` line, with no `-web` left;
+    Compose gives `app-watch-api` and `app-upload-api` `OIDC_AUDIENCE: "sign-in-web"` and the
+    worker none; `setup.mjs` still names the client `${identity.id}-web`.
+  - `tile-guard.test.ts`, 2 tests that run the whole emitted `src/processes/watch-api.ts` (its
+    relative imports resolved to the other emitted files) on real Fastify 5.12.7 from the Jeeves
+    server, `listen` replaced by `ready` (as `tile-processes.test.ts` does), with RS256 tokens
+    signed by a key made in the test:
+    - with `OIDC_AUDIENCE=api://example` a token for `api://example` gets `200 {signedIn: true,
+      …}` from `GET /modules/viewer-check/me` and one for `sign-in-web` gets 401
+      `SIGN_IN_REQUIRED`; with `sign-in-web` (Compose's value) the reverse. The verifier asked
+      `jwtVerify` for exactly those audiences.
+    - unset and empty: the lines are `startup-failed` with `Error: OIDC_AUDIENCE must name …`
+      and `Application startup failed`, exit code 1, and no app started.
+  - The file's loader gained the two package stand-ins and sends the ready marker to a temp
+    directory. Its older tests are unchanged.
+- Docs: `jeeves-generator/README.md` (the sign-in bullet; the Keycloak paragraph's guarded
+  process variables), `jeeves/CATALOG.md` Sign-in, `docs/studio.md` (the sign-in paragraph).
+
+**Checks.** All on the final tree.
+- Before any change, at `d36d570`: `pnpm check` exit 0, 115 files / 923 tests.
+- `pnpm check` exit 0: 115 files / 926 tests. Biome shows only the older 1 info.
+- `pnpm test:e2e`: 74 passed. Web build: exit 0.
+- New tests: 3. On HEAD's templates (a scratch repository copy with the two new test files,
+  since deleted) all 3 fail at their first assertion; the 14 older tests in those files pass.
+- Pins: `processes-off.test.ts` passed without `pins:update`; no pinned path changed. The brief's
+  `grep -rl -- '-web'` in the three pinned exports finds only `scripts/setup.mjs` and
+  `pnpm-lock.yaml`: no pinned export builds a tile-level guard's verifier, and none sets an
+  `OIDC_` variable (Runnable processes are off there).
+- Docker phase, after the offline checks:
+  - `pnpm test:generated --suite=identity`: 1 file / 1 test passed (B07, 130 s): real Keycloak
+    PKCE tokens still pass both guards with Compose's `OIDC_AUDIENCE`.
+  - `--suite=media`: 1 file / 1 test passed (B08, 159 s).
+  - `--suite=faults`, run 1: 4 passed, 1 failed. B09 media's case 3 failed its precondition
+    (`inHandAtOutage` empty: FFmpeg's 360p encode seen 0.6 s before the 724 ms broker stop, none
+    after). That is the store-outage review's open item 6. Run 2: the same, 4/5.
+  - A control on HEAD (`d36d570`, a scratch clone with its own offline install, since deleted):
+    5/5 (477 s). Run 3 on this tree: 5/5 (507 s).
+  - QG11 can't reach that precondition. In the media stack the export differs from HEAD's only in
+    `src/processes/account-api.ts`, `upload-api.ts`, `watch-api.ts`, `compose.yaml` and the
+    report; the Transcoder's process and every runtime file are byte-identical. Case 3's sign-in,
+    upload and encode passed in every run.
+  - The Docker inventory after the phase equals the one before, apart from another repository's
+    `qrwtyb-local` stack, which a concurrent run started and rebuilt meanwhile (its containers,
+    network, volume and 12 `qrwtyb/*:local` tags with new IDs; I touched none). No `gs-`
+    resource is left, and my five runs' `test-results/generated/` folders are removed.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths: in `probe`, `src/processes/front.ts`, `compose.yaml`, `.jeeves/manifest.json`
+    and `.jeeves/report.json`; in `r83`, `src/processes/account-api.ts`, `billing-api.ts`,
+    `link-api.ts`, `compose.yaml` and the same two. Each guarded process changes by the two new
+    lines and the audience line; each `compose.yaml` only by `OIDC_AUDIENCE: "identity-web"` on
+    each guarded service.
+  - The report differs only in the registry's source hashes and sizes (`http-wiring.ts`
+    44784 → 45002 bytes, `local.ts` 57629 → 57685; owners' `sourceSha256` `d12dc6e0…8f44` →
+    `18dbf24d…931b` and `3e6ae0ee…2ab0` → `c4d12aff…d927`). In the manifest only the changed
+    files' rows and that inventory move.
+  - Re-exported on the final tree, both equal the first after-exports. In each, the offline
+    frozen install and `pnpm build` (`tsc`) both exit 0. The scratch exports are deleted.
+- The unit names no Docker proof, and nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- QG11 lists QG06 under Depends (convention only), and QG06 hasn't run (batch 2). QG11 needed
+  none of its code: it reads one more variable the way the guard already read `OIDC_ISSUER` and
+  `OIDC_JWKS_URL`. So it ran before QG06; QG06 may later fold this read into its convention.
+- The check that names `OIDC_AUDIENCE` is a line in the guard's setup, in the process file. A
+  helper in `src/runtime/identity.ts` would have changed a file outside the Emitted output list.
+- jose 6.2.13 is an export dependency and isn't installed in the Jeeves workspace, and unit tests
+  have no network. The offline tests use a stand-in for jose's `createRemoteJWKSet` and
+  `jwtVerify` that checks the RS256 signature, `iss`, `aud`, `exp` and `sub` with
+  `node:crypto` and records the audience it is asked for. Real jose against Keycloak is the
+  identity suite's B07.
+- "Refused without" is tested as refused under another `OIDC_AUDIENCE` (Compose's
+  `sign-in-web`), since without the variable the process does not start (the third test).
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03).
+- A deployment now sets `OIDC_AUDIENCE` beside `OIDC_ISSUER` and `OIDC_JWKS_URL`. It takes one
+  audience; a list of audiences (which `createPrincipalVerifier` accepts) would need a parsing
+  rule, which nothing asks for yet.
+- An unset `OIDC_ISSUER` or `OIDC_JWKS_URL` still fails startup with the verifier's generic
+  errors (`Invalid verified identity binding`, `Invalid URL`), which name neither variable.
+- B09 media's open item 6 failed twice in a row here, while another repository's `qrwtyb-local`
+  stack was being built and started. A harness fix is still a later unit's.
+- A mistake, repaired: my first HEAD control (and probably the HEAD-failure copy) linked this
+  checkout's `node_modules`, and pnpm's pre-run install wrote through the links. Packages were
+  unchanged ("Already up to date"), but the bin shims, `.pnpm-workspace-state-v1.json`,
+  `.modules.yaml` and `.pnpm/lock.yaml` were rewritten from the clone. `pnpm install
+  --frozen-lockfile --offline` in this checkout ("Already up to date") rewrote them; no shim or
+  state file names a scratch path now, and `pnpm check` passed after it. Scratch copies need their
+  own install.
+- No edge file changed, so the F22 note is still for a later unit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the two script
+  modes) were not touched or staged.
+
+**For the next unit.** QGR1 (review batch 1). After regeneration, QRWTY's managed issuer works by
+setting `OIDC_AUDIENCE` to its tokens' audience; local runs need no change.

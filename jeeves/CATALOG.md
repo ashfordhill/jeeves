@@ -337,10 +337,12 @@ slots and generation: `studioComponentDefinitions` in
   (`thirdParty`) and `requires` reasons.
 - **Sign-in:** an Auth guard connected to an Identity leads `verified-identity@0.1.0` (Template ·
   Sign-in), with **Sign-in** Required or Optional (`signIn`, absent = Required); connected to an
-  External API, or in a Worker, it stays a stub. A tile holds one. Multipart uploads needs its
-  tile's guard set to Required: it binds the guard's Identity and is a Stub ("Needs an Auth guard
-  set to Required in Upload API.") until then; the guard is no longer one of its parts. A guard a
-  tile-level upload template binds (frozen v2, the presets) stays that template's.
+  External API, or in a Worker, it stays a stub. A tile holds one. Its process accepts tokens for
+  the audience in `OIDC_AUDIENCE` (locally the Identity's browser client, `<identity>-web`) and
+  doesn't start without it. Multipart uploads needs its tile's guard set to Required: it binds the
+  guard's Identity and is a Stub ("Needs an Auth guard set to Required in Upload API.") until
+  then; the guard is no longer one of its parts. A guard a tile-level upload template binds
+  (frozen v2, the presets) stays that template's.
 - **Favorites:** generic, for any product's items (videos, listings). Connected to its own
   database (`state`) beside its tile's Auth guard set to Required, it leads `favorites@0.1.0`
   (Template · Favorites); its optional **items** are a Data access in the same tile, whose database
