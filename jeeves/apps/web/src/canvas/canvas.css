@@ -23,9 +23,6 @@
 
 :root[data-theme="dark"] :is(.board, .board-overlay) {
   --board-scrim: rgba(0, 0, 0, 0.45);
-  /* The dark theme's blue is too close to its line colour for a selected tile's lines to stand
-     out; the board selects in a more saturated blue. */
-  --board-select: #3d9cf0;
   /* The removal's confirm button takes the Remove item's solid deep red and its light ink, as
      the right-click menu does. */
   --board-remove-active: var(--off-bg);
@@ -1286,13 +1283,13 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--yellow);
-  color: var(--on-yellow);
+  background: var(--warn);
+  color: var(--on-warn);
   box-shadow: 0 0 0 2px var(--board-tile);
 }
 
-/* The inspector's list of warnings: the yellow of the mark on the yellow family's solid --sfam
-   (the list is `data-family="data"`), the message in plain words. */
+/* The inspector's list of warnings: the orange of the mark on the orange family's solid --sfam
+   (the list is `data-family="worker"`), the message in plain words. */
 .lane-warnings {
   list-style: none;
   margin: 8px 0;
@@ -1307,7 +1304,7 @@
   align-items: flex-start;
   padding: 6px 8px;
   border-radius: 6px;
-  border: 1px solid var(--yellow);
+  border: 1px solid var(--warn);
   background: var(--sfam);
   color: var(--ink);
 }

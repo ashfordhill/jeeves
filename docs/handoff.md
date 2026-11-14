@@ -13508,3 +13508,47 @@ under 400px on either side: no menu near this width fits beside it there. The Go
 narrower menu, a different measure of "beside the tile", or another rule; that's the owner's.
 Owner dirty paths untouched and unstaged.
 **For the next unit.** UF02 is not done. Revise its values or Goal, then rerun UF02 before UF03.
+
+## 2026-11-13 — UF03: Dark blue, the chat bubble and an orange warning mark
+
+**What changed.**
+- `tokens.css`: dark `--blue` `#7eb6e0` → `#3d9cf0`. New `--warn` (`#f28f3d` light, `#f5a05e` dark)
+  and `--on-warn` (`#071c28`) in both theme blocks, and their light values on the export's
+  capture surface (the mark is drawn in a PNG export).
+- `design-view.css`: `.chat-user` is `--chrome` with a `--chrome` border and `--chrome-ink` text,
+  as the preview's `.msg-u`; `.chat-file` sets `--ink` (below).
+- The warning mark is orange wherever it is drawn: `canvas.css` `.lane-warning-mark` takes
+  `--warn` / `--on-warn` (tiles, container headers and action tiles, on the canvas and in exports);
+  `.lane-warnings li`'s edge is `--warn`, and `Warnings.tsx` puts the list on
+  `data-family="worker"` (orange `--sfam`) in the tile, action and system inspectors; comment says so.
+- `canvas.css`: the dark `--board-select: #3d9cf0` override and its comment are gone (below).
+- `docs/studio.md`: the two warning sentences say orange.
+
+**Checks.** Before any change: `pnpm check` exit 0, 115 files / 910 tests. After: `pnpm check`
+exit 0, 115 / 910 (Biome's one info is older, in a template); `pnpm test:e2e` 74 passed (4.6 min);
+`pnpm --filter @jeeves/web build` exit 0. Mouse (`uf03-check.spec.ts`, then deleted): 2 passed,
+1440×900 and 1280×800, no page error. By mouse on a blank design: Consume → Microservice → Message
+channel (no consumer) and an unlinked Produce; a scripted chat turn. Measured light / dark: both
+marks `rgb(242, 143, 61)` / `rgb(245, 160, 94)` with `rgb(7, 28, 40)` ink; the inspector's list
+`data-family="worker"`, edge the mark's colour, fill `rgb(253, 228, 207)` / `rgb(106, 59, 23)`;
+the bubble `rgb(12, 51, 73)` / `rgb(7, 18, 25)` with `rgb(243, 251, 254)` text; `--blue` `#1a8fd4` /
+`#3d9cf0` and the selected tile's ring `rgb(26, 143, 212)` / `rgb(61, 156, 240)`; light and dark
+PNG exports with the same SHA-256. Control: without the two capture-surface lines the dark export's
+hash differed; restored. Six screenshots in `plans/ui-followups/evidence/uf03/`, matching the
+preview's `chat-*.png` bubble. Its projects deleted; `jeeves_e2e` holds only "E2E Every kind" and
+"TinyURL · studio study".
+**Differences from the plan.**
+- `.chat-file` sets `color: var(--ink)`: a file chip in the bubble keeps its own `--cream` face but
+  inherited its text colour, so it would have been `--chrome-ink` on `--cream`. No text in the
+  bubble set its own colour from `--ink` (`.chat-text` inherits).
+- With dark `--blue` now `#3d9cf0`, `canvas.css`'s dark `--board-select: #3d9cf0` (a literal
+  outside `tokens.css`) was the same value, and its comment (the dark blue is too close to the
+  line colour) no longer held; the board selects in `--blue`, unchanged on screen.
+- The step's grep found no other warning in yellow; the board's `.is-marked` ring is red
+  (`--board-remove`), so unchanged.
+**Noticed.** Dark `--select-ring` is still the old blue at 65% (`rgba(126, 182, 224, 0.65)`), the
+outline of an open module `+`, and dark `--blue-deep` (`#a8d0ee`) its border: not named by this
+unit, left. A module's Refused status keeps its yellow edge (a refusal, not a warning). UF03 ran
+before UF02 on the coordinator's order; UF02 is still blocked. Owner dirty paths untouched and
+unstaged.
+**For the next unit.** UF04 of [UI follow-ups](plans/ui-followups/units.md).

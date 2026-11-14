@@ -675,7 +675,7 @@ saved and never sent to chat.
   a button that selects it.
 - The user's line to an action: the action, and the user and the action as buttons.
 
-A tile or action with a warning lists it, in yellow, below its kind.
+A tile or action with a warning lists it, in orange, below its kind.
 
 **Names and IDs.** A tile's or module's ID follows its name while it still has the form it was
 created with (`worker-service`, `worker-service-2`; `<tile>-data-access`) or its current name's
@@ -722,7 +722,7 @@ are not "Fix the lanes first" problems (those are lane errors). The rules are:
   represented. Any outgoing relationship clears this narrow check; it does not establish that
   a business side effect is implemented. Names, labels and modules cannot establish one.
 
-On the canvas, a tile or action with a warning has a small yellow mark in its top-right corner;
+On the canvas, a tile or action with a warning has a small orange mark in its top-right corner;
 the pointer on it shows the message. Its inspector lists its warnings, and the system's inspector
 (click empty paper) lists them all. The mark goes as soon as the design is fixed, or with Undo.
 The blueprint reports warnings as findings (`DESIGN_WARNING`, severity `warning`), and chat sees

@@ -50,13 +50,15 @@
   gap: 8px;
 }
 
+/* The person's message, as the preview's `.msg-u`: light type on the bars' --chrome. */
 .chat-user {
   align-self: flex-end;
   max-width: 88%;
   padding: 8px 10px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--chrome);
   border-radius: 12px 12px 4px 12px;
-  background: var(--banner);
+  background: var(--chrome);
+  color: var(--chrome-ink);
   box-shadow: var(--chip-shadow);
 }
 
@@ -143,6 +145,7 @@
   border: 2px solid var(--row-line);
   border-radius: 8px;
   background: var(--cream);
+  color: var(--ink);
   font-size: 12px;
   font-weight: 700;
 }
