@@ -14355,3 +14355,12 @@ within the statement timeout plus 500 ms when PostgreSQL stalls, and drains don'
 
 **For the next unit.** QG12. After regeneration, a QRWTY client can retry the generated
 runtime's own 503s after one second with no product code; a product 503 sets its own value.
+
+## 2026-11-14 — Plan: QRWTY gaps batch 2 (owner decisions)
+
+Planning only. The owner answered decisions 1, 2, 3, 6 and 7 of the QRWTY gaps plan, all yes:
+QG03 (application-owned dependencies), QG06 (endpoints from the environment), QG04 (a stub cache
+down at startup no longer stops the process), QG18 (a client-side query timeout counts as
+unreachable) and QG20 (configured HTTP client for External API and Identity tiles). The plan gains a
+batch-2 order (QG03, QG04, QG06–QG10, QG18, QG20, then the QGR2 review) after batch 1 finishes.
+**For the next unit.** QG12 (batch 1).

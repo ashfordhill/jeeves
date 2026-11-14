@@ -28,6 +28,22 @@ Run in this order, then the review unit:
 QG03, QG04, QG06 (and so QG07–QG10), QG18 and QG20 wait for the owner's decisions listed below.
 QG13–QG16 are deferred.
 
+## Batch 2 (owner decisions, 2026-11-14 morning)
+
+The owner answered the plan's decisions for QRWTY's coordinator:
+
+- **Decision 1 (QG03): yes.** The application owns its package dependencies; Jeeves keeps its own pins.
+- **Decision 2 (QG06): yes.** Store and tile endpoints come from the environment (as amended by R3).
+- **Decision 3 (QG04): yes.** A stub cache that is down at startup no longer stops the process.
+- **Decision 6 (QG18): yes.** A client-side query timeout counts as unreachable.
+- **Decision 7 (QG20): yes.** External API and Identity tiles give stubs a configured HTTP client.
+
+Run after batch 1's remaining units (QG12, QG11) and QGR1, in this order: QG03, QG04, QG06, QG07,
+QG08, QG09, QG10, QG18, QG20, then **QGR2 — Review batch 2**, written like QGR1 (Fable, xhigh; its
+record is `docs/plans/qrwty-gaps/review-batch2.md`; commit `QGR2: review QRWTY gap batch 2`).
+QG13–QG16 stay deferred.
+
+
 Notes from the Q03 review that Q03b left for this copy: record F22 (the edge rewrites `Host` and
 passes the client's `X-Forwarded-For`) as a Jeeves limit in `docs/template-gaps.md` when a unit
 touches the edge; cite GS09's external-API gap, SO03's open item 3 (stalled database) and PF review
