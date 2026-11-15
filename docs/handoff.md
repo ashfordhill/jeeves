@@ -17492,3 +17492,68 @@ after these three.
 
 **For the next unit.** QGR3, the batch 3 review. Batch 3's units are all committed: QG30, QG31,
 QG29, QG28, QG32, QG33 and QG34.
+
+## 2026-11-15 — QGR3: Review QRWTY gap batch 3
+
+**What changed.**
+- [docs/plans/qrwty-gaps/review-batch3.md](plans/qrwty-gaps/review-batch3.md): the review of QG30,
+  QG31, QG29, QG28, QG32, QG33 and QG34 from `fa78baf` (`git diff e1b4130..HEAD`), written like QGR1
+  and QGR2: verdict, checks, each unit against its brief, the interactions in the shared files, the
+  two owner-decided readings (QG28, QG29), eleven findings (none a defect; two limits, the rest notes),
+  five proposed units (QG35 ready; QG36–QG39 for the owner), the owner's answers to B1–B4, what a
+  regeneration of arm A's export would change, and notes for the QL plan.
+- No template, generator source, test, pin or other doc changed. **No defect was found, so nothing is
+  fixed.**
+
+**How it was checked.** The owner's lighter profile (2026-11-15, relayed by the coordinator).
+- `pnpm check` on `fa78baf` (this tree's code; the review adds docs only): exit 0, 117 files / 1027
+  tests, Biome only the older 1 info. Note for the next agent: a fresh shell's `node` is 18.19.1
+  (`/usr/bin/node`); Vitest then fails at startup (`styleText` missing from `node:util`). The
+  repository needs Node 24 (`.nvmrc` 24.21.0, installed under nvm); put
+  `~/.nvm/versions/node/v24.21.0/bin` first on `PATH`.
+- Web build: exit 0.
+- Regeneration proof across the whole batch, the QGR3 brief's reading check: a scratch clone at
+  `e1b4130` with its own offline install exported the probe (`a3b6204f…0505`, verified), r83
+  (`4c16e0ca…5d50`) and the Pub/Sub fixture; this tree exported the same. Each fixture's changed
+  paths are exactly the union of the seven briefs' Emitted output lists (the review's Checks table
+  lists them); `compose.yaml` differs only by `setup-migrate`'s `JEEVES_MIGRATE_TLS`; the report's
+  `processes` is equal for the probe and r83 and differs for the Pub/Sub fixture only in Tally's loop
+  and store rows; required gaps unchanged (3, 11, 2); before, exactly `Dockerfile` and
+  `service-resources.ts` ended with a blank line, after no file does. The clone and the exports are
+  deleted; the checkout's `node_modules` was not touched.
+- Pins: `processes-off.json`'s changed entries are exactly the union of QG30's, QG29's, QG32's and
+  QG34's pin lists.
+- Skipped by the packet: e2e, `test:generated --suite=all`, the HEAD measurement of new tests. No
+  Docker proof: no claim was doubted (each unit with a behavioural claim ran its own; QG28's fan-out
+  is Pub/Sub's rule, which the suite's capture subscription already exercises). No `qgr3-` resource
+  was created and no Docker command ran.
+- Read in qrwty only the A evidence the packet allows: `q04/a-found-gaps.md`, `q05/checks.md`
+  §9–10, `q06/a-found-gaps.md`. Nothing of the QL plan or of arm B was read.
+
+**Differences from the plan.**
+- The QGR3 brief in `units.md` names e2e, build and `--suite=all`; the packet's lighter profile
+  replaced them with `pnpm check`, the build and at most one Docker proof on doubt. Recorded above.
+- No Known limits row was added: no unit was declined (B1 was yes).
+
+**Noticed.**
+- The unit is QRWTY-driven (batch 3's review, run `qrwty-r1-20261114`, arm A).
+- **Both owner-decided readings hold.** QG28: one subscription `<topic>--<tile>--<module>` per
+  loop stub, in either mode, tile copies sharing. QG29: QG10's setting under `JEEVES_MIGRATE_`,
+  the only deterministic reading since the migration reaches one cluster for every database,
+  provider databases included.
+- **Limits, not defects:** the configuration pass reads no credential file (a bad
+  `JEEVES_SECRET_<NAME>_FILE` fails alone after earlier probes; proposed QG35, ready), and templates'
+  own clients still read as built (QG31's row; QG36 for the owner).
+- **Arm A's regeneration** renames `click-events--analytics-worker` to
+  `click-events--analytics-worker--analytics-worker-click-aggregator` (and its `.failed`), needs
+  `JEEVES_MIGRATE_TLS` on the migration job, and lets Q04's preflight checks and secret wrapper go.
+  The review's last sections list everything.
+- **Arm A's Q06 recorded AG-10 to AG-12** (a stub's own configuration, versioned product SQL,
+  per-table privileges), outside batch 3; proposed as QG37–QG39 for the owner.
+- B2–B4 have no recorded owner answer; QGB3's "no unit now" recommendations were applied (QG33's
+  rows) and they stay open.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** The QL plan can start; batch 3 is complete. QG35 is ready whenever the owner
+wants it; QG36–QG39 wait for the owner.
