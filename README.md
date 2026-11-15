@@ -49,8 +49,8 @@ Unfortunately it kept leading to more units of work getting added and agents cha
 I cut things off to get the data I was looking for which was:
 
 1. Build qrwty. 
-  - How good is it from an enterprise software design standpoint?
-      - Not expecting perfection (even though such a thing doesn't exist in the software world anyway). But anything decent can be built upon and improved. Lock down good patterns into reuseable templates that **source from** a human-readable diagram source of truth.
+    - How good is it from an enterprise software design standpoint?
+        - Not expecting perfection (even though such a thing doesn't exist in the software world anyway). But anything decent can be built upon and improved. Lock down good patterns into reuseable templates that **source from** a human-readable diagram source of truth.
 2. Build qrwty without Jeeves. Is it inferior? Spaghetti?
    - In the future I might pause this type of investigation just because of the amount of resources (tokens, time) it can consume. I think it is safe to assume that diagram-based prompting will probably offer better results than just text-based prompting alone. This is evident even when working with human engineers.
 3. Calculate lines of code differences to see where we're at for deterministic vs non-deterministic code usage
