@@ -584,7 +584,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         "  const clients = {",
         '    "events": await queuePublisher(scope, probe, { queue: "events", mode: "work-queue" }, brokerState(config.tile, failure, "broker publish events")),',
         '    "hot": await cacheClient(scope, probe, { cache: "hot" }),',
-        '    "identity": identityTarget(),',
+        '    "identity": identityTarget({ identity: "identity" }),',
         '    "provider": externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
         '    "store": await databaseClient(scope, probe, { tile: config.tile, resource: "store" }),',
         "  };",
@@ -598,38 +598,42 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     );
     expect(front).not.toContain("unavailable");
     // Neither has a probe: each is built before the sign-in and the service, and reads its URL then.
-    expect(front.indexOf("identityTarget()")).toBeLessThan(front.indexOf("createTileGuard({"));
+    expect(front.indexOf("identityTarget(")).toBeLessThan(front.indexOf("createTileGuard({"));
     const clients = text(probe, "src/runtime/module-clients.ts");
     for (const name of ["httpTarget", "externalTarget", "identityTarget"])
       expect(clients).toContain(`export function ${name}(`);
     expect(clients).not.toContain("// @");
   });
 
-  it("sets the issuer for a stub tile that calls the Identity, and no External API URL in Compose", () => {
+  it("sets the Identity's address inside the network for a stub tile that calls it, and no External API URL in Compose", () => {
     type Service = { environment?: Record<string, string>; depends_on?: Record<string, unknown> };
     const composed = (bundle: Bundle) =>
       json(bundle, "compose.yaml").services as Record<string, Service>;
-    // Front's sign-in already reads OIDC_ISSUER; nothing reads JEEVES_EXTERNAL_PROVIDER_URL from
-    // compose.yaml: it is the application's (compose.override.yaml), so startup fails until set.
+    // Front's sign-in reads OIDC_ISSUER, the browser's issuer, which a container can't reach
+    // (QG20's proof); its stub's client reads Keycloak's address inside the network (QGR2). Nothing
+    // reads JEEVES_EXTERNAL_PROVIDER_URL from compose.yaml: it is the application's
+    // (compose.override.yaml), so startup fails until set.
     const front = composed(probe)["app-front"]?.environment ?? {};
     expect(front.OIDC_ISSUER).toMatch(
       /^http:\/\/127\.0\.0\.1:\$\{LOCAL_IDENTITY_PORT:\?Set LOCAL_IDENTITY_PORT\}\/realms\/identity$/,
     );
+    expect(front.JEEVES_IDENTITY_IDENTITY_URL).toBe("http://identity-identity:8080");
     expect(Object.keys(front).filter((name) => name.startsWith("JEEVES_EXTERNAL_"))).toEqual([]);
-    // r83's Session API has no sign-in; its stubs call the Identity, so it reads OIDC_ISSUER only,
-    // at the sign-ins' value, and waits for no Identity service.
+    // r83's Session API has no sign-in; its stubs call the Identity, so it reads the Identity's
+    // address only (no OIDC_* at all) and waits for no Identity service.
     const r83 = fixture("qrwty-r83.json");
     const services = composed(r83);
     const session = services["app-session-api"] ?? {};
     expect(
       Object.keys(session.environment ?? {}).filter((name) => name.startsWith("OIDC_")),
-    ).toEqual(["OIDC_ISSUER"]);
-    expect(session.environment?.OIDC_ISSUER).toBe(
-      services["app-account-api"]?.environment?.OIDC_ISSUER,
+    ).toEqual([]);
+    expect(session.environment?.JEEVES_IDENTITY_IDENTITY_URL).toBe("http://identity-identity:8080");
+    expect(services["app-account-api"]?.environment).not.toHaveProperty(
+      "JEEVES_IDENTITY_IDENTITY_URL",
     );
     expect(Object.keys(session.depends_on ?? {})).toEqual(["local-postgres"]);
     expect(text(r83, "src/processes/session-api.ts")).toContain(
-      '    "identity": identityTarget(),',
+      '    "identity": identityTarget({ identity: "identity" }),',
     );
     for (const [process, variable] of [
       ["billing-api", "JEEVES_EXTERNAL_STRIPE_API_URL"],
@@ -642,12 +646,12 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
           name.startsWith("JEEVES_EXTERNAL_"),
         ),
       ).toEqual([]);
-    // The report lists the issuer as Compose sets it.
+    // The report lists the Identity's variable as Compose sets it, and no OIDC_* for Session API.
     const session83 = processes(r83).tiles.find((row) => row.tile === "session-api") as unknown as {
       environment: string[];
     };
-    expect(session83.environment).toContain("OIDC_ISSUER");
-    expect(session83.environment).not.toContain("OIDC_AUDIENCE");
+    expect(session83.environment).toContain("JEEVES_IDENTITY_IDENTITY_URL");
+    expect(session83.environment.filter((name) => name.startsWith("OIDC_"))).toEqual([]);
   });
 
   it("reports each client's base URL in the stores rows, and the README names the URLs to set", () => {
@@ -663,7 +667,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         access: "request",
         modules: ["front-probe"],
         provisioned:
-          "HTTP client at OIDC_ISSUER, the issuer of Keycloak identity-identity (realm identity); a failed call waits as an unreachable store's does",
+          "HTTP client at JEEVES_IDENTITY_IDENTITY_URL, the Identity's base URL as the process reaches it (locally Keycloak identity-identity inside the network, realm identity); a failed call waits as an unreachable store's does",
       },
       {
         store: "provider",
@@ -679,15 +683,19 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     for (const phrase of [
       "Each External API its stubs call is at `JEEVES_EXTERNAL_<ID>_URL`, by the same URL rule, which `compose.yaml` doesn't set",
       "until it is set the process fails startup with `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL`. Here `app-front` reads `JEEVES_EXTERNAL_PROVIDER_URL`.",
-      "A process whose stubs call the Identity reads its `OIDC_ISSUER` as their base URL",
-      // Locally that is the browser's issuer, which a container can't reach (QG20's proof).
-      "which a container can't reach, so locally such a call fails as an unreachable service does",
-      "a `JEEVES_TILE_<ID>_URL`, `JEEVES_EXTERNAL_<ID>_URL`, `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:`",
+      "A process whose stubs call the Identity reads `JEEVES_IDENTITY_<ID>_URL`, the Identity's base URL as the process reaches it",
+      // Locally the browser's issuer is unreachable from a container (QG20's proof), so the base
+      // is Keycloak's address inside the network (QGR2).
+      "`compose.yaml` sets Keycloak's address inside the network, `http://identity-<id>:8080`",
+      "A sign-in's `OIDC_ISSUER` is what tokens carry, which a container can't reach locally, so it isn't the client's base.",
+      "a `JEEVES_TILE_<ID>_URL`, `JEEVES_EXTERNAL_<ID>_URL`, `JEEVES_IDENTITY_<ID>_URL`, `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:`",
     ])
       expect(readme).toContain(phrase);
+    expect(readme).not.toContain("which a container can't reach, so locally such a call fails");
     // A design whose stubs call neither keeps its README as it was.
     const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
     expect(text(stack, "README.md")).not.toContain("JEEVES_EXTERNAL_");
+    expect(text(stack, "README.md")).not.toContain("JEEVES_IDENTITY_");
     expect(stores(stack, "links-api").map((row) => row.kind)).not.toContain("external-api");
   });
 
@@ -702,12 +710,15 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     expect(stores(bundle, "api").map((row) => [row.store, row.modules])).toEqual([
       ["partner", ["caller"]],
     ]);
-    // wider(): Gate's Login has no sign-in, so it isn't provisioned; nor is its OIDC_ISSUER set.
+    // wider(): Gate's Login has no sign-in, so it isn't provisioned; nor is its address set.
     const wide = assemble(wider());
     expect(text(wide, "src/processes/stats-api.ts")).toContain(
       '    login: unavailable<GateDependencies["login"]>("Login for Gate (an Identity isn\'t provisioned for stubs)"),',
     );
     expect(services(wide)["app-stats-api"]).not.toHaveProperty("environment.OIDC_ISSUER");
+    expect(services(wide)["app-stats-api"]).not.toHaveProperty(
+      "environment.JEEVES_IDENTITY_LOGIN_URL",
+    );
     expect(stores(wide, "stats-api").map((row) => row.store)).toEqual(["stats-index", "partner"]);
   });
 });

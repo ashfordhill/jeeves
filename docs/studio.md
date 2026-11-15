@@ -1488,9 +1488,9 @@ retry policy spaces the other retries.
 A stub's link to an External API gets an HTTP client at the API's base URL, which you set
 (`JEEVES_EXTERNAL_<ID>_URL`, locally in `compose.override.yaml`; until it is set the process
 doesn't start, naming it), and a failed call keeps the normal retries; a link to the Identity a
-sign-in uses gets one at that Identity's issuer, whose lost connection waits as a store's does
-(locally that issuer is the address the browser uses, which the process can't reach, so the call
-fails there).
+sign-in uses gets one at that Identity's base URL as the process reaches it
+(`JEEVES_IDENTITY_<ID>_URL`: locally Keycloak's address inside the network, not the issuer the
+browser uses, which the process can't reach), whose lost connection waits as a store's does.
 The client passes the stub's own request options through, so the stub sets its timeout and adds
 its own credential; a link to an Identity no sign-in uses still answers "Not implemented".
 Each process finds its databases, caches, broker, the tiles its stubs call and the External APIs

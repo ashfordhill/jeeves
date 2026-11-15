@@ -64,7 +64,8 @@ export type ProcessMount = {
     /** The application tiles its stubs call (`httpTarget`), each at `JEEVES_TILE_<ID>_URL`. */
     calls?: string[];
     identity?: string;
-    /** The Identity its stubs call (`identityTarget`, QG20), at that Identity's `OIDC_ISSUER`. */
+    /** The Identity its stubs call (`identityTarget`, QG20), by its local ID, at its
+     * `JEEVES_IDENTITY_<ID>_URL` (locally Keycloak inside the network). */
     issuer?: string;
     /** The External APIs its stubs call (`externalTarget`, QG20), each at
      * `JEEVES_EXTERNAL_<ID>_URL`. */

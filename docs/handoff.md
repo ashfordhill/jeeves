@@ -16118,3 +16118,95 @@ worker waits out a stalled database with the same attempt.
 **For the next unit.** QGR2. Stubs on External APIs read `JEEVES_EXTERNAL_<ID>_URL` (the
 application's, in `compose.override.yaml`); stubs on the Identity a sign-in binds read
 `OIDC_ISSUER`.
+
+## 2026-11-14 — QGR2: Review QRWTY gap batch 2
+
+**What changed.**
+- [docs/plans/qrwty-gaps/review-batch2.md](plans/qrwty-gaps/review-batch2.md) (new): the verdict,
+  the checks before and after, each of the ten units against its brief, the interactions in the
+  shared runtime files, the one fix, 20 findings with severity, four proposed units (QG26 and QG27
+  ready, QG28 and QG29 for the owner) and folds into QG21 and QG23, notes for the QRWTY lessons
+  plan (QL01, QL02, QL11/QL12, QL14), the disclosure that F3 came from arm B, and what Q05 must know
+  about the frozen baseline.
+- **One defect fixed (QG20's Identity client).** A stub's Identity client read `OIDC_ISSUER`, which
+  Compose must set to the browser's issuer (what a sign-in compares `iss` with), so inside a
+  container it reached the container itself: the probe's `/identity` answered 503 and r83's Session
+  API could not have called the Identity locally. It now reads `JEEVES_IDENTITY_<ID>_URL`, the
+  Identity as the process reaches it, following `OIDC_JWKS_URL`'s precedent and QG06's convention:
+  - `module-clients.ts.template`: `identityTarget(binding: { identity })` reads
+    `JEEVES_IDENTITY_<ID>_URL` through the same `target()` (QG06's URL rule, QG10's `https:` refusal
+    under the switch, the internal-call mark).
+  - `client-wiring.ts` (`identityVariable`, the emitted `identityTarget({ identity: "<id>" })`, the
+    stores row text), `local-contract.ts` (`localEndpoints` takes `issuer`: `JEEVES_IDENTITY_<ID>_URL`
+    → `http://identity-<id>:8080`, so Compose, the report's `environment` and the README's
+    per-process list agree), `local.ts` (no `OIDC_ISSUER` for a stub tile that only calls the
+    Identity; the README's sentence and the switch's list), `tile-processes.ts` (`environmentOf`),
+    `http-wiring.ts` (a field comment).
+  - Tests: the seven QG20 tests the change touches now assert the new variable and call
+    (`module-clients.test.ts` 4, `client-wiring.test.ts` 3; the base test also shows the call goes
+    to Keycloak's address while `OIDC_ISSUER` is set to the browser's). On `78371fe`'s templates
+    (a scratch clone, its own offline install, the two files copied in) all seven fail; here all pass.
+  - Docs: `jeeves-generator/README.md` (Provisioning row, Module clients, the switch list),
+    `docs/studio.md`, `docs/template-gaps.md` (the "Open" Identity row is "Fixed in QGR2").
+  - Pins: none (`processes-off.test.ts` as it is). Emitted output: `module-clients.ts`, the
+    Identity-calling process files, `compose.yaml`, `README.md`, report, manifest: inside QG20's list.
+- Nothing else in code, templates or pins changed; the other findings are recorded with units.
+
+**Checks.** On `78371fe` before any change, then on the final tree, in phases: offline, e2e and
+the build, then Docker.
+- `pnpm check`: before exit 0, 117 files / 1012 tests; after exit 0, 117 / 1012 (the fix changes
+  assertions, adds no test); Biome only the older 1 info.
+- `pnpm test:e2e`: before 74 passed (4.7 min); after 74 passed (4.7 min), both first run, alone.
+- Web build: exit 0.
+- Regeneration proof across the whole batch: `probe-design.json` (`a3b6204f…0505`, verified) and
+  `qrwty-r83.json` exported from a scratch clone at `b55644a` (its own offline install) and from the
+  final tree: the changed paths are exactly the union of the ten Emitted output lists plus manifest
+  and report (the record lists them); `compose.yaml` differs only by `environment` keys; the lock
+  is byte-identical to the asset's; each `after-*` installs offline (`--ignore-scripts` and plain)
+  and builds, exit 0. Against `78371fe`'s own exports, the fix changed only QG20's paths.
+- Pins: `processes-off.json` changed exactly the units' lists.
+- Docker phase (`--artifacts` in the scratchpad): `pnpm test:generated --suite=all` run 1 **15/17**
+  (25.7 min), the two failures the packet's known flakes, B06 recovery's post-stall refill (while
+  my proof stack built its image beside it) and B10's clock; `--suite=faults` alone **5/5** (9.2
+  min) and `--suite=regeneration` alone **1/1** (2.7 min). Pub/Sub P1–P8 passed first time (P6:
+  first 202 at 78 ms, backlog at 1,418 ms after a 60,169 ms pause).
+- My Docker proof, project `qgr2-probe` (ports 47991–47993) on the fixed tree's probe export with
+  the Q03 bodies and an override setting `JEEVES_EXTERNAL_PROVIDER_URL`: `…/front-probe/identity`
+  **200 `{"status":200}`** in 61 ms (Keycloak's realm document from inside; `OIDC_ISSUER` from
+  inside is `ECONNREFUSED`; on `78371fe` the route answered 503); `…/provider` 418; QG04 rerun: a
+  paused cache answers 503 in 0.169 s then 0.001 s and comes back by itself; a Front restarted with
+  the cache stopped answers 302 in 2 s with the `warn`/`unavailable` probe line. Teardown by name,
+  exit 0 each; nothing `qgr2-` left.
+- Inventory: containers, networks and volumes identical before and after; images differ only by
+  arm B's `qrwtyb/*:b09b-1` tags removed meanwhile; `jeeves-postgres-1` untouched; no `gs-` or
+  `/tmp/jeeves-system-*` left; `test-results/generated/` unchanged (artifacts in the scratchpad).
+- The scratch clones, exports and proof script are deleted; the checkout's `node_modules` was not
+  touched by them.
+
+**Differences from the plan.**
+- The fix deviates from QG20's brief, which named `OIDC_ISSUER` as the Identity client's base; the
+  packet asked for a decision before the freeze, and the brief's Goal (a real client to the
+  Identity) was unmet locally for every design, with no application-side workaround for a tile that
+  also has a sign-in. The record explains the choice; the owner can revert it by name.
+- No other unit's work changed. QG08's compose deviation and QG09's `pubsub-init.mjs` change are
+  accepted as recorded.
+- The usage limit stopped the session for about 35 minutes while the suite and the proof ran; both
+  finished meanwhile, their outputs were used as they were, and nothing was rerun for that reason.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03's plan, its second review unit); its commit is arm A's frozen
+  generation baseline (QRWTY owner decisions §10), which Q05 generates from.
+- The two Pub/Sub consumer behaviours worth a unit: a lease that can lapse while a message is held
+  (the SDK's client-side deadline starts at 10 s; `minAckDeadline` unset; attempts inflate) → QG27
+  (ready); several loop stubs of one tile sharing one subscription → QG28 (owner).
+- F3's grpc-js options bound the channel's reconnect, not the SDK's own stream retry (100 ms to
+  60 s); P6's pause exercises neither. For QLR1.
+- A publish the request deadline abandons can still land (at-least-once): QRWTY's durable-clicks
+  concern and QL02's.
+- `migrate.mjs` can't verify a private CA (`PGSSLMODE` only) → QG29 (owner).
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG21, then QG22, QG23 and QG25 as planned; the record names what folds into
+QG21 (two test cases) and QG23 (two deployer sentences). QG26 and QG27 are ready for the
+coordinator's order; QG28 and QG29 need the owner. Q05 generates arm A's export from this commit.

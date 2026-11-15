@@ -60,7 +60,8 @@ export type V2LocalContribution = {
     cache?: readonly string[];
     /** The application tiles its stubs call, each at `JEEVES_TILE_<ID>_URL`. */
     calls?: readonly string[];
-    /** The Identity its stubs call (QG20): its `OIDC_ISSUER`, the local issuer, as a sign-in's. */
+    /** The Identity its stubs call (QG20), by its local ID: `JEEVES_IDENTITY_<ID>_URL`, locally
+     * Keycloak's address inside the network (`localEndpoints`). */
     issuer?: string;
     /** The External APIs its stubs call (QG20), each at `JEEVES_EXTERNAL_<ID>_URL`, which the
      * application sets: Compose sets none, and the README names them. */
@@ -87,8 +88,10 @@ export const localPubsub = {
  * `JEEVES_CACHE_<ID>_HOST`, `_PORT` and `_TLS`; locally `disable`, QG10), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`), the
  * Pub/Sub project when it publishes to or consumes a topic (`JEEVES_PUBSUB_PROJECT`, and only
  * locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION: none`, so the client looks for no
- * Google metadata server, QG09) and each application tile its stubs call
- * (`JEEVES_TILE_<ID>_URL`). A deployment sets its own values.
+ * Google metadata server, QG09), each application tile its stubs call (`JEEVES_TILE_<ID>_URL`)
+ * and the Identity they call (`JEEVES_IDENTITY_<ID>_URL`, locally Keycloak inside the network,
+ * `http://identity-<id>:8080`: a sign-in's `OIDC_ISSUER` is what tokens carry, which a container
+ * can't reach, QG20). A deployment sets its own values.
  */
 export function localEndpoints(service: {
   sql?: readonly string[];
@@ -96,6 +99,7 @@ export function localEndpoints(service: {
   broker?: boolean;
   pubsub?: boolean;
   calls?: readonly string[];
+  issuer?: string;
 }): Record<string, string> {
   const rows: [string, string][] = [
     ...(service.sql ?? []).flatMap((id): [string, string][] => [
@@ -125,6 +129,14 @@ export function localEndpoints(service: {
       `JEEVES_TILE_${endpointId(id)}_URL`,
       `http://app-${id}:3000`,
     ]),
+    ...(service.issuer
+      ? ([
+          [
+            `JEEVES_IDENTITY_${endpointId(service.issuer)}_URL`,
+            `http://identity-${service.issuer}:8080`,
+          ],
+        ] as [string, string][])
+      : []),
   ];
   return Object.fromEntries(rows.sort(([a], [b]) => v2Compare(a, b)));
 }

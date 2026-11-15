@@ -210,14 +210,13 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
   };
 }
 /** The variables a process reads from its environment, sorted, as its Compose service sets them:
- * its endpoints (QG06), a sign-in's `OIDC_*`, a stub's Identity client's `OIDC_ISSUER` (QG20) and
- * what its templates read. An External API's `JEEVES_EXTERNAL_<ID>_URL` is the application's to
- * set, so it is in the API's `stores` row instead. */
+ * its endpoints (QG06; a stub's Identity client's `JEEVES_IDENTITY_<ID>_URL` among them, QG20), a
+ * sign-in's `OIDC_*` and what its templates read. An External API's `JEEVES_EXTERNAL_<ID>_URL` is
+ * the application's to set, so it is in the API's `stores` row instead. */
 function environmentOf(service: ReturnType<typeof serviceOf>) {
   return unique([
     ...Object.keys(service.environment ?? {}),
     ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
-    ...(service.issuer ? ["OIDC_ISSUER"] : []),
     ...Object.keys(localEndpoints(service)),
   ]);
 }

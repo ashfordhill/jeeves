@@ -55,12 +55,16 @@ type Client = {
 
 /** An External API's base URL variable (QG20), `JEEVES_EXTERNAL_<ID>_URL`. */
 export const externalVariable = (element: string) => `JEEVES_EXTERNAL_${endpointId(element)}_URL`;
+/** An Identity's base URL variable (QG20, QGR2), `JEEVES_IDENTITY_<ID>_URL`, by its local ID (the
+ * Keycloak service's and realm's): the Identity as the process reaches it, not a sign-in's
+ * `OIDC_ISSUER`, which a container can't always reach. */
+export const identityVariable = (local: string) => `JEEVES_IDENTITY_${endpointId(local)}_URL`;
 
 /**
  * A stub's link to an External API or an Identity whose interface is an `HttpTarget` (QG20): an
- * External API's client at `JEEVES_EXTERNAL_<ID>_URL`, unmarked, and an Identity's at `OIDC_ISSUER`,
- * marked as an internal call, when a sign-in in the design binds that Identity. Anything else
- * (an Identity no sign-in binds, a link that verifies a token) is undefined.
+ * External API's client at `JEEVES_EXTERNAL_<ID>_URL`, unmarked, and an Identity's at
+ * `JEEVES_IDENTITY_<ID>_URL`, marked as an internal call, when a sign-in in the design binds that
+ * Identity. Anything else (an Identity no sign-in binds, a link that verifies a token) is undefined.
  */
 function outsideClient(
   kind: string,
@@ -81,7 +85,7 @@ function outsideClient(
       key: target.element,
       section: "http",
       name: "identityTarget",
-      call: "identityTarget()",
+      call: `identityTarget({ identity: ${text(generationLocalIdentity(target.element).local)} })`,
     };
   return undefined;
 }
@@ -327,8 +331,9 @@ export function stubClients(
         calls: list
           .filter((client) => client.section === "http" && !client.name)
           .map((client) => client.key),
-        // A stub's Identity client reads that Identity's `OIDC_ISSUER`, and an External API's its
-        // `JEEVES_EXTERNAL_<ID>_URL`, which Compose doesn't set (QG20).
+        // A stub's Identity client reads that Identity's `JEEVES_IDENTITY_<ID>_URL` (locally
+        // Keycloak inside the network), and an External API's its `JEEVES_EXTERNAL_<ID>_URL`, which
+        // Compose doesn't set (QG20).
         ...(issuer && { issuer: generationLocalIdentity(issuer).local }),
         ...(external.length && { external }),
       },
@@ -426,7 +431,7 @@ export function stubTargetRows(
       provisioned:
         row.kind === "external-api"
           ? `HTTP client at ${externalVariable(row.store)}, which the application sets (compose.yaml doesn't, so startup fails until it is set); a failed call keeps the normal retries`
-          : `HTTP client at OIDC_ISSUER, the issuer of Keycloak identity-${generationLocalIdentity(row.store).local} (realm ${generationLocalIdentity(row.store).local}); a failed call waits as an unreachable store's does`,
+          : `HTTP client at ${identityVariable(generationLocalIdentity(row.store).local)}, the Identity's base URL as the process reaches it (locally Keycloak identity-${generationLocalIdentity(row.store).local} inside the network, realm ${generationLocalIdentity(row.store).local}); a failed call waits as an unreachable store's does`,
     }));
 }
 

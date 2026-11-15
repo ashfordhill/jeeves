@@ -780,10 +780,14 @@ export function httpTarget(binding: { tile: string }): HttpTarget {
 export function externalTarget(base: string): HttpTarget {
   return target(base, false);
 }
-/** The Identity a sign-in binds, at its issuer `OIDC_ISSUER` (locally Keycloak's realm; with
- * `JEEVES_REQUIRE_TLS=true` it must be `https:`). A provisioned service: a rejected `fetch` is
- * marked `Symbol.for("jeeves.internal-call")`, so a lost connection waits as a store's does. */
-export function identityTarget(): HttpTarget {
-  return target("OIDC_ISSUER", true);
+/** The Identity a sign-in binds, at `JEEVES_IDENTITY_<ID>_URL`: its base URL as this process
+ * reaches it (locally Keycloak inside the network, `http://identity-<id>:8080`, so a stub adds the
+ * realm's paths, `/realms/<id>/...`; a deployment sets its issuer's origin, or another address its
+ * processes reach; with `JEEVES_REQUIRE_TLS=true` it must be `https:`). A sign-in's `OIDC_ISSUER`
+ * is what tokens carry, which a container can't always reach, so it isn't the base. A provisioned
+ * service: a rejected `fetch` is marked `Symbol.for("jeeves.internal-call")`, so a lost connection
+ * waits as a store's does. */
+export function identityTarget(binding: { identity: string }): HttpTarget {
+  return target(variable("IDENTITY", binding.identity, "URL"), true);
 }
 // @http-end

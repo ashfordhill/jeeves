@@ -615,7 +615,7 @@ scripts:
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
 | Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
 | External API (QG20) | Nothing runs: the stub gets `externalTarget`, an HTTP client at `JEEVES_EXTERNAL_<ID>_URL`, which the application sets (in `compose.override.yaml` locally; `compose.yaml` sets none) |
-| Identity a sign-in binds (QG20) | Its Keycloak, as the sign-in's: the stub gets `identityTarget`, an HTTP client at `OIDC_ISSUER`, which `compose.yaml` sets for the stub's tile too (with no `depends_on` of its own: a lost connection is waited out) |
+| Identity a sign-in binds (QG20) | Its Keycloak, as the sign-in's: the stub gets `identityTarget`, an HTTP client at `JEEVES_IDENTITY_<ID>_URL`, the Identity's base URL as the process reaches it, which `compose.yaml` sets to Keycloak's address inside the network, `http://identity-<id>:8080` (not the sign-in's `OIDC_ISSUER`, the browser's address, which a container can't reach; QGR2), with no `depends_on` of its own: a lost connection is waited out |
 
 Each process gets its credentials, `depends_on` its providers healthy, and has the endpoints it
 reads set to these local services in its Compose `environment` (Module clients, below). A store whose saved
@@ -696,7 +696,9 @@ cache), `objectClient`
 (`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`),
 `httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`),
 `externalTarget` (an External API at `JEEVES_EXTERNAL_<ID>_URL`) and `identityTarget` (the Identity
-a sign-in binds, at `OIDC_ISSUER`) (QG20). The three HTTP clients have no probe; each resolves a
+a sign-in binds, at `JEEVES_IDENTITY_<ID>_URL`: locally Keycloak inside the network, so a stub adds
+the realm's paths, `/realms/<id>/...`; a deployment sets its issuer's origin or another address its
+processes reach) (QG20). The three HTTP clients have no probe; each resolves a
 stub's `request(path, init)` against its base URL and passes `init` to `fetch` as it is, so the
 stub bounds a call with `signal: AbortSignal.timeout(ms)` and adds its own headers (a credential
 it reads from a `SECRET_DIR` file: the client reads none). `httpTarget` and `identityTarget` mark a
@@ -769,9 +771,9 @@ path; `_CA_FILE` and `_TLS_SERVERNAME` are not read with `disable`. `JEEVES_REQU
 or unset (another value fails with `Invalid endpoint JEEVES_REQUIRE_TLS`); with `true`, startup
 fails with `Insecure endpoint <variable>` for a database or cache whose `_TLS` isn't
 `verify-full` (a database's Unix socket directory is local transport and passes), a
-`JEEVES_TILE_<ID>_URL` or `JEEVES_EXTERNAL_<ID>_URL` that isn't `https:` (`httpTarget`,
-`externalTarget`), an `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:` (the sign-in's lines in
-the process file, and `identityTarget`) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
+`JEEVES_TILE_<ID>_URL`, `JEEVES_EXTERNAL_<ID>_URL` or `JEEVES_IDENTITY_<ID>_URL` that isn't
+`https:` (`httpTarget`, `externalTarget`, `identityTarget`), an `OIDC_ISSUER` or `OIDC_JWKS_URL`
+that isn't `https:` (the sign-in's lines in the process file) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
 clients). Each is checked where its client is built: the stubs' in `module-clients.ts`, a template's
 pool in `service-resources.ts`, the cache read's cache in `cacheEndpoint`. The broker (RabbitMQ),
 object storage and search have no TLS and are not checked, and `migrate.mjs` still follows

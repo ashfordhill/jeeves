@@ -910,6 +910,7 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
   });
   const internalCall = Symbol.for("jeeves.internal-call");
   const external = "JEEVES_EXTERNAL_PARTNER_URL";
+  const identity = "JEEVES_IDENTITY_IDENTITY_URL";
   /** A `fetch` that lost its connection, as undici rejects it. */
   const lost = () =>
     new TypeError("fetch failed", {
@@ -967,30 +968,44 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
     // The Identity is a provisioned service: its lost connection waits as a store's does.
     const away = lost();
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(away));
-    environment({ OIDC_ISSUER: "https://issuer.example/realms/identity" });
-    await expect(clients.identityTarget().request("/realms/identity")).rejects.toBe(away);
+    environment({ [identity]: "https://issuer.example" });
+    await expect(
+      clients.identityTarget({ identity: "identity" }).request("/realms/identity"),
+    ).rejects.toBe(away);
     expect(Reflect.get(away, internalCall)).toBe(true);
     expect(delivery.unreachable(away)).toBe(true);
   });
 
-  it("calls the Identity at OIDC_ISSUER, as a sign-in reads it", async () => {
+  it("calls the Identity at JEEVES_IDENTITY_<ID>_URL, where the process reaches it, never at OIDC_ISSUER (QGR2)", async () => {
     const response = new Response("{}");
     const fetch = vi.fn(async () => response);
     vi.stubGlobal("fetch", fetch);
-    environment({ OIDC_ISSUER: "http://127.0.0.1:47922/realms/identity" });
+    // A sign-in's issuer is the browser's address, which a container can't reach (QG20's proof);
+    // the client's base is Keycloak inside the network, as compose.yaml sets it.
+    environment({
+      OIDC_ISSUER: "http://127.0.0.1:47922/realms/identity",
+      [identity]: "http://identity-identity:8080",
+    });
     const init = { headers: { accept: "application/json" } };
     expect(
       await clients
-        .identityTarget()
+        .identityTarget({ identity: "identity" })
         .request("/realms/identity/.well-known/openid-configuration", init),
     ).toBe(response);
     expect(fetch).toHaveBeenCalledWith(
-      new URL("http://127.0.0.1:47922/realms/identity/.well-known/openid-configuration"),
+      new URL("http://identity-identity:8080/realms/identity/.well-known/openid-configuration"),
       init,
+    );
+    // The variable is the Identity's own, by its local ID.
+    environment({ [identity]: undefined, JEEVES_IDENTITY_SIGN_IN_URL: "https://id.example" });
+    await clients.identityTarget({ identity: "sign-in" }).request("/realms/sign-in");
+    expect(fetch).toHaveBeenLastCalledWith(new URL("https://id.example/realms/sign-in"), undefined);
+    expect(outcome(() => clients.identityTarget({ identity: "identity" }))).toBe(
+      `Invalid endpoint ${identity}`,
     );
   });
 
-  it("fails naming JEEVES_EXTERNAL_<ID>_URL or OIDC_ISSUER when unset or invalid, never its value", () => {
+  it("fails naming JEEVES_EXTERNAL_<ID>_URL or JEEVES_IDENTITY_<ID>_URL when unset or invalid, never its value", () => {
     const credentials = ["https://", ["user", "pass"].join(":"), "@api.partner.example"].join("");
     const invalid = [
       undefined,
@@ -1004,7 +1019,7 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
     ];
     for (const [name, build] of [
       [external, () => clients.externalTarget(external)],
-      ["OIDC_ISSUER", () => clients.identityTarget()],
+      [identity, () => clients.identityTarget({ identity: "identity" })],
     ] as const)
       for (const value of invalid) {
         environment({ [name]: value });
@@ -1014,20 +1029,22 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
       }
   });
 
-  it("with JEEVES_REQUIRE_TLS=true needs an https: External API and issuer, naming the variable", () => {
+  it("with JEEVES_REQUIRE_TLS=true needs an https: External API and Identity, naming the variable", () => {
     environment({
       JEEVES_REQUIRE_TLS: "true",
       [external]: "http://api.partner.example",
-      OIDC_ISSUER: "http://127.0.0.1:47922/realms/identity",
+      [identity]: "http://identity-identity:8080",
     });
     expect(outcome(() => clients.externalTarget(external))).toBe(`Insecure endpoint ${external}`);
-    expect(outcome(() => clients.identityTarget())).toBe("Insecure endpoint OIDC_ISSUER");
+    expect(outcome(() => clients.identityTarget({ identity: "identity" }))).toBe(
+      `Insecure endpoint ${identity}`,
+    );
     environment({
       [external]: "https://api.partner.example",
-      OIDC_ISSUER: "https://issuer.example/realms/identity",
+      [identity]: "https://issuer.example",
     });
     expect(outcome(() => clients.externalTarget(external))).toBe("built");
-    expect(outcome(() => clients.identityTarget())).toBe("built");
+    expect(outcome(() => clients.identityTarget({ identity: "identity" }))).toBe("built");
     // Without the switch, http: passes as before; another switch value fails naming it.
     environment({ JEEVES_REQUIRE_TLS: undefined, [external]: "http://api.partner.example" });
     expect(outcome(() => clients.externalTarget(external))).toBe("built");
