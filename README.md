@@ -1,5 +1,8 @@
 # Jeeves <!-- omit from toc -->
 
+- [11/15/2026 (part I)](#11152026-part-i)
+  - [Agents on the Loose!](#agents-on-the-loose)
+  - [Results (part I)](#results-part-i)
 - [11/14/2026](#11142026)
   - [qrwty](#qrwty)
   - [Improving Jeeves](#improving-jeeves)
@@ -34,6 +37,39 @@
   - [Challenges](#challenges)
   - [UI/UX of generated apps](#uiux-of-generated-apps)
 
+
+## 11/15/2026 (part I)
+
+### Agents on the Loose!
+
+I had an agent orchestrating lanes of other agents for the past couple days to see if I could get away with doing more initial planning upfront with some rules instead of my usual way of doing things (create 1 build plan at a time with a decent size goal, maybe equivalent to a Jira Epic or multiple large tickets. Each unit executs on a fresh agent and this is overseen by a parent agent).
+
+Unfortunately it kept leading to more units of work getting added and agents chasing a goalpost that kept moving. When I checked in on the status, it'd gotten off course in the same way SWE engineers get off course without a clear concrete goal and vague tickets.
+
+I cut things off to get the data I was looking for which was:
+
+1. Build qrwty. 
+  - How good is it from an enterprise software design standpoint?
+    - Not expecting perfection (even though such a thing doesn't exist in the software world anyway). But anything decent can be built upon and improved. Lock down good patterns into reuseable templates that **source from** a human-readable diagram source of truth.
+2. Build qrwty without Jeeves. Is it inferior? Spaghetti?
+  - In the future I might pause this type of investigation just because of the amount of resources (tokens, time) it can consume. I think it is safe to assume that diagram-based prompting will probably offer better results than just text-based prompting alone. This is evident even when working with human engineers.
+3. Calculate lines of code differences to see where we're at for deterministic vs non-deterministic code usage
+4. See opportunities to lift patterns out of qrwty and back into Jeeves templates if they are generic enough concepts to be used for other types of projects
+
+### Results (part I)
+
+> The agents are currently rebuilding QRWTY after doing #4 above. The UI never got finished (it's not important to make the UI perfect but it does help me faster evaluate features as a human). So we are regenerating and deploying QRWTY while relying on the $300 free trial credits from GCP; this should be able to keep it up and running for a month or two, supposedly.
+
+The results from before #4 can be seen in the [qrwty repo](https://www.github.com/ashfordhill/qrwty). Here's a tl;dr:
+
+1. 80% code from Jeeves (not including UI and test code)
+2. non-Jeeves had 5x more LOC for tests (~10k vs ~2k)
+  - Doesn't really say much about reliability but I'm assuming the agents were more paranoid about testing everything from non-Jeeves and more trusting about 'reliable' solutions from Jeeves
+3. Around the same amount of UI code in both Jeeves and non-Jeeves impls of qrwty.
+
+Both projects will be saved in the qrwty repo.
+
+Hoping things will be ready for a human evaluation later this evening.
 
 ## 11/14/2026
 
