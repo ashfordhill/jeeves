@@ -1,5 +1,6 @@
 import {
   generationLocalIdentity,
+  generationTemplateQueues,
   type NormalizedGenerationSelection,
   type NormalizedProcess,
 } from "@jeeves/spec";
@@ -26,7 +27,7 @@ import {
   tileProcess,
   uploadLifecycle,
 } from "./http-wiring.ts";
-import { subscriberQueue } from "./local-contract.ts";
+import { pubsubSubscription, stubPubsub, subscriberQueue } from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths } from "./module-stubs.ts";
 
 const tileLoop = "../runtime/tile-loop.ts";
@@ -721,7 +722,9 @@ const builders: Record<string, Builder> = {
 };
 
 /** A loop stub: one loop per queue it consumes, calling its entry point with each message and its
- * dependencies (`client-wiring.ts`). Its queues are provisioned with the tile's other stub stores. */
+ * dependencies (`client-wiring.ts`). Its queues are provisioned with the tile's other stub stores:
+ * RabbitMQ's on the broker (`brokerBinding`), and a Pub/Sub topic's on its tile's subscription and
+ * `.failed` topic (`pubsubLoop`, QG08). */
 function stubLoops(
   process: NormalizedProcess,
   stub: NormalizedProcess["stubs"][number],
@@ -737,13 +740,17 @@ function stubLoops(
   const from = (path: string) => `../${path.slice("src/".length)}`;
   // A Worker's Concurrency (v3 contract, section 4); one message at a time beside HTTP routes.
   const concurrency = process.worker?.concurrency.value ?? 1;
-  const loops: LoopRow[] = (stub.consumes ?? []).map((queue) => {
-    const names = consumed(
-      { process, selections },
-      generationLocalIdentity(queue.element).local,
-      queue.mode,
-      id,
-    );
+  const templated = generationTemplateQueues(selections);
+  // Which loops consume a Pub/Sub topic, in the order of `loops`.
+  const pubsub = (stub.consumes ?? []).map((queue) =>
+    stubPubsub({ ...queue, kind: "queue" }, templated),
+  );
+  const loops: LoopRow[] = (stub.consumes ?? []).map((queue, index) => {
+    const topic = generationLocalIdentity(queue.element).local;
+    const subscription = pubsub[index] ? pubsubSubscription(topic, process.tile) : undefined;
+    const names = subscription
+      ? { queue: subscription.name, failedQueue: subscription.failed }
+      : consumed({ process, selections }, topic, queue.mode, id);
     return {
       module: id,
       ...names,
@@ -755,18 +762,23 @@ function stubLoops(
   return {
     imports: [
       { from: tileLoop, name: "startModuleLoop" },
-      ...(loops.length
-        ? [brokerStateImport, { from: "../runtime/module-clients.ts", name: "brokerBinding" }]
+      ...(loops.length ? [brokerStateImport] : []),
+      ...(pubsub.some((item) => !item)
+        ? [{ from: "../runtime/module-clients.ts", name: "brokerBinding" }]
+        : []),
+      ...(pubsub.some((item) => item)
+        ? [{ from: "../runtime/module-clients.ts", name: "pubsubLoop" }]
         : []),
       { from: from(paths.module), name: entry },
     ],
-    // Each loop gets the broker's endpoint from the environment (`brokerBinding`).
+    // Each RabbitMQ loop gets the broker's endpoint from the environment (`brokerBinding`); a
+    // Pub/Sub loop its project, through the probe log its subscription's check writes to.
     setup: loops.flatMap((loop, offset) => [
-      `// ${line(module.name)}: a loop on ${loop.queue}.`,
+      `// ${line(module.name)}: a loop on ${pubsub[offset] ? "the Pub/Sub subscription " : ""}${loop.queue}.`,
       `await startModuleLoop(scope, loopLog, ${loopLine(first + offset)}, (message) =>`,
       `  ${entry}(dependencies[${text(id)}], message),`,
       `  ${brokerState(`broker consume ${loop.queue}`)},`,
-      "  brokerBinding(),",
+      pubsub[offset] ? "  pubsubLoop(probe)," : "  brokerBinding(),",
       ");",
     ]),
     configure: [],

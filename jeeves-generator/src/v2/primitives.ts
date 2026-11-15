@@ -9,8 +9,10 @@ const clientLibraries: Record<ClientSection, string[]> = {
   // The broker's endpoint alone needs no library: its publisher and loops bring theirs.
   broker: [],
   queue: ["delivery", "amqp"],
-  // The Pub/Sub publisher uses the official client in module-clients.ts itself.
+  // The Pub/Sub publisher and a loop's subscriber use the official client in module-clients.ts
+  // itself; the subscriber's loop brings the delivery runner's library.
   pubsub: [],
+  "pubsub-loop": [],
   cache: ["valkey"],
   objects: ["objects"],
   search: ["search"],

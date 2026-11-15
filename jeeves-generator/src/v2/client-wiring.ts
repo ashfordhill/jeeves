@@ -30,19 +30,25 @@ const clients = "../runtime/module-clients.ts";
 const entryTypes = "../modules/entry.ts";
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
  * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
- * endpoint, for a stub's publisher and its loops; `pubsub` a Pub/Sub topic's publisher (QG07). */
+ * endpoint, for a stub's publisher and its RabbitMQ loops; `pubsub` a Pub/Sub topic's publisher
+ * (QG07), which `pubsub-loop`, a stub loop's Pub/Sub subscriber (QG08), also needs. */
 export type ClientSection =
   | "database"
   | "broker"
   | "queue"
   | "pubsub"
+  | "pubsub-loop"
   | "cache"
   | "objects"
   | "search"
   | "http";
 
 /** One client a process builds: its key in `clients`, its section and its constructor call. */
-type Client = { key: string; section: Exclude<ClientSection, "broker">; call: string };
+type Client = {
+  key: string;
+  section: Exclude<ClientSection, "broker" | "pubsub-loop">;
+  call: string;
+};
 
 /** What a store's client is built with, and what its probe checks. */
 function storeClient(store: StubStore): Client {
@@ -204,11 +210,14 @@ export function stubClients(
   // Every provisioned store gets its client and probe, even one only a library stub uses.
   for (const store of stores)
     if (!store.unsupported && store.access !== "consume") use(storeClient(store));
-  // A publisher and a stub's loop read the broker's endpoint (`brokerBinding`).
-  if (sections.has("queue") || stubs.some(({ stub }) => stub.consumes?.length))
+  // A publisher and a stub's RabbitMQ loop read the broker's endpoint (`brokerBinding`); a loop on
+  // a Pub/Sub topic consumes its tile's subscription (`pubsubLoop`, QG08), probed at its start.
+  if (sections.has("queue") || stores.some((store) => store.access === "consume" && !store.pubsub))
     sections.add("broker");
+  const pubsubLoops = stores.some((store) => store.access === "consume" && store.pubsub);
+  if (pubsubLoops) for (const section of ["pubsub", "pubsub-loop"] as const) sections.add(section);
   const list = [...built.values()].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
-  const probed = list.some((client) => client.call.startsWith("await "));
+  const probed = pubsubLoops || list.some((client) => client.call.startsWith("await "));
   for (const client of list)
     imports.push({
       from: clients,
@@ -236,7 +245,11 @@ export function stubClients(
           ? [
               "// Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
               "// use, each probed once before the process is ready; a failed probe fails startup.",
-              ...(probed ? ["const probe = createProbeLog(config.tile);"] : []),
+            ]
+          : []),
+        ...(probed ? ["const probe = createProbeLog(config.tile);"] : []),
+        ...(list.length
+          ? [
               "const clients = {",
               ...list.map((client) => `  ${text(client.key)}: ${client.call},`),
               "};",
@@ -262,7 +275,9 @@ export function stubClients(
           .map((s) => s.resource),
         cache: provisioned.filter((store) => store.kind === "cache").map((s) => s.resource),
         broker: provisioned.some((store) => store.kind === "queue" && !store.pubsub),
-        ...(list.some((client) => client.section === "pubsub") && { pubsub: true }),
+        ...((pubsubLoops || list.some((client) => client.section === "pubsub")) && {
+          pubsub: true,
+        }),
         calls: list.filter((client) => client.section === "http").map((client) => client.key),
       },
       local: {},

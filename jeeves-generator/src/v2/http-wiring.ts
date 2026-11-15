@@ -59,7 +59,7 @@ export type ProcessMount = {
     storage: string[];
     cache: string[];
     broker: boolean;
-    /** It publishes to a Pub/Sub topic (`pubsubPublisher`, QG07). */
+    /** It publishes to or consumes a Pub/Sub topic (`pubsubPublisher`, QG07; `pubsubLoop`, QG08). */
     pubsub?: boolean;
     /** The application tiles its stubs call (`httpTarget`), each at `JEEVES_TILE_<ID>_URL`. */
     calls?: string[];

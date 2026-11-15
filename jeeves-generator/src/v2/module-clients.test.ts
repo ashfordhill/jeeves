@@ -150,6 +150,16 @@ fakes["./valkey.ts"] = stripTypeScriptTypes(
 ).replace(/from "([^"]+)"/g, (match, from: string) =>
   fakes[from] ? `from "${dataUrl(fakes[from])}"` : match,
 );
+// A stub loop's Pub/Sub subscriber (QG08) shares the loop's runtime: the exact delivery.ts, and a
+// stand-in for tile-loop.ts, whose subscriber tile-loop.test.ts runs.
+fakes["./delivery.ts"] = stripTypeScriptTypes(
+  readFileSync(
+    new URL("../../templates/local-v2/assets/src/runtime/delivery.ts.template", import.meta.url),
+    "utf8",
+  ),
+);
+fakes["./tile-loop.ts"] =
+  'export const failureStep = () => { throw new Error("Not used by these tests"); };';
 const tileProcess = dataUrl(
   stripTypeScriptTypes(
     readFileSync(

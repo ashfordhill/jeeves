@@ -37,6 +37,34 @@ export type ModuleLoop = {
   concurrency: number;
 };
 
+/** What a loop's consumer opens with: its queue (for a Pub/Sub loop, its subscription), that
+ * queue's .failed, its bounds, the handler each message is given and its state hook. */
+export type LoopConsumerOptions = {
+  queue: string;
+  failedQueue: string;
+  concurrency: number;
+  retryLimit: number;
+  handle: MessageHandler;
+  onState?: BrokerState;
+};
+/** An open consumer: `close` stops taking messages and lets those in hand settle before it closes;
+ * `closed` resolves only after `close()`. */
+export type LoopConsumer = { close(): Promise<void>; closed: Promise<{ fatal: boolean }> };
+/**
+ * How a loop consumes, the interface both transports implement: RabbitMQ's consumer on a broker
+ * binding (`amqpLoop`) and a Pub/Sub subscription's (`pubsubLoop` in module-clients.ts). `retries`
+ * says what spaces a retry: the handler's `retryDelay` wait (RabbitMQ), or the transport itself
+ * (a Pub/Sub subscription's retry policy).
+ */
+export type LoopTransport = {
+  retries: "handler" | "transport";
+  open(options: LoopConsumerOptions): Promise<LoopConsumer>;
+};
+/** RabbitMQ: `createConsumer` on the broker's binding. */
+export function amqpLoop(broker: BrokerBinding = loopBroker): LoopTransport {
+  return { retries: "handler", open: (options) => createConsumer(broker, options) };
+}
+
 /** A process's loop log: "Not implemented" lines, and one line per other failed message. Each is
  * at most once a second per module and hook (or queue), the next line counting what it held back. */
 export type LoopLog = {
@@ -81,21 +109,31 @@ const messageId = (delivery: Delivery) =>
   delivery.messageId === undefined ? {} : { messageId: delivery.messageId };
 /** The delivery runner waits out an unreachable store itself and keeps the attempt. */
 const storeUnreachable = (error: unknown) => unreachable(error) && !(error instanceof NonRetryable);
+/**
+ * What a failed message's runner does next, by the delivery runner's rule, which a Pub/Sub loop's
+ * runner keeps too: an unreachable store (not a `NonRetryable`) waits and keeps the attempt; a
+ * `NonRetryable` ends in .failed with its code, and so does a failure on attempt retry limit + 1
+ * (`RETRY_EXHAUSTED`); anything else is retried.
+ */
+export function failureStep(
+  error: unknown,
+  attempt: number,
+  retryLimit: number,
+): { step: "wait" } | { step: "terminal"; code: string } | { step: "retry" } {
+  if (storeUnreachable(error)) return { step: "wait" };
+  if (error instanceof NonRetryable) return { step: "terminal", code: error.code };
+  return attempt > retryLimit ? { step: "terminal", code: "RETRY_EXHAUSTED" } : { step: "retry" };
+}
 /** What the delivery runner does with a failed message: retry it, or send it to .failed. */
 function outcome(loop: Pick<ModuleLoop, "failedQueue" | "retryLimit">, error: unknown, delivery: Delivery) {
-  if (storeUnreachable(error))
+  const next = failureStep(error, delivery.deliveryCount, loop.retryLimit);
+  if (next.step === "wait")
     return {
       retry: true,
       action: `store unreachable, retry in ${UNREACHABLE_WAIT_MS} ms (attempt not counted)`,
     };
-  const code =
-    error instanceof NonRetryable
-      ? error.code
-      : delivery.deliveryCount > loop.retryLimit
-        ? "RETRY_EXHAUSTED"
-        : undefined;
-  return code
-    ? { retry: false, action: `sent to ${loop.failedQueue} (${code})` }
+  return next.step === "terminal"
+    ? { retry: false, action: `sent to ${loop.failedQueue} (${next.code})` }
     : { retry: true, action: `retry ${delivery.deliveryCount} of ${loop.retryLimit}` };
 }
 
@@ -104,13 +142,15 @@ function outcome(loop: Pick<ModuleLoop, "failedQueue" | "retryLimit">, error: un
  * "Not implemented" is terminal at once (NOT_IMPLEMENTED: the message goes to .failed) with one
  * log line. An unreachable store waits no `retryDelay` here: the runner waits 5 s and keeps the
  * attempt. Any other error is retried within the loop's limit after `retryDelay(attempt)`, then
- * ends in .failed as RETRY_EXHAUSTED; `stopping` cuts a wait short.
+ * ends in .failed as RETRY_EXHAUSTED; `stopping` cuts a wait short. With `retries` "transport"
+ * (a Pub/Sub loop), the handler doesn't wait: the subscription's retry policy spaces the retry.
  */
 export function moduleHandler(
   log: LoopLog,
   loop: ModuleLoop,
   entry: (message: ModuleMessage) => Promise<void>,
   stopping: AbortSignal,
+  retries: LoopTransport["retries"] = "handler",
 ): MessageHandler {
   return async (body, delivery) => {
     try {
@@ -133,7 +173,7 @@ export function moduleHandler(
         throw new NonRetryable("NOT_IMPLEMENTED");
       }
       const next = outcome(loop, error, delivery);
-      const waits = next.retry && !storeUnreachable(error);
+      const waits = next.retry && !storeUnreachable(error) && retries === "handler";
       const delay = waits ? retryDelay(delivery.deliveryCount) : 0;
       log.failed({
         module: loop.module,
@@ -150,10 +190,11 @@ export function moduleHandler(
 }
 
 /**
- * Starts a module's loop on its queue: manual ack, prefetch equal to its concurrency, bounded
- * retry and `<queue>.failed`. Stopping cancels the subscription, cuts a retry wait short and
- * drains the message in hand. After a lost broker connection the consumer reconnects every 5 s,
- * telling `onState`; nothing here fails the process.
+ * Starts a module's loop on its queue through its transport: a broker binding is RabbitMQ's
+ * (`amqpLoop`: manual ack, prefetch equal to its concurrency, bounded retry and `<queue>.failed`),
+ * and `pubsubLoop` a Pub/Sub subscription's, with the same contract. Stopping cancels the
+ * subscription, cuts a retry wait short and drains the message in hand. After a lost connection
+ * the consumer reconnects every 5 s, telling `onState`; nothing here fails the process.
  */
 export async function startModuleLoop(
   scope: ProcessScope,
@@ -161,15 +202,16 @@ export async function startModuleLoop(
   loop: ModuleLoop,
   entry: (message: ModuleMessage) => Promise<void>,
   onState?: BrokerState,
-  broker: BrokerBinding = loopBroker,
+  transport: LoopTransport | BrokerBinding = loopBroker,
 ) {
+  const consumes = "open" in transport ? transport : amqpLoop(transport);
   const stopping = new AbortController();
-  const consumer = await createConsumer(broker, {
+  const consumer = await consumes.open({
     queue: loop.queue,
     failedQueue: loop.failedQueue,
     concurrency: loop.concurrency,
     retryLimit: loop.retryLimit,
-    handle: moduleHandler(log, loop, entry, stopping.signal),
+    handle: moduleHandler(log, loop, entry, stopping.signal, consumes.retries),
     onState,
   });
   scope.own(() => {

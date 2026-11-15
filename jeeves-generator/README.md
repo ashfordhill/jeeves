@@ -479,7 +479,9 @@ bucket, or why it has none, and Preview shows them.
 
 **Consume loops** (contract §3–5). A loop consumes a topic's subscriber queue or a work queue
 itself, through the shared `createConsumer` and delivery runner (manual ack, prefetch equal to its
-concurrency, `x-delivery-attempt`, and `<queue>.failed` with `x-terminal-code`). A topic's
+concurrency, `x-delivery-attempt`, and `<queue>.failed` with `x-terminal-code`); a loop stub on a
+Pub/Sub topic consumes its tile's subscription instead (`pubsubLoop`, below). `startModuleLoop`
+takes either through `LoopTransport`, which both implement (`amqpLoop` on a broker binding). A topic's
 subscriber is the tile's `<topic>--<tile>`, unless the tile has several consuming modules on that
 topic: then each gets its own `<topic>--<module>` (tile-processes review row 6), so each receives
 every message. The report's `loops` rows name each queue, module and what a failure does, and the
@@ -495,7 +497,8 @@ stub loops and mounted templates both consume their row (`startModuleLoop`, `loo
   (`NOT_IMPLEMENTED`: the message goes to `<queue>.failed` on its first delivery). Any other
   error but an unreachable store (below) is retried 5 times; before retry *n* the handler waits
   `min(250 ms × 2^(n−1), 10 s)` (7.75 s over the five), then the message ends in `.failed` as
-  `RETRY_EXHAUSTED`.
+  `RETRY_EXHAUSTED`. On a Pub/Sub topic the handler doesn't wait: the message is nacked, and its
+  subscription's retry policy spaces the redelivery.
 - **Asset lifecycle** runs `startAssetLifecycleWorker` on the results subscriber
   (`<results>--<tile>`, which the processes owner contributes because the template didn't), with
   its publication relay when bound. Its `assets` and `receipts` tables sit in its upload
@@ -612,11 +615,10 @@ reads set to these local services in its Compose `environment` (Module clients, 
 provider isn't unspecified or self-hosted, or whose engine isn't unspecified or the local one
 (PostgreSQL, Redis-compatible, OpenSearch), isn't provisioned: a required `unsupported` gap
 `provider-<module>-<tile>`, so the stack isn't runnable. The exception is a queue saved on Google
-Cloud that no template binds (`generationTemplateQueues`): it is a Pub/Sub topic, below. Its
-consuming tiles' subscriptions are provisioned, but consuming Pub/Sub isn't installed yet, so a
-loop stub on it is the same gap ("Consuming Pub/Sub is not installed yet."). A queue a template
-binds keeps the template's self-hosted provider, and a stub's link to one saved on Google Cloud
-keeps the gap. Identity isn't provisioned for stubs
+Cloud that no template binds (`generationTemplateQueues`, `stubPubsub`): it is a Pub/Sub topic,
+below, with a subscription for each consuming tile, which a loop stub on it consumes. A queue a
+template binds keeps the template's self-hosted provider, and a stub's link to one saved on Google
+Cloud keeps the gap. Identity isn't provisioned for stubs
 (an Auth guard connected to it is a sign-in template, the tile's only one), and nor are CDN or
 External API tiles.
 
@@ -674,7 +676,7 @@ past its statement timeout), `queuePublisher` (publisher confirms; each message 
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
 `pubsubPublisher` (a Pub/Sub topic's publisher on the official client, `@google-cloud/pubsub`
-6.3.2, below), `cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
+6.3.2, below), `pubsubLoop` (a loop stub's transport on its tile's Pub/Sub subscription, below), `cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
 bounded client, `createValkeyCache` in `src/runtime/valkey.ts`, which the primitives emit when no
 cache read already does: a command settles within 150 ms and at most 32 wait, while no client is
 connected a command fails at once with `Cache unavailable`, a lost or stalled client is destroyed
@@ -683,7 +685,7 @@ cache), `objectClient`
 (`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
 `httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`). Each
 client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
-confirm channel, the Pub/Sub topic existing, `PING`, `HeadBucket` (or, for a write-only key,
+confirm channel, the Pub/Sub topic existing (for a loop, its subscription), `PING`, `HeadBucket` (or, for a write-only key,
 opening and aborting a multipart upload) and cluster health. Each logs one JSON line
 (`{"event":"probe","tile","client","kind","check","result":"ok"}`); a failure logs the error and
 fails startup, so a healthy process has reached every store it uses with its own credentials. A
@@ -707,7 +709,7 @@ when it builds that client, before its probe, with no default (`<ID>` is the til
 | A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT` | `cache-<id>`, `6379` |
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
-| Pub/Sub, for a process that publishes to a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST`) | `local`, `local-pubsub:8085` |
+| Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST`) | `local`, `local-pubsub:8085` |
 
 A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
 directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port is an integer
@@ -717,7 +719,8 @@ or `-`, optionally after `<domain>:`). A missing or invalid one fails startup wi
 `startup-failed` line. The stubs' clients read theirs in `module-clients.ts`; a template's `pool`
 and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
 its cache through `cacheEndpoint` in `valkey.ts`, whose bounded client checks a host by the same
-rule. Every loop passes `brokerBinding()` to `startModuleLoop` or `loopConsumer`, so the compiled
+rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loopConsumer` (a Pub/Sub
+loop passes `pubsubLoop(probe)`), so the compiled
 `loopBroker` in `tile-loop.ts` is only a default no process uses. The foundation sets exactly the
 variables each process reads in its `app-<id>` service's `environment` (`localEndpoints` in
 `local-contract.ts`), beside a sign-in's `OIDC_*`; `processes.tiles[].environment` in the report
@@ -753,6 +756,34 @@ naming it. `local-pubsub` is the emulator (`gcloud beta emulators pubsub start
 the emulator local-pubsub)`, or for a consuming tile its subscription, and the export's README says
 what a deployment's own infrastructure creates and grants (the Pub/Sub service agent's rights a
 dead-letter policy needs).
+
+**Pub/Sub loops** (QG08). A loop stub on such a topic consumes its tile's subscription
+`<topic>--<tile>` through `pubsubLoop(probe)` in `module-clients.ts` (the `pubsub-loop` section,
+beside the publisher's `pubsub`), with a RabbitMQ loop's contract. Its process config's loop row
+names the subscription and `<topic>--<tile>.failed`, and its service gets `JEEVES_PUBSUB_PROJECT`
+(and locally `PUBSUB_EMULATOR_HOST`), not the broker. At start it checks the subscription exists
+(5 s; false or an error fails startup), then opens one streaming-pull subscriber with flow control
+`maxMessages` equal to the loop's Concurrency and `allowExcessMessages: false`, so at most that
+many messages are in hand; the client extends a message's lease while it is. Each message gives
+the stub `body` (its data), `messageId` (its `messageId` attribute, else Pub/Sub's ID), `headers`
+(its attributes), `attempt` (Pub/Sub's delivery attempt, which counts from 1 because the
+subscription has a dead-letter policy) and `source` (the subscription). It is acknowledged only
+after the stub resolves. Another error is nacked at once and the subscription's retry policy (1–10
+s) spaces the redelivery; a failure on delivery attempt retry limit + 1 (6 for a stub), a
+`NonRetryable` or "Not implemented" publishes a copy to the `.failed` topic with the message's
+attributes and `x-terminal-code` (`RETRY_EXHAUSTED`, its code, `NOT_IMPLEMENTED`), and the message
+is acknowledged once Pub/Sub has the copy (within 2000 ms), else nacked. An unreachable store
+(`unreachable`, as above) keeps the message: the stub runs again 5 s later with the same message
+and attempt, and a drain during the wait nacks it. A subscriber error logs one `broker consume
+<subscription>` failure line (so does a failed `.failed` copy), and `"state":"available"` when a
+message arrives again; a subscriber that closes on an error opens again 5 s later, once its
+messages in hand have settled and the subscription answers, and the process never stops for it.
+The drain stops taking messages, lets those in hand settle, then closes the subscription (which
+nacks what it held back) and the client. Pub/Sub counts every redelivery as an attempt, a nack at
+a drain or a lost lease too, where RabbitMQ's `x-delivery-attempt` counts only the loop's own
+retries. A consuming process needs `pubsub.subscriptions.get` and `pubsub.subscriptions.consume`
+on its subscription and `pubsub.topics.publish` on its `.failed` topic. Several loop stubs of one
+tile on one topic share its one subscription, so each message reaches one of them.
 
 **Credentials** are generated at first run, as for templates: `setup.mjs` writes the
 passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is

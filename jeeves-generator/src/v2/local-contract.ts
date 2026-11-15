@@ -54,7 +54,8 @@ export type V2LocalContribution = {
     sql?: readonly string[];
     storage?: readonly string[];
     broker?: boolean;
-    /** It publishes to a Pub/Sub topic (QG07): `JEEVES_PUBSUB_PROJECT`, and locally the emulator. */
+    /** It publishes to or consumes a Pub/Sub topic (QG07, QG08): `JEEVES_PUBSUB_PROJECT`, and
+     * locally the emulator. */
     pubsub?: boolean;
     cache?: readonly string[];
     /** The application tiles its stubs call, each at `JEEVES_TILE_<ID>_URL`. */
@@ -79,9 +80,9 @@ export const localPubsub = {
  * The endpoints a process reads from its environment (QG06), each with its local value: every
  * database and cache it opens (`JEEVES_DATABASE_<ID>_HOST` and `_PORT`, `JEEVES_CACHE_<ID>_HOST`
  * and `_PORT`), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`), the
- * Pub/Sub project when it publishes to a topic (`JEEVES_PUBSUB_PROJECT`, and only locally
- * `PUBSUB_EMULATOR_HOST`) and each application tile its stubs call (`JEEVES_TILE_<ID>_URL`). A
- * deployment sets its own values.
+ * Pub/Sub project when it publishes to or consumes a topic (`JEEVES_PUBSUB_PROJECT`, and only
+ * locally `PUBSUB_EMULATOR_HOST`) and each application tile its stubs call
+ * (`JEEVES_TILE_<ID>_URL`). A deployment sets its own values.
  */
 export function localEndpoints(service: {
   sql?: readonly string[];
@@ -192,15 +193,19 @@ export const pubsubSubscription = (topic: string, tile: string) => {
   const name = `${topic}--${generationLocalIdentity(tile).local}`;
   return { name, failed: `${name}.failed` };
 };
-/** Why a loop stub on a Pub/Sub topic is a required gap (QG07): its subscription is provisioned,
- * but no consumer runs it yet. */
-export const pubsubConsumeGap = "Consuming Pub/Sub is not installed yet.";
+/** Whether a stub's link is to a Pub/Sub topic (QG07): a queue saved on Google Cloud that no
+ * template binds (`templated`, from `generationTemplateQueues`). A loop stub on one consumes its
+ * tile's subscription (`pubsubLoop`, QG08). */
+export const stubPubsub = (
+  link: { kind: string; provider: string; element: string },
+  templated: ReadonlySet<string>,
+) => link.kind === "queue" && link.provider === "google-cloud" && !templated.has(link.element);
 /**
  * Every store and channel a process's stubs link to, sorted by resource and channel, and a
  * required `unsupported` gap (`provider-<module>-<tile>`) for each link to one that isn't
  * provisioned. A queue only stubs use (no selection in `selections` binds it) that is saved on
- * Google Cloud is a Pub/Sub topic; a link that consumes one is a gap too (`pubsubConsumeGap`).
- * Worked out from the resolver's facts; nothing is written to ownership.
+ * Google Cloud is a Pub/Sub topic (`stubPubsub`), published to and consumed through the official
+ * client. Worked out from the resolver's facts; nothing is written to ownership.
  */
 export function stubStores(
   process: NormalizedProcess,
@@ -222,17 +227,15 @@ export function stubStores(
       ...(stub.stores ?? []),
     ];
     for (const link of links) {
-      const pubsub =
-        link.kind === "queue" && link.provider === "google-cloud" && !templated.has(link.element);
+      const pubsub = stubPubsub(link, templated);
       const unsupported = pubsub ? undefined : stubUnsupported(link);
-      const why = unsupported ?? (pubsub && link.access === "consume" ? pubsubConsumeGap : "");
       const gap = `provider-${stub.selection}-${link.element}`;
-      if (why && !gaps.has(gap))
+      if (unsupported && !gaps.has(gap))
         gaps.set(gap, {
           id: gap,
           required: true,
           status: "unsupported",
-          description: why,
+          description: unsupported,
           sourcePaths: [pointer(link.sourcePath)],
         });
       const queue = link.kind === "queue";

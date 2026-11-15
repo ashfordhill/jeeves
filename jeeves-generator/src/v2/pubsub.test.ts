@@ -96,10 +96,16 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     });
     expect(links.depends_on["local-pubsub"]).toEqual({ condition: "service_healthy" });
     expect(links.environment).toMatchObject({ JEEVES_BROKER_HOST: "local-broker" });
-    // The consuming tile's loop isn't installed yet: no Pub/Sub client, so no project.
+    // The consuming tile's loop reads the project too (QG08), and no longer the broker.
     const worker = compose.services["app-visit-worker"];
     expect(worker.depends_on["local-pubsub"]).toEqual({ condition: "service_healthy" });
-    expect(Object.keys(worker.environment)).not.toContain("JEEVES_PUBSUB_PROJECT");
+    expect(worker.environment).toMatchObject({
+      JEEVES_PUBSUB_PROJECT: "local",
+      PUBSUB_EMULATOR_HOST: "local-pubsub:8085",
+    });
+    expect(Object.keys(worker.environment)).not.toContain("JEEVES_BROKER_HOST");
+    expect(worker.depends_on).not.toHaveProperty("local-broker");
+    expect(worker.secrets ?? []).not.toContain("broker-password");
     expect(compose.services["local-broker"]).toBeDefined();
     expect(compose.secrets).not.toHaveProperty("pubsub");
 
@@ -142,7 +148,7 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     expect(setup).toBeLessThan(local.indexOf('step("application"'));
   });
 
-  it("publishes through pubsubPublisher, reports the topic and gaps the loop that would consume it", () => {
+  it("publishes through pubsubPublisher, reports the topic and its subscription, and consumes it with no gap", () => {
     const process = text(cloudExport, "src/processes/links-api.ts");
     expect(process).toContain(
       '    "visits": await pubsubPublisher(scope, probe, { topic: "visits" }),\n',
@@ -182,20 +188,19 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     expect(
       report.processes.tiles.find((row: { tile: string }) => row.tile === "links-api").environment,
     ).toEqual(expect.arrayContaining(["JEEVES_PUBSUB_PROJECT", "PUBSUB_EMULATOR_HOST"]));
-    // A loop stub on a Pub/Sub topic: a required unsupported gap until consuming is installed.
-    expect(report.gaps.filter((gap: { id: string }) => gap.id.startsWith("provider-"))).toEqual([
+    // A loop stub on a Pub/Sub topic consumes its tile's subscription (QG08): no gap, runnable.
+    expect(report.gaps.filter((gap: { id: string }) => gap.id.startsWith("provider-"))).toEqual([]);
+    expect(report.processes.runnable).toBe(true);
+    expect(
+      report.processes.tiles.find((row: { tile: string }) => row.tile === "visit-worker").loops,
+    ).toEqual([
       {
-        emitter: "local.foundation",
-        id: "provider-visit-consumer-visits",
-        required: true,
-        status: "unsupported",
-        description: "Consuming Pub/Sub is not installed yet.",
-        sourcePaths: [
-          `/architecture/studio/componentConnections/${cloud.architecture?.studio?.componentConnections?.findIndex((link) => link.id === "visit-consumer-visits")}`,
-        ],
+        queue: "visits--visit-worker",
+        module: "visit-consumer",
+        answers:
+          '"Not implemented: Visit consumer" sends the message to visits--visit-worker.failed (NOT_IMPLEMENTED) until it is written; other errors retry 5 times',
       },
     ]);
-    expect(report.processes.runnable).toBe(false);
     expect(
       report.settings.find(
         (row: { input: string; value: unknown }) =>
@@ -208,6 +213,78 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     expect(readme).toContain("`pubsub.topics.get` and `pubsub.topics.publish`");
     expect(readme).toContain("The emulator keeps nothing across a restart");
     expect(readme).toContain("reads `JEEVES_PUBSUB_PROJECT`");
+    expect(readme).toContain(
+      "A loop stub on a topic consumes its tile's subscription through the official client (`pubsubLoop`",
+    );
+    expect(readme).toContain("`pubsub.subscriptions.get` and `pubsub.subscriptions.consume`");
+    expect(readme).not.toContain("isn't installed yet");
+  });
+
+  it("runs a loop stub on a Pub/Sub topic on its tile's subscription through pubsubLoop (QG08)", () => {
+    const worker = text(cloudExport, "src/processes/visit-worker.ts");
+    expect(worker).toContain(
+      [
+        "  // Visit consumer: a loop on the Pub/Sub subscription visits--visit-worker.",
+        "  await startModuleLoop(scope, loopLog, config.loops[0], (message) =>",
+        '    visitConsumer(dependencies["visit-consumer"], message),',
+        '    brokerState(config.tile, failure, "broker consume visits--visit-worker"),',
+        "    pubsubLoop(probe),",
+        "  );",
+        "  scope.ready();",
+      ].join("\n"),
+    );
+    expect(worker).toContain('"queue": "visits--visit-worker",\n');
+    expect(worker).toContain('"failedQueue": "visits--visit-worker.failed",\n');
+    expect(worker).toMatch(
+      /import \{[^}]*\bpubsubLoop\b[^}]*\} from "\.\.\/runtime\/module-clients\.ts";/,
+    );
+    expect(worker).not.toContain("brokerBinding");
+    // The probe log its subscription's check writes to comes before the loop.
+    expect(worker.indexOf("const probe = createProbeLog(config.tile);")).toBeLessThan(
+      worker.indexOf("pubsubLoop(probe)"),
+    );
+    // Its subscription and dead-letter topic are the ones setup-pubsub creates.
+    const plan = json(cloudExport, "infra/local.json");
+    expect(plan.pubsub.subscriptions[0]).toMatchObject({
+      name: "visits--visit-worker",
+      deadLetterPolicy: { deadLetterTopic: "visits--visit-worker.failed" },
+    });
+    // RabbitMQ's loop stays on the broker for Uploaded.
+    const links = text(cloudExport, "src/processes/links-api.ts");
+    expect(links).toContain("  // Upload consumer: a loop on uploaded.\n");
+    expect(links).toContain("    brokerBinding(),\n");
+    expect(links).not.toContain("pubsubLoop");
+    const clients = text(cloudExport, "src/runtime/module-clients.ts");
+    expect(clients).toContain("export function pubsubLoop(log: ProbeLog): LoopTransport {");
+    expect(clients).toContain(
+      'import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Delivery } from "./delivery.ts";',
+    );
+    expect(clients).not.toContain("// @");
+    // A publisher-only Pub/Sub export has no subscriber.
+    const publisherOnly = exported(
+      runStudioCommands(cloud, [{ type: "disconnectModule", link: "visit-consumer-visits" }]),
+    );
+    expect(text(publisherOnly, "src/runtime/module-clients.ts")).not.toContain("pubsubLoop");
+    expect(text(publisherOnly, "src/runtime/module-clients.ts")).toContain("pubsubPublisher");
+  });
+
+  it("needs no broker for a design whose only channels are Pub/Sub topics, its loops included (QG08)", () => {
+    const only = exported(provider(cloud, "uploaded", "google-cloud"));
+    const services = json(only, "compose.yaml").services;
+    for (const name of Object.keys(services).filter((item) => item.startsWith("app-")))
+      expect(Object.keys(services[name].environment ?? {}), name).not.toContain(
+        "JEEVES_BROKER_HOST",
+      );
+    const links = text(only, "src/processes/links-api.ts");
+    expect(links).toContain(
+      "  // Upload consumer: a loop on the Pub/Sub subscription uploaded--links-api.\n",
+    );
+    expect(links).not.toContain("brokerBinding");
+    expect(services["app-links-api"].environment).toMatchObject({ JEEVES_PUBSUB_PROJECT: "local" });
+    const report = json(only, ".jeeves/report.json");
+    expect(report.gaps.filter((gap: { id: string }) => gap.id.startsWith("provider-"))).toEqual([]);
+    expect(report.processes.runnable).toBe(true);
+    expect(text(only, "src/runtime/module-clients.ts")).not.toContain("brokerBinding");
   });
 
   it("leaves a RabbitMQ design without Pub/Sub, and a design with only Pub/Sub channels without a broker", () => {

@@ -525,8 +525,8 @@ emulator). It is consumed as `stub-channel.provider`; mouse and chat share it
 (`getDesign.editableSettings` rows with `input: queue.provider`), and it can't be cleared. A
 Queue a template uses has no such control: its template fixes it at Self-hosted, and any other
 saved value is that template's unsupported setting. A saved value it doesn't support (AWS, an
-older design) keeps the control, unsupported, until it is put right. Consuming Pub/Sub isn't
-installed yet: a loop stub on a Google Cloud queue is a required gap.
+older design) keeps the control, unsupported, until it is put right. A loop stub on a Google
+Cloud queue consumes its tile's Pub/Sub subscription.
 
 Generation preview and ZIP use these same installed consumer contracts. The dialog shows exact
 selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse

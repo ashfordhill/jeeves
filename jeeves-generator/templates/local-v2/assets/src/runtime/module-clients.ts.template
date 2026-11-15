@@ -15,6 +15,16 @@ import { createPublisher, type BrokerState } from "./amqp.ts";
 import { randomUUID as pubsubMessageId } from "node:crypto";
 import { PubSub } from "@google-cloud/pubsub";
 // @pubsub-import-end
+// @pubsub-loop-import-start
+import type { Message, Subscription } from "@google-cloud/pubsub";
+import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Delivery } from "./delivery.ts";
+import {
+  failureStep,
+  type LoopConsumer,
+  type LoopConsumerOptions,
+  type LoopTransport,
+} from "./tile-loop.ts";
+// @pubsub-loop-import-end
 // @cache-import-start
 import { createFailureLog } from "./tile-process.ts";
 import { createValkeyCache } from "./valkey.ts";
@@ -283,6 +293,234 @@ export async function pubsubPublisher(
   };
 }
 // @pubsub-end
+// @pubsub-loop-start
+/** The wait before a subscriber that closed on an error opens again, and between its checks. */
+const pubsubReopenMs = 5000;
+/** `work`, or a rejection `<what> (<ms> ms)` once `ms` pass. */
+function within<T>(work: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    work,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${what} (${ms} ms)`)), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+/** Resolves after `ms`, or at once when `signal` aborts. */
+function pause(ms: number, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) return Promise.resolve();
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", done);
+      resolve();
+    };
+    const timer = setTimeout(done, ms);
+    signal.addEventListener("abort", done, { once: true });
+  });
+}
+/**
+ * A loop's transport on its tile's Pub/Sub subscription `<topic>--<tile>` (QG08), through the
+ * official client in `JEEVES_PUBSUB_PROJECT` with Application Default Credentials (locally
+ * `PUBSUB_EMULATOR_HOST`), with the contract a RabbitMQ loop has:
+ * - one streaming-pull subscriber per loop, handing over at most the loop's Concurrency messages
+ *   at a time (`maxMessages`, no excess); the client extends each one's lease while it is in hand;
+ * - a message is acknowledged only after its handler resolves;
+ * - a retryable failure is nacked, and the subscription's retry policy spaces its redelivery;
+ * - a terminal one (a `NonRetryable`, or a failure on delivery attempt retry limit + 1) is
+ *   published to `<topic>--<tile>.failed` with its attributes and `x-terminal-code`, then
+ *   acknowledged once Pub/Sub has that copy (within 2000 ms); if it hasn't, the message is nacked;
+ * - an unreachable store keeps the message: 5 s later the handler runs again with the same message
+ *   and attempt;
+ * - a subscriber error, or a failed `.failed` copy, tells `onState` `unavailable` once, and
+ *   `available` when a message arrives again; a subscriber that closes on an error opens again 5 s
+ *   later, once its messages in hand have settled and its subscription answers (`available`), or
+ *   tries again 5 s after that. Nothing here fails the process.
+ * Closing stops taking messages, cuts a wait short (that message is nacked) and lets the handlers
+ * in hand settle, then closes the subscription, which nacks what it held back, and the client. A
+ * message's `attempt` is Pub/Sub's delivery attempt, which every redelivery counts, a nack at
+ * close or a lost lease too. Processes never create or change subscriptions. Probe: the
+ * subscription exists.
+ */
+export function pubsubLoop(log: ProbeLog): LoopTransport {
+  return { retries: "transport", open: (options) => pubsubConsumer(log, options) };
+}
+async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Promise<LoopConsumer> {
+  validateDeliveryBinding(options);
+  if (
+    !Number.isSafeInteger(options.concurrency) ||
+    options.concurrency < 1 ||
+    options.concurrency > 100000
+  )
+    throw new Error("Invalid consumer concurrency");
+  const client = new PubSub({ projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject) });
+  const subscribe = () =>
+    client.subscription(options.queue, {
+      flowControl: { maxMessages: options.concurrency, allowExcessMessages: false },
+    });
+  const failedTopic = client.topic(options.failedQueue, { gaxOpts: { timeout: pubsubDeadlineMs } });
+  const answers = async (subscription: Subscription) => {
+    const [exists] = await subscription.exists();
+    if (!exists) throw new Error(`Pub/Sub subscription ${options.queue} not found`);
+  };
+  /** One subscriber: a lost one takes no message, and its client has nacked those it held. */
+  type Generation = { subscription: Subscription; lost: boolean; stop: AbortController };
+  let current: Generation | undefined;
+  const inFlight = new Set<Promise<void>>();
+  let closing = false;
+  let retry: ReturnType<typeof setTimeout> | undefined;
+  let shutdown: Promise<void> | undefined;
+  let reported: "available" | "unavailable" | undefined;
+  const report = (state: "available" | "unavailable", error?: unknown) => {
+    if (state === reported) return;
+    reported = state;
+    try {
+      options.onState?.(state, error);
+    } catch {
+      /* The consumer goes on as it would without the report. */
+    }
+  };
+  let finishClosed!: (result: { fatal: boolean }) => void;
+  const closed = new Promise<{ fatal: boolean }>((resolve) => {
+    finishClosed = resolve;
+  });
+
+  async function deliver(generation: Generation, message: Message) {
+    const attempt =
+      Number.isSafeInteger(message.deliveryAttempt) && message.deliveryAttempt >= 1
+        ? message.deliveryAttempt
+        : 1;
+    const id = message.attributes.messageId;
+    const delivery: Delivery = {
+      messageId: typeof id === "string" && id !== "" ? id : message.id,
+      headers: { ...message.attributes },
+      deliveryCount: attempt,
+      redelivered: attempt > 1,
+    };
+    for (;;) {
+      let failure: unknown;
+      try {
+        await options.handle(message.data, delivery);
+        if (!generation.lost) message.ack();
+        return;
+      } catch (error) {
+        failure = error;
+      }
+      if (generation.lost) return;
+      const next = failureStep(failure, attempt, options.retryLimit);
+      if (next.step === "retry") return message.nack();
+      if (next.step === "wait") {
+        // The store failed, not the message: keep it and run it again with the same attempt.
+        await pause(UNREACHABLE_WAIT_MS, generation.stop.signal);
+        if (generation.lost) return;
+        if (closing) return message.nack();
+        continue;
+      }
+      try {
+        await within(
+          failedTopic.publishMessage({
+            data: message.data,
+            attributes: { ...message.attributes, "x-terminal-code": next.code },
+          }),
+          pubsubDeadlineMs,
+          "Publish deadline",
+        );
+        if (!generation.lost) message.ack();
+      } catch (error) {
+        // Redelivered: the message is never lost, and the next delivery tries the copy again.
+        if (!generation.lost) message.nack();
+        report("unavailable", error);
+      }
+      return;
+    }
+  }
+  function open(subscription: Subscription): Generation {
+    const generation: Generation = { subscription, lost: false, stop: new AbortController() };
+    let cause: unknown;
+    subscription.on("error", (error: unknown) => {
+      cause = error;
+      if (!generation.lost && !closing) report("unavailable", error);
+    });
+    subscription.on("close", () =>
+      lose(generation, cause ?? new Error("Pub/Sub subscriber closed")),
+    );
+    // Adding the listener starts the streaming pull.
+    subscription.on("message", (message: Message) => {
+      // Draining or lost, a message stays with the client, which nacks it as it closes.
+      if (closing || generation.lost) return;
+      report("available");
+      const task = deliver(generation, message);
+      inFlight.add(task);
+      void task.finally(() => inFlight.delete(task)).catch(() => {});
+    });
+    return generation;
+  }
+  // A subscriber that closes on its own lost its stream for good: its client nacked what it held.
+  function lose(generation: Generation, error: unknown) {
+    if (closing || generation.lost) return;
+    generation.lost = true;
+    generation.stop.abort();
+    if (generation !== current) return;
+    current = undefined;
+    report("unavailable", error);
+    later();
+  }
+  function later() {
+    if (closing || retry) return;
+    retry = setTimeout(() => {
+      retry = undefined;
+      void reopen();
+    }, pubsubReopenMs);
+  }
+  async function reopen() {
+    // As a RabbitMQ consumer does, the next subscriber opens only after the lost one's messages
+    // settle, so the messages in hand never exceed the Concurrency.
+    await Promise.allSettled([...inFlight]);
+    if (closing) return;
+    const subscription = subscribe();
+    try {
+      await within(answers(subscription), 5000, "Pub/Sub check deadline");
+    } catch (error) {
+      report("unavailable", error);
+      later();
+      return;
+    }
+    if (closing) return;
+    current = open(subscription);
+    report("available");
+  }
+  function close(): Promise<void> {
+    if (shutdown) return shutdown;
+    closing = true;
+    clearTimeout(retry);
+    retry = undefined;
+    current?.stop.abort();
+    return (shutdown = (async () => {
+      await Promise.allSettled([...inFlight]);
+      const generation = current;
+      current = undefined;
+      if (generation) await generation.subscription.close().catch(() => {});
+      await client.close().catch(() => {});
+      finishClosed({ fatal: false });
+    })());
+  }
+
+  const first = subscribe();
+  try {
+    await probed(
+      log,
+      { client: options.queue, kind: "queue", check: "the Pub/Sub subscription exists" },
+      () => answers(first),
+    );
+  } catch (error) {
+    await client.close().catch(() => {});
+    throw error;
+  }
+  current = open(first);
+  report("available");
+  return { close, closed };
+}
+// @pubsub-loop-end
 // @cache-start
 /** A cache (Valkey) with its password, through the cache read's bounded client
  * (`createValkeyCache`): a command settles within 150 ms and at most 32 wait; while no client is

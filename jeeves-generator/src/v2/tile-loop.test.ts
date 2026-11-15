@@ -1,6 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
+import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
+import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
+import { canonicalJson } from "../json.ts";
+import { assembleV2 } from "./assemble.ts";
 
 // The exact emitted loop scaffold, on the real delivery runner. Only `createConsumer` (amqplib)
 // is replaced: by the runner over an in-memory transport that records what the broker would see.
@@ -601,5 +606,541 @@ describe("emitted failure line", () => {
         upload: "u-1",
       },
     ]);
+  });
+});
+
+// QG08: the stub stack with Visits on Google Cloud, so Visit consumer's loop consumes its tile's
+// Pub/Sub subscription. The exact emitted module-clients.ts runs on the real tile-loop.ts and
+// delivery.ts above, with a fake official client: each subscription is an event emitter the test
+// drives, and every call the client is asked for is recorded in order.
+const pubsubBundle = assembleV2(
+  {
+    designJson: canonicalJson(
+      runStudioCommands(stubStackDesign(), [
+        { type: "setRunnableProcesses", on: true },
+        {
+          type: "edit",
+          element: "visits",
+          settings: { kind: "queue", mode: "topic", provider: "google-cloud" },
+        },
+      ]),
+    ),
+  },
+  loadLocalV2Registry(),
+);
+type FakeSubscription = import("node:events").EventEmitter & {
+  name: string;
+  options: unknown;
+};
+type PubsubFake = {
+  calls: unknown[][];
+  subscriptions: FakeSubscription[];
+  exists: () => Promise<[boolean]>;
+  publish: (message: { data: Buffer; attributes: Record<string, string> }) => Promise<string>;
+};
+const pubsubFake: PubsubFake = {
+  calls: [],
+  subscriptions: [],
+  exists: async () => [true],
+  publish: async () => "copy-1",
+};
+(globalThis as { pubsubLoopFake?: PubsubFake }).pubsubLoopFake = pubsubFake;
+const fakeSdk = `import { EventEmitter } from "node:events";
+  const fake = globalThis.pubsubLoopFake;
+  export class PubSub {
+    constructor(options) { fake.calls.push(["PubSub", options]); }
+    subscription(name, options) {
+      const subscription = Object.assign(new EventEmitter(), {
+        name,
+        options,
+        exists: () => (fake.calls.push(["exists", name]), fake.exists()),
+        close: async () => {
+          fake.calls.push(["close subscription", name]);
+          subscription.emit("close");
+        },
+      });
+      subscription.on("newListener", (event) => {
+        if (event === "message") fake.calls.push(["stream", name]);
+      });
+      fake.subscriptions.push(subscription);
+      return subscription;
+    }
+    topic(name, options) {
+      fake.calls.push(["topic", name, options]);
+      return {
+        publishMessage: (message) => {
+          fake.calls.push(["publish", name, message.data.toString(), message.attributes]);
+          return fake.publish(message);
+        },
+      };
+    }
+    async close() { fake.calls.push(["close client"]); }
+  }`;
+const emittedClients = stripTypeScriptTypes(
+  new TextDecoder().decode(
+    pubsubBundle.files.find((file) => file.path === "src/runtime/module-clients.ts")?.bytes,
+  ),
+);
+// The runtime files it shares with the loop are the real ones; every other import (the other
+// stores' libraries, unused here) is a stand-in that only exports its names.
+const pubsubClients = await import(
+  dataUrl(
+    emittedClients.replace(
+      /import\s*\{([^}]*)\}\s*from\s*"([^"]+)";/g,
+      (statement, names: string, from: string) => {
+        const runtime = /^\.\/(delivery|tile-loop|tile-process)\.ts$/.exec(from)?.[1];
+        if (runtime) return statement.replace(`"${from}"`, `"${moduleUrl(runtime)}"`);
+        if (from === "@google-cloud/pubsub")
+          return statement.replace(`"${from}"`, `"${dataUrl(fakeSdk)}"`);
+        if (from.startsWith("node:")) return statement;
+        const exported = names
+          .split(",")
+          .map((name) => name.trim().split(/\s+as\s+/)[0])
+          .filter(Boolean)
+          .map((name) => `export const ${name} = () => { throw new Error("unused"); };`);
+        return statement.replace(`"${from}"`, `"${dataUrl(exported.join("\n"))}"`);
+      },
+    ),
+  )
+);
+const { brokerState } = await import(moduleUrl("tile-process"));
+
+describe("emitted Pub/Sub stub loops (QG08)", () => {
+  const visitsLoop = { ...visits, concurrency: 3 };
+  let project: string | undefined;
+  beforeEach(() => {
+    project = process.env.JEEVES_PUBSUB_PROJECT;
+    process.env.JEEVES_PUBSUB_PROJECT = "local";
+    pubsubFake.calls.length = 0;
+    pubsubFake.subscriptions.length = 0;
+    pubsubFake.exists = async () => [true];
+    pubsubFake.publish = async () => "copy-1";
+  });
+  afterEach(() => {
+    if (project === undefined) delete process.env.JEEVES_PUBSUB_PROJECT;
+    else process.env.JEEVES_PUBSUB_PROJECT = project;
+  });
+  const probes: Record<string, unknown>[] = [];
+  const probe = Object.assign((entry: Record<string, unknown>) => probes.push(entry), {
+    tile: "visit-worker",
+  });
+  /** A message as the official client hands it over; ack and nack are recorded in order. */
+  function message(
+    id: string,
+    options: { attributes?: Record<string, string>; deliveryAttempt?: number } = {},
+  ) {
+    const { attributes = { messageId: id }, deliveryAttempt = 1 } = options;
+    return {
+      id: `server-${id}`,
+      data: Buffer.from(`body of ${id}`),
+      attributes,
+      deliveryAttempt,
+      ack: () => pubsubFake.calls.push(["ack", id]),
+      nack: () => pubsubFake.calls.push(["nack", id]),
+    };
+  }
+  /** Visit consumer's loop as its process starts it, with the process's own state hook. */
+  async function pubsubStarted(entry: (message: unknown) => Promise<void>, bounds = visitsLoop) {
+    probes.length = 0;
+    const scope = testScope();
+    const log = loop.createLoopLog("visit-worker");
+    const failure = createFailureLog("visit-worker");
+    const consumer = await loop.startModuleLoop(
+      scope,
+      log,
+      bounds,
+      entry,
+      brokerState("visit-worker", failure, `broker consume ${bounds.queue}`),
+      pubsubClients.pubsubLoop(probe),
+    );
+    const subscription = () => {
+      const current = pubsubFake.subscriptions.at(-1);
+      if (!current) throw new Error("No subscription");
+      return current;
+    };
+    const deliver = (item: ReturnType<typeof message>) => subscription().emit("message", item);
+    return { scope, consumer, subscription, deliver };
+  }
+  const handled = (id: string) =>
+    vi.waitFor(() => {
+      if (
+        !pubsubFake.calls.some(
+          (call) => (call[0] === "ack" || call[0] === "nack") && call[1] === id,
+        )
+      )
+        throw new Error(`${id} not settled yet`);
+    });
+  const after = (index: number) => pubsubFake.calls.slice(index);
+
+  it("streams its tile's subscription once it exists, holding at most its Concurrency in hand", async () => {
+    const { scope, consumer } = await pubsubStarted(async () => {});
+    expect(pubsubFake.calls).toEqual([
+      ["PubSub", { projectId: "local" }],
+      ["topic", "visits--visit-worker.failed", { gaxOpts: { timeout: 2000 } }],
+      ["exists", "visits--visit-worker"],
+      ["stream", "visits--visit-worker"],
+    ]);
+    expect(pubsubFake.subscriptions).toHaveLength(1);
+    expect(pubsubFake.subscriptions[0]?.options).toEqual({
+      flowControl: { maxMessages: 3, allowExcessMessages: false },
+    });
+    expect(probes).toEqual([
+      {
+        level: "info",
+        client: "visits--visit-worker",
+        kind: "queue",
+        check: "the Pub/Sub subscription exists",
+        result: "ok",
+      },
+    ]);
+    // Startup reports the consumer available once, as a broker consumer does.
+    expect(lines).toEqual([
+      {
+        level: "info",
+        event: "broker",
+        tile: "visit-worker",
+        what: "broker consume visits--visit-worker",
+        state: "available",
+      },
+    ]);
+    expect(scope.owned).toHaveLength(1);
+    expect(scope.transport).toHaveBeenCalledWith(
+      expect.objectContaining({ closed: consumer.closed }),
+    );
+    await scope.stop();
+    await expect(consumer.closed).resolves.toEqual({ fatal: false });
+  });
+
+  it("gives the module each message's bytes, ID, attributes, attempt and subscription, and acks only after it resolves", async () => {
+    const received: unknown[] = [];
+    let finish!: () => void;
+    const { scope, deliver } = await pubsubStarted(async (item) => {
+      received.push(item);
+      if (received.length === 1)
+        await new Promise<void>((resolve) => {
+          finish = resolve;
+        });
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("a", { attributes: { messageId: "a", trace: "t" }, deliveryAttempt: 2 }));
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(after(start)).toEqual([]);
+    finish();
+    await handled("a");
+    expect(after(start)).toEqual([["ack", "a"]]);
+    // With no messageId attribute, the message's ID is Pub/Sub's own.
+    deliver(message("b", { attributes: {} }));
+    await handled("b");
+    expect(received).toEqual([
+      {
+        body: Buffer.from("body of a"),
+        messageId: "a",
+        headers: { messageId: "a", trace: "t" },
+        attempt: 2,
+        source: "visits--visit-worker",
+      },
+      {
+        body: Buffer.from("body of b"),
+        messageId: "server-b",
+        headers: {},
+        attempt: 1,
+        source: "visits--visit-worker",
+      },
+    ]);
+    expect(lines.filter((line) => line.event !== "broker")).toEqual([]);
+    await scope.stop();
+  });
+
+  it("nacks another error at once, for the subscription to space, until a failure on attempt 6 ends in .failed as RETRY_EXHAUSTED", async () => {
+    vi.useFakeTimers();
+    const { scope, deliver } = await pubsubStarted(async () => {
+      throw new TypeError("boom");
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("first"));
+    await vi.advanceTimersByTimeAsync(0);
+    // No retryDelay wait: the subscription's retry policy spaces the redelivery.
+    expect(after(start)).toEqual([["nack", "first"]]);
+    expect(lines.at(-1)).toEqual({
+      level: "error",
+      event: "loop-error",
+      tile: "visit-worker",
+      module: "visit-consumer",
+      queue: "visits--visit-worker",
+      messageId: "first",
+      attempt: 1,
+      error: "TypeError: boom",
+      action: "retry 1 of 5",
+    });
+    // Delivery attempt 5 is the last retry, as a RabbitMQ loop's fifth delivery is.
+    deliver(message("fifth", { deliveryAttempt: 5 }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(after(start).at(-1)).toEqual(["nack", "fifth"]);
+    const sixth = pubsubFake.calls.length;
+    deliver(
+      message("sixth", { attributes: { messageId: "sixth", trace: "t" }, deliveryAttempt: 6 }),
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    expect(after(sixth)).toEqual([
+      [
+        "publish",
+        "visits--visit-worker.failed",
+        "body of sixth",
+        { messageId: "sixth", trace: "t", "x-terminal-code": "RETRY_EXHAUSTED" },
+      ],
+      ["ack", "sixth"],
+    ]);
+    expect(scope.fail).not.toHaveBeenCalled();
+    await scope.stop();
+  });
+
+  it('sends "Not implemented" and a NonRetryable to .failed with their attributes, acking each once Pub/Sub has the copy', async () => {
+    const { scope, deliver } = await pubsubStarted(async (item) => {
+      if ((item as { messageId: string }).messageId === "bad")
+        throw new NonRetryable("MALFORMED_MESSAGE");
+      throw new Error("Not implemented: Visit consumer");
+    });
+    let publish!: (id: string) => void;
+    pubsubFake.publish = () =>
+      new Promise<string>((resolve) => {
+        publish = resolve;
+      });
+    const start = pubsubFake.calls.length;
+    deliver(message("m1", { attributes: { messageId: "m1", trace: "t" } }));
+    await vi.waitFor(() => expect(publish).toBeTypeOf("function"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Not acknowledged before the copy is.
+    expect(after(start)).toEqual([
+      [
+        "publish",
+        "visits--visit-worker.failed",
+        "body of m1",
+        { messageId: "m1", trace: "t", "x-terminal-code": "NOT_IMPLEMENTED" },
+      ],
+    ]);
+    publish("copy-1");
+    await handled("m1");
+    expect(after(start).at(-1)).toEqual(["ack", "m1"]);
+    expect(lines.at(-1)).toMatchObject({
+      event: "not-implemented",
+      action: "sent to visits--visit-worker.failed (NOT_IMPLEMENTED)",
+    });
+    pubsubFake.publish = async () => "copy-2";
+    const bad = pubsubFake.calls.length;
+    deliver(message("bad"));
+    await handled("bad");
+    expect(after(bad)).toEqual([
+      [
+        "publish",
+        "visits--visit-worker.failed",
+        "body of bad",
+        { messageId: "bad", "x-terminal-code": "MALFORMED_MESSAGE" },
+      ],
+      ["ack", "bad"],
+    ]);
+    await scope.stop();
+  });
+
+  it("nacks a terminal message whose .failed copy fails or misses its 2000 ms deadline, telling the state hook", async () => {
+    vi.useFakeTimers();
+    const { scope, deliver } = await pubsubStarted(async () => {
+      throw new Error("Not implemented: Visit consumer");
+    });
+    pubsubFake.publish = () => Promise.reject(new Error("14 UNAVAILABLE"));
+    const start = pubsubFake.calls.length;
+    deliver(message("m1"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(after(start).map((call) => call[0])).toEqual(["publish", "nack"]);
+    expect(lines.at(-1)).toEqual({
+      level: "error",
+      event: "failure",
+      tile: "visit-worker",
+      what: "broker consume visits--visit-worker",
+      error: "Error: 14 UNAVAILABLE",
+    });
+    // A copy Pub/Sub never answers is given up after 2000 ms, and the message is nacked.
+    pubsubFake.publish = () => new Promise<string>(() => {});
+    const hung = pubsubFake.calls.length;
+    deliver(message("m2"));
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(after(hung).map((call) => call[0])).toEqual(["publish"]);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(after(hung)).toEqual([
+      ["publish", "visits--visit-worker.failed", "body of m2", expect.any(Object)],
+      ["nack", "m2"],
+    ]);
+    expect(pubsubFake.calls.some((call) => call[0] === "ack")).toBe(false);
+    expect(scope.fail).not.toHaveBeenCalled();
+    await scope.stop();
+  });
+
+  it("keeps a message whose store is unreachable and runs it again 5 s later with the same attempt", async () => {
+    vi.useFakeTimers();
+    const received: unknown[] = [];
+    const { scope, deliver } = await pubsubStarted(async (item) => {
+      received.push(item);
+      if (received.length < 3)
+        throw Object.assign(new Error("connect ECONNREFUSED"), { code: "ECONNREFUSED" });
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("lost", { deliveryAttempt: 4 }));
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(received).toHaveLength(1);
+    expect(after(start)).toEqual([]);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(received).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(5000);
+    // The third run resolves: one ack, never a nack, and the attempt never moved.
+    expect(after(start)).toEqual([["ack", "lost"]]);
+    expect(received).toEqual(
+      Array(3).fill(expect.objectContaining({ messageId: "lost", attempt: 4 })),
+    );
+    expect(lines.filter((line) => line.event === "loop-error")).toEqual([
+      {
+        level: "error",
+        event: "loop-error",
+        tile: "visit-worker",
+        module: "visit-consumer",
+        queue: "visits--visit-worker",
+        messageId: "lost",
+        attempt: 4,
+        error: "Error: connect ECONNREFUSED",
+        action: "store unreachable, retry in 5000 ms (attempt not counted)",
+      },
+      expect.objectContaining({
+        attempt: 4,
+        action: "store unreachable, retry in 5000 ms (attempt not counted)",
+      }),
+    ]);
+    await scope.stop();
+  });
+
+  it("nacks a message waiting on its store when the loop closes, then closes the subscription and the client", async () => {
+    vi.useFakeTimers();
+    const { scope, consumer, deliver } = await pubsubStarted(async () => {
+      throw new Error("Connection terminated unexpectedly");
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("waiting"));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(after(start)).toEqual([]);
+    // No timer advances: stopping alone ends the 5 s wait.
+    await scope.stop();
+    expect(after(start)).toEqual([
+      ["nack", "waiting"],
+      ["close subscription", "visits--visit-worker"],
+      ["close client"],
+    ]);
+    await expect(consumer.closed).resolves.toEqual({ fatal: false });
+  });
+
+  it("drains: takes no new message, lets the one in hand settle, then closes the subscription and the client", async () => {
+    let finish!: () => void;
+    const received: string[] = [];
+    const { scope, deliver } = await pubsubStarted(async (item) => {
+      received.push((item as { messageId: string }).messageId);
+      await new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("slow"));
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    let stopped = false;
+    const stopping = scope.stop().then(() => {
+      stopped = true;
+    });
+    // Arriving while it drains, a message is left to the client, which nacks it as it closes.
+    deliver(message("late"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(stopped).toBe(false);
+    expect(after(start)).toEqual([]);
+    finish();
+    await stopping;
+    expect(received).toEqual(["slow"]);
+    expect(after(start)).toEqual([
+      ["ack", "slow"],
+      ["close subscription", "visits--visit-worker"],
+      ["close client"],
+    ]);
+  });
+
+  it("reports a subscriber error once and opens a subscriber that closed on one again 5 s later; the process never stops for it", async () => {
+    vi.useFakeTimers();
+    const { scope, subscription, deliver } = await pubsubStarted(async () => {});
+    const first = subscription();
+    first.emit("error", new Error("13 INTERNAL: stream reset"));
+    first.emit("error", new Error("13 INTERNAL: stream reset"));
+    expect(lines.filter((line) => line.event === "failure")).toEqual([
+      {
+        level: "error",
+        event: "failure",
+        tile: "visit-worker",
+        what: "broker consume visits--visit-worker",
+        error: "Error: 13 INTERNAL: stream reset",
+      },
+    ]);
+    // It streams again: one available line. (A second later, so the failure log's once-a-second
+    // limit holds back nothing below.)
+    deliver(message("m1"));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(lines.at(-1)).toMatchObject({ event: "broker", state: "available" });
+    // A subscriber that closes on an error (here NOT_FOUND, while setup creates it again).
+    pubsubFake.exists = async () => [false];
+    const start = pubsubFake.calls.length;
+    first.emit("error", new Error("5 NOT_FOUND: Subscription does not exist"));
+    first.emit("close");
+    expect(lines.at(-1)).toMatchObject({
+      event: "failure",
+      error: "Error: 5 NOT_FOUND: Subscription does not exist",
+    });
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(after(start)).toEqual([]);
+    await vi.advanceTimersByTimeAsync(1);
+    // Its check fails, so it tries again 5 s later, and then streams.
+    expect(after(start)).toEqual([["exists", "visits--visit-worker"]]);
+    pubsubFake.exists = async () => [true];
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(after(start)).toEqual([
+      ["exists", "visits--visit-worker"],
+      ["exists", "visits--visit-worker"],
+      ["stream", "visits--visit-worker"],
+    ]);
+    expect(lines.at(-1)).toMatchObject({ event: "broker", state: "available" });
+    // The lost subscriber takes no message; the new one does.
+    first.emit("message", message("old"));
+    deliver(message("new"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(after(start).filter((call) => call[0] === "ack")).toEqual([["ack", "new"]]);
+    expect(subscription()).not.toBe(first);
+    expect(subscription().options).toEqual(first.options);
+    expect(scope.fail).not.toHaveBeenCalled();
+    await scope.stop();
+  });
+
+  it("fails startup when its subscription is missing or its project invalid, closing its client", async () => {
+    pubsubFake.exists = async () => [false];
+    await expect(pubsubStarted(async () => {})).rejects.toThrow(
+      "Startup probe failed: queue visits--visit-worker",
+    );
+    expect(probes).toEqual([
+      {
+        level: "error",
+        client: "visits--visit-worker",
+        kind: "queue",
+        check: "the Pub/Sub subscription exists",
+        result: "failed",
+        error: "Error: Pub/Sub subscription visits--visit-worker not found",
+      },
+    ]);
+    expect(pubsubFake.calls.at(-1)).toEqual(["close client"]);
+    expect(pubsubFake.calls.some((call) => call[0] === "stream")).toBe(false);
+    process.env.JEEVES_PUBSUB_PROJECT = "Not a project";
+    pubsubFake.calls.length = 0;
+    await expect(pubsubStarted(async () => {})).rejects.toThrow(
+      "Invalid endpoint JEEVES_PUBSUB_PROJECT",
+    );
+    expect(pubsubFake.calls).toEqual([]);
   });
 });

@@ -15330,3 +15330,181 @@ baseline), then QG21–QG23 and QG25, then QL.
 tree while QG07 was mid-unit. `2625d96` holds the rest.
 
 **For the next unit.** QG08.
+
+## 2026-11-14 — QG08: Stub loops consume Pub/Sub subscriptions
+
+**What changed.**
+- `tile-loop.ts.template`:
+  - `LoopTransport` (`retries`, `open`) is the interface both transports implement, with
+    `LoopConsumerOptions` and `LoopConsumer`. `amqpLoop(binding)` is RabbitMQ's `createConsumer`.
+  - `startModuleLoop`'s last argument takes a `LoopTransport` or, as before, a broker binding.
+  - `failureStep(error, attempt, retryLimit)` is the delivery runner's rule (wait / terminal with
+    its code / retry); `outcome` now uses it.
+  - `moduleHandler` skips its `retryDelay` wait when the transport spaces retries.
+- `module-clients.ts.template`, new `pubsub-loop` section (and its imports) beside `pubsub`:
+  `pubsubLoop(probe)`, a loop's transport on `<topic>--<tile>`.
+  - Startup probe: the subscription exists. Then one streaming-pull subscriber with flow control
+    `{ maxMessages: <Concurrency>, allowExcessMessages: false }`.
+  - Each message's `ModuleMessage`: `body` its data; `messageId` its attribute, else the server
+    ID; `headers` its attributes; `attempt` its `deliveryAttempt` (below 1 counts as 1); `source`
+    the subscription.
+  - `ack()` only after the handler resolves. A retryable failure is nacked at once.
+  - Terminal (`failureStep`): a copy goes to `<topic>--<tile>.failed` with the attributes plus
+    `x-terminal-code`, bounded at 2000 ms (`Publish deadline`), then `ack()`. A failed copy →
+    `nack()` and one `broker consume <subscription>` failure line.
+  - Unreachable store: it keeps the message, waits 5 s and runs the handler again with the same
+    message and attempt. `close()` during the wait → `nack()`.
+  - A subscriber `error` → one failure line (state reporting as BR01's); `available` when a
+    message arrives again. A subscriber that closes on its own → a new one 5 s later, once the
+    messages in hand settle and the subscription answers; a failed check tries again in 5 s.
+  - Drain: it stops handing messages over, lets those in hand settle, then closes the subscription
+    (which nacks what it held back) and the client.
+- `loop-wiring.ts`, `stubLoops`: a loop on a Pub/Sub topic (`stubPubsub`) gets
+  `pubsubSubscription`'s names in its loop row and `pubsubLoop(probe)` in place of
+  `brokerBinding()`. RabbitMQ loops' lines are unchanged.
+- `client-wiring.ts`:
+  - A tile with such a loop gets the `pubsub` and `pubsub-loop` sections, the probe log and
+    `service.pubsub`.
+  - `broker` only for a non-Pub/Sub consume.
+  - `ClientSection` and `clientSections` (`tile-processes.ts`) and `primitives.ts` gain
+    `pubsub-loop`.
+- `local-contract.ts`:
+  - QG07's invariant-8 gap is gone (`pubsubConsumeGap` removed).
+  - `stubPubsub` names the rule `stubStores` and the loops share.
+- `local.ts`:
+  - A service's `pubsub` flag needs a topic it publishes to or consumes.
+  - The generated README's Pub/Sub paragraph describes the consumer, and the endpoints sentence
+    says "publishes to or consumes".
+- Tests, 12 new:
+  - `tile-loop.test.ts`, 10. They run the exact emitted `module-clients.ts` of the stub stack
+    (Visits on Google Cloud) on the real `tile-loop.ts` and `delivery.ts`, with a fake official
+    client (subscriptions are event emitters) and fake timers. The cases:
+    - flow control equals Concurrency, with the probe and the startup state;
+    - the `ModuleMessage` mapping, and ack only after the handler;
+    - nack on a retryable error, with no wait, until attempt 6, which is `RETRY_EXHAUSTED`;
+    - `NOT_IMPLEMENTED` and `MALFORMED_MESSAGE` go to `.failed` with their attributes, and the
+      ack waits for the copy;
+    - a failed or hung (2000 ms) copy → nack;
+    - unreachable → the handler runs again after 5 s with the same attempt, and no nack;
+    - close during the wait → nack;
+    - the drain;
+    - an error line once, a reopen 5 s later, and a retry after a failed check;
+    - a missing subscription or a bad project fails startup.
+  - `pubsub.test.ts`, 2: the loop stub's process file, imports and plan; and a design with only
+    Pub/Sub channels, loops included, needs no broker.
+- Updated assertions:
+  - QG07's gap assertions in `pubsub.test.ts`: now no `provider-` gap, runnable, and the worker's
+    service gets `JEEVES_PUBSUB_PROJECT` and no broker.
+  - `module-clients.test.ts` setup only: fakes for `./delivery.ts` and `./tile-loop.ts`, which the
+    Pub/Sub bundle's file now imports.
+- Pins: none changed. `processes-off.test.ts` passes as it is.
+- Docs:
+  - `jeeves-generator/README.md`: Consume loops, the stub gap paragraph, Module clients, the probe
+    list, the endpoints row and sentence, and a new **Pub/Sub loops** paragraph.
+  - `docs/studio.md`, `docs/studio-settings.md` and `jeeves/CATALOG.md`.
+
+**Checks.**
+- `pnpm check`:
+  - Before any change, at `423acbd`: exit 0, 117 files / 968 tests.
+  - On the final tree: exit 0, 117 files / 980 tests. Biome shows only the older 1 info.
+- New tests on HEAD's templates: I used a scratch clone at `423acbd` with its own offline install
+  and the three changed test files.
+  - All 12 new tests fail there: `pubsubLoop` doesn't exist, and the wiring assertions fail.
+  - QG07's two updated tests fail too. `module-clients.test.ts` passes.
+  - The clone is deleted. The checkout's `node_modules/.modules.yaml`,
+    `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` have the same checksums and mtimes
+    (12:10) as before.
+- `pnpm test:e2e`:
+  - Run 1: 72 passed, 2 failed. `connect.spec.ts:174` and `:217` failed in `createStudy` ("Project:"
+    menu not visible, `studio.ts:94`), the known load flake.
+  - Those two alone: 2 passed.
+  - Run 2, the whole suite alone on the final tree: 74 passed (4.7 min).
+- Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `src/runtime/tile-loop.ts`, `.jeeves/manifest.json` and
+    `.jeeves/report.json`. No process file or `module-clients.ts` changed: the fixtures' Events is
+    RabbitMQ, and the new section is left out.
+  - The report differs only in the registry's source inventory: owners' `sourceSha256`
+    `8d9740f2…` → `1b5fd0f9…5e18`, and the nine changed sources. Required gaps are unchanged
+    (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0.
+  - Re-exported on the final tree, both equal the after-exports.
+  - The probe variant with Events on Google Cloud also builds (`tsc` on the SDK's 6.3.2 types).
+  - The scratch exports are deleted.
+- Docker phase, after the offline checks:
+  - `--suite=wiring`: 2/2 passed (B05, B06 normal; 195 s).
+  - `--suite=core`: 4/4 passed (B01–B04; 309 s).
+  - `--suite=faults`: 5/5 passed (492.7 s), first run.
+- Docker proof on the probe variant: Events on Google Cloud (the studio's edit command), Tally's
+  loop kept, the probe bodies copied, project `qg08-probe`, ports 47971–47973.
+  - `first-run` exit 0, all healthy. Tally logged its `SELECT 1` probe, then `the Pub/Sub
+    subscription exists` `ok` 3.07 s later (a `MetadataLookupWarning` in between), then `"state":
+    "available"`. It was ready 3.6 s after its container started.
+  - Publishes `a`, `b`, `b` again, `c` (202 each): `m_tally_count.seen` holds `a|1`, `b|1`, `c|1`.
+  - `ni-1` (the proof's Tally body throws "Not implemented" for `ni-` IDs): one not-implemented
+    line, `sent to events--tally.failed (NOT_IMPLEMENTED)`. Pulling `events--tally.failed`
+    through the export's own SDK (`docker compose run setup-pubsub`) gave exactly that message with
+    attributes `{"messageId":"ni-1","x-terminal-code":"NOT_IMPLEMENTED"}`.
+  - `docker compose stop local-postgres`, then `d`, `e`, `f` published, then 15 s, then
+    `start` (19.5 s in all):
+    - Tally logged `getaddrinfo ENOTFOUND local-postgres`,
+      `store unreachable, retry in 5000 ms (attempt not counted)` for `d`, every 5 s, always
+      `"attempt":1`;
+    - after the restore, `d|1`, `e|1`, `f|1` were present;
+    - `.failed` was empty;
+    - Tally's restart count stayed 0 and its start time unchanged.
+  - Extra: `docker compose stop app-tally` drained in 0.46 s with exit code 0. `h`, published while
+    Tally was stopped, was counted `h|1` once it started.
+  - Teardown: `docker compose --profile '*' down --volumes --remove-orphans` and `docker image rm
+    qg08-probe-app:latest`.
+- Inventory and cleanup:
+  - The Docker inventory after equals the one before: containers, images, networks and volumes,
+    line for line.
+  - No `qg08` or new `gs-` resource is left, and `jeeves-postgres-1` is unchanged.
+  - This unit's 3 `test-results/generated/` folders are removed.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **Pub/Sub designs change beyond the Emitted output list.** Neither fixture has a Pub/Sub topic,
+  so the proof's paths are within the list. In a design with one, a consuming tile's
+  `compose.yaml` service gets `JEEVES_PUBSUB_PROJECT` and `PUBSUB_EMULATOR_HOST`, and loses the
+  broker when it no longer uses it. Its `README.md` Pub/Sub paragraph changes too. The consumer
+  needs both (QG07's note), and `local.ts`'s check had to accept a consuming service.
+- **`delivery.ts` is not touched**, so no pin moves. The retry decision is shared as
+  `failureStep` in `tile-loop.ts`. The RabbitMQ runner keeps its own two lines, which follow the
+  same rule.
+- Choices the brief doesn't name:
+  - The subscriber probes that its subscription exists. That is the file's rule for every client,
+    and the analogue of a RabbitMQ consumer's failing first connect.
+  - The `.failed` copy is bounded at the publisher's 2000 ms, and its failure is reported through
+    the state hook, as a failed RabbitMQ republish is.
+  - A `deliveryAttempt` below 1 counts as 1 (`ModuleMessage.attempt` is "1 on its first
+    delivery"). It happens only on a subscription without a dead-letter policy.
+- **The drain does not use the SDK's `WaitForProcessing` close.** That close waits for messages
+  the client leased but never handed over, up to the 60-minute lease limit. Instead, the consumer
+  stops handing messages over, settles those in hand, then closes with the default nack.
+- **The proof.** "Three publishes, one ID twice" was run as `a`, `b`, `b`, `c`, so that three IDs
+  appear once each. The probe's Tally body never throws, so the proof used a variant of the
+  application-owned `tally-count.ts`, in the scratch export only.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03).
+- **Attempts differ from RabbitMQ.** Pub/Sub counts every redelivery as an attempt, including a
+  nack at a drain or a lost lease. RabbitMQ's `x-delivery-attempt` counts only the loop's own
+  retries. So repeated restarts can bring a Pub/Sub message to `RETRY_EXHAUSTED` sooner. The
+  generator README says so.
+- **Several loop stubs of one tile on one Pub/Sub topic share QG07's single subscription**, so each
+  message reaches one of them. RabbitMQ gives each module its own queue. It is documented, not
+  refused; a QGR2 question.
+- **An emulator outage that doesn't close the subscriber logs no failure line.** By the SDK's
+  source (`message-stream.js`), a stream that ends `UNAVAILABLE` is retried internally with up to
+  60 s backoff, emitting only `debug`. So such an outage logs no failure line, and resuming can
+  take up to 60 s after the emulator returns. For QG09's tests.
+- **Probe margin.** The metadata-server lookup (QG07's note) took 3.07 s of the subscriber probe's
+  5 s here too. No variable was added.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG09. A stub loop on a Pub/Sub topic runs `pubsubLoop` on
+`<topic>--<tile>`, and its service reads `JEEVES_PUBSUB_PROJECT`.

@@ -431,7 +431,8 @@ in [studio settings](../docs/studio-settings.md).
 
 Settings name providers as intent only: they create no box, credential, deployment or API call.
 The one provider that changes generated code is a stub-only Queue's Google Cloud, with Runnable
-processes on: its stubs publish to a Pub/Sub topic ([installed features](#installed-features-and-controls)).
+processes on: its stubs publish to a Pub/Sub topic and their loops consume its subscriptions
+([installed features](#installed-features-and-controls)).
 
 | Area | Choices |
 | --- | --- |

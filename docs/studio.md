@@ -1480,8 +1480,11 @@ once at startup; a store on another provider isn't provisioned, and the stack is
 one exception is a Queue or Topic only stubs use, whose **Provider** can be set to Google Cloud
 in its Options or by chat: it is then a Pub/Sub topic, its publishers resolve only once Pub/Sub
 has acknowledged a message (within 2 s), and locally the export runs the Pub/Sub emulator, whose
-setup creates the topic and a subscription per consuming tile at every start; consuming one isn't
-installed yet, so a loop stub on it is a required gap.
+setup creates the topic and a subscription per consuming tile at every start. A loop stub on it
+consumes its tile's subscription as a RabbitMQ loop consumes its queue: at most its Concurrency
+in hand, each acknowledged only after the stub resolves, "Not implemented" and the sixth failure
+in `.failed`, and an unreachable store waiting 5 s with the same attempt; the subscription's
+retry policy spaces the other retries.
 Each process finds its databases, caches, broker and the tiles its stubs call through its
 environment (`JEEVES_*` variables, with no default): the export's `compose.yaml` sets them to the
 local services, its README lists them per process, and a deployment sets its own.

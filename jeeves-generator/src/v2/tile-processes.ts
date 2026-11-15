@@ -80,6 +80,7 @@ const clientSections: readonly ClientSection[] = [
   "broker",
   "queue",
   "pubsub",
+  "pubsub-loop",
   "cache",
   "objects",
   "search",
