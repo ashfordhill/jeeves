@@ -57,9 +57,10 @@ const internalCall = Symbol.for("jeeves.internal-call");
  * message failed. It looks at the error, its `cause` chain (up to five deep) and each of an
  * `AggregateError`'s `errors` for a Node socket code (ECONNREFUSED, ECONNRESET, ENOTFOUND,
  * EAI_AGAIN, ETIMEDOUT, EHOSTUNREACH, ENETUNREACH, EPIPE), a PostgreSQL SQLSTATE of class 08 or
- * 57P01–57P03, or a `pg` message that starts with "Connection terminated" or contains "timeout
- * exceeded when trying to connect". A statement timeout (57014), a constraint violation or any
- * other error is not unreachable. Nor is an outside call: on the way, a `TypeError` "fetch
+ * 57P01–57P03, or a `pg` message that starts with "Connection terminated", contains "timeout
+ * exceeded when trying to connect" or is exactly "Query read timeout" (the pool's client-side
+ * bound: a stalled database sent no reply). A statement timeout (57014), a constraint violation or
+ * any other error is not unreachable. Nor is an outside call: on the way, a `TypeError` "fetch
  * failed" that isn't marked `Symbol.for("jeeves.internal-call")` (as `httpTarget` marks a call to
  * another tile) answers false at once, so the message keeps the normal retries. An application's
  * SDK that doesn't use `fetch` still looks like a store; it can throw `NonRetryable` to end a
@@ -83,7 +84,8 @@ export function unreachable(error: unknown): boolean {
     if (
       typeof message === "string" &&
       (message.startsWith("Connection terminated") ||
-        message.includes("timeout exceeded when trying to connect"))
+        message.includes("timeout exceeded when trying to connect") ||
+        message === "Query read timeout")
     )
       return true;
     if (value instanceof AggregateError && value.errors.some((item) => found(item, depth + 1)))

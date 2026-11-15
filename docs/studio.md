@@ -1469,7 +1469,7 @@ the mapping is written). Two modules in one tile that consume the same topic eac
 subscriber queue, so each receives every message. A message that reaches "Not implemented" goes
 to its queue's `.failed` at once with one log line (a template's too, with no retries), and the
 process stays healthy; a stub's own error is retried 5 times with backoff before `.failed`. A
-message whose store is unreachable (a lost database connection) waits 5 s and keeps the attempt,
+message whose store is unreachable (a lost or stalled database connection) waits 5 s and keeps the attempt,
 in a stub's loop and a template's alike, so an outage never sends it to `.failed`; a failed
 `fetch` to an outside host keeps the normal retries (another HTTP client's socket error still
 waits: see the generator README). A

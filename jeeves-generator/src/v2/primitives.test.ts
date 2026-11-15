@@ -216,6 +216,81 @@ describe("emitted runtime primitives", () => {
       expect(deliveryCore.unreachable(error), String(error)).toBe(false);
   });
 
+  it("counts pg's client-side query timeout, exactly, as unreachable", () => {
+    // QG17's bound: a query on a stalled database that gets no reply rejects with this message.
+    expect(deliveryCore.unreachable(new Error("Query read timeout"))).toBe(true);
+    expect(
+      deliveryCore.unreachable(
+        new Error("query failed", { cause: new Error("Query read timeout") }),
+      ),
+    ).toBe(true);
+    expect(deliveryCore.unreachable(new Error("Query read timeout exceeded"))).toBe(false);
+  });
+
+  it("waits out a stalled database with the same attempt; a NonRetryable wrapping the timeout ends the message", async () => {
+    vi.useFakeTimers();
+    try {
+      const events: unknown[] = [];
+      const onTerminal = vi.fn();
+      const runner = deliveryCore.createDeliveryRunner({
+        queue: "tasks",
+        failedQueue: "tasks.failed",
+        retryLimit: 2,
+        handle: async (_body: Buffer, delivery: { messageId: string }) => {
+          if (delivery.messageId === "stalled") throw new Error("Query read timeout");
+          throw Object.assign(new deliveryCore.NonRetryable("STORE_STALLED"), {
+            cause: new Error("Query read timeout"),
+          });
+        },
+        onTerminal,
+        transport: {
+          cancel: async () => {},
+          republish: async (
+            queue: string,
+            message: { messageId: string },
+            headers: Record<string, unknown>,
+          ) => {
+            events.push({ id: message.messageId, queue, headers });
+          },
+          ack: (receipt: string) => {
+            events.push(`ack:${receipt}`);
+          },
+          close: async () => {},
+        },
+      });
+      for (const id of ["stalled", "ended"])
+        runner.accept({
+          body: Buffer.from("{}"),
+          messageId: id,
+          receipt: id,
+          headers: { "x-delivery-attempt": 1 },
+          redelivered: true,
+        });
+      // The NonRetryable is terminal at once; the stalled one is not retried yet.
+      await vi.advanceTimersByTimeAsync(4999);
+      expect(events).toEqual([
+        {
+          id: "ended",
+          queue: "tasks.failed",
+          headers: { "x-delivery-attempt": 2, "x-terminal-code": "STORE_STALLED" },
+        },
+        "ack:ended",
+      ]);
+      expect(onTerminal).toHaveBeenCalledTimes(1);
+      // After 5 s the stalled one goes back to its own queue with the same attempt.
+      await vi.advanceTimersByTimeAsync(1);
+      expect(events.slice(2)).toEqual([
+        { id: "stalled", queue: "tasks", headers: { "x-delivery-attempt": 1 } },
+        "ack:stalled",
+      ]);
+      expect(onTerminal).toHaveBeenCalledTimes(1);
+      await runner.close();
+      await expect(runner.closed).resolves.toEqual({ fatal: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("tells a failed outside fetch from a call to another tile", () => {
     const refused = () =>
       new TypeError("fetch failed", {

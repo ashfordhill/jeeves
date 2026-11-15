@@ -532,14 +532,17 @@ terminal at once, other failures retry within its limit (lifecycle 10, video 3, 
 `NOT_IMPLEMENTED`, as a stub's does (tile-processes review row 7: a retry can't write it), rather
 than the template's generic `MALFORMED_MESSAGE` or retrying to `RETRY_EXHAUSTED`; a code of the
 template's own (the media worker's `INVALID_MEDIA`) is kept. In a stub loop and a mounted
-template alike, an unreachable store waits 5 s and keeps the attempt: when a failure is a lost
-or refused connection (a socket error such as `ECONNREFUSED`, a PostgreSQL SQLSTATE of class 08
-or 57P01–57P03, or `pg`'s "Connection terminated"), the delivery runner (`unreachable` in
-`delivery.ts`) puts the message back on its queue with the same `x-delivery-attempt` 5 s later,
-so an outage never sends it to `.failed`; its line's action reads `store unreachable, retry in
-5000 ms (attempt not counted)`, and `pnpm stop` ends the wait at once, leaving the message in its
-queue; a failed call to an outside host keeps the normal retries (a `fetch failed` counts as
-unreachable only when it is `httpTarget`'s call to another tile). A failed message logs one JSON
+template alike, an unreachable store waits 5 s and keeps the attempt: when a failure is a lost,
+refused or stalled connection (a socket error such as `ECONNREFUSED`, a PostgreSQL SQLSTATE of
+class 08 or 57P01–57P03, `pg`'s "Connection terminated", or its client-side `Query read timeout`
+when a stalled database sends no reply), the delivery runner (`unreachable` in `delivery.ts`)
+puts the message back on its queue with the same `x-delivery-attempt` 5 s later, so an outage
+never sends it to `.failed` (a stall that never ends keeps waiting, as any outage does); its
+line's action reads `store unreachable, retry in 5000 ms (attempt not counted)`, and `pnpm stop`
+ends the wait at once, leaving the message in its queue. A query that is only slow still spends
+an attempt: the server's statement timeout (`57014`) comes first. A failed call to an outside
+host keeps the normal retries (a `fetch failed` counts as unreachable only when it is
+`httpTarget`'s call to another tile). A failed message logs one JSON
 line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error

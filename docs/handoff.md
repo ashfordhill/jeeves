@@ -15864,3 +15864,96 @@ exports carry `pnpm-workspace.yaml`, so their plain install passes.
 
 **For the next unit.** QG18. Exports read `JEEVES_*_TLS` for every database and cache (Compose sets
 `disable`); `JEEVES_REQUIRE_TLS=true` is the production profile's refusal.
+
+## 2026-11-14 — QG18: A client-side query timeout counts as unreachable
+
+**What changed.**
+- `delivery.ts.template`, `unreachable()`: an error (or one on its `cause` chain or in an
+  `AggregateError`) whose `message` is exactly `Query read timeout` is unreachable. That is pg's
+  client-side bound (QG17's `query_timeout`, the statement timeout + 500 ms) on a query that gets
+  no reply. So a mounted template's worker and a stub loop (RabbitMQ or Pub/Sub, through
+  `tile-loop.ts`'s `storeUnreachable`) whose database stalls wait 5 s and keep the attempt instead
+  of spending a retry. The doc comment lists it. A `NonRetryable` still ends the message, as before:
+  both callers exclude it.
+- Tests, 2 new in `primitives.test.ts` (on the emitted core):
+  - `unreachable` is true for `new Error("Query read timeout")` and for it as a `cause`, and false
+    for `new Error("Query read timeout exceeded")`;
+  - through the delivery runner (fake timers): a handler's `Query read timeout` at attempt 1 is
+    republished to its own queue after exactly 5,000 ms with `x-delivery-attempt` still 1, and no
+    terminal hook; a `NonRetryable("STORE_STALLED")` whose `cause` is that timeout goes to
+    `tasks.failed` at once with attempt 2 and its code, and the terminal hook runs once.
+- Pins (`processes-off.json`), in `frozen-v2` and `v2-module-design`: changed
+  `src/runtime/delivery.ts` and `.jeeves/manifest.json`. `stub-stack` unchanged (it has no
+  `delivery.ts`).
+- Docs: `docs/plans/store-outage/units.md` Decision (one bullet, owner 2026-11-14);
+  `jeeves-generator/README.md` (the unreachable list gains the stall; a stall that never ends keeps
+  waiting; a merely slow query still gets `57014` first and spends an attempt);
+  `docs/template-gaps.md` (QG17's row no longer says the error spends an attempt);
+  `docs/studio.md` ("a lost or stalled database connection").
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 999 tests. On the final tree, exit 0, 117
+  files / 1001 tests; Biome shows only the older 1 info.
+- New tests on HEAD's templates: a scratch clone at `5a6c2e1` with its own offline install and the
+  changed `primitives.test.ts`. Both new tests fail there (`unreachable` answers false; the stalled
+  message is republished at once with attempt 2); the other 7 pass. The clone is deleted. The
+  checkout's `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml`
+  keep their checksums and mtimes (12:10).
+- `pnpm test:e2e`:
+  - Run 1: 73 passed, 1 failed, the known load flake (`relationship-tracing.spec.ts:113`,
+    `getByRole('button', { name: /^Project:/ })` not visible in 5 s at `studio.ts:94`, load
+    average 13–15 while arm B ran).
+  - That test alone: 1 passed. Run 2, the whole suite alone: 74 passed (5.1 min).
+- Web build: exit 0.
+- Docker phase, after the offline checks, source SHA-256 `fa8c2e53…2035`: `--suite=faults`
+  **5/5 passed** on its first run (Vitest 520.3 s, CLI 21:42–21:52): B06 recovery, B09 counter,
+  B09 broker, B09 database (a **stopped** server's `57P01`/`ECONNRESET` path, unchanged) and B09
+  media. No rerun was needed. Artifacts went to the scratchpad, so nothing was added under
+  `test-results/generated/`.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `.jeeves/manifest.json`, `.jeeves/report.json` and
+    `src/runtime/delivery.ts`; nothing else.
+  - The report differs only in the registry's source inventory (owners' `sourceSha256`
+    `85b2d3e8…5a6d` → `7eab64f8…4a67` and `201c7920…4808` → `9da60e8c…7f85`; the template's
+    source entry, 8,762 → 8,907 bytes). Required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. Re-exported on the final tree, both equal the after-exports. Scratch exports deleted.
+- Inventory: containers, networks, volumes and images equal the pre-phase inventory line for line,
+  and the pre-unit one apart from arm B's `qrwtyb` containers and images, which changed meanwhile
+  (not touched). No `qg18` or `gs-` resource and no `/tmp/jeeves-system-*` is left;
+  `jeeves-postgres-1` is unchanged. The unit created no Docker resource of its own.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **"False for a `NonRetryable` wrapping it."** `unreachable()` has never looked at
+  `NonRetryable`: it walks the `cause` chain, so a `NonRetryable` whose `cause` is the timeout
+  answers true there, as one wrapping `ECONNREFUSED` always has. The exclusion is in its two
+  callers (`createDeliveryRunner` and `tile-loop.ts`'s `storeUnreachable`, both `unreachable(error)
+  && !(error instanceof NonRetryable)`). Making `unreachable()` itself answer false would change
+  its answer for every wrapped cause, which the Goal doesn't ask; so the test checks the case where
+  the decision is made, the delivery runner: such an error ends the message at once and is not
+  waited out. A `NonRetryable` can't carry the message itself (its message is its code,
+  `^[A-Z][A-Z0-9_]{0,79}$`).
+- **Docs the brief doesn't name.** `docs/template-gaps.md`'s QG17 row said "That error isn't an
+  unreachable store, so a worker's message spends an attempt", now false; `docs/studio.md`'s
+  "(a lost database connection)" now names the stall too (Rule 8).
+- **Order of phases:** the packet's: check, e2e, build; then `--suite=faults` and the
+  regeneration proof's installs and builds. The brief names no Docker proof.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), decided by the owner on 2026-11-14 (decision 6).
+- **The catch the owner accepted:** a stall that never ends cycles for ever, every 5 s per held
+  message, as any outage does under the Decision; nothing reaches `.failed`. A message can't cause
+  it on a live server: a lock wait or a slow query is the server's, and its `statement_timeout`
+  (`57014`) answers 500 ms before the client's bound.
+- **HTTP is unchanged:** a route's `Query read timeout` still answers the fallback 503 (QGR1
+  finding 1; QG21 adds `Retry-After`).
+- **Templates' transactions:** a stall inside `transaction()` settles at twice the bound (the
+  `ROLLBACK` stalls too, QGR1 Interactions); `transaction()` swallows the `ROLLBACK`'s error and
+  rethrows the query's `Query read timeout`, so the message waits. Not exercised by a Docker run
+  here: `--suite=faults` stops PostgreSQL rather than pausing it, and no suite pauses it.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG20. `unreachable()` now also matches pg's `Query read timeout`, so a
+worker waits out a stalled database with the same attempt.

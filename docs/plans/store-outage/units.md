@@ -39,7 +39,10 @@ five deep) or on any of an `AggregateError`'s `errors`:
   `EHOSTUNREACH`, `ENETUNREACH`, `EPIPE`;
 - a PostgreSQL SQLSTATE of class `08` (any code starting `08`), or `57P01`, `57P02`, `57P03`;
 - a message from `pg`/`pg-pool` that starts with `Connection terminated`, or contains
-  `timeout exceeded when trying to connect`.
+  `timeout exceeded when trying to connect`;
+- a client-side query timeout counts as unreachable (owner, 2026-11-14, QG18): a `pg` message
+  that is exactly `Query read timeout` (QG17's bound), so a worker whose database stalls keeps
+  its attempt, and a stall that never ends cycles for ever, as any outage does.
 
 A statement timeout (`57014`), a constraint violation or any other error is not unreachable and
 keeps today's behaviour.
