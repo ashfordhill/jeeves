@@ -16210,3 +16210,77 @@ the build, then Docker.
 **For the next unit.** QG21, then QG22, QG23 and QG25 as planned; the record names what folds into
 QG21 (two test cases) and QG23 (two deployer sentences). QG26 and QG27 are ready for the
 coordinator's order; QG28 and QG29 need the owner. Q05 generates arm A's export from this commit.
+
+## 2026-11-15 — QG21: The fallback 503 carries Retry-After too
+
+**What changed.**
+- `http.ts.template`, `setErrorHandler`'s non-`HttpError` branch: when the answer is the fallback
+  503 `UNAVAILABLE` (any error that isn't an `HttpError` or a 400/413/415 request error), it sets
+  `Retry-After: 1` unless the reply already has one (`reply.hasHeader`, QG19's rule), with a
+  two-line comment. Status, body, `Cache-Control: no-store` and `onFailure` (once per request) are
+  unchanged; a 400/413/415 gets no header.
+- Test, 1 new in `tile-processes.test.ts` (the block on real Fastify 5.12.7): a route throwing
+  `new Error("Query read timeout")`, and a stub entry throwing a plain `Error`, `Cache deadline`,
+  `Cache unavailable` (QG04) or a `TypeError("fetch failed")` marked
+  `Symbol.for("jeeves.internal-call")` as `identityTarget` marks it (QG20) each answer 503
+  `UNAVAILABLE` with `retry-after: 1` and `cache-control: no-store`, and `onFailure` gets exactly
+  one `[what, error]` for each; a route that set `Retry-After: 30` before throwing keeps 30; an
+  invalid-JSON 400 has none and no `onFailure`.
+- Pins (`processes-off.json`): `frozen-v2` and `v2-module-design` each changed
+  `src/runtime/http.ts` and `.jeeves/manifest.json`; nothing else (`stub-stack` unchanged).
+- Docs: `jeeves-generator/README.md`, the QG19 sentence in Runnable processes gains the fallback
+  503 (a dependency's error, such as `Query read timeout` or `Cache deadline`).
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 1012 tests. On the final tree, exit 0, 117
+  files / 1013 tests; Biome shows only the older 1 info.
+- New tests on HEAD's templates: a scratch clone at `59f2569` with its own offline install and the
+  changed `tile-processes.test.ts`. The new test fails there at its first `retry-after`
+  (`undefined`); the file's other 21 pass. With its assertions made soft (in the clone only), 5
+  fail there: `/stalled` and the four stub cases; the kept 30, the 400 and the `onFailure` counts
+  pass on HEAD, as they already held. The clone is deleted. The checkout's
+  `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` keep their
+  checksums and mtimes (2026-11-14 12:10).
+- `pnpm test:e2e`: 74 passed (4.8 min), first run. Web build: exit 0.
+- Docker phase, after the offline checks, source SHA-256 `cdced8aa…85ac`: `--suite=wiring`
+  **2/2 passed** on its first run (B05, B06; Vitest 203.2 s, 00:20–00:24). Artifacts went to the
+  scratchpad, so nothing was added under `test-results/generated/`.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `.jeeves/manifest.json`, `.jeeves/report.json` and
+    `src/runtime/http.ts`; nothing else.
+  - The report differs only in the registry's source inventory (owners' `sourceSha256`
+    `52eeddb1…7da0` → `f3cb3fbf…a27a` and `f02f8f38…e4d5` → `640c17ba…12fa`; the template's
+    source entry, 5,047 → 5,334 bytes, `4c421a50…c33b` → `05f7e802…fb20`). `gaps` and
+    `processes` are equal; required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. Scratch exports deleted.
+- Inventory: networks and volumes equal the pre-unit and pre-phase inventories line for line;
+  containers and images differ only by other runs' entries that changed meanwhile (two
+  `n06-selftest-*` containers, one since removed, and arm B's `qrwtyb/*:local` images), none
+  touched. No `qg21` or `gs-` resource and no `/tmp/jeeves-system-*` is left; `jeeves-postgres-1`
+  is unchanged. The unit created no Docker resource of its own.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **The marked `fetch failed` case** is built in the test as `identityTarget` marks it (a
+  `TypeError("fetch failed")` with an `ECONNREFUSED` cause and the internal-call symbol), not by
+  calling the emitted `module-clients.ts`, which this test file doesn't load;
+  `module-clients.test.ts` already shows `identityTarget` sets that mark. The error handler
+  doesn't read the mark, so the answer is the same either way.
+- **"Same rule as QG19"** is applied in the branch's `!clientError` block, beside `failed()`, so
+  every fallback 503 gets it, including an error that carries another `statusCode` (a 404 or 500
+  Fastify error), since that branch answers 503 for all of them.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), proposed ready by the QGR1 review (finding 1), with QGR2's
+  folded test cases (a stub's `Cache deadline`/`Cache unavailable` and a marked Identity
+  `fetch failed`).
+- Still without `Retry-After`: `GET /healthz`'s 503 (for orchestrators, as QGR1 says), the edge's
+  502/503/504 (QG25), and a 503 a stub *returns* as its response (it keeps its own headers, as
+  QG19 left it).
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG22. Every 503 the generated runtime answers from a route (the admission's,
+an `HttpError`'s and the fallback) now carries `Retry-After: 1` unless the route set its own.

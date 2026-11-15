@@ -990,4 +990,86 @@ describe("emitted HTTP service and process runtime", () => {
     });
     await http.close();
   });
+
+  it("gives the fallback 503 Retry-After: 1 unless the route set its own, a 400 none, and tells onFailure once (QG21)", async () => {
+    // What a stub's dependency throws: pg's client-side bound (QG17), the bounded cache's
+    // (QG04), and the Identity client's lost connection, marked as identityTarget marks it (QG20).
+    const stalled = new Error("Query read timeout");
+    const plain = new Error("Stub failed");
+    const deadline = new Error("Cache deadline");
+    const away = new Error("Cache unavailable");
+    const identityLost = new TypeError("fetch failed", {
+      cause: Object.assign(new Error("connect ECONNREFUSED 10.0.0.9:8080"), {
+        code: "ECONNREFUSED",
+      }),
+    });
+    Reflect.set(identityLost, Symbol.for("jeeves.internal-call"), true);
+    const thrown: Record<string, Error> = {
+      "/plain": plain,
+      "/cache-deadline": deadline,
+      "/cache-unavailable": away,
+      "/identity": identityLost,
+    };
+    const entry = vi.fn(async (request: { path: string }) => {
+      throw thrown[request.path];
+    });
+    const failures: Failure[] = [];
+    const http: RealService & { start(listen: unknown): Promise<string> } =
+      await realHttpRuntime.createHttpService({
+        id: "front",
+        settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+        configure: (routes: { route(route: unknown): void }) => {
+          routes.route({
+            method: "GET",
+            url: "/stalled",
+            handler: async () => {
+              throw stalled;
+            },
+          });
+          routes.route({
+            method: "GET",
+            url: "/own",
+            handler: async (
+              _request: unknown,
+              reply: { header(name: string, value: string): unknown },
+            ) => {
+              reply.header("Retry-After", "30");
+              throw stalled;
+            },
+          });
+          routes.route({ method: "POST", url: "/json", handler: async () => ({ ok: true }) });
+          tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry);
+        },
+        initialize: async () => {},
+        onFailure: (what: string, error: unknown) => failures.push([what, error]),
+      });
+    await http.start({ host: "127.0.0.1", port: 0 });
+    const get = async (url: string) => answer(await http.inject({ method: "GET", url }));
+    const fallback = {
+      status: 503,
+      retryAfter: "1",
+      cacheControl: "no-store",
+      body: { error: "UNAVAILABLE", message: "Service unavailable." },
+    };
+    expect(await get("/stalled")).toEqual(fallback);
+    expect(failures).toEqual([["request GET /stalled", stalled]]);
+    for (const [path, error] of Object.entries(thrown)) {
+      failures.length = 0;
+      expect(await get(`/modules/probe${path}`)).toEqual(fallback);
+      expect(failures).toEqual([["request GET /modules/probe/*", error]]);
+    }
+    expect(entry).toHaveBeenCalledTimes(4);
+    failures.length = 0;
+    expect(await get("/own")).toEqual({ ...fallback, retryAfter: "30" });
+    expect(failures).toEqual([["request GET /own", stalled]]);
+    failures.length = 0;
+    expect(answer(await post(http, "/json", "application/json", '{"bad":'))).toEqual({
+      status: 400,
+      retryAfter: undefined,
+      cacheControl: "no-store",
+      body: { error: "INVALID_REQUEST", message: "Invalid request." },
+    });
+    expect(failures).toEqual([]);
+    await http.close();
+  });
 });

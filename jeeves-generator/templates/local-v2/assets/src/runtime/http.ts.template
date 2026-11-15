@@ -83,7 +83,12 @@ export async function createHttpService(options: {
     const status =
       error && typeof error === "object" && "statusCode" in error ? error.statusCode : undefined;
     const clientError = status === 400 || status === 413 || status === 415;
-    if (!clientError) failed();
+    if (!clientError) {
+      failed();
+      // Any other error (a dependency's, such as `Query read timeout`, or a stub's own) answers the
+      // fallback 503, which says when to retry too: one second, unless the route set its own.
+      if (!reply.hasHeader("Retry-After")) reply.header("Retry-After", "1");
+    }
     reply.code(clientError ? status : 503).send({
       error: clientError ? "INVALID_REQUEST" : "UNAVAILABLE",
       message: clientError ? "Invalid request." : "Service unavailable.",
