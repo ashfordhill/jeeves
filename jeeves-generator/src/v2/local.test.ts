@@ -194,7 +194,7 @@ describe("standalone local foundation", () => {
 
   it("leaves compose.override.yaml to the application and never bypasses Compose's merge", () => {
     const own =
-      "**Your own configuration.** `compose.override.yaml` beside `compose.yaml` is yours: export never writes it and `update:v2` never touches it. Docker Compose merges it into every command `pnpm first-run`, `start` and `stop` run, so give your modules their own `environment` and `secrets` there, or add a service of your own (for example a scheduler that calls your routes). Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next `pnpm start`.";
+      "**Your own configuration.** `compose.override.yaml` beside `compose.yaml` is yours: export never writes it and `update:v2` never touches it. Docker Compose merges it into every command `pnpm first-run`, `start` and `stop` run, so give your modules their own `environment` and `secrets` there, or add a service of your own (for example a scheduler that calls your routes). A service of your own starts with `pnpm start` only when a generated service `depends_on` it, which your override may add; otherwise start it with your own `docker compose up`. Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next `pnpm start`.";
     const processes = assembleV2(
       {
         designJson: JSON.stringify(

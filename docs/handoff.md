@@ -16371,3 +16371,64 @@ an `HttpError`'s and the fallback) now carries `Retry-After: 1` unless the route
 
 **For the next unit.** QG23 (docs). Every secret setup and bootstrap write is chmodded to its mode
 after the write.
+
+## 2026-11-15 — QG23: Two sentences deployers need
+
+**What changed.**
+- `docs/template-gaps.md`, Known limits, three rows after QG10's plain-text row:
+  - A non-superuser migration admin must hold `ADMIN OPTION` on each database owner role it didn't
+    create (`GRANT <owner> TO <admin> WITH ADMIN OPTION` by the role's creator), else `migrate.mjs`
+    stops at `permission denied to grant role "<owner>"` before any database statement (QGR1).
+  - QGR2's fold: a Cloud SQL server certificate whose only name is `<project>:<instance>` can't be
+    checked by `_TLS_SERVERNAME`; reach the instance by its Unix socket directory
+    (`JEEVES_DATABASE_<ID>_HOST=/cloudsql/<instance>`, which `JEEVES_REQUIRE_TLS` accepts) or give
+    it a CA whose certificates carry DNS names.
+  - QGR2's fold: `migrate.mjs` can't verify a private CA (`pg` maps `PGSSLMODE` to Node's roots
+    with the host name checked, or to none, and doesn't read `PGSSLROOTCERT`), so a managed
+    database with its own CA is migrated through its socket directory (`PGHOST=/cloudsql/<instance>`)
+    or an auth proxy; status "Open; QG29 needs the owner".
+- `jeeves-generator/README.md`, the QG12 paragraph: one sentence, an owner role the admin didn't
+  create needs that grant from its creator first, else the run stops at `permission denied to grant
+  role` before any database statement.
+- The generated README's "Your own configuration" paragraph (`local.ts`) gains the brief's sentence,
+  word for word: "A service of your own starts with `pnpm start` only when a generated service
+  `depends_on` it, which your override may add; otherwise start it with your own `docker compose
+  up`." Checked against `local.mjs`: `first-run` and `start` run `up -d --wait` on named providers,
+  identities and `plan.application`, and `run --rm --no-deps` for setup, so Compose starts an
+  override-only service only as a dependency. The `own` string in `local.test.ts` is updated (the
+  assertion the brief names); no test added.
+- Pins (`processes-off.json`): `frozen-v2`, `v2-module-design` and `stub-stack` each changed
+  `README.md` and `.jeeves/manifest.json`; nothing else.
+
+**Checks.**
+- `pnpm check`: on QG22's final tree (this unit's base, `1d42570`) exit 0, 117 files / 1014 tests.
+  On the final tree, exit 0, 117 files / 1014 tests; Biome shows only the older 1 info.
+- No e2e, web build or Docker suite: the packet makes `pnpm check` enough for this docs unit, and no
+  docs check failed.
+- Regeneration proof (cheap, so run): `probe-design.json` (`a3b6204f…0505`) and `qrwty-r83.json`,
+  from `1d42570` and from the final tree. Changed paths, both: `.jeeves/manifest.json`,
+  `.jeeves/report.json`, `README.md` (the one sentence); the report differs only in the registry's
+  source inventory (`local.ts`). In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts
+  --offline` and `pnpm build` exit 0. Scratch exports deleted.
+- No new test, so none to run on HEAD. No Docker resource created. Nothing in the studio is
+  user-visible, so no mouse check.
+
+**Differences from the plan.**
+- The QGR2 fold's `PGSSLMODE` sentence is its own Known limits row: QG10's row names the limit
+  beside the broker, storage and search ("QRWTY uses none of the three"), which isn't true of the
+  migration; that row is unchanged.
+- The brief's Regressions list e2e and the web build; the packet replaces them with `pnpm check`.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), proposed ready by the QGR1 review (findings 3 and 9), with QGR2's
+  folded sentences (findings 11 and 13).
+- `jeeves-generator/README.md` still says, in the endpoints table, that the Identity a stub calls
+  reads `OIDC_ISSUER` (and, in the paragraph after it, "a stub Identity client's `OIDC_ISSUER`"); since
+  QGR2's fix it is `JEEVES_IDENTITY_<ID>_URL`. Outside this unit's sentences, so left for the next
+  unit that edits that table or a review.
+- QRWTY arm A's export is frozen at `4e87f97`, so the generated README sentence reaches it only by a
+  regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG25, as planned. The three deployer rows are in Known limits.

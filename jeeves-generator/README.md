@@ -979,7 +979,9 @@ bootstrap requires manual inspection. Migration hash changes refuse without rese
 before the first role until the last database is done, so copies started at once run one at a
 time. Its admin may be a superuser or, as on a managed PostgreSQL 16 or later, a CREATEDB
 CREATEROLE role: a non-superuser admin grants itself each database owner `WITH INHERIT FALSE, SET
-TRUE`, so it can create the owner's database without using the owner's privileges. Each
+TRUE`, so it can create the owner's database without using the owner's privileges. An owner role
+the admin didn't create needs `GRANT <owner> TO <admin> WITH ADMIN OPTION` from its creator first,
+else the run stops at `permission denied to grant role` before any database statement. Each
 database's `REVOKE ALL … FROM PUBLIC` and `GRANT CONNECT` run as its owner (`SET ROLE`), so
 PUBLIC keeps no CONNECT whichever admin runs it, and a non-superuser admin has none of its own.
 Owners are setup-only; runtime users require explicit relation grants and published readers
