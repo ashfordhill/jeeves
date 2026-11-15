@@ -16762,3 +16762,63 @@ include each External API's URL.
 
 **For the next unit.** QG28 and QG29 wait for the owner. A Pub/Sub loop's lease is now 60 s, and
 `tile-loop.ts` has no compiled broker endpoint.
+
+## 2026-11-15 — QGB3: briefs for arm A's found gaps
+
+**What changed.**
+- [docs/plans/qrwty-gaps/units.md](plans/qrwty-gaps/units.md): a new section, "Batch 3: arm A's
+  found gaps (QG30–QG34)", after batch 2's text and before the QG01–QG20 plan. It holds:
+  - a mapping of AG-01 to AG-09 (and QGR2's findings 5 and 11) to units;
+  - the run order, the recorded decisions, B1–B4 with recommendations, and Rules for batch 3 (an
+    isolation rule: no QL plan, nothing of arm B);
+  - exact briefs for QG30 (AG-02), QG31 (AG-01), QG29, QG28, QG32 (AG-09), QG33 (docs: AG-04,
+    AG-05, AG-06) and QG34 (AG-03, needs the owner), and the review unit QGR3.
+- [docs/plans/qrwty-lessons/README.md](plans/qrwty-lessons/README.md): one line, the QL units start
+  after batch 3 and QGR3.
+- No template, generator source, test, pin or other doc changed.
+
+**How it was checked.** Docs only, so no suite, export or Docker run, as the packet says.
+- Read the three arm A evidence files the packet names, and nothing else in qrwty.
+- Read the template and generator code each brief names, so its Files, functions, strings and
+  emitted lines are taken from HEAD (`573b94e`):
+  - `module-clients.ts.template`, `valkey.ts.template`, `service-resources.ts.template`,
+    `tile-guard.ts.template`, `postgres.ts.template`, `local.ts` (runtime), `common.mjs` and
+    `migrate.mjs`;
+  - `client-wiring.ts`, `http-wiring.ts`, `tile-processes.ts`, `local-contract.ts`,
+    `loop-wiring.ts`, `composition.ts` and `local.ts`;
+  - the tests they name.
+- Checked the AG-09 cause by reading file endings:
+  - `templates/local-v2/assets/Dockerfile` is the only file under `jeeves-generator/templates/`
+    ending `\n\n`;
+  - `composition.ts`'s section strip leaves `// @cache-end` as an empty last line.
+- AG-07: QG26's diff and the README at HEAD (line 738, the table row; line 754, the paragraph)
+  name `JEEVES_IDENTITY_<ID>_URL`.
+
+**Differences from the plan.**
+- **QG28 and QG29 are decided.** The coordinator relayed the owner's decisions mid-unit, so both
+  are written as decided units ("decided by the owner, 2026-11-15"), not owner questions:
+  - QG28 uses QGR2's names, `<topic>--<tile>--<module>`, for every Pub/Sub loop stub.
+  - QG29 uses QG10's setting under the prefix `JEEVES_MIGRATE_`. "The same CA-file setting the
+    app's connections have used" is read as QG10's mode, CA file and server name, not the
+    application's per-database `JEEVES_DATABASE_<ID>_*`: the migration reaches one cluster at
+    `PGHOST`.
+- **No AG unit for AG-04, AG-05, AG-06 or AG-08.** QG33 records the first three as Known limits;
+  AG-08 isn't a template gap. Each is a decision with a recommendation (B2–B4).
+- **QGR3 is added** (a final review unit, as batches 1 and 2 had).
+
+**Noticed.**
+- The unit is QRWTY-driven: arm A's Q04 and Q05 gaps, for run `qrwty-r1-20261114`.
+- **QG28 renames every existing Pub/Sub subscription once.** QRWTY's
+  `click-events--analytics-worker` becomes `click-events--analytics-worker--<module>` when arm A
+  regenerates, and the Pub/Sub suite's `clicks--tally` becomes `clicks--tally--count`.
+  - A deployment creates the new subscription before it deploys, since Pub/Sub keeps messages only
+    for subscriptions that exist when they are published, then drains the old one.
+  - In work-queue mode, two Pub/Sub loops of one tile then each get every message, where RabbitMQ's
+    share the queue (QG28 invariant 5).
+- **QG31 covers stubs' clients and the sign-in only.** Templates' own clients still read their
+  variables as each is built, which QG31 records as a limit.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG30, then the run order in batch 3. QG34 waits for the owner's answer to
+B1, and B2–B4 are recommendations against units. The QL plan starts after QGR3.

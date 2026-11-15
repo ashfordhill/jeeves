@@ -53,6 +53,819 @@ passes the client's `X-Forwarded-For`) as a Jeeves limit in `docs/template-gaps.
 touches the edge; cite GS09's external-API gap, SO03's open item 3 (stalled database) and PF review
 follow-up 10 (`pnpm start` drops copies; an oracle adapter must not recover a copy that way).
 
+## Batch 3: arm A's found gaps (QG30–QG34)
+
+**Status:** planned 2026-11-15 by QGB3 (docs only) at Jeeves `573b94e`, for QRWTY run
+`qrwty-r1-20261114`, arm A, template development. Nothing is implemented. Arm A builds on the export
+frozen at `4e87f97` (QGR2). Its Q04 and Q05 found nine gaps in Jeeves's templates, AG-01 to AG-09
+(qrwty `docs/evidence/q04/a-found-gaps.md`; `docs/evidence/q05/checks.md` §10). The Q05 review
+(qrwty `docs/reviews/Q05-review.md` lines 180–185) finds them recorded honestly, each with a
+workaround, and none blocking a later QRWTY unit. These units come from A's own findings, so A may
+take them later by regenerating. They run **before** the [QRWTY lessons](../qrwty-lessons/units.md)
+(QL) plan, which draws on arm B. QGR2's two proposals, QG28 and QG29, join this batch: the owner
+decided both on 2026-11-15, and their exact briefs below replace
+[review-batch2.md](review-batch2.md)'s proposals.
+
+### Gap-to-unit mapping
+
+| Gap | A's severity | What was found | Batch 3 |
+| --- | --- | --- | --- |
+| AG-01 | Low | Configuration is checked one client at a time, between probes | **QG31** (ready) |
+| AG-02 | Medium | `JEEVES_REQUIRE_TLS=true` accepts `NODE_TLS_REJECT_UNAUTHORIZED=0` | **QG30** (ready) |
+| AG-03 | Medium | Credentials are read from one directory only, `SECRET_DIR/<name>` | **QG34** (needs the owner, B1) |
+| AG-04 | Medium | The cache client sends a static password, so a managed cache's token (IAM) authentication can't be used | No unit: a known limit, recorded by QG33; a credentials provider is deferred until a field project needs it (B2) |
+| AG-05 | Low | Pub/Sub topic and subscription names are compiled from the design | No unit: a known limit, recorded by QG33; database, login and bucket names are compiled the same way (B3) |
+| AG-06 | Low | `migrate.mjs` provisions the local Keycloak's database and logins also where the issuer is managed | No unit: a known limit, recorded by QG33 (one unused database and two secrets; harmless) |
+| AG-07 | Low (docs) | The generator README's endpoints table named `OIDC_ISSUER` for a stub's Identity client | No unit: fixed in QG26 (`51f6639`). Checked at `573b94e`: the table row (`jeeves-generator/README.md` line 738) and the paragraph after it (line 754) name `JEEVES_IDENTITY_<ID>_URL` |
+| AG-08 | Low (notation) | A queue's Provider isn't drawn: revision 84's PNGs equal revision 83's | No unit: not a template gap. The canvas draws no tile's provider or engine (a Database's neither); the Inspector and Preview show it (B4) |
+| AG-09 | Low (cosmetic) | `Dockerfile` and `src/features/service-resources.ts` end with a blank line | **QG32** (ready) |
+| QGR2 finding 5 | Low | Several loop stubs of one tile share one Pub/Sub subscription | **QG28** (decided by the owner, 2026-11-15) |
+| QGR2 finding 11 | Low | `migrate.mjs` can't verify a private CA, and nothing refuses it in plain text | **QG29** (decided by the owner, 2026-11-15) |
+
+### Run order
+
+1. QG30 — The TLS switch refuses Node's verification override
+2. QG31 — Configuration is checked before the first probe
+3. QG29 — `migrate.mjs` verifies TLS with the deployment's CA
+4. QG28 — Each Pub/Sub loop stub gets its own subscription
+5. QG32 — Generated files end with one newline
+6. QG33 — Three limits for managed deployments (docs)
+7. QG34 — A credential's file can be named by its own variable, once the owner answers B1 yes.
+   If the owner declines, it is skipped and QGR3 records AG-03 as a Known limits row.
+8. **QGR3 — Review batch 3**, written like QGR1 and QGR2 (below).
+
+QG31 follows QG30 (QG30's check moves with the sign-in's lines), QG29 follows QG30 (its switch
+read takes QG30's rule), QG28 follows QG31 (both edit `client-wiring.ts` and the Pub/Sub part of
+`module-clients.ts.template`), and QG33 follows QG28 (its AG-05 row uses QG28's names). The QL plan
+starts after QGR3.
+
+### Batch 3 decisions
+
+Recorded:
+
+- **QG28: decided by the owner, 2026-11-15 (relayed by the QRWTY coordinator), as QGR2 proposed.**
+  Each loop stub on a Pub/Sub topic gets its own subscription, `<topic>--<tile>--<module>`, so
+  every module sees every message.
+- **QG29: decided by the owner, 2026-11-15 (relayed by the QRWTY coordinator), as QGR2 proposed.**
+  `migrate.mjs` verifies TLS with the setting QG10 gave the application's database connections: a
+  `_TLS` mode (`disable` or `verify-full`), an optional `_CA_FILE` and `_TLS_SERVERNAME`, under the
+  migration's own prefix, `JEEVES_MIGRATE_`, since it reaches one cluster at `PGHOST`.
+
+Open, each with QGB3's recommendation:
+
+- **B1 (QG34, AG-03).** Can each credential's file be named by its own variable,
+  `JEEVES_SECRET_<NAME>_FILE`, beside today's `SECRET_DIR/<name>`? It adds a family of deployment
+  variables, as QG06 did for endpoints. The alternatives are reading `<SECRET_DIR>/<name>/<file>`
+  when that path is a directory (no variable, but a fixed file name to agree on), or keeping one
+  directory and documenting Q04's link-and-exec wrapper. **Recommendation: yes, the variable.** It
+  works on any platform that mounts files, Compose sets none of them, and it removes a shell wrapper
+  from every Cloud Run service and job.
+- **B2 (AG-04).** Should the cache client fetch a fresh token per connection for a managed cache's
+  token authentication? **Recommendation: no unit now** (deferred, as QG13–QG16 are). It needs a
+  provider-specific credentials provider, a variable to select it, and a refresh rule Q04 couldn't
+  confirm (`TOKEN_AUTH`). Q04's `AUTH_DISABLED` on a private network with `verify-full` works.
+  QG33 records it.
+- **B3 (AG-05).** Should Pub/Sub topic and subscription names come from the environment?
+  **Recommendation: no unit now.** Database, login and bucket names are compiled the same way, so
+  one design's deployments already need their own instances, and sharing a project is a deployment
+  choice. QG33 records it. If yes, a later unit after QG28 reads the names from variables (the
+  owner picks then: one prefix, or a variable per name).
+- **B4 (AG-08).** Should the canvas draw a queue's provider? **Recommendation: no unit now.** The
+  canvas draws no tile's provider or engine, so drawing only the queue's would be inconsistent. If
+  wanted, a later studio unit draws every kind's alike in the Detailed view, under the owner's
+  visual review.
+
+### Rules for batch 3
+
+This plan's **Rules for every unit** and **Regeneration proof** apply, with these changes:
+
+- **Rule 1:** read `AGENTS.md`, the last three entries of `docs/handoff.md`, this plan's Rules for
+  every unit and Regeneration proof, then this batch's text above and your own brief. Don't read
+  another brief.
+- **Isolation.** These units come from QRWTY arm A's findings. Don't read `docs/plans/qrwty-lessons/`,
+  QRWTY's repositories or anything of arm B, and take nothing from them: each brief carries its
+  evidence.
+- **Rule 9's Noticed** says the unit is QRWTY-driven, naming its gap (`AG-nn`, or QGR2's finding).
+- **Regeneration proof:** QG28 and QG31 change Pub/Sub code, so they also export the Pub/Sub
+  fixture's design, `field-projects/generator-system/fixtures/pubsub/design.json`, as QG27 did. A
+  Docker proof on `after-probe` needs the application's `compose.override.yaml` to set
+  `JEEVES_EXTERNAL_PROVIDER_URL` on `app-front` (QG20: Front fails startup without it), as QG22's
+  and QGR2's proofs did.
+- Run new and changed tests on HEAD's templates in a scratch clone with its own offline install,
+  record which fail there, and delete the clone, as QG21–QG27 did.
+
+### QG30 — The TLS switch refuses Node's verification override (ready)
+
+**Status:** local and cloud (QRWTY's production profile starts every process with the switch).
+Ready: QG10's approved Goal includes a refusal for disabled TLS verification.
+**Depends:** none.
+
+**Goal:** with `JEEVES_REQUIRE_TLS=true`, a process refuses to start while
+`NODE_TLS_REJECT_UNAUTHORIZED` is set to anything but `1`, so no client that leaves certificate
+checks to Node's default can run unverified.
+
+**Found (arm A, Q04: qrwty `docs/evidence/q04/a-found-gaps.md` lines 12 and 34–45).** With
+`NODE_TLS_REJECT_UNAUTHORIZED=0`, a `fetch` to a server whose certificate it can't verify answers
+200. `pg` with a wrong CA is still refused: its explicit `rejectUnauthorized: true` wins. Session,
+Link, Account and Billing API start and become ready with the variable set under
+`JEEVES_REQUIRE_TLS=true`. So `httpTarget`, `externalTarget`, `identityTarget` and the sign-in's
+remote key set would accept any certificate, and a key set fetched unverified can be replaced.
+Node turns verification off for exactly `0`; the remedy refuses every value but `1`.
+
+**Files.**
+- `requireTls()` in each of these templates:
+  - `jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template`;
+  - `jeeves-generator/templates/local-v2/assets/src/runtime/valkey.ts.template`;
+  - `jeeves-generator/templates/local-v2/assets/src/features/service-resources.ts.template`, inside
+    `@sql`, with tabs and `throw Error(`.
+- `jeeves-generator/src/v2/http-wiring.ts`, `verifiedIdentity`'s emitted setup lines.
+- `jeeves-generator/src/v2/local.ts`, `endpointsReadme`.
+- The tests below. Docs: `jeeves-generator/README.md` (Verified TLS bindings) and
+  `docs/template-gaps.md` (Known limits).
+
+**Steps.**
+1. Each `requireTls()` keeps `undefined` → `false`, and `Invalid endpoint JEEVES_REQUIRE_TLS` for any
+   value but `true`. For `true` it then reads `process.env.NODE_TLS_REJECT_UNAUTHORIZED`. When that
+   is defined and isn't exactly `"1"`, it throws `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`;
+   otherwise it returns `true`. A two-line comment says why: `0` turns off certificate checks for
+   every client that leaves them to Node, so under the switch only unset or `1` passes (QG30).
+2. In the guard's lines, right after
+   `if (requireTls !== undefined && requireTls !== "true") throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");`,
+   emit, with the same indent:
+   `if (requireTls && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== undefined && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== "1") throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");`.
+   The comment above those lines says so.
+3. In `endpointsReadme`, after "the broker, object storage and search are plain text and aren't
+   checked.", add: "With the switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else
+   startup fails with `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`: `0` would turn off
+   certificate checks for every client that leaves them to Node." Every other phrase stays as it is.
+
+**Invariants.**
+1. Without the switch nothing changes: the variable isn't read, Compose sets neither, and local
+   stacks are unchanged.
+2. With the switch, unset or `1` passes. `0`, the empty string, `false` and `true` each fail by
+   name, never by value, before any client of that reader is built.
+3. An invalid switch value still fails `Invalid endpoint JEEVES_REQUIRE_TLS` first. No other rule,
+   message or order changes, and `pg`'s and the cache's own `rejectUnauthorized: true` stay.
+4. The check runs where the switch is read, as QG10's refusals do. A process that reads it nowhere
+   (no database, cache, Pub/Sub client, HTTP client or sign-in) isn't checked.
+
+**Emitted output.**
+- Where the export has them: `src/runtime/module-clients.ts`, `src/runtime/valkey.ts` and
+  `src/features/service-resources.ts` (with its `@sql` section).
+- Guarded process files, `README.md` (processes on), `.jeeves/report.json` and
+  `.jeeves/manifest.json`.
+- Pinned (Rule 7): `src/runtime/valkey.ts`, `src/features/service-resources.ts` and
+  `.jeeves/manifest.json` in `frozen-v2` and `v2-module-design`, and nothing in `stub-stack`. Any
+  other pinned path: stop.
+
+**Offline tests** (each fails before):
+- **`module-clients.test.ts`**, the QG10 block, one new test. The switch is on with verified
+  values: `verify-full` for the database and cache, `https:` URLs, no `PUBSUB_EMULATOR_HOST`, and
+  `JEEVES_PUBSUB_PROJECT` set.
+  - With `NODE_TLS_REJECT_UNAUTHORIZED` each of `0`, the empty string, `false` and `true`, these each fail
+    `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`, with `fake.calls` and the probe lines empty:
+    `databaseClient`, `cacheClient`, `httpTarget`, `externalTarget`, `identityTarget`,
+    `pubsubPublisher` and `valkey.cacheEndpoint`.
+  - With `1`, or unset, each is built.
+  - Without the switch, `0` builds each.
+- **`composition.test.ts`**, the QG10 pool test.
+  `tls({ JEEVES_REQUIRE_TLS: "true", [name("TLS")]: "verify-full", NODE_TLS_REJECT_UNAUTHORIZED: "0" })`
+  is `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`; with `"1"` it is `{ mode: "verify-full" }`.
+- **`tile-guard.test.ts`**, the QG10 test. Under the switch, `0` gives the `startup-failed` line
+  `Error: Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED` and no app; `1` gives
+  `Application ready`. Its `finally` restores the variable.
+- **`http-wiring.test.ts`**: the emitted sign-in lines include the new line.
+- **`tile-processes.test.ts`**: its README phrases include step 3's sentence.
+
+**Docker proof:** none. The refusal is a startup check that the offline tests run on the emitted
+files, and Node's behaviour is Q04's experiment.
+**Required regressions:** check, e2e, build. Docker phase: `--suite=wiring` and `--suite=identity`.
+**Docs.**
+- `jeeves-generator/README.md`, Verified TLS bindings: step 3's sentence.
+- `docs/template-gaps.md`, a new Known limits row: "`JEEVES_REQUIRE_TLS=true` accepted
+  `NODE_TLS_REJECT_UNAUTHORIZED=0`, which turns off certificate checks for every client that
+  leaves them to Node (`fetch`, the sign-in's key set). Found in QRWTY arm A's Q04 (AG-02) | Fixed
+  in QG30: under the switch it must be unset or `1`".
+
+**Commit:** `QG30: the TLS switch refuses Node's verification override`.
+
+### QG31 — Configuration is checked before the first probe (ready)
+
+**Status:** local and cloud: this is what a deployer sees when a setting is wrong. Ready: every
+refusal stays the same refusal, it only comes earlier.
+**Depends:** QG30 (its guard line moves here).
+
+**Goal:** a process with stubs checks, in one pass, every variable its stubs' clients and its
+tile's sign-in read, before any client is built or probed. A wrong setting is then named even while
+a store is down, and several wrong settings are named together.
+
+**Found (arm A, Q04: qrwty `docs/evidence/q04/a-found-gaps.md` lines 11 and 19–31).**
+- Each client reads and checks its variables as it is built. The clients are built in the
+  `clients` object's sorted order, each probed before the next.
+- With the production environment and one wrong setting per start, the generated runtime named the
+  wrong setting in only 15 of 96 starts.
+- In Redirect service the Pub/Sub publisher `click-events` comes first. So
+  `JEEVES_DATABASE_LINKS_TLS=disable`, or a missing `JEEVES_DATABASE_LINKS_HOST`, showed only as
+  `Startup probe failed: queue click-events` while Pub/Sub was unreachable.
+- QGR2 recorded the same order (Interactions, `module-clients.ts.template`).
+
+**Files.**
+- `jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template`:
+  - `checkConfiguration` (below), exported, outside every `@…` section (after `transport`), so
+    every emitted `module-clients.ts` has it.
+  - Database section: `export function databaseEndpoint(resource: string)`, returning
+    `{ hostname, port, tls }`. These are `databaseClient`'s three reads moved as they are
+    (`endpoint(variable("DATABASE", resource, "HOST"), host(true))`, the `PORT` read and
+    `transport("DATABASE", resource, hostname)`). `databaseClient` keeps its `localLogins` lookup
+    first, then calls `databaseEndpoint`.
+  - Cache section: `export function cacheClientEndpoint(cache: string)`, returning
+    `{ hostname, port, tls }`. These are `cacheClient`'s reads moved; `cacheClient` calls it.
+  - Pub/Sub section: `export function pubsubProjectId(): string`, which runs `refuseEmulator()` and
+    returns `endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject)`. Both `new PubSub({ projectId: … })`
+    calls use it in place of their `refuseEmulator()` call and `endpoint(…)` argument.
+    `pubsubConsumer` keeps `validateDeliveryBinding` and its concurrency check before it.
+  - The file's header comment says what runs first.
+- `jeeves-generator/templates/local-v2/assets/src/runtime/tile-guard.ts.template`:
+  `export function signInSettings(): { issuer: string; audience: string; jwksUrl: string }`. It
+  holds the guard's emitted checks, moved here with their order and messages:
+  1. `OIDC_AUDIENCE` must be non-empty, else
+     `OIDC_AUDIENCE must name the audience of the sign-in tokens.`
+  2. `JEEVES_REQUIRE_TLS` must be unset or `true`, else `Invalid endpoint JEEVES_REQUIRE_TLS`.
+  3. QG30's `NODE_TLS_REJECT_UNAUTHORIZED` check.
+  4. `OIDC_ISSUER`, then `OIDC_JWKS_URL`, by the `signInUrl` rule: no whitespace, and
+     `URL.parse`'s protocol `http:` or `https:` (`Invalid endpoint <name>`); `https:` under the
+     switch (`Insecure endpoint <name>`).
+- `jeeves-generator/src/v2/http-wiring.ts`, `verifiedIdentity`:
+  - The IIFE keeps `const binding = …`, then runs `const settings = signInSettings();` and calls
+    `createPrincipalVerifier({ issuer: settings.issuer, audience: settings.audience, jwksUrl: settings.jwksUrl, algorithms: ["RS256"], jwksTimeoutMs: 3000 })`.
+  - The mount imports `signInSettings` from `../runtime/tile-guard.ts`.
+  - A one-line comment goes where the inline checks were.
+- `jeeves-generator/src/v2/client-wiring.ts`, `stubClients`: the pass (below) and its imports:
+  - `checkConfiguration` and the readers it calls, from `module-clients.ts`;
+  - `signInSettings` from `../runtime/tile-guard.ts`, when `tileGuard(process, selections)` from
+    `http-wiring.ts` names a sign-in.
+- `jeeves-generator/src/v2/local.ts`, `endpointsReadme`: its first sentence and its failure
+  sentence (Docs).
+- Tests, and docs: `jeeves-generator/README.md` (Endpoints from the environment) and
+  `docs/template-gaps.md` (Known limits).
+
+**`checkConfiguration`, exactly:**
+
+```ts
+/** Runs every check before any client is built or probed (QG31): each reads and checks its
+ * variables as its client will. One failing check fails startup with its own error; several with
+ * `Invalid configuration: <message>; <message>`, in the order given, each message once. A message
+ * names a variable, never its value. */
+export function checkConfiguration(checks: readonly (() => unknown)[]): void {
+  const failures: unknown[] = [];
+  const messages: string[] = [];
+  for (const check of checks)
+    try {
+      check();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!messages.includes(message)) {
+        messages.push(message);
+        failures.push(error);
+      }
+    }
+  if (failures.length === 1) throw failures[0];
+  if (failures.length) throw new Error(`Invalid configuration: ${messages.join("; ")}`);
+}
+```
+
+**The pass.** It goes first in the stub clients' `setup`, before the "Module clients" comment,
+whenever it has at least one check. Its comment reads: "Configuration: every variable these
+clients and the tile's sign-in read, checked before any client is built or probed; one wrong
+setting fails startup naming it, several are named together." Then
+`checkConfiguration([`, one `  () => <check>,` line per check, and `]);`. The checks come in this
+order, each once (compared by its text):
+1. One per entry of the sorted `clients` list:
+   - a database: `databaseEndpoint(<resource>)`;
+   - a RabbitMQ publisher (`queue`): `brokerBinding()`;
+   - a Pub/Sub publisher (`pubsub`): `pubsubProjectId()`;
+   - a cache: `cacheClientEndpoint(<resource>)`;
+   - an HTTP client: its own call (`httpTarget({ tile: "<id>" })`,
+     `externalTarget("JEEVES_EXTERNAL_<ID>_URL")` or `identityTarget({ identity: "<id>" })`);
+   - object storage and search: none, since their endpoints are compiled.
+2. `brokerBinding()` when `sections` has `broker`, and `pubsubProjectId()` when it has
+   `pubsub-loop`.
+3. `signInSettings()` when the tile has a sign-in.
+
+For the probe fixture's Front, the emitted pass is exactly:
+
+```
+  checkConfiguration([
+    () => brokerBinding(),
+    () => cacheClientEndpoint("hot"),
+    () => identityTarget({ identity: "identity" }),
+    () => externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),
+    () => databaseEndpoint("store"),
+    () => signInSettings(),
+  ]);
+```
+
+**Invariants.**
+1. Every refusal a client or the sign-in makes today keeps its rule and its message. It now comes
+   from the pass, before the probe log, any client, probe or loop. A lone wrong setting fails with
+   exactly today's message, so every existing single-failure assertion holds; two or more fail with
+   `Invalid configuration: …`.
+2. Within one check, only its first failure is reported, in the reader's order as today (a
+   database's `HOST`, then `PORT`, then `TLS`).
+3. The clients, the sign-in and the loops still read their variables as they are built, with the
+   same functions, so a value can't change between the pass and the build unchecked.
+4. Templates' own clients are unchanged and still read their variables as each is built: `pool` and
+   `brokerBinding` in `service-resources.ts`, and the cache read's `cacheEndpoint`. This is recorded
+   as a limit.
+5. A process without stubs has no pass. Its sign-in still checks in the guard's setup, now through
+   `signInSettings`.
+6. No variable is added. Compose, the report's `environment` and the README's per-process lists
+   are unchanged.
+
+**Emitted output.**
+- `src/runtime/module-clients.ts`, `src/runtime/tile-guard.ts` (guarded designs) and every process
+  file with stubs or a sign-in.
+- `README.md` (processes on), `.jeeves/report.json` and `.jeeves/manifest.json`.
+- Pinned: none expected, since no pinned export has processes on. If `processes-off.test.ts` fails,
+  follow Rule 7.
+
+**Offline tests** (each fails before):
+- **`module-clients.test.ts`:**
+  - `checkConfiguration` runs every check. A lone failure rethrows that error object. Three failing
+    checks, two with one message, give `Invalid configuration: <a>; <b>`, and no value appears.
+  - With the database's `_TLS` set to `require` and the cache's `_HOST` unset,
+    `checkConfiguration([() => clients.databaseEndpoint("links-db"), () => clients.cacheClientEndpoint("links-cache")])`
+    throws
+    `Invalid configuration: Invalid endpoint JEEVES_DATABASE_LINKS_DB_TLS; Invalid endpoint JEEVES_CACHE_LINKS_CACHE_HOST`,
+    with `fake.calls` empty.
+  - The existing QG06 and QG10 tests pass unchanged.
+- **`client-wiring.test.ts`**, the QG20 describe:
+  - The probe's `front.ts` holds the block above before `  const probe = createProbeLog(config.tile);`.
+  - It imports `brokerBinding`, `cacheClientEndpoint`, `checkConfiguration` and `databaseEndpoint`
+    from `../runtime/module-clients.ts`, and `signInSettings` from `../runtime/tile-guard.ts`.
+  - The probe's `tally.ts` pass is its database's `databaseEndpoint(…)`, then `brokerBinding()`,
+    with no `signInSettings`.
+- **`http-wiring.test.ts`**: the emitted sign-in lines are the new ones.
+- **`tile-guard.test.ts`**: the existing tests pass unchanged. The sign-in stack's `watch-api` now
+  checks through `signInSettings()` in its pass, with the same messages.
+
+**Docker proof.** Run it on `after-probe` with the probe bodies and the override, as project
+`qg31-probe` on its own loopback ports.
+1. `pnpm first-run`; every service is healthy.
+2. `docker compose --profile '*' stop local-broker`.
+3. Run
+   `docker compose --profile '*' run --rm --no-deps -e JEEVES_DATABASE_STORE_TLS=require -e JEEVES_CACHE_HOT_HOST= app-front`.
+   It exits non-zero, and its `startup-failed` line is
+   `Error: Invalid configuration: Invalid endpoint JEEVES_CACHE_HOT_HOST; Invalid endpoint JEEVES_DATABASE_STORE_TLS`,
+   with no `"event":"probe"` line before it.
+4. Run the same without the two `-e`: it fails `Startup probe failed: queue events`, the outage as
+   before.
+5. Run step 3's command on `before-probe` (HEAD's templates, same steps): it names only
+   `Startup probe failed: queue events`. Record both results.
+6. Tear down: `pnpm stop`, `docker compose --profile '*' down --volumes --remove-orphans`, the
+   image removed by name, `.runtime` deleted.
+
+**Required regressions:** check, e2e, build. Docker phase: `--suite=wiring`, `--suite=identity`,
+`--suite=pubsub` and `--suite=core`.
+**Docs.**
+- `jeeves-generator/README.md`, Endpoints from the environment. The first sentence becomes: a
+  process with stubs checks every variable its stubs' clients and its sign-in read in one pass,
+  `checkConfiguration` at the top of its process file, before any client is built or probed; each
+  client reads its own again as it is built; a template's own clients read theirs as each is built.
+  The failure sentence adds that several fail together as `Invalid configuration: <message>; <message>`.
+- The generated README (`endpointsReadme`), the same in its words. Its first sentence becomes
+  "Each process with stubs checks the endpoints its clients and sign-in use in one pass before any
+  client is built or probed, and reads each again as it builds that client, with no default". After
+  "fails startup with `Invalid endpoint <variable>`, never its value" it adds "(several at once:
+  `Invalid configuration: <message>; <message>`)".
+- `docs/template-gaps.md`, a new Known limits row: "Configuration was checked one client at a time
+  between probes, so a store that was down hid a wrong setting (named in 15 of 96 starts). Found in
+  QRWTY arm A's Q04 (AG-01) | Fixed in QG31 for stubs' clients and the sign-in; a template's own
+  clients still read theirs as each is built".
+
+**Commit:** `QG31: configuration is checked before the first probe`.
+
+### QG29 — `migrate.mjs` verifies TLS with the deployment's CA (decided by the owner, 2026-11-15)
+
+**Status:** cloud: a managed PostgreSQL with its own CA, reached by a private address.
+**Depends:** QG30 (its switch read takes QG30's rule).
+
+**Goal:** `scripts/migrate.mjs` reaches PostgreSQL over a transport the deployment names, with QG10's
+setting: TLS verified against its CA, a transport `PGSSLMODE` can't change, and a plain-text one
+refused under `JEEVES_REQUIRE_TLS=true`.
+
+**Found (QGR2: [review-batch2.md](review-batch2.md) finding 11 and §Proposed units; Known limits in
+`docs/template-gaps.md`).**
+- `migrate.mjs` passes no `ssl`, so `pg` follows `PGSSLMODE`: `ssl: true` with Node's roots and the
+  host name checked, or `false`, and `no-verify` turns checks off. It doesn't read `PGSSLROOTCERT`.
+- So a private CA can't be verified there.
+- Nothing refuses a plain-text migration, though its connection carries the admin's password.
+
+**Variables.**
+- `JEEVES_MIGRATE_TLS`: `disable` or `verify-full`, with no default (`Invalid endpoint JEEVES_MIGRATE_TLS`).
+- With `verify-full`, two optional variables:
+  - `JEEVES_MIGRATE_CA_FILE`, a PEM file read at the start. One that can't be read fails
+    `Unreadable CA file JEEVES_MIGRATE_CA_FILE (<code>)`, never with its path.
+  - `JEEVES_MIGRATE_TLS_SERVERNAME`, by QG10's host rule (`Invalid endpoint JEEVES_MIGRATE_TLS_SERVERNAME`).
+- `JEEVES_REQUIRE_TLS`: `true` or unset, else `Invalid endpoint JEEVES_REQUIRE_TLS`.
+  - With `true`, `disable` fails `Insecure endpoint JEEVES_MIGRATE_TLS`, unless `PGHOST` starts
+    with `/` (a socket directory, local transport, as QG10 accepts).
+  - With `true`, QG30's `NODE_TLS_REJECT_UNAUTHORIZED` rule applies too.
+
+**Files.**
+- `jeeves-generator/templates/local-v2/assets/scripts/migrate.mjs`:
+  - A new first line, `import { checkServerIdentity } from "node:tls";`.
+  - A `migrationSsl()` function, called once into `const ssl` before `connect` is defined.
+  - `connect`'s `pg.Client` gets `ssl`: `false` for `disable`; for `verify-full`,
+    `{ rejectUnauthorized: true, ca?, servername?, checkServerIdentity? }`, built as `postgresSsl`
+    in `postgres.ts.template` builds it, so a given name is checked by
+    `checkServerIdentity(servername, certificate)`. Every connection (admin, owner, the
+    runtime-login checks) uses it.
+  - The three anchors of `local.ts`'s `productStep` stay byte-identical: the line
+    `import { hash, plan, quote, secret } from "./common.mjs";`, the Keycloak comment and the
+    `COMMIT` line.
+- `jeeves-generator/src/v2/local.ts`:
+  - `setup-migrate`'s `environment` gains `JEEVES_MIGRATE_TLS: "disable"`, as `setup-pubsub` adds
+    its own.
+  - The generated README's intro gains one sentence after "Migration owners/admin are mounted only
+    into setup.": "`scripts/migrate.mjs` reaches PostgreSQL at `PGHOST` and `PGPORT` with
+    `JEEVES_MIGRATE_TLS` (`disable`, or `verify-full` with an optional `JEEVES_MIGRATE_CA_FILE`
+    and `JEEVES_MIGRATE_TLS_SERVERNAME`), read as a database's `_TLS` is; `PGSSLMODE` can't change
+    it, and with `JEEVES_REQUIRE_TLS=true` it must be `verify-full` unless `PGHOST` is a socket
+    directory."
+- Tests in `jeeves-generator/src/v2/local.test.ts`, beside QG12's test.
+- Docs.
+
+**Invariants.**
+1. Locally the same as today: Compose sets `disable`, so `ssl: false`.
+2. `verify-full` checks the chain and the host name (or `_TLS_SERVERNAME`), with the CA file when
+   one is given. No value turns verification off, and `PGSSLMODE` changes nothing.
+3. Everything is read before the first connection, so a wrong setting fails before any statement.
+4. Nothing else in `migrate.mjs` changes: roles, databases, grants, the lock, history, messages and
+   the product step.
+5. No process reads these variables.
+
+**Emitted output.**
+- `scripts/migrate.mjs`, `compose.yaml` (exports with a database), `README.md`,
+  `.jeeves/manifest.json` and `.jeeves/report.json`.
+- Pinned (Rule 7): `scripts/migrate.mjs`, `README.md` and `.jeeves/manifest.json` in all three;
+  `compose.yaml` in `frozen-v2` and `v2-module-design`. Any other pinned path: stop.
+
+**Offline tests** (`local.test.ts`; each fails before):
+- **Text checks.** The emitted `migrate.mjs` has the import and the reads before the first
+  `connect(`. `pg.Client` gets `ssl`. Compose gives `setup-migrate` `JEEVES_MIGRATE_TLS: "disable"`.
+  With processes on, the product step is still substituted.
+- **Behaviour.** Use `frozen-v2`'s emitted `scripts/migrate.mjs` and `scripts/common.mjs`, copied to
+  a temporary directory with `infra/local.json` = `{}`, a `SECRET_DIR` holding `postgres-admin`, and
+  a fake `node_modules/pg`. The fake's `Client` prints its options' `ssl` as one JSON line
+  (`checkServerIdentity` as its `typeof`), and its `connect` rejects `stop`. Run each case with a
+  child `node`:
+  - `disable` → `false`, with `PGSSLMODE=require` too;
+  - `verify-full` → `{ rejectUnauthorized: true }`; with a CA file, its exact text; with a server
+    name, `servername` and a function `checkServerIdentity`;
+  - `JEEVES_MIGRATE_TLS` unset, or `require` → `Invalid endpoint JEEVES_MIGRATE_TLS`;
+  - a missing CA file → `Unreadable CA file JEEVES_MIGRATE_CA_FILE (ENOENT)`;
+  - the switch with `disable` → `Insecure endpoint JEEVES_MIGRATE_TLS`, and with
+    `PGHOST=/cloudsql/p:r:i` it passes (`false`);
+  - the switch with `NODE_TLS_REJECT_UNAUTHORIZED=0` → `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`.
+  - Every failing case prints no `Client` line.
+  - Delete the temporary directory afterwards.
+
+**Docker proof.** QG10's, on the migration. Use a scratch PostgreSQL 17.11 (the pinned digest)
+that accepts only `hostssl`, with a CA and a server certificate generated at run time in the scratch
+directory, never in the repository. Run `after-probe`'s `migrate.mjs` with QG12's command shape
+(`env PGHOST=127.0.0.1 PGPORT=… SECRET_DIR=… node scripts/migrate.mjs`):
+- `verify-full` with that CA completes, and a repeat applies nothing new;
+- another CA is refused, exit 1, nothing applied;
+- `disable` is refused by the server (no `pg_hba.conf` entry without encryption);
+- `verify-full` with `PGSSLMODE=disable` still connects over TLS (`pg_stat_ssl.ssl` is true for
+  its backend);
+- `JEEVES_REQUIRE_TLS=true` with `disable` fails before connecting.
+Remove the container by name.
+
+**Required regressions:** check, e2e, build. Docker phase: `--suite=core` and `--suite=regeneration`.
+**Docs.**
+- `jeeves-generator/README.md`: in Verified TLS bindings, "and `migrate.mjs` still follows
+  `PGSSLMODE`" becomes what it reads now; the QG12 paragraph names the variables.
+- `docs/template-gaps.md`: the row "`migrate.mjs` can't verify a private CA …" becomes "Fixed in
+  QG29", and the plain-text row drops "`migrate.mjs` still follows `PGSSLMODE`".
+
+**Commit:** `QG29: migrate.mjs verifies TLS with the deployment's CA`.
+
+### QG28 — Each Pub/Sub loop stub gets its own subscription (decided by the owner, 2026-11-15)
+
+**Status:** local and cloud.
+**Depends:** QG27 (the same consumer code) and QG31 (the same files).
+
+**Goal:** every loop stub on a Pub/Sub topic consumes its own subscription,
+`<topic>--<tile>--<module>`, so every module sees every message. Copies of one tile still share
+their module's subscription and compete for its messages.
+
+**Found (QGR2: [review-batch2.md](review-batch2.md) finding 5 and §Proposed units).** Two loop stubs
+of one tile on one topic share `<topic>--<tile>` and split its messages, while RabbitMQ gives each
+consuming module of a topic its own subscriber queue.
+
+**Names.**
+- Every Pub/Sub loop stub, alone on its tile or not, in either queue mode, gets subscription
+  `<topic>--<tile>--<module>`. `<tile>` is `generationLocalIdentity(tile).local`, as today, and
+  `<module>` is `generationLocalIdentity(<module>).local`, the `id` that `stubLoops` uses.
+- Each gets dead-letter topic `<topic>--<tile>--<module>.failed` and a pull subscription of that
+  name.
+- The settings are unchanged: 60 s ack deadline, retries backing off from 1 s to 10 s, 100 delivery
+  attempts.
+- Because a name never depends on how many modules consume, adding a second loop stub never renames
+  the first one's subscription. Every existing subscription is renamed once (Noticed for the owner,
+  below).
+
+**Files.**
+- `jeeves-generator/src/v2/local-contract.ts`:
+  - `pubsubSubscription(topic, tile, module)` returns
+    `{ name: <topic>--<tile>--<module>, failed: <name>.failed }`.
+  - New `pubsubSubscriptions(model: LoopModel, topic, tile)`: for each loop stub of the tile's
+    process whose `consumes` has that topic (by `generationLocalIdentity(queue.element).local`),
+    that module's subscription, sorted by name with `v2Compare`.
+  - Both doc comments are updated.
+- `jeeves-generator/src/v2/loop-wiring.ts`, `stubLoops`: `pubsubSubscription(topic, process.tile, id)`.
+- `jeeves-generator/src/v2/local.ts`:
+  - The Pub/Sub plan (the `byKind("pubsub")` loop) adds, for each consuming host, every entry of
+    `pubsubSubscriptions(model, r.id, host)`, each with its `.failed` topic and pull subscription,
+    named and checked by `pubsubName` as today.
+  - The comment above it is updated.
+  - The README's Pub/Sub paragraph (below).
+- `jeeves-generator/src/v2/client-wiring.ts`, `provisionedAs`, the consuming Pub/Sub row:
+  - With one module, today's text with the new names: "Google Cloud Pub/Sub subscription <name> on
+    topic <topic>, with dead-letter topic <name>.failed and its subscription (<local>)".
+  - With several: "Google Cloud Pub/Sub subscriptions <a>, <b> on topic <topic>, one per consuming
+    module, each with its dead-letter topic <subscription>.failed and its subscription (<local>)".
+- `jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template`,
+  `pubsubLoop`'s doc comment: "its tile's Pub/Sub subscription `<topic>--<tile>`" becomes "its own
+  Pub/Sub subscription `<topic>--<tile>--<module>`", and `<topic>--<tile>.failed` becomes
+  `<subscription>.failed`. Its comment only; no code changes.
+- The Pub/Sub suite and fixture: `jeeves-generator/integration/scenarios/pubsub.system.test.ts`'s
+  `subscription` becomes `"clicks--tally--count"`, and `field-projects/generator-system/README.md`
+  names it everywhere it names `clicks--tally`.
+- Tests: `jeeves-generator/src/v2/pubsub.test.ts`.
+- Docs: `jeeves-generator/README.md` (the Provisioning row for a queue saved on Google Cloud, and
+  Pub/Sub loops).
+
+**The README's Pub/Sub paragraph** (`pubsubReadme` in `local.ts`). "Each tile that consumes a topic
+gets subscription `<topic>--<tile>`, which its copies share (another tile gets its own, so each
+tile gets every message)" becomes "Each loop stub that consumes a topic gets its own subscription,
+`<topic>--<tile>--<module>`, which its tile's copies share (every other loop stub, of this tile or
+another, gets its own, so each gets every message, in either mode)". Each `<topic>--<tile>.failed`
+in that paragraph becomes `<subscription>.failed`.
+
+**Invariants.**
+1. RabbitMQ is unchanged: `subscriberQueue` and `subscriberQueues`, `broker-init.mjs` and its plan.
+2. One subscription per Pub/Sub loop stub per topic, with its own `.failed` topic and pull
+   subscription. The loop's `config.loops[n].queue` and `failedQueue` are its own, and the report
+   row names them.
+3. Processes still create nothing, and `pubsub-init.mjs` is unchanged: it creates what the plan
+   lists.
+4. A publisher-only design is unchanged.
+5. In work-queue mode, two loop stubs of one tile now each get every message on Pub/Sub, where
+   RabbitMQ's share the queue. QG07 already treats tiles that way ("in either mode"), and the
+   generator README says so.
+
+**Emitted output.**
+- For a design with a Pub/Sub loop: `infra/local.json`, the consuming process files,
+  `src/runtime/module-clients.ts` (the comment), `README.md`, `.jeeves/report.json` and
+  `.jeeves/manifest.json`. For a publisher-only Pub/Sub design, `README.md`, report and manifest.
+- Pinned: none expected; if `processes-off.test.ts` fails, follow Rule 7.
+- Regeneration proof: the probe and r83 change only manifest and report. The Pub/Sub fixture
+  changes the paths listed in the first bullet.
+
+**Offline tests** (`pubsub.test.ts`; each fails before):
+- **Two loops on one tile.** Take the stub stack on Google Cloud (`cloud`) with a second loop stub
+  on Visit worker, added with `runStudioCommands`:
+  `{ type: "addModule", host: "visit-worker", kind: "event-consumer", id: "visit-auditor", name: "Visit auditor" }`
+  and
+  `{ type: "connectModule", module: "visit-auditor", slot: "channel", target: { tile: "visits" } }`.
+  - `infra/local.json`'s Pub/Sub subscriptions are `visits--visit-worker--visit-auditor` and
+    `visits--visit-worker--visit-consumer`, with their two `.failed` pulls.
+  - Its topics include both `.failed` topics, and there is no `visits--visit-worker`.
+  - `src/processes/visit-worker.ts`'s two loops consume their own names.
+  - The report row names both.
+- **Work-queue mode.** The same design with Visits edited to `mode: "work-queue"` has the same two
+  subscriptions.
+- **Today's `cloudExport`.** Its subscription is now `visits--visit-worker--visit-consumer`: update
+  every existing assertion of an emitted Pub/Sub name in this file and in any other test that fails
+  for this reason. A name a test passes to a fake itself stays as it is.
+
+**Docker phase:** `--suite=pubsub` (P1–P9 on `clicks--tally--count`) and `--suite=core`. **Docker
+proof:** none beyond the suite. The plan's subscriptions are rows `pubsub-init.mjs` creates with
+its existing, tested code, and each subscription getting every message is Pub/Sub's own rule.
+**Required regressions:** check, e2e, build.
+**Commit:** `QG28: each Pub/Sub loop stub gets its own subscription`.
+
+### QG32 — Generated files end with one newline (ready)
+
+**Status:** cosmetic: every application that commits its export sees `git diff --check` flag two
+generated files.
+**Depends:** none.
+
+**Goal:** no emitted file ends with a blank line.
+
+**Found (arm A, Q05: qrwty `docs/evidence/q05/checks.md` lines 241 and 253; the Q05 review, line
+43).**
+- `git diff --check` over the export reports `new blank line at EOF` for `Dockerfile` and
+  `src/features/service-resources.ts`.
+- Read here: the asset `templates/local-v2/assets/Dockerfile` ends with `\n\n`. It is the only file
+  under `jeeves-generator/templates/` that does.
+- `composition.ts` strips `service-resources.ts.template`'s sections with
+  `// @<name>-start[\s\S]*?// @<name>-end`, which becomes `""` when the section is dropped. When it
+  is kept, only the markers become `""`. Either way the file's last line, `// @cache-end`, ends up
+  empty.
+
+**Files.**
+- `jeeves-generator/templates/local-v2/assets/Dockerfile`: delete its last, empty line and nothing
+  else.
+- `jeeves-generator/src/v2/composition.ts`: after the section loop,
+  `constructors = constructors.replace(/\n+$/, "\n");`, with a one-line comment.
+- A test in `jeeves-generator/src/v2/local.test.ts`.
+
+**Invariants.**
+1. Only the final blank line goes; every other byte of both files is unchanged.
+2. The blank lines the kept markers leave inside `service-resources.ts` stay. Removing them would
+   change every pinned copy's lines for no reader.
+3. No other template or emitter changes.
+
+**Emitted output.**
+- `Dockerfile` and `src/features/service-resources.ts`, each where the export has it, and
+  `.jeeves/manifest.json`.
+- Pinned (Rule 7): `Dockerfile` and `.jeeves/manifest.json` in all three;
+  `src/features/service-resources.ts` in `frozen-v2` and `v2-module-design`. Any other pinned path:
+  stop.
+
+**Offline test** (`local.test.ts`, beside QG22's test). It covers the exports QG22's test builds
+and the probe fixture (`docs/plans/qrwty-gaps/fixtures/probe-design.json`, read as
+`client-wiring.test.ts` reads it).
+- No emitted file's bytes end with `\n\n`.
+- `Dockerfile` and `src/features/service-resources.ts` end with exactly one `\n`.
+- Before changing anything, run it on HEAD. It must fail on exactly those two paths. If it names
+  any other path, stop (Rule 2) and list them in the handoff.
+
+**Docker proof:** none.
+**Required regressions:** check, e2e, build. Docker phase: `--suite=core` (the image builds from
+the changed `Dockerfile`).
+**Commit:** `QG32: generated files end with one newline`.
+
+### QG33 — Three limits for managed deployments (ready, docs)
+
+**Status:** docs only; AG-04, AG-05 and AG-06 get no unit (B2, B3).
+**Depends:** QG28 (the AG-05 row names its subscriptions).
+
+**Goal:** a deployer reads each of these three limits, with its workaround, in one place.
+
+**Found (arm A, Q04: qrwty `docs/evidence/q04/a-found-gaps.md` lines 14–16, 60–91).**
+- The cache's password is read once and sent on every connection.
+- Topic and subscription names are compiled into the process files and the setup plan.
+- `infra/local.json`'s provider logins and databases include the local Keycloak's (`i_identity`,
+  `io_identity`, `ik_identity`), so `migrate.mjs` creates them and needs two secrets even where the
+  issuer is managed.
+
+**Files.** `docs/template-gaps.md`, Known limits: three rows after the table's last row, in this
+order and with this text:
+1. "A cache's password is read once from its secret file and sent on every connection, so a managed
+   cache's token authentication can't be used (Memorystore for Valkey's IAM tokens expire an hour
+   after they are fetched). Such a cache runs with authentication off, reachable only on a private
+   network, with `verify-full`. Found in QRWTY arm A's Q04 (AG-04) | Open; deferred until a field
+   project needs it: a credentials provider that fetches a fresh token per connection, selected by
+   a variable"
+2. "Pub/Sub topic and subscription names are the design's IDs (`<topic>`,
+   `<topic>--<tile>--<module>` and its `.failed`), compiled into the process files and
+   `infra/local.json`, as database, login and bucket names are, so two deployments of one design
+   can't share a Google Cloud project. Found in QRWTY arm A's Q04 (AG-05) | Open; a later unit can
+   read the names from the environment as QG06 reads endpoints"
+3. "`migrate.mjs` creates every provider database and login in `infra/local.json`, the local
+   Keycloak's included (for Identity `identity`: `i_identity`, `io_identity`, `ik_identity`), also
+   where a deployment uses a managed issuer: one unused database, and two secrets the migration job
+   must still be given. Found in QRWTY arm A's Q04 (AG-06) | Open (harmless; give the two secrets
+   random values)"
+
+**Invariants.** No other line of any file changes.
+**Emitted output:** none (no template changes).
+**Required regressions:** check.
+**Commit:** `QG33: three limits for managed deployments`.
+
+### QG34 — A credential's file can be named by its own variable (needs the owner, B1)
+
+**Status:** cloud (Cloud Run mounts each secret at its own path). Needs the owner: it adds a family
+of deployment variables beside QG06's endpoints.
+**Depends:** none.
+
+**Goal:** each credential a process or setup script reads can come from a file the deployment
+names, so a platform that mounts every secret at its own path needs no wrapper.
+
+**Found (arm A, Q04: qrwty `docs/evidence/q04/a-found-gaps.md` lines 13 and 47–58).**
+- `readSecret(name)` reads `${SECRET_DIR ?? "/run/secrets"}/${name}`, and so does `migrate.mjs`,
+  through `common.mjs`'s `secret`.
+- Cloud Run doesn't allow mounting two secrets at one path. Redirect service, Link API and Account
+  API read two credentials each, and the migration job reads fourteen.
+- Q04 mounts each secret at `<dir>/<name>/value`, links them into one directory in a preflight,
+  and starts the process through a shell (`SECRET_DIR=… exec node …`).
+
+**The variable.** `JEEVES_SECRET_<NAME>_FILE`, where `<NAME>` is the secret's name upper-cased
+with each `-` and `.` as `_` (`sql-links--redirect-service` →
+`JEEVES_SECRET_SQL_LINKS__REDIRECT_SERVICE_FILE`).
+- It is optional. When it is set, it holds an absolute path to the file, which is read as the
+  credential (trimmed, as today). Unset, the credential is read from `<SECRET_DIR>/<name>` as
+  today.
+- A set value that isn't absolute, or holds a control character, fails `Invalid endpoint <variable>`.
+- A file it names that can't be read fails `Unreadable secret file <variable> (<code>)`, never with
+  the path or the value.
+
+**Files.**
+- `jeeves-generator/templates/local-v2/assets/src/runtime/local.ts`, `readSecret`: the name rule
+  first (`Invalid secret identity`, as today), then the variable, then the read.
+- `jeeves-generator/templates/local-v2/assets/scripts/common.mjs`, `secret`: the same variable
+  rule.
+- `jeeves-generator/src/v2/local.ts`: one sentence in the generated README's intro, after
+  "Migration owners/admin are mounted only into setup." (or after QG29's sentence): "A credential
+  is read from `JEEVES_SECRET_<NAME>_FILE` when that is set (an absolute path; `<NAME>` is the
+  secret's name upper-cased, with `-` and `.` as `_`), else from `SECRET_DIR/<name>`
+  (`/run/secrets/<name>`, where Compose mounts it)."
+- Tests in `jeeves-generator/src/v2/local.test.ts`.
+- Docs: `jeeves-generator/README.md`, where it describes secrets and `SECRET_DIR`, and
+  `docs/template-gaps.md` (a row).
+
+**Invariants.**
+1. Unset, every read is today's byte for byte: `SECRET_DIR`, `/run/secrets`, `.trim()`, and the
+   name rule first.
+2. Both readers apply the same rule.
+3. Compose sets none of these variables, since locally the files are where Compose mounts them.
+   Nothing else reads a secret.
+4. The report's `environment` and the README's per-process lists don't list them; they are
+   optional, like `_CA_FILE`. The README sentence gives the rule.
+
+**Emitted output.**
+- `src/runtime/local.ts`, `scripts/common.mjs`, `README.md`, `.jeeves/manifest.json` and
+  `.jeeves/report.json`.
+- Pinned (Rule 7): `src/runtime/local.ts`, `scripts/common.mjs`, `README.md` and
+  `.jeeves/manifest.json` in all three. Any other pinned path: stop.
+
+**Offline tests** (`local.test.ts`; each fails before):
+- **`readSecret`.** Load the emitted `src/runtime/local.ts`, type-stripped, as `tile-guard.test.ts`
+  loads emitted files. In a temporary directory:
+  - the default read comes from `SECRET_DIR`;
+  - the variable, naming another file, wins;
+  - a relative value fails `Invalid endpoint JEEVES_SECRET_<NAME>_FILE`;
+  - a missing file fails `Unreadable secret file JEEVES_SECRET_<NAME>_FILE (ENOENT)`, with no path
+    in the message;
+  - an invalid name fails `Invalid secret identity` before the variable is read.
+- **`common.mjs`.** Copy the emitted `common.mjs` to `scripts/` in a temporary directory, with
+  `infra/local.json` = `{}`. A child `node` runs the same four cases for `secret`, as QG22's test
+  runs `setup.mjs`.
+
+**Docker proof.** Run it on `after-probe` with the probe bodies and the override, as project
+`qg34-probe`.
+1. `pnpm first-run`.
+2. Give `app-front` and `setup-migrate` Cloud Run's shape in the override:
+   - each secret in the service's `secrets` list, bind-mounted read-only from
+     `.runtime/secrets/<name>` at `/credentials/<name>/value`;
+   - `JEEVES_SECRET_<NAME>_FILE: /credentials/<name>/value` for each;
+   - `SECRET_DIR: /nonexistent`.
+3. `pnpm start`: `setup-migrate` exits 0, and `app-front` is healthy (its probes used each
+   credential).
+4. Point one variable at a missing file: `app-front`'s `startup-failed` line names
+   `Unreadable secret file <variable> (ENOENT)`.
+5. Tear down as QG31 does.
+
+**Required regressions:** check, e2e, build. Docker phase: `--suite=core` and `--suite=wiring`.
+**Docs.** `docs/template-gaps.md`, a new Known limits row: "Credentials were read from one
+directory only, `SECRET_DIR/<name>`, and Cloud Run mounts each secret at its own path. Found in
+QRWTY arm A's Q04 (AG-03) | Fixed in QG34: `JEEVES_SECRET_<NAME>_FILE` names a credential's file".
+
+**Commit:** `QG34: a credential's file can be named by its own variable`.
+
+### QGR3 — Review batch 3
+
+**Who.** A fresh reviewer (Fable, xhigh) that implemented none of the batch's units.
+
+**What it reads and checks.**
+- Every batch-3 handoff entry, and `git diff <QGB3's commit>..HEAD`.
+- Each unit's invariants, pins and emitted-output lists, against its brief.
+- The regeneration proof across the batch: the two fixtures and the Pub/Sub fixture.
+- The interactions between units in these files:
+  - `module-clients.ts.template` (QG30, QG31, QG28);
+  - `tile-guard.ts.template` and the guard's lines (QG30, QG31);
+  - `migrate.mjs` and `common.mjs` (QG29, QG34);
+  - `service-resources.ts.template` (QG30, QG32).
+
+**What it runs:** check, e2e, build and `pnpm test:generated --suite=all`.
+
+**What it may fix:** a small defect, only with a test that fails before and passes after.
+
+**What it records** in `docs/plans/qrwty-gaps/review-batch3.md`:
+- the rest of its findings, with any new unit under **Proposed units**, marked ready or needs the
+  owner;
+- the owner's answers to B1–B4;
+- a Known limits row in `docs/template-gaps.md` for a declined unit's gap;
+- what a regeneration of arm A's export would change, QG28's renamed subscriptions included.
+
+**Isolation:** it reads nothing of the QL plan or of QRWTY arm B.
+**Commit:** `QGR3: review QRWTY gap batch 3`.
+
 ---
 
 # QRWTY-driven generator gaps: QG01–QG20

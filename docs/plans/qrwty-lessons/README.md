@@ -11,6 +11,8 @@ project: both arms' designs, decisions, code and reviews, together with Jeeves i
 
 **Status:** owner decisions given 2026-11-14 (see units.md §Decisions). Nothing is implemented. The run order is QL02–QL06, QL14, QL07–QL12, then QL13; QL01 is folded into QG09. QL units start after QGR2, then QG21–QG23 and QG25.
 
+**Batch 3 first (QGB3, 2026-11-15):** the QL units start after [qrwty-gaps](../qrwty-gaps/units.md) batch 3 (QG30–QG34, QG28, QG29) and its review, QGR3.
+
 **Planner usage:** 527,714 tokens, 84 tool uses, 31 minutes.
 
 **Isolation (QRWTY experiment):** the plan draws on arm B's code. QRWTY arm A's workers don't read
