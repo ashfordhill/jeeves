@@ -16284,3 +16284,90 @@ coordinator's order; QG28 and QG29 need the owner. Q05 generates arm A's export 
 
 **For the next unit.** QG22. Every 503 the generated runtime answers from a route (the admission's,
 an `HttpError`'s and the fallback) now carries `Retry-After: 1` unless the route set its own.
+
+## 2026-11-15 — QG22: Secret files are 0644 whatever the host umask
+
+**What changed.**
+- `setup.mjs` (asset): the `write` helper keeps its `writeFileSync(path, value, { mode, flag:
+  "wx" })` and then calls `chmodSync(path, mode)`, with a one-line comment (the host's umask masks
+  `mode`; containers run as `node`). Every secret is 0644 as before; Garage's `garage.toml` keeps
+  its 0600 (Differences).
+- `bootstrap.mjs` (asset): each storage key's `writeFileSync` is followed by
+  `chmodSync(path, 0o644)`, with the same comment. Nothing else in either script changed.
+- Test, 1 new in `local.test.ts`, beside QG05's: in the default, stub-stack (processes on) and full
+  YouTube exports, each emitted script's write is followed by its `chmodSync` (one per
+  `writeFileSync`); and the full export's emitted `setup.mjs`, `common.mjs` and `infra/local.json`,
+  run by a child `node` under `process.umask(0o077)` in a temporary directory (deleted after), write
+  every planned secret except bootstrap's storage keys at 0644, `garage.toml` at 0600, and
+  `.runtime/secrets` at 0700. No Docker; the values are setup's own random ones.
+- Pins (`processes-off.json`): `frozen-v2`, `v2-module-design` and `stub-stack` each changed
+  `scripts/setup.mjs`, `scripts/bootstrap.mjs` and `.jeeves/manifest.json`; nothing else.
+- Docs: `jeeves-generator/README.md`, the QG05 passage: setup writes every secret those containers
+  mount with mode 0644, "set after the write so the host's umask can't narrow it".
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 1013 tests. On the final tree, exit 0, 117
+  files / 1014 tests; Biome shows only the older 1 info.
+- New test on HEAD's templates: a scratch clone at `39a20be` with its own offline install and the
+  changed `local.test.ts`. It fails there at its first text assertion; the file's other 7 pass.
+  With its assertions made soft (in the clone only), under umask 077 HEAD's setup writes all 12
+  0644 secrets at 0600 (384), the `chmodSync` counts fail, and `garage.toml` (0600) and the
+  directory pass, as they already held. The clone is deleted. The checkout's
+  `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` keep their
+  checksums and mtimes (2026-11-14 12:10).
+- `pnpm test:e2e`: run 1, 73 passed / 1 failed: `v3-build.spec.ts` "designs YouTube v3 from a blank
+  project by mouse" at `getByRole('button', { name: /^Project:/ })` not visible within 5 s
+  (`e2e/studio.ts:94`), the packet's known load flake (load average 4–7, other runs' Docker stacks
+  beside it). That test alone: 1 passed (2.2 min). The full suite again, alone: 74 passed (4.9 min).
+- Web build: exit 0.
+- Docker phase, after the offline checks:
+  - `pnpm test:generated --suite=core` (artifacts in the scratchpad): **4/4 passed** (B01–B04, 2
+    files, Vitest 324.8 s), first run.
+  - **The brief's proof** on after-probe with the probe bodies at their `generated-extension`
+    paths and a `compose.override.yaml` setting `JEEVES_EXTERNAL_PROVIDER_URL` (QG20 makes Front
+    fail startup without it), project `qg22-probe`, 127.0.0.1:47961–47963: in a subshell with
+    `umask 077` (checked: `0077`), `pnpm first-run` exit 0 in 87 s, all seven services healthy.
+    `.runtime/secrets`: all 12 files 0644 (owner `ash`, uid 1000), the directory and `.runtime`
+    0700. `app-front` running, healthy, `User` `node`; inside it `id` is uid 1000 and its three
+    `/run/secrets/*` are 0644. Then `pnpm stop` exit 0, `docker compose --profile '*' down
+    --volumes --remove-orphans` exit 0, `docker image rm qg22-probe-app:latest`, `.runtime`
+    removed; no `qg22` container, image, network or volume is left.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `.jeeves/manifest.json`, `.jeeves/report.json`, `scripts/bootstrap.mjs`,
+    `scripts/setup.mjs`; nothing else.
+  - The report differs only in the registry's source inventory (the two scripts' `bytes` and
+    `sha256`, and each owner's `sourceSha256`). Required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. Scratch exports deleted.
+- Inventory: compared at the unit's start, before the Docker phase and after it. The differences
+  are other runs' and none was touched: arm A's `qrwtya-q04-*` stack (18 containers, its image,
+  two networks, three volumes) appeared, two `n06-selftest-*` containers went, and arm B's
+  `qrwtyb/*` images were rebuilt and tagged `b07-1`. No `qg22` or `gs-` resource and no
+  `/tmp/jeeves-system-*` is left; `jeeves-postgres-1` is unchanged; nothing was added under
+  `test-results/generated/`.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **`garage.toml`.** The brief says `chmodSync(path, 0o644)` after each write. `setup.mjs` writes
+  every file through one helper whose `mode` is 0644 except for `garage.toml`, which it writes
+  0600 (it holds Garage's RPC secret, and only `local-objects`, a provider image Compose sets no
+  `user` for, mounts it). The helper
+  calls `chmodSync(path, mode)`, so every secret a container mounts is 0644 and `garage.toml` stays
+  0600; a literal 0644 would have made it world-readable, a change the brief doesn't mention.
+- **The proof's override.** Since QG20, Front fails startup until `JEEVES_EXTERNAL_PROVIDER_URL` is
+  set, so the proof sets it in the application's `compose.override.yaml`, as QG20's and QGR2's
+  proofs did; nothing generated was edited.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), proposed ready by the QGR1 review (finding 5).
+- On this host the user is uid 1000, the same as the image's `node`, so HEAD's 0600 files would
+  also have been readable here and `app-front` healthy; the proof's evidence is the modes. A host
+  user with another uid and a strict umask is where HEAD failed.
+- `local.mjs` writes `.runtime/local-setup.json` with `mode: 0o600`; a umask can only narrow that,
+  and only the host reads it, so it is unchanged.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG23 (docs). Every secret setup and bootstrap write is chmodded to its mode
+after the write.

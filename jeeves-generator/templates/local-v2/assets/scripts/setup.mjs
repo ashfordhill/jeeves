@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { plan } from "./common.mjs";
 
 /** Called only after local.mjs has checked exact-project Docker state and free ports. */
@@ -9,8 +9,12 @@ export function setup() {
   mkdirSync(".runtime", { mode: 0o700 });
   mkdirSync(".runtime/secrets", { mode: 0o700 });
   const values = {};
-  const write = (name, value, mode = 0o644) =>
-    writeFileSync(`.runtime/secrets/${name}`, value, { mode, flag: "wx" });
+  const write = (name, value, mode = 0o644) => {
+    const path = `.runtime/secrets/${name}`;
+    writeFileSync(path, value, { mode, flag: "wx" });
+    // The host's umask masks `mode`; containers run as `node`, so set it exactly.
+    chmodSync(path, mode);
+  };
   for (const name of plan.secrets.filter(
     (name) =>
       !plan.generatedSecrets.includes(name) &&

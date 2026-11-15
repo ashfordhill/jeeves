@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, writeFileSync } from "node:fs";
 import { compose, plan } from "./common.mjs";
 
 const garage = (...args) => compose("exec", "-T", "local-objects", "/garage", ...args);
@@ -20,10 +20,13 @@ for (const name of plan.generatedSecrets) {
     secretAccessKey = result.match(/Secret key:\s*(\S+)/)?.[1];
   if (!accessKeyId || !secretAccessKey)
     throw new Error("Storage key output changed; inspect private runtime without logging keys.");
-  writeFileSync(`.runtime/secrets/${name}`, JSON.stringify({ accessKeyId, secretAccessKey }), {
+  const path = `.runtime/secrets/${name}`;
+  writeFileSync(path, JSON.stringify({ accessKeyId, secretAccessKey }), {
     mode: 0o644,
     flag: "wx",
   });
+  // The host's umask masks `mode`; containers run as `node`, so set it exactly.
+  chmodSync(path, 0o644);
 }
 for (const binding of plan.storage)
   garage(

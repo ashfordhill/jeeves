@@ -1,4 +1,9 @@
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { designSchema, generationRuntime } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
@@ -288,6 +293,85 @@ describe("standalone local foundation", () => {
     expect(text(processes, "src/runtime/process.ts")).toContain(
       'const marker = "/tmp/application-ready";',
     );
+  });
+
+  it("sets each secret's mode after writing it, so the host umask can't narrow it (QG22)", () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    const full = emit(
+      designSchema.parse({
+        ...generationSourceFixture(),
+        generation: generationSelectionsFixture(),
+      }),
+    );
+    for (const bundle of [emit(), processes, full]) {
+      // open(2) masks writeFileSync's mode with the umask; chmod sets the same mode exactly.
+      const setup = text(bundle, "scripts/setup.mjs");
+      expect(setup).toContain(
+        [
+          `    const path = \`.runtime/secrets/\${name}\`;`,
+          '    writeFileSync(path, value, { mode, flag: "wx" });',
+          "    // The host's umask masks `mode`; containers run as `node`, so set it exactly.",
+          "    chmodSync(path, mode);\n",
+        ].join("\n"),
+      );
+      const bootstrap = text(bundle, "scripts/bootstrap.mjs");
+      expect(bootstrap).toContain(
+        [
+          `  const path = \`.runtime/secrets/\${name}\`;`,
+          "  writeFileSync(path, JSON.stringify({ accessKeyId, secretAccessKey }), {",
+          "    mode: 0o644,",
+          '    flag: "wx",',
+          "  });",
+          "  // The host's umask masks `mode`; containers run as `node`, so set it exactly.",
+          "  chmodSync(path, 0o644);\n",
+        ].join("\n"),
+      );
+      for (const script of [setup, bootstrap])
+        expect(script.match(/\bchmodSync\(/g)?.length).toBe(
+          script.match(/\bwriteFileSync\(/g)?.length,
+        );
+    }
+    // The emitted setup, run under umask 077: every secret a container mounts is 0644, and
+    // Garage's own config keeps 0600.
+    const dir = mkdtempSync(join(tmpdir(), "jeeves-qg22-"));
+    try {
+      for (const path of ["scripts/common.mjs", "scripts/setup.mjs", "infra/local.json"]) {
+        mkdirSync(dirname(join(dir, path)), { recursive: true });
+        writeFileSync(join(dir, path), text(full, path));
+      }
+      const script = pathToFileURL(join(dir, "scripts/setup.mjs")).href;
+      const run = spawnSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "-e",
+          `process.umask(0o077); (await import(${JSON.stringify(script)})).setup();`,
+        ],
+        { encoding: "utf8", env: { ...process.env, LOCAL_HTTP_PORT: "47900" } },
+      );
+      expect(run.status, run.stderr).toBe(0);
+      const secrets = join(dir, ".runtime/secrets");
+      const modes = Object.fromEntries(
+        readdirSync(secrets).map((name) => [name, statSync(join(secrets, name)).mode & 0o777]),
+      );
+      const plan = JSON.parse(text(full, "infra/local.json"));
+      // Every planned secret except the storage keys, which bootstrap writes later.
+      expect(Object.keys(modes).sort()).toEqual(
+        plan.secrets.filter((name: string) => !plan.generatedSecrets.includes(name)).sort(),
+      );
+      for (const [name, mode] of Object.entries(modes))
+        expect([name, mode]).toEqual([name, name === "garage.toml" ? 0o600 : 0o644]);
+      expect(statSync(secrets).mode & 0o777).toBe(0o700);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("migrates one copy at a time and completes with a non-superuser admin", () => {

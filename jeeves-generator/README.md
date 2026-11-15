@@ -969,7 +969,7 @@ with `pnpm build` in the export. The `Dockerfile` builds as root, then its `app`
 (every process and setup container) and `media` image run as the base image's unprivileged `node`
 user (uid 1000). `/app` stays root-owned and readable, so at run time a process writes only under
 `/tmp` (its ready marker, the media worker's job files), and setup writes every secret those
-containers mount with mode 0644. Allocate `COMPOSE_PROJECT_NAME`, `LOCAL_HTTP_PORT`,
+containers mount with mode 0644, set after the write so the host's umask can't narrow it. Allocate `COMPOSE_PROJECT_NAME`, `LOCAL_HTTP_PORT`,
 `LOCAL_IDENTITY_PORT`, `LOCAL_OBJECT_PORT` together; all three ports must be distinct, free,
 loopback ports outside the owner/v1 reservations. Run `pnpm first-run` once, `pnpm stop` for
 all profiles and `pnpm start` to retain the exact project, private `.runtime` credentials and
