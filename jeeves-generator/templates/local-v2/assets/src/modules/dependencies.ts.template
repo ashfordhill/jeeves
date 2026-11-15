@@ -6,9 +6,19 @@ export interface DatabaseReader {
   query<Row = Record<string, unknown>>(sql: string, values?: readonly unknown[]): Promise<Row[]>;
 }
 
+/** The statements of one `transaction`, on its connection. */
+export interface Tx {
+  query<Row = Record<string, unknown>>(sql: string, values?: readonly unknown[]): Promise<Row[]>;
+  execute(sql: string, values?: readonly unknown[]): Promise<{ rowCount: number }>;
+}
+
 /** A database a module reads and writes. */
 export interface DatabaseReadWriter extends DatabaseReader {
   execute(sql: string, values?: readonly unknown[]): Promise<{ rowCount: number }>;
+  /** One transaction on one connection: BEGIN, your statements, COMMIT; ROLLBACK when fn
+   * throws. A serialization failure or deadlock reruns fn (at most 3 attempts). Don't send BEGIN,
+   * COMMIT or ROLLBACK yourself. */
+  transaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T>;
 }
 
 /** A queue or topic a module publishes to. `messageId` is the message's ID (a fresh one when it

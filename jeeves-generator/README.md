@@ -705,7 +705,15 @@ stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a de
 `databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
 `execute`; a query that gets no reply in 2.5 s, as when PostgreSQL stalls, rejects `Query read
 timeout` and the pool discards its connection, and a template's pool has the same bound, 500 ms
-past its statement timeout), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
+past its statement timeout; and `transaction(fn)` (QL03), which runs `fn`'s statements on one
+reserved connection between BEGIN and COMMIT through `src/runtime/transaction.ts`, which the
+primitives emit when no durable template already does: ROLLBACK when `fn` throws or a statement
+fails, SQL that starts with transaction control (`BEGIN`, `START TRANSACTION`, `COMMIT`, `END`,
+`ROLLBACK`, `ABORT`, `SAVEPOINT`, `RELEASE`, `PREPARE TRANSACTION`) refused before it is sent, a
+serialization failure or deadlock (`40001`, `40P01`) rerunning `fn` on a new transaction after
+20 ms and then 40 ms, the third rethrown, and a COMMIT that lost its connection after `fn`
+resolved (SQLSTATE class `08`, `57P01`, `57P02` or none) rejecting `TransactionOutcomeUnknown`,
+never the result; the pool's statement and query timeouts apply inside it), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
 `pubsubPublisher` (a Pub/Sub topic's publisher on the official client, `@google-cloud/pubsub`

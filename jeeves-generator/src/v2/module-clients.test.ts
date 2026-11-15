@@ -29,16 +29,20 @@ const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).t
 /** Each fake records what it is asked for in `calls`; the database and broker fakes also record
  * the endpoint they were given in `endpoints`, and the database fake its transport in
  * `transports`. The Pub/Sub client's topic exists unless `pubsub` says not, and `pubsub.publish`
- * answers its publishes when it is set. */
+ * answers its publishes when it is set. Each connection a database pool reserves records its
+ * statements in `connections`, ending with `release` (or `release discard`); `answer` can fail a
+ * statement on the nth connection, or answer it. */
 type Calls = {
   calls: unknown[][];
   endpoints: unknown[][];
   transports: unknown[];
+  connections: string[][];
+  answer?: (sql: string, connection: number) => unknown;
   fail?: string;
   hang?: boolean;
   pubsub?: { exists?: boolean; publish?: () => Promise<string> };
 };
-const fake: Calls = { calls: [], endpoints: [], transports: [] };
+const fake: Calls = { calls: [], endpoints: [], transports: [], connections: [] };
 (globalThis as { moduleClientsFake?: Calls }).moduleClientsFake = fake;
 const check = `
   const fake = globalThis.moduleClientsFake;
@@ -60,6 +64,19 @@ const fakes: Record<string, string> = {
         on: (event) => record("on", event),
         end: async () => record("end"),
         query: (sql, values) => outcome(sql, { rows: [{ sql, values }], rowCount: 3 }),
+        connect: async () => {
+          const statements = [];
+          fake.connections.push(statements);
+          const connection = fake.connections.length;
+          return {
+            query: async (sql, values) => {
+              statements.push(sql);
+              const answer = await fake.answer?.(sql, connection);
+              return answer ?? { rows: [{ sql, values }], rowCount: sql.startsWith("INSERT") ? 1 : null };
+            },
+            release: (discard) => statements.push(discard ? "release discard" : "release"),
+          };
+        },
       };
     }`,
   "./amqp.ts": `${check}
@@ -159,6 +176,12 @@ fakes["./valkey.ts"] = stripTypeScriptTypes(
   ),
 ).replace(/from "([^"]+)"/g, (match, from: string) =>
   fakes[from] ? `from "${dataUrl(fakes[from])}"` : match,
+);
+// A stub's transaction (QL03) runs on the exact emitted transaction.ts, over the fake pool.
+fakes["./transaction.ts"] = stripTypeScriptTypes(
+  new TextDecoder().decode(
+    bundle.files.find((file) => file.path === "src/runtime/transaction.ts")?.bytes,
+  ),
 );
 // A stub loop's Pub/Sub subscriber (QG08) shares the loop's runtime: the exact delivery.ts, and a
 // stand-in for tile-loop.ts, whose subscriber tile-loop.test.ts runs.
@@ -673,6 +696,257 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     await vi.advanceTimersByTimeAsync(5000);
     await failed;
     expect(lines.at(-1)).toMatchObject({ result: "failed", error: "Error: Probe deadline (5 s)" });
+  });
+});
+
+describe("a stub's database transaction (QL03)", () => {
+  type Tx = {
+    query(sql: string, values?: unknown[]): Promise<unknown[]>;
+    execute(sql: string, values?: unknown[]): Promise<{ rowCount: number }>;
+  };
+  type Database = Tx & { transaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T> };
+  beforeEach(() => environment(localEnvironment));
+  afterEach(() => {
+    fake.calls.length = 0;
+    fake.endpoints.length = 0;
+    fake.connections.length = 0;
+    fake.answer = undefined;
+    lines.length = 0;
+    vi.useRealTimers();
+    restoreEnvironment();
+  });
+  /** The stub stack's Links database client, after its probe. */
+  async function database(): Promise<Database> {
+    const db = await clients.databaseClient(testScope(), probe, {
+      tile: "links-api",
+      resource: "links-db",
+    });
+    fake.calls.length = 0;
+    return db;
+  }
+  /** A PostgreSQL error as pg gives it: its SQLSTATE is `code`. */
+  const sqlError = (message: string, code?: string) =>
+    Object.assign(new Error(message), code === undefined ? {} : { code });
+  const control = "Transaction control is owned by transaction()";
+
+  it("runs BEGIN, its statements and COMMIT on one reserved connection while a query uses the pool", async () => {
+    const db = await database();
+    const result = await db.transaction(async (tx) => {
+      const [rows, elsewhere] = await Promise.all([
+        tx.query("SELECT $1", [1]),
+        db.query("SELECT 2"),
+      ]);
+      const inserted = await tx.execute("INSERT INTO t VALUES ($1)", ["a"]);
+      return { rows, elsewhere, inserted, updated: await tx.execute("UPDATE t SET x = 1") };
+    });
+    expect(result).toEqual({
+      rows: [{ sql: "SELECT $1", values: [1] }],
+      elsewhere: [{ sql: "SELECT 2" }],
+      inserted: { rowCount: 1 },
+      // pg gives a null rowCount here.
+      updated: { rowCount: 0 },
+    });
+    expect(fake.connections).toEqual([
+      [
+        "BEGIN",
+        "SELECT $1",
+        "INSERT INTO t VALUES ($1)",
+        "UPDATE t SET x = 1",
+        "COMMIT",
+        "release",
+      ],
+    ]);
+    expect(fake.calls).toEqual([["SELECT 2"]]);
+  });
+
+  it("rolls back when fn throws or a statement fails, and a Tx used after its transaction rejects", async () => {
+    const db = await database();
+    let kept: Tx | undefined;
+    await expect(
+      db.transaction(async (tx) => {
+        kept = tx;
+        await tx.execute("INSERT INTO t VALUES (1)");
+        throw new Error("Stop");
+      }),
+    ).rejects.toThrow("Stop");
+    await expect(kept?.query("SELECT 1")).rejects.toThrow("SQL transaction is not active");
+    // A failed statement fails its transaction when fn catches it, or never awaits it.
+    const duplicate = sqlError("duplicate key value", "23505");
+    fake.answer = (sql) => {
+      if (sql.startsWith("INSERT")) throw duplicate;
+    };
+    await expect(
+      db.transaction(async (tx) => {
+        await tx.execute("INSERT INTO t VALUES (2)").catch(() => {});
+        return "done";
+      }),
+    ).rejects.toBe(duplicate);
+    await expect(
+      db.transaction(async (tx) => {
+        void tx.execute("INSERT INTO t VALUES (3)");
+        return "done";
+      }),
+    ).rejects.toBe(duplicate);
+    expect(fake.connections).toEqual(
+      [1, 2, 3].map((n) => ["BEGIN", `INSERT INTO t VALUES (${n})`, "ROLLBACK", "release"]),
+    );
+    expect(fake.calls).toEqual([]);
+  });
+
+  it("refuses transaction control before sending it", async () => {
+    const db = await database();
+    await db.transaction(async (tx) => {
+      for (const sql of [
+        "BEGIN",
+        "  begin;",
+        "\n\tSTART  TRANSACTION",
+        "COMMIT",
+        "end",
+        "Rollback to savepoint a",
+        "ABORT",
+        "SAVEPOINT a",
+        "RELEASE SAVEPOINT a",
+        "PREPARE TRANSACTION 'x'",
+      ]) {
+        await expect(tx.execute(sql)).rejects.toThrow(control);
+        await expect(tx.query(sql)).rejects.toThrow(control);
+      }
+      // The transaction's own isolation level and a prepared statement are not control.
+      await tx.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+      await tx.execute("PREPARE q AS SELECT 1");
+    });
+    expect(fake.connections).toEqual([
+      [
+        "BEGIN",
+        "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+        "PREPARE q AS SELECT 1",
+        "COMMIT",
+        "release",
+      ],
+    ]);
+  });
+
+  it("reruns fn on a new transaction 20 ms after a serialization failure", async () => {
+    const db = await database();
+    vi.useFakeTimers();
+    fake.answer = (sql, connection) => {
+      if (sql.startsWith("UPDATE") && connection === 1)
+        throw sqlError("could not serialize access", "40001");
+    };
+    let runs = 0;
+    const settled = db.transaction(async (tx) => {
+      runs += 1;
+      await tx.execute("UPDATE t SET x = 1");
+      return runs;
+    });
+    await vi.advanceTimersByTimeAsync(19);
+    expect(fake.connections).toEqual([["BEGIN", "UPDATE t SET x = 1", "ROLLBACK", "release"]]);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await settled).toBe(2);
+    expect(fake.connections).toEqual([
+      ["BEGIN", "UPDATE t SET x = 1", "ROLLBACK", "release"],
+      ["BEGIN", "UPDATE t SET x = 1", "COMMIT", "release"],
+    ]);
+  });
+
+  it("rethrows the third serialization failure or deadlock, rerun after 20 ms and then 40 ms", async () => {
+    const db = await database();
+    vi.useFakeTimers();
+    const failures = [
+      sqlError("could not serialize access 1", "40001"),
+      sqlError("deadlock detected 2", "40P01"),
+      sqlError("could not serialize access 3", "40001"),
+    ];
+    fake.answer = (sql, connection) => {
+      if (sql.startsWith("UPDATE")) throw failures[connection - 1];
+    };
+    const settled = db
+      .transaction(async (tx) => tx.execute("UPDATE t SET x = 1"))
+      .catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(20);
+    expect(fake.connections).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(39);
+    expect(fake.connections).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await settled).toBe(failures[2]);
+    expect(fake.connections).toEqual(
+      [1, 2, 3].map(() => ["BEGIN", "UPDATE t SET x = 1", "ROLLBACK", "release"]),
+    );
+  });
+
+  it("rejects TransactionOutcomeUnknown, never the result, when the COMMIT loses its connection", async () => {
+    const db = await database();
+    const lost = [
+      sqlError("connection failure", "08006"),
+      sqlError("terminating connection due to administrator command", "57P01"),
+      sqlError("the database system is shutting down", "57P02"),
+      sqlError("Connection terminated unexpectedly"),
+      sqlError("Query read timeout"),
+      sqlError("write EPIPE", "EPIPE"),
+    ];
+    for (const error of lost) {
+      fake.answer = (sql) => {
+        if (sql === "COMMIT" || sql === "ROLLBACK") throw error;
+      };
+      const outcome = await db
+        .transaction(async (tx) => {
+          await tx.execute("INSERT INTO t VALUES (1)");
+          return "committed";
+        })
+        .catch((caught: unknown) => caught);
+      expect(outcome).toBeInstanceOf(Error);
+      expect(outcome).toMatchObject({
+        name: "TransactionOutcomeUnknown",
+        message: "Transaction outcome unknown",
+        cause: error,
+      });
+    }
+    // Never rerun: one connection each, discarded when its ROLLBACK fails too.
+    expect(fake.connections).toEqual(
+      lost.map(() => [
+        "BEGIN",
+        "INSERT INTO t VALUES (1)",
+        "COMMIT",
+        "ROLLBACK",
+        "release discard",
+      ]),
+    );
+    // A COMMIT the server answered with another SQLSTATE rolled back: its own error.
+    const deferred = sqlError("duplicate key value", "23505");
+    fake.answer = (sql) => {
+      if (sql === "COMMIT") throw deferred;
+    };
+    await expect(db.transaction(async () => "committed")).rejects.toBe(deferred);
+    // A lost connection before fn resolved is that statement's error.
+    const before = sqlError("connection failure", "08006");
+    fake.answer = (sql) => {
+      if (sql.startsWith("INSERT")) throw before;
+    };
+    await expect(db.transaction(async (tx) => tx.execute("INSERT INTO t VALUES (2)"))).rejects.toBe(
+      before,
+    );
+  });
+
+  it("reruns a COMMIT's serialization failure, and rethrows it on the third attempt", async () => {
+    const db = await database();
+    vi.useFakeTimers();
+    const failures = [1, 2, 3].map((n) => sqlError(`could not serialize access ${n}`, "40001"));
+    fake.answer = (sql, connection) => {
+      if (sql === "COMMIT") throw failures[connection - 1];
+    };
+    let runs = 0;
+    const settled = db
+      .transaction(async () => {
+        runs += 1;
+        return runs;
+      })
+      .catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(60);
+    expect(await settled).toBe(failures[2]);
+    expect(runs).toBe(3);
+    expect(fake.connections).toEqual(
+      [1, 2, 3].map(() => ["BEGIN", "COMMIT", "ROLLBACK", "release"]),
+    );
   });
 });
 

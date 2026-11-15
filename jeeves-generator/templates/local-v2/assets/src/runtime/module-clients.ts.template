@@ -11,6 +11,7 @@ import { readFileSync } from "node:fs";
 // @database-import-start
 import { localLogins } from "../features/local-bindings.ts";
 import { createPostgres } from "./postgres.ts";
+import { assertTransaction, transaction, type TransactionPool } from "./transaction.ts";
 // @database-import-end
 // @queue-import-start
 import { randomUUID } from "node:crypto";
@@ -54,6 +55,7 @@ import type {
   ObjectStore,
   QueuePublisher,
   SearchIndex,
+  Tx,
 } from "../modules/dependencies.ts";
 import type { ProcessScope } from "./process.ts";
 import { NotImplemented } from "./tile-process.ts";
@@ -238,10 +240,81 @@ export function databaseEndpoint(resource: string) {
     tls: transport("DATABASE", resource, hostname),
   };
 }
+/** SQL a stub may not send in a transaction: `transaction` sends BEGIN, COMMIT and ROLLBACK. */
+const transactionControl =
+  /^\s*(?:begin|start\s+transaction|commit|end|rollback|abort|savepoint|release|prepare\s+transaction)\b/i;
+/** An error's SQLSTATE: five digits or capital letters, never a Node error code such as `EPIPE`. */
+function sqlState(error: unknown): string | undefined {
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === "string" && /^[0-9A-Z]{5}$/.test(code) && !/^E[A-Z]+$/.test(code)
+    ? code
+    : undefined;
+}
+/**
+ * A stub's transaction (QL03): `fn` on one connection reserved from the pool, between BEGIN and
+ * COMMIT (`transaction.ts`, which rolls back when `fn` throws or a statement fails). Its `Tx`
+ * refuses SQL that starts with transaction control, before sending it; a `Tx` used after its
+ * transaction ended rejects. A statement `fn` didn't await settles before COMMIT. A serialization
+ * failure or deadlock (40001, 40P01) reruns `fn` on a new transaction 20 ms later, then 40 ms; the
+ * third is rethrown. When `fn` resolved and the COMMIT then failed on the connection (SQLSTATE
+ * class 08, 57P01, 57P02 or none), whether it committed is unknown: it rejects
+ * `TransactionOutcomeUnknown` (`Transaction outcome unknown`, with the COMMIT's error as its
+ * `cause`), never the result.
+ */
+async function scopedTransaction<T>(pool: TransactionPool, fn: (tx: Tx) => Promise<T>): Promise<T> {
+  for (let attempt = 1; ; attempt += 1) {
+    let committing = false;
+    try {
+      return await transaction(pool, async (scope) => {
+        const sent = new Set<Promise<unknown>>();
+        const send = <R>(
+          sql: string,
+          values: readonly unknown[] | undefined,
+          answer: (result: { rows: unknown[]; rowCount: number | null }) => R,
+        ): Promise<R> => {
+          if (transactionControl.test(sql))
+            return Promise.reject(new Error("Transaction control is owned by transaction()"));
+          const result = (async () =>
+            answer(await scope.query(sql, values ? [...values] : undefined)))();
+          sent.add(result);
+          // Its failure fails the transaction (`transaction.ts`), whether or not `fn` awaits it.
+          result.catch(() => {});
+          return result;
+        };
+        const value = await fn({
+          query: <Row = Record<string, unknown>>(sql: string, values?: readonly unknown[]) =>
+            send(sql, values, (result) => result.rows as Row[]),
+          execute: (sql, values) =>
+            send(sql, values, (result) => ({ rowCount: result.rowCount ?? 0 })),
+        });
+        await Promise.allSettled(sent);
+        assertTransaction(scope);
+        committing = true;
+        return value;
+      });
+    } catch (error) {
+      const state = sqlState(error);
+      if (
+        committing &&
+        (state === undefined || state.startsWith("08") || state === "57P01" || state === "57P02")
+      ) {
+        const unknown = new Error("Transaction outcome unknown", { cause: error });
+        unknown.name = "TransactionOutcomeUnknown";
+        throw unknown;
+      }
+      if ((state === "40001" || state === "40P01") && attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 20 * attempt));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
  * what another owner publishes when the tile may only read it. Stubs own no tables: a module's
  * own tables need a migration and grants of their own. Its endpoint and transport come from
- * `databaseEndpoint`. Probe: SELECT 1. */
+ * `databaseEndpoint`. `query` and `execute` each take a connection from the pool; `transaction`
+ * (`scopedTransaction`) reserves one for its statements. Probe: SELECT 1. */
 export async function databaseClient(
   scope: ProcessScope,
   log: ProbeLog,
@@ -273,6 +346,7 @@ export async function databaseClient(
     async execute(sql, values) {
       return { rowCount: (await run(sql, values)).rowCount ?? 0 };
     },
+    transaction: (fn) => scopedTransaction(pool, fn),
   };
 }
 // @database-end

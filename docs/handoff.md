@@ -17795,3 +17795,151 @@ wants it; QG36–QG39 wait for the owner.
 
 **For the next unit.** QL03, Database stubs get a scoped transaction. QL04 (after QL02 and QL03)
 builds on this unit's `defineRoutes`, `rawPath` and `signal`.
+
+## 2026-11-15 — QL03: Database stubs get a scoped transaction
+
+**What changed.**
+- `templates/local-v2/assets/src/modules/dependencies.ts.template`: a new `Tx` (`query` and
+  `execute`, as `DatabaseReader` and `DatabaseReadWriter` declare them), and
+  `DatabaseReadWriter.transaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T>` with the brief's doc
+  comment.
+- `templates/local-v2/assets/src/runtime/module-clients.ts.template`, all inside `@database`:
+  - `@database-import` imports `assertTransaction`, `transaction` and `type TransactionPool` from
+    `./transaction.ts`. The type import from `../modules/dependencies.ts` adds `Tx`.
+  - New `transactionControl` (the brief's nine openings after leading whitespace, any case),
+    `sqlState(error)` and `scopedTransaction(pool, fn)`. `databaseClient` returns
+    `transaction: (fn) => scopedTransaction(pool, fn)`; its `query` and `execute` are unchanged.
+  - `scopedTransaction` calls `transaction(pool, …)` with a `Tx` whose `query` gives `rows` and
+    `execute` `{ rowCount }` (0 for pg's null), both on the reserved client. Control SQL rejects
+    `Transaction control is owned by transaction()` before it is sent. `40001`/`40P01` reruns `fn`
+    after 20 ms × attempt, at most 3 attempts. A connection-level COMMIT failure after `fn`
+    resolved (class `08`, `57P01`, `57P02`, none) rejects `Error("Transaction outcome unknown")`
+    named `TransactionOutcomeUnknown`. A COMMIT with another SQLSTATE rejects with that error.
+- `src/v2/primitives.ts`: `clientLibraries.database` is `["postgres", "transaction"]`, and
+  `transaction` is dropped when a selection is a durable kind: `local.durability` then writes the
+  same asset (QG04's rule for `valkey.ts`).
+- `src/v2/durability.ts`: exports `durableKinds`, its four kinds, which both emitters now read.
+- `transaction.ts.template` is unchanged.
+- Tests:
+  - `module-clients.test.ts`: the fake pool gains `connect`. Each reserved connection records its
+    statements and its `release`/`release discard`, and an `answer` hook fails or answers a
+    statement on the nth one. `./transaction.ts` is the emitted file. A new describe has 7 tests:
+    - BEGIN, three statements and COMMIT on one connection while a parallel `db.query` uses the
+      pool, with `rowCount` 1 and 0 (null);
+    - ROLLBACK for a throwing `fn`, and for a failed statement that `fn` catches or never awaits;
+      a kept `Tx` rejects `SQL transaction is not active`;
+    - ten control strings refused on `query` and `execute` with nothing sent, while `SET
+      TRANSACTION ISOLATION LEVEL SERIALIZABLE` and `PREPARE q AS SELECT 1` pass;
+    - `40001` reruns after 20 ms (fake timers: not at 19), giving two BEGINs and one COMMIT;
+    - `40001`, `40P01`, `40001` reject with the third, rerun at 20 ms and then 40 ms;
+    - a COMMIT failing with `08006`, `57P01`, `57P02`, no code, `Query read timeout` or `EPIPE`
+      gives `TransactionOutcomeUnknown` with that `cause`, once each, never rerun. A `23505`
+      COMMIT and an `08006` statement give their own errors;
+    - a COMMIT `40001` three times reruns `fn` 3 times and rejects with the third.
+  - `client-wiring.test.ts`: 1 new test. The stub stack's `transaction.ts` is owned by
+    `local.primitives`, and v2's (Favorites) by `local.durability`. Both are the template's bytes,
+    and both `module-clients.ts` import it. With processes off there is none. The bucket-only
+    design has no `transaction.ts`.
+  - `tile-processes.test.ts`: the stub stack's added paths include `src/runtime/transaction.ts`.
+- Docs: `jeeves-generator/README.md`, **Module clients**, the `databaseClient` clause.
+- Pins (Rule 7): `src/modules/dependencies.ts` and `.jeeves/manifest.json` in v2-module-design
+  and stub-stack. Nothing else changed.
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: exit 0, 117 files / 1042 tests (8 new); Biome shows only the older 1 info. Before
+  `pins:update`, only `processes-off.test.ts` failed.
+- Web build: exit 0.
+- Regeneration proof, before and after from this checkout: `probe-design.json`
+  (`a3b6204f…0505`, verified), `qrwty-r83.json` (`4c16e0ca…5d50`) and YouTube v4's design
+  (`9762df41…813f`).
+  - Probe and r83: `.jeeves/manifest.json`, `.jeeves/report.json`, `src/modules/dependencies.ts`
+    and `src/runtime/module-clients.ts`, plus `src/runtime/transaction.ts`, which is new and has
+    the template's bytes.
+  - YouTube v4: the same four, and no new file. Its `transaction.ts` (from `local.durability`)
+    is unchanged.
+  - That is the brief's list. The report differs only in its source inventory.
+  - `update:v2 … youtube/v4/app --check`: `refused` `[]` (create 1, replace 27, unchanged 68,
+    keep 11).
+- Docker proof, the unit's one Docker run. Project `ql03-probe` on 127.0.0.1:47991–47993, run on
+  after-probe with Q03's bodies and both SQL files at their `generated-extension` paths.
+  - Q03's `front-probe.ts` gained a `/tx2` case. It inserts `<id>-a`, reads `inOpenTx`, inserts
+    `<id>-b`, then returns. `fail` throws instead, `hold` waits 600 ms between the inserts, and
+    `control` sends `COMMIT` itself.
+  - The `compose.override.yaml` set only `JEEVES_EXTERNAL_PROVIDER_URL`.
+  - `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build` (tsc 7.0.2)
+    both exited 0. The checkout's `node_modules/.modules.yaml` and `.pnpm/lock.yaml` keep their
+    mtimes (2026-11-14 12:10).
+  1. `pnpm first-run`: exit 0 in 87 s, all seven services healthy.
+  2. Through the edge:
+     - `…/front-probe/tx2?fail` gives `Error: tx2 failure after two inserts` and 0 rows.
+     - `…/tx2` commits, with `in_open_tx: true` inside, and 2 rows.
+     - `…/tx2?control` gives `Error: Transaction control is owned by transaction()` and 0 rows,
+       so its first insert rolled back.
+     - Then `SELECT count(*) FROM pg_stat_activity WHERE state = 'idle in transaction'` (psql as
+       `postgres`) gives 0.
+  3. `…/tx2?hold`: during the wait, one `r_store__front` session is `idle in transaction`. The
+     request answers in 611 ms with 2 rows, and then the count is 0.
+  4. Ten requests in parallel, half with `fail`: five commit with 2 rows each and five roll back,
+     10 rows in all. Afterwards none is `idle in transaction`.
+  5. Front logged no failure line.
+  6. Teardown, each exit 0: `pnpm stop`; `docker compose --profile '*' down --volumes
+     --remove-orphans`; `docker image rm ql03-probe-app:latest`. The six exports are deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  No `ql03` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - the brief's `--suite=wiring` and `--suite=core`, since the proof above is the one Docker run;
+  - the measurement of the new tests on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in after-r83 and after-youtube.
+- Nothing in the studio is user-visible, so there was no mouse check.
+- After the proof, only the wrapping of `scopedTransaction`'s doc comment changed. `pnpm check` ran
+  again after it.
+
+**Differences from the plan.**
+- **frozen-v2's pins are unchanged.** The brief lists its `src/modules/dependencies.ts`, but
+  frozen-v2 doesn't emit that file.
+- **A statement `fn` didn't await settles before COMMIT.** The brief doesn't say this. Without it,
+  pg would queue COMMIT behind a statement that then fails. PostgreSQL answers that COMMIT
+  `ROLLBACK` with no error, so a rolled-back transaction would resolve as success. Each statement
+  also gets a no-op `catch`, so a failure `fn` ignores becomes the transaction's rejection and
+  not an unhandled one.
+- **`TransactionOutcomeUnknown` carries the COMMIT's error as `cause`.** The brief doesn't name
+  `cause`.
+  - `delivery.ts`'s `unreachable` follows `cause`. So in a loop stub, an unknown outcome from a
+    lost connection waits 5 s with the same attempt, as a store outage does.
+  - A route stub answers 503, as for any other error.
+- **A SQLSTATE** is a `code` of five digits or capital letters that isn't a Node code
+  (`/^E[A-Z]+$/`, the shape `transport` already reads). So `EPIPE` and `ECONNRESET` count as no
+  SQLSTATE, which is unknown at COMMIT.
+- **The control match.**
+  - The keyword must end at a word boundary. `start transaction` and `prepare transaction` allow
+    any whitespace inside them.
+  - `SET TRANSACTION …` and `PREPARE <name> AS …` pass.
+  - Leading comments aren't skipped, since the brief says whitespace.
+  - A refused statement wasn't sent, so it rejects but doesn't fail the transaction. If `fn` catches
+    the refusal, the transaction can still commit.
+- **`durableKinds`** moved from `durability.ts`'s filter to an export, so that primitives reads the
+  same list.
+- **The dependencies.ts doc** is the brief's text exactly. It doesn't name
+  `TransactionOutcomeUnknown`; `module-clients.ts` and the README do.
+- **`docs/studio.md`** doesn't describe a stub's database client, so it is unchanged.
+  `docs/template-gaps.md` has no row for this.
+- **The proof's `hold`, `control` and parallel runs** go beyond the brief.
+
+**Noticed.**
+- The unit comes from the QRWTY lessons plan (JP00).
+- A COMMIT that fails `40001` (as under SERIALIZABLE) reruns `fn`, as a statement's does.
+- `transaction.ts` tries ROLLBACK after a failed COMMIT. On a lost connection that fails too and
+  the connection is discarded; the unit test shows `release discard`.
+- YouTube v4's `app/test/watch.test.ts` fakes `DatabaseReadWriter` without `transaction`. Its
+  `tsc` covers `src/` only, so the build is unaffected.
+- **Nested calls aren't refused.** QG13's outline (`docs/plans/qrwty-gaps/units.md`) and
+  `analysis.md` say a nested call is refused, but the QL03 brief doesn't. A `db.transaction`
+  inside `fn` runs on a second connection, which can wait on the first one's locks. This is for the
+  reviewer (QL13).
+- QRWTY arm A's export is frozen at `4e87f97`, so this reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QL04, Route stubs get idempotency records. It builds on QL02's
+`defineRoutes`, `rawPath` and `signal` and on this unit's `transaction`.

@@ -11,6 +11,14 @@ export {
   type SqlRelation,
 } from "../../templates/local-v2/assets/src/runtime/durable-sql.ts";
 
+/** The templates whose emitter writes `transaction.ts` (and the rest of these libraries). */
+export const durableKinds: readonly string[] = [
+  "owned-multipart",
+  "asset-lifecycle",
+  "event-counter",
+  "favorites",
+];
+
 export function createLocalDurability(sourcePaths: readonly string[]): V2Emitter {
   return {
     id: "local.durability",
@@ -21,11 +29,7 @@ export function createLocalDurability(sourcePaths: readonly string[]): V2Emitter
     sourcePaths,
     dependencies: [generationRuntime.ref],
     render: ({ model, asset }) => {
-      const selected = model.selections.filter((s) =>
-        ["owned-multipart", "asset-lifecycle", "event-counter", "favorites"].includes(
-          s.binding.kind,
-        ),
-      );
+      const selected = model.selections.filter((s) => durableKinds.includes(s.binding.kind));
       const paths = selected.map(
         (s) => `/${s.sourcePath.map((part) => pointerPart(String(part))).join("/")}`,
       );

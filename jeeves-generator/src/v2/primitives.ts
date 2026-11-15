@@ -1,11 +1,13 @@
 import { generationCapabilities, generationRuntime } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
 import { type ClientSection, stubClients } from "./client-wiring.ts";
+import { durableKinds } from "./durability.ts";
 import { type V2Emitter, v2Compare } from "./registry.ts";
 
 const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
 const clientLibraries: Record<ClientSection, string[]> = {
-  database: ["postgres"],
+  // A stub's database client runs its transactions through transaction.ts (QL03).
+  database: ["postgres", "transaction"],
   // The broker's endpoint alone needs no library: its publisher and loops bring theirs.
   broker: [],
   queue: ["delivery", "amqp"],
@@ -53,6 +55,10 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       // stub's cache client then uses that same file.
       if (model.selections.some((selection) => selection.binding.kind === "positive-cache-read"))
         modules.delete("valkey");
+      // Likewise local.durability writes transaction.ts for its templates, and a stub's database
+      // client then uses that same file.
+      if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
+        modules.delete("transaction");
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)
           add(["admission", "http"], selection.sourcePath);

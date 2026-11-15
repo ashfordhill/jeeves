@@ -477,7 +477,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       .map((file) => file.path)
       .filter((path) => path.includes("/runtime/"));
     expect(runtime).toContain("src/runtime/objects.ts");
-    for (const library of ["postgres", "amqp", "search", "identity"])
+    for (const library of ["postgres", "transaction", "amqp", "search", "identity"])
       expect(runtime).not.toContain(`src/runtime/${library}.ts`);
   });
 
@@ -501,6 +501,33 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(owner(v2)).toEqual(["local.positive-cache"]);
     expect(text(v2, "src/runtime/module-clients.ts")).not.toContain("valkey");
     // No stub cache and no cache read (the stub stack with processes off): none.
+    expect(owner(stackOff)).toEqual([]);
+  });
+
+  it("gives a stub's database client transaction.ts, written once (QL03)", () => {
+    const owner = (bundle: Bundle) =>
+      bundle.manifest.files
+        .filter((file) => file.path === "src/runtime/transaction.ts")
+        .map((file) => (file.owner === "assembler" ? file.owner : file.owner.id));
+    const imports =
+      'import { assertTransaction, transaction, type TransactionPool } from "./transaction.ts";';
+    const library = readFileSync(
+      new URL(
+        "../../templates/local-v2/assets/src/runtime/transaction.ts.template",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    // Stubs alone: the runtime primitives write it for the database client.
+    expect(owner(stack)).toEqual(["local.primitives"]);
+    expect(text(stack, "src/runtime/module-clients.ts")).toContain(imports);
+    expect(text(stack, "src/runtime/transaction.ts")).toBe(library);
+    // Beside Favorites (v2), local.durability writes it, the same bytes, and the stubs' client
+    // uses that file.
+    expect(owner(v2)).toEqual(["local.durability"]);
+    expect(text(v2, "src/runtime/module-clients.ts")).toContain(imports);
+    expect(text(v2, "src/runtime/transaction.ts")).toBe(library);
+    // Processes off (no stub client, no durable template): none.
     expect(owner(stackOff)).toEqual([]);
   });
 

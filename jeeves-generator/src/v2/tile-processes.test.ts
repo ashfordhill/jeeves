@@ -109,6 +109,8 @@ describe("local.tile-processes", () => {
       "src/runtime/tile-http.ts",
       "src/runtime/tile-loop.ts",
       "src/runtime/tile-process.ts",
+      // The stubs' database client runs its transactions through it (QL03).
+      "src/runtime/transaction.ts",
       // The stubs' cache (Links cache) uses the cache read's bounded client.
       "src/runtime/valkey.ts",
     ]);
