@@ -1483,8 +1483,8 @@ const cdnTypes: readonly (readonly [string, string])[] = [
 
 /** The edge's nginx configuration: `/api/<host>/` for each public HTTP process, `/cdn/<cdn>/` for
  * each CDN's public bucket (read only, from the bucket's local website), its own `/healthz`, 503
- * JSON for a process that is down, and 404 for everything else. Upstreams resolve per request
- * through Docker DNS. */
+ * JSON with `Retry-After: 1` for a process that is down, and 404 for everything else. Upstreams
+ * resolve per request through Docker DNS. */
 function edgeConfig(
   hosts: readonly string[],
   cdn: readonly { cdn: string; bucket: string }[] = [],
@@ -1539,7 +1539,9 @@ function edgeConfig(
           `    location @cdn-missing { return 404 ${json({ error: "NOT_FOUND", message: "No object for this key." })}; }`,
         ]
       : []),
-    `    location @unavailable { return 503 ${json({ error: "UNAVAILABLE", message: "Service unavailable." })}; }`,
+    // Its 503 (for an upstream's 502 or 504) says when to retry, as the processes' own 503s do
+    // (QG19, QG21); `always`, since nginx adds a header to an error status only then.
+    `    location @unavailable { add_header Retry-After 1 always; return 503 ${json({ error: "UNAVAILABLE", message: "Service unavailable." })}; }`,
     `    location / { return 404 ${json({ error: "NOT_FOUND", message: "Route not found." })}; }`,
     "  }",
     "}",

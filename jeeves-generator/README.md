@@ -369,10 +369,11 @@ an `edge` row per public host and the foundation writes `app-edge`: the nginx pi
 process healthy (and Garage for a CDN route), and healthy on its own `GET /healthz`
 (`{"service":"edge","application":"ready"}`). `infra/edge/nginx.conf` routes `/api/<id>/` to
 `app-<id>:3000/` (resolved per request through Docker DNS), answers 503
-`{"error":"UNAVAILABLE","message":"Service unavailable."}` while that process is down, and 404 JSON
-for anything else, so an internal process is reached only inside the network at
-`http://app-<id>:3000`, the value Compose gives a calling process's `JEEVES_TILE_<ID>_URL`
-(Module clients, below). The edge's own answers are JSON whatever a path's extension (`types { }`).
+`{"error":"UNAVAILABLE","message":"Service unavailable."}` with `Retry-After: 1` while that process
+is down (where nginx would answer 502 or 504, a CDN route's included), and 404 JSON for anything
+else, so an internal process is reached only inside the network at `http://app-<id>:3000`, the
+value Compose gives a calling process's `JEEVES_TILE_<ID>_URL` (Module clients, below). A process's
+own answers, its 503s with their `Retry-After` among them, pass through unchanged. The edge's own answers are JSON whatever a path's extension (`types { }`).
 The edge owns the single HTTP port: a service contributing `http: true` beside it refuses, and so
 does a tile whose ID is `edge`.
 

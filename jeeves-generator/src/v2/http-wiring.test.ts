@@ -1,5 +1,6 @@
 import { type DesignDocument, emptyDesign, type StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { searchStackDesign } from "../../../jeeves/packages/spec/src/fixtures/search-stack.ts";
 import {
   signIn,
   signInStackCommands,
@@ -158,7 +159,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
           (id) =>
             `    location /api/${id}/ { set $backend app-${id}:3000; rewrite ^/api/${id}/(.*)$ /$1 break; proxy_pass http://$backend; }`,
         ),
-        `    location @unavailable { return 503 '{"error":"UNAVAILABLE","message":"Service unavailable."}'; }`,
+        `    location @unavailable { add_header Retry-After 1 always; return 503 '{"error":"UNAVAILABLE","message":"Service unavailable."}'; }`,
         `    location / { return 404 '{"error":"NOT_FOUND","message":"Route not found."}'; }`,
         "  }",
         "}",
@@ -214,6 +215,35 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(record?.contributors.map((item) => item.emitter.id)).toEqual(["local.tile-processes"]);
     // Off, there is no edge.
     expect(stackOff.files.map((file) => file.path)).not.toContain("infra/edge/nginx.conf");
+  });
+
+  it("answers a process or bucket that is down with 503 and Retry-After: 1 (QG25)", () => {
+    const unavailable = `    location @unavailable { add_header Retry-After 1 always; return 503 '{"error":"UNAVAILABLE","message":"Service unavailable."}'; }`;
+    // The stub stack's edge (API routes only) and the search stack's (a CDN route too).
+    const cdn = assemble(runStudioCommands(searchStackDesign(), [on]));
+    for (const [label, bundle, errorPages] of [
+      ["stub stack", stack, ["    error_page 502 504 = @unavailable;"]],
+      [
+        "search stack",
+        cdn,
+        [
+          "    error_page 502 504 = @unavailable;",
+          "      error_page 403 404 = @cdn-missing;",
+          "      error_page 502 504 = @unavailable;",
+        ],
+      ],
+    ] as const) {
+      const lines = text(bundle, "infra/edge/nginx.conf").split("\n");
+      // Every 502 and 504 the edge meets goes to the one 503, which alone sets Retry-After.
+      expect(
+        lines.filter((line) => line.includes("error_page")),
+        label,
+      ).toEqual(errorPages);
+      expect(
+        lines.filter((line) => line.includes("Retry-After")),
+        label,
+      ).toEqual([unavailable]);
+    }
   });
 
   it("has no edge without a public HTTP process, and refuses a tile that would take its name", () => {

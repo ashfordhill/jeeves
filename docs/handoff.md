@@ -16432,3 +16432,99 @@ after the write.
   changes) were not touched or staged.
 
 **For the next unit.** QG25, as planned. The three deployer rows are in Known limits.
+
+## 2026-11-15 — QG25: The edge's 502/503/504 carry Retry-After
+
+**What changed.**
+- `local.ts`, `edgeConfig`: the edge's `location @unavailable` becomes `add_header Retry-After 1
+  always; return 503 '{"error":"UNAVAILABLE","message":"Service unavailable."}';`, with a two-line
+  comment (`always`, since nginx adds a header to an error status only then). Both `error_page 502
+  504 = @unavailable` lines (the server's and a CDN route's) send nginx's own 502 and 504 there,
+  so every answer the edge gives for a process or bucket that is down is that 503 with
+  `Retry-After: 1`. A process's own answers pass through unchanged. The doc comment says so.
+- Tests (`http-wiring.test.ts`): the exact `nginx.conf` assertion takes the new line; 1 new test
+  checks that in the stub stack's edge and the search stack's (a CDN route too) every `error_page`
+  is the expected one, and the only line with `Retry-After` is `@unavailable`'s.
+- Pins: none changed (`processes-off.test.ts` passes; no pinned export has an edge).
+- Docs: `jeeves-generator/README.md`, The edge: the 503 carries `Retry-After: 1` where nginx would
+  answer 502 or 504 (a CDN route's included), and a process's own answers, its 503s with their
+  `Retry-After`, pass through unchanged. `docs/template-gaps.md`, Known limits: F22's row (below).
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 1014 tests (run twice; the first run had
+  my edit in the tree for a few seconds, reverted at once, so it was run again on the clean tree).
+  On the final tree, exit 0, 117 files / 1015 tests; Biome shows only the older 1 info.
+- New tests on HEAD's templates: a scratch clone at `efbff72` with its own offline install and
+  the changed `http-wiring.test.ts`. The new test fails there (stub stack: no `Retry-After` line),
+  and so does the updated exact `nginx.conf` assertion; the file's other 9 pass. The clone is
+  deleted. The checkout's `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json` and
+  `.pnpm/lock.yaml` keep their checksums and mtimes (2026-11-14 12:10).
+- `pnpm test:e2e`: run 1, 65 passed / 9 failed, every one at `getByRole('button', { name:
+  /^Project:/ })` not visible within 5 s (`e2e/studio.ts:94`), the packet's known load flake (load
+  average about 11, both arms' Docker stacks beside it). Run 2, alone: 73 passed / 1 failed,
+  `module-authoring.spec.ts:911` ("with Runnable processes on, a stub tile's Options …") at its
+  30 s test timeout inside the `finally`'s `page.request.delete`, after its assertions. That test
+  alone: 1 passed (10.4 s). Run 2's timed-out delete had left its project (`E2E Process settings`)
+  in `jeeves_e2e`, so I deleted that one row, as the service's `deleteProject` does (its tables
+  cascade); the two older projects are untouched.
+- Web build: exit 0.
+- Docker phase (the brief names no suite or proof, so a targeted one): the pinned nginx
+  (`nginx:1.28.3-alpine@sha256:a8b39bd9…d236`) with after-probe's emitted `infra/edge/nginx.conf`
+  (`edcbb67c…8672`), container `qg25-edge` on network `qg25-edge`, 127.0.0.1:47971, and a
+  scratch upstream under the alias `app-front`:
+  - no `app-front` (name not resolved): 503 `UNAVAILABLE`, `Retry-After: 1`,
+    `application/json`; `/healthz` 200 and an unknown path 404, neither with `Retry-After`;
+  - `app-front` up: its 200, its 503 with `Retry-After: 7` and its 502 pass through unchanged (one
+    `Retry-After`, 7);
+  - `app-front` resolved, nothing on 3000 (`connect() failed (111)`): 503 with `Retry-After: 1`;
+  - `app-front` accepting and never answering (`upstream timed out`, nginx's 504, after 67 s):
+    503 with `Retry-After: 1`. (A first try of this case closed at once, `upstream prematurely
+    closed connection`, a 502, also 503 with `Retry-After: 1`; rerun with the upstream's stdin
+    held open.)
+  - Every container and the network removed by name; none is left.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `.jeeves/manifest.json`, `.jeeves/report.json` and
+    `infra/edge/nginx.conf` (the one `@unavailable` line); nothing else.
+  - The report differs only in the registry's source inventory (`local.ts`, 71,022 → 71,260
+    bytes, and its owners' `sourceSha256`). Required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. Scratch exports deleted.
+- Inventory: compared at the unit's start, before the Docker phase and after it. Networks and
+  volumes are equal throughout; the container and image differences are other runs' (arm A's
+  `qrwtya-q04-*` containers recreated, a `qrwtya-q04-r01-*` container, arm B's `qrwtyb/*:b07-2`
+  images), none touched. No `qg25-` resource and nothing under `test-results/generated/` is left;
+  `jeeves-postgres-1` is still up 12 days (the e2e rerun's `pnpm db:up` found it running).
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- The brief says "a one-line `add_header … always` per `error_page`". Both `error_page 502 504`
+  lines name the one `@unavailable` location, so the one line there covers both; adding it beside
+  each `error_page` wouldn't apply to the named location's answer.
+- The brief names no test, pins or regression suite. The exact `nginx.conf` assertion is the
+  emitted-string assertion of the file this unit changes, so it is updated; the Docker check is
+  the real-nginx proof above.
+- **The coordinator's optional forwarded-header change is not made.** Clearing inbound
+  `X-Forwarded-*` and setting `X-Forwarded-For` from `$remote_addr` needs design the brief doesn't
+  give: nginx can't clear a header family, so someone picks the names (`X-Forwarded-Host`,
+  `-Proto`, `-Port`, `Forwarded`, `X-Real-IP` …); `$remote_addr` is the client only where the edge
+  is the first hop, and behind a load balancer it would be the balancer; no template reads these
+  headers; and the Q03 review gave F22 "no unit". It is recorded in F22's row instead.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), proposed by the QGR1 review (finding 1's edge half), approved by
+  the owner on 2026-11-14. QGR2 folds nothing into it.
+- F22, now in `docs/template-gaps.md` Known limits: the edge passes the client's headers as sent,
+  except `Host`, which nginx sets to `app-<id>:3000`, so `X-Forwarded-For` is the client's claim
+  and no process learns the client's address or host. Open, waiting for a decision on which hops
+  a deployment trusts. QRWTY's own trusted edge reaches `app-<id>:3000` directly.
+- Still without `Retry-After`: `GET /healthz`'s 503 (for orchestrators), and a 503 a stub returns
+  as its response (its own headers, as QG19 left it).
+- A CDN route's 503 doesn't carry the route's `X-Content-Type-Options` or CSP headers (the named
+  location has its own headers), as before this unit; the README's "each answer also carries"
+  means the objects' answers.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG26. Every 503 the generated edge or a process answers from its own code
+now carries `Retry-After: 1`, except `/healthz`'s.
