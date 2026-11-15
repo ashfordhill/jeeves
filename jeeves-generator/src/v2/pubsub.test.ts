@@ -55,7 +55,7 @@ const pubsubImage =
   "gcr.io/google.com/cloudsdktool/google-cloud-cli:591.0.0-emulators@sha256:112c21f8f6e04b03b393b3c34fb943a1f443e839f18c6492c364ac2e6c3ff935";
 
 describe("Pub/Sub channels for stubs (QG07)", () => {
-  it("runs the emulator, creates the topic and the consuming tile's subscription in setup, and gives the publisher its project", () => {
+  it("runs the emulator, creates the topic and the consuming loop stub's subscription in setup, and gives the publisher its project", () => {
     const compose = json(cloudExport, "compose.yaml");
     expect(compose.services["local-pubsub"]).toEqual({
       image: pubsubImage,
@@ -111,19 +111,22 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
 
     const plan = json(cloudExport, "infra/local.json");
     expect(plan.pubsub).toEqual({
-      topics: ["visits", "visits--visit-worker.failed"],
+      topics: ["visits", "visits--visit-worker--visit-consumer.failed"],
       subscriptions: [
         {
-          name: "visits--visit-worker",
+          name: "visits--visit-worker--visit-consumer",
           topic: "visits",
           ackDeadlineSeconds: 60,
           retryPolicy: { minimumBackoffSeconds: 1, maximumBackoffSeconds: 10 },
           deadLetterPolicy: {
-            deadLetterTopic: "visits--visit-worker.failed",
+            deadLetterTopic: "visits--visit-worker--visit-consumer.failed",
             maxDeliveryAttempts: 100,
           },
         },
-        { name: "visits--visit-worker.failed", topic: "visits--visit-worker.failed" },
+        {
+          name: "visits--visit-worker--visit-consumer.failed",
+          topic: "visits--visit-worker--visit-consumer.failed",
+        },
       ],
     });
     expect(plan.broker).toEqual([{ resource: "uploaded", queues: ["uploaded"] }]);
@@ -182,23 +185,23 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
         access: "consume",
         modules: ["visit-consumer"],
         provisioned:
-          "Google Cloud Pub/Sub subscription visits--visit-worker on topic visits, with dead-letter topic visits--visit-worker.failed and its subscription (locally the emulator local-pubsub)",
+          "Google Cloud Pub/Sub subscription visits--visit-worker--visit-consumer on topic visits, with dead-letter topic visits--visit-worker--visit-consumer.failed and its subscription (locally the emulator local-pubsub)",
       },
     );
     expect(
       report.processes.tiles.find((row: { tile: string }) => row.tile === "links-api").environment,
     ).toEqual(expect.arrayContaining(["JEEVES_PUBSUB_PROJECT", "PUBSUB_EMULATOR_HOST"]));
-    // A loop stub on a Pub/Sub topic consumes its tile's subscription (QG08): no gap, runnable.
+    // A loop stub on a Pub/Sub topic consumes its own subscription (QG08, QG28): no gap, runnable.
     expect(report.gaps.filter((gap: { id: string }) => gap.id.startsWith("provider-"))).toEqual([]);
     expect(report.processes.runnable).toBe(true);
     expect(
       report.processes.tiles.find((row: { tile: string }) => row.tile === "visit-worker").loops,
     ).toEqual([
       {
-        queue: "visits--visit-worker",
+        queue: "visits--visit-worker--visit-consumer",
         module: "visit-consumer",
         answers:
-          '"Not implemented: Visit consumer" sends the message to visits--visit-worker.failed (NOT_IMPLEMENTED) until it is written; other errors retry 5 times',
+          '"Not implemented: Visit consumer" sends the message to visits--visit-worker--visit-consumer.failed (NOT_IMPLEMENTED) until it is written; other errors retry 5 times',
       },
     ]);
     expect(
@@ -214,27 +217,27 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     expect(readme).toContain("The emulator keeps nothing across a restart");
     expect(readme).toContain("reads `JEEVES_PUBSUB_PROJECT`");
     expect(readme).toContain(
-      "A loop stub on a topic consumes its tile's subscription through the official client (`pubsubLoop`",
+      "A loop stub on a topic consumes its own subscription through the official client (`pubsubLoop`",
     );
     expect(readme).toContain("`pubsub.subscriptions.get` and `pubsub.subscriptions.consume`");
     expect(readme).not.toContain("isn't installed yet");
   });
 
-  it("runs a loop stub on a Pub/Sub topic on its tile's subscription through pubsubLoop (QG08)", () => {
+  it("runs a loop stub on a Pub/Sub topic on its own subscription through pubsubLoop (QG08)", () => {
     const worker = text(cloudExport, "src/processes/visit-worker.ts");
     expect(worker).toContain(
       [
-        "  // Visit consumer: a loop on the Pub/Sub subscription visits--visit-worker.",
+        "  // Visit consumer: a loop on the Pub/Sub subscription visits--visit-worker--visit-consumer.",
         "  await startModuleLoop(scope, loopLog, config.loops[0], (message) =>",
         '    visitConsumer(dependencies["visit-consumer"], message),',
-        '    brokerState(config.tile, failure, "broker consume visits--visit-worker"),',
+        '    brokerState(config.tile, failure, "broker consume visits--visit-worker--visit-consumer"),',
         "    pubsubLoop(probe),",
         "  );",
         "  scope.ready();",
       ].join("\n"),
     );
-    expect(worker).toContain('"queue": "visits--visit-worker",\n');
-    expect(worker).toContain('"failedQueue": "visits--visit-worker.failed",\n');
+    expect(worker).toContain('"queue": "visits--visit-worker--visit-consumer",\n');
+    expect(worker).toContain('"failedQueue": "visits--visit-worker--visit-consumer.failed",\n');
     expect(worker).toMatch(
       /import \{[^}]*\bpubsubLoop\b[^}]*\} from "\.\.\/runtime\/module-clients\.ts";/,
     );
@@ -246,8 +249,8 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     // Its subscription and dead-letter topic are the ones setup-pubsub creates.
     const plan = json(cloudExport, "infra/local.json");
     expect(plan.pubsub.subscriptions[0]).toMatchObject({
-      name: "visits--visit-worker",
-      deadLetterPolicy: { deadLetterTopic: "visits--visit-worker.failed" },
+      name: "visits--visit-worker--visit-consumer",
+      deadLetterPolicy: { deadLetterTopic: "visits--visit-worker--visit-consumer.failed" },
     });
     // RabbitMQ's loop stays on the broker for Uploaded.
     const links = text(cloudExport, "src/processes/links-api.ts");
@@ -277,7 +280,7 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
       );
     const links = text(only, "src/processes/links-api.ts");
     expect(links).toContain(
-      "  // Upload consumer: a loop on the Pub/Sub subscription uploaded--links-api.\n",
+      "  // Upload consumer: a loop on the Pub/Sub subscription uploaded--links-api--upload-consumer.\n",
     );
     expect(links).not.toContain("brokerBinding");
     expect(services["app-links-api"].environment).toMatchObject({ JEEVES_PUBSUB_PROJECT: "local" });
@@ -306,9 +309,9 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     expect(plan.secrets).not.toContain("broker-password");
     expect(plan.pubsub.topics).toEqual([
       "uploaded",
-      "uploaded--links-api.failed",
+      "uploaded--links-api--upload-consumer.failed",
       "visits",
-      "visits--visit-worker.failed",
+      "visits--visit-worker--visit-consumer.failed",
     ]);
     // Both publishers are Pub/Sub ones; no RabbitMQ publisher is emitted.
     const clients = text(only, "src/runtime/module-clients.ts");
@@ -329,6 +332,90 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
       topics: ["visits"],
       subscriptions: [],
     });
+  });
+
+  it("gives each loop stub of a tile its own subscription, in either mode (QG28)", () => {
+    // A second loop stub on Visit worker, consuming Visits beside Visit consumer.
+    const twoLoops = runStudioCommands(cloud, [
+      {
+        type: "addModule",
+        host: "visit-worker",
+        kind: "event-consumer",
+        id: "visit-auditor",
+        name: "Visit auditor",
+      },
+      {
+        type: "connectModule",
+        module: "visit-auditor",
+        slot: "channel",
+        target: { tile: "visits" },
+      },
+    ]);
+    const settings = {
+      ackDeadlineSeconds: 60,
+      retryPolicy: { minimumBackoffSeconds: 1, maximumBackoffSeconds: 10 },
+    };
+    const own = (module: string) => `visits--visit-worker--${module}`;
+    // Visits saved as a work queue: Pub/Sub still gives each loop stub its own subscription.
+    const saved = twoLoops.architecture?.studio?.elements.find((row) => row.element === "visits");
+    const workQueue = runStudioCommands(twoLoops, [
+      {
+        type: "edit",
+        element: "visits",
+        settings: { ...saved?.settings, mode: "work-queue" },
+      } as StudioCommand,
+    ]);
+    expect(
+      workQueue.architecture?.studio?.elements.find((row) => row.element === "visits")?.settings,
+    ).toEqual({ kind: "queue", mode: "work-queue", provider: "google-cloud" });
+    for (const design of [twoLoops, workQueue]) {
+      const bundle = exported(design);
+      const plan = json(bundle, "infra/local.json");
+      expect(plan.pubsub).toEqual({
+        topics: ["visits", `${own("visit-auditor")}.failed`, `${own("visit-consumer")}.failed`],
+        subscriptions: ["visit-auditor", "visit-consumer"].flatMap((module) => [
+          {
+            name: own(module),
+            topic: "visits",
+            ...settings,
+            deadLetterPolicy: {
+              deadLetterTopic: `${own(module)}.failed`,
+              maxDeliveryAttempts: 100,
+            },
+          },
+          { name: `${own(module)}.failed`, topic: `${own(module)}.failed` },
+        ]),
+      });
+      // No subscription is the tile's.
+      expect(JSON.stringify(plan.pubsub)).not.toMatch(/"visits--visit-worker(\.failed)?"/);
+      // Each loop consumes its own subscription and sends terminal failures to its own .failed.
+      const worker = text(bundle, "src/processes/visit-worker.ts");
+      for (const module of ["visit-auditor", "visit-consumer"]) {
+        expect(worker).toContain(`"queue": "${own(module)}",\n`);
+        expect(worker).toContain(`"failedQueue": "${own(module)}.failed",\n`);
+        expect(worker).toContain(`a loop on the Pub/Sub subscription ${own(module)}.\n`);
+      }
+      expect(worker.match(/pubsubLoop\(probe\)/g)).toHaveLength(2);
+      const report = json(bundle, ".jeeves/report.json");
+      const tile = report.processes.tiles.find(
+        (row: { tile: string }) => row.tile === "visit-worker",
+      );
+      expect(tile.stores.find((row: { store: string }) => row.store === "visits")).toEqual({
+        store: "visits",
+        name: "Visits",
+        kind: "queue",
+        access: "consume",
+        modules: expect.arrayContaining(["visit-auditor", "visit-consumer"]),
+        provisioned: `Google Cloud Pub/Sub subscriptions ${own("visit-auditor")}, ${own("visit-consumer")} on topic visits, one per consuming module, each with its dead-letter topic <subscription>.failed and its subscription (locally the emulator local-pubsub)`,
+      });
+      expect(
+        tile.loops.map((row: { queue: string; module: string }) => [row.module, row.queue]).sort(),
+      ).toEqual([
+        ["visit-auditor", own("visit-auditor")],
+        ["visit-consumer", own("visit-consumer")],
+      ]);
+      expect(report.processes.runnable).toBe(true);
+    }
   });
 
   it("keeps a stub's link to a template's queue on its provider gap, never Pub/Sub", () => {
@@ -558,23 +645,28 @@ describe("scripts/pubsub-init.mjs (QG07, locally only)", () => {
     const created = state();
     expect(created.topics).toEqual([
       "projects/local/topics/visits",
-      "projects/local/topics/visits--visit-worker.failed",
+      "projects/local/topics/visits--visit-worker--visit-consumer.failed",
     ]);
     expect(created.calls.filter(([name]: [string]) => name === "createSubscription")).toEqual([
       [
         "createSubscription",
         "visits",
-        "visits--visit-worker",
+        "visits--visit-worker--visit-consumer",
         {
           ackDeadlineSeconds: 60,
           retryPolicy: { minimumBackoff: { seconds: 1 }, maximumBackoff: { seconds: 10 } },
           deadLetterPolicy: {
-            deadLetterTopic: "projects/local/topics/visits--visit-worker.failed",
+            deadLetterTopic: "projects/local/topics/visits--visit-worker--visit-consumer.failed",
             maxDeliveryAttempts: 100,
           },
         },
       ],
-      ["createSubscription", "visits--visit-worker.failed", "visits--visit-worker.failed", {}],
+      [
+        "createSubscription",
+        "visits--visit-worker--visit-consumer.failed",
+        "visits--visit-worker--visit-consumer.failed",
+        {},
+      ],
     ]);
     expect(created.calls.at(-1)).toEqual(["close"]);
     // Every start runs it again: what exists with the same settings stays as it is.
@@ -612,31 +704,33 @@ describe("scripts/pubsub-init.mjs (QG07, locally only)", () => {
       ],
     ] as const) {
       const before = state();
-      const original = structuredClone(before.subscriptions["visits--visit-worker"]);
-      change(before.subscriptions["visits--visit-worker"]);
+      const original = structuredClone(
+        before.subscriptions["visits--visit-worker--visit-consumer"],
+      );
+      change(before.subscriptions["visits--visit-worker--visit-consumer"]);
       writeFileSync(join(scratch, "state.json"), JSON.stringify(before));
       const result = run();
       expect(result.status).toBe(1);
       expect(result.stderr).toContain(
-        `Pub/Sub subscription visits--visit-worker exists with other settings (${setting}); remove it or keep the design's.`,
+        `Pub/Sub subscription visits--visit-worker--visit-consumer exists with other settings (${setting}); remove it or keep the design's.`,
       );
       const after = state();
       expect(after.calls.slice(before.calls.length).map(([name]: [string]) => name)).toEqual([
         "PubSub",
         "close",
       ]);
-      after.subscriptions["visits--visit-worker"] = original;
+      after.subscriptions["visits--visit-worker--visit-consumer"] = original;
       writeFileSync(join(scratch, "state.json"), JSON.stringify(after));
     }
     // The inspection subscription has no policy of its own.
     const before = state();
-    before.subscriptions["visits--visit-worker.failed"].retryPolicy = {
+    before.subscriptions["visits--visit-worker--visit-consumer.failed"].retryPolicy = {
       minimumBackoff: { seconds: "1", nanos: 0 },
       maximumBackoff: { seconds: "10", nanos: 0 },
     };
     writeFileSync(join(scratch, "state.json"), JSON.stringify(before));
     expect(run().stderr).toContain(
-      "Pub/Sub subscription visits--visit-worker.failed exists with other settings (retryPolicy)",
+      "Pub/Sub subscription visits--visit-worker--visit-consumer.failed exists with other settings (retryPolicy)",
     );
   });
 

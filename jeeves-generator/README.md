@@ -485,9 +485,9 @@ bucket, or why it has none, and Preview shows them.
 **Consume loops** (contract §3–5). A loop consumes a topic's subscriber queue or a work queue
 itself, through the shared `createConsumer` and delivery runner (manual ack, prefetch equal to its
 concurrency, `x-delivery-attempt`, and `<queue>.failed` with `x-terminal-code`); a loop stub on a
-Pub/Sub topic consumes its tile's subscription instead (`pubsubLoop`, below). `startModuleLoop`
-takes either through `LoopTransport`, which both implement (`amqpLoop` on a broker binding). A topic's
-subscriber is the tile's `<topic>--<tile>`, unless the tile has several consuming modules on that
+Pub/Sub topic consumes its own subscription instead (`pubsubLoop`, below). `startModuleLoop`
+takes either through `LoopTransport`, which both implement (`amqpLoop` on a broker binding). On
+RabbitMQ a topic's subscriber is the tile's `<topic>--<tile>`, unless the tile has several consuming modules on that
 topic: then each gets its own `<topic>--<module>` (tile-processes review row 6), so each receives
 every message. The report's `loops` rows name each queue, module and what a failure does, and the
 process file's `config.loops` holds each loop's queue, `.failed`, retry limit and concurrency;
@@ -614,7 +614,7 @@ scripts:
 | --- | --- |
 | Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, and SELECT on its `published` views (product tables, below). A stub that writes it also has its own schema there. Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
 | Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
-| Queue saved on Google Cloud, only stubs using it | A Pub/Sub topic with the queue's ID; for each consuming tile a subscription `<topic>--<tile>` (ack deadline 60 s, retries backing off 1–10 s, dead-letter topic `<topic>--<tile>.failed` after 100 attempts) and a pull subscription `<topic>--<tile>.failed`; locally the emulator `local-pubsub` and `setup-pubsub` (`pubsub-init.mjs`), no credential |
+| Queue saved on Google Cloud, only stubs using it | A Pub/Sub topic with the queue's ID; for each loop stub that consumes it its own subscription `<topic>--<tile>--<module>`, which its tile's copies share (ack deadline 60 s, retries backing off 1–10 s, dead-letter topic `<subscription>.failed` after 100 attempts), and a pull subscription `<subscription>.failed`; locally the emulator `local-pubsub` and `setup-pubsub` (`pubsub-init.mjs`), no credential |
 | Cache | `cache-<id>` (Valkey) and its password |
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
 | Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
@@ -627,7 +627,7 @@ provider isn't unspecified or self-hosted, or whose engine isn't unspecified or 
 (PostgreSQL, Redis-compatible, OpenSearch), isn't provisioned: a required `unsupported` gap
 `provider-<module>-<tile>`, so the stack isn't runnable. The exception is a queue saved on Google
 Cloud that no template binds (`generationTemplateQueues`, `stubPubsub`): it is a Pub/Sub topic,
-below, with a subscription for each consuming tile, which a loop stub on it consumes. A queue a
+below, with its own subscription for each loop stub that consumes it. A queue a
 template binds keeps the template's self-hosted provider, and a stub's link to one saved on Google
 Cloud keeps the gap. An Identity is provisioned for stubs only when a sign-in binds it (an Auth
 guard connected to it is a sign-in template, the tile's only one); a stub's link to an Identity
@@ -691,7 +691,7 @@ past its statement timeout), `queuePublisher` (publisher confirms; each message 
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
 `pubsubPublisher` (a Pub/Sub topic's publisher on the official client, `@google-cloud/pubsub`
-6.3.2, below), `pubsubLoop` (a loop stub's transport on its tile's Pub/Sub subscription, below), `cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
+6.3.2, below), `pubsubLoop` (a loop stub's transport on its own Pub/Sub subscription, below), `cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
 bounded client, `createValkeyCache` in `src/runtime/valkey.ts`, which the primitives emit when no
 cache read already does: a command settles within 150 ms and at most 32 wait, while no client is
 connected a command fails at once with `Cache unavailable`, a lost or stalled client is destroyed
@@ -826,14 +826,15 @@ and subscription the plan lists that is missing, and stops at one that exists wi
 naming it. `local-pubsub` is the emulator (`gcloud beta emulators pubsub start
 --host-port=0.0.0.0:8085 --project=local`, pinned in `providers.json`), healthy once it answers on
 8085, with no published port. The report's store row says `Google Cloud Pub/Sub topic <id> (locally
-the emulator local-pubsub)`, or for a consuming tile its subscription, and the export's README says
+the emulator local-pubsub)`, or for a consuming tile each of its loop stubs' subscriptions, and the export's README says
 what a deployment's own infrastructure creates and grants (the Pub/Sub service agent's rights a
 dead-letter policy needs).
 
-**Pub/Sub loops** (QG08). A loop stub on such a topic consumes its tile's subscription
-`<topic>--<tile>` through `pubsubLoop(probe)` in `module-clients.ts` (the `pubsub-loop` section,
-beside the publisher's `pubsub`), with a RabbitMQ loop's contract. Its process config's loop row
-names the subscription and `<topic>--<tile>.failed`, and its service gets `JEEVES_PUBSUB_PROJECT`
+**Pub/Sub loops** (QG08). A loop stub on such a topic consumes its own subscription
+`<topic>--<tile>--<module>` (QG28), which its tile's copies share, through `pubsubLoop(probe)` in
+`module-clients.ts` (the `pubsub-loop` section, beside the publisher's `pubsub`), with a RabbitMQ
+loop's contract. Its process config's loop row names the subscription and
+`<subscription>.failed`, and its service gets `JEEVES_PUBSUB_PROJECT`
 (and locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`), not the broker. At start it checks the subscription exists
 (5 s; false or an error fails startup), then opens one streaming-pull subscriber with flow control
 `maxMessages` equal to the loop's Concurrency and `allowExcessMessages: false`, so at most that
@@ -860,8 +861,11 @@ The drain stops taking messages, lets those in hand settle, then closes the subs
 nacks what it held back) and the client. Pub/Sub counts every redelivery as an attempt, a nack at
 a drain or a lost lease too, where RabbitMQ's `x-delivery-attempt` counts only the loop's own
 retries. A consuming process needs `pubsub.subscriptions.get` and `pubsub.subscriptions.consume`
-on its subscription and `pubsub.topics.publish` on its `.failed` topic. Several loop stubs of one
-tile on one topic share its one subscription, so each message reaches one of them.
+on its subscription and `pubsub.topics.publish` on its `.failed` topic. Every loop stub has its
+own subscription, whether its tile has one or several on the topic, so each gets every message in
+either mode: in work-queue mode two loop stubs of one tile each get every message on Pub/Sub, where
+RabbitMQ's share the work queue. The name never depends on how many modules consume, so adding a
+loop stub never renames another's subscription.
 
 **Credentials** are generated at first run, as for templates: `setup.mjs` writes the
 passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is

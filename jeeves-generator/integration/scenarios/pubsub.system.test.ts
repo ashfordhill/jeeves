@@ -15,10 +15,10 @@ import { poll } from "../harness/process.ts";
 import { createCapture, emulatorFault, Pulled } from "../harness/pubsub.ts";
 
 // The Pub/Sub fixture: Clicks API's Record stub publishes each click to the Clicks topic with its
-// ID as `messageId`; Tally's Count stub consumes Tally's subscription and writes Tally database.
+// ID as `messageId`; Tally's Count stub consumes its own subscription and writes Tally database.
 const templates = ["module-stub", "module-stub"];
 const topic = "clicks";
-const subscription = "clicks--tally";
+const subscription = "clicks--tally--count";
 const failedSubscription = `${subscription}.failed`;
 const database = "d_tally_db";
 /** The harness's own subscription on the topic. */

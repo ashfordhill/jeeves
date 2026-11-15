@@ -723,8 +723,8 @@ const builders: Record<string, Builder> = {
 
 /** A loop stub: one loop per queue it consumes, calling its entry point with each message and its
  * dependencies (`client-wiring.ts`). Its queues are provisioned with the tile's other stub stores:
- * RabbitMQ's on the broker (`brokerBinding`), and a Pub/Sub topic's on its tile's subscription and
- * `.failed` topic (`pubsubLoop`, QG08). */
+ * RabbitMQ's on the broker (`brokerBinding`), and a Pub/Sub topic's on the module's own
+ * subscription and `.failed` topic (`pubsubLoop`, QG08, QG28). */
 function stubLoops(
   process: NormalizedProcess,
   stub: NormalizedProcess["stubs"][number],
@@ -747,7 +747,7 @@ function stubLoops(
   );
   const loops: LoopRow[] = (stub.consumes ?? []).map((queue, index) => {
     const topic = generationLocalIdentity(queue.element).local;
-    const subscription = pubsub[index] ? pubsubSubscription(topic, process.tile) : undefined;
+    const subscription = pubsub[index] ? pubsubSubscription(topic, process.tile, id) : undefined;
     const names = subscription
       ? { queue: subscription.name, failedQueue: subscription.failed }
       : consumed({ process, selections }, topic, queue.mode, id);

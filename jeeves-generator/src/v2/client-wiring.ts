@@ -414,8 +414,14 @@ function provisionedAs(
         const local = `locally the emulator ${localPubsub.service}`;
         if (store.access === "publish")
           return `Google Cloud Pub/Sub topic ${store.resource} (${local})`;
-        const subscription = pubsubSubscription(store.resource, host);
-        return `Google Cloud Pub/Sub subscription ${subscription.name} on topic ${store.resource}, with dead-letter topic ${subscription.failed} and its subscription (${local})`;
+        // Each consuming module's own subscription (QG28).
+        const subscriptions = store.modules
+          .map((module) => pubsubSubscription(store.resource, host, module))
+          .sort((a, b) => v2Compare(a.name, b.name));
+        const [only] = subscriptions;
+        if (only && subscriptions.length === 1)
+          return `Google Cloud Pub/Sub subscription ${only.name} on topic ${store.resource}, with dead-letter topic ${only.failed} and its subscription (${local})`;
+        return `Google Cloud Pub/Sub subscriptions ${subscriptions.map((row) => row.name).join(", ")} on topic ${store.resource}, one per consuming module, each with its dead-letter topic <subscription>.failed and its subscription (${local})`;
       }
       const queue =
         store.mode === "topic"

@@ -9,7 +9,7 @@ import {
   endpointId,
   localEndpoints,
   localPubsub,
-  pubsubSubscription,
+  pubsubSubscriptions,
   type StubStore,
   stubStores,
   stubUnsupported,
@@ -703,32 +703,32 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         corsPut: false,
       });
   }
-  // Pub/Sub (QG07): each topic, and for each tile that consumes it a subscription, which the tile's
-  // copies share, with its dead-letter topic and a pull subscription of that name. setup-pubsub
-  // creates them all before any process starts: Pub/Sub keeps a message only for subscriptions
-  // that exist when it is published.
+  // Pub/Sub (QG07): each topic, and for each loop stub that consumes it its own subscription
+  // (QG28), which its tile's copies share, with its dead-letter topic and a pull subscription of
+  // that name. setup-pubsub creates them all before any process starts: Pub/Sub keeps a message
+  // only for subscriptions that exist when it is published.
   const pubsubTopics: string[] = [];
-  const pubsubSubscriptions: Record<string, unknown>[] = [];
+  const pubsubSubscriptionRows: Record<string, unknown>[] = [];
   for (const r of byKind("pubsub")) {
     pubsubTopics.push(r.id);
     const consumers = r.users.filter((u) => u.channel === "consume").map((u) => u.host);
-    for (const host of [...new Set(consumers)].sort(v2Compare)) {
-      const subscription = pubsubSubscription(r.id, host);
-      pubsubTopics.push(pubsubName(subscription.failed));
-      pubsubSubscriptions.push(
-        {
-          name: pubsubName(subscription.name),
-          topic: r.id,
-          ackDeadlineSeconds: 60,
-          retryPolicy: { minimumBackoffSeconds: 1, maximumBackoffSeconds: 10 },
-          deadLetterPolicy: { deadLetterTopic: subscription.failed, maxDeliveryAttempts: 100 },
-        },
-        { name: subscription.failed, topic: subscription.failed },
-      );
-    }
+    for (const host of [...new Set(consumers)].sort(v2Compare))
+      for (const subscription of pubsubSubscriptions(model, r.id, host)) {
+        pubsubTopics.push(pubsubName(subscription.failed));
+        pubsubSubscriptionRows.push(
+          {
+            name: pubsubName(subscription.name),
+            topic: r.id,
+            ackDeadlineSeconds: 60,
+            retryPolicy: { minimumBackoffSeconds: 1, maximumBackoffSeconds: 10 },
+            deadLetterPolicy: { deadLetterTopic: subscription.failed, maxDeliveryAttempts: 100 },
+          },
+          { name: subscription.failed, topic: subscription.failed },
+        );
+      }
   }
   pubsubTopics.sort(v2Compare);
-  pubsubSubscriptions.sort((a, b) => v2Compare(String(a.name), String(b.name)));
+  pubsubSubscriptionRows.sort((a, b) => v2Compare(String(a.name), String(b.name)));
   for (const db of databases) db.migrations.sort();
   const productSql = productFiles(model, databases, logins, views, grants);
   for (const row of productSql) provenance(row.sourcePaths);
@@ -1120,7 +1120,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     grants,
     broker,
     ...(pubsubTopics.length && {
-      pubsub: { topics: pubsubTopics, subscriptions: pubsubSubscriptions },
+      pubsub: { topics: pubsubTopics, subscriptions: pubsubSubscriptionRows },
     }),
     storage,
     objects,
@@ -1269,7 +1269,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         .map((r) => `\`${r.id}\``)
         .join(
           ", ",
-        )}). A stub publishes through the official client (\`pubsubPublisher\` in \`src/runtime/module-clients.ts\`): \`publish\` resolves only once Pub/Sub has acknowledged the message, which carries the module's \`messageId\` (else a fresh one) as its \`messageId\` attribute; Pub/Sub gives a resent message a new ID, so a consumer deduplicates on the attribute. A publish fails after 2000 ms, and while 1000 are outstanding the next fails at once. Each publishing process checks at startup that its topic exists and fails without it; it needs \`pubsub.topics.get\` and \`pubsub.topics.publish\` on the topic, through Application Default Credentials (the export holds no key file). Processes never create or change topics or subscriptions. Locally \`local-pubsub\` runs the Pub/Sub emulator, reached only inside the network at \`local-pubsub:8085\`, and \`setup-pubsub\` (\`scripts/pubsub-init.mjs\`) creates every topic and subscription \`infra/local.json\` lists before the processes start, at \`first-run\` and every \`start\`: it creates what is missing and stops, naming it, at one that exists with other settings. Each tile that consumes a topic gets subscription \`<topic>--<tile>\`, which its copies share (another tile gets its own, so each tile gets every message), with a 60 s ack deadline, retries backing off from 1 s to 10 s and dead-letter topic \`<topic>--<tile>.failed\` after 100 delivery attempts, plus a pull subscription \`<topic>--<tile>.failed\` to inspect it. A loop stub on a topic consumes its tile's subscription through the official client (\`pubsubLoop\` in \`src/runtime/module-clients.ts\`), with a RabbitMQ loop's contract: one streaming-pull subscriber holding at most its Worker's Concurrency messages in hand, each acknowledged only after the stub resolves. Another error is nacked, and the subscription's retry policy spaces the redelivery (no 250 ms wait); a failure on delivery attempt 6, after 5 retries, ends the message in \`<topic>--<tile>.failed\` as "Not implemented" does at once: a copy with its attributes and \`x-terminal-code\`, then the message is acknowledged once Pub/Sub has the copy, else nacked. An unreachable store keeps the message and runs it again 5 s later with the same attempt. A message's attempt is Pub/Sub's delivery attempt, which every redelivery counts, a nack while draining or a lost lease too. A lost subscriber is reported once and reopened 5 s later. Each consuming process checks at startup that its subscription exists, and needs \`pubsub.subscriptions.get\` and \`pubsub.subscriptions.consume\` on it and \`pubsub.topics.publish\` on its \`.failed\` topic. The emulator keeps nothing across a restart, no topic, subscription or message: a local limit, never a durability claim. A deployment's own infrastructure creates the same topics and subscriptions, and grants the Pub/Sub service agent what a dead-letter policy needs (publish on each \`.failed\` topic, subscribe on its subscription).\n`
+        )}). A stub publishes through the official client (\`pubsubPublisher\` in \`src/runtime/module-clients.ts\`): \`publish\` resolves only once Pub/Sub has acknowledged the message, which carries the module's \`messageId\` (else a fresh one) as its \`messageId\` attribute; Pub/Sub gives a resent message a new ID, so a consumer deduplicates on the attribute. A publish fails after 2000 ms, and while 1000 are outstanding the next fails at once. Each publishing process checks at startup that its topic exists and fails without it; it needs \`pubsub.topics.get\` and \`pubsub.topics.publish\` on the topic, through Application Default Credentials (the export holds no key file). Processes never create or change topics or subscriptions. Locally \`local-pubsub\` runs the Pub/Sub emulator, reached only inside the network at \`local-pubsub:8085\`, and \`setup-pubsub\` (\`scripts/pubsub-init.mjs\`) creates every topic and subscription \`infra/local.json\` lists before the processes start, at \`first-run\` and every \`start\`: it creates what is missing and stops, naming it, at one that exists with other settings. Each loop stub that consumes a topic gets its own subscription, \`<topic>--<tile>--<module>\`, which its tile's copies share (every other loop stub, of this tile or another, gets its own, so each gets every message, in either mode), with a 60 s ack deadline, retries backing off from 1 s to 10 s and dead-letter topic \`<subscription>.failed\` after 100 delivery attempts, plus a pull subscription \`<subscription>.failed\` to inspect it. A loop stub on a topic consumes its own subscription through the official client (\`pubsubLoop\` in \`src/runtime/module-clients.ts\`), with a RabbitMQ loop's contract: one streaming-pull subscriber holding at most its Worker's Concurrency messages in hand, each acknowledged only after the stub resolves. Another error is nacked, and the subscription's retry policy spaces the redelivery (no 250 ms wait); a failure on delivery attempt 6, after 5 retries, ends the message in \`<subscription>.failed\` as "Not implemented" does at once: a copy with its attributes and \`x-terminal-code\`, then the message is acknowledged once Pub/Sub has the copy, else nacked. An unreachable store keeps the message and runs it again 5 s later with the same attempt. A message's attempt is Pub/Sub's delivery attempt, which every redelivery counts, a nack while draining or a lost lease too. A lost subscriber is reported once and reopened 5 s later. Each consuming process checks at startup that its subscription exists, and needs \`pubsub.subscriptions.get\` and \`pubsub.subscriptions.consume\` on it and \`pubsub.topics.publish\` on its \`.failed\` topic. The emulator keeps nothing across a restart, no topic, subscription or message: a local limit, never a durability claim. A deployment's own infrastructure creates the same topics and subscriptions, and grants the Pub/Sub service agent what a dead-letter policy needs (publish on each \`.failed\` topic, subscribe on its subscription).\n`
     : "";
   files.push(
     file(

@@ -17179,3 +17179,116 @@ them, as its third check.
 
 **For the next unit.** QG28, as batch 3 runs. Nothing here touches `client-wiring.ts` or
 `module-clients.ts.template`.
+
+## 2026-11-15 — QG28: Each Pub/Sub loop stub gets its own subscription
+
+**What changed.**
+- `src/v2/local-contract.ts`:
+  - `pubsubSubscription(topic, tile, module)` returns `<topic>--<tile>--<module>` (each part by
+    `generationLocalIdentity(...).local`) and `<name>.failed`.
+  - New `pubsubSubscriptions(model, topic, tile)`: one per loop stub of the tile's process whose
+    `consumes` has the topic, sorted by name with `v2Compare`.
+  - Both doc comments are updated, and so are the `StubStore.pubsub` and `stubPubsub` comments
+    ("its own subscription").
+- `src/v2/loop-wiring.ts`, `stubLoops`: `pubsubSubscription(topic, process.tile, id)`, so each
+  loop's `config.loops[n].queue` and `failedQueue` are its module's. The doc comment is updated.
+- `src/v2/local.ts`:
+  - The Pub/Sub plan adds every entry of `pubsubSubscriptions(model, r.id, host)` for each
+    consuming host, each with its `.failed` topic and pull subscription, by `pubsubName` as before.
+    The comment above it is updated.
+  - The README paragraph has the brief's sentence, and its three `<topic>--<tile>.failed` are now
+    `<subscription>.failed`.
+- `src/v2/client-wiring.ts`, `provisionedAs`: the consuming Pub/Sub row names each consuming
+  module's subscription, in the brief's one-module and several-module wording.
+- `module-clients.ts.template`, `pubsubLoop`'s doc comment: "its own Pub/Sub subscription
+  `<topic>--<tile>--<module>`" and `<subscription>.failed` (comment only; the first two lines
+  reflowed to stay within 100 columns).
+- The Pub/Sub suite's `subscription` is `"clicks--tally--count"` (and its top comment says "its own
+  subscription"). `field-projects/generator-system/README.md` names `clicks--tally--count` and
+  `clicks--tally--count.failed` at all three places, and "beside Count's".
+- Tests, `pubsub.test.ts`:
+  - 1 new: two loop stubs on Visit worker, the brief's `addModule` and `connectModule`. It runs on
+    the topic as saved and again with Visits saved as `work-queue` (a saved edit through
+    `runStudioCommands`; the supported command refuses `mode` here). Both have the same plan: two
+    subscriptions with their settings and `.failed` pulls, and both `.failed` topics, with no
+    `visits--visit-worker`. Each loop consumes its own name, the report's store row names both,
+    the `loops` rows map each module to its own, and the export is runnable.
+  - Changed: every emitted Pub/Sub name in the file (`visits--visit-worker` is now
+    `visits--visit-worker--visit-consumer`, 27 places; `uploaded--links-api` is now
+    `uploaded--links-api--upload-consumer`, 2). Also the README phrase "consumes its own
+    subscription", and two test titles and a comment that said "its tile's subscription". No other
+    test file failed.
+- Pins: none changed (`processes-off.test.ts` passes; `processes-off.json` is byte-identical).
+- Docs:
+  - `jeeves-generator/README.md`: the Provisioning row (the queue saved on Google Cloud) and Pub/Sub
+    loops (the name, `<subscription>.failed`, and the last sentence, which now says each loop stub
+    gets every message in either mode, unlike RabbitMQ's shared work queue).
+  - Sentences that became false (Rule 8): Consume loops ("its own subscription", and "On RabbitMQ
+    a topic's subscriber is …"), the stub-store paragraph, `pubsubLoop` in the clients list and the
+    report's store-row sentence.
+  - `docs/studio.md`: "a subscription per consuming loop stub", and "consumes its own
+    subscription".
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: before (QG29's final tree, `07394c4`), exit 0, 117 files / 1024 tests. On the final
+  tree, exit 0, 117 files / 1025 tests; Biome shows only the older 1 info.
+- Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`), `qrwty-r83.json` and the Pub/Sub
+  fixture (batch 3's rule), exported from HEAD's sources and from the change.
+  - The probe and r83 changed only `.jeeves/manifest.json` and `.jeeves/report.json`. The reports
+    differ only in the source inventory, and the required gaps are unchanged (probe 3, r83 11).
+  - The Pub/Sub fixture changed `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`,
+    `infra/local.json`, `src/processes/tally.ts` and `src/runtime/module-clients.ts`. That is the
+    brief's first bullet.
+  - `tally.ts` changed only by the loop's `queue`, `failedQueue`, comment and `brokerState` name.
+    `module-clients.ts` changed only by the comment. `infra/local.json` changed only in `pubsub`
+    (`clicks--tally--count` and its `.failed`), and the README only in the paragraph.
+  - The report changed in the loop's `queue` and `answers`, the store's `provisioned`, and the
+    inventory. Required gaps are unchanged (2).
+  - Scratch exports deleted.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=pubsub` (artifacts in the
+  scratchpad): **3/3 passed** (334 s), first run.
+  - Tally's subscriber probe checked `clicks--tally--count` (P7: 54 ms after its database probe).
+  - P4: redelivered 50,726 ms after `docker start` (QG27's run: 50,831 ms).
+- Inventory: containers, images, networks and volumes are identical before the suite and after it.
+  The harness's cleanup record shows each `gs-` project empty. No `/tmp/jeeves-system-*` is left,
+  `test-results/generated/` still holds its 10 older entries, and `jeeves-postgres-1` is
+  unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - `--suite=core`, since the pubsub suite is the one Docker run;
+  - the measurement of the new test on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in each `after-*`.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **The README paragraph's next sentence changed too.** "A loop stub on a topic consumes its
+  tile's subscription" would contradict the brief's sentence just before it, so it now says "its
+  own subscription". `pubsub.test.ts`'s assertion of that phrase changed with it.
+- **The several-module row's `<subscription>.failed` is literal text**, as the brief writes it.
+  Each name is listed, and its `.failed` is that name plus `.failed`.
+- **The plan's local array is now `pubsubSubscriptionRows`**, since `pubsubSubscriptions` is now
+  the imported function.
+- **`pubsubSubscriptions` also checks `role === "loop"`**, as the brief's "loop stub" says. Only
+  loop stubs have `consumes`, so nothing differs.
+- **The before-exports were made in the checkout.** HEAD's versions of the five edited sources
+  were restored with `git show HEAD:<path>`, the exports were made, and then my versions were
+  copied back. No stash or reset was used, and no other path changed.
+
+**Noticed.**
+- The unit is QRWTY-driven: QGR2's finding 5, decided by the owner on 2026-11-15 (batch 3).
+- **Every existing Pub/Sub subscription is renamed once.** The suite's `clicks--tally` is now
+  `clicks--tally--count`, and QRWTY's `click-events--analytics-worker` becomes
+  `click-events--analytics-worker--<module>` when arm A regenerates (its export is frozen at
+  `4e87f97`). A deployment creates the new subscription and its `.failed` topic before it
+  deploys, since Pub/Sub keeps messages only for subscriptions that exist when they are
+  published, then drains and deletes the old one.
+- A Pub/Sub name is at most 63 + 2 + 63 + 2 + 63 + 7 = 200 characters, so `pubsubName`'s 255-limit
+  never refuses one.
+- RabbitMQ is unchanged (invariant 1): `subscriberQueue`, `subscriberQueues`, `broker-init.mjs`
+  and the broker plan.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG32, as batch 3 runs. QG33's AG-05 row can use these names,
+`<topic>--<tile>--<module>`.

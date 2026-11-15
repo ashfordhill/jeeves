@@ -438,8 +438,8 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 /**
- * A loop's transport on its tile's Pub/Sub subscription `<topic>--<tile>` (QG08), through the
- * official client in `JEEVES_PUBSUB_PROJECT` with Application Default Credentials (locally
+ * A loop's transport on its own Pub/Sub subscription `<topic>--<tile>--<module>` (QG08), through
+ * the official client in `JEEVES_PUBSUB_PROJECT` with Application Default Credentials (locally
  * `PUBSUB_EMULATOR_HOST`), with the contract a RabbitMQ loop has:
  * - one streaming-pull subscriber per loop, handing over at most the loop's Concurrency messages
  *   at a time (`maxMessages`, no excess); the client extends each one's lease while it is in hand,
@@ -449,7 +449,7 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
  * - a message is acknowledged only after its handler resolves;
  * - a retryable failure is nacked, and the subscription's retry policy spaces its redelivery;
  * - a terminal one (a `NonRetryable`, or a failure on delivery attempt retry limit + 1) is
- *   published to `<topic>--<tile>.failed` with its attributes and `x-terminal-code`, then
+ *   published to `<subscription>.failed` with its attributes and `x-terminal-code`, then
  *   acknowledged once Pub/Sub has that copy (within 2000 ms); if it hasn't, the message is nacked;
  * - an unreachable store keeps the message: 5 s later the handler runs again with the same message
  *   and attempt;

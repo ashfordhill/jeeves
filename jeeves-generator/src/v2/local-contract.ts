@@ -198,8 +198,8 @@ export type StubStore = {
   mode?: "work-queue" | "topic";
   /** Object storage saved as public: its bucket serves a local website. */
   public?: true;
-  /** A queue only stubs use, saved on Google Cloud (QG07): a Pub/Sub topic, and for a consuming
-   * tile its subscription, instead of RabbitMQ. */
+  /** A queue only stubs use, saved on Google Cloud (QG07): a Pub/Sub topic, and for each consuming
+   * loop stub its own subscription, instead of RabbitMQ. */
   pubsub?: true;
   modules: string[];
   sourcePaths: string[];
@@ -207,16 +207,17 @@ export type StubStore = {
   unsupported?: string;
 };
 const widest = (a: StubStore["access"], b: StubStore["access"]) => (a === b ? a : "read-write");
-/** A consuming tile's Pub/Sub subscription on a topic, `<topic>--<tile>`, which copies of the tile
- * share, and its dead-letter topic `<topic>--<tile>.failed`, with a pull subscription of that name
- * for inspection (QG07). */
-export const pubsubSubscription = (topic: string, tile: string) => {
-  const name = `${topic}--${generationLocalIdentity(tile).local}`;
+/** A loop stub's own Pub/Sub subscription on a topic, `<topic>--<tile>--<module>`, which copies of
+ * its tile share, and its dead-letter topic `<name>.failed`, with a pull subscription of that name
+ * for inspection (QG07, QG28). Every loop stub has its own, so each gets every message; the name
+ * never depends on how many modules consume. */
+export const pubsubSubscription = (topic: string, tile: string, module: string) => {
+  const name = `${topic}--${generationLocalIdentity(tile).local}--${generationLocalIdentity(module).local}`;
   return { name, failed: `${name}.failed` };
 };
 /** Whether a stub's link is to a Pub/Sub topic (QG07): a queue saved on Google Cloud that no
  * template binds (`templated`, from `generationTemplateQueues`). A loop stub on one consumes its
- * tile's subscription (`pubsubLoop`, QG08). */
+ * own subscription (`pubsubLoop`, QG08, QG28). */
 export const stubPubsub = (
   link: { kind: string; provider: string; element: string },
   templated: ReadonlySet<string>,
@@ -347,4 +348,23 @@ export function subscriberQueues(model: LoopModel, topic: string, host: string):
   return modules.length > 1
     ? modules.map((module) => `${topic}--${module}`)
     : [`${topic}--${host}`];
+}
+/** Every Pub/Sub subscription a tile has on a topic (QG28): one per loop stub of its process that
+ * consumes the topic, each the module's own (`pubsubSubscription`), sorted by name. */
+export function pubsubSubscriptions(
+  model: LoopModel,
+  topic: string,
+  tile: string,
+): ReturnType<typeof pubsubSubscription>[] {
+  const process = model.processes?.find((item) => item.tile === tile);
+  return (process?.stubs ?? [])
+    .filter(
+      (stub) =>
+        stub.role === "loop" &&
+        (stub.consumes ?? []).some(
+          (queue) => generationLocalIdentity(queue.element).local === topic,
+        ),
+    )
+    .map((stub) => pubsubSubscription(topic, tile, stub.module))
+    .sort((a, b) => v2Compare(a.name, b.name));
 }
