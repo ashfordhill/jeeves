@@ -387,6 +387,19 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
   const signedIn = [200, { signedIn: true, subject: "sub-1", username: "viewer" }];
   const refused = [401, { error: "SIGN_IN_REQUIRED", message: "Sign in to continue." }];
 
+  it("checks the sign-in through signInSettings in Watch API's configuration pass, then again as it is built (QG31)", () => {
+    // Watch API has stubs, so its pass runs the sign-in's checks before any client; the tests
+    // below see their messages unchanged, first from the pass.
+    const source = emitted("src/processes/watch-api.ts");
+    const pass = source.indexOf("  checkConfiguration([");
+    expect(pass).toBeGreaterThan(source.indexOf("await runProcess("));
+    expect(source.slice(pass, source.indexOf("  ]);", pass))).toContain(
+      "    () => signInSettings(),\n",
+    );
+    expect(pass).toBeLessThan(source.indexOf("const settings = signInSettings();"));
+    expect(source).not.toContain("OIDC_");
+  });
+
   it("accepts a token for the audience OIDC_AUDIENCE names and refuses one for another", async () => {
     audiences.length = 0;
     const deployed = await run("api://example");

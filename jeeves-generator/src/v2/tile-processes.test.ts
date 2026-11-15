@@ -413,12 +413,15 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
       const readme = text(target, "README.md");
       expect(rows(target).length).toBeGreaterThan(0);
       for (const row of rows(target)) {
-        // Compose's keys plus the process's JEEVES_EXTERNAL_*, which the application sets.
-        const external = [
-          ...text(target, `src/processes/${row.service.slice("app-".length)}.ts`).matchAll(
-            /externalTarget\("(JEEVES_EXTERNAL_\w+)"\)/g,
-          ),
-        ].map((match) => match[1]);
+        // Compose's keys plus the process's JEEVES_EXTERNAL_*, which the application sets. Each
+        // `externalTarget` call appears twice since QG31, in the configuration pass and its client.
+        const external = new Set(
+          [
+            ...text(target, `src/processes/${row.service.slice("app-".length)}.ts`).matchAll(
+              /externalTarget\("(JEEVES_EXTERNAL_\w+)"\)/g,
+            ),
+          ].map((match) => match[1]),
+        );
         expect(row.environment, row.service).toEqual(
           [...Object.keys(composed[row.service]?.environment ?? {}), ...external].sort(),
         );
@@ -558,6 +561,9 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
       "`Unreadable CA file <variable>`",
       "With `JEEVES_REQUIRE_TLS=true` (else unset), startup fails with `Insecure endpoint <variable>`",
       "and any `PUBSUB_EMULATOR_HOST`; the broker, object storage and search are plain text and aren't checked.",
+      // QG31: one pass before any client, several wrong settings named together.
+      "Each process with stubs checks the endpoints its clients and sign-in use in one pass before any client is built or probed, and reads each again as it builds that client, with no default:",
+      "never its value (several at once: `Invalid configuration: <message>; <message>`).",
       // QG30: Node's verification override under the switch.
       "With the switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else startup fails with `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`: `0` would turn off certificate checks for every client that leaves them to Node.",
       "`compose.yaml` sets the local values (`disable`, and no `JEEVES_REQUIRE_TLS`); a deployment sets its own.",

@@ -396,7 +396,8 @@ bucket, or why it has none, and Preview shows them.
   `verified-identity@0.1.0`, and the process builds one `createTileGuard` (the scaffold
   `src/runtime/tile-guard.ts`, emitted when a guard exists) on `createPrincipalVerifier`
   (`OIDC_ISSUER`, the audience in `OIDC_AUDIENCE`, `OIDC_JWKS_URL`, RS256, a 3 s key-set
-  timeout, `exp` and `sub` required). A missing or empty `OIDC_AUDIENCE` fails startup
+  timeout, `exp` and `sub` required), which `signInSettings` in `tile-guard.ts` reads and checks
+  (QG31). A missing or empty `OIDC_AUDIENCE` fails startup
   (`startup-failed`, naming it), and so does an `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't an
   absolute `http:` or `https:` URL or holds whitespace, with `Invalid endpoint <variable>`, never
   its value; the issuer is compared with each token's `iss` exactly as it is set. Every module route of the
@@ -715,8 +716,9 @@ opening and aborting a multipart upload) and cluster health. Each logs one JSON 
 fails startup, so a healthy process has reached every store it uses with its own credentials. A
 cache is the exception: one that is down at startup logs `"level":"warn"` with
 `"result":"unavailable"` (the error is in its `cache <cache>` failure line), and the process
-starts without it; its client connects by itself when the cache is back. The
-process file builds one client per store before its loops subscribe and its service listens, then
+starts without it; its client connects by itself when the cache is back. After its
+configuration pass (below), the process file builds one client per store before its loops
+subscribe and its service listens, then
 each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls the module
 it names (a route stub with the caller's input as its request, a library stub with none). What isn't
 provisioned (another provider, an Identity no sign-in binds, a link that verifies a token, a CDN, a
@@ -724,8 +726,10 @@ tile with no process, a template's part) is `unavailable(...)`: every call answe
 implemented: <tile> for <module> (<why>)". A stub's own "Not implemented" still answers 501 or goes
 to `.failed`.
 
-**Endpoints from the environment.** A process reads each endpoint it uses from its environment
-when it builds that client, before its probe, with no default (`<ID>` is the tile ID upper-cased,
+**Endpoints from the environment.** A process with stubs checks every variable its stubs' clients
+and its sign-in read in one pass, `checkConfiguration` at the top of its process file, before any
+client is built or probed (QG31); each client reads its own again as it is built; a template's own
+clients read theirs as each is built. No variable has a default (`<ID>` is the tile ID upper-cased,
 `-` as `_`, so `hot-routes` is `HOT_ROUTES`):
 
 | Endpoint | Variables | Local value in `compose.yaml` |
@@ -744,7 +748,11 @@ directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port
 (which URL parsing would trim, so a trailing newline fails too); a Pub/Sub
 project is a Google Cloud project ID (a lowercase letter, then up to 29 lowercase letters, digits
 or `-`, optionally after `<domain>:`). A missing or invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
-`startup-failed` line. The stubs' clients read theirs in `module-clients.ts`; a template's `pool`
+`startup-failed` line; several fail together as `Invalid configuration: <message>; <message>`
+(each message once, in the pass's order: the clients' sorted keys, the broker and Pub/Sub for the
+loops, then the sign-in). The stubs' clients read theirs in `module-clients.ts` (the pass calls
+`databaseEndpoint`, `cacheClientEndpoint`, `brokerBinding`, `pubsubProjectId` and the HTTP clients'
+own calls; object storage and search are compiled, so they have none); a template's `pool`
 and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
 its cache through `cacheEndpoint` in `valkey.ts`, whose bounded client checks a host by the same
 rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loopConsumer`, and a
@@ -777,9 +785,10 @@ fails with `Insecure endpoint <variable>` for a database or cache whose `_TLS` i
 `verify-full` (a database's Unix socket directory is local transport and passes), a
 `JEEVES_TILE_<ID>_URL`, `JEEVES_EXTERNAL_<ID>_URL` or `JEEVES_IDENTITY_<ID>_URL` that isn't
 `https:` (`httpTarget`, `externalTarget`, `identityTarget`), an `OIDC_ISSUER` or `OIDC_JWKS_URL`
-that isn't `https:` (the sign-in's lines in the process file) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
-clients). Each is checked where its client is built: the stubs' in `module-clients.ts`, a template's
-pool in `service-resources.ts`, the cache read's cache in `cacheEndpoint`. The broker (RabbitMQ),
+that isn't `https:` (`signInSettings` in `tile-guard.ts`) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
+clients). Each is checked where its client is built: the stubs' in `module-clients.ts` (and first in
+the configuration pass, with the sign-in's), a template's pool in `service-resources.ts`, the cache
+read's cache in `cacheEndpoint`. The broker (RabbitMQ),
 object storage and search have no TLS and are not checked, and `migrate.mjs` still follows
 `PGSSLMODE`. With the switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else startup
 fails with `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`: `0` would turn off certificate checks

@@ -20,6 +20,34 @@ export interface TileGuard {
 const refused = () => new HttpError(401, "SIGN_IN_REQUIRED", "Sign in to continue.");
 const anonymous: Caller = { signedIn: false };
 
+/** The sign-in's settings from the environment (Compose sets the local ones), checked in this
+ * order: `OIDC_AUDIENCE`, the audience its tokens carry, is set; `JEEVES_REQUIRE_TLS` is unset or
+ * `true`, and under it `NODE_TLS_REJECT_UNAUTHORIZED` is unset or `1` (QG30); then `OIDC_ISSUER`
+ * and `OIDC_JWKS_URL` are each an absolute http: or https: URL with no whitespace (URL.parse would
+ * trim it, but the issuer is compared as set), and https: under the switch. A failure names the
+ * variable, never its value. A process with stubs runs it in its configuration pass, and the
+ * sign-in again as it is built (QG31). */
+export function signInSettings(): { issuer: string; audience: string; jwksUrl: string } {
+  const audience = process.env.OIDC_AUDIENCE;
+  if (!audience) throw new Error("OIDC_AUDIENCE must name the audience of the sign-in tokens.");
+  const requireTls = process.env.JEEVES_REQUIRE_TLS;
+  if (requireTls !== undefined && requireTls !== "true")
+    throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+  // `0` would fetch the key set unverified (QG30).
+  const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  if (requireTls && verify !== undefined && verify !== "1")
+    throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+  const signInUrl = (name: "OIDC_ISSUER" | "OIDC_JWKS_URL") => {
+    const value = process.env[name] ?? "";
+    const protocol = /\s/.test(value) ? undefined : URL.parse(value)?.protocol;
+    if (protocol !== "http:" && protocol !== "https:") throw new Error(`Invalid endpoint ${name}`);
+    if (requireTls && protocol !== "https:") throw new Error(`Insecure endpoint ${name}`);
+    return value;
+  };
+  const issuer = signInUrl("OIDC_ISSUER");
+  return { issuer, audience, jwksUrl: signInUrl("OIDC_JWKS_URL") };
+}
+
 export function createTileGuard(options: {
   signIn: SignIn;
   verify(bearer: string): Promise<VerifiedPrincipal>;

@@ -1,9 +1,12 @@
 // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
-// one per store or channel a tile's stubs use. Export rewrites this file. Each client reads its
-// endpoint from the environment (`JEEVES_*`; compose.yaml sets the local ones), then runs one
-// bounded startup probe that its access allows; a failed probe fails the process's startup, but
-// a cache that is down is logged and the process starts without it. With JEEVES_REQUIRE_TLS=true,
-// a plain-text or emulator endpoint fails startup (`Insecure endpoint <variable>`).
+// one per store or channel a tile's stubs use. Export rewrites this file. First the process file's
+// configuration pass (`checkConfiguration`) runs each client's endpoint reader and the sign-in's
+// check, so a wrong setting fails startup before any client is built or probed (QG31). Then each
+// client reads its endpoint from the environment again (`JEEVES_*`; compose.yaml sets the local
+// ones) and runs one bounded startup probe that its access allows; a failed probe fails the
+// process's startup, but a cache that is down is logged and the process starts without it. With
+// JEEVES_REQUIRE_TLS=true, a plain-text or emulator endpoint fails startup (`Insecure endpoint
+// <variable>`).
 import { readFileSync } from "node:fs";
 // @database-import-start
 import { localLogins } from "../features/local-bindings.ts";
@@ -166,6 +169,26 @@ function transport(kind: "DATABASE" | "CACHE", id: string, hostname: string): Tr
     ...(certified !== undefined && { servername: certified }),
   };
 }
+/** Runs every check before any client is built or probed (QG31): each reads and checks its
+ * variables as its client will. One failing check fails startup with its own error; several with
+ * `Invalid configuration: <message>; <message>`, in the order given, each message once. A message
+ * names a variable, never its value. */
+export function checkConfiguration(checks: readonly (() => unknown)[]): void {
+  const failures: unknown[] = [];
+  const messages: string[] = [];
+  for (const check of checks)
+    try {
+      check();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!messages.includes(message)) {
+        messages.push(message);
+        failures.push(error);
+      }
+    }
+  if (failures.length === 1) throw failures[0];
+  if (failures.length) throw new Error(`Invalid configuration: ${messages.join("; ")}`);
+}
 
 /** The probe log; it names its tile, for a client's own lines after startup. */
 export type ProbeLog = ((entry: Record<string, unknown>) => void) & { readonly tile: string };
@@ -204,11 +227,21 @@ async function probed(
 }
 
 // @database-start
+/** A database's endpoint, `JEEVES_DATABASE_<ID>_HOST` (a host or a Unix socket directory) and
+ * `_PORT`, and its transport `_TLS` (`transport`), read in that order: the configuration pass
+ * checks it, and `databaseClient` reads it again as it builds its pool. */
+export function databaseEndpoint(resource: string) {
+  const hostname = endpoint(variable("DATABASE", resource, "HOST"), host(true));
+  return {
+    hostname,
+    port: endpoint(variable("DATABASE", resource, "PORT"), port),
+    tls: transport("DATABASE", resource, hostname),
+  };
+}
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
  * what another owner publishes when the tile may only read it. Stubs own no tables: a module's
- * own tables need a migration and grants of their own. Its endpoint is
- * `JEEVES_DATABASE_<ID>_HOST` (a host or a Unix socket directory) and `_PORT`, and its transport
- * `_TLS` (`transport`). Probe: SELECT 1. */
+ * own tables need a migration and grants of their own. Its endpoint and transport come from
+ * `databaseEndpoint`. Probe: SELECT 1. */
 export async function databaseClient(
   scope: ProcessScope,
   log: ProbeLog,
@@ -218,11 +251,8 @@ export async function databaseClient(
     (item) => item.resource === binding.resource && item.host === binding.tile,
   );
   if (!login) throw new Error(`No runtime login for ${binding.resource}`);
-  const hostname = endpoint(variable("DATABASE", binding.resource, "HOST"), host(true));
   const pool = createPostgres({
-    hostname,
-    port: endpoint(variable("DATABASE", binding.resource, "PORT"), port),
-    tls: transport("DATABASE", binding.resource, hostname),
+    ...databaseEndpoint(binding.resource),
     login,
     poolSize: 10,
     statementTimeoutMs: 2000,
@@ -248,7 +278,7 @@ export async function databaseClient(
 // @database-end
 // @broker-start
 /** The broker's runtime login at its endpoint, `JEEVES_BROKER_HOST` and `JEEVES_BROKER_PORT`, read
- * when a publisher or a stub's loop is built. */
+ * by the configuration pass and again when a publisher or a stub's loop is built. */
 export function brokerBinding() {
   return {
     hostname: endpoint("JEEVES_BROKER_HOST", host()),
@@ -313,6 +343,13 @@ function refuseEmulator() {
   if (requireTls() && process.env.PUBSUB_EMULATOR_HOST !== undefined)
     throw new Error("Insecure endpoint PUBSUB_EMULATOR_HOST");
 }
+/** The Pub/Sub project every Pub/Sub client is built in, `JEEVES_PUBSUB_PROJECT`, after the
+ * emulator refusal: the configuration pass checks it, and each client reads it again as it is
+ * built. */
+export function pubsubProjectId(): string {
+  refuseEmulator();
+  return endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject);
+}
 /** A Google Cloud Pub/Sub topic a module publishes to, through the official client, in the project
  * `JEEVES_PUBSUB_PROJECT` with Application Default Credentials; locally `PUBSUB_EMULATOR_HOST`
  * points the client at the emulator. `publish` resolves only once Pub/Sub has acknowledged the
@@ -327,9 +364,8 @@ export async function pubsubPublisher(
   log: ProbeLog,
   binding: { topic: string },
 ): Promise<QueuePublisher> {
-  refuseEmulator();
   const client = new PubSub({
-    projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
+    projectId: pubsubProjectId(),
     ...pubsubChannel,
   });
   const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs } });
@@ -438,9 +474,8 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
     options.concurrency > 100000
   )
     throw new Error("Invalid consumer concurrency");
-  refuseEmulator();
   const client = new PubSub({
-    projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
+    projectId: pubsubProjectId(),
     ...pubsubChannel,
   });
   // The client's own lease starts at 10 s, which would shorten the subscription's 60 s deadline.
@@ -613,26 +648,31 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
 }
 // @pubsub-loop-end
 // @cache-start
+/** A stub cache's endpoint, `JEEVES_CACHE_<ID>_HOST` (a host, never a path) and `_PORT`, and its
+ * transport `_TLS` (`transport`), read in that order: the configuration pass checks it, and
+ * `cacheClient` reads it again as it builds its client. */
+export function cacheClientEndpoint(cache: string) {
+  const hostname = endpoint(variable("CACHE", cache, "HOST"), host());
+  return {
+    hostname,
+    port: endpoint(variable("CACHE", cache, "PORT"), port),
+    tls: transport("CACHE", cache, hostname),
+  };
+}
 /** A cache (Valkey) with its password, through the cache read's bounded client
  * (`createValkeyCache`): a command settles within 150 ms and at most 32 wait; while no client is
  * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
  * and a new one tried every 5 s; each change is logged, a `cache <cache>` failure line when it
  * is lost and an info line when it is available. Closing destroys the client, so a drain never
- * waits on the cache. Its endpoint is `JEEVES_CACHE_<ID>_HOST` and `_PORT`, and its transport
- * `_TLS` (`transport`). Probe: PING; a cache that is down at startup logs `unavailable` and the
- * process starts without it. */
+ * waits on the cache. Its endpoint and transport come from `cacheClientEndpoint`. Probe: PING; a
+ * cache that is down at startup logs `unavailable` and the process starts without it. */
 export async function cacheClient(
   scope: ProcessScope,
   log: ProbeLog,
   binding: { cache: string },
 ): Promise<CacheClient> {
   const failure = createFailureLog(log.tile);
-  const hostname = endpoint(variable("CACHE", binding.cache, "HOST"), host());
-  const endpoints = {
-    hostname,
-    port: endpoint(variable("CACHE", binding.cache, "PORT"), port),
-    tls: transport("CACHE", binding.cache, hostname),
-  };
+  const endpoints = cacheClientEndpoint(binding.cache);
   const cache = await createValkeyCache({
     binding: { ...endpoints, secret: `cache-${binding.cache}` },
     onState: (state, error) =>

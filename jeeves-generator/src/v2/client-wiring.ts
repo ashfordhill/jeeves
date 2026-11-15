@@ -13,6 +13,7 @@ import {
   pascal,
   service,
   text,
+  tileGuard,
   tileProcess,
 } from "./http-wiring.ts";
 import {
@@ -28,6 +29,7 @@ import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs
 import { type V2ProcessReport, v2Compare } from "./registry.ts";
 
 const clients = "../runtime/module-clients.ts";
+const guardPath = "../runtime/tile-guard.ts";
 const entryTypes = "../modules/entry.ts";
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
  * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
@@ -45,12 +47,15 @@ export type ClientSection =
   | "http";
 
 /** One client a process builds: its key in `clients`, its section and its constructor call; `name`
- * is the function it calls when it isn't its section's own (QG20's HTTP clients). */
+ * is the function it calls when it isn't its section's own (QG20's HTTP clients). `check` is the
+ * reader the configuration pass calls for a store's client (QG31); an HTTP client's is its own
+ * call, and object storage and search have none, since their endpoints are compiled. */
 type Client = {
   key: string;
   section: Exclude<ClientSection, "broker" | "pubsub-loop">;
   call: string;
   name?: "externalTarget" | "identityTarget";
+  check?: { name: string; call: string };
 };
 
 /** An External API's base URL variable (QG20), `JEEVES_EXTERNAL_<ID>_URL`. */
@@ -90,6 +95,10 @@ function outsideClient(
   return undefined;
 }
 
+/** The configuration pass's readers for the broker's endpoint and the Pub/Sub project (QG31). */
+const brokerCheck = { name: "brokerBinding", call: "brokerBinding()" };
+const pubsubCheck = { name: "pubsubProjectId", call: "pubsubProjectId()" };
+
 /** What a store's client is built with, and what its probe checks. */
 function storeClient(store: StubStore): Client {
   const key = store.element;
@@ -100,6 +109,7 @@ function storeClient(store: StubStore): Client {
         key,
         section: "database",
         call: `await databaseClient(scope, probe, { tile: config.tile, resource: ${resource} })`,
+        check: { name: "databaseEndpoint", call: `databaseEndpoint(${resource})` },
       };
     case "queue":
       // A queue only stubs use, saved on Google Cloud, publishes to its Pub/Sub topic (QG07).
@@ -108,17 +118,20 @@ function storeClient(store: StubStore): Client {
           key,
           section: "pubsub",
           call: `await pubsubPublisher(scope, probe, { topic: ${resource} })`,
+          check: pubsubCheck,
         };
       return {
         key,
         section: "queue",
         call: `await queuePublisher(scope, probe, { queue: ${resource}, mode: ${text(store.mode ?? "work-queue")} }, ${brokerState(`broker publish ${store.resource}`)})`,
+        check: brokerCheck,
       };
     case "cache":
       return {
         key,
         section: "cache",
         call: `await cacheClient(scope, probe, { cache: ${resource} })`,
+        check: { name: "cacheClientEndpoint", call: `cacheClientEndpoint(${resource})` },
       };
     case "object-store":
       return {
@@ -278,6 +291,22 @@ export function stubClients(
         }[client.section],
     });
   if (probed) imports.push({ from: clients, name: "createProbeLog" });
+  // The configuration pass (QG31): every reader these clients, their loops and the tile's sign-in
+  // use, each once (by its text), so a wrong setting fails before any client is built or probed.
+  const checks = new Map<string, { name: string; from: string }>();
+  for (const client of list)
+    if (client.section === "http")
+      checks.set(client.call, { name: client.name ?? "httpTarget", from: clients });
+    else if (client.check)
+      checks.set(client.check.call, { name: client.check.name, from: clients });
+  if (sections.has("broker"))
+    checks.set(brokerCheck.call, { name: brokerCheck.name, from: clients });
+  if (sections.has("pubsub-loop"))
+    checks.set(pubsubCheck.call, { name: pubsubCheck.name, from: clients });
+  if (tileGuard(process, selections))
+    checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
+  if (checks.size) imports.push({ from: clients, name: "checkConfiguration" });
+  for (const check of checks.values()) imports.push(check);
   // A queue's publisher reports a lost and a returned broker through the failure log.
   if (list.some((client) => client.section === "queue"))
     imports.push({ from: tileProcess, name: "brokerState" });
@@ -291,6 +320,15 @@ export function stubClients(
     mount: {
       imports,
       setup: [
+        ...(checks.size
+          ? [
+              "// Configuration: every variable these clients and the tile's sign-in read, checked before any",
+              "// client is built or probed; one wrong setting fails startup naming it, several are named together.",
+              "checkConfiguration([",
+              ...[...checks.keys()].map((call) => `  () => ${call},`),
+              "]);",
+            ]
+          : []),
         ...(list.length
           ? [
               "// Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",

@@ -446,13 +446,15 @@ describe("Installs, the metadata lookup and the reconnect bound (QG09)", () => {
         "};",
       ].join("\n"),
     );
-    // The publisher's client and the loop's: each `new PubSub(` spreads the bound in.
+    // The publisher's client and the loop's: each `new PubSub(` spreads the bound in. Its project
+    // comes through `pubsubProjectId` (QG31), which reads `JEEVES_PUBSUB_PROJECT`.
     const built = clients.split("new PubSub(").slice(1);
     expect(built).toHaveLength(2);
     for (const call of built)
       expect(call.slice(0, call.indexOf("});"))).toBe(
-        '{\n    projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),\n    ...pubsubChannel,\n  ',
+        "{\n    projectId: pubsubProjectId(),\n    ...pubsubChannel,\n  ",
       );
+    expect(clients).toContain('  return endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject);\n');
     const init = text(cloudExport, "scripts/pubsub-init.mjs");
     expect(init.split("new PubSub(")).toHaveLength(2);
     expect(init).toContain(

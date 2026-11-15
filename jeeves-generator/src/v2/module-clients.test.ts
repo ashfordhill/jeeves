@@ -1639,6 +1639,98 @@ describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => 
   });
 });
 
+describe("configuration is checked before the first probe (QG31)", () => {
+  beforeEach(() => environment(localEnvironment));
+  afterEach(() => {
+    fake.calls.length = 0;
+    lines.length = 0;
+    restoreEnvironment();
+  });
+  /** What the pass throws, or "passed". */
+  const thrown = (checks: (() => unknown)[]) => {
+    try {
+      clients.checkConfiguration(checks);
+      return "passed";
+    } catch (error) {
+      return error;
+    }
+  };
+
+  it("runs every check; one failure is its own error, several are named together, each once", () => {
+    const ran: string[] = [];
+    const check = (name: string, error?: Error) => () => {
+      ran.push(name);
+      if (error) throw error;
+    };
+    expect(thrown([check("a"), check("b")])).toBe("passed");
+    // A lone failure rethrows that error object, so its message is exactly today's.
+    const alone = new Error("Invalid endpoint JEEVES_DATABASE_LINKS_DB_HOST");
+    expect(thrown([check("c"), check("d", alone), check("e")])).toBe(alone);
+    expect(ran).toEqual(["a", "b", "c", "d", "e"]);
+    // Three failing readers, two with one message: each message once, in the order given, and
+    // never a value.
+    const wrong = { tls: `tls-${randomUUID()}`, port: `9${randomUUID()}` };
+    environment({
+      JEEVES_DATABASE_LINKS_DB_TLS: wrong.tls,
+      JEEVES_CACHE_LINKS_CACHE_PORT: wrong.port,
+    });
+    const several = thrown([
+      () => clients.databaseEndpoint("links-db"),
+      () => clients.httpTarget({ tile: "stats-api" }),
+      () => clients.cacheClientEndpoint("links-cache"),
+      () => clients.databaseEndpoint("links-db"),
+    ]) as Error;
+    expect(several.message).toBe(
+      "Invalid configuration: Invalid endpoint JEEVES_DATABASE_LINKS_DB_TLS; Invalid endpoint JEEVES_CACHE_LINKS_CACHE_PORT",
+    );
+    for (const value of Object.values(wrong)) expect(several.message).not.toContain(value);
+    expect(fake.calls).toEqual([]);
+  });
+
+  it("names a database's and a cache's wrong settings together, before any client is built", () => {
+    environment({
+      JEEVES_DATABASE_LINKS_DB_TLS: "require",
+      JEEVES_CACHE_LINKS_CACHE_HOST: undefined,
+    });
+    expect(() =>
+      clients.checkConfiguration([
+        () => clients.databaseEndpoint("links-db"),
+        () => clients.cacheClientEndpoint("links-cache"),
+      ]),
+    ).toThrow(
+      new Error(
+        "Invalid configuration: Invalid endpoint JEEVES_DATABASE_LINKS_DB_TLS; Invalid endpoint JEEVES_CACHE_LINKS_CACHE_HOST",
+      ),
+    );
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+    // Each reader returns what its client is built with, so the pass and the build read alike.
+    environment(localEnvironment);
+    for (const [read, name] of [
+      [() => clients.databaseEndpoint("links-db"), "DATABASE_LINKS_DB"],
+      [() => clients.cacheClientEndpoint("links-cache"), "CACHE_LINKS_CACHE"],
+    ] as const)
+      expect(read()).toEqual({
+        hostname: localEnvironment[`JEEVES_${name}_HOST`],
+        port: Number(localEnvironment[`JEEVES_${name}_PORT`]),
+        tls: { mode: "disable" },
+      });
+    // Pub/Sub's project, after the emulator refusal, as both Pub/Sub clients read it.
+    environment({ JEEVES_PUBSUB_PROJECT: undefined, JEEVES_REQUIRE_TLS: "true" });
+    environment({ PUBSUB_EMULATOR_HOST: "local-pubsub:8085" });
+    expect(thrown([() => pubsubClients.pubsubProjectId()])).toEqual(
+      new Error("Insecure endpoint PUBSUB_EMULATOR_HOST"),
+    );
+    environment({ JEEVES_REQUIRE_TLS: undefined });
+    expect(thrown([() => pubsubClients.pubsubProjectId()])).toEqual(
+      new Error("Invalid endpoint JEEVES_PUBSUB_PROJECT"),
+    );
+    environment({ JEEVES_PUBSUB_PROJECT: "local" });
+    expect(pubsubClients.pubsubProjectId()).toBe("local");
+    expect(fake.calls).toEqual([]);
+  });
+});
+
 describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
   const source = new TextDecoder().decode(
     bundle.files.find((file) => file.path === "src/runtime/postgres.ts")?.bytes,

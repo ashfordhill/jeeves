@@ -594,7 +594,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       '    provider: clients["provider"],\n    identity: clients["identity"],\n',
     );
     expect(front).toContain(
-      'import { cacheClient, createProbeLog, databaseClient, externalTarget, identityTarget, queuePublisher } from "../runtime/module-clients.ts";',
+      'import { brokerBinding, cacheClient, cacheClientEndpoint, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint, externalTarget, identityTarget, queuePublisher } from "../runtime/module-clients.ts";',
     );
     expect(front).not.toContain("unavailable");
     // Neither has a probe: each is built before the sign-in and the service, and reads its URL then.
@@ -603,6 +603,57 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     for (const name of ["httpTarget", "externalTarget", "identityTarget"])
       expect(clients).toContain(`export function ${name}(`);
     expect(clients).not.toContain("// @");
+  });
+
+  it("checks every variable the probe's clients and Front's sign-in read in one pass, before the first probe (QG31)", () => {
+    const front = text(probe, "src/processes/front.ts");
+    expect(front).toContain(
+      [
+        "  // Configuration: every variable these clients and the tile's sign-in read, checked before any",
+        "  // client is built or probed; one wrong setting fails startup naming it, several are named together.",
+        "  checkConfiguration([",
+        "    () => brokerBinding(),",
+        '    () => cacheClientEndpoint("hot"),',
+        '    () => identityTarget({ identity: "identity" }),',
+        '    () => externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
+        '    () => databaseEndpoint("store"),',
+        "    () => signInSettings(),",
+        "  ]);",
+        "  // Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
+        "  // use, each probed once before the process is ready; a failed probe fails startup, except",
+        "  // a cache's, which is logged.",
+        "  const probe = createProbeLog(config.tile);",
+      ].join("\n"),
+    );
+    expect(front).toContain(
+      'import { createTileGuard, signInSettings } from "../runtime/tile-guard.ts";',
+    );
+    // The pass comes before every client, its probe and the sign-in, which read theirs again.
+    const pass = front.indexOf("checkConfiguration([");
+    for (const later of [
+      "await queuePublisher(",
+      "createTileGuard({",
+      "const settings = signInSettings();",
+    ])
+      expect(pass, later).toBeLessThan(front.indexOf(later));
+    // Tally's: its database's endpoint, then its RabbitMQ loop's broker; no sign-in.
+    const tally = text(probe, "src/processes/tally.ts");
+    expect(tally).toContain(
+      [
+        "  checkConfiguration([",
+        '    () => databaseEndpoint("tally-db"),',
+        "    () => brokerBinding(),",
+        "  ]);",
+        "  // Module clients",
+      ].join("\n"),
+    );
+    expect(tally).toContain(
+      'import { brokerBinding, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint } from "../runtime/module-clients.ts";',
+    );
+    expect(tally).not.toContain("signInSettings");
+    const clients = text(probe, "src/runtime/module-clients.ts");
+    for (const name of ["checkConfiguration", "databaseEndpoint", "cacheClientEndpoint"])
+      expect(clients).toContain(`export function ${name}(`);
   });
 
   it("sets the Identity's address inside the network for a stub tile that calls it, and no External API URL in Compose", () => {

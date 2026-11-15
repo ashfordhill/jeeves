@@ -570,34 +570,49 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         [
           `  const ${name} = (() => {`,
           `    const binding = config.templates["${guard}"];`,
-          "    // The audience its tokens carry is the deployment's; Compose sets the local client's.",
-          '    if (!process.env.OIDC_AUDIENCE) throw new Error("OIDC_AUDIENCE must name the audience of the sign-in tokens.");',
-          "    // So are its issuer and key set (Compose sets the local ones): each an absolute http: or",
-          "    // https: URL with no whitespace (URL.parse would trim it, but the issuer is compared as set),",
-          "    // or startup fails naming the variable, never its value. With JEEVES_REQUIRE_TLS set to",
-          "    // true (else absent), each must be https: (`Insecure endpoint <variable>`), and",
-          "    // NODE_TLS_REJECT_UNAUTHORIZED unset or 1: 0 would fetch the key set unverified (QG30).",
-          "    const requireTls = process.env.JEEVES_REQUIRE_TLS;",
-          '    if (requireTls !== undefined && requireTls !== "true") throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");',
-          '    if (requireTls && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== undefined && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== "1") throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");',
-          '    const signInUrl = (name: "OIDC_ISSUER" | "OIDC_JWKS_URL") => {',
-          '      const value = process.env[name] ?? "";',
-          "      const protocol = /\\s/.test(value) ? undefined : URL.parse(value)?.protocol;",
-          `      if (protocol !== "http:" && protocol !== "https:") throw new Error(\`Invalid endpoint \${name}\`);`,
-          `      if (requireTls && protocol !== "https:") throw new Error(\`Insecure endpoint \${name}\`);`,
-          "      return value;",
-          "    };",
+          "    // Its audience, issuer and key set are the deployment's, checked by signInSettings (tile-guard.ts).",
+          "    const settings = signInSettings();",
           "    return createTileGuard({",
           "      signIn: binding.signIn,",
           "      verify: createPrincipalVerifier({",
-          '        issuer: signInUrl("OIDC_ISSUER"),',
-          "        audience: process.env.OIDC_AUDIENCE,",
-          '        jwksUrl: signInUrl("OIDC_JWKS_URL"),',
+          "        issuer: settings.issuer,",
+          "        audience: settings.audience,",
+          "        jwksUrl: settings.jwksUrl,",
+          '        algorithms: ["RS256"],',
+          "        jwksTimeoutMs: 3000,",
           "",
         ].join("\n"),
       );
+      expect(source).toContain(
+        'import { createTileGuard, signInSettings } from "../runtime/tile-guard.ts";',
+      );
       expect(source).not.toContain("-web");
     }
+    // The checks moved into tile-guard.ts with their order and messages (QG31).
+    expect(text(bundle, "src/runtime/tile-guard.ts")).toContain(
+      [
+        "export function signInSettings(): { issuer: string; audience: string; jwksUrl: string } {",
+        "  const audience = process.env.OIDC_AUDIENCE;",
+        '  if (!audience) throw new Error("OIDC_AUDIENCE must name the audience of the sign-in tokens.");',
+        "  const requireTls = process.env.JEEVES_REQUIRE_TLS;",
+        '  if (requireTls !== undefined && requireTls !== "true")',
+        '    throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");',
+        "  // `0` would fetch the key set unverified (QG30).",
+        "  const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;",
+        '  if (requireTls && verify !== undefined && verify !== "1")',
+        '    throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");',
+        '  const signInUrl = (name: "OIDC_ISSUER" | "OIDC_JWKS_URL") => {',
+        '    const value = process.env[name] ?? "";',
+        "    const protocol = /\\s/.test(value) ? undefined : URL.parse(value)?.protocol;",
+        `    if (protocol !== "http:" && protocol !== "https:") throw new Error(\`Invalid endpoint \${name}\`);`,
+        `    if (requireTls && protocol !== "https:") throw new Error(\`Insecure endpoint \${name}\`);`,
+        "    return value;",
+        "  };",
+        '  const issuer = signInUrl("OIDC_ISSUER");',
+        '  return { issuer, audience, jwksUrl: signInUrl("OIDC_JWKS_URL") };',
+        "}",
+      ].join("\n"),
+    );
     // Locally the audience is the realm's browser client, whose tokens the guards took before.
     const services = json(bundle, "compose.yaml").services;
     for (const service of ["app-watch-api", "app-upload-api"])
@@ -610,18 +625,21 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     const bundle = assemble(signInStackDesign());
     const services = json(bundle, "compose.yaml").services;
     const names = ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"];
+    // The process reads them through signInSettings in tile-guard.ts (QG31).
+    const guard = text(bundle, "src/runtime/tile-guard.ts");
+    // The issuer and key set come only through the URL check: no empty fallback is left.
+    expect(guard).not.toMatch(/process\.env\.OIDC_\w+ \?\?/);
+    expect(guard.match(/signInUrl\("OIDC_\w+"\)/g)).toEqual([
+      'signInUrl("OIDC_ISSUER")',
+      'signInUrl("OIDC_JWKS_URL")',
+    ]);
+    // The variables it reads are exactly those each Compose service sets and its report row lists.
+    expect([...new Set(guard.match(/OIDC_[A-Z_]+/g))].sort()).toEqual(names);
     for (const tile of ["watch-api", "upload-api"]) {
       const source = text(bundle, `src/processes/${tile}.ts`);
-      // The issuer and key set come only through the URL check: no empty fallback is left.
-      expect(source).not.toMatch(/process\.env\.OIDC_\w+ \?\?/);
-      expect(source.match(/signInUrl\("OIDC_\w+"\)/g)).toEqual([
-        'signInUrl("OIDC_ISSUER")',
-        'signInUrl("OIDC_JWKS_URL")',
-      ]);
+      expect(source).not.toContain("OIDC_");
       // Inside the process's start, so a refusal is its `startup-failed` line.
-      expect(source.indexOf("await runProcess(")).toBeLessThan(source.indexOf("signInUrl"));
-      // The variables it reads are exactly those its Compose service sets and its report row lists.
-      expect([...new Set(source.match(/OIDC_[A-Z_]+/g))].sort()).toEqual(names);
+      expect(source.indexOf("await runProcess(")).toBeLessThan(source.indexOf("signInSettings()"));
       expect(
         Object.keys(services[`app-${tile}`].environment)
           .filter((key) => key.startsWith("OIDC_"))

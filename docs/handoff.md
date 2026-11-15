@@ -16913,3 +16913,142 @@ B1, and B2–B4 are recommendations against units. The QL plan starts after QGR3
 
 **For the next unit.** QG31 moves the sign-in's checks into `signInSettings`. QG30's line goes with
 them, as its third check.
+
+## 2026-11-15 — QG31: Configuration is checked before the first probe
+
+**What changed.**
+- `module-clients.ts.template`:
+  - `checkConfiguration`, exactly as the brief has it, exported after `transport`, outside every
+    section.
+  - Three new readers:
+    - `databaseEndpoint(resource)` (database section): `databaseClient`'s three reads, moved as
+      they are. `databaseClient` keeps its `localLogins` lookup first, then spreads it into
+      `createPostgres`.
+    - `cacheClientEndpoint(cache)` (cache section): `cacheClient` calls it.
+    - `pubsubProjectId()` (Pub/Sub section): `refuseEmulator()`, then `JEEVES_PUBSUB_PROJECT`.
+      Both `new PubSub({ projectId: pubsubProjectId(), … })` calls use it.
+  - The header comment says the pass runs first. It names no section's function, since a design
+    without that section must not mention it. `brokerBinding`'s doc says the pass reads it too.
+- `tile-guard.ts.template`: `signInSettings()` holds the guard's checks in their order and with
+  their messages: `OIDC_AUDIENCE`, the switch, QG30's `NODE_TLS_REJECT_UNAUTHORIZED`, then
+  `OIDC_ISSUER` and `OIDC_JWKS_URL` by the `signInUrl` rule.
+- `http-wiring.ts`, `verifiedIdentity`: the IIFE keeps `const binding = …`, then a one-line
+  comment and `const settings = signInSettings();`, and passes `settings.issuer`,
+  `settings.audience` and `settings.jwksUrl` to `createPrincipalVerifier`. It imports
+  `signInSettings`.
+- `client-wiring.ts`, `stubClients`: the pass goes first in the stub clients' setup, with the
+  brief's comment, whenever it has a check. The checks come in this order, each once by its text:
+  - one per sorted client (database `databaseEndpoint`, RabbitMQ `brokerBinding()`, Pub/Sub
+    `pubsubProjectId()`, cache `cacheClientEndpoint`, an HTTP client its own call);
+  - then `brokerBinding()` and `pubsubProjectId()` for the loops' sections;
+  - then `signInSettings()` when `tileGuard` names a sign-in.
+
+  It imports `checkConfiguration` and each reader. The probe's Front pass is the brief's block,
+  line for line.
+- `local.ts`, `endpointsReadme`: the brief's first sentence and its "(several at once: …)".
+- Tests:
+  - 4 new:
+    - `module-clients.test.ts`, two. The first: `checkConfiguration` runs every check, a lone
+      failure rethrows that error object, and three failing readers with two messages give
+      `Invalid configuration: <a>; <b>` with no value. The second: the brief's
+      database-and-cache case, with `fake.calls` empty; the two readers return Compose's values,
+      and `pubsubProjectId` refuses the emulator under the switch and names a missing project.
+    - `client-wiring.test.ts` (QG20 describe): Front's block before
+      `const probe = createProbeLog(config.tile);`, its imports, the pass before every client
+      and the sign-in, and Tally's pass (`databaseEndpoint("tally-db")`, `brokerBinding()`, no
+      `signInSettings`).
+    - `tile-guard.test.ts`: Watch API's pass holds `signInSettings()` before the guard's call, and
+      the file has no `OIDC_`. The existing tile-guard tests pass unchanged, so each lone message is
+      the same.
+  - Changed:
+    - `http-wiring.test.ts`: QG11's emitted lines are the new ones and `signInSettings`'s body is
+      asserted in `tile-guard.ts`. QG24's test reads the URL checks and `OIDC_*` names from
+      `tile-guard.ts`, and the process file from `signInSettings()`.
+    - `client-wiring.test.ts`: QG20's Front import line.
+    - `pubsub.test.ts` F3: `projectId: pubsubProjectId()`, plus the reader's
+      `JEEVES_PUBSUB_PROJECT` line.
+    - `tile-processes.test.ts`: QG26's rows test dedupes the `externalTarget(...)` matches (each
+      URL now appears in the pass and in its client), and QG10's README phrases gain the two
+      sentences.
+- Pins: none changed (`processes-off.test.ts` passes).
+- Docs:
+  - `jeeves-generator/README.md`, Endpoints from the environment: the first sentence and the
+    failure sentence (with the pass's order and readers), as the brief says.
+  - Sentences that became false: the sign-in passage and the TLS paragraph now say
+    `signInSettings` in `tile-guard.ts` (they said "the sign-in's lines in the process file"), and
+    the clients passage says the pass comes first.
+  - `docs/template-gaps.md`: the brief's Known limits row.
+
+**Checks.** Lighter, by the owner's decision (relayed by the coordinator, 2026-11-15).
+- `pnpm check`: before any change (QG30's final tree, `ba520b5`), exit 0, 117 files / 1019 tests.
+  On the final tree, exit 0, 117 files / 1023 tests; Biome shows only the older 1 info.
+- Web build: exit 0.
+- Docker proof, the unit's one Docker run, as project `qg31-probe` on 127.0.0.1:47971–47973. It ran
+  on after-probe with the Q03 bodies and product SQL at their `generated-extension` paths and a
+  `compose.override.yaml` setting `JEEVES_EXTERNAL_PROVIDER_URL`.
+  1. `pnpm first-run`: exit 0 in 91 s, all seven services healthy.
+  2. `docker compose --profile '*' stop local-broker`: exit 0.
+  3. `run --rm --no-deps -e JEEVES_DATABASE_STORE_TLS=require -e JEEVES_CACHE_HOT_HOST= app-front`:
+     exit 1. Its only lines are `{"level":"error","event":"startup-failed","error":"Error: Invalid
+     configuration: Invalid endpoint JEEVES_CACHE_HOT_HOST; Invalid endpoint
+     JEEVES_DATABASE_STORE_TLS"}` and `Application startup failed`; there is no `"event":"probe"`
+     line.
+  4. The same without the two `-e`: exit 1, the `events` probe line (`ENOTFOUND local-broker`),
+     then `Startup probe failed: queue events`.
+  5. HEAD's templates: before-probe's app image, built under the same project and run against the
+     same stack with step 3's command (`.runtime` and the override copied). Exit 1, with only the
+     probe line and `Startup probe failed: queue events`, so the wrong settings were not named.
+  6. `pnpm stop`, `docker compose --profile '*' down --volumes --remove-orphans`,
+     `docker image rm qg31-probe-app:latest` and both `.runtime` copies deleted, each exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`), `qrwty-r83.json` and the Pub/Sub
+  fixture (batch 3's rule). Changed paths:
+  - probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`, `src/processes/front.ts`,
+    `src/processes/tally.ts`, `src/runtime/module-clients.ts`, `src/runtime/tile-guard.ts`;
+  - r83: the same, with `account-api`, `analytics-worker`, `billing-api`, `link-api`,
+    `redirect-service` and `session-api` in place of the probe's processes;
+  - pubsub: the manifest, the report, `README.md`, `src/processes/clicks-api.ts`,
+    `src/processes/tally.ts` and `src/runtime/module-clients.ts`.
+
+  These are the brief's Emitted output list and nothing else. The reports differ only in the
+  registry's source inventory, so `environment` is unchanged. Required gaps are unchanged (probe
+  3, r83 11, pubsub 2). Scratch exports deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  No `qg31` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - the Docker suites the brief names (`wiring`, `identity`, `pubsub`, `core`), since the proof
+    above is the one run;
+  - the measurement of new tests on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in each `after-*`. The proof's image build compiled
+    after-probe's emitted code in Docker (`pnpm build`, exit 0), and the proof needed an offline
+    install there for its host scripts.
+
+**Differences from the plan.**
+- **Three existing assertions outside the brief's test list** change with the emitted code the
+  brief requires:
+  - `pubsub.test.ts` F3 (the `projectId` line);
+  - QG24's test in `http-wiring.test.ts` (the checks moved to `tile-guard.ts`);
+  - QG26's rows test in `tile-processes.test.ts` (dedupes the `externalTarget` matches).
+
+  Each still checks what it checked, at the new place.
+- **The header comment** names no section's function: QG07's and QG08's "no broker" and "no
+  Pub/Sub" tests read the file's text.
+- **Step 5 reused the running stack.** It built HEAD's app image under the same project, instead
+  of a second stack.
+
+**Noticed.**
+- The unit is arm A-found (QRWTY Q04, AG-01), batch 3.
+- Each reader runs twice at startup, in the pass and in the build, so a CA file is read twice.
+  Both use the same function (invariant 3).
+- A pass with a broker failure and a sign-in failure lists them in the pass's order. QRWTY's
+  "first failing probe" case is gone, but a store that is down still fails startup, now after the
+  configuration.
+- Templates' own clients (`pool`, `service-resources.ts`'s `brokerBinding`, `cacheEndpoint`) still
+  read as each is built (invariant 4, the Known limits row).
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG29, as batch 3 runs. Every process with stubs now opens with
+`checkConfiguration([...])`; QG28 edits the same `stubClients` code and the Pub/Sub part of
+`module-clients.ts.template`.
