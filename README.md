@@ -42,9 +42,13 @@
 
 ### Agents on the Loose!
 
-I had an agent orchestrating lanes of other agents for the past couple days to see if I could get away with doing more initial planning upfront with some rules instead of my usual way of doing things (create 1 build plan at a time with a decent size goal, maybe equivalent to a Jira Epic or multiple large tickets. Each unit executs on a fresh agent and this is overseen by a parent agent).
+I had an agent orchestrating lanes of other agents for the past couple days to see if I could get away with doing more initial planning upfront with some rules instead of my usual way of doing things (create 1 build plan at a time with a decent size goal, maybe equivalent to a Jira Epic or multiple large tickets. Each unit executs on a fresh agent and this is overseen by a parent agent). Then I would do my human review and poke around the results.
 
-Unfortunately it kept leading to more units of work getting added and agents chasing a goalpost that kept moving. When I checked in on the status, it'd gotten off course in the same way SWE engineers get off course without a clear concrete goal and vague tickets.
+Unfortunately, the multi-lane agents and larger-than-usual-build-goals kept leading to more units of work getting added and agents chasing a goalpost that kept moving. When I checked in on the status, it'd gotten off course in the same way SWE engineers get off course without a clear concrete goal and vague tickets.
+
+> Anthropic has recently boasted about letting 1000+ agents run with Fable 5.2 to build an operating system that could 'boot on a machine'. Actual details about the qualtiy of that operating system are not being transparently presented. I don't think throwing 1000+ agents to build anything over a week is a going to lead to anything you want to put in production. Cat herding, lack of human understanding of architecture designs, probably only generating diagrams after the fact (I mean hopefully they'd go for diagrams of some sort...right...? RIGHT?)
+>
+> In any case, one of the goals with Jeeves is to keep the humans in control and informed of decisions, but merely moving them up a level of abstraction, which I've cited in one of my earlier writeups last year, praising diagrams. We should be architects because code monkeys and ticket grinding is handled by computers now. Basically we need to get good at understanding our intentions, communicating those intentions clearly and able to steer back to course when paths start to deviate too far from the goal. 
 
 I cut things off to get the data I was looking for which was:
 
