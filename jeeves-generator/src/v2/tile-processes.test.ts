@@ -1,4 +1,5 @@
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { createRequire, stripTypeScriptTypes } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -808,7 +809,8 @@ describe("emitted HTTP service and process runtime", () => {
               return { ok: true };
             },
           });
-          if (entry) tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry);
+          if (entry)
+            tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry, { deadlineMs: 1000 });
         },
         initialize: async () => {},
       });
@@ -990,7 +992,7 @@ describe("emitted HTTP service and process runtime", () => {
             },
           });
           routes.route({ method: "POST", url: "/json", handler: async () => ({ ok: true }) });
-          tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry);
+          tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry, { deadlineMs: 1000 });
         },
         initialize: async () => {},
       });
@@ -1077,7 +1079,7 @@ describe("emitted HTTP service and process runtime", () => {
             },
           });
           routes.route({ method: "POST", url: "/json", handler: async () => ({ ok: true }) });
-          tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry);
+          tileHttpRuntime.stubRoutes(routes, () => {}, "probe", entry, { deadlineMs: 1000 });
         },
         initialize: async () => {},
         onFailure: (what: string, error: unknown) => failures.push([what, error]),
@@ -1109,6 +1111,210 @@ describe("emitted HTTP service and process runtime", () => {
       body: { error: "INVALID_REQUEST", message: "Invalid request." },
     });
     expect(failures).toEqual([]);
+    await http.close();
+  });
+});
+
+// QL02: the emitted entry.ts (its `defineRoutes` imports nothing) and the same service, on real
+// Fastify through `inject`, and once on a real loopback socket so a client can go away.
+const entryRuntime = await import(
+  dataUrl(
+    stripTypeScriptTypes(
+      text(assemble(runStudioCommands(stubStackDesign(), [on])), "src/modules/entry.ts"),
+    ),
+  )
+);
+const liveFastify = `export { default } from ${JSON.stringify(pathToFileURL(serverRequire.resolve("fastify")).href)};`;
+const liveHttpRuntime = await import(runtimeUrl("http", liveFastify));
+const liveTileHttpRuntime = await import(runtimeUrl("tile-http", liveFastify));
+
+describe("route stubs get a deadline signal and a route table (QL02)", () => {
+  type Answer = { statusCode: number; headers: Record<string, unknown>; json(): unknown };
+  type Service = {
+    inject(request: unknown): Promise<Answer>;
+    start(listen: unknown): Promise<string>;
+    close(): Promise<void>;
+  };
+  /** The stub routes of module "probe" on a started service with this Request timeout. */
+  const stubService = async (
+    entry: (request: unknown) => Promise<unknown>,
+    requestTimeoutMs = 1000,
+    runtime = { http: realHttpRuntime, tileHttp: tileHttpRuntime },
+  ) => {
+    const http: Service = await runtime.http.createHttpService({
+      id: "front",
+      settings: { requestTimeoutMs, concurrencyLimit: 10 },
+      configure: (routes: unknown) =>
+        runtime.tileHttp.stubRoutes(routes, () => {}, "probe", entry, {
+          deadlineMs: requestTimeoutMs,
+        }),
+      initialize: async () => {},
+    });
+    const address = await http.start({ host: "127.0.0.1", port: 0 });
+    return { http, address };
+  };
+  type Routed = { method: string; path: string; params: Record<string, string> };
+  const linkTable = (seen: unknown[]) =>
+    entryRuntime.defineRoutes({
+      "GET /links/:id": async (request: Routed) => {
+        seen.push(["get", request.method, request.params]);
+        return { body: { id: request.params.id } };
+      },
+      "PATCH /links/:id": async (request: Routed) => {
+        seen.push(["patch", request.params]);
+        return { status: 204 };
+      },
+      "POST /links": async (request: Routed) => {
+        seen.push(["post", request.params]);
+        return { status: 201 };
+      },
+    });
+
+  it("routes a table's keys by pattern and method, HEAD to GET, and answers 404, 405 with Allow", async () => {
+    const seen: unknown[] = [];
+    const { http } = await stubService(linkTable(seen));
+    const call = (method: string, path: string) =>
+      http.inject({ method, url: `/modules/probe${path}` });
+    expect((await call("GET", "/links/a%20b")).json()).toEqual({ id: "a b" });
+    // Each segment is decoded once, from the path as it was sent: an encoded slash stays in it.
+    expect((await call("GET", "/links/a%2Fb")).json()).toEqual({ id: "a/b" });
+    expect((await call("GET", "/links/100%25")).json()).toEqual({ id: "100%" });
+    expect((await call("GET", "/links/x?a=%2F")).json()).toEqual({ id: "x" });
+    expect((await call("HEAD", "/links/x")).statusCode).toBe(200);
+    expect((await call("PATCH", "/links/x")).statusCode).toBe(204);
+    expect((await call("POST", "/links")).statusCode).toBe(201);
+    expect(seen).toEqual([
+      ["get", "GET", { id: "a b" }],
+      ["get", "GET", { id: "a/b" }],
+      ["get", "GET", { id: "100%" }],
+      ["get", "GET", { id: "x" }],
+      ["get", "HEAD", { id: "x" }],
+      ["patch", { id: "x" }],
+      ["post", {}],
+    ]);
+    const refused = await call("DELETE", "/links/x");
+    expect([refused.statusCode, refused.headers.allow, refused.json()]).toEqual([
+      405,
+      "GET, HEAD, PATCH",
+      { error: "METHOD_NOT_ALLOWED", message: "Method not allowed." },
+    ]);
+    const posted = await call("GET", "/links");
+    expect([posted.statusCode, posted.headers.allow]).toEqual([405, "POST"]);
+    const notFound = { error: "NOT_FOUND", message: "Route not found." };
+    for (const path of ["/other", "", "/links/x/y", "/links/"]) {
+      const missing = await call("GET", path);
+      expect([path, missing.statusCode, missing.json()]).toEqual([path, 404, notFound]);
+    }
+    expect(seen).toHaveLength(7);
+    await http.close();
+  });
+
+  it("answers 400 for a segment that doesn't decode, and passes the stub's context through", async () => {
+    const routes = entryRuntime.defineRoutes({
+      "GET /": async (_request: unknown, context: { n: number }) => ({ body: context.n }),
+      "GET /:id": async (request: Routed, context: { n: number }) => ({
+        body: [request.params.id, context.n],
+      }),
+    });
+    const request = (rawPath: string) => ({ method: "GET", path: rawPath, rawPath });
+    expect(await routes(request("/%E0%A4%A"), { n: 1 })).toEqual({
+      status: 400,
+      body: { error: "INVALID_REQUEST", message: "Invalid request." },
+    });
+    expect(await routes(request("/"), { n: 2 })).toEqual({ body: 2 });
+    expect(await routes(request("/caf%C3%A9"), { n: 3 })).toEqual({ body: ["café", 3] });
+  });
+
+  it("throws at definition, naming the key, for a duplicate or an invalid key", () => {
+    const handler = async () => ({});
+    const define =
+      (...keys: string[]) =>
+      () =>
+        entryRuntime.defineRoutes(Object.fromEntries(keys.map((key) => [key, handler])));
+    expect(define("GET /links/:id", "GET /links/:slug")).toThrow(
+      "Duplicate route GET /links/:slug",
+    );
+    for (const key of [
+      "GET /x/",
+      "GET //x",
+      "GET x",
+      "GET",
+      "get /x",
+      "TRACE /x",
+      "GET  /x",
+      "GET /x/*",
+      "GET /:1d",
+      "GET /:",
+      "GET /:id/:id",
+    ])
+      expect(define("GET /ok", key), key).toThrow(`Invalid route ${key}`);
+    expect(define("GET /", "GET /links/:id", "PUT /links/:id", "GET /links/new")).not.toThrow();
+  });
+
+  it("aborts the signal with DEADLINE at the Request timeout, as the admission answers 503", async () => {
+    let aborted: (value: [reason: unknown, elapsed: number]) => void = () => {};
+    const abort = new Promise<[unknown, number]>((resolve) => {
+      aborted = resolve;
+    });
+    const { http } = await stubService(async (request) => {
+      const { signal } = request as { signal: AbortSignal };
+      const start = performance.now();
+      await new Promise((resolve) => signal.addEventListener("abort", resolve, { once: true }));
+      aborted([signal.reason, performance.now() - start]);
+      return { status: 200 };
+    }, 300);
+    const answer = await http.inject({ method: "GET", url: "/modules/probe/slow" });
+    expect([answer.statusCode, answer.headers["retry-after"], answer.json()]).toEqual([
+      503,
+      "1",
+      { error: "DEADLINE", message: "Request deadline exceeded; check status before retrying." },
+    ]);
+    const [reason, elapsed] = await abort;
+    expect(reason).toEqual(new Error("DEADLINE"));
+    expect(elapsed).toBeGreaterThanOrEqual(290);
+    expect(elapsed).toBeLessThan(800);
+    await http.close();
+  });
+
+  it("never aborts the signal after a normal answer", async () => {
+    const signals: AbortSignal[] = [];
+    const { http } = await stubService(async (request) => {
+      signals.push((request as { signal: AbortSignal }).signal);
+      return { body: { ok: true } };
+    }, 300);
+    expect((await http.inject({ method: "GET", url: "/modules/probe/fast" })).statusCode).toBe(200);
+    expect(signals[0]?.aborted).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(signals[0]?.aborted).toBe(false);
+    await http.close();
+  });
+
+  it("aborts the signal with CLIENT_CLOSED when the client goes before the answer", async () => {
+    let entered = () => {};
+    const reached = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    let aborted: (reason: unknown) => void = () => {};
+    const abort = new Promise<unknown>((resolve) => {
+      aborted = resolve;
+    });
+    const { http, address } = await stubService(
+      async (request) => {
+        const { signal } = request as { signal: AbortSignal };
+        entered();
+        await new Promise((resolve) => signal.addEventListener("abort", resolve, { once: true }));
+        aborted(signal.reason);
+        return { status: 200 };
+      },
+      5000,
+      { http: liveHttpRuntime, tileHttp: liveTileHttpRuntime },
+    );
+    const client = httpRequest(`${address}/modules/probe/held`);
+    client.on("error", () => {});
+    client.end();
+    await reached;
+    client.destroy();
+    expect(await abort).toEqual(new Error("CLIENT_CLOSED"));
     await http.close();
   });
 });

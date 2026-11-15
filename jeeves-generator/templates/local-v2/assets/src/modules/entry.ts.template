@@ -10,8 +10,11 @@ export type Caller =
 /** One HTTP request to /modules/<module id> or a path below it. */
 export type ModuleRequest = {
   method: string;
-  /** The path below /modules/<module id>: "/" for the module's own path. */
+  /** The path below /modules/<module id>: "/" for the module's own path. Decoded: `%20` is a
+   * space, and `%2F` a slash. */
   path: string;
+  /** The same path as it was sent, its escapes kept (`%20`, `%2F`): what `defineRoutes` matches. */
+  rawPath: string;
   query: Record<string, string | string[] | undefined>;
   headers: Record<string, string | string[] | undefined>;
   /** Parsed JSON or text, up to 64 KiB; undefined when there is none. */
@@ -20,6 +23,10 @@ export type ModuleRequest = {
    * them; undefined when there is none. Don't change it. */
   rawBody?: Uint8Array;
   caller: Caller;
+  /** Aborted with `Error("DEADLINE")` once the tile's Request timeout passes, or with
+   * `Error("CLIENT_CLOSED")` when the client goes before the answer; never after an answer. Pass
+   * it to downstream calls (`fetch(url, { signal })`) so they stop when no one waits for them. */
+  signal: AbortSignal;
 };
 
 /** What a route stub answers: 200 and no body unless it says otherwise. */
@@ -40,3 +47,100 @@ export type ModuleMessage = {
   /** The queue it came from. */
   source: string;
 };
+
+/** One route of a table: the request with its pattern's `:name` segments in `params`, decoded,
+ * and what the stub passed beside it (its dependencies, say). */
+export type RouteHandler<Context = void> = (
+  request: ModuleRequest & { params: Record<string, string> },
+  context: Context,
+) => Promise<ModuleResponse>;
+
+const methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"];
+const parameter = /^:[A-Za-z_][A-Za-z0-9_]*$/;
+const answer = (status: number, error: string, message: string): ModuleResponse => ({
+  status,
+  body: { error, message },
+});
+
+/** A route stub's routes as a table, defined once when its file loads, so a bad table fails
+ * startup. A key is `"<METHOD> <pattern>"`: one of DELETE, GET, HEAD, OPTIONS, PATCH, POST or PUT,
+ * then a path below the module's own that starts with `/`, each segment a literal or `:name`
+ * (one segment), with no wildcard and no trailing slash but `/` itself. The first key in table
+ * order whose pattern and method match answers; HEAD falls back to GET. Any other path answers 404
+ * `NOT_FOUND`, another method on a path that matches 405 `METHOD_NOT_ALLOWED` with `Allow`, and a
+ * segment that doesn't decode 400 `INVALID_REQUEST`. Throws `Invalid route <key>` for a malformed
+ * key and `Duplicate route <key>` for a second key with the same method and pattern.
+ *
+ *     const routes = defineRoutes<Dependencies>({
+ *       "GET /links/:id": async (request, dependencies) => ({ body: { id: request.params.id } }),
+ *     });
+ *     export async function linksApi(dependencies: Dependencies, request: ModuleRequest) {
+ *       return routes(request, dependencies);
+ *     }
+ */
+export function defineRoutes<Context = void>(
+  table: Record<string, RouteHandler<Context>>,
+): (request: ModuleRequest, context: Context) => Promise<ModuleResponse> {
+  const seen = new Set<string>();
+  const routes = Object.entries(table).map(([key, handler]) => {
+    const space = key.indexOf(" ");
+    const method = key.slice(0, space);
+    const pattern = key.slice(space + 1);
+    const segments = pattern === "/" ? [] : pattern.split("/").slice(1);
+    if (
+      space < 1 ||
+      !methods.includes(method) ||
+      !pattern.startsWith("/") ||
+      !segments.every(
+        (segment) =>
+          segment !== "" &&
+          !segment.includes("*") &&
+          (!segment.startsWith(":") || parameter.test(segment)),
+      )
+    )
+      throw new Error(`Invalid route ${key}`);
+    const names = segments.filter((segment) => segment.startsWith(":"));
+    if (new Set(names).size !== names.length) throw new Error(`Invalid route ${key}`);
+    // Two patterns that differ only in their parameters' names match the same paths.
+    const shape = `${method} ${segments.map((segment) => (segment.startsWith(":") ? ":" : segment)).join("/")}`;
+    if (seen.has(shape)) throw new Error(`Duplicate route ${key}`);
+    seen.add(shape);
+    return { method, segments, handler };
+  });
+  return async (request, context) => {
+    const parts = request.rawPath === "/" ? [] : request.rawPath.split("/").slice(1);
+    let decoded: string[];
+    try {
+      decoded = parts.map((part) => decodeURIComponent(part));
+    } catch {
+      return answer(400, "INVALID_REQUEST", "Invalid request.");
+    }
+    const match = (segments: readonly string[]) => {
+      if (segments.length !== decoded.length) return undefined;
+      const params: Record<string, string> = {};
+      for (const [index, segment] of segments.entries()) {
+        const value = decoded[index] ?? "";
+        if (!segment.startsWith(":")) {
+          if (segment !== value) return undefined;
+        } else if (value === "") return undefined;
+        else params[segment.slice(1)] = value;
+      }
+      return params;
+    };
+    const matching = routes.flatMap((route) => {
+      const params = match(route.segments);
+      return params ? [{ ...route, params }] : [];
+    });
+    const found =
+      matching.find((route) => route.method === request.method) ??
+      (request.method === "HEAD" ? matching.find((route) => route.method === "GET") : undefined);
+    if (found) return found.handler({ ...request, params: found.params }, context);
+    if (!matching.length) return answer(404, "NOT_FOUND", "Route not found.");
+    const allowed = new Set(matching.map((route) => route.method));
+    if (allowed.has("GET")) allowed.add("HEAD");
+    return {
+      ...answer(405, "METHOD_NOT_ALLOWED", "Method not allowed."),
+      headers: { Allow: [...allowed].sort().join(", ") },
+    };
+  };
+}

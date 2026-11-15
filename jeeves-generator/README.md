@@ -420,8 +420,26 @@ bucket, or why it has none, and Preview shows them.
   (undefined when there is no body). A `ModuleResponse.headers` value is a string or an array of
   strings; an array sends the header once per value, such as two `Set-Cookie` lines.
   `request.caller` is the tile's sign-in caller, and always
-  `{signedIn: false}` in a tile with no guard. Its `dependencies` are real clients (provisioning for stubs,
-  below). Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
+  `{signedIn: false}` in a tile with no guard. `request.signal` is aborted with `Error("DEADLINE")`
+  once the tile's Request timeout passes after the stub starts (when the admission answers 503
+  `DEADLINE`; the process passes `{ deadlineMs: config.settings.requestTimeoutMs }` to
+  `stubRoutes`), or with `Error("CLIENT_CLOSED")` when the client goes before the answer is
+  written, and never once the stub has answered: pass it to downstream calls so they stop.
+  `request.path` is decoded (`%2F` is a slash); `request.rawPath` is the same path as it was sent.
+  `defineRoutes(table)`, in `entry.ts`, makes the stub's dispatch from a table keyed
+  `"<METHOD> <pattern>"`: DELETE, GET, HEAD, OPTIONS, PATCH, POST or PUT, and a pattern of literal
+  and `:name` segments (one non-empty segment each) with no wildcard and no trailing slash but `/`
+  itself. The first key in table order whose pattern and method match answers, with
+  `request.params` (each segment of `rawPath` decoded once, so `%2F` stays inside a parameter);
+  HEAD falls back to GET. Any other path answers 404 `NOT_FOUND`, another method on a matching
+  path 405 `METHOD_NOT_ALLOWED` with `Allow` (the path's methods sorted, `GET, HEAD` for a GET),
+  and a segment that doesn't decode 400 `INVALID_REQUEST`. A malformed key (`Invalid route <key>`)
+  or a second key with the same method and pattern (`Duplicate route <key>`) throws when the table
+  is defined, so a table defined at the top of the stub's file fails startup;
+  `defineRoutes<Dependencies>` gives `(request, dependencies)` and hands each handler the
+  dependencies the stub passes as its second argument.
+  A stub that doesn't use it dispatches every method and path itself. Its `dependencies` are real
+  clients (provisioning for stubs, below). Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
   and get their clients, and are called only through another module's link.
 - **Multipart uploads** is mounted on its real libraries: its private schema (named from the
   selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in

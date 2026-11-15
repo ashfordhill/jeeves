@@ -1,4 +1,5 @@
 import { generateKeyPairSync, sign } from "node:crypto";
+import { EventEmitter } from "node:events";
 import { mkdtempSync, rmSync } from "node:fs";
 import { createRequire, stripTypeScriptTypes } from "node:module";
 import { tmpdir } from "node:os";
@@ -212,13 +213,17 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
       return { status: 200 };
     };
     const log = () => {};
+    const limits = { deadlineMs: 1000 };
     const withGuard = routes();
-    stubRoutes(guard.routes(withGuard), log, "hello", entry, guard.caller);
+    stubRoutes(guard.routes(withGuard), log, "hello", entry, limits, guard.caller);
     const without = routes();
-    stubRoutes(without, log, "plain", entry);
-    const reply = { code: () => reply, header: () => reply };
+    stubRoutes(without, log, "plain", entry, limits);
+    const reply = { code: () => reply, header: () => reply, raw: new EventEmitter() };
     const get = (open: ReturnType<typeof routes>, key: string, authorization?: string) =>
-      open.mounted.get(key)?.({ ...request(authorization), params: { "*": "x" } }, reply);
+      open.mounted.get(key)?.(
+        { ...request(authorization), url: key.slice(4).replace("*", "x"), params: { "*": "x" } },
+        reply,
+      );
     await get(withGuard, "GET /modules/hello/*", "Bearer good");
     await get(withGuard, "GET /modules/hello/*");
     await get(without, "GET /modules/plain/*", "Bearer good");
@@ -241,9 +246,11 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
         seen.push(moduleRequest);
         return { headers: { "Set-Cookie": cookies, "X-Probe": "one" } };
       },
+      { deadlineMs: 1000 },
     );
     const headers: [string, unknown][] = [];
     const reply = {
+      raw: new EventEmitter(),
       code: () => reply,
       header: (name: string, value: unknown) => {
         headers.push([name, value]);
@@ -253,18 +260,27 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
     const rawBody = Buffer.from('{"id":"evt_1",  "n": 1.0}');
     const body = { id: "evt_1", n: 1 };
     await open.mounted.get("POST /modules/probe/*")?.(
-      { ...request(), method: "POST", params: { "*": "events" }, body, rawBody },
+      {
+        ...request(),
+        method: "POST",
+        url: "/modules/probe/events",
+        params: { "*": "events" },
+        body,
+        rawBody,
+      },
       reply,
     );
     expect(seen).toEqual([
       {
         method: "POST",
         path: "/events",
+        rawPath: "/events",
         query: {},
         headers: {},
         body,
         rawBody,
         caller: { signedIn: false },
+        signal: expect.any(AbortSignal),
       },
     ]);
     // Each value in order, from a copy: Fastify may add to the array it is given.

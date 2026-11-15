@@ -1024,7 +1024,8 @@ const templates: Record<
 };
 
 /** A route stub: any method on /modules/<module> and below, called with its dependencies
- * (`client-wiring.ts`) and the tile's sign-in's caller. */
+ * (`client-wiring.ts`), the tile's sign-in's caller and a signal bounded by its Request timeout
+ * (`config.settings.requestTimeoutMs`). */
 function routeStub(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
@@ -1043,22 +1044,18 @@ function routeStub(
       { from: from(paths.module), name: entry },
     ],
     setup: [],
-    // In a tile with a sign-in, the stub's request carries its caller.
-    configure: guard
-      ? [
-          "stubRoutes(",
-          "  routes,",
-          "  log,",
-          `  ${text(id)},`,
-          `  (request) => ${entry}(dependencies[${text(id)}], request),`,
-          `  ${guard}.caller,`,
-          ");",
-        ]
-      : [
-          `stubRoutes(routes, log, ${text(id)}, (request) =>`,
-          `  ${entry}(dependencies[${text(id)}], request),`,
-          ");",
-        ],
+    // The stub's request carries a signal aborted at the tile's Request timeout, and in a tile
+    // with a sign-in its caller.
+    configure: [
+      "stubRoutes(",
+      "  routes,",
+      "  log,",
+      `  ${text(id)},`,
+      `  (request) => ${entry}(dependencies[${text(id)}], request),`,
+      "  { deadlineMs: config.settings.requestTimeoutMs },",
+      ...(guard ? [`  ${guard}.caller,`] : []),
+      ");",
+    ],
     initialize: [],
     started: [],
     routes: [

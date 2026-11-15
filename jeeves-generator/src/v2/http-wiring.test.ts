@@ -120,13 +120,15 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     // The process mounts each route through its 501 wrapper.
     const links = text(stack, "src/processes/links-api.ts");
     expect(links).toContain(
-      'stubRoutes(routes, log, "link-reader", (request) =>\n        linkReader(dependencies["link-reader"], request),\n      );',
+      'stubRoutes(\n        routes,\n        log,\n        "link-reader",\n        (request) => linkReader(dependencies["link-reader"], request),\n        { deadlineMs: config.settings.requestTimeoutMs },\n      );',
     );
     expect(links).toContain(
       'import type { Dependencies as LinkReaderDependencies } from "../modules/links-api/link-reader.slots.ts";',
     );
     // Its Upload consumer is a loop, not a route.
-    expect(links).not.toContain('stubRoutes(routes, log, "upload-consumer"');
+    expect(links).not.toContain(
+      'stubRoutes(\n        routes,\n        log,\n        "upload-consumer"',
+    );
     expect(
       json(stack, ".jeeves/normalized.json").processes.find(
         (row: { tile: string }) => row.tile === "preview-api",
@@ -468,7 +470,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       '    configure: (open) => {\n      // Every module route checks its caller first: the tile\'s sign-in.\n      const routes = viewerCheck.routes(open);\n      viewerCheck.me(routes, "/modules/viewer-check/me");',
     );
     expect(watch).toContain(
-      '      stubRoutes(\n        routes,\n        log,\n        "hello",\n        (request) => hello(dependencies["hello"], request),\n        viewerCheck.caller,\n      );',
+      '      stubRoutes(\n        routes,\n        log,\n        "hello",\n        (request) => hello(dependencies["hello"], request),\n        { deadlineMs: config.settings.requestTimeoutMs },\n        viewerCheck.caller,\n      );',
     );
     expect(watch).toContain('      "signIn": "optional",');
     expect(text(bundle, "src/processes/upload-api.ts")).toContain('      "signIn": "required",');

@@ -36,28 +36,50 @@ export function notImplementedRoutes(
 
 const anyMethod = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"] as const;
 const anonymous = async (): Promise<Caller> => ({ signedIn: false });
+/** The path below /modules/<module> as it was sent: Fastify gives `*` decoded. The router takes
+ * the path before any `?` or `#` (from the first `/` after an absolute target's host) and matches
+ * `/modules/<module>` before it decodes, so the first three `/`-separated parts are that prefix. */
+function rawPathOf(url: string): string {
+  let target = url;
+  for (const mark of ["?", "#"]) {
+    const at = target.indexOf(mark);
+    if (at !== -1) target = target.slice(0, at);
+  }
+  if (!target.startsWith("/")) {
+    const at = target.indexOf("/", target.indexOf("://") + 3);
+    target = at === -1 ? "/" : target.slice(at);
+  }
+  return `/${target.split("/").slice(3).join("/")}`;
+}
 async function moduleRequest(
   request: FastifyRequest,
   caller: (request: FastifyRequest) => Promise<Caller>,
+  signal: AbortSignal,
 ): Promise<ModuleRequest> {
   const rest = (request.params as { "*"?: string })["*"];
   return {
     method: request.method,
     path: `/${rest ?? ""}`,
+    rawPath: rawPathOf(request.url),
     query: request.query as ModuleRequest["query"],
     headers: request.headers,
     body: request.body,
     rawBody: request.rawBody,
     caller: await caller(request),
+    signal,
   };
 }
 /** A route stub answers any method on /modules/<module> and every path below it. `caller` is the
- * tile's Auth guard's, or anonymous. */
+ * tile's Auth guard's, or anonymous. Its request's `signal` is aborted with `Error("DEADLINE")`
+ * `deadlineMs` after the handler starts (the tile's Request timeout, when the admission answers
+ * 503 `DEADLINE`), or with `Error("CLIENT_CLOSED")` when the client goes before the answer is
+ * written; once the stub has answered it is never aborted. */
 export function stubRoutes(
   routes: HttpRoutes,
   log: NotImplementedLog,
   module: string,
   entry: (request: ModuleRequest) => Promise<ModuleResponse>,
+  limits: { deadlineMs: number },
   caller: (request: FastifyRequest) => Promise<Caller> = anonymous,
 ): void {
   const mounted = notImplementedRoutes(routes, log, module);
@@ -66,11 +88,23 @@ export function stubRoutes(
       method: [...anyMethod],
       url,
       async handler(request, reply) {
-        const response = await entry(await moduleRequest(request, caller));
-        reply.code(response.status ?? 200);
-        for (const [name, value] of Object.entries(response.headers ?? {}))
-          reply.header(name, Array.isArray(value) ? [...value] : value);
-        return response.body;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(new Error("DEADLINE")), limits.deadlineMs);
+        // The response closes when it is written or when its connection goes first.
+        const closed = () => {
+          if (!reply.raw.writableEnded) controller.abort(new Error("CLIENT_CLOSED"));
+        };
+        reply.raw.once("close", closed);
+        try {
+          const response = await entry(await moduleRequest(request, caller, controller.signal));
+          reply.code(response.status ?? 200);
+          for (const [name, value] of Object.entries(response.headers ?? {}))
+            reply.header(name, Array.isArray(value) ? [...value] : value);
+          return response.body;
+        } finally {
+          clearTimeout(timer);
+          reply.raw.off("close", closed);
+        }
       },
     });
 }

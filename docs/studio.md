@@ -1446,7 +1446,9 @@ uses where no template on the tile does: **Request timeout** and **Concurrency l
 Service or Uploads tile, **Concurrency** on a Worker (its stub loops run that many messages at
 once). Empty, each shows the value the process runs; typing saves it on the tile (one Undo
 step), and Preview lists each process's settings with their origin. In an HTTP tile, each stub that consumes no queue
-answers any method on `/modules/<module id>` and below, Multipart uploads, Cache reader and Search
+answers any method on `/modules/<module id>` and below (its request's `signal` aborts at the tile's
+Request timeout or when the client goes, and `defineRoutes` in `src/modules/entry.ts` gives it a
+route table that answers 404, and 405 with `Allow`), Multipart uploads, Cache reader and Search
 query run their templates with a generated `<lead>.hooks.ts`; each answers 501 "Not implemented"
 until written. Search query (`?q=&page=`) reads the mapping and document from its Index writer's
 hooks file and its own `preset` and `hit`. An Auth guard connected to an Identity is the tile's

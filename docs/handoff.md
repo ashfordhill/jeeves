@@ -17659,3 +17659,139 @@ wants it; QG36–QG39 wait for the owner.
   changes) were not touched or staged.
 
 **For the next unit.** QG36–QG39 wait for the owner. The QL plan can start.
+
+## 2026-11-15 — QL02: Route stubs get a deadline signal and a route table
+
+**What changed.**
+- `templates/local-v2/assets/src/modules/entry.ts.template`:
+  - `ModuleRequest` gains `signal: AbortSignal` and `rawPath: string` (see Differences), and the
+    doc of `path` says it is decoded.
+  - New `RouteHandler<Context = void>` and `defineRoutes(table)`, the brief's table: keys
+    `"<METHOD> <pattern>"`, first match in table order, HEAD falls back to GET, 404 `NOT_FOUND`,
+    405 `METHOD_NOT_ALLOWED` with `Allow` (sorted, `GET, HEAD` for a GET), 400 `INVALID_REQUEST`
+    for a segment that doesn't decode, `Invalid route <key>` and `Duplicate route <key>` at
+    definition. A `:name` segment needs a non-empty value.
+- `templates/local-v2/assets/src/runtime/tile-http.ts.template`: `stubRoutes(routes, log, module,
+  entry, { deadlineMs }, caller?)`. Each handler builds an `AbortController`: a timer aborts it
+  with `Error("DEADLINE")` `deadlineMs` after the handler starts, and the response's `close`
+  aborts it with `Error("CLIENT_CLOSED")` while `reply.raw.writableEnded` is false. Both are
+  cleared when the stub settles, so a normal answer never aborts it. `moduleRequest` adds
+  `signal` and `rawPath` (from `request.url`). The admission is unchanged.
+- `src/v2/http-wiring.ts`, `routeStub`: the emitted call gains
+  `{ deadlineMs: config.settings.requestTimeoutMs },` before the guard's caller. Both forms are
+  now multi-line.
+- Tests:
+  - `tile-processes.test.ts`: a new describe with 6 tests on the emitted `entry.ts` (from the stub
+    stack) and the emitted `http.ts`/`tile-http.ts` on the server's Fastify. Through `inject`: the
+    brief's table (`GET /links/a%20b` → `a b`, plus `a%2Fb` → `a/b`, `100%25` → `100%`, a query
+    ignored), HEAD to GET, `DELETE` 405 `allow: "GET, HEAD, PATCH"`, `GET /links` 405 `POST`,
+    404 for `/other`, `/`, `/links/x/y` and `/links/`. Directly: 400 for `%E0%A4%A`, and the
+    context passed through. At definition: duplicate, `GET /x/` and nine other bad keys throw.
+    `requestTimeoutMs` 300: `DEADLINE` after 290–800 ms with the admission's 503 body and
+    `Retry-After: 1`. A normal answer is still unaborted 400 ms later. On a loopback socket, a
+    client that is destroyed gives `CLIENT_CLOSED`. The three existing `stubRoutes` calls pass
+    `{ deadlineMs: 1000 }`.
+  - `tile-guard.test.ts`: its three calls pass the limits; the fake requests carry `url` and the
+    fake replies `raw`; the received request's shape adds `rawPath` and `signal`.
+  - `http-wiring.test.ts`: its two emitted `stubRoutes(` strings and the `upload-consumer`
+    negative, in the new form.
+- Docs: `jeeves-generator/README.md` (Module routes, the route stub bullet) and the route-stub
+  sentence of `docs/studio.md`.
+- Pins: none changed (`processes-off.test.ts` passed unchanged).
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: exit 0, 117 files / 1034 tests (6 new); Biome shows only the older 1 info.
+- Web build: exit 0.
+- Regeneration proof, before and after from this checkout: `probe-design.json`
+  (`a3b6204f…0505`, verified), `qrwty-r83.json` (`4c16e0ca…5d50`) and YouTube v4's design
+  (`9762df41…813f`).
+  - Probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `src/modules/entry.ts`,
+    `src/processes/front.ts`, `src/runtime/tile-http.ts`.
+  - r83: the probe's four paths other than `front.ts`, plus `src/processes/account-api.ts`,
+    `billing-api.ts`, `link-api.ts`, `redirect-service.ts` and `session-api.ts`
+    (`analytics-worker.ts`, with no route stub, is unchanged).
+  - YouTube v4: the same four plus `src/processes/watch-api.ts`.
+  - That is the brief's list. Each process file differs only by one `{ deadlineMs: … }` line per
+    route stub; the report only in its source inventory.
+  - `update:v2 … youtube/v4/app --check`: `refused` `[]` (create 1, replace 26, unchanged 69,
+    keep 11).
+- Docker proof, the unit's one Docker run. Project `ql02-probe` on 127.0.0.1:47981–47983, on
+  after-probe. Q03's `front-probe.ts`, `tally-count.ts` and both SQL files were at their
+  `generated-extension` paths. A proof body using `defineRoutes<Dependencies>` replaced
+  `front-internal-grant.ts`: `GET /grants/:id`, `POST /grants`, and `GET /slow`, which awaits its
+  signal and logs the reason. The `compose.override.yaml` set only
+  `JEEVES_EXTERNAL_PROVIDER_URL`. It needed `pnpm install --frozen-lockfile --ignore-scripts
+  --offline`, and `pnpm build` (tsc) then exited 0. The checkout's `node_modules/.modules.yaml`
+  and `.pnpm/lock.yaml` keep their mtimes (2026-11-14 12:10).
+  1. `pnpm first-run`: exit 0 in 86 s, all seven services healthy.
+  2. Through the edge: `GET …/front-probe/env` answers 200 (Q03's body, no table). `PUT
+     …/front-internal-grant/grants/x` answers 405, `allow: GET, HEAD`, with the brief's body.
+     `GET …/grants/a%20b` gives `a b`, HEAD 200, `POST …/grants` 201, `DELETE …/grants` 405
+     `allow: POST`, and `…/other` 404.
+  3. `GET …/slow`: the admission's 503 `DEADLINE` with `retry-after: 1`. The stub logged
+     `Error: DEADLINE` after 1001 ms; Front's Request timeout is 1000.
+  4. `curl --max-time 0.3 …/slow`: the stub logged `Error: CLIENT_CLOSED` after 300 ms.
+  5. From inside `app-front` (`fetch` to 127.0.0.1:3000): `…/grants/a%2Fb` gives `a/b`, and
+     `100%25` gives `100%`.
+  6. Teardown, each exit 0: `pnpm stop`; `docker compose --profile '*' down --volumes
+     --remove-orphans`; `docker image rm ql02-probe-app:latest`. The six exports are deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  No `ql02` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - the brief's `--suite=wiring`, since the proof above is the one Docker run;
+  - the measurement of the new tests on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in after-r83 and after-youtube.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **`ModuleRequest.rawPath` is new.** The brief doesn't name it. Fastify's `*` arrives decoded
+  (find-my-way decodes it once, `%2F` and `%25` included), so `path` was decoded at HEAD.
+  Decoding its segments again would decode twice (a `%` in an id gives 400, `%2525` gives `%`),
+  and an encoded `/` would split a parameter. `stubRoutes` takes `rawPath` from `request.url`:
+  before any `?` or `#`, from the first `/` after an absolute target's host, with the first three
+  `/` parts (`/modules/<module>`) dropped. `defineRoutes` splits it and decodes each segment with
+  `decodeURIComponent`, as invariant 2 says. Through Fastify a malformed escape never reaches a
+  stub: it gets Fastify's own 400 `FST_ERR_BAD_URL`, unchanged. So `defineRoutes`' 400 answers
+  only a direct call.
+- **`defineRoutes<Context>` passes a second argument to each handler.** The brief has none. A
+  table defined at the top of the stub's file (so a bad one fails startup, invariant 4) otherwise
+  can't reach the stub's dependencies. With no `Context` the entry is
+  `(request) => Promise<ModuleResponse>`, as the brief says (checked with tsc).
+- **`{ deadlineMs }` is `stubRoutes`' fifth argument, before `caller`**, which stays last and
+  optional, so an unguarded call needs no `undefined`.
+- **A duplicate key** can't occur in an object literal (TypeScript rejects one). It is a second key
+  with the same method and pattern up to its parameters' names (`GET /links/:id`, then
+  `GET /links/:slug`), `Duplicate route <key>`. A pattern that repeats a parameter name is
+  `Invalid route <key>`.
+- **`Allow`** lists the methods of every pattern that matches the path. The brief says "that
+  pattern's"; the two are the same when one pattern matches. An exact HEAD key anywhere in the
+  table wins over the GET fallback.
+- **Unnamed emitted-string assertions updated**: `http-wiring.test.ts`'s two `stubRoutes(`
+  strings and the `upload-consumer` negative, which would otherwise pass vacuously. This is
+  QG35's practice.
+- **`docs/studio.md`** lists no `ModuleRequest` fields. The route-stub sentence gained a clause
+  instead.
+- **The `CLIENT_CLOSED` test listens on 127.0.0.1 port 0**, the first generator unit test with a
+  socket: `inject` can't drop a client. It uses loopback only.
+- **The proof's table body replaced Q03's `front-internal-grant.ts`**, the probe's other route
+  stub. Steps 3–5 go beyond the brief.
+
+**Noticed.**
+- The unit comes from the QRWTY lessons plan (JP00).
+- **The edge turns `%2F` into `/`.** nginx's `rewrite ^/api/<tile>/(.*)$ /$1 break` hands the app
+  a decoded slash. It re-escapes the rest: `%20`, `%25`, `%3F` and `%C3%A9` arrive intact. Through
+  the edge `…/grants/a%2Fb` answered 404, but directly it gives `a/b`. A parameter can't hold an
+  encoded slash behind the local edge. That is the edge's area (QG25), not this unit's.
+- Q03's `/raw` probe prints `Object.keys(request)`, which now includes `rawPath` and `signal`.
+- Front logs a `failure` line for the admission's 503 `DEADLINE`, as before.
+- YouTube v4's `app/test/watch.test.ts` builds a `ModuleRequest` without `signal` or `rawPath`.
+  Its `tsc` covers `src/` only, so the build is unaffected.
+- `docs/plans/tile-processes/contract.md` still lists `ModuleRequest`'s first five fields; it
+  already left out `rawBody` and `caller`. It is a plan and is unchanged.
+- QRWTY arm A's export is frozen at `4e87f97`, so this reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QL03, Database stubs get a scoped transaction. QL04 (after QL02 and QL03)
+builds on this unit's `defineRoutes`, `rawPath` and `signal`.
