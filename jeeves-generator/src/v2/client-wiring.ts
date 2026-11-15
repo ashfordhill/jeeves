@@ -30,6 +30,7 @@ import { type V2ProcessReport, v2Compare } from "./registry.ts";
 
 const clients = "../runtime/module-clients.ts";
 const guardPath = "../runtime/tile-guard.ts";
+const localPath = "../runtime/local.ts";
 const entryTypes = "../modules/entry.ts";
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
  * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
@@ -303,6 +304,18 @@ export function stubClients(
     checks.set(brokerCheck.call, { name: brokerCheck.name, from: clients });
   if (sections.has("pubsub-loop"))
     checks.set(pubsubCheck.call, { name: pubsubCheck.name, from: clients });
+  // Then each credential these clients read (QG35), by the name Compose's `secrets` gives the
+  // service: the value is discarded, so a missing or unreadable one fails in the pass too.
+  const secrets = new Set<string>();
+  for (const store of stores) {
+    if (store.unsupported) continue;
+    if (store.kind === "database") secrets.add(`sql-${store.resource}--${process.tile}`);
+    else if (store.kind === "cache") secrets.add(`cache-${store.resource}`);
+    else if (store.kind === "object-store") secrets.add(`s3-${process.tile}`);
+  }
+  if (sections.has("broker")) secrets.add("broker-password");
+  for (const secret of [...secrets].sort(v2Compare))
+    checks.set(`readSecret(${text(secret)})`, { name: "readSecret", from: localPath });
   if (tileGuard(process, selections))
     checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
   if (checks.size) imports.push({ from: clients, name: "checkConfiguration" });

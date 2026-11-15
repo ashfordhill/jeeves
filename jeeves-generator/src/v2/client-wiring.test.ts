@@ -617,6 +617,9 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    () => identityTarget({ identity: "identity" }),',
         '    () => externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
         '    () => databaseEndpoint("store"),',
+        '    () => readSecret("broker-password"),',
+        '    () => readSecret("cache-hot"),',
+        '    () => readSecret("sql-store--front"),',
         "    () => signInSettings(),",
         "  ]);",
         "  // Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
@@ -636,13 +639,18 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       "const settings = signInSettings();",
     ])
       expect(pass, later).toBeLessThan(front.indexOf(later));
-    // Tally's: its database's endpoint, then its RabbitMQ loop's broker; no sign-in.
+    // Each credential Compose's `secrets` gives the service is read in the pass too (QG35).
+    expect(front).toContain('import { readSecret } from "../runtime/local.ts";');
+    // Tally's: its database's endpoint, then its RabbitMQ loop's broker, then their credentials; no
+    // sign-in.
     const tally = text(probe, "src/processes/tally.ts");
     expect(tally).toContain(
       [
         "  checkConfiguration([",
         '    () => databaseEndpoint("tally-db"),',
         "    () => brokerBinding(),",
+        '    () => readSecret("broker-password"),',
+        '    () => readSecret("sql-tally-db--tally"),',
         "  ]);",
         "  // Module clients",
       ].join("\n"),
@@ -654,6 +662,24 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     const clients = text(probe, "src/runtime/module-clients.ts");
     for (const name of ["checkConfiguration", "databaseEndpoint", "cacheClientEndpoint"])
       expect(clients).toContain(`export function ${name}(`);
+    // In both fixtures every process is a stub tile's, so its pass reads exactly the credentials
+    // Compose's `secrets` gives its service, each once, sorted (QG35).
+    for (const bundle of [probe, fixture("qrwty-r83.json")]) {
+      const services = json(bundle, "compose.yaml").services as Record<
+        string,
+        { secrets?: string[] }
+      >;
+      const files = bundle.files.filter((file) => file.path.startsWith("src/processes/"));
+      expect(files.length).toBeGreaterThan(1);
+      for (const { path } of files) {
+        const tile = path.slice("src/processes/".length, -".ts".length);
+        const read = [...text(bundle, path).matchAll(/\(\) => readSecret\("([^"]+)"\),/g)].map(
+          (match) => match[1],
+        );
+        expect(read, path).toEqual([...(services[`app-${tile}`]?.secrets ?? [])].sort());
+        expect(read.length, path).toBeGreaterThan(0);
+      }
+    }
   });
 
   it("sets the Identity's address inside the network for a stub tile that calls it, and no External API URL in Compose", () => {

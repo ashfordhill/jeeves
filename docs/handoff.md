@@ -17557,3 +17557,105 @@ QG29, QG28, QG32, QG33 and QG34.
 
 **For the next unit.** The QL plan can start; batch 3 is complete. QG35 is ready whenever the owner
 wants it; QG36–QG39 wait for the owner.
+
+## 2026-11-15 — QG35: The configuration pass reads each credential
+
+**What changed.**
+- `jeeves-generator/src/v2/client-wiring.ts`, `stubClients`: after the clients' checks and the
+  loops' `brokerBinding()`/`pubsubProjectId()`, before `signInSettings()`, the pass gains one
+  `() => readSecret("<secret>")` per credential the process's clients read, sorted with
+  `v2Compare`: `sql-<database>--<tile>` for each provisioned database, `cache-<id>` for each
+  cache, `s3-<tile>` once when a store is object storage, and `broker-password` when `sections`
+  has `broker`. These are the names Compose's `secrets` gives the service. `readSecret` is
+  imported from `../runtime/local.ts`. The value is discarded.
+- Tests:
+  - `client-wiring.test.ts`, the QG31 test: Front's pass gains the brief's three lines between
+    `databaseEndpoint("store")` and `signInSettings()`, and Tally's gains its two after
+    `brokerBinding()`. Front imports `readSecret` from `../runtime/local.ts`. In both fixtures,
+    each process's names equal its `app-<tile>` service's Compose `secrets`, sorted.
+  - `module-clients.test.ts`, the QG31 describe: 1 new test, on the emitted `local.ts`
+    (type-stripped). A pass with a missing `JEEVES_SECRET_<NAME>_FILE` and a wrong `_TLS` gives
+    `Invalid configuration: Invalid endpoint JEEVES_DATABASE_LINKS_DB_TLS; Unreadable secret file
+    JEEVES_SECRET_SQL_LINKS_DB__LINKS_API_FILE (ENOENT)`, with no value and no path. Alone, the
+    credential gives its own error. With the file there, the pass passes. No client is built.
+  - `tile-processes.test.ts`, QG06's no-compiled-host test: its `"cache-` literal is now
+    `(?<!readSecret\()"cache-` (see Differences).
+- `jeeves-generator/README.md`:
+  - **Endpoints**: the pass's order now includes the credentials.
+  - **Credentials**: one sentence on the pass reading each credential, and that a template's own
+    clients still read theirs as each is built.
+- Pins: none changed (`processes-off.test.ts` passed unchanged; processes off has no stub).
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: exit 0, 117 files / 1028 tests; Biome shows only the older 1 info. The first run
+  failed only QG06's `"cache-` assertion, before the change below.
+- Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`
+  (`4c16e0ca…5d50`), before and after, from this checkout.
+  - Probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `src/processes/front.ts` and
+    `src/processes/tally.ts`.
+  - r83: `.jeeves/manifest.json`, `.jeeves/report.json`, and `src/processes/account-api.ts`,
+    `analytics-worker.ts`, `billing-api.ts`, `link-api.ts`, `redirect-service.ts` and
+    `session-api.ts`.
+  - That is the brief's list, process files with stubs plus the report and manifest. Each process
+    file differs only by the import line and its `readSecret` lines. The report differs only in
+    the source inventory (`client-wiring.ts`).
+- Docker proof, the unit's one Docker run. Project `qg35-probe` on 127.0.0.1:47971–47973, run on
+  after-probe with the Q03 bodies and product SQL at their `generated-extension` paths. Its
+  `compose.override.yaml` set only `JEEVES_EXTERNAL_PROVIDER_URL` on `app-front`. It needed
+  `pnpm install --frozen-lockfile --ignore-scripts --offline` in after-probe. The checkout's
+  `node_modules/.modules.yaml` and `.pnpm/lock.yaml` keep their mtimes (2026-11-14 12:10).
+  1. `pnpm first-run`: exit 0 in 90 s, all seven services healthy. Front's log shows its three
+     probes `ok`, then `started`, so the pass read the three mounted credentials.
+  2. QG34's step 4, `run --rm --no-deps -e
+     JEEVES_SECRET_SQL_STORE__FRONT_FILE=/credentials/missing/value app-front`: exit 1. Its only
+     line is `{"level":"error","event":"startup-failed","error":"Error: Unreadable secret file
+     JEEVES_SECRET_SQL_STORE__FRONT_FILE (ENOENT)"}`. There is no `"event":"probe"` line and no
+     broker or cache state line before it (QG34's run had four).
+  3. The same with `-e JEEVES_DATABASE_STORE_TLS=require`: exit 1, `Invalid configuration:
+     Invalid endpoint JEEVES_DATABASE_STORE_TLS; Unreadable secret file
+     JEEVES_SECRET_SQL_STORE__FRONT_FILE (ENOENT)`, again with no line before it.
+  4. Teardown, each exit 0: `pnpm stop`; `docker compose --profile '*' down --volumes
+     --remove-orphans`; `docker image rm qg35-probe-app:latest`. The four exports, with their
+     `.runtime`, are deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  No `qg35` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - the brief's `--suite=wiring`, since the proof above is the one Docker run;
+  - the measurement of the new tests on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in each `after-*`, except the proof's install above. The
+    proof's image build compiled after-probe in Docker.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **QG06's assertion in `tile-processes.test.ts` is narrowed.** The brief doesn't name it. It
+  forbade the literal `"cache-` in process files, `module-clients.ts` and `service-resources.ts`,
+  to catch a compiled cache host. The brief's own emitted line, `() => readSecret("cache-hot")`,
+  contains it, since a cache's credential is named `cache-<id>` as its host is. The regex now skips
+  only a `readSecret(` argument, so a compiled host still fails it. This follows QG04's and QG06's
+  practice of updating an unnamed assertion of the unit's own emitted output. The reviewer may
+  prefer another form.
+- **Extra checks**, beyond the brief: the fixture-wide equality with Compose's `secrets` in
+  `client-wiring.test.ts`, and the proof's step 3.
+- **The proof skipped QG34's steps 2 and 3** (the Cloud Run-shaped override and `pnpm start`).
+  Step 4 needs only the variable.
+- The comment above the pass ("every variable these clients and the tile's sign-in read") is
+  unchanged, since the brief gives no new wording.
+
+**Noticed.**
+- The unit is from the QGR3 review (QG31 + QG34 finding 1). It is QRWTY-driven (run
+  `qrwty-r1-20261114`, arm A, batch 3's rules).
+- With `JEEVES_SECRET_<NAME>_FILE` unset, `readSecret`'s default read is unchanged (QG34's
+  invariant). Its error is still Node's own, which names the path (`ENOENT: no such file or
+  directory, open '/run/secrets/<name>'`), never the value. It now surfaces in the pass too.
+- `broker-password` follows `sections.has("broker")`, as the brief says. Compose's `broker`
+  follows a provisioned non-Pub/Sub queue. They differ only for a stub loop on a RabbitMQ queue
+  whose saved provider isn't local (a required `unsupported` gap). That loop's `brokerBinding()`
+  reads the password anyway, so the pass only fails earlier.
+- A template's own clients still read their credentials as each is built (QG36, for the owner).
+- QRWTY arm A's export is frozen at `4e87f97`, so this reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG36–QG39 wait for the owner. The QL plan can start.

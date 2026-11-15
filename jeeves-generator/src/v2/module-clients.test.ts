@@ -1729,6 +1729,52 @@ describe("configuration is checked before the first probe (QG31)", () => {
     expect(pubsubClients.pubsubProjectId()).toBe("local");
     expect(fake.calls).toEqual([]);
   });
+
+  it("names a credential file that can't be read and a wrong _TLS together (QG35)", async () => {
+    // `readSecret`, from the emitted `src/runtime/local.ts`, type-stripped: the pass reads each
+    // credential as its client will, and discards the value.
+    const { readSecret } = await import(
+      dataUrl(
+        stripTypeScriptTypes(
+          new TextDecoder().decode(
+            bundle.files.find((file) => file.path === "src/runtime/local.ts")?.bytes,
+          ),
+        ),
+      )
+    );
+    const variable = "JEEVES_SECRET_SQL_LINKS_DB__LINKS_API_FILE";
+    const dir = mkdtempSync(join(tmpdir(), "jeeves-qg35-"));
+    const wrong = `tls-${randomUUID()}`;
+    const pass = [
+      () => clients.databaseEndpoint("links-db"),
+      () => readSecret("sql-links-db--links-api"),
+    ];
+    try {
+      environment({
+        [variable]: join(dir, "missing", "value"),
+        JEEVES_DATABASE_LINKS_DB_TLS: wrong,
+      });
+      const both = thrown(pass) as Error;
+      expect(both.message).toBe(
+        `Invalid configuration: Invalid endpoint JEEVES_DATABASE_LINKS_DB_TLS; Unreadable secret file ${variable} (ENOENT)`,
+      );
+      for (const hidden of [wrong, dir]) expect(both.message).not.toContain(hidden);
+      // Alone, the credential's own error, as its client would throw it.
+      environment({ JEEVES_DATABASE_LINKS_DB_TLS: "disable" });
+      expect(thrown(pass)).toEqual(new Error(`Unreadable secret file ${variable} (ENOENT)`));
+      // With the file there, the pass passes.
+      const value = randomUUID();
+      mkdirSync(join(dir, "mounted"));
+      writeFileSync(join(dir, "mounted", "value"), `${value}\n`);
+      environment({ [variable]: join(dir, "mounted", "value") });
+      expect(thrown(pass)).toBe("passed");
+      expect(readSecret("sql-links-db--links-api")).toBe(value);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+  });
 });
 
 describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {

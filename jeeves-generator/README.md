@@ -750,7 +750,7 @@ project is a Google Cloud project ID (a lowercase letter, then up to 29 lowercas
 or `-`, optionally after `<domain>:`). A missing or invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
 `startup-failed` line; several fail together as `Invalid configuration: <message>; <message>`
 (each message once, in the pass's order: the clients' sorted keys, the broker and Pub/Sub for the
-loops, then the sign-in). The stubs' clients read theirs in `module-clients.ts` (the pass calls
+loops, their credentials, then the sign-in). The stubs' clients read theirs in `module-clients.ts` (the pass calls
 `databaseEndpoint`, `cacheClientEndpoint`, `brokerBinding`, `pubsubProjectId` and the HTTP clients'
 own calls; object storage and search are compiled, so they have none); a template's `pool`
 and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
@@ -878,7 +878,12 @@ secret's name upper-cased, with `-` and `.` as `_` (`sql-links--redirect-service
 platform that mounts each secret at its own path (Cloud Run) needs no wrapper. A value that isn't
 absolute, or holds a control character, fails `Invalid endpoint <variable>`; a file that can't be
 read fails `Unreadable secret file <variable>` with its error code (`ENOENT`, `EACCES`), never the
-path or the value. `readSecret` checks the name first (`Invalid secret identity`). Compose sets
+path or the value. `readSecret` checks the name first (`Invalid secret identity`). A process with
+stubs also reads, in its configuration pass, each credential its stubs' clients read, the names
+Compose's `secrets` gives its service (`sql-<database>--<tile>`, `cache-<id>`, `broker-password`,
+`s3-<tile>`), sorted, after the endpoints and before the sign-in, and discards the values (QG35):
+a credential that can't be read fails before any probe, named with any other wrong setting. A
+template's own clients read theirs as each is built. Compose sets
 none of these variables, and they are optional, like `_CA_FILE`, so neither the report's
 `environment` nor the export's README lists them per process; the README's intro gives the rule.
 

@@ -503,7 +503,9 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
           /\b5432\b/,
           /\b5672\b/,
           /\b6379\b/,
-          /"cache-/,
+          // A cache's host; its credential is also named `cache-<id>`, which the configuration
+          // pass reads (QG35).
+          /(?<!readSecret\()"cache-/,
           /app-[a-z0-9-]+:3000/,
         ])
           expect(code, `${file.path} ${literal}`).not.toMatch(literal);
