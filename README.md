@@ -50,9 +50,9 @@ I cut things off to get the data I was looking for which was:
 
 1. Build qrwty. 
   - How good is it from an enterprise software design standpoint?
-    - Not expecting perfection (even though such a thing doesn't exist in the software world anyway). But anything decent can be built upon and improved. Lock down good patterns into reuseable templates that **source from** a human-readable diagram source of truth.
+      - Not expecting perfection (even though such a thing doesn't exist in the software world anyway). But anything decent can be built upon and improved. Lock down good patterns into reuseable templates that **source from** a human-readable diagram source of truth.
 2. Build qrwty without Jeeves. Is it inferior? Spaghetti?
-  - In the future I might pause this type of investigation just because of the amount of resources (tokens, time) it can consume. I think it is safe to assume that diagram-based prompting will probably offer better results than just text-based prompting alone. This is evident even when working with human engineers.
+   - In the future I might pause this type of investigation just because of the amount of resources (tokens, time) it can consume. I think it is safe to assume that diagram-based prompting will probably offer better results than just text-based prompting alone. This is evident even when working with human engineers.
 3. Calculate lines of code differences to see where we're at for deterministic vs non-deterministic code usage
 4. See opportunities to lift patterns out of qrwty and back into Jeeves templates if they are generic enough concepts to be used for other types of projects
 
@@ -64,7 +64,7 @@ The results from before #4 can be seen in the [qrwty repo](https://www.github.co
 
 1. 80% code from Jeeves (not including UI and test code)
 2. non-Jeeves had 5x more LOC for tests (~10k vs ~2k)
-  - Doesn't really say much about reliability but I'm assuming the agents were more paranoid about testing everything from non-Jeeves and more trusting about 'reliable' solutions from Jeeves
+    - Doesn't really say much about reliability but I'm assuming the agents were more paranoid about testing everything from non-Jeeves and more trusting about 'reliable' solutions from Jeeves
 3. Around the same amount of UI code in both Jeeves and non-Jeeves impls of qrwty.
 
 Both projects will be saved in the qrwty repo.
