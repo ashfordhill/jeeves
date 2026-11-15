@@ -64,6 +64,11 @@ export type ProcessMount = {
     /** The application tiles its stubs call (`httpTarget`), each at `JEEVES_TILE_<ID>_URL`. */
     calls?: string[];
     identity?: string;
+    /** The Identity its stubs call (`identityTarget`, QG20), at that Identity's `OIDC_ISSUER`. */
+    issuer?: string;
+    /** The External APIs its stubs call (`externalTarget`, QG20), each at
+     * `JEEVES_EXTERNAL_<ID>_URL`. */
+    external?: string[];
     environment?: Record<string, string>;
     /** The media image, for a process that runs Video HLS. */
     target?: "media";

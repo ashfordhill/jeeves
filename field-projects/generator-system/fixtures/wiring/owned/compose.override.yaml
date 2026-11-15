@@ -1,0 +1,8 @@
+# Wiring's own Compose configuration (QG02's seam; export never writes this file). Its External
+# call links to Partner API, so Wiring API reads JEEVES_EXTERNAL_PARTNER_URL at startup (QG20):
+# compose.yaml sets none, so the application does. The harness's controlled server answers at this
+# name on the stack's network; the External call body sends to the endpoint its request names.
+services:
+  app-wiring-api:
+    environment:
+      JEEVES_EXTERNAL_PARTNER_URL: http://external-fixture:3000

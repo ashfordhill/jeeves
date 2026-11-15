@@ -12,11 +12,14 @@ import { command, hash, json, poll, repository, sourceSnapshot, writeJson } from
 
 type Report = ReturnType<typeof assembleV2>["report"];
 type Manifest = { files: { path: string; sha256: string; ownership: string }[] };
+/** An application-owned file the fixture puts into the export: a stub, a hooks file, product SQL,
+ * or (`override`) its own `compose.override.yaml` (QG02's seam), which export never writes, for
+ * what the application sets itself, such as an External API's URL (QG20). */
 type Attachment = {
   source: string;
   destination: string;
-  role: "stub" | "hooks" | "sql";
-  module: string;
+  role: "stub" | "hooks" | "sql" | "override";
+  module?: string;
 };
 async function freePorts() {
   const servers = Array.from({ length: 3 }, () => createServer());
@@ -245,25 +248,34 @@ export async function setupApplication(
     assertSafeOutputPath(attachment.destination);
     assert(attachment.source.startsWith("owned/"));
     const file = app.manifest.files.find((row) => row.path === attachment.destination);
-    assert.equal(
-      file?.ownership,
-      "generated-extension",
-      `Attachment is not owned extension: ${attachment.destination}`,
-    );
+    // The application's own Compose override: the one file of its own the export doesn't list.
+    if (attachment.role === "override")
+      assert(
+        attachment.destination === "compose.override.yaml" && !file && !attachment.module,
+        `Override attachment must be compose.override.yaml, which export never writes: ${attachment.destination}`,
+      );
+    else
+      assert.equal(
+        file?.ownership,
+        "generated-extension",
+        `Attachment is not owned extension: ${attachment.destination}`,
+      );
     const module = app.report.modules?.find((row) => row.module === attachment.module);
     const valid =
-      attachment.role === "hooks"
-        ? app.report.processes?.tiles.some((tile) =>
-            tile.hooks.some(
-              (hook) =>
-                hook.selection === module?.selection && hook.file === attachment.destination,
-            ),
-          )
-        : attachment.role === "sql"
-          ? module?.sql?.some((row) => row.file === attachment.destination)
-          : module?.status === "stub" &&
-            module.files.includes(attachment.destination) &&
-            !attachment.destination.endsWith(".slots.ts");
+      attachment.role === "override"
+        ? true
+        : attachment.role === "hooks"
+          ? app.report.processes?.tiles.some((tile) =>
+              tile.hooks.some(
+                (hook) =>
+                  hook.selection === module?.selection && hook.file === attachment.destination,
+              ),
+            )
+          : attachment.role === "sql"
+            ? module?.sql?.some((row) => row.file === attachment.destination)
+            : module?.status === "stub" &&
+              module.files.includes(attachment.destination) &&
+              !attachment.destination.endsWith(".slots.ts");
     assert(valid, `Attachment not reported for ${attachment.module}: ${attachment.destination}`);
     assert(!attachment.destination.startsWith(".jeeves/"));
     assert(

@@ -55,8 +55,9 @@ import type {
 import type { ProcessScope } from "./process.ts";
 import { NotImplemented } from "./tile-process.ts";
 
-/** A dependency that isn't provisioned locally (another provider, an Identity, a CDN, an external
- * API): calling it, or any of its members, answers "Not implemented: <what>". */
+/** A dependency that isn't provisioned locally (another provider, an Identity no sign-in binds, a
+ * stub's token check, a CDN, a tile that runs no process): calling it, or any of its members,
+ * answers "Not implemented: <what>". */
 export function unavailable<T extends object>(what: string): T {
   const fail = () => Promise.reject(new NotImplemented(what));
   return new Proxy(fail, {
@@ -741,6 +742,28 @@ export async function searchClient(
 }
 // @search-end
 // @http-start
+/** An HTTP client on the base URL in the environment variable `name`, read now (an absolute
+ * `http:` or `https:` URL, else `Invalid endpoint <name>`; with `JEEVES_REQUIRE_TLS=true` it must
+ * be `https:`, else `Insecure endpoint <name>`). `request(path, init)` resolves `path` against the
+ * base and passes `init` to `fetch` as it is, so a stub bounds a call with
+ * `signal: AbortSignal.timeout(ms)` and adds its own headers (a credential from a `SECRET_DIR`
+ * file); the client reads no credential. It has no probe. With `internal`, a rejected `fetch` is
+ * marked `Symbol.for("jeeves.internal-call")`, so a lost connection waits as a store's does. */
+function target(name: string, internal: boolean): HttpTarget {
+  const base = endpoint(name, url);
+  if (requireTls() && new URL(base).protocol !== "https:")
+    throw new Error(`Insecure endpoint ${name}`);
+  return {
+    request: (path, init) =>
+      internal
+        ? fetch(new URL(path, base), init).catch((error: unknown) => {
+            if (typeof error === "object" && error !== null)
+              Reflect.set(error, Symbol.for("jeeves.internal-call"), true);
+            throw error;
+          })
+        : fetch(new URL(path, base), init),
+  };
+}
 /** Another application tile's process at `JEEVES_TILE_<ID>_URL` (locally `http://app-<id>:3000`,
  * inside the network; with `JEEVES_REQUIRE_TLS=true` it must be `https:`, or startup fails
  * `Insecure endpoint JEEVES_TILE_<ID>_URL`). It has no probe and no `depends_on`: that process may
@@ -748,17 +771,19 @@ export async function searchClient(
  * `Symbol.for("jeeves.internal-call")`, so a lost connection to that process waits as a store's
  * does, not as an outside call. */
 export function httpTarget(binding: { tile: string }): HttpTarget {
-  const name = variable("TILE", binding.tile, "URL");
-  const base = endpoint(name, url);
-  if (requireTls() && new URL(base).protocol !== "https:")
-    throw new Error(`Insecure endpoint ${name}`);
-  return {
-    request: (path, init) =>
-      fetch(new URL(path, base), init).catch((error: unknown) => {
-        if (typeof error === "object" && error !== null)
-          Reflect.set(error, Symbol.for("jeeves.internal-call"), true);
-        throw error;
-      }),
-  };
+  return target(variable("TILE", binding.tile, "URL"), true);
+}
+/** An External API at the base URL in the variable `base`, its `JEEVES_EXTERNAL_<ID>_URL`. The
+ * application sets it (locally in `compose.override.yaml`; `compose.yaml` doesn't), so until it is
+ * set startup fails `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL`; with `JEEVES_REQUIRE_TLS=true` it
+ * must be `https:`. A rejected `fetch` is not marked: an outside call keeps the normal retries. */
+export function externalTarget(base: string): HttpTarget {
+  return target(base, false);
+}
+/** The Identity a sign-in binds, at its issuer `OIDC_ISSUER` (locally Keycloak's realm; with
+ * `JEEVES_REQUIRE_TLS=true` it must be `https:`). A provisioned service: a rejected `fetch` is
+ * marked `Symbol.for("jeeves.internal-call")`, so a lost connection waits as a store's does. */
+export function identityTarget(): HttpTarget {
+  return target("OIDC_ISSUER", true);
 }
 // @http-end

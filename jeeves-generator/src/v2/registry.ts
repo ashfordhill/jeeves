@@ -62,7 +62,9 @@ export type V2ProcessReport = {
   /** Each mounted template's generated hooks file and the hooks that answer "Not implemented". */
   hooks: readonly { selection: string; file: string; hooks: readonly string[] }[];
   /** Each store or channel its stubs use (tile process contract, section 6): the widest access
-   * among their links, and what is provisioned for it or why it isn't. */
+   * among their links, and what is provisioned for it or why it isn't; then each External API, and
+   * an Identity a sign-in binds, that they call through an HTTP client, with the base URL it reads
+   * (QG20). */
   stores: readonly {
     store: string;
     name: string;

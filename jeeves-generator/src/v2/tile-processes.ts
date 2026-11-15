@@ -1,6 +1,6 @@
 import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
-import { type ClientSection, stubClients, stubStoreRows } from "./client-wiring.ts";
+import { type ClientSection, stubClients, stubStoreRows, stubTargetRows } from "./client-wiring.ts";
 import { httpMounts, importLines, type ProcessMount } from "./http-wiring.ts";
 import { localEndpoints, type V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
@@ -182,6 +182,8 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
     ...wired.map((item) => item.environment ?? {}),
   );
   const calls = unique(wired.flatMap((item) => item.calls ?? []));
+  const issuer = unique(wired.flatMap((item) => (item.issuer ? [item.issuer] : [])));
+  const external = unique(wired.flatMap((item) => item.external ?? []));
   return {
     host: process.tile,
     command: ["node", processPaths(process.tile).built],
@@ -201,16 +203,21 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
     ...(calls.length && { calls }),
     ...(wired.some((item) => item.target === "media") && { target: "media" as const }),
     ...(identity[0] && { identity: identity[0] }),
+    ...(issuer[0] && { issuer: issuer[0] }),
+    ...(external.length && { external }),
     ...(Object.keys(environment).length && { environment }),
     readiness: true,
   };
 }
 /** The variables a process reads from its environment, sorted, as its Compose service sets them:
- * its endpoints (QG06), a sign-in's `OIDC_*` and what its templates read. */
+ * its endpoints (QG06), a sign-in's `OIDC_*`, a stub's Identity client's `OIDC_ISSUER` (QG20) and
+ * what its templates read. An External API's `JEEVES_EXTERNAL_<ID>_URL` is the application's to
+ * set, so it is in the API's `stores` row instead. */
 function environmentOf(service: ReturnType<typeof serviceOf>) {
   return unique([
     ...Object.keys(service.environment ?? {}),
     ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
+    ...(service.issuer ? ["OIDC_ISSUER"] : []),
     ...Object.keys(localEndpoints(service)),
   ]);
 }
@@ -280,7 +287,7 @@ function reportRow(
           ]
         : [],
     ),
-    stores: stubStoreRows(process, selections, views),
+    stores: [...stubStoreRows(process, selections, views), ...stubTargetRows(process, selections)],
   };
 }
 

@@ -1,7 +1,8 @@
 import type { ModuleRequest, ModuleResponse } from "../entry.ts";
 import type { Dependencies } from "./external-call.slots.ts";
-/** External adapters are custom: the generator deliberately supplies no partner client.
- * The disposable harness supplies this endpoint; no endpoint is added to generated config. */
+/** A custom external adapter: the generated partner client (`dependencies.partner`, QG20) reads
+ * JEEVES_EXTERNAL_PARTNER_URL, which this fixture's compose.override.yaml sets, but this body keeps
+ * its own bounded fetch to the endpoint the disposable harness supplies in the request. */
 export async function externalCall(
   _dependencies: Dependencies,
   request: ModuleRequest,

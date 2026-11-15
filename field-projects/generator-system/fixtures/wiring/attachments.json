@@ -100,5 +100,10 @@
     "destination": "infra/postgres/work-db/modules/work.sql",
     "role": "sql",
     "module": "work"
+  },
+  {
+    "source": "owned/compose.override.yaml",
+    "destination": "compose.override.yaml",
+    "role": "override"
   }
 ]

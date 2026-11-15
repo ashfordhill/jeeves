@@ -60,6 +60,11 @@ export type V2LocalContribution = {
     cache?: readonly string[];
     /** The application tiles its stubs call, each at `JEEVES_TILE_<ID>_URL`. */
     calls?: readonly string[];
+    /** The Identity its stubs call (QG20): its `OIDC_ISSUER`, the local issuer, as a sign-in's. */
+    issuer?: string;
+    /** The External APIs its stubs call (QG20), each at `JEEVES_EXTERNAL_<ID>_URL`, which the
+     * application sets: Compose sets none, and the README names them. */
+    external?: readonly string[];
     target?: "app" | "media";
     environment?: Readonly<Record<string, string>>;
     readiness?: boolean;

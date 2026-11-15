@@ -900,6 +900,144 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
   });
 });
 
+// The loops' own test for an unreachable store (delivery.ts, as emitted).
+const delivery = await import(dataUrl(String(fakes["./delivery.ts"])));
+
+describe("an External API's and the Identity's HTTP clients (QG20)", () => {
+  afterEach(() => {
+    restoreEnvironment();
+    vi.unstubAllGlobals();
+  });
+  const internalCall = Symbol.for("jeeves.internal-call");
+  const external = "JEEVES_EXTERNAL_PARTNER_URL";
+  /** A `fetch` that lost its connection, as undici rejects it. */
+  const lost = () =>
+    new TypeError("fetch failed", {
+      cause: Object.assign(new Error("connect ECONNREFUSED 10.0.0.9:443"), {
+        code: "ECONNREFUSED",
+      }),
+    });
+  /** What building a client throws, or "built". */
+  const outcome = (build: () => unknown) => {
+    try {
+      build();
+      return "built";
+    } catch (error) {
+      return (error as Error).message;
+    }
+  };
+  it("calls an External API at its JEEVES_EXTERNAL_<ID>_URL, passing the stub's init through as it is", async () => {
+    const response = new Response(null, { status: 402 });
+    const fetch = vi.fn(async () => response);
+    vi.stubGlobal("fetch", fetch);
+    environment({ [external]: "https://api.partner.example/v1/" });
+    const target = clients.externalTarget(external);
+    // The stub's own init: its signal bounds the call and its header carries its own credential.
+    const init = {
+      method: "POST",
+      headers: { authorization: ["Bearer", randomUUID()].join(" ") },
+      signal: AbortSignal.timeout(1000),
+    };
+    expect(await target.request("charges", init)).toBe(response);
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      new URL("https://api.partner.example/v1/charges"),
+      init,
+    );
+    expect((fetch.mock.calls[0] as unknown[])[1]).toBe(init);
+    // Without one the client adds nothing: it reads no credential.
+    await target.request("/status");
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      new URL("https://api.partner.example/status"),
+      undefined,
+    );
+  });
+
+  it("never marks an External API's failed call, so a loop keeps the normal retries; the Identity's is marked", async () => {
+    const refused = lost();
+    const fetch = vi.fn().mockRejectedValueOnce(refused).mockRejectedValueOnce("not an object");
+    vi.stubGlobal("fetch", fetch);
+    environment({ [external]: "https://api.partner.example" });
+    const target = clients.externalTarget(external);
+    await expect(target.request("/v1/x")).rejects.toBe(refused);
+    expect(Reflect.get(refused, internalCall)).toBeUndefined();
+    expect(delivery.unreachable(refused)).toBe(false);
+    await expect(target.request("/v1/x")).rejects.toBe("not an object");
+    // The Identity is a provisioned service: its lost connection waits as a store's does.
+    const away = lost();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(away));
+    environment({ OIDC_ISSUER: "https://issuer.example/realms/identity" });
+    await expect(clients.identityTarget().request("/realms/identity")).rejects.toBe(away);
+    expect(Reflect.get(away, internalCall)).toBe(true);
+    expect(delivery.unreachable(away)).toBe(true);
+  });
+
+  it("calls the Identity at OIDC_ISSUER, as a sign-in reads it", async () => {
+    const response = new Response("{}");
+    const fetch = vi.fn(async () => response);
+    vi.stubGlobal("fetch", fetch);
+    environment({ OIDC_ISSUER: "http://127.0.0.1:47922/realms/identity" });
+    const init = { headers: { accept: "application/json" } };
+    expect(
+      await clients
+        .identityTarget()
+        .request("/realms/identity/.well-known/openid-configuration", init),
+    ).toBe(response);
+    expect(fetch).toHaveBeenCalledWith(
+      new URL("http://127.0.0.1:47922/realms/identity/.well-known/openid-configuration"),
+      init,
+    );
+  });
+
+  it("fails naming JEEVES_EXTERNAL_<ID>_URL or OIDC_ISSUER when unset or invalid, never its value", () => {
+    const credentials = ["https://", ["user", "pass"].join(":"), "@api.partner.example"].join("");
+    const invalid = [
+      undefined,
+      "",
+      "/v1",
+      "api.partner.example",
+      "ftp://api.partner.example",
+      credentials,
+      "https://api.partner.example/?key=1",
+      "https://api.partner.example/#top",
+    ];
+    for (const [name, build] of [
+      [external, () => clients.externalTarget(external)],
+      ["OIDC_ISSUER", () => clients.identityTarget()],
+    ] as const)
+      for (const value of invalid) {
+        environment({ [name]: value });
+        const message = outcome(build);
+        expect(message, `${name} ${value}`).toBe(`Invalid endpoint ${name}`);
+        if (value) expect(message).not.toContain(value);
+      }
+  });
+
+  it("with JEEVES_REQUIRE_TLS=true needs an https: External API and issuer, naming the variable", () => {
+    environment({
+      JEEVES_REQUIRE_TLS: "true",
+      [external]: "http://api.partner.example",
+      OIDC_ISSUER: "http://127.0.0.1:47922/realms/identity",
+    });
+    expect(outcome(() => clients.externalTarget(external))).toBe(`Insecure endpoint ${external}`);
+    expect(outcome(() => clients.identityTarget())).toBe("Insecure endpoint OIDC_ISSUER");
+    environment({
+      [external]: "https://api.partner.example",
+      OIDC_ISSUER: "https://issuer.example/realms/identity",
+    });
+    expect(outcome(() => clients.externalTarget(external))).toBe("built");
+    expect(outcome(() => clients.identityTarget())).toBe("built");
+    // Without the switch, http: passes as before; another switch value fails naming it.
+    environment({ JEEVES_REQUIRE_TLS: undefined, [external]: "http://api.partner.example" });
+    expect(outcome(() => clients.externalTarget(external))).toBe("built");
+    environment({ JEEVES_REQUIRE_TLS: "1" });
+    expect(outcome(() => clients.externalTarget(external))).toBe(
+      "Invalid endpoint JEEVES_REQUIRE_TLS",
+    );
+  });
+});
+
 // The exact emitted postgres.ts, which both pools (a stub's `databaseClient` and a template's
 // `pool`) are built through, with a fake `pg.Pool` constructor that records its options.
 // QG07: the stub stack with Visits on Google Cloud, so its module-clients.ts has the Pub/Sub

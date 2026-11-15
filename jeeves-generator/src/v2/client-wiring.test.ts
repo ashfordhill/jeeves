@@ -1,5 +1,10 @@
-import type { DesignDocument, StudioCommand } from "@jeeves/spec";
-import { describe, expect, it } from "vitest";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { createRequire, stripTypeScriptTypes } from "node:module";
+import { tmpdir } from "node:os";
+import { join, posix } from "node:path";
+import { pathToFileURL } from "node:url";
+import { type DesignDocument, emptyDesign, type StudioCommand } from "@jeeves/spec";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import {
   stubStackDesign,
   stubStackWithCacheRead,
@@ -24,6 +29,7 @@ const text = (bundle: Bundle, path: string) => {
   return new TextDecoder().decode(file.bytes);
 };
 const json = (bundle: Bundle, path: string) => JSON.parse(text(bundle, path));
+const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
 type Store = {
   store: string;
   kind: string;
@@ -400,9 +406,10 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     const wide = assemble(wider());
     expect(processes(wide).runnable).toBe(true);
     const stats = text(wide, "src/processes/stats-api.ts");
-    expect(stats).toContain(
-      '    partner: unavailable<PartnerCallerDependencies["partner"]>("Partner API for Partner caller (an External API isn\'t provisioned locally)"),',
-    );
+    // An External API is an HTTP client at its base URL (QG20); an Identity no sign-in binds isn't
+    // provisioned.
+    expect(stats).toContain('    "partner": externalTarget("JEEVES_EXTERNAL_PARTNER_URL"),');
+    expect(stats).toContain('    partner: clients["partner"],');
     expect(stats).toContain(
       '    login: unavailable<GateDependencies["login"]>("Login for Gate (an Identity isn\'t provisioned for stubs)"),',
     );
@@ -527,5 +534,321 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       ["archive-upload"],
       ["upload-publisher"],
     ]);
+  });
+});
+
+/** A plan fixture, QRWTY's Q03 probe or its saved design r83, as the regeneration proof exports it. */
+const fixture = (name: string) =>
+  assembleV2(
+    {
+      designJson: readFileSync(
+        new URL(`../../../docs/plans/qrwty-gaps/fixtures/${name}`, import.meta.url),
+        "utf8",
+      ),
+    },
+    registry,
+  );
+/** API (a Service) whose Caller stub calls Partner API (an External API), and whose Token check, an
+ * Auth guard no sign-in template leads, verifies tokens with it. */
+const callsPartner = () =>
+  runStudioCommands(emptyDesign(), [
+    { type: "addAction", lane: "download", name: "Run", system: { name: "Calls" } },
+    {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      tile: { id: "api", name: "API", kind: "service" },
+      linkId: "download-api",
+    },
+    tile("api", "partner", "Partner API", "external-api"),
+    { type: "addModule", host: "api", kind: "external-call", id: "caller", name: "Caller" },
+    { type: "connectModule", module: "caller", slot: "target", target: { tile: "partner" } },
+    { type: "addModule", host: "api", kind: "auth-guard", id: "token-check", name: "Token check" },
+    {
+      type: "connectModule",
+      module: "token-check",
+      slot: "identity",
+      target: { tile: "partner" },
+    },
+    on,
+  ]);
+
+describe("External API and Identity tiles give stubs a configured HTTP client (QG20)", () => {
+  const probe = fixture("probe-design.json");
+
+  it("gives the probe's Probe externalTarget for Provider and the marked identityTarget for Identity", () => {
+    expect(probe.report.findings).toEqual([]);
+    const front = text(probe, "src/processes/front.ts");
+    expect(front).toContain(
+      [
+        "  const clients = {",
+        '    "events": await queuePublisher(scope, probe, { queue: "events", mode: "work-queue" }, brokerState(config.tile, failure, "broker publish events")),',
+        '    "hot": await cacheClient(scope, probe, { cache: "hot" }),',
+        '    "identity": identityTarget(),',
+        '    "provider": externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
+        '    "store": await databaseClient(scope, probe, { tile: config.tile, resource: "store" }),',
+        "  };",
+      ].join("\n"),
+    );
+    expect(front).toContain(
+      '    provider: clients["provider"],\n    identity: clients["identity"],\n',
+    );
+    expect(front).toContain(
+      'import { cacheClient, createProbeLog, databaseClient, externalTarget, identityTarget, queuePublisher } from "../runtime/module-clients.ts";',
+    );
+    expect(front).not.toContain("unavailable");
+    // Neither has a probe: each is built before the sign-in and the service, and reads its URL then.
+    expect(front.indexOf("identityTarget()")).toBeLessThan(front.indexOf("createTileGuard({"));
+    const clients = text(probe, "src/runtime/module-clients.ts");
+    for (const name of ["httpTarget", "externalTarget", "identityTarget"])
+      expect(clients).toContain(`export function ${name}(`);
+    expect(clients).not.toContain("// @");
+  });
+
+  it("sets the issuer for a stub tile that calls the Identity, and no External API URL in Compose", () => {
+    type Service = { environment?: Record<string, string>; depends_on?: Record<string, unknown> };
+    const composed = (bundle: Bundle) =>
+      json(bundle, "compose.yaml").services as Record<string, Service>;
+    // Front's sign-in already reads OIDC_ISSUER; nothing reads JEEVES_EXTERNAL_PROVIDER_URL from
+    // compose.yaml: it is the application's (compose.override.yaml), so startup fails until set.
+    const front = composed(probe)["app-front"]?.environment ?? {};
+    expect(front.OIDC_ISSUER).toMatch(
+      /^http:\/\/127\.0\.0\.1:\$\{LOCAL_IDENTITY_PORT:\?Set LOCAL_IDENTITY_PORT\}\/realms\/identity$/,
+    );
+    expect(Object.keys(front).filter((name) => name.startsWith("JEEVES_EXTERNAL_"))).toEqual([]);
+    // r83's Session API has no sign-in; its stubs call the Identity, so it reads OIDC_ISSUER only,
+    // at the sign-ins' value, and waits for no Identity service.
+    const r83 = fixture("qrwty-r83.json");
+    const services = composed(r83);
+    const session = services["app-session-api"] ?? {};
+    expect(
+      Object.keys(session.environment ?? {}).filter((name) => name.startsWith("OIDC_")),
+    ).toEqual(["OIDC_ISSUER"]);
+    expect(session.environment?.OIDC_ISSUER).toBe(
+      services["app-account-api"]?.environment?.OIDC_ISSUER,
+    );
+    expect(Object.keys(session.depends_on ?? {})).toEqual(["local-postgres"]);
+    expect(text(r83, "src/processes/session-api.ts")).toContain(
+      '    "identity": identityTarget(),',
+    );
+    for (const [process, variable] of [
+      ["billing-api", "JEEVES_EXTERNAL_STRIPE_API_URL"],
+      ["link-api", "JEEVES_EXTERNAL_REPUTATION_API_URL"],
+    ])
+      expect(text(r83, `src/processes/${process}.ts`)).toContain(`externalTarget("${variable}")`);
+    for (const service of Object.values(services))
+      expect(
+        Object.keys(service.environment ?? {}).filter((name) =>
+          name.startsWith("JEEVES_EXTERNAL_"),
+        ),
+      ).toEqual([]);
+    // The report lists the issuer as Compose sets it.
+    const session83 = processes(r83).tiles.find((row) => row.tile === "session-api") as unknown as {
+      environment: string[];
+    };
+    expect(session83.environment).toContain("OIDC_ISSUER");
+    expect(session83.environment).not.toContain("OIDC_AUDIENCE");
+  });
+
+  it("reports each client's base URL in the stores rows, and the README names the URLs to set", () => {
+    expect(
+      stores(probe, "front")
+        .filter((row) => row.kind !== "database")
+        .slice(-2),
+    ).toEqual([
+      {
+        store: "identity",
+        name: "Identity",
+        kind: "identity",
+        access: "request",
+        modules: ["front-probe"],
+        provisioned:
+          "HTTP client at OIDC_ISSUER, the issuer of Keycloak identity-identity (realm identity); a failed call waits as an unreachable store's does",
+      },
+      {
+        store: "provider",
+        name: "Provider",
+        kind: "external-api",
+        access: "request",
+        modules: ["front-probe"],
+        provisioned:
+          "HTTP client at JEEVES_EXTERNAL_PROVIDER_URL, which the application sets (compose.yaml doesn't, so startup fails until it is set); a failed call keeps the normal retries",
+      },
+    ]);
+    const readme = text(probe, "README.md");
+    for (const phrase of [
+      "Each External API its stubs call is at `JEEVES_EXTERNAL_<ID>_URL`, by the same URL rule, which `compose.yaml` doesn't set",
+      "until it is set the process fails startup with `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL`. Here `app-front` reads `JEEVES_EXTERNAL_PROVIDER_URL`.",
+      "A process whose stubs call the Identity reads its `OIDC_ISSUER` as their base URL",
+      // Locally that is the browser's issuer, which a container can't reach (QG20's proof).
+      "which a container can't reach, so locally such a call fails as an unreachable service does",
+      "a `JEEVES_TILE_<ID>_URL`, `JEEVES_EXTERNAL_<ID>_URL`, `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:`",
+    ])
+      expect(readme).toContain(phrase);
+    // A design whose stubs call neither keeps its README as it was.
+    const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+    expect(text(stack, "README.md")).not.toContain("JEEVES_EXTERNAL_");
+    expect(stores(stack, "links-api").map((row) => row.kind)).not.toContain("external-api");
+  });
+
+  it("keeps unavailable for a token check and an Identity no sign-in binds", () => {
+    const bundle = assemble(callsPartner());
+    const api = text(bundle, "src/processes/api.ts");
+    expect(api).toContain('    "partner": externalTarget("JEEVES_EXTERNAL_PARTNER_URL"),');
+    // Token check's link verifies a token (a TokenVerifier), not an HTTP target.
+    expect(api).toContain(
+      '    partner: unavailable<TokenCheckDependencies["partner"]>("Partner API for Token check (an External API isn\'t provisioned locally)"),',
+    );
+    expect(stores(bundle, "api").map((row) => [row.store, row.modules])).toEqual([
+      ["partner", ["caller"]],
+    ]);
+    // wider(): Gate's Login has no sign-in, so it isn't provisioned; nor is its OIDC_ISSUER set.
+    const wide = assemble(wider());
+    expect(text(wide, "src/processes/stats-api.ts")).toContain(
+      '    login: unavailable<GateDependencies["login"]>("Login for Gate (an Identity isn\'t provisioned for stubs)"),',
+    );
+    expect(services(wide)["app-stats-api"]).not.toHaveProperty("environment.OIDC_ISSUER");
+    expect(stores(wide, "stats-api").map((row) => row.store)).toEqual(["stats-index", "partner"]);
+  });
+});
+
+// The emitted API process of `callsPartner`, run with its relative imports resolved to the other
+// emitted files and Fastify from the Jeeves server (the version the export pins), whose `listen`
+// only readies the app. Caller's body is the application's: it calls Partner API and answers its
+// status, bounding the call with its own signal.
+describe("a process whose stub calls an External API (QG20)", () => {
+  const bundle = assemble(callsPartner());
+  const sources = new Map(
+    bundle.files.map((file) => [file.path, new TextDecoder().decode(file.bytes)]),
+  );
+  sources.set(
+    "src/modules/api/caller.ts",
+    [
+      "export async function caller(dependencies, request) {",
+      '  const response = await dependencies.partner.request("/v1/charges?limit=1", {',
+      "    signal: AbortSignal.timeout(1000),",
+      "  });",
+      "  return { body: { status: response.status } };",
+      "}",
+    ].join("\n"),
+  );
+  const markerDirectory = mkdtempSync(join(tmpdir(), "jeeves-external-"));
+  const serverRequire = createRequire(
+    new URL("../../../jeeves/apps/server/package.json", import.meta.url),
+  );
+  const fastify =
+    dataUrl(`import fastify from ${JSON.stringify(pathToFileURL(serverRequire.resolve("fastify")).href)};
+export const apps = [];
+export default function Fastify(options) {
+  const app = fastify(options);
+  app.listen = async () => { await app.ready(); apps.push(app); return "http://injected"; };
+  return app;
+}`);
+  const urls = new Map<string, string>();
+  const compile = (path: string): string => {
+    const source = sources.get(path);
+    if (source === undefined) throw new Error(`Missing ${path}`);
+    return stripTypeScriptTypes(source)
+      .replace(
+        /from "(\.\.?\/[^"]+)"/g,
+        (_match, relative: string) => `from "${load(posix.join(posix.dirname(path), relative))}"`,
+      )
+      .replace('from "fastify"', `from "${fastify}"`)
+      .replace('"/tmp/application-ready"', JSON.stringify(join(markerDirectory, "ready")));
+  };
+  const load = (path: string): string => {
+    const old = urls.get(path);
+    if (old) return old;
+    const url = dataUrl(compile(path));
+    urls.set(path, url);
+    return url;
+  };
+  const signals = ["SIGTERM", "SIGINT"] as const;
+  const listening = Object.fromEntries(signals.map((name) => [name, process.listeners(name)]));
+  const exitCode = process.exitCode;
+  const dropListeners = () => {
+    for (const name of signals)
+      for (const listener of process.listeners(name))
+        if (!listening[name]?.includes(listener)) process.removeListener(name, listener);
+  };
+  const names = ["JEEVES_EXTERNAL_PARTNER_URL", "JEEVES_REQUIRE_TLS"] as const;
+  const saved = Object.fromEntries(names.map((name) => [name, process.env[name]]));
+  afterEach(() => {
+    for (const name of names)
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    dropListeners();
+    process.exitCode = exitCode;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+  afterAll(() => rmSync(markerDirectory, { recursive: true, force: true }));
+  type App = { inject(request: unknown): Promise<{ statusCode: number; json(): unknown }> };
+  let runs = 0;
+  /** Starts the process with `values` set (undefined unsets one), keeping its console lines. */
+  async function run(values: Partial<Record<(typeof names)[number], string | undefined>>) {
+    for (const [name, value] of Object.entries(values))
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    const lines: unknown[] = [];
+    const keep = (line: string) => lines.push(line.startsWith("{") ? JSON.parse(line) : line);
+    vi.spyOn(console, "log").mockImplementation(keep);
+    vi.spyOn(console, "error").mockImplementation(keep);
+    const { apps } = (await import(fastify)) as { apps: App[] };
+    const before = apps.length;
+    process.exitCode = undefined;
+    dropListeners();
+    runs += 1;
+    await import(dataUrl(`${compile("src/processes/api.ts")}\n// run ${runs}\n`));
+    return { lines, app: apps.length > before ? apps.at(-1) : undefined };
+  }
+  const failed = (error: string) => [
+    { level: "error", event: "startup-failed", error: `Error: ${error}` },
+    "Application startup failed",
+  ];
+
+  it("fails startup naming JEEVES_EXTERNAL_<ID>_URL until it is set, never its value", async () => {
+    for (const value of [
+      undefined,
+      "",
+      "ftp://partner.example",
+      "https://partner.example/?key=1",
+    ]) {
+      const { lines, app } = await run({ JEEVES_EXTERNAL_PARTNER_URL: value });
+      expect(lines).toEqual(failed("Invalid endpoint JEEVES_EXTERNAL_PARTNER_URL"));
+      expect(process.exitCode).toBe(1);
+      expect(app === undefined).toBe(true);
+      if (value) expect(JSON.stringify(lines)).not.toContain(value);
+    }
+    process.env.JEEVES_REQUIRE_TLS = "true";
+    const { lines } = await run({ JEEVES_EXTERNAL_PARTNER_URL: "http://partner.example" });
+    expect(lines).toEqual(failed("Insecure endpoint JEEVES_EXTERNAL_PARTNER_URL"));
+  });
+
+  it("answers the External API's status through the stub once it is set, and its lost call 503", async () => {
+    const fetch = vi.fn(async () => new Response(null, { status: 418 }));
+    vi.stubGlobal("fetch", fetch);
+    const { lines, app } = await run({ JEEVES_EXTERNAL_PARTNER_URL: "http://127.0.0.1:47999" });
+    expect(lines).toContain("Application ready");
+    if (!app) throw new Error("The process did not start");
+    const response = await app.inject({ method: "GET", url: "/modules/caller" });
+    expect([response.statusCode, response.json()]).toEqual([200, { status: 418 }]);
+    const [url, init] = fetch.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(url).toEqual(new URL("http://127.0.0.1:47999/v1/charges?limit=1"));
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    // A lost connection to an outside host answers the fallback 503, as any stub error does.
+    fetch.mockRejectedValueOnce(new TypeError("fetch failed"));
+    const lost = await app.inject({ method: "GET", url: "/modules/caller" });
+    expect([lost.statusCode, lost.json()]).toEqual([
+      503,
+      { error: "UNAVAILABLE", message: "Service unavailable." },
+    ]);
+    // Token check still answers Not implemented.
+    expect((await app.inject({ method: "GET", url: "/modules/token-check" })).statusCode).toBe(501);
+    const stop = process.listeners("SIGTERM").at(-1);
+    if (!stop || listening.SIGTERM?.includes(stop)) throw new Error("No process runs");
+    process.removeListener("SIGTERM", stop);
+    stop("SIGTERM");
+    await vi.waitFor(() => expect(process.exitCode).toBe(0));
   });
 });

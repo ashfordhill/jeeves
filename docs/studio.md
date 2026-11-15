@@ -1485,13 +1485,22 @@ consumes its tile's subscription as a RabbitMQ loop consumes its queue: at most 
 in hand, each acknowledged only after the stub resolves, "Not implemented" and the sixth failure
 in `.failed`, and an unreachable store waiting 5 s with the same attempt; the subscription's
 retry policy spaces the other retries.
-Each process finds its databases, caches, broker and the tiles its stubs call through its
-environment (`JEEVES_*` variables, with no default): the export's `compose.yaml` sets them to the
-local services, its README lists them per process, and a deployment sets its own. Each database
+A stub's link to an External API gets an HTTP client at the API's base URL, which you set
+(`JEEVES_EXTERNAL_<ID>_URL`, locally in `compose.override.yaml`; until it is set the process
+doesn't start, naming it), and a failed call keeps the normal retries; a link to the Identity a
+sign-in uses gets one at that Identity's issuer, whose lost connection waits as a store's does
+(locally that issuer is the address the browser uses, which the process can't reach, so the call
+fails there).
+The client passes the stub's own request options through, so the stub sets its timeout and adds
+its own credential; a link to an Identity no sign-in uses still answers "Not implemented".
+Each process finds its databases, caches, broker, the tiles its stubs call and the External APIs
+they call through its environment (`JEEVES_*` variables, with no default): the export's
+`compose.yaml` sets each to its local service (an External API's is yours to set), its README
+lists them per process, and a deployment sets its own. Each database
 and cache also has a transport, `disable` (locally) or `verify-full` (TLS that checks the
 certificate and host name, with an optional CA file), and a deployment that sets
 `JEEVES_REQUIRE_TLS=true` makes each process refuse at startup a plain-text database or cache, a
-tile, issuer or key set that isn't `https:`, and the Pub/Sub emulator.
+tile, External API, issuer or key set that isn't `https:`, and the Pub/Sub emulator.
 Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
 or a stub with a write link; an Event publisher's outbox doesn't count) gets its own SQL file,
 `infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`

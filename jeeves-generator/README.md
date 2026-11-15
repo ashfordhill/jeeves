@@ -541,8 +541,9 @@ never sends it to `.failed` (a stall that never ends keeps waiting, as any outag
 line's action reads `store unreachable, retry in 5000 ms (attempt not counted)`, and `pnpm stop`
 ends the wait at once, leaving the message in its queue. A query that is only slow still spends
 an attempt: the server's statement timeout (`57014`) comes first. A failed call to an outside
-host keeps the normal retries (a `fetch failed` counts as unreachable only when it is
-`httpTarget`'s call to another tile). A failed message logs one JSON
+host keeps the normal retries, an External API's (`externalTarget`) included (a `fetch failed`
+counts as unreachable only when it is `httpTarget`'s call to another tile or `identityTarget`'s
+to the Identity). A failed message logs one JSON
 line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
@@ -613,6 +614,8 @@ scripts:
 | Cache | `cache-<id>` (Valkey) and its password |
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
 | Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
+| External API (QG20) | Nothing runs: the stub gets `externalTarget`, an HTTP client at `JEEVES_EXTERNAL_<ID>_URL`, which the application sets (in `compose.override.yaml` locally; `compose.yaml` sets none) |
+| Identity a sign-in binds (QG20) | Its Keycloak, as the sign-in's: the stub gets `identityTarget`, an HTTP client at `OIDC_ISSUER`, which `compose.yaml` sets for the stub's tile too (with no `depends_on` of its own: a lost connection is waited out) |
 
 Each process gets its credentials, `depends_on` its providers healthy, and has the endpoints it
 reads set to these local services in its Compose `environment` (Module clients, below). A store whose saved
@@ -622,9 +625,13 @@ provider isn't unspecified or self-hosted, or whose engine isn't unspecified or 
 Cloud that no template binds (`generationTemplateQueues`, `stubPubsub`): it is a Pub/Sub topic,
 below, with a subscription for each consuming tile, which a loop stub on it consumes. A queue a
 template binds keeps the template's self-hosted provider, and a stub's link to one saved on Google
-Cloud keeps the gap. Identity isn't provisioned for stubs
-(an Auth guard connected to it is a sign-in template, the tile's only one), and nor are CDN or
-External API tiles.
+Cloud keeps the gap. An Identity is provisioned for stubs only when a sign-in binds it (an Auth
+guard connected to it is a sign-in template, the tile's only one); a stub's link to an Identity
+no sign-in binds, and a link that verifies a token (a `TokenVerifier`, such as an Auth guard on
+an External API), stay `unavailable`, and CDN tiles aren't provisioned. An External API isn't a
+store and runs nothing; its stub's client only reads its URL. Neither has a gap. Each of the two
+has a `stores` row in the report (`kind` `external-api` or `identity`, `access` `request`) whose
+`provisioned` names the variable it reads.
 
 **Keycloak** comes from every guard selection (and from a tile-level multipart, as in v2): each
 binds its Identity, which runs as `identity-<id>` with one realm `<id>` and one public PKCE client
@@ -686,8 +693,16 @@ cache read already does: a command settles within 150 ms and at most 32 wait, wh
 connected a command fails at once with `Cache unavailable`, a lost or stalled client is destroyed
 and a new one tried every 5 s, and the drain destroys the client, so it never waits on the
 cache), `objectClient`
-(`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`) and
-`httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`). Each
+(`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`),
+`httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`),
+`externalTarget` (an External API at `JEEVES_EXTERNAL_<ID>_URL`) and `identityTarget` (the Identity
+a sign-in binds, at `OIDC_ISSUER`) (QG20). The three HTTP clients have no probe; each resolves a
+stub's `request(path, init)` against its base URL and passes `init` to `fetch` as it is, so the
+stub bounds a call with `signal: AbortSignal.timeout(ms)` and adds its own headers (a credential
+it reads from a `SECRET_DIR` file: the client reads none). `httpTarget` and `identityTarget` mark a
+rejected `fetch` `Symbol.for("jeeves.internal-call")`, so a loop waits out a lost connection to a
+provisioned service as it does a store's; `externalTarget` doesn't, so an outside call keeps the
+normal retries. Each other
 client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
 confirm channel, the Pub/Sub topic existing (for a loop, its subscription), `PING`, `HeadBucket` (or, for a write-only key,
 opening and aborting a multipart upload) and cluster health. Each logs one JSON line
@@ -699,9 +714,10 @@ starts without it; its client connects by itself when the cache is back. The
 process file builds one client per store before its loops subscribe and its service listens, then
 each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls the module
 it names (a route stub with the caller's input as its request, a library stub with none). What isn't
-provisioned (another provider, an Identity, a CDN or External API, a tile with no process, a
-template's part) is `unavailable(...)`: every call answers "Not implemented: <tile> for <module>
-(<why>)". A stub's own "Not implemented" still answers 501 or goes to `.failed`.
+provisioned (another provider, an Identity no sign-in binds, a link that verifies a token, a CDN, a
+tile with no process, a template's part) is `unavailable(...)`: every call answers "Not
+implemented: <tile> for <module> (<why>)". A stub's own "Not implemented" still answers 501 or goes
+to `.failed`.
 
 **Endpoints from the environment.** A process reads each endpoint it uses from its environment
 when it builds that client, before its probe, with no default (`<ID>` is the tile ID upper-cased,
@@ -713,6 +729,8 @@ when it builds that client, before its probe, with no default (`<ID>` is the til
 | A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT`, `JEEVES_CACHE_<ID>_TLS` | `cache-<id>`, `6379`, `disable` |
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
+| An External API a stub calls (QG20) | `JEEVES_EXTERNAL_<ID>_URL` | None: the application sets it (`compose.override.yaml`), and until then startup fails `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL` |
+| The Identity a stub calls, when a sign-in binds it (QG20) | `OIDC_ISSUER` | The sign-in's, `http://127.0.0.1:$LOCAL_IDENTITY_PORT/realms/<id>`: the issuer the browser sees, which a container can't reach, so locally the stub's call fails as an unreachable service does (Known limits in [template gaps](../docs/template-gaps.md)) |
 | Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`) | `local`, `local-pubsub:8085`, `none` |
 
 A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
@@ -727,8 +745,11 @@ rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loop
 loop passes `pubsubLoop(probe)`), so the compiled
 `loopBroker` in `tile-loop.ts` is only a default no process uses. The foundation sets exactly the
 variables each process reads in its `app-<id>` service's `environment` (`localEndpoints` in
-`local-contract.ts`), beside a sign-in's `OIDC_*`; `processes.tiles[].environment` in the report
-lists them, sorted, and the export's README lists them per process. A deployment sets its own
+`local-contract.ts`), beside a sign-in's `OIDC_*` and a stub Identity client's `OIDC_ISSUER`;
+`processes.tiles[].environment` in the report lists them, sorted, and the export's README lists
+them per process. The one exception is an External API's `JEEVES_EXTERNAL_<ID>_URL`: the
+application's to set, so it is in neither list, but in the API's `stores` row and in a README
+sentence naming each process's (QG20). A deployment sets its own
 values; local stacks behave as before. Object storage and search are still reached at their local
 names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
 `PGHOST` and `PGPORT`).
@@ -748,8 +769,9 @@ path; `_CA_FILE` and `_TLS_SERVERNAME` are not read with `disable`. `JEEVES_REQU
 or unset (another value fails with `Invalid endpoint JEEVES_REQUIRE_TLS`); with `true`, startup
 fails with `Insecure endpoint <variable>` for a database or cache whose `_TLS` isn't
 `verify-full` (a database's Unix socket directory is local transport and passes), a
-`JEEVES_TILE_<ID>_URL` that isn't `https:` (`httpTarget`), an `OIDC_ISSUER` or `OIDC_JWKS_URL` that
-isn't `https:` (the sign-in's lines in the process file) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
+`JEEVES_TILE_<ID>_URL` or `JEEVES_EXTERNAL_<ID>_URL` that isn't `https:` (`httpTarget`,
+`externalTarget`), an `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:` (the sign-in's lines in
+the process file, and `identityTarget`) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
 clients). Each is checked where its client is built: the stubs' in `module-clients.ts`, a template's
 pool in `service-resources.ts`, the cache read's cache in `cacheEndpoint`. The broker (RabbitMQ),
 object storage and search have no TLS and are not checked, and `migrate.mjs` still follows

@@ -15957,3 +15957,164 @@ exports carry `pnpm-workspace.yaml`, so their plain install passes.
 
 **For the next unit.** QG20. `unreachable()` now also matches pg's `Query read timeout`, so a
 worker waits out a stalled database with the same attempt.
+
+## 2026-11-14 — QG20: External API and Identity tiles give stubs a configured HTTP client
+
+**What changed.**
+- `module-clients.ts.template` (`http` section): a private `target(name, internal)` holds what
+  `httpTarget` did (the base URL from the variable by QG06's rule, QG10's `https:` refusal under
+  `JEEVES_REQUIRE_TLS=true`, `fetch(new URL(path, base), init)` with `init` passed as it is, the
+  internal-call mark only when `internal`). `httpTarget` calls it marked, so it is unchanged.
+  New `externalTarget(base)` (`base` is the variable's name, `JEEVES_EXTERNAL_<ID>_URL`) calls it
+  unmarked; new `identityTarget()` calls it marked on `OIDC_ISSUER`. None reads a credential or has
+  a probe. The `unavailable` comment lists what still is.
+- `client-wiring.ts`: `outsideClient` gives a stub link whose interface is an `HttpTarget` to an
+  External API `externalTarget("JEEVES_EXTERNAL_<ID>_URL")`, and to an Identity a sign-in in the
+  design binds (`selections[].identity.element`) `identityTarget()`; anything else keeps
+  `unavailable` with its old reason. The process service gains `issuer` and `external`; `calls`
+  stays the `httpTarget` tiles. New `stubTargetRows`: the report's `stores` rows for both (`kind`
+  `external-api` or `identity`, `access` `request`, `provisioned` naming the variable), after the
+  stores, by tile.
+- `tile-processes.ts`: the `stores` rows include them; `serviceOf` carries `issuer` and `external`;
+  `environmentOf` adds `OIDC_ISSUER` for `issuer`.
+- `local.ts`: a service with `issuer` gets `OIDC_ISSUER` in Compose (the sign-in's local value;
+  refused if no sign-in binds that Identity) and no `depends_on`; nothing is set for an External
+  API. The generated README's endpoints paragraph, only when a process calls one: the
+  `JEEVES_EXTERNAL_<ID>_URL` rule, that it is yours (`compose.override.yaml`), the startup failure
+  until set, each process's variables, the Identity's `OIDC_ISSUER` and its local limit (Noticed);
+  the switch's list gains `JEEVES_EXTERNAL_<ID>_URL`.
+- `local-contract.ts`, `http-wiring.ts`, `registry.ts`: the two service fields and comments.
+- Generated-system harness (`integration/harness/application.ts`): an attachment role `override`,
+  only `compose.override.yaml` and only when the manifest doesn't list it, so a fixture can set what
+  an application sets itself. The wiring fixture attaches `owned/compose.override.yaml`, which sets
+  `JEEVES_EXTERNAL_PARTNER_URL: http://external-fixture:3000` on Wiring API; `external-call.ts`'s
+  comment says its own fetch is kept. (Differences.)
+- Tests, 11 new:
+  - `module-clients.test.ts` 5: `externalTarget` passes the stub's `init` (signal, its own header)
+    through as it is and adds nothing without one; its rejected `fetch` is unmarked
+    (`delivery.ts`'s `unreachable` false) while `identityTarget`'s is marked (true); the Identity is
+    called at `OIDC_ISSUER`; both fail `Invalid endpoint <variable>` unset or invalid, never the
+    value; under the switch both need `https:`, and a bad switch value fails by name.
+  - `client-wiring.test.ts` 6: the probe fixture's `front.ts` has `"identity": identityTarget()` and
+    `"provider": externalTarget("JEEVES_EXTERNAL_PROVIDER_URL")` and no `unavailable`; Compose
+    (probe and r83: Session API gets only `OIDC_ISSUER`, no `depends_on`; no `JEEVES_EXTERNAL_*`
+    anywhere) and the report environment; the two `stores` rows and the README sentences (none in
+    the stub stack's); a token check (an Auth guard stub on an External API) and an Identity no
+    sign-in binds keep `unavailable`; and the emitted process run in-process (Fastify from the
+    server): startup fails `Invalid endpoint JEEVES_EXTERNAL_PARTNER_URL` unset or invalid and
+    `Insecure endpoint …` under the switch, and once set the stub answers the API's status (418)
+    with its own signal, a lost call 503.
+- Updated assertion: `client-wiring.test.ts`'s Partner caller line (`unavailable` → the client).
+- Pins: none changed (`processes-off.test.ts` passed; no pinned export has processes on).
+- Docs: `jeeves-generator/README.md` (the outside-call sentence, two Provisioning rows and the
+  paragraph after them, Module clients, two endpoint rows, the environment sentence, the switch
+  list), `docs/studio.md`, `docs/template-gaps.md` (two Known limits rows),
+  `field-projects/generator-system/README.md` (the external-call paragraph).
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 1001 tests. On the final tree, exit 0, 117
+  files / 1012 tests; Biome shows only the older 1 info.
+- New tests on HEAD's templates: a scratch clone at `2345393` with its own offline install and the
+  two changed test files. All 11 new tests fail there (`externalTarget is not a function`; on HEAD
+  the process starts with the variable unset and answers 501), and so does the updated assertion;
+  the other 40 pass. (The README test gained one phrase after this run, the local Identity
+  sentence; it failed there already.) The clone is deleted. The checkout's
+  `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` keep their
+  checksums and mtimes (12:10).
+- `pnpm test:e2e`: 74 passed (5.1 min) on its first run, before the last text and harness edits;
+  again on the final tree, 74 passed (4.9 min). No rerun was needed.
+- Web build: exit 0 (twice, the second on the final tree).
+- Docker phase, after the offline checks:
+  - `--suite=wiring` run 1: **0/2**. Both stacks' first-run failed: Wiring API's External call links
+    to Partner, so it now fails startup `Invalid endpoint JEEVES_EXTERNAL_PARTNER_URL`, as the brief
+    says it must until set. Run 2: 0/2 in 4 s, a precedence slip in my harness change (the
+    `override` row went through the hooks check), before any container. Run 3, with the fixture's
+    override: **2/2 passed** (Vitest 193.5 s); `app-wiring-api`'s environment had the URL; B05's
+    external call reached the controlled server with both inputs.
+  - **The brief's proof**, on after-probe with the probe bodies at their `generated-extension`
+    paths, project `qg20-probe` (127.0.0.1:47971–47973):
+    - `pnpm first-run` with nothing set: exit 1; `app-front` exited 1 with
+      `{"event":"startup-failed","error":"Error: Invalid endpoint JEEVES_EXTERNAL_PROVIDER_URL"}`.
+    - `compose.override.yaml` setting `JEEVES_EXTERNAL_PROVIDER_URL: http://127.0.0.1:18080`, then
+      `pnpm first-run` again: exit 0, all seven services healthy.
+    - A loopback server inside `app-front` (`docker compose exec -d`, 127.0.0.1:18080, answers
+      418). `GET /api/front/modules/front-probe/provider` at the edge: **200 `{"status":418}`** in
+      15 ms; the server saw `GET /v1/x`.
+    - The same request on before-probe (HEAD's templates, same bodies, project `qg20-before`,
+      127.0.0.1:47974–47976): **501** `Not implemented: Provider for Probe (an External API isn't
+      provisioned locally)`.
+    - `…/front-probe/identity`: before 501 `Not implemented: Identity for Probe (an Identity isn't
+      provisioned for stubs)`; after **503 `UNAVAILABLE`**, with a `fetch failed` failure line. From
+      inside `app-front`, `OIDC_ISSUER` (`http://127.0.0.1:47972/realms/identity`) is
+      `ECONNREFUSED`, while `http://identity-identity:8080/realms/identity` answers 200 (Noticed).
+    - Each stack: `pnpm stop`, `docker compose --profile '*' down --volumes --remove-orphans`,
+      `docker image rm <project>-app:latest`, `.runtime` removed.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`, on the
+  final tree.
+  - Changed paths, probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`,
+    `src/processes/front.ts`, `src/runtime/module-clients.ts` (its `compose.yaml` is unchanged:
+    Front's sign-in already sets `OIDC_ISSUER`). r83: `.jeeves/manifest.json`,
+    `.jeeves/report.json`, `README.md`, `compose.yaml` (only `app-session-api` gains
+    `OIDC_ISSUER`), `src/processes/billing-api.ts`, `link-api.ts`, `session-api.ts`,
+    `src/runtime/module-clients.ts`.
+  - The report differs only in the registry's source inventory, the new `stores` rows (probe:
+    Front's Identity and Provider; r83: Billing API's Stripe API, Link API's Reputation API,
+    Session API's Identity) and Session API's `OIDC_ISSUER` in `processes.tiles[].environment`.
+    Required gaps unchanged (probe 3, r83 11).
+  - In each, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build` exit 0
+    (also with the probe bodies attached). Scratch exports deleted.
+- Inventory: containers, networks and volumes equal the pre-phase and pre-unit inventories line for
+  line; images too, apart from arm B's `qrwtyb` tags removed meanwhile (not touched). No `qg20` or
+  `gs-` resource and no `/tmp/jeeves-system-*` is left; `jeeves-postgres-1` is unchanged.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **The wiring fixture.** The brief's Goal makes a process whose stub links an External API fail
+  startup until the application sets its URL, and its required regression is `--suite=wiring`,
+  whose fixture has exactly such a link (run 1, 0/2). The fixture is an application, so it now
+  sets the URL as the generated README tells one to, in its own `compose.override.yaml`; the
+  harness gained the one attachment role that allows that file. Nothing it asserts changed; the
+  external-call body still uses its own fetch. No other generated-system fixture emits either new
+  client (each exported and checked).
+- **Names.** `externalTarget(base)` takes the variable's name, so the process file shows which
+  variable to set. The Identity's marked client is `identityTarget()`; `httpTarget` keeps its
+  signature and behaviour but now calls the shared `target`.
+- **Where the report rows are built.** `stubTargetRows` is in `client-wiring.ts` beside the client
+  rule it reuses; `tile-processes.ts` appends them to `stores`.
+- **What stays `unavailable`.** A link whose interface is a `TokenVerifier` (an Auth guard that
+  leads no template, for example one on an External API) can't take an `HttpTarget`, so it keeps
+  the proxy. "The design has no Identity binding" is read per Identity: a stub's link to an
+  Identity no sign-in binds keeps it (one Identity per design, so the two readings differ only in
+  a design the foundation refuses anyway).
+- **Report environment.** `processes.tiles[].environment` stays what Compose sets (QG06's test), so
+  `JEEVES_EXTERNAL_<ID>_URL` is in the API's `stores` row and a README sentence naming each
+  process's, not in that list or the per-process README list.
+- **`docs/template-gaps.md`.** It had no GS09 "no installed external-API client" row; a Known limits
+  row records it as fixed, and a second the local Identity limit.
+- **`delivery.ts`'s comments** still name only `httpTarget` as setting the mark; the file is pinned
+  and outside the Emitted output list, so it is unchanged (now incomplete: `identityTarget` marks
+  too).
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), decided by the owner on 2026-11-14 (decision 7).
+- **Locally a stub's Identity client can't reach Keycloak.** Its base is `OIDC_ISSUER`, which
+  Compose sets to the browser's issuer, `http://127.0.0.1:$LOCAL_IDENTITY_PORT/realms/<id>` (what
+  a sign-in compares `iss` with); inside a container that is the container itself. So locally a
+  route stub's identity call answers 503, and a loop stub's would wait for ever (marked: an
+  unreachable service). Before QG20 the same call answered 501. In a deployment the issuer must be
+  reachable from the process. A QGR2 question: QRWTY's r83 Session API (Sign-in flow, API
+  forwarding) calls the Identity, so Q07/Q09 can't exercise it locally as exported. Session API has
+  no sign-in, so QRWTY's own override could point its `OIDC_ISSUER` at
+  `http://identity-identity:8080/realms/identity` (which answered 200 in the proof); a tile with a
+  sign-in can't, since its sign-in compares tokens' `iss` with that value.
+- **The report environment omits `JEEVES_EXTERNAL_<ID>_URL`** (Differences); a deployer reading
+  only `processes.tiles[].environment` would miss it. A QGR2 question whether it should list it.
+- The HTTP clients have no deadline of their own, as `httpTarget` never had: a route stub that
+  passes no `signal` is answered at its request deadline (1000 ms), and a loop stub waits as long
+  as `fetch` does.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QGR2. Stubs on External APIs read `JEEVES_EXTERNAL_<ID>_URL` (the
+application's, in `compose.override.yaml`); stubs on the Identity a sign-in binds read
+`OIDC_ISSUER`.

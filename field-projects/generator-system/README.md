@@ -91,9 +91,13 @@ queues are independently checked in PostgreSQL/RabbitMQ. Each work copy's solo e
 can handle delivery; the concurrent burst has no fairness requirement.
 
 The internal call uses the generated `HttpTarget` across separate application containers.
-External API dependencies deliberately remain unavailable: there is no installed external
-endpoint adapter. The tiny owned external-call body supplies that custom integration with a
-bounded native fetch; it does **not** demonstrate a generated external API client. The harness
+The External call's link to Partner gives it the generated External API client
+(`externalTarget`, QG20), which reads `JEEVES_EXTERNAL_PARTNER_URL` at startup. `compose.yaml`
+sets none, so the fixture sets it in its own `compose.override.yaml`, attached with the
+`override` role (the one attachment the manifest doesn't list); without it Wiring API fails
+startup with `Invalid endpoint JEEVES_EXTERNAL_PARTNER_URL`. The tiny owned external-call body
+still supplies its own integration with a bounded native fetch; it does **not** exercise the
+generated client (`client-wiring.test.ts` runs that one in-process). The harness
 starts the controlled server separately using the built application's pinned Node image, on
 only this stack's private network, with exact project labels and no published port or source
 mount. Its endpoint is supplied in the test request, outside generated configuration. Recovery
