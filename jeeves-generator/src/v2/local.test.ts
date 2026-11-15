@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -17,6 +18,7 @@ import {
   loadLocalV2Dependencies as loadLocalV2Registry,
 } from "../../templates/local-v2/index.ts";
 import { assembleV2 } from "./assemble.ts";
+import { offDesigns } from "./fixtures/processes-off.ts";
 import type { V2Emitter } from "./registry.ts";
 
 const source = () => {
@@ -431,6 +433,162 @@ describe("standalone local foundation", () => {
       expect(script.indexOf('"RESET ROLE"')).toBeLessThan(
         script.indexOf("connect(db.database, db.owner"),
       );
+    }
+  });
+
+  it("migrates over the transport JEEVES_MIGRATE_TLS names, which PGSSLMODE can't change (QG29)", () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    for (const bundle of [emit(), processes]) {
+      const script = text(bundle, "scripts/migrate.mjs");
+      expect(script).toContain('import { checkServerIdentity } from "node:tls";\n');
+      // Every transport variable is read once, in `migrationSsl`, before the first connection.
+      const read = script.indexOf("const ssl = migrationSsl();\n");
+      expect(script.match(/migrationSsl\(\)/g)).toHaveLength(2);
+      expect(read).toBeGreaterThan(script.indexOf("function migrationSsl() {"));
+      expect(read).toBeLessThan(script.indexOf("connect("));
+      expect(read).toBeLessThan(script.indexOf("const connect = "));
+      for (const name of [
+        "JEEVES_REQUIRE_TLS",
+        "NODE_TLS_REJECT_UNAUTHORIZED",
+        "JEEVES_MIGRATE_TLS",
+        "JEEVES_MIGRATE_TLS_SERVERNAME",
+        "JEEVES_MIGRATE_CA_FILE",
+      ]) {
+        const reads = [...script.matchAll(new RegExp(`process\\.env\\.${name}\\b`, "g"))];
+        expect([name, reads.length]).toEqual([name, 1]);
+        expect(reads[0]?.index).toBeLessThan(read);
+      }
+      expect(script).not.toMatch(/process\.env\.PGSSL/);
+      // Every connection (admin, owner, runtime-login check) is the one `pg.Client`, given `ssl`.
+      expect(script.match(/new pg\.Client\(/g)).toHaveLength(1);
+      expect(script).toContain("    port: Number(process.env.PGPORT ?? 5432),\n    ssl,\n");
+      const compose = JSON.parse(text(bundle, "compose.yaml"));
+      expect(compose.services["setup-migrate"].environment.JEEVES_MIGRATE_TLS).toBe("disable");
+      // No process reads them: only the migration's setup service has one.
+      for (const [name, service] of Object.entries(compose.services))
+        expect([name, JSON.stringify(service).includes("JEEVES_MIGRATE_")]).toEqual([
+          name,
+          name === "setup-migrate",
+        ]);
+      for (const file of bundle.files.filter((f) => f.path.startsWith("src/")))
+        expect([
+          file.path,
+          new TextDecoder().decode(file.bytes).includes("JEEVES_MIGRATE_"),
+        ]).toEqual([file.path, false]);
+    }
+    // With processes on, the product step's three anchors are still substituted.
+    const product = text(processes, "scripts/migrate.mjs");
+    expect(product).toContain(
+      'import { hash, plan, quote, secret } from "./common.mjs";\nimport { applyProductSql, grantProductSql } from "./products.mjs";\n',
+    );
+    expect(product).toContain("      await applyProductSql(owner, db, quote);\n");
+    expect(product).toContain(
+      '      await grantProductSql(owner, db, runtime, quote);\n      await owner.query("COMMIT");\n',
+    );
+
+    // The emitted script, with a stand-in `pg` whose Client prints its `ssl` and refuses to connect.
+    const registry = loadApplicationRegistry();
+    const frozenDesign = offDesigns(registry)["frozen-v2"];
+    if (frozenDesign === undefined) throw new Error("frozen-v2 is one of the pinned designs");
+    const frozen = assembleV2({ designJson: frozenDesign }, registry);
+    const dir = mkdtempSync(join(tmpdir(), "jeeves-qg29-"));
+    try {
+      for (const path of ["scripts/migrate.mjs", "scripts/common.mjs"]) {
+        mkdirSync(dirname(join(dir, path)), { recursive: true });
+        writeFileSync(join(dir, path), text(frozen, path));
+      }
+      mkdirSync(join(dir, "infra"));
+      writeFileSync(join(dir, "infra/local.json"), "{}");
+      mkdirSync(join(dir, "secrets"));
+      writeFileSync(join(dir, "secrets/postgres-admin"), randomUUID());
+      mkdirSync(join(dir, "node_modules/pg"), { recursive: true });
+      writeFileSync(
+        join(dir, "node_modules/pg/package.json"),
+        JSON.stringify({ name: "pg", type: "module", exports: "./index.js" }),
+      );
+      writeFileSync(
+        join(dir, "node_modules/pg/index.js"),
+        [
+          "class Client {",
+          "  constructor({ ssl }) {",
+          "    const shown = ssl && typeof ssl === 'object' && 'checkServerIdentity' in ssl",
+          "      ? { ...ssl, checkServerIdentity: typeof ssl.checkServerIdentity }",
+          "      : ssl;",
+          "    console.log(JSON.stringify({ ssl: shown }));",
+          "  }",
+          "  connect() { return Promise.reject(new Error('stop')); }",
+          "}",
+          "export default { Client };",
+        ].join("\n"),
+      );
+      const caText = `test CA ${randomUUID()}\n`;
+      writeFileSync(join(dir, "ca.pem"), caText);
+      const run = (variables: Record<string, string>) => {
+        const result = spawnSync(process.execPath, [join(dir, "scripts/migrate.mjs")], {
+          encoding: "utf8",
+          env: { SECRET_DIR: join(dir, "secrets"), ...variables },
+        });
+        expect(result.status).toBe(1);
+        return result;
+      };
+      const connects = (variables: Record<string, string>, ssl: unknown) => {
+        const result = run(variables);
+        expect([variables, result.stdout]).toEqual([variables, `${JSON.stringify({ ssl })}\n`]);
+        expect(result.stderr).toContain("Error: stop\n");
+      };
+      const fails = (variables: Record<string, string>, message: string) => {
+        const result = run(variables);
+        expect([variables, result.stdout]).toEqual([variables, ""]);
+        expect(result.stderr).toContain(`Error: ${message}\n`);
+        expect(result.stderr).not.toContain("missing-ca");
+      };
+      connects({ JEEVES_MIGRATE_TLS: "disable" }, false);
+      connects({ JEEVES_MIGRATE_TLS: "disable", PGSSLMODE: "require" }, false);
+      connects({ JEEVES_MIGRATE_TLS: "verify-full" }, { rejectUnauthorized: true });
+      connects(
+        { JEEVES_MIGRATE_TLS: "verify-full", PGSSLMODE: "disable" },
+        { rejectUnauthorized: true },
+      );
+      connects(
+        { JEEVES_MIGRATE_TLS: "verify-full", JEEVES_MIGRATE_CA_FILE: join(dir, "ca.pem") },
+        { rejectUnauthorized: true, ca: caText },
+      );
+      connects(
+        { JEEVES_MIGRATE_TLS: "verify-full", JEEVES_MIGRATE_TLS_SERVERNAME: "db.internal" },
+        { rejectUnauthorized: true, servername: "db.internal", checkServerIdentity: "function" },
+      );
+      fails({}, "Invalid endpoint JEEVES_MIGRATE_TLS");
+      fails({ JEEVES_MIGRATE_TLS: "require" }, "Invalid endpoint JEEVES_MIGRATE_TLS");
+      fails(
+        { JEEVES_MIGRATE_TLS: "verify-full", JEEVES_MIGRATE_TLS_SERVERNAME: "db internal" },
+        "Invalid endpoint JEEVES_MIGRATE_TLS_SERVERNAME",
+      );
+      fails(
+        { JEEVES_MIGRATE_TLS: "verify-full", JEEVES_MIGRATE_CA_FILE: join(dir, "missing-ca.pem") },
+        "Unreadable CA file JEEVES_MIGRATE_CA_FILE (ENOENT)",
+      );
+      // The switch (QG10, with QG30's rule).
+      const strict = { JEEVES_REQUIRE_TLS: "true" };
+      fails({ ...strict, JEEVES_MIGRATE_TLS: "disable" }, "Insecure endpoint JEEVES_MIGRATE_TLS");
+      connects({ ...strict, JEEVES_MIGRATE_TLS: "disable", PGHOST: "/cloudsql/p:r:i" }, false);
+      connects({ ...strict, JEEVES_MIGRATE_TLS: "verify-full" }, { rejectUnauthorized: true });
+      fails(
+        { ...strict, JEEVES_MIGRATE_TLS: "verify-full", NODE_TLS_REJECT_UNAUTHORIZED: "0" },
+        "Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED",
+      );
+      fails(
+        { JEEVES_REQUIRE_TLS: "TRUE", JEEVES_MIGRATE_TLS: "verify-full" },
+        "Invalid endpoint JEEVES_REQUIRE_TLS",
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });

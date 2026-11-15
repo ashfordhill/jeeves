@@ -1,11 +1,62 @@
 import { readFileSync } from "node:fs";
+import { checkServerIdentity } from "node:tls";
 import pg from "pg";
 import { hash, plan, quote, secret } from "./common.mjs";
+
+/** `pg`'s `ssl` for every connection, read before the first (QG29) as a database's `_TLS` is
+ * (QG10). `JEEVES_MIGRATE_TLS` is `disable` (plain text or a Unix socket) or `verify-full`, with
+ * no default; `pg` always gets `ssl`, so `PGSSLMODE` can't change it. `verify-full` checks the
+ * chain against `JEEVES_MIGRATE_CA_FILE` (an optional PEM file; else Node's roots) and the host
+ * name, or `JEEVES_MIGRATE_TLS_SERVERNAME` when the certificate carries another name. With
+ * `JEEVES_REQUIRE_TLS=true`, `disable` fails unless `PGHOST` is a socket directory, and
+ * `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1` (QG30). A message names a variable, never
+ * its value. */
+function migrationSsl() {
+  const strict = process.env.JEEVES_REQUIRE_TLS;
+  if (strict !== undefined && strict !== "true")
+    throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+  const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  if (strict && verify !== undefined && verify !== "1")
+    throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+  const mode = process.env.JEEVES_MIGRATE_TLS;
+  if (mode !== "disable" && mode !== "verify-full")
+    throw new Error("Invalid endpoint JEEVES_MIGRATE_TLS");
+  if (mode === "disable") {
+    if (strict && !process.env.PGHOST?.startsWith("/"))
+      throw new Error("Insecure endpoint JEEVES_MIGRATE_TLS");
+    return false;
+  }
+  const servername = process.env.JEEVES_MIGRATE_TLS_SERVERNAME;
+  if (servername !== undefined && !/^[A-Za-z0-9.-]{1,253}$/.test(servername))
+    throw new Error("Invalid endpoint JEEVES_MIGRATE_TLS_SERVERNAME");
+  const path = process.env.JEEVES_MIGRATE_CA_FILE;
+  let ca;
+  if (path !== undefined)
+    try {
+      ca = readFileSync(path, "utf8");
+    } catch (error) {
+      const code = error?.code;
+      throw new Error(
+        `Unreadable CA file JEEVES_MIGRATE_CA_FILE${typeof code === "string" && /^E[A-Z]+$/.test(code) ? ` (${code})` : ""}`,
+      );
+    }
+  // `pg` puts a host name in place of `servername`, so a given name is checked here.
+  return {
+    rejectUnauthorized: true,
+    ...(ca !== undefined && { ca }),
+    ...(servername !== undefined && {
+      servername,
+      checkServerIdentity: (_host, certificate) => checkServerIdentity(servername, certificate),
+    }),
+  };
+}
+const ssl = migrationSsl();
 
 const connect = async (database, user, password) => {
   const client = new pg.Client({
     host: process.env.PGHOST ?? "local-postgres",
     port: Number(process.env.PGPORT ?? 5432),
+    ssl,
     database,
     user,
     password,

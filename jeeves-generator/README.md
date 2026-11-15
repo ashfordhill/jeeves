@@ -766,7 +766,7 @@ a process reads, sorted, that one included, and the export's README lists the sa
 (QG26); the API's `stores` row names it too. A deployment sets its own values; local stacks
 behave as before. Object storage and search are still reached at their local
 names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
-`PGHOST` and `PGPORT`).
+`PGHOST`, `PGPORT` and `JEEVES_MIGRATE_TLS`).
 
 **Verified TLS bindings** (QG10). A database's or cache's `_TLS` is `disable` or `verify-full`,
 with no default. `disable` is plain text: `createPostgres` (`postgres.ts`) gives `pg` `ssl: false`,
@@ -789,8 +789,9 @@ that isn't `https:` (`signInSettings` in `tile-guard.ts`) and any `PUBSUB_EMULAT
 clients). Each is checked where its client is built: the stubs' in `module-clients.ts` (and first in
 the configuration pass, with the sign-in's), a template's pool in `service-resources.ts`, the cache
 read's cache in `cacheEndpoint`. The broker (RabbitMQ),
-object storage and search have no TLS and are not checked, and `migrate.mjs` still follows
-`PGSSLMODE`. With the switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else startup
+object storage and search have no TLS and are not checked. `migrate.mjs` reads its own
+transport, `JEEVES_MIGRATE_TLS`, by the same rules, the switch's included (QG29, below). With the
+switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else startup
 fails with `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`: `0` would turn off certificate checks
 for every client that leaves them to Node (QG30). `compose.yaml` sets `disable` for every database
 and cache and never `JEEVES_REQUIRE_TLS`, so local stacks are unchanged.
@@ -995,7 +996,15 @@ recorded Docker volume identities. Changed/missing identities refuse. Interrupte
 bootstrap requires manual inspection. Migration hash changes refuse without resetting data.
 `scripts/migrate.mjs` holds the advisory lock `local-v2:cluster` on its admin connection from
 before the first role until the last database is done, so copies started at once run one at a
-time. Its admin may be a superuser or, as on a managed PostgreSQL 16 or later, a CREATEDB
+time. It reaches PostgreSQL at `PGHOST` and `PGPORT` with `JEEVES_MIGRATE_TLS` (QG29),
+`disable` or `verify-full` with no default, read before the first connection as a database's
+`_TLS` is: with `verify-full`, `JEEVES_MIGRATE_CA_FILE` is an optional PEM file (one that can't be
+read fails `Unreadable CA file JEEVES_MIGRATE_CA_FILE` and its code) and
+`JEEVES_MIGRATE_TLS_SERVERNAME` the optional name the certificate carries. Every connection gets
+that `ssl`, so `PGSSLMODE` can't change it. With `JEEVES_REQUIRE_TLS=true`, `disable` fails
+`Insecure endpoint JEEVES_MIGRATE_TLS` unless `PGHOST` is a socket directory, and QG30's
+`NODE_TLS_REJECT_UNAUTHORIZED` rule applies; `compose.yaml` gives `setup-migrate` `disable`. Its
+admin may be a superuser or, as on a managed PostgreSQL 16 or later, a CREATEDB
 CREATEROLE role: a non-superuser admin grants itself each database owner `WITH INHERIT FALSE, SET
 TRUE`, so it can create the owner's database without using the owner's privileges. An owner role
 the admin didn't create needs `GRANT <owner> TO <admin> WITH ADMIN OPTION` from its creator first,

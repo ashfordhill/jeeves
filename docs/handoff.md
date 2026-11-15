@@ -17052,3 +17052,130 @@ them, as its third check.
 **For the next unit.** QG29, as batch 3 runs. Every process with stubs now opens with
 `checkConfiguration([...])`; QG28 edits the same `stubClients` code and the Pub/Sub part of
 `module-clients.ts.template`.
+
+## 2026-11-15 — QG29: migrate.mjs verifies TLS with the deployment's CA
+
+**What changed.**
+- `templates/local-v2/assets/scripts/migrate.mjs`:
+  - `import { checkServerIdentity } from "node:tls";` and `migrationSsl()`, called once into
+    `const ssl` before `connect` is defined.
+  - It reads, in this order: `JEEVES_REQUIRE_TLS` (`true` or unset, else `Invalid endpoint
+    JEEVES_REQUIRE_TLS`), QG30's `NODE_TLS_REJECT_UNAUTHORIZED` rule under the switch, then
+    `JEEVES_MIGRATE_TLS` (`disable` or `verify-full`, no default).
+  - `disable` gives `false`; under the switch it fails `Insecure endpoint JEEVES_MIGRATE_TLS`
+    unless `PGHOST` starts with `/`.
+  - `verify-full` gives `{ rejectUnauthorized: true, ca?, servername?, checkServerIdentity? }`, built
+    as `postgresSsl` builds it. `JEEVES_MIGRATE_TLS_SERVERNAME` follows the host rule (`Invalid
+    endpoint …`), and a CA file that can't be read fails `Unreadable CA file
+    JEEVES_MIGRATE_CA_FILE (<code>)`.
+  - `connect`'s one `pg.Client` gets `ssl`, so the admin, owner and runtime-login connections all
+    use it. Nothing else in the script changed, and the product step's three anchors are
+    byte-identical.
+- `src/v2/local.ts`: `setup-migrate`'s `environment` gains `JEEVES_MIGRATE_TLS: "disable"`, as
+  `setup-pubsub` adds its own. The generated README's intro gets the brief's sentence after
+  "Migration owners/admin are mounted only into setup.".
+- Tests: 1 new, in `local.test.ts` beside QG12's.
+  - Text checks on the base and the stub-stack (processes on) exports: the import; each of the
+    five variables read once, before `const ssl`, which comes before the first `connect(`; one
+    `pg.Client` with `ssl`; Compose's `disable`; no other service or `src/` file naming
+    `JEEVES_MIGRATE_`; and the product step still substituted.
+  - Behaviour: frozen-v2's emitted `migrate.mjs` and `common.mjs`, with a stand-in `pg`, run in a
+    child `node` with only each case's variables. It covers the brief's cases, plus `verify-full`
+    with `PGSSLMODE=disable`, a bad server name, the switch with `verify-full`, and `TRUE`.
+- Pins (Rule 7, `pins:update`): `scripts/migrate.mjs`, `README.md` and `.jeeves/manifest.json` in
+  all three exports, and `compose.yaml` in `frozen-v2` and `v2-module-design`. That is exactly the
+  brief's list.
+- Docs:
+  - `jeeves-generator/README.md`: Verified TLS bindings says what `migrate.mjs` reads now, the QG12
+    paragraph names the variables and rules, and the endpoints paragraph's list of what
+    `migrate.mjs` reads adds `JEEVES_MIGRATE_TLS`.
+  - `docs/template-gaps.md`: the private-CA row is "Fixed in QG29", and the plain-text row drops
+    "`migrate.mjs` still follows `PGSSLMODE`".
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: before any change, exit 0, 117 files / 1023 tests. On the final tree, exit 0, 117
+  files / 1024 tests; Biome shows only the older 1 info.
+- Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`. In
+  both, the changed paths are exactly `.jeeves/manifest.json`, `.jeeves/report.json`,
+  `README.md`, `compose.yaml` and `scripts/migrate.mjs`, the brief's list.
+  - `compose.yaml` differs only by `setup-migrate`'s `JEEVES_MIGRATE_TLS`, and `README.md` only by
+    the sentence.
+  - The report differs only in the source inventory (`local.ts`, `migrate.mjs`). `gaps` and
+    `processes` are equal.
+- Docker proof, the unit's one Docker run:
+  - Setup: `qg29-pg` (`postgres:17.11-alpine3.23@sha256:bc2701f9…b61f`, 127.0.0.1:47991) with
+    `ssl=on`, `log_connections=on` and a `pg_hba.conf` of only `local all postgres peer` and
+    `hostssl … scram-sha-256` (IPv4, IPv6).
+  - Two CAs and a server certificate from CA one (`DNS:qg29-db.internal`, `IP:127.0.0.1`) were
+    made at run time in the scratchpad with OpenSSL 3.0.13.
+  - It ran after-probe's `migrate.mjs` with the Q03 bodies and product SQL at their
+    `generated-extension` paths and secrets from its own `setup.mjs`. Each case was
+    `env -i PGHOST=127.0.0.1 PGPORT=47991 SECRET_DIR=… <case> node scripts/migrate.mjs`. The
+    refusals ran first, on the empty cluster:
+  - **Another CA** (CA two): exit 1, `unable to verify the first certificate`; no database or role
+    was created. Node's roots: the same.
+  - **`disable`: refused by the server**, `no pg_hba.conf entry … no encryption`. With
+    `PGSSLMODE=require` too: the same.
+  - **`JEEVES_REQUIRE_TLS=true` with `disable`**: exit 1, `Insecure endpoint JEEVES_MIGRATE_TLS`,
+    and the server received no connection. With `NODE_TLS_REJECT_UNAUTHORIZED=0`: `Insecure
+    endpoint NODE_TLS_REJECT_UNAUTHORIZED`, also with no connection.
+  - `_TLS_SERVERNAME=other.internal`: refused, `ERR_TLS_CERT_ALTNAME_INVALID`. After every
+    refusal the cluster still had no database and no role.
+  - **`verify-full` with CA one** (switch on): exit 0, all three template migrations and three
+    product SQL files applied. The three databases and six roles exist, and each
+    `local_migrations` has 1 row.
+  - **The repeat**: exit 0, no template migration applied (only the product SQL, which runs every
+    time), and `local_migrations` unchanged. With `_TLS_SERVERNAME=qg29-db.internal`: exit 0.
+  - **`verify-full` with `PGSSLMODE=disable`**: a `psql` session held `local-v2:cluster`, so the
+    migration's admin backend waited on it. `pg_stat_ssl` for that backend was `ssl=true TLSv1.3`.
+    It then ran to exit 0.
+  - The server log: all 33 connections from the migration's host are accounted for. 28 were
+    authorized with `SSL enabled (protocol=TLSv1.3`, 2 were the `disable` refusals, and 3 were
+    the handshakes the client aborted. The 18 sessions without TLS are the proof's own `psql`
+    over the container's local socket.
+  - Removed `qg29-pg` by name, then its anonymous data volume by its exact ID (created at the
+    container's start, labelled anonymous, used by nothing). The certificates and exports are
+    deleted.
+  - The proof needed `pnpm install --frozen-lockfile --ignore-scripts --offline` in after-probe
+    (for `pg`). The checkout's `node_modules/.modules.yaml` and `.pnpm/lock.yaml` keep their
+    mtimes (2026-11-14 12:10).
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  `jeeves-postgres-1` is unchanged, and no `qg29` resource is left.
+- Skipped by the owner's decision:
+  - e2e, since nothing in the studio or web changed;
+  - `--suite=core` and `--suite=regeneration`, since the proof above is the one Docker run;
+  - the measurement of the new test on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in each `after-*` (except the proof's install above).
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **The import is the second line, not the first.** Biome's `organizeImports` (on in
+  `tooling/biome.config.json`, which covers the template's `.mjs`) sorts `node:fs` before
+  `node:tls`, and `pnpm lint` fails otherwise.
+- **The switch's read is in `migrationSsl`.** The script has no shared `requireTls()`, so the
+  same rule and messages are inline, before the mode, as QG10's `databaseTls` orders them.
+- **`PGHOST`'s socket test reads `process.env.PGHOST?.startsWith("/")`.** `connect`'s
+  `local-postgres` default doesn't start with `/`, so it isn't repeated, and `connect` is
+  unchanged.
+- **Extra test cases and proof cases**, beyond the brief's: `PGSSLMODE=disable` with
+  `verify-full`, a bad server name, the switch with `verify-full`, `TRUE` and the override in
+  the test; Node's roots, `disable` with `PGSSLMODE=require`, the override, and a right and a
+  wrong server name in the proof.
+- **The generator README's endpoints paragraph** names `JEEVES_MIGRATE_TLS` among what
+  `migrate.mjs` reads (Rule 8; it was incomplete, not false).
+
+**Noticed.**
+- The unit is QRWTY-driven: QGR2's finding 11, decided by the owner on 2026-11-15 (batch 3).
+- `pg` still reads `PGSSLNEGOTIATION` from the environment (`direct` with `ssl: false` throws in
+  `pg`). Today no template sets it, and it can't turn TLS off.
+- A CA with DNS names only and `PGHOST` an IP needs `_TLS_SERVERNAME`, as for a database's
+  `_TLS`. QG10's Cloud SQL `<project>:<instance>` limit applies here too.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+  A deployment's migration job then needs `JEEVES_MIGRATE_TLS` set; unset fails before any
+  connection.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG28, as batch 3 runs. Nothing here touches `client-wiring.ts` or
+`module-clients.ts.template`.
