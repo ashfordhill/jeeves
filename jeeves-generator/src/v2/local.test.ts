@@ -10,6 +10,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { stripTypeScriptTypes } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -642,6 +643,117 @@ describe("standalone local foundation", () => {
         "Invalid endpoint JEEVES_REQUIRE_TLS",
       );
     } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("reads a credential from the file JEEVES_SECRET_<NAME>_FILE names, else SECRET_DIR (QG34)", async () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    for (const bundle of [emit(), processes]) {
+      // Compose sets none of the variables, and only the README's one sentence names them.
+      expect(text(bundle, "compose.yaml")).not.toContain("JEEVES_SECRET_");
+      expect(text(bundle, ".jeeves/report.json")).not.toContain("JEEVES_SECRET_");
+      const readme = text(bundle, "README.md");
+      expect(readme).toContain(
+        "A credential is read from `JEEVES_SECRET_<NAME>_FILE` when that is set (an absolute path; `<NAME>` is the secret's name upper-cased, with `-` and `.` as `_`), else from `SECRET_DIR/<name>` (`/run/secrets/<name>`, where Compose mounts it).",
+      );
+      expect(readme.match(/JEEVES_SECRET_/g)).toHaveLength(1);
+    }
+
+    const name = "sql-links--redirect-service";
+    const variable = "JEEVES_SECRET_SQL_LINKS__REDIRECT_SERVICE_FILE";
+    const dir = mkdtempSync(join(tmpdir(), "jeeves-qg34-"));
+    const fromDirectory = randomUUID();
+    const fromFile = randomUUID();
+    const mounted = join(dir, "credentials", name, "value");
+    const missing = join(dir, "credentials", "missing", "value");
+    const saved = { SECRET_DIR: process.env.SECRET_DIR };
+    try {
+      mkdirSync(join(dir, "secrets"));
+      writeFileSync(join(dir, "secrets", name), `${fromDirectory}\n`);
+      mkdirSync(dirname(mounted), { recursive: true });
+      writeFileSync(mounted, `${fromFile}\n`);
+
+      // `readSecret`, from the emitted `src/runtime/local.ts`, type-stripped.
+      const local = stripTypeScriptTypes(text(processes, "src/runtime/local.ts"));
+      const { readSecret } = await import(
+        `data:text/javascript;base64,${Buffer.from(local).toString("base64")}`
+      );
+      const read = (variables: Record<string, string>, secret = name) => {
+        const set = { SECRET_DIR: join(dir, "secrets"), ...variables };
+        Object.assign(process.env, set);
+        try {
+          return { value: readSecret(secret) };
+        } catch (error) {
+          return { error: (error as Error).message };
+        } finally {
+          for (const key of Object.keys(set)) delete process.env[key];
+        }
+      };
+      expect(read({})).toEqual({ value: fromDirectory });
+      expect(read({ [variable]: mounted })).toEqual({ value: fromFile });
+      expect(read({ JEEVES_SECRET_CACHE_HOT_FILE: mounted }, "cache.hot")).toEqual({
+        value: fromFile,
+      });
+      expect(read({ [variable]: "credentials/value" })).toEqual({
+        error: `Invalid endpoint ${variable}`,
+      });
+      expect(read({ [variable]: `${mounted}\n` })).toEqual({
+        error: `Invalid endpoint ${variable}`,
+      });
+      expect(read({ [variable]: missing })).toEqual({
+        error: `Unreadable secret file ${variable} (ENOENT)`,
+      });
+      // The name rule comes first: the variable this name would have is never read.
+      expect(read({ JEEVES_SECRET_SQL_LINKS_FILE: "relative" }, "Sql-links")).toEqual({
+        error: "Invalid secret identity",
+      });
+
+      // `secret`, from the emitted `scripts/common.mjs`, in a child `node` with only each case's
+      // variables.
+      mkdirSync(join(dir, "scripts"));
+      writeFileSync(join(dir, "scripts/common.mjs"), text(processes, "scripts/common.mjs"));
+      mkdirSync(join(dir, "infra"));
+      writeFileSync(join(dir, "infra/local.json"), "{}");
+      const common = pathToFileURL(join(dir, "scripts/common.mjs")).href;
+      const secret = (variables: Record<string, string>) => {
+        const run = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "-e",
+            [
+              `const { secret } = await import(${JSON.stringify(common)});`,
+              `try { console.log(JSON.stringify({ value: secret(${JSON.stringify(name)}) })); }`,
+              "catch (error) { console.log(JSON.stringify({ error: error.message })); }",
+            ].join("\n"),
+          ],
+          { encoding: "utf8", env: { SECRET_DIR: join(dir, "secrets"), ...variables } },
+        );
+        expect(run.status, run.stderr).toBe(0);
+        return JSON.parse(run.stdout);
+      };
+      expect(secret({})).toEqual({ value: fromDirectory });
+      expect(secret({ [variable]: mounted })).toEqual({ value: fromFile });
+      expect(secret({ [variable]: "credentials/value" })).toEqual({
+        error: `Invalid endpoint ${variable}`,
+      });
+      expect(secret({ [variable]: `${mounted}\n` })).toEqual({
+        error: `Invalid endpoint ${variable}`,
+      });
+      expect(secret({ [variable]: missing })).toEqual({
+        error: `Unreadable secret file ${variable} (ENOENT)`,
+      });
+    } finally {
+      if (saved.SECRET_DIR === undefined) delete process.env.SECRET_DIR;
+      else process.env.SECRET_DIR = saved.SECRET_DIR;
       rmSync(dir, { recursive: true, force: true });
     }
   });

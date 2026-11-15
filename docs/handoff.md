@@ -17382,3 +17382,113 @@ the table's last row, the edge's `X-Forwarded-For` row.
 
 **For the next unit.** QG34 (the owner answered B1 yes on 2026-11-15). Its Known limits row goes
 after these three.
+
+## 2026-11-15 — QG34: A credential's file can be named by its own variable
+
+**What changed.** The owner answered B1 yes on 2026-11-15 (relayed by the coordinator).
+- `templates/local-v2/assets/src/runtime/local.ts`, `readSecret`: the name rule first (`Invalid
+  secret identity`, unchanged), then `JEEVES_SECRET_<NAME>_FILE` (`<NAME>` the name upper-cased,
+  each `-` and `.` as `_`), then the read.
+  - Unset: today's read, byte for byte (`SECRET_DIR`, `/run/secrets`, `.trim()`).
+  - Set: an absolute path with no control character, else `Invalid endpoint <variable>`. The file
+    is read and trimmed. A read that fails gives `Unreadable secret file <variable> (<code>)`, as
+    `readCa` builds its message, never the path or the value.
+  - The doc comment gives the rule.
+- `templates/local-v2/assets/scripts/common.mjs`, `secret`: the same variable rule. `migrate.mjs`,
+  `broker-init.mjs` and `storage-config.mjs` read through it.
+- `src/v2/local.ts`: the brief's sentence in the generated README's intro, after QG29's sentence.
+- Tests: 1 new, in `local.test.ts` after QG29's.
+  - Text: in the base and stub-stack (processes on) exports, `compose.yaml` and the report name no
+    `JEEVES_SECRET_`, and the README has the sentence and no other mention.
+  - `readSecret`: the emitted `local.ts`, type-stripped and imported. In a temporary directory it
+    covers the brief's five cases, plus a dotted name (`cache.hot`) and a value ending in a newline.
+  - `secret`: the emitted `common.mjs` in `scripts/`, with `infra/local.json` = `{}`, in a child
+    `node` with only each case's variables. It covers the brief's four cases, plus the newline.
+- Pins (Rule 7, `pins:update`): `src/runtime/local.ts`, `scripts/common.mjs`, `README.md` and
+  `.jeeves/manifest.json` in all three exports. That is exactly the brief's list.
+- Docs:
+  - `jeeves-generator/README.md`, **Credentials**: the rule, both readers, the messages, that
+    Compose sets none, and that the report's `environment` and the README's per-process lists
+    don't name them.
+  - `docs/template-gaps.md`: the brief's Known limits row (AG-03), after QG33's three.
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: on the final tree, exit 0, 117 files / 1027 tests; Biome shows only the older 1
+  info.
+- Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`. The
+  before-exports were made from HEAD's two template files, restored with `git show HEAD:<path>`;
+  my versions were copied back after. No stash or reset was used.
+  - In both, the changed paths are exactly `.jeeves/manifest.json`, `.jeeves/report.json`,
+    `README.md`, `scripts/common.mjs` and `src/runtime/local.ts`, the brief's list.
+  - `README.md` differs only by the sentence.
+  - The report differs only in the source inventory (the two templates and `src/v2/local.ts`).
+    Everything else in it is equal.
+- Docker proof, the unit's one Docker run. Project `qg32-qg34-probe` on 127.0.0.1:47961–47963,
+  run on after-probe with the Q03 bodies and product SQL at their `generated-extension` paths. Its
+  `compose.override.yaml` set `JEEVES_EXTERNAL_PROVIDER_URL` on `app-front`. The proof needed
+  `pnpm install --frozen-lockfile --ignore-scripts --offline` in after-probe. The checkout's
+  `node_modules/.modules.yaml` and `.pnpm/lock.yaml` keep their mtimes (2026-11-14 12:10).
+  1. `pnpm first-run`: exit 0 in 87 s, all seven services healthy.
+  2. The override gave `app-front` (3 secrets) and `setup-migrate` (7) Cloud Run's shape. Each
+     secret was bind-mounted read-only from `.runtime/secrets/<name>` at
+     `/credentials/<name>/value`, with `JEEVES_SECRET_<NAME>_FILE` pointing there, and
+     `SECRET_DIR: /nonexistent`. `docker compose config` showed both.
+  3. `pnpm start`: exit 0 in 22 s.
+     - `setup-migrate` ran to `Migrations current; …`, applying the three product SQL files.
+     - `app-front` was recreated with the override and is healthy. Its probes `events` (broker),
+       `hot` (cache) and `store` (database) answered `ok`.
+  4. `run --rm --no-deps -e JEEVES_SECRET_SQL_STORE__FRONT_FILE=/credentials/missing/value
+     app-front`: exit 1. After the `events` and `hot` probes, it printed
+     `{"level":"error","event":"startup-failed","error":"Error: Unreadable secret file
+     JEEVES_SECRET_SQL_STORE__FRONT_FILE (ENOENT)"}`, with no path.
+  5. Teardown, each exit 0:
+     - `pnpm stop`;
+     - `docker compose --profile '*' down --volumes --remove-orphans`;
+     - `docker image rm qg32-qg34-probe-app:latest`.
+
+     The exports, with their `.runtime`, are deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  No `qg32`/`qg34` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is
+  unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - `--suite=core` and `--suite=wiring`, since the proof above is the one Docker run;
+  - the measurement of the new test on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in each `after-*`, except the proof's install above. The
+    proof's image build compiled after-probe in Docker.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **The proof's project is `qg32-qg34-probe`**, not `qg34-probe`: the coordinator asked for a
+  `qg32-` prefix on every resource of this three-unit run.
+- **The control-character check uses `charCodeAt`**, as `durable-sql.ts` and `search-contract.ts`
+  do. Biome's `noControlCharactersInRegex` rejects `/[\u0000-\u001f\u007f]/` in these two linted
+  files. `module-clients.ts.template`'s copy isn't linted.
+- **`secret` in `common.mjs` still has no name rule**, as at HEAD. The brief gives the name rule to
+  `readSecret` only, and invariant 1 keeps it as it is.
+- **Extra test cases**, beyond the brief's: a dotted name and a newline value. The proof's step 2
+  also leaves the generated `secrets` mounted at `/run/secrets`, since an override can't drop them
+  without `!reset`. `SECRET_DIR=/nonexistent` keeps them unused.
+
+**Noticed.**
+- The unit is arm A-found (QRWTY Q04, AG-03), batch 3.
+- Names that differ only by `-`, `.` or `_` share one variable (`a-b`, `a.b`, `a_b` all give
+  `JEEVES_SECRET_A_B_FILE`). Today's plans name secrets with `-` and `--`, plus `garage.toml`, so
+  none collide.
+- A credential is read when its client is built, after QG31's configuration pass. A bad
+  `JEEVES_SECRET_*_FILE` therefore fails alone, after the probes before it (step 4), not inside
+  `Invalid configuration: …`.
+- `jeeves-generator/README.md`'s endpoints paragraph says the report's `environment` "lists every
+  variable a process reads". It already left out the optional ones (`_CA_FILE`,
+  `_TLS_SERVERNAME`, `JEEVES_REQUIRE_TLS`), and the new Credentials sentence says these are left
+  out too. The older sentence is unchanged.
+- The local provider containers (PostgreSQL, RabbitMQ, Valkey, Keycloak) read `/run/secrets`
+  themselves. They are local only and not deployed.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+  After that, Q04's link-and-exec wrapper can go.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QGR3, the batch 3 review. Batch 3's units are all committed: QG30, QG31,
+QG29, QG28, QG32, QG33 and QG34.

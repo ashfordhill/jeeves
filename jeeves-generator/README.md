@@ -869,7 +869,18 @@ loop stub never renames another's subscription.
 
 **Credentials** are generated at first run, as for templates: `setup.mjs` writes the
 passwords, and `bootstrap.mjs` the Garage keys, into private `.runtime/secrets` (0700). None is
-in the export or the repository. `pnpm stop` and `pnpm start` keep them and the volumes.
+in the export or the repository. `pnpm stop` and `pnpm start` keep them and the volumes. A
+process (`readSecret` in `local.ts`) and the setup scripts (`secret` in `common.mjs`) read a
+credential from the file `JEEVES_SECRET_<NAME>_FILE` names when that is set, else from
+`SECRET_DIR/<name>` (`/run/secrets/<name>`, where Compose mounts it) (QG34). `<NAME>` is the
+secret's name upper-cased, with `-` and `.` as `_` (`sql-links--redirect-service` is
+`JEEVES_SECRET_SQL_LINKS__REDIRECT_SERVICE_FILE`), and the value is an absolute path, so a
+platform that mounts each secret at its own path (Cloud Run) needs no wrapper. A value that isn't
+absolute, or holds a control character, fails `Invalid endpoint <variable>`; a file that can't be
+read fails `Unreadable secret file <variable>` with its error code (`ENOENT`, `EACCES`), never the
+path or the value. `readSecret` checks the name first (`Invalid secret identity`). Compose sets
+none of these variables, and they are optional, like `_CA_FILE`, so neither the report's
+`environment` nor the export's README lists them per process; the README's intro gives the rule.
 
 Each mounted lead gets `src/modules/<host>/<lead>.hooks.ts` (a `generated-extension`): one
 factory over the template's generic resources whose every hook throws `NotImplemented("<hook>
