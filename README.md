@@ -50,7 +50,7 @@ Unfortunately, the multi-lane agents and larger-than-usual-build-goals kept lead
 >
 > In any case, one of the goals with Jeeves is to keep the humans in control and informed of decisions, but merely moving them up a level of abstraction, which I've cited in one of my earlier writeups last year, praising diagrams. We should be architects because code monkeys and ticket grinding is handled by computers now. Basically we need to get good at understanding our intentions, communicating those intentions clearly and able to steer back to course when paths start to deviate too far from the goal. 
 
-<p align="center"><img src=".docs/whee.gif" width="400"/></p>
+<p align="center"><img src=".docs/qrwty/whee.gif" width="400"/></p>
 
 I cut things off to get the data I was looking for which was:
 
