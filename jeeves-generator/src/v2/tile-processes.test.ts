@@ -346,6 +346,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
   const linksDb = {
     JEEVES_DATABASE_LINKS_DB_HOST: "local-postgres",
     JEEVES_DATABASE_LINKS_DB_PORT: "5432",
+    JEEVES_DATABASE_LINKS_DB_TLS: "disable",
   };
 
   it("sets exactly the endpoints each process reads in its service, at today's local values", () => {
@@ -360,6 +361,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
         ...broker,
         JEEVES_CACHE_LINKS_CACHE_HOST: "cache-links-cache",
         JEEVES_CACHE_LINKS_CACHE_PORT: "6379",
+        JEEVES_CACHE_LINKS_CACHE_TLS: "disable",
         ...linksDb,
         JEEVES_TILE_STATS_API_URL: "http://app-stats-api:3000",
       },
@@ -383,6 +385,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     expect(Object.keys(watch).filter((name) => name.startsWith("JEEVES_CACHE_"))).toEqual([
       "JEEVES_CACHE_HOT_METADATA_HOST",
       "JEEVES_CACHE_HOT_METADATA_PORT",
+      "JEEVES_CACHE_HOT_METADATA_TLS",
     ]);
     expect(watch.JEEVES_CACHE_HOT_METADATA_HOST).toBe("cache-hot-metadata");
     expect(watch.OIDC_AUDIENCE).toBeDefined();
@@ -407,8 +410,10 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
           "JEEVES_BROKER_PORT",
           "JEEVES_CACHE_LINKS_CACHE_HOST",
           "JEEVES_CACHE_LINKS_CACHE_PORT",
+          "JEEVES_CACHE_LINKS_CACHE_TLS",
           "JEEVES_DATABASE_LINKS_DB_HOST",
           "JEEVES_DATABASE_LINKS_DB_PORT",
+          "JEEVES_DATABASE_LINKS_DB_TLS",
           "JEEVES_TILE_STATS_API_URL",
         ],
       ],
@@ -421,12 +426,13 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
           "JEEVES_BROKER_PORT",
           "JEEVES_DATABASE_LINKS_DB_HOST",
           "JEEVES_DATABASE_LINKS_DB_PORT",
+          "JEEVES_DATABASE_LINKS_DB_TLS",
         ],
       ],
     ]);
     const readme = text(stack, "README.md");
     expect(readme).toContain(
-      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_TILE_STATS_API_URL`\n- `app-stats-api`: none\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`\n",
+      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_CACHE_LINKS_CACHE_TLS`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`, `JEEVES_TILE_STATS_API_URL`\n- `app-stats-api`: none\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`\n",
     );
     expect(readme).toContain("fails startup with `Invalid endpoint <variable>`, never its value");
     expect(text(off, "README.md")).not.toContain("Endpoints from the environment");
@@ -482,6 +488,50 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     expect(watch).toContain(
       "    binding: { ...cacheEndpoint(binding.resource), secret: binding.secret },",
     );
+  });
+
+  it("keeps local stacks as they were: every database and cache disable, and no JEEVES_REQUIRE_TLS (QG10)", () => {
+    const v3 = assemble(
+      designSchema.parse(
+        JSON.parse(
+          readFileSync(
+            new URL("../../../field-projects/youtube/v3/inputs/design.json", import.meta.url),
+            "utf8",
+          ),
+        ),
+      ),
+    );
+    let bindings = 0;
+    for (const target of [stack, assemble(runStudioCommands(stubStackWithCacheRead(), [on])), v3])
+      for (const [name, service] of Object.entries(services(target))) {
+        if (!name.startsWith("app-")) continue;
+        const environment = service.environment ?? {};
+        const keys = Object.keys(environment);
+        // Each database and cache endpoint has its transport, locally disable; nothing else of
+        // QG10's is set, so no CA file is read and nothing is refused.
+        for (const key of keys.filter((item) => /^JEEVES_(DATABASE|CACHE)_.+_HOST$/.test(item))) {
+          bindings += 1;
+          expect(environment[key.replace(/_HOST$/, "_TLS")], `${name} ${key}`).toBe("disable");
+        }
+        expect(keys.filter((key) => key.endsWith("_TLS")).length, name).toBe(
+          keys.filter((key) => /^JEEVES_(DATABASE|CACHE)_.+_HOST$/.test(key)).length,
+        );
+        expect(
+          keys.filter((key) => /JEEVES_REQUIRE_TLS|_CA_FILE$|_TLS_SERVERNAME$/.test(key)),
+          name,
+        ).toEqual([]);
+      }
+    expect(bindings).toBeGreaterThan(5);
+    // The README says what each value does and what the switch refuses.
+    const readme = text(stack, "README.md");
+    for (const phrase of [
+      "`JEEVES_DATABASE_<ID>_TLS` or `JEEVES_CACHE_<ID>_TLS`, with no default: `disable` (plain text, which `PGSSLMODE` can't change) or `verify-full`",
+      "`Unreadable CA file <variable>`",
+      "With `JEEVES_REQUIRE_TLS=true` (else unset), startup fails with `Insecure endpoint <variable>`",
+      "and any `PUBSUB_EMULATOR_HOST`; the broker, object storage and search are plain text and aren't checked.",
+      "`compose.yaml` sets the local values (`disable`, and no `JEEVES_REQUIRE_TLS`); a deployment sets its own.",
+    ])
+      expect(readme).toContain(phrase);
   });
 });
 

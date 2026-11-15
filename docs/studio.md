@@ -1487,7 +1487,11 @@ in `.failed`, and an unreachable store waiting 5 s with the same attempt; the su
 retry policy spaces the other retries.
 Each process finds its databases, caches, broker and the tiles its stubs call through its
 environment (`JEEVES_*` variables, with no default): the export's `compose.yaml` sets them to the
-local services, its README lists them per process, and a deployment sets its own.
+local services, its README lists them per process, and a deployment sets its own. Each database
+and cache also has a transport, `disable` (locally) or `verify-full` (TLS that checks the
+certificate and host name, with an optional CA file), and a deployment that sets
+`JEEVES_REQUIRE_TLS=true` makes each process refuse at startup a plain-text database or cache, a
+tile, issuer or key set that isn't `https:`, and the Pub/Sub emulator.
 Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
 or a stub with a write link; an Event publisher's outbox doesn't count) gets its own SQL file,
 `infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`

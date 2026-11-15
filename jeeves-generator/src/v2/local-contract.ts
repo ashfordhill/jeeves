@@ -78,8 +78,8 @@ export const localPubsub = {
 } as const;
 /**
  * The endpoints a process reads from its environment (QG06), each with its local value: every
- * database and cache it opens (`JEEVES_DATABASE_<ID>_HOST` and `_PORT`, `JEEVES_CACHE_<ID>_HOST`
- * and `_PORT`), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`), the
+ * database and cache it opens (`JEEVES_DATABASE_<ID>_HOST`, `_PORT` and `_TLS`,
+ * `JEEVES_CACHE_<ID>_HOST`, `_PORT` and `_TLS`; locally `disable`, QG10), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`), the
  * Pub/Sub project when it publishes to or consumes a topic (`JEEVES_PUBSUB_PROJECT`, and only
  * locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION: none`, so the client looks for no
  * Google metadata server, QG09) and each application tile its stubs call
@@ -96,10 +96,12 @@ export function localEndpoints(service: {
     ...(service.sql ?? []).flatMap((id): [string, string][] => [
       [`JEEVES_DATABASE_${endpointId(id)}_HOST`, "local-postgres"],
       [`JEEVES_DATABASE_${endpointId(id)}_PORT`, "5432"],
+      [`JEEVES_DATABASE_${endpointId(id)}_TLS`, "disable"],
     ]),
     ...(service.cache ?? []).flatMap((id): [string, string][] => [
       [`JEEVES_CACHE_${endpointId(id)}_HOST`, `cache-${id}`],
       [`JEEVES_CACHE_${endpointId(id)}_PORT`, "6379"],
+      [`JEEVES_CACHE_${endpointId(id)}_TLS`, "disable"],
     ]),
     ...(service.broker
       ? ([

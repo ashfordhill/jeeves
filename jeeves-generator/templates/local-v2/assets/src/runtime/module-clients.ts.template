@@ -2,7 +2,9 @@
 // one per store or channel a tile's stubs use. Export rewrites this file. Each client reads its
 // endpoint from the environment (`JEEVES_*`; compose.yaml sets the local ones), then runs one
 // bounded startup probe that its access allows; a failed probe fails the process's startup, but
-// a cache that is down is logged and the process starts without it.
+// a cache that is down is logged and the process starts without it. With JEEVES_REQUIRE_TLS=true,
+// a plain-text or emulator endpoint fails startup (`Insecure endpoint <variable>`).
+import { readFileSync } from "node:fs";
 // @database-import-start
 import { localLogins } from "../features/local-bindings.ts";
 import { createPostgres } from "./postgres.ts";
@@ -104,6 +106,59 @@ const url = (value: string) => {
     : undefined;
 };
 
+/** `JEEVES_REQUIRE_TLS` (QG10): `true` makes startup refuse a plain-text or emulator endpoint
+ * (`Insecure endpoint <variable>`); absent, nothing is refused; any other value fails naming it. */
+function requireTls(): boolean {
+  const value = process.env.JEEVES_REQUIRE_TLS;
+  if (value === undefined) return false;
+  if (value === "true") return true;
+  throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+}
+/** How a client reaches a database or cache (QG10). `disable`: plain text (for a database also a
+ * Unix socket). `verify-full`: TLS that checks the certificate chain against `ca` (PEM; else
+ * Node's roots) and the host name, or `servername` when the certificate carries another name. */
+type Transport = { mode: "disable" } | { mode: "verify-full"; ca?: string; servername?: string };
+/**
+ * A database's or cache's transport from the environment, read with its endpoint: `JEEVES_<KIND>_
+ * <ID>_TLS`, `disable` or `verify-full`, with no default. With `verify-full`, `_CA_FILE` is an
+ * optional PEM file, read now (one that can't be read fails `Unreadable CA file <variable>`), and
+ * `_TLS_SERVERNAME` the optional name the certificate carries when it isn't the host (a host
+ * name, by the host rule). With
+ * `JEEVES_REQUIRE_TLS=true`, `disable` fails `Insecure endpoint <the _TLS variable>`, except on a
+ * database's Unix socket directory, which is local transport.
+ */
+function transport(kind: "DATABASE" | "CACHE", id: string, hostname: string): Transport {
+  const strict = requireTls();
+  const name = variable(kind, id, "TLS");
+  const mode = endpoint(name, (value) =>
+    value === "disable" || value === "verify-full" ? value : undefined,
+  );
+  if (mode === "disable") {
+    if (strict && !hostname.startsWith("/")) throw new Error(`Insecure endpoint ${name}`);
+    return { mode };
+  }
+  const named = variable(kind, id, "TLS_SERVERNAME");
+  const certified =
+    process.env[named] === undefined ? undefined : endpoint(named, host());
+  const caFile = variable(kind, id, "CA_FILE");
+  const path = process.env[caFile];
+  let ca: string | undefined;
+  if (path !== undefined)
+    try {
+      ca = readFileSync(path, "utf8");
+    } catch (error) {
+      const code = (error as { code?: unknown } | null)?.code;
+      throw new Error(
+        `Unreadable CA file ${caFile}${typeof code === "string" && /^E[A-Z]+$/.test(code) ? ` (${code})` : ""}`,
+      );
+    }
+  return {
+    mode,
+    ...(ca !== undefined && { ca }),
+    ...(certified !== undefined && { servername: certified }),
+  };
+}
+
 /** The probe log; it names its tile, for a client's own lines after startup. */
 export type ProbeLog = ((entry: Record<string, unknown>) => void) & { readonly tile: string };
 /** One JSON line per client probe: `ok` once it passes, `unavailable` for a cache that is down,
@@ -144,7 +199,8 @@ async function probed(
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
  * what another owner publishes when the tile may only read it. Stubs own no tables: a module's
  * own tables need a migration and grants of their own. Its endpoint is
- * `JEEVES_DATABASE_<ID>_HOST` (a host or a Unix socket directory) and `_PORT`. Probe: SELECT 1. */
+ * `JEEVES_DATABASE_<ID>_HOST` (a host or a Unix socket directory) and `_PORT`, and its transport
+ * `_TLS` (`transport`). Probe: SELECT 1. */
 export async function databaseClient(
   scope: ProcessScope,
   log: ProbeLog,
@@ -154,9 +210,11 @@ export async function databaseClient(
     (item) => item.resource === binding.resource && item.host === binding.tile,
   );
   if (!login) throw new Error(`No runtime login for ${binding.resource}`);
+  const hostname = endpoint(variable("DATABASE", binding.resource, "HOST"), host(true));
   const pool = createPostgres({
-    hostname: endpoint(variable("DATABASE", binding.resource, "HOST"), host(true)),
+    hostname,
     port: endpoint(variable("DATABASE", binding.resource, "PORT"), port),
+    tls: transport("DATABASE", binding.resource, hostname),
     login,
     poolSize: 10,
     statementTimeoutMs: 2000,
@@ -241,6 +299,12 @@ const pubsubChannel = {
   "grpc.initial_reconnect_backoff_ms": 500,
   "grpc.max_reconnect_backoff_ms": 2000,
 };
+/** With `JEEVES_REQUIRE_TLS=true`, a set `PUBSUB_EMULATOR_HOST` (a plain-text emulator) fails
+ * `Insecure endpoint PUBSUB_EMULATOR_HOST` before a Pub/Sub client is built. */
+function refuseEmulator() {
+  if (requireTls() && process.env.PUBSUB_EMULATOR_HOST !== undefined)
+    throw new Error("Insecure endpoint PUBSUB_EMULATOR_HOST");
+}
 /** A Google Cloud Pub/Sub topic a module publishes to, through the official client, in the project
  * `JEEVES_PUBSUB_PROJECT` with Application Default Credentials; locally `PUBSUB_EMULATOR_HOST`
  * points the client at the emulator. `publish` resolves only once Pub/Sub has acknowledged the
@@ -255,6 +319,7 @@ export async function pubsubPublisher(
   log: ProbeLog,
   binding: { topic: string },
 ): Promise<QueuePublisher> {
+  refuseEmulator();
   const client = new PubSub({
     projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
     ...pubsubChannel,
@@ -362,6 +427,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
     options.concurrency > 100000
   )
     throw new Error("Invalid consumer concurrency");
+  refuseEmulator();
   const client = new PubSub({
     projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
     ...pubsubChannel,
@@ -539,17 +605,20 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
  * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
  * and a new one tried every 5 s; each change is logged, a `cache <cache>` failure line when it
  * is lost and an info line when it is available. Closing destroys the client, so a drain never
- * waits on the cache. Its endpoint is `JEEVES_CACHE_<ID>_HOST` and `_PORT`. Probe: PING; a cache
- * that is down at startup logs `unavailable` and the process starts without it. */
+ * waits on the cache. Its endpoint is `JEEVES_CACHE_<ID>_HOST` and `_PORT`, and its transport
+ * `_TLS` (`transport`). Probe: PING; a cache that is down at startup logs `unavailable` and the
+ * process starts without it. */
 export async function cacheClient(
   scope: ProcessScope,
   log: ProbeLog,
   binding: { cache: string },
 ): Promise<CacheClient> {
   const failure = createFailureLog(log.tile);
+  const hostname = endpoint(variable("CACHE", binding.cache, "HOST"), host());
   const endpoints = {
-    hostname: endpoint(variable("CACHE", binding.cache, "HOST"), host()),
+    hostname,
     port: endpoint(variable("CACHE", binding.cache, "PORT"), port),
+    tls: transport("CACHE", binding.cache, hostname),
   };
   const cache = await createValkeyCache({
     binding: { ...endpoints, secret: `cache-${binding.cache}` },
@@ -673,12 +742,16 @@ export async function searchClient(
 // @search-end
 // @http-start
 /** Another application tile's process at `JEEVES_TILE_<ID>_URL` (locally `http://app-<id>:3000`,
- * inside the network). It has no probe and no `depends_on`: that process may start after this
- * one. Its failures count as an unreachable service: a rejected `fetch` is marked
+ * inside the network; with `JEEVES_REQUIRE_TLS=true` it must be `https:`, or startup fails
+ * `Insecure endpoint JEEVES_TILE_<ID>_URL`). It has no probe and no `depends_on`: that process may
+ * start after this one. Its failures count as an unreachable service: a rejected `fetch` is marked
  * `Symbol.for("jeeves.internal-call")`, so a lost connection to that process waits as a store's
  * does, not as an outside call. */
 export function httpTarget(binding: { tile: string }): HttpTarget {
-  const base = endpoint(variable("TILE", binding.tile, "URL"), url);
+  const name = variable("TILE", binding.tile, "URL");
+  const base = endpoint(name, url);
+  if (requireTls() && new URL(base).protocol !== "https:")
+    throw new Error(`Insecure endpoint ${name}`);
   return {
     request: (path, init) =>
       fetch(new URL(path, base), init).catch((error: unknown) => {

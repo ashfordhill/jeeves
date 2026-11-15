@@ -437,8 +437,8 @@ bucket, or why it has none, and Preview shows them.
   `complete` and `closed` delegate to it, so their "Not implemented" comes from the lifecycle
   hooks they reach (`metadata`, `job.construct`, `response`).
 - **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
-  Valkey cache at `GET /modules/<lead>/:key`; null answers 404. The cache's host and port come
-  from `cacheEndpoint` (`valkey.ts`): `JEEVES_CACHE_<ID>_HOST` and `_PORT`, not the bindings file. While the cache is down it reads
+  Valkey cache at `GET /modules/<lead>/:key`; null answers 404. The cache's host, port and
+  transport come from `cacheEndpoint` (`valkey.ts`): `JEEVES_CACHE_<ID>_HOST`, `_PORT` and `_TLS`, not the bindings file. While the cache is down it reads
   the database: a cache call that rejects or passes its 150 ms deadline makes the reader skip the
   cache for 5 s, and a call that hasn't settled keeps it skipped until it does. The Valkey client
   (`createValkeyCache`) destroys a lost client and connects a new one every 5 s, and logs each
@@ -706,8 +706,8 @@ when it builds that client, before its probe, with no default (`<ID>` is the til
 
 | Endpoint | Variables | Local value in `compose.yaml` |
 | --- | --- | --- |
-| A Database tile | `JEEVES_DATABASE_<ID>_HOST`, `JEEVES_DATABASE_<ID>_PORT` | `local-postgres`, `5432` |
-| A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT` | `cache-<id>`, `6379` |
+| A Database tile | `JEEVES_DATABASE_<ID>_HOST`, `JEEVES_DATABASE_<ID>_PORT`, `JEEVES_DATABASE_<ID>_TLS` | `local-postgres`, `5432`, `disable` |
+| A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT`, `JEEVES_CACHE_<ID>_TLS` | `cache-<id>`, `6379`, `disable` |
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
 | Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`) | `local`, `local-pubsub:8085`, `none` |
@@ -729,6 +729,29 @@ lists them, sorted, and the export's README lists them per process. A deployment
 values; local stacks behave as before. Object storage and search are still reached at their local
 names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
 `PGHOST` and `PGPORT`).
+
+**Verified TLS bindings** (QG10). A database's or cache's `_TLS` is `disable` or `verify-full`,
+with no default. `disable` is plain text: `createPostgres` (`postgres.ts`) gives `pg` `ssl: false`,
+so `PGSSLMODE` can't change it, and the cache's socket has no TLS. `verify-full` is TLS that checks
+the certificate chain and the host name: `pg` gets `{ rejectUnauthorized: true }` and
+`createValkeyCache` connects with `socket.tls` and `rejectUnauthorized: true`. With `verify-full`
+two variables are optional: `_CA_FILE`, a PEM file read as the client is built (`ca`; else Node's
+roots), and `_TLS_SERVERNAME`, the name the certificate must carry when it isn't the host (a
+managed instance reached by a private address; a host name by the host rule). For `pg`, which puts
+a host name in place of `servername`, that name is checked by the pool's own
+`checkServerIdentity`. No value turns verification off. A CA file that can't be read fails startup
+with `Unreadable CA file <variable>` and its error code (`ENOENT`, `EACCES`, `EISDIR`), never its
+path; `_CA_FILE` and `_TLS_SERVERNAME` are not read with `disable`. `JEEVES_REQUIRE_TLS` is `true`
+or unset (another value fails with `Invalid endpoint JEEVES_REQUIRE_TLS`); with `true`, startup
+fails with `Insecure endpoint <variable>` for a database or cache whose `_TLS` isn't
+`verify-full` (a database's Unix socket directory is local transport and passes), a
+`JEEVES_TILE_<ID>_URL` that isn't `https:` (`httpTarget`), an `OIDC_ISSUER` or `OIDC_JWKS_URL` that
+isn't `https:` (the sign-in's lines in the process file) and any `PUBSUB_EMULATOR_HOST` (both Pub/Sub
+clients). Each is checked where its client is built: the stubs' in `module-clients.ts`, a template's
+pool in `service-resources.ts`, the cache read's cache in `cacheEndpoint`. The broker (RabbitMQ),
+object storage and search have no TLS and are not checked, and `migrate.mjs` still follows
+`PGSSLMODE`. `compose.yaml` sets `disable` for every database and cache and never
+`JEEVES_REQUIRE_TLS`, so local stacks are unchanged.
 
 **Pub/Sub channels for stubs** (QG07). With Runnable processes on, a Queue tile whose every user
 is a stub has the normal control Provider (`queue.provider`: unspecified, self-hosted or

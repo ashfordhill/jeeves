@@ -1,4 +1,8 @@
+import { randomUUID } from "node:crypto";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   applyOperations,
   buildGenerationPresetCommand,
@@ -176,6 +180,8 @@ describe("reusable composition before product completion", () => {
       "../runtime/amqp.ts":
         "export const createConsumer = (binding) => ({ binding }), createPublisher = (binding) => ({ binding });",
       "../runtime/positive-cache.ts": "export const createPositiveReader = () => {};",
+      // A CA file is read as the pool is built (QG10).
+      "node:fs": 'export { readFileSync } from "node:fs";',
     };
     const dataUrl = (js: string) =>
       `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
@@ -212,6 +218,7 @@ describe("reusable composition before product completion", () => {
   const local = {
     JEEVES_DATABASE_STATE_DB_HOST: "local-postgres",
     JEEVES_DATABASE_STATE_DB_PORT: "5432",
+    JEEVES_DATABASE_STATE_DB_TLS: "disable",
     JEEVES_BROKER_HOST: "local-broker",
     JEEVES_BROKER_PORT: "5672",
   };
@@ -244,6 +251,7 @@ describe("reusable composition before product completion", () => {
     const restore = withEnvironment({
       JEEVES_DATABASE_STATE_DB_HOST: "db.internal",
       JEEVES_DATABASE_STATE_DB_PORT: "6432",
+      JEEVES_DATABASE_STATE_DB_TLS: "disable",
       JEEVES_BROKER_HOST: "mq.internal",
       JEEVES_BROKER_PORT: "5673",
     });
@@ -294,6 +302,69 @@ describe("reusable composition before product completion", () => {
       } finally {
         restore();
       }
+    }
+  });
+
+  it("gives a template's pool its transport, and refuses a plain-text one under JEEVES_REQUIRE_TLS (QG10)", async () => {
+    const resources = await emittedResources();
+    const scope = { own: () => {} };
+    const directory = mkdtempSync(join(tmpdir(), "jeeves-qg10-"));
+    const caFile = join(directory, "ca.pem");
+    const caText = `test CA ${randomUUID()}\n`;
+    writeFileSync(caFile, caText);
+    const name = (part: string) => `JEEVES_DATABASE_STATE_DB_${part}`;
+    const tls = (values: Record<string, string | undefined>) => {
+      const restore = withEnvironment({
+        ...local,
+        [name("CA_FILE")]: undefined,
+        [name("TLS_SERVERNAME")]: undefined,
+        JEEVES_REQUIRE_TLS: undefined,
+        ...values,
+      });
+      try {
+        return resources.pool(scope, counter, "state").options.tls;
+      } catch (error) {
+        return (error as Error).message;
+      } finally {
+        restore();
+      }
+    };
+    try {
+      expect(tls({})).toEqual({ mode: "disable" });
+      expect(tls({ [name("TLS")]: "verify-full" })).toEqual({ mode: "verify-full" });
+      expect(
+        tls({
+          [name("TLS")]: "verify-full",
+          [name("CA_FILE")]: caFile,
+          [name("TLS_SERVERNAME")]: "state.example",
+        }),
+      ).toEqual({ mode: "verify-full", ca: caText, servername: "state.example" });
+      // Each failure names its variable, never its value.
+      const missing = join(directory, "missing.pem");
+      expect([
+        tls({ [name("TLS")]: undefined }),
+        tls({ [name("TLS")]: "require" }),
+        tls({ [name("TLS")]: "verify-full", [name("TLS_SERVERNAME")]: "state example" }),
+        tls({ [name("TLS")]: "verify-full", [name("CA_FILE")]: missing }),
+        tls({ JEEVES_REQUIRE_TLS: "yes" }),
+        tls({ JEEVES_REQUIRE_TLS: "true" }),
+      ]).toEqual([
+        `Invalid endpoint ${name("TLS")}`,
+        `Invalid endpoint ${name("TLS")}`,
+        `Invalid endpoint ${name("TLS_SERVERNAME")}`,
+        `Unreadable CA file ${name("CA_FILE")} (ENOENT)`,
+        "Invalid endpoint JEEVES_REQUIRE_TLS",
+        `Insecure endpoint ${name("TLS")}`,
+      ]);
+      // Under the switch, verified TLS passes, and so does a Unix socket directory (local transport).
+      expect(tls({ JEEVES_REQUIRE_TLS: "true", [name("TLS")]: "verify-full" })).toEqual({
+        mode: "verify-full",
+      });
+      expect(tls({ JEEVES_REQUIRE_TLS: "true", [name("HOST")]: "/cloudsql/p:r:i" })).toEqual({
+        mode: "disable",
+      });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
     }
   });
 });

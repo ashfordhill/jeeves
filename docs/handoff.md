@@ -15680,3 +15680,187 @@ This coordinator docs entry records the owner's answers.
 
 **For the next unit.** QG10. `pnpm test:generated --suite=pubsub` covers the Pub/Sub clients;
 exports carry `pnpm-workspace.yaml`, so their plain install passes.
+
+## 2026-11-14 — QG10: Verified TLS bindings and an insecure-endpoint refusal
+
+**What changed.**
+- Each database and cache binding has a transport, `JEEVES_DATABASE_<ID>_TLS` /
+  `JEEVES_CACHE_<ID>_TLS`: `disable` or `verify-full`, required, no default. With `verify-full`,
+  `_CA_FILE` (a PEM file, read as the client is built; else Node's roots) and `_TLS_SERVERNAME`
+  (by the host rule) are optional; neither is read with `disable`. A bad value fails `Invalid
+  endpoint <variable>`; a CA file that can't be read fails `Unreadable CA file <variable> (<code>)`,
+  never the path.
+- `JEEVES_REQUIRE_TLS`: `true` or unset (another value fails `Invalid endpoint
+  JEEVES_REQUIRE_TLS`). With `true`, startup fails `Insecure endpoint <variable>` for a database or
+  cache whose `_TLS` isn't `verify-full` (a database Unix socket directory passes), a
+  `JEEVES_TILE_<ID>_URL`, `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:`, and any
+  `PUBSUB_EMULATOR_HOST`. Each check is where its client is built.
+- `postgres.ts.template`: `DatabaseTls`, `postgresSsl` and `createPostgres({ tls })`. `pg` gets
+  `ssl: false` for `disable` (so `PGSSLMODE` can't change it) and `{ rejectUnauthorized: true, ca? }`
+  for `verify-full`; with a server name also `servername` and a `checkServerIdentity` that checks
+  that name, because pg 8.23.1 replaces `servername` with a host name (`connection.js`).
+- `valkey.ts.template`: `CacheTls`; `ValkeyBinding.tls`; `cacheEndpoint` reads `_TLS`, `_CA_FILE`,
+  `_TLS_SERVERNAME` and the switch; `createValkeyCache` connects `verify-full` with `socket.tls:
+  true`, `rejectUnauthorized: true`, `ca`, `servername` (redis 6.3.0 passes these to `tls.connect`);
+  `disable` keeps the old socket exactly.
+- `module-clients.ts.template`: `requireTls` and `transport` (top level); `databaseClient` and
+  `cacheClient` pass the transport; `httpTarget` refuses a non-`https:` URL under the switch;
+  `refuseEmulator()` before each of the two `new PubSub(` (publisher, loop).
+- `service-resources.ts.template` (`sql` section): `requireTls` and `databaseTls`; a template's
+  `pool` passes its transport.
+- `http-wiring.ts`: the sign-in's setup lines validate the switch and refuse a non-`https:`
+  `OIDC_ISSUER` / `OIDC_JWKS_URL` under it; the cache read's comment names `_TLS`.
+- `local-contract.ts` (`localEndpoints`): `_TLS: disable` for every database and cache, so
+  `compose.yaml`, `processes.tiles[].environment` and the README's per-process list carry it.
+  `local.ts`: the generated README's endpoints paragraph gains the TLS and switch sentences.
+- Tests, 14 new:
+  - `module-clients.test.ts` 10: the transport reaching fake `pg`/`redis` for each value (CA file,
+    name, `disable` not reading a CA); invalid `_TLS`, name and switch values before any client; an
+    unreadable CA (`ENOENT`, `EISDIR`, empty path) for both; each refusal under the switch
+    (database, cache, tile URL, the publisher's emulator) and what passes (verified TLS, `https:`,
+    a socket directory); nothing refused without it; `cacheEndpoint` and `createValkeyCache`
+    with TLS; and on the server's real pg 8.23.1 (the version the export pins, asserted):
+    `disable` gives `ssl: false` that `PGSSLMODE=verify-full` doesn't change (and without the
+    option pg would follow it), `verify-full` keeps verified TLS whatever `PGSSLMODE` says, the
+    name check, and no value giving unverified TLS.
+  - `composition.test.ts` 1: a template pool's transport, failures and refusals.
+  - `tile-loop.test.ts` 1: a Pub/Sub loop refuses the emulator under the switch.
+  - `tile-guard.test.ts` 1: the emitted process refuses an `http:` issuer or key set under the
+    switch, starts with `https:`, and refuses a bad switch value.
+  - `tile-processes.test.ts` 1: every local database and cache is `disable`, none sets the switch,
+    a CA file or a name; the README sentences.
+- Updated assertions (the shapes this unit changes): QG06's compose environment, report rows and
+  README list (`tile-processes.test.ts`, 2 tests); QG06's `cacheEndpoint` result
+  (`module-clients.test.ts`); QG17's pool options gain `ssl: false`; QG11's emitted sign-in lines
+  (`http-wiring.test.ts`). Test setup: the fake `pg` records `options.tls`; `composition.test.ts`'s
+  environments set `JEEVES_DATABASE_STATE_DB_TLS` (now required) and its loader passes `node:fs`.
+- Pins (`processes-off.json`), in `frozen-v2` and `v2-module-design`: changed
+  `src/features/service-resources.ts`, `src/runtime/postgres.ts`, `src/runtime/valkey.ts` and
+  `.jeeves/manifest.json`. `stub-stack` unchanged.
+- Docs: `jeeves-generator/README.md` (the endpoints table, a **Verified TLS bindings** paragraph,
+  the cache read's sentence), `docs/studio.md` (the endpoints sentence), `docs/template-gaps.md`
+  (two Known limits rows: fixed, and the plain-text broker, object storage and search).
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 985 tests. On the final tree, exit 0, 117
+  files / 999 tests; Biome shows only the older 1 info.
+- New tests on HEAD's templates: a scratch clone at `91d4824` with its own offline install and the
+  six changed test files. 13 of the 14 new tests fail there; the 14th, "uses the pg version the
+  export pins", is a version guard and passes. The five updated assertions fail there too (QG06's
+  two compose/report tests and its `cacheEndpoint` result, QG17's pool options, QG11's sign-in
+  lines); the rest pass. The clone is deleted. The checkout's `node_modules/.modules.yaml`,
+  `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` keep their checksums and mtimes (12:10).
+- `pnpm test:e2e`:
+  - Run 1: 65 passed, 9 failed. Every failure was the known load flake: `getByRole('button', {
+    name: /^Project:/ })` not visible in 5 s (`studio.ts:94`) or `.board[data-layout="ready"]` not
+    ready in 20 s, while arm B ran its stacks (load average 5–6).
+  - Run 2, the whole suite alone: 74 passed (5.0 min).
+- Web build: exit 0.
+- Docker phase, after the offline checks, source SHA-256 `f0fe9751…9de5`: `--suite=all` once,
+  **17/17 passed** on its first run (Vitest 1,718 s, CLI 20:42–21:14): core 1, core-delivery 3,
+  wiring 2, identity 1, media 1, faults-media 1, regeneration 1 (B10), faults 4, pubsub 3. No
+  rerun was needed. Artifacts went to the scratchpad, so nothing was added under
+  `test-results/generated/`.
+- **hostssl proof.** Certificates made at run time with OpenSSL 3.0.13 in the scratchpad: CA one,
+  CA two, and a server certificate from CA one whose only name is `DNS:qg10-db.internal`.
+  `qg10-pg-tls` (`postgres:17.11-alpine3.23@sha256:bc2701f9…b61f`, 127.0.0.1:47981) ran with
+  `ssl=on` and a `pg_hba.conf` of only `local all postgres peer` and `hostssl … scram-sha-256`
+  (IPv4 and IPv6). Each case is one Node process importing after-probe's built
+  `dist/runtime/module-clients.js` and calling `databaseClient` for Front's `store` login, with
+  only the case's variables set:
+  - `verify-full`, CA one, `TLS_SERVERNAME=qg10-db.internal`: **connected**; `pg_stat_ssl` says
+    `ssl` true, TLSv1.3, as `r_store__front`.
+  - **Another CA** (CA two): refused, `unable to verify the first certificate`. Node's roots: the
+    same.
+  - **`disable`: refused by the server**, `no pg_hba.conf entry for host "172.17.0.1", user
+    "r_store__front", database "d_store", no encryption`.
+  - Host names: without a name (host `127.0.0.1`) refused, `IP: 127.0.0.1 is not in the cert's
+    list`; `TLS_SERVERNAME=other.internal` refused; host `localhost` with the name connected, and
+    without it refused (`Host: localhost. is not in the cert's altnames`). So the name check
+    holds where pg replaces `servername` with the host.
+  - The environment can't change it: `PGSSLMODE=disable` with `verify-full` still connected over
+    TLSv1.3; `PGSSLMODE=require` with `disable` was still refused as plain text.
+  - `JEEVES_REQUIRE_TLS=true`: `disable` failed `Insecure endpoint JEEVES_DATABASE_STORE_TLS` in
+    1 ms before any connection; `verify-full` connected. A missing CA file failed `Unreadable CA
+    file JEEVES_DATABASE_STORE_CA_FILE (ENOENT)`.
+  - The server logged `could not accept SSL connection: EOF detected` for each refused certificate
+    and the two `no encryption` lines.
+- Extra, the same for a cache: `qg10-valkey-tls` (`valkey/valkey:8.1.10-alpine@sha256:081c2f5c…8507`,
+  127.0.0.1:47982, `--port 0 --tls-port 6379`) through `cacheClient` on redis 6.3.0: `verify-full`
+  with CA one and the name connected (`set` then `get` gave the value); CA two (`self-signed
+  certificate in certificate chain`), no name (`IP: 127.0.0.1 is not in the cert's list`) and
+  `disable` (`Socket closed unexpectedly`) each left the cache unavailable with one failure line,
+  as a down cache is; `disable` under the switch failed `Insecure endpoint JEEVES_CACHE_HOT_TLS`.
+- The proof ran twice: first on a draft after-probe export (its name rule still allowed `:`), then
+  again with fresh certificates on the final tree's after-probe export, with the results above.
+  Both containers were removed by name (`docker rm -f -v`), and every certificate, key, password
+  and the proof script deleted.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`, on the
+  final tree.
+  - Changed paths, probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`,
+    `compose.yaml`, `src/processes/front.ts`, `src/runtime/module-clients.ts`,
+    `src/runtime/postgres.ts`, `src/runtime/valkey.ts`. r83: the same, with
+    `src/processes/account-api.ts`, `billing-api.ts` and `link-api.ts` in place of `front.ts`.
+    Neither fixture has a template database, so `service-resources.ts` doesn't change there (it does
+    in the pins).
+  - The report differs only in the registry's source inventory (owners' `sourceSha256`
+    `f7e8b22e…` → `85b2d3e8…5a6d`, the seven changed sources) and the new `_TLS` names in
+    `processes.tiles[].environment`. Required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. The YouTube v3 design (a template pool and the cache read) also exports and builds.
+  - The scratch exports are deleted.
+- Inventory: containers, networks and volumes equal the pre-phase inventory; images too, apart from
+  arm B's `qrwtyb` tags rebuilt meanwhile and its two `qrwtyb-restore-*` containers gone (not
+  touched). No `qg10` or `gs-` resource and no `/tmp/jeeves-system-*` is left;
+  `jeeves-postgres-1` is unchanged.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **Where the Compose values come from.** The brief names `local.ts` for "Compose: `disable`
+  everywhere locally"; the values are in `localEndpoints` (`local-contract.ts`), which `local.ts`
+  spreads into each service and the report reads, so the line is there. `local.ts` has the README
+  text.
+- **Messages the brief doesn't give.** A bad `_TLS`, name or switch value uses QG06's `Invalid
+  endpoint <variable>`; an unreadable CA file is `Unreadable CA file <variable> (<code>)`, the code
+  only when it is an `E…` code.
+- **Choices the brief leaves open.**
+  - `JEEVES_REQUIRE_TLS` "true or absent": any other value (empty included) fails by name, so a
+    typo can't silently turn the refusal off. It is read where an endpoint is read, so a process
+    that reads none doesn't check it.
+  - `_CA_FILE` and `_TLS_SERVERNAME` are read only with `verify-full`.
+  - `_TLS_SERVERNAME` follows the host rule. A rule with `:` was tried for Cloud SQL's
+    `<project>:<instance>` common names, but Node 24's `checkServerIdentity` never matches a name
+    with `:` (probed), so it would always fail.
+  - Any set `PUBSUB_EMULATOR_HOST`, empty included, is refused under the switch ("any").
+  - `createValkeyCache` treats a binding without `tls` (only possible from untyped code) as plain
+    TCP, so the positive-cache tests' bindings keep their exact socket. The type requires it.
+- **pg's server name.** `{ rejectUnauthorized: true, ca? }` alone can't honour `_TLS_SERVERNAME`
+  when the host is a name: pg 8.23.1 sets `servername` to the host after spreading `ssl`
+  (`connection.js`, `upgradeToSSL`). So the pool also gets `checkServerIdentity` for that name;
+  the proof's `localhost` case shows it.
+- **The Pub/Sub clients keep their two `new PubSub(` calls**, each after `refuseEmulator()`, so
+  QG09's F3 assertion stands as written.
+- **What the switch doesn't refuse.** The brief's list is followed exactly: the broker (RabbitMQ,
+  out of scope by R8), object storage and search (compiled local `http:` names) are plain text and
+  not checked, and `migrate.mjs` still follows `PGSSLMODE`. The generated README, the generator
+  README and a new Known limits row say so.
+- **The order of phases** is the packet's: check, e2e, build; then `--suite=all`, the hostssl proof
+  and the regeneration proof. The proof was repeated on the final export (Checks).
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), as amended by R8 (it depends on QG04 and excludes RabbitMQ TLS).
+- **Under the switch a cache with a bad certificate is unavailable, not fatal.** QG04's rule
+  (a cache that is down at startup is logged and the process starts) applies to a refused TLS
+  handshake too: the proof's wrong-CA cache logged `cache hot` failures and kept retrying. Only
+  `disable` fails startup. A QGR2 question whether the production profile should make that fatal.
+- **A Cloud SQL server certificate whose only name is `<project>:<instance>`** can't be checked by
+  Node's `checkServerIdentity`; such an instance is reached through its Unix socket directory
+  (local transport, which passes) or with a CA whose certificates carry DNS names. QRWTY's Q04 should
+  pick one.
+- **Memorystore and private addresses.** With `verify-full` and an IP host, the certificate must
+  carry that IP or the deployment sets `_TLS_SERVERNAME`.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG18. Exports read `JEEVES_*_TLS` for every database and cache (Compose sets
+`disable`); `JEEVES_REQUIRE_TLS=true` is the production profile's refusal.

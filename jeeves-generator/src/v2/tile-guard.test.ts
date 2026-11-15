@@ -474,4 +474,38 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
     expect(await me(deployed.app, token("api://example", `${bare}/`))).toEqual(refused);
     await stop();
   });
+
+  it("with JEEVES_REQUIRE_TLS=true needs an https: issuer and key set, naming the variable (QG10)", async () => {
+    const saved = process.env.JEEVES_REQUIRE_TLS;
+    const failed = (error: string) => [
+      { level: "error", event: "startup-failed", error: `Error: ${error}` },
+      "Application startup failed",
+    ];
+    try {
+      process.env.JEEVES_REQUIRE_TLS = "true";
+      const plain = "http://issuer.example/realms/sign-in";
+      for (const name of ["OIDC_ISSUER", "OIDC_JWKS_URL"]) {
+        const { lines, app } = await run("api://example", { [name]: plain });
+        expect(lines).toEqual(failed(`Insecure endpoint ${name}`));
+        expect(process.exitCode).toBe(1);
+        expect(app === undefined).toBe(true);
+        expect(JSON.stringify(lines)).not.toContain(plain);
+      }
+      // Both https: (the test issuer's): the process starts and verifies as before.
+      const verified = await run("api://example");
+      expect(verified.lines).toContain("Application ready");
+      expect(await me(verified.app, token("api://example"))).toEqual(signedIn);
+      await stop();
+      // The switch is `true` or unset; any other value fails naming it.
+      for (const value of ["", "1", "TRUE", "false"]) {
+        process.env.JEEVES_REQUIRE_TLS = value;
+        const { lines, app } = await run("api://example");
+        expect(lines).toEqual(failed("Invalid endpoint JEEVES_REQUIRE_TLS"));
+        expect(app === undefined).toBe(true);
+      }
+    } finally {
+      if (saved === undefined) delete process.env.JEEVES_REQUIRE_TLS;
+      else process.env.JEEVES_REQUIRE_TLS = saved;
+    }
+  });
 });

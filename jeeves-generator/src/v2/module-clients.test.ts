@@ -1,6 +1,11 @@
-import { readFileSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { randomUUID } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire, stripTypeScriptTypes } from "node:module";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { checkServerIdentity, type PeerCertificate } from "node:tls";
+import { pathToFileURL } from "node:url";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -22,16 +27,18 @@ const emitted = new TextDecoder().decode(
 );
 const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
 /** Each fake records what it is asked for in `calls`; the database and broker fakes also record
- * the endpoint they were given in `endpoints`. The Pub/Sub client's topic exists unless `pubsub`
- * says not, and `pubsub.publish` answers its publishes when it is set. */
+ * the endpoint they were given in `endpoints`, and the database fake its transport in
+ * `transports`. The Pub/Sub client's topic exists unless `pubsub` says not, and `pubsub.publish`
+ * answers its publishes when it is set. */
 type Calls = {
   calls: unknown[][];
   endpoints: unknown[][];
+  transports: unknown[];
   fail?: string;
   hang?: boolean;
   pubsub?: { exists?: boolean; publish?: () => Promise<string> };
 };
-const fake: Calls = { calls: [], endpoints: [] };
+const fake: Calls = { calls: [], endpoints: [], transports: [] };
 (globalThis as { moduleClientsFake?: Calls }).moduleClientsFake = fake;
 const check = `
   const fake = globalThis.moduleClientsFake;
@@ -47,6 +54,7 @@ const fakes: Record<string, string> = {
   "./postgres.ts": `${check}
     export function createPostgres(options) {
       fake.endpoints.push(["postgres", options.hostname, options.port]);
+      fake.transports.push(options.tls);
       record("createPostgres", options.login.user, options.poolSize, options.statementTimeoutMs);
       return {
         on: (event) => record("on", event),
@@ -873,9 +881,14 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     const hotRoutes = {
       JEEVES_CACHE_HOT_ROUTES_HOST: "cache.internal",
       JEEVES_CACHE_HOT_ROUTES_PORT: "6380",
+      JEEVES_CACHE_HOT_ROUTES_TLS: "disable",
     };
     environment(hotRoutes);
-    expect(valkey.cacheEndpoint("hot-routes")).toEqual({ hostname: "cache.internal", port: 6380 });
+    expect(valkey.cacheEndpoint("hot-routes")).toEqual({
+      hostname: "cache.internal",
+      port: 6380,
+      tls: { mode: "disable" },
+    });
     const cases: [Record<string, string | undefined>, string][] = [
       [{ JEEVES_CACHE_HOT_ROUTES_HOST: undefined }, "JEEVES_CACHE_HOT_ROUTES_HOST"],
       [{ JEEVES_CACHE_HOT_ROUTES_HOST: "/run/valkey" }, "JEEVES_CACHE_HOT_ROUTES_HOST"],
@@ -1095,6 +1108,283 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
   });
 });
 
+describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => {
+  // A CA file is a PEM file the process reads as it builds the client; these tests check only that
+  // its exact bytes reach the client, so its content is a marker made at run time.
+  const directory = mkdtempSync(join(tmpdir(), "jeeves-qg10-"));
+  const caFile = join(directory, "ca.pem");
+  const caText = `test CA ${randomUUID()}\n`;
+  writeFileSync(caFile, caText);
+  mkdirSync(join(directory, "folder"));
+  afterAll(() => rmSync(directory, { recursive: true, force: true }));
+  beforeEach(() => {
+    fake.calls.length = 0;
+    fake.transports.length = 0;
+    environment({ ...localEnvironment, JEEVES_REQUIRE_TLS: undefined });
+  });
+  afterEach(() => {
+    fake.calls.length = 0;
+    fake.endpoints.length = 0;
+    fake.transports.length = 0;
+    lines.length = 0;
+    restoreEnvironment();
+    vi.unstubAllGlobals();
+  });
+  const links = { tile: "links-api", resource: "links-db" };
+  const db = (part: string) => `JEEVES_DATABASE_LINKS_DB_${part}`;
+  const cache = (part: string) => `JEEVES_CACHE_LINKS_CACHE_${part}`;
+  const tcp = {
+    host: "cache-links-cache",
+    port: 6379,
+    connectTimeout: 500,
+    reconnectStrategy: false,
+  };
+  /** The socket the cache's client was created with, after the client is closed. */
+  async function cacheSocket() {
+    const scope = testScope();
+    await clients.cacheClient(scope, probe, { cache: "links-cache" });
+    for (const drain of scope.owned) await drain();
+    const created = fake.calls.filter((call) => call[0] === "createClient");
+    const options = created.at(-1)?.[1] as { socket: unknown } | undefined;
+    if (!options) throw new Error("No cache client was created");
+    return options.socket;
+  }
+  /** What building a client rejects or throws with, or "built". */
+  const outcome = (build: () => unknown) =>
+    Promise.resolve()
+      .then(build)
+      .then(
+        () => "built",
+        (thrown: Error) => thrown.message,
+      );
+
+  it("passes a database's and a cache's transport to its client: disable, verify-full, a CA file and a certificate name", async () => {
+    // Compose's local value.
+    await clients.databaseClient(testScope(), probe, links);
+    environment({ [db("TLS")]: "verify-full" });
+    await clients.databaseClient(testScope(), probe, links);
+    environment({ [db("CA_FILE")]: caFile, [db("TLS_SERVERNAME")]: "links-db.example" });
+    await clients.databaseClient(testScope(), probe, links);
+    // With disable, a CA file and a name are not read.
+    environment({ [db("TLS")]: "disable", [db("CA_FILE")]: join(directory, "missing.pem") });
+    await clients.databaseClient(testScope(), probe, links);
+    expect(fake.transports).toEqual([
+      { mode: "disable" },
+      { mode: "verify-full" },
+      { mode: "verify-full", ca: caText, servername: "links-db.example" },
+      { mode: "disable" },
+    ]);
+    // A cache: plain TCP as before for disable; TLS that rejects an unverified certificate, with
+    // the CA's PEM and the certificate's name, for verify-full.
+    expect(await cacheSocket()).toEqual(tcp);
+    environment({ [cache("TLS")]: "verify-full" });
+    expect(await cacheSocket()).toEqual({ ...tcp, tls: true, rejectUnauthorized: true });
+    environment({ [cache("CA_FILE")]: caFile, [cache("TLS_SERVERNAME")]: "cache.example" });
+    expect(await cacheSocket()).toEqual({
+      ...tcp,
+      tls: true,
+      rejectUnauthorized: true,
+      ca: caText,
+      servername: "cache.example",
+    });
+    environment({ [cache("TLS")]: "disable" });
+    expect(await cacheSocket()).toEqual(tcp);
+  });
+
+  it("fails a database or cache naming a missing or invalid transport, name or switch, before any client", async () => {
+    const cases: [Record<string, string | undefined>, string][] = [];
+    for (const [kind, name] of [
+      ["database", db],
+      ["cache", cache],
+    ] as const) {
+      for (const value of [undefined, "", "require", "verify-ca", "VERIFY-FULL", "verify-full "])
+        cases.push([{ [name("TLS")]: value, kind }, name("TLS")]);
+      // A name by the host rule: Node's own check refuses others, `project:instance` included.
+      for (const value of ["", "db example", "db_example", "p:i", "a".repeat(254)])
+        cases.push([
+          { [name("TLS")]: "verify-full", [name("TLS_SERVERNAME")]: value, kind },
+          name("TLS_SERVERNAME"),
+        ]);
+      for (const value of ["", "1", "TRUE", "false", "yes"])
+        cases.push([{ JEEVES_REQUIRE_TLS: value, kind }, "JEEVES_REQUIRE_TLS"]);
+    }
+    const seen: string[][] = [];
+    for (const [{ kind, ...values }, variable] of cases) {
+      environment(localEnvironment);
+      environment(values);
+      const message = await outcome(() =>
+        kind === "database"
+          ? clients.databaseClient(testScope(), probe, links)
+          : clients.cacheClient(testScope(), probe, { cache: "links-cache" }),
+      );
+      seen.push([message, variable]);
+      for (const value of Object.values(values)) if (value) expect(message).not.toContain(value);
+      environment({
+        JEEVES_REQUIRE_TLS: undefined,
+        [db("TLS_SERVERNAME")]: undefined,
+        [cache("TLS_SERVERNAME")]: undefined,
+      });
+    }
+    expect(seen).toEqual(cases.map(([, variable]) => [`Invalid endpoint ${variable}`, variable]));
+    // No pool or cache client was created and no probe ran or logged.
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+  });
+
+  it("fails startup naming a CA file that can't be read, and its error code, never its path", async () => {
+    const seen: string[] = [];
+    for (const name of [db, cache])
+      for (const path of [join(directory, "missing.pem"), join(directory, "folder"), ""]) {
+        environment({ [name("TLS")]: "verify-full", [name("CA_FILE")]: path });
+        const message = await outcome(() =>
+          name === db
+            ? clients.databaseClient(testScope(), probe, links)
+            : clients.cacheClient(testScope(), probe, { cache: "links-cache" }),
+        );
+        seen.push(message);
+        if (path) expect(message).not.toContain(path);
+        environment(localEnvironment);
+      }
+    expect(seen).toEqual([
+      `Unreadable CA file ${db("CA_FILE")} (ENOENT)`,
+      `Unreadable CA file ${db("CA_FILE")} (EISDIR)`,
+      `Unreadable CA file ${db("CA_FILE")} (ENOENT)`,
+      `Unreadable CA file ${cache("CA_FILE")} (ENOENT)`,
+      `Unreadable CA file ${cache("CA_FILE")} (EISDIR)`,
+      `Unreadable CA file ${cache("CA_FILE")} (ENOENT)`,
+    ]);
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+  });
+
+  it("with JEEVES_REQUIRE_TLS=true refuses a plain-text database, cache or tile and a Pub/Sub emulator, by name", async () => {
+    const fetch = vi.fn(async () => new Response("ok"));
+    vi.stubGlobal("fetch", fetch);
+    const tile = "JEEVES_TILE_STATS_API_URL";
+    environment({ JEEVES_REQUIRE_TLS: "true", [tile]: "http://stats.internal:3000" });
+    expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe(
+      `Insecure endpoint ${db("TLS")}`,
+    );
+    expect(
+      await outcome(() => clients.cacheClient(testScope(), probe, { cache: "links-cache" })),
+    ).toBe(`Insecure endpoint ${cache("TLS")}`);
+    expect(await outcome(() => clients.httpTarget({ tile: "stats-api" }))).toBe(
+      `Insecure endpoint ${tile}`,
+    );
+    // Refused before any client: no pool, cache client or probe.
+    expect(fake.calls).toEqual([]);
+    expect(lines).toEqual([]);
+    // Pub/Sub's emulator is plain text: any PUBSUB_EMULATOR_HOST is refused before a client.
+    environment({ JEEVES_PUBSUB_PROJECT: "local" });
+    for (const emulator of ["local-pubsub:8085", ""]) {
+      environment({ PUBSUB_EMULATOR_HOST: emulator });
+      expect(
+        await outcome(() => pubsubClients.pubsubPublisher(testScope(), probe, { topic: "visits" })),
+      ).toBe("Insecure endpoint PUBSUB_EMULATOR_HOST");
+    }
+    expect(fake.calls).toEqual([]);
+    // Verified TLS, https: and no emulator pass; so does a database's Unix socket directory,
+    // which is local transport.
+    environment({
+      PUBSUB_EMULATOR_HOST: undefined,
+      [db("TLS")]: "verify-full",
+      [cache("TLS")]: "verify-full",
+      [tile]: "https://stats.internal:8443",
+    });
+    expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
+    expect(await cacheSocket()).toEqual({ ...tcp, tls: true, rejectUnauthorized: true });
+    await clients.httpTarget({ tile: "stats-api" }).request("/x");
+    expect(fetch).toHaveBeenCalledWith(new URL("https://stats.internal:8443/x"), undefined);
+    expect(
+      await outcome(() => pubsubClients.pubsubPublisher(testScope(), probe, { topic: "visits" })),
+    ).toBe("built");
+    environment({ [db("HOST")]: "/cloudsql/p:r:i", [db("TLS")]: "disable" });
+    expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
+    expect(fake.transports).toEqual([{ mode: "verify-full" }, { mode: "disable" }]);
+  });
+
+  it("without JEEVES_REQUIRE_TLS refuses nothing: Compose's local values pass as before", async () => {
+    const fetch = vi.fn(async () => new Response("ok"));
+    vi.stubGlobal("fetch", fetch);
+    expect(localEnvironment).toMatchObject({ [db("TLS")]: "disable", [cache("TLS")]: "disable" });
+    expect(Object.keys(localEnvironment)).not.toContain("JEEVES_REQUIRE_TLS");
+    expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
+    expect(await cacheSocket()).toEqual(tcp);
+    await clients.httpTarget({ tile: "stats-api" }).request("/x");
+    expect(fetch).toHaveBeenCalledWith(new URL("http://app-stats-api:3000/x"), undefined);
+    environment({ JEEVES_PUBSUB_PROJECT: "local", PUBSUB_EMULATOR_HOST: "local-pubsub:8085" });
+    expect(
+      await outcome(() => pubsubClients.pubsubPublisher(testScope(), probe, { topic: "visits" })),
+    ).toBe("built");
+  });
+
+  it("reads a cache read's transport in cacheEndpoint, and createValkeyCache connects verify-full with TLS", async () => {
+    const name = (part: string) => `JEEVES_CACHE_HOT_ROUTES_${part}`;
+    const hotRoutes = {
+      [name("HOST")]: "10.1.2.3",
+      [name("PORT")]: "6378",
+      [name("TLS")]: "verify-full",
+      [name("CA_FILE")]: caFile,
+      [name("TLS_SERVERNAME")]: "cache.example",
+    };
+    environment(hotRoutes);
+    const endpoint = valkey.cacheEndpoint("hot-routes");
+    expect(endpoint).toEqual({
+      hostname: "10.1.2.3",
+      port: 6378,
+      tls: { mode: "verify-full", ca: caText, servername: "cache.example" },
+    });
+    const opened = await valkey.createValkeyCache({
+      binding: { ...endpoint, secret: "cache-hot-routes" },
+    });
+    opened.close();
+    expect(fake.calls[0]).toEqual([
+      "createClient",
+      {
+        password: "secret of cache-hot-routes",
+        disableOfflineQueue: true,
+        commandsQueueMaxLength: 32,
+        socket: {
+          host: "10.1.2.3",
+          port: 6378,
+          connectTimeout: 500,
+          reconnectStrategy: false,
+          tls: true,
+          rejectUnauthorized: true,
+          ca: caText,
+          servername: "cache.example",
+        },
+      },
+    ]);
+    const cases: [Record<string, string | undefined>, string][] = [
+      [{ [name("TLS")]: undefined }, `Invalid endpoint ${name("TLS")}`],
+      [{ [name("TLS")]: "no-verify" }, `Invalid endpoint ${name("TLS")}`],
+      [{ [name("TLS_SERVERNAME")]: "cache example" }, `Invalid endpoint ${name("TLS_SERVERNAME")}`],
+      [
+        { [name("CA_FILE")]: join(directory, "missing.pem") },
+        `Unreadable CA file ${name("CA_FILE")} (ENOENT)`,
+      ],
+      [{ JEEVES_REQUIRE_TLS: "1" }, "Invalid endpoint JEEVES_REQUIRE_TLS"],
+      [
+        { JEEVES_REQUIRE_TLS: "true", [name("TLS")]: "disable" },
+        `Insecure endpoint ${name("TLS")}`,
+      ],
+    ];
+    const seen: string[][] = [];
+    for (const [values, message] of cases) {
+      environment({ ...hotRoutes, JEEVES_REQUIRE_TLS: undefined });
+      environment(values);
+      seen.push([await outcome(() => valkey.cacheEndpoint("hot-routes")), message]);
+    }
+    expect(seen).toEqual(cases.map(([, message]) => [message, message]));
+    // Verified TLS passes the switch; without it, disable gives plain TCP as before.
+    environment({ ...hotRoutes, JEEVES_REQUIRE_TLS: "true" });
+    expect(valkey.cacheEndpoint("hot-routes").tls.mode).toBe("verify-full");
+    environment({ JEEVES_REQUIRE_TLS: undefined, [name("TLS")]: "disable" });
+    expect(valkey.cacheEndpoint("hot-routes").tls).toEqual({ mode: "disable" });
+  });
+});
+
 describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
   const source = new TextDecoder().decode(
     bundle.files.find((file) => file.path === "src/runtime/postgres.ts")?.bytes,
@@ -1127,6 +1417,7 @@ describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
     createPostgres({
       hostname: "local-postgres",
       port: 5432,
+      tls: { mode: "disable" },
       login: { database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db" },
       poolSize: 10,
       statementTimeoutMs: 2000,
@@ -1136,6 +1427,8 @@ describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
       {
         host: "local-postgres",
         port: 5432,
+        // QG10: Compose's transport, which PGSSLMODE can't change.
+        ssl: false,
         database: "d_links_db",
         user: "r_links_db__links_api",
         password: "secret of sql-links-db",
@@ -1145,5 +1438,133 @@ describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
         connectionTimeoutMillis: 2000,
       },
     ]);
+  });
+});
+
+// QG10: the exact emitted postgres.ts on the pg the Jeeves server pins, which is the version the
+// export pins: what `ssl` each transport gives the pool, and what pg then does with it. Nothing
+// connects.
+describe("emitted postgres.ts: a database's transport (QG10)", () => {
+  const serverRequire = createRequire(
+    new URL("../../../jeeves/apps/server/package.json", import.meta.url),
+  );
+  const pgEntry = serverRequire.resolve("pg");
+  const pools: Record<string, unknown>[] = [];
+  (globalThis as { qg10PoolsFake?: unknown[] }).qg10PoolsFake = pools;
+  const realPg = `import pg from ${JSON.stringify(pathToFileURL(pgEntry).href)};
+    export default { Pool: class extends pg.Pool { constructor(options) { super(options); globalThis.qg10PoolsFake.push(this); } } };`;
+  const source = new TextDecoder().decode(
+    bundle.files.find((file) => file.path === "src/runtime/postgres.ts")?.bytes,
+  );
+  const loaded = import(
+    dataUrl(
+      stripTypeScriptTypes(source).replace(/from "([^"]+)"/g, (match, from: string) =>
+        from === "pg"
+          ? `from "${dataUrl(realPg)}"`
+          : from === "./local.ts"
+            ? `from "${dataUrl(String(fakes["./local.ts"]))}"`
+            : match,
+      ),
+    )
+  );
+  const options = (tls: unknown) => ({
+    hostname: "db.internal",
+    port: 5432,
+    tls,
+    login: { database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db" },
+    poolSize: 10,
+    statementTimeoutMs: 2000,
+    connectionTimeoutMs: 2000,
+  });
+  let mode: string | undefined;
+  beforeEach(() => {
+    mode = process.env.PGSSLMODE;
+  });
+  afterEach(async () => {
+    if (mode === undefined) delete process.env.PGSSLMODE;
+    else process.env.PGSSLMODE = mode;
+    for (const pool of pools.splice(0)) await (pool as { end(): Promise<void> }).end();
+  });
+  /** The `ssl` a pool's clients connect with, as pg works it out from the pool's options. */
+  const clientSsl = (pool: Record<string, unknown>) => {
+    const pg = serverRequire("pg");
+    return new pg.Client((pool as { options: unknown }).options).connectionParameters.ssl;
+  };
+
+  it("uses the pg version the export pins", () => {
+    const manifest = JSON.parse(
+      readFileSync(join(pgEntry.slice(0, pgEntry.lastIndexOf("/lib/")), "package.json"), "utf8"),
+    ) as { version: string };
+    const pins = JSON.parse(
+      readFileSync(
+        new URL("../../templates/local-v2/assets/package.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { dependencies: Record<string, string> };
+    expect(manifest.version).toBe(pins.dependencies.pg);
+  });
+
+  it("gives disable ssl: false, so PGSSLMODE can't turn TLS on or off", async () => {
+    const { createPostgres } = await loaded;
+    process.env.PGSSLMODE = "verify-full";
+    const pool = createPostgres(options({ mode: "disable" }));
+    expect(pool.options.ssl).toBe(false);
+    expect(clientSsl(pool)).toBe(false);
+    // Without an ssl option (before QG10), pg followed the environment.
+    const pg = serverRequire("pg");
+    const { ssl: _, ...unset } = pool.options;
+    expect(new pg.Client(unset).connectionParameters.ssl).toBe(true);
+  });
+
+  it("gives verify-full verified TLS whatever PGSSLMODE says, with its CA and its certificate's name", async () => {
+    const { createPostgres } = await loaded;
+    for (const environment of ["disable", "no-verify", undefined]) {
+      if (environment === undefined) delete process.env.PGSSLMODE;
+      else process.env.PGSSLMODE = environment;
+      const pool = createPostgres(options({ mode: "verify-full" }));
+      expect(pool.options.ssl).toEqual({ rejectUnauthorized: true });
+      expect(clientSsl(pool)).toEqual({ rejectUnauthorized: true });
+    }
+    const ca = `test CA ${randomUUID()}`;
+    expect(createPostgres(options({ mode: "verify-full", ca })).options.ssl).toEqual({
+      rejectUnauthorized: true,
+      ca,
+    });
+    const named = createPostgres(
+      options({ mode: "verify-full", ca, servername: "links-db.example" }),
+    ).options.ssl;
+    expect(named).toEqual({
+      rejectUnauthorized: true,
+      ca,
+      servername: "links-db.example",
+      checkServerIdentity: expect.any(Function),
+    });
+    // pg puts a host name in place of `servername`, so the given name is checked here instead:
+    // a certificate for that name passes whatever the host, and one for the host does not.
+    const certificate = (name: string, altNames?: string) =>
+      ({ subject: { CN: name }, ...(altNames && { subjectaltname: altNames }) }) as PeerCertificate;
+    expect(named.checkServerIdentity("db.internal", certificate("links-db.example"))).toBe(
+      undefined,
+    );
+    expect(named.checkServerIdentity("10.1.2.3", certificate("links-db.example"))).toBe(undefined);
+    expect(named.checkServerIdentity("db.internal", certificate("db.internal"))).toBeInstanceOf(
+      Error,
+    );
+    const dns = createPostgres(options({ mode: "verify-full", servername: "db.example" })).options
+      .ssl;
+    expect(dns.checkServerIdentity("10.1.2.3", certificate("x", "DNS:db.example"))).toBe(
+      checkServerIdentity("db.example", certificate("x", "DNS:db.example")),
+    );
+    expect(
+      dns.checkServerIdentity("db.example", certificate("x", "DNS:other.example")),
+    ).toBeInstanceOf(Error);
+  });
+
+  it("has no option that turns verification off", async () => {
+    const { createPostgres } = await loaded;
+    expect(source).not.toMatch(/rejectUnauthorized:\s*false/);
+    // Anything but verify-full is plain text, never unverified TLS.
+    for (const mode of ["disable", "no-verify", "require", "prefer"])
+      expect(createPostgres(options({ mode })).options.ssl).toBe(false);
   });
 });

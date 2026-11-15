@@ -1,7 +1,8 @@
 import { selections } from "./application-bindings.ts";
 import { localLogins } from "./local-bindings.ts";
 // @sql-import-start
-import { createPostgres } from "../runtime/postgres.ts";
+import { readFileSync } from "node:fs";
+import { createPostgres, type DatabaseTls } from "../runtime/postgres.ts";
 // @sql-import-end
 // @objects-import-start
 import { createObjects } from "../runtime/objects.ts";
@@ -66,15 +67,61 @@ export function endpointPort(name: string): number {
 	throw Error(`Invalid endpoint ${name}`);
 }
 // @sql-start
-/** A template's pool on its tile's login, at `JEEVES_DATABASE_<ID>_HOST` and `_PORT`. */
+/** `JEEVES_REQUIRE_TLS` (QG10): `true` makes startup refuse a plain-text endpoint (`Insecure
+ * endpoint <variable>`); absent, nothing is refused; any other value fails naming it. */
+function requireTls(): boolean {
+	const value = process.env.JEEVES_REQUIRE_TLS;
+	if (value === undefined) return false;
+	if (value === "true") return true;
+	throw Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+}
+/** A database's transport, `<database>_TLS`: `disable` or `verify-full`, with no default. With
+ * `verify-full`, `_CA_FILE` is an optional PEM file, read now (one that can't be read fails
+ * `Unreadable CA file <variable>`), and `_TLS_SERVERNAME` the optional name the certificate
+ * carries when it isn't the host (1–253 letters, digits, `.` or `-`). With
+ * `JEEVES_REQUIRE_TLS=true`, `disable` fails `Insecure endpoint <database>_TLS`, except on a Unix
+ * socket directory, which is local transport. */
+function databaseTls(database: string, hostname: string): DatabaseTls {
+	const strict = requireTls();
+	const mode = process.env[`${database}_TLS`];
+	if (mode !== "disable" && mode !== "verify-full")
+		throw Error(`Invalid endpoint ${database}_TLS`);
+	if (mode === "disable") {
+		if (strict && !hostname.startsWith("/")) throw Error(`Insecure endpoint ${database}_TLS`);
+		return { mode };
+	}
+	const servername = process.env[`${database}_TLS_SERVERNAME`];
+	if (servername !== undefined && !/^[A-Za-z0-9.-]{1,253}$/.test(servername))
+		throw Error(`Invalid endpoint ${database}_TLS_SERVERNAME`);
+	const path = process.env[`${database}_CA_FILE`];
+	let ca: string | undefined;
+	if (path !== undefined)
+		try {
+			ca = readFileSync(path, "utf8");
+		} catch (error) {
+			const code = (error as { code?: unknown } | null)?.code;
+			throw Error(
+				`Unreadable CA file ${database}_CA_FILE${typeof code === "string" && /^E[A-Z]+$/.test(code) ? ` (${code})` : ""}`,
+			);
+		}
+	return {
+		mode,
+		...(ca !== undefined && { ca }),
+		...(servername !== undefined && { servername }),
+	};
+}
+/** A template's pool on its tile's login, at `JEEVES_DATABASE_<ID>_HOST` and `_PORT`, with its
+ * transport `_TLS` (`databaseTls`). */
 export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
 	const id = resource(s, field);
 	const login = localLogins.find((l) => l.resource === id && l.host === s.host);
 	if (!login) throw Error("Missing contributed login");
 	const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
+	const hostname = endpointHost(`${database}_HOST`, true);
 	const client = createPostgres({
-		hostname: endpointHost(`${database}_HOST`, true),
+		hostname,
 		port: endpointPort(`${database}_PORT`),
+		tls: databaseTls(database, hostname),
 		login,
 		poolSize: input(s, `${field}.poolSize`),
 		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),

@@ -1150,4 +1150,30 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
     );
     expect(pubsubFake.calls).toEqual([]);
   });
+
+  it("with JEEVES_REQUIRE_TLS=true refuses a Pub/Sub emulator before any client (QG10)", async () => {
+    const saved = ["JEEVES_REQUIRE_TLS", "PUBSUB_EMULATOR_HOST"].map(
+      (name) => [name, process.env[name]] as const,
+    );
+    try {
+      process.env.JEEVES_REQUIRE_TLS = "true";
+      for (const emulator of ["local-pubsub:8085", ""]) {
+        process.env.PUBSUB_EMULATOR_HOST = emulator;
+        pubsubFake.calls.length = 0;
+        await expect(pubsubStarted(async () => {})).rejects.toThrow(
+          /^Insecure endpoint PUBSUB_EMULATOR_HOST$/,
+        );
+        expect(pubsubFake.calls).toEqual([]);
+      }
+      process.env.JEEVES_REQUIRE_TLS = "on";
+      await expect(pubsubStarted(async () => {})).rejects.toThrow(
+        /^Invalid endpoint JEEVES_REQUIRE_TLS$/,
+      );
+      expect(pubsubFake.calls).toEqual([]);
+    } finally {
+      for (const [name, value] of saved)
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+    }
+  });
 });
