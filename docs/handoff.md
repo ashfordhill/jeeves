@@ -16528,3 +16528,105 @@ after the write.
 
 **For the next unit.** QG26. Every 503 the generated edge or a process answers from its own code
 now carries `Retry-After: 1`, except `/healthz`'s.
+
+## 2026-11-15 — QG26: The report lists every variable a process reads
+
+**What changed.**
+- `tile-processes.ts`, `environmentOf`: adds `(service.external ?? []).map(externalVariable)`, so
+  `processes.tiles[].environment` lists each External API's `JEEVES_EXTERNAL_<ID>_URL` with the
+  process that reads it (Compose still doesn't set it). The doc comment says so.
+- `local.ts`: the README's per-process list ("Each process reads …") adds the same variables;
+  `externalReads` becomes a map from service to its variables, and the sentence "Here `app-x` reads
+  …" is gone. The tile URL rule there reads "no credentials, query, fragment or whitespace".
+- `client-wiring.ts`: the emitted comment over each stub process's clients ends "a failed probe
+  fails startup, except a cache's, which is logged."
+- `module-clients.ts.template`, `url`: a value matching `/\s/` is refused (`Invalid endpoint
+  <name>`), so `JEEVES_TILE_*`, `JEEVES_EXTERNAL_*` and `JEEVES_IDENTITY_*` with a trailing newline
+  fail startup; its comment says why (`new URL` trims, drops or encodes it).
+- `http-wiring.ts`, `signInUrl`: `const protocol = /\s/.test(value) ? undefined :
+  URL.parse(value)?.protocol;`, so `OIDC_ISSUER` or `OIDC_JWKS_URL` with whitespace fails `Invalid
+  endpoint <name>`; the emitted comment above it says so.
+- Tests: 2 new, `module-clients.test.ts` (each of the three HTTP clients refuses six spaced values,
+  a trailing `\n` and `\r\n` among them, and builds without them) and `tile-guard.test.ts` (both
+  `OIDC_*` URLs with a trailing newline, a leading space, a tab or an inner space fail startup,
+  naming the variable, never the value). Changed: QG06's rows test is now "Compose's keys plus the
+  process's `JEEVES_EXTERNAL_*`" (from its `externalTarget(...)` calls), also on the probe, and its
+  README line per process equals the row; QG20's Compose test asserts r83's Billing API row has
+  `JEEVES_EXTERNAL_STRIPE_API_URL` and its service doesn't; QG20's README test drops the "Here"
+  phrase for the `app-front` list line; QG11's emitted sign-in lines take the new ones.
+- Pins: none changed (`processes-off.test.ts` passes; no pinned export has a guard or a stub).
+- Docs: `jeeves-generator/README.md`. The endpoints table's Identity row is now
+  `JEEVES_IDENTITY_<ID>_URL`, locally `http://identity-<id>:8080` (it said `OIDC_ISSUER` and the
+  browser's issuer), and the paragraph after it says the report and the export's README list every
+  variable a process reads, the External API's included (it said a stub Identity client reads
+  `OIDC_ISSUER` and the External API's is in neither list). The URL rule and the sign-in passage
+  say whitespace is refused.
+
+**Checks.**
+- `pnpm check`: before any change, QG25's final tree (only `docs/handoff.md` differs), exit 0,
+  117 files / 1015 tests. On the final tree, exit 0, 117 files / 1017 tests; Biome shows only the
+  older 1 info.
+- New and changed tests on HEAD's templates: a scratch clone at `79ecb96` with its own offline
+  install and the five changed test files. 6 fail there, each at its QG26 assertion: the 2 new
+  tests (a trailing `\n` is `built`; the sign-in starts), QG06's rows test (`app-front` lacks
+  `JEEVES_EXTERNAL_PROVIDER_URL`; the two stub stacks pass), QG20's Compose test (Billing API's row
+  lacks the Stripe URL), QG20's README test and QG11's emitted lines; the files' other 92 pass. The
+  clone is deleted. The checkout's `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json`
+  and `.pnpm/lock.yaml` keep their checksums and mtimes (2026-11-14 12:10).
+- `pnpm test:e2e`: run 1, 67 passed / 7 failed, all UI waits of 5 s (`canvas.spec.ts` 18 and 53,
+  a new project's URL not changing in time, `studio.ts:107`; `connect.spec.ts` 174 and 217,
+  `connection-dots.spec.ts` 286 and `detailed-view.spec.ts` 111 and 265, a save not seen in time);
+  none touches generation. Run 2, alone: 73 passed / 1 failed, `spawn.spec.ts:404` at `Project:`
+  not visible within 5 s (`studio.ts:94`, the known load flake; load average 7–9). That test
+  alone: 1 passed (9.6 s). Run 1 had left four projects in `jeeves_e2e` (created during it by the
+  failed tests); I deleted those four rows by ID. The two older projects are untouched.
+- Web build: exit 0.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=wiring` (artifacts in the
+  scratchpad): **2/2 passed** (B05, B06; Vitest 208.4 s), first run.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths: probe `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`,
+    `src/processes/front.ts`, `src/processes/tally.ts`, `src/runtime/module-clients.ts`; r83 the
+    same with `account-api`, `analytics-worker`, `billing-api`, `link-api`, `redirect-service` and
+    `session-api` in place of the probe's processes. Nothing else: the brief's list.
+  - Process files: the clients comment in each; in each guarded one (`front`, `account-api`,
+    `billing-api`, `link-api`) the sign-in's comment and `/\s/` line. `module-clients.ts`: the
+    `url` rule. README: the per-process list gains `JEEVES_EXTERNAL_PROVIDER_URL` (`app-front`), or
+    `JEEVES_EXTERNAL_STRIPE_API_URL` (`app-billing-api`) and `JEEVES_EXTERNAL_REPUTATION_API_URL`
+    (`app-link-api`); the "Here" sentence goes; "or whitespace".
+  - The report: those `environment` rows gain the same variables, nothing removed; the rest is
+    the registry's source inventory (`client-wiring.ts`, `http-wiring.ts`, `local.ts`,
+    `tile-processes.ts`, `module-clients.ts.template`). `gaps` equal; required gaps unchanged
+    (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. Scratch exports deleted.
+- Inventory: compared before the Docker phase and after it. The differences are other runs':
+  arm A's `qrwtya-q05-*` stack (12 containers, its image, network and three volumes) went
+  meanwhile; none touched. No `gs-` or `qg26` resource and no `/tmp/jeeves-system-*` is left;
+  `test-results/generated/` still holds its 10 older entries; `jeeves-postgres-1` is unchanged.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **"Here `app-x` reads …"** is removed (the brief: "may then go"): the per-process list now says
+  it, so QG20's README test asserts the `app-front` list line instead.
+- **QG06's rows test** also runs on the probe, since neither stub stack calls an External API;
+  without it the new rule would be checked on no row. It also checks each README line against the
+  row.
+- **The generated README's URL rule** gains "or whitespace" beside the `url` change; the README is
+  in the brief's Emitted output.
+- **The stale `OIDC_ISSUER` text** QG23 found (the coordinator's addition) is fixed in the table
+  row and the paragraph after it.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), proposed ready by the QGR2 review (findings 7, 10 and 18); the
+  README fix was noticed by QG23.
+- The list still leaves out the optional variables Compose doesn't set: `_CA_FILE`,
+  `_TLS_SERVERNAME` and `JEEVES_REQUIRE_TLS`, which the README describes. "Every variable" holds
+  for the required ones.
+- The `host` rule already refuses whitespace (letters, digits, `.` and `-` only); a database's
+  socket directory refuses control characters but not a space, which a path may hold.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG27, as planned. `processes.tiles[].environment` and the README's list now
+include each External API's URL.

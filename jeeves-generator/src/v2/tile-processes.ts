@@ -1,6 +1,12 @@
 import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
-import { type ClientSection, stubClients, stubStoreRows, stubTargetRows } from "./client-wiring.ts";
+import {
+  type ClientSection,
+  externalVariable,
+  stubClients,
+  stubStoreRows,
+  stubTargetRows,
+} from "./client-wiring.ts";
 import { httpMounts, importLines, type ProcessMount } from "./http-wiring.ts";
 import { localEndpoints, type V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
@@ -209,15 +215,16 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
     readiness: true,
   };
 }
-/** The variables a process reads from its environment, sorted, as its Compose service sets them:
- * its endpoints (QG06; a stub's Identity client's `JEEVES_IDENTITY_<ID>_URL` among them, QG20), a
- * sign-in's `OIDC_*` and what its templates read. An External API's `JEEVES_EXTERNAL_<ID>_URL` is
- * the application's to set, so it is in the API's `stores` row instead. */
+/** The variables a process reads from its environment, sorted: those its Compose service sets (its
+ * endpoints, QG06, a stub's Identity client's `JEEVES_IDENTITY_<ID>_URL` among them, QG20; a
+ * sign-in's `OIDC_*`; what its templates read) and each External API's `JEEVES_EXTERNAL_<ID>_URL`,
+ * which the application sets (QG26). */
 function environmentOf(service: ReturnType<typeof serviceOf>) {
   return unique([
     ...Object.keys(service.environment ?? {}),
     ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
     ...Object.keys(localEndpoints(service)),
+    ...(service.external ?? []).map(externalVariable),
   ]);
 }
 

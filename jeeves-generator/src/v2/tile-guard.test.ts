@@ -452,6 +452,28 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
     }
   });
 
+  it("fails startup naming OIDC_ISSUER or OIDC_JWKS_URL with whitespace in it, a trailing newline too (QG26)", async () => {
+    // URL.parse would trim or encode each, but the issuer is compared with `iss` as set: every
+    // token would be refused.
+    const urls = { OIDC_ISSUER: issuer, OIDC_JWKS_URL: `${issuer}/protocol/openid-connect/certs` };
+    for (const name of ["OIDC_ISSUER", "OIDC_JWKS_URL"] as const)
+      for (const value of [
+        `${urls[name]}\n`,
+        ` ${urls[name]}`,
+        `${urls[name]}\t`,
+        `${urls[name]} x`,
+      ]) {
+        const { lines, app } = await run("api://example", { [name]: value });
+        expect(lines, `${name} ${JSON.stringify(value)}`).toEqual([
+          { level: "error", event: "startup-failed", error: `Error: Invalid endpoint ${name}` },
+          "Application startup failed",
+        ]);
+        expect(process.exitCode).toBe(1);
+        expect(app === undefined).toBe(true);
+        expect(JSON.stringify(lines)).not.toContain(urls[name]);
+      }
+  });
+
   it("passes an http: or https: issuer and key set through as they are given (QG24)", async () => {
     // Compose's local shape: an http: issuer on a loopback port, the key set at Keycloak's name.
     const local = "http://127.0.0.1:47922/realms/sign-in";

@@ -393,15 +393,44 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     expect(Object.keys(services(off)).filter((name) => name.startsWith("app-"))).toEqual([]);
   });
 
-  it("reports and documents each process's variables as its service sets them", () => {
-    for (const target of [stack, assemble(runStudioCommands(stubStackWithCacheRead(), [on]))]) {
+  it("reports and documents each process's variables: what its service sets and its External APIs' URLs", () => {
+    // QRWTY's probe: Front's stub calls an External API, whose URL Compose doesn't set (QG26).
+    const probe = assembleV2(
+      {
+        designJson: readFileSync(
+          new URL("../../../docs/plans/qrwty-gaps/fixtures/probe-design.json", import.meta.url),
+          "utf8",
+        ),
+      },
+      registry,
+    );
+    for (const target of [
+      stack,
+      assemble(runStudioCommands(stubStackWithCacheRead(), [on])),
+      probe,
+    ]) {
       const composed = services(target);
+      const readme = text(target, "README.md");
       expect(rows(target).length).toBeGreaterThan(0);
-      for (const row of rows(target))
+      for (const row of rows(target)) {
+        // Compose's keys plus the process's JEEVES_EXTERNAL_*, which the application sets.
+        const external = [
+          ...text(target, `src/processes/${row.service.slice("app-".length)}.ts`).matchAll(
+            /externalTarget\("(JEEVES_EXTERNAL_\w+)"\)/g,
+          ),
+        ].map((match) => match[1]);
         expect(row.environment, row.service).toEqual(
-          Object.keys(composed[row.service]?.environment ?? {}).sort(),
+          [...Object.keys(composed[row.service]?.environment ?? {}), ...external].sort(),
         );
+        // The README lists the same, per process.
+        expect(readme, row.service).toContain(
+          `\n- \`${row.service}\`: ${row.environment.length ? row.environment.map((name) => `\`${name}\``).join(", ") : "none"}\n`,
+        );
+      }
     }
+    expect(rows(probe).find((row) => row.service === "app-front")?.environment).toContain(
+      "JEEVES_EXTERNAL_PROVIDER_URL",
+    );
     expect(rows(stack).map((row) => [row.service, row.environment])).toEqual([
       [
         "app-links-api",

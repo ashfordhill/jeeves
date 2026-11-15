@@ -294,7 +294,8 @@ export function stubClients(
         ...(list.length
           ? [
               "// Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
-              "// use, each probed once before the process is ready; a failed probe fails startup.",
+              "// use, each probed once before the process is ready; a failed probe fails startup, except",
+              "// a cache's, which is logged.",
             ]
           : []),
         ...(probed ? ["const probe = createProbeLog(config.tile);"] : []),

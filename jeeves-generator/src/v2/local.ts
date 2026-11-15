@@ -880,8 +880,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
             : `${r.kind}-${id}`;
   };
   const application: string[] = [];
-  // The External API URLs each process reads (QG20): the application's to set, so not in Compose.
-  const externalReads: string[] = [];
+  // The External API URLs each process reads (QG20): the application's to set, so not in Compose,
+  // but in the process's list of what it reads (QG26).
+  const externalReads = new Map<string, string[]>();
   let stubIssuer = false;
   const publicHttp = (host: string) =>
     model.selections.some((s) => s.host === host && s.inputs["host.exposure"] === "public");
@@ -977,11 +978,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         );
       if (issuerBinding) stubIssuer = true;
       if (service.external?.length)
-        externalReads.push(
-          `\`${name}\` reads ${[...service.external]
-            .sort(v2Compare)
-            .map((id) => `\`JEEVES_EXTERNAL_${endpointId(id)}_URL\``)
-            .join(", ")}`,
+        externalReads.set(
+          name,
+          service.external.map((id) => `JEEVES_EXTERNAL_${endpointId(id)}_URL`),
         );
       if (service.http) {
         if (httpHost)
@@ -1236,11 +1235,15 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         "Selected search providers have no contributed versioned feature mapping/query implementation.",
       sourcePaths,
     });
-  // What each process reads from its environment, as its service sets it (QG06).
+  // What each process reads from its environment: what its service sets (QG06) and its External
+  // APIs' URLs (QG26).
   const processEnvironment = application
     .filter((name) => name !== "app-edge")
     .map((name) => {
-      const keys = Object.keys((services[name]?.environment ?? {}) as Record<string, string>);
+      const keys = [
+        ...Object.keys((services[name]?.environment ?? {}) as Record<string, string>),
+        ...(externalReads.get(name) ?? []),
+      ];
       return `- \`${name}\`: ${
         keys.length
           ? [...keys]
@@ -1250,7 +1253,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           : "none"
       }`;
     });
-  const endpointsReadme = `\n**Endpoints from the environment.** Each process reads the endpoints it uses from its environment as it builds each client, with no default: \`JEEVES_DATABASE_<ID>_HOST\` (a host, or an absolute Unix socket directory) and \`_PORT\` for each database, \`JEEVES_CACHE_<ID>_HOST\` and \`_PORT\` for each cache, \`JEEVES_BROKER_HOST\` and \`JEEVES_BROKER_PORT\` for the broker, and \`JEEVES_TILE_<ID>_URL\` (absolute \`http:\` or \`https:\`, with no credentials, query or fragment) for each tile its stubs call, where \`<ID>\` is the tile ID upper-cased with \`-\` as \`_\`.${pubsubTopics.length ? " A process that publishes to or consumes a Pub/Sub topic reads `JEEVES_PUBSUB_PROJECT`, a Google Cloud project ID (a lowercase letter, then up to 29 lowercase letters, digits or `-`, optionally after `<domain>:`); `compose.yaml` also sets `PUBSUB_EMULATOR_HOST` for the local emulator and `METADATA_SERVER_DETECTION: none`, so the client looks for no Google metadata server; a deployment leaves both unset." : ""}${externalReads.length ? ` Each External API its stubs call is at \`JEEVES_EXTERNAL_<ID>_URL\`, by the same URL rule, which \`compose.yaml\` doesn't set: the value is yours, so set it in \`compose.override.yaml\` (and in your deployment); until it is set the process fails startup with \`Invalid endpoint JEEVES_EXTERNAL_<ID>_URL\`. Here ${externalReads.sort(v2Compare).join("; ")}. A failed call to an External API keeps a loop's normal retries.` : ""}${stubIssuer ? " A process whose stubs call the Identity reads `JEEVES_IDENTITY_<ID>_URL`, the Identity's base URL as the process reaches it, by the same URL rule: `compose.yaml` sets Keycloak's address inside the network, `http://identity-<id>:8080` (a stub adds the realm's paths, `/realms/<id>/...`); a deployment sets its issuer's origin, or another address its processes reach. A sign-in's `OIDC_ISSUER` is what tokens carry, which a container can't reach locally, so it isn't the client's base. A lost connection to the Identity waits as an unreachable store's does." : ""} A missing or invalid one fails startup with \`Invalid endpoint <variable>\`, never its value. Each database and cache also reads its transport, \`JEEVES_DATABASE_<ID>_TLS\` or \`JEEVES_CACHE_<ID>_TLS\`, with no default: \`disable\` (plain text, which \`PGSSLMODE\` can't change) or \`verify-full\` (TLS that checks the certificate chain and the host name); with \`verify-full\`, \`_CA_FILE\` is an optional PEM file (else Node's roots; one that can't be read fails startup with \`Unreadable CA file <variable>\`) and \`_TLS_SERVERNAME\` the optional name the certificate carries when it isn't the host (a managed instance reached by a private address). With \`JEEVES_REQUIRE_TLS=true\` (else unset), startup fails with \`Insecure endpoint <variable>\` for a database or cache whose transport isn't \`verify-full\` (a database's Unix socket directory is local transport and passes), a \`JEEVES_TILE_<ID>_URL\`, ${externalReads.length ? "`JEEVES_EXTERNAL_<ID>_URL`, " : ""}${stubIssuer ? "`JEEVES_IDENTITY_<ID>_URL`, " : ""}\`OIDC_ISSUER\` or \`OIDC_JWKS_URL\` that isn't \`https:\`, and any \`PUBSUB_EMULATOR_HOST\`; the broker, object storage and search are plain text and aren't checked. \`compose.yaml\` sets the local values (\`disable\`, and no \`JEEVES_REQUIRE_TLS\`); a deployment sets its own. Object storage and search are still reached at their local names. Each process reads (also \`processes.tiles[].environment\` in .jeeves/report.json):\n\n${processEnvironment.join("\n")}\n`;
+  const endpointsReadme = `\n**Endpoints from the environment.** Each process reads the endpoints it uses from its environment as it builds each client, with no default: \`JEEVES_DATABASE_<ID>_HOST\` (a host, or an absolute Unix socket directory) and \`_PORT\` for each database, \`JEEVES_CACHE_<ID>_HOST\` and \`_PORT\` for each cache, \`JEEVES_BROKER_HOST\` and \`JEEVES_BROKER_PORT\` for the broker, and \`JEEVES_TILE_<ID>_URL\` (absolute \`http:\` or \`https:\`, with no credentials, query, fragment or whitespace) for each tile its stubs call, where \`<ID>\` is the tile ID upper-cased with \`-\` as \`_\`.${pubsubTopics.length ? " A process that publishes to or consumes a Pub/Sub topic reads `JEEVES_PUBSUB_PROJECT`, a Google Cloud project ID (a lowercase letter, then up to 29 lowercase letters, digits or `-`, optionally after `<domain>:`); `compose.yaml` also sets `PUBSUB_EMULATOR_HOST` for the local emulator and `METADATA_SERVER_DETECTION: none`, so the client looks for no Google metadata server; a deployment leaves both unset." : ""}${externalReads.size ? ` Each External API its stubs call is at \`JEEVES_EXTERNAL_<ID>_URL\`, by the same URL rule, which \`compose.yaml\` doesn't set: the value is yours, so set it in \`compose.override.yaml\` (and in your deployment); until it is set the process fails startup with \`Invalid endpoint JEEVES_EXTERNAL_<ID>_URL\`. A failed call to an External API keeps a loop's normal retries.` : ""}${stubIssuer ? " A process whose stubs call the Identity reads `JEEVES_IDENTITY_<ID>_URL`, the Identity's base URL as the process reaches it, by the same URL rule: `compose.yaml` sets Keycloak's address inside the network, `http://identity-<id>:8080` (a stub adds the realm's paths, `/realms/<id>/...`); a deployment sets its issuer's origin, or another address its processes reach. A sign-in's `OIDC_ISSUER` is what tokens carry, which a container can't reach locally, so it isn't the client's base. A lost connection to the Identity waits as an unreachable store's does." : ""} A missing or invalid one fails startup with \`Invalid endpoint <variable>\`, never its value. Each database and cache also reads its transport, \`JEEVES_DATABASE_<ID>_TLS\` or \`JEEVES_CACHE_<ID>_TLS\`, with no default: \`disable\` (plain text, which \`PGSSLMODE\` can't change) or \`verify-full\` (TLS that checks the certificate chain and the host name); with \`verify-full\`, \`_CA_FILE\` is an optional PEM file (else Node's roots; one that can't be read fails startup with \`Unreadable CA file <variable>\`) and \`_TLS_SERVERNAME\` the optional name the certificate carries when it isn't the host (a managed instance reached by a private address). With \`JEEVES_REQUIRE_TLS=true\` (else unset), startup fails with \`Insecure endpoint <variable>\` for a database or cache whose transport isn't \`verify-full\` (a database's Unix socket directory is local transport and passes), a \`JEEVES_TILE_<ID>_URL\`, ${externalReads.size ? "`JEEVES_EXTERNAL_<ID>_URL`, " : ""}${stubIssuer ? "`JEEVES_IDENTITY_<ID>_URL`, " : ""}\`OIDC_ISSUER\` or \`OIDC_JWKS_URL\` that isn't \`https:\`, and any \`PUBSUB_EMULATOR_HOST\`; the broker, object storage and search are plain text and aren't checked. \`compose.yaml\` sets the local values (\`disable\`, and no \`JEEVES_REQUIRE_TLS\`); a deployment sets its own. Object storage and search are still reached at their local names. Each process reads (also \`processes.tiles[].environment\` in .jeeves/report.json):\n\n${processEnvironment.join("\n")}\n`;
   // Google Cloud Pub/Sub (QG07): what runs, what it promises and what a deployment provides.
   const pubsubReadme = pubsubTopics.length
     ? `\n**Google Cloud Pub/Sub.** A queue only stubs use, saved with provider Google Cloud, is a Pub/Sub topic named by the queue's ID (${byKind(

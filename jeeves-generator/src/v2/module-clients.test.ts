@@ -1029,6 +1029,33 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
       }
   });
 
+  it("refuses a URL with whitespace, a trailing newline too, naming the variable (QG26)", () => {
+    // `new URL` would trim, drop or encode each, so the value checked wouldn't be the one set.
+    const tile = "JEEVES_TILE_STATS_API_URL";
+    const base = "https://api.partner.example";
+    const spaced = [
+      `${base}\n`,
+      `${base}\r\n`,
+      ` ${base}`,
+      `${base}\t`,
+      `${base}/v1 x`,
+      "https://api.\npartner.example",
+    ];
+    for (const [name, build] of [
+      [tile, () => clients.httpTarget({ tile: "stats-api" })],
+      [external, () => clients.externalTarget(external)],
+      [identity, () => clients.identityTarget({ identity: "identity" })],
+    ] as const) {
+      for (const value of spaced) {
+        environment({ [name]: value });
+        expect(outcome(build), `${name} ${JSON.stringify(value)}`).toBe(`Invalid endpoint ${name}`);
+      }
+      // The same URL without it is built.
+      environment({ [name]: base });
+      expect(outcome(build), name).toBe("built");
+    }
+  });
+
   it("with JEEVES_REQUIRE_TLS=true needs an https: External API and Identity, naming the variable", () => {
     environment({
       JEEVES_REQUIRE_TLS: "true",

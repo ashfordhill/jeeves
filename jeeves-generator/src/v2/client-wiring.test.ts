@@ -647,11 +647,18 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         ),
       ).toEqual([]);
     // The report lists the Identity's variable as Compose sets it, and no OIDC_* for Session API.
-    const session83 = processes(r83).tiles.find((row) => row.tile === "session-api") as unknown as {
-      environment: string[];
-    };
+    const row = (tile: string) =>
+      processes(r83).tiles.find((item) => item.tile === tile) as unknown as {
+        environment: string[];
+      };
+    const session83 = row("session-api");
     expect(session83.environment).toContain("JEEVES_IDENTITY_IDENTITY_URL");
     expect(session83.environment.filter((name) => name.startsWith("OIDC_"))).toEqual([]);
+    // And an External API's URL with the process that reads it, which Compose doesn't set (QG26).
+    expect(row("billing-api").environment).toContain("JEEVES_EXTERNAL_STRIPE_API_URL");
+    expect(services["app-billing-api"]?.environment).not.toHaveProperty(
+      "JEEVES_EXTERNAL_STRIPE_API_URL",
+    );
   });
 
   it("reports each client's base URL in the stores rows, and the README names the URLs to set", () => {
@@ -682,7 +689,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     const readme = text(probe, "README.md");
     for (const phrase of [
       "Each External API its stubs call is at `JEEVES_EXTERNAL_<ID>_URL`, by the same URL rule, which `compose.yaml` doesn't set",
-      "until it is set the process fails startup with `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL`. Here `app-front` reads `JEEVES_EXTERNAL_PROVIDER_URL`.",
+      "until it is set the process fails startup with `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL`. A failed call to an External API keeps a loop's normal retries.",
       "A process whose stubs call the Identity reads `JEEVES_IDENTITY_<ID>_URL`, the Identity's base URL as the process reaches it",
       // Locally the browser's issuer is unreachable from a container (QG20's proof), so the base
       // is Keycloak's address inside the network (QGR2).
@@ -691,6 +698,9 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       "a `JEEVES_TILE_<ID>_URL`, `JEEVES_EXTERNAL_<ID>_URL`, `JEEVES_IDENTITY_<ID>_URL`, `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't `https:`",
     ])
       expect(readme).toContain(phrase);
+    // Which process reads which URL is in the per-process list (QG26), not a sentence of its own.
+    expect(readme).toMatch(/\n- `app-front`: [^\n]*`JEEVES_EXTERNAL_PROVIDER_URL`/);
+    expect(readme).not.toContain("Here `app-front` reads");
     expect(readme).not.toContain("which a container can't reach, so locally such a call fails");
     // A design whose stubs call neither keeps its README as it was.
     const stack = assemble(runStudioCommands(stubStackDesign(), [on]));

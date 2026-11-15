@@ -398,8 +398,8 @@ bucket, or why it has none, and Preview shows them.
   (`OIDC_ISSUER`, the audience in `OIDC_AUDIENCE`, `OIDC_JWKS_URL`, RS256, a 3 s key-set
   timeout, `exp` and `sub` required). A missing or empty `OIDC_AUDIENCE` fails startup
   (`startup-failed`, naming it), and so does an `OIDC_ISSUER` or `OIDC_JWKS_URL` that isn't an
-  absolute `http:` or `https:` URL, with `Invalid endpoint <variable>`, never its value; the
-  issuer is compared with each token's `iss` exactly as it is set. Every module route of the
+  absolute `http:` or `https:` URL or holds whitespace, with `Invalid endpoint <variable>`, never
+  its value; the issuer is compared with each token's `iss` exactly as it is set. Every module route of the
   tile is mounted through `guard.routes(...)`: **Required** answers 401
   `{"error":"SIGN_IN_REQUIRED","message":"Sign in to continue."}` without a valid
   `Authorization: Bearer` token; **Optional** treats a request without the header as anonymous
@@ -735,12 +735,13 @@ when it builds that client, before its probe, with no default (`<ID>` is the til
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
 | An External API a stub calls (QG20) | `JEEVES_EXTERNAL_<ID>_URL` | None: the application sets it (`compose.override.yaml`), and until then startup fails `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL` |
-| The Identity a stub calls, when a sign-in binds it (QG20) | `OIDC_ISSUER` | The sign-in's, `http://127.0.0.1:$LOCAL_IDENTITY_PORT/realms/<id>`: the issuer the browser sees, which a container can't reach, so locally the stub's call fails as an unreachable service does (Known limits in [template gaps](../docs/template-gaps.md)) |
+| The Identity a stub calls, when a sign-in binds it (QG20) | `JEEVES_IDENTITY_<ID>_URL` | Keycloak inside the network, `http://identity-<id>:8080`: the Identity as the process reaches it, not the sign-in's `OIDC_ISSUER`, which a container can't reach (QGR2); a deployment sets its issuer's origin or another address its processes reach |
 | Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`) | `local`, `local-pubsub:8085`, `none` |
 
 A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
 directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port is an integer
-1–65535; a URL is absolute `http:` or `https:` with no credentials, query or fragment; a Pub/Sub
+1–65535; a URL is absolute `http:` or `https:` with no credentials, query, fragment or whitespace
+(which URL parsing would trim, so a trailing newline fails too); a Pub/Sub
 project is a Google Cloud project ID (a lowercase letter, then up to 29 lowercase letters, digits
 or `-`, optionally after `<domain>:`). A missing or invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
 `startup-failed` line. The stubs' clients read theirs in `module-clients.ts`; a template's `pool`
@@ -750,12 +751,12 @@ rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loop
 loop passes `pubsubLoop(probe)`), so the compiled
 `loopBroker` in `tile-loop.ts` is only a default no process uses. The foundation sets exactly the
 variables each process reads in its `app-<id>` service's `environment` (`localEndpoints` in
-`local-contract.ts`), beside a sign-in's `OIDC_*` and a stub Identity client's `OIDC_ISSUER`;
-`processes.tiles[].environment` in the report lists them, sorted, and the export's README lists
-them per process. The one exception is an External API's `JEEVES_EXTERNAL_<ID>_URL`: the
-application's to set, so it is in neither list, but in the API's `stores` row and in a README
-sentence naming each process's (QG20). A deployment sets its own
-values; local stacks behave as before. Object storage and search are still reached at their local
+`local-contract.ts`, a stub Identity client's `JEEVES_IDENTITY_<ID>_URL` among them), beside a
+sign-in's `OIDC_*`. The one it doesn't set is an External API's `JEEVES_EXTERNAL_<ID>_URL`, the
+application's to set (QG20). `processes.tiles[].environment` in the report lists every variable
+a process reads, sorted, that one included, and the export's README lists the same per process
+(QG26); the API's `stores` row names it too. A deployment sets its own values; local stacks
+behave as before. Object storage and search are still reached at their local
 names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
 `PGHOST` and `PGPORT`).
 
