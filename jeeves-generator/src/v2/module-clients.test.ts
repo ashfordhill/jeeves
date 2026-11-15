@@ -31,13 +31,13 @@ const dataUrl = (js: string) => `data:text/javascript;base64,${Buffer.from(js).t
  * `transports`. The Pub/Sub client's topic exists unless `pubsub` says not, and `pubsub.publish`
  * answers its publishes when it is set. Each connection a database pool reserves records its
  * statements in `connections`, ending with `release` (or `release discard`); `answer` can fail a
- * statement on the nth connection, or answer it. */
+ * statement on the nth connection, or answer it, and is given its values. */
 type Calls = {
   calls: unknown[][];
   endpoints: unknown[][];
   transports: unknown[];
   connections: string[][];
-  answer?: (sql: string, connection: number) => unknown;
+  answer?: (sql: string, connection: number, values?: unknown[]) => unknown;
   fail?: string;
   hang?: boolean;
   pubsub?: { exists?: boolean; publish?: () => Promise<string> };
@@ -71,7 +71,7 @@ const fakes: Record<string, string> = {
           return {
             query: async (sql, values) => {
               statements.push(sql);
-              const answer = await fake.answer?.(sql, connection);
+              const answer = await fake.answer?.(sql, connection, values);
               return answer ?? { rows: [{ sql, values }], rowCount: sql.startsWith("INSERT") ? 1 : null };
             },
             release: (discard) => statements.push(discard ? "release discard" : "release"),
@@ -177,12 +177,14 @@ fakes["./valkey.ts"] = stripTypeScriptTypes(
 ).replace(/from "([^"]+)"/g, (match, from: string) =>
   fakes[from] ? `from "${dataUrl(fakes[from])}"` : match,
 );
-// A stub's transaction (QL03) runs on the exact emitted transaction.ts, over the fake pool.
-fakes["./transaction.ts"] = stripTypeScriptTypes(
-  new TextDecoder().decode(
-    bundle.files.find((file) => file.path === "src/runtime/transaction.ts")?.bytes,
-  ),
-);
+// A stub's transaction (QL03) runs on the exact emitted transaction.ts, over the fake pool, and
+// its idempotent call (QL04) on the exact idempotency.ts, swept by process.ts's `periodic`.
+for (const name of ["transaction", "idempotency", "process"])
+  fakes[`./${name}.ts`] = stripTypeScriptTypes(
+    new TextDecoder().decode(
+      bundle.files.find((file) => file.path === `src/runtime/${name}.ts`)?.bytes,
+    ),
+  );
 // A stub loop's Pub/Sub subscriber (QG08) shares the loop's runtime: the exact delivery.ts, and a
 // stand-in for tile-loop.ts, whose subscriber tile-loop.test.ts runs.
 fakes["./delivery.ts"] = stripTypeScriptTypes(
@@ -212,6 +214,8 @@ const js = stripTypeScriptTypes(emitted).replace(/from "([^"]+)"/g, (match, from
       : match,
 );
 const clients = await import(dataUrl(js));
+// The same module instance the clients import, for `IdempotencyConflict` and `requestHash`.
+const idempotency = await import(dataUrl(String(fakes["./idempotency.ts"])));
 const { NotImplemented } = await import(tileProcess);
 const valkey = await import(dataUrl(String(fakes["./valkey.ts"])));
 
@@ -947,6 +951,255 @@ describe("a stub's database transaction (QL03)", () => {
     expect(fake.connections).toEqual(
       [1, 2, 3].map(() => ["BEGIN", "COMMIT", "ROLLBACK", "release"]),
     );
+  });
+});
+
+describe("a stub's idempotency records (QL04)", () => {
+  type Tx = { execute(sql: string, values?: unknown[]): Promise<{ rowCount: number }> };
+  type Answer = { status: number; body: unknown };
+  type Database = {
+    idempotent(
+      request: { scope: { kind: string; id: string }; key: string; hash: string },
+      fn: (tx: Tx) => Promise<Answer>,
+    ): Promise<Answer & { replayed: boolean }>;
+  };
+  const hash = idempotency.requestHash({ method: "POST", route: "POST /links", body: { a: 1 } });
+  const request = { scope: { kind: "account", id: "acct-1" }, key: "key-1", hash };
+  const key = ["links-api", "account", "acct-1", "key-1"];
+  const lock = "SELECT pg_try_advisory_lock(hashtext('jeeves.idempotency')) AS locked";
+  const unlock = "SELECT pg_advisory_unlock(hashtext('jeeves.idempotency'))";
+  /** Each statement a reserved connection sent, with its values. */
+  const sent: { sql: string; values?: unknown[] }[] = [];
+  const scopes: ReturnType<typeof testScope>[] = [];
+  beforeEach(() => environment(localEnvironment));
+  afterEach(async () => {
+    // Drain each client: its sweep stops, then its pool ends.
+    for (const scope of scopes.splice(0))
+      for (const drain of [...scope.owned].reverse()) await drain();
+    fake.calls.length = 0;
+    fake.endpoints.length = 0;
+    fake.connections.length = 0;
+    fake.answer = undefined;
+    sent.length = 0;
+    lines.length = 0;
+    vi.useRealTimers();
+    restoreEnvironment();
+  });
+  /** The stub stack's Links database client, after its probe. Unless `answer` says otherwise, the
+   * sweep doesn't get its lock, an UPDATE changes one row and the rest as the fake pool answers. */
+  async function database(answer?: (sql: string) => unknown): Promise<Database> {
+    const scope = testScope();
+    scopes.push(scope);
+    const db = await clients.databaseClient(scope, probe, {
+      tile: "links-api",
+      resource: "links-db",
+    });
+    fake.answer = (sql, _connection, values) => {
+      sent.push({ sql, values });
+      const given = answer?.(sql);
+      if (given !== undefined) return given;
+      if (sql === lock) return { rows: [{ locked: false }], rowCount: 1 };
+      if (sql.startsWith("UPDATE jeeves")) return { rows: [], rowCount: 1 };
+    };
+    fake.calls.length = 0;
+    return db;
+  }
+  /** The transactions' connections, without the sweep's. */
+  const transactions = () => fake.connections.filter((statements) => statements[0] === "BEGIN");
+  const sweeps = () => fake.connections.filter((statements) => statements[0] === lock);
+  const short = (sql: string) =>
+    sql.startsWith("INSERT INTO links") ? sql : sql.split(" ").slice(0, 2).join(" ");
+
+  it("runs BEGIN, DELETE, INSERT, fn, UPDATE and COMMIT for a new key, and stores a 2xx answer", async () => {
+    const db = await database();
+    const result = await db.idempotent(request, async (tx) => {
+      await tx.execute("INSERT INTO links VALUES ($1)", ["a"]);
+      return { status: 201, body: { id: "a" } };
+    });
+    expect(result).toEqual({ status: 201, body: { id: "a" }, replayed: false });
+    expect(transactions().map((statements) => statements.map(short))).toEqual([
+      [
+        "BEGIN",
+        "DELETE FROM",
+        "INSERT INTO",
+        "INSERT INTO links VALUES ($1)",
+        "UPDATE jeeves.idempotency_records",
+        "COMMIT",
+        "release",
+      ],
+    ]);
+    const [statements] = transactions();
+    expect(statements?.[1]).toBe(
+      "DELETE FROM jeeves.idempotency_records WHERE tile = $1 AND scope_kind = $2 AND scope_id = $3 AND idem_key = $4 AND expires_at <= now()",
+    );
+    expect(statements?.[2]).toBe(
+      "INSERT INTO jeeves.idempotency_records (tile, scope_kind, scope_id, idem_key, request_hash, status, response, created_at, expires_at) VALUES ($1, $2, $3, $4, decode($5, 'hex'), 0, '{}', now(), now() + interval '86400 seconds') ON CONFLICT DO NOTHING",
+    );
+    expect(statements?.[4]).toBe(
+      "UPDATE jeeves.idempotency_records SET status = $5, response = $6::jsonb WHERE tile = $1 AND scope_kind = $2 AND scope_id = $3 AND idem_key = $4",
+    );
+  });
+
+  it("passes the record's tile, scope, key and hash, and the answer as JSON", async () => {
+    const db = await database();
+    await db.idempotent(request, async () => ({ status: 200, body: { list: [1, 2] } }));
+    const values = (start: string) => sent.find((row) => row.sql.startsWith(start))?.values;
+    expect(values("DELETE FROM jeeves")).toEqual(key);
+    expect(values("INSERT INTO jeeves")).toEqual([...key, hash]);
+    expect(values("UPDATE jeeves")).toEqual([...key, 200, '{"list":[1,2]}']);
+    // No body is stored as JSON null.
+    sent.length = 0;
+    await db.idempotent(request, async () => ({ status: 204, body: undefined }));
+    expect(values("UPDATE jeeves")).toEqual([...key, 204, "null"]);
+  });
+
+  it("replays a stored answer without running fn", async () => {
+    const db = await database((sql) => {
+      if (sql.startsWith("INSERT INTO jeeves")) return { rows: [], rowCount: 0 };
+      if (sql.startsWith("SELECT encode"))
+        return { rows: [{ hash, status: 201, response: { id: "a" } }], rowCount: 1 };
+    });
+    const fn = vi.fn(async () => ({ status: 201, body: "again" }));
+    expect(await db.idempotent(request, fn)).toEqual({
+      status: 201,
+      body: { id: "a" },
+      replayed: true,
+    });
+    expect(fn).not.toHaveBeenCalled();
+    expect(transactions().map((statements) => statements.map(short))).toEqual([
+      ["BEGIN", "DELETE FROM", "INSERT INTO", "SELECT encode(request_hash,", "COMMIT", "release"],
+    ]);
+  });
+
+  it("throws IdempotencyConflict after ROLLBACK for a different request under the key", async () => {
+    const db = await database((sql) => {
+      if (sql.startsWith("INSERT INTO jeeves")) return { rows: [], rowCount: 0 };
+      if (sql.startsWith("SELECT encode"))
+        return { rows: [{ hash: "0".repeat(64), status: 201, response: {} }], rowCount: 1 };
+    });
+    const fn = vi.fn(async () => ({ status: 201, body: {} }));
+    const conflict = await db.idempotent(request, fn).catch((error: unknown) => error);
+    expect(conflict).toBeInstanceOf(idempotency.IdempotencyConflict);
+    expect(conflict).toMatchObject({ name: "IdempotencyConflict" });
+    expect(fn).not.toHaveBeenCalled();
+    expect(transactions().map((statements) => statements.map(short))).toEqual([
+      ["BEGIN", "DELETE FROM", "INSERT INTO", "SELECT encode(request_hash,", "ROLLBACK", "release"],
+    ]);
+    // A record that went between the INSERT and the SELECT: try again.
+    const gone = await database((sql) => {
+      if (sql.startsWith("INSERT INTO jeeves")) return { rows: [], rowCount: 0 };
+      if (sql.startsWith("SELECT encode")) return { rows: [], rowCount: 0 };
+    });
+    await expect(gone.idempotent(request, fn)).rejects.toThrow(
+      /^Idempotency record changed; retry$/,
+    );
+  });
+
+  it("rolls back a non-2xx answer with fn's writes and returns it, not stored", async () => {
+    const db = await database();
+    const result = await db.idempotent(request, async (tx) => {
+      await tx.execute("INSERT INTO links VALUES ($1)", ["a"]);
+      return { status: 403, body: { error: "FORBIDDEN" } };
+    });
+    expect(result).toEqual({ status: 403, body: { error: "FORBIDDEN" }, replayed: false });
+    expect(transactions().map((statements) => statements.map(short))).toEqual([
+      [
+        "BEGIN",
+        "DELETE FROM",
+        "INSERT INTO",
+        "INSERT INTO links VALUES ($1)",
+        "ROLLBACK",
+        "release",
+      ],
+    ]);
+    // fn's own error rolls back too, and rejects with it.
+    await expect(
+      db.idempotent(request, async () => {
+        throw new Error("Stop");
+      }),
+    ).rejects.toThrow("Stop");
+  });
+
+  it("refuses an invalid key before BEGIN, and starts no sweep", async () => {
+    const db = await database();
+    for (const bad of [
+      { ...request, key: "" },
+      { ...request, key: "with space" },
+      { ...request, key: "k".repeat(256) },
+      { ...request, scope: { kind: "Account", id: "1" } },
+      { ...request, scope: { kind: "account", id: "" } },
+    ])
+      await expect(db.idempotent(bad, async () => ({ status: 200, body: {} }))).rejects.toThrow(
+        /^Invalid idempotency key$/,
+      );
+    await expect(
+      db.idempotent({ ...request, hash: "nope" }, async () => ({ status: 200, body: {} })),
+    ).rejects.toThrow(/^Invalid request hash$/);
+    expect(fake.connections).toEqual([]);
+  });
+
+  it("sweeps from the first call and every 60 s with the advisory lock, and stops at drain", async () => {
+    vi.useFakeTimers();
+    const db = await database((sql) => {
+      if (sql === lock) return { rows: [{ locked: true }], rowCount: 1 };
+      if (sql.startsWith("DELETE FROM jeeves.idempotency_records WHERE (tile"))
+        return { rows: [], rowCount: 2 };
+    });
+    await db.idempotent(request, async () => ({ status: 200, body: {} }));
+    await vi.advanceTimersByTimeAsync(0);
+    const sweep = [
+      lock,
+      "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
+      unlock,
+      "release",
+    ];
+    expect(sweeps()).toEqual([sweep]);
+    // One sweep per client: a second call starts none.
+    await db.idempotent(request, async () => ({ status: 200, body: {} }));
+    await vi.advanceTimersByTimeAsync(59_999);
+    expect(sweeps()).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(sweeps()).toEqual([sweep, sweep]);
+    // Drain: the sweep stops before the pool ends, and no timer is left.
+    for (const scope of scopes.splice(0))
+      for (const drain of [...scope.owned].reverse()) await drain();
+    expect(fake.calls).toEqual([["end"]]);
+    await vi.advanceTimersByTimeAsync(180_000);
+    expect(sweeps()).toHaveLength(2);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("does nothing without the lock, and logs a failed sweep's failure line, discarding its connection", async () => {
+    vi.useFakeTimers();
+    const db = await database();
+    await db.idempotent(request, async () => ({ status: 200, body: {} }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sweeps()).toEqual([[lock, "release"]]);
+    const out = stdout();
+    try {
+      fake.answer = (sql) => {
+        if (sql === lock) return { rows: [{ locked: true }], rowCount: 1 };
+        if (sql.startsWith("DELETE FROM jeeves.idempotency_records WHERE (tile"))
+          throw new Error("canceling statement due to statement timeout");
+      };
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(sweeps()[1]).toEqual([
+        lock,
+        "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
+        "release discard",
+      ]);
+      expect(out.lines()).toEqual([
+        {
+          level: "error",
+          event: "failure",
+          tile: "links-api",
+          what: "idempotency sweep links-api",
+          error: "Error: canceling statement due to statement timeout",
+        },
+      ]);
+    } finally {
+      out.restore();
+    }
   });
 });
 

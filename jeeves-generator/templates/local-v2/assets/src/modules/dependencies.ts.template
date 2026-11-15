@@ -12,6 +12,20 @@ export interface Tx {
   execute(sql: string, values?: readonly unknown[]): Promise<{ rowCount: number }>;
 }
 
+/** Whose idempotency key it is: `kind`, a lowercase letter then up to 31 lowercase letters, digits
+ * or `-` (`account`, say), and its `id`, 1–255 characters. */
+export interface IdempotencyScope {
+  kind: string;
+  id: string;
+}
+
+/** What `idempotent` answers: the stored answer (`replayed: true`) or the one `fn` just gave. */
+export interface IdempotentResult<Body = unknown> {
+  status: number;
+  body: Body;
+  replayed: boolean;
+}
+
 /** A database a module reads and writes. */
 export interface DatabaseReadWriter extends DatabaseReader {
   execute(sql: string, values?: readonly unknown[]): Promise<{ rowCount: number }>;
@@ -19,6 +33,15 @@ export interface DatabaseReadWriter extends DatabaseReader {
    * throws. A serialization failure or deadlock reruns fn (at most 3 attempts). Don't send BEGIN,
    * COMMIT or ROLLBACK yourself. */
   transaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T>;
+  /** An idempotent create or payment: fn runs in one `transaction` once per scope and key. Its
+   * 200–299 answer is stored for 24 hours and replayed for the same `hash` (`requestHash`, in the
+   * runtime's idempotency.ts) without running fn; any other status rolls fn's writes back and
+   * is not stored. A different hash under the key throws `IdempotencyConflict` (answer 409). A
+   * `key` of 1–255 visible ASCII characters, else `Invalid idempotency key`. */
+  idempotent<Body = unknown>(
+    request: { scope: IdempotencyScope; key: string; hash: string },
+    fn: (tx: Tx) => Promise<{ status: number; body: Body }>,
+  ): Promise<IdempotentResult<Body>>;
 }
 
 /** A queue or topic a module publishes to. `messageId` is the message's ID (a fresh one when it

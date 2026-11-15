@@ -212,8 +212,9 @@ describe("module catalog records", () => {
       "event-counter-policy",
       "public-video-policy",
     ]);
-    // V3-07 added the favorites policy; youtube-core still names the six above.
-    expect(Object.keys(generationPolicies)).toHaveLength(7);
+    // V3-07 added the favorites policy and QL04 the idempotency policy; youtube-core still names
+    // the six above.
+    expect(Object.keys(generationPolicies)).toHaveLength(8);
     // Every record v2 saved is still the catalog's, byte for byte.
     const saved = designGeneration(v2());
     expect(saved?.runtime).toEqual(generationRuntime.ref);

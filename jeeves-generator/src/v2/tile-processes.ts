@@ -112,9 +112,20 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       if (!model.processes?.length) return undefined;
       const mounts = mountsOf(model);
       const all = [...mounts.values()].flat();
+      // A database several tiles' stubs write gets its idempotency records once (QL04): the same
+      // migration from each is one; any other repeat is still refused.
+      const migrations = all.flatMap((mount) => mount.local.migrations ?? []);
       const contribution: V2LocalContribution = {
         sourcePaths: ["/generation/processes"],
-        migrations: all.flatMap((mount) => mount.local.migrations ?? []),
+        migrations: migrations.filter(
+          (migration, index) =>
+            migrations.findIndex(
+              (item) =>
+                item.resource === migration.resource &&
+                item.id === migration.id &&
+                item.sql === migration.sql,
+            ) === index,
+        ),
         logins: all.flatMap((mount) => mount.local.logins ?? []),
         views: all.flatMap((mount) => mount.local.views ?? []),
         grants: all.flatMap((mount) => mount.local.grants ?? []),

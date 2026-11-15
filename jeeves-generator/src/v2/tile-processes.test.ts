@@ -90,6 +90,8 @@ describe("local.tile-processes", () => {
     expect(paths(bundle).filter((path) => !paths(off).includes(path))).toEqual([
       "infra/edge/nginx.conf",
       "infra/postgres/links-db/000-foundation.sql",
+      // Links API's stubs write it, so it has the idempotency records (QL04).
+      "infra/postgres/links-db/050-jeeves-idempotency.sql",
       "infra/postgres/links-db/modules/link-reader.sql",
       "scripts/products.mjs",
       "src/modules/entry.ts",
@@ -101,6 +103,8 @@ describe("local.tile-processes", () => {
       "src/runtime/amqp.ts",
       "src/runtime/delivery.ts",
       "src/runtime/http.ts",
+      // The stubs' database client keeps its idempotency records through it (QL04).
+      "src/runtime/idempotency.ts",
       "src/runtime/module-clients.ts",
       "src/runtime/objects.ts",
       "src/runtime/postgres.ts",

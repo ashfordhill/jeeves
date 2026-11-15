@@ -1,0 +1,182 @@
+// Generated scaffold: idempotency records for module stubs (QL04). A stub's database client
+// (module-clients.ts) runs `idempotent` on them: one record per tile, scope and key in the
+// Jeeves-owned table `jeeves.idempotency_records`, which `infra/postgres/<database>/
+// 050-jeeves-idempotency.sql` creates on each database a stub writes, for the logins of the tiles
+// whose stubs write it. Export rewrites this file.
+import { createHash } from "node:crypto";
+import type { IdempotencyScope, Tx } from "../modules/dependencies.ts";
+import type { TransactionPool } from "./transaction.ts";
+
+/** The idempotency policy (`idempotency-policy` in the generation catalog). */
+export const idempotencyPolicy = {
+  windowSeconds: 86400,
+  keyMinCharacters: 1,
+  keyMaxCharacters: 255,
+  sweepSeconds: 60,
+  sweepBatch: 1000,
+  stored: "2xx-only",
+} as const;
+
+/** A different request under a key whose answer is stored: a route stub answers 409. */
+export class IdempotencyConflict extends Error {
+  constructor() {
+    super("Idempotency key reused with a different request");
+    this.name = "IdempotencyConflict";
+  }
+}
+
+/** `value` as `JSON.stringify` gives it (so `toJSON` applies and `undefined` members are dropped),
+ * with every object's keys sorted at every depth (by UTF-16 code unit) and arrays in order;
+ * `undefined` is `null`. */
+function canonical(value: unknown): string {
+  const write = (item: unknown): string => {
+    if (Array.isArray(item)) return `[${item.map(write).join(",")}]`;
+    if (item !== null && typeof item === "object") {
+      const record = item as Record<string, unknown>;
+      return `{${Object.keys(record)
+        .sort()
+        .map((key) => `${JSON.stringify(key)}:${write(record[key])}`)
+        .join(",")}}`;
+    }
+    return JSON.stringify(item);
+  };
+  return write(JSON.parse(JSON.stringify(value) ?? "null"));
+}
+
+/**
+ * What identifies a request under its key: SHA-256 (lowercase hex) over the UTF-8 of
+ * `{"method":…,"route":…,"params":…,"body":…}`, the method upper-cased, `params` with its keys
+ * sorted and `body` canonical (keys sorted at every depth, arrays in order; none is `null`). Pass
+ * the route's pattern (`POST /links`), its params and the parsed body.
+ */
+export function requestHash(request: {
+  method: string;
+  route: string;
+  params?: Readonly<Record<string, string>>;
+  body?: unknown;
+}): string {
+  const text = `{"method":${JSON.stringify(request.method.toUpperCase())},"route":${JSON.stringify(request.route)},"params":${canonical(request.params ?? {})},"body":${canonical(request.body)}}`;
+  return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+/** One record's identity: the tile whose stub keeps it, the scope, the key and the request's
+ * hash. */
+export type IdempotencyRecord = {
+  tile: string;
+  scope: IdempotencyScope;
+  key: string;
+  hash: string;
+};
+const scopeKind = /^[a-z][a-z0-9-]{0,31}$/;
+const visible = /^[\x21-\x7e]+$/;
+/** Refuses, before any statement, a scope or key the table doesn't take: `scope.kind` a lowercase
+ * letter then up to 31 lowercase letters, digits or `-`; `scope.id` 1–255 characters, none NUL;
+ * `key` 1–255 visible ASCII characters (`Invalid idempotency key`); and a hash that isn't
+ * `requestHash`'s 64 lowercase hex digits (`Invalid request hash`). */
+export function checkIdempotencyKey(request: {
+  scope: IdempotencyScope;
+  key: string;
+  hash: string;
+}): void {
+  const { scope, key, hash } = request ?? {};
+  const id = typeof scope?.id === "string" ? [...scope.id].length : 0;
+  if (
+    typeof scope?.kind !== "string" ||
+    !scopeKind.test(scope.kind) ||
+    id < 1 ||
+    id > 255 ||
+    scope.id.includes("\u0000") ||
+    typeof key !== "string" ||
+    key.length < idempotencyPolicy.keyMinCharacters ||
+    key.length > idempotencyPolicy.keyMaxCharacters ||
+    !visible.test(key)
+  )
+    throw new Error("Invalid idempotency key");
+  if (typeof hash !== "string" || !/^[0-9a-f]{64}$/.test(hash))
+    throw new Error("Invalid request hash");
+}
+
+const where = "tile = $1 AND scope_kind = $2 AND scope_id = $3 AND idem_key = $4";
+const identity = (record: IdempotencyRecord) => [
+  record.tile,
+  record.scope.kind,
+  record.scope.id,
+  record.key,
+];
+
+/**
+ * Takes the key in the caller's transaction: deletes its record once expired, then inserts one
+ * (status 0, answer `{}`, expiring 24 hours from now) unless the key has one. A concurrent holder
+ * on another copy keeps the insert waiting on the primary key until it commits or rolls back.
+ * `taken: true` when the insert took it; otherwise the stored answer, `IdempotencyConflict` for a
+ * different hash, or `Idempotency record changed; retry` when the record went between the two
+ * statements.
+ */
+export async function takeKey(
+  tx: Tx,
+  record: IdempotencyRecord,
+): Promise<{ taken: true } | { taken: false; status: number; body: unknown }> {
+  const key = identity(record);
+  await tx.execute(
+    `DELETE FROM jeeves.idempotency_records WHERE ${where} AND expires_at <= now()`,
+    key,
+  );
+  const inserted = await tx.execute(
+    `INSERT INTO jeeves.idempotency_records (tile, scope_kind, scope_id, idem_key, request_hash, status, response, created_at, expires_at) VALUES ($1, $2, $3, $4, decode($5, 'hex'), 0, '{}', now(), now() + interval '${idempotencyPolicy.windowSeconds} seconds') ON CONFLICT DO NOTHING`,
+    [...key, record.hash],
+  );
+  if (inserted.rowCount === 1) return { taken: true };
+  const [row] = await tx.query<{ hash: string; status: number; response: unknown }>(
+    `SELECT encode(request_hash, 'hex') AS hash, status, response FROM jeeves.idempotency_records WHERE ${where}`,
+    key,
+  );
+  if (!row) throw new Error("Idempotency record changed; retry");
+  if (row.hash !== record.hash) throw new IdempotencyConflict();
+  return { taken: false, status: row.status, body: row.response };
+}
+
+/** Whether an answer is kept: 200–299 only. */
+export const storedStatus = (status: number) =>
+  Number.isInteger(status) && status >= 200 && status <= 299;
+
+/** Stores the key's answer in the caller's transaction, where `takeKey` took it. */
+export async function storeResult(
+  tx: Tx,
+  record: IdempotencyRecord,
+  result: { status: number; body: unknown },
+): Promise<void> {
+  const updated = await tx.execute(
+    `UPDATE jeeves.idempotency_records SET status = $5, response = $6::jsonb WHERE ${where}`,
+    [...identity(record), result.status, JSON.stringify(result.body ?? null)],
+  );
+  if (updated.rowCount !== 1) throw new Error("Idempotency record changed; retry");
+}
+
+/**
+ * One sweep, on one connection: with `pg_try_advisory_lock(hashtext('jeeves.idempotency'))` it
+ * deletes at most 1,000 expired records (any tile's, oldest first, skipping one a transaction
+ * holds), then unlocks; a copy that doesn't get the lock does nothing. A failure discards the
+ * connection, which ends its session and so its lock. Resolves the records deleted.
+ */
+export async function sweepExpired(pool: TransactionPool): Promise<number> {
+  const client = await pool.connect();
+  let discard = true;
+  try {
+    const { rows } = await client.query<{ locked: boolean }>(
+      "SELECT pg_try_advisory_lock(hashtext('jeeves.idempotency')) AS locked",
+    );
+    if (rows[0]?.locked !== true) {
+      discard = false;
+      return 0;
+    }
+    const deleted = await client.query(
+      "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
+      [idempotencyPolicy.sweepBatch],
+    );
+    await client.query("SELECT pg_advisory_unlock(hashtext('jeeves.idempotency'))");
+    discard = false;
+    return deleted.rowCount ?? 0;
+  } finally {
+    client.release(discard);
+  }
+}

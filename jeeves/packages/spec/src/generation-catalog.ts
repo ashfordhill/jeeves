@@ -79,6 +79,17 @@ export const generationPolicies = freezeRecord({
     order: "newest-first",
     add: "idempotent-eligible-only",
   }),
+  /** A stub's idempotency records (QL04): a key's 2xx answer, kept 24 hours in the Jeeves-owned
+   * `jeeves.idempotency_records` and swept every 60 s. Bound to no template: the generated
+   * `src/runtime/idempotency.ts` runs these values. */
+  idempotency: record("idempotency-policy", {
+    windowSeconds: 86400,
+    keyMinCharacters: 1,
+    keyMaxCharacters: 255,
+    sweepSeconds: 60,
+    sweepBatch: 1000,
+    stored: "2xx-only",
+  }),
 });
 
 export const generationRuntime = record("local-runtime", {

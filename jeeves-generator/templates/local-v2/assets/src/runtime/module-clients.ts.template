@@ -12,6 +12,16 @@ import { readFileSync } from "node:fs";
 import { localLogins } from "../features/local-bindings.ts";
 import { createPostgres } from "./postgres.ts";
 import { assertTransaction, transaction, type TransactionPool } from "./transaction.ts";
+import {
+  checkIdempotencyKey,
+  idempotencyPolicy,
+  storedStatus,
+  storeResult,
+  sweepExpired,
+  takeKey,
+  type IdempotencyRecord,
+} from "./idempotency.ts";
+import { periodic } from "./process.ts";
 // @database-import-end
 // @queue-import-start
 import { randomUUID } from "node:crypto";
@@ -32,7 +42,6 @@ import {
 } from "./tile-loop.ts";
 // @pubsub-loop-import-end
 // @cache-import-start
-import { createFailureLog } from "./tile-process.ts";
 import { createValkeyCache } from "./valkey.ts";
 // @cache-import-end
 // @objects-import-start
@@ -52,13 +61,14 @@ import type {
   CacheClient,
   DatabaseReadWriter,
   HttpTarget,
+  IdempotentResult,
   ObjectStore,
   QueuePublisher,
   SearchIndex,
   Tx,
 } from "../modules/dependencies.ts";
 import type { ProcessScope } from "./process.ts";
-import { NotImplemented } from "./tile-process.ts";
+import { createFailureLog, NotImplemented } from "./tile-process.ts";
 
 /** A dependency that isn't provisioned locally (another provider, an Identity no sign-in binds, a
  * stub's token check, a CDN, a tile that runs no process): calling it, or any of its members,
@@ -310,11 +320,50 @@ async function scopedTransaction<T>(pool: TransactionPool, fn: (tx: Tx) => Promi
     }
   }
 }
+/**
+ * A stub's idempotent call (QL04), in one `scopedTransaction`: the key is checked before BEGIN
+ * (`checkIdempotencyKey`), then `takeKey` takes it or finds its record. A stored answer is
+ * returned `replayed` without running `fn`; a different hash rejects `IdempotencyConflict` after
+ * ROLLBACK. `fn`'s 200–299 answer is stored (`storeResult`) and committed with its writes; any
+ * other status rolls the transaction back and is returned, not stored.
+ */
+async function idempotentCall<Body>(
+  pool: TransactionPool,
+  record: IdempotencyRecord,
+  fn: (tx: Tx) => Promise<{ status: number; body: Body }>,
+): Promise<IdempotentResult<Body>> {
+  // An answer that isn't stored leaves the transaction by this error, so it rolls back.
+  const unstored = new Error("Idempotent answer not stored");
+  const held: { answer?: { status: number; body: Body } } = {};
+  try {
+    return await scopedTransaction(pool, async (tx) => {
+      held.answer = undefined;
+      const taken = await takeKey(tx, record);
+      if (!taken.taken) return { status: taken.status, body: taken.body as Body, replayed: true };
+      const result = await fn(tx);
+      if (!storedStatus(result.status)) {
+        held.answer = result;
+        throw unstored;
+      }
+      await storeResult(tx, record, result);
+      return { status: result.status, body: result.body, replayed: false };
+    });
+  } catch (error) {
+    const answer = held.answer;
+    if (error === unstored && answer)
+      return { status: answer.status, body: answer.body, replayed: false };
+    throw error;
+  }
+}
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
- * what another owner publishes when the tile may only read it. Stubs own no tables: a module's
- * own tables need a migration and grants of their own. Its endpoint and transport come from
- * `databaseEndpoint`. `query` and `execute` each take a connection from the pool; `transaction`
- * (`scopedTransaction`) reserves one for its statements. Probe: SELECT 1. */
+ * what another owner publishes when the tile may only read it. A stub's own tables need its
+ * product SQL; on a database a stub writes, its login also uses the Jeeves-owned
+ * `jeeves.idempotency_records` (QL04). Its endpoint and transport come from `databaseEndpoint`.
+ * `query` and `execute` each take a connection from the pool; `transaction`
+ * (`scopedTransaction`) and `idempotent` (`idempotentCall`) reserve one for their statements. The
+ * first `idempotent` call starts the sweep of expired records (`sweepExpired`): then and every
+ * 60 s, owned by `scope`, so it stops at drain; a failed sweep logs an `idempotency sweep <tile>`
+ * failure line. Probe: SELECT 1. */
 export async function databaseClient(
   scope: ProcessScope,
   log: ProbeLog,
@@ -333,12 +382,28 @@ export async function databaseClient(
   });
   // An idle connection's error is not fatal: the next query reconnects.
   pool.on("error", () => {});
-  scope.own(() => pool.end());
+  let ended = false;
+  scope.own(() => {
+    ended = true;
+    return pool.end();
+  });
   await probed(log, { client: binding.resource, kind: "database", check: "SELECT 1" }, () =>
     pool.query("SELECT 1"),
   );
   const run = (sql: string, values?: readonly unknown[]) =>
     pool.query(sql, values ? [...values] : undefined);
+  const failure = createFailureLog(binding.tile);
+  let sweeping = false;
+  const sweep = () => {
+    if (sweeping || ended) return;
+    sweeping = true;
+    periodic(
+      scope,
+      () => (ended ? Promise.resolve() : sweepExpired(pool)),
+      idempotencyPolicy.sweepSeconds * 1000,
+      (error) => failure(`idempotency sweep ${binding.tile}`, error),
+    );
+  };
   return {
     async query<Row = Record<string, unknown>>(sql: string, values?: readonly unknown[]) {
       return (await run(sql, values)).rows as Row[];
@@ -347,6 +412,15 @@ export async function databaseClient(
       return { rowCount: (await run(sql, values)).rowCount ?? 0 };
     },
     transaction: (fn) => scopedTransaction(pool, fn),
+    async idempotent(request, fn) {
+      checkIdempotencyKey(request);
+      sweep();
+      return idempotentCall(
+        pool,
+        { tile: binding.tile, scope: request.scope, key: request.key, hash: request.hash },
+        fn,
+      );
+    },
   };
 }
 // @database-end

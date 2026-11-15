@@ -167,6 +167,15 @@ CREATE INDEX ON "favorite_items"."favorites"(account, added_at DESC, item);
     );
     const local = JSON.parse(text(bundle, "infra/local.json"));
     expect(local.grants).toEqual([
+      // Catalog writer, a stub, writes Catalog: the idempotency records (QL04).
+      {
+        host: "account-api",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+        relation: "idempotency_records",
+        resource: "catalog",
+        schema: "jeeves",
+      },
       {
         host: "account-api",
         kind: "table",

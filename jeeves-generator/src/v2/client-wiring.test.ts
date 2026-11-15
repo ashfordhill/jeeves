@@ -17,6 +17,7 @@ import {
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { canonicalJson } from "../json.ts";
 import { assembleV2 } from "./assemble.ts";
+import { idempotencyMigration } from "./client-wiring.ts";
 
 const registry = loadLocalV2Registry();
 const on: StudioCommand = { type: "setRunnableProcesses", on: true };
@@ -128,7 +129,11 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         database: "d_links_db",
         owner: "o_links_db",
         secret: "owner-links-db",
-        migrations: ["infra/postgres/links-db/000-foundation.sql"],
+        // A stub writes it, so it has the idempotency records too (QL04).
+        migrations: [
+          "infra/postgres/links-db/000-foundation.sql",
+          "infra/postgres/links-db/050-jeeves-idempotency.sql",
+        ],
         // Link reader writes it (Links API created it), so it has its own SQL file and schema.
         modules: [
           {
@@ -150,9 +155,19 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       ["links-api", "r_links_db__links_api", "sql-links-db--links-api"],
       ["visit-worker", "r_links_db__visit_worker", "sql-links-db--visit-worker"],
     ]);
-    // No template tables: CONNECT and USAGE on public (migrate.mjs), no relation grants; the
-    // product step grants published and the writer's own schema (products.mjs).
-    expect(plan.grants).toEqual([]);
+    // No template tables: CONNECT and USAGE on public (migrate.mjs), and only the writing tile's
+    // grant on the idempotency records (QL04); the product step grants published and the
+    // writer's own schema (products.mjs).
+    expect(plan.grants).toEqual([
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "idempotency_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+    ]);
     expect(text(stack, "infra/postgres/links-db/000-foundation.sql")).toContain(
       "REVOKE ALL ON SCHEMA public FROM PUBLIC;",
     );
@@ -531,12 +546,76 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(owner(stackOff)).toEqual([]);
   });
 
+  it("gives each database a stub writes the idempotency records, granted to its writing tiles only (QL04)", () => {
+    const migration = "infra/postgres/links-db/050-jeeves-idempotency.sql";
+    type Plan = {
+      databases: { resource: string; migrations: string[] }[];
+      grants: { resource: string; host: string; schema?: string }[];
+      logins: { resource: string; host: string }[];
+    };
+    const plan = (bundle: Bundle) => json(bundle, "infra/local.json") as Plan;
+    const jeeves = (bundle: Bundle) => plan(bundle).grants.filter((g) => g.schema === "jeeves");
+    // Links API writes Links database; Visit worker only reads it.
+    expect(text(stack, migration)).toBe(idempotencyMigration.sql);
+    expect(text(stack, migration)).toContain(
+      "CREATE TABLE IF NOT EXISTS jeeves.idempotency_records (tile text NOT NULL, scope_kind text NOT NULL, scope_id text NOT NULL, idem_key text NOT NULL, request_hash bytea NOT NULL, status integer NOT NULL, response jsonb NOT NULL, created_at timestamptz NOT NULL, expires_at timestamptz NOT NULL, PRIMARY KEY (tile, scope_kind, scope_id, idem_key));",
+    );
+    expect(stack.manifest.files.find((file) => file.path === migration)?.ownership).toBe(
+      "generated-scaffold",
+    );
+    expect(plan(stack).databases.find((db) => db.resource === "links-db")?.migrations).toEqual([
+      "infra/postgres/links-db/000-foundation.sql",
+      migration,
+    ]);
+    expect(jeeves(stack)).toEqual([
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "idempotency_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+    ]);
+    // The stub rows still declare the logins, in their order.
+    expect(plan(stack).logins.map((login) => `${login.resource} ${login.host}`)).toEqual([
+      "links-db links-api",
+      "links-db visit-worker",
+    ]);
+    // Its product SQL header lists no Jeeves table as a template's.
+    expect(text(stack, "infra/postgres/links-db/modules/link-reader.sql")).not.toContain("jeeves");
+    // Two tiles that write it (one owner package): one migration, a grant for each.
+    const shared = runStudioCommands(stubStackDesign(), [on]);
+    const studio = shared.architecture?.studio;
+    studio?.packages.push({
+      id: "links-team",
+      name: "Links team",
+      description: "",
+      members: ["links-api", "visit-worker"],
+    });
+    const store = studio?.elements.find((row) => row.element === "links-db");
+    if (store) store.owner = { kind: "package", id: "links-team" };
+    const both = assemble(shared);
+    expect(plan(both).databases.find((db) => db.resource === "links-db")?.migrations).toEqual([
+      "infra/postgres/links-db/000-foundation.sql",
+      migration,
+    ]);
+    expect(jeeves(both).map((grant) => grant.host)).toEqual(["links-api", "visit-worker"]);
+    // A design whose stubs only read a database (v2), or processes off: none.
+    for (const bundle of [v2, stackOff]) {
+      expect(bundle.files.some((file) => file.path.endsWith("/050-jeeves-idempotency.sql"))).toBe(
+        false,
+      );
+      expect(jeeves(bundle)).toEqual([]);
+    }
+  });
+
   it("reports what is provisioned for each process's stubs", () => {
     expect(
       stores(stack, "links-api").map((row) => `${row.store} ${row.access}: ${row.provisioned}`),
     ).toEqual([
       "links-cache read-write: Valkey cache-links-cache with its password",
-      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader)",
+      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader; its idempotency records in jeeves.idempotency_records)",
       "uploaded consume: RabbitMQ work queue uploaded and its .failed",
       "visits publish: RabbitMQ exchange visits",
     ]);

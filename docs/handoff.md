@@ -17943,3 +17943,186 @@ builds on this unit's `defineRoutes`, `rawPath` and `signal`.
 
 **For the next unit.** QL04, Route stubs get idempotency records. It builds on QL02's
 `defineRoutes`, `rawPath` and `signal` and on this unit's `transaction`.
+
+## 2026-11-15 — QL04: Route stubs get idempotency records
+
+**What changed.**
+- New `templates/local-v2/assets/src/runtime/idempotency.ts.template`: `requestHash`, `takeKey`,
+  `storeResult`, `sweepExpired` and `IdempotencyConflict` (`name` `"IdempotencyConflict"`), plus
+  `idempotencyPolicy`, `checkIdempotencyKey`, `storedStatus` and `IdempotencyRecord`.
+  - `requestHash` is the lowercase-hex SHA-256 of `{"method","route","params","body"}`. The method
+    is upper-cased, `params` and every object's keys are sorted, arrays keep their order, and no
+    body is `null`.
+  - `takeKey` deletes the key's expired record, then inserts one (status 0, `{}`, 86,400 s) `ON
+    CONFLICT DO NOTHING`. Without the insert, it reads the record: another hash gives the conflict,
+    and a missing record gives `Idempotency record changed; retry`.
+  - `sweepExpired` takes `pg_try_advisory_lock(hashtext('jeeves.idempotency'))` on one connection.
+    It deletes at most 1,000 expired records (any tile's, oldest first, `FOR UPDATE SKIP LOCKED`),
+    then unlocks. A failure discards the connection, which ends its lock.
+- `dependencies.ts.template`: `IdempotencyScope`, `IdempotentResult<Body>` and
+  `DatabaseReadWriter.idempotent({ scope, key, hash }, fn)`, with a doc comment.
+- `module-clients.ts.template`, in `@database`:
+  - `idempotentCall` runs `takeKey`, `fn`, then `storeResult` in one `scopedTransaction` (QL03).
+    A non-2xx answer leaves by a private error, so it rolls back, and is returned
+    `replayed: false`.
+  - `databaseClient.idempotent` checks the key before BEGIN. The first call starts `periodic`
+    (`process.ts`) on `scope`: a sweep then and every 60 s, logging an
+    `idempotency sweep <tile>` failure line when one fails.
+  - `createFailureLog` moved from the cache section's import to the unconditional `tile-process.ts`
+    import.
+- `src/v2/client-wiring.ts`:
+  - `idempotencyMigration` holds `050-jeeves-idempotency.sql`: the brief's three statements, a
+    header line and `REVOKE ALL ON SCHEMA jeeves FROM PUBLIC`.
+  - `idempotencyGrant` and `stubClients(...).mount.local` give each database a stub writes the
+    migration and the tile's grant (SELECT, INSERT, UPDATE, DELETE on
+    `jeeves.idempotency_records`).
+  - The store's report text gains `its idempotency records in jeeves.idempotency_records`.
+- `src/v2/local.ts`:
+  - A grant on a stub's own database login passes the "login before grants" check, since the stub
+    rows add that login later.
+  - The product-SQL header's template tables leave out schema `jeeves`.
+  - The export README gains one sentence.
+- `src/v2/tile-processes.ts`: identical migrations (several tiles writing one database) are one.
+- `src/v2/primitives.ts`: `clientLibraries.database` adds `idempotency`.
+- `jeeves/packages/spec/src/generation-catalog.ts`: policy record `idempotency`
+  (`idempotency-policy`, the brief's values), bound to no template.
+- Tests:
+  - New `idempotency.test.ts`, 6 tests:
+    - the canonical hash (`{a:1,b:2}` equals `{b:2,a:1}`, nested too; another body, route or
+      method differs; the exact text);
+    - the policy equals the catalog's;
+    - key refusals;
+    - on PGlite: the migration twice, store, replay, conflict, 403 not stored, the reader denied
+      `permission denied for schema jeeves`, expiry, and a sweep of 3 with no advisory lock left.
+  - `module-clients.test.ts`, 8 tests:
+    - the order BEGIN, DELETE, INSERT, fn, UPDATE, COMMIT, and the values;
+    - a replay runs no `fn`;
+    - a conflict after ROLLBACK, and a record that went;
+    - a 403 rolled back;
+    - an invalid key or hash before any connection;
+    - fake timers: a sweep at the first call and at 60 s, none after drain, no timer left;
+    - no lock gives `[lock, release]`;
+    - a failing sweep gives its failure line and `release discard`.
+    - The fake pool's `answer` now gets the values.
+  - `client-wiring.test.ts`: 1 new test. Links API gets the migration and grant, and Visit worker
+    (read only) none. The logins keep their order. A package-owned Links database written by two
+    tiles gets one migration and two grants. v2 and processes off get none.
+  - `product-sql.test.ts`: 1 new test on migration order.
+  - `tile-processes.test.ts`: two added paths.
+- Docs:
+  - `jeeves-generator/README.md`: the Provisioning table's Database row, the provisioned-text
+    sentence, the `databaseClient` clause and a new **Idempotency records** paragraph;
+  - `docs/studio.md`: one sentence.
+- Pins (Rule 7): `.jeeves/manifest.json` and `src/modules/dependencies.ts` in v2-module-design and
+  stub-stack.
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: exit 0, 118 files / 1058 tests (16 new); Biome shows only the older 1 info. The
+  first run failed five tests, fixed as below: favorites, http-wiring, module-stubs and the two
+  processes-off pins.
+- Web build: exit 0.
+- Regeneration proof, before and after from this checkout: `probe-design.json` (`a3b6204f…0505`,
+  verified), `qrwty-r83.json` (`4c16e0ca…5d50`) and YouTube v4's design (`9762df41…813f`).
+  - Probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`, `infra/local.json`,
+    `infra/postgres/store/050-jeeves-idempotency.sql`, `infra/postgres/tally-db/050-jeeves-idempotency.sql`,
+    `src/modules/dependencies.ts`, `src/runtime/idempotency.ts` (new) and
+    `src/runtime/module-clients.ts`.
+  - r83: the same, with the migration in `analytics`, `billing`, `links` and `sessions`.
+  - YouTube v4: the same without `infra/` (no stub writes a database there).
+  - That is the brief's list. `src/features/local-bindings.ts`, the process files and the product
+    SQL headers are unchanged. `infra/local.json` differs only in `databases[].migrations` and
+    `grants`.
+  - `update:v2 … youtube/v4/app --check`: `refused` `[]` (create 2, replace 27, unchanged 68,
+    keep 11).
+- Docker proof, the unit's one Docker run. Project `ql04-probe` on 127.0.0.1:48001–48003, run on
+  after-probe with Q03's bodies and both SQL files at their `generated-extension` paths.
+  - Front Probe gained a `POST /idem` case. It reads `Idempotency-Key` and hashes `POST /idem` with
+    the body. `fn` inserts one `m_front_probe.items` row and answers 201 (or `?status=`). The case
+    maps `IdempotencyConflict` to 409 and `Invalid idempotency key` to 400.
+  - The `compose.override.yaml` set only `JEEVES_EXTERNAL_PROVIDER_URL` on `app-front`.
+  - `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build` (tsc 7.0.2) both
+    exited 0. The checkout's `node_modules/.modules.yaml` and `.pnpm/lock.yaml` keep their mtimes
+    (2026-11-14 12:10).
+  1. `pnpm first-run`: exit 0 in 87 s, all seven services healthy. Setup applied
+     `store/000-foundation.sql`, then `050-jeeves-idempotency.sql`, then the two product files (the
+     same for `tally-db`).
+     - Schema `jeeves`'s ACL is `{o_store=UC/o_store,r_store__front=U/o_store}`.
+     - The table belongs to `o_store`. Only `r_store__front` has a grant: DELETE, INSERT, SELECT,
+       UPDATE. `d_tally_db` has the same for `r_tally_db__tally`.
+  2. Through the edge:
+     - `a1` with `{"url":…,"n":1}` gives 201 `replayed:false`.
+     - The same key with the keys reordered gives 201, the same `id`, `replayed:true`.
+     - That leaves one record (`front|account|probe|a1|201`, 86,400 s) and one item.
+     - The same key with another body gives 409 `IdempotencyConflict`.
+     - `?status=403` gives 403 and leaves no record and no new item.
+     - A key with a space, or no key, gives 400.
+  3. psql inserted a record whose `expires_at` was a day ago. It was gone 37 s later, and `a1` was
+     kept.
+  4. Afterwards there was no advisory lock and no session `idle in transaction`. Front logged no
+     failure line.
+  5. Teardown, each exit 0: `pnpm stop`; `docker compose --profile '*' down --volumes
+     --remove-orphans`; `docker image rm ql04-probe-app:latest`. The six exports are deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after it.
+  No `ql04` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - the brief's `--suite=wiring`, `--suite=core` and `--suite=regeneration`, since the proof above
+    is the one Docker run;
+  - the measurement of the new tests on HEAD in a scratch clone;
+  - `pnpm install` and `pnpm build` in after-r83 and after-youtube.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **The sweep starts at a client's first `idempotent` call**, not when the client is built. The
+  call in the process file (not in the Emitted output list) can't say which client writes, and a
+  database a stub only reads has no table or grant, so an eager sweep would fail there every
+  60 s. `periodic` runs its first tick at once, so a sweep runs at that first call and every 60 s
+  after it. A copy that never calls `idempotent` doesn't sweep. A copy that does sweeps every
+  tile's expired records on that database, since the lock is per database.
+- **`hash` is `requestHash`'s 64 lowercase hex digits**, stored with `decode($5, 'hex')` and read
+  back with `encode`. Any other value rejects `Invalid request hash`, a message the brief doesn't
+  name. `scope.id` is counted in code points and may not hold NUL, which PostgreSQL's `text`
+  can't.
+- **Files outside the brief's list:**
+  - `local.ts`, for the grant check and the product header's filter;
+  - `tile-processes.ts`, for the migration dedupe.
+  - Contributing logins instead would have reordered `localLogins`, and so
+    `src/features/local-bindings.ts`.
+- **The migration** adds a header comment and `REVOKE ALL ON SCHEMA jeeves FROM PUBLIC`, as
+  Favorites' migration does, beside the brief's three statements.
+- **The policy record is bound to no template.** Binding it to `module-stub` would change that
+  template's ref hash, and with it every saved design's selections.
+- **Extras beyond the brief:**
+  - the report's provisioned text;
+  - the export README sentence;
+  - a body that is `undefined` stored as JSON `null`;
+  - the PGlite tests;
+  - the proof's 403, 400 and ACL steps.
+- **Unnamed assertions updated** (QG35's practice):
+  - `favorites.test.ts`'s and `http-wiring.test.ts`'s exact `grants`;
+  - `module-generation.test.ts`'s policy count, 7 to 8;
+  - `client-wiring.test.ts`'s existing plan assertion (migrations and grants).
+  - `module-stubs.test.ts` forbids `runtime/` in `dependencies.ts`, so the doc comment says "the
+    runtime's idempotency.ts" instead.
+- **Migration order:** no fixture has both a stub-written database and a `100-` migration. The
+  order test shows each list, the path sort and `migrate.mjs`'s order.
+- **The proof's first sequence of calls lost its output**: `curl -o /dev/stdout` truncated the
+  log. Its record and item were deleted, and the sequence ran again with fresh keys, as above.
+
+**Noticed.**
+- The unit comes from the QRWTY lessons plan (JP00).
+- **The migration's bytes are now fixed.** `migrate.mjs` records each applied file's SHA-256, so
+  editing `idempotencyMigration.sql` makes setup refuse an existing runtime (`Applied migration …
+  differs`). A change needs a new `05x-jeeves-…` file. QL08's leases get their own file, which
+  the dedupe in `tile-processes.ts` also covers.
+- A concurrent holder makes the second insert wait on the primary key within the pool's 2 s
+  statement timeout. If the holder's `fn` takes longer, the waiter fails 57014 and the route
+  answers 503 instead of replaying.
+- No stub slot writes a database without reading it today. If a write-only one appears,
+  `local.ts` would refuse the grant's SELECT.
+- QRWTY arm A's export is frozen at `4e87f97`, so this reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QL05, Stubs declare their settings and startup refuses an invalid one. QL08
+can reuse `idempotencyGrant`'s shape and the `050-` migration path for its leases.

@@ -357,7 +357,8 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
 
   it("provisions what the mounted templates use: tables, logins and providers", () => {
     const plan = json(stack, "infra/local.json");
-    // The cache read: a source login, no grants (beside the stubs' logins on Links database).
+    // The cache read: a source login, no grants (beside the stubs' logins on Links database, and
+    // the writing stubs' grant on its idempotency records, QL04).
     expect(plan.logins).toContainEqual({
       resource: "previews-db",
       host: "preview-api",
@@ -365,7 +366,16 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       user: "r_previews_db__preview_api",
       secret: "sql-previews-db--preview-api",
     });
-    expect(plan.grants).toEqual([]);
+    expect(plan.grants).toEqual([
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "idempotency_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+    ]);
     const services = json(stack, "compose.yaml").services;
     expect(services["app-preview-api"]).toMatchObject({
       depends_on: {

@@ -1508,7 +1508,12 @@ or a stub with a write link; an Event publisher's outbox doesn't count) gets its
 `infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`
 and every `start` run it in the module's own schema, after the template tables; only its tile
 may use its tables, and every tile on that database may read the views it puts in `published`
-(keep the file re-runnable). Preview's **Processes** list shows the edge's paths and each CDN's
+(keep the file re-runnable). A database a stub writes also gets Jeeves's own table
+`jeeves.idempotency_records` (`infra/postgres/<database>/050-jeeves-idempotency.sql`), which only
+the tiles whose stubs write it use: a stub's `idempotent` call runs a create or payment once per
+key, keeps a 2xx answer for 24 hours and replays it for the same request, answers a different
+request under the key with `IdempotencyConflict` (for the stub to answer 409), and rolls any other
+answer back; expired records are swept every 60 s. Preview's **Processes** list shows the edge's paths and each CDN's
 route, then each
 process with its service, shape, edge path, routes and loops ("loop on <queue>"), what is
 provisioned for its stubs ("Provisioned: Links database (database, read-write)", and under

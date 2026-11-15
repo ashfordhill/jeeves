@@ -96,6 +96,35 @@ function outsideClient(
   return undefined;
 }
 
+/**
+ * The Jeeves-owned table of a stub's idempotency records (QL04, D4), on each database a stub
+ * writes: the setup-only owner creates it, with no PUBLIC access, and only the logins of the tiles
+ * whose stubs write that database get USAGE on `jeeves` and SELECT, INSERT, UPDATE and DELETE on
+ * it (`idempotencyGrant`). A stub never creates it.
+ */
+export const idempotencyMigration = {
+  id: "050-jeeves-idempotency.sql",
+  sql: `-- Jeeves-owned: the idempotency records of the stubs that write this database (QL04).
+CREATE SCHEMA IF NOT EXISTS jeeves;
+REVOKE ALL ON SCHEMA jeeves FROM PUBLIC;
+CREATE TABLE IF NOT EXISTS jeeves.idempotency_records (tile text NOT NULL, scope_kind text NOT NULL, scope_id text NOT NULL, idem_key text NOT NULL, request_hash bytea NOT NULL, status integer NOT NULL, response jsonb NOT NULL, created_at timestamptz NOT NULL, expires_at timestamptz NOT NULL, PRIMARY KEY (tile, scope_kind, scope_id, idem_key));
+CREATE INDEX IF NOT EXISTS idempotency_records_expires ON jeeves.idempotency_records (expires_at);
+`,
+} as const;
+/** A writing tile's login on the idempotency records (QL04). */
+export const idempotencyGrant = (resource: string, host: string) => ({
+  resource,
+  host,
+  schema: "jeeves",
+  relation: "idempotency_records",
+  kind: "table" as const,
+  privileges: ["SELECT" as const, "INSERT" as const, "UPDATE" as const, "DELETE" as const],
+});
+/** A store a stub writes that is provisioned locally: a database there gets the idempotency
+ * records. */
+const writesDatabase = (store: StubStore) =>
+  store.kind === "database" && !store.unsupported && store.access !== "read";
+
 /** The configuration pass's readers for the broker's endpoint and the Pub/Sub project (QG31). */
 const brokerCheck = { name: "brokerBinding", call: "brokerBinding()" };
 const pubsubCheck = { name: "pubsubProjectId", call: "pubsubProjectId()" };
@@ -324,6 +353,7 @@ export function stubClients(
   if (list.some((client) => client.section === "queue"))
     imports.push({ from: tileProcess, name: "brokerState" });
   const provisioned = stores.filter((store) => !store.unsupported);
+  const written = stores.filter(writesDatabase);
   const issuer = list.find((client) => client.name === "identityTarget")?.key;
   const external = list
     .filter((client) => client.name === "externalTarget")
@@ -389,7 +419,18 @@ export function stubClients(
         ...(issuer && { issuer: generationLocalIdentity(issuer).local }),
         ...(external.length && { external }),
       },
-      local: {},
+      // Each database a stub writes gets the idempotency records and this tile's grant (QL04);
+      // the tile's login there is the stub rows' own.
+      local: written.length
+        ? {
+            migrations: written.map((store) => ({
+              resource: store.resource,
+              id: idempotencyMigration.id,
+              sql: idempotencyMigration.sql,
+            })),
+            grants: written.map((store) => idempotencyGrant(store.resource, process.tile)),
+          }
+        : {},
     },
   };
 }
@@ -420,6 +461,7 @@ function provisionedAs(
           ? [`SELECT on its owner's template views ${templateViews.join(", ")}`]
           : []),
         ...(own.length ? [`its own tables in ${own.join(", ")}`] : []),
+        ...(writesDatabase(store) ? ["its idempotency records in jeeves.idempotency_records"] : []),
       ].join("; ")})`;
     }
     case "queue": {

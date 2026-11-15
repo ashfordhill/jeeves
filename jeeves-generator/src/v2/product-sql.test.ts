@@ -212,6 +212,33 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     ).toThrowError(expect.objectContaining({ code: "INVALID_ASSET" }));
   });
 
+  it("applies a stub's idempotency records (050-) before template migrations (100-) and product SQL (QL04)", () => {
+    const migrations = (bundle: Bundle, resource: string) =>
+      json(bundle, "infra/local.json").databases.find(
+        (db: { resource: string }) => db.resource === resource,
+      )?.migrations as string[];
+    expect(migrations(stack, "links-db")).toEqual([
+      "infra/postgres/links-db/000-foundation.sql",
+      "infra/postgres/links-db/050-jeeves-idempotency.sql",
+    ]);
+    expect(migrations(v2, "metadata-db")).toEqual([
+      "infra/postgres/metadata-db/000-foundation.sql",
+      "infra/postgres/metadata-db/100-handler-writer.sql",
+      "infra/postgres/metadata-db/100-upload-multipart.sql",
+    ]);
+    // The plan lists a database's migrations sorted by path, so 050- falls between 000- and 100-.
+    const one = ["100-handler-writer", "050-jeeves-idempotency", "000-foundation"].map(
+      (name) => `infra/postgres/metadata-db/${name}.sql`,
+    );
+    expect(one.toSorted()).toEqual([one[2], one[1], one[0]]);
+    // setup applies them in that order, each once, and only then the product step.
+    const migrate = text(stack, "scripts/migrate.mjs");
+    expect(migrate.indexOf("for (const path of db.migrations) {")).toBeGreaterThan(0);
+    expect(migrate.indexOf("for (const path of db.migrations) {")).toBeLessThan(
+      migrate.indexOf("await applyProductSql"),
+    );
+  });
+
   it("says in each process's stores what its database login reads", () => {
     type Store = { store: string; provisioned?: string };
     const rows = (bundle: Bundle, tile: string) =>
@@ -219,7 +246,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
         bundle.report as unknown as { processes: { tiles: { tile: string; stores: Store[] }[] } }
       ).processes.tiles.find((row) => row.tile === tile)?.stores ?? [];
     expect(rows(stack, "links-api").find((row) => row.store === "links-db")?.provisioned).toBe(
-      "PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader)",
+      "PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader; its idempotency records in jeeves.idempotency_records)",
     );
     expect(rows(stack, "visit-worker").find((row) => row.store === "links-db")?.provisioned).toBe(
       "PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; SELECT on published)",

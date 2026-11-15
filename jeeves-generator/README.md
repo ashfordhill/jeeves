@@ -630,7 +630,7 @@ scripts:
 
 | Store | Provisioned for each stub tile |
 | --- | --- |
-| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, and SELECT on its `published` views (product tables, below). A stub that writes it also has its own schema there. Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
+| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, and SELECT on its `published` views (product tables, below). A stub that writes it also has its own schema there, and `jeeves.idempotency_records` (Module clients, below). Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
 | Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
 | Queue saved on Google Cloud, only stubs using it | A Pub/Sub topic with the queue's ID; for each loop stub that consumes it its own subscription `<topic>--<tile>--<module>`, which its tile's copies share (ack deadline 60 s, retries backing off 1–10 s, dead-letter topic `<subscription>.failed` after 100 attempts), and a pull subscription `<subscription>.failed`; locally the emulator `local-pubsub` and `setup-pubsub` (`pubsub-init.mjs`), no credential |
 | Cache | `cache-<id>` (Valkey) and its password |
@@ -698,7 +698,8 @@ failed: …`). Template tables stay their templates' (uploads, assets, receipts,
 totals): a product file never creates them, and a template never touches `m_*` or `published`.
 Each writer's row in `report.modules` gains `sql` (`[{database, file, schema}]`, one per database
 it writes), and a stub store's `provisioned` text says `SELECT on published` and names the
-stub's own schema.
+stub's own schema and, on a database a stub writes, its idempotency records in
+`jeeves.idempotency_records` (Idempotency records, below).
 
 **Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind the
 stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
@@ -713,7 +714,8 @@ fails, SQL that starts with transaction control (`BEGIN`, `START TRANSACTION`, `
 serialization failure or deadlock (`40001`, `40P01`) rerunning `fn` on a new transaction after
 20 ms and then 40 ms, the third rethrown, and a COMMIT that lost its connection after `fn`
 resolved (SQLSTATE class `08`, `57P01`, `57P02` or none) rejecting `TransactionOutcomeUnknown`,
-never the result; the pool's statement and query timeouts apply inside it), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
+never the result; the pool's statement and query timeouts apply inside it; and `idempotent`,
+below), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
 names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
 reconnects every 5 s after a lost broker),
 `pubsubPublisher` (a Pub/Sub topic's publisher on the official client, `@google-cloud/pubsub`
@@ -751,6 +753,34 @@ provisioned (another provider, an Identity no sign-in binds, a link that verifie
 tile with no process, a template's part) is `unavailable(...)`: every call answers "Not
 implemented: <tile> for <module> (<why>)". A stub's own "Not implemented" still answers 501 or goes
 to `.failed`.
+
+**Idempotency records** (QL04, owner decision D4). On each database a stub writes, the export has
+Jeeves's own table `jeeves.idempotency_records` (`tile`, `scope_kind`, `scope_id`, `idem_key`,
+`request_hash` bytea, `status`, `response` jsonb, `created_at`, `expires_at`; primary key the
+first four, an index on `expires_at`), created by the migration
+`infra/postgres/<database id>/050-jeeves-idempotency.sql` (`idempotencyMigration` in
+`client-wiring.ts`, a `generated-scaffold`, applied once before any `100-` template migration and
+the product SQL) as the setup-only owner, with no PUBLIC access. Only the logins of the tiles whose
+stubs write that database get USAGE on `jeeves` and SELECT, INSERT, UPDATE and DELETE on it
+(`grants` in `infra/local.json`); a database a stub only reads gets neither, and a stub never
+creates it. A database several tiles' stubs write gets the migration once and a grant for each.
+A stub's `db.idempotent({ scope, key, hash }, fn)` (`src/runtime/idempotency.ts`, which the
+primitives emit with the database client) makes a create or payment request idempotent: `scope`
+is `{ kind, id }` (`kind` `^[a-z][a-z0-9-]{0,31}$`, `id` 1–255 characters) and `key` 1–255
+visible ASCII characters (`[\x21-\x7e]`), else `Invalid idempotency key` before any statement;
+`hash` is `requestHash({ method, route, params?, body? })`, SHA-256 over the canonical request (the
+method upper-cased, params and every object's keys sorted, arrays in order, no body `null`). In one
+`transaction` it deletes the key's expired record, inserts one (status 0, 24 hours) unless the key
+has one (a concurrent holder on another copy keeps it waiting on the primary key), runs `fn(tx)`,
+and stores a 200–299 answer before COMMIT; any other status rolls `fn`'s writes back and is
+returned with `replayed: false`, not stored. A key with a record answers its stored status and body
+with `replayed: true` without running `fn`, or for a different hash rejects `IdempotencyConflict`
+(`name` `"IdempotencyConflict"`, which the stub answers 409) after ROLLBACK. The first call starts
+the sweep (`sweepExpired`): then and every 60 s, under
+`pg_try_advisory_lock(hashtext('jeeves.idempotency'))`, it deletes at most 1,000 expired records
+(any tile's), and a copy without the lock does nothing; a failure logs an
+`idempotency sweep <tile>` failure line; the sweep is owned by the process's scope and stops at
+drain. The values are the generation catalog's `idempotency-policy`. Loop stubs may call it too.
 
 **Endpoints from the environment.** A process with stubs checks every variable its stubs' clients
 and its sign-in read in one pass, `checkConfiguration` at the top of its process file, before any
