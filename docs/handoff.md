@@ -17292,3 +17292,62 @@ them, as its third check.
 
 **For the next unit.** QG32, as batch 3 runs. QG33's AG-05 row can use these names,
 `<topic>--<tile>--<module>`.
+
+## 2026-11-15 — QG32: Generated files end with one newline
+
+**What changed.**
+- `templates/local-v2/assets/Dockerfile`: its last, empty line is deleted, and nothing else.
+- `src/v2/composition.ts`: after the section loop, `constructors = constructors.replace(/\n+$/,
+  "\n");` with a one-line comment. `service-resources.ts` now ends with one newline whether its
+  last section (`cache`) is kept or dropped. The blank lines the kept markers leave inside the file
+  stay (invariant 2).
+- Tests: 1 new, in `local.test.ts` after QG22's. It exports QG22's three designs (the base, the
+  stub stack with processes on, the full selections fixture) and the probe fixture, read as
+  `client-wiring.test.ts` reads it.
+  - No emitted file's bytes end with `\n\n`.
+  - `Dockerfile` and `src/features/service-resources.ts`, each where an export has it, end with
+    exactly one `\n`. Both paths must appear in at least one export, so the check can't pass empty.
+  - Run before the two source changes (in the checkout, on HEAD's templates): it failed on exactly
+    `Dockerfile` and `src/features/service-resources.ts`.
+- Pins (Rule 7, `pins:update`): `Dockerfile` and `.jeeves/manifest.json` in all three exports, and
+  `src/features/service-resources.ts` in `frozen-v2` and `v2-module-design`. That is exactly the
+  brief's list.
+- Docs: none named, and no sentence became false.
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: on the final tree, exit 0, 117 files / 1026 tests; Biome shows only the older 1
+  info. (QG28 recorded HEAD at 1025.)
+- Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`. In both,
+  the changed paths are exactly `.jeeves/manifest.json`, `.jeeves/report.json`, `Dockerfile` and
+  `src/features/service-resources.ts`, the brief's list.
+  - Each of the two files lost only its final `\n` (`Dockerfile` 1628 → 1627 bytes,
+    `service-resources.ts` 2137 → 2136).
+  - The report differs only in the source inventory (`composition.ts`, `Dockerfile`).
+  - Scratch exports deleted.
+- Docker phase, after the offline checks: `pnpm test:generated --suite=core` (artifacts in the
+  scratchpad): **4/4 passed** (B01–B04, 299 s), first run. Its images build from the changed
+  `Dockerfile`.
+- Inventory: containers, images, networks and volumes are identical before the suite and after it.
+  No `/tmp/jeeves-system-*` is left, `test-results/generated/` still holds its 10 older entries,
+  and `jeeves-postgres-1` is unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed;
+  - the measurement of the new test on HEAD in a scratch clone (the brief's own HEAD run was made in
+    the checkout, above);
+  - `pnpm install` and `pnpm build` in each `after-*`.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **The HEAD run of the new test was in the checkout**, before the two source edits, not in a
+  scratch clone.
+
+**Noticed.**
+- The unit is arm A-found (QRWTY Q05, AG-09), batch 3.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+  Then `git diff --check` over the export no longer flags the two files.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG33 (docs only), as batch 3 runs. Its three Known limits rows go after
+the table's last row, the edge's `X-Forwarded-For` row.

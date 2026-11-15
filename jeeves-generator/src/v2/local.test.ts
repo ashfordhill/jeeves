@@ -1,6 +1,14 @@
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -374,6 +382,52 @@ describe("standalone local foundation", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it("ends every emitted file with one newline, never a blank line (QG32)", () => {
+    const processes = assembleV2(
+      {
+        designJson: JSON.stringify(
+          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    const full = emit(
+      designSchema.parse({
+        ...generationSourceFixture(),
+        generation: generationSelectionsFixture(),
+      }),
+    );
+    // QRWTY's Q03 probe, as the regeneration proof exports it.
+    const probe = assembleV2(
+      {
+        designJson: readFileSync(
+          new URL("../../../docs/plans/qrwty-gaps/fixtures/probe-design.json", import.meta.url),
+          "utf8",
+        ),
+      },
+      loadApplicationRegistry(),
+    );
+    const blankAtEnd = new Set<string>();
+    const endings: [string, boolean][] = [];
+    for (const bundle of [emit(), processes, full, probe]) {
+      for (const { path, bytes } of bundle.files) {
+        const end = Array.from(bytes.subarray(-2));
+        if (end.length === 2 && end[0] === 0x0a && end[1] === 0x0a) blankAtEnd.add(path);
+      }
+      for (const path of ["Dockerfile", "src/features/service-resources.ts"]) {
+        if (!bundle.files.some((f) => f.path === path)) continue;
+        const content = text(bundle, path);
+        endings.push([path, content.endsWith("\n") && !content.endsWith("\n\n")]);
+      }
+    }
+    expect([...blankAtEnd].sort()).toEqual([]);
+    // Each where the export has it, with exactly one final newline.
+    expect(new Set(endings.map(([path]) => path))).toEqual(
+      new Set(["Dockerfile", "src/features/service-resources.ts"]),
+    );
+    for (const ending of endings) expect(ending).toEqual([ending[0], true]);
   });
 
   it("migrates one copy at a time and completes with a non-superuser admin", () => {

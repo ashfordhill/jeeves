@@ -30,4 +30,3 @@ WORKDIR /app
 COPY --from=app /app /app
 USER node
 CMD ["node", "dist/services/media.js"]
-

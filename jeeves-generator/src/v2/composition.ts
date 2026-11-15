@@ -119,6 +119,8 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
             (block) => (required ? block.replace(/\/\/ @[^\n]+/g, "") : ""),
           );
       }
+      // The last section's end marker leaves an empty last line; end with one newline.
+      constructors = constructors.replace(/\n+$/, "\n");
       const bindings = selections.map((s) => ({
         id: s.id,
         kind: s.binding.kind,
