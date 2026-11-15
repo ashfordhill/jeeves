@@ -15508,3 +15508,17 @@ tree while QG07 was mid-unit. `2625d96` holds the rest.
 
 **For the next unit.** QG09. A stub loop on a Pub/Sub topic runs `pubsubLoop` on
 `<topic>--<tile>`, and its service reads `JEEVES_PUBSUB_PROJECT`.
+
+## 2026-11-14 — Docs: owner decisions on the QL plan, and QG09's folded template changes
+
+This coordinator docs entry records the owner's answers.
+
+- **QL plan:** D1–D6 are yes. QL01 is folded into QG09. QG16 is decided by the planner as unit QL14
+  (`docs/plans/qrwty-lessons/qg16-decision.md`).
+- **QG09:** it gains F1–F3, in `docs/plans/qrwty-gaps/units.md`:
+  - F1, `pnpm-workspace.yaml` with `allowBuilds: { protobufjs: false }`;
+  - F2, `METADATA_SERVER_DETECTION: none` for local Pub/Sub services;
+  - F3, the reconnect backoff options 500/2000 ms;
+  - extra rows P6–P8.
+
+**For the next unit:** QG09.

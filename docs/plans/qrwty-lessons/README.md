@@ -9,7 +9,7 @@ project: both arms' designs, decisions, code and reviews, together with Jeeves i
   [qrwty-gaps](../qrwty-gaps/units.md). QG21–QG23 and QG25 run before it.
 - [planner-packet.md](planner-packet.md): the planner's assignment.
 
-**Status:** draft. Nothing is implemented, and the owner's decisions are pending.
+**Status:** owner decisions given 2026-11-14 (see units.md §Decisions). Nothing is implemented. The run order is QL02–QL06, QL14, QL07–QL12, then QL13; QL01 is folded into QG09. QL units start after QGR2, then QG21–QG23 and QG25.
 
 **Planner usage:** 527,714 tokens, 84 tool uses, 31 minutes.
 

@@ -10,12 +10,13 @@ edit the same template files as QL01–QL04; two agents must never share the che
 
 | Unit | Title | Depends | Owner decision | Layer |
 | --- | --- | --- | --- | --- |
-| QL01 | Pub/Sub clients reconnect within two seconds and skip the credential lookup locally | QG07, QG08 landed | No | templates |
+| QL01 | ~~Pub/Sub clients reconnect within two seconds and skip the credential lookup locally~~ **Folded into QG09** (owner, 2026-11-14; F2 uses `METADATA_SERVER_DETECTION=none`, not `universeDomain`) | — | — | — |
 | QL02 | Route stubs get a deadline signal and a route table | — | No | templates, generator |
 | QL03 | Database stubs get a scoped transaction | — | No | templates, generator |
 | QL04 | Route stubs get idempotency records | QL02, QL03 | **D4** | templates, generator |
 | QL05 | Stubs declare their settings and startup refuses an invalid one | — | **D6** | templates, generator |
 | QL06 | A keys library for stubs: rings, signatures, sealed values and cursors | QL05 | No | templates, generator |
+| QL14 | Startup waits for a missing store; configuration still fails fast (runs here, after QL06) | QL02–QL05 | **QG16** (decided) | templates, generator |
 | QL07 | A Scheduled task module kind with its interval | — | **D2** | spec, studio, chat |
 | QL08 | Scheduled tasks run every N seconds under a shared lease | QL03, QL07 | **D2**, **D4** | templates, generator |
 | QL09 | A Custom module can call its tile's Cache reader | — | **D5** | spec, studio, generator |
@@ -29,6 +30,8 @@ independent of the template units; QL11 waits only for the owner. A unit whose d
 is skipped and the review notes it.
 
 ## Decisions (each with the planner's recommendation)
+
+**Owner, 2026-11-14:** D1–D6 **yes**. Clarification 7 **yes**: QL01 is folded into QG09. Clarification 8 (QG16) was delegated to the planner, which decided it in [qg16-decision.md](qg16-decision.md): wait and retry; configuration errors still fail fast. That decision is unit QL14.
 
 1. **D1 — Workload identity between tiles (QL10).** A direct link between two application tiles
    whose Security is **Service identity** (the stored default) makes the callee require a workload
@@ -989,3 +992,104 @@ rest in `docs/plans/qrwty-lessons/review.md`, with any new unit under **Proposed
 ready or needs the owner; adds the design-playbook lesson from analysis §6 if no unit did; and
 updates `docs/template-gaps.md`'s rows that the units closed. Commit:
 `QLR1: review the QRWTY lessons units`.
+
+### QL14 — Startup waits for a missing store; configuration still fails fast
+
+**Status:** ready (the owner's decision above; replaces QG16's startup half). **Depends:** none;
+run after QL06 and before QL07.
+
+**Goal:** a process whose database, broker, topic, bucket or search service does not answer at
+startup stays alive and not ready, retries every 5 s, and becomes ready by itself when the
+dependency is back; an invalid endpoint, setting or secret still fails startup at once; an HTTP
+process listens from the start so liveness never depends on a store.
+
+**Found (arm A, VE; arm B).** Q03's `g04-startup-coupling.txt`: a Front restarted while its cache
+was down failed startup (`Probe deadline (5 s)`), exited 1 and stayed down (the edge answered
+503); a Tally restarted with the broker down exited the same way. QG04 fixed the cache. Arm B's
+`platform/lifecycle.ts` waits for every dependency with capped backoff and exits only for invalid
+configuration; its HTTP processes listen first and report readiness separately.
+
+**Files.**
+- `jeeves-generator/templates/local-v2/assets/src/runtime/process.ts.template`: a new
+  `export async function waitUntilReady<T>(scope, name, check: () => Promise<T>, log): Promise<T>`
+  beside `periodic`: runs `check`; on rejection logs the waiting line and retries after 5,000 ms;
+  stops at once (rejecting `Error("Process stopped during startup")`) when the scope is stopping;
+  `runProcess` writes the `startup-stopped` line and sets exit code 0 when startup rejects with
+  that error after a signal, instead of `startup-failed`.
+- `jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template`: every
+  probe except the cache's goes through `waitUntilReady` (the probe log gains `result: "waiting"`,
+  `retryIn`, `error`); configuration errors (`Invalid endpoint`, the secret read) are thrown before
+  `waitUntilReady` is entered, so they keep failing startup. The header comment and the process
+  files' comment "a failed probe fails startup" (noted by QG04 and QG06) become "a store that
+  doesn't answer is retried every 5 s; startup fails only for an invalid endpoint, setting or
+  secret".
+- `jeeves-generator/templates/local-v2/assets/src/runtime/http.ts.template` (`createHttpService`):
+  `start()` listens first, then awaits `initialize()`, then sets `state = "ready"` and opens the
+  admission; `GET /livez` is added beside `/healthz` (reserved like it); `initialize()` is given
+  to `waitUntilReady` by the process file (below), so `http.ts` itself stays free of the retry.
+- `jeeves-generator/src/v2/http-wiring.ts` and `tile-processes.ts` (`entryFile`): the process's
+  `initialize` wraps each mount's `initialize` lines in `waitUntilReady(scope, "<module> initialize",
+  …)`; the HTTP service's `start` is called before the client probes so the port is open while they
+  wait; loops are started only after every probe and initialize has passed (the existing order:
+  clients, then loops, then `ready()`).
+- `jeeves-generator/src/v2/loop-wiring.ts`: no change expected; if a loop's mount probes its own
+  store at start, that probe goes through `waitUntilReady` too (list it in the handoff).
+- `jeeves-generator/templates/local-v2/assets/src/features/service-resources.ts.template`: no
+  change (templates' pools are probed through their mounts' `initialize`).
+- Tests: `jeeves-generator/src/v2/tile-processes.test.ts` (the block that loads the emitted
+  `http.ts`: listen before initialize, `/livez`, `/healthz` 503 `starting`, routes 503 `UNAVAILABLE`
+  with `Retry-After: 1` while waiting), `module-clients.test.ts` (fake `pg`, fake timers: a probe
+  that fails twice then passes; the waiting lines; `Invalid endpoint` still throws at once; a stop
+  during the wait rejects at once), `tile-loop.test.ts` or `loop-wiring.test.ts` (no subscribe
+  before readiness), `processes-off.test.ts` by Rule 7.
+- Docs: `jeeves-generator/README.md` (Runnable processes: the startup and `/healthz` sentences;
+  Module clients: the probe sentence; the failure-lines list gains the waiting probe line),
+  `docs/studio.md` where it says a failed probe fails startup, `docs/template-gaps.md` Known
+  limits (a new row "Fixed in QL14" replacing the implied limit "a dependency down at start fails
+  startup"; QG04's row text unchanged), `docs/plans/tile-processes/contract.md` §6 is a plan and is
+  left as is (note it in the handoff).
+
+**Invariants.**
+1. With every dependency up, startup is unchanged: the same probe lines, `started` lines, marker
+   and `Application ready`; `/healthz` 200 once ready; the only new output is the `/livez` route.
+2. With a database, broker, topic, bucket or search service unreachable at start: the process
+   stays running with restart count 0; the waiting line repeats every 5–10 s naming the client and
+   the error; `/healthz` is 503 `starting` and `/livez` 200; a module route is 503 `UNAVAILABLE`
+   with `Retry-After: 1`; no loop is subscribed; the marker is absent. When the dependency answers,
+   the `ok` line, the loops, the marker and `/healthz` 200 follow within one retry interval plus
+   the probe's own time, with no restart.
+3. `Invalid endpoint <NAME>`, `Invalid setting <NAME>` and a missing secret file still write
+   `startup-failed` and exit 1 before any probe.
+4. The cache's startup behaviour is exactly QG04's.
+5. SIGTERM during a wait: exit 0 within 1 s, the `startup-stopped` line, no `startup-failed`
+   line, no `drain-failed` line.
+6. `pnpm first-run` and `pnpm start` are unchanged (providers are healthy before application
+   services start; the healthcheck is still the marker).
+
+**Emitted output.** With processes on: `src/runtime/process.ts`, `src/runtime/http.ts`,
+`src/runtime/module-clients.ts`, every `src/processes/*.ts`, `README.md`, `.jeeves/report.json`,
+`.jeeves/manifest.json`. Pinned (Rule 7): `src/runtime/http.ts` (frozen-v2, v2-module-design) and
+`.jeeves/manifest.json`; any other: stop.
+
+**Offline tests** (fail before, pass after): the emitted service answers `/livez` 200 and
+`/healthz` 503 `starting` after `start()` is called but before `initialize` resolves, and a route
+503 `UNAVAILABLE` with `retry-after: 1`; `waitUntilReady` with fake timers retries at 5,000 ms and
+resolves on the third attempt with two waiting lines; it rejects at once when the scope stops; the
+emitted `module-clients.ts` with a fake `pg` whose first `SELECT 1` rejects `ECONNREFUSED`:
+`databaseClient` resolves after the fake recovers, with one waiting line; `Invalid endpoint
+JEEVES_DATABASE_TALLY_DB_HOST` is thrown before any `SELECT 1`; a process file calls
+`service.start(...)` before the first `await databaseClient(` (text order) and `startModuleLoop`
+after the last probe.
+
+**Required regressions:** check, e2e, build; Docker phase `pnpm test:generated --suite=core`,
+`--suite=wiring`, `--suite=faults`. Nothing user-visible in the studio: no mouse check.
+**Docker proof** (`after-probe` with the probe bodies, its own Compose project): `first-run`;
+`docker stop` of `local-postgres`; `docker restart` of `app-front` and `app-tally`: both containers
+stay `running` with restart count 0 for 60 s; `GET /api/front/healthz` → 503 `starting`,
+`GET /api/front/livez` → 200, `GET …/front-probe/env` → 503 `UNAVAILABLE` with `Retry-After: 1`;
+Front's log shows `"result":"waiting"` lines 5–10 s apart; `rabbitmqctl list_consumers` shows no
+Tally consumer; `docker start local-postgres` → within 15 s `/healthz` 200, `/env` answers, Tally's
+consumer is listed and a published message is counted; then `docker stop local-postgres`,
+`docker restart app-front`, and `docker stop -t 10 app-front` during the wait exits 0 in under 2 s
+with the `startup-stopped` line. Remove the project.
+**Commit:** `QL14: startup waits for a missing store; configuration still fails fast`.

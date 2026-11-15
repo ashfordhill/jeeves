@@ -730,6 +730,35 @@ README's tables; the CI workflow's suite list if it names suites; evidence in th
 order of phases. Show one row failing against HEAD's templates of QG08 (or say why it can't run),
 as SO02 did. **Commit:** `QG09: generated-system tests for Pub/Sub channels`.
 
+**Folded into QG09 (owner, 2026-11-14).** These are template changes, made in this unit before the
+suite, and the suite proves them:
+- **(F1) Install scripts.** Every export gains `pnpm-workspace.yaml` with `allowBuilds: { protobufjs: false }`
+  (QG07 verified that it works with the lock unchanged), so plain `pnpm install` and `pnpm add` succeed
+  without `--ignore-scripts`. It is a new emitted path in every export, and pins follow Rule 7. Update
+  the generated README's install note and the generator README's `--ignore-scripts` advice.
+- **(F2) No metadata lookup locally.** The local `compose.yaml` gives every service that publishes to or
+  consumes a Pub/Sub topic `METADATA_SERVER_DETECTION: none` (QG07 and QG08 measured 3.1–3.3 s of the
+  5 s probe spent on the lookup). Pass no `universeDomain`: QG07 found that it switches the SDK out of
+  emulator mode.
+- **(F3) Reconnect bound** (QRWTY lessons QL01, folded here). Every `new PubSub(` in the templates
+  receives `"grpc.initial_reconnect_backoff_ms": 500` and `"grpc.max_reconnect_backoff_ms": 2000`.
+  QG08 also found, in the SDK's source, that an `UNAVAILABLE` stream otherwise retries with up to 60 s
+  backoff.
+
+**Emitted output for F1–F3:** `pnpm-workspace.yaml` (new), `compose.yaml` (Pub/Sub designs only),
+`src/runtime/module-clients.ts` and `src/runtime/tile-loop.ts` (wherever `new PubSub(` is), the
+generated `README.md`, `.jeeves/manifest.json` and `.jeeves/report.json`.
+
+**Extra rows:**
+- **P6:** pause the emulator for 60 s, then unpause. The first 202 comes within 3.0 s, and the consumer
+  counts the backlog within 10 s. Record both times.
+- **P7:** a fresh `first-run`'s first publish answers 202 in under 2.0 s, and the subscriber probe
+  passes in under 2.0 s.
+- **P8:** in a fresh export, plain `pnpm install --frozen-lockfile` (without `--ignore-scripts`) exits 0.
+
+Offline tests cover F1–F3's emitted lines (fail before, pass after). The harness keeps
+`--ignore-scripts` for the other suites.
+
 ### QG10 — Verified TLS bindings and an insecure-endpoint refusal
 
 **Status:** local, because QRWTY's R01 starts every process locally in the production profile and
