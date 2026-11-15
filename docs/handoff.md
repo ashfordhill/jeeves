@@ -17351,3 +17351,34 @@ them, as its third check.
 
 **For the next unit.** QG33 (docs only), as batch 3 runs. Its three Known limits rows go after
 the table's last row, the edge's `X-Forwarded-For` row.
+
+## 2026-11-15 — QG33: Three limits for managed deployments
+
+**What changed.**
+- `docs/template-gaps.md`, Known limits: three rows after the table's last row (the edge's
+  forwarded headers), in the brief's order and with its text:
+  - the cache's password, read once and sent on every connection (AG-04);
+  - Pub/Sub topic and subscription names compiled from the design's IDs, with QG28's
+    `<topic>--<tile>--<module>` (AG-05);
+  - `migrate.mjs` creating the local Keycloak's database and logins also where the issuer is
+    managed (AG-06).
+- No other line of any file changed. No template changed, so there is no emitted output and no pin
+  changed.
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: exit 0, 117 files / 1026 tests; Biome shows only the older 1 info.
+- Skipped, as the brief and the coordinator allow for a docs-only unit: the web build, e2e, Docker
+  and the regeneration proof (no template changed).
+
+**Differences from the plan.** None.
+
+**Noticed.**
+- The unit is arm A-found (QRWTY Q04: AG-04, AG-05 and AG-06), batch 3.
+- Checked against the code while adding the rows: `local.ts` names the Keycloak provider's database,
+  owner and login `i_<id>`, `io_<id>` and `ik_<id>`, and `valkey.ts` reads the cache's secret once,
+  when its client is built. Both match the rows.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG34 (the owner answered B1 yes on 2026-11-15). Its Known limits row goes
+after these three.
