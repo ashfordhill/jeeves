@@ -198,7 +198,8 @@ Count stub consumes its subscription `clicks--tally` and writes Tally database. 
 holds the two stub bodies and Count's product SQL. Count records each delivery (ID, attempt,
 worker) and counts a click once by its ID, since Pub/Sub delivers at least once. A click whose ID
 starts with `ni-` throws "Not implemented" and one starting with `retry-` a retryable error, so the
-generated loop's terminal and retry paths run on real messages. Each stack installs its fresh
+generated loop's terminal and retry paths run on real messages; one starting with `hold-` is
+recorded, then held 30 s before it counts. Each stack installs its fresh
 export with the README's plain `pnpm install --frozen-lockfile` (P8); the other suites keep the
 Dockerfile's `--ignore-scripts`. The harness reaches the emulator, which publishes no port, through
 its REST API from inside Clicks API's container, with the address and project that container's
@@ -212,11 +213,12 @@ the exact project label names.
 | P1 | `pubsub.system.test.ts` | Every click answered 202 is in the capture subscription with its body and `messageId` attribute; a click sent twice reaches Count twice (attempt 1 each) and is counted once |
 | P2 | `pubsub.system.test.ts` | The emulator paused: each publish answers 503 within 2.5 s, `/healthz` answers 200 and Clicks API's only failure lines are those requests'; unpaused, the 503's click sent again answers 202 within 10 s and is counted; no process exits or restarts |
 | P3 | `pubsub.system.test.ts` | An `ni-` click reaches `clicks--tally.failed` with its attributes and `x-terminal-code` `NOT_IMPLEMENTED`, and Count records nothing; a `retry-` click is delivered again with growing attempts from 1 to 6 and ends there `RETRY_EXHAUSTED`; neither is counted and nothing else reaches `.failed` |
-| P4 | `pubsub.system.test.ts` | A trigger on Count's delivery record, scoped to one click and waiting on a harness-held advisory lock, holds Count after its click has committed (a lock wait from Tally's address). Tally is killed while that statement still waits, inside its 2 s statement timeout, which then ends it uncommitted. After `docker start` the click is delivered again with a later attempt and is still counted once; `.failed` stays empty |
+| P4 | `pubsub.system.test.ts` | A trigger on Count's delivery record, scoped to one click and waiting on a harness-held advisory lock, holds Count after its click has committed (a lock wait from Tally's address). Tally is killed while that statement still waits, inside its 2 s statement timeout, which then ends it uncommitted. After `docker start` the click is delivered again, once the dead consumer's lease (up to 60 s) ends, with a later attempt and is still counted once; `.failed` stays empty; the time to that delivery is recorded |
 | P5 | `pubsub.system.test.ts` | PostgreSQL stopped while clicks are published (202: publishing needs only Pub/Sub): Tally logs `store unreachable, retry in 5000 ms (attempt not counted)` with attempt 1, at least one 5 s wait apart, and `.failed` stays empty; after `docker start` every click is counted once, its first delivery with attempt 1 (a copy Pub/Sub sends again after a lapsed lease may follow with a later attempt), and no process restarted |
 | P6 | `pubsub.system.test.ts` | The emulator paused for 60 s, a click every 10 s answering 503 within 2.5 s. After `docker unpause` the first of them sent again answers 202 within 3.0 s, and Tally counts the backlog (the six sent again and three new) within 10 s; both times are recorded |
 | P7 | each `pubsub` test | On a fresh `first-run`, Tally's subscriber probe passes in under 2.0 s (from its database probe's line to its own) and the stack's first publish answers 202 in under 2.0 s |
 | P8 | each `pubsub` test | Setup installs the fresh export with plain `pnpm install --frozen-lockfile` (no `--ignore-scripts`), which exits 0 |
+| P9 | `pubsub.system.test.ts` | A `hold-` click, held 30 s in hand (longer than the client's default 10 s lease), is delivered once: 10 s after it counts, Count has recorded one delivery, attempt 1, and `.failed` holds only P3's two |
 
 P2 and P6 read "nothing else fails" for the publishing process, Clicks API; Tally logs what it
 logs. P6's backlog is what the clients held while Pub/Sub was away: a paused emulator accepts

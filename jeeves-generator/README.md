@@ -747,9 +747,9 @@ or `-`, optionally after `<domain>:`). A missing or invalid one fails startup wi
 `startup-failed` line. The stubs' clients read theirs in `module-clients.ts`; a template's `pool`
 and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
 its cache through `cacheEndpoint` in `valkey.ts`, whose bounded client checks a host by the same
-rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loopConsumer` (a Pub/Sub
-loop passes `pubsubLoop(probe)`), so the compiled
-`loopBroker` in `tile-loop.ts` is only a default no process uses. The foundation sets exactly the
+rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loopConsumer`, and a
+Pub/Sub loop passes `pubsubLoop(probe)`: `tile-loop.ts` compiles no broker endpoint, so each loop
+takes its transport from its process. The foundation sets exactly the
 variables each process reads in its `app-<id>` service's `environment` (`localEndpoints` in
 `local-contract.ts`, a stub Identity client's `JEEVES_IDENTITY_<ID>_URL` among them), beside a
 sign-in's `OIDC_*`. The one it doesn't set is an External API's `JEEVES_EXTERNAL_<ID>_URL`, the
@@ -825,7 +825,12 @@ names the subscription and `<topic>--<tile>.failed`, and its service gets `JEEVE
 (and locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`), not the broker. At start it checks the subscription exists
 (5 s; false or an error fails startup), then opens one streaming-pull subscriber with flow control
 `maxMessages` equal to the loop's Concurrency and `allowExcessMessages: false`, so at most that
-many messages are in hand; the client extends a message's lease while it is. Each message gives
+many messages are in hand; the client extends a message's lease while it is, and with
+`minAckDeadline` 60 s (the subscription's own ack deadline, which the client's 10 s start would
+otherwise shorten) it renews the lease at most about 54 s apart, so a message held through store
+waits keeps its lease and its attempt. The trade-off: a consumer that crashes holding a message
+gives it back only when that lease ends, so Pub/Sub delivers it again up to 60 s later instead of
+about 10 s (the pubsub suite's P4 measures it). Each message gives
 the stub `body` (its data), `messageId` (its `messageId` attribute, else Pub/Sub's ID), `headers`
 (its attributes), `attempt` (Pub/Sub's delivery attempt, which counts from 1 because the
 subscription has a dead-letter policy) and `source` (the subscription). It is acknowledged only

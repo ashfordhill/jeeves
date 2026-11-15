@@ -16630,3 +16630,135 @@ now carries `Retry-After: 1`, except `/healthz`'s.
 
 **For the next unit.** QG27, as planned. `processes.tiles[].environment` and the README's list now
 include each External API's URL.
+
+## 2026-11-15 — QG27: Pub/Sub loops keep their lease for the subscription's deadline
+
+**What changed.**
+- `module-clients.ts.template`, `pubsubConsumer`: `client.subscription(options.queue, { flowControl,
+  minAckDeadline: Duration.from({ seconds: 60 }) })`, with `Duration` imported from
+  `@google-cloud/pubsub` in the `pubsub-loop` import line (`import { Duration, type Message, type
+  Subscription }`). 60 is QG07's `ackDeadlineSeconds`. Checked on the real 6.3.2 client (a scratch
+  script on after-pubsub's install): the subscriber's `ackDeadline` is 10 without the option and 60
+  with it, and stays 60 after a 1 s ack; the lease timer is `(deadline × 0.9 − latency) × jitter`,
+  so renewals come at most about 54 s apart, not 9 s. The `pubsubLoop` doc comment says so and gives
+  the crash trade-off.
+- `tile-loop.ts.template`: `loopBroker` is gone. `startModuleLoop`'s `transport` is required, so
+  `onState` becomes `BrokerState | undefined`. Every emitted call passes both. `amqpLoop(broker)` and
+  `loopConsumer(loop, handle, hooks, broker)` lose their defaults too, since those defaults were
+  `loopBroker`. Every emitted `loopConsumer` call passes hooks and `brokerBinding()`. The doc
+  comments say no broker endpoint is compiled in.
+- Tests:
+  - `tile-loop.test.ts`: the subscription-options assertion (QG08's "streams its tile's
+    subscription …") now expects `minAckDeadline`, a `Duration` of 60 s. The fake SDK gains a
+    `Duration` shaped like 6.3.2's (milliseconds, `totalOf`).
+  - 1 new test, "compiles no broker endpoint": the module has no `loopBroker`, the template has no
+    `local-broker`, and `startModuleLoop` (with a binding or `amqpLoop(binding)`) and `loopConsumer`
+    consume on exactly the binding passed.
+  - The RabbitMQ helpers (`started`, the template-loop test) pass an explicit Compose binding.
+  - `tile-search.test.ts` passes one to `loopConsumer`. `module-clients.test.ts`'s fake SDK
+    exports a `Duration` stand-in, so its Pub/Sub bundle links.
+- Pubsub suite: row **P9** at the end of the first test. The fixture's Count (`owned/count.ts`)
+  records a `hold-` click's delivery, holds it 30 s, then counts it. `hold-p9` must count no sooner
+  than 30 s after its 202, and 10 s after it counts, `m_count.deliveries` must hold one row, attempt
+  1. The click must count once, and `.failed` must hold only P3's two.
+- Pins: none changed (`processes-off.test.ts` passes; no pinned export has processes on).
+- Docs:
+  - `jeeves-generator/README.md`, Pub/Sub loops: `minAckDeadline` 60 s and the trade-off. A
+    consumer that crashes holding a message gives it back only when its lease ends, up to 60 s
+    later instead of about 10 s; P4 measures it.
+  - The endpoints passage: `tile-loop.ts` compiles no broker endpoint; it said `loopBroker` was a
+    default no process uses.
+  - `field-projects/generator-system/README.md`: the `hold-` clicks, a P9 row, and P4's lease wait.
+
+**Checks.**
+- `pnpm check`:
+  - Before any change: exit 0, 117 files / 1017 tests.
+  - On the final tree: exit 0, 117 files / 1018 tests; Biome shows only the older 1 info.
+- New and changed tests on HEAD's templates: run in a scratch clone at `51f6639` with its own
+  offline install and the three changed test files.
+  - 2 fail there, the new test (`loopBroker` present) and the updated options assertion (no
+    `minAckDeadline`); the files' other 69 pass.
+  - The clone is deleted. The checkout's `node_modules/.modules.yaml`,
+    `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` keep their checksums and mtimes
+    (2026-11-14 12:10).
+  - P9 wasn't run on HEAD; the Docker proof below is the contrast.
+- `pnpm test:e2e`, three runs; every failure was the known load flake, `Project:` not visible
+  within 5 s (`studio.ts:94`), with load average 10–18 while arm B ran:
+  - Run 1: 70 passed / 4 failed.
+  - Run 2, alone: 68 passed / 6 failed, different tests, same flake.
+  - The ten failed tests alone (`--workers=1`): 10 passed.
+  - Each failure came before any project was created; `jeeves_e2e` holds only its two older
+    projects, so nothing was deleted.
+- Web build: exit 0.
+- Docker phase, after the offline checks:
+  - `pnpm test:generated --suite=pubsub`: **3/3 passed** (343 s), first run.
+    - P9: `hold-p9` counted 30,165 ms after its 202, with one delivery, attempt 1.
+    - P4: redelivered with attempt 2, **50,831 ms** after `docker start` began (QG09's run: 8,205
+      ms), inside its 60 s poll.
+    - P5: each click [1]. P7 probes 63–69 ms. P3 attempts 1–6. P6 79 ms / 1,451 ms.
+  - `--suite=core`: **4/4 passed** (B01–B04, 316 s), first run.
+- Docker proof: `proof.mjs` in the scratchpad, on a fresh export of the pubsub fixture with its
+  stub bodies and SQL attached, under projects `qg27-after` and `qg27-head` on free loopback
+  ports. SDK logging (`GOOGLE_SDK_NODE_LOGGING: pubsub:ack-batch,pubsub:expiry` on `app-tally`)
+  came through the stack's own `compose.override.yaml`. The steps: count `w-0`; `docker stop`
+  `local-postgres`; publish `x-0`–`x-2` (202 each); keep PostgreSQL away 75 s; start it; wait
+  until all count, then 15 s.
+  - After this change: Tally held `x-0` through 16 `attempt not counted` lines, all attempt 1.
+    The client sent **one** lease extension in the outage, 46.8 s after receipt. Every click had
+    one delivery, attempt 1 (`x-0` [1], `x-1` [1], `x-2` [1]), all counted 5.3 s after the
+    restore.
+  - HEAD's templates (the `before-pubsub` export): the client renewed 20 times, up to **9,718 ms**
+    apart against its 10 s lease. `x-2`, held back by flow control, was delivered **8 times**
+    (attempts 1–8, run one after another at the restore) and counted once; `x-0` and `x-1` [1].
+    That is QGR2's finding 3 reproduced: one more lapse after attempt 6 and a real failure would
+    end `RETRY_EXHAUSTED` at once.
+  - Both stacks' containers, network, volume and image were removed by ID or name; none is left.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`, plus
+  the pubsub fixture's design.
+  - Changed paths, probe and r83: `.jeeves/manifest.json`, `.jeeves/report.json`,
+    `src/runtime/tile-loop.ts`. Pubsub: the same plus `src/runtime/module-clients.ts` (the
+    import, the comment, the `minAckDeadline` line). Nothing else: the brief's list.
+  - The report differs only in the registry's source inventory (`module-clients.ts.template`,
+    `tile-loop.ts.template`). The manifest differs in those hashes and in `tile-loop.ts`'s bytes
+    (12,279 → 12,209) and hash.
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. The pubsub build type-checks the new option against 6.3.2's `SubscriberOptions`.
+  - Scratch exports deleted.
+- Inventory: compared before the Docker phase and after it. The differences are other runs':
+  arm B's `qrwtyb-local-*` stack (24 containers, its network and volume) went, and its
+  `qrwtyb/*` images were rebuilt or removed meanwhile; none touched. No `gs-` or `qg27-` resource
+  and no `/tmp/jeeves-system-*` is left. `test-results/generated/` still holds its 10 older
+  entries; `jeeves-postgres-1` is unchanged.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **`amqpLoop` and `loopConsumer` lose their defaults too.** The brief names `startModuleLoop`, but
+  both defaulted to `loopBroker`, which the brief removes. `onState` becomes `BrokerState |
+  undefined`, since a required parameter can't follow an optional one. Emitted calls are unchanged
+  (process files aren't in the changed paths).
+- **P9's Count records the delivery first,** then holds 30 s, then counts. A copy would then be
+  recorded as soon as it reached Count (right after the held click's ack), so the 10 s wait after
+  the count is enough. P9 sits in the first pubsub test (after P3) rather than a fourth stack.
+- **The Docker proof runs on the pubsub fixture's export,** not after-probe: the probe's queue is
+  RabbitMQ, so its loop has no lease. It ran on HEAD's export too, for the contrast.
+- **The regeneration proof adds the pubsub fixture's design** beside the two named fixtures,
+  since neither of them has a Pub/Sub loop, so neither shows the `module-clients.ts` change.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), proposed ready by the QGR2 review (finding 3, with finding 9's
+  `loopBroker` folded in).
+- P4's margin: its poll waits 60 s from Tally's restart being healthy, and the redelivery now comes
+  about 51 s after the start began. It passed with about 9 s to spare. Under heavy load the
+  restart takes longer, which widens the margin. Under very light load a later lease extension
+  before the kill could narrow it. Watch it if P4 flakes.
+- The emulator doesn't hold back messages by flow control on its side: both runs received 2–3
+  clicks at once while the Concurrency is 1, and the client held the extra ones (and leased them).
+  On HEAD those were the ones that lapsed.
+- The trade-off holds for a deployment too: a process that crashes holding messages delays them by
+  up to 60 s. A drain nacks them at once, as before.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG28 and QG29 wait for the owner. A Pub/Sub loop's lease is now 60 s, and
+`tile-loop.ts` has no compiled broker endpoint.

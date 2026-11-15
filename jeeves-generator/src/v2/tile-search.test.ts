@@ -212,6 +212,14 @@ describe("emitted search scaffold (v3 contract, section 5)", () => {
       retryLimit: 5,
       concurrency: 4,
     };
+    const broker = {
+      hostname: "local-broker",
+      port: 5672,
+      username: "runtime",
+      passwordSecret: "broker-password",
+      heartbeatSeconds: 10,
+      confirmTimeoutMs: 5000,
+    };
     type Fake = {
       options: { queue: string; concurrency: number };
       events: unknown[];
@@ -228,7 +236,13 @@ describe("emitted search scaffold (v3 contract, section 5)", () => {
         index,
         hooks: watched,
         openConsumer: async (handle: unknown) => {
-          consumer = await loop.loopConsumer(row, loop.templateHandler(log, row, handle), {});
+          // On the broker binding the process passes (`brokerBinding()`), as its file does.
+          consumer = await loop.loopConsumer(
+            row,
+            loop.templateHandler(log, row, handle),
+            {},
+            broker,
+          );
           return consumer;
         },
       });

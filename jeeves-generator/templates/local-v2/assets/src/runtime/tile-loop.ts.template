@@ -18,16 +18,6 @@ import {
 } from "./tile-process.ts";
 import type { ModuleMessage } from "../modules/entry.ts";
 
-/** The local broker's runtime login, as the template consumers use it. */
-export const loopBroker: BrokerBinding = {
-  hostname: "local-broker",
-  port: 5672,
-  username: "runtime",
-  passwordSecret: "broker-password",
-  heartbeatSeconds: 10,
-  confirmTimeoutMs: 5000,
-};
-
 /** One loop: the module it calls, the queue it consumes, that queue's .failed and its bounds. */
 export type ModuleLoop = {
   module: string;
@@ -60,8 +50,9 @@ export type LoopTransport = {
   retries: "handler" | "transport";
   open(options: LoopConsumerOptions): Promise<LoopConsumer>;
 };
-/** RabbitMQ: `createConsumer` on the broker's binding. */
-export function amqpLoop(broker: BrokerBinding = loopBroker): LoopTransport {
+/** RabbitMQ: `createConsumer` on the broker's binding, which the process reads from its
+ * environment (`brokerBinding`); no endpoint is compiled in. */
+export function amqpLoop(broker: BrokerBinding): LoopTransport {
   return { retries: "handler", open: (options) => createConsumer(broker, options) };
 }
 
@@ -194,15 +185,16 @@ export function moduleHandler(
  * (`amqpLoop`: manual ack, prefetch equal to its concurrency, bounded retry and `<queue>.failed`),
  * and `pubsubLoop` a Pub/Sub subscription's, with the same contract. Stopping cancels the
  * subscription, cuts a retry wait short and drains the message in hand. After a lost connection
- * the consumer reconnects every 5 s, telling `onState`; nothing here fails the process.
+ * the consumer reconnects every 5 s, telling `onState`; nothing here fails the process. The
+ * process always passes the transport: no broker endpoint is compiled in.
  */
 export async function startModuleLoop(
   scope: ProcessScope,
   log: LoopLog,
   loop: ModuleLoop,
   entry: (message: ModuleMessage) => Promise<void>,
-  onState?: BrokerState,
-  transport: LoopTransport | BrokerBinding = loopBroker,
+  onState: BrokerState | undefined,
+  transport: LoopTransport | BrokerBinding,
 ) {
   const consumes = "open" in transport ? transport : amqpLoop(transport);
   const stopping = new AbortController();
@@ -224,13 +216,14 @@ export async function startModuleLoop(
 
 /**
  * A mounted template's consumer on its loop row: the queue, `.failed`, concurrency and retry limit
- * the process config names, so each consuming module of a tile reads its own subscriber queue.
+ * the process config names, so each consuming module of a tile reads its own subscriber queue,
+ * on the broker binding the process passes (`brokerBinding`).
  */
 export function loopConsumer(
   loop: Omit<ModuleLoop, "module">,
   handle: MessageHandler,
-  hooks: ConsumerHooks & { onState?: BrokerState } = {},
-  broker: BrokerBinding = loopBroker,
+  hooks: ConsumerHooks & { onState?: BrokerState },
+  broker: BrokerBinding,
 ) {
   return createConsumer(broker, {
     ...hooks,

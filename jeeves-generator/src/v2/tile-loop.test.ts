@@ -70,6 +70,15 @@ const loop = await import(moduleUrl("tile-loop"));
 const { NonRetryable } = await import(moduleUrl("delivery"));
 const { NotImplemented, createFailureLog, logStarted } = await import(moduleUrl("tile-process"));
 
+/** What a process passes each RabbitMQ loop: `brokerBinding()` read from Compose's endpoint. */
+const broker = {
+  hostname: "local-broker",
+  port: 5672,
+  username: "runtime",
+  passwordSecret: "broker-password",
+  heartbeatSeconds: 10,
+  confirmTimeoutMs: 5000,
+};
 const visits = {
   module: "visit-consumer",
   queue: "visits--visit-worker",
@@ -116,7 +125,7 @@ const settled = (consumer: Consumer, receipt: string) =>
 async function started(entry: (message: unknown) => Promise<void>, bounds = visits) {
   const scope = testScope();
   const log = loop.createLoopLog("visit-worker");
-  await loop.startModuleLoop(scope, log, bounds, entry);
+  await loop.startModuleLoop(scope, log, bounds, entry, undefined, broker);
   const consumer = consumers.at(-1);
   if (!consumer) throw new Error("No consumer");
   return { scope, consumer };
@@ -141,6 +150,40 @@ describe("emitted stub loops (tile process contract, section 5)", () => {
     );
     await scope.stop();
     await expect(consumer.closed).resolves.toEqual({ fatal: false });
+  });
+
+  it("compiles no broker endpoint: each loop consumes on the binding its process passes (QG27)", async () => {
+    expect(loop).not.toHaveProperty("loopBroker");
+    const template = readFileSync(
+      new URL("../../templates/local-v2/assets/src/runtime/tile-loop.ts.template", import.meta.url),
+      "utf8",
+    );
+    expect(template).not.toContain("local-broker");
+    // A deployment's broker, as `brokerBinding()` reads it from the environment.
+    const deployed = { ...broker, hostname: "broker.internal", port: 5673 };
+    const log = loop.createLoopLog("visit-worker");
+    const scope = testScope();
+    await loop.startModuleLoop(scope, log, visits, async () => {}, undefined, deployed);
+    expect(consumers.at(-1)?.binding).toBe(deployed);
+    await loop.startModuleLoop(
+      scope,
+      log,
+      visits,
+      async () => {},
+      undefined,
+      loop.amqpLoop(deployed),
+    );
+    expect(consumers.at(-1)?.binding).toBe(deployed);
+    const consumer: Consumer = await loop.loopConsumer(
+      visits,
+      loop.templateHandler(log, visits, async () => {}),
+      {},
+      deployed,
+    );
+    expect(consumer.binding).toBe(deployed);
+    expect(consumers).toHaveLength(3);
+    await scope.stop();
+    await consumer.close();
   });
 
   it('sends "Not implemented" to .failed at once with one rate-limited log line, and keeps going', async () => {
@@ -503,6 +546,7 @@ describe("emitted template loops", () => {
         await hooks.construct();
       }),
       { onFatal: scope.fail },
+      broker,
     );
     expect(consumer.binding).toMatchObject({ hostname: "local-broker" });
     expect(consumer.options).toMatchObject({
@@ -647,6 +691,15 @@ const pubsubFake: PubsubFake = {
 (globalThis as { pubsubLoopFake?: PubsubFake }).pubsubLoopFake = pubsubFake;
 const fakeSdk = `import { EventEmitter } from "node:events";
   const fake = globalThis.pubsubLoopFake;
+  // The client's Duration (temporal.ts in 6.3.2): milliseconds, read back in a unit.
+  export class Duration {
+    constructor(millis) { this.millis = millis; }
+    static from(like) { return new Duration((like.seconds ?? 0) * 1000 + (like.milliseconds ?? 0)); }
+    totalOf(unit) {
+      if (unit !== "second") throw new Error("Unit not faked: " + unit);
+      return this.millis / 1000;
+    }
+  }
   export class PubSub {
     constructor(options) { fake.calls.push(["PubSub", options]); }
     subscription(name, options) {
@@ -704,6 +757,7 @@ const pubsubClients = await import(
   )
 );
 const { brokerState } = await import(moduleUrl("tile-process"));
+const { Duration: FakeDuration } = await import(dataUrl(fakeSdk));
 
 describe("emitted Pub/Sub stub loops (QG08)", () => {
   const visitsLoop = { ...visits, concurrency: 3 };
@@ -788,9 +842,16 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
       ["stream", "visits--visit-worker"],
     ]);
     expect(pubsubFake.subscriptions).toHaveLength(1);
-    expect(pubsubFake.subscriptions[0]?.options).toEqual({
+    // QG27: the client's lease is at least the subscription's own 60 s ack deadline.
+    const options = pubsubFake.subscriptions[0]?.options as { minAckDeadline?: unknown };
+    expect(options).toEqual({
       flowControl: { maxMessages: 3, allowExcessMessages: false },
+      minAckDeadline: FakeDuration.from({ seconds: 60 }),
     });
+    expect(options.minAckDeadline).toBeInstanceOf(FakeDuration);
+    expect((options.minAckDeadline as { totalOf(unit: string): number }).totalOf("second")).toBe(
+      60,
+    );
     expect(probes).toEqual([
       {
         level: "info",

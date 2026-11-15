@@ -18,7 +18,7 @@ import { randomUUID as pubsubMessageId } from "node:crypto";
 import { PubSub } from "@google-cloud/pubsub";
 // @pubsub-import-end
 // @pubsub-loop-import-start
-import type { Message, Subscription } from "@google-cloud/pubsub";
+import { Duration, type Message, type Subscription } from "@google-cloud/pubsub";
 import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Delivery } from "./delivery.ts";
 import {
   failureStep,
@@ -401,7 +401,10 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
  * official client in `JEEVES_PUBSUB_PROJECT` with Application Default Credentials (locally
  * `PUBSUB_EMULATOR_HOST`), with the contract a RabbitMQ loop has:
  * - one streaming-pull subscriber per loop, handing over at most the loop's Concurrency messages
- *   at a time (`maxMessages`, no excess); the client extends each one's lease while it is in hand;
+ *   at a time (`maxMessages`, no excess); the client extends each one's lease while it is in hand,
+ *   for at least the subscription's 60 s ack deadline (`minAckDeadline`), renewing it at most about
+ *   54 s apart, so a 5 s store wait has a wide margin; a consumer that crashes holding a message
+ *   gives it back only when that lease ends, up to 60 s later;
  * - a message is acknowledged only after its handler resolves;
  * - a retryable failure is nacked, and the subscription's retry policy spaces its redelivery;
  * - a terminal one (a `NonRetryable`, or a failure on delivery attempt retry limit + 1) is
@@ -435,9 +438,11 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
     projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
     ...pubsubChannel,
   });
+  // The client's own lease starts at 10 s, which would shorten the subscription's 60 s deadline.
   const subscribe = () =>
     client.subscription(options.queue, {
       flowControl: { maxMessages: options.concurrency, allowExcessMessages: false },
+      minAckDeadline: Duration.from({ seconds: 60 }),
     });
   const failedTopic = client.topic(options.failedQueue, { gaxOpts: { timeout: pubsubDeadlineMs } });
   const answers = async (subscription: Subscription) => {

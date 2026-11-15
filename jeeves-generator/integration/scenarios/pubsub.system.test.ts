@@ -148,7 +148,7 @@ async function whilePaused<T>(
   }
 }
 
-test("P8, P7, P1, P3: a plain install; a fresh start's first publish and subscriber probe each under 2 s; every 202 is published and a repeated ID counts once; Not implemented and an exhausted retry end in .failed with their codes", async () => {
+test("P8, P7, P1, P3, P9: a plain install; a fresh start's first publish and subscriber probe each under 2 s; every 202 is published and a repeated ID counts once; Not implemented and an exhausted retry end in .failed with their codes; a click held 30 s is delivered once", async () => {
   await withApplication(
     "pubsub",
     templates,
@@ -252,6 +252,32 @@ test("P8, P7, P1, P3: a plain install; a fresh start's first publish and subscri
           database,
         ),
       });
+
+      // P9 (QG27): Count records a hold- click's delivery, holds it 30 s, then counts it. Its
+      // lease lasts the subscription's 60 s deadline and is extended while it is in hand, so it
+      // doesn't lapse: one delivery, attempt 1. A copy would reach Count right after the held
+      // click's ack and be recorded at once, so 10 s after the count shows none came.
+      const hold = "hold-p9";
+      const holdSent = await record(app, hold);
+      expect(holdSent.status).toBe(202);
+      const holdCounted = await countedBecomes(app, [hold], 60_000);
+      await until(holdCounted.at + 10_000);
+      const p9 = {
+        sent: holdSent,
+        countedMs: Math.round(holdCounted.at - holdSent.answeredAt),
+        attempts: await attempts(app, hold),
+        deliveries: await app.sql(
+          `SELECT json_agg(d ORDER BY at) FROM m_count.deliveries d WHERE message_id='${hold}'`,
+          database,
+        ),
+      };
+      await app.save("p9-hold.json", p9);
+      expect(p9.attempts).toEqual([1]);
+      expect(p9.countedMs).toBeGreaterThanOrEqual(30_000);
+      expect(await counted(app, [hold])).toEqual([`${hold}|${clickValue(hold)}`]);
+      await failed.pull();
+      expect(failed.messages).toHaveLength(2);
+      await assertNoProcessExited(app, before, "P9");
     },
     "design.json",
     plain,

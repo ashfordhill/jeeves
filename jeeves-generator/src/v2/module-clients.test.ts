@@ -95,6 +95,8 @@ const fakes: Record<string, string> = {
     }`,
   "./local.ts": 'export const readSecret = (name) => "secret of " + name;',
   "@google-cloud/pubsub": `${check}
+    // A loop's subscriber (tile-loop.test.ts runs it) imports Duration too.
+    export class Duration { static from(like) { return { like }; } }
     export class PubSub {
       constructor(options) { record("PubSub", options); }
       topic(name, options) {

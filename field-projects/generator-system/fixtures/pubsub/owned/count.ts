@@ -16,6 +16,17 @@ export async function count(dependencies: Dependencies, message: ModuleMessage):
     await delivered();
     throw new Error(`Count refuses ${id}`);
   }
+  // A hold- click is recorded, then held 30 s in hand before it counts: longer than the client's
+  // default 10 s lease, so a lapsed lease would deliver a copy, recorded at once (P9).
+  if (id.startsWith("hold-")) {
+    await delivered();
+    await new Promise((done) => setTimeout(done, 30_000));
+    await dependencies.tallyDb.execute(
+      "INSERT INTO m_count.clicks (message_id, value, worker) VALUES ($1,$2,$3) ON CONFLICT (message_id) DO NOTHING",
+      [id, value, hostname()],
+    );
+    return;
+  }
   // Pub/Sub delivers a message at least once: a click counts once, by its ID.
   await dependencies.tallyDb.execute(
     "INSERT INTO m_count.clicks (message_id, value, worker) VALUES ($1,$2,$3) ON CONFLICT (message_id) DO NOTHING",
