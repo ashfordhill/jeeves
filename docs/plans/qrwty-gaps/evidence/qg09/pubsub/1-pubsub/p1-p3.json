@@ -1,0 +1,117 @@
+{
+  "p7": {
+    "subscriberProbeMs": 77,
+    "subscriberProbeLines": [
+      {
+        "service": "app-tally",
+        "container": "ebbc40d2018204f6f47ba47e65746c93ac1593fb4f135eb1733db4bf7f92166e",
+        "at": "2026-11-15T01:45:41.471190906Z",
+        "entry": {
+          "event": "probe",
+          "tile": "tally",
+          "level": "info",
+          "client": "tally-db",
+          "kind": "database",
+          "check": "SELECT 1",
+          "result": "ok"
+        }
+      },
+      {
+        "service": "app-tally",
+        "container": "ebbc40d2018204f6f47ba47e65746c93ac1593fb4f135eb1733db4bf7f92166e",
+        "at": "2026-11-15T01:45:41.548764326Z",
+        "entry": {
+          "event": "probe",
+          "tile": "tally",
+          "level": "info",
+          "client": "clicks--tally",
+          "kind": "queue",
+          "check": "the Pub/Sub subscription exists",
+          "result": "ok"
+        }
+      }
+    ],
+    "publisherProbeFromStartMs": 486,
+    "firstPublish": {
+      "status": 202,
+      "body": {
+        "messageId": "p1-a",
+        "value": "value of p1-a"
+      },
+      "elapsedMs": 43,
+      "answeredAt": 43609.594967
+    }
+  },
+  "captured": [
+    {
+      "id": "1",
+      "data": "{\"value\":\"value of p1-a\"}",
+      "attributes": {
+        "messageId": "p1-a"
+      },
+      "publishTime": "2026-11-15T01:45:53.922Z"
+    },
+    {
+      "id": "2",
+      "data": "{\"value\":\"value of p1-b\"}",
+      "attributes": {
+        "messageId": "p1-b"
+      },
+      "publishTime": "2026-11-15T01:45:54.035Z"
+    },
+    {
+      "id": "3",
+      "data": "{\"value\":\"value of p1-b\"}",
+      "attributes": {
+        "messageId": "p1-b"
+      },
+      "publishTime": "2026-11-15T01:45:54.051Z"
+    },
+    {
+      "id": "4",
+      "data": "{\"value\":\"value of p1-c\"}",
+      "attributes": {
+        "messageId": "p1-c"
+      },
+      "publishTime": "2026-11-15T01:45:54.066Z"
+    },
+    {
+      "id": "5",
+      "data": "{\"value\":\"value of ni-p3\"}",
+      "attributes": {
+        "messageId": "ni-p3"
+      },
+      "publishTime": "2026-11-15T01:45:54.946Z"
+    },
+    {
+      "id": "6",
+      "data": "{\"value\":\"value of retry-p3\"}",
+      "attributes": {
+        "messageId": "retry-p3"
+      },
+      "publishTime": "2026-11-15T01:45:54.960Z"
+    }
+  ],
+  "failed": [
+    {
+      "id": "7",
+      "data": "{\"value\":\"value of ni-p3\"}",
+      "attributes": {
+        "messageId": "ni-p3",
+        "x-terminal-code": "NOT_IMPLEMENTED"
+      },
+      "publishTime": "2026-11-15T01:45:55.013Z"
+    },
+    {
+      "id": "8",
+      "data": "{\"value\":\"value of retry-p3\"}",
+      "attributes": {
+        "messageId": "retry-p3",
+        "x-terminal-code": "RETRY_EXHAUSTED"
+      },
+      "publishTime": "2026-11-15T01:46:06.735Z"
+    }
+  ],
+  "retryAttempts": [1, 2, 3, 4, 5, 6],
+  "deliveries": "[{\"message_id\":\"p1-a\",\"attempt\":1,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:53.964693+00:00\"}, \n {\"message_id\":\"p1-b\",\"attempt\":1,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:54.083013+00:00\"}, \n {\"message_id\":\"p1-b\",\"attempt\":1,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:54.193718+00:00\"}, \n {\"message_id\":\"p1-c\",\"attempt\":1,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:54.311768+00:00\"}, \n {\"message_id\":\"retry-p3\",\"attempt\":1,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:55.118317+00:00\"}, \n {\"message_id\":\"retry-p3\",\"attempt\":2,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:55.248156+00:00\"}, \n {\"message_id\":\"retry-p3\",\"attempt\":3,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:57.16319+00:00\"}, \n {\"message_id\":\"retry-p3\",\"attempt\":4,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:45:59.118634+00:00\"}, \n {\"message_id\":\"retry-p3\",\"attempt\":5,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:46:03.707111+00:00\"}, \n {\"message_id\":\"retry-p3\",\"attempt\":6,\"worker\":\"ebbc40d20182\",\"at\":\"2026-11-15T01:46:06.716382+00:00\"}]"
+}

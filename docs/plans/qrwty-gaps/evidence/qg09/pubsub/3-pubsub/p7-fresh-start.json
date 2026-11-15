@@ -1,0 +1,43 @@
+{
+  "subscriberProbeMs": 54,
+  "subscriberProbeLines": [
+    {
+      "service": "app-tally",
+      "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+      "at": "2026-11-15T01:48:56.847183116Z",
+      "entry": {
+        "event": "probe",
+        "tile": "tally",
+        "level": "info",
+        "client": "tally-db",
+        "kind": "database",
+        "check": "SELECT 1",
+        "result": "ok"
+      }
+    },
+    {
+      "service": "app-tally",
+      "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+      "at": "2026-11-15T01:48:56.901432620Z",
+      "entry": {
+        "event": "probe",
+        "tile": "tally",
+        "level": "info",
+        "client": "clicks--tally",
+        "kind": "queue",
+        "check": "the Pub/Sub subscription exists",
+        "result": "ok"
+      }
+    }
+  ],
+  "publisherProbeFromStartMs": 547,
+  "firstPublish": {
+    "status": 202,
+    "body": {
+      "messageId": "p4-seed",
+      "value": "value of p4-seed"
+    },
+    "elapsedMs": 23,
+    "answeredAt": 219954.655573
+  }
+}

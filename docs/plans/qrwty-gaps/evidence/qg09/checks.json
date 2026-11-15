@@ -1,0 +1,56 @@
+{
+  "sourceSha256": "28b55c180ead52fc8da56049168f692ab4151738b71677ebe9d2838c39cf057a",
+  "pubsub": {
+    "outcome": "passed",
+    "tests": 3,
+    "files": 1,
+    "stacks": 3,
+    "vitestSeconds": 250.67,
+    "cliMonotonicSeconds": 253.31,
+    "wallSeconds": 282
+  },
+  "core": {
+    "outcome": "passed",
+    "tests": 4,
+    "files": 2,
+    "stacks": 4,
+    "vitestSeconds": 310.6,
+    "cliMonotonicSeconds": 314.28,
+    "wallSeconds": 351
+  },
+  "wiring": {
+    "outcome": "passed",
+    "tests": 2,
+    "files": 1,
+    "stacks": 2,
+    "vitestSeconds": 189.7,
+    "cliMonotonicSeconds": 191.7,
+    "wallSeconds": 214
+  },
+  "headTemplates": {
+    "templatesOf": "b4003fc",
+    "sourceSha256": "785c80d88d6ede10eb3979644f44d5c83e3f80001c67a1e482ef3179e120358c",
+    "outcome": "failed",
+    "tests": 3,
+    "passed": 0,
+    "failed": "each stack's setup at P8: ERR_PNPM_IGNORED_BUILDS protobufjs@7.6.6",
+    "manualP7": { "subscriberProbeMs": 3067, "firstPublishMs": 24 }
+  },
+  "rows": {
+    "P7": { "subscriberProbeMs": [77, 53, 54], "firstPublishMs": [43, 24, 23] },
+    "P2": { "pausedPublishMs": [1004, 1003], "acceptedAfterUnpauseMs": 74 },
+    "P6": {
+      "pausedMs": 60165,
+      "pausedPublishMs": [1003, 1004, 1004, 1003, 1004, 1003],
+      "firstAcceptedMs": 76,
+      "backlogCountedMs": 1034
+    },
+    "P3": { "retryAttempts": [1, 2, 3, 4, 5, 6] },
+    "P4": { "statementWaitAtKillMs": 462, "redeliveredAttempt": 2, "startToRedeliveredMs": 8205 },
+    "P5": {
+      "outageMs": 6551,
+      "startToAllCountedMs": 5685,
+      "deliveries": { "p5-0": [1], "p5-1": [1], "p5-2": [1] }
+    }
+  }
+}

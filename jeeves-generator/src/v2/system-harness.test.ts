@@ -1,7 +1,8 @@
+import { readdirSync } from "node:fs";
 import { afterEach, expect, test, vi } from "vitest";
 import { until } from "../../integration/harness/faults.ts";
 import { poll } from "../../integration/harness/process.ts";
-import { missingSuites } from "../../integration/harness/suites.ts";
+import { implementedSuites, missingSuites } from "../../integration/harness/suites.ts";
 
 // A WSL2 host was observed stepping its wall clock forward 3.58 s every 32 s (GS07/GS09).
 const step = 3580;
@@ -53,6 +54,12 @@ test("until waits for a monotonic instant whatever the wall clock does", async (
   offset += step;
   await until(started + 300);
   expect(performance.now() - started).toBeGreaterThanOrEqual(295);
+});
+
+test("every implemented suite, pubsub included (QG09), has a scenario file for `all` to run", () => {
+  expect(implementedSuites).toContain("pubsub");
+  const scenarios = readdirSync(new URL("../../integration/scenarios/", import.meta.url));
+  expect(missingSuites(implementedSuites, scenarios)).toEqual([]);
 });
 
 test("every selected suite must contribute a scenario file, so `all` cannot pass short", () => {

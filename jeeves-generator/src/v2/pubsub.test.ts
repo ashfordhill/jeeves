@@ -362,6 +362,105 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
   });
 });
 
+/** The gRPC channel options QG09 gives every Pub/Sub client. */
+const reconnectBound = {
+  "grpc.initial_reconnect_backoff_ms": 500,
+  "grpc.max_reconnect_backoff_ms": 2000,
+};
+
+describe("Installs, the metadata lookup and the reconnect bound (QG09)", () => {
+  it("gives every export its own pnpm-workspace.yaml, so a plain install skips protobufjs's install script, and says so (F1)", () => {
+    // Processes off (a pinned export), RabbitMQ only, and with a Pub/Sub topic.
+    for (const bundle of [exported(v2ModuleDesign()), rabbitExport, cloudExport]) {
+      expect(
+        bundle.manifest.files.find((row) => row.path === "pnpm-workspace.yaml")?.ownership,
+      ).toBe("generated-extension");
+      expect(bytes(bundle, "pnpm-workspace.yaml")).toEqual(
+        new Uint8Array(asset("pnpm-workspace.yaml")),
+      );
+      // Its one setting: protobufjs's install script doesn't run.
+      expect(
+        text(bundle, "pnpm-workspace.yaml")
+          .split("\n")
+          .filter((line) => line !== "" && !line.startsWith("#")),
+      ).toEqual(["allowBuilds:", "  protobufjs: false"]);
+      const readme = text(bundle, "README.md");
+      expect(readme).toContain("Run `pnpm install --frozen-lockfile` then `pnpm build`.");
+      expect(readme).toContain(
+        "`pnpm-workspace.yaml`'s `allowBuilds` says which packages' install scripts run: the template's dependencies run none (`protobufjs: false`), so neither command needs `--ignore-scripts`.",
+      );
+      expect(readme).not.toContain("pnpm install --frozen-lockfile --ignore-scripts");
+      // The image still installs exactly the lock, running no install script.
+      expect(text(bundle, "Dockerfile")).toContain(
+        "COPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile --ignore-scripts\n",
+      );
+    }
+  });
+
+  it("tells each service that publishes to or consumes a Pub/Sub topic to look for no metadata server, only locally (F2)", () => {
+    const services = json(cloudExport, "compose.yaml").services as Record<
+      string,
+      { environment?: Record<string, string> }
+    >;
+    const told = Object.keys(services).filter(
+      (name) => services[name]?.environment?.METADATA_SERVER_DETECTION !== undefined,
+    );
+    // Links API publishes to Visits and Visit worker consumes it; setup-pubsub is neither.
+    expect(told).toEqual(["app-links-api", "app-visit-worker"]);
+    for (const name of told)
+      expect(services[name]?.environment).toMatchObject({
+        METADATA_SERVER_DETECTION: "none",
+        JEEVES_PUBSUB_PROJECT: "local",
+        PUBSUB_EMULATOR_HOST: "local-pubsub:8085",
+      });
+    const rabbitServices = json(rabbitExport, "compose.yaml").services as Record<
+      string,
+      { environment?: Record<string, string> }
+    >;
+    expect(
+      Object.values(rabbitServices).some(
+        (service) => service.environment?.METADATA_SERVER_DETECTION !== undefined,
+      ),
+    ).toBe(false);
+    // The report lists it with what each of those processes reads; the README says a deployment
+    // leaves it unset.
+    const report = json(cloudExport, ".jeeves/report.json");
+    for (const tile of ["links-api", "visit-worker"])
+      expect(
+        report.processes.tiles.find((row: { tile: string }) => row.tile === tile).environment,
+      ).toContain("METADATA_SERVER_DETECTION");
+    expect(text(cloudExport, "README.md")).toContain(
+      "`compose.yaml` also sets `PUBSUB_EMULATOR_HOST` for the local emulator and `METADATA_SERVER_DETECTION: none`, so the client looks for no Google metadata server; a deployment leaves both unset.",
+    );
+    // No universe domain: it would take the client out of emulator mode.
+    expect(text(cloudExport, "src/runtime/module-clients.ts")).not.toContain("universeDomain");
+  });
+
+  it("builds every Pub/Sub client in the export with the reconnect bound, 500 ms doubling to at most 2000 ms (F3)", () => {
+    const clients = text(cloudExport, "src/runtime/module-clients.ts");
+    expect(clients).toContain(
+      [
+        "const pubsubChannel = {",
+        '  "grpc.initial_reconnect_backoff_ms": 500,',
+        '  "grpc.max_reconnect_backoff_ms": 2000,',
+        "};",
+      ].join("\n"),
+    );
+    // The publisher's client and the loop's: each `new PubSub(` spreads the bound in.
+    const built = clients.split("new PubSub(").slice(1);
+    expect(built).toHaveLength(2);
+    for (const call of built)
+      expect(call.slice(0, call.indexOf("});"))).toBe(
+        '{\n    projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),\n    ...pubsubChannel,\n  ',
+      );
+    const init = text(cloudExport, "scripts/pubsub-init.mjs");
+    expect(init.split("new PubSub(")).toHaveLength(2);
+    expect(init).toContain(
+      'new PubSub({\n  projectId,\n  "grpc.initial_reconnect_backoff_ms": 500,\n  "grpc.max_reconnect_backoff_ms": 2000,\n});',
+    );
+  });
+});
+
 // The emitted setup script, run by Node against a fake `@google-cloud/pubsub` that keeps the
 // emulator's state in a file and reports it as the emulator does (durations as strings).
 const fakeClient = `import { readFileSync, writeFileSync } from "node:fs";
@@ -537,6 +636,12 @@ describe("scripts/pubsub-init.mjs (QG07, locally only)", () => {
     expect(run().stderr).toContain(
       "Pub/Sub subscription visits--visit-worker.failed exists with other settings (retryPolicy)",
     );
+  });
+
+  it("builds its client in the project with the reconnect bound (QG09, F3)", () => {
+    install(cloudExport);
+    expect(run().status).toBe(0);
+    expect(state().calls[0]).toEqual(["PubSub", { projectId: "local", ...reconnectBound }]);
   });
 
   it("needs JEEVES_PUBSUB_PROJECT", () => {

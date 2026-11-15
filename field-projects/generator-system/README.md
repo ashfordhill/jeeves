@@ -10,10 +10,11 @@ pnpm test:generated --suite=identity --artifacts=/absolute/new-identity-results
 pnpm test:generated --suite=media --artifacts=/absolute/new-media-results
 pnpm test:generated --suite=regeneration --artifacts=/absolute/new-regeneration-results
 pnpm test:generated --suite=faults --artifacts=/absolute/new-faults-results
+pnpm test:generated --suite=pubsub --artifacts=/absolute/new-pubsub-results
 pnpm test:generated --suite=all
 ```
 
-`core`, `wiring`, `identity`, `media`, `regeneration` and `faults` are implemented. Unknown or future suite names fail; `all` prints the implemented
+`core`, `wiring`, `identity`, `media`, `regeneration`, `faults` and `pubsub` are implemented. Unknown or future suite names fail; `all` prints the implemented
 suites it selects, and fails if any selected suite ran no scenario file. These Docker/network
 tests run separately from `pnpm check` and the studio E2E tests. Vitest runs files serially,
 with no test retries and no green skips for unavailable Docker, failed setup or missing
@@ -36,11 +37,12 @@ has the coverage map, costs and gaps):
 | Owned multipart, video HLS (FFmpeg), asset lifecycle, outbox | media, faults |
 | Search projection and search query | media (wiring's search is a stub over a seeded index) |
 | Broker client (`amqp.ts`, delivery, tile loop) | core, wiring, media, faults |
+| Pub/Sub clients (`pubsubPublisher`, `pubsubLoop`), `pubsub-init.mjs`, the emulator, the export's `pnpm-workspace.yaml` | pubsub |
 | `update:v2` and settings bindings | regeneration |
 | Harness, Compose/local scripts, Dockerfile, edge | all |
 
 Core takes about 4–5 minutes; wiring, identity, media and regeneration about 2–3 each; faults
-about 8; all about 21–23.
+about 8; pubsub about 5; all about 26–28.
 
 Each run exports the saved diagram through the default registry's `export:v2`, checks the
 installed template selections, attaches only the explicit application-owned map, performs a
@@ -186,6 +188,37 @@ OpenSearch, Keycloak and Valkey data loss. [GS07 evidence](../../docs/plans/gene
 records each boundary, duration and limit; [SO02 evidence](../../docs/plans/generated-system-tests/evidence/so02/README.md)
 records the database row's.
 
+The Pub/Sub fixture has a public Clicks API whose Record stub publishes each click to Clicks, a
+queue only stubs use, saved with provider Google Cloud (a Pub/Sub topic), and a Worker, Tally, whose
+Count stub consumes its subscription `clicks--tally` and writes Tally database. The attachment map
+holds the two stub bodies and Count's product SQL. Count records each delivery (ID, attempt,
+worker) and counts a click once by its ID, since Pub/Sub delivers at least once. A click whose ID
+starts with `ni-` throws "Not implemented" and one starting with `retry-` a retryable error, so the
+generated loop's terminal and retry paths run on real messages. Each stack installs its fresh
+export with the README's plain `pnpm install --frozen-lockfile` (P8); the other suites keep the
+Dockerfile's `--ignore-scripts`. The harness reaches the emulator, which publishes no port, through
+its REST API from inside Clicks API's container, with the address and project that container's
+environment names: a capture subscription of its own on the topic, beside Tally's, and pulls of
+`clicks--tally.failed`. Faults are `docker pause` and `unpause` of the emulator, `docker kill` of
+Tally behind a trigger gate, and `docker stop` and `start` of PostgreSQL, each on the one container
+the exact project label names.
+
+| Behavior | Executable test | Observations |
+| --- | --- | --- |
+| P1 | `pubsub.system.test.ts` | Every click answered 202 is in the capture subscription with its body and `messageId` attribute; a click sent twice reaches Count twice (attempt 1 each) and is counted once |
+| P2 | `pubsub.system.test.ts` | The emulator paused: each publish answers 503 within 2.5 s, `/healthz` answers 200 and Clicks API's only failure lines are those requests'; unpaused, the 503's click sent again answers 202 within 10 s and is counted; no process exits or restarts |
+| P3 | `pubsub.system.test.ts` | An `ni-` click reaches `clicks--tally.failed` with its attributes and `x-terminal-code` `NOT_IMPLEMENTED`, and Count records nothing; a `retry-` click is delivered again with growing attempts from 1 to 6 and ends there `RETRY_EXHAUSTED`; neither is counted and nothing else reaches `.failed` |
+| P4 | `pubsub.system.test.ts` | A trigger on Count's delivery record, scoped to one click and waiting on a harness-held advisory lock, holds Count after its click has committed (a lock wait from Tally's address). Tally is killed while that statement still waits, inside its 2 s statement timeout, which then ends it uncommitted. After `docker start` the click is delivered again with a later attempt and is still counted once; `.failed` stays empty |
+| P5 | `pubsub.system.test.ts` | PostgreSQL stopped while clicks are published (202: publishing needs only Pub/Sub): Tally logs `store unreachable, retry in 5000 ms (attempt not counted)` with attempt 1, at least one 5 s wait apart, and `.failed` stays empty; after `docker start` every click is counted once, its first delivery with attempt 1 (a copy Pub/Sub sends again after a lapsed lease may follow with a later attempt), and no process restarted |
+| P6 | `pubsub.system.test.ts` | The emulator paused for 60 s, a click every 10 s answering 503 within 2.5 s. After `docker unpause` the first of them sent again answers 202 within 3.0 s, and Tally counts the backlog (the six sent again and three new) within 10 s; both times are recorded |
+| P7 | each `pubsub` test | On a fresh `first-run`, Tally's subscriber probe passes in under 2.0 s (from its database probe's line to its own) and the stack's first publish answers 202 in under 2.0 s |
+| P8 | each `pubsub` test | Setup installs the fresh export with plain `pnpm install --frozen-lockfile` (no `--ignore-scripts`), which exits 0 |
+
+P2 and P6 read "nothing else fails" for the publishing process, Clicks API; Tally logs what it
+logs. P6's backlog is what the clients held while Pub/Sub was away: a paused emulator accepts
+nothing, so the 503's clicks are sent again, as a client retries. [QG09
+evidence](../../docs/plans/qrwty-gaps/evidence/qg09/README.md) records each row's times.
+
 Transient passwords, PKCE verifiers/codes/state, OAuth tokens and session cookies are registered
 before use in a mode-0600 private sibling file under the mode-0700 OS temporary run directory.
 No OAuth forms, URLs, headers or response bodies are recorded. The private file survives until
@@ -210,7 +243,7 @@ steps by more than B10's 3 s margins (this WSL2 host steps +3.58 s every 32 s) c
 when a step lands near a fill or an expiry; the failure message shows the step. Diagnose it as
 the host clock, not by rerunning until it passes.
 
-`integration/author-activity.ts`, `integration/author-wiring.ts`, `integration/author-identity.ts` and `integration/author-regeneration.ts` record the studio commands
+`integration/author-activity.ts`, `integration/author-wiring.ts`, `integration/author-identity.ts`, `integration/author-regeneration.ts` and `integration/author-pubsub.ts` record the studio commands
 used to author the saved diagrams. They are development helpers, never application runtime
 code. To rebuild the diagrams deliberately:
 
@@ -219,6 +252,7 @@ pnpm --filter @jeeves/generator exec tsx integration/author-activity.ts
 pnpm --filter @jeeves/generator exec tsx integration/author-wiring.ts
 pnpm --filter @jeeves/generator exec tsx integration/author-identity.ts
 pnpm --filter @jeeves/generator exec tsx integration/author-regeneration.ts
+pnpm --filter @jeeves/generator exec tsx integration/author-pubsub.ts
 ```
 
 Evidence defaults to ignored `test-results/generated/<run-id>/`. It contains source and fixture
@@ -251,7 +285,7 @@ a generated scaffold, replace a real provider with a fake, weaken an assertion o
 ## CI and other runners
 
 `.github/workflows/generated-system.yml` runs core on every pull request and push to `main`,
-with weekly scheduled `all` and manual `core`, `wiring`, `identity`, `media`, `regeneration`, `faults` or `all` selection. It calls the same command as a plain local shell:
+with weekly scheduled `all` and manual `core`, `wiring`, `identity`, `media`, `regeneration`, `faults`, `pubsub` or `all` selection. It calls the same command as a plain local shell:
 
 ```sh
 pnpm install --frozen-lockfile

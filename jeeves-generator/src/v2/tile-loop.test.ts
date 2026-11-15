@@ -775,7 +775,14 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
   it("streams its tile's subscription once it exists, holding at most its Concurrency in hand", async () => {
     const { scope, consumer } = await pubsubStarted(async () => {});
     expect(pubsubFake.calls).toEqual([
-      ["PubSub", { projectId: "local" }],
+      [
+        "PubSub",
+        {
+          projectId: "local",
+          "grpc.initial_reconnect_backoff_ms": 500,
+          "grpc.max_reconnect_backoff_ms": 2000,
+        },
+      ],
       ["topic", "visits--visit-worker.failed", { gaxOpts: { timeout: 2000 } }],
       ["exists", "visits--visit-worker"],
       ["stream", "visits--visit-worker"],

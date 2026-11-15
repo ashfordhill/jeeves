@@ -1,0 +1,65 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-a17ebb19-e670-4f63-b76b-ef315175158f-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    },
+    {
+      "project": "gs-a17ebb19-e670-4f63-b76b-ef315175158f-2",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    },
+    {
+      "project": "gs-a17ebb19-e670-4f63-b76b-ef315175158f-3",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    },
+    {
+      "project": "gs-a17ebb19-e670-4f63-b76b-ef315175158f-4",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

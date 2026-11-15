@@ -39,6 +39,11 @@ async function freePorts() {
   }
 }
 
+/** How setup installs the export: `ignore-scripts` is its Dockerfile's command (no dependency's
+ * install script runs); `plain` is its README's `pnpm install --frozen-lockfile`, which its own
+ * `pnpm-workspace.yaml` makes pass (QG09's P8, the pubsub suite). */
+export type SetupOptions = { install?: "ignore-scripts" | "plain" };
+
 export class Application {
   readonly observations: unknown[] = [];
   phase: "setup" | "assertion" = "setup";
@@ -46,6 +51,8 @@ export class Application {
   manifestHash = "";
   report!: Report;
   attachments: Attachment[] = [];
+  /** The arguments setup installed the export with, once it has. */
+  installArgs: string[] = [];
   readonly env: NodeJS.ProcessEnv;
   constructor(
     readonly stack: StackRecord,
@@ -202,6 +209,7 @@ export async function setupApplication(
   app: Application,
   templates: string[],
   designFile = "design.json",
+  options: SetupOptions = {},
 ) {
   const fixture = join(repository, "field-projects/generator-system/fixtures", app.stack.fixture);
   assertSafeOutputPath(designFile);
@@ -268,14 +276,14 @@ export async function setupApplication(
     );
   }
   await app.scaffoldCheck("attached");
-  // The export's own install (its README and Dockerfile): no dependency's install script runs,
-  // and pnpm refuses one it would skip unasked (the Pub/Sub client's protobufjs).
-  await app.execute(
-    "install",
-    "pnpm",
-    ["install", "--frozen-lockfile", "--ignore-scripts"],
-    180_000,
-  );
+  // The export's own install. Its Dockerfile's runs no dependency's install script; its README's
+  // plain one relies on its pnpm-workspace.yaml, since pnpm refuses an install that would skip a
+  // script unasked (the Pub/Sub client's protobufjs).
+  app.installArgs =
+    options.install === "plain"
+      ? ["install", "--frozen-lockfile"]
+      : ["install", "--frozen-lockfile", "--ignore-scripts"];
+  await app.execute("install", "pnpm", app.installArgs, 180_000);
   await app.execute("build", "pnpm", ["build"], 120_000);
   assert.equal(
     (await sourceSnapshot()).sha256,
@@ -313,11 +321,12 @@ export async function withApplication(
   templates: string[],
   behavior: (app: Application) => Promise<void>,
   designFile = "design.json",
+  options: SetupOptions = {},
 ) {
   const app = await createApplication(fixture);
   let failed: unknown;
   try {
-    await setupApplication(app, templates, designFile);
+    await setupApplication(app, templates, designFile, options);
     await behavior(app);
   } catch (error) {
     failed = error;

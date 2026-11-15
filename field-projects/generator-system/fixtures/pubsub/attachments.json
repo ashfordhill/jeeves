@@ -1,0 +1,20 @@
+[
+  {
+    "source": "owned/record.ts",
+    "destination": "src/modules/clicks-api/record.ts",
+    "role": "stub",
+    "module": "record"
+  },
+  {
+    "source": "owned/count.ts",
+    "destination": "src/modules/tally/count.ts",
+    "role": "stub",
+    "module": "count"
+  },
+  {
+    "source": "owned/count.sql",
+    "destination": "infra/postgres/tally-db/modules/count.sql",
+    "role": "sql",
+    "module": "count"
+  }
+]

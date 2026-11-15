@@ -1,0 +1,5 @@
+app-tally-1 | 2026-11-15T02:00:33.696342365Z {"event":"probe","tile":"tally","level":"info","client":"tally-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-tally-1 | 2026-11-15T02:00:36.763415997Z {"event":"probe","tile":"tally","level":"info","client":"clicks--tally","kind":"queue","check":"the Pub/Sub subscription exists","result":"ok"}
+app-clicks-api-1 | 2026-11-15T02:00:36.461168635Z {"event":"probe","tile":"clicks-api","level":"info","client":"clicks","kind":"queue","check":"the Pub/Sub topic exists","result":"ok"}
+/qg09-head-app-clicks-api-1 2026-11-15T02:00:32.953573881Z
+/qg09-head-app-tally-1 2026-11-15T02:00:33.271583253Z

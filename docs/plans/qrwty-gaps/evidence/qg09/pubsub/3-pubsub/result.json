@@ -1,0 +1,5 @@
+{
+  "fixture": "pubsub",
+  "phase": "assertion",
+  "outcome": "passed"
+}

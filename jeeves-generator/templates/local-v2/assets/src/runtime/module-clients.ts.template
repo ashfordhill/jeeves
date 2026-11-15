@@ -235,6 +235,12 @@ const pubsubProject = (value: string) =>
  * outstanding in a process. */
 const pubsubDeadlineMs = 2000;
 const pubsubOutstanding = 1000;
+/** Every Pub/Sub client's gRPC channel tries a lost connection again after 500 ms, doubling to at
+ * most 2000 ms (gRPC's own maximum is 120 s), so it reconnects soon after Pub/Sub is back (QG09). */
+const pubsubChannel = {
+  "grpc.initial_reconnect_backoff_ms": 500,
+  "grpc.max_reconnect_backoff_ms": 2000,
+};
 /** A Google Cloud Pub/Sub topic a module publishes to, through the official client, in the project
  * `JEEVES_PUBSUB_PROJECT` with Application Default Credentials; locally `PUBSUB_EMULATOR_HOST`
  * points the client at the emulator. `publish` resolves only once Pub/Sub has acknowledged the
@@ -249,7 +255,10 @@ export async function pubsubPublisher(
   log: ProbeLog,
   binding: { topic: string },
 ): Promise<QueuePublisher> {
-  const client = new PubSub({ projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject) });
+  const client = new PubSub({
+    projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
+    ...pubsubChannel,
+  });
   const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs } });
   const outstanding = new Set<Promise<unknown>>();
   let closed = false;
@@ -353,7 +362,10 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
     options.concurrency > 100000
   )
     throw new Error("Invalid consumer concurrency");
-  const client = new PubSub({ projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject) });
+  const client = new PubSub({
+    projectId: endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject),
+    ...pubsubChannel,
+  });
   const subscribe = () =>
     client.subscription(options.queue, {
       flowControl: { maxMessages: options.concurrency, allowExcessMessages: false },

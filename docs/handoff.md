@@ -15522,3 +15522,161 @@ This coordinator docs entry records the owner's answers.
   - extra rows P6–P8.
 
 **For the next unit:** QG09.
+
+## 2026-11-14 — QG09: Generated-system tests for Pub/Sub channels
+
+**What changed.**
+- Folded template changes (owner, 2026-11-14), made first:
+  - **F1.** New asset `templates/local-v2/assets/pnpm-workspace.yaml` (`allowBuilds: { protobufjs:
+    false }`), emitted in every export by `local.ts` as `generated-extension`, beside `package.json`
+    and `pnpm-lock.yaml`. The generated README's install note is now `pnpm install
+    --frozen-lockfile` then `pnpm build`, and says the three files are yours and what `allowBuilds`
+    does. The Dockerfile still installs with `--ignore-scripts`.
+  - **F2.** `localEndpoints` (`local-contract.ts`) gives each service with `pubsub` (a publisher or a
+    Pub/Sub loop) `METADATA_SERVER_DETECTION: none` beside `PUBSUB_EMULATOR_HOST`, so it is in
+    `compose.yaml`, the report's `processes.tiles[].environment` and the README's per-process list.
+    The README's endpoints sentence says a deployment leaves both unset. No `universeDomain`.
+  - **F3.** `module-clients.ts.template`: a `pubsubChannel` constant
+    (`"grpc.initial_reconnect_backoff_ms": 500`, `"grpc.max_reconnect_backoff_ms": 2000`) spread
+    into both `new PubSub({...})` (publisher and loop); `scripts/pubsub-init.mjs` lists the same two
+    options inline.
+- The suite:
+  - `integration/scenarios/pubsub.system.test.ts`, 3 tests on 3 stacks: "P8, P7, P1, P3", "P2, P6"
+    and "P4, P5". P7 and P8 are checked on each fresh stack.
+  - `integration/harness/pubsub.ts`: the emulator's REST API from inside a running container of the
+    stack (`PUBSUB_EMULATOR_HOST`, `JEEVES_PUBSUB_PROJECT` from its own environment): a capture
+    subscription, pull-and-ack (`Pulled` keeps every message pulled), and `emulatorFault` (pause and
+    unpause on the one `local-pubsub` container the project label names).
+  - `harness/application.ts`: setup takes `{ install: "plain" }` (the README's command) and records
+    `installArgs`; every other suite keeps `--ignore-scripts`.
+  - `harness/suites.ts` adds `pubsub` (so `all` runs it); `run.ts`'s comment says `all` is about 28
+    minutes.
+  - Fixture `field-projects/generator-system/fixtures/pubsub/`: Clicks API (public, Record stub)
+    publishes to Clicks (a queue only stubs use, provider Google Cloud); Tally (Worker, Concurrency
+    1, Count stub) consumes `clicks--tally` and writes Tally database. Owned files: `record.ts`,
+    `count.ts`, `count.sql`; `attachments.json`. `integration/author-pubsub.ts` holds the studio
+    commands. Count records each delivery (`m_count.deliveries`), then counts the click once by ID
+    (`m_count.clicks`, `ON CONFLICT DO NOTHING`); `ni-` IDs throw "Not implemented", `retry-` IDs a
+    retryable error.
+- Tests, 5 new offline:
+  - `pubsub.test.ts` 4: F1 (every export, processes off included: the file, its ownership and bytes,
+    its one setting, the README note, the Dockerfile unchanged); F2 (exactly the publisher's and
+    consumer's services, none in a RabbitMQ export, the report, the README, no `universeDomain`);
+    F3 (both `new PubSub(` spread the bound; `pubsub-init.mjs` has it); and `pubsub-init.mjs` run
+    against the fake client builds its client with the bound.
+  - `system-harness.test.ts` 1: every implemented suite, `pubsub` included, has a scenario file.
+- Updated assertions: the three `["PubSub", {...}]` constructor calls (`module-clients.test.ts` 2,
+  `tile-loop.test.ts` 1) now include the two options; `http-wiring.test.ts`'s stub-stack file count
+  52 → 53 (the new path).
+- Pins (`processes-off.json`), in `frozen-v2`, `v2-module-design` and `stub-stack`: added
+  `pnpm-workspace.yaml`; changed `README.md` and `.jeeves/manifest.json`.
+- Docs: `jeeves-generator/README.md` (current state, the install paragraph, two install sentences,
+  the endpoints row, the Pub/Sub paragraphs); `field-projects/generator-system/README.md` (commands,
+  implemented list, which-suite row, times, a Pub/Sub fixture section with P1–P8, CI list, the
+  author helper); `docs/glossary.md` (Scaffold excludes `pnpm-workspace.yaml`);
+  `.github/workflows/generated-system.yml` (manual `pubsub`).
+- Evidence: `docs/plans/qrwty-gaps/evidence/qg09/` (README, `checks.json`, the final `pubsub/` run's
+  sanitized artifacts, `head-templates/`, `core/` and `wiring/` summaries).
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 980 tests. On the final tree, exit 0, 117
+  files / 985 tests; Biome shows only the older 1 info.
+- New tests on HEAD's templates: a scratch clone at `b4003fc` with its own offline install and the
+  changed test files. All 5 new tests fail there, and so do the 3 updated constructor assertions and
+  the 52 → 53 count; the rest pass. The clone is deleted. The checkout's `node_modules/.modules.yaml`,
+  `.pnpm-workspace-state-v1.json` and `.pnpm/lock.yaml` keep their checksums and mtimes (12:10).
+- `pnpm test:e2e`: 74 passed (4.8 min), first run. Web build: exit 0.
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, both: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md` and
+    `pnpm-workspace.yaml` (new). Neither fixture has a Pub/Sub topic, so `compose.yaml` and
+    `module-clients.ts` don't change.
+  - The report differs only in the registry's source inventory (`sourceSha256` `1b5fd0f9…` →
+    `f7e8b22e…`). Required gaps unchanged (probe 3, r83 11).
+  - In each `after-*`: `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0; so does a plain `pnpm install --frozen-lockfile --offline`, with the lock unchanged.
+  - Re-exported on the final tree, both equal the after-exports. Scratch exports deleted.
+- Docker phase, after the offline checks, source SHA-256 `28b55c18…f057a`:
+  - `--suite=pubsub`: 3/3 passed (Vitest 250.7 s, CLI 253.3 s). Rows: P8 plain install exit 0 three
+    times; P7 subscriber probe 77/53/54 ms, first publish 43/24/23 ms; P1 capture held exactly the
+    four 202s, `p1-b` reached Count twice and counted once; P3 `.failed` held exactly `ni-p3`
+    (`NOT_IMPLEMENTED`) and `retry-p3` (`RETRY_EXHAUSTED`, attempts 1–6); P2 paused publishes 503 in
+    1,004/1,003 ms, `/healthz` 200, 202 74 ms after the unpause; P6 paused 60,165 ms, six 503s in
+    1,003–1,004 ms, first 202 **76 ms** and backlog counted **1,034 ms** after the unpause; P4 killed
+    462 ms into the gated statement, redelivered with attempt 2 and counted once; P5 PostgreSQL away
+    6,551 ms, waiting lines attempt 1 at 683 and 6,081 ms, `.failed` empty, all counted 5,685 ms
+    after the start, no restart.
+  - `--suite=core`: 4/4 (310.6 s). `--suite=wiring`: 2/2 (189.7 s). Both first runs.
+  - A development run of the pubsub suite before the offline checks: 2/3. P5 failed on its own
+    over-strict check that each click had exactly one delivery with attempt 1: `p5-0` had attempts
+    1 then 2 (Noticed). The check now asserts the held click's first delivery has attempt 1, as
+    the row's waiting lines do; the final run above is after that change.
+  - **Against HEAD's QG08 templates** (the scratch clone, HEAD's templates and generator source,
+    the new suite copied in): 0/3. Every stack's setup failed at **P8**, the plain install,
+    `ERR_PNPM_IGNORED_BUILDS` (`protobufjs@7.6.6`), before any container. By hand on a HEAD-template
+    export (`qg09-head`, installed with `--ignore-scripts`): **P7** fails too, the subscriber probe
+    took 3,067 ms; the first publish took 24 ms.
+- Exploration stacks `qg09-exp`, `qg09-exp2` and `qg09-head` (ports 47961–47969): each removed with
+  `docker compose --profile '*' down --volumes --remove-orphans` and `docker image rm
+  <project>-app:latest`.
+- Inventory and cleanup: containers, networks and volumes equal the pre-unit inventory line for
+  line; images too, apart from arm B's `qrwtyb` tags rebuilt meanwhile (not touched). No `qg09` or
+  `gs-` resource and no `/tmp/jeeves-system-*` is left; `jeeves-postgres-1` is unchanged. Every run
+  wrote its artifacts to the scratchpad, so nothing was added under `test-results/generated/`.
+- Nothing in the studio is user-visible, so no mouse check.
+
+**Differences from the plan.**
+- **Order of phases.** The brief lists the suites before check, e2e and build; the assignment packet
+  puts check, e2e and build first, then the Docker phase. I followed the packet.
+- **F3's paths.** The templates have three `new PubSub(`: two in `module-clients.ts.template` and
+  one in `scripts/pubsub-init.mjs`. `tile-loop.ts` has none, so it doesn't change, and
+  `pubsub-init.mjs` (Pub/Sub designs only) does, as "every `new PubSub(`" asks. Neither fixture nor
+  any pinned export has a Pub/Sub topic, so the proof and pins show neither.
+- **F3 against 6.3.2's types.** `ClientConfig` declares no `grpc.*` key, so the two options in an
+  object literal fail `tsc` (excess property); google-gax 6.14.0's `createStub` passes every
+  `grpc.*` option to the channel. So `module-clients.ts` spreads the `pubsubChannel` constant into
+  each call (checked with `tsc` on the installed SDK).
+- **F1's ownership.** The brief names the path, not its ownership. It is `generated-extension`,
+  with the package manifests, so an application whose own package needs its script adds it there,
+  and `update:v2` keeps an existing one (QG07's note called it the application's). The glossary's
+  Scaffold row says so.
+- **F2's reach.** Through `localEndpoints`, so the report and README list it with
+  `PUBSUB_EMULATOR_HOST`. `setup-pubsub` neither publishes nor consumes and doesn't get it.
+- **Row readings.** "Nothing else in the process fails" (P2, P6) is read for the publishing process:
+  Clicks API's only failure lines are the record requests'. P6's backlog is what the clients held:
+  a paused emulator accepts nothing, so the six 503s are sent again, plus three new clicks. Times
+  run from the start of `docker unpause`. P7's probe time runs from Tally's database-probe line to
+  its subscription-probe line, with nothing logged between them. P5's "attempt unchanged" is the
+  waiting lines' attempt and the held click's first delivery (SO02's pattern).
+- **P4's gate.** The fixture's Count records its delivery after the click's insert has committed,
+  and the trigger holds that second statement. The killed worker's statement is ended by the
+  server's 2 s statement timeout while the harness still holds the lock: released first, an
+  autocommit insert from a dead client would still commit. The kill has to land inside that 2 s.
+  The poll is 10 ms, and it landed 462 ms in.
+- The fixture's owned bodies pick their failures by ID prefix (`ni-`, `retry-`). That is
+  application code in fixture files only.
+
+**Noticed.**
+- The unit is QRWTY-driven (Q03), with F1–F3 folded in by the owner on 2026-11-14.
+- **A held message can be delivered again.** In the development run and in one of three scratch
+  reproductions, a click held in the unreachable-store wait was delivered again while it waited:
+  `p5-0` had attempts 1 and 2, and in the reproduction `x-1` (held back by Concurrency 1) had 1, 2
+  and 3. The held copy ran first with attempt 1, and the stub's insert counted each once. With the
+  SDK's own logging on (through `compose.override.yaml`), two reproductions showed no copy; the
+  client's lease extensions came at most 8.9 s apart against its 10 s stream deadline. So the
+  trigger isn't pinned. Each lapse adds a copy waiting client-side and raises the attempt.
+  `pubsubLoop` passes no `minAckDeadline` (the SDK's default is 10 s; the subscription's is 60 s).
+  A question for QGR2.
+- **A pause doesn't exercise F3.** A paused emulator keeps its TCP connections, so P6 needs no
+  reconnect and shows the recovery, not F3's bound. A stopped emulator would exercise the bound,
+  but it keeps no topic, subscription or message across a restart.
+- The emulator counts delivery attempts (the subscription's dead-letter policy turns them on), but
+  doesn't keep the retry policy's 1 s minimum: `retry-` attempts came about 0.1, 1.5, 2, 3 and 3 s
+  apart. Forwarding to the dead-letter topic after 100 attempts wasn't exercised.
+- Paused publishes answer 503 at Clicks API's 1000 ms request deadline, before the publisher's own
+  2000 ms (as QG07 found).
+- The pubsub suite takes about 4.2 min; `all` about 28.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG10. `pnpm test:generated --suite=pubsub` covers the Pub/Sub clients;
+exports carry `pnpm-workspace.yaml`, so their plain install passes.

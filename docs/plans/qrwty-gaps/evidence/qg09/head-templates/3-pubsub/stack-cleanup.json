@@ -1,0 +1,15 @@
+{
+  "project": "gs-8edd35b5-19e5-4350-bf76-8d152480e989-3",
+  "before": {
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  },
+  "after": {
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  }
+}

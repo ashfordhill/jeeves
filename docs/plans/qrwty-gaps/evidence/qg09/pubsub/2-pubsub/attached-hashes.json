@@ -1,0 +1,20 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/tally-db/modules/count.sql",
+      "ownership": "generated-extension",
+      "sha256": "41d68a5ac9c963287655c311d564da61eba618478657d70c22c43499966c30c0"
+    },
+    {
+      "path": "src/modules/clicks-api/record.ts",
+      "ownership": "generated-extension",
+      "sha256": "90e3c78108db8da093dfb66511144d931c62e96de5827ac53b4ce5e340b7a10b"
+    },
+    {
+      "path": "src/modules/tally/count.ts",
+      "ownership": "generated-extension",
+      "sha256": "9dbfbd989935bb728254be2f85909c602a664f336c44866e209e6adeffd191a9"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

@@ -945,7 +945,14 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
     const scope = testScope();
     const publisher = await pubsubClients.pubsubPublisher(scope, probe, visits);
     expect(fake.calls).toEqual([
-      ["PubSub", { projectId: "local" }],
+      [
+        "PubSub",
+        {
+          projectId: "local",
+          "grpc.initial_reconnect_backoff_ms": 500,
+          "grpc.max_reconnect_backoff_ms": 2000,
+        },
+      ],
       ["topic", "visits", { gaxOpts: { timeout: 2000 } }],
       ["exists"],
     ]);
@@ -1058,7 +1065,14 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
       environment({ JEEVES_PUBSUB_PROJECT: value });
       fake.calls.length = 0;
       await pubsubClients.pubsubPublisher(testScope(), probe, visits);
-      expect(fake.calls[0]).toEqual(["PubSub", { projectId: value }]);
+      expect(fake.calls[0]).toEqual([
+        "PubSub",
+        {
+          projectId: value,
+          "grpc.initial_reconnect_backoff_ms": 500,
+          "grpc.max_reconnect_backoff_ms": 2000,
+        },
+      ]);
     }
     for (const value of [
       undefined,

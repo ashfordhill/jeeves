@@ -1,7 +1,15 @@
 import { basename } from "node:path";
 
 /** Implemented suites; Vitest selects `scenarios/<suite>*.system.test.ts` for each one. */
-export const implementedSuites = ["core", "wiring", "identity", "media", "regeneration", "faults"];
+export const implementedSuites = [
+  "core",
+  "wiring",
+  "identity",
+  "media",
+  "regeneration",
+  "faults",
+  "pubsub",
+];
 
 /** Selected suites that contributed no scenario file to a run (a missing file is not a pass). */
 export function missingSuites(selected: string[], testFiles: string[]) {

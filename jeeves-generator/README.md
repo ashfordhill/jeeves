@@ -11,8 +11,8 @@
   Event counter, Search indexing, Search query and Favorites. Any other module exports as a
   typed stub.
 - **Yours to write:** each template's `<lead>.hooks.ts`, each stub's `<module>.ts` and each
-  writer's product SQL file. `package.json` and `pnpm-lock.yaml` are yours too: add a package
-  your modules use with `pnpm add --ignore-scripts <name>@<exact version>`.
+  writer's product SQL file. `package.json`, `pnpm-lock.yaml` and `pnpm-workspace.yaml` are yours
+  too: add a package your modules use with `pnpm add <name>@<exact version>`.
 - **Commands:** `pnpm --filter @jeeves/generator export:v2 <design.json> <new directory>`. The
   studio's Generate project dialog produces the same files as a ZIP.
   `pnpm --filter @jeeves/generator update:v2 <design.json> <existing export> [--check]`
@@ -103,15 +103,16 @@ and embedded assets, including standalone locks; see [templates](templates/READM
 
 Each template file declares `generated-scaffold` or `generated-extension` ownership and exact
 contributing design JSON pointers. Initial extension files are still generated output, not
-custom implementation credit. In a v2 export the foundation's `package.json` and
-`pnpm-lock.yaml` are `generated-extension`, with the template's pins: the application adds the
-packages its stubs and hooks use with `pnpm add --ignore-scripts <name>@<exact version>`, which
-edits no generated file, and the image still installs exactly the lock (`pnpm install
---frozen-lockfile --ignore-scripts`). `--ignore-scripts` is needed: the Pub/Sub client's
-`protobufjs` has a postinstall script, which the image never runs, and pnpm 12 refuses an install
-that would skip it silently (`ERR_PNPM_IGNORED_BUILDS`). An application that wants plain `pnpm add`
-can say so in its own `pnpm-workspace.yaml` (`allowBuilds: { protobufjs: false }`), which export
-never writes.
+custom implementation credit. In a v2 export the foundation's `package.json`,
+`pnpm-lock.yaml` and `pnpm-workspace.yaml` are `generated-extension`, with the template's pins:
+the application adds the packages its stubs and hooks use with `pnpm add <name>@<exact version>`,
+which edits no generated file, and the image still installs exactly the lock (`pnpm install
+--frozen-lockfile --ignore-scripts`). pnpm 12 refuses an install that would skip a package's
+install script it hasn't been told about (`ERR_PNPM_IGNORED_BUILDS`), and the Pub/Sub client's
+`protobufjs` has a postinstall script (a version warning), which the image never runs. The export's
+`pnpm-workspace.yaml` says so (`allowBuilds: { protobufjs: false }`), so a plain `pnpm install
+--frozen-lockfile` and `pnpm add` pass with the lock unchanged; an application whose own package
+needs its script adds it there.
 `.jeeves/` is reserved for the generator. Duplicate paths,
 case collisions, file/directory collisions, traversal, absolute paths and portable reserved names
 refuse the whole assembly. Source paths must exist and belong to the selected declarations
@@ -709,7 +710,7 @@ when it builds that client, before its probe, with no default (`<ID>` is the til
 | A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT` | `cache-<id>`, `6379` |
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
-| Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST`) | `local`, `local-pubsub:8085` |
+| Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`) | `local`, `local-pubsub:8085`, `none` |
 
 A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
 directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port is an integer
@@ -742,7 +743,13 @@ client's `gaxOpts.timeout` is 2000 and the publisher rejects `Publish deadline (
 since the client's default waits far longer for an unreachable service. At most 1000 are outstanding
 per process; the next rejects at once, `Publisher queue full`. The client's default batching
 applies, and `key` is not used. Its probe checks `topic.exists()`; false or an error fails startup.
-The drain waits for outstanding publishes, then closes the client. It runs in
+The drain waits for outstanding publishes, then closes the client. Every Pub/Sub client in the
+templates (the publisher's, a loop's and `pubsub-init.mjs`'s) is built with the gRPC options
+`grpc.initial_reconnect_backoff_ms` 500 and `grpc.max_reconnect_backoff_ms` 2000 (`pubsubChannel`;
+gRPC's own maximum is 120 s), so its channel tries a lost connection again within 2 s. Locally each
+service that publishes to or consumes a topic also gets `METADATA_SERVER_DETECTION: none`, so its
+client looks for no Google metadata server (the lookup took about 3 s of the 5 s probe); no
+`universeDomain` is passed, since it takes the client out of emulator mode. It runs in
 `JEEVES_PUBSUB_PROJECT` with Application Default Credentials (the export holds no key file), and
 needs `pubsub.topics.get` and `pubsub.topics.publish` on the topic. Processes never create or change
 topics or subscriptions: locally only `setup-pubsub` does, running `scripts/pubsub-init.mjs` at
@@ -761,7 +768,7 @@ dead-letter policy needs).
 `<topic>--<tile>` through `pubsubLoop(probe)` in `module-clients.ts` (the `pubsub-loop` section,
 beside the publisher's `pubsub`), with a RabbitMQ loop's contract. Its process config's loop row
 names the subscription and `<topic>--<tile>.failed`, and its service gets `JEEVES_PUBSUB_PROJECT`
-(and locally `PUBSUB_EMULATOR_HOST`), not the broker. At start it checks the subscription exists
+(and locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`), not the broker. At start it checks the subscription exists
 (5 s; false or an error fails startup), then opens one streaming-pull subscriber with flow control
 `maxMessages` equal to the loop's Concurrency and `allowExcessMessages: false`, so at most that
 many messages are in hand; the client extends a message's lease while it is. Each message gives
@@ -827,8 +834,8 @@ values and the stub stack (`spec/src/fixtures/stub-stack.ts`) as they were befor
 existed, every payload byte and the provenance files apart from their source and emitter
 inventory.
 
-To run one, export it into a new directory, then, in it, `pnpm install --frozen-lockfile
---ignore-scripts` and `pnpm build`; allocate the project and ports as below and run
+To run one, export it into a new directory, then, in it, `pnpm install --frozen-lockfile` and
+`pnpm build`; allocate the project and ports as below and run
 `pnpm first-run`. Each `app-*` is healthy once ready. Public processes answer at
 `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/`, for example `/api/<id>/healthz` or
 `/api/<id>/modules/<module id>`; reach an internal one from inside the network, for example
@@ -905,8 +912,8 @@ records only its actual contributors; static utility assets do not credit unrela
 See the [actual interface record](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-04--standalone-local-foundation).
 
 Exports use Node 24.21.0/pnpm 12.16.1 and the captured exact v1 dependency/provider pins.
-Rendering never reads mutable v1 files. Install with `pnpm install --frozen-lockfile --ignore-scripts`
-and build with `pnpm build` in the export. The `Dockerfile` builds as root, then its `app` image
+Rendering never reads mutable v1 files. Install with `pnpm install --frozen-lockfile` and build
+with `pnpm build` in the export. The `Dockerfile` builds as root, then its `app` image
 (every process and setup container) and `media` image run as the base image's unprivileged `node`
 user (uid 1000). `/app` stays root-owned and readable, so at run time a process writes only under
 `/tmp` (its ready marker, the media worker's job files), and setup writes every secret those

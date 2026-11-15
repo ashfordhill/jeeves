@@ -1,0 +1,5 @@
+# The application's own pnpm settings, like package.json and pnpm-lock.yaml. pnpm runs a
+# package's install script only when allowBuilds says true, and refuses an install that would
+# skip one it isn't told about. protobufjs's script only prints a version warning.
+allowBuilds:
+  protobufjs: false

@@ -1,0 +1,50 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-4aee41d1-9186-46fe-a8fb-9070d8669ac0-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    },
+    {
+      "project": "gs-4aee41d1-9186-46fe-a8fb-9070d8669ac0-2",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    },
+    {
+      "project": "gs-4aee41d1-9186-46fe-a8fb-9070d8669ac0-3",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

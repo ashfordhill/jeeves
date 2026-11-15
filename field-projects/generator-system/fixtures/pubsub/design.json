@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 3,
+  "revision": 13,
+  "elements": [
+    {
+      "id": "clicks-api",
+      "name": "Clicks API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "clicks",
+      "name": "Clicks",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "tally",
+      "name": "Tally",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "tally-db",
+      "name": "Tally database",
+      "classification": {
+        "kind": "Data store"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "clicks-api-clicks",
+      "kind": "depends-on",
+      "from": {
+        "element": "clicks-api"
+      },
+      "to": {
+        "element": "clicks"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "clicks-tally",
+      "kind": "depends-on",
+      "from": {
+        "element": "clicks"
+      },
+      "to": {
+        "element": "tally"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "tally-tally-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "tally"
+      },
+      "to": {
+        "element": "tally-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Clicks",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "clicks-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "clicks",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "google-cloud"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "clicks-api"
+          }
+        },
+        {
+          "element": "tally",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "tally-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "tally"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "clicks-api-clicks",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "clicks-tally",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "tally-tally-db",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "record",
+          "host": "clicks-api",
+          "name": "Record",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "count",
+          "host": "tally",
+          "name": "Count",
+          "settings": {
+            "kind": "custom"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "record-clicks",
+          "from": "record",
+          "to": {
+            "kind": "element",
+            "id": "clicks",
+            "via": "clicks-api-clicks"
+          }
+        },
+        {
+          "id": "count-clicks",
+          "from": "count",
+          "to": {
+            "kind": "element",
+            "id": "clicks",
+            "via": "clicks-tally"
+          }
+        },
+        {
+          "id": "count-tally-db",
+          "from": "count",
+          "to": {
+            "kind": "element",
+            "id": "tally-db",
+            "via": "tally-tally-db"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "entry-clicks-api",
+          "lane": "download",
+          "element": "clicks-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Record a click"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "record",
+        "target": {
+          "kind": "component",
+          "component": "record",
+          "host": "clicks-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "count",
+        "target": {
+          "kind": "component",
+          "component": "count",
+          "host": "tally"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  }
+}

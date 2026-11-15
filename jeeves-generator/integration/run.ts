@@ -81,7 +81,8 @@ if (args[0] === "--cleanup") {
     });
     if (interrupted) throw new Error(`Interrupted by ${interrupted}`);
     // One suite keeps its 20-minute bound. `all` runs every suite serially (faults included
-    // since GS07, about 23 minutes locally), so it has twice that; no test deadline changes.
+    // since GS07 and pubsub since QG09, about 28 minutes locally), so it has twice that; no
+    // test deadline changes.
     const output = await command(
       "pnpm",
       ["exec", "vitest", "run", "--config", "jeeves-generator/integration/vitest.config.ts"],

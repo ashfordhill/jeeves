@@ -1,0 +1,12 @@
+{
+  "id": "gs-2070aabd-5261-4ddd-b3db-236b3348759c",
+  "selected": ["wiring"],
+  "commit": "b4003fc6cf1aa79c4b7aa186ab0877f77371bf8d",
+  "dirty": "M field-projects/generator-system/README.md\n M jeeves-generator/README.md\n M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/suites.ts\n M jeeves-generator/integration/run.ts\n M jeeves-generator/src/v2/fixtures/processes-off.json\n M jeeves-generator/src/v2/http-wiring.test.ts\n M jeeves-generator/src/v2/local-contract.ts\n M jeeves-generator/src/v2/local.ts\n M jeeves-generator/src/v2/module-clients.test.ts\n M jeeves-generator/src/v2/pubsub.test.ts\n M jeeves-generator/src/v2/system-harness.test.ts\n M jeeves-generator/src/v2/tile-loop.test.ts\n M jeeves-generator/templates/local-v2/assets/scripts/pubsub-init.mjs\n M jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template\n?? field-projects/generator-system/fixtures/pubsub/\n?? jeeves-generator/integration/author-pubsub.ts\n?? jeeves-generator/integration/harness/pubsub.ts\n?? jeeves-generator/integration/scenarios/pubsub.system.test.ts\n?? jeeves-generator/templates/local-v2/assets/pnpm-workspace.yaml",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

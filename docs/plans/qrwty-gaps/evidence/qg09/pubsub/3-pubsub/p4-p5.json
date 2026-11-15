@@ -1,0 +1,130 @@
+{
+  "p7": {
+    "subscriberProbeMs": 54,
+    "subscriberProbeLines": [
+      {
+        "service": "app-tally",
+        "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+        "at": "2026-11-15T01:48:56.847183116Z",
+        "entry": {
+          "event": "probe",
+          "tile": "tally",
+          "level": "info",
+          "client": "tally-db",
+          "kind": "database",
+          "check": "SELECT 1",
+          "result": "ok"
+        }
+      },
+      {
+        "service": "app-tally",
+        "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+        "at": "2026-11-15T01:48:56.901432620Z",
+        "entry": {
+          "event": "probe",
+          "tile": "tally",
+          "level": "info",
+          "client": "clicks--tally",
+          "kind": "queue",
+          "check": "the Pub/Sub subscription exists",
+          "result": "ok"
+        }
+      }
+    ],
+    "publisherProbeFromStartMs": 547,
+    "firstPublish": {
+      "status": 202,
+      "body": {
+        "messageId": "p4-seed",
+        "value": "value of p4-seed"
+      },
+      "elapsedMs": 23,
+      "answeredAt": 219954.655573
+    }
+  },
+  "p4": {
+    "boundary": {
+      "blocked": {
+        "pid": 97,
+        "usename": "r_tally_db__tally",
+        "client": "172.24.0.5",
+        "query_start": "2026-11-15 01:49:12.433839+00",
+        "state": "active",
+        "wait_event_type": "Lock",
+        "wait_event": "advisory",
+        "waited_ms": 4
+      },
+      "killed": {
+        "fault": "app-tally kill",
+        "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+        "at": "2026-11-15T01:49:12.535Z",
+        "monotonicAt": 220713.243321,
+        "elapsedMs": 359,
+        "result": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900"
+      },
+      "still": {
+        "pid": 97,
+        "usename": "r_tally_db__tally",
+        "client": "172.24.0.5",
+        "query_start": "2026-11-15 01:49:12.433839+00",
+        "state": "active",
+        "wait_event_type": "Lock",
+        "wait_event": "advisory",
+        "waited_ms": 462
+      }
+    },
+    "again": [2],
+    "redeliveredMs": 8205
+  },
+  "p5": {
+    "outage": {
+      "notCounted": [
+        {
+          "service": "app-tally",
+          "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+          "at": "2026-11-15T01:49:24.289152420Z",
+          "entry": {
+            "level": "error",
+            "event": "loop-error",
+            "tile": "tally",
+            "module": "count",
+            "queue": "clicks--tally",
+            "messageId": "p5-0",
+            "attempt": 1,
+            "error": "Error: getaddrinfo ENOTFOUND local-postgres",
+            "action": "store unreachable, retry in 5000 ms (attempt not counted)"
+          },
+          "seenMs": 683
+        },
+        {
+          "service": "app-tally",
+          "container": "e45ec249ddb34c5a641b9e84ed505f15e599601fc26766d2e0de6d4dc37ba900",
+          "at": "2026-11-15T01:49:29.296917605Z",
+          "entry": {
+            "level": "error",
+            "event": "loop-error",
+            "tile": "tally",
+            "module": "count",
+            "queue": "clicks--tally",
+            "messageId": "p5-0",
+            "attempt": 1,
+            "error": "Error: getaddrinfo ENOTFOUND local-postgres",
+            "action": "store unreachable, retry in 5000 ms (attempt not counted)"
+          },
+          "seenMs": 6081
+        }
+      ],
+      "failed": []
+    },
+    "held": "p5-0",
+    "deliveries": {
+      "p5-0": [1],
+      "p5-1": [1],
+      "p5-2": [1]
+    },
+    "times": {
+      "outageMs": 6551,
+      "startToAllCountedMs": 5685
+    }
+  }
+}

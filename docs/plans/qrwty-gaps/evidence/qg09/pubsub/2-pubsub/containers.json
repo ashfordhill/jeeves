@@ -1,0 +1,6 @@
+{
+  "containers": ["1eb54cd2a76d", "8bd99ac6f44a", "941e49654dc3", "ac1930a90f7f", "5f4580ba4bd6"],
+  "networks": ["41904f7f3f9e"],
+  "volumes": ["gs-4aee41d1-9186-46fe-a8fb-9070d8669ac0-2_postgres-data"],
+  "images": ["gs-4aee41d1-9186-46fe-a8fb-9070d8669ac0-2-app:latest"]
+}

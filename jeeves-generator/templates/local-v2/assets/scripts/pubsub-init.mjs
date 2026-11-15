@@ -6,7 +6,12 @@ import { plan } from "./common.mjs";
 // it. Nothing is deleted or changed, and processes never create topics or subscriptions.
 const projectId = process.env.JEEVES_PUBSUB_PROJECT;
 if (!projectId) throw new Error("Set JEEVES_PUBSUB_PROJECT.");
-const pubsub = new PubSub({ projectId });
+// Every Pub/Sub client's channel reconnects after 500 ms, doubling to at most 2000 ms (QG09).
+const pubsub = new PubSub({
+  projectId,
+  "grpc.initial_reconnect_backoff_ms": 500,
+  "grpc.max_reconnect_backoff_ms": 2000,
+});
 const topicName = (id) => `projects/${projectId}/topics/${id}`;
 /** gRPC's ALREADY_EXISTS: another setup created it first. */
 const alreadyExists = (error) => error?.code === 6;

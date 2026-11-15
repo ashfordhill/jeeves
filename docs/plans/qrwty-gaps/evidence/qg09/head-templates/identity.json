@@ -1,0 +1,12 @@
+{
+  "id": "gs-8edd35b5-19e5-4350-bf76-8d152480e989",
+  "selected": ["pubsub"],
+  "commit": "b4003fc6cf1aa79c4b7aa186ab0877f77371bf8d",
+  "dirty": "M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/suites.ts\n M jeeves-generator/integration/run.ts\n M jeeves-generator/src/v2/module-clients.test.ts\n M jeeves-generator/src/v2/pubsub.test.ts\n M jeeves-generator/src/v2/system-harness.test.ts\n M jeeves-generator/src/v2/tile-loop.test.ts\n?? field-projects/generator-system/fixtures/pubsub/\n?? jeeves-generator/integration/harness/pubsub.ts\n?? jeeves-generator/integration/scenarios/pubsub.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

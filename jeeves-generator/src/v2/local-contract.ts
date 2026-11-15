@@ -81,7 +81,8 @@ export const localPubsub = {
  * database and cache it opens (`JEEVES_DATABASE_<ID>_HOST` and `_PORT`, `JEEVES_CACHE_<ID>_HOST`
  * and `_PORT`), the broker when it publishes or consumes (`JEEVES_BROKER_HOST`, `_PORT`), the
  * Pub/Sub project when it publishes to or consumes a topic (`JEEVES_PUBSUB_PROJECT`, and only
- * locally `PUBSUB_EMULATOR_HOST`) and each application tile its stubs call
+ * locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION: none`, so the client looks for no
+ * Google metadata server, QG09) and each application tile its stubs call
  * (`JEEVES_TILE_<ID>_URL`). A deployment sets its own values.
  */
 export function localEndpoints(service: {
@@ -110,6 +111,7 @@ export function localEndpoints(service: {
       ? ([
           ["JEEVES_PUBSUB_PROJECT", localPubsub.project],
           ["PUBSUB_EMULATOR_HOST", localPubsub.host],
+          ["METADATA_SERVER_DETECTION", "none"],
         ] as [string, string][])
       : []),
     ...(service.calls ?? []).map((id): [string, string] => [
