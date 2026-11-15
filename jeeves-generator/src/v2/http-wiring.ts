@@ -15,7 +15,9 @@ import { ownedUploadPersistence } from "./upload-state.ts";
 export type Lead = NonNullable<NormalizedProcess["templates"][number]["lead"]>;
 type Route = { method: string; path: string; answers: string };
 /** One import binding: a value or a type, from a path relative to `src/processes/`. */
-export type Import = { from: string; name: string; type?: true };
+/** One name a process file imports; `namespace` imports the whole module as `name` (QL05: a
+ * stub's file, whose `settings` export may be missing). */
+export type Import = { from: string; name: string; type?: true; namespace?: true };
 /** One loop a process runs (tile process contract, section 5): the process config's `loops` row
  * its code reads, and what a message that fails there answers, for the report. */
 export type LoopRow = {
@@ -1095,21 +1097,35 @@ export function httpMounts(
   return mounts;
 }
 
-/** The process file's imports, merged per path and sorted. */
+/** The process file's imports, merged per path and sorted; a path's namespace import comes first,
+ * on its own line. */
 export function importLines(imports: readonly Import[]): string[] {
   const byPath = new Map<string, Set<string>>();
+  const namespaces = new Map<string, string>();
   for (const item of imports) {
+    if (item.namespace) {
+      namespaces.set(item.from, item.name);
+      continue;
+    }
     const names = byPath.get(item.from) ?? new Set<string>();
     names.add(item.type ? `type ${item.name}` : item.name);
     byPath.set(item.from, names);
   }
   const key = (name: string) => name.replace(/^type /, "");
-  return [...byPath]
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([from, names]) => {
-      const sorted = [...names].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
-      return sorted.every((name) => name.startsWith("type "))
-        ? `import type { ${sorted.map(key).join(", ")} } from ${text(from)};`
-        : `import { ${sorted.join(", ")} } from ${text(from)};`;
+  return [...new Set([...byPath.keys(), ...namespaces.keys()])]
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    .flatMap((from) => {
+      const namespace = namespaces.get(from);
+      const sorted = [...(byPath.get(from) ?? [])].sort((a, b) =>
+        key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0,
+      );
+      return [
+        ...(namespace ? [`import * as ${namespace} from ${text(from)};`] : []),
+        ...(!sorted.length
+          ? []
+          : sorted.every((name) => name.startsWith("type "))
+            ? [`import type { ${sorted.map(key).join(", ")} } from ${text(from)};`]
+            : [`import { ${sorted.join(", ")} } from ${text(from)};`]),
+      ];
     });
 }

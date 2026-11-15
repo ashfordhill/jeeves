@@ -18126,3 +18126,204 @@ builds on this unit's `defineRoutes`, `rawPath` and `signal`.
 
 **For the next unit.** QL05, Stubs declare their settings and startup refuses an invalid one. QL08
 can reuse `idempotencyGrant`'s shape and the `050-` migration path for its leases.
+
+## 2026-11-15 — QL05: Stubs declare their settings and startup refuses an invalid one
+
+**What changed.**
+- New `templates/local-v2/assets/src/runtime/settings.ts.template`: `declareSettings`, `text`,
+  `integer`, `url`, `secret`, `keyRing`, `optional`, `readSettings` and the types
+  `SettingsDeclaration`, `SettingsOf`, `Setting`, `SettingKind`, `KeyRing`, `RingKey`.
+  - A name matches `^[A-Z][A-Z0-9_]{0,63}$` and isn't `JEEVES_*`, `OIDC_*`, `PG*`, `SECRET_DIR` or
+    `PORT`, else `declareSettings` throws `Reserved setting name <NAME>`. It returns a frozen copy
+    and remembers it.
+  - `readSettings(module, declaration)` reads in declaration order: text, integer and url from
+    `process.env[NAME]`, secret and keyRing from the file `JEEVES_SECRET_<NAME>_FILE` names, else
+    `SECRET_DIR/<name>` (`/run/secrets`), one trailing newline removed. Missing (unset, empty, no
+    file) when not optional, or invalid, throws `Invalid setting <NAME>`; a kind's own error is
+    dropped, so no value reaches a message. The result is frozen. `SettingsOf<T>` takes
+    `typeof declaration` or `typeof import("./<module>.ts")` (`Record<never, never>` without a
+    `settings` export).
+- `src/v2/module-stubs.ts`:
+  - emits `src/runtime/settings.ts` beside `dependencies.ts`, a `generated-scaffold` of
+    `local.module-stubs`;
+  - each `.slots.ts` imports `SettingsOf` and ends `Dependencies` with
+    `settings: SettingsOf<typeof import("./<module>.ts")>;`, and no slot property is named
+    `settings` any more (a tile `settings` gives `settingsStore`);
+  - each stub body gains, after its imports, `import { declareSettings } from
+    "../../runtime/settings.ts";` and, before the entry function, the brief's comment and
+    `export const settings = declareSettings({});`.
+- `src/v2/client-wiring.ts`, `stubClients`:
+  - each stub's file is imported whole (`import * as <Pascal>Module`);
+  - a `const declared = { "<module>": (<Pascal>Module as { settings?: SettingsDeclaration }).settings ?? declareSettings({}), … }`
+    comes before the pass;
+  - the pass ends with one `() => readSettings("<module>", declared["<module>"])` per stub, after
+    `signInSettings()`, so every process with stubs now has a pass;
+  - each `dependencies["<module>"]` ends with
+    `settings: readSettings(…) as <Pascal>Dependencies["settings"]`, and an empty one is
+    `{ settings }`;
+  - the pass's comment names the stubs' settings.
+  - New `stubSettingsRows` gives the report's rows.
+- `src/v2/http-wiring.ts`: `Import.namespace`; `importLines` writes a path's
+  `import * as <name>` line before its named import.
+- `src/v2/registry.ts` and `tile-processes.ts`: a process row with stubs gains
+  `stubSettings: [{ module, file }]`.
+- `src/v2/local.ts`: the export README's Runnable-processes paragraph gains one sentence: how a
+  stub declares settings, the startup refusal, that Compose sets none (`compose.override.yaml`'s
+  `environment` and `secrets`), the file name rule and `stubSettings`.
+- Tests:
+  - `tile-processes.test.ts`, 5 new, on the stub stack's emitted `settings.ts` with a scratch
+    `SECRET_DIR`:
+    - each kind accepts and refuses, with the value absent from the message: text over `max`;
+      integer out of range, `07`, `+3`, `1e1`, unsafe; url with credentials (also encoded), the
+      wrong protocol, a newline, relative; secret missing, empty, `\n` or a directory; a ring
+      with a 31-byte key, 0 or 9 entries, a duplicate or bad ID, padding, an object, bad JSON;
+    - `optional` gives `undefined` and the result is frozen;
+    - `JEEVES_SECRET_<NAME>_FILE` wins, and a named missing file or relative path is refused even
+      when optional;
+    - reserved names, and a declaration `declareSettings` didn't make;
+    - Links API's and Visit worker's processes read settings in the pass, before `databaseClient`.
+  - `client-wiring.test.ts`, 2 new:
+    - the probe's Front: the imports, `declared`, the pass's last two lines after the sign-in and
+      before every client, the dependency line, the report's rows, Compose and the README;
+    - the in-place run (QG20's harness). Caller declares
+      `CALLER_LIMIT: optional(integer({ min: 1, max: 100 }))`, and Token check's body predates
+      QL05 (no export). `0`, `1000`, `7.5`, ` 7`, `seven` each fail
+      `startup-failed` `Invalid setting CALLER_LIMIT` with no value shown. With the URL unset too,
+      `Invalid configuration: Invalid endpoint JEEVES_EXTERNAL_PARTNER_URL; Invalid setting CALLER_LIMIT`.
+      `7` starts; Caller answers `{ status: 418, limit: 7 }` and Token check 501.
+  - `module-stubs.test.ts`: the new lines, `Dependencies.settings` in every scaffold, the
+    `settingsStore` rename, `settings.ts`'s owner, stubs import only `runtime/settings.ts`.
+- Docs: `jeeves-generator/README.md` (Module stubs, a **Settings a stub declares** paragraph after
+  Idempotency records, the pass's order), `docs/studio.md` (the stub sentence), `docs/glossary.md`
+  (Stub).
+- Pins (Rule 7): v2-module-design and stub-stack, `.jeeves/manifest.json`, `.jeeves/report.json`,
+  each stub's `.ts` and `.slots.ts`, and the added `src/runtime/settings.ts` (78→79 and 53→54
+  files). frozen-v2 is unchanged.
+
+**Checks.** The lighter profile (owner, 2026-11-15, relayed by the coordinator).
+- `pnpm check`: exit 0, 118 files / 1065 tests (7 new); Biome shows only the older 1 info. Before
+  `pins:update` and the assertion updates, these failed: the two processes-off pins, and
+  module-stubs, module-templates, http-wiring, loop-wiring, local (QG34's README count),
+  client-wiring, `update.test.ts` #8 and the server's `generation-v2.test.ts`.
+- Web build: exit 0.
+- Regeneration proof, before and after from this checkout: `probe-design.json` (`a3b6204f…0505`,
+  verified), `qrwty-r83.json` (`4c16e0ca…5d50`) and YouTube v4's design (`9762df41…813f`).
+  - Probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`,
+    `src/modules/front/front-internal-grant.{slots.ts,ts}`, `src/modules/front/front-probe.{slots.ts,ts}`,
+    `src/modules/tally/tally-count.{slots.ts,ts}`, `src/processes/front.ts`, `src/processes/tally.ts`
+    and `src/runtime/settings.ts` (new).
+  - r83: the same kinds of path, for its 11 stubs' `.ts` and `.slots.ts` and all six process files.
+  - YouTube v4: the two Watch API stubs' `.ts` and `.slots.ts` and `src/processes/watch-api.ts`.
+    Its template-only processes are unchanged.
+  - That is the brief's Emitted output list. The report differs in `stubSettings`, the module
+    rows' `files` (`src/runtime/settings.ts`) and the inventory. Gaps are unchanged (3, 11, 9
+    required).
+  - `update:v2 … youtube/v4/app --check`: `refused` `[]` (create 3, replace 29, unchanged 66,
+    keep 9). The two stub bodies are `keepChanged`, with shadows.
+- Docker proof, the unit's one Docker run. Project `ql05-probe` on 127.0.0.1:48011–48013, on
+  after-probe.
+  - Q03's bodies and both SQL files were at their `generated-extension` paths. Front Probe's body
+    also declared `PROBE_GREETING: text()` and `PROBE_TOKEN: secret()` and answers `/settings`
+    with the greeting and the token's length. Q03's Internal grant and Count bodies have no
+    `settings` export.
+  - `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build` (tsc 7.0.2) both
+    exited 0, so the older bodies type-check. The checkout's `node_modules/.modules.yaml` and
+    `.pnpm/lock.yaml` keep their mtimes (2026-11-14 12:10).
+  1. The override set only `JEEVES_EXTERNAL_PROVIDER_URL`. `pnpm first-run` exited 1 after 76 s.
+     Front's whole log was
+     `{"level":"error","event":"startup-failed","error":"Error: Invalid setting PROBE_GREETING"}`
+     and `Application startup failed`, with no probe line. Tally (no export) was ready.
+  2. The override then added `PROBE_GREETING` and the `probe-token` secret: a 41-byte random file
+     in the scratch copy, mode 0644, mounted through `secrets`.
+     - `pnpm start` refused (`First initialization incomplete; use first-run`), so `pnpm first-run`
+       ran again: exit 0 in 27 s, all seven healthy.
+     - `GET …/api/front/modules/front-probe/settings` answered 200
+       `{"greeting":"hello from ql05","tokenLength":40}`.
+     - The token is in neither Front's log nor the answer.
+     - `…/front-internal-grant/x` answered 200.
+  3. Teardown, each exit 0: `pnpm stop`; `docker compose --profile '*' down --volumes
+     --remove-orphans`; `docker image rm ql05-probe-app:latest`. The exports and the proof copy
+     are deleted.
+- Inventory: containers, images, networks and volumes are identical before the proof and after
+  it. No `ql05` resource and no `/tmp/jeeves-system-*` is left, and `jeeves-postgres-1` is
+  unchanged.
+- Skipped by the owner's decision (relayed by the coordinator):
+  - e2e, since nothing in the studio or web changed (the server change is one test's expected list);
+  - the brief's `--suite=wiring` and `--suite=regeneration`, since the proof above is the one
+    Docker run;
+  - the measurement of the new tests on HEAD;
+  - `pnpm install` and `pnpm build` in after-r83 and after-youtube.
+- Nothing in the studio is user-visible, so there was no mouse check.
+
+**Differences from the plan.**
+- **A file setting also reads `JEEVES_SECRET_<NAME>_FILE`.** QG34 landed after the plan and gives
+  every credential that variable. The brief names only `SECRET_DIR/<name>`. A setting's variable
+  can't collide with one it declares, since `JEEVES_*` is reserved. Any failure there is
+  `Invalid setting <NAME>`, not QG34's messages.
+- **The pass.** QL05's fold asks for the pass, which the brief doesn't name.
+  - The reads come last, after `signInSettings()`. Each runs twice, in the pass and for the
+    dependencies, as QG31's readers do.
+  - The brief's cast is written once per stub, in `declared`, and the stub's file is a namespace
+    import. tsc 7.0.2 accepts the brief's cast for a module without the export.
+- **First failure per stub.** A stub's settings are read in order, and the first wrong one is
+  named. That is the brief's proof text. Other wrong settings in the pass are named beside it.
+- **Extras beyond the brief:**
+  - `Invalid settings declaration <module>` for an object `declareSettings` didn't make; this is
+    where `module` is used;
+  - keyRing refuses duplicate IDs and padded or non-canonical base64url;
+  - url refuses whitespace and control characters, as QG06's rule does;
+  - a trailing `\r\n` counts as the one newline.
+- **Files outside the brief's list:**
+  - `http-wiring.ts` (namespace imports);
+  - `registry.ts` and `tile-processes.ts` (`stubSettings`, for QG37);
+  - `local.ts` (the export README, which the Emitted output names);
+  - `update.test.ts` #8 (`src/runtime/` now holds two records);
+  - the server's `generation-v2.test.ts` (module `files`).
+- **Pins.** The brief lists no `.jeeves/report.json`. The off reports changed only in the module
+  rows' `files`, which Rule 7 allows.
+- **Unnamed assertions updated** (QG35's practice):
+  - http-wiring's and loop-wiring's exact stub bodies, and the off stack's 53 files, now 54;
+  - module-templates' two file lists;
+  - client-wiring's pass and empty-`redirector` lines;
+  - module-stubs' "no `runtime/`" rule, now "only `runtime/settings.ts`";
+  - the export README's new sentence names no `JEEVES_SECRET_`, since QG34's test allows one.
+
+**Noticed.**
+- The unit comes from the QRWTY lessons plan (JP00). It folds in QGR3's proposed **QG37** (Q06
+  AG-10), at the coordinator's direction (owner: "yes for all recommendations").
+  - **Covered:**
+    - a stub declares the variables and credentials it reads (its `settings` export);
+    - the process reads and checks them inside QG31/QG35's pass, before the first probe, naming
+      the variable and never the value, with other wrong settings;
+    - a failure is the `startup-failed` line, not an import-time stack trace.
+  - **Covered by reference:** the report's environment list and the README's per-process list.
+    The report is derived from the design, and the names live in the application's stub file, so
+    neither lists them by name. Each process row's `stubSettings` names the files, and the README
+    gives the convention and points to it.
+  - **Left:**
+    - Compose's `secrets`: the application's `compose.override.yaml` sets them (brief invariant
+      6, QG02);
+    - listing the names themselves, which needs the design to carry them (QG37's other shape)
+      and so the owner;
+    - `JEEVES_REQUIRE_TLS` for `url()` settings: a URL setting isn't a connection, so a stub
+      declares `protocols: ["https:"]`;
+    - a reserved name throws when the stub's module loads, before `runProcess`. That is a code
+      error, not configuration.
+- A `secret()` named after a generated credential (`BROKER_PASSWORD` is `broker-password`) reads
+  that credential's file. The brief's reserved list doesn't cover it. This is for the reviewer
+  (QL13).
+- Two stubs in one process that declare one name read the same variable.
+- YouTube v4's `app/test/watch.test.ts` builds `Dependencies` without `settings`. Its `tsc`
+  covers `src/` only.
+- Biome must run with `--config-path=tooling/biome.config.json` (`pnpm format`). Without it, it
+  reformats whole files to its defaults. A run here did that and was undone by a three-way merge
+  onto HEAD's formatting before anything was committed.
+- The owner edited the root `README.md` (an 11/15 section) during the unit. It was not touched
+  or staged.
+- QRWTY arm A's export is frozen at `4e87f97`, so this reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QL06, A keys library for stubs. It builds on `keyRing()`, whose value is
+`{ current, entries }` with `Buffer` keys, the first entry `current`. QL10 can declare its
+workload settings the same way.

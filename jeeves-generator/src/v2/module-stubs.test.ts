@@ -121,10 +121,19 @@ describe("module stubs", () => {
     expect(publisher).toContain("  clicks: QueuePublisher;");
     expect(publisher).toContain("  // outbox: not connected (Database, write, optional)");
     expect(publisher.match(/^ {2}\w+: \w+;$/gmu)).toEqual(["  clicks: QueuePublisher;"]);
-    // An unconnected module has no properties and no import.
+    // An unconnected module has no slot properties and imports only its settings' type (QL05).
     const limit = text(bundle, "src/modules/shorten/shorten-limit.slots.ts");
-    expect(limit).toContain("  // store: not connected (Cache, read & write, optional)\n};");
-    expect(limit).not.toContain("import");
+    expect(limit).toContain(
+      [
+        "  // store: not connected (Cache, read & write, optional)",
+        "  // settings: the values shorten-limit.ts's `settings` export declares.",
+        '  settings: SettingsOf<typeof import("./shorten-limit.ts")>;',
+        "};",
+      ].join("\n"),
+    );
+    expect(limit.match(/^import .*$/gmu)).toEqual([
+      'import type { SettingsOf } from "../../runtime/settings.ts";',
+    ]);
     expect(limit).toContain("export const slots = [] as const;");
     // The loader names the module it uses; the cache slot it lacks is a comment.
     const cache = text(bundle, "src/modules/shorten/shorten-cache.slots.ts");
@@ -138,6 +147,13 @@ describe("module stubs", () => {
         "// Link cache, a Cache reader in Shorten service: Reads from a cache before the database.",
         "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
         'import type { Dependencies } from "./shorten-cache.slots.ts";',
+        // The settings it reads, none until written (QL05, owner decision D6).
+        'import { declareSettings } from "../../runtime/settings.ts";',
+        "",
+        "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+        " * optional(kind) for an optional one. Values come from the process environment, secrets from",
+        " * SECRET_DIR files. */",
+        "export const settings = declareSettings({});",
         "",
         "export async function shortenCache(dependencies: Dependencies): Promise<void> {",
         '  throw new Error("Not implemented: Link cache");',
@@ -148,6 +164,27 @@ describe("module stubs", () => {
     expect(text(bundle, "src/modules/dependencies.ts")).toContain(
       "export interface QueuePublisher",
     );
+    // Every scaffold types its module's settings from the module's own `settings` export, and no
+    // slot's property is named `settings`.
+    for (const module of ["shorten-links", "shorten-clicks", "shorten-limit", "shorten-cache"]) {
+      const scaffold = text(bundle, `src/modules/shorten/${module}.slots.ts`);
+      expect(scaffold).toContain(`  settings: SettingsOf<typeof import("./${module}.ts")>;\n};`);
+      expect(scaffold.match(/^ {2}settings:/gmu)).toHaveLength(1);
+      expect(text(bundle, `src/modules/shorten/${module}.ts`)).toContain(
+        'import { declareSettings } from "../../runtime/settings.ts";\n\n/** The settings this module reads',
+      );
+    }
+    const named = assemble(
+      run(run(design, tile("shorten", "settings", "Settings", "cache")), {
+        type: "connectModule",
+        module: "shorten-limit",
+        slot: "store",
+        target: { tile: "settings" },
+      }),
+    );
+    const renamed = text(named, "src/modules/shorten/shorten-limit.slots.ts");
+    expect(renamed).toContain("  settingsStore: CacheClient;");
+    expect(renamed.match(/^ {2}settings:/gmu)).toHaveLength(1);
   });
 
   it("is deterministic, gives each file one owner and provisions nothing", () => {
@@ -175,14 +212,21 @@ describe("module stubs", () => {
       bundle.manifest.implementations.find((item) => item.id === "local.module-stubs")
         ?.sourceSha256,
     ).toMatch(/^[a-f0-9]{64}$/u);
-    // Stubs import no template library and their tiles are not provisioned.
+    // Stubs import no template library, only their own settings library (QL05), and their tiles
+    // are not provisioned.
     for (const file of bundle.files.filter((item) => item.path.startsWith("src/modules/")))
-      expect(new TextDecoder().decode(file.bytes)).not.toContain("runtime/");
+      expect(
+        new TextDecoder().decode(file.bytes).replaceAll('"../../runtime/settings.ts"', ""),
+      ).not.toContain("runtime/");
+    expect(text(bundle, "src/modules/dependencies.ts")).not.toContain("settings");
     expect(
-      bundle.files.some(
-        (file) => file.path.startsWith("src/runtime/") && file.path !== "src/runtime/local.ts",
-      ),
-    ).toBe(false);
+      bundle.files.filter((file) => file.path.startsWith("src/runtime/")).map((file) => file.path),
+    ).toEqual(["src/runtime/local.ts", "src/runtime/settings.ts"]);
+    const settings = bundle.manifest.files.find((file) => file.path === "src/runtime/settings.ts");
+    expect([settings?.ownership, settings?.owner]).toEqual([
+      "generated-scaffold",
+      expect.objectContaining({ id: "local.module-stubs" }),
+    ]);
     const plan = JSON.parse(text(bundle, "infra/local.json"));
     expect([plan.resources, plan.databases, plan.broker, plan.providers]).toEqual([[], [], [], []]);
     // Each stub is required custom work.
@@ -206,6 +250,7 @@ describe("module stubs", () => {
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-limit.slots.ts",
         "src/modules/shorten/shorten-limit.ts",
+        "src/runtime/settings.ts",
       ],
     });
     expect(modules?.find((item) => item.module === "shorten-cache")?.reason).toBe(

@@ -1,4 +1,5 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { request as httpRequest } from "node:http";
 import { createRequire, stripTypeScriptTypes } from "node:module";
 import { tmpdir } from "node:os";
@@ -1322,5 +1323,248 @@ describe("route stubs get a deadline signal and a route table (QL02)", () => {
     client.destroy();
     expect(await abort).toEqual(new Error("CLIENT_CLOSED"));
     await http.close();
+  });
+});
+
+// The emitted settings.ts a stub declares its settings with (QL05, owner decision D6), loaded as
+// the stub stack exports it; its only import is node:fs. File settings come from a scratch
+// SECRET_DIR.
+const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+const settingsRuntime = await import(
+  dataUrl(stripTypeScriptTypes(text(stack, "src/runtime/settings.ts")))
+);
+
+describe("stubs declare their settings and startup refuses an invalid one (QL05)", () => {
+  const {
+    declareSettings,
+    readSettings,
+    text: textKind,
+    integer,
+    url,
+    secret,
+    keyRing,
+    optional,
+  } = settingsRuntime;
+  const secrets = mkdtempSync(join(tmpdir(), "jeeves-settings-"));
+  const names = [
+    "SECRET_DIR",
+    "PROBE_GREETING",
+    "PROBE_COUNT",
+    "PROBE_ORIGIN",
+    "JEEVES_SECRET_PROBE_TOKEN_FILE",
+  ] as const;
+  const saved = Object.fromEntries(names.map((name) => [name, process.env[name]]));
+  const set = (values: Partial<Record<(typeof names)[number], string | undefined>>) => {
+    for (const [name, value] of Object.entries(values))
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+  };
+  afterEach(() => {
+    for (const name of names)
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    rmSync(secrets, { recursive: true, force: true });
+    mkdirSync(secrets);
+  });
+  afterAll(() => rmSync(secrets, { recursive: true, force: true }));
+  /** Reads one setting `NAME` of `kind` with `value` (undefined: unset); its error's message. */
+  const read = (name: string, kind: unknown, value?: string) => {
+    const file = name === "PROBE_TOKEN" || name === "PROBE_RING";
+    const path = join(secrets, name.toLowerCase().replaceAll("_", "-"));
+    set({ SECRET_DIR: secrets });
+    if (file) {
+      if (value === undefined) rmSync(path, { force: true });
+      else writeFileSync(path, value);
+    } else if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+    try {
+      return {
+        value: readSettings("probe", declareSettings({ [name]: kind }))[name],
+      };
+    } catch (error) {
+      return { error: (error as Error).message };
+    } finally {
+      if (!file) delete process.env[name];
+    }
+  };
+  const key = (bytes: number) => Buffer.alloc(bytes, 7).toString("base64url");
+
+  it("accepts each kind's value and refuses another, naming the setting and never the value", () => {
+    const refused = (name: string, kind: unknown, values: (string | undefined)[]) => {
+      for (const value of values) {
+        const result = read(name, kind, value);
+        expect(result, String(value)).toEqual({
+          error: `Invalid setting ${name}`,
+        });
+        if (value?.trim()) expect(result.error).not.toContain(value.trim());
+      }
+    };
+    expect(read("PROBE_GREETING", textKind(), "hello there")).toEqual({
+      value: "hello there",
+    });
+    expect(read("PROBE_GREETING", textKind({ max: 3 }), "héé")).toEqual({
+      value: "héé",
+    });
+    refused("PROBE_GREETING", textKind({ max: 3 }), [undefined, "", "hello"]);
+    expect(read("PROBE_COUNT", integer({ min: -5, max: 10 }), "-5")).toEqual({
+      value: -5,
+    });
+    expect(read("PROBE_COUNT", integer(), "0")).toEqual({ value: 0 });
+    refused("PROBE_COUNT", integer({ min: 1, max: 10 }), [
+      "11",
+      "0",
+      "07",
+      "+3",
+      "1e1",
+      "2.5",
+      " 3",
+      "9007199254740993",
+    ]);
+    expect(read("PROBE_ORIGIN", url(), "https://short.example/r?x=1")).toEqual({
+      value: new URL("https://short.example/r?x=1"),
+    });
+    refused("PROBE_ORIGIN", url({ protocols: ["https:"] }), [
+      "http://short.example",
+      "https://user:pass@short.example",
+      "https://short.example/\n",
+      "/relative",
+      "ftp://short.example",
+    ]);
+    refused("PROBE_ORIGIN", url(), ["https://ad%6Din@short.example"]);
+    // A secret's file, with one trailing newline removed; missing, empty or a directory is refused.
+    expect(read("PROBE_TOKEN", secret(), "s3cr3t-value\n")).toEqual({
+      value: new Uint8Array(Buffer.from("s3cr3t-value")),
+    });
+    expect(read("PROBE_TOKEN", secret(), "two\r\n\n")).toEqual({
+      value: new Uint8Array(Buffer.from("two\r\n")),
+    });
+    refused("PROBE_TOKEN", secret(), [undefined, "", "\n"]);
+    // A file that is there but can't be read is refused, even for an optional setting.
+    rmSync(join(secrets, "probe-token"));
+    mkdirSync(join(secrets, "probe-token"));
+    expect(() =>
+      readSettings("probe", declareSettings({ PROBE_TOKEN: optional(secret()) })),
+    ).toThrow(new Error("Invalid setting PROBE_TOKEN"));
+    rmSync(join(secrets, "probe-token"), { recursive: true });
+    // A key ring: 1–8 unique IDs, each key at least 32 bytes of unpadded base64url.
+    const ring = read(
+      "PROBE_RING",
+      keyRing(),
+      JSON.stringify([
+        { id: "k2", key: key(32) },
+        { id: "k1", key: key(48) },
+      ]),
+    ).value as {
+      current: { id: string; key: Buffer };
+      entries: { id: string; key: Buffer }[];
+    };
+    expect(ring.current.id).toBe("k2");
+    expect(ring.current.key).toEqual(Buffer.alloc(32, 7));
+    expect(ring.entries.map((entry) => [entry.id, entry.key.length])).toEqual([
+      ["k2", 32],
+      ["k1", 48],
+    ]);
+    expect(Object.isFrozen(ring) && Object.isFrozen(ring.entries)).toBe(true);
+    refused("PROBE_RING", keyRing(), [
+      JSON.stringify([{ id: "k1", key: key(31) }]),
+      JSON.stringify([]),
+      JSON.stringify(Array.from({ length: 9 }, (_, n) => ({ id: `k${n}`, key: key(32) }))),
+      JSON.stringify([
+        { id: "k1", key: key(32) },
+        { id: "k1", key: key(33) },
+      ]),
+      JSON.stringify([{ id: "k 1", key: key(32) }]),
+      JSON.stringify([{ id: "x".repeat(33), key: key(32) }]),
+      JSON.stringify([{ id: "k1", key: `${key(32)}=` }]),
+      JSON.stringify({ id: "k1", key: key(32) }),
+      `[{"id":"k1","key":"${key(32)}"`,
+    ]);
+  });
+
+  it("returns undefined for a missing optional setting and freezes the result", () => {
+    set({ SECRET_DIR: secrets, PROBE_GREETING: "", PROBE_COUNT: undefined });
+    const declaration = declareSettings({
+      PROBE_GREETING: optional(textKind()),
+      PROBE_COUNT: optional(integer()),
+      PROBE_TOKEN: optional(secret()),
+    });
+    const values = readSettings("probe", declaration);
+    expect(values).toEqual({
+      PROBE_GREETING: undefined,
+      PROBE_COUNT: undefined,
+      PROBE_TOKEN: undefined,
+    });
+    expect(Object.keys(values)).toEqual(["PROBE_GREETING", "PROBE_COUNT", "PROBE_TOKEN"]);
+    expect(Object.isFrozen(values)).toBe(true);
+    // An optional one that is set must still be valid.
+    set({ PROBE_COUNT: "many" });
+    expect(() => readSettings("probe", declaration)).toThrow(
+      new Error("Invalid setting PROBE_COUNT"),
+    );
+    // Read in declaration order: the first missing one is named.
+    set({ PROBE_GREETING: undefined, PROBE_COUNT: undefined });
+    expect(() =>
+      readSettings("probe", declareSettings({ PROBE_GREETING: textKind(), PROBE_TOKEN: secret() })),
+    ).toThrow(new Error("Invalid setting PROBE_GREETING"));
+    expect(readSettings("probe", declareSettings({}))).toEqual({});
+  });
+
+  it("reads a file setting from JEEVES_SECRET_<NAME>_FILE when it is set, as a credential is", () => {
+    const value = randomUUID();
+    const elsewhere = join(secrets, "mounted", "token");
+    mkdirSync(join(secrets, "mounted"));
+    writeFileSync(elsewhere, `${value}\n`);
+    writeFileSync(join(secrets, "probe-token"), "from-secret-dir");
+    set({ SECRET_DIR: secrets, JEEVES_SECRET_PROBE_TOKEN_FILE: elsewhere });
+    const declaration = declareSettings({ PROBE_TOKEN: optional(secret()) });
+    expect(Buffer.from(readSettings("probe", declaration).PROBE_TOKEN).toString()).toBe(value);
+    // Named, a missing file is refused even for an optional setting; so is a relative path.
+    for (const path of [join(secrets, "missing"), "relative/token", `${elsewhere}\n`]) {
+      set({ JEEVES_SECRET_PROBE_TOKEN_FILE: path });
+      expect(() => readSettings("probe", declaration)).toThrow(
+        new Error("Invalid setting PROBE_TOKEN"),
+      );
+    }
+  });
+
+  it("refuses a reserved name at declaration, and a declaration declareSettings didn't make", () => {
+    for (const name of [
+      "JEEVES_TILE_FRONT_URL",
+      "OIDC_ISSUER",
+      "PGHOST",
+      "SECRET_DIR",
+      "PORT",
+      "lower",
+      "1ST",
+      "WITH-DASH",
+      `A${"B".repeat(64)}`,
+      "",
+    ])
+      expect(() => declareSettings({ [name]: textKind() }), name).toThrow(
+        new Error(`Reserved setting name ${name}`),
+      );
+    expect(
+      Object.keys(
+        declareSettings({
+          [`A${"B".repeat(63)}`]: textKind(),
+          PORTS: textKind(),
+        }),
+      ),
+    ).toHaveLength(2);
+    expect(() => readSettings("front-probe", { PROBE_GREETING: textKind() })).toThrow(
+      new Error("Invalid settings declaration front-probe"),
+    );
+    expect(Object.isFrozen(declareSettings({ PROBE_GREETING: textKind() }))).toBe(true);
+  });
+
+  it("has every process read its stubs' settings in the pass, before databaseClient", () => {
+    for (const tile of ["links-api", "visit-worker"]) {
+      const source = text(stack, `src/processes/${tile}.ts`);
+      const pass = source.indexOf("checkConfiguration([");
+      const first = source.indexOf("  () => readSettings(");
+      expect(source.indexOf("const declared = {"), tile).toBeLessThan(pass);
+      expect(first, tile).toBeGreaterThan(pass);
+      expect(first, tile).toBeLessThan(source.indexOf("await databaseClient("));
+    }
   });
 });

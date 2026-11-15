@@ -698,6 +698,12 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
         'import type { ModuleRequest, ModuleResponse } from "../entry.ts";',
         'import type { Dependencies } from "./redirector.slots.ts";',
+        'import { declareSettings } from "../../runtime/settings.ts";',
+        "",
+        "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+        " * optional(kind) for an optional one. Values come from the process environment, secrets from",
+        " * SECRET_DIR files. */",
+        "export const settings = declareSettings({});",
         "",
         "/** Answers any method on /modules/redirector and every path below it. */",
         "export async function redirector(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {",
@@ -712,6 +718,6 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(text(stack, "src/modules/entry.ts")).toContain("export type ModuleRequest = {");
     expect(stackOff.files.map((file) => file.path)).not.toContain("src/modules/entry.ts");
     // A stub-only stack off has the same files as the stub stack alone.
-    expect(assemble(stubStackDesign()).files.length).toBe(53);
+    expect(assemble(stubStackDesign()).files.length).toBe(54);
   });
 });

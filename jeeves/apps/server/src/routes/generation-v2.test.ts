@@ -238,18 +238,21 @@ it("lists each module's status in the preview and exports a stub-only design", a
         unconnected: ["store"],
       },
     ]);
-    // The report adds each module's files; the stubs are installed, so nothing is missing.
+    // The report adds each module's files (with the settings library they declare theirs with,
+    // QL05); the stubs are installed, so nothing is missing.
     expect(data.report.findings).toEqual([]);
     expect(data.report.modules.map((row: { files: string[] }) => row.files)).toEqual([
       [
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-links.slots.ts",
         "src/modules/shorten/shorten-links.ts",
+        "src/runtime/settings.ts",
       ],
       [
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-limit.slots.ts",
         "src/modules/shorten/shorten-limit.ts",
+        "src/runtime/settings.ts",
       ],
     ]);
     expect(await service.getDesign(project.id)).toEqual(current);

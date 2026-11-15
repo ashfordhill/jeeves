@@ -108,13 +108,15 @@ describe("module-authored v2 and its tile-level twin", () => {
   it("emit the same template payload, apart from the two stubs, v2's declared fixed values and the sign-in row", () => {
     const a = payload(tiles);
     const b = payload(modules);
-    // Only the two stubs (View count reader, View publisher) add files.
+    // Only the two stubs (View count reader, View publisher) add files, and the settings they
+    // declare (QL05).
     expect([...b.keys()].filter((path) => !a.has(path))).toEqual([
       "src/modules/dependencies.ts",
       "src/modules/watch/watch-counts.slots.ts",
       "src/modules/watch/watch-counts.ts",
       "src/modules/watch/watch-views.slots.ts",
       "src/modules/watch/watch-views.ts",
+      "src/runtime/settings.ts",
     ]);
     expect([...a.keys()].filter((path) => !b.has(path))).toEqual([]);
     const bindingsFile = "src/features/application-bindings.ts";
@@ -193,6 +195,7 @@ describe("module-authored v2 and its tile-level twin", () => {
       "src/modules/dependencies.ts",
       "src/modules/watch/watch-counts.slots.ts",
       "src/modules/watch/watch-counts.ts",
+      "src/runtime/settings.ts",
     ]);
     expect(tiles.report.modules).toBeUndefined();
   });

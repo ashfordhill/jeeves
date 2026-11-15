@@ -48,6 +48,9 @@ export type V2ProcessReport = {
    * stores', broker's and called tiles' endpoints (`JEEVES_*`), a sign-in's `OIDC_*`, and what a
    * template reads (`OBJECT_PUBLIC_ENDPOINT`). */
   environment: readonly string[];
+  /** Each stub whose file's `settings` export the process reads in its configuration pass (QL05),
+   * when it has stubs: the names are the application's code, so `environment` doesn't list them. */
+  stubSettings?: readonly { module: string; file: string }[];
   settings: readonly {
     setting: string;
     value: number;

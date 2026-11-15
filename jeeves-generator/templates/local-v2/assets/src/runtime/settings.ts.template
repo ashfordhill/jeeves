@@ -1,0 +1,184 @@
+// Generated scaffold: the settings a module stub declares it reads (QL05). A stub's file exports
+// `settings = declareSettings({ NAME: kind, ... })`, and its process reads that declaration in its
+// configuration pass, before any client is built or probed (`readSettings`), then hands the values
+// to the stub as `dependencies.settings`. A missing or invalid setting fails startup with
+// `Invalid setting <NAME>`, never its value. Export rewrites this file.
+import { readFileSync } from "node:fs";
+
+/** text, integer and url read the process environment; secret and keyRing read a file. */
+export type SettingKind = "text" | "integer" | "url" | "secret" | "keyRing";
+/** One declared setting: its kind, whether it may be missing, and the value it gives. */
+export type Setting<Value = unknown> = {
+  readonly kind: SettingKind;
+  readonly optional: boolean;
+  /** The value of a present setting (a string, or a file's bytes); throws when it is invalid. */
+  readonly parse: (raw: string | Buffer) => Value;
+};
+/** A module's declaration: each setting's name and kind, made by `declareSettings`. */
+export type SettingsDeclaration = { readonly [name: string]: Setting };
+/** One key of a ring: its ID and at least 32 bytes. */
+export type RingKey = { readonly id: string; readonly key: Buffer };
+/** A key ring: `current` (the first entry) signs or seals; every entry verifies or opens. */
+export type KeyRing = { readonly current: RingKey; readonly entries: readonly RingKey[] };
+type Values<Declaration> = {
+  readonly [Name in keyof Declaration]: Declaration[Name] extends Setting<infer Value>
+    ? Value
+    : never;
+};
+/** The values a declaration gives, from `typeof declaration` or from a stub's module type,
+ * `typeof import("./<module>.ts")`, whose `settings` export it reads (none when it has none). */
+export type SettingsOf<T> = T extends { readonly settings: infer Declaration extends SettingsDeclaration }
+  ? Values<Declaration>
+  : T extends SettingsDeclaration
+    ? Values<T>
+    : Record<never, never>;
+
+/** Thrown inside a kind's `parse`; `readSettings` replaces it, so no value reaches a message. */
+const invalid = (): never => {
+  throw new Error("Invalid value");
+};
+const setting = <Value>(
+  kind: SettingKind,
+  parse: (raw: string | Buffer) => Value,
+): Setting<Value> => Object.freeze({ kind, optional: false, parse });
+
+/** Text from the environment, at most `max` characters (code points). */
+export function text(options: { max?: number } = {}): Setting<string> {
+  return setting("text", (raw) => {
+    const value = String(raw);
+    if (options.max !== undefined && [...value].length > options.max) invalid();
+    return value;
+  });
+}
+/** A whole number from the environment (`-12`, `0`, `42`; no sign, leading zero or exponent
+ * otherwise), a safe integer within `min` and `max`. */
+export function integer(options: { min?: number; max?: number } = {}): Setting<number> {
+  return setting("integer", (raw) => {
+    const value = String(raw);
+    if (!/^(0|-?[1-9][0-9]*)$/.test(value)) invalid();
+    const number = Number(value);
+    if (!Number.isSafeInteger(number)) invalid();
+    if (options.min !== undefined && number < options.min) invalid();
+    if (options.max !== undefined && number > options.max) invalid();
+    return number;
+  });
+}
+/** An absolute URL from the environment with one of `protocols` (both by default), no
+ * credentials and no whitespace or control character (which URL parsing would trim). */
+export function url(
+  options: { protocols?: readonly ("http:" | "https:")[] } = {},
+): Setting<URL> {
+  const protocols: readonly string[] = options.protocols ?? ["http:", "https:"];
+  return setting("url", (raw) => {
+    const value = String(raw);
+    if (/[\s\p{Cc}]/u.test(value) || !URL.canParse(value)) invalid();
+    const parsed = new URL(value);
+    if (!protocols.includes(parsed.protocol) || parsed.username || parsed.password) invalid();
+    return parsed;
+  });
+}
+/** A secret's bytes from its file. */
+export function secret(): Setting<Uint8Array> {
+  return setting("secret", (raw) => new Uint8Array(raw as Buffer));
+}
+/** A key ring from its file: a JSON array of 1–8 `{ "id", "key" }`, each `id` 1–32 of
+ * `[A-Za-z0-9_-]` and unique, each `key` base64url (no padding) of at least 32 bytes. */
+export function keyRing(): Setting<KeyRing> {
+  return setting("keyRing", (raw) => {
+    let list: unknown;
+    try {
+      list = JSON.parse((raw as Buffer).toString("utf8"));
+    } catch {
+      return invalid();
+    }
+    if (!Array.isArray(list) || list.length < 1 || list.length > 8) invalid();
+    const ids = new Set<string>();
+    const entries = (list as unknown[]).map((item) => {
+      const { id, key } = (item ?? {}) as { id?: unknown; key?: unknown };
+      if (typeof id !== "string" || !/^[A-Za-z0-9_-]{1,32}$/.test(id) || ids.has(id)) invalid();
+      if (typeof key !== "string" || !/^[A-Za-z0-9_-]+$/.test(key)) invalid();
+      const bytes = Buffer.from(key as string, "base64url");
+      if (bytes.length < 32 || bytes.toString("base64url") !== key) invalid();
+      ids.add(id as string);
+      return Object.freeze({ id: id as string, key: bytes });
+    });
+    const [current] = entries;
+    if (!current) return invalid();
+    return Object.freeze({ current, entries: Object.freeze(entries) });
+  });
+}
+/** Any kind that may be missing: then its value is `undefined`. */
+export function optional<Value>(kind: Setting<Value>): Setting<Value | undefined> {
+  return Object.freeze({ ...kind, optional: true });
+}
+
+const declarations = new WeakSet<object>();
+/** Names the generated code reads itself, or doesn't fit the rule. */
+const reserved = (name: string) =>
+  !/^[A-Z][A-Z0-9_]{0,63}$/.test(name) ||
+  /^(JEEVES_|OIDC_|PG)/.test(name) ||
+  name === "SECRET_DIR" ||
+  name === "PORT";
+
+/** A module's settings by name (`^[A-Z][A-Z0-9_]{0,63}$`, not `JEEVES_*`, `OIDC_*`, `PG*`,
+ * `SECRET_DIR` or `PORT`; another throws `Reserved setting name <NAME>`), read in this order. */
+export function declareSettings<const Declaration extends SettingsDeclaration>(
+  declaration: Declaration,
+): Declaration {
+  for (const name of Object.keys(declaration))
+    if (reserved(name)) throw new Error(`Reserved setting name ${name}`);
+  const frozen = Object.freeze({ ...declaration });
+  declarations.add(frozen);
+  return frozen;
+}
+
+const fromFile = (kind: SettingKind) => kind === "secret" || kind === "keyRing";
+/** A file setting's bytes: the file `JEEVES_SECRET_<NAME>_FILE` names when that is set (an
+ * absolute path, as for a credential), else `SECRET_DIR/<name>` (`/run/secrets/<name>`), `<name>`
+ * lower-cased with `_` as `-`; one trailing newline removed. Undefined when it is missing. */
+function readFile(name: string): Buffer | undefined {
+  const named = process.env[`JEEVES_SECRET_${name}_FILE`];
+  if (named !== undefined && (!named.startsWith("/") || /\p{Cc}/u.test(named)))
+    throw new Error("Invalid file");
+  let bytes: Buffer;
+  try {
+    bytes = readFileSync(
+      named ??
+        `${process.env.SECRET_DIR ?? "/run/secrets"}/${name.toLowerCase().replaceAll("_", "-")}`,
+    );
+  } catch (error) {
+    if (named === undefined && (error as { code?: unknown } | null)?.code === "ENOENT")
+      return undefined;
+    throw new Error("Unreadable file");
+  }
+  const end = bytes.at(-1) === 0x0a ? (bytes.at(-2) === 0x0d ? 2 : 1) : 0;
+  const value = bytes.subarray(0, bytes.length - end);
+  return value.length ? value : undefined;
+}
+
+/**
+ * Reads `module`'s declared settings, in declaration order: text, integer and url from
+ * `process.env[NAME]`, secret and keyRing from their file. Missing (unset, empty or no file) when
+ * not optional, or invalid for its kind, throws `Invalid setting <NAME>`; the value is never in a
+ * message or a log line. A declaration not made by `declareSettings` throws
+ * `Invalid settings declaration <module>`. The result is frozen.
+ */
+export function readSettings<const Declaration extends SettingsDeclaration>(
+  module: string,
+  declaration: Declaration,
+): SettingsOf<Declaration> {
+  if (!declarations.has(declaration)) throw new Error(`Invalid settings declaration ${module}`);
+  const values: Record<string, unknown> = {};
+  for (const [name, kind] of Object.entries(declaration)) {
+    let valid = true;
+    try {
+      const raw = fromFile(kind.kind) ? readFile(name) : process.env[name] || undefined;
+      valid = raw !== undefined || kind.optional;
+      values[name] = raw === undefined ? undefined : kind.parse(raw);
+    } catch {
+      valid = false;
+    }
+    if (!valid) throw new Error(`Invalid setting ${name}`);
+  }
+  return Object.freeze(values) as SettingsOf<Declaration>;
+}

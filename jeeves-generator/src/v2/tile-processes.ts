@@ -4,6 +4,7 @@ import {
   type ClientSection,
   externalVariable,
   stubClients,
+  stubSettingsRows,
   stubStoreRows,
   stubTargetRows,
 } from "./client-wiring.ts";
@@ -264,6 +265,7 @@ function reportRow(
   views: Parameters<typeof stubStoreRows>[2],
 ): V2ProcessReport {
   const http = process.shape === "http";
+  const stubSettings = stubSettingsRows(process, selections);
   return {
     tile: process.tile,
     name: process.name,
@@ -274,6 +276,7 @@ function reportRow(
     ...(http && process.exposure === "public" && { edge: `/api/${process.tile}/` }),
     entry: processPaths(process.tile).entry,
     environment: environmentOf(serviceOf(process, mounts)),
+    ...(stubSettings.length && { stubSettings }),
     settings: settings(process),
     routes: http
       ? [

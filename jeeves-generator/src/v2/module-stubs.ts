@@ -18,6 +18,8 @@ type Connection = Slot["connections"][number];
 type Path = readonly (string | number)[];
 
 const dependenciesPath = "src/modules/dependencies.ts";
+/** What a stub declares it reads, and how its process reads it (QL05, owner decision D6). */
+const settingsPath = "src/runtime/settings.ts";
 const pointer = (path: Path) => `/${path.map((part) => pointerPart(String(part))).join("/")}`;
 
 /** A stub module's two files: its scaffold and its extension (module authoring contract, §6). */
@@ -82,6 +84,14 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
           path: dependenciesPath,
           content: asset(
             "jeeves-generator/templates/local-v2/assets/src/modules/dependencies.ts.template",
+          ),
+          ownership: "generated-scaffold",
+          sourcePaths: selections.map((s) => pointer(s.sourcePath)),
+        },
+        {
+          path: settingsPath,
+          content: asset(
+            "jeeves-generator/templates/local-v2/assets/src/runtime/settings.ts.template",
           ),
           ownership: "generated-scaffold",
           sourcePaths: selections.map((s) => pointer(s.sourcePath)),
@@ -177,11 +187,12 @@ export function moduleEntryName(module: string) {
 
 /**
  * Each connected slot's property in a stub's `Dependencies`, in slot order: named after the tile
- * or module it uses (then its slot, then a number), typed by the link's use. A loop stub's
- * consumed queue is its input, not a dependency (tile process contract, section 4).
+ * or module it uses (then its slot, then a number), typed by the link's use; never `settings`,
+ * the module's own settings (QL05). A loop stub's consumed queue is its input, not a dependency
+ * (tile process contract, section 4).
  */
 export function stubProperties(module: NormalizedStubModule, loop: boolean) {
-  const used = new Set<string>();
+  const used = new Set<string>(["settings"]);
   return module.slots.flatMap((slot) =>
     slot.connections.map((connection) => {
       const target = connection.target;
@@ -276,11 +287,14 @@ function stubFiles(
   const scaffold = [
     `// Generated scaffold: ${named} in ${line(module.hostName)}.`,
     `// Export rewrites this file; write the module in ${file(paths.module)}.`,
+    'import type { SettingsOf } from "../../runtime/settings.ts";',
     ...(imports.length ? [`import type { ${imports.join(", ")} } from "../dependencies.ts";`] : []),
     "",
-    "/** What the module uses: one property per connected slot. */",
+    "/** What the module uses: one property per connected slot, and its own settings. */",
     `export type Dependencies = {`,
     ...members,
+    `  // settings: the values ${file(paths.module)}'s \`settings\` export declares.`,
+    `  settings: SettingsOf<typeof import(${JSON.stringify(`./${file(paths.module)}`)})>;`,
     "};",
     "",
     "/** Each connected slot: the tile or module it uses, through which link, and how. */",
@@ -296,6 +310,12 @@ function stubFiles(
     ...(route ? ['import type { ModuleRequest, ModuleResponse } from "../entry.ts";'] : []),
     ...(loop ? ['import type { ModuleMessage } from "../entry.ts";'] : []),
     `import type { Dependencies } from "./${file(paths.slots)}";`,
+    'import { declareSettings } from "../../runtime/settings.ts";',
+    "",
+    "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+    " * optional(kind) for an optional one. Values come from the process environment, secrets from",
+    " * SECRET_DIR files. */",
+    "export const settings = declareSettings({});",
     "",
     ...(route
       ? [

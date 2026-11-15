@@ -31,6 +31,7 @@ import { type V2ProcessReport, v2Compare } from "./registry.ts";
 const clients = "../runtime/module-clients.ts";
 const guardPath = "../runtime/tile-guard.ts";
 const localPath = "../runtime/local.ts";
+const settingsPath = "../runtime/settings.ts";
 const entryTypes = "../modules/entry.ts";
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
  * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
@@ -208,14 +209,25 @@ export function stubClients(
   const from = (path: string) => `../${path.slice("src/".length)}`;
   const assignments: string[] = [];
   const types: string[] = [];
+  // Each stub's own settings (QL05): its file's `settings` export, read through a cast so a stub
+  // file without one (an older body) builds and runs with none.
+  const declarations: string[] = [];
+  const settingReads: string[] = [];
   for (const { stub, module } of stubs) {
     const id = generationLocalIdentity(module.component).local;
     const alias = `${pascal(id)}Dependencies`;
+    const files = moduleStubPaths(process.tile, module.component);
     imports.push({
-      from: from(moduleStubPaths(process.tile, module.component).slots),
+      from: from(files.slots),
       name: `Dependencies as ${alias}`,
       type: true,
     });
+    imports.push({ from: from(files.module), name: `${pascal(id)}Module`, namespace: true });
+    declarations.push(
+      `  ${text(id)}: (${pascal(id)}Module as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),`,
+    );
+    const read = `readSettings(${text(id)}, declared[${text(id)}])`;
+    settingReads.push(read);
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
     const unavailable = (property: string, what: string, why: string) => {
@@ -285,13 +297,12 @@ export function stubClients(
           : `${/^[AEIOU]/.test(named) ? "an" : "a"} ${named} isn't provisioned locally`;
       return [property, unavailable(property, target.name, why)];
     });
+    values.push(["settings", `${read} as ${alias}["settings"]`]);
     assignments.push(
       ...(stub.role === "library"
         ? [`// ${line(module.name)} (library): called only through another module's link.`]
         : []),
-      values.length
-        ? `dependencies[${text(id)}] = {\n${values.map(([property, value]) => `  ${property}: ${value},`).join("\n")}\n};`
-        : `dependencies[${text(id)}] = {};`,
+      `dependencies[${text(id)}] = {\n${values.map(([property, value]) => `  ${property}: ${value},`).join("\n")}\n};`,
     );
   }
   // Every provisioned store gets its client and probe, even one only a library stub uses.
@@ -347,7 +358,13 @@ export function stubClients(
     checks.set(`readSecret(${text(secret)})`, { name: "readSecret", from: localPath });
   if (tileGuard(process, selections))
     checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
-  if (checks.size) imports.push({ from: clients, name: "checkConfiguration" });
+  // Last, each stub's declared settings (QL05), in the order its dependencies are built.
+  for (const read of settingReads) checks.set(read, { name: "readSettings", from: settingsPath });
+  imports.push(
+    { from: settingsPath, name: "declareSettings" },
+    { from: settingsPath, name: "SettingsDeclaration", type: true },
+    { from: clients, name: "checkConfiguration" },
+  );
   for (const check of checks.values()) imports.push(check);
   // A queue's publisher reports a lost and a returned broker through the failure log.
   if (list.some((client) => client.section === "queue"))
@@ -363,15 +380,16 @@ export function stubClients(
     mount: {
       imports,
       setup: [
-        ...(checks.size
-          ? [
-              "// Configuration: every variable these clients and the tile's sign-in read, checked before any",
-              "// client is built or probed; one wrong setting fails startup naming it, several are named together.",
-              "checkConfiguration([",
-              ...[...checks.keys()].map((call) => `  () => ${call},`),
-              "]);",
-            ]
-          : []),
+        "// Each stub's own settings: what its file's `settings` export declares (none without one).",
+        "const declared = {",
+        ...declarations,
+        "};",
+        "// Configuration: every variable these clients, the tile's sign-in and its stubs' settings read,",
+        "// checked before any client is built or probed; one wrong setting fails startup naming it,",
+        "// several are named together (a stub's first).",
+        "checkConfiguration([",
+        ...[...checks.keys()].map((call) => `  () => ${call},`),
+        "]);",
         ...(list.length
           ? [
               "// Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
@@ -533,6 +551,25 @@ export function stubTargetRows(
           ? `HTTP client at ${externalVariable(row.store)}, which the application sets (compose.yaml doesn't, so startup fails until it is set); a failed call keeps the normal retries`
           : `HTTP client at ${identityVariable(generationLocalIdentity(row.store).local)}, the Identity's base URL as the process reaches it (locally Keycloak identity-${generationLocalIdentity(row.store).local} inside the network, realm ${generationLocalIdentity(row.store).local}); a failed call waits as an unreachable store's does`,
     }));
+}
+
+/** The report's `stubSettings` rows (QL05): each stub whose file's `settings` export the process
+ * reads, in the order its dependencies are built. */
+export function stubSettingsRows(
+  process: NormalizedProcess,
+  selections: readonly NormalizedGenerationSelection[],
+): NonNullable<V2ProcessReport["stubSettings"]> {
+  return process.stubs.flatMap((stub) => {
+    const module = selections.find((item) => item.id === stub.selection)?.module;
+    return module
+      ? [
+          {
+            module: module.component,
+            file: moduleStubPaths(process.tile, module.component).module,
+          },
+        ]
+      : [];
+  });
 }
 
 /** The report's `stores` rows for a process: each store or channel its stubs use, what is

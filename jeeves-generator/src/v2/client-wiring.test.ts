@@ -405,7 +405,10 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       '    linkReader: (input) => linkReader(dependencies["link-reader"], input as ModuleRequest),',
     );
     expect(links).toContain('    statsApi: clients["stats-api"],');
-    expect(links).toContain('  dependencies["redirector"] = {};');
+    // A stub with no connected slot still gets its own settings (QL05).
+    expect(links).toContain(
+      '  dependencies["redirector"] = {\n    settings: readSettings("redirector", declared["redirector"]) as RedirectorDependencies["settings"],\n  };',
+    );
     // Clients are built and probed before the loops subscribe and the service listens.
     expect(links.indexOf("const clients = {")).toBeLessThan(links.indexOf("startModuleLoop("));
     expect(links).not.toContain("unprovisioned");
@@ -715,8 +718,9 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     const front = text(probe, "src/processes/front.ts");
     expect(front).toContain(
       [
-        "  // Configuration: every variable these clients and the tile's sign-in read, checked before any",
-        "  // client is built or probed; one wrong setting fails startup naming it, several are named together.",
+        "  // Configuration: every variable these clients, the tile's sign-in and its stubs' settings read,",
+        "  // checked before any client is built or probed; one wrong setting fails startup naming it,",
+        "  // several are named together (a stub's first).",
         "  checkConfiguration([",
         "    () => brokerBinding(),",
         '    () => cacheClientEndpoint("hot"),',
@@ -727,6 +731,9 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    () => readSecret("cache-hot"),',
         '    () => readSecret("sql-store--front"),',
         "    () => signInSettings(),",
+        // Then each stub's declared settings (QL05).
+        '    () => readSettings("front-probe", declared["front-probe"]),',
+        '    () => readSettings("front-internal-grant", declared["front-internal-grant"]),',
         "  ]);",
         "  // Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
         "  // use, each probed once before the process is ready; a failed probe fails startup, except",
@@ -757,6 +764,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         "    () => brokerBinding(),",
         '    () => readSecret("broker-password"),',
         '    () => readSecret("sql-tally-db--tally"),',
+        '    () => readSettings("tally-count", declared["tally-count"]),',
         "  ]);",
         "  // Module clients",
       ].join("\n"),
@@ -786,6 +794,61 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         expect(read.length, path).toBeGreaterThan(0);
       }
     }
+  });
+
+  it("reads each stub's declared settings last in the pass and gives them to its dependencies (QL05)", () => {
+    const front = text(probe, "src/processes/front.ts");
+    // Each stub's file is imported whole, so one without a `settings` export still builds.
+    for (const line of [
+      'import * as FrontProbeModule from "../modules/front/front-probe.ts";',
+      'import * as FrontInternalGrantModule from "../modules/front/front-internal-grant.ts";',
+      'import { type SettingsDeclaration, declareSettings, readSettings } from "../runtime/settings.ts";',
+    ])
+      expect(front).toContain(`\n${line}\n`);
+    expect(front.indexOf("import * as FrontProbeModule")).toBeLessThan(
+      front.indexOf("import { frontProbe }"),
+    );
+    expect(front).toContain(
+      [
+        "  // Each stub's own settings: what its file's `settings` export declares (none without one).",
+        "  const declared = {",
+        '    "front-probe": (FrontProbeModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),',
+        '    "front-internal-grant": (FrontInternalGrantModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),',
+        "  };",
+        "  // Configuration:",
+      ].join("\n"),
+    );
+    // Read in the pass, before any client is built or probed, then again for the dependencies.
+    const pass = front.indexOf('    () => readSettings("front-probe", declared["front-probe"]),');
+    expect(pass).toBeGreaterThan(front.indexOf("    () => signInSettings(),"));
+    for (const later of ["await queuePublisher(", "await databaseClient(", "createTileGuard({"])
+      expect(pass, later).toBeLessThan(front.indexOf(later));
+    expect(front).toContain(
+      '    identity: clients["identity"],\n    settings: readSettings("front-probe", declared["front-probe"]) as FrontProbeDependencies["settings"],\n  };',
+    );
+    expect(front.match(/readSettings\(/g)).toHaveLength(4);
+    // The report names each stub file a process reads settings from; Compose sets none of them.
+    const rows = (probe.report as unknown as Report).processes.tiles as unknown as {
+      tile: string;
+      stubSettings?: unknown;
+    }[];
+    expect(rows.map((row) => [row.tile, row.stubSettings])).toEqual([
+      [
+        "front",
+        [
+          { module: "front-probe", file: "src/modules/front/front-probe.ts" },
+          {
+            module: "front-internal-grant",
+            file: "src/modules/front/front-internal-grant.ts",
+          },
+        ],
+      ],
+      ["tally", [{ module: "tally-count", file: "src/modules/tally/tally-count.ts" }]],
+    ]);
+    expect(text(probe, "compose.yaml")).not.toContain("PROBE_");
+    expect(text(probe, "README.md")).toContain(
+      "its process reads them in its configuration pass, before any client is built or probed, and gives them to the stub as `dependencies.settings`: a missing or invalid one fails startup with `Invalid setting <NAME>`, never its value. `compose.yaml` sets none of them:",
+    );
   });
 
   it("sets the Identity's address inside the network for a stub tile that calls it, and no External API URL in Compose", () => {
@@ -925,14 +988,26 @@ describe("a process whose stub calls an External API (QG20)", () => {
   const sources = new Map(
     bundle.files.map((file) => [file.path, new TextDecoder().decode(file.bytes)]),
   );
+  // Caller declares one optional setting (QL05).
   sources.set(
     "src/modules/api/caller.ts",
     [
+      'import { declareSettings, integer, optional } from "../../runtime/settings.ts";',
+      "export const settings = declareSettings({ CALLER_LIMIT: optional(integer({ min: 1, max: 100 })) });",
       "export async function caller(dependencies, request) {",
       '  const response = await dependencies.partner.request("/v1/charges?limit=1", {',
       "    signal: AbortSignal.timeout(1000),",
       "  });",
-      "  return { body: { status: response.status } };",
+      "  return { body: { status: response.status, limit: dependencies.settings.CALLER_LIMIT } };",
+      "}",
+    ].join("\n"),
+  );
+  // Token check's body is an older one, written before QL05: it has no `settings` export.
+  sources.set(
+    "src/modules/api/token-check.ts",
+    [
+      "export async function tokenCheck(dependencies, request) {",
+      '  throw new Error("Not implemented: Token check");',
       "}",
     ].join("\n"),
   );
@@ -975,7 +1050,7 @@ export default function Fastify(options) {
       for (const listener of process.listeners(name))
         if (!listening[name]?.includes(listener)) process.removeListener(name, listener);
   };
-  const names = ["JEEVES_EXTERNAL_PARTNER_URL", "JEEVES_REQUIRE_TLS"] as const;
+  const names = ["JEEVES_EXTERNAL_PARTNER_URL", "JEEVES_REQUIRE_TLS", "CALLER_LIMIT"] as const;
   const saved = Object.fromEntries(names.map((name) => [name, process.env[name]]));
   afterEach(() => {
     for (const name of names)
@@ -1042,12 +1117,55 @@ export default function Fastify(options) {
     expect(init.signal).toBeInstanceOf(AbortSignal);
     // A lost connection to an outside host answers the fallback 503, as any stub error does.
     fetch.mockRejectedValueOnce(new TypeError("fetch failed"));
+    // (Unset, Caller's optional CALLER_LIMIT is undefined, so its answer has no `limit`.)
     const lost = await app.inject({ method: "GET", url: "/modules/caller" });
     expect([lost.statusCode, lost.json()]).toEqual([
       503,
       { error: "UNAVAILABLE", message: "Service unavailable." },
     ]);
     // Token check still answers Not implemented.
+    expect((await app.inject({ method: "GET", url: "/modules/token-check" })).statusCode).toBe(501);
+    const stop = process.listeners("SIGTERM").at(-1);
+    if (!stop || listening.SIGTERM?.includes(stop)) throw new Error("No process runs");
+    process.removeListener("SIGTERM", stop);
+    stop("SIGTERM");
+    await vi.waitFor(() => expect(process.exitCode).toBe(0));
+  });
+
+  it("fails startup naming a stub's invalid setting in the pass, never its value, and hands a valid one to the stub (QL05)", async () => {
+    for (const value of ["0", "1000", "7.5", " 7", "seven"]) {
+      const { lines, app } = await run({
+        JEEVES_EXTERNAL_PARTNER_URL: "http://127.0.0.1:47999",
+        CALLER_LIMIT: value,
+      });
+      expect(lines, value).toEqual(failed("Invalid setting CALLER_LIMIT"));
+      expect(app === undefined).toBe(true);
+      if (value.trim().length > 1) expect(JSON.stringify(lines)).not.toContain(value.trim());
+    }
+    // Named together with an endpoint, in the pass's order: the setting comes last.
+    const both = await run({
+      JEEVES_EXTERNAL_PARTNER_URL: undefined,
+      CALLER_LIMIT: "0",
+    });
+    expect(both.lines).toEqual(
+      failed(
+        "Invalid configuration: Invalid endpoint JEEVES_EXTERNAL_PARTNER_URL; Invalid setting CALLER_LIMIT",
+      ),
+    );
+    const fetch = vi.fn(async () => new Response(null, { status: 418 }));
+    vi.stubGlobal("fetch", fetch);
+    const { lines, app } = await run({
+      JEEVES_EXTERNAL_PARTNER_URL: "http://127.0.0.1:47999",
+      CALLER_LIMIT: "7",
+    });
+    expect(lines).toContain("Application ready");
+    if (!app) throw new Error("The process did not start");
+    const response = await app.inject({
+      method: "GET",
+      url: "/modules/caller",
+    });
+    expect([response.statusCode, response.json()]).toEqual([200, { status: 418, limit: 7 }]);
+    // Token check's older body, with no `settings` export, still runs and answers Not implemented.
     expect((await app.inject({ method: "GET", url: "/modules/token-check" })).statusCode).toBe(501);
     const stop = process.listeners("SIGTERM").at(-1);
     if (!stop || listening.SIGTERM?.includes(stop)) throw new Error("No process runs");

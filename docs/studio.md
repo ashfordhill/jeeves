@@ -1425,7 +1425,11 @@ Preview returns the same list. A lead with its
 parts connected exports its installed template exactly as the same template selected on its tile
 would, and the lead and its parts read Template. A module without a complete template exports as
 a typed stub under `src/modules/<tile>/`, which throws "Not implemented" until you write it; each
-stub is a required custom gap.
+stub is a required custom gap. A stub's file also declares the settings it reads
+(`export const settings = declareSettings({ ... })`, text, integer, URL, secret or key ring, from
+`src/runtime/settings.ts`); with Runnable processes on, its process reads them before it reaches
+any store and refuses to start, naming the setting and never its value, when one is missing or
+invalid. You give them in your `compose.override.yaml`.
 
 **Runnable processes** is an unticked checkbox in the dialog. Ticking it saves
 `generation.processes: true` in the design (one revision and one Undo step; unticking or Undo

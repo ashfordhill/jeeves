@@ -294,17 +294,22 @@ normalized row.
 dependency-only registry). For each stub module it writes:
 
 - `src/modules/<host>/<module>.slots.ts` (scaffold): a `Dependencies` type with one typed
-  property per connected slot, named after the target tile or module, and a `slots` descriptor
-  naming the tile, its host link and how it is used. Each unconnected slot is a comment line,
-  such as `// outbox: not connected (Database, write, optional)`.
+  property per connected slot, named after the target tile or module (never `settings`), and a
+  `slots` descriptor naming the tile, its host link and how it is used. Each unconnected slot is
+  a comment line, such as `// outbox: not connected (Database, write, optional)`. Its last
+  property is `settings: SettingsOf<typeof import("./<module>.ts")>`, the values the module's
+  own `settings` export declares (none when it has none).
 - `src/modules/<host>/<module>.ts` (extension): an entry point named after the module that takes
-  `Dependencies` and throws `Not implemented: <name>`.
+  `Dependencies` and throws `Not implemented: <name>`, after
+  `export const settings = declareSettings({});` (Settings a stub declares, below).
 - one shared `src/modules/dependencies.ts` (scaffold): a minimal interface per tile kind and use
   (database read or read-write, queue publish or consume, object read or write, cache, search
   read or write, token verifier, HTTP target, module call).
+- one shared `src/runtime/settings.ts` (scaffold, QL05): `declareSettings`, the kinds and
+  `readSettings`.
 
-Stubs import no template library and, with Runnable processes off, provision nothing, so a
-stub-only export installs and builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
+Stubs import no template library (only their own `src/runtime/settings.ts`) and, with Runnable
+processes off, provision nothing, so a stub-only export installs and builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
 Export writes only to a new directory, and `planFileWrites` refuses an edited `<module>.ts` with
 `EXISTING_OUTPUT_CHANGED`; [`update:v2`](#updating-an-existing-export) regenerates into an
 existing export and keeps your bodies.
@@ -782,9 +787,36 @@ the sweep (`sweepExpired`): then and every 60 s, under
 `idempotency sweep <tile>` failure line; the sweep is owned by the process's scope and stops at
 drain. The values are the generation catalog's `idempotency-policy`. Loop stubs may call it too.
 
+**Settings a stub declares** (QL05, owner decision D6). A stub's file exports the settings it
+reads: `export const settings = declareSettings({ NAME: kind, ... })` from
+`src/runtime/settings.ts` (written by `local.module-stubs` beside `dependencies.ts`). A name
+matches `^[A-Z][A-Z0-9_]{0,63}$` and isn't `JEEVES_*`, `OIDC_*`, `PG*`, `SECRET_DIR` or `PORT`;
+another throws `Reserved setting name <NAME>` when the module loads. The kinds are
+`text({ max? })` (at most `max` code points), `integer({ min?, max? })` (a safe integer, no
+sign but `-`, no leading zero), `url({ protocols? })` (absolute, `http:` and `https:` by default,
+no credentials, whitespace or control character), `secret()` (a `Uint8Array`) and `keyRing()` (a
+JSON array of 1–8 `{ "id", "key" }`, each `id` 1–32 of `[A-Za-z0-9_-]` and unique, each `key`
+unpadded base64url of at least 32 bytes; it gives `{ current, entries }` with `Buffer` keys,
+`current` the first), and `optional(kind)` (`undefined` when missing). text, integer and url read
+`process.env[NAME]`; secret and keyRing read the file `JEEVES_SECRET_<NAME>_FILE` names when that
+is set (an absolute path, as for a credential), else `SECRET_DIR/<name>`, `<name>` the setting's
+name lower-cased with `_` as `-` (`PROBE_TOKEN` is `probe-token`), with one trailing newline
+removed. Each process with stubs imports each stub's file whole and takes
+`(<Module> as { settings?: SettingsDeclaration }).settings ?? declareSettings({})`, so a stub
+file written before QL05, without the export, builds and runs with none; it reads every
+declaration with `readSettings("<module>", ...)` last in its configuration pass (below), before
+any client is built or probed, then again as `dependencies["<module>"].settings` (frozen). A
+missing (unset, empty or no file) or invalid setting fails startup with `Invalid setting <NAME>`
+in the `startup-failed` line, never its value; a stub's settings are read in declaration order,
+so its first wrong one is named, beside any other wrong setting in the pass. `compose.yaml` sets
+none of them: the application gives them in its `compose.override.yaml` (QG02), a value in the
+service's `environment` and a secret or ring through its `secrets`. The report's
+`processes.tiles[].stubSettings` lists each stub file a process reads them from; the names are the
+application's code, so `environment` doesn't list them.
+
 **Endpoints from the environment.** A process with stubs checks every variable its stubs' clients
-and its sign-in read in one pass, `checkConfiguration` at the top of its process file, before any
-client is built or probed (QG31); each client reads its own again as it is built; a template's own
+and its sign-in read, and its stubs' declared settings (QL05), in one pass, `checkConfiguration`
+at the top of its process file, before any client is built or probed (QG31); each client reads its own again as it is built; a template's own
 clients read theirs as each is built. No variable has a default (`<ID>` is the tile ID upper-cased,
 `-` as `_`, so `hot-routes` is `HOT_ROUTES`):
 
@@ -806,7 +838,7 @@ project is a Google Cloud project ID (a lowercase letter, then up to 29 lowercas
 or `-`, optionally after `<domain>:`). A missing or invalid one fails startup with `Invalid endpoint <variable>`, never its value, in the
 `startup-failed` line; several fail together as `Invalid configuration: <message>; <message>`
 (each message once, in the pass's order: the clients' sorted keys, the broker and Pub/Sub for the
-loops, their credentials, then the sign-in). The stubs' clients read theirs in `module-clients.ts` (the pass calls
+loops, their credentials, the sign-in, then each stub's declared settings, QL05). The stubs' clients read theirs in `module-clients.ts` (the pass calls
 `databaseEndpoint`, `cacheClientEndpoint`, `brokerBinding`, `pubsubProjectId` and the HTTP clients'
 own calls; object storage and search are compiled, so they have none); a template's `pool`
 and `brokerBinding` (its publisher, consumer and loop) in `service-resources.ts`; the cache read
