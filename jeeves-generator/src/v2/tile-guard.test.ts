@@ -499,6 +499,7 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
 
   it("with JEEVES_REQUIRE_TLS=true needs an https: issuer and key set, naming the variable (QG10)", async () => {
     const saved = process.env.JEEVES_REQUIRE_TLS;
+    const savedOverride = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
     const failed = (error: string) => [
       { level: "error", event: "startup-failed", error: `Error: ${error}` },
       "Application startup failed",
@@ -518,6 +519,18 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
       expect(verified.lines).toContain("Application ready");
       expect(await me(verified.app, token("api://example"))).toEqual(signedIn);
       await stop();
+      // Node's verification override must be unset or 1 under the switch (QG30): 0 would fetch
+      // the key set unverified.
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+      const override = await run("api://example");
+      expect(override.lines).toEqual(failed("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED"));
+      expect(process.exitCode).toBe(1);
+      expect(override.app === undefined).toBe(true);
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "1";
+      const one = await run("api://example");
+      expect(one.lines).toContain("Application ready");
+      await stop();
+      delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
       // The switch is `true` or unset; any other value fails naming it.
       for (const value of ["", "1", "TRUE", "false"]) {
         process.env.JEEVES_REQUIRE_TLS = value;
@@ -528,6 +541,8 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
     } finally {
       if (saved === undefined) delete process.env.JEEVES_REQUIRE_TLS;
       else process.env.JEEVES_REQUIRE_TLS = saved;
+      if (savedOverride === undefined) delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      else process.env.NODE_TLS_REJECT_UNAUTHORIZED = savedOverride;
     }
   });
 });

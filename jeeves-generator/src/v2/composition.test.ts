@@ -363,6 +363,21 @@ describe("reusable composition before product completion", () => {
       expect(tls({ JEEVES_REQUIRE_TLS: "true", [name("HOST")]: "/cloudsql/p:r:i" })).toEqual({
         mode: "disable",
       });
+      // Under the switch, Node's verification override must be unset or 1 (QG30).
+      expect(
+        tls({
+          JEEVES_REQUIRE_TLS: "true",
+          [name("TLS")]: "verify-full",
+          NODE_TLS_REJECT_UNAUTHORIZED: "0",
+        }),
+      ).toBe("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+      expect(
+        tls({
+          JEEVES_REQUIRE_TLS: "true",
+          [name("TLS")]: "verify-full",
+          NODE_TLS_REJECT_UNAUTHORIZED: "1",
+        }),
+      ).toEqual({ mode: "verify-full" });
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

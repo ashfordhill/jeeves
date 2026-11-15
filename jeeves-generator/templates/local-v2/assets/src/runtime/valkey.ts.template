@@ -31,8 +31,13 @@ const validPort = (port: number) => Number.isInteger(port) && port >= 1 && port 
 function requireTls(): boolean {
   const value = process.env.JEEVES_REQUIRE_TLS;
   if (value === undefined) return false;
-  if (value === "true") return true;
-  throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+  if (value !== "true") throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+  // `0` turns off certificate checks for every client that leaves them to Node (`fetch`, the
+  // sign-in's key set), so under the switch only unset or `1` passes (QG30).
+  const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  if (verify !== undefined && verify !== "1")
+    throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+  return true;
 }
 
 /** A CA file's PEM, read when the client is built: one that can't be read fails startup naming

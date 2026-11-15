@@ -1502,6 +1502,76 @@ describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => 
     ).toBe("built");
   });
 
+  it("with JEEVES_REQUIRE_TLS=true refuses NODE_TLS_REJECT_UNAUTHORIZED unless unset or 1, by name, before any client (QG30)", async () => {
+    const tile = "JEEVES_TILE_STATS_API_URL";
+    const external = "JEEVES_EXTERNAL_PARTNER_URL";
+    const identity = "JEEVES_IDENTITY_IDENTITY_URL";
+    // Every other value is verified, so only Node's override can be refused.
+    const verified = {
+      JEEVES_REQUIRE_TLS: "true",
+      [db("TLS")]: "verify-full",
+      [cache("TLS")]: "verify-full",
+      [tile]: "https://stats.internal:8443",
+      [external]: "https://api.partner.example",
+      [identity]: "https://issuer.example",
+      PUBSUB_EMULATOR_HOST: undefined,
+      JEEVES_PUBSUB_PROJECT: "local",
+    };
+    const scope = testScope();
+    const builds: [string, () => unknown][] = [
+      ["databaseClient", () => clients.databaseClient(scope, probe, links)],
+      ["cacheClient", () => clients.cacheClient(scope, probe, { cache: "links-cache" })],
+      ["httpTarget", () => clients.httpTarget({ tile: "stats-api" })],
+      ["externalTarget", () => clients.externalTarget(external)],
+      ["identityTarget", () => clients.identityTarget({ identity: "identity" })],
+      ["pubsubPublisher", () => pubsubClients.pubsubPublisher(scope, probe, { topic: "visits" })],
+      ["cacheEndpoint", () => valkey.cacheEndpoint("links-cache")],
+    ];
+    /** What building each client gives with these values. */
+    const built = async (values: Record<string, string | undefined>) => {
+      const seen: string[][] = [];
+      for (const [name, build] of builds) {
+        environment(values);
+        seen.push([name, await outcome(build)]);
+      }
+      return seen;
+    };
+    const each = (result: string) => builds.map(([name]) => [name, result]);
+    try {
+      // Node turns verification off for exactly 0; every value but 1 is refused, naming the
+      // variable, never its value.
+      for (const value of ["0", "", "false", "true"]) {
+        expect(await built({ ...verified, NODE_TLS_REJECT_UNAUTHORIZED: value }), value).toEqual(
+          each("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED"),
+        );
+        // Refused before any client: no pool, cache client, Pub/Sub client or probe.
+        expect(fake.calls).toEqual([]);
+        expect(lines).toEqual([]);
+      }
+      // An invalid switch still fails naming the switch first.
+      expect(
+        await built({ ...verified, JEEVES_REQUIRE_TLS: "TRUE", NODE_TLS_REJECT_UNAUTHORIZED: "0" }),
+      ).toEqual(each("Invalid endpoint JEEVES_REQUIRE_TLS"));
+      expect(fake.calls).toEqual([]);
+      // Unset or 1 passes: each is built.
+      for (const value of [undefined, "1"])
+        expect(
+          await built({ ...verified, NODE_TLS_REJECT_UNAUTHORIZED: value }),
+          `${value}`,
+        ).toEqual(each("built"));
+      // Without the switch nothing checks Node's override: 0 builds each, as before.
+      expect(
+        await built({
+          ...verified,
+          JEEVES_REQUIRE_TLS: undefined,
+          NODE_TLS_REJECT_UNAUTHORIZED: "0",
+        }),
+      ).toEqual(each("built"));
+    } finally {
+      for (const drain of scope.owned) await drain();
+    }
+  });
+
   it("reads a cache read's transport in cacheEndpoint, and createValkeyCache connects verify-full with TLS", async () => {
     const name = (part: string) => `JEEVES_CACHE_HOT_ROUTES_${part}`;
     const hotRoutes = {

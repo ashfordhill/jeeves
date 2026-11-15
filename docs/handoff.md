@@ -16822,3 +16822,94 @@ include each External API's URL.
 
 **For the next unit.** QG30, then the run order in batch 3. QG34 waits for the owner's answer to
 B1, and B2–B4 are recommendations against units. The QL plan starts after QGR3.
+
+## 2026-11-15 — QG30: The TLS switch refuses Node's verification override
+
+**What changed.**
+- `requireTls()` in `module-clients.ts.template`, `valkey.ts.template` and
+  `service-resources.ts.template` (inside `@sql`, tabs, `throw Error(`): unset is still `false`, and
+  any value but `true` still fails `Invalid endpoint JEEVES_REQUIRE_TLS`. With `true` it then reads
+  `NODE_TLS_REJECT_UNAUTHORIZED`, and a defined value other than `"1"` fails
+  `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`. A two-line comment says why. Every reader of
+  the switch gets the check: `transport` (stub database and cache), `target` (`httpTarget`,
+  `externalTarget`, `identityTarget`), `refuseEmulator` (both Pub/Sub clients), the cache read's
+  `cacheEndpoint` and a template's `databaseTls`.
+- `http-wiring.ts`, `verifiedIdentity`: the sign-in's setup emits, right after the
+  `Invalid endpoint JEEVES_REQUIRE_TLS` line and at its indent, the brief's
+  `if (requireTls && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== undefined && … !== "1") throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");`.
+  The comment above now ends "… and NODE_TLS_REJECT_UNAUTHORIZED unset or 1: 0 would fetch the key
+  set unverified (QG30)."
+- `local.ts`, `endpointsReadme`: step 3's sentence comes after "… aren't checked.".
+- Tests:
+  - 1 new, `module-clients.test.ts` (QG10 block). The switch is on with verified values. For each
+    of `0`, `""`, `false` and `true`, all seven readers fail `Insecure endpoint
+    NODE_TLS_REJECT_UNAUTHORIZED`: `databaseClient`, `cacheClient`, `httpTarget`, `externalTarget`,
+    `identityTarget`, `pubsubPublisher` and `valkey.cacheEndpoint`. `fake.calls` and the probe
+    lines stay empty, and no value is ever named. With `TRUE` the switch is still named first.
+    Unset or `1` builds each, and so does `0` without the switch.
+  - Changed: QG10's pool test in `composition.test.ts` (`0` refused, `1` gives
+    `{ mode: "verify-full" }`), and QG10's sign-in test in `tile-guard.test.ts` (`0` gives the
+    `startup-failed` line and no app, `1` gives `Application ready`; its `finally` restores the
+    variable). Also QG11's emitted sign-in lines in `http-wiring.test.ts` (the comment and the new
+    line) and QG10's README phrases in `tile-processes.test.ts` (step 3's sentence).
+- Pins (Rule 7, `pins:update`): `frozen-v2` and `v2-module-design` changed `.jeeves/manifest.json`,
+  `src/features/service-resources.ts` and `src/runtime/valkey.ts`. Nothing changed in `stub-stack`.
+  That is exactly the brief's list.
+- Docs: `jeeves-generator/README.md` (Verified TLS bindings) gets step 3's sentence.
+  `docs/template-gaps.md` gets the brief's Known limits row, after QG10's.
+
+**Checks.**
+- `pnpm check`: before any change, exit 0, 117 files / 1018 tests. On the final tree, exit 0, 117
+  files / 1019 tests; Biome shows only the older 1 info.
+- New and changed tests on HEAD's templates: a scratch clone at `e1b4130` with its own offline
+  install and the five changed test files. 5 fail there, each at its QG30 assertion: the new test
+  (the database is `built` with `0`), the pool test, the sign-in test (`Application ready` with
+  `0`), the emitted lines and the README phrases. The files' other 90 pass. The clone is deleted.
+  The checkout's `node_modules/.modules.yaml`, `.pnpm-workspace-state-v1.json` and
+  `.pnpm/lock.yaml` kept their checksums and mtimes (2026-11-14 12:10).
+- `pnpm test:e2e`: 74 passed (4.7 min), first run. `jeeves_e2e` holds only its two older projects.
+- Web build: exit 0.
+- Docker phase, after the offline checks (artifacts in the scratchpad), each on its first run:
+  - `pnpm test:generated --suite=wiring`: **2/2 passed** (B05, B06; 192.6 s).
+  - `--suite=identity`: **1/1 passed** (B07; 124.7 s).
+- Regeneration proof: `probe-design.json` (`a3b6204f…0505`, verified) and `qrwty-r83.json`.
+  - Changed paths, probe: `.jeeves/manifest.json`, `.jeeves/report.json`, `README.md`,
+    `src/processes/front.ts`, `src/runtime/module-clients.ts`, `src/runtime/valkey.ts`.
+  - r83: the same, with `account-api.ts`, `billing-api.ts` and `link-api.ts` in place of
+    `front.ts`. These are the guarded process files.
+  - Neither export's `service-resources.ts` has the `@sql` section, so it is unchanged. Nothing
+    else changed; this is the brief's list.
+  - The report differs only in the registry's source inventory (`http-wiring.ts`, `local.ts` and
+    the three templates). `gaps` are equal, and required gaps are unchanged (probe 3, r83 11).
+  - In each `after-*`, `pnpm install --frozen-lockfile --ignore-scripts --offline` and `pnpm build`
+    exit 0. Scratch exports deleted.
+- Inventory: compared before the Docker phase and after it. The only difference is another run's,
+  untouched: arm A's `qrwtya-q13-app:build-1` image appeared. No `gs-` or `qg30-` resource and no
+  `/tmp/jeeves-system-*` is left. `test-results/generated/` still holds its 10 older entries, and
+  `jeeves-postgres-1` is unchanged.
+- Nothing in the studio is user-visible, so there was no mouse check.
+- Midway, the coordinator relayed the owner's decision (2026-11-15) to lighten testing. Every check
+  above had finished or was running by then (the identity suite ran to its end), so this unit
+  skipped none of them.
+
+**Differences from the plan.**
+- **`requireTls()`'s shape.** `if (value === "true") return true; throw …` becomes
+  `if (value !== "true") throw …`, followed by the override check and `return true`. The
+  behaviour and the messages are the brief's.
+- **The new test also checks invariant 3:** a switch of `TRUE` with `0` still fails
+  `Invalid endpoint JEEVES_REQUIRE_TLS`.
+- **The generator README's sentence ends "(QG30)",** as its neighbours cite their units.
+
+**Noticed.**
+- The unit is arm A-found (QRWTY Q04, AG-02), batch 3.
+- The generated `README.md` changes only in step 3's sentence; the per-process variable lists
+  don't name `NODE_TLS_REJECT_UNAUTHORIZED`. It is an optional Node variable that Compose doesn't
+  set, like `_CA_FILE` and `JEEVES_REQUIRE_TLS` itself.
+- The refusal covers what a process reads. A child process or a library that sets the variable
+  after startup isn't checked again. No template does.
+- QRWTY arm A's export is frozen at `4e87f97`, so this change reaches it only by a regeneration.
+- The owner's dirty paths (`.jeeves-feedback/`, the `Zone.Identifier` files and the three mode
+  changes) were not touched or staged.
+
+**For the next unit.** QG31 moves the sign-in's checks into `signInSettings`. QG30's line goes with
+them, as its third check.

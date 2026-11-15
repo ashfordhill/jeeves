@@ -558,6 +558,8 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
       "`Unreadable CA file <variable>`",
       "With `JEEVES_REQUIRE_TLS=true` (else unset), startup fails with `Insecure endpoint <variable>`",
       "and any `PUBSUB_EMULATOR_HOST`; the broker, object storage and search are plain text and aren't checked.",
+      // QG30: Node's verification override under the switch.
+      "With the switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else startup fails with `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`: `0` would turn off certificate checks for every client that leaves them to Node.",
       "`compose.yaml` sets the local values (`disable`, and no `JEEVES_REQUIRE_TLS`); a deployment sets its own.",
     ])
       expect(readme).toContain(phrase);

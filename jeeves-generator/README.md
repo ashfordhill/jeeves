@@ -781,8 +781,10 @@ that isn't `https:` (the sign-in's lines in the process file) and any `PUBSUB_EM
 clients). Each is checked where its client is built: the stubs' in `module-clients.ts`, a template's
 pool in `service-resources.ts`, the cache read's cache in `cacheEndpoint`. The broker (RabbitMQ),
 object storage and search have no TLS and are not checked, and `migrate.mjs` still follows
-`PGSSLMODE`. `compose.yaml` sets `disable` for every database and cache and never
-`JEEVES_REQUIRE_TLS`, so local stacks are unchanged.
+`PGSSLMODE`. With the switch, `NODE_TLS_REJECT_UNAUTHORIZED` must be unset or `1`, else startup
+fails with `Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED`: `0` would turn off certificate checks
+for every client that leaves them to Node (QG30). `compose.yaml` sets `disable` for every database
+and cache and never `JEEVES_REQUIRE_TLS`, so local stacks are unchanged.
 
 **Pub/Sub channels for stubs** (QG07). With Runnable processes on, a Queue tile whose every user
 is a stub has the normal control Provider (`queue.provider`: unspecified, self-hosted or
