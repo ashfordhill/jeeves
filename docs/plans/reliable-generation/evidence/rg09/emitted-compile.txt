@@ -1,0 +1,138 @@
+keys 53 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative public API proof: src/modules/items-api/negative.ts(1,9): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'keyRing'.
+src/modules/items-api/negative.ts(1,17): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'secret'.
+src/modules/items-api/negative.ts(1,24): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'readSettings'.
+src/modules/items-api/negative.ts(3,59): error TS2339: Property 'current' does not exist on type 'SigningKeys'.
+src/modules/items-api/negative.ts(3,93): error TS2339: Property 'entries' does not exist on type 'SigningKeys'.
+src/modules/items-api/negative.ts(3,123): error TS2339: Property 'file' does not exist on type 'SigningKeys'.
+src/modules/items-api/negative.ts(3,159): error TS2741: Property 'context' is missing in type '{ scope: string; }' but required in type 'ValueContext'.
+
+zero 74 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+favorites 73 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+video 124 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+workload 55 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative service API proof: src/modules/caller/negative.ts(1,9): error TS2724: '"../../extension-api/index.ts"' has no exported member named 'serviceTarget'. Did you mean 'ServiceTarget'?
+src/modules/caller/negative.ts(1,23): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'workloadSettings'.
+src/modules/caller/negative.ts(1,40): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'verifiedBearer'.
+src/modules/caller/negative.ts(3,46): error TS2339: Property 'credentials' does not exist on type 'ServiceTarget'.
+src/modules/caller/negative.ts(3,67): error TS2339: Property 'audience' does not exist on type 'ServiceTarget'.
+src/modules/caller/negative.ts(3,85): error TS2339: Property 'request' does not exist on type 'ServiceTarget'.
+src/modules/caller/negative.ts(3,132): error TS2322: Type '"PUT"' is not assignable to type '"GET" | "POST"'.
+src/modules/caller/negative.ts(3,186): error TS2353: Object literal may only specify known properties, and 'headers' does not exist in type 'Readonly<{ method: "GET" | "POST"; body?: unknown; }>'.
+
+Private workload boundary proof: src/modules/caller/negative.ts: forbidden private runtime import ../../runtime/workload.ts
+
+workloadUser 59 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Real jose: valid cached key during outage; unknown-key cooldown; failed-refresh cooldown; 60s key expiry fails closed; recovery/rotation passed.
+Real jose: 12 concurrent callers share one refresh; separate copies fetch separately; valid token survives early refresh outage only to exp; cold/expired credentials fail closed.
+Real jose: expired/wrong-audience/disallowed/user-only identity refusal and dual-audience workload-as-user confusion refusal passed. No live HTTP dispatch.
+{"token":5,"jwks":8,"service":0}
+
+stubs 94 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+frozen-v2 79 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+v2-module-design 86 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stub-stack 60 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Pin review {
+  'frozen-v2': {
+    before: 79,
+    after: 79,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      '.jeeves/normalized.json',
+      '.jeeves/report.json',
+      'diagnostics/generation.json',
+      'infra/local.json',
+      'scripts/local.mjs',
+      'scripts/setup.mjs',
+      'src/extension-api/index.ts',
+      'src/runtime/admission.ts',
+      'src/runtime/identity.ts',
+      'src/runtime/operation.ts'
+    ]
+  },
+  'v2-module-design': {
+    before: 86,
+    after: 86,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      '.jeeves/normalized.json',
+      '.jeeves/report.json',
+      'diagnostics/generation.json',
+      'infra/local.json',
+      'scripts/local.mjs',
+      'scripts/setup.mjs',
+      'src/extension-api/index.ts',
+      'src/modules/watch/watch-counts.slots.ts',
+      'src/modules/watch/watch-views.slots.ts',
+      'src/runtime/admission.ts',
+      'src/runtime/identity.ts',
+      'src/runtime/operation.ts'
+    ]
+  },
+  'stub-stack': {
+    before: 60,
+    after: 60,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      '.jeeves/normalized.json',
+      '.jeeves/report.json',
+      'diagnostics/generation.json',
+      'scripts/local.mjs',
+      'scripts/setup.mjs',
+      'src/extension-api/index.ts',
+      'src/modules/links-api/limiter.slots.ts',
+      'src/modules/links-api/link-cache.slots.ts',
+      'src/modules/links-api/link-reader.slots.ts',
+      'src/modules/links-api/redirector.slots.ts',
+      'src/modules/links-api/stats-caller.slots.ts',
+      'src/modules/links-api/upload-consumer.slots.ts',
+      'src/modules/links-api/visit-publisher.slots.ts',
+      'src/modules/stats-api/stats-search.slots.ts',
+      'src/modules/upload-api/archive-upload.slots.ts',
+      'src/modules/upload-api/upload-publisher.slots.ts',
+      'src/modules/visit-worker/archiver.slots.ts',
+      'src/modules/visit-worker/visit-consumer.slots.ts',
+      'src/modules/visit-worker/visit-writer.slots.ts',
+      'src/runtime/operation.ts'
+    ]
+  }
+}

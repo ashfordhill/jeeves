@@ -1,5 +1,6 @@
 import type { DesignDocument, StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import {
   moduleAuthored,
@@ -38,7 +39,7 @@ const gap = (bundle: Bundle, id: string) => bundle.report.gaps.find((item) => it
 type Services = Record<string, { depends_on: object; secrets: string[]; [key: string]: unknown }>;
 
 describe("consume loops (tile process contract, sections 3-5)", () => {
-  const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+  const stack = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
   const stackOff = assemble(stubStackDesign());
   const v2 = assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on]));
 
@@ -156,7 +157,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
   });
 
   it("leaves a queue on another provider unprovisioned, as an unsupported gap", () => {
-    const design = runStudioCommands(stubStackDesign(), [
+    const design = runStudioCommands(withStubWorkloads(stubStackDesign()), [
       {
         type: "edit",
         element: "visits",

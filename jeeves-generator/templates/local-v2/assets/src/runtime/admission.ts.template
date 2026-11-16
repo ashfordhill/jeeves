@@ -124,6 +124,7 @@ export function classifyHttpError(error: unknown) {
   // failure or timeout may hide an already dispatched mutation.
   const retryable = error instanceof HttpError && admissionRefusals.has(error);
   const headers: Record<string, string> = { "Cache-Control": "no-store" };
+  if (unknown) headers["X-Jeeves-Outcome"] = "unknown";
   if (retryable) headers["Retry-After"] = "1";
   if (status === 401) headers["WWW-Authenticate"] = "Bearer";
   if (status === 405 && allow) headers.Allow = allow;

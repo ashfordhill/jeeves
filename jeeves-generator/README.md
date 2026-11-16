@@ -1282,3 +1282,51 @@ application's external review, not database migration proof. Missing or stale ma
 without changing existing files, even with `--ack-extension-api=7`. Namespace changes still
 require a fresh export and explicit application/data migration. The complete generated migration
 guide is `.jeeves/extensions.md`; acknowledgement also requires its staged checker/TypeScript build.
+
+## Service identity contract (extension API v8)
+
+Each server/worker module can select an Identity through its optional `workload` link. Browser
+hosts cannot select or hold confidential workload credentials. This selection is independent
+of user Auth guards. New process calls require caller and callee to select the same installed
+local OIDC/Keycloak issuer, even on private networks. The first contract uses RS256 confidential
+service accounts with user grants disabled, a signed `jeeves_workload` process ID, matching
+`azp=jeeves-workload-<id>` and `aud=jeeves-service-<target>`. An application needs its own issuer
+realm/client namespace; local setup is test infrastructure, not production provisioning.
+
+A generated `ServiceTarget.call(moduleId, {method: "GET" | "POST", body?})` fixes the destination,
+operation roots, audiences and credentials. GET has no body; response headers are not forwarded
+and redirects are never followed. JSON request bounds are 64 KiB total, depth 16,
+4,096 values, 1,024 array items, 128 object keys and 16 KiB per string. Product code receives no
+URL/header/token override. Declared links establish operation/caller maxima; a callee's exported
+`allowedCallers` list can only narrow its process callers. The supported callee surface is a
+route stub's entrypoint at `/internal/modules/<id>`, GET/POST root only. Both path fields are `/`.
+Internal framing ignores product response headers, always uses `Cache-Control: no-store`, and
+refuses automatic HEAD dispatch. Public route headers keep their existing behavior.
+Internal replies encode bounded JSON DTOs, including primitive strings and null; an empty result
+normalizes to null, and no-content responses remain empty. No binary or general proxy is offered. Internal service callees
+have no legacy `/modules` alias. Public callees keep explicitly declared browser ingress and its
+user policy. Installed-template cross-process adapters remain gaps.
+
+Workload and user identities are checked independently. Workload-marked tokens never establish
+an end user, even with a user audience. An already verified incoming bearer is kept privately on
+the operation context and forwarded only to compiled recipients sharing the user issuer. It is
+released when the context closes and never reaches product DTOs. This provides no session lookup,
+token refresh, cookies or authentication retry. GET is read; POST is an external mutation.
+Nested reads cannot restore network authority inside a local atomic effect. Lost, oversized,
+undecodable or uncertain POST replies stay outcome-unknown; no automatic retry occurs.
+
+Each process snapshots deployment endpoints (`JEEVES_WORKLOAD_ISSUER`, `_TOKEN_URL`, `_JWKS_URL`)
+and its secret before clients open. `JEEVES_REQUIRE_TLS` applies. One process caches at most 16
+fixed target audiences with a single refresh per audience. Token/JWKS waits and each fetch are
+bounded at 2 seconds; failed refresh has a one-second cooldown. Tokens expire at their verified
+`exp`, at most 300 seconds, with early refresh in the last five seconds. A valid token survives
+refresh outage only to that bound. JWKS responses are at most 64 KiB/16 keys, with 60-second
+maximum age and 30-second unknown-key cooldown. Cached keys never gain validity during outage.
+Invalid workload identity is 401, a denied caller 403 and dependency outage 503.
+
+Keycloak imports a realm only on first initialization. A retained local runtime with missing or
+changed `.runtime/workload-contract.json` refuses restart; it never assumes `--import-realm`
+updates existing clients. Use a fresh disposable runtime or a reviewed external issuer migration.
+The record attests that review, not issuer-state proof. API7→8 changes the former unavailable
+HTTP dependency signature, so updates require `--ack-extension-api=8` and a passing staged
+checker/TypeScript build. Migrate handwritten calls yourself; the updater preserves their bytes.

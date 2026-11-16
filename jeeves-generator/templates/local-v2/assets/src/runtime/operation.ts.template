@@ -30,18 +30,28 @@ export class OperationError extends Error {
 }
 type EffectClass = "read" | "local-atomic-mutation" | "durable-external-work";
 const effectRank = { read: 0, "local-atomic-mutation": 1, "durable-external-work": 2 } as const;
-const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass }>();
+const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass; networkDenied?: boolean }>();
 /** Private generated boundary: a nested capability cannot widen its caller's effect authority. */
 export function withEffect<T>(effect: EffectClass, dispatch: () => T): T {
   assertOperation();
   const parent = active.getStore();
   if (parent?.effect && effectRank[effect] > effectRank[parent.effect])
     throw new OperationError("refused", "EFFECT_NOT_ALLOWED");
-  return active.run({ ...parent, effect }, dispatch);
+  return active.run({ ...parent, effect, networkDenied: parent?.networkDenied || effect === "local-atomic-mutation" }, dispatch);
 }
 const contexts = new WeakSet<object>();
+// Private generated credential propagation. Never enumerable on the public context/DTO.
+const verifiedBearers = new WeakMap<OperationContext, string>();
+export function rememberVerifiedBearer(token: string): void {
+  const context = currentOperation();
+  if (context) verifiedBearers.set(context, token);
+}
+export const verifiedBearer = () => { const context = currentOperation(); return context ? verifiedBearers.get(context) : undefined; };
 export const currentOperation = () => active.getStore()?.context;
 export const currentProcess = () => active.getStore()?.scope;
+export function assertNetworkAllowed(): void {
+  if (active.getStore()?.networkDenied) throw new OperationError("refused", "EFFECT_NOT_ALLOWED");
+}
 export function withProcess<T>(scope: ProcessScope | undefined, effect: () => T): T {
   return active.run({ scope }, effect);
 }
@@ -97,9 +107,12 @@ export function operation(options: {
     remainingMs: () => (controller.signal.aborted ? 0 : Math.max(0, expires - performance.now())),
   });
   contexts.add(context);
+  const bearer = verifiedBearer();
+  if (bearer) verifiedBearers.set(context, bearer);
   return {
     context,
     close() {
+      verifiedBearers.delete(context);
       clearTimeout(timer);
       for (const signal of parents) signal.removeEventListener("abort", cancel);
     },

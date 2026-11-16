@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { applyOperations } from "./apply.ts";
 import type { DesignDocument } from "./design.ts";
 import { stubStackDesign } from "./fixtures/stub-stack.ts";
@@ -87,7 +88,7 @@ describe("a Queue's Provider when only stubs use it (QG07)", () => {
   });
 
   it("accepts Google Cloud by the supported command and refuses a provider nothing generates", () => {
-    const design = runStudioCommands(stubStackDesign(), [on]);
+    const design = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     const cloud = edit(design, "visits", { provider: "google-cloud" });
     expect(settingsOf(cloud, "visits")).toEqual({
       kind: "queue",
@@ -114,13 +115,16 @@ describe("a Queue's Provider when only stubs use it (QG07)", () => {
   });
 
   it("keeps a saved provider it doesn't support on its control, unsupported, until it is put right", () => {
-    const design = runStudioCommands(runStudioCommands(stubStackDesign(), [on]), [
-      {
-        type: "edit",
-        element: "visits",
-        settings: { kind: "queue", mode: "topic", provider: "aws" },
-      },
-    ]);
+    const design = runStudioCommands(
+      runStudioCommands(withStubWorkloads(stubStackDesign()), [on]),
+      [
+        {
+          type: "edit",
+          element: "visits",
+          settings: { kind: "queue", mode: "topic", provider: "aws" },
+        },
+      ],
+    );
     expect(normalSettingFields(design, installed, { element: "visits" })).toMatchObject([
       { input: "queue.provider", value: "aws", status: "unsupported", normalControl: true },
     ]);

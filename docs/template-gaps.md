@@ -19,6 +19,13 @@ Details of 1–8: [YouTube v3 notes](../field-projects/youtube/v3/notes/README.m
 
 ## Known limits
 
+RG09 fixes the missing workload-identity boundary for new generated route-stub service calls
+through API8: dedicated local service accounts, scoped caller handles and operation allowlists.
+Missing issuer setup refuses export even on private networks. Installed-template cross-process
+adapters and arbitrary external HTTP adapters remain explicit gaps. Existing issuer/client
+updates require reviewed provisioning; realm import does not update an existing realm. Native
+two-service authentication is a later RG14 evidence case, not established by these unit fixtures.
+
 Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 
 | Limit | Status |

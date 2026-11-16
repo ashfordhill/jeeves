@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { ownershipDesign } from "../../field-projects/generator-system/fixtures/rg-ownership/design.ts";
+import { withStubWorkloads } from "../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { favoritesStackDesign } from "../../jeeves/packages/spec/src/fixtures/favorites-stack.ts";
 import { stubStackDesign } from "../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
@@ -84,10 +85,75 @@ async function snapshot(root: string): Promise<unknown> {
 }
 
 describe("extension contract migration", () => {
+  it("RG09 refuses API7 service hook updates, checks explicit API8 migration and preserves bodies", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jeeves-rg09-api-"));
+    roots.push(root);
+    const app = join(root, "app");
+    const make = (version: number) => {
+      const bundle = fixture(version);
+      const api =
+        version === 7
+          ? "export interface ServiceTarget { call(input: unknown): Promise<never>; }\n"
+          : "export interface ServiceTarget { call(operation: string, request: {method:'GET'|'POST';body?:unknown}): Promise<{status:number;body:unknown}>; }\n";
+      const files = bundle.files
+        .filter((f) => f.path !== ".jeeves/manifest.json")
+        .map((f) => ({
+          ...f,
+          bytes: Buffer.from(
+            f.path === "src/api.ts"
+              ? api
+              : f.path === "src/hook.ts"
+                ? 'import type {ServiceTarget} from "./api.js";\nexport const hook=(target:ServiceTarget)=>target.call({method:"GET"});\n'
+                : f.bytes,
+          ),
+        }));
+      const manifest = {
+        ...bundle.manifest,
+        files: bundle.manifest.files.map((f) => {
+          const file = files.find((x) => x.path === f.path);
+          return file ? { ...f, sha256: sha256(file.bytes), bytes: file.bytes.length } : f;
+        }),
+      };
+      return {
+        ...bundle,
+        manifest,
+        files: [
+          ...files,
+          { path: ".jeeves/manifest.json", bytes: Buffer.from(JSON.stringify(manifest)) },
+        ],
+      };
+    };
+    await exportNewDirectory(make(7).files, app);
+    await mkdir(join(app, "node_modules"));
+    await symlink(
+      fileURLToPath(new URL("../../node_modules/typescript", import.meta.url)),
+      join(app, "node_modules/typescript"),
+    );
+    const before = await snapshot(app);
+    for (const check of [true, false]) {
+      const refused = await updateDirectory(make(8), app, { check });
+      expect(refused.refused.join("\n")).toContain("Extension API 7 -> 8 requires migration");
+      expect(refused.refused.join("\n")).toContain("src/hook.ts");
+      expect(await snapshot(app)).toEqual(before);
+    }
+    const failed = await updateDirectory(make(8), app, {
+      check: false,
+      acknowledgeExtensionApi: 8,
+    });
+    expect(failed.refused.join("\n")).toContain("Expected 2 arguments");
+    expect(await snapshot(app)).toEqual(before);
+    const migrated =
+      '// product body migrated by its author\nimport type {ServiceTarget} from "./api.js";\nexport const hook=(target:ServiceTarget)=>target.call("receive",{method:"GET"});\n';
+    await writeFile(join(app, "src/hook.ts"), migrated);
+    expect(
+      (await updateDirectory(make(8), app, { check: false, acknowledgeExtensionApi: 8 })).refused,
+    ).toEqual([]);
+    expect(await readFile(join(app, "src/hook.ts"), "utf8")).toBe(migrated);
+  });
   it("emits the installed capability guide/version and verifies real output responsibility", () => {
-    expect(real.manifest.extensionApi.version).toBe(7);
+    expect(real.manifest.extensionApi.version).toBe(8);
     expect(real.manifest.extensionApi.boundary).toBe("checked-extensions");
-    expect(real.report.extensionApi.version).toBe(7);
+    expect(real.report.extensionApi.version).toBe(8);
     expect(real.report.capabilities).toHaveLength(4);
     expect(
       Buffer.from(
@@ -175,7 +241,7 @@ describe("extension contract migration", () => {
   });
 });
 
-it("RG07 refuses a v6-to-v7 update until the exact database access migration is explicitly acknowledged", async () => {
+it("RG07 refuses a v6-to-current update until the exact database access migration is explicitly acknowledged", async () => {
   const root = await mkdtemp(join(tmpdir(), "jeeves-rg05-migration-"));
   roots.push(root);
   const app = join(root, "app");
@@ -187,8 +253,8 @@ it("RG07 refuses a v6-to-v7 update until the exact database access migration is 
   await writeFile(join(app, ".jeeves/manifest.json"), JSON.stringify(manifest));
   const before = await snapshot(app);
   const result = await updateDirectory(real, app, { check: true });
-  expect(result.refused.join("\n")).toContain("Extension API 6 -> 7 requires migration");
-  expect(result.refused.join("\n")).toContain("--ack-extension-api=7");
+  expect(result.refused.join("\n")).toContain("Extension API 6 -> 8 requires migration");
+  expect(result.refused.join("\n")).toContain("--ack-extension-api=8");
   expect(result.refused.join("\n")).toContain("src/modules/account-api/favorite-items.hooks.ts");
   expect(await snapshot(app)).toEqual(before);
 });
@@ -243,7 +309,9 @@ it("RG06 refuses actual legacy-to-shared product namespace migration even with A
   const prior = assembleV2(
     {
       designJson: canonicalJson(
-        runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+        runStudioCommands(withStubWorkloads(stubStackDesign()), [
+          { type: "setRunnableProcesses", on: true },
+        ]),
       ),
     },
     registry,
@@ -285,7 +353,9 @@ it("RG06 named-view audience edits keep legacy writer schemas and need no namesp
   const root = await mkdtemp(join(tmpdir(), "jeeves-rg06-view-audience-"));
   roots.push(root);
   const app = join(root, "app");
-  const source = runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]);
+  const source = runStudioCommands(withStubWorkloads(stubStackDesign()), [
+    { type: "setRunnableProcesses", on: true },
+  ]);
   const prior = assembleV2({ designJson: canonicalJson(source) }, registry);
   await exportNewDirectory(prior.files, app);
   const design = runStudioCommands(source, [
@@ -333,7 +403,7 @@ it("RG07 refuses legacy product SQL without an explicit external baseline, prese
   await writeFile(join(app, legacy), sql);
   const before = await snapshot(app);
   for (const check of [true, false]) {
-    const result = await updateDirectory(next, app, { check, acknowledgeExtensionApi: 7 });
+    const result = await updateDirectory(next, app, { check, acknowledgeExtensionApi: 8 });
     expect(result.refused.join("\n")).toContain("Product SQL baseline/migration required");
     expect(result.refused.join("\n")).toContain("never executes old SQL or converts schemas");
     expect(await snapshot(app)).toEqual(before);
@@ -348,7 +418,7 @@ it("RG07 refuses legacy product SQL without an explicit external baseline, prese
   );
   const withReceipt = await snapshot(app);
   expect(
-    (await updateDirectory(next, app, { check: false, acknowledgeExtensionApi: 7 })).refused.join(
+    (await updateDirectory(next, app, { check: false, acknowledgeExtensionApi: 8 })).refused.join(
       "\n",
     ),
   ).toContain("baseline/migration required");

@@ -61,6 +61,7 @@ const commands: StudioCommand[] = [
   tile("wiring-api", "items-index", "Items index", "search"),
   tile("wiring-api", "internal-api", "Internal API", "service"),
   tile("internal-api", "vault", "Vault", "object-store"),
+  tile("internal-api", "workload-issuer", "Workload issuer", "identity"),
   tile("wiring-api", "partner", "Partner", "external-api"),
   tile("publisher-api", "broadcasts", "Broadcasts", "queue"),
   {
@@ -83,6 +84,7 @@ const commands: StudioCommand[] = [
   connect("forward", "loader", "echo", true),
   module("wiring-api", "internal-call", "Internal call", "external-call"),
   connect("internal-call", "target", "internal-api"),
+  connect("internal-call", "workload", "workload-issuer"),
   module("wiring-api", "external-call", "External call", "external-call"),
   connect("external-call", "target", "partner"),
   module("wiring-api", "object-roundtrip", "Object roundtrip", "custom"),
@@ -100,6 +102,7 @@ const commands: StudioCommand[] = [
   connect("catalog-read", "loader", "catalog-source", true),
   connect("catalog-writer", "database", "catalog"),
   module("internal-api", "transform", "Transform", "custom"),
+  connect("transform", "workload", "workload-issuer"),
   connect("transform", "uses", "vault"),
   // `uses` follows the existing incoming consume link, so these custom bodies receive messages
   // and real generated database dependencies together; they implement only a domain SQL insert.

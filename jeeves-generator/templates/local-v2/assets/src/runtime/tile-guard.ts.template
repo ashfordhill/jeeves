@@ -1,4 +1,4 @@
-import { dependency, currentProcess, OperationError, assertOperation } from "./operation.ts";
+import { dependency, currentProcess, OperationError, assertOperation, rememberVerifiedBearer } from "./operation.ts";
 // Generated scaffold: an Auth guard's sign-in for its tile (v3 contract, section 2).
 // Export rewrites this file. Required: every module route needs a valid token. Optional: a request
 // without one is anonymous, and a token that fails verification is still refused.
@@ -64,13 +64,12 @@ export function createTileGuard(options: {
       typeof header === "string" ? /^Bearer (\S{1,16384})$/i.exec(header)?.[1] : undefined;
     if (!token) throw refused();
     try {
-      return {
-        signedIn: true,
-        principal: await dependency(
+      const principal = await dependency(
           { scope, maximumMs: 300000, definite: () => true, preserveDefinite: true },
           () => options.verify(token),
-        ),
-      };
+        );
+      rememberVerifiedBearer(token);
+      return { signedIn: true, principal };
     } catch (error) {
       if (error instanceof OperationError) throw error;
       // Only known token/claim/signature failures are authentication refusals. Native network

@@ -551,3 +551,11 @@ Display names preserve IDs, target addresses, durable namespaces and hook paths.
 **call** is a diagram link to a complete Favorites module in the same tile, not a configuration
 field. Its installed exact input/output/version/effect contracts are compiled metadata; there is
 no schema editor or Advanced setting. See [module connections](studio.md#adding-a-module).
+
+Server/worker modules have an optional **workload** link to an Identity, independent of user
+Sign-in. Select the same installed local OIDC/Keycloak issuer on each calling/called process.
+This is an implemented link choice, not an extra setting. New service calls on private networks
+need it too. Callee route stubs may export `allowedCallers` in product code to narrow the declared
+process callers; there is no audience/credential override control. An Auth guard first connects
+user identity, then workload on another Identity drag; other supported module Identity dots choose
+workload. Browser hosts cannot hold these credentials. See the emitted API8 guide.

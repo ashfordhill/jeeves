@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -670,7 +671,7 @@ describe("emitted failure line", () => {
 const pubsubBundle = assembleV2(
   {
     designJson: canonicalJson(
-      runStudioCommands(stubStackDesign(), [
+      runStudioCommands(withStubWorkloads(stubStackDesign()), [
         { type: "setRunnableProcesses", on: true },
         {
           type: "edit",

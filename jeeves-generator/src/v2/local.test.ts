@@ -16,6 +16,7 @@ import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { designSchema, generationRuntime } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import {
@@ -209,7 +210,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -238,7 +241,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -268,7 +273,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -312,7 +319,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -391,7 +400,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -437,7 +448,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -504,7 +517,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),
@@ -660,7 +675,9 @@ describe("standalone local foundation", () => {
     const processes = assembleV2(
       {
         designJson: JSON.stringify(
-          runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+          runStudioCommands(withStubWorkloads(stubStackDesign()), [
+            { type: "setRunnableProcesses", on: true },
+          ]),
         ),
       },
       loadApplicationRegistry(),

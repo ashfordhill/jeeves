@@ -151,6 +151,7 @@ export const blueprintComponentLinkSchema = z.strictObject({
     z.strictObject({ kind: z.literal("element"), id: idSchema, via: idSchema }),
   ]),
   label: text.optional(),
+  slot: z.literal("workload").optional(),
 });
 /** What the user does in a lane (at most one action per lane): the word on its action tile. */
 export const blueprintActionSchema = z.strictObject({ lane: studioLaneSchema, name: text });
@@ -574,6 +575,7 @@ function projectLegacyBlueprint(design: DesignDocument, projectName: string): De
       service,
       from: link.from,
       to: { ...link.to },
+      ...(link.slot && { slot: link.slot }),
       ...(link.label && { label: link.label }),
     });
   }

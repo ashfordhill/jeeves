@@ -165,6 +165,16 @@ export type NormalizedProcessSetting = {
  */
 export type NormalizedProcess = {
   tile: string;
+  /** Explicit issuer selection, independent of user Sign-in. Client/audience IDs use stable IDs. */
+  workload?: { identity: string; client: string; audience: string; sourcePaths: Path[] };
+  serviceCalls?: {
+    module: string;
+    target: string;
+    operations: string[];
+    forwardUser: boolean;
+    sourcePath: Path;
+  }[];
+  workloadCallers?: string[];
   name: string;
   kind: GenerationProcessKind;
   shape: "http" | "worker";
@@ -1215,6 +1225,131 @@ export function resolveGeneration(
       ),
     );
   if (model?.processes) {
+    // A workload selector provisions the finite local client-credentials contract without an
+    // Auth guard or browser. Saved source is readable; runnable generation reports missing setup.
+    for (const process of model.processes) {
+      const links = (studio?.componentConnections ?? []).flatMap((link, index) => {
+        const module = studio?.components?.find((module) => module.id === link.from);
+        return module?.host === process.tile &&
+          link.slot === "workload" &&
+          link.to.kind === "element"
+          ? [
+              {
+                target: { kind: "element" as const, element: link.to.id },
+                sourcePath: ["architecture", "studio", "componentConnections", index],
+              },
+            ]
+          : [];
+      });
+      const issuers = [
+        ...new Set(
+          links.flatMap((link) => (link.target.kind === "element" ? [link.target.element] : [])),
+        ),
+      ];
+      if (issuers.length > 1)
+        report(
+          "CONFIG_INVALID",
+          process.sourcePath,
+          "A process must select one Workload identity issuer; disconnect the conflicting workload links.",
+        );
+      const issuer = issuers[0];
+      if (!issuer) continue;
+      const selected = element(issuer);
+      if (
+        selected?.settings.kind !== "identity" ||
+        selected.settings.provider !== "oidc" ||
+        selected.settings.execution !== "docker"
+      ) {
+        report(
+          "NEEDS_TEMPLATE",
+          links[0]?.sourcePath ?? process.sourcePath,
+          "Workload identity requires the installed local OIDC/Keycloak Identity (Docker execution); select that Identity in the workload slot.",
+        );
+        continue;
+      }
+      process.workload = {
+        identity: issuer,
+        client: `jeeves-workload-${process.tile}`,
+        audience: `jeeves-service-${process.tile}`,
+        sourcePaths: links.map((link) => link.sourcePath),
+      };
+    }
+    for (const process of model.processes) {
+      const calls = normalized
+        .filter((s) => s.host === process.tile)
+        .flatMap((s) =>
+          (s.module?.slots ?? []).flatMap((slot) =>
+            slot.connections.flatMap((link) => {
+              const target = link.target;
+              if (
+                target.kind !== "element" ||
+                studioComponentTargetKind(target.tile) !== "application"
+              )
+                return [];
+              const destination = model.processes?.find((p) => p.tile === target.element);
+              const operations =
+                destination?.stubs
+                  .filter((stub) => stub.role === "route")
+                  .map((stub) => stub.module) ?? [];
+              if (
+                !process.workload ||
+                !destination?.workload ||
+                process.workload.identity !== destination.workload.identity
+              )
+                report(
+                  "CONFIG_REQUIRED",
+                  link.sourcePath,
+                  `Authenticated service call ${process.tile} → ${target.element} requires both processes to connect a module workload slot to the same installed Identity; Private network does not replace workload identity.`,
+                );
+              if (destination?.shape !== "http" || !operations.length)
+                report(
+                  "NEEDS_TEMPLATE",
+                  link.sourcePath,
+                  `Service call ${target.element} requires an HTTP process with a route stub; no installed cross-process adapter exists for its other operations.`,
+                );
+              const userGuard = normalized.find(
+                (s) => s.host === target.element && s.binding.kind === "verified-identity",
+              );
+              const sourceGuard = normalized.find(
+                (s) => s.host === process.tile && s.binding.kind === "verified-identity",
+              );
+              if (
+                userGuard &&
+                userGuard.inputs["guard.signIn"] !== "optional" &&
+                (!sourceGuard || sourceGuard.identity?.element !== userGuard.identity?.element)
+              )
+                report(
+                  "CONFIG_REQUIRED",
+                  link.sourcePath,
+                  `Service call ${target.element} requires an end-user credential as well as workload identity; connect matching user Auth guards on caller and callee to verify and privately forward the incoming bearer.`,
+                );
+              if (destination)
+                destination.workloadCallers = [
+                  ...new Set([...(destination.workloadCallers ?? []), process.tile]),
+                ].sort();
+              return [
+                {
+                  module: s.module?.component ?? s.id,
+                  target: target.element,
+                  operations,
+                  forwardUser:
+                    !!userGuard &&
+                    !!sourceGuard &&
+                    sourceGuard.identity?.element === userGuard.identity?.element,
+                  sourcePath: link.sourcePath,
+                },
+              ];
+            }),
+          ),
+        );
+      if (calls.length) process.serviceCalls = calls;
+      if (new Set(calls.map((call) => call.target)).size > 16)
+        report(
+          "NEEDS_TEMPLATE",
+          process.sourcePath,
+          "A workload supports at most 16 declared service audiences per process; reduce the service targets.",
+        );
+    }
     for (const process of model.processes) {
       const access = model.productState.flatMap((state) =>
         state.access

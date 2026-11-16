@@ -225,7 +225,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         status: "stub",
         selection: "shorten-links",
         reason: "No Generated module in Shorten service uses it, so you write it.",
-        unconnected: [],
+        unconnected: ["workload"],
       },
       {
         module: "shorten-limit",
@@ -235,7 +235,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         status: "stub",
         selection: "shorten-limit",
         reason: "Jeeves doesn't generate Rate limiter modules; you write it.",
-        unconnected: ["store"],
+        unconnected: ["store", "workload"],
       },
     ]);
     // The report adds each module's files (with the settings library they declare theirs with,

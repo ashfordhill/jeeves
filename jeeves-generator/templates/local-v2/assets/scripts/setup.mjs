@@ -1,6 +1,18 @@
 import { randomBytes } from "node:crypto";
-import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { plan } from "./common.mjs";
+
+const workloadContract = () =>
+  JSON.stringify(plan.identity.map((i) => ({ id: i.id, workloads: i.workloads ?? [] })));
+/** Realm import is first-run only. Restart must never pretend import updates an existing realm. */
+export function verifyWorkloadSetup() {
+  if (!plan.identity.some((i) => i.workloads?.length)) return;
+  const path = ".runtime/workload-contract.json";
+  if (!existsSync(path) || readFileSync(path, "utf8") !== workloadContract())
+    throw new Error(
+      "Workload issuer setup changed or is missing. Existing Keycloak realms are not updated by --import-realm. Use a fresh disposable local runtime, or perform a reviewed external issuer/client migration and record its exact workload contract before restart.",
+    );
+}
 
 /** Called only after local.mjs has checked exact-project Docker state and free ports. */
 export function setup() {
@@ -8,6 +20,8 @@ export function setup() {
     throw new Error("Existing .runtime must be retained; setup is single-use.");
   mkdirSync(".runtime", { mode: 0o700 });
   mkdirSync(".runtime/secrets", { mode: 0o700 });
+  writeFileSync(".runtime/workload-contract.json", workloadContract(), { mode: 0o600, flag: "wx" });
+  chmodSync(".runtime/workload-contract.json", 0o600);
   const values = {};
   const write = (name, value, mode = 0o644) => {
     const path = `.runtime/secrets/${name}`;
@@ -57,10 +71,45 @@ index = "index.html"
       JSON.stringify({
         realm: identity.id,
         enabled: true,
+        accessTokenLifespan: 300,
         registrationAllowed: false,
         roles: { realm: identity.roles.map((name) => ({ name })) },
         sslRequired: "none",
         clients: [
+          ...(identity.workloads ?? []).map((workload) => ({
+            clientId: workload.client,
+            publicClient: false,
+            secret: values[workload.secret],
+            serviceAccountsEnabled: true,
+            standardFlowEnabled: false,
+            implicitFlowEnabled: false,
+            directAccessGrantsEnabled: false,
+            fullScopeAllowed: false,
+            protocolMappers: [
+              {
+                name: "workload-process",
+                protocol: "openid-connect",
+                protocolMapper: "oidc-hardcoded-claim-mapper",
+                config: {
+                  "claim.name": "jeeves_workload",
+                  "claim.value": workload.process,
+                  "jsonType.label": "String",
+                  "id.token.claim": "false",
+                  "access.token.claim": "true",
+                },
+              },
+              ...workload.audiences.map((audience) => ({
+                name: `audience-${audience}`,
+                protocol: "openid-connect",
+                protocolMapper: "oidc-audience-mapper",
+                config: {
+                  "included.custom.audience": audience,
+                  "id.token.claim": "false",
+                  "access.token.claim": "true",
+                },
+              })),
+            ],
+          })),
           {
             clientId: `${identity.id}-web`,
             publicClient: true,

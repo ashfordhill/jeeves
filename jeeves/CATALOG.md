@@ -370,9 +370,17 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 | Command | What it does |
 | --- | --- |
 | `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` changes the label and preserves the ID. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
-| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; other adapters and cross-process callable transports remain gaps. A filled slot must be disconnected first. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; other installed-template adapters, including cross-process Favorites, remain gaps. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
+
+Modules on server/worker hosts also accept `slot: "workload", target: {tile: "identity-id"}`. This
+selects the finite local OIDC/Keycloak service-account issuer independently of user Sign-in.
+New service calls require that shared issuer on caller/callee, including private-network links.
+API8 offers bounded GET/POST calls to route-stub operation roots with compiled callers; template
+adapters remain gaps. A module's `allowedCallers` export may narrow its maximum. An Auth guard first connects user identity; another Identity drag selects workload once that slot
+is filled. Other supported module Identity dots choose workload. Saved untagged Identity links retain
+their legacy inferred use; explicit workload links retain `slot` in source and blueprint v3.
 
 Each command derives, in the same batch and one Undo step, every module's generation
 ([`module-generation.ts`](packages/spec/src/module-generation.ts)). This covers the selections,

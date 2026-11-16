@@ -545,6 +545,10 @@ function buildModuleCommand(
     }
     case "connectModule": {
       const module = component(input.module);
+      if (input.slot === "workload" && tileKind(module.host) === "browser")
+        throw new Error(
+          "Workload identity requires a server or worker process; a Browser cannot hold service credentials.",
+        );
       const definition = studioComponentDefinitions[module.settings.kind];
       const who = sentence(module.name);
       const host = name(module.host);
@@ -658,6 +662,8 @@ function buildModuleCommand(
           id: freshId(`${module.id}-${tile}`, (id) => free.has(id)),
           from: module.id,
           to: { kind: "element", id: tile, via },
+          ...(slot.id === "workload" && { slot: "workload" as const }),
+          ...(slot.id === "workload" && { label: "Workload identity" }),
         },
       ];
       break;
@@ -729,7 +735,12 @@ export function moduleConnectOptions(
     const kind = kinds.get(node.id);
     if (!kind) return [];
     const target = studioComponentTargetKind(kind);
-    const slot = definition.slots.find((each) => !each.module && each.targets.includes(target));
+    const matching = moduleSlots(design, module).filter(
+      (state) => !state.slot.module && state.slot.targets.includes(target),
+    );
+    const slot = (
+      matching.find((state) => state.slot.many || state.links.length === 0) ?? matching[0]
+    )?.slot;
     return [
       attempt(
         { tile: node.id },

@@ -42,3 +42,78 @@ export function bindFavoritesHooks(hooks: { eligible(itemId: string): boolean })
   const guarded = productHooks(hooks);
   return { eligible: async (itemId: string) => guarded.eligible(itemId) };
 }
+
+/** Finite JSON DTO validation precedes serialization and every credential/network dispatch. */
+export function jsonBody(value: unknown): string | undefined {
+  if (value === undefined) return undefined;
+  const ancestors = new Set<object>();
+  let nodes = 0;
+  let bytes = 0;
+  const refuse = () => {
+    throw new Error("Invalid JSON DTO");
+  };
+  const add = (length: number) => {
+    bytes += length;
+    if (bytes > 65536) refuse();
+  };
+  const string = (text: string, max = 16384) => {
+    if (Buffer.byteLength(text) > max) refuse();
+    add(Buffer.byteLength(JSON.stringify(text)));
+  };
+  const visit = (item: unknown, depth: number): void => {
+    if (++nodes > 4096 || depth > 16) refuse();
+    if (item === null) {
+      add(4);
+      return;
+    }
+    if (typeof item === "string") {
+      string(item);
+      return;
+    }
+    if (typeof item === "boolean") {
+      add(item ? 4 : 5);
+      return;
+    }
+    if (typeof item === "number" && Number.isFinite(item)) {
+      add(String(item).length);
+      return;
+    }
+    if (
+      !item ||
+      typeof item !== "object" ||
+      ancestors.has(item) ||
+      Object.getOwnPropertySymbols(item).length
+    )
+      return refuse();
+    ancestors.add(item);
+    if (Array.isArray(item)) {
+      if (item.length > 1024) refuse();
+      add(2 + Math.max(0, item.length - 1));
+      for (let i = 0; i < item.length; i++) {
+        const property = Object.getOwnPropertyDescriptor(item, String(i));
+        if (!property || !("value" in property)) refuse();
+        visit(property!.value, depth + 1);
+      }
+      if (
+        Object.keys(item).length !== item.length ||
+        Object.getOwnPropertyNames(item).length !== item.length + 1
+      )
+        refuse();
+    } else {
+      if (![Object.prototype, null].includes(Object.getPrototypeOf(item))) refuse();
+      const keys = Object.keys(item);
+      if (keys.length > 128 || Object.getOwnPropertyNames(item).length !== keys.length) refuse();
+      add(2 + Math.max(0, keys.length - 1));
+      for (const key of keys) {
+        const property = Object.getOwnPropertyDescriptor(item, key);
+        if (!property || !("value" in property)) refuse();
+        string(key, 256);
+        add(1);
+        visit(property!.value, depth + 1);
+      }
+    }
+    ancestors.delete(item);
+  };
+  visit(value, 0);
+  return JSON.stringify(value);
+}

@@ -158,6 +158,18 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
       const clients = moduleClients(model, asset);
       return {
         files: [
+          ...(processes.some((p) => p.workload)
+            ? [
+                {
+                  path: "src/runtime/workload.ts",
+                  content: asset(
+                    "jeeves-generator/templates/local-v2/assets/src/runtime/workload.ts.template",
+                  ),
+                  ownership: "generated-scaffold" as const,
+                  sourcePaths: ["/generation/processes"],
+                },
+              ]
+            : []),
           ...processes.map((process) => entryFile(process, mounts.get(process.tile) ?? [])),
           ...all.flatMap((mount) => (mount.hooks ? [mount.hooks.file] : [])),
           // "Not implemented" and the failure log (every process and the stubs' clients use
@@ -204,6 +216,7 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
   const external = unique(wired.flatMap((item) => item.external ?? []));
   return {
     host: process.tile,
+    ...(process.workload && { workload: process.workload }),
     command: ["node", processPaths(process.tile).built],
     http: false,
     dependsOn: unique(wired.flatMap((item) => item.dependsOn)),
@@ -235,6 +248,9 @@ function environmentOf(service: ReturnType<typeof serviceOf>) {
   return unique([
     ...Object.keys(service.environment ?? {}),
     ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
+    ...(service.workload
+      ? ["JEEVES_WORKLOAD_ISSUER", "JEEVES_WORKLOAD_TOKEN_URL", "JEEVES_WORKLOAD_JWKS_URL"]
+      : []),
     ...Object.keys(localEndpoints(service)),
     ...(service.external ?? []).map(externalVariable),
   ]);
@@ -268,6 +284,11 @@ function reportRow(
   const stubSettings = stubSettingsRows(process, selections);
   return {
     tile: process.tile,
+    ...(process.workload && {
+      workload: process.workload,
+      serviceCalls: process.serviceCalls ?? [],
+      workloadCallers: process.workloadCallers ?? [],
+    }),
     name: process.name,
     kind: process.kind,
     service: `app-${process.tile}`,
@@ -332,11 +353,15 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   );
   const stubs = process.stubs
     .filter((stub) => stub.role === "route")
-    .map((stub) => ({ module: stub.module, path: `/modules/${stub.module}` }));
+    .map((stub) => ({
+      module: stub.module,
+      path: `${process.workloadCallers?.length && process.exposure !== "public" ? "/internal/modules" : "/modules"}/${stub.module}`,
+    }));
   // What each loop consumes, in the order its code reads `config.loops[n]`.
   const loops = mounts.flatMap((mount) => mount.loops.map(({ answers: _, ...loop }) => loop));
   const config = {
     tile: process.tile,
+    ...(process.workload && { workload: process.workload }),
     kind: process.kind,
     shape: process.shape,
     ...(process.exposure && { exposure: process.exposure }),
@@ -353,7 +378,14 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
     "// Export rewrites this file. Write modules in src/modules/; .jeeves/report.json lists what runs.",
   ];
   const routed = mounts.some((mount) => mount.configure.length);
-  const setup = mounts.flatMap((mount) => mount.setup);
+  const setup = [
+    ...(process.workload
+      ? [
+          `const workload = createWorkload(workloadConfiguration, ${JSON.stringify(unique(process.serviceCalls?.map((call) => call.target) ?? []))});`,
+        ]
+      : []),
+    ...mounts.flatMap((mount) => mount.setup),
+  ];
   // Each template's `started` line, once everything before the ready marker has passed.
   const started = mounts.flatMap((mount) =>
     mount.template && mount.startup
@@ -371,6 +403,12 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   // A tile with a sign-in mounts every module route through it.
   const guard = mounts.find((mount) => mount.guard)?.guard;
   const imports = importLines([
+    ...(process.workload
+      ? [
+          { from: "../runtime/workload.ts", name: "workloadSettings" },
+          { from: "../runtime/workload.ts", name: "createWorkload" },
+        ]
+      : []),
     ...(http
       ? [
           { from: "../runtime/http.ts", name: "createHttpService" },
@@ -407,6 +445,9 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
       : []),
   ];
   const validation = [
+    ...(process.workload
+      ? ["const workloadConfiguration = workloadSettings(config.workload);"]
+      : []),
     ...mounts.flatMap((mount) => mount.validation ?? []),
     ...(mounts.some((mount) => mount.template) ? ["validateTemplateSettings(config.tile);"] : []),
   ];

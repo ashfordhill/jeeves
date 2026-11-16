@@ -10,6 +10,7 @@ import {
   type StudioCommand,
 } from "@jeeves/spec";
 import { afterAll, describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import {
   runStudioCommands,
@@ -47,7 +48,7 @@ const asset = (path: string) =>
 
 // The stub stack with Runnable processes on: Visits (a topic Visit publisher publishes to and Visit
 // consumer consumes) set to Google Cloud; Uploaded stays on RabbitMQ.
-const rabbit = runStudioCommands(stubStackDesign(), [on]);
+const rabbit = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
 const cloud = provider(rabbit, "visits", "google-cloud");
 const rabbitExport = exported(rabbit);
 const cloudExport = exported(cloud);

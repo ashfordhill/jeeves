@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { applyOperations } from "./apply.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import { stubStackDesign } from "./fixtures/stub-stack.ts";
@@ -82,14 +83,14 @@ describe("Runnable processes (tile process contract, section 1)", () => {
         processes: undefined,
       }),
     ).toThrow("Runnable processes aren't installed in this studio's generator.");
-    const on = run(stubStackDesign(), processes(true)).design;
+    const on = run(withStubWorkloads(stubStackDesign()), processes(true)).design;
     expect(
       buildSupportedAuthoringCommand(on, processes(false), { templates: [] }).ops,
     ).toHaveLength(1);
   });
 
   it("keeps the option through later module commands", () => {
-    const on = run(stubStackDesign(), processes(true)).design;
+    const on = run(withStubWorkloads(stubStackDesign()), processes(true)).design;
     const next = runStudioCommands(on, [
       { type: "addModule", host: "stats-api", kind: "rate-limiter", name: "Stats limiter" },
     ]);
@@ -99,7 +100,10 @@ describe("Runnable processes (tile process contract, section 1)", () => {
   it("normalizes a process per application tile only when on", () => {
     const off = resolveGeneration(stubStackDesign(), installed);
     expect(off.model && "processes" in off.model).toBe(false);
-    const on = resolveGeneration(run(stubStackDesign(), processes(true)).design, installed);
+    const on = resolveGeneration(
+      run(withStubWorkloads(stubStackDesign()), processes(true)).design,
+      installed,
+    );
     expect(on.findings).toEqual([]);
     const rows = on.model?.processes ?? [];
     expect(rows.map((row) => [row.tile, row.kind, row.shape, row.exposure])).toEqual([
@@ -190,8 +194,10 @@ describe("Runnable processes (tile process contract, section 1)", () => {
   });
 
   it("works out every other store and channel a stub links to, with the link's access", () => {
-    const rows = resolveGeneration(run(stubStackDesign(), processes(true)).design, installed).model
-      ?.processes;
+    const rows = resolveGeneration(
+      run(withStubWorkloads(stubStackDesign()), processes(true)).design,
+      installed,
+    ).model?.processes;
     const stores = (tile: string, module: string) =>
       rows
         ?.find((row) => row.tile === tile)
@@ -292,7 +298,7 @@ describe("Runnable processes (tile process contract, section 1)", () => {
   });
 
   it("needs the host to install it, and a design built from modules", () => {
-    const on = run(stubStackDesign(), processes(true)).design;
+    const on = run(withStubWorkloads(stubStackDesign()), processes(true)).design;
     const without = { ...installed, processes: undefined };
     const finding = resolveGeneration(on, without).findings.map((item) => [
       item.code,
@@ -316,7 +322,7 @@ describe("Runnable processes (tile process contract, section 1)", () => {
     const generation = { version: 1, runtime: generationRuntime.ref, selections: [] };
     expect(generationSchema.safeParse({ ...generation, processes: true }).success).toBe(true);
     expect(generationSchema.safeParse({ ...generation, processes: false }).success).toBe(false);
-    const on = run(stubStackDesign(), processes(true)).design;
+    const on = run(withStubWorkloads(stubStackDesign()), processes(true)).design;
     expect(unsupportedBlueprintV2(on)).toContainEqual({
       path: ["generation", "processes"],
       reason: "Runnable processes are unsupported by blueprint v2.",

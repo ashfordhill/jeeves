@@ -57,7 +57,7 @@ type Client = {
   key: string;
   section: Exclude<ClientSection, "broker" | "pubsub-loop">;
   call: string;
-  name?: "externalTarget" | "identityTarget" | "productDatabaseClient";
+  name?: "externalTarget" | "identityTarget" | "productDatabaseClient" | "serviceTarget";
   check?: { name: string; call: string };
   prepare?: string;
 };
@@ -314,12 +314,26 @@ export function stubClients(
       if (kind === "application") {
         if (!processes.some((item) => item.tile === target.element))
           return [property, unavailable(property, target.name, "it runs no process")];
+        const call = process.serviceCalls?.find(
+          (call) => call.module === module.component && call.target === target.element,
+        );
+        if (!call || !process.workload)
+          return [
+            property,
+            unavailable(
+              property,
+              target.name,
+              "Workload identity setup required; connect caller and callee workload slots to the same Identity",
+            ),
+          ];
         return [
           property,
           use({
-            key: target.element,
+            key: `${target.element}:${module.component}`,
             section: "http",
-            call: `httpTarget({ tile: ${text(target.element)} })`,
+            name: "serviceTarget",
+            call: `serviceTarget({ tile: ${text(target.element)}, operations: ${JSON.stringify(call.operations)}, forwardUser: ${call.forwardUser}, credentials: workload })`,
+            check: { name: "serviceEndpoint", call: `serviceEndpoint(${text(target.element)})` },
           }),
         ];
       }
@@ -369,7 +383,7 @@ export function stubClients(
   const probed = pubsubLoops || list.some((client) => client.call.startsWith("await "));
   for (const client of list)
     imports.push({
-      from: clients,
+      from: client.name === "serviceTarget" ? "../runtime/workload.ts" : clients,
       name:
         client.name ??
         {
@@ -389,7 +403,9 @@ export function stubClients(
   // use, each once (by its text), so a wrong setting fails before any client is built or probed.
   const checks = new Map<string, { name: string; from: string }>();
   for (const client of list)
-    if (client.section === "http")
+    if (client.name === "serviceTarget" && client.check)
+      checks.set(client.check.call, { name: client.check.name, from: "../runtime/workload.ts" });
+    else if (client.section === "http")
       checks.set(client.call, { name: client.name ?? "httpTarget", from: clients });
     else if (client.check)
       checks.set(client.check.call, { name: client.check.name, from: clients });
@@ -429,6 +445,8 @@ export function stubClients(
   const provisioned = stores.filter((store) => !store.unsupported);
   const written = stores.filter(writesDatabase);
   const issuer = list.find((client) => client.name === "identityTarget")?.key;
+  if (process.workload && process.workloadCallers?.length)
+    imports.push({ from: "../runtime/workload.ts", name: "callerAllowlist" });
   const external = list
     .filter((client) => client.name === "externalTarget")
     .map((client) => client.key);
@@ -437,6 +455,17 @@ export function stubClients(
     mount: {
       imports,
       validation: [
+        ...(process.workload && process.workloadCallers?.length
+          ? [
+              `const allowedCallers = { ${stubs
+                .filter(({ stub }) => stub.role === "route")
+                .map(
+                  ({ module }) =>
+                    `${text(module.component)}: callerAllowlist((${pascal(module.component)}Module as { allowedCallers?: unknown }).allowedCallers, ${JSON.stringify(process.workloadCallers)})`,
+                )
+                .join(", ")} };`,
+            ]
+          : []),
         "// Each stub's own settings: what its file's `settings` export declares (none without one).",
         "const declared = {",
         ...declarations,
@@ -499,9 +528,7 @@ export function stubClients(
         ...((pubsubLoops || list.some((client) => client.section === "pubsub")) && {
           pubsub: true,
         }),
-        calls: list
-          .filter((client) => client.section === "http" && !client.name)
-          .map((client) => client.key),
+        calls: [...new Set(process.serviceCalls?.map((call) => call.target) ?? [])],
         // A stub's Identity client reads that Identity's `JEEVES_IDENTITY_<ID>_URL` (locally
         // Keycloak inside the network), and an External API's its `JEEVES_EXTERNAL_<ID>_URL`, which
         // Compose doesn't set (QG20).

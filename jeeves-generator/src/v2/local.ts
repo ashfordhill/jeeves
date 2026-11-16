@@ -180,6 +180,8 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   const gaps: V2Gap[] = [];
   const resourceMap = new Map<string, Resource>();
   const identityIds = new Set<string>();
+  for (const process of model.processes ?? [])
+    if (process.workload) identityIds.add(process.workload.identity);
   const sourcePaths = ["/generation"];
   const provenance = (paths: readonly (readonly (string | number)[])[]) => {
     for (const parts of paths) {
@@ -428,6 +430,16 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     secret: `identity-${id}`,
     admin: `identity-admin-${id}`,
     roles: [...(identityRoles.find((row) => row.element === id)?.roles ?? [])],
+    workloads: (model.processes ?? [])
+      .filter((p) => p.workload?.identity === id)
+      .map((p) => ({
+        process: p.tile,
+        client: p.workload?.client ?? "",
+        secret: `workload-${p.workload?.client}`,
+        audiences: [
+          ...new Set(p.serviceCalls?.map((call) => `jeeves-service-${call.target}`) ?? []),
+        ].sort(),
+      })),
   }));
   for (const r of byKind("database"))
     databases.push({
@@ -980,6 +992,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "The fixed local identity port slot supports one selected identity authority.",
     );
   for (const i of identity) {
+    for (const workload of i.workloads) secret(workload.secret);
     secret(i.secret);
     setupSecrets.push(i.secret);
     secret(i.admin);
@@ -1080,6 +1093,9 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           "Exactly one runtime writer per selected host.",
         );
       const credentials: string[] = [];
+      const workload = model.processes?.find((p) => p.tile === service.host)?.workload;
+      const workloadIssuer = workload && identity.find((i) => i.id === workload.identity);
+      if (workload) credentials.push(`workload-${workload.client}`);
       for (const id of service.sql ?? []) {
         const login = logins.find((l) => l.resource === id && l.host === service.host);
         if (!login)
@@ -1180,6 +1196,11 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         // the application's to set.
         environment: {
           ...service.environment,
+          ...(workloadIssuer && {
+            JEEVES_WORKLOAD_ISSUER: `http://127.0.0.1:${composeVariable("LOCAL_IDENTITY_PORT")}/realms/${workloadIssuer.id}`,
+            JEEVES_WORKLOAD_TOKEN_URL: `http://${workloadIssuer.service}:8080/realms/${workloadIssuer.id}/protocol/openid-connect/token`,
+            JEEVES_WORKLOAD_JWKS_URL: `http://${workloadIssuer.service}:8080/realms/${workloadIssuer.id}/protocol/openid-connect/certs`,
+          }),
           ...(identityBinding && {
             OIDC_ISSUER: `http://127.0.0.1:${composeVariable("LOCAL_IDENTITY_PORT")}/realms/${identityBinding.id}`,
             OIDC_AUDIENCE: `${identityBinding.id}-web`,
@@ -1197,6 +1218,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           ]),
         }),
         depends_on: {
+          ...(workloadIssuer && { [workloadIssuer.service]: { condition: "service_healthy" } }),
           ...(identityBinding && { [identityBinding.service]: { condition: "service_healthy" } }),
           ...Object.fromEntries(
             service.dependsOn.map((id) => {

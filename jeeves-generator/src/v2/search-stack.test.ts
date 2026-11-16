@@ -5,6 +5,7 @@ import {
   type StudioCommand,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { searchStackDesign } from "../../../jeeves/packages/spec/src/fixtures/search-stack.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
@@ -227,7 +228,7 @@ describe("the search stack (V3-08)", () => {
 
 describe("process settings reach the process (v3 contract, section 4, D5)", () => {
   it("runs a stub tile's saved limits: an HTTP process's and a Worker's stub loops", () => {
-    let design = runStudioCommands(stubStackDesign(), [on]);
+    let design = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     design = edit(design, "links-api", { requestTimeoutMs: 250, concurrencyLimit: 7 });
     design = edit(design, "visit-worker", { concurrency: 8 });
     const bundle = assemble(design);
@@ -246,7 +247,7 @@ describe("process settings reach the process (v3 contract, section 4, D5)", () =
     // A loop stub beside HTTP routes still runs one message at a time.
     expect(text(bundle, "src/processes/links-api.ts")).toContain('"concurrency": 1');
     // Unsaved, each runs its initial value, listed as fixed.
-    const fresh = assemble(runStudioCommands(stubStackDesign(), [on]));
+    const fresh = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
     expect(row(fresh, "visit-worker").settings).toEqual([
       { setting: "concurrency", value: 1, origin: "fixed" },
     ]);

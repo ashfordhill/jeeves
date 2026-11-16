@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { applyOperations } from "./apply.ts";
 import type { DesignDocument } from "./design.ts";
 import { designSchema, emptyDesign, parseStoredDesign } from "./design.ts";
@@ -96,7 +97,7 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
   });
 
   it("saves a typed value on the tile, which the process runs as the tile's, and clears it", () => {
-    let design = runStudioCommands(stubStackDesign(), [on]);
+    let design = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     design = edit(design, "links-api", { requestTimeoutMs: 250 });
     design = edit(design, "visit-worker", { concurrency: 8 });
     expect(settingsOf(design, "links-api")?.requestTimeoutMs).toBe(250);
@@ -159,7 +160,7 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
     // An older saved revision whose Request timeout is out of range: the schema refuses it, so
     // the resolver has no model. Before V3-18 that hid every control, this one included, and
     // neither the Options form nor chat's edit could reach the value.
-    const valid = runStudioCommands(stubStackDesign(), [on]);
+    const valid = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     const design = structuredClone(valid);
     const tile = settingsOf(design, "links-api");
     if (!tile) throw new Error("No Links API.");
@@ -206,7 +207,7 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
   });
 
   it("opens a stored design whose only problem is a setting's number out of bounds", () => {
-    const valid = runStudioCommands(stubStackDesign(), [on]);
+    const valid = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     const stored = structuredClone(valid);
     const links = settingsOf(stored, "links-api");
     const worker = settingsOf(stored, "visit-worker");
@@ -290,7 +291,10 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
       ["video-cdn", ["public"]],
     ]);
     // A design with no CDN has none.
-    const stub = resolveGeneration(runStudioCommands(stubStackDesign(), [on]), installed).model;
+    const stub = resolveGeneration(
+      runStudioCommands(withStubWorkloads(stubStackDesign()), [on]),
+      installed,
+    ).model;
     expect(stub && "delivery" in stub).toBe(false);
   });
 });

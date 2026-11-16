@@ -1,0 +1,6 @@
+Root hashes matched: 7
+Owner binary diff/modes matched: 34001 bytes, SHA256 875bf5375fa478082da3cebeae9c0a2ecc286e3fe7615b877139dfcc39ca8fb7
+Frozen v1 and historical YouTube trees: no changes
+Branch: main
+Docker inventory after (same as before):
+c0fbbc2996fe jeeves-postgres-1 127.0.0.1:54329->5432/tcp

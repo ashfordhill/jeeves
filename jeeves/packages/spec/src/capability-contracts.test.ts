@@ -46,7 +46,7 @@ describe("versioned callable metadata", () => {
       access: [{ resource: "favorites", name: "favorites.items", use: "write" }],
       caller: { kind: "verified-principal", identity: "sign-in", guard: "account-check" },
       lifecycle: { process: "account-api", mechanism: "src/runtime/process.ts" },
-      extensionApiVersion: 7,
+      extensionApiVersion: 8,
     });
   });
 

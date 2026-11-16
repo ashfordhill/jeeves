@@ -13,6 +13,7 @@ import {
   type StudioCommand,
 } from "@jeeves/spec";
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import {
   stubStackDesign,
   stubStackWithCacheRead,
@@ -78,7 +79,7 @@ const emptyWorker = () =>
 
 describe("local.tile-processes", () => {
   const off = assemble(stubStackDesign());
-  const bundle = assemble(runStudioCommands(stubStackDesign(), [on]));
+  const bundle = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
 
   it("installs processes in the application registry only", () => {
     expect(registry.installed.processes).toBe(true);
@@ -97,6 +98,7 @@ describe("local.tile-processes", () => {
       "infra/postgres/links-db/products/commands/example.sql",
       "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
       "infra/postgres/links-db/products/queries/example.sql",
+      "infra/postgres/workload-issuer/000-foundation.sql",
       "scripts/products.mjs",
       "src/http-errors.hooks.ts",
       "src/modules/entry.ts",
@@ -125,6 +127,7 @@ describe("local.tile-processes", () => {
       "src/runtime/transaction.ts",
       // The stubs' cache (Links cache) uses the cache read's bounded client.
       "src/runtime/valkey.ts",
+      "src/runtime/workload.ts",
     ]);
     expect(paths(off).filter((path) => !paths(bundle).includes(path))).toEqual([]);
     const http = text(bundle, "src/processes/links-api.ts");
@@ -170,6 +173,7 @@ describe("local.tile-processes", () => {
       "app-upload-api",
       "app-visit-worker",
       "cache-links-cache",
+      "identity-workload-issuer",
       "local-broker",
       "local-objects",
       "local-postgres",
@@ -181,8 +185,13 @@ describe("local.tile-processes", () => {
     const healthy = (...names: string[]) =>
       Object.fromEntries(names.map((name) => [name, { condition: "service_healthy" }]));
     const providers: Record<string, object> = {
-      "app-links-api": healthy("cache-links-cache", "local-broker", "local-postgres"),
-      "app-stats-api": healthy("search-stats-index"),
+      "app-links-api": healthy(
+        "cache-links-cache",
+        "identity-workload-issuer",
+        "local-broker",
+        "local-postgres",
+      ),
+      "app-stats-api": healthy("identity-workload-issuer", "search-stats-index"),
       "app-upload-api": healthy("local-broker", "local-objects"),
       "app-visit-worker": healthy("local-broker", "local-objects", "local-postgres"),
     };
@@ -205,6 +214,7 @@ describe("local.tile-processes", () => {
     );
     expect(plan.providers).toEqual([
       "cache-links-cache",
+      "identity-workload-issuer",
       "local-broker",
       "local-objects",
       "local-postgres",
@@ -335,7 +345,7 @@ describe("local.tile-processes", () => {
   });
 
   it("refuses export where processes aren't installed", () => {
-    const design = runStudioCommands(stubStackDesign(), [on]);
+    const design = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     const dependencies = loadLocalV2Dependencies();
     expect(
       generationExportBlockers(design, dependencies.installed).map((item) => item.target.path),
@@ -346,7 +356,7 @@ describe("local.tile-processes", () => {
 });
 
 describe("store and tile endpoints come from the environment (QG06)", () => {
-  const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+  const stack = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
   const off = assemble(stubStackDesign());
   const services = (target: Bundle) =>
     (
@@ -379,9 +389,20 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
         JEEVES_CACHE_LINKS_CACHE_TLS: "disable",
         ...linksDb,
         JEEVES_TILE_STATS_API_URL: "http://app-stats-api:3000",
+        JEEVES_WORKLOAD_ISSUER: `http://127.0.0.1:\${LOCAL_IDENTITY_PORT:?Set LOCAL_IDENTITY_PORT}/realms/workload-issuer`,
+        JEEVES_WORKLOAD_JWKS_URL:
+          "http://identity-workload-issuer:8080/realms/workload-issuer/protocol/openid-connect/certs",
+        JEEVES_WORKLOAD_TOKEN_URL:
+          "http://identity-workload-issuer:8080/realms/workload-issuer/protocol/openid-connect/token",
       },
       // Its only store is a search index, which is still reached at its local name.
-      "app-stats-api": {},
+      "app-stats-api": {
+        JEEVES_WORKLOAD_ISSUER: `http://127.0.0.1:\${LOCAL_IDENTITY_PORT:?Set LOCAL_IDENTITY_PORT}/realms/workload-issuer`,
+        JEEVES_WORKLOAD_JWKS_URL:
+          "http://identity-workload-issuer:8080/realms/workload-issuer/protocol/openid-connect/certs",
+        JEEVES_WORKLOAD_TOKEN_URL:
+          "http://identity-workload-issuer:8080/realms/workload-issuer/protocol/openid-connect/token",
+      },
       "app-upload-api": broker,
       "app-visit-worker": { ...broker, ...linksDb },
     });
@@ -421,7 +442,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     );
     for (const target of [
       stack,
-      assemble(runStudioCommands(stubStackWithCacheRead(), [on])),
+      assemble(runStudioCommands(withStubWorkloads(stubStackWithCacheRead()), [on])),
       probe,
     ]) {
       const composed = services(target);
@@ -462,9 +483,15 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
           "JEEVES_DATABASE_LINKS_DB_PORT",
           "JEEVES_DATABASE_LINKS_DB_TLS",
           "JEEVES_TILE_STATS_API_URL",
+          "JEEVES_WORKLOAD_ISSUER",
+          "JEEVES_WORKLOAD_JWKS_URL",
+          "JEEVES_WORKLOAD_TOKEN_URL",
         ],
       ],
-      ["app-stats-api", []],
+      [
+        "app-stats-api",
+        ["JEEVES_WORKLOAD_ISSUER", "JEEVES_WORKLOAD_JWKS_URL", "JEEVES_WORKLOAD_TOKEN_URL"],
+      ],
       ["app-upload-api", ["JEEVES_BROKER_HOST", "JEEVES_BROKER_PORT"]],
       [
         "app-visit-worker",
@@ -479,7 +506,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     ]);
     const readme = text(stack, "README.md");
     expect(readme).toContain(
-      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_CACHE_LINKS_CACHE_TLS`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`, `JEEVES_TILE_STATS_API_URL`\n- `app-stats-api`: none\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`\n",
+      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_CACHE_LINKS_CACHE_TLS`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`, `JEEVES_TILE_STATS_API_URL`, `JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_JWKS_URL`, `JEEVES_WORKLOAD_TOKEN_URL`\n- `app-stats-api`: `JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_JWKS_URL`, `JEEVES_WORKLOAD_TOKEN_URL`\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`\n",
     );
     expect(readme).toContain("fails startup with `Invalid endpoint <variable>`, never its value");
     expect(text(off, "README.md")).not.toContain("Endpoints from the environment");
@@ -498,7 +525,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     );
     const designs = [
       stack,
-      assemble(runStudioCommands(stubStackWithCacheRead(), [on])),
+      assemble(runStudioCommands(withStubWorkloads(stubStackWithCacheRead()), [on])),
       assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on])),
       v3,
     ];
@@ -551,7 +578,11 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
       ),
     );
     let bindings = 0;
-    for (const target of [stack, assemble(runStudioCommands(stubStackWithCacheRead(), [on])), v3])
+    for (const target of [
+      stack,
+      assemble(runStudioCommands(withStubWorkloads(stubStackWithCacheRead()), [on])),
+      v3,
+    ])
       for (const [name, service] of Object.entries(services(target))) {
         if (!name.startsWith("app-")) continue;
         const environment = service.environment ?? {};
@@ -1179,7 +1210,10 @@ describe("emitted HTTP service and process runtime", () => {
 const entryRuntime = await import(
   dataUrl(
     stripTypeScriptTypes(
-      text(assemble(runStudioCommands(stubStackDesign(), [on])), "src/modules/entry.ts"),
+      text(
+        assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on])),
+        "src/modules/entry.ts",
+      ),
     ),
   )
 );
@@ -1429,7 +1463,7 @@ describe("route stubs get a deadline signal and a route table (QL02)", () => {
 // The emitted settings.ts a stub declares its settings with (QL05, owner decision D6), loaded as
 // the stub stack exports it; its only import is node:fs. File settings come from a scratch
 // SECRET_DIR.
-const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+const stack = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
 const settingsRuntime = await import(
   dataUrl(
     stripTypeScriptTypes(text(stack, "src/runtime/settings.ts")).replaceAll(

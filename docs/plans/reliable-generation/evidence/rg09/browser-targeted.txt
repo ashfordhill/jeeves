@@ -1,0 +1,22 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3538846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3538865) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3539037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 3 workers
+
+(node:3539092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3539098) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3539099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:399:1 › looking, hovering and cancelled drags change neither the design nor the blueprint (5.3s)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:242:1 › connects a module from its dot, refuses with the reason, and disconnects from its line's menu (8.7s)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:155:1 › adds a module of every menu kind to a Service and a Worker by mouse (15.5s)
+
+  3 passed (18.7s)

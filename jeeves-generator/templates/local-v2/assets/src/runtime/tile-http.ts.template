@@ -1,6 +1,6 @@
-import { operation, withOperation, assertOperation } from "./operation.ts";
+import { operation, withOperation, withEffect, assertOperation, OperationError } from "./operation.ts";
 import type { OperationContext } from "./operation.ts";
-import { immutable } from "./hook-boundary.ts";
+import { immutable, jsonBody } from "./hook-boundary.ts";
 import type { FastifyRequest } from "fastify";
 import { HttpError } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
@@ -58,13 +58,14 @@ async function moduleRequest(
   request: FastifyRequest,
   caller: (request: FastifyRequest) => Promise<Caller>,
   context: OperationContext,
+  root = false,
 ): Promise<ModuleRequest> {
   const rest = (request.params as { "*"?: string })["*"];
   return Object.freeze({
     ...immutable({
       method: request.method,
-      path: `/${rest ?? ""}`,
-      rawPath: rawPathOf(request.url),
+      path: root ? "/" : `/${rest ?? ""}`,
+      rawPath: root ? "/" : rawPathOf(request.url),
       query: request.query as ModuleRequest["query"],
       headers: Object.fromEntries(
         Object.entries(request.headers).filter(([name]) =>
@@ -97,15 +98,24 @@ export function stubRoutes(
   entry: (request: ModuleRequest) => Promise<ModuleResponse>,
   limits: { deadlineMs: number; stopping?: AbortSignal },
   caller: (request: FastifyRequest) => Promise<Caller> = anonymous,
+  prefix = "/modules",
 ): void {
   const mounted = notImplementedRoutes(routes, log, module);
-  for (const url of [`/modules/${module}`, `/modules/${module}/*`])
+  for (const url of prefix === "/modules" ? [`${prefix}/${module}`, `${prefix}/${module}/*`] : [`${prefix}/${module}`])
     mounted.route({
-      method: [...anyMethod],
+      method: prefix === "/modules" ? [...anyMethod] : ["GET", "POST"],
       url,
       bodyLimit: 65536,
       rawBody: false,
       async handler(request, reply) {
+        if (prefix !== "/modules") {
+          reply.header("Cache-Control", "no-store");
+          if (!["GET", "POST"].includes(request.method)) throw new HttpError(405, "METHOD_NOT_ALLOWED", "Method not allowed.", "GET, POST");
+          try {
+            if (request.method === "GET" && request.body !== undefined) throw Error("Unexpected read body");
+            jsonBody(request.body);
+          } catch { throw new HttpError(400, "INVALID_SERVICE_CALL", "Invalid service call."); }
+        }
         const callerFacts = await caller(request);
         const parent = request.operationContext;
         const running = operation({
@@ -116,15 +126,27 @@ export function stubRoutes(
           signals: [parent?.signal, limits.stopping],
         });
         try {
-          const response = await withOperation(running.context, async () =>
-            entry(await moduleRequest(request, async () => callerFacts, running.context)),
-          );
+          const response = await withOperation(running.context, async () => {
+            const dispatch = async () => entry(await moduleRequest(request, async () => callerFacts, running.context, prefix !== "/modules"));
+            return prefix === "/modules" ? dispatch() : withEffect(request.method === "GET" ? "read" : "durable-external-work", dispatch);
+          });
           // A child budget may expire just before its parent timer; never let a late
           // empty/success response win the outer admission deadline race.
           assertOperation(running.context);
           reply.code(response.status ?? 200);
-          for (const [name, value] of Object.entries(response.headers ?? {}))
-            reply.header(name, Array.isArray(value) ? [...value] : value);
+          if (prefix === "/modules")
+            for (const [name, value] of Object.entries(response.headers ?? {}))
+              reply.header(name, Array.isArray(value) ? [...value] : value);
+          if (prefix !== "/modules") {
+            if ([204, 205, 304].includes(response.status ?? 200)) return undefined;
+            try {
+              const body = jsonBody(response.body === undefined ? null : response.body);
+              reply.header("Content-Type", "application/json");
+              return body;
+            } catch {
+              throw new OperationError(request.method === "POST" ? "unknown" : "definite-failure", "INVALID_SERVICE_RESPONSE");
+            }
+          }
           return response.body;
         } finally {
           running.close();

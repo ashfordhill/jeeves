@@ -1,0 +1,403 @@
+import { createRemoteJWKSet, customFetch, jwtVerify } from "jose";
+import { readSecret } from "./local.ts";
+import { immutable, jsonBody } from "./hook-boundary.ts";
+import {
+  assertNetworkAllowed,
+  assertOperation,
+  currentOperation,
+  currentProcess,
+  dependency,
+  OperationError,
+  verifiedBearer,
+  withEffect,
+  withProcess,
+} from "./operation.ts";
+import { HttpError } from "./admission.ts";
+import type { HttpRoutes } from "./http.ts";
+
+type Binding = Readonly<{ identity: string; client: string; audience: string }>;
+type Credential = Readonly<{ token: string; expires: number; deadline: number }>;
+const valid = (credential: Credential | undefined, margin = 0): boolean =>
+  !!credential &&
+  credential.expires > Date.now() + margin &&
+  credential.deadline > performance.now() + margin;
+const invalid = () => new HttpError(401, "WORKLOAD_REQUIRED", "Service identity required.");
+const unavailable = () => new OperationError("definite-failure", "IDENTITY_UNAVAILABLE");
+const safeId = (id: string) => /^[a-z][a-z0-9-]{0,127}$/.test(id);
+const variable = (id: string) => id.toUpperCase().replaceAll("-", "_");
+function endpoint(name: string): string {
+  const value = process.env[name] ?? "";
+  const parsed = /\s/.test(value) ? null : URL.parse(value);
+  if (
+    !parsed ||
+    !["http:", "https:"].includes(parsed.protocol) ||
+    parsed.username ||
+    parsed.password ||
+    value.includes("?") ||
+    value.includes("#") ||
+    parsed.search ||
+    parsed.hash
+  )
+    throw new Error(`Invalid endpoint ${name}`);
+  const tls = process.env.JEEVES_REQUIRE_TLS;
+  if (tls !== undefined && tls !== "true") throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
+  if (tls && parsed.protocol !== "https:") throw new Error(`Insecure endpoint ${name}`);
+  if (
+    tls &&
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED !== undefined &&
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED !== "1"
+  )
+    throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+  return value;
+}
+export const serviceEndpoint = (id: string) => {
+  const name = `JEEVES_TILE_${variable(id)}_URL`;
+  const base = endpoint(name);
+  if (new URL(base).pathname !== "/") throw new Error(`Invalid endpoint ${name}`);
+  return base;
+};
+/** Configuration only, before any clients or requests. Snapshot credentials once per process. */
+export function workloadSettings(binding: Binding) {
+  if (!safeId(binding.identity) || !safeId(binding.client) || !safeId(binding.audience))
+    throw new Error("Invalid workload binding");
+  const issuer = endpoint("JEEVES_WORKLOAD_ISSUER");
+  const tokenUrl = endpoint("JEEVES_WORKLOAD_TOKEN_URL");
+  const jwksUrl = endpoint("JEEVES_WORKLOAD_JWKS_URL");
+  const secret = readSecret(`workload-${binding.client}`);
+  if (!secret || secret.length > 4096) throw new Error("Invalid workload credential");
+  return Object.freeze({ ...binding, issuer, tokenUrl, jwksUrl, secret });
+}
+type Settings = ReturnType<typeof workloadSettings>;
+/** One instance per independent process. 16 fixed compiled audiences, 64 KiB response bounds,
+ * one in-flight fetch per audience, 1s failed-refresh cooldown, no retries. Tokens live at most
+ * 300s and never beyond their verified exp. A still-valid token survives refresh failure only
+ * until that bound. JWKS cache max-age 60s, unknown-key cooldown 30s, fetch timeout 2s.
+ * Key removal may take 60s to reach a verifier; issuer outage never extends cached-key validity. */
+export function createWorkload(settings: Settings, targets: readonly string[]) {
+  if (
+    targets.length > 16 ||
+    new Set(targets).size !== targets.length ||
+    targets.some((id) => !safeId(id))
+  )
+    throw new Error("Invalid workload targets");
+  const scope = currentProcess();
+  let nextJwks = 0;
+  let keyDeadline = 0;
+  const jwks = createRemoteJWKSet(new URL(settings.jwksUrl), {
+    timeoutDuration: 2000,
+    cacheMaxAge: 60000,
+    cooldownDuration: 30000,
+    [customFetch]: async (url, options) => {
+      if (Date.now() < nextJwks) throw unavailable();
+      try {
+        const response = await fetch(url, { ...options, credentials: "omit" });
+        if (response.status !== 200) {
+          await response.body?.cancel();
+          throw unavailable();
+        }
+        const value = await boundedJson(response);
+        if (
+          !value ||
+          typeof value !== "object" ||
+          !("keys" in value) ||
+          !Array.isArray(value.keys) ||
+          !value.keys.length ||
+          value.keys.length > 16
+        )
+          throw unavailable();
+        keyDeadline = performance.now() + 60000;
+        return new Response(JSON.stringify(value), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      } finally {
+        nextJwks = Date.now() + 1000;
+      }
+    },
+  });
+  const tokens = new Map<string, Credential>();
+  const pending = new Map<string, Promise<Credential>>();
+  const next = new Map<string, number>();
+  const verify = (token: string, audience: string) =>
+    dependency(
+      { scope, maximumMs: 2000, definite: () => true, preserveDefinite: true },
+      async () => {
+        if (keyDeadline && performance.now() >= keyDeadline) await jwks.reload();
+        return jwtVerify(token, jwks, {
+          issuer: settings.issuer,
+          audience,
+          algorithms: ["RS256"],
+          requiredClaims: ["exp", "iat", "sub", "azp", "jeeves_workload"],
+        });
+      },
+    );
+  const facts = async (token: string, audience: string) => {
+    if (!token || token.length > 16384) throw invalid();
+    try {
+      const { payload } = await verify(token, audience);
+      const caller = payload.jeeves_workload;
+      if (
+        typeof caller !== "string" ||
+        !safeId(caller) ||
+        payload.azp !== `jeeves-workload-${caller}` ||
+        typeof payload.sub !== "string" ||
+        !payload.sub ||
+        typeof payload.exp !== "number" ||
+        typeof payload.iat !== "number" ||
+        payload.exp - payload.iat > 300 ||
+        payload.iat > Date.now() / 1000 + 5
+      )
+        throw invalid();
+      return { caller, expires: payload.exp * 1000 };
+    } catch (error) {
+      if (error instanceof HttpError || error instanceof OperationError) throw error;
+      const code = (error as { code?: string })?.code;
+      if (
+        [
+          "ERR_JWT_EXPIRED",
+          "ERR_JWT_CLAIM_VALIDATION_FAILED",
+          "ERR_JWT_INVALID",
+          "ERR_JWS_INVALID",
+          "ERR_JWS_SIGNATURE_VERIFICATION_FAILED",
+          "ERR_JOSE_ALG_NOT_ALLOWED",
+          "ERR_JOSE_NOT_SUPPORTED",
+          "ERR_JWKS_NO_MATCHING_KEY",
+        ].includes(code ?? "")
+      )
+        throw invalid();
+      throw unavailable();
+    }
+  };
+  async function acquire(target: string): Promise<string> {
+    assertOperation();
+    if (!targets.includes(target)) throw new OperationError("refused", "UNDECLARED_DESTINATION");
+    const cached = tokens.get(target);
+    if (cached && valid(cached, 5000)) return cached.token;
+    if ((next.get(target) ?? 0) > Date.now()) {
+      if (cached && valid(cached)) return cached.token;
+      throw unavailable();
+    }
+    let work = pending.get(target);
+    if (!work) {
+      // Shared refresh has its own bounded process scope, not the first waiter's cancellation.
+      work = withProcess(scope, async () => {
+        try {
+          const token = await dependency(
+            { scope, maximumMs: 2000, context: undefined },
+            async (signal) => {
+              const response = await fetch(settings.tokenUrl, {
+                method: "POST",
+                redirect: "manual",
+                credentials: "omit",
+                signal,
+                headers: { "content-type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                  grant_type: "client_credentials",
+                  client_id: settings.client,
+                  client_secret: settings.secret,
+                  audience: `jeeves-service-${target}`,
+                }),
+              });
+              if (!response.ok) {
+                await response.body?.cancel();
+                throw unavailable();
+              }
+              const value = await boundedJson(response);
+              if (
+                !value ||
+                typeof value !== "object" ||
+                !("access_token" in value) ||
+                typeof value.access_token !== "string"
+              )
+                throw unavailable();
+              return value.access_token;
+            },
+          );
+          const verified = await facts(token, `jeeves-service-${target}`);
+          if (
+            `jeeves-workload-${verified.caller}` !== settings.client ||
+            verified.expires <= Date.now()
+          )
+            throw invalid();
+          const credential = Object.freeze({
+            token,
+            expires: Math.min(verified.expires, Date.now() + 300000),
+            deadline: performance.now() + Math.min(verified.expires - Date.now(), 300000),
+          });
+          tokens.set(target, credential);
+          return credential;
+        } finally {
+          next.set(target, Date.now() + 1000);
+          pending.delete(target);
+        }
+      });
+      pending.set(target, work);
+    }
+    try {
+      return (
+        await dependency(
+          { scope, maximumMs: 2000, definite: () => true, preserveDefinite: true },
+          () => work!,
+        )
+      ).token;
+    } catch (error) {
+      assertOperation();
+      if (cached && valid(cached)) return cached.token;
+      if (error instanceof OperationError && error.code === "CONTEXT_EXPIRED") throw error;
+      throw unavailable();
+    }
+  }
+  return Object.freeze({
+    acquire,
+    async require(header: unknown, allowed: readonly string[]) {
+      const token =
+        typeof header === "string" ? /^Bearer (\S{1,16384})$/.exec(header)?.[1] : undefined;
+      if (!token) throw invalid();
+      const verified = await facts(token, settings.audience);
+      if (!allowed.includes(verified.caller))
+        throw new HttpError(403, "WORKLOAD_FORBIDDEN", "Service caller is not allowed.");
+      return Object.freeze({ process: verified.caller });
+    },
+  });
+}
+type Workload = ReturnType<typeof createWorkload>;
+export function callerAllowlist(value: unknown, maximum: readonly string[]): readonly string[] {
+  if (value === undefined) return Object.freeze([...maximum]);
+  if (
+    !Array.isArray(value) ||
+    value.some((id) => typeof id !== "string" || !maximum.includes(id)) ||
+    new Set(value).size !== value.length
+  )
+    throw new Error("Allowed callers must narrow the compiled service callers");
+  return Object.freeze([...value]);
+}
+/** Only internal endpoints use this wrapper. Browser endpoints keep their declared user policy. */
+export function workloadRoutes(
+  routes: HttpRoutes,
+  workload: Workload,
+  allowed: readonly string[],
+): HttpRoutes {
+  return {
+    route({ handler, ...route }) {
+      routes.route({
+        ...route,
+        async handler(request, reply) {
+          await workload.require(request.headers["x-jeeves-workload"], allowed);
+          return handler.call(this, request, reply);
+        },
+      });
+    },
+  };
+}
+async function boundedJson(response: Response): Promise<unknown> {
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  const reader = response.body?.getReader();
+  try {
+    while (reader) {
+      const part = await reader.read();
+      if (part.done) break;
+      size += part.value.byteLength;
+      if (size > 65536) {
+        await reader.cancel();
+        throw unavailable();
+      }
+      chunks.push(part.value);
+    }
+  } finally {
+    reader?.releaseLock();
+  }
+  return size ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : null;
+}
+/** Generated scoped handle: no URL, audience, header or credentials in the product API. */
+export function serviceTarget(binding: {
+  tile: string;
+  operations: readonly string[];
+  forwardUser?: boolean;
+  credentials: Workload;
+}) {
+  const base = serviceEndpoint(binding.tile);
+  const allowed = new Set(binding.operations);
+  if (
+    new URL(base).pathname !== "/" ||
+    !safeId(binding.tile) ||
+    [...allowed].some((id) => !safeId(id))
+  )
+    throw new Error("Invalid service target binding");
+  return Object.freeze({
+    async call(operation: string, request: Readonly<{ method: "GET" | "POST"; body?: unknown }>) {
+      assertOperation();
+      assertNetworkAllowed();
+      if (
+        !allowed.has(operation) ||
+        !request ||
+        !["GET", "POST"].includes(request.method) ||
+        Object.keys(request).some((key) => !["method", "body"].includes(key)) ||
+        (request.method === "GET" && request.body !== undefined)
+      )
+        throw new OperationError("refused", "INVALID_SERVICE_CALL");
+      let body: string | undefined;
+      try {
+        body = jsonBody(request.body);
+      } catch {
+        throw new OperationError("refused", "INVALID_SERVICE_CALL");
+      }
+      return withEffect(request.method === "GET" ? "read" : "durable-external-work", async () => {
+        const token = await binding.credentials.acquire(binding.tile);
+        const context = currentOperation();
+        const user = binding.forwardUser ? verifiedBearer() : undefined;
+        const headers = {
+          ...(body === undefined ? {} : { "content-type": "application/json" }),
+          "x-jeeves-workload": `Bearer ${token}`,
+          ...(user ? { authorization: `Bearer ${user}` } : {}),
+          ...(context
+            ? {
+                "x-jeeves-remaining-ms": String(Math.floor(context.remainingMs())),
+                "x-correlation-id": context.correlationId,
+              }
+            : {}),
+        };
+        const result = await dependency({ mutation: request.method === "POST" }, async (signal) => {
+          const response = await fetch(new URL(`/internal/modules/${operation}`, base), {
+            method: request.method,
+            body,
+            headers,
+            signal,
+            credentials: "omit",
+            redirect: "manual",
+          });
+          let value: unknown;
+          try {
+            value = await boundedJson(response);
+          } catch {
+            throw new OperationError(
+              request.method === "POST" ? "unknown" : "definite-failure",
+              "INVALID_SERVICE_RESPONSE",
+            );
+          }
+          if (
+            response.headers.get("x-jeeves-outcome") === "unknown" ||
+            (request.method === "POST" && response.status >= 500) ||
+            (value &&
+              typeof value === "object" &&
+              "error" in value &&
+              value.error === "OUTCOME_UNKNOWN")
+          )
+            throw new OperationError("unknown", "REMOTE_OUTCOME_UNKNOWN");
+          if (response.status >= 500)
+            throw new OperationError("definite-failure", "SERVICE_UNAVAILABLE");
+          return immutable({ status: response.status, body: value });
+        });
+        if (result.status === 401)
+          throw new HttpError(
+            401,
+            "SERVICE_SIGN_IN_REQUIRED",
+            "Service call authentication required.",
+          );
+        if (result.status === 403)
+          throw new HttpError(403, "SERVICE_CALL_FORBIDDEN", "Service call is not allowed.");
+        return result;
+      });
+    },
+  });
+}

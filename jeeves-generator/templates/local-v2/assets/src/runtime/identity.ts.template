@@ -50,6 +50,9 @@ export function createPrincipalVerifier(binding: IdentityBinding, keySet?: JWTVe
     );
     if (typeof payload.sub !== "string" || !payload.sub || payload.sub.length > 255)
       throw new Error("Invalid identity subject");
+    // A service-account JWT never establishes an independent end user, even when it also
+    // carries the user audience. The finite issuer reserves this signed claim for workloads.
+    if ("jeeves_workload" in payload) throw new Error("Invalid identity token");
     return { subject: payload.sub, claims: payload };
   };
 }

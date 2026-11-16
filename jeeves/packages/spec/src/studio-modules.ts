@@ -170,7 +170,9 @@ export function moduleLinkSlot(
   const kind = kindOf(design, link.to.id);
   if (!kind) return undefined;
   const target = studioComponentTargetKind(kind);
-  return slots.find((slot) => slot.targets.includes(target));
+  if (link.slot)
+    return slots.find((slot) => slot.id === link.slot && slot.targets.includes(target));
+  return slots.find((slot) => slot.id !== "workload" && slot.targets.includes(target));
 }
 
 /** A module slot and what fills it: each link's ID and its target tile (or module). */
@@ -188,13 +190,15 @@ export function moduleSlots(design: DesignDocument, component: string): ModuleSl
   const module = studio?.components?.find((item) => item.id === component);
   if (!module) return [];
   const links = (studio?.componentConnections ?? []).filter((link) => link.from === component);
-  return studioComponentDefinitions[module.settings.kind].slots.map((slot) => ({
-    slot,
-    links: links
-      .filter((link) => moduleLinkSlot(design, link)?.id === slot.id)
-      .map((link) => ({
-        id: link.id,
-        target: link.to.kind === "component" ? { module: link.to.id } : { tile: link.to.id },
-      })),
-  }));
+  return studioComponentDefinitions[module.settings.kind].slots
+    .filter((slot) => slot.id !== "workload" || kindOf(design, module.host) !== "browser")
+    .map((slot) => ({
+      slot,
+      links: links
+        .filter((link) => moduleLinkSlot(design, link)?.id === slot.id)
+        .map((link) => ({
+          id: link.id,
+          target: link.to.kind === "component" ? { module: link.to.id } : { tile: link.to.id },
+        })),
+    }));
 }

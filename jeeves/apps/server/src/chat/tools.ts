@@ -189,7 +189,7 @@ const parsers: Record<ToolName, z.ZodType> = {
 };
 const descriptions: Record<ToolName, string> = {
   listStudioDefinitions:
-    "List what a new tile can be (the link fan's eleven kinds, each with its label), the tile types with their kinds and defaults, the module catalog (each kind's slots, the tiles that hold it, what it becomes there: Template, Part of a template or Stub, and its one-line description), the link table, the caps, the design warnings and notes on preconfigured kinds. Design only; none supplies a runtime or verification.",
+    "List what a new tile can be (the link fan's eleven kinds, each with its label), the tile types with their kinds and defaults, the module catalog (each kind's slots, the tiles that hold it, what it becomes there: Template, Part of a template or Stub, and its one-line description), the link table, the caps, the design warnings and notes on preconfigured kinds. Server/worker modules use workload slots to select an Identity independently of user Sign-in; Browser hosts cannot hold confidential workload credentials. Runnable service calls require caller and callee to select the same installed issuer, including on private networks; route stubs support authenticated GET/POST operation roots, other callee adapters remain gaps. Design only; none supplies verification evidence.",
   describeStudioDefinition:
     "Read a kind's diagnostic source schema and historical defaults. These are preserved design intent, not editable choices; getDesign.editableSettings supplies actual normal controls.",
   listStudioPatterns:

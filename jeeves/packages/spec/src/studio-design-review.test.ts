@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { applyOperations } from "./apply.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import { testInstalledSupport as installed } from "./fixtures/installed-support.ts";
@@ -224,7 +225,7 @@ describe("the design review chat runs after each change (V3-09)", () => {
 
   it("offers to clear a process's own out-of-range setting, which its control can reach (V3-18)", () => {
     // The stub stack's Links API runs only stubs, so its process consumes its limits itself.
-    const valid = runStudioCommands(stubStackDesign(), [
+    const valid = runStudioCommands(withStubWorkloads(stubStackDesign()), [
       { type: "setRunnableProcesses", on: true },
     ]);
     const tile = valid.architecture?.studio?.elements.find((item) => item.element === "links-api");

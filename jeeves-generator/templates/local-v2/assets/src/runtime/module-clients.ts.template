@@ -1046,7 +1046,8 @@ function target(name: string, internal: boolean): HttpTarget {
  * `Symbol.for("jeeves.internal-call")`, so a lost connection to that process waits as a store's
  * does, not as an outside call. */
 export function httpTarget(binding: { tile: string }): HttpTarget {
-  return target(variable("TILE", binding.tile, "URL"), true);
+  target(variable("TILE", binding.tile, "URL"), true);
+  return Object.freeze({ request: async () => { throw new OperationError("refused", "WORKLOAD_BINDING_REQUIRED"); } });
 }
 /** An External API at the base URL in the variable `base`, its `JEEVES_EXTERNAL_<ID>_URL`. The
  * application sets it (locally in `compose.override.yaml`; `compose.yaml` doesn't), so until it is

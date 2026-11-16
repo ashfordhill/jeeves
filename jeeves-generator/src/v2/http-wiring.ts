@@ -1006,29 +1006,63 @@ function routeStub(
   const entry = moduleEntryName(module.component);
   const from = (path: string) => `../${path.slice("src/".length)}`;
   const answers = `501 ${text(`Not implemented: ${module.name}`)} until it is written`;
+  const internalOnly = !!process.workloadCallers?.length && process.exposure !== "public";
   return {
     imports: [
       { from: tileHttp, name: "stubRoutes" },
+      ...(process.workload && process.workloadCallers?.length
+        ? [{ from: "../runtime/workload.ts", name: "workloadRoutes" }]
+        : []),
       { from: from(paths.module), name: entry },
     ],
     setup: [],
     // The stub's request carries a signal aborted at the tile's Request timeout, and in a tile
     // with a sign-in its caller.
     configure: [
-      "stubRoutes(",
-      "  routes,",
-      "  log,",
-      `  ${text(id)},`,
-      `  (request) => ${entry}(dependencies[${text(id)}], request),`,
-      "  { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },",
-      ...(guard ? [`  ${guard}.caller,`] : []),
-      ");",
+      ...(!internalOnly
+        ? [
+            "stubRoutes(",
+            "  routes,",
+            "  log,",
+            `  ${text(id)},`,
+            `  (request) => ${entry}(dependencies[${text(id)}], request),`,
+            "  { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },",
+            ...(guard ? [`  ${guard}.caller,`] : []),
+            ");",
+          ]
+        : []),
+      ...(process.workload && process.workloadCallers?.length
+        ? [
+            "stubRoutes(",
+            `  workloadRoutes(routes, workload, allowedCallers[${text(id)}]),`,
+            "  log,",
+            `  ${text(id)},`,
+            `  (request) => ${entry}(dependencies[${text(id)}], request),`,
+            "  { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },",
+            `  ${guard ? `${guard}.caller` : "undefined"},`,
+            '  "/internal/modules",',
+            ");",
+          ]
+        : []),
     ],
     initialize: [],
     started: [],
     routes: [
-      { method: "ANY", path: `/modules/${id}`, answers },
-      { method: "ANY", path: `/modules/${id}/*`, answers },
+      ...(process.workload && process.workloadCallers?.length
+        ? [
+            {
+              method: "GET/POST",
+              path: `/internal/modules/${id}`,
+              answers: "Workload-authenticated operation; user identity remains independent",
+            },
+          ]
+        : []),
+      ...(!internalOnly
+        ? [
+            { method: "ANY", path: `/modules/${id}`, answers },
+            { method: "ANY", path: `/modules/${id}/*`, answers },
+          ]
+        : []),
     ],
     loops: [],
     service: service(),

@@ -1,5 +1,6 @@
 import type { DesignDocument, StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import {
   moduleAuthored,
@@ -35,7 +36,7 @@ const modules = (bundle: Bundle) =>
 describe("product tables and published views (v3 contract, section 1)", () => {
   const v2 = assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on]));
   const v2Off = assemble(moduleAuthored(tileLevelTwin(), registry.installed));
-  const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+  const stack = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
 
   it("emits one application-owned initial migration per namespace and no re-runnable module files", () => {
     const migrations = v2.files.filter((item) => item.path.includes("/products/migrations/"));

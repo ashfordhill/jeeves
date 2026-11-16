@@ -39,6 +39,9 @@ export type V2TemplateFile = {
  * and settings with their origin, and what each route and loop answers. */
 export type V2ProcessReport = {
   tile: string;
+  workload?: import("@jeeves/spec").NormalizedProcess["workload"];
+  serviceCalls?: import("@jeeves/spec").NormalizedProcess["serviceCalls"];
+  workloadCallers?: readonly string[];
   name: string;
   kind: string;
   service: string;

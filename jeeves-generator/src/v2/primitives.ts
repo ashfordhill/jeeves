@@ -45,6 +45,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       // A stub's clients use the libraries of the stores it is provisioned (tile process contract,
       // section 6); its cache client uses the cache read's bounded client, valkey.ts.
       for (const process of model.processes ?? []) {
+        if (process.workload) add(["admission", "http"], ["generation", "processes"]);
         if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
         if (process.stubs.some((stub) => stub.consumes?.length))
           add(["delivery", "amqp"], ["generation", "processes"]);

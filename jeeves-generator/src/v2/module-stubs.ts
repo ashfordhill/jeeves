@@ -167,6 +167,8 @@ function dependencyType(slot: Slot, connection: Connection): string {
   if (target.kind === "component") return slot.callables ? "FavoritesCapability" : "ModuleCall";
   const use = linkUse(slot, connection);
   switch (studioComponentTargetKind(target.tile)) {
+    case "application":
+      return "ServiceTarget";
     case "database":
       return use === "read" ? "DatabaseReader" : "DatabaseReadWriter";
     case "object-store":
@@ -199,24 +201,26 @@ export function moduleEntryName(module: string) {
  */
 export function stubProperties(module: NormalizedStubModule, loop: boolean) {
   const used = new Set<string>(["settings"]);
-  return module.slots.flatMap((slot) =>
-    slot.connections.map((connection) => {
-      const target = connection.target;
-      const id = target.kind === "component" ? target.component : target.element;
-      let property = camel(id);
-      if (used.has(property)) property = `${property}${camel(`-${slot.id}`)}`;
-      for (let n = 2; used.has(property); n += 1) property = `${camel(id)}${n}`;
-      used.add(property);
-      return {
-        slot,
-        connection,
-        property,
-        type: dependencyType(slot, connection),
-        use: linkUse(slot, connection),
-        input: loop && target.kind === "element" && target.channel === "consume",
-      };
-    }),
-  );
+  return module.slots
+    .filter((slot) => slot.id !== "workload")
+    .flatMap((slot) =>
+      slot.connections.map((connection) => {
+        const target = connection.target;
+        const id = target.kind === "component" ? target.component : target.element;
+        let property = camel(id);
+        if (used.has(property)) property = `${property}${camel(`-${slot.id}`)}`;
+        for (let n = 2; used.has(property); n += 1) property = `${camel(id)}${n}`;
+        used.add(property);
+        return {
+          slot,
+          connection,
+          property,
+          type: dependencyType(slot, connection),
+          use: linkUse(slot, connection),
+          input: loop && target.kind === "element" && target.channel === "consume",
+        };
+      }),
+    );
 }
 
 function stubFiles(

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { capture, hash, output, plan } from "./common.mjs";
-import { setup } from "./setup.mjs";
+import { setup, verifyWorkloadSetup } from "./setup.mjs";
 
 const command = process.argv[2];
 if (
@@ -202,6 +202,7 @@ const setupServices = [
   "setup-storage",
 ].filter((name) => Object.hasOwn(JSON.parse(readFileSync("compose.yaml", "utf8")).services, name));
 const buildServices = [...setupServices, ...plan.application];
+if (command !== "stop") verifyWorkloadSetup();
 if (buildServices.length) step("build", () => output("build", ...buildServices));
 if (plan.providers.length)
   step("providers", () => {

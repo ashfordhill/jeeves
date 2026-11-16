@@ -299,6 +299,8 @@ export const studioComponentConnectionSchema = z.strictObject({
   id: idSchema,
   from: idSchema,
   to: studioComponentTargetSchema,
+  /** Explicit only for the overlapping workload selector; legacy links keep inferred slots. */
+  slot: z.literal("workload").optional(),
   /** Optional short action; absent means a derived label. */
   label: z.string().trim().min(1).max(studioComponentLimits.action).optional(),
 });
@@ -365,6 +367,7 @@ export const studioModuleSlotIds = [
   "outbox",
   "database",
   "identity",
+  "workload",
   "target",
   "uses",
   "objects",
@@ -563,6 +566,10 @@ function component<K extends StudioComponentKind>(
 ): StudioComponentDefinition<K> {
   return deepFreeze({
     ...metadata,
+    slots: metadata.slots.some((slot) => slot.id === "workload")
+      ? metadata.slots
+      : [...metadata.slots, slot("workload", ["identity"], "verify", "optional")],
+    targets: [...new Set([...metadata.targets, "identity" as const])],
     kind,
     fields: [...general, ...metadata.fields],
     defaults: createStudioComponentSettings(kind),
@@ -752,7 +759,10 @@ export const studioComponentDefinitions: {
     browserHost: true,
     hosts: anyHost,
     scope: "generic",
-    slots: [slot("target", ["external-api", "application", "identity"], "request", "optional")],
+    slots: [
+      slot("workload", ["identity"], "verify", "optional"),
+      slot("target", ["external-api", "application", "identity"], "request", "optional"),
+    ],
     generation: stub,
     targets: ["external-api", "application", "identity"],
     fields: [
@@ -773,6 +783,7 @@ export const studioComponentDefinitions: {
     hosts: anyHost,
     scope: "generic",
     slots: [
+      slot("workload", ["identity"], "verify", "optional"),
       { ...slot("uses", allTargets, "uses", "optional"), many: true },
       {
         id: "call",

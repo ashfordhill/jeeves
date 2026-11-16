@@ -18605,3 +18605,31 @@ workload settings the same way.
   No new provider/dependency, secret inspection, Docker checkpoint, paid/live call, push or deployment.
 - Commit subject: `RG08: provide purpose-bound keys and sealed values`. Stop for acceptance;
   no later unit began. Native concurrent migrator/login proof remains RG14.
+
+## 2026-11-16 — RG09 active after RG08 acceptance
+
+- Coordinator accepted RG08 commit `cbac7d80f9a6e8ce28c2832647f54c2088e1902a`.
+  RG09 is the sole active unit: audience-bound workload identity and operation caller enforcement,
+  independent of end-user sign-in. No later unit has started.
+
+## 2026-11-16 — RG09 verified, local commit for acceptance
+
+- Extension API **v8** compiles authenticated route-stub service calls, fixed audiences/credentials
+  and per-operation caller maxima/narrowing. Server/worker workload selection is independent of
+  user Sign-in; Browser hosts refuse it. Internal callees have no legacy alias. Required users
+  remain separately verified; bounded incoming-bearer propagation stays private and clears on close.
+- Per-process token/JWKS caches are finite, expiry-bound and fail closed, with invalid identity
+  distinct from outage. GET/POST root DTOs are bounded; POST uncertainty, inherited network/effect
+  restrictions, RG03 budgets and RG04 protected HTTP errors remain intact. Internal framing ignores
+  product headers, forces no-store and refuses implicit HEAD. API7→8 migration checks
+  preserve handwritten bytes; old realm import never silently provisions new clients.
+- `pnpm check`: **127 files / 1,151 passed**; web build and offline chat evals pass. E2e **75 passed**,
+  then exact new-selector expectations corrected and **3 passed**; all **78** cases accounted for,
+  including TinyURL, both rebuilds and both workload mouse cases. Ten scratch exports pass checker/
+  TS7; actual pinned jose cache/outage/rotation proof passes offline. Off pins **79→79 / 86→86 /
+  60→60** reviewed; frozen v1 unchanged. [Evidence and limits](plans/reliable-generation/evidence/rg09/README.md).
+- Local Keycloak service-account setup remains test infrastructure; native two-service and
+  migration/login proof remain RG14. No session refresh/cookies, new provider/dependency, paid/live
+  issuer call, Docker checkpoint, push, deployment or later unit. Root hashes, exact owner diff/
+  modes and historical artifacts are preserved. Commit subject:
+  `RG09: require workload identity on generated service calls`. Stop for acceptance.

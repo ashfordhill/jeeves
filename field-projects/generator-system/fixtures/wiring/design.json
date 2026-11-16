@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "revision": 53,
+  "revision": 56,
   "elements": [
     {
       "id": "wiring-api",
@@ -63,6 +63,13 @@
       "name": "Vault",
       "classification": {
         "kind": "Data store"
+      }
+    },
+    {
+      "id": "workload-issuer",
+      "name": "Workload issuer",
+      "classification": {
+        "kind": "Application"
       }
     },
     {
@@ -213,6 +220,22 @@
       }
     },
     {
+      "id": "internal-api-workload-issuer",
+      "kind": "calls",
+      "from": {
+        "element": "internal-api"
+      },
+      "to": {
+        "element": "workload-issuer"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
       "id": "wiring-api-partner",
       "kind": "calls",
       "from": {
@@ -320,6 +343,22 @@
       "planned": {
         "label": "Reads & writes",
         "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "wiring-api-workload-issuer",
+      "kind": "calls",
+      "from": {
+        "element": "wiring-api"
+      },
+      "to": {
+        "element": "workload-issuer"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
         "interaction": "Request / response",
         "security": "Private network"
       }
@@ -471,6 +510,20 @@
           }
         },
         {
+          "element": "workload-issuer",
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "language": "typescript",
+            "exposure": "internal",
+            "provider": "oidc",
+            "execution": "docker"
+          }
+        },
+        {
           "element": "partner",
           "definition": {
             "id": "studio-external-api",
@@ -598,6 +651,10 @@
           "settings": {}
         },
         {
+          "connection": "internal-api-workload-issuer",
+          "settings": {}
+        },
+        {
           "connection": "wiring-api-partner",
           "settings": {}
         },
@@ -631,6 +688,10 @@
         },
         {
           "connection": "workers-work-db",
+          "settings": {}
+        },
+        {
+          "connection": "wiring-api-workload-issuer",
           "settings": {}
         }
       ],
@@ -778,6 +839,17 @@
           }
         },
         {
+          "id": "internal-call-workload-issuer",
+          "from": "internal-call",
+          "to": {
+            "kind": "element",
+            "id": "workload-issuer",
+            "via": "wiring-api-workload-issuer"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
           "id": "external-call-partner",
           "from": "external-call",
           "to": {
@@ -856,6 +928,17 @@
             "id": "catalog",
             "via": "catalog-api-catalog"
           }
+        },
+        {
+          "id": "transform-workload-issuer",
+          "from": "transform",
+          "to": {
+            "kind": "element",
+            "id": "workload-issuer",
+            "via": "internal-api-workload-issuer"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
         },
         {
           "id": "transform-vault",

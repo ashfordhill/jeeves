@@ -367,8 +367,8 @@ describe("module rows and links in the Detailed view", () => {
       const row = view.rowOf(module);
       return row && [row.connects, row.connected];
     };
-    // A redirect responder takes no connections; its links to modules fill no slot.
-    expect(dot("redirect-responder")).toEqual([false, false]);
+    // A redirect responder can select workload identity; its links to modules fill no slot.
+    expect(dot("redirect-responder")).toEqual([true, false]);
     expect(dot("redirect-cache-reader")).toEqual([true, true]);
     expect(dot("redirect-data")).toEqual([true, true]);
     expect(dot("shorten-custom")).toEqual([true, false]);

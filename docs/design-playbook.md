@@ -1834,3 +1834,12 @@ process also has template-table grants; sharing a process must not accidentally 
 Migration DDL runs under the product namespace role while generated setup owns the locked checksum
 history and ledger transition in the same transaction. Lexical refusals catch ordinary control
 mistakes; database privileges enforce protected-state boundaries, without a SQL sandbox claim.
+
+## 2026-11-16 RG09: service authentication must cover every alias of an operation
+
+User identity and workload identity are separate credentials. A dedicated service-account token
+must not become an end user merely because it has a user audience. For a private service callee,
+adding a checked internal endpoint is insufficient if a legacy route still invokes the same
+product entry anonymously. Close those aliases and alternate methods/paths; retain browser
+routes only where public ingress is declared. Derive caller maxima from actual links, and keep
+audiences, credentials, verification and forwarding inside generated adapters.

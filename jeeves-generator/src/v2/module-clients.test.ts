@@ -1,3 +1,4 @@
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { operationImports } from "./operation.test.helpers.ts";
 
 const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
@@ -22,7 +23,9 @@ import { assembleV2 } from "./assemble.ts";
 const bundle = assembleV2(
   {
     designJson: canonicalJson(
-      runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+      runStudioCommands(withStubWorkloads(stubStackDesign()), [
+        { type: "setRunnableProcesses", on: true },
+      ]),
     ),
   },
   loadLocalV2Registry(),
@@ -801,7 +804,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     const fetch = vi.fn(async () => new Response("ok"));
     vi.stubGlobal("fetch", fetch);
     try {
-      const target = clients.httpTarget({ tile: "stats-api" });
+      const target = clients.externalTarget("JEEVES_TILE_STATS_API_URL");
       await target.request("/modules/stats-search", { method: "POST" });
       expect(fetch).toHaveBeenCalledWith(
         new URL("http://app-stats-api:3000/modules/stats-search"),
@@ -817,7 +820,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     }
   });
 
-  it("marks a failed call to another tile as internal and passes a response through", async () => {
+  it("bounds legacy external transport failures without adding automatic retries", async () => {
     const internalCall = Symbol.for("jeeves.internal-call");
     const response = new Response("ok");
     const refused = new TypeError("fetch failed", {
@@ -832,7 +835,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       .mockRejectedValueOnce("not an object");
     vi.stubGlobal("fetch", fetch);
     try {
-      const target = clients.httpTarget({ tile: "stats-api" });
+      const target = clients.externalTarget("JEEVES_TILE_STATS_API_URL");
       expect(await target.request("/modules/stats-search")).toMatchObject({
         status: response.status,
       });
@@ -1526,7 +1529,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     const fetch = vi.fn(async () => new Response("ok"));
     vi.stubGlobal("fetch", fetch);
     environment({ JEEVES_TILE_STATS_API_URL: "https://stats.internal:8443" });
-    await clients.httpTarget({ tile: "stats-api" }).request("/modules/stats-search");
+    await clients.externalTarget("JEEVES_TILE_STATS_API_URL").request("/modules/stats-search");
     expect(fetch).toHaveBeenCalledWith(
       new URL("https://stats.internal:8443/modules/stats-search"),
       expect.objectContaining({
@@ -1813,7 +1816,7 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
 const pubsubBundle = assembleV2(
   {
     designJson: canonicalJson(
-      runStudioCommands(stubStackDesign(), [
+      runStudioCommands(withStubWorkloads(stubStackDesign()), [
         { type: "setRunnableProcesses", on: true },
         {
           type: "edit",
@@ -2212,7 +2215,7 @@ describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => 
     });
     expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
     expect(await cacheSocket()).toEqual({ ...tcp, tls: true, rejectUnauthorized: true });
-    await clients.httpTarget({ tile: "stats-api" }).request("/x");
+    await clients.externalTarget("JEEVES_TILE_STATS_API_URL").request("/x");
     expect(fetch).toHaveBeenCalledWith(
       new URL("https://stats.internal:8443/x"),
       expect.objectContaining({ redirect: "manual", signal: expect.any(AbortSignal) }),
@@ -2232,7 +2235,7 @@ describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => 
     expect(Object.keys(localEnvironment)).not.toContain("JEEVES_REQUIRE_TLS");
     expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
     expect(await cacheSocket()).toEqual(tcp);
-    await clients.httpTarget({ tile: "stats-api" }).request("/x");
+    await clients.externalTarget("JEEVES_TILE_STATS_API_URL").request("/x");
     expect(fetch).toHaveBeenCalledWith(
       new URL("http://app-stats-api:3000/x"),
       expect.objectContaining({ redirect: "manual", signal: expect.any(AbortSignal) }),

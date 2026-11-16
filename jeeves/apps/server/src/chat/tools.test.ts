@@ -57,6 +57,36 @@ const addCache = (baseRevision: number) => ({
 });
 
 describe("studio chat tools", () => {
+  it("RG09 chat exposes the same missing-workload refusal and fixes it with workload links", async () => {
+    const { workloadDesign } = await import(
+      "../../../../../field-projects/generator-system/fixtures/rg-workload/design.ts"
+    );
+    const { resolveGeneration } = await import("@jeeves/spec");
+    const source = workloadDesign();
+    const studio = source.architecture?.studio;
+    if (!studio) throw Error("studio");
+    studio.componentConnections = studio.componentConnections?.filter(
+      (link) => link.slot !== "workload",
+    );
+    const workspace = new Workspace(source);
+    const before = run(workspace, "reviewDesign");
+    expect(JSON.stringify(before)).toContain("Private network does not replace workload identity");
+    const fixed = run(workspace, "applyStudioCommands", {
+      commands: [
+        { type: "connectModule", module: "send", slot: "workload", target: { tile: "issuer" } },
+        { type: "connectModule", module: "receive", slot: "workload", target: { tile: "issuer" } },
+      ],
+    });
+    expect(fixed.ok).toBe(true);
+    const result = resolveGeneration(workspace.working, installedGenerationSupport());
+    expect(result.findings).toEqual([]);
+    const compact = run(workspace, "getDesign");
+    expect(
+      compact.tiles
+        .find((t: { id: string }) => t.id === "caller")
+        .modules.find((m: { id: string }) => m.id === "send").links,
+    ).toContainEqual(expect.objectContaining({ slot: "workload", to: { tile: "issuer" } }));
+  });
   it("names no strict-contract tool and keeps the retired declarations out of what chat reads", () => {
     const removed = [
       "configureDesignScope",
@@ -315,7 +345,7 @@ describe("studio chat tools", () => {
     expect(shorten?.find((module) => module.id === "shorten-limit")).toMatchObject({
       status: "stub",
       reason: "Jeeves doesn't generate Rate limiter modules; you write it.",
-      unconnected: ["store"],
+      unconnected: ["store", "workload"],
     });
     // A kind its tile can't hold, and a slot it doesn't have, are refused in plain words.
     expect(
@@ -463,7 +493,7 @@ describe("studio chat tools", () => {
     expect(catalog.find((item) => item.kind === "favorites")).toMatchObject({
       description: "Keeps each signed-in account's favorite items.",
       hosts: ["service"],
-      slots: [{ id: "state" }, { id: "items", module: "data-access" }],
+      slots: [{ id: "state" }, { id: "items", module: "data-access" }, { id: "workload" }],
       generation: { kind: "lead", template: "favorites" },
     });
   });

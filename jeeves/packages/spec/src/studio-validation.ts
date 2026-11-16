@@ -352,7 +352,26 @@ function validateStudioComponents(
       report("UNKNOWN_REFERENCE", [...path, "from"], `Component ${link.from} does not exist.`);
       return;
     }
-    const key = `${link.from}>${link.to.kind}:${link.to.id}${link.to.kind === "element" ? `>${link.to.via}` : ""}`;
+    if (link.slot === "workload" && kind(from.host) === "browser")
+      report(
+        "CONFIG_INVALID",
+        [...path, "slot"],
+        "Workload identity requires a server or worker process; a Browser cannot hold service credentials.",
+      );
+    if (
+      link.slot === "workload" &&
+      (link.to.kind !== "element" ||
+        kind(link.to.id) !== "identity" ||
+        !studioComponentDefinitions[from.settings.kind].slots.some(
+          (slot) => slot.id === "workload",
+        ))
+    )
+      report(
+        "CONFIG_INVALID",
+        [...path, "slot"],
+        "Workload identity links must connect a supported workload slot to an Identity tile.",
+      );
+    const key = `${link.from}>${link.to.kind}:${link.to.id}${link.to.kind === "element" ? `>${link.to.via}` : ""}:${link.slot ?? "legacy"}`;
     if (seen.has(key))
       report("DUPLICATE_CONNECTION", path, "This component connection already exists.");
     seen.add(key);

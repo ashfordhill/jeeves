@@ -1,0 +1,19 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3514093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3514112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3514200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 2 workers
+
+(node:3514274) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3514275) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/workload.spec.ts:85:1 › Auth guard adds workload identity by mouse after its user identity is connected (5.3s)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/workload.spec.ts:5:1 › workload links fix private-network generation refusal by mouse without a user Sign-in (8.0s)
+
+  2 passed (11.4s)

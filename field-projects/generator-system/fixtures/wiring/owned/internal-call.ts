@@ -1,14 +1,12 @@
-import type { ModuleRequest, ModuleResponse } from "../entry.ts";
+import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";
 import type { Dependencies } from "./internal-call.slots.ts";
 export async function internalCall(
   dependencies: Dependencies,
   request: ModuleRequest,
 ): Promise<ModuleResponse> {
-  const response = await dependencies.internalApi.request("/modules/transform", {
+  const response = await dependencies.internalApi.call("transform", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(request.body),
-    signal: AbortSignal.timeout(2000),
+    body: request.body,
   });
-  return { status: response.status, body: await response.json() };
+  return { status: response.status, body: response.body };
 }

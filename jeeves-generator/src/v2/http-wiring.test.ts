@@ -1,5 +1,6 @@
 import { type DesignDocument, emptyDesign, type StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { searchStackDesign } from "../../../jeeves/packages/spec/src/fixtures/search-stack.ts";
 import {
   signIn,
@@ -46,7 +47,7 @@ const routes = (bundle: Bundle, tile: string) =>
 const gap = (bundle: Bundle, id: string) => bundle.report.gaps.find((item) => item.id === id);
 
 describe("HTTP wiring (tile process contract, sections 2-4)", () => {
-  const stack = assemble(runStudioCommands(stubStackWithCacheRead(), [on]));
+  const stack = assemble(runStudioCommands(withStubWorkloads(stubStackWithCacheRead()), [on]));
   const stackOff = assemble(stubStackWithCacheRead());
   const v2 = assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on]));
   const v2Off = assemble(moduleAuthored(tileLevelTwin(), registry.installed));
@@ -73,7 +74,10 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       ...stub("redirector", "Redirector"),
       ...stub("stats-caller", "Stats caller"),
     ]);
-    expect(routes(stack, "stats-api")).toEqual([...ready, ...stub("stats-search", "Stats search")]);
+    expect(routes(stack, "stats-api")).toEqual([
+      ...ready,
+      "GET/POST /internal/modules/stats-search → Workload-authenticated operation; user identity remains independent",
+    ]);
     expect(routes(stack, "upload-api")).toEqual([
       ...ready,
       ...stub("archive-upload", "Archive upload"),
@@ -206,6 +210,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         .map(([name, service]) => `${name} ${service.ports}`),
     ).toEqual([
       `app-edge 127.0.0.1:\${LOCAL_HTTP_PORT:?Set LOCAL_HTTP_PORT}:8080`,
+      `identity-workload-issuer 127.0.0.1:\${LOCAL_IDENTITY_PORT:?Set LOCAL_IDENTITY_PORT}:8080`,
       `local-objects 127.0.0.1:\${LOCAL_OBJECT_PORT:?Set LOCAL_OBJECT_PORT}:3900`,
     ]);
     expect(rows(stack).tiles.map((row) => [row.tile, row.edge])).toEqual([
@@ -394,6 +399,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     // Links API's stubs use the cache, the database and the broker (client-wiring.test.ts).
     expect(Object.keys(services["app-links-api"].depends_on)).toEqual([
       "cache-links-cache",
+      "identity-workload-issuer",
       "local-broker",
       "local-postgres",
     ]);
@@ -699,10 +705,12 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       "src/modules/links-api/link-cache.ts",
       "src/modules/links-api/link-reader.ts",
       "src/modules/links-api/redirector.ts",
+      "src/modules/links-api/stats-caller.slots.ts",
       "src/modules/links-api/stats-caller.ts",
       "src/modules/links-api/upload-consumer.slots.ts",
       "src/modules/links-api/upload-consumer.ts",
       "src/modules/links-api/visit-publisher.ts",
+      "src/modules/stats-api/stats-search.slots.ts",
       "src/modules/stats-api/stats-search.ts",
       "src/modules/upload-api/archive-upload.ts",
       "src/modules/upload-api/upload-publisher.ts",

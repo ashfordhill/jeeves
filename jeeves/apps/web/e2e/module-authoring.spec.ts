@@ -104,8 +104,8 @@ const WORKER = [
   ["Video thumbnailer", "Building block"],
   ["Custom", "You write it"],
 ];
-/** Kinds whose rows can't connect: no dot. */
-const NO_DOT = ["Redirect responder", "Event counter"];
+/** Kinds whose only external connection selects workload identity. */
+const WORKLOAD_ONLY = ["Redirect responder", "Event counter"];
 
 /**
  * A blank project in the Simple view with the user's Consume action and the given tiles, each
@@ -216,16 +216,14 @@ test("adds a module of every menu kind to a Service and a Worker by mouse", asyn
         index + 1,
       );
     }
-    // Every row is open to a connection but those of kinds that take none; none is connected.
+    // Every row can select workload identity; none is connected.
     const worker = tile(page, "Worker service");
-    await expect(worker.locator(".lane-container-row-dot")).toHaveCount(
-      WORKER.length - NO_DOT.length,
-    );
+    await expect(worker.locator(".lane-container-row-dot")).toHaveCount(WORKER.length);
     await expect(worker.locator(".lane-container-row-dot[data-connected]")).toHaveCount(0);
-    for (const kind of NO_DOT)
+    for (const kind of WORKLOAD_ONLY)
       await expect(
         worker.locator(".lane-container-row", { hasText: kind }).locator(".lane-container-row-dot"),
-      ).toHaveCount(0);
+      ).toHaveCount(1);
 
     // One Undo takes the last module back out.
     const before = (await saved(page, id)).revision;
@@ -270,7 +268,8 @@ test("connects a module from its dot, refuses with the reason, and disconnects f
     // A tile it can't use fades, with the reason; on release the notice says it and nothing
     // changes.
     await dragOnto(page, dot(page, module), tile(page, "Cache"));
-    const reason = "Data access can't use Cache; a Data access connects to a database.";
+    const reason =
+      "Data access can't use Cache; a Data access connects to a database or an identity service.";
     await expect(page.locator(".board-connect-tip")).toHaveText(reason);
     await expect(tile(page, "Cache")).not.toHaveClass(/is-drop-target/);
     await expect(tile(page, "Database")).toHaveClass(/is-drop-target/);
@@ -410,9 +409,9 @@ test("looking, hovering and cancelled drags change neither the design nor the bl
 
   await page.getByRole("button", { name: "Detailed", exact: true }).click();
   await ready(page);
-  // A Redirect responder takes no connections: no dot. The Cache reader's loader is drawn, and
+  // A Redirect responder can select workload identity. The Cache reader's loader is drawn, and
   // no other link between modules of a tile is.
-  await expect(dot(page, "redirect-responder")).toHaveCount(0);
+  await expect(dot(page, "redirect-responder")).toHaveCount(1);
   await expect(dot(page, "redirect-cache-reader")).toHaveAttribute("data-connected", "true");
   await expect(page.locator(".board .lane-container-loader")).toHaveCount(1);
   await expect(page.locator(".board .lane-container-loader")).toHaveAttribute(

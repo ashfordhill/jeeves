@@ -5,6 +5,7 @@ import { join, posix } from "node:path";
 import { pathToFileURL } from "node:url";
 import { type DesignDocument, emptyDesign, type StudioCommand } from "@jeeves/spec";
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import {
   stubStackDesign,
   stubStackWithCacheRead,
@@ -61,7 +62,7 @@ const edit = (element: string, settings: Record<string, unknown>): StudioCommand
 /** The stub stack with more of what a stub can use: a write-only bucket, an index writer, a module
  * link to a library stub, an external API and an Identity no template binds. */
 const wider = () =>
-  runStudioCommands(stubStackDesign(), [
+  runStudioCommands(withStubWorkloads(stubStackDesign()), [
     tile("stats-api", "partner", "Partner API", "external-api"),
     tile("stats-api", "login", "Login", "identity"),
     tile("visit-worker", "exports", "Exports", "object-store"),
@@ -116,7 +117,7 @@ const wider = () =>
   ]);
 
 describe("provisioning for stubs (tile process contract, section 6)", () => {
-  const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+  const stack = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
   const stackOff = assemble(stubStackDesign());
   const v2 = assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on]));
 
@@ -154,6 +155,13 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
             file: "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
           },
         ],
+      },
+      {
+        resource: "workload-issuer",
+        database: "i_workload_issuer",
+        owner: "io_workload_issuer",
+        secret: "identity-owner-workload-issuer",
+        migrations: ["infra/postgres/workload-issuer/000-foundation.sql"],
       },
     ]);
     expect(
@@ -212,6 +220,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     // Cache and search: their own services; no index (no mapping), so no search setup.
     expect(plan.providers).toEqual([
       "cache-links-cache",
+      "identity-workload-issuer",
       "local-broker",
       "local-objects",
       "local-postgres",
@@ -226,10 +235,12 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(compose["setup-migrate"]?.secrets).toEqual([
       "postgres-admin",
       "owner-links-db",
+      "identity-owner-workload-issuer",
       "sql-links-db--links-api",
       "sql-links-db--visit-worker",
       "product-links-db--links-api",
       "product-links-db--visit-worker",
+      "identity-workload-issuer",
     ]);
     // Each process gets its credentials and waits for each provider it uses, healthy.
     const needs = (name: string) => [
@@ -237,15 +248,19 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       compose[name]?.secrets,
     ];
     expect(needs("app-links-api")).toEqual([
-      ["cache-links-cache", "local-broker", "local-postgres"],
+      ["cache-links-cache", "identity-workload-issuer", "local-broker", "local-postgres"],
       [
+        "workload-jeeves-workload-links-api",
         "sql-links-db--links-api",
         "product-links-db--links-api",
         "cache-links-cache",
         "broker-password",
       ],
     ]);
-    expect(needs("app-stats-api")).toEqual([["search-stats-index"], []]);
+    expect(needs("app-stats-api")).toEqual([
+      ["identity-workload-issuer", "search-stats-index"],
+      ["workload-jeeves-workload-stats-api"],
+    ]);
     expect(needs("app-upload-api")).toEqual([
       ["local-broker", "local-objects"],
       ["s3-upload-api", "broker-password"],
@@ -374,7 +389,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
   });
 
   it("leaves another saved provider or engine unprovisioned, as a required unsupported gap", () => {
-    const design = runStudioCommands(stubStackDesign(), [
+    const design = runStudioCommands(withStubWorkloads(stubStackDesign()), [
       edit("links-db", { kind: "database", engine: "mysql", provider: "self-hosted" }),
       edit("links-cache", { kind: "cache", engine: "redis-compatible", provider: "upstash" }),
       edit("archive", { kind: "object-store", provider: "aws-s3", access: "private" }),
@@ -405,7 +420,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     // Only Visits (unspecified) is provisioned.
     const plan = json(bundle, "infra/local.json");
     expect(plan.resources.map((item: { id: string }) => item.id)).toEqual(["visits"]);
-    expect(plan.providers).toEqual(["local-broker"]);
+    expect(plan.providers).toEqual(["identity-workload-issuer", "local-broker", "local-postgres"]);
     // Each such dependency answers "Not implemented" naming why; the export still compiles.
     expect(text(bundle, "src/processes/links-api.ts")).toContain(
       'linksDb: unavailable<LinkReaderDependencies["linksDb"]>("Links database for Link reader (its provider isn\'t provisioned locally)"),',
@@ -426,7 +441,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         "  const clients = {",
         '    "links-cache": await cacheClient(scope, probe, { cache: "links-cache" }),',
         '    "product:links-db:link-reader": await productDatabaseClient(scope, probe, preparedProduct["product:links-db:link-reader"]),',
-        '    "stats-api": httpTarget({ tile: "stats-api" }),',
+        '    "stats-api:stats-caller": serviceTarget({ tile: "stats-api", operations: ["stats-search"], forwardUser: false, credentials: workload }),',
         '    "visits": await queuePublisher(scope, probe, { queue: "visits", mode: "topic" }, brokerState(config.tile, failure, "broker publish visits")),',
         "  };",
       ].join("\n"),
@@ -435,9 +450,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(links).toContain(
       '    linkReader: (input) => moduleCall(() => linkReader(dependencies["link-reader"], input as ModuleRequest)),',
     );
-    expect(links).toContain(
-      '    statsApi: unavailable<StatsCallerDependencies["statsApi"]>("Stats API for Stats caller (requires a registered product capability binding)"),',
-    );
+    expect(links).toContain('    statsApi: clients["stats-api:stats-caller"],');
     // A stub with no connected slot still gets its own settings (QL05).
     expect(links).toContain(
       '  dependencies["redirector"] = {\n    settings: configuredSettings["redirector"] as RedirectorDependencies["settings"],\n  };',
@@ -503,7 +516,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(stackOff.files.map((file) => file.path)).not.toContain("src/runtime/postgres.ts");
     // A design whose only stub reads a bucket keeps only that section and its library.
     const bare = assemble(
-      runStudioCommands(stubStackDesign(), [
+      runStudioCommands(withStubWorkloads(stubStackDesign()), [
         ...[
           "link-reader",
           "link-cache",
@@ -545,7 +558,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(text(stack, "src/runtime/module-clients.ts")).toContain(imports);
     expect(text(stack, "src/runtime/module-clients.ts")).not.toContain('from "redis"');
     // Beside a cache read, its emitter writes it and the stubs' client uses the same file.
-    const both = assemble(runStudioCommands(stubStackWithCacheRead(), [on]));
+    const both = assemble(runStudioCommands(withStubWorkloads(stubStackWithCacheRead()), [on]));
     expect(owner(both)).toEqual(["local.positive-cache"]);
     expect(text(both, "src/runtime/module-clients.ts")).toContain(imports);
     expect(text(both, "src/runtime/valkey.ts")).toBe(text(stack, "src/runtime/valkey.ts"));
@@ -625,7 +638,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       text(stack, "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql"),
     ).not.toContain("jeeves");
     // Two tiles that write it (one owner package): one migration, a grant for each.
-    const shared = runStudioCommands(stubStackDesign(), [on]);
+    const shared = runStudioCommands(withStubWorkloads(stubStackDesign()), [on]);
     const studio = shared.architecture?.studio;
     studio?.packages.push({
       id: "links-team",
@@ -1003,7 +1016,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     expect(readme).not.toContain("Here `app-front` reads");
     expect(readme).not.toContain("which a container can't reach, so locally such a call fails");
     // A design whose stubs call neither keeps its README as it was.
-    const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
+    const stack = assemble(runStudioCommands(withStubWorkloads(stubStackDesign()), [on]));
     expect(text(stack, "README.md")).not.toContain("JEEVES_EXTERNAL_");
     expect(text(stack, "README.md")).not.toContain("JEEVES_IDENTITY_");
     expect(stores(stack, "links-api").map((row) => row.kind)).not.toContain("external-api");

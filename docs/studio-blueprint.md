@@ -32,7 +32,15 @@ Display renames preserve element, component, selection, owner and link IDs, gene
 addresses and durable/extension namespaces ([names and IDs](studio.md#inspector)). Explicit identity
 changes require application migration. Normalized Custom call slots carry the exact installed
 Favorites input/output/version/effect requirements and stable callee module ID; mismatches refuse
-with the required/installed difference. No cross-process callable transport is installed yet.
+with the required/installed difference. Cross-process installed-template adapters remain gaps;
+route stubs have API8 workload-authenticated GET/POST operation roots.
+
+An explicit component-link `slot: "workload"` distinguishes a module's Identity
+selector from their legacy generic Identity dependency. Blueprint v3 retains that finite tag;
+older untagged links keep their inferred use. The normalized process records the issuer, stable
+workload client/audience, source-module service calls, allowed operations and maximum callers.
+Preview refuses missing/mismatched issuer setup before export, including Private network links.
+User bearer forwarding is private and limited to compiled recipients sharing the user issuer.
 
 Blueprint v3 retains all original settings, custom requirements and generation declarations,
 including unsupported preserved values hidden by the normal editor. Its generation resolver

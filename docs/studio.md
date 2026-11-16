@@ -1470,6 +1470,20 @@ of the list gives 50 a page, newest first; adding asks its generated `eligible` 
 answers 501 until written and reads the database of its items Data access. The
 Identity then runs as Keycloak, with one realm and one browser client, and the guarded processes
 verify tokens against it, for the audience their `OIDC_AUDIENCE` names (locally that client's).
+A module can instead select that Identity through their **workload** slot without
+an Auth guard or browser. In Connect mode, dragging their dot onto Identity selects workload
+identity. New service links require both processes to select the same installed issuer. API8
+generates a scoped `call(moduleId, {method: "GET" | "POST", body?})` handle for route stubs;
+installed-template cross-process adapters remain gaps. Internal callees expose only the checked
+`/internal/modules/<moduleId>` root, with no legacy `/modules` alias. Explicitly public callees
+retain browser routes under their user policy. Dedicated workload credentials never count as
+an end user. A verified incoming user bearer is privately forwarded only to declared recipients;
+session lookup, refresh and retries are outside this adapter. Product code can narrow each
+callee's maximum with `allowedCallers`, but cannot replace audiences or attached credentials.
+Local setup adds service-account clients with user grants disabled. Existing Keycloak realms are
+not updated by `--import-realm`: changed workload setup refuses restart until a fresh disposable
+runtime or reviewed external issuer migration. See `.jeeves/extensions.md` for cache/outage bounds
+and the explicit API7→8 hook migration; generated native two-service evidence remains separate.
 When an asset lifecycle names an upload, that upload's `reserve`,
 `complete` and `closed` hooks are the lifecycle's, so only its own hooks are left to write. In any tile, a stub connected to consume a queue
 runs a loop on it, and the asset lifecycle, Video HLS, event counter and Index writer run their

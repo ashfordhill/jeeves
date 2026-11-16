@@ -387,7 +387,7 @@ describe("module commands", () => {
       ],
       [
         connect("watch-details", "index", { tile: "search-index" }),
-        "Details reader has no index connection; a Data access connects its database.",
+        "Details reader has no index connection; a Data access connects its database or workload.",
       ],
       [
         connect("watch-details", "database", { tile: "metadata-db" }),
@@ -399,7 +399,7 @@ describe("module commands", () => {
       ],
       [
         connect("watch-redirect", "target", { tile: "search" }),
-        "Redirect responder can't connect; a Redirect responder takes no connections.",
+        "Redirect responder has no target connection; a Redirect responder connects its workload.",
       ],
       [
         connect("watch-cache-reader", "loader", { module: "watch-views" }),
@@ -435,7 +435,7 @@ describe("module commands", () => {
     expect(moduleStatus(cut, "watch-cache-reader")).toMatchObject({
       status: "stub",
       reason: "Needs a Data access as its loader.",
-      unconnected: ["loader"],
+      unconnected: ["loader", "workload"],
     });
     expect(refusal(cut, { type: "disconnectModule", link: link.id })).toBe(
       `There is no module link "${link.id}".`,
@@ -480,7 +480,8 @@ describe("module commands", () => {
       options.find((item) => "tile" in item.target && item.target.tile === "metadata-db"),
     ).toEqual({
       target: { tile: "metadata-db" },
-      refusal: "Details cache can't use Metadata database; a Cache reader connects to a cache.",
+      refusal:
+        "Details cache can't use Metadata database; a Cache reader connects to a cache or an identity service.",
     });
     expect(
       moduleConnectOptions(base, "watch-details").find((item) => "module" in item.target),
@@ -1401,27 +1402,31 @@ describe("module status and older designs", () => {
       ]),
     );
     expect(reasons).toEqual({
-      "upload-multipart": ["stub", "Needs a connection to object storage.", ["objects"]],
+      "upload-multipart": [
+        "stub",
+        "Needs a connection to object storage.",
+        ["objects", "workload"],
+      ],
       "upload-limit": [
         "stub",
         "Jeeves doesn't generate Rate limiter modules; you write it.",
-        ["store"],
+        ["store", "workload"],
       ],
       // A part no lead beside it uses is a normal stub, never told to add a lead or move.
       "watch-views": [
         "stub",
         "No Generated module in Watch API uses it, so you write it.",
-        ["channel", "outbox"],
+        ["channel", "outbox", "workload"],
       ],
       "watch-consumer": [
         "stub",
         "No Generated module in Watch API uses it, so you write it.",
-        ["channel"],
+        ["channel", "workload"],
       ],
       "transcoder-cache": [
         "stub",
         "Needs to be in a service or a redirect service.",
-        ["cache", "loader"],
+        ["cache", "loader", "workload"],
       ],
     });
   });

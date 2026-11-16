@@ -128,6 +128,7 @@ describe("module stubs", () => {
     expect(limit).toContain(
       [
         "  // store: not connected (Cache, read & write, optional)",
+        "  // workload: not connected (Identity, verify, optional)",
         "  // settings: the values shorten-limit.ts's `settings` export declares.",
         '  settings: SettingsOf<typeof import("./shorten-limit.ts")>;',
         "};",
@@ -249,10 +250,10 @@ describe("module stubs", () => {
   it("lists every module in the report only for a module-level design", () => {
     const modules = modulesOf(bundle);
     expect(modules?.map((item) => [item.module, item.status, item.unconnected])).toEqual([
-      ["shorten-links", "stub", []],
-      ["shorten-clicks", "stub", ["outbox"]],
-      ["shorten-limit", "stub", ["store"]],
-      ["shorten-cache", "stub", ["cache"]],
+      ["shorten-links", "stub", ["workload"]],
+      ["shorten-clicks", "stub", ["outbox", "workload"]],
+      ["shorten-limit", "stub", ["store", "workload"]],
+      ["shorten-cache", "stub", ["cache", "workload"]],
     ]);
     expect(modules?.find((item) => item.module === "shorten-limit")).toMatchObject({
       reason: "Jeeves doesn't generate Rate limiter modules; you write it.",

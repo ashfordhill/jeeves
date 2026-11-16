@@ -9,6 +9,7 @@ import {
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { ownershipDesign } from "../../../field-projects/generator-system/fixtures/rg-ownership/design.ts";
+import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { favoritesStackDesign } from "../../../jeeves/packages/spec/src/fixtures/favorites-stack.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
@@ -233,7 +234,7 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
     expect(shared.productState.schema).toBe("p_links_api_owner");
     expect(shared.modules).toHaveLength(2);
     // The API-only case has no sharedWith membership to accidentally mask allowlist coupling.
-    const initial = runStudioCommands(stubStackDesign(), [
+    const initial = runStudioCommands(withStubWorkloads(stubStackDesign()), [
       {
         type: "setDatabaseAccess",
         role: "links-api",

@@ -1,0 +1,74 @@
+{
+  "frozen-v2": {
+    "before": 79,
+    "after": 79,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "infra/local.json",
+      "scripts/local.mjs",
+      "scripts/setup.mjs",
+      "src/extension-api/index.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/identity.ts",
+      "src/runtime/operation.ts"
+    ]
+  },
+  "v2-module-design": {
+    "before": 86,
+    "after": 86,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "infra/local.json",
+      "scripts/local.mjs",
+      "scripts/setup.mjs",
+      "src/extension-api/index.ts",
+      "src/modules/watch/watch-counts.slots.ts",
+      "src/modules/watch/watch-views.slots.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/identity.ts",
+      "src/runtime/operation.ts"
+    ]
+  },
+  "stub-stack": {
+    "before": 60,
+    "after": 60,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/local.mjs",
+      "scripts/setup.mjs",
+      "src/extension-api/index.ts",
+      "src/modules/links-api/limiter.slots.ts",
+      "src/modules/links-api/link-cache.slots.ts",
+      "src/modules/links-api/link-reader.slots.ts",
+      "src/modules/links-api/redirector.slots.ts",
+      "src/modules/links-api/stats-caller.slots.ts",
+      "src/modules/links-api/upload-consumer.slots.ts",
+      "src/modules/links-api/visit-publisher.slots.ts",
+      "src/modules/stats-api/stats-search.slots.ts",
+      "src/modules/upload-api/archive-upload.slots.ts",
+      "src/modules/upload-api/upload-publisher.slots.ts",
+      "src/modules/visit-worker/archiver.slots.ts",
+      "src/modules/visit-worker/visit-consumer.slots.ts",
+      "src/modules/visit-worker/visit-writer.slots.ts",
+      "src/runtime/operation.ts"
+    ]
+  }
+}
