@@ -200,6 +200,9 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
   };
   for (const emitter of registry.emitters) {
     const provides = emitter.provides;
+    for (const callable of provides.callables ?? [])
+      if (model.capabilities.some((item) => item.contract.id === callable.contract.id))
+        verifyOutputs(emitter.id, callable.outputPaths);
     if (provides.runtime && sameContractRef(provides.runtime.ref, model.runtime))
       verifyOutputs(emitter.id, provides.runtime.outputPaths);
     for (const preset of provides.presets ?? [])
@@ -343,6 +346,8 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
   };
   const report = freeze({
     format: "jeeves-v2-support-v1",
+    extensionApi: model.extensionApi,
+    capabilities: model.capabilities,
     semanticComplete: resolution.complete,
     applicationComplete: resolution.complete && !gaps.some((gap) => gap.required),
     runtimeVerification: "none",
@@ -386,9 +391,24 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
   addMetadata(`${metadata}inputs/design.json`, input.designJson);
   addMetadata(`${metadata}normalized.json`, jsonFile(model), ["/generation"]);
   addMetadata(`${metadata}report.json`, jsonFile(report), ["/generation"]);
+  addMetadata(
+    `${metadata}extensions.md`,
+    `# Generated extension contract
+
+Extension API version: ${model.extensionApi.version} (${model.extensionApi.boundary}).
+
+This version retains the existing unrestricted hooks. The future guarded public API location is ${model.extensionApi.publicApi}; that API is not installed yet. Do not import it until a generated version supplies it.
+
+Handwritten hooks, stubs and product SQL remain application-owned. Incompatible version updates refuse and list affected paths. Migrate the code yourself, then run update:v2 with --ack-extension-api=<target version>. The updater validates a temporary copy against the new generated files with TypeScript before applying. Install the target export's dependencies offline first if required. --check never changes the checkout; an acknowledgement is not a build bypass.
+
+Installed callable contracts: ${model.capabilities.map((item) => `${item.id}@${item.contract.version} (${item.contract.effect})`).join(", ") || "none"}.
+`,
+    ["/generation"],
+  );
   records.sort((a, b) => v2Compare(a.path, b.path));
   const manifest = freeze({
     format: "jeeves-v2-manifest-v1",
+    extensionApi: model.extensionApi,
     generator: { id: "jeeves-v2", version: "0.1.0-experimental.1" },
     input: {
       sourceSha256: input.sourceSha256,

@@ -1,7 +1,23 @@
+import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { constants, type Stats } from "node:fs";
-import { lstat, mkdir, open, readdir, realpath, rename, rmdir, unlink } from "node:fs/promises";
+import {
+  cp,
+  lstat,
+  mkdir,
+  mkdtemp,
+  open,
+  readdir,
+  realpath,
+  rename,
+  rm,
+  rmdir,
+  symlink,
+  unlink,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { promisify } from "node:util";
 import { assertDistinctPaths } from "./files.ts";
 import { sha256 } from "./json.ts";
 import type { assembleV2 } from "./v2/assemble.ts";
@@ -323,6 +339,66 @@ async function writeFileAtomically(root: string, path: string, bytes: Uint8Array
   }
 }
 
+/** Missing metadata denotes the pre-versioned, unrestricted API, not the saved design schema. */
+function extensionVersion(manifest: Record<string, unknown>) {
+  if (manifest.extensionApi === undefined) return 1;
+  if (
+    !isRecord(manifest.extensionApi) ||
+    !Number.isSafeInteger(manifest.extensionApi.version) ||
+    (manifest.extensionApi.version as number) < 1
+  )
+    throw failure("Invalid extension API version in .jeeves/manifest.json");
+  return manifest.extensionApi.version as number;
+}
+
+/** Build the actual kept application against the new generated interfaces. No target bytes,
+ * dependency install or old runtime need changing for validation. All scratch output is removed. */
+async function validateMigration(
+  root: string,
+  bundle: ReturnType<typeof assembleV2>,
+  actions: readonly UpdateAction[],
+) {
+  const stage = await mkdtemp(join(tmpdir(), "jeeves-extension-migration-"));
+  try {
+    // Keep untracked application source too (shared DTOs, product SQL, etc). Never copy runtime
+    // state, dependency trees, credentials or repository internals into a migration build.
+    const excluded = new Set([".git", ".jeeves", ".runtime", "node_modules", "dist"]);
+    const copy = async (relative: string) => {
+      for (const entry of await readdir(join(root, relative), { withFileTypes: true })) {
+        if (excluded.has(entry.name) || entry.name === ".env" || entry.name.startsWith(".env."))
+          continue;
+        const path = relative ? `${relative}/${entry.name}` : entry.name;
+        if (entry.isSymbolicLink()) throw unsafe(path);
+        if (entry.isDirectory()) {
+          await mkdir(join(stage, path), { recursive: true });
+          await copy(path);
+        } else if (entry.isFile()) await cp(join(root, path), join(stage, path));
+        else throw unsafe(path);
+      }
+    };
+    await copy("");
+    const bytes = new Map(bundle.files.map((file) => [file.path, file.bytes]));
+    for (const { path, action } of actions) {
+      if (action === "remove") await unlink(join(stage, path));
+      if (action === "create" || action === "replace") {
+        const content = bytes.get(path);
+        if (!content) throw failure(`The bundle has no bytes for ${path}`);
+        await writeFileAtomically(stage, path, content);
+      }
+    }
+    // Resolve installed dependencies without executing the application's editable build script.
+    await symlink(join(root, "node_modules"), join(stage, "node_modules"), "dir");
+    const compiler = join(root, "node_modules/typescript/bin/tsc");
+    await promisify(execFile)(
+      process.execPath,
+      [compiler, "--noEmit", "--project", join(stage, "tsconfig.json")],
+      { cwd: stage, timeout: 120000, maxBuffer: 1024 * 1024 },
+    );
+  } finally {
+    await rm(stage, { recursive: true, force: true });
+  }
+}
+
 /**
  * Regenerates an existing Jeeves v2 export in place from `bundle` (what `assembleV2` returns).
  * Generated files are rewritten and the application's own files kept, as `planUpdate` decides.
@@ -333,7 +409,7 @@ async function writeFileAtomically(root: string, path: string, bytes: Uint8Array
 export async function updateDirectory(
   bundle: ReturnType<typeof assembleV2>,
   directory: string,
-  options: { check: boolean },
+  options: { check: boolean; acknowledgeExtensionApi?: number },
 ): Promise<UpdateResult> {
   const { root, manifest } = await exportManifest(directory);
   const previous = previousFiles(manifest);
@@ -379,7 +455,42 @@ export async function updateDirectory(
     remove: named("remove"),
     orphan: named("orphan"),
   };
-  if (plan.refused.length || options.check) return result;
+  const beforeVersion = extensionVersion(manifest);
+  const nextVersion = bundle.manifest.extensionApi.version;
+  const hooks = previous
+    .filter(
+      (file) =>
+        file.ownership === extension &&
+        /\.(?:[cm]?[jt]sx?)$/u.test(file.path) &&
+        disk.has(file.path),
+    )
+    .map((file) => file.path)
+    .sort(compare);
+  if (beforeVersion !== nextVersion) {
+    const instruction = `Extension API ${beforeVersion} -> ${nextVersion} requires migration; edit these files and acknowledge --ack-extension-api=${nextVersion}: ${hooks.join(", ")}`;
+    if (options.acknowledgeExtensionApi !== nextVersion) result.refused.push(instruction);
+    else if (overrides.length)
+      result.refused.push(
+        `Resolve generated overrides before extension migration: ${overrides.join(", ")}`,
+      );
+    else if (!plan.refused.length) {
+      try {
+        await validateMigration(root, bundle, plan.actions);
+      } catch (error) {
+        const detail = error as { stdout?: string; stderr?: string; message?: string };
+        result.refused.push(
+          `Extension migration build failed (${hooks.join(", ")}): ${detail.stdout || detail.stderr || detail.message}`,
+        );
+      }
+    }
+  } else if (
+    options.acknowledgeExtensionApi !== undefined &&
+    options.acknowledgeExtensionApi !== nextVersion
+  )
+    result.refused.push(
+      `Acknowledge the target extension API version ${nextVersion}, not ${options.acknowledgeExtensionApi}.`,
+    );
+  if (result.refused.length || options.check) return result;
 
   const generated = new Map(bundle.files.map((file) => [file.path, file.bytes]));
   const bytesOf = (path: string) => {

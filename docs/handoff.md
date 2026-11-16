@@ -18327,3 +18327,38 @@ can reuse `idempotencyGrant`'s shape and the `050-` migration path for its lease
 **For the next unit.** QL06, A keys library for stubs. It builds on `keyRing()`, whose value is
 `{ current, entries }` with `Buffer` keys, the first entry `current`. QL10 can declare its
 workload settings the same way.
+
+
+## 2026-11-16 — RG01: Versioned capability contracts and hook migration
+
+- Extended the existing normalized model with serializable, source-traced callable/effect,
+  owner/role, access, principal/dependency, lifecycle and extension-version records. Only the
+  four existing Favorites HTTP operations are registered; exact registry/output checks consume
+  those claims. Saved diagrams and historical exports remain readable/untouched.
+- New `.jeeves/extensions.md`; normalized/report/manifest metadata and the diagnostic mirror
+  record extension API **v1 (legacy-unrestricted)**. The future public API location is documented
+  but not installed. v2 pins were reviewed: +1 guide file, metadata only; frozen v1 unchanged.
+- Incompatible updates name hook paths and refuse unless `--ack-extension-api=<target>` is
+  explicit. A disposable staging copy compiles kept application code against the new generated
+  interfaces before apply; `--check`, failed builds and refusals preserve target bytes. Hooks
+  are never rewritten. Missing old version metadata means v1, preserving compatible updates.
+- Checks: focused resolver/schema/update 61 passed; affected model/support/migration cases 63
+  passed; final `pnpm check` 120 files/1,072 tests passed; web build passed. Standard e2e: 73
+  passed, one stale QL05 file-order assertion failed; corrected it to exact complete file lists.
+  Coordinator reran the affected mouse case: 1 passed (7.5 s). Existing TinyURL canvas and
+  preview/download browser cases passed. No authoring commands changed or Docker checkpoint ran.
+- Initial sandbox subprocess/socket failures were superseded by successful authorized runs.
+  Owner clarified full command access/no routine prompts; coordinator handled the final targeted
+  rerun after this agent still received IPC EPERM. All protected root files and owner dirty paths
+  are preserved. [Detailed evidence](plans/reliable-generation/evidence/rg01/README.md).
+- API/limits: this unit establishes the version guard, not a guarded runtime. Staged TypeScript
+  validation needs installed target dependencies and proves interface/build compatibility only.
+  RG02 may rely on these records/refusals and must increment the version before breaking hooks.
+  Deferred capability/lifecycle implementations remain in their assigned units; no new queue.
+- Commit subject: `RG01: version generated capability contracts and guard hook migration`.
+
+- Final RG01 evidence supplement: coordinator completed the required real scratch Favorites
+  regeneration/readback (exit 0, 58 files, four capabilities, extension API v1); the temporary
+  export was removed. [Fixture output](plans/reliable-generation/evidence/rg01/fixture.json).
+  This agent's `.git` mount is read-only, so explicit staging failed without an index change;
+  the coordinator creates the authorized single local unit commit from the exact unit paths.

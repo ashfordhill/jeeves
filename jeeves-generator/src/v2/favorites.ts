@@ -1,4 +1,5 @@
 import {
+  generationCallableContracts,
   type generationPolicies,
   generationRuntime,
   type NormalizedGenerationSelection,
@@ -65,6 +66,12 @@ export function createLocalFavorites(sourcePaths: readonly string[]): V2Emitter 
       "Each signed-in account's favorite items in one template-owned table, with bounded add, check, remove and paged list.",
     sourcePaths,
     dependencies: [generationRuntime.ref],
+    provides: {
+      callables: generationCallableContracts.map((contract) => ({
+        contract,
+        outputPaths: ["src/runtime/favorites.ts"],
+      })),
+    },
     render: ({ model, asset }) => {
       const selections = model.selections.filter((s) => s.binding.kind === "favorites");
       const paths = selections.map(

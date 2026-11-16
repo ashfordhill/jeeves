@@ -18,6 +18,7 @@ import {
 } from "./fixtures/v2-modules.ts";
 import { designGeneration, type GenerationSelection } from "./generation.ts";
 import {
+  generationExtensionApi,
   generationPolicies,
   generationRuntime,
   generationTemplates,
@@ -1450,6 +1451,10 @@ describe("module status and older designs", () => {
       }
     );
     const { model } = resolveGeneration(v2());
-    expect(JSON.parse(JSON.stringify(model))).toEqual(normalized.default);
+    expect(JSON.parse(JSON.stringify(model))).toEqual({
+      ...normalized.default,
+      extensionApi: generationExtensionApi,
+      capabilities: [],
+    });
   });
 });

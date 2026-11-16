@@ -1,4 +1,5 @@
 /** Finite compilation requirements. These descriptors install no executable implementation. */
+import { z } from "zod";
 import { freezeRecord } from "./content-hash.ts";
 import type { GenerationResourceKind } from "./generation.ts";
 import { type GenerationBindingKind, generationTemplates } from "./generation-catalog.ts";
@@ -6,6 +7,21 @@ import type { ExactContractRef } from "./operation-records.ts";
 import type { DeclaredAccess } from "./ownership.ts";
 import { type StudioComponentKind, studioComponentKinds } from "./studio-components.ts";
 import type { StudioKind } from "./studio-model.ts";
+
+/** Finite capability metadata; no code, schema expressions or executable values. */
+export const generationCallableContractSchema = z.strictObject({
+  id: z.string().regex(/^[a-z][a-z0-9.-]+$/),
+  version: z.number().int().positive(),
+  input: z.string().regex(/^[a-z][a-z0-9.-]+$/),
+  output: z.string().regex(/^[a-z][a-z0-9.-]+$/),
+  effect: z.enum(["read", "local-atomic-mutation", "durable-external-work"]),
+});
+export type GenerationCallableContract = z.infer<typeof generationCallableContractSchema>;
+export type GenerationInstalledCallable = {
+  contract: GenerationCallableContract;
+  /** Existing implementation output checked by the assembler. */
+  outputPaths: readonly string[];
+};
 
 export type GenerationValue = string | number;
 export type GenerationSupportedValues =
@@ -56,6 +72,7 @@ export type GenerationInstalledTemplate = {
 };
 export type GenerationInstalledSupport = {
   runtime?: ExactContractRef;
+  callables?: readonly GenerationInstalledCallable[];
   presets?: readonly ExactContractRef[];
   templates: readonly GenerationInstalledTemplate[];
   /** The host runs a process per application tile (tile process contract, section 1). */

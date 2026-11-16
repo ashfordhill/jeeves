@@ -3,11 +3,19 @@
  * its policies and each of its settings, and Runnable processes, as the executing registry lists
  * them. The server's tests use the real registry.
  */
-import { generationRuntime, generationTemplates } from "../generation-catalog.ts";
+import {
+  generationCallableContracts,
+  generationRuntime,
+  generationTemplates,
+} from "../generation-catalog.ts";
 import { type GenerationInstalledSupport, generationCapabilities } from "../generation-support.ts";
 
 export const testInstalledSupport: GenerationInstalledSupport = {
   runtime: generationRuntime.ref,
+  callables: generationCallableContracts.map((contract) => ({
+    contract,
+    outputPaths: ["src/runtime/favorites.ts"],
+  })),
   templates: Object.entries(generationTemplates).map(([kind, template]) => ({
     ref: template.ref,
     consumers: [

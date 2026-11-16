@@ -1016,9 +1016,19 @@ test("Generate project lists each module's status and previews its stubs", async
       ["Custom", "stub"],
     ]);
     expect(preview.report.findings).toEqual([]);
-    expect(preview.report.modules.map((row: { files: string[] }) => row.files.at(-1))).toEqual([
-      "src/modules/microservice/microservice-rate-limiter.ts",
-      "src/modules/microservice/microservice-custom.ts",
+    expect(preview.report.modules.map((row: { files: string[] }) => row.files)).toEqual([
+      [
+        "src/modules/dependencies.ts",
+        "src/modules/microservice/microservice-rate-limiter.slots.ts",
+        "src/modules/microservice/microservice-rate-limiter.ts",
+        "src/runtime/settings.ts",
+      ],
+      [
+        "src/modules/dependencies.ts",
+        "src/modules/microservice/microservice-custom.slots.ts",
+        "src/modules/microservice/microservice-custom.ts",
+        "src/runtime/settings.ts",
+      ],
     ]);
     await expect(dialog.getByText(/^Ready: \d+ files/)).toBeVisible();
     await expect(

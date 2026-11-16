@@ -179,3 +179,43 @@ export function knownGenerationTemplate(ref: ExactContractRef) {
 export function knownGenerationPreset(ref: ExactContractRef) {
   return generationPresetCatalog.find((entry) => sameContractRef(entry.ref, ref));
 }
+
+/** The current unrestricted hook API, independent of saved-design and template versions.
+ * Future guarded APIs must increment this version before changing handwritten interfaces. */
+export const generationExtensionApi = freezeRecord({
+  version: 1,
+  publicApi: "src/extension-api/index.ts",
+  boundary: "legacy-unrestricted",
+});
+
+/** Only existing callable operations. These names identify bounded contracts, not TS source. */
+export const generationCallableContracts = freezeRecord([
+  {
+    id: "favorites.add",
+    version: 1,
+    input: "favorites.item",
+    output: "favorites.item-record",
+    effect: "local-atomic-mutation",
+  },
+  {
+    id: "favorites.remove",
+    version: 1,
+    input: "favorites.item",
+    output: "favorites.empty",
+    effect: "local-atomic-mutation",
+  },
+  {
+    id: "favorites.check",
+    version: 1,
+    input: "favorites.item",
+    output: "favorites.item-record",
+    effect: "read",
+  },
+  {
+    id: "favorites.list",
+    version: 1,
+    input: "favorites.page",
+    output: "favorites.item-page",
+    effect: "read",
+  },
+] as const);

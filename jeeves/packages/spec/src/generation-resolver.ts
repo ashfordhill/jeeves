@@ -11,12 +11,15 @@ import {
   generationSchema,
 } from "./generation.ts";
 import {
+  generationCallableContracts,
+  generationExtensionApi,
   generationPolicies,
   generationRuntime,
   knownGenerationPreset,
   knownGenerationTemplate,
 } from "./generation-catalog.ts";
 import {
+  type GenerationCallableContract,
   type GenerationInstalledSupport,
   type GenerationProcessKind,
   type GenerationSettingRule,
@@ -245,8 +248,28 @@ export function stubLinkUse(use: StudioModuleSlot["use"], target: StubTarget): s
   if (use === "uses") return "request";
   return use;
 }
+/** One installed operation on an existing module, traced back to the saved design. */
+export type NormalizedCallableCapability = {
+  id: string;
+  contract: GenerationCallableContract;
+  selection: string;
+  module: string;
+  process: string;
+  owner: string;
+  role: "api" | "worker";
+  sourcePath: Path;
+  roleSourcePath: Path;
+  transport: "http" | "in-process" | "delivery-consumer" | "scheduled-task";
+  dependencies: string[];
+  access: { resource: string; name: string; use: "read" | "write"; sourcePath: Path }[];
+  caller: { kind: "verified-principal"; identity: string; guard: string; sourcePath: Path };
+  lifecycle: { process: string; mechanism: string };
+  extensionApiVersion: number;
+};
 export type NormalizedGeneration = {
   version: 1;
+  extensionApi: typeof generationExtensionApi;
+  capabilities: NormalizedCallableCapability[];
   runtime: GenerationSelection["template"];
   preset?: GenerationSelection["template"];
   selections: NormalizedGenerationSelection[];
@@ -1102,6 +1125,8 @@ export function resolveGeneration(
     ? undefined
     : {
         version: 1,
+        extensionApi: structuredClone(generationExtensionApi),
+        capabilities: [],
         runtime: structuredClone(generation.runtime),
         ...(generation.preset && { preset: structuredClone(generation.preset) }),
         selections: normalized,
@@ -1119,6 +1144,66 @@ export function resolveGeneration(
       ),
     );
   if (model?.processes) {
+    for (const selection of normalized) {
+      if (selection.binding.kind !== "favorites" || selection.target.kind !== "component") continue;
+      const binding = selection.binding;
+      const identity = normalized.find(
+        (item) =>
+          item.binding.kind === "verified-identity" &&
+          item.target.kind === "component" &&
+          item.target.component === binding.identity.guard,
+      );
+      for (const contract of generationCallableContracts) {
+        const implementation = installed.callables?.find(
+          (item) => item.contract.id === contract.id && item.contract.version === contract.version,
+        );
+        if (!implementation)
+          report(
+            "NEEDS_TEMPLATE",
+            [...selection.sourcePath, "template"],
+            `Required callable ${contract.id}@${contract.version} is not installed for module ${selection.target.component}.`,
+          );
+        if (!identity)
+          report(
+            "CONFIG_REQUIRED",
+            [...selection.sourcePath, "binding", "identity"],
+            `Callable ${contract.id} requires a verified-identity selection for guard ${binding.identity.guard}.`,
+          );
+        const role = ownership.roles.find((item) => item.element === selection.host);
+        const state = selection.resources.find((item) => item.field === "state");
+        if (!implementation || !identity || !role || !state) continue;
+        model.capabilities.push({
+          id: `${selection.target.component}.${contract.id}`,
+          contract: structuredClone(contract),
+          selection: selection.id,
+          module: selection.target.component,
+          process: selection.host,
+          owner: role.owner,
+          role: role.kind,
+          sourcePath: structuredClone(selection.sourcePath),
+          roleSourcePath: ["ownership", "roles", ownership.roles.indexOf(role)],
+          transport: "http",
+          dependencies: [identity.id],
+          access: [
+            {
+              resource: state.element,
+              name: "favorites.items",
+              use: contract.effect === "read" ? "read" : "write",
+              sourcePath: state.sourcePath,
+            },
+          ],
+          caller: {
+            kind: "verified-principal",
+            identity: binding.identity.element,
+            guard: binding.identity.guard,
+            sourcePath: [...selection.sourcePath, "binding", "identity"],
+          },
+          lifecycle: { process: selection.host, mechanism: "src/runtime/process.ts" },
+          extensionApiVersion: generationExtensionApi.version,
+        });
+      }
+    }
+    model.capabilities.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const delivery = normalizedDelivery(design);
     if (delivery.length) model.delivery = delivery;
   }

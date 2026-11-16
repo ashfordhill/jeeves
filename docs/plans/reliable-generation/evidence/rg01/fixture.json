@@ -1,0 +1,315 @@
+{
+  "fixture": "favoritesStackDesign(true)",
+  "exportCreatedAndRead": true,
+  "cleanup": "finally removes the task-owned scratch export",
+  "extensionApi": {
+    "boundary": "legacy-unrestricted",
+    "publicApi": "src/extension-api/index.ts",
+    "version": 1
+  },
+  "semanticComplete": true,
+  "applicationComplete": false,
+  "runtimeVerification": "none",
+  "capabilities": [
+    {
+      "access": [
+        {
+          "name": "favorites.items",
+          "resource": "favorites",
+          "sourcePath": [
+            "generation",
+            "selections",
+            1,
+            "binding",
+            "state"
+          ],
+          "use": "write"
+        }
+      ],
+      "caller": {
+        "guard": "account-check",
+        "identity": "sign-in",
+        "kind": "verified-principal",
+        "sourcePath": [
+          "generation",
+          "selections",
+          1,
+          "binding",
+          "identity"
+        ]
+      },
+      "contract": {
+        "effect": "local-atomic-mutation",
+        "id": "favorites.add",
+        "input": "favorites.item",
+        "output": "favorites.item-record",
+        "version": 1
+      },
+      "dependencies": [
+        "account-check"
+      ],
+      "extensionApiVersion": 1,
+      "id": "favorite-items.favorites.add",
+      "lifecycle": {
+        "mechanism": "src/runtime/process.ts",
+        "process": "account-api"
+      },
+      "module": "favorite-items",
+      "owner": "account-api-owner",
+      "process": "account-api",
+      "role": "api",
+      "roleSourcePath": [
+        "ownership",
+        "roles",
+        0
+      ],
+      "selection": "favorite-items",
+      "sourcePath": [
+        "generation",
+        "selections",
+        1
+      ],
+      "transport": "http"
+    },
+    {
+      "access": [
+        {
+          "name": "favorites.items",
+          "resource": "favorites",
+          "sourcePath": [
+            "generation",
+            "selections",
+            1,
+            "binding",
+            "state"
+          ],
+          "use": "read"
+        }
+      ],
+      "caller": {
+        "guard": "account-check",
+        "identity": "sign-in",
+        "kind": "verified-principal",
+        "sourcePath": [
+          "generation",
+          "selections",
+          1,
+          "binding",
+          "identity"
+        ]
+      },
+      "contract": {
+        "effect": "read",
+        "id": "favorites.check",
+        "input": "favorites.item",
+        "output": "favorites.item-record",
+        "version": 1
+      },
+      "dependencies": [
+        "account-check"
+      ],
+      "extensionApiVersion": 1,
+      "id": "favorite-items.favorites.check",
+      "lifecycle": {
+        "mechanism": "src/runtime/process.ts",
+        "process": "account-api"
+      },
+      "module": "favorite-items",
+      "owner": "account-api-owner",
+      "process": "account-api",
+      "role": "api",
+      "roleSourcePath": [
+        "ownership",
+        "roles",
+        0
+      ],
+      "selection": "favorite-items",
+      "sourcePath": [
+        "generation",
+        "selections",
+        1
+      ],
+      "transport": "http"
+    },
+    {
+      "access": [
+        {
+          "name": "favorites.items",
+          "resource": "favorites",
+          "sourcePath": [
+            "generation",
+            "selections",
+            1,
+            "binding",
+            "state"
+          ],
+          "use": "read"
+        }
+      ],
+      "caller": {
+        "guard": "account-check",
+        "identity": "sign-in",
+        "kind": "verified-principal",
+        "sourcePath": [
+          "generation",
+          "selections",
+          1,
+          "binding",
+          "identity"
+        ]
+      },
+      "contract": {
+        "effect": "read",
+        "id": "favorites.list",
+        "input": "favorites.page",
+        "output": "favorites.item-page",
+        "version": 1
+      },
+      "dependencies": [
+        "account-check"
+      ],
+      "extensionApiVersion": 1,
+      "id": "favorite-items.favorites.list",
+      "lifecycle": {
+        "mechanism": "src/runtime/process.ts",
+        "process": "account-api"
+      },
+      "module": "favorite-items",
+      "owner": "account-api-owner",
+      "process": "account-api",
+      "role": "api",
+      "roleSourcePath": [
+        "ownership",
+        "roles",
+        0
+      ],
+      "selection": "favorite-items",
+      "sourcePath": [
+        "generation",
+        "selections",
+        1
+      ],
+      "transport": "http"
+    },
+    {
+      "access": [
+        {
+          "name": "favorites.items",
+          "resource": "favorites",
+          "sourcePath": [
+            "generation",
+            "selections",
+            1,
+            "binding",
+            "state"
+          ],
+          "use": "write"
+        }
+      ],
+      "caller": {
+        "guard": "account-check",
+        "identity": "sign-in",
+        "kind": "verified-principal",
+        "sourcePath": [
+          "generation",
+          "selections",
+          1,
+          "binding",
+          "identity"
+        ]
+      },
+      "contract": {
+        "effect": "local-atomic-mutation",
+        "id": "favorites.remove",
+        "input": "favorites.item",
+        "output": "favorites.empty",
+        "version": 1
+      },
+      "dependencies": [
+        "account-check"
+      ],
+      "extensionApiVersion": 1,
+      "id": "favorite-items.favorites.remove",
+      "lifecycle": {
+        "mechanism": "src/runtime/process.ts",
+        "process": "account-api"
+      },
+      "module": "favorite-items",
+      "owner": "account-api-owner",
+      "process": "account-api",
+      "role": "api",
+      "roleSourcePath": [
+        "ownership",
+        "roles",
+        0
+      ],
+      "selection": "favorite-items",
+      "sourcePath": [
+        "generation",
+        "selections",
+        1
+      ],
+      "transport": "http"
+    }
+  ],
+  "files": [
+    ".dockerignore",
+    ".gitignore",
+    ".jeeves/extensions.md",
+    ".jeeves/inputs/design.json",
+    ".jeeves/manifest.json",
+    ".jeeves/normalized.json",
+    ".jeeves/report.json",
+    "Dockerfile",
+    "README.md",
+    "compose.yaml",
+    "diagnostics/generation.json",
+    "ffmpeg-os.lock",
+    "infra/edge/nginx.conf",
+    "infra/local.json",
+    "infra/postgres/catalog/000-foundation.sql",
+    "infra/postgres/catalog/050-jeeves-idempotency.sql",
+    "infra/postgres/catalog/modules/catalog-writer.sql",
+    "infra/postgres/favorites/000-foundation.sql",
+    "infra/postgres/favorites/100-favorite-items.sql",
+    "infra/postgres/favorites/modules/favorite-items.sql",
+    "infra/postgres/sign-in/000-foundation.sql",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "scripts/bootstrap.mjs",
+    "scripts/broker-init.mjs",
+    "scripts/common.mjs",
+    "scripts/local.mjs",
+    "scripts/migrate.mjs",
+    "scripts/products.mjs",
+    "scripts/setup.mjs",
+    "scripts/status.mjs",
+    "scripts/storage-config.mjs",
+    "src/features/application-bindings.ts",
+    "src/features/local-bindings.ts",
+    "src/features/service-resources.ts",
+    "src/modules/account-api/catalog-writer.slots.ts",
+    "src/modules/account-api/catalog-writer.ts",
+    "src/modules/account-api/favorite-items.hooks.ts",
+    "src/modules/dependencies.ts",
+    "src/modules/entry.ts",
+    "src/processes/account-api.ts",
+    "src/runtime/admission.ts",
+    "src/runtime/durable-sql.ts",
+    "src/runtime/favorites.ts",
+    "src/runtime/http.ts",
+    "src/runtime/idempotency.ts",
+    "src/runtime/identity.ts",
+    "src/runtime/local.ts",
+    "src/runtime/module-clients.ts",
+    "src/runtime/postgres.ts",
+    "src/runtime/process.ts",
+    "src/runtime/settings.ts",
+    "src/runtime/tile-guard.ts",
+    "src/runtime/tile-http.ts",
+    "src/runtime/tile-process.ts",
+    "src/runtime/transaction.ts",
+    "tsconfig.json"
+  ]
+}

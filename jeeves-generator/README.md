@@ -225,7 +225,26 @@ file of yours `keepChanged`, until your file equals the new bytes or you delete 
 accept your file as it is (an override's shadow comes back while it stays listed). The update
 deletes the shadows it no longer needs, and the folder once it is empty.
 
-**`--check`** runs the preflight and prints the same result, and writes nothing.
+**`--check`** runs the preflight and prints the same result, and writes nothing to the export.
+
+The manifest and support report record `extensionApi.version` separately from the saved design
+schema. Missing version metadata means the original unrestricted API, version 1. Existing v1
+updates remain compatible. `.jeeves/extensions.md` describes that contract and names the future
+public API location; it does not claim that the guarded API exists yet. The normalized model and
+report also list installed callable contracts with stable module/process/owner IDs, source paths,
+effects, declared access, caller requirements and the generated lifecycle mechanism. Currently
+these records cover the existing Favorites HTTP operations, not future capabilities.
+
+An incompatible version update refuses and names handwritten hook/stub paths. Migrate those
+files yourself, then pass `--ack-extension-api=<target version>` (also accepted with `--check`).
+The updater first copies application source to a temporary staging directory, overlays the new
+generated files, and runs the installed TypeScript compiler with `--noEmit` against that copy.
+Thus a migrated hook can reference the new interface before the old checkout has that runtime.
+The updater never rewrites handwritten bodies. A failed build or acknowledgement writes nothing
+to the export; scratch files are always removed. The copy omits `.runtime`, `.git`, `.env` files,
+`dist` and dependency trees; it uses the export's installed dependencies. Install the target
+export's exact dependencies offline beforehand when they change. Resolve generated overrides
+before migration. This is an interface/build check, not runtime proof or a hostile-code sandbox.
 
 ## Jeeves preview and ZIP download
 

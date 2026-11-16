@@ -2,9 +2,12 @@ import { readFileSync } from "node:fs";
 import {
   type ExactContractRef,
   exactContractRefSchema,
+  type GenerationInstalledCallable,
   type GenerationInstalledSupport,
   type GenerationInstalledTemplate,
   type GenerationSettingDecision,
+  generationCallableContractSchema,
+  generationCallableContracts,
   generationRuntime,
   knownGenerationPreset,
   knownGenerationTemplate,
@@ -103,6 +106,7 @@ export type V2Emitter = {
   sourcePaths: readonly string[];
   dependencies?: readonly ExactContractRef[];
   provides?: {
+    callables?: readonly GenerationInstalledCallable[];
     runtime?: { ref: ExactContractRef; outputPaths: readonly string[] };
     presets?: readonly { ref: ExactContractRef; outputPaths: readonly string[] }[];
     templates?: readonly GenerationInstalledTemplate[];
@@ -187,7 +191,8 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
         (provides.runtime ||
           provides.presets?.length ||
           provides.templates?.length ||
-          provides.processes)
+          provides.processes ||
+          provides.callables?.length)
       )
         refuse(
           "INVALID_REGISTRY",
@@ -213,7 +218,22 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
           inputs.add(consumer.input);
         }
       }
+      for (const callable of provides.callables ?? []) {
+        const parsed = generationCallableContractSchema.safeParse(callable.contract);
+        if (
+          !parsed.success ||
+          !generationCallableContracts.some(
+            (contract) => canonicalJson(contract) === canonicalJson(callable.contract),
+          )
+        )
+          refuse(
+            "INVALID_REGISTRY",
+            emitter.id,
+            "Install only exact implemented callable contracts.",
+          );
+      }
       const paths = [
+        ...(provides.callables ?? []).map((callable) => callable.outputPaths),
         ...(provides.runtime ? [provides.runtime.outputPaths] : []),
         ...(provides.presets ?? []).map((preset) => preset.outputPaths),
         ...(provides.templates ?? []).flatMap((template) =>
@@ -268,7 +288,11 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
       "/registry",
       "Install one owner per exact runtime/preset/template responsibility.",
     );
+  const callables = sorted.flatMap((emitter) => emitter.provides.callables ?? []);
+  if (new Set(callables.map((item) => item.contract.id)).size !== callables.length)
+    refuse("INVALID_REGISTRY", "/registry", "Install one owner per callable contract.");
   const installed: GenerationInstalledSupport = {
+    callables,
     ...(runtimeOwners[0]?.provides.runtime && { runtime: runtimeOwners[0].provides.runtime.ref }),
     presets: presets.map((preset) => preset.ref),
     templates,
