@@ -868,9 +868,9 @@ export function cacheClientEndpoint(cache: string) {
   };
 }
 /** A cache (Valkey) with its password, through the cache read's bounded client
- * (`createValkeyCache`): a command settles within 150 ms and at most 32 wait; while no client is
+ * (`createValkeyCache`): a caller settles within 150 ms and at most 32 actual commands remain pending; while no client is
  * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
- * and a new one tried every 5 s; each change is logged, a `cache <cache>` failure line when it
+ * and a new one tried every 5 s; queue saturation preserves a healthy client. Each change is logged, a `cache <cache>` failure line when it
  * is lost and an info line when it is available. Closing destroys the client, so a drain never
  * waits on the cache. Its endpoint and transport come from `cacheClientEndpoint`. Probe: PING; a
  * cache that is down at startup logs `unavailable` and the process starts without it. */

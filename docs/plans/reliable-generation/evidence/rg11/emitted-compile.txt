@@ -1,0 +1,50 @@
+video 125 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 96 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative public API: src/modules/links-api/negative.ts(1,9): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'createValkeyCache'.
+src/modules/links-api/negative.ts(1,27): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'ADMIT_WINDOW'.
+src/modules/links-api/negative.ts(1,40): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'SET_IF_NEWER'.
+src/modules/links-api/negative.ts(3,38): error TS2339: Property 'admit' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,74): error TS2339: Property 'setIfNewer' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,131): error TS2339: Property 'getVersioned' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,153): error TS2339: Property 'eval' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,168): error TS2339: Property 'sendCommand' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,186): error TS2339: Property 'socket' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,195): error TS2339: Property 'client' does not exist on type 'CacheClient'.
+
+Private boundary: src/modules/links-api/negative.ts: forbidden private runtime import ../../runtime/valkey.ts
+
+frozen-v2 79 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+v2-module-design 86 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stub-stack 60 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Pin review {
+  'frozen-v2': {
+    before: 79,
+    after: 79,
+    added: [],
+    removed: [],
+    changed: [ '.jeeves/manifest.json', 'src/runtime/valkey.ts' ]
+  },
+  'v2-module-design': {
+    before: 86,
+    after: 86,
+    added: [],
+    removed: [],
+    changed: [ '.jeeves/manifest.json', 'src/runtime/valkey.ts' ]
+  },
+  'stub-stack': { before: 60, after: 60, added: [], removed: [], changed: [] }
+}

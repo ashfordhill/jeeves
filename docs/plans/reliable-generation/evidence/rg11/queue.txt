@@ -1,0 +1,2 @@
+Pinned node-redis 6.3.0: full-queue rejection is local Error, before enqueue/wire; pendingCount unchanged; existing command and subsequent PING succeed.
+No native socket/connect or Valkey operation executed; transport integration remains RG14.

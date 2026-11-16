@@ -99,8 +99,10 @@ const fakes: Record<string, string> = {
       };
     }`,
   redis: `${check}
+    export class ErrorReply extends Error {}
     export function createClient(options) {
       record("createClient", options);
+      let cancelConnect;
       // A command records its arguments, then answers, fails or (with hang) never answers.
       const reply = (name, value) => (...args) => {
         record(name, ...args);
@@ -110,9 +112,15 @@ const fakes: Record<string, string> = {
       };
       return {
         on: (event) => record("on", event),
-        connect: () => outcome("connect", undefined),
+        connect: () => {
+          if (fake.hang && fake.fail === "connect") {
+            record("connect");
+            return new Promise((_, reject) => { cancelConnect = reject; });
+          }
+          return outcome("connect", undefined);
+        },
         ping: () => outcome("PING", "PONG"),
-        destroy: () => record("destroy"),
+        destroy: () => { record("destroy"); cancelConnect?.(new Error("Client destroyed")); },
         get: reply("get", (key) => (key === "missing" ? null : "value")),
         set: reply("set", "OK"),
         del: reply("del", 1),
@@ -561,7 +569,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       const cache = await clients.cacheClient(testScope(), probe, { cache: "links-cache" });
       // The cache read's bounded client: no offline queue or client reconnect, 32 queued at
       // most, a 500 ms connect.
-      expect(fake.calls.slice(0, 4)).toEqual([
+      expect(fake.calls.slice(0, 5)).toEqual([
         [
           "createClient",
           {
@@ -577,6 +585,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
           },
         ],
         ["on", "error"],
+        ["on", "end"],
         ["connect"],
         ["PING"],
       ]);
@@ -597,7 +606,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       await cache.set("key", "value", 60);
       await cache.set("key", "value");
       await cache.delete("key");
-      expect(fake.calls.slice(4)).toEqual([
+      expect(fake.calls.slice(5)).toEqual([
         ["get", "key"],
         ["get", "missing"],
         ["set", "key", "value", { EX: 60 }],
@@ -720,7 +729,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
           event: "failure",
           tile: "links-api",
           what: "cache links-cache",
-          error: "Error: connect refused",
+          error: "OperationError: Operation definite-failure: DEPENDENCY_FAILED",
         },
         back,
         {
@@ -728,7 +737,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
           event: "failure",
           tile: "links-api",
           what: "cache links-cache",
-          error: "Error: Cache deadline",
+          error: "OperationError: Cache deadline",
         },
         back,
       ]);

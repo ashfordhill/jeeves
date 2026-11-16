@@ -18664,3 +18664,30 @@ workload settings the same way.
   resources are preserved. No new provider/dependency, paid/live call, Docker checkpoint, owner
   ports, push, deployment or later unit. Commit subject:
   `RG10: own replay ordering and local mutation atomicity`. Stop for coordinator acceptance.
+
+
+## 2026-11-16 — RG11 verified, local commit for acceptance
+
+- Extension API remains **v8**; public stub `CacheClient` is unchanged. Private Valkey `admit`
+  uses one rolling log/store TIME with bounded cardinality and absolute reset/expiry. Private
+  `setIfNewer` compares canonical unsigned 64-bit decimal strings exactly, writes with PXAT,
+  and permits equal-version renewal only for identical contents. `getVersioned` rechecks the
+  original absolute validity at delivery. RG12/13 select public capabilities later; fixed policies
+  need separate key namespaces, clocks must agree, and version fences end with key retention.
+- At most 32 actual command promises remain pending across generations. Queue saturation refuses
+  without destroying a healthy client; unknown Lua/malformed mutation outcomes never retry.
+  Context/effect guards, actual-promise lifecycle tracking, cancellation, one bounded reconnect
+  attempt/timer and genuine disconnect recovery are covered. Optional immutable-cache fallback
+  stays unchanged. Malformed UTF-16 keys/values refuse; valid non-BMP Unicode round-trips.
+- Final `pnpm check`: **129 files / 1,187 tests passed**, test phase **69.04 s**; focused **108 passed**.
+  Full e2e **78/78 passed**, including TinyURL and both mouse rebuilds; web build passed. Five
+  scratch exports pass checker/TS7 with negative private/script/socket API proof. Reviewed off
+  pins **79→79 / 86→86 / 60→60**. Exact emitted Lua passes **66** offline assertions with Redis/
+  cjson doubles; actual pinned node-redis proves pre-enqueue queue-full and subsequent survival.
+- [Evidence, corrections and limits](plans/reliable-generation/evidence/rg11/README.md).
+  Native Valkey/transport/competing processes remain RG14; no new provider/dependency, Docker
+  checkpoint, authoring/chat description, live/paid call, owner ports, push or deployment.
+  Root hashes, exact **34,001-byte** owner diff/modes, frozen v1, historical outputs/evidence and
+  accepted container inventory remain intact. Commit subject:
+  `RG11: add atomic cache operations and distinguish saturation from failure`. Stop for acceptance;
+  no later unit began.

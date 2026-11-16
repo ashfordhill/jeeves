@@ -1,0 +1,2 @@
+$ tsx src/v2/fixtures/update-processes-off.ts
+{ 'frozen-v2': 79, 'v2-module-design': 86, 'stub-stack': 60 }

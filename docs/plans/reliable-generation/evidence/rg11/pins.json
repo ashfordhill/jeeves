@@ -1,0 +1,23 @@
+{
+  "frozen-v2": {
+    "before": 79,
+    "after": 79,
+    "added": [],
+    "removed": [],
+    "changed": [".jeeves/manifest.json", "src/runtime/valkey.ts"]
+  },
+  "v2-module-design": {
+    "before": 86,
+    "after": 86,
+    "added": [],
+    "removed": [],
+    "changed": [".jeeves/manifest.json", "src/runtime/valkey.ts"]
+  },
+  "stub-stack": {
+    "before": 60,
+    "after": 60,
+    "added": [],
+    "removed": [],
+    "changed": []
+  }
+}

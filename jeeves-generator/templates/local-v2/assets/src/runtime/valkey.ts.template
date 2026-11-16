@@ -1,6 +1,7 @@
-import { dependency, OperationError, currentProcess } from "./operation.ts";
+import { dependency, OperationError, currentProcess, assertNetworkAllowed, assertOperation } from "./operation.ts";
 import { readFileSync } from "node:fs";
-import { createClient } from "redis";
+import { createClient, ErrorReply } from "redis";
+import { randomUUID } from "node:crypto";
 import { readSecret } from "./local.ts";
 
 /** How a client reaches its cache (QG10). `disable`: plain TCP. `verify-full`: TLS that checks the
@@ -12,16 +13,112 @@ export type CacheTls =
   | { mode: "verify-full"; ca?: string; servername?: string };
 export type ValkeyBinding = { hostname: string; port: number; secret: string; tls: CacheTls };
 
-/** The bounded cache. The cache read's reader uses `get` and `set` with an absolute expiry
- * (`{ PXAT }`, its `PositiveCache`); a stub's cache client also uses `set` with seconds
- * (`{ EX }`) or no expiry, `delete`, and `ping` for its startup probe. */
+/** Private runtime primitives. Product hooks receive the separately scoped CacheClient;
+ * scripts, clients, sockets and these coordination operations are never injected into hooks. */
+export interface WindowDecision {
+  readonly admitted: boolean;
+  readonly count: number;
+  /** Absolute UTC milliseconds on the store clock: oldest admission leaves the window here. */
+  readonly resetAt: number;
+}
+export interface VersionedValue {
+  /** Canonical unsigned 64-bit decimal, compared without converting it to a Lua/JS number. */
+  readonly version: string;
+  readonly value: string;
+  /** Absolute UTC milliseconds. Copying or transporting a record never renews this bound. */
+  readonly validUntil: number;
+}
+export interface VersionWrite {
+  readonly status: "stored" | "not-newer" | "expired" | "version-conflict";
+  readonly validUntil: number;
+}
 export interface ValkeyCache {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, expiry?: { PXAT: number } | { EX: number }): Promise<unknown>;
   delete(key: string): Promise<unknown>;
   ping(): Promise<unknown>;
+  /** One rolling log, at most limit admissions in any windowMs, using store TIME. Use a
+   * separate key namespace per fixed policy; denials do not extend expiry. Unavailability throws
+   * and NEVER supplies an allowance. 1–10,000 entries; 1 ms–7 days. No automatic retry. */
+  admit(key: string, policy: Readonly<{ limit: number; windowMs: number }>): Promise<WindowDecision>;
+  getVersioned(key: string): Promise<VersionedValue | null>;
+  /** Single-key compare/write with PXAT. Same version can renew only identical contents.
+   * Versions are fenced while the key is retained, not across cache eviction/expiry/data loss.
+   * A source must supply versions and an absolute validity bound before starting its fill;
+   * current UTC clocks must agree for client-side validity checks. At most 7 days remain. */
+  setIfNewer(key: string, record: VersionedValue): Promise<VersionWrite>;
   close(): void;
 }
+const MAX_PENDING = 32;
+const MAX_VALUE = 65536;
+const MAX_LIFETIME = 604800000;
+const MAX_VERSION = "18446744073709551615";
+const validVersion = (v: unknown): v is string => typeof v === "string" &&
+  /^(0|[1-9][0-9]{0,19})$/.test(v) && (v.length < 20 || v <= MAX_VERSION);
+const validUntil = (v: unknown): v is number => Number.isSafeInteger(v) && Number(v) > 0;
+const wellFormed = (v: string) => Buffer.from(v, "utf8").toString("utf8") === v;
+const validValue = (v: unknown): v is string => typeof v === "string" && Buffer.byteLength(v) <= MAX_VALUE && wellFormed(v);
+const validRecord = (v: unknown): v is VersionedValue => {
+  if (!v || typeof v !== "object") return false;
+  const r = v as VersionedValue;
+  return validVersion(r.version) && validValue(r.value) && validUntil(r.validUntil);
+};
+const failure = (outcome: "refused" | "definite-failure" | "unknown", code: string, message?: string) => {
+  const error = new OperationError(outcome, code);
+  if (message) error.message = message;
+  return error;
+};
+function keyInput(key: string) {
+  if (typeof key !== "string" || !key || Buffer.byteLength(key) > 512 || !wellFormed(key))
+    throw failure("refused", "INVALID_CACHE_KEY");
+}
+
+// Fixed single-key scripts. Never accept script text, command names or key lists from hooks.
+const ADMIT_WINDOW = `
+local t = redis.call('TIME')
+local now = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)
+local window = tonumber(ARGV[1])
+local limit = tonumber(ARGV[2])
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now - window)
+local count = redis.call('ZCARD', KEYS[1])
+local admitted = 0
+if count < limit then
+  redis.call('ZADD', KEYS[1], now, ARGV[3])
+  redis.call('PEXPIREAT', KEYS[1], now + window)
+  count = count + 1
+  admitted = 1
+end
+local oldest = redis.call('ZRANGE', KEYS[1], 0, 0, 'WITHSCORES')
+return {admitted, count, now, tonumber(oldest[2]) + window}
+`;
+const SET_IF_NEWER = `
+local t = redis.call('TIME')
+local now = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)
+local untilAt = tonumber(ARGV[3])
+if untilAt <= now then return 2 end
+if untilAt > now + ${MAX_LIFETIME} then return redis.error_reply('JEEVES_CACHE_EXPIRY') end
+local cur = redis.call('GET', KEYS[1])
+if cur then
+  local ok, e = pcall(cjson.decode, cur)
+  if not ok or type(e) ~= 'table' or e.v ~= 1 or type(e.version) ~= 'string'
+     or not string.match(e.version, '^%d+$') or #e.version > 20
+     or (#e.version > 1 and string.sub(e.version, 1, 1) == '0')
+     or (#e.version == 20 and e.version > '${MAX_VERSION}')
+     or type(e.value) ~= 'string' or #e.value > ${MAX_VALUE}
+     or type(e.validUntil) ~= 'number' or e.validUntil <= 0
+     or e.validUntil > 9007199254740991 or e.validUntil ~= math.floor(e.validUntil) then
+    return redis.error_reply('JEEVES_CACHE_RECORD')
+  end
+  local version = ARGV[2]
+  if #e.version > #version or (#e.version == #version and e.version > version) then return 0 end
+  if e.version == version then
+    if e.value ~= ARGV[4] then return 3 end
+    if e.validUntil >= untilAt then return 0 end
+  end
+end
+redis.call('SET', KEYS[1], ARGV[1], 'PXAT', ARGV[3])
+return 1
+`;
 
 /** A host is 1–253 letters, digits, `.` or `-`; a port an integer 1–65535. */
 const validHost = (hostname: string) => /^[A-Za-z0-9.-]{1,253}$/.test(hostname);
@@ -91,66 +188,63 @@ export function cacheEndpoint(cache: string): { hostname: string; port: number; 
   };
 }
 
-/** Startup cache failure is optional. No offline queue, client reconnect or hidden default
- * endpoint: a lost client is destroyed and a new one connects every five seconds. Each command
- * settles within 150 ms; at most 32 wait. Use the emitted normalized binding, with its host, port
- * and transport from `cacheEndpoint`: `verify-full` connects with TLS that rejects an unverified
- * certificate. The caller owns close alongside its HTTP service. */
+/** Optional-cache startup failure does not prevent readiness. Required consumers must fail
+ * closed on every rejected decision. No offline queue, driver reconnect or mutation replay.
+ * At most 32 actual commands remain unsettled, even after caller timeout; replies are bounded
+ * to 150 ms. Lost/stalled connections reconnect after 5 s (connect bound 500 ms), one generation
+ * at a time. A stuck actual connect prevents accumulating further attempts. Queue saturation and
+ * server error replies leave healthy clients connected. Lifecycle cancellation closes the client. */
 export async function createValkeyCache(options: {
   binding: ValkeyBinding;
   credential?: (secret: string) => string;
-  /** Told when the cache becomes available or unavailable, starting with the first connect. */
   onState?: (state: "available" | "unavailable", error?: unknown) => void;
 }): Promise<ValkeyCache> {
+  assertNetworkAllowed();
+  assertOperation();
   const operationScope = currentProcess();
   const { hostname, port, secret, tls } = options.binding;
   if (!validHost(hostname) || !validPort(port)) throw new Error("Invalid cache endpoint");
   const password = (options.credential ?? readSecret)(secret);
   const tcp = { host: hostname, port, connectTimeout: 500, reconnectStrategy: false as const };
-  const socket =
-    tls?.mode === "verify-full"
-      ? {
-          ...tcp,
-          tls: true as const,
-          rejectUnauthorized: true,
-          ...(tls.ca !== undefined && { ca: tls.ca }),
-          ...(tls.servername !== undefined && { servername: tls.servername }),
-        }
-      : tcp;
-  const open = () =>
-    createClient({ password, disableOfflineQueue: true, commandsQueueMaxLength: 32, socket });
-  // One client generation at a time, active or still connecting. Every error handler, connect
-  // result and command result belongs to its generation and is ignored once that generation is
-  // no longer current or the cache is closed.
+  const socket = tls?.mode === "verify-full" ? {
+    ...tcp, tls: true as const, rejectUnauthorized: true,
+    ...(tls.ca !== undefined && { ca: tls.ca }),
+    ...(tls.servername !== undefined && { servername: tls.servername }),
+  } : tcp;
+  const open = () => createClient({ password, disableOfflineQueue: true, commandsQueueMaxLength: MAX_PENDING, socket });
   type Generation = { client: ReturnType<typeof open>; ready: boolean };
   let current: Generation | undefined;
   let retry: ReturnType<typeof setTimeout> | undefined;
   let closed = false;
+  let connecting = false;
+  let pending = 0;
   let reported: "available" | "unavailable" | undefined;
   const report = (state: "available" | "unavailable", error?: unknown) => {
     if (state === reported) return;
     reported = state;
-    try {
-      options.onState?.(state, error);
-    } catch {
-      /* The cache goes on as it would without the report. */
-    }
+    try { options.onState?.(state, error); } catch { /* Reporting cannot change cache behavior. */ }
   };
   const destroy = (generation: Generation) => {
-    try {
-      generation.client.destroy();
-    } catch {
-      /* Already destroyed. */
-    }
+    try { generation.client.destroy(); } catch { /* Already destroyed. */ }
+  };
+  const close = () => {
+    if (closed) return;
+    closed = true;
+    clearTimeout(retry);
+    retry = undefined;
+    operationScope?.signal.removeEventListener("abort", close);
+    if (current) destroy(current);
+    current = undefined;
   };
   const retryLater = () => {
     if (closed || retry) return;
     retry = setTimeout(() => {
       retry = undefined;
-      if (!closed) connect().catch(retryLater);
+      if (connecting) retryLater();
+      else if (!closed) connect().catch(retryLater);
     }, 5000);
+    retry.unref?.();
   };
-  // The current generation is lost: destroy its client and try a new one in five seconds.
   const lose = (generation: Generation, error: unknown) => {
     if (closed || generation !== current) return;
     current = undefined;
@@ -158,62 +252,124 @@ export async function createValkeyCache(options: {
     report("unavailable", error);
     retryLater();
   };
-  async function bounded<T>(
-    generation: Generation,
-    effect: () => Promise<T>,
-    milliseconds: number,
-  ): Promise<T> {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    try {
-      return await Promise.race([
-        Promise.resolve().then(effect),
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new Error("Cache deadline")), milliseconds);
-        }),
-      ]);
-    } catch (error) {
-      lose(generation, error);
-      throw error;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
   async function connect() {
+    if (closed || connecting) return;
     const generation: Generation = { client: open(), ready: false };
     generation.client.on("error", (error: unknown) => lose(generation, error));
+    generation.client.on("end", () => lose(generation, failure("definite-failure", "CACHE_DISCONNECTED")));
     current = generation;
     try {
-      await bounded(generation, () => generation.client.connect(), 500);
-    } catch {
-      // Lost already: a command rejects as unavailable until a new client connects (the reader
-      // reads its primary meanwhile).
+      await dependency({ scope: operationScope, maximumMs: 500, deadlineMessage: "Cache deadline" }, () => {
+        connecting = true;
+        try { return generation.client.connect().finally(() => { connecting = false; }); }
+        catch (error) { connecting = false; throw error; }
+      });
+    } catch (error) {
+      lose(generation, error);
       return;
     }
-    if (closed || generation !== current) {
-      // Closed or lost while connecting: this client is never used.
-      destroy(generation);
-      return;
-    }
+    if (closed || generation !== current) { destroy(generation); return; }
     generation.ready = true;
     report("available");
   }
+  operationScope?.signal.addEventListener("abort", close, { once: true });
   await connect();
-  const command = <T>(effect: (client: Generation["client"]) => Promise<T>, mutation = false) => {
+  const command = async <T>(
+    effect: (client: Generation["client"]) => Promise<unknown>,
+    parse: (reply: unknown) => T,
+    mutation = false,
+  ): Promise<T> => {
+    assertNetworkAllowed(mutation);
+    assertOperation();
     const generation = current;
-    if (!generation?.ready) return Promise.reject(new Error("Cache unavailable"));
-    return dependency({ scope: operationScope, maximumMs: 150, mutation, deadlineMessage: "Cache deadline" }, () => effect(generation.client)).catch((error) => { if (!(error instanceof OperationError && error.outcome === "refused")) lose(generation, error); throw error; });
+    if (closed || !generation?.ready) throw failure("refused", "CACHE_UNAVAILABLE", "Cache unavailable");
+    if (pending >= MAX_PENDING) throw failure("refused", "CACHE_SATURATED");
+    try {
+      return await dependency({ scope: operationScope, maximumMs: 150, mutation, deadlineMessage: "Cache deadline" }, () => {
+        pending += 1;
+        // Hold the slot AND lifecycle tracking until actual settlement, not the caller's race.
+        let work: Promise<unknown>;
+        try { work = effect(generation.client); }
+        catch (error) { work = Promise.reject(error); }
+        return work.catch((error: unknown) => {
+          // Pinned node-redis rejects this before adding a command to its wire queue.
+          if (!(error instanceof ErrorReply) && error instanceof Error && error.message === "The queue is full")
+            throw failure("refused", "CACHE_SATURATED");
+          // Lua errors may follow partial script effects; mutation outcome stays unknown.
+          if (error instanceof ErrorReply) throw failure(mutation ? "unknown" : "definite-failure", "CACHE_COMMAND_FAILED");
+          throw error;
+        }).then((reply) => {
+          try { return parse(reply); }
+          catch { throw failure(mutation ? "unknown" : "definite-failure", "CACHE_REPLY_INVALID"); }
+        }).finally(() => { pending -= 1; });
+      });
+    } catch (error) {
+      // Refusals, bad application/server replies and overload are not broken connectivity.
+      if (!(error instanceof OperationError) || ["INTERRUPTED", "DEPENDENCY_FAILED", "DISPATCH_FAILED"].includes(error.code))
+        lose(generation, error);
+      throw error;
+    }
+  };
+  const stringReply = (reply: unknown) => {
+    if (reply !== null && !validValue(reply)) throw Error("Invalid cache value");
+    return reply as string | null;
   };
   return {
-    get: (key) => command((client) => client.get(key)),
-    set: (key, value, expiry) => command((client) => client.set(key, value, expiry), true),
-    delete: (key) => command((client) => client.del(key), true),
-    ping: () => command((client) => client.ping()),
-    close: () => {
-      closed = true;
-      clearTimeout(retry);
-      retry = undefined;
-      if (current) destroy(current);
-      current = undefined;
+    get: async (key) => { keyInput(key); return command((client) => client.get(key), stringReply); },
+    set: async (key, value, expiry) => {
+      keyInput(key);
+      if (!validValue(value) || (expiry !== undefined && !("PXAT" in expiry ? validUntil(expiry.PXAT) : Number.isSafeInteger(expiry.EX) && expiry.EX > 0 && expiry.EX <= 604800)))
+        throw failure("refused", "INVALID_CACHE_VALUE");
+      return command((client) => client.set(key, value, expiry), (reply) => {
+        if (reply !== "OK") throw Error("Invalid SET reply");
+        return reply;
+      }, true);
     },
+    delete: async (key) => { keyInput(key); return command((client) => client.del(key), (reply) => {
+      if (reply !== 0 && reply !== 1) throw Error("Invalid DEL reply");
+      return reply;
+    }, true); },
+    ping: () => command((client) => client.ping(), (reply) => {
+      if (reply !== "PONG") throw Error("Invalid PING reply");
+      return reply;
+    }),
+    admit: async (key, policy) => {
+      keyInput(key);
+      const { limit, windowMs } = policy;
+      if (!Number.isSafeInteger(limit) || limit < 1 || limit > 10000 || !Number.isSafeInteger(windowMs) || windowMs < 1 || windowMs > MAX_LIFETIME)
+        throw failure("refused", "INVALID_CACHE_WINDOW");
+      return command((client) => client.eval(ADMIT_WINDOW, { keys: [key], arguments: [String(windowMs), String(limit), randomUUID()] }), (reply) => {
+        if (!Array.isArray(reply) || reply.length !== 4) throw Error("Invalid window reply");
+        const [admitted, count, now, resetAt] = reply;
+        if ((admitted !== 0 && admitted !== 1) || !Number.isSafeInteger(count) || count < 1 || count > limit || (admitted === 0 && count !== limit) || !validUntil(now) || !validUntil(resetAt) || resetAt <= now || resetAt > now + windowMs)
+          throw Error("Invalid window reply");
+        return Object.freeze({ admitted: admitted === 1, count, resetAt });
+      }, true);
+    },
+    getVersioned: async (key) => {
+      keyInput(key);
+      const record = await command((client) => client.get(key), (reply) => {
+        if (reply === null) return null;
+        if (typeof reply !== "string" || Buffer.byteLength(reply) > MAX_VALUE * 6 + 256) throw Error("Invalid cache envelope");
+        const r: unknown = JSON.parse(reply);
+        if (!validRecord(r) || (r as {v?: unknown}).v !== 1 || r.validUntil > Date.now() + MAX_LIFETIME) throw Error("Invalid cache record");
+        return Object.freeze({ version: r.version, value: r.value, validUntil: r.validUntil });
+      });
+      return record && record.validUntil > Date.now() ? record : null;
+    },
+    setIfNewer: async (key, input) => {
+      keyInput(key);
+      if (!validRecord(input)) throw failure("refused", "INVALID_CACHE_RECORD");
+      // Snapshot once: later edits to the caller's object cannot change dispatched fields.
+      const { version, value, validUntil: until } = input;
+      if (until > Date.now() + MAX_LIFETIME) throw failure("refused", "INVALID_CACHE_EXPIRY");
+      const encoded = JSON.stringify({ v: 1, version, value, validUntil: until });
+      const status = await command((client) => client.eval(SET_IF_NEWER, { keys: [key], arguments: [encoded, version, String(until), value] }), (reply) => {
+        if (reply !== 0 && reply !== 1 && reply !== 2 && reply !== 3) throw Error("Invalid compare reply");
+        return (["not-newer", "stored", "expired", "version-conflict"] as const)[reply]!;
+      }, true);
+      return Object.freeze({ status: until <= Date.now() ? "expired" : status, validUntil: until });
+    },
+    close,
   };
 }

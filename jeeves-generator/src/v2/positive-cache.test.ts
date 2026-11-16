@@ -357,7 +357,9 @@ describe("emitted positive cache reader", () => {
       return client;
     });
     try {
-      const fakeRedis = moduleUrl("export const createClient = globalThis.__positiveCacheClient;");
+      const fakeRedis = moduleUrl(
+        "export class ErrorReply extends Error {} export const createClient = globalThis.__positiveCacheClient;",
+      );
       const code = source("valkey")
         .replace('from "redis"', `from "${fakeRedis}"`)
         .replace(
@@ -459,7 +461,7 @@ async function withFakeValkey(
   });
   try {
     const fakeRedis = moduleUrl(
-      "export const createClient = (options) => globalThis.__valkeyClient(options);",
+      "export class ErrorReply extends Error {} export const createClient = (options) => globalThis.__valkeyClient(options);",
     );
     const code = source("valkey")
       .replace('from "redis"', `from "${fakeRedis}"`)
@@ -503,7 +505,9 @@ describe("emitted Valkey cache reconnects", () => {
       connects.push(() => Promise.reject(refused));
       const down = recorder();
       const unavailable = await open(down.onState);
-      expect(down.states).toEqual([["unavailable", refused]]);
+      expect(down.states).toEqual([
+        ["unavailable", expect.objectContaining({ outcome: "definite-failure", cause: refused })],
+      ]);
       expect(client(clients, 1).destroy).toHaveBeenCalledTimes(1);
       await expect(unavailable.get("key")).rejects.toThrow("Cache unavailable");
       await vi.advanceTimersByTimeAsync(4999);

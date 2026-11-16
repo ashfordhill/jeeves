@@ -88,3 +88,13 @@ run under the product-only role; captured database/network handles cannot escape
 Retention cleanup starts with the configured runtime and removes only bounded expired committed
 records. Cross-database atomicity, payments and durable external effects remain unavailable here;
 real simultaneous PostgreSQL contention remains RG14. [Evidence](plans/reliable-generation/evidence/rg10/README.md).
+
+## Atomic cache runtime (RG11)
+
+Private Valkey primitives now provide a bounded single-key rolling admission log on store time
+and exact unsigned-decimal version comparisons with absolute expiry. Queue saturation refuses
+without disconnecting a healthy client; unknown mutations never retry automatically. Public
+stub `CacheClient` remains unchanged: callable admission and mutable cache-reader policies are
+not exposed by RG11. Optional immutable-cache fallback remains separate. Version fences last
+while a key is retained, not across cache eviction, expiry or data loss. Native competing-client
+and store recovery proof remains RG14. [Evidence](plans/reliable-generation/evidence/rg11/README.md).
