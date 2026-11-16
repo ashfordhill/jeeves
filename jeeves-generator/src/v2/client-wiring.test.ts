@@ -402,7 +402,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     );
     // A module link calls the module it names, here a route stub with the caller's input.
     expect(links).toContain(
-      '    linkReader: (input) => linkReader(dependencies["link-reader"], input as ModuleRequest),',
+      '    linkReader: (input) => moduleCall(() => linkReader(dependencies["link-reader"], input as ModuleRequest)),',
     );
     expect(links).toContain(
       '    statsApi: unavailable<StatsCallerDependencies["statsApi"]>("Stats API for Stats caller (requires a registered product capability binding)"),',
@@ -434,7 +434,9 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       '    login: unavailable<GateDependencies["login"]>("Login for Gate (requires a registered product capability binding)"),',
     );
     const visits = text(wide, "src/processes/visit-worker.ts");
-    expect(visits).toContain('    visitWriter: () => visitWriter(dependencies["visit-writer"]),');
+    expect(visits).toContain(
+      '    visitWriter: () => moduleCall(() => visitWriter(dependencies["visit-writer"])),',
+    );
     expect(visits).toContain(
       '    "exports": await objectClient(scope, probe, { tile: config.tile, bucket: "exports", access: "write" }),',
     );

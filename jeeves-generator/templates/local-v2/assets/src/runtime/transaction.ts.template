@@ -1,3 +1,4 @@
+import { assertOperation, dependency, OperationError } from "./operation.ts";
 import type pg from "pg";
 
 const transactionScope: unique symbol = Symbol("SQL transaction");
@@ -21,16 +22,21 @@ export function abortTransaction(tx: Tx, error: unknown): never {
   if (scope) scope.failure = { error };
   throw error;
 }
-export async function transaction<T>(
+async function executeTransaction<T>(
   pool: TransactionPool,
   effect: (tx: Tx) => Promise<T>,
 ): Promise<T> {
-  const client = await pool.connect();
+  const client = await pool.connect().catch((error: unknown) => {
+    if (error instanceof Error)
+      Object.defineProperty(error, "outcome", { value: "definite-failure", configurable: true });
+    throw error;
+  });
   const scope = { active: true };
   const tx: Tx = Object.freeze({
     [transactionScope]: true as const,
     query<Row extends pg.QueryResultRow>(sql: string, values?: unknown[]) {
       assertTransaction(tx);
+      assertOperation();
       return client.query<Row>(sql, values).catch((error: unknown) => abortTransaction(tx, error));
     },
   });
@@ -38,16 +44,45 @@ export async function transaction<T>(
   let began = false,
     discard = false;
   try {
+    assertOperation();
     await client.query("BEGIN");
     began = true;
     const result = await effect(tx);
     assertTransaction(tx);
-    await client.query("COMMIT");
+    assertOperation();
+    try {
+      await client.query("COMMIT");
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      if (
+        typeof code !== "string" ||
+        !/^[0-9A-Z]{5}$/.test(code) ||
+        /^E[A-Z]+$/.test(code) ||
+        code.startsWith("08") ||
+        code === "57P01" ||
+        code === "57P02"
+      ) {
+        discard = true;
+        const unknown = new OperationError("unknown", "COMMIT_RESPONSE_LOST", { cause: error });
+        unknown.name = "TransactionOutcomeUnknown";
+        unknown.message = "Transaction outcome unknown";
+        throw unknown;
+      }
+      throw error;
+    }
     return result;
   } catch (error) {
     if (began) {
       try {
         await client.query("ROLLBACK");
+        if (
+          error instanceof Error &&
+          !(error instanceof OperationError && error.outcome === "unknown")
+        )
+          Object.defineProperty(error, "outcome", {
+            value: "definite-failure",
+            configurable: true,
+          });
       } catch {
         discard = true;
       }
@@ -57,4 +92,19 @@ export async function transaction<T>(
     scope.active = false;
     client.release(discard);
   }
+}
+
+/** The underlying transaction retains its connection through final COMMIT/ROLLBACK settlement.
+ * A caller timeout never releases the connection or grants permission to retry its mutation. */
+export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>): Promise<T> {
+  return dependency(
+    {
+      mutation: true,
+      preserveDefinite: true,
+      definite: (error) => {
+        return (error as { outcome?: string })?.outcome === "definite-failure";
+      },
+    },
+    () => executeTransaction(pool, effect),
+  );
 }

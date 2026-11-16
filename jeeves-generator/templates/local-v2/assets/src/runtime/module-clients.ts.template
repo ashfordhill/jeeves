@@ -1,3 +1,4 @@
+import { dependency, publisherOptions, OperationError, currentOperation } from "./operation.ts";
 // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
 // one per store or channel a tile's stubs use. Export rewrites this file. First the process file's
 // configuration pass (`checkConfiguration`) runs each client's endpoint reader and the sign-in's
@@ -24,11 +25,9 @@ import {
 import { periodic } from "./process.ts";
 // @database-import-end
 // @queue-import-start
-import { randomUUID } from "node:crypto";
 import { createPublisher, type BrokerState } from "./amqp.ts";
 // @queue-import-end
 // @pubsub-import-start
-import { randomUUID as pubsubMessageId } from "node:crypto";
 import { PubSub } from "@google-cloud/pubsub";
 // @pubsub-import-end
 // @pubsub-loop-import-start
@@ -312,6 +311,7 @@ async function scopedTransaction<T>(pool: TransactionPool, fn: (tx: Tx) => Promi
         return value;
       });
     } catch (error) {
+      if (error instanceof OperationError) throw error;
       const state = sqlState(error);
       if (
         committing &&
@@ -405,7 +405,7 @@ export async function databaseClient(
     scope.signal,
   );
   const run = (sql: string, values?: readonly unknown[]) =>
-    pool.query(sql, values ? [...values] : undefined);
+    dependency({ scope, mutation: true }, () => pool.query(sql, values ? [...values] : undefined));
   const failure = createFailureLog(binding.tile);
   let sweeping = false;
   const sweep = () => {
@@ -483,7 +483,10 @@ export async function queuePublisher(
   );
   const opened = publisher;
   if (!opened) throw new Error(`No publisher for ${binding.queue}`);
-  return { publish: (message, options) => opened.publish(message, options?.messageId ?? randomUUID()) };
+  return { publish: (message, options) => {
+    const checked = publisherOptions(options);
+    return dependency({ scope, mutation: true, maximumMs: broker.confirmTimeoutMs }, () => opened.publish(message, checked.messageId, checked.attributes));
+  } };
   });
 }
 // @queue-end
@@ -534,7 +537,7 @@ export async function pubsubPublisher(
     projectId: pubsubProjectId(),
     ...pubsubChannel,
   });
-  const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs } });
+  const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 } });
   const outstanding = new Set<Promise<unknown>>();
   let closed = false;
   scope.own(async () => {
@@ -553,27 +556,16 @@ export async function pubsubPublisher(
   );
   return {
     publish(message, options) {
-      if (closed) return Promise.reject(new Error("Publisher closed"));
+      if (closed) return Promise.reject(new OperationError("refused", "PUBLISHER_CLOSED"));
       if (outstanding.size >= pubsubOutstanding)
-        return Promise.reject(new Error("Publisher queue full"));
-      let timer: ReturnType<typeof setTimeout> | undefined;
-      const sent: Promise<unknown> = Promise.race([
-        topic.publishMessage({
-          data: Buffer.from(message),
-          attributes: { messageId: options?.messageId ?? pubsubMessageId() },
-        }),
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(
-            () => reject(new Error(`Publish deadline (${pubsubDeadlineMs} ms)`)),
-            pubsubDeadlineMs,
-          );
-        }),
-      ]).finally(() => {
-        clearTimeout(timer);
-        outstanding.delete(sent);
+        return Promise.reject(new OperationError("refused", "PUBLISHER_FULL"));
+      const checked = publisherOptions(options);
+      return dependency({ scope, maximumMs: pubsubDeadlineMs, mutation: true, deadlineMessage: `Publish deadline (${pubsubDeadlineMs} ms)` }, () => {
+        const sent = topic.publishMessage({ data: Buffer.from(message), attributes: { ...checked.attributes, messageId: checked.messageId } });
+        outstanding.add(sent);
+        void sent.finally(() => outstanding.delete(sent)).catch(() => {});
+        return sent.then(() => undefined);
       });
-      outstanding.add(sent);
-      return sent.then(() => undefined);
     },
   };
   });
@@ -652,7 +644,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
       flowControl: { maxMessages: options.concurrency, allowExcessMessages: false },
       minAckDeadline: Duration.from({ seconds: 60 }),
     });
-  const failedTopic = client.topic(options.failedQueue, { gaxOpts: { timeout: pubsubDeadlineMs } });
+  const failedTopic = client.topic(options.failedQueue, { gaxOpts: { timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 } });
   const answers = async (subscription: Subscription) => {
     const [exists] = await subscription.exists();
     if (!exists) throw new Error(`Pub/Sub subscription ${options.queue} not found`);
@@ -914,22 +906,24 @@ export async function objectClient(
   return {
     async get(key) {
       try {
-        const object = await client.send(new GetObjectCommand({ Bucket, Key: key }));
-        return object.Body ? await object.Body.transformToByteArray() : new Uint8Array();
+        return await dependency({ scope, definite: (error) => error instanceof Error && error.name === "NoSuchKey", preserveDefinite: true }, async (signal) => {
+          const object = await client.send(new GetObjectCommand({ Bucket, Key: key }), { abortSignal: signal });
+          return object.Body ? await object.Body.transformToByteArray() : new Uint8Array();
+        });
       } catch (error) {
         if (error instanceof Error && error.name === "NoSuchKey") return undefined;
         throw error;
       }
     },
     async put(key, body, contentType) {
-      await client.send(
+      await dependency({ scope, mutation: true }, (signal) => client.send(
         new PutObjectCommand({
           Bucket,
           Key: key,
           Body: body,
           ...(contentType && { ContentType: contentType }),
-        }),
-      );
+        }), { abortSignal: signal },
+      ));
     },
   };
   });
@@ -956,14 +950,14 @@ export async function searchClient(
   const index = binding.index;
   return {
     async search<Hit = Record<string, unknown>>(query: Record<string, unknown>) {
-      const result = await client.search({ index, body: query });
+      const result = await dependency({ scope }, () => client.search({ index, body: query }));
       return result.body.hits.hits.map((hit) => hit._source as Hit);
     },
     async index(id, document) {
-      await client.index({ index, id, body: document });
+      await dependency({ scope, mutation: true }, () => client.index({ index, id, body: document }));
     },
     async remove(id) {
-      await client.delete({ index, id });
+      await dependency({ scope, mutation: true }, () => client.delete({ index, id }));
     },
   };
   });
@@ -982,14 +976,43 @@ function target(name: string, internal: boolean): HttpTarget {
   if (requireTls() && new URL(base).protocol !== "https:")
     throw new Error(`Insecure endpoint ${name}`);
   return {
-    request: (path, init) =>
-      internal
-        ? fetch(new URL(path, base), init).catch((error: unknown) => {
-            if (typeof error === "object" && error !== null)
-              Reflect.set(error, Symbol.for("jeeves.internal-call"), true);
-            throw error;
-          })
-        : fetch(new URL(path, base), init),
+    request: async (path, init = {}) => {
+      if (init.signal?.aborted) throw new OperationError("refused", "CONTEXT_EXPIRED");
+      const destination = new URL(path, base);
+      const declared = new URL(base);
+      if (destination.origin !== declared.origin || destination.username || destination.password || destination.hash || init.credentials === "include")
+        throw new OperationError("refused", "UNDECLARED_DESTINATION");
+      const headers = new Headers(init.headers);
+      if ([...headers.keys()].some((key) => !["accept", "content-type", "if-none-match", "if-modified-since", "idempotency-key"].includes(key)))
+        throw new OperationError("refused", "PROTECTED_HEADER");
+      const context = currentOperation();
+      if (context) {
+        headers.set("x-jeeves-remaining-ms", String(Math.max(0, Math.floor(context.remainingMs()))));
+        headers.set("x-correlation-id", context.correlationId);
+      }
+      const mutation = !["GET", "HEAD"].includes((init.method ?? "GET").toUpperCase());
+      try {
+        return await dependency({ mutation }, async (signal) => {
+          const response = await fetch(destination, { ...init, headers, redirect: "manual", credentials: "omit", signal: init.signal ? AbortSignal.any([signal, init.signal]) : signal });
+          const chunks: Uint8Array[] = [];
+          let length = 0;
+          const reader = response.body?.getReader();
+          try {
+            while (reader) {
+              const part = await reader.read();
+              if (part.done) break;
+              length += part.value.byteLength;
+              if (length > 65536) { await reader.cancel(); throw new OperationError(mutation ? "unknown" : "definite-failure", "RESPONSE_TOO_LARGE"); }
+              chunks.push(part.value);
+            }
+          } finally { reader?.releaseLock(); }
+          return new Response(response.body === null ? null : Buffer.concat(chunks), { status: response.status, statusText: response.statusText, headers: response.headers });
+        });
+      } catch (error) {
+        if (internal && typeof error === "object" && error !== null && !(error instanceof OperationError && error.outcome === "unknown")) Reflect.set(error, Symbol.for("jeeves.internal-call"), true);
+        throw error;
+      }
+    },
   };
 }
 /** Another application tile's process at `JEEVES_TILE_<ID>_URL` (locally `http://app-<id>:3000`,

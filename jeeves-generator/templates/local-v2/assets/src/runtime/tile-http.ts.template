@@ -1,3 +1,5 @@
+import { operation, withOperation } from "./operation.ts";
+import type { OperationContext } from "./operation.ts";
 import { immutable } from "./hook-boundary.ts";
 import type { FastifyRequest } from "fastify";
 import { HttpError } from "./admission.ts";
@@ -55,22 +57,32 @@ function rawPathOf(url: string): string {
 async function moduleRequest(
   request: FastifyRequest,
   caller: (request: FastifyRequest) => Promise<Caller>,
-  signal: AbortSignal,
+  context: OperationContext,
 ): Promise<ModuleRequest> {
   const rest = (request.params as { "*"?: string })["*"];
   return Object.freeze({
     ...immutable({
-    method: request.method,
-    path: `/${rest ?? ""}`,
-    rawPath: rawPathOf(request.url),
-    query: request.query as ModuleRequest["query"],
-    headers: Object.fromEntries(Object.entries(request.headers).filter(([name]) =>
-      ["accept", "content-type", "if-none-match", "if-modified-since", "idempotency-key"].includes(name.toLowerCase()))),
-    body: request.body,
-    rawBody: request.rawBody,
-    caller: await caller(request),
+      method: request.method,
+      path: `/${rest ?? ""}`,
+      rawPath: rawPathOf(request.url),
+      query: request.query as ModuleRequest["query"],
+      headers: Object.fromEntries(
+        Object.entries(request.headers).filter(([name]) =>
+          [
+            "accept",
+            "content-type",
+            "if-none-match",
+            "if-modified-since",
+            "idempotency-key",
+          ].includes(name.toLowerCase()),
+        ),
+      ),
+      body: request.body,
+      rawBody: request.rawBody,
+      caller: await caller(request),
     }),
-    signal,
+    signal: context.signal,
+    context,
   });
 }
 /** A route stub answers any method on /modules/<module> and every path below it. `caller` is the
@@ -92,26 +104,25 @@ export function stubRoutes(
       method: [...anyMethod],
       url,
       async handler(request, reply) {
-        const controller = new AbortController();
-        const stopping = () => controller.abort(new Error("PROCESS_STOPPING"));
-        if (limits.stopping?.aborted) stopping();
-        else limits.stopping?.addEventListener("abort", stopping, { once: true });
-        const timer = setTimeout(() => controller.abort(new Error("DEADLINE")), limits.deadlineMs);
-        // The response closes when it is written or when its connection goes first.
-        const closed = () => {
-          if (!reply.raw.writableEnded) controller.abort(new Error("CLIENT_CLOSED"));
-        };
-        reply.raw.once("close", closed);
+        const callerFacts = await caller(request);
+        const parent = request.operationContext;
+        const running = operation({
+          maximumMs: limits.deadlineMs,
+          remainingMs: parent?.remainingMs(),
+          correlationId: parent?.correlationId,
+          caller: callerFacts.signedIn ? { subject: callerFacts.principal.subject } : {},
+          signals: [parent?.signal, limits.stopping],
+        });
         try {
-          const response = await entry(await moduleRequest(request, caller, controller.signal));
+          const response = await withOperation(running.context, async () =>
+            entry(await moduleRequest(request, async () => callerFacts, running.context)),
+          );
           reply.code(response.status ?? 200);
           for (const [name, value] of Object.entries(response.headers ?? {}))
             reply.header(name, Array.isArray(value) ? [...value] : value);
           return response.body;
         } finally {
-          clearTimeout(timer);
-          limits.stopping?.removeEventListener("abort", stopping);
-          reply.raw.off("close", closed);
+          running.close();
         }
       },
     });

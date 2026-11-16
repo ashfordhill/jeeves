@@ -1,3 +1,4 @@
+import { operation, withOperation, OperationError, withProcess, currentProcess } from "./operation.ts";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createConsumer, type BrokerBinding, type BrokerState } from "./amqp.ts";
 import {
@@ -111,6 +112,7 @@ export function failureStep(
   attempt: number,
   retryLimit: number,
 ): { step: "wait" } | { step: "terminal"; code: string } | { step: "retry" } {
+  if (error instanceof OperationError && error.outcome === "unknown") return { step: "terminal", code: "OUTCOME_UNKNOWN" };
   if (storeUnreachable(error)) return { step: "wait" };
   if (error instanceof NonRetryable) return { step: "terminal", code: error.code };
   return attempt > retryLimit ? { step: "terminal", code: "RETRY_EXHAUSTED" } : { step: "retry" };
@@ -145,13 +147,15 @@ export function moduleHandler(
 ): MessageHandler {
   return async (body, delivery) => {
     try {
-      await entry({
+      const execution = operation({ maximumMs: 30000, correlationId: delivery.headers?.correlationId, signals: [stopping] });
+      try { await withOperation(execution.context, () => entry({
+        context: execution.context,
         body,
         ...messageId(delivery),
         headers: delivery.headers,
         attempt: delivery.deliveryCount,
         source: loop.queue,
-      });
+      })); } finally { execution.close(); }
     } catch (error) {
       if (isNotImplemented(error)) {
         log.notImplemented({
@@ -175,6 +179,7 @@ export function moduleHandler(
         action: waits ? `${next.action} in ${delay} ms` : next.action,
       });
       if (waits) await wait(delay, stopping);
+      if (error instanceof OperationError && error.outcome === "unknown") throw new NonRetryable("OUTCOME_UNKNOWN");
       throw error;
     }
   };
@@ -203,9 +208,10 @@ export async function startModuleLoop(
     failedQueue: loop.failedQueue,
     concurrency: loop.concurrency,
     retryLimit: loop.retryLimit,
-    handle: moduleHandler(log, loop, entry, stopping.signal, consumes.retries),
+    handle: (body, delivery) => withProcess(scope, () => moduleHandler(log, loop, entry, stopping.signal, consumes.retries)(body, delivery)),
     onState,
   });
+  scope.admission?.(() => { stopping.abort(); void consumer.close().catch(() => {}); });
   scope.own(() => {
     stopping.abort();
     return consumer.close();
@@ -219,13 +225,14 @@ export async function startModuleLoop(
  * the process config names, so each consuming module of a tile reads its own subscriber queue,
  * on the broker binding the process passes (`brokerBinding`).
  */
-export function loopConsumer(
+export async function loopConsumer(
   loop: Omit<ModuleLoop, "module">,
   handle: MessageHandler,
   hooks: ConsumerHooks & { onState?: BrokerState },
   broker: BrokerBinding,
 ) {
-  return createConsumer(broker, {
+  const scope = currentProcess();
+  const consumer = await createConsumer(broker, {
     ...hooks,
     queue: loop.queue,
     failedQueue: loop.failedQueue,
@@ -233,6 +240,8 @@ export function loopConsumer(
     retryLimit: loop.retryLimit,
     handle,
   });
+  scope?.admission?.(() => { void consumer.close().catch(() => {}); });
+  return consumer;
 }
 
 const reached = new AsyncLocalStorage<{ what?: string }>();
@@ -281,10 +290,13 @@ export function templateHandler(
   loop: Pick<ModuleLoop, "module" | "queue" | "failedQueue" | "retryLimit">,
   handle: MessageHandler,
 ): MessageHandler {
+  const scope = currentProcess();
   return async (body, delivery) => {
     const store: { what?: string } = {};
     try {
-      await reached.run(store, () => handle(body, delivery));
+      const execution = operation({ maximumMs: 30000, correlationId: delivery.headers?.correlationId, signals: [scope?.signal] });
+      try { await withProcess(scope, () => withOperation(execution.context, () => reached.run(store, () => handle(body, delivery)))); }
+      finally { execution.close(); }
     } catch (error) {
       const next = outcome(loop, error, delivery);
       const unwritten = store.what !== undefined && !specific(error);
@@ -305,6 +317,7 @@ export function templateHandler(
           error: describe(error),
           action: next.action,
         });
+      if (error instanceof OperationError && error.outcome === "unknown") throw new NonRetryable("OUTCOME_UNKNOWN");
       throw unwritten ? new NonRetryable("NOT_IMPLEMENTED") : error;
     }
   };

@@ -1,7 +1,9 @@
 import { writeFileSync, rmSync } from "node:fs";
+import { withProcess } from "./operation.ts";
 
 export interface ProcessScope {
   readonly signal: AbortSignal;
+  track?<T>(work: Promise<T>): void;
   own(close: () => void | Promise<void>): void;
   /** Stop admission before draining dependents in reverse construction order. */
   admission(stop: () => void): void;
@@ -27,6 +29,7 @@ export function createProcessLifecycle(options: {
   terminate?: (code: number) => void;
   mark?: (ready: boolean) => void;
 } = {}) {
+  const outstanding = new Set<Promise<unknown>>();
   const drains: (() => void | Promise<void>)[] = [];
   const admission: (() => void)[] = [];
   const instances = new Map<string, unknown>();
@@ -60,6 +63,7 @@ export function createProcessLifecycle(options: {
         // Let a cancellable constructor settle before closing its dependencies. The final
         // timer also covers a constructor or hook that ignores cancellation forever.
         await starting.catch(() => {});
+        while (outstanding.size) await Promise.allSettled([...outstanding]);
         while (drains.length) {
           try { await drains.pop()!(); }
           catch (error) { failed = true; logError("drain-failed", error); }
@@ -73,6 +77,7 @@ export function createProcessLifecycle(options: {
   };
   const scope: ProcessScope = {
     signal: cancellation.signal,
+    track(work) { outstanding.add(work); void work.finally(() => outstanding.delete(work)).catch(() => {}); },
     own(drain) { drains.push(drain); },
     admission(stop) { if (cancellation.signal.aborted) stop(); else admission.push(stop); },
     once<T>(key: string, construct: () => T): T {
@@ -99,7 +104,7 @@ export function createProcessLifecycle(options: {
   return {
     scope, close,
     async start(start: (scope: ProcessScope) => Promise<void>) {
-      starting = Promise.resolve().then(() => start(scope));
+      starting = Promise.resolve().then(() => withProcess(scope, () => start(scope)));
       try { await starting; }
       catch (error) {
         failed = true;

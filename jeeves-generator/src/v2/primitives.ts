@@ -32,7 +32,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
     sourcePaths,
     dependencies: [generationRuntime.ref],
     render: ({ model, asset }) => {
-      const modules = new Map<string, Set<string>>();
+      const modules = new Map<string, Set<string>>([["operation", new Set(["/generation"])]]);
       const add = (names: string[], path: readonly (string | number)[]) => {
         for (const name of names) {
           const paths = modules.get(name) ?? new Set<string>();

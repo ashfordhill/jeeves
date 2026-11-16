@@ -1,3 +1,4 @@
+import type { OperationContext } from "../runtime/operation.ts";
 // Generated scaffold: what a module's entry point receives and answers when its tile runs.
 // Export rewrites this file. A route stub takes a ModuleRequest; a loop stub takes a ModuleMessage.
 
@@ -9,6 +10,7 @@ export type Caller =
 
 /** One HTTP request to /modules/<module id> or a path below it. */
 export type ModuleRequest = {
+  readonly context: OperationContext;
   readonly method: string;
   /** The path below /modules/<module id>: "/" for the module's own path. Decoded: `%20` is a
    * space, and `%2F` a slash. */
@@ -40,6 +42,7 @@ export type ModuleResponse = {
 
 /** One message from a queue or topic the module consumes. */
 export type ModuleMessage = {
+  readonly context: OperationContext;
   body: Uint8Array;
   messageId?: string;
   headers: Record<string, unknown>;

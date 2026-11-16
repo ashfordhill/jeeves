@@ -218,12 +218,15 @@ describe("module stubs", () => {
     // are not provisioned.
     for (const file of bundle.files.filter((item) => item.path.startsWith("src/modules/")))
       expect(
-        new TextDecoder().decode(file.bytes).replaceAll('"../../runtime/settings.ts"', ""),
+        new TextDecoder()
+          .decode(file.bytes)
+          .replaceAll('"../../runtime/settings.ts"', "")
+          .replaceAll('"../runtime/operation.ts"', ""),
       ).not.toContain("runtime/");
     expect(text(bundle, "src/modules/dependencies.ts")).not.toContain("settings");
     expect(
       bundle.files.filter((file) => file.path.startsWith("src/runtime/")).map((file) => file.path),
-    ).toEqual(["src/runtime/local.ts", "src/runtime/settings.ts"]);
+    ).toEqual(["src/runtime/local.ts", "src/runtime/operation.ts", "src/runtime/settings.ts"]);
     const settings = bundle.manifest.files.find((file) => file.path === "src/runtime/settings.ts");
     expect([settings?.ownership, settings?.owner]).toEqual([
       "generated-scaffold",

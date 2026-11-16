@@ -282,6 +282,11 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
     );
     expect(seen).toEqual([
       {
+        context: expect.objectContaining({
+          caller: {},
+          signal: expect.any(AbortSignal),
+          remainingMs: expect.any(Function),
+        }),
         method: "POST",
         path: "/events",
         rawPath: "/events",

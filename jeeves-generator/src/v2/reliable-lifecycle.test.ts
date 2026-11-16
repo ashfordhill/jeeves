@@ -1,6 +1,10 @@
+import { operationImports } from "./operation.test.helpers.ts";
+
+const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
+
 import { execFileSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { stripTypeScriptTypes } from "node:module";
+import { stripTypeScriptTypes as stripTypes } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -280,4 +284,22 @@ describe("RG02 process ownership and public boundary", () => {
     await writeFile(generated, `${await readFile(generated, "utf8")}\n// manual edit\n`);
     expect((await check()).stderr).toContain("write to template-owned file");
   });
+});
+
+it("RG03 terminates at the final drain bound with an underlying dependency still unsettled", () => {
+  const operation = data(text(bundle, "src/runtime/operation.ts"));
+  const child = `${stripTypeScriptTypes(processSource)}\nimport { dependency } from ${JSON.stringify(operation)};\nconst app = createProcessLifecycle({ budgetMs: 30, mark: () => {} });\nawait app.start(async () => { const result = await dependency({ maximumMs: 5, mutation: true }, () => new Promise(() => {})).catch(e => e); if(result.outcome !== 'unknown') throw Error('Lost unknown outcome'); setInterval(() => {}, 1000); });\nawait app.close();`;
+
+  try {
+    execFileSync(process.execPath, ["--input-type=module", "-e", child], {
+      timeout: 3000,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    throw Error("Child did not fail");
+  } catch (error) {
+    const result = error as { status: number; stderr: string };
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("shutdown-deadline");
+  }
 });

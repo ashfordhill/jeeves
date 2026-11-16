@@ -1,6 +1,10 @@
+import { operationImports } from "./operation.test.helpers.ts";
+
+const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
+
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
+import { stripTypeScriptTypes as stripTypes } from "node:module";
 import { designSchema } from "@jeeves/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -51,6 +55,8 @@ class FakeChannel extends EventEmitter {
   closed = false;
   confirm: "ack" | "hold" | "nack" = "ack";
   events: Event[] = [];
+  confirms: Done[] = [];
+  attributes: unknown[] = [];
   private subscriber?: (message: Message | null) => void;
   private check() {
     if (this.closed) throw new Error("Channel closed");
@@ -58,8 +64,9 @@ class FakeChannel extends EventEmitter {
   private send(event: Event, done: Done) {
     this.events.push(event);
     this.check();
+    if (this.confirm === "hold") this.confirms.push(done);
     if (this.confirm !== "hold") {
-      const error = this.confirm === "nack" ? new Error("Message nacked") : null;
+      const error = this.confirm === "nack" ? new Error("message nacked") : null;
       void Promise.resolve().then(() => done(error));
     }
     return true;
@@ -68,9 +75,10 @@ class FakeChannel extends EventEmitter {
     exchange: string,
     routingKey: string,
     content: Buffer,
-    options: { messageId?: string },
+    options: { messageId?: string; headers?: Record<string, string> },
     done: Done,
   ) {
+    this.attributes.push(options.headers);
     const to = exchange || routingKey;
     return this.send({ publish: to, body: content.toString(), messageId: options.messageId }, done);
   }
@@ -105,6 +113,9 @@ class FakeChannel extends EventEmitter {
   shut() {
     if (this.closed) return;
     this.closed = true;
+    // amqplib drains outstanding confirm callbacks in its constructor-installed close listener,
+    // before the adapter receives the close event.
+    for (const done of this.confirms.splice(0)) done(new Error("channel closed"));
     this.emit("close");
   }
   deliver(body: string) {
@@ -240,7 +251,10 @@ describe("emitted broker publisher reconnects", () => {
       ["unavailable", lost],
     ]);
     // At once: no timer runs before it rejects.
-    await expect(publisher.publish(bytes("b"), "m2")).rejects.toThrow("Broker unavailable");
+    await expect(publisher.publish(bytes("b"), "m2")).rejects.toMatchObject({
+      outcome: "refused",
+      code: "BROKER_UNAVAILABLE",
+    });
     await vi.advanceTimersByTimeAsync(4999);
     expect(broker.state.attempts).toBe(1);
     broker.state.connects.push(() => Promise.reject(new Error("connect ECONNREFUSED")));
@@ -269,7 +283,10 @@ describe("emitted broker publisher reconnects", () => {
     const publisher = await createPublisher(binding, topic, { onState });
     // A rejected confirm on an open channel rejects that publish only.
     broker.channel(0).confirm = "nack";
-    await expect(publisher.publish(bytes("a"), "m1")).rejects.toThrow("Message nacked");
+    await expect(publisher.publish(bytes("a"), "m1")).rejects.toMatchObject({
+      outcome: "definite-failure",
+      code: "PUBLISH_NOT_CONFIRMED",
+    });
     broker.channel(0).confirm = "hold";
     let rejected: unknown;
     const waiting = publisher.publish(bytes("b"), "m2").catch((error: unknown) => {
@@ -280,6 +297,7 @@ describe("emitted broker publisher reconnects", () => {
     await vi.advanceTimersByTimeAsync(binding.confirmTimeoutMs);
     await waiting;
     expect(rejected).toBeInstanceOf(Error);
+    expect(rejected).toMatchObject({ outcome: "unknown", code: "PUBLISH_NOT_CONFIRMED" });
     await publisher.close();
   });
 
@@ -291,7 +309,10 @@ describe("emitted broker publisher reconnects", () => {
     await expect(down.closed).resolves.toEqual({ fatal: false });
     await vi.advanceTimersByTimeAsync(20000);
     expect(broker.state.attempts).toBe(1);
-    await expect(down.publish(bytes("a"), "m1")).rejects.toThrow("AMQP publisher is draining");
+    await expect(down.publish(bytes("a"), "m1")).rejects.toMatchObject({
+      outcome: "refused",
+      code: "PUBLISHER_DRAINING",
+    });
 
     const { states, onState } = recorder();
     const opening = await createPublisher(binding, topic, { onState });
@@ -589,5 +610,37 @@ describe("emitted broker wiring", () => {
       '{ ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-jobs") }',
     );
     expect(transcoder.match(/onFatal: scope\.fail,/g)).toHaveLength(1);
+  });
+});
+
+describe("RG03 late AMQP confirmation", () => {
+  it("reports timeout as unknown, keeps the actual confirm pending through close, and never republishes", async () => {
+    vi.useFakeTimers();
+    try {
+      const broker = fakeBroker();
+      const publisher = await createPublisher(binding, topic);
+      broker.channel(0).confirm = "hold";
+      const pending = publisher
+        .publish(bytes("effect"), "stable-1", { purpose: "receipt" })
+        .catch((error: unknown) => error);
+      await vi.advanceTimersByTimeAsync(binding.confirmTimeoutMs);
+      expect(await pending).toMatchObject({ outcome: "unknown", code: "INTERRUPTED" });
+      let drained = false;
+      const close = publisher.close().then(() => {
+        drained = true;
+      });
+      await vi.advanceTimersByTimeAsync(10);
+      expect(drained).toBe(false);
+      expect(broker.channel(0).events).toEqual([
+        { publish: "view-events", body: "effect", messageId: "stable-1" },
+      ]);
+      for (const done of broker.channel(0).confirms.splice(0)) done(null);
+      await close;
+      expect(drained).toBe(true);
+      expect(broker.channel(0).events).toHaveLength(1);
+      expect(broker.channel(0).attributes).toEqual([{ purpose: "receipt" }]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

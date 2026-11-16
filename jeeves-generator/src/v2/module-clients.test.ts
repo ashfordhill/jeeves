@@ -1,6 +1,10 @@
+import { operationImports } from "./operation.test.helpers.ts";
+
+const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
+
 import { randomUUID } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { createRequire, stripTypeScriptTypes } from "node:module";
+import { createRequire, stripTypeScriptTypes as stripTypes } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkServerIdentity, type PeerCertificate } from "node:tls";
@@ -256,6 +260,7 @@ function testScope() {
   const transports: unknown[] = [];
   return {
     owned,
+    signal: new AbortController().signal,
     transports,
     own: (drain: () => unknown) => owned.push(drain),
     transport: (value: unknown) => transports.push(value),
@@ -486,7 +491,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       bundle.files.find((file) => file.path === "src/modules/dependencies.ts")?.bytes,
     );
     expect(dependencies).toContain(
-      "publish(message: Uint8Array, options?: { key?: string; messageId?: string }): Promise<void>;",
+      "publish(message: Uint8Array, options?: PublisherOptions): Promise<void>;",
     );
   });
 
@@ -588,7 +593,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
         event: "failure",
         tile: "links-api",
         what: "cache links-cache",
-        error: "Error: Cache deadline",
+        error: "OperationError: Cache deadline",
       };
       const back = {
         level: "info",
@@ -750,9 +755,12 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       await target.request("/modules/stats-search", { method: "POST" });
       expect(fetch).toHaveBeenCalledWith(
         new URL("http://app-stats-api:3000/modules/stats-search"),
-        {
+        expect.objectContaining({
           method: "POST",
-        },
+          redirect: "manual",
+          credentials: "omit",
+          signal: expect.any(AbortSignal),
+        }),
       );
     } finally {
       vi.unstubAllGlobals();
@@ -775,12 +783,20 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     vi.stubGlobal("fetch", fetch);
     try {
       const target = clients.httpTarget({ tile: "stats-api" });
-      expect(await target.request("/modules/stats-search")).toBe(response);
+      expect(await target.request("/modules/stats-search")).toMatchObject({
+        status: response.status,
+      });
       expect(Reflect.get(refused, internalCall)).toBeUndefined();
-      await expect(target.request("/modules/stats-search")).rejects.toBe(refused);
-      expect(Reflect.get(refused, internalCall)).toBe(true);
+      await expect(target.request("/modules/stats-search")).rejects.toMatchObject({
+        outcome: "definite-failure",
+        cause: refused,
+      });
+      expect(Reflect.get(refused, internalCall)).toBeUndefined();
       // Only an object can carry the mark; anything else is rethrown as it was.
-      await expect(target.request("/modules/stats-search")).rejects.toBe("not an object");
+      await expect(target.request("/modules/stats-search")).rejects.toMatchObject({
+        outcome: "definite-failure",
+        cause: "not an object",
+      });
       expect(fetch).toHaveBeenCalledTimes(3);
     } finally {
       vi.unstubAllGlobals();
@@ -1463,7 +1479,11 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     await clients.httpTarget({ tile: "stats-api" }).request("/modules/stats-search");
     expect(fetch).toHaveBeenCalledWith(
       new URL("https://stats.internal:8443/modules/stats-search"),
-      undefined,
+      expect.objectContaining({
+        redirect: "manual",
+        credentials: "omit",
+        signal: expect.any(AbortSignal),
+      }),
     );
     const name = "JEEVES_TILE_STATS_API_URL";
     const credentials = ["http://", ["user", "pass"].join(":"), "@stats.internal"].join("");
@@ -1552,9 +1572,9 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
       return (error as Error).message;
     }
   };
-  it("calls an External API at its JEEVES_EXTERNAL_<ID>_URL, passing the stub's init through as it is", async () => {
+  it("bounds an External API at its declared URL and refuses product credential overrides", async () => {
     const response = new Response(null, { status: 402 });
-    const fetch = vi.fn(async () => response);
+    const fetch = vi.fn(async () => response.clone());
     vi.stubGlobal("fetch", fetch);
     environment({ [external]: "https://api.partner.example/v1/" });
     const target = clients.externalTarget(external);
@@ -1564,19 +1584,34 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
       headers: { authorization: ["Bearer", randomUUID()].join(" ") },
       signal: AbortSignal.timeout(1000),
     };
-    expect(await target.request("charges", init)).toBe(response);
+    await expect(target.request("charges", init)).rejects.toMatchObject({
+      outcome: "refused",
+      code: "PROTECTED_HEADER",
+    });
+    expect(fetch).not.toHaveBeenCalled();
+    delete (init.headers as { authorization?: string }).authorization;
+    expect(await target.request("charges", init)).toMatchObject({ status: response.status });
     expect(fetch).toHaveBeenNthCalledWith(
       1,
       new URL("https://api.partner.example/v1/charges"),
-      init,
+      expect.objectContaining({
+        redirect: "manual",
+        credentials: "omit",
+        headers: expect.any(Headers),
+        signal: expect.any(AbortSignal),
+      }),
     );
-    expect((fetch.mock.calls[0] as unknown[])[1]).toBe(init);
+    expect(((fetch.mock.calls[0] as unknown[])[1] as RequestInit).headers).toBeInstanceOf(Headers);
     // Without one the client adds nothing: it reads no credential.
     await target.request("/status");
     expect(fetch).toHaveBeenNthCalledWith(
       2,
       new URL("https://api.partner.example/status"),
-      undefined,
+      expect.objectContaining({
+        redirect: "manual",
+        credentials: "omit",
+        signal: expect.any(AbortSignal),
+      }),
     );
   });
 
@@ -1586,24 +1621,30 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
     vi.stubGlobal("fetch", fetch);
     environment({ [external]: "https://api.partner.example" });
     const target = clients.externalTarget(external);
-    await expect(target.request("/v1/x")).rejects.toBe(refused);
+    await expect(target.request("/v1/x")).rejects.toMatchObject({
+      outcome: "definite-failure",
+      cause: refused,
+    });
     expect(Reflect.get(refused, internalCall)).toBeUndefined();
     expect(delivery.unreachable(refused)).toBe(false);
-    await expect(target.request("/v1/x")).rejects.toBe("not an object");
+    await expect(target.request("/v1/x")).rejects.toMatchObject({
+      outcome: "definite-failure",
+      cause: "not an object",
+    });
     // The Identity is a provisioned service: its lost connection waits as a store's does.
     const away = lost();
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(away));
     environment({ [identity]: "https://issuer.example" });
     await expect(
       clients.identityTarget({ identity: "identity" }).request("/realms/identity"),
-    ).rejects.toBe(away);
-    expect(Reflect.get(away, internalCall)).toBe(true);
-    expect(delivery.unreachable(away)).toBe(true);
+    ).rejects.toMatchObject({ outcome: "definite-failure", cause: away });
+    expect(Reflect.get(away, internalCall)).toBeUndefined();
+    expect(delivery.unreachable(away)).toBe(false);
   });
 
   it("calls the Identity at JEEVES_IDENTITY_<ID>_URL, where the process reaches it, never at OIDC_ISSUER (QGR2)", async () => {
     const response = new Response("{}");
-    const fetch = vi.fn(async () => response);
+    const fetch = vi.fn(async () => response.clone());
     vi.stubGlobal("fetch", fetch);
     // A sign-in's issuer is the browser's address, which a container can't reach (QG20's proof);
     // the client's base is Keycloak inside the network, as compose.yaml sets it.
@@ -1616,15 +1657,23 @@ describe("an External API's and the Identity's HTTP clients (QG20)", () => {
       await clients
         .identityTarget({ identity: "identity" })
         .request("/realms/identity/.well-known/openid-configuration", init),
-    ).toBe(response);
+    ).toMatchObject({ status: response.status });
     expect(fetch).toHaveBeenCalledWith(
       new URL("http://identity-identity:8080/realms/identity/.well-known/openid-configuration"),
-      init,
+      expect.objectContaining({
+        redirect: "manual",
+        credentials: "omit",
+        headers: expect.any(Headers),
+        signal: expect.any(AbortSignal),
+      }),
     );
     // The variable is the Identity's own, by its local ID.
     environment({ [identity]: undefined, JEEVES_IDENTITY_SIGN_IN_URL: "https://id.example" });
     await clients.identityTarget({ identity: "sign-in" }).request("/realms/sign-in");
-    expect(fetch).toHaveBeenLastCalledWith(new URL("https://id.example/realms/sign-in"), undefined);
+    expect(fetch).toHaveBeenLastCalledWith(
+      new URL("https://id.example/realms/sign-in"),
+      expect.objectContaining({ redirect: "manual", signal: expect.any(AbortSignal) }),
+    );
     expect(outcome(() => clients.identityTarget({ identity: "identity" }))).toBe(
       `Invalid endpoint ${identity}`,
     );
@@ -1773,7 +1822,7 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
           "grpc.max_reconnect_backoff_ms": 2000,
         },
       ],
-      ["topic", "visits", { gaxOpts: { timeout: 2000 } }],
+      ["topic", "visits", { gaxOpts: { timeout: 2000, retry: null, maxRetries: 0 } }],
       ["exists"],
     ]);
     expect(lines).toEqual([
@@ -1815,7 +1864,7 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
   it("rejects a publish at 2000 ms, and the next at once while 1000 are outstanding", async () => {
     vi.useFakeTimers();
     const publisher = await pubsubClients.pubsubPublisher(testScope(), probe, visits);
-    fake.pubsub = { publish: () => new Promise<string>(() => {}) };
+    const acks = held();
     let settled = false;
     const late = publisher.publish(payload).finally(() => {
       settled = true;
@@ -1825,17 +1874,27 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
     expect(settled).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
     await rejected;
-    const outstanding = Array.from({ length: 1000 }, () =>
+    const outstanding = Array.from({ length: 999 }, () =>
       publisher.publish(payload).catch((error: Error) => error.message),
     );
-    await expect(publisher.publish(payload)).rejects.toThrow("Publisher queue full");
+    await expect(publisher.publish(payload)).rejects.toMatchObject({
+      outcome: "refused",
+      code: "PUBLISHER_FULL",
+    });
     // The refused one never reached Pub/Sub.
-    expect(fake.calls.filter((call) => call[0] === "publishMessage")).toHaveLength(1001);
+    expect(fake.calls.filter((call) => call[0] === "publishMessage")).toHaveLength(1000);
     await vi.advanceTimersByTimeAsync(2000);
     expect(new Set(await Promise.all(outstanding))).toEqual(
       new Set(["Publish deadline (2000 ms)"]),
     );
-    // Settled publishes free their places.
+    // Caller timeout does not free a still-unsettled driver operation's place.
+    await expect(publisher.publish(payload)).rejects.toMatchObject({
+      outcome: "refused",
+      code: "PUBLISHER_FULL",
+    });
+    for (const ack of acks) ack("late-confirm");
+    await vi.advanceTimersByTimeAsync(0);
+    // Only actual driver settlement frees the bounded places.
     fake.pubsub = undefined;
     await expect(publisher.publish(payload)).resolves.toBeUndefined();
   });
@@ -1853,7 +1912,10 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
     expect(drained).toBe(false);
     expect(fake.calls.map((call) => call[0])).not.toContain("close");
     // Draining, it takes no new publish.
-    await expect(publisher.publish(payload)).rejects.toThrow("Publisher closed");
+    await expect(publisher.publish(payload)).rejects.toMatchObject({
+      outcome: "refused",
+      code: "PUBLISHER_CLOSED",
+    });
     acks[0]?.("server-2");
     await sent;
     await drain;
@@ -2101,7 +2163,10 @@ describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => 
     expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
     expect(await cacheSocket()).toEqual({ ...tcp, tls: true, rejectUnauthorized: true });
     await clients.httpTarget({ tile: "stats-api" }).request("/x");
-    expect(fetch).toHaveBeenCalledWith(new URL("https://stats.internal:8443/x"), undefined);
+    expect(fetch).toHaveBeenCalledWith(
+      new URL("https://stats.internal:8443/x"),
+      expect.objectContaining({ redirect: "manual", signal: expect.any(AbortSignal) }),
+    );
     expect(
       await outcome(() => pubsubClients.pubsubPublisher(testScope(), probe, { topic: "visits" })),
     ).toBe("built");
@@ -2118,7 +2183,10 @@ describe("verified TLS bindings and an insecure-endpoint refusal (QG10)", () => 
     expect(await outcome(() => clients.databaseClient(testScope(), probe, links))).toBe("built");
     expect(await cacheSocket()).toEqual(tcp);
     await clients.httpTarget({ tile: "stats-api" }).request("/x");
-    expect(fetch).toHaveBeenCalledWith(new URL("http://app-stats-api:3000/x"), undefined);
+    expect(fetch).toHaveBeenCalledWith(
+      new URL("http://app-stats-api:3000/x"),
+      expect.objectContaining({ redirect: "manual", signal: expect.any(AbortSignal) }),
+    );
     environment({ JEEVES_PUBSUB_PROJECT: "local", PUBSUB_EMULATOR_HOST: "local-pubsub:8085" });
     expect(
       await outcome(() => pubsubClients.pubsubPublisher(testScope(), probe, { topic: "visits" })),
@@ -2582,4 +2650,373 @@ describe("emitted postgres.ts: a database's transport (QG10)", () => {
     for (const mode of ["disable", "no-verify", "require", "prefer"])
       expect(createPostgres(options({ mode })).options.ssl).toBe(false);
   });
+});
+
+const operationRuntime = await import((await import("./operation.test.helpers.ts")).operationUrl);
+const processRuntime = await import(dataUrl(String(fakes["./process.ts"])));
+
+describe("RG03 emitted dependency contexts and uncertain effects", () => {
+  const previousExit = process.exitCode;
+  beforeEach(() => {
+    environment({
+      ...localEnvironment,
+      JEEVES_PUBSUB_PROJECT: "rg03-test",
+      JEEVES_EXTERNAL_PARTNER_URL: "https://partner.example/v1/",
+    });
+    fake.calls.length = 0;
+    fake.connections.length = 0;
+    fake.answer = undefined;
+    fake.pubsub = undefined;
+  });
+  afterEach(() => {
+    restoreEnvironment();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    fake.answer = undefined;
+    fake.pubsub = undefined;
+    process.exitCode = previousExit;
+  });
+
+  it("refuses a fresh database/cache/publish/module operation after the one-second context expires", async () => {
+    vi.useFakeTimers();
+    const scope = testScope();
+    const db = await clients.databaseClient(scope, probe, {
+      tile: "links-api",
+      resource: "links-db",
+    });
+    const cache = await clients.cacheClient(scope, probe, { cache: "links-cache" });
+    const publisher = await clients.queuePublisher(scope, probe, {
+      queue: "visits",
+      mode: "topic",
+    });
+    const request = operationRuntime.operation({ maximumMs: 1000, remainingMs: 2000 });
+    await operationRuntime.withOperation(request.context, async () => {
+      await db.query("SELECT 1");
+      await vi.advanceTimersByTimeAsync(1000);
+      const before = fake.calls.length;
+      await expect(db.execute("UPDATE product SET value = 1")).rejects.toMatchObject({
+        outcome: "refused",
+        code: "CONTEXT_EXPIRED",
+      });
+      await expect(cache.set("key", "value")).rejects.toMatchObject({ outcome: "refused" });
+      await expect(publisher.publish(Buffer.from("late"))).rejects.toMatchObject({
+        outcome: "refused",
+      });
+      const entry = vi.fn(async () => 1);
+      await expect(operationRuntime.moduleCall(entry)).rejects.toMatchObject({
+        outcome: "refused",
+      });
+      expect(entry).not.toHaveBeenCalled();
+      expect(fake.calls).toHaveLength(before);
+    });
+    request.close();
+    await expect(cache.get("healthy")).resolves.toBe("value");
+    expect(fake.calls.filter(([name]) => name === "createClient")).toHaveLength(1);
+    expect(fake.calls.filter(([name]) => name === "destroy")).toHaveLength(0);
+    for (const close of scope.owned.reverse()) await close();
+  });
+
+  it("keeps a late Pub/Sub publish tracked through process drain, preserving stable identity and attributes", async () => {
+    vi.useFakeTimers();
+    let settle!: (id: string) => void;
+    fake.pubsub = {
+      publish: () =>
+        new Promise<string>((resolve) => {
+          settle = resolve;
+        }),
+    };
+    const lifecycle = processRuntime.createProcessLifecycle({ mark() {}, terminate: vi.fn() });
+    let publisher: { publish: (...args: unknown[]) => Promise<void> };
+    await lifecycle.start(async (scope: unknown) => {
+      publisher = await pubsubClients.pubsubPublisher(scope, probe, { topic: "visits" });
+    });
+    const request = operationRuntime.operation({ maximumMs: 10, correlationId: "correlation-1" });
+    const sent = operationRuntime
+      .withProcess(lifecycle.scope, () =>
+        operationRuntime.withOperation(request.context, () =>
+          publisher.publish(Buffer.from("event"), {
+            messageId: "event-1",
+            attributes: { purpose: "receipt" },
+          }),
+        ),
+      )
+      .catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(await sent).toMatchObject({ outcome: "unknown" });
+    expect(fake.calls.filter(([name]) => name === "publishMessage")).toEqual([
+      [
+        "publishMessage",
+        "event",
+        { purpose: "receipt", correlationId: "correlation-1", messageId: "event-1" },
+      ],
+    ]);
+    let drained = false;
+    const closing = lifecycle.close().then(() => {
+      drained = true;
+    });
+    await vi.advanceTimersByTimeAsync(20);
+    expect(drained).toBe(false);
+    expect(fake.calls.filter(([name]) => name === "close")).toHaveLength(0);
+    settle("acknowledged-late");
+    await closing;
+    expect(drained).toBe(true);
+    expect(fake.calls.filter(([name]) => name === "publishMessage")).toHaveLength(1);
+    expect(fake.calls.filter(([name]) => name === "close")).toHaveLength(1);
+    request.close();
+  });
+
+  it("refuses malformed/oversized/reserved publisher attributes before either transport sends", async () => {
+    const scope = testScope();
+    const rabbit = await clients.queuePublisher(scope, probe, { queue: "visits", mode: "topic" });
+    const google = await pubsubClients.pubsubPublisher(scope, probe, { topic: "visits" });
+    for (const publisher of [rabbit, google]) {
+      for (const options of [
+        { messageId: "invalid identity" },
+        { attributes: { messageId: "spoof" } },
+        { attributes: { key: "x".repeat(1025) } },
+        { attributes: Object.fromEntries(Array.from({ length: 33 }, (_, i) => [`a${i}`, "v"])) },
+        {
+          attributes: Object.fromEntries(
+            Array.from({ length: 9 }, (_, i) => [`a${i}`, "x".repeat(1024)]),
+          ),
+        },
+      ])
+        expect(() => publisher.publish(Buffer.from("bad"), options)).toThrow(
+          expect.objectContaining({ outcome: "refused" }),
+        );
+    }
+    expect(
+      fake.calls.filter(([name]) => name === "publish" || name === "publishMessage"),
+    ).toHaveLength(0);
+    for (const close of scope.owned.reverse()) await close();
+  });
+
+  it("preserves native lost-COMMIT uncertainty despite a successful rollback response, with no retry", async () => {
+    const scope = testScope();
+    const db = await clients.databaseClient(scope, probe, {
+      tile: "links-api",
+      resource: "links-db",
+    });
+    const failure = Object.assign(new Error("connection reset"), { code: "ECONNRESET" });
+    fake.answer = (sql) => {
+      if (sql === "COMMIT") throw failure;
+    };
+    const product = vi.fn(async (tx) => {
+      await tx.execute("INSERT INTO product VALUES (1)");
+      return "must not return";
+    });
+    await expect(db.transaction(product)).rejects.toMatchObject({
+      name: "TransactionOutcomeUnknown",
+      outcome: "unknown",
+      cause: failure,
+    });
+    expect(product).toHaveBeenCalledOnce();
+    expect(fake.connections).toEqual([
+      ["BEGIN", "INSERT INTO product VALUES (1)", "COMMIT", "ROLLBACK", "release discard"],
+    ]);
+    for (const close of scope.owned.reverse()) await close();
+  });
+
+  it("does not release a transaction's connection while its timed-out COMMIT is unsettled", async () => {
+    vi.useFakeTimers();
+    const lifecycle = processRuntime.createProcessLifecycle({ mark() {}, terminate: vi.fn() });
+    let db: {
+      transaction: (
+        fn: (tx: { execute(sql: string): Promise<void> }) => Promise<string>,
+      ) => Promise<string>;
+    };
+    await lifecycle.start(async (scope: unknown) => {
+      db = await clients.databaseClient(scope, probe, { tile: "links-api", resource: "links-db" });
+    });
+    let finish!: () => void;
+    fake.answer = (sql) =>
+      sql === "COMMIT"
+        ? new Promise<void>((resolve) => {
+            finish = resolve;
+          })
+        : undefined;
+    const request = operationRuntime.operation({ maximumMs: 20 });
+    const product = vi.fn(async (tx) => {
+      await tx.execute("INSERT INTO product VALUES (1)");
+      return "done";
+    });
+    const pending = operationRuntime
+      .withProcess(lifecycle.scope, () =>
+        operationRuntime.withOperation(request.context, () => db.transaction(product)),
+      )
+      .catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(20);
+    expect(await pending).toMatchObject({ outcome: "unknown" });
+    expect(fake.connections).toEqual([["BEGIN", "INSERT INTO product VALUES (1)", "COMMIT"]]);
+    let drained = false;
+    const close = lifecycle.close().then(() => {
+      drained = true;
+    });
+    await vi.advanceTimersByTimeAsync(20);
+    expect(drained).toBe(false);
+    finish();
+    await close;
+    expect(product).toHaveBeenCalledOnce();
+    expect(fake.connections).toEqual([
+      ["BEGIN", "INSERT INTO product VALUES (1)", "COMMIT", "release"],
+    ]);
+    request.close();
+  });
+
+  it("bounds declared-target responses, blocks destination/header overrides and never follows redirects or retries a mutation", async () => {
+    const target = clients.externalTarget("JEEVES_EXTERNAL_PARTNER_URL");
+    const fetch = vi.fn(
+      async (_url: unknown, _init?: RequestInit) => new Response("x".repeat(65537)),
+    );
+    vi.stubGlobal("fetch", fetch);
+    for (const path of [
+      "https://elsewhere.example",
+      "//elsewhere.example",
+      "https://user:pass@partner.example/v1/x",
+    ])
+      await expect(target.request(path)).rejects.toMatchObject({
+        outcome: "refused",
+        code: "UNDECLARED_DESTINATION",
+      });
+    await expect(
+      target.request("x", { headers: { authorization: "spoof" } }),
+    ).rejects.toMatchObject({ outcome: "refused", code: "PROTECTED_HEADER" });
+    expect(fetch).not.toHaveBeenCalled();
+    await expect(target.request("x", { method: "POST" })).rejects.toMatchObject({
+      outcome: "unknown",
+      code: "RESPONSE_TOO_LARGE",
+    });
+    expect(fetch).toHaveBeenCalledOnce();
+    fetch.mockImplementation(
+      async () =>
+        new Response(null, { status: 302, headers: { Location: "https://elsewhere.example" } }),
+    );
+    const response = await target.request("x", { method: "POST", redirect: "follow" });
+    expect(response.status).toBe(302);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch.mock.calls[1]?.[1]).toMatchObject({ redirect: "manual", credentials: "omit" });
+  });
+});
+
+it("RG03 rechecks the context after a template pool's delayed connection acquisition before sending SQL", async () => {
+  vi.useFakeTimers();
+  const state = {
+    query: vi.fn(async () => ({ rows: [], rowCount: 0 })),
+    release: vi.fn(),
+    acquire: undefined as unknown as () => Promise<unknown>,
+  };
+  (globalThis as { rg03Pool?: unknown }).rg03Pool = state;
+  const fakePg = dataUrl(
+    "export default { Pool: class { connect() { return globalThis.rg03Pool.acquire(); } } };",
+  );
+  const source = stripTypeScriptTypes(
+    new TextDecoder().decode(
+      bundle.files.find((file) => file.path === "src/runtime/postgres.ts")?.bytes,
+    ),
+  )
+    .replace('from "pg"', `from "${fakePg}"`)
+    .replace('from "./local.ts"', `from "${dataUrl('export const readSecret = () => "unused";')}"`);
+  const { createPostgres } = await import(dataUrl(source));
+  let acquired!: (value: unknown) => void;
+  state.acquire = () =>
+    new Promise((resolve) => {
+      acquired = resolve;
+    });
+  const pool = createPostgres({
+    hostname: "localhost",
+    port: 5432,
+    tls: { mode: "disable" },
+    login: { database: "db", user: "writer", secret: "unused" },
+    poolSize: 1,
+    statementTimeoutMs: 2000,
+    connectionTimeoutMs: 2000,
+  });
+  const request = operationRuntime.operation({ maximumMs: 10 });
+  try {
+    const pending = operationRuntime
+      .withOperation(request.context, () => pool.query("INSERT INTO product VALUES (1)"))
+      .catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(await pending).toMatchObject({ outcome: "unknown" });
+    acquired({ query: state.query, release: state.release });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(state.query).not.toHaveBeenCalled();
+    expect(state.release).toHaveBeenCalledWith(false);
+    state.acquire = async () => ({ query: state.query, release: state.release });
+    state.query.mockRejectedValueOnce(Object.assign(new Error("write EPIPE"), { code: "EPIPE" }));
+    const next = operationRuntime.operation({ maximumMs: 1000 });
+    try {
+      await expect(
+        operationRuntime.withOperation(next.context, () =>
+          pool.query("UPDATE product SET value = 2"),
+        ),
+      ).rejects.toMatchObject({ outcome: "unknown" });
+      expect(state.release).toHaveBeenLastCalledWith(true);
+    } finally {
+      next.close();
+    }
+  } finally {
+    request.close();
+    vi.useRealTimers();
+    delete (globalThis as { rg03Pool?: unknown }).rg03Pool;
+  }
+});
+
+it("RG03 bounds mounted identity verification without cancelling another caller's shared JWKS work", async () => {
+  vi.useFakeTimers();
+  const state = {
+    calls: 0,
+    keySets: [] as unknown[],
+    pending: undefined as unknown as Promise<{ payload: { sub: string } }>,
+  };
+  (globalThis as { rg03Identity?: unknown }).rg03Identity = state;
+  const jose = dataUrl(
+    "export function createRemoteJWKSet(_url, options) { globalThis.rg03Identity.keySets.push(options); return {}; } export function jwtVerify() { globalThis.rg03Identity.calls++; return globalThis.rg03Identity.pending; }",
+  );
+  const source = stripTypeScriptTypes(
+    readFileSync(
+      new URL("../../templates/local-v2/assets/src/runtime/identity.ts.template", import.meta.url),
+      "utf8",
+    ),
+  ).replace('from "jose"', `from "${jose}"`);
+  const { createPrincipalVerifier } = await import(dataUrl(source));
+  let finish!: (value: { payload: { sub: string } }) => void;
+  state.pending = new Promise((resolve) => {
+    finish = resolve;
+  });
+  const lifecycle = processRuntime.createProcessLifecycle({ mark() {}, terminate: vi.fn() });
+  const verify = operationRuntime.withProcess(lifecycle.scope, () =>
+    createPrincipalVerifier({
+      issuer: "https://issuer.example",
+      audience: "api",
+      jwksUrl: "https://issuer.example/jwks",
+      algorithms: ["RS256"],
+      jwksTimeoutMs: 2000,
+    }),
+  );
+  const short = operationRuntime.operation({ maximumMs: 10 }),
+    long = operationRuntime.operation({ maximumMs: 1000 });
+  try {
+    const early = operationRuntime
+      .withOperation(short.context, () => verify("token"))
+      .catch((error: unknown) => error);
+    const later = operationRuntime.withOperation(long.context, () => verify("token"));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(await early).toMatchObject({ outcome: "definite-failure", code: "INTERRUPTED" });
+    expect(long.context.signal.aborted).toBe(false);
+    expect(state.keySets).toEqual([{ timeoutDuration: 2000 }]);
+    await expect(async () =>
+      operationRuntime.withOperation(short.context, () => verify("token")),
+    ).rejects.toMatchObject({ outcome: "refused" });
+    expect(state.calls).toBe(2);
+    finish({ payload: { sub: "account" } });
+    await expect(later).resolves.toEqual({ subject: "account", claims: { sub: "account" } });
+    await lifecycle.close();
+  } finally {
+    short.close();
+    long.close();
+    vi.useRealTimers();
+    delete (globalThis as { rg03Identity?: unknown }).rg03Identity;
+  }
 });

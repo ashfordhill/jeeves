@@ -1,3 +1,4 @@
+import { dependency, OperationError, currentProcess } from "./operation.ts";
 import amqp, { type ConsumeMessage } from "amqplib";
 import { readSecret } from "./local.ts";
 import {
@@ -115,6 +116,7 @@ export async function createPublisher(
   destination: { exchange: string; routingKey: string },
   hooks: { onState?: BrokerState } = {},
 ) {
+  const operationScope = currentProcess();
   type Generation = { connection: Connection; channel: Channel; lost: boolean };
   const report = stateReport(hooks.onState);
   let current: Generation | undefined;
@@ -188,25 +190,26 @@ export async function createPublisher(
   return {
     closed,
     close,
-    async publish(body: Uint8Array, messageId: string): Promise<void> {
-      if (closing) throw new Error("AMQP publisher is draining");
+    async publish(body: Uint8Array, messageId: string, attributes: Record<string, string> = {}): Promise<void> {
+      if (closing) throw new OperationError("refused", "PUBLISHER_DRAINING");
       const generation = current;
-      if (!generation) throw new Error("Broker unavailable");
-      const work = confirmed(binding.confirmTimeoutMs, (done) =>
-        generation.channel.publish(
-          destination.exchange,
-          destination.routingKey,
-          Buffer.from(body),
-          { persistent: true, messageId, contentType: "application/json" },
-          done,
-        ),
-      );
-      pending.add(work);
-      try {
-        await work;
-      } finally {
-        pending.delete(work);
-      }
+      if (!generation) throw new OperationError("refused", "BROKER_UNAVAILABLE");
+      return dependency({ scope: operationScope, maximumMs: binding.confirmTimeoutMs, mutation: true, deadlineMessage: "AMQP confirm deadline" }, async () => {
+        const work = new Promise<void>((resolve, reject) => {
+          try {
+            generation.channel.publish(destination.exchange, destination.routingKey, Buffer.from(body),
+              { persistent: true, messageId, headers: attributes, contentType: "application/json" },
+              // The pinned amqplib close listener invokes confirms before our close listener.
+              // Only its explicit broker NACK proves failure; channel-close callbacks are unknown.
+              (error?: Error | null) => error
+                ? reject(new OperationError(error.message === "message nacked" ? "definite-failure" : "unknown", "PUBLISH_NOT_CONFIRMED", { cause: error })) : resolve());
+          } catch (error) { reject(new OperationError("unknown", "PUBLISH_DISPATCH_FAILED", { cause: error })); }
+        });
+        // Keep the real confirm callback alive after the caller deadline. Closing waits for it,
+        // or the owning process terminates at its final drain bound. Never republish here.
+        pending.add(work);
+        try { await work; } finally { pending.delete(work); }
+      });
     },
   };
 }

@@ -1,3 +1,4 @@
+import { dependency, currentProcess, assertOperation, OperationError } from "./operation.ts";
 import { checkServerIdentity, type PeerCertificate } from "node:tls";
 import pg from "pg";
 import { readSecret, type SqlLogin } from "./local.ts";
@@ -39,7 +40,14 @@ export function createPostgres(options: {
   connectionTimeoutMs: number;
   credential?: (secret: string) => string;
 }) {
-  return new pg.Pool({
+  const operationScope = currentProcess();
+  const sqlFailure = (error: unknown) => {
+    const code = (error as { code?: unknown })?.code;
+    return (
+      typeof code === "string" && /^(?!08|57P0)[0-9A-Z]{5}$/.test(code) && !/^E[A-Z]+$/.test(code)
+    );
+  };
+  const pool = new pg.Pool({
     host: options.hostname,
     port: options.port,
     ssl: postgresSsl(options.tls),
@@ -52,5 +60,40 @@ export function createPostgres(options: {
     // the client rejects "Query read timeout" and the pool discards that connection.
     query_timeout: options.statementTimeoutMs + 500,
     connectionTimeoutMillis: options.connectionTimeoutMs,
+  });
+  return new Proxy(pool, {
+    get(target, key) {
+      if (key === "query")
+        return (sql: string, values?: unknown[]) =>
+          dependency(
+            {
+              scope: operationScope,
+              maximumMs: options.statementTimeoutMs,
+              mutation: true,
+              definite: sqlFailure,
+            },
+            async () => {
+              const client = await target.connect().catch((error: unknown) => {
+                throw new OperationError("definite-failure", "DATABASE_CONNECT_FAILED", {
+                  cause: error,
+                });
+              });
+              let sent = false,
+                discard = false;
+              try {
+                assertOperation();
+                sent = true;
+                return await client.query(sql, values);
+              } catch (error) {
+                discard = sent && !sqlFailure(error);
+                throw error;
+              } finally {
+                client.release(discard);
+              }
+            },
+          );
+      const value = Reflect.get(target, key);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
   });
 }

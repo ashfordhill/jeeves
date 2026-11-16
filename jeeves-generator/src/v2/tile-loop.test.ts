@@ -91,6 +91,7 @@ function testScope() {
   const owned: Drain[] = [];
   return {
     owned,
+    signal: new AbortController().signal,
     own: (drain: Drain) => owned.push(drain),
     transport: vi.fn(),
     fail: vi.fn(),
@@ -196,7 +197,16 @@ describe("emitted stub loops (tile process contract, section 5)", () => {
     });
     consumer.deliver("m1", { trace: "t" });
     await settled(consumer, "m1");
-    expect(received).toEqual([
+    expect(
+      received.map((value: unknown) => {
+        const { context, ...message } = value as { context: unknown };
+        expect(context).toMatchObject({
+          signal: expect.any(AbortSignal),
+          remainingMs: expect.any(Function),
+        });
+        return message;
+      }),
+    ).toEqual([
       {
         body: Buffer.from("m1"),
         messageId: "m1",
@@ -837,7 +847,11 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
           "grpc.max_reconnect_backoff_ms": 2000,
         },
       ],
-      ["topic", "visits--visit-worker.failed", { gaxOpts: { timeout: 2000 } }],
+      [
+        "topic",
+        "visits--visit-worker.failed",
+        { gaxOpts: { timeout: 2000, retry: null, maxRetries: 0 } },
+      ],
       ["exists", "visits--visit-worker"],
       ["stream", "visits--visit-worker"],
     ]);
@@ -900,7 +914,16 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
     // With no messageId attribute, the message's ID is Pub/Sub's own.
     deliver(message("b", { attributes: {} }));
     await handled("b");
-    expect(received).toEqual([
+    expect(
+      received.map((value: unknown) => {
+        const { context, ...message } = value as { context: unknown };
+        expect(context).toMatchObject({
+          signal: expect.any(AbortSignal),
+          remainingMs: expect.any(Function),
+        });
+        return message;
+      }),
+    ).toEqual([
       {
         body: Buffer.from("body of a"),
         messageId: "a",
@@ -1236,5 +1259,70 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
         if (value === undefined) delete process.env[name];
         else process.env[name] = value;
     }
+  });
+});
+
+const operationRuntime = await import(moduleUrl("operation"));
+describe("RG03 delivery budgets and unknown outcomes", () => {
+  it("gives queued work a fresh execution budget after its originating request has expired", async () => {
+    vi.useFakeTimers();
+    const originating = operationRuntime.operation({ maximumMs: 1000, correlationId: "origin-1" });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(originating.context.remainingMs()).toBe(0);
+    let received:
+      | { context: { remainingMs(): number; correlationId: string; requestId: string } }
+      | undefined;
+    const handler = loop.moduleHandler(
+      loop.createLoopLog("worker"),
+      visits,
+      async (message: typeof received) => {
+        received = message;
+      },
+      new AbortController().signal,
+    );
+    await handler(Buffer.from("work"), {
+      messageId: "event-1",
+      deliveryCount: 1,
+      redelivered: false,
+      headers: { correlationId: "origin-1", remainingMs: 0 },
+    });
+    expect(received?.context.remainingMs()).toBeGreaterThan(29900);
+    expect(received?.context.correlationId).toBe("origin-1");
+    expect(received?.context.requestId).not.toBe(originating.context.requestId);
+    originating.close();
+  });
+
+  it("routes uncertain publish/commit effects to terminal OUTCOME_UNKNOWN without blind retry or store wait", async () => {
+    const unknown = new operationRuntime.OperationError("unknown", "COMMIT_RESPONSE_LOST", {
+      cause: Object.assign(new Error("socket lost"), { code: "ECONNRESET" }),
+    });
+    const entry = vi.fn(async () => {
+      throw unknown;
+    });
+    const { scope, consumer } = await started(entry);
+    consumer.deliver("uncertain");
+    await settled(consumer, "uncertain");
+    expect(entry).toHaveBeenCalledOnce();
+    expect(consumer.events).toEqual([
+      {
+        republish: visits.failedQueue,
+        receipt: "uncertain",
+        headers: { "x-terminal-code": "OUTCOME_UNKNOWN", "x-delivery-attempt": 1 },
+      },
+      { ack: "uncertain" },
+    ]);
+    expect(loop.failureStep(unknown, 1, 5)).toEqual({ step: "terminal", code: "OUTCOME_UNKNOWN" });
+    const template = loop.templateHandler(loop.createLoopLog("worker"), visits, async () => {
+      throw unknown;
+    });
+    await expect(
+      template(Buffer.from("work"), {
+        messageId: "x",
+        deliveryCount: 1,
+        redelivered: false,
+        headers: {},
+      }),
+    ).rejects.toMatchObject({ code: "OUTCOME_UNKNOWN" });
+    await scope.stop();
   });
 });

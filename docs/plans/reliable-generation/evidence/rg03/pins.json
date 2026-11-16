@@ -1,0 +1,68 @@
+{
+  "frozen-v2": {
+    "before": 77,
+    "after": 78,
+    "added": ["src/runtime/operation.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "src/extension-api/index.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/amqp.ts",
+      "src/runtime/delivery.ts",
+      "src/runtime/http.ts",
+      "src/runtime/identity.ts",
+      "src/runtime/objects.ts",
+      "src/runtime/postgres.ts",
+      "src/runtime/process.ts",
+      "src/runtime/search.ts",
+      "src/runtime/transaction.ts",
+      "src/runtime/valkey.ts"
+    ]
+  },
+  "v2-module-design": {
+    "before": 83,
+    "after": 84,
+    "added": ["src/runtime/operation.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "src/extension-api/index.ts",
+      "src/modules/dependencies.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/amqp.ts",
+      "src/runtime/delivery.ts",
+      "src/runtime/http.ts",
+      "src/runtime/identity.ts",
+      "src/runtime/objects.ts",
+      "src/runtime/postgres.ts",
+      "src/runtime/process.ts",
+      "src/runtime/search.ts",
+      "src/runtime/transaction.ts",
+      "src/runtime/valkey.ts"
+    ]
+  },
+  "stub-stack": {
+    "before": 58,
+    "after": 59,
+    "added": ["src/runtime/operation.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "src/extension-api/index.ts",
+      "src/modules/dependencies.ts"
+    ]
+  }
+}

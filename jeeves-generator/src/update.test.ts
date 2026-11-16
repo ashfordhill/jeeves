@@ -680,7 +680,7 @@ describe("updateDirectory", () => {
     // manifest is valid but collides with the new one.
     await editManifest(directory, (records) => {
       const kept = records.filter((record) => !record.path.startsWith("src/runtime/"));
-      expect(records.length - kept.length).toBe(2);
+      expect(records.length - kept.length).toBe(3);
       records.splice(0, records.length, ...kept);
     });
     await expect(update(directory)).rejects.toThrow("OUTPUT_COLLISION at src/runtime");
@@ -794,8 +794,8 @@ describe("updateDirectory", () => {
       { check: true },
     );
     expect(result.refused).toHaveLength(1);
-    expect(result.refused[0]).toContain("Extension API 1 -> 2 requires migration");
-    expect(result.refused[0]).toContain("--ack-extension-api=2");
+    expect(result.refused[0]).toContain("Extension API 1 -> 3 requires migration");
+    expect(result.refused[0]).toContain("--ack-extension-api=3");
     expect(result.refused[0]).toContain("src/modules/");
     // Its package.json override (template gap 8) is now the application's own file: kept, with
     // the shadow the override left still pending.

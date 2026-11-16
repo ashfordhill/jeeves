@@ -1,3 +1,4 @@
+import type { PublisherOptions } from "../runtime/operation.ts";
 // Generated scaffold: the minimal interfaces module stubs take, one per tile kind and use.
 // Export rewrites this file. Back each one with a real client when you write a module.
 
@@ -47,7 +48,7 @@ export interface DatabaseReadWriter extends DatabaseReader {
 /** A queue or topic a module publishes to. `messageId` is the message's ID (a fresh one when it
  * is absent), so a consumer whose receipts are keyed on it takes a repeat once. */
 export interface QueuePublisher {
-  publish(message: Uint8Array, options?: { key?: string; messageId?: string }): Promise<void>;
+  publish(message: Uint8Array, options?: PublisherOptions): Promise<void>;
 }
 
 /** A queue or topic a module consumes from. */

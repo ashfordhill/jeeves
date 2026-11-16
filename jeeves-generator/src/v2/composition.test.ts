@@ -1,6 +1,10 @@
+import { operationImports } from "./operation.test.helpers.ts";
+
+const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
+
 import { randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
+import { stripTypeScriptTypes as stripTypes } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {

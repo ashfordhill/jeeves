@@ -1,0 +1,215 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+import { randomUUID } from "node:crypto";
+interface ProcessScope {
+  readonly signal: AbortSignal;
+  track?<T>(work: Promise<T>): void;
+  admission?(stop: () => void): void;
+}
+
+/** Durations cross machines; monotonic timestamps never do. Contexts are runtime-owned. */
+export interface OperationContext {
+  readonly requestId: string;
+  readonly correlationId: string;
+  readonly caller: Readonly<{ subject?: string }>;
+  readonly signal: AbortSignal;
+  remainingMs(): number;
+}
+export type EffectOutcome = "refused" | "definite-failure" | "unknown";
+export interface OperationFailure extends Error {
+  readonly outcome: EffectOutcome;
+}
+export class OperationError extends Error {
+  readonly outcome: EffectOutcome;
+  readonly code: string;
+  constructor(outcome: EffectOutcome, code: string, options?: ErrorOptions) {
+    super(`Operation ${outcome}: ${code}`, options);
+    this.name = "OperationError";
+    this.outcome = outcome;
+    this.code = code;
+  }
+}
+const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope }>();
+const contexts = new WeakSet<object>();
+export const currentOperation = () => active.getStore()?.context;
+export const currentProcess = () => active.getStore()?.scope;
+export function withProcess<T>(scope: ProcessScope | undefined, effect: () => T): T {
+  return active.run({ scope }, effect);
+}
+export function withOperation<T>(context: OperationContext, effect: () => T): T {
+  if (!contexts.has(context)) throw new OperationError("refused", "INVALID_CONTEXT");
+  assertOperation(context);
+  return active.run({ ...active.getStore(), context }, effect);
+}
+const validId = (value: unknown): value is string =>
+  typeof value === "string" && /^[A-Za-z0-9._:-]{1,128}$/.test(value);
+/** A receiver accepts only a remaining duration and clamps it to its own finite maximum. */
+export function operation(options: {
+  maximumMs: number;
+  remainingMs?: number;
+  correlationId?: unknown;
+  caller?: { subject?: string };
+  signals?: readonly (AbortSignal | undefined)[];
+}) {
+  if (
+    !Number.isSafeInteger(options.maximumMs) ||
+    options.maximumMs < 1 ||
+    options.maximumMs > 300000
+  )
+    throw new OperationError("refused", "INVALID_BUDGET");
+  const forwarded = options.remainingMs ?? options.maximumMs;
+  if (!Number.isFinite(forwarded) || forwarded < 0)
+    throw new OperationError("refused", "INVALID_BUDGET");
+  if (
+    options.caller?.subject !== undefined &&
+    (typeof options.caller.subject !== "string" ||
+      options.caller.subject.length < 1 ||
+      options.caller.subject.length > 255)
+  )
+    throw new OperationError("refused", "INVALID_CALLER");
+  const budget = Math.min(options.maximumMs, forwarded);
+  const expires = performance.now() + budget;
+  const controller = new AbortController();
+  const parents = (options.signals ?? []).filter((s): s is AbortSignal => !!s);
+  const cancel = () =>
+    controller.abort(parents.find((signal) => signal.aborted)?.reason ?? new Error("CANCELLED"));
+  for (const signal of parents) {
+    if (signal.aborted) cancel();
+    else signal.addEventListener("abort", cancel, { once: true });
+  }
+  const timer = setTimeout(() => controller.abort(new Error("DEADLINE")), budget);
+  timer.unref?.();
+  const requestId = randomUUID();
+  const context: OperationContext = Object.freeze({
+    requestId,
+    correlationId: validId(options.correlationId) ? options.correlationId : requestId,
+    caller: Object.freeze(options.caller?.subject ? { subject: options.caller.subject } : {}),
+    signal: controller.signal,
+    remainingMs: () => (controller.signal.aborted ? 0 : Math.max(0, expires - performance.now())),
+  });
+  contexts.add(context);
+  return {
+    context,
+    close() {
+      clearTimeout(timer);
+      for (const signal of parents) signal.removeEventListener("abort", cancel);
+    },
+  };
+}
+export function assertOperation(context = currentOperation()): void {
+  if (context && (!contexts.has(context) || context.signal.aborted || context.remainingMs() <= 0))
+    throw new OperationError("refused", "CONTEXT_EXPIRED");
+  if (active.getStore()?.scope?.signal.aborted)
+    throw new OperationError("refused", "PROCESS_STOPPING");
+}
+/** Track the actual driver promise, never the caller's timeout race. Cancellation is best effort;
+ * after dispatch, a timeout/transport loss is UNKNOWN for mutations, even if abort was requested.
+ * Drivers may establish definite failure explicitly (e.g. SQLSTATE or broker NACK). No retry. */
+export async function dependency<T>(
+  options: {
+    maximumMs?: number;
+    mutation?: boolean;
+    scope?: ProcessScope;
+    context?: OperationContext;
+    definite?: (error: unknown) => boolean;
+    preserveDefinite?: boolean;
+    deadlineMessage?: string;
+  },
+  dispatch: (signal: AbortSignal, remainingMs: number) => Promise<T>,
+): Promise<T> {
+  const context = options.context ?? currentOperation();
+  assertOperation(context);
+  const scope = options.scope ?? active.getStore()?.scope;
+  if (scope?.signal.aborted) throw new OperationError("refused", "PROCESS_STOPPING");
+  const budget = Math.min(
+    options.maximumMs ?? 2000,
+    context?.remainingMs() ?? options.maximumMs ?? 2000,
+  );
+  if (budget <= 0) throw new OperationError("refused", "CONTEXT_EXPIRED");
+  const abort = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const outcome = () => (options.mutation ? ("unknown" as const) : ("definite-failure" as const));
+  let cancel!: () => void;
+  let work: Promise<T>;
+  // Dispatch synchronously after the final check; do not schedule fresh work past a deadline.
+  try {
+    work = dispatch(abort.signal, Math.max(1, Math.floor(budget)));
+  } catch (error) {
+    throw new OperationError(
+      options.definite?.(error) ? "definite-failure" : outcome(),
+      "DISPATCH_FAILED",
+      { cause: error },
+    );
+  }
+  scope?.track?.(work);
+  const stopped = new Promise<never>((_resolve, reject) => {
+    cancel = () => {
+      abort.abort();
+      const error = new OperationError(outcome(), "INTERRUPTED");
+      if (options.deadlineMessage) error.message = options.deadlineMessage;
+      reject(error);
+    };
+    context?.signal.addEventListener("abort", cancel, { once: true });
+    scope?.signal.addEventListener("abort", cancel, { once: true });
+    timer = setTimeout(cancel, budget);
+    if (context?.signal.aborted || scope?.signal.aborted) cancel();
+  });
+  try {
+    return await Promise.race([work, stopped]);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "outcome" in error &&
+      ["refused", "definite-failure", "unknown"].includes(String(error.outcome))
+    )
+      throw error;
+    if (options.preserveDefinite && options.definite?.(error) && error instanceof Error) {
+      Object.defineProperty(error, "outcome", { value: "definite-failure", configurable: true });
+      throw error;
+    }
+    throw new OperationError(
+      options.definite?.(error) ? "definite-failure" : outcome(),
+      "DEPENDENCY_FAILED",
+      { cause: error },
+    );
+  } finally {
+    clearTimeout(timer);
+    context?.signal.removeEventListener("abort", cancel);
+    scope?.signal.removeEventListener("abort", cancel);
+  }
+}
+export interface PublisherOptions {
+  readonly messageId?: string;
+  readonly attributes?: Readonly<Record<string, string>>;
+  readonly key?: string;
+}
+/** Same portable bounds on both transports: 32 attributes, 64-byte names, 1024-byte values,
+ * 8192 bytes total. Runtime identity/correlation fields cannot be replaced by product mapping. */
+export function publisherOptions(options: PublisherOptions = {}) {
+  if (options.messageId !== undefined && !validId(options.messageId))
+    throw new OperationError("refused", "INVALID_MESSAGE_ID");
+  const entries = Object.entries(options.attributes ?? {});
+  if (entries.length > 32) throw new OperationError("refused", "INVALID_ATTRIBUTES");
+  let size = 0;
+  for (const [name, value] of entries) {
+    if (
+      !/^[A-Za-z][A-Za-z0-9._-]{0,63}$/.test(name) ||
+      ["messageId", "correlationId", "remainingMs"].includes(name) ||
+      typeof value !== "string" ||
+      Buffer.byteLength(value) > 1024 ||
+      /[\u0000-\u001f\u007f]/.test(value)
+    )
+      throw new OperationError("refused", "INVALID_ATTRIBUTES");
+    size += Buffer.byteLength(name) + Buffer.byteLength(value);
+  }
+  if (size > 8192) throw new OperationError("refused", "INVALID_ATTRIBUTES");
+  const correlationId = currentOperation()?.correlationId;
+  return {
+    messageId: options.messageId ?? randomUUID(),
+    attributes: { ...Object.fromEntries(entries), ...(correlationId ? { correlationId } : {}) },
+  };
+}
+
+/** Existing in-process stub links inherit the active runtime context and cannot dispatch late. */
+export function moduleCall<T>(effect: () => Promise<T>): Promise<T> {
+  return dependency({ mutation: true, maximumMs: 300000 }, effect);
+}

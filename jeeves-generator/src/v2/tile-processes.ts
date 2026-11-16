@@ -402,6 +402,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         ...indent(validation, 2),
         ...indent(setup, 2),
         "  const service = await createHttpService({",
+        "    stopping: scope.signal,",
         "    id: config.tile,",
         "    settings: config.settings,",
         "    onFailure: failure,",

@@ -242,17 +242,24 @@ export function stubClients(
           return [property, unavailable(property, target.name, "a template's part, not a stub")];
         const paths = moduleStubPaths(process.tile, target.component);
         const entry = moduleEntryName(target.component);
+        imports.push({ from: "../runtime/operation.ts", name: "moduleCall" });
         imports.push({ from: from(paths.module), name: entry });
         const deps = `dependencies[${text(generationLocalIdentity(target.component).local)}]`;
         if (called.role === "route") {
           imports.push({ from: entryTypes, name: "ModuleRequest", type: true });
-          return [property, `(input) => ${entry}(${deps}, input as ModuleRequest)`];
+          return [
+            property,
+            `(input) => moduleCall(() => ${entry}(${deps}, input as ModuleRequest))`,
+          ];
         }
         if (called.role === "loop") {
           imports.push({ from: entryTypes, name: "ModuleMessage", type: true });
-          return [property, `(input) => ${entry}(${deps}, input as ModuleMessage)`];
+          return [
+            property,
+            `(input) => moduleCall(() => ${entry}(${deps}, input as ModuleMessage))`,
+          ];
         }
-        return [property, `() => ${entry}(${deps})`];
+        return [property, `() => moduleCall(() => ${entry}(${deps}))`];
       }
       const kind = studioComponentTargetKind(target.tile);
       if (

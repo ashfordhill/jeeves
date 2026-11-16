@@ -18418,3 +18418,38 @@ workload settings the same way.
 - Single explicit-path local commit subject: `RG02: unify process lifecycle and restrict application extension APIs`.
   Root files, owner diff/mode changes, frozen v1, old exports and the existing Postgres container
   remain preserved. No push/deployment or later unit; stop here for coordinator review.
+
+
+## 2026-11-16 — RG03 active after RG02 acceptance
+
+- Coordinator accepted RG02 commit `ac2113b2ec742cf93588385e1b9c48ffab3cc0e2`. RG03 is the sole active unit: operation budgets/cancellation and explicit uncertain outcomes. No later unit has started.
+
+
+## 2026-11-16 — RG03 verified, local commit for acceptance
+
+- Public extension API **v3** adds runtime-owned bounded context/outcome types. HTTP and existing
+  module adapters carry verified caller/correlation facts, remaining duration and cancellation;
+  receivers clamp durations, and delivery receives its own 30-second budget. v2-to-v3 migration
+  refuses without explicit acknowledgement; hooks/old exports are preserved.
+- Template/stub database/cache/queue/object/search/identity clients share expiry preflight and
+  process tracking. Late SQL acquisition sends no statement; transactions retain their connection
+  until settled, preserve poisoned-transaction checks, and never retry unknown COMMIT. Lost native
+  EPIPE/ECONNRESET or AMQP close confirmation remains unknown, including callback-before-close order.
+  Attribute/identity bounds apply on both publishers; target origin/header/redirect/body bounds and
+  SDK retry refusal are implemented. Shared JWKS waits do not let one caller cancel another.
+- Unknown queue effects use terminal `OUTCOME_UNKNOWN`, not intentional runner retry. This does
+  not prevent crash/broker redelivery of an unguarded Custom effect. Existing durable outbox events
+  remain at least once with stable event identity; SQL/authenticated target handles remain unavailable
+  custom gaps. Recovery/idempotency mechanisms and real two-copy/provider faults were not added.
+- Checks: final `pnpm check` **121 files / 1,097 tests passed**; standard e2e **74/74 passed**, including
+  TinyURL and mouse generation/export; web build passed. Five scratch exports checker/TS7 pass
+  (79/80/63/115/85 files); affected video/stub exports pass again after final source corrections.
+  Focused evidence includes late AMQP/PubSub/COMMIT, cancelled/expired dispatch, healthy cache reuse,
+  identity shared-work isolation and actual child termination for an unsettled driver operation.
+- Failed early assertions and the loop fake's missing mandatory signal were diagnosed and corrected
+  without weakening checks. Successful browser/build checks were retained; full checks were repeated
+  only for failed regression or meaningful SQL/identity/AMQP source corrections. Reviewed off pins
+  add exactly `src/runtime/operation.ts` (77→78, 83→84, 58→59). Root/owner changes and Postgres preserved.
+  [Detailed evidence and limits](plans/reliable-generation/evidence/rg03/README.md).
+- Commit subject: `RG03: propagate operation budgets and preserve unknown effect outcomes`.
+  Stop for coordinator acceptance; no later unit, push, deployment or task Docker resource.

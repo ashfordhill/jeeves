@@ -13,8 +13,10 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
     render: ({ model, asset }) => {
       const has = (kind: string) => model.selections.some((s) => s.binding.kind === kind);
       const publicLines = [
-        "/** Public extension API v2. Application contracts live in src/contracts/. */",
+        "/** Public extension API v3. Application contracts live in src/contracts/. */",
         'export class NotImplemented extends Error { constructor(what: string) { super("Not implemented: " + what); this.name = "NotImplemented"; } }',
+        'export type { OperationContext, OperationFailure, EffectOutcome, PublisherOptions } from "../runtime/operation.ts";',
+        'export { OperationError } from "../runtime/operation.ts";',
         "/** Registered product queries are unavailable until a generated SQL binding installs them. */",
         "export interface ProductQueries { call(name: string, input: Readonly<Record<string, unknown>>): Promise<unknown>; }",
         "export interface UnavailableCapability { call(input: unknown): Promise<never>; }",

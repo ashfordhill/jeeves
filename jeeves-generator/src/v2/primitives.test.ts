@@ -392,6 +392,7 @@ describe("emitted runtime primitives", () => {
       "src/runtime/http.ts",
       "src/runtime/identity.ts",
       "src/runtime/objects.ts",
+      "src/runtime/operation.ts",
       "src/runtime/postgres.ts",
       "src/runtime/search.ts",
     ]);

@@ -1,3 +1,4 @@
+import { dependency, OperationError, currentProcess } from "./operation.ts";
 import { readFileSync } from "node:fs";
 import { createClient } from "redis";
 import { readSecret } from "./local.ts";
@@ -101,6 +102,7 @@ export async function createValkeyCache(options: {
   /** Told when the cache becomes available or unavailable, starting with the first connect. */
   onState?: (state: "available" | "unavailable", error?: unknown) => void;
 }): Promise<ValkeyCache> {
+  const operationScope = currentProcess();
   const { hostname, port, secret, tls } = options.binding;
   if (!validHost(hostname) || !validPort(port)) throw new Error("Invalid cache endpoint");
   const password = (options.credential ?? readSecret)(secret);
@@ -196,15 +198,15 @@ export async function createValkeyCache(options: {
     report("available");
   }
   await connect();
-  const command = <T>(effect: (client: Generation["client"]) => Promise<T>) => {
+  const command = <T>(effect: (client: Generation["client"]) => Promise<T>, mutation = false) => {
     const generation = current;
     if (!generation?.ready) return Promise.reject(new Error("Cache unavailable"));
-    return bounded(generation, () => effect(generation.client), 150);
+    return dependency({ scope: operationScope, maximumMs: 150, mutation, deadlineMessage: "Cache deadline" }, () => effect(generation.client)).catch((error) => { if (!(error instanceof OperationError && error.outcome === "refused")) lose(generation, error); throw error; });
   };
   return {
     get: (key) => command((client) => client.get(key)),
-    set: (key, value, expiry) => command((client) => client.set(key, value, expiry)),
-    delete: (key) => command((client) => client.del(key)),
+    set: (key, value, expiry) => command((client) => client.set(key, value, expiry), true),
+    delete: (key) => command((client) => client.del(key), true),
     ping: () => command((client) => client.ping()),
     close: () => {
       closed = true;

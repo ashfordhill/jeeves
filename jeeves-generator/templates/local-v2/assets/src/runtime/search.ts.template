@@ -1,10 +1,30 @@
+import { dependency, currentProcess } from "./operation.ts";
 import { Client } from "@opensearch-project/opensearch";
 
 /** No index/mapping/query or product policy is inferred from the endpoint. */
 export function createSearch(options: { endpoint: string; requestTimeoutMs: number }) {
-  return new Client({
+  const operationScope = currentProcess();
+  const client = new Client({
     node: options.endpoint,
     requestTimeout: options.requestTimeoutMs,
     maxRetries: 0,
   });
+  const wrap = (owner: object): object => new Proxy(owner, {
+    get(target, key) {
+      const value = Reflect.get(target, key);
+      if (typeof value === "function" && key !== "close") return (params: unknown, request: object = {}) =>
+        dependency({ scope: operationScope, maximumMs: options.requestTimeoutMs,
+          mutation: !["search", "get", "mget", "count", "health", "exists", "getMapping"].includes(String(key)),
+        }, async (signal, remainingMs) => {
+          const work = value.call(target, params, { ...request, requestTimeout: remainingMs, maxRetries: 0 });
+          const cancel = () => work.abort?.();
+          signal.addEventListener("abort", cancel, { once: true });
+          try { return await work; } finally { signal.removeEventListener("abort", cancel); }
+        });
+      if (typeof value === "function") return value.bind(target);
+      if (["indices", "cluster", "cat"].includes(String(key)) && value) return wrap(value);
+      return value;
+    },
+  });
+  return wrap(client) as Client;
 }

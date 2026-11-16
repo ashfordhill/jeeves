@@ -1,6 +1,10 @@
+import { operationImports } from "./operation.test.helpers.ts";
+
+const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
+
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
+import { stripTypeScriptTypes as stripTypes } from "node:module";
 import { PGlite } from "@electric-sql/pglite";
 import { generationPolicies } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";

@@ -1,5 +1,9 @@
+import { operationImports } from "./operation.test.helpers.ts";
+
+const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
+
 import { readFileSync } from "node:fs";
-import { stripTypeScriptTypes } from "node:module";
+import { stripTypeScriptTypes as stripTypes } from "node:module";
 import { designSchema } from "@jeeves/spec";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -590,7 +594,7 @@ describe("emitted Valkey cache reconnects", () => {
       expect(client(clients, 0).get).toHaveBeenCalledTimes(2);
       expect(states).toEqual([
         ["available", undefined],
-        ["unavailable", reset],
+        ["unavailable", expect.objectContaining({ outcome: "definite-failure", cause: reset })],
       ]);
       expect(client(clients, 0).destroy).toHaveBeenCalledTimes(1);
       expect(vi.getTimerCount()).toBe(1);

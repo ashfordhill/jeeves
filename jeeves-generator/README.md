@@ -25,7 +25,7 @@
   only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
   projects use `local-v2`.
 
-New exports use extension API **v2 (`checked-extensions`)**. Product code imports types and
+New exports use extension API **v3 (`checked-extensions`)**. Product code imports types and
 helpers from `src/extension-api/index.ts`; shared DTOs and pure definitions belong in the
 application-owned `src/contracts/` directory. Run `pnpm check:extensions` offline (also part of
 `pnpm build`). It checks private runtime/driver/cross-service imports, policy effect APIs and
@@ -36,7 +36,7 @@ bridges retain transaction, guard, credentials and lifecycle authority. Custom S
 verification and arbitrary HTTP target handles are unavailable public capabilities and appear as
 selection-specific custom gaps; a cache loader's `ProductQueries` handle also remains unavailable
 until a registered query binding is installed. Existing unrestricted exports remain readable;
-an update from API v1 refuses until `--ack-extension-api=2` and a successful staged interface and
+an update from API v1 refuses until `--ack-extension-api=3` and a successful staged interface and
 boundary check. Handwritten bodies are preserved, never rewritten to claim compatibility.
 
 `pnpm test:generated` separately exports, builds and runs the Activity backend with real
@@ -1173,3 +1173,17 @@ The CLI exports this honest partial bundle using the existing `exportNewDirector
 every existing destination, including an empty or edited one, and symlink ancestors. It prints
 completeness/findings without claiming the export runs. `planFileWrites` remains available for
 pure edit/custom-file preservation checks. V1 continues using `export:new` unchanged.
+
+
+RG03 adds a runtime-owned operation context to HTTP stub requests and queue messages. It carries
+bounded request/correlation identities, verified caller facts, cancellation and remaining duration.
+Dependency adapters refuse expired work; receivers clamp forwarded durations to their own maximum.
+Each delivery receives a fresh 30-second execution budget. Attributes/identity are bounded and
+preserved by both publishers; SDK mutation retries are disabled. Fetch/S3/OpenSearch cancellation
+is best effort; drivers that cannot cancel remain tracked until actual settlement or the process's
+10-second final drain bound. A timeout or lost COMMIT/publish response can be `unknown`, never proof
+of rollback. Unknown queue effects use terminal `OUTCOME_UNKNOWN`, not automatic effect retry;
+broker redelivery/crash still requires installed durable recovery. Custom SQL/authenticated target
+handles remain unavailable. Private target transport permits only its declared origin, manual
+redirects, safe headers and a 64 KiB response. See each export's `.jeeves/extensions.md` for v3
+migration and exact attribute bounds. Old exports/hooks are preserved and require explicit migration.

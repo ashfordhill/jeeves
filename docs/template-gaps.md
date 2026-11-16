@@ -47,3 +47,15 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 | Pub/Sub topic and subscription names are the design's IDs (`<topic>`, `<topic>--<tile>--<module>` and its `.failed`), compiled into the process files and `infra/local.json`, as database, login and bucket names are, so two deployments of one design can't share a Google Cloud project. Found in QRWTY arm A's Q04 (AG-05) | Open; a later unit can read the names from the environment as QG06 reads endpoints |
 | `migrate.mjs` creates every provider database and login in `infra/local.json`, the local Keycloak's included (for Identity `identity`: `i_identity`, `io_identity`, `ik_identity`), also where a deployment uses a managed issuer: one unused database, and two secrets the migration job must still be given. Found in QRWTY arm A's Q04 (AG-06) | Open (harmless; give the two secrets random values) |
 | Credentials were read from one directory only, `SECRET_DIR/<name>`, and Cloud Run mounts each secret at its own path. Found in QRWTY arm A's Q04 (AG-03) | Fixed in QG34: `JEEVES_SECRET_<NAME>_FILE` names a credential's file |
+
+
+## Reliable-generation runtime boundary (RG03)
+
+Operation budgets/cancellation and typed refused/definite-failure/unknown outcomes now reach
+installed template and stub adapters. Queue identities/attributes are bounded; delivery gets a
+fresh execution budget. Private legacy target transport is destination/body/header bounded, but
+public SQL and authenticated target handles remain explicit selection-specific custom gaps.
+Unknown effects go to the existing terminal queue path without intentional runner replay. This
+does not prevent broker redelivery after a crash; unguarded Custom external effects still require
+an installed recovery/idempotency capability. No provider/cloud or once-only-effect certification
+is claimed. [Unit evidence](plans/reliable-generation/evidence/rg03/README.md).

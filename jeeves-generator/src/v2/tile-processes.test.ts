@@ -1658,3 +1658,64 @@ describe("stubs declare their settings and startup refuses an invalid one (QL05)
     }
   });
 });
+
+describe("RG03 HTTP operation adapters", () => {
+  it("clamps forwarded duration, exposes verified caller facts and cancels supported dependency work", async () => {
+    const operations = await import(runtimeUrl("operation", liveFastify));
+    let context:
+      | {
+          remainingMs(): number;
+          caller: { subject?: string };
+          correlationId: string;
+          signal: AbortSignal;
+        }
+      | undefined;
+    let dependencySignal: AbortSignal | undefined;
+    let finish!: () => void;
+    const http = await liveHttpRuntime.createHttpService({
+      id: "rg03",
+      settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+      initialize: async () => {},
+      configure: (routes: unknown) =>
+        liveTileHttpRuntime.stubRoutes(
+          routes,
+          () => {},
+          "probe",
+          async (request: { context: typeof context }) => {
+            context = request.context;
+            await operations.dependency({}, (signal: AbortSignal) => {
+              dependencySignal = signal;
+              return new Promise<void>((resolve) => {
+                finish = resolve;
+              });
+            });
+            return { body: "done" };
+          },
+          { deadlineMs: 1000 },
+          async () => ({ signedIn: true, principal: { subject: "verified-account", claims: {} } }),
+        ),
+    });
+    await http.start({ host: "127.0.0.1", port: 0 });
+    const response = await http.inject({
+      method: "GET",
+      url: "/modules/probe/work",
+      headers: { "x-jeeves-remaining-ms": "30", "x-correlation-id": "trace-1" },
+    });
+    expect(response.statusCode).toBe(503);
+    expect(context?.caller).toEqual({ subject: "verified-account" });
+    expect(context?.correlationId).toBe("trace-1");
+    expect(context?.remainingMs()).toBe(0);
+    expect(dependencySignal?.aborted).toBe(true);
+    let dispatched = false;
+    await expect(async () =>
+      operations.withOperation(context, () =>
+        operations.dependency({}, async () => {
+          dispatched = true;
+        }),
+      ),
+    ).rejects.toMatchObject({ outcome: "refused" });
+    expect(dispatched).toBe(false);
+    finish();
+    await http.close();
+  });
+});

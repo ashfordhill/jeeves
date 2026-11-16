@@ -196,7 +196,8 @@ export function createDeliveryRunner<Receipt>(
           if (!fatalClosure) options.transport.ack(message.receipt);
         } catch (error) {
           if (fatalClosure) return;
-          if (unreachable(error) && !(error instanceof NonRetryable)) {
+          const unknown = error instanceof Error && "outcome" in error && error.outcome === "unknown";
+          if (!unknown && unreachable(error) && !(error instanceof NonRetryable)) {
             // The store failed, not the message: the attempt doesn't count.
             await wait(UNREACHABLE_WAIT_MS);
             // Unacked, the delivery returns to the broker when the channel closes.
@@ -209,7 +210,7 @@ export function createDeliveryRunner<Receipt>(
             }
             return;
           }
-          const terminal = error instanceof NonRetryable || attempts >= options.retryLimit;
+          const terminal = unknown || error instanceof NonRetryable || attempts >= options.retryLimit;
           try {
             if (terminal) await options.onTerminal?.(message.body, delivery, error);
             if (fatalClosure) return;
@@ -222,7 +223,7 @@ export function createDeliveryRunner<Receipt>(
                 ...(terminal
                   ? {
                       "x-terminal-code":
-                        error instanceof NonRetryable ? error.code : "RETRY_EXHAUSTED",
+                        unknown ? "OUTCOME_UNKNOWN" : error instanceof NonRetryable ? error.code : "RETRY_EXHAUSTED",
                     }
                   : {}),
               },

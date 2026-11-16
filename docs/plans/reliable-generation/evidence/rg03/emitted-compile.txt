@@ -1,0 +1,28 @@
+signIn 79 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+search 80 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+favorites 63 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+video 115 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 85 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+
+Affected exports after the final AMQP callback-order correction:
+video 115 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 85 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).

@@ -1,3 +1,11 @@
+import {
+  operation,
+  withOperation,
+  OperationError,
+  withProcess,
+  currentProcess,
+} from "./operation.ts";
+import type { OperationContext } from "./operation.ts";
 import Fastify, { type HTTPMethods, type RouteHandlerMethod } from "fastify";
 import { createAdmission, HttpError, type HttpSettings } from "./admission.ts";
 export { HttpError, type HttpSettings } from "./admission.ts";
@@ -6,6 +14,7 @@ declare module "fastify" {
   interface FastifyRequest {
     /** The body's bytes as received, for a JSON or text request with a body. */
     rawBody?: Buffer;
+    operationContext?: OperationContext;
   }
 }
 
@@ -21,16 +30,19 @@ export interface HttpRoutes {
 export async function createHttpService(options: {
   id: string;
   settings: HttpSettings;
+  stopping?: AbortSignal;
   configure: (routes: HttpRoutes) => void | Promise<void>;
   initialize: () => Promise<void>;
   /** Told of each failed request: a 5xx other than 501, or an error that isn't a client error. */
   onFailure?: (what: string, error: unknown) => void;
 }) {
+  const scope = currentProcess();
   const admission = createAdmission(options.settings);
   const app = Fastify({ logger: false, bodyLimit: 65536 });
   // JSON and text are read as bytes and kept, so a route can check a signature over them; each
   // parser gives the value and the errors Fastify's own gives (400 invalid or empty JSON, 413).
   app.decorateRequest("rawBody", undefined);
+  app.decorateRequest("operationContext", undefined);
   app.removeContentTypeParser(["application/json", "text/plain"]);
   const parseJson = app.getDefaultJsonParser("error", "error");
   app.addContentTypeParser(
@@ -72,6 +84,19 @@ export async function createHttpService(options: {
         /* The answer does not change. */
       }
     };
+    if (error instanceof OperationError) {
+      failed();
+      reply
+        .code(error.outcome === "refused" && error.code === "INVALID_BUDGET" ? 400 : 503)
+        .send({
+          error: error.outcome === "unknown" ? "OUTCOME_UNKNOWN" : error.code,
+          message:
+            error.outcome === "unknown"
+              ? "Outcome unknown; check status before retrying."
+              : "Operation unavailable.",
+        });
+      return;
+    }
     if (error instanceof HttpError) {
       if (error.statusCode >= 500 && error.statusCode !== 501) failed();
       // A 503 (not accepting, at the concurrency limit, past the deadline, or a route's own) says
@@ -104,7 +129,59 @@ export async function createHttpService(options: {
       app.route({
         ...route,
         handler(request, reply) {
-          return admission.run(() => handler.call(this, request, reply));
+          const forwarded = request.headers?.["x-jeeves-remaining-ms"];
+          const budget =
+            forwarded === undefined
+              ? undefined
+              : typeof forwarded === "string" && /^\d{1,9}$/.test(forwarded)
+                ? Number(forwarded)
+                : NaN;
+          let running: ReturnType<typeof operation>;
+          try {
+            running = operation({
+              maximumMs: options.settings.requestTimeoutMs,
+              remainingMs: budget,
+              correlationId: request.headers?.["x-correlation-id"],
+              signals: [options.stopping],
+            });
+          } catch (error) {
+            return Promise.reject(error);
+          }
+          request.operationContext = running.context;
+          const closed = () => {
+            if (!reply.raw.writableEnded) disconnect.abort(new Error("CLIENT_CLOSED"));
+          };
+          const disconnect = new AbortController();
+          const context = operation({
+            maximumMs: options.settings.requestTimeoutMs,
+            remainingMs: running.context.remainingMs(),
+            correlationId: running.context.correlationId,
+            signals: [running.context.signal, disconnect.signal],
+          });
+          request.operationContext = context.context;
+          reply.raw?.once("close", closed);
+          return admission
+            .run(
+              () =>
+                withProcess(scope, () =>
+                  withOperation(context.context, async () => {
+                    const result = await handler.call(this, request, reply);
+                    if (context.context.remainingMs() <= 0 || context.context.signal.aborted)
+                      throw new HttpError(
+                        503,
+                        "DEADLINE",
+                        "Request deadline exceeded; check status before retrying.",
+                      );
+                    return result;
+                  }),
+                ),
+              context.context.remainingMs(),
+            )
+            .finally(() => {
+              reply.raw?.off("close", closed);
+              context.close();
+              running.close();
+            });
         },
       });
     },

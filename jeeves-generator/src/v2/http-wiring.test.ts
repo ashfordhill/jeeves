@@ -718,6 +718,6 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(text(stack, "src/modules/entry.ts")).toContain("export type ModuleRequest = {");
     expect(stackOff.files.map((file) => file.path)).not.toContain("src/modules/entry.ts");
     // A stub-only stack off has the same files as the stub stack alone.
-    expect(assemble(stubStackDesign()).files.length).toBe(58);
+    expect(assemble(stubStackDesign()).files.length).toBe(59);
   });
 });

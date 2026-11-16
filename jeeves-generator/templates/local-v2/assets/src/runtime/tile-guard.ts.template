@@ -1,3 +1,4 @@
+import { dependency, currentProcess, OperationError, assertOperation } from "./operation.ts";
 // Generated scaffold: an Auth guard's sign-in for its tile (v3 contract, section 2).
 // Export rewrites this file. Required: every module route needs a valid token. Optional: a request
 // without one is anonymous, and a token that fails verification is still refused.
@@ -54,20 +55,30 @@ export function createTileGuard(options: {
 }) {
   if (options.signIn !== "required" && options.signIn !== "optional")
     throw new Error("Invalid sign-in setting");
+  const scope = currentProcess();
   const callers = new WeakMap<FastifyRequest, Promise<Caller>>();
   const resolve = async (request: FastifyRequest): Promise<Caller> => {
     const header = request.headers.authorization;
     if (header === undefined) return anonymous;
-    const token = typeof header === "string" ? /^Bearer (\S{1,16384})$/i.exec(header)?.[1] : undefined;
+    const token =
+      typeof header === "string" ? /^Bearer (\S{1,16384})$/i.exec(header)?.[1] : undefined;
     if (!token) throw refused();
     try {
-      return { signedIn: true, principal: await options.verify(token) };
-    } catch {
+      return {
+        signedIn: true,
+        principal: await dependency(
+          { scope, maximumMs: 300000, definite: () => true, preserveDefinite: true },
+          () => options.verify(token),
+        ),
+      };
+    } catch (error) {
+      if (error instanceof OperationError) throw error;
       throw refused();
     }
   };
   const guard: TileGuard = {
     caller(request) {
+      assertOperation();
       let caller = callers.get(request);
       if (!caller) {
         caller = resolve(request);

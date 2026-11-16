@@ -1,3 +1,4 @@
+import { dependency, currentProcess } from "./operation.ts";
 import { S3Client, UploadPartCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { readSecret } from "./local.ts";
@@ -22,7 +23,8 @@ export function createObjects(options: {
     !credentials.secretAccessKey
   )
     throw new Error("Invalid object credential");
-  return new S3Client({
+  const operationScope = currentProcess();
+  const client = new S3Client({
     endpoint: options.endpoint,
     region: options.region,
     credentials: {
@@ -30,8 +32,19 @@ export function createObjects(options: {
       secretAccessKey: credentials.secretAccessKey,
     },
     forcePathStyle: true,
+    maxAttempts: 1,
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
+  });
+  return new Proxy(client, {
+    get(target, key) {
+      if (key === "send") return (command: Parameters<S3Client["send"]>[0], options: { abortSignal?: AbortSignal } = {}) =>
+        dependency({ scope: operationScope, mutation: !/^(Get|Head|List)/.test(command.constructor.name),
+          definite: (error) => error instanceof Error && error.name === "NoSuchKey", preserveDefinite: true,
+        }, (signal) => target.send(command, { ...options, abortSignal: options.abortSignal ? AbortSignal.any([options.abortSignal, signal]) : signal }));
+      const value = Reflect.get(target, key);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
   });
 }
 /** Provider primitive only; caller enforces ownership, part identity, bounds and lifecycle.
