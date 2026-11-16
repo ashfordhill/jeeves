@@ -94,6 +94,7 @@ describe("local.tile-processes", () => {
       "infra/postgres/links-db/000-foundation.sql",
       // Links API's stubs write it, so it has the idempotency records (QL04).
       "infra/postgres/links-db/050-jeeves-idempotency.sql",
+      "infra/postgres/links-db/051-jeeves-local-operations.sql",
       "infra/postgres/links-db/products.json",
       "infra/postgres/links-db/products/commands/example.sql",
       "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
@@ -113,6 +114,7 @@ describe("local.tile-processes", () => {
       "src/runtime/http.ts",
       // The stubs' database client keeps its idempotency records through it (QL04).
       "src/runtime/idempotency.ts",
+      "src/runtime/local-operation.ts",
       "src/runtime/module-clients.ts",
       "src/runtime/objects.ts",
       "src/runtime/postgres.ts",

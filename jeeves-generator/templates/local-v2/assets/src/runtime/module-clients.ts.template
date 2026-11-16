@@ -1,4 +1,4 @@
-import { dependency, publisherOptions, OperationError, currentOperation } from "./operation.ts";
+import { dependency, publisherOptions, OperationError, currentOperation, assertNetworkAllowed } from "./operation.ts";
 // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
 // one per store or channel a tile's stubs use. Export rewrites this file. First the process file's
 // configuration pass (`checkConfiguration`) runs each client's endpoint reader and the sign-in's
@@ -24,6 +24,8 @@ import {
   type IdempotencyRecord,
 } from "./idempotency.ts";
 import { periodic } from "./process.ts";
+import { bindLocalOperation, localOperationDefinition } from "./local-operation.ts";
+import { privateReplayKeys } from "./settings.ts";
 import { prepareProductOperations } from "./product-operations.ts";
 // @database-import-end
 // @queue-import-start
@@ -367,14 +369,19 @@ async function idempotentCall<Body>(
   }
 }
 /** Public product SQL uses separate credentials, retaining credential scope in the RG02 key. */
-export function prepareProductDatabase(binding: {tile: string; resource: string; module: string}) {
+export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown}) {
   const maximum = productDatabases.find((row) => row.resource === binding.resource);
   const login = productLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
   if (!maximum || !login) throw new Error("No scoped product SQL binding");
   const configuration = { ...databaseEndpoint(binding.resource), login, poolSize: 10, statementTimeoutMs: 2000, connectionTimeoutMs: 2000 };
   readSecret(login.secret);
   const operations = prepareProductOperations(maximum, binding);
-  return {configuration, operations, binding};
+  const local = localOperationDefinition(binding.operation, binding.property ?? "", binding.writable ?? false);
+  const keys = local?.definition.secret ? privateReplayKeys() : undefined;
+  const runtimeLogin = localLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
+  if (local && !runtimeLogin) throw new Error("Missing private replay database binding");
+  if (local && runtimeLogin) readSecret(runtimeLogin.secret);
+  return {configuration, operations, binding, local, keys, runtimeLogin};
 }
 export async function productDatabaseClient(
   scope: ProcessScope, log: ProbeLog, prepared: ReturnType<typeof prepareProductDatabase>,
@@ -386,7 +393,22 @@ export async function productDatabaseClient(
     return pool;
   });
   await probed(log, {client: binding.resource, kind: "database", check: "SELECT 1"}, () => pool.query("SELECT 1"), scope.signal);
-  return operations((sql, values, readOnly) => transaction(pool, (tx) => tx.query(sql, values), {readOnly}));
+  const handle = operations((sql, values, readOnly) => transaction(pool, (tx) => tx.query(sql, values), {readOnly}));
+  if (prepared.local && prepared.runtimeLogin) {
+    const runtimeConfiguration = {...configuration, login: prepared.runtimeLogin};
+    const replayPool = processClient(scope, "postgres", runtimeConfiguration, () => {
+      const client = ownResource(scope, createPostgres(runtimeConfiguration), "end");
+      client.on("error", () => {});
+      return client;
+    });
+    bindLocalOperation(handle, prepared.local, {...binding, productRole: configuration.login.user, pool: replayPool, keys: prepared.keys, commands: operations});
+    processClient(scope, "replay-cleanup", runtimeConfiguration, () => {
+      periodic(scope, () => sweepExpired(replayPool), idempotencyPolicy.sweepSeconds * 1000,
+        (error) => createFailureLog(binding.tile)("local replay cleanup", error));
+      return true;
+    });
+  }
+  return handle;
 }
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
  * what another owner publishes when the tile may only read it. A stub's own tables need its
@@ -508,7 +530,8 @@ export async function queuePublisher(
   const opened = publisher;
   if (!opened) throw new Error(`No publisher for ${binding.queue}`);
   return { publish: (message, options) => {
-    const checked = publisherOptions(options);
+    assertNetworkAllowed(true);
+      const checked = publisherOptions(options);
     return dependency({ scope, mutation: true, maximumMs: broker.confirmTimeoutMs }, () => opened.publish(message, checked.messageId, checked.attributes));
   } };
   });
@@ -583,6 +606,7 @@ export async function pubsubPublisher(
       if (closed) return Promise.reject(new OperationError("refused", "PUBLISHER_CLOSED"));
       if (outstanding.size >= pubsubOutstanding)
         return Promise.reject(new OperationError("refused", "PUBLISHER_FULL"));
+      assertNetworkAllowed(true);
       const checked = publisherOptions(options);
       return dependency({ scope, maximumMs: pubsubDeadlineMs, mutation: true, deadlineMessage: `Publish deadline (${pubsubDeadlineMs} ms)` }, () => {
         const sent = topic.publishMessage({ data: Buffer.from(message), attributes: { ...checked.attributes, messageId: checked.messageId } });
@@ -883,12 +907,15 @@ export async function cacheClient(
   }
   return {
     async get(key) {
+      assertNetworkAllowed();
       return (await cache.get(key)) ?? undefined;
     },
     async set(key, value, ttlSeconds) {
+      assertNetworkAllowed(true);
       await cache.set(key, value, ttlSeconds ? { EX: ttlSeconds } : undefined);
     },
     async delete(key) {
+      assertNetworkAllowed(true);
       await cache.delete(key);
     },
   };
@@ -929,6 +956,7 @@ export async function objectClient(
   );
   return {
     async get(key) {
+      assertNetworkAllowed();
       try {
         return await dependency({ scope, definite: (error) => error instanceof Error && error.name === "NoSuchKey", preserveDefinite: true }, async (signal) => {
           const object = await client.send(new GetObjectCommand({ Bucket, Key: key }), { abortSignal: signal });
@@ -940,6 +968,7 @@ export async function objectClient(
       }
     },
     async put(key, body, contentType) {
+      assertNetworkAllowed(true);
       await dependency({ scope, mutation: true }, (signal) => client.send(
         new PutObjectCommand({
           Bucket,
@@ -974,13 +1003,16 @@ export async function searchClient(
   const index = binding.index;
   return {
     async search<Hit = Record<string, unknown>>(query: Record<string, unknown>) {
+      assertNetworkAllowed();
       const result = await dependency({ scope }, () => client.search({ index, body: query }));
       return result.body.hits.hits.map((hit) => hit._source as Hit);
     },
     async index(id, document) {
+      assertNetworkAllowed(true);
       await dependency({ scope, mutation: true }, () => client.index({ index, id, body: document }));
     },
     async remove(id) {
+      assertNetworkAllowed(true);
       await dependency({ scope, mutation: true }, () => client.delete({ index, id }));
     },
   };
@@ -1001,6 +1033,7 @@ function target(name: string, internal: boolean): HttpTarget {
     throw new Error(`Insecure endpoint ${name}`);
   return {
     request: async (path, init = {}) => {
+      assertNetworkAllowed();
       if (init.signal?.aborted) throw new OperationError("refused", "CONTEXT_EXPIRED");
       const destination = new URL(path, base);
       const declared = new URL(base);
@@ -1015,6 +1048,7 @@ function target(name: string, internal: boolean): HttpTarget {
         headers.set("x-correlation-id", context.correlationId);
       }
       const mutation = !["GET", "HEAD"].includes((init.method ?? "GET").toUpperCase());
+      assertNetworkAllowed(mutation);
       try {
         return await dependency({ mutation }, async (signal) => {
           const response = await fetch(destination, { ...init, headers, redirect: "manual", credentials: "omit", signal: init.signal ? AbortSignal.any([signal, init.signal]) : signal });

@@ -1,4 +1,4 @@
-import { assertOperation, dependency, OperationError } from "./operation.ts";
+import { assertDatabaseAllowed, assertOperation, dependency, OperationError } from "./operation.ts";
 import type pg from "pg";
 
 const transactionScope: unique symbol = Symbol("SQL transaction");
@@ -19,7 +19,7 @@ export function assertTransaction(tx: Tx): void {
 /** A failed atomic hook must not leave a receipt committed if its caller catches the error. */
 export function abortTransaction(tx: Tx, error: unknown): never {
   const scope = scopes.get(tx);
-  if (scope) scope.failure = { error };
+  if (scope && !scope.failure) scope.failure = { error };
   throw error;
 }
 async function executeTransaction<T>(
@@ -78,7 +78,7 @@ async function executeTransaction<T>(
         await client.query("ROLLBACK");
         if (
           error instanceof Error &&
-          !(error instanceof OperationError && error.outcome === "unknown")
+          !(error instanceof OperationError)
         )
           Object.defineProperty(error, "outcome", {
             value: "definite-failure",
@@ -98,6 +98,7 @@ async function executeTransaction<T>(
 /** The underlying transaction retains its connection through final COMMIT/ROLLBACK settlement.
  * A caller timeout never releases the connection or grants permission to retry its mutation. */
 export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>, options: {readOnly?: boolean} = {}): Promise<T> {
+  assertDatabaseAllowed();
   return dependency(
     {
       mutation: !options.readOnly,

@@ -77,3 +77,14 @@ protected state. Registered parameterized operations remain inside compiled owne
 module-link maxima. There is no arbitrary SQL handle or schema designer. Existing SQL requires
 a reviewed external baseline and explicit API v7 migration; no automatic data conversion occurs.
 Real concurrent migration/login proof remains RG14.
+
+## Local operation replay (RG10)
+
+The new public `defineLocalOperation` boundary binds one writable stub database before startup.
+HTTP and generated same-process calls authenticate the account, validate canonical identity,
+recover committed results before new-work admission, and commit registered product commands with
+private replay storage. Secret responses use private purpose-bound sealing keys. Scoped commands
+run under the product-only role; captured database/network handles cannot escape that callback.
+Retention cleanup starts with the configured runtime and removes only bounded expired committed
+records. Cross-database atomicity, payments and durable external effects remain unavailable here;
+real simultaneous PostgreSQL contention remains RG14. [Evidence](plans/reliable-generation/evidence/rg10/README.md).

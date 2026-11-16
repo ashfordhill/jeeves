@@ -467,6 +467,7 @@ describe("standalone local foundation", () => {
         `GRANT \${quote(login.user)} TO CURRENT_USER WITH INHERIT FALSE, SET TRUE`,
         ...(bundle === processes
           ? [
+              `GRANT \${quote(product.user)} TO \${quote(runtime.user)} WITH INHERIT FALSE, SET TRUE`,
               "SELECT 1 FROM pg_roles WHERE rolname=$1",
               `CREATE ROLE \${quote(namespace.role)} NOLOGIN NOINHERIT`,
               `GRANT \${quote(namespace.role)} TO \${quote(db.owner)} WITH INHERIT FALSE, SET TRUE`,

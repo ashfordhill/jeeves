@@ -1,0 +1,44 @@
+{
+  "frozen-v2": {
+    "before": 79,
+    "after": 79,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      "src/extension-api/index.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/operation.ts",
+      "src/runtime/transaction.ts"
+    ]
+  },
+  "v2-module-design": {
+    "before": 86,
+    "after": 86,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      "src/extension-api/index.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/operation.ts",
+      "src/runtime/settings.ts",
+      "src/runtime/transaction.ts"
+    ]
+  },
+  "stub-stack": {
+    "before": 60,
+    "after": 60,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      "src/extension-api/index.ts",
+      "src/runtime/operation.ts",
+      "src/runtime/settings.ts"
+    ]
+  }
+}

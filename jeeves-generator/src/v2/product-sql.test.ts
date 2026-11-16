@@ -158,6 +158,9 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     expect(added).toEqual([
       'import { applyProductSql, grantProductSql } from "./products.mjs";',
       "    ...plan.productLogins,",
+      "    for (const product of plan.productLogins.filter((row) => row.database === db.database)) {",
+      "      const runtime = plan.logins.find((row) => row.database === db.database && row.host === product.host);",
+      `      if (runtime) await admin.query(\`GRANT \${quote(product.user)} TO \${quote(runtime.user)} WITH INHERIT FALSE, SET TRUE\`);`,
       "    for (const namespace of db.productSql?.namespaces ?? []) {",
       '      if (!(await admin.query("SELECT 1 FROM pg_roles WHERE rolname=$1", [namespace.role])).rowCount)',
       // biome-ignore lint/suspicious/noTemplateCurlyInString: exact emitted script assertion
@@ -194,6 +197,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     expect(migrations(stack, "links-db")).toEqual([
       "infra/postgres/links-db/000-foundation.sql",
       "infra/postgres/links-db/050-jeeves-idempotency.sql",
+      "infra/postgres/links-db/051-jeeves-local-operations.sql",
     ]);
     expect(migrations(v2, "metadata-db")).toEqual([
       "infra/postgres/metadata-db/000-foundation.sql",

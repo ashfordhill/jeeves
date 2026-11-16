@@ -104,7 +104,11 @@ export type HttpErrorFormatter = (error: Readonly<PublicHttpError>) => Readonly<
 export function classifyHttpError(error: unknown) {
   let status = 503, code = "UNAVAILABLE", message = "Service unavailable.", allow: string | undefined;
   let unknown = false;
-  if (error instanceof HttpError) {
+  if (error && typeof error === "object" && (error as Error).name === "LocalOperationError" && "statusCode" in error && "code" in error &&
+    [400,401,404,405,409,410,503].includes(Number(error.statusCode)) &&
+    ["SIGN_IN_REQUIRED","LOCAL_OPERATION_PATH","LOCAL_OPERATION_METHOD","IDEMPOTENCY_KEY_REQUIRED","LOCAL_OPERATION_INPUT","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_IN_PROGRESS","IDEMPOTENCY_EXPIRED","REPLAY_UNAVAILABLE"].includes(String(error.code))) {
+    status = Number(error.statusCode); code = String(error.code); message = code; if (status === 405) allow = "POST";
+  } else if (error instanceof HttpError) {
     status = error.statusCode; code = error.code; message = error.message; allow = error.allow;
   } else if (error && typeof error === "object" && "outcome" in error) {
     unknown = error.outcome === "unknown";

@@ -708,3 +708,221 @@ describe("RG09 generated caller adapter", () => {
     expect(noUser.statusCode).toBe(401);
   });
 });
+
+it("RG10 authenticated internal POST and the in-process core share replay identity and ordering", async () => {
+  const { fixture, load } = await import("./local-operation.test.helpers.ts");
+  const { invokeLocalModule } = await import(load("local-operation"));
+  const f = await fixture();
+  const generated = loader(true);
+  const { createHttpService } = await import(generated.load("src/runtime/http.ts"));
+  const { stubRoutes } = await import(generated.load("src/runtime/tile-http.ts"));
+  const { createTileGuard } = await import(generated.load("src/runtime/tile-guard.ts"));
+  const { createPrincipalVerifier } = await import(generated.load("src/runtime/identity.ts"));
+  const serviceRuntime = await import(generated.load("src/runtime/workload.ts"));
+  vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+  let admissions = 0,
+    unavailable = false;
+  let local = f.define({
+    admit: async () => {
+      admissions++;
+      if (unavailable) throw Error("reputation down");
+    },
+  });
+  const guard = createTileGuard({
+    signIn: "required",
+    verify: createPrincipalVerifier({
+      issuer,
+      audience: "issuer-web",
+      jwksUrl: settings.jwksUrl,
+      algorithms: ["RS256"],
+      jwksTimeoutMs: 2000,
+    }),
+  });
+  const credentials = serviceRuntime.createWorkload(
+    { ...settings, client: "jeeves-workload-callee", audience: "jeeves-service-callee" },
+    [],
+  );
+  const logs = vi.spyOn(console, "log").mockImplementation(() => {});
+  const service = await createHttpService({
+    id: "local-operation",
+    settings: { requestTimeoutMs: 10000, concurrencyLimit: 10 },
+    initialize: async () => {},
+    configure(routes: unknown) {
+      stubRoutes(
+        serviceRuntime.workloadRoutes(guard.routes(routes), credentials, ["caller"]),
+        () => {},
+        "receive",
+        (request: unknown) => local.route(f.dependencies, request),
+        { deadlineMs: 10000 },
+        (request: unknown) => guard.caller(request),
+        "/internal/modules",
+      );
+    },
+  });
+  try {
+    await service.start({ host: "127.0.0.1", port: 0 });
+    const workload = token();
+    const user = token({ aud: "issuer-web", sub: "alice" }, false);
+    const fetched: Record<string, string>[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: URL | string, init: RequestInit) => {
+        const headers = Object.fromEntries(new Headers(init.headers));
+        fetched.push(headers);
+        const response = await service.inject({
+          method: init.method,
+          url: new URL(url).pathname,
+          headers,
+          payload: init.body,
+        });
+        return new Response(response.body, {
+          status: response.statusCode,
+          headers: response.headers,
+        });
+      }),
+    );
+    const target = serviceRuntime.serviceTarget({
+      tile: "callee",
+      operations: ["receive"],
+      forwardUser: true,
+      credentials: { acquire: async () => workload },
+    });
+    const call = (key: string, input: unknown) =>
+      within(async () => {
+        op.rememberVerifiedBearer(user);
+        return target.call("receive", { method: "POST", key, body: input });
+      }, 10000);
+    const first = await call("shared", { id: "one" });
+    unavailable = true;
+    expect(first).toEqual({ status: 201, body: { id: "one", secret: "replay-secret" } });
+    const running = op.operation({ maximumMs: 10000, caller: { subject: "alice" } });
+    try {
+      expect(
+        await op.withOperation(running.context, () =>
+          invokeLocalModule(
+            local,
+            f.dependencies,
+            { key: "shared", input: { id: "one" } },
+            async () => {
+              throw Error("legacy route bypass");
+            },
+          ),
+        ),
+      ).toEqual(first);
+    } finally {
+      running.close();
+    }
+    expect(await call("shared", { id: "one" })).toEqual(first);
+    expect(admissions).toBe(1);
+    expect(await call("shared", { id: "changed" })).toMatchObject({
+      status: 409,
+      body: { error: "IDEMPOTENCY_CONFLICT" },
+    });
+    expect(fetched[0]).toMatchObject({
+      "idempotency-key": "shared",
+      "x-jeeves-workload": `Bearer ${workload}`,
+      authorization: `Bearer ${user}`,
+    });
+    for (const headers of [
+      { "x-jeeves-workload": `Bearer ${workload}` },
+      { authorization: `Bearer ${user}` },
+    ]) {
+      const denied = await service.inject({
+        method: "POST",
+        url: "/internal/modules/receive",
+        headers: { ...headers, "idempotency-key": "shared" },
+        payload: { id: "one" },
+      });
+      expect(denied.statusCode).toBe(401);
+    }
+    expect((await f.pg.query("SELECT count(*)::int AS n FROM p_app.items")).rows).toEqual([
+      { n: 1 },
+    ]);
+    expect(JSON.stringify(logs.mock.calls)).not.toContain("replay-secret");
+    expect(JSON.stringify(logs.mock.calls)).not.toContain("jke1.");
+    let nullableEffects = 0;
+    local = f.define({
+      validate: (input: unknown) => input,
+      mutate: async (
+        input: unknown,
+        commands: { call(name: string, values: unknown[]): Promise<unknown> },
+      ) => {
+        nullableEffects++;
+        await commands.call("insert", [input === undefined ? "absence" : "null", "alice"]);
+        return { status: 201, body: { present: input !== undefined } };
+      },
+    });
+    const absent = await call("presence", undefined);
+    expect(absent).toEqual({ status: 201, body: { present: false } });
+    const nullableContext = op.operation({ maximumMs: 10000, caller: { subject: "alice" } });
+    try {
+      expect(
+        await op.withOperation(nullableContext.context, () =>
+          invokeLocalModule(
+            local,
+            f.dependencies,
+            { key: "presence", input: undefined },
+            async () => {
+              throw Error("legacy bypass");
+            },
+          ),
+        ),
+      ).toEqual(absent);
+      await expect(
+        op.withOperation(nullableContext.context, () =>
+          invokeLocalModule(
+            local,
+            f.dependencies,
+            { key: "presence", input: null },
+            async () => {},
+          ),
+        ),
+      ).rejects.toMatchObject({ code: "IDEMPOTENCY_CONFLICT" });
+    } finally {
+      nullableContext.close();
+    }
+    expect(await call("presence", null)).toMatchObject({
+      status: 409,
+      body: { error: "IDEMPOTENCY_CONFLICT" },
+    });
+    expect(nullableEffects).toBe(1);
+    let normalizedEffects = 0;
+    local = f.define({
+      validate: (input: unknown) => {
+        const value = input as { a: { value: number }; z: { value: number } };
+        expect(Object.keys(value)).toEqual(["a", "z"]);
+        expect(value.a).not.toBe(value.z);
+        expect(Object.is(value.a.value, -0)).toBe(false);
+        return { z: value.z, a: value.a };
+      },
+      mutate: async (input: unknown) => {
+        normalizedEffects++;
+        expect(Object.keys(input as object)).toEqual(["a", "z"]);
+        return { status: 200, body: { normalized: true } };
+      },
+    });
+    const shared = { value: -0 };
+    expect(await f.run(local, "normalized", { z: shared, a: shared })).toEqual({
+      status: 200,
+      body: { normalized: true },
+    });
+    expect(await call("normalized", { a: { value: 0 }, z: { value: 0 } })).toEqual({
+      status: 200,
+      body: { normalized: true },
+    });
+    expect(normalizedEffects).toBe(1);
+    const before = fetched.length;
+    for (const request of [
+      { method: "POST", key: "bad key", body: {} },
+      { method: "GET", key: "shared" },
+    ])
+      await expect(within(() => target.call("receive", request))).rejects.toMatchObject({
+        code: "INVALID_SERVICE_CALL",
+      });
+    expect(fetched).toHaveLength(before);
+  } finally {
+    await service.close();
+    logs.mockRestore();
+    await f.pg.close();
+  }
+});

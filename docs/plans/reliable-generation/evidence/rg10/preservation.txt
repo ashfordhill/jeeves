@@ -1,0 +1,53 @@
+Seven root files: SHA-256 matches supplied receipt.
+Owner binary diff and modes unchanged: 34,001 bytes.
+Frozen local-v1 unchanged. Historical exports/evidence unmodified; new RG10 paths only.
+
+Observed command: docker ps -a --format ID/Names/Ports
+1dc6a0dd4030 jeeves-youtube-v2-app-watch-1 
+99a6538db5a1 jeeves-youtube-v2-app-upload-1 
+22d7ade439c0 jeeves-youtube-v2-app-view-counter-1 
+6a08e570bd2e jeeves-youtube-v2-app-completion-handler-1 
+b13f7f42188b jeeves-youtube-v2-app-search-indexer-1 
+1d8158c2b6f1 jeeves-youtube-v2-app-search-1 
+44b4f8497527 jeeves-youtube-v2-app-edge-1 
+a4e326b25c51 jeeves-youtube-v2-app-transcoder-1 
+9c693f3a7ac3 jeeves-youtube-v2-identity-identity-1 
+b8a0d609292d jeeves-youtube-v2-local-broker-1 
+74650706e71f jeeves-youtube-v2-local-postgres-1 
+348a01cfd332 jeeves-youtube-v2-search-search-index-1 
+e6a3ce6076dc jeeves-youtube-v2-cache-metadata-cache-1 
+271ad65cb4fd jeeves-youtube-v2-local-objects-1 
+db167ecfc647 jeeves-youtube-v1-watch-1 
+315ffd6ea78f jeeves-youtube-v1-upload-1 
+bf0ee6ee70cc jeeves-youtube-v1-view-counter-1 
+769ae214b46c jeeves-youtube-v1-completion-handler-1 
+e90ad80cb0c9 jeeves-youtube-v1-transcoder-1 
+6056b39f8f85 jeeves-youtube-v1-search-indexer-1 
+713f74a859a5 jeeves-youtube-v1-search-1 
+63a47cac59f9 jeeves-youtube-v1-edge-1 
+3d52d7883379 jeeves-youtube-v1-cache-1 
+c9e5b6ac4158 jeeves-youtube-v1-identity-1 
+525f6339fe98 jeeves-youtube-v1-postgres-1 
+bb9baa036b2e jeeves-youtube-v1-broker-1 
+78866961e467 jeeves-youtube-v1-search-index-1 
+b79fb27061fb jeeves-youtube-v1-objects-1 
+15a461f56f53 excalidraw 0.0.0.0:5000->80/tcp, [::]:5000->80/tcp
+3a4574bd3547 jeeves-fieldwork-demo-inventory-web-1 
+7a18295e66e9 jeeves-fieldwork-demo-inventory-1 
+98ee62c65e7d jeeves-fieldwork-demo-inventory-instance-3-1 
+81fb75112238 jeeves-fieldwork-demo-inventory-instance-2-1 
+8ab155a42644 jeeves-fieldwork-demo-inventory-instance-1-1 
+cbb12f4ce70c jeeves-fieldwork-demo-inventory-db-1 
+3f6e105d8e9f qrwty-qrwty-web-1 
+6b2fa6a33c0c qrwty-qrwty-1 
+a57e555727fc qrwty-5174-qrwty-web-1 
+47fdbfc0bbc2 qrwty-5174-qrwty-1 
+a9f678e7893c qrwty-5174-qrwty-db-1 
+7be10d5a9227 qrwty-qrwty-db-1 
+c0fbbc2996fe jeeves-postgres-1 127.0.0.1:54329->5432/tcp
+
+Observed command: docker ps --format ID/Names/Status/Ports
+c0fbbc2996fe jeeves-postgres-1 Up 13 days (healthy) 127.0.0.1:54329->5432/tcp
+
+Task-owned container/volume/network delta: none created or removed. Historical stopped resources preserved.
+Only the existing jeeves-postgres-1 was used by standard e2e db:up; no generated-system checkpoint.

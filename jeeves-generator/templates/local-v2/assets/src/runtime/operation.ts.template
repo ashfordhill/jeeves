@@ -30,7 +30,7 @@ export class OperationError extends Error {
 }
 type EffectClass = "read" | "local-atomic-mutation" | "durable-external-work";
 const effectRank = { read: 0, "local-atomic-mutation": 1, "durable-external-work": 2 } as const;
-const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass; networkDenied?: boolean }>();
+const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass; networkDenied?: boolean; localMutation?: boolean }>();
 /** Private generated boundary: a nested capability cannot widen its caller's effect authority. */
 export function withEffect<T>(effect: EffectClass, dispatch: () => T): T {
   assertOperation();
@@ -49,8 +49,18 @@ export function rememberVerifiedBearer(token: string): void {
 export const verifiedBearer = () => { const context = currentOperation(); return context ? verifiedBearers.get(context) : undefined; };
 export const currentOperation = () => active.getStore()?.context;
 export const currentProcess = () => active.getStore()?.scope;
-export function assertNetworkAllowed(): void {
-  if (active.getStore()?.networkDenied) throw new OperationError("refused", "EFFECT_NOT_ALLOWED");
+/** Private local mutation scope also refuses captured database handles/transactions. */
+export function assertDatabaseAllowed(): void {
+  if (active.getStore()?.localMutation) throw new OperationError("refused", "EFFECT_NOT_ALLOWED");
+}
+export function withLocalPolicy<T>(dispatch: () => T): T {
+  return withEffect("read", () => active.run({ ...active.getStore(), networkDenied: true, localMutation: true }, dispatch));
+}
+export function withLocalMutation<T>(dispatch: () => T): T {
+  return withEffect("local-atomic-mutation", () => active.run({ ...active.getStore(), localMutation: true }, dispatch));
+}
+export function assertNetworkAllowed(mutation = false): void {
+  if (active.getStore()?.networkDenied || (mutation && active.getStore()?.effect === "read")) throw new OperationError("refused", "EFFECT_NOT_ALLOWED");
 }
 export function withProcess<T>(scope: ProcessScope | undefined, effect: () => T): T {
   return active.run({ scope }, effect);
@@ -157,6 +167,7 @@ export async function dependency<T>(
   try {
     work = dispatch(abort.signal, Math.max(1, Math.floor(budget)));
   } catch (error) {
+    if (error instanceof OperationError) throw error;
     throw new OperationError(
       options.definite?.(error) ? "definite-failure" : outcome(),
       "DISPATCH_FAILED",

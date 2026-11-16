@@ -261,3 +261,15 @@ export function createSettingsReader(): typeof readSettings {
       return files.get(path);
     });
 }
+
+/** Private generated replay authority, snapshotted once per process; never in product settings. */
+let replayKeys: SealingKeys | undefined;
+export function privateReplayKeys(): SealingKeys {
+  if (replayKeys) return replayKeys;
+  try {
+    const raw = readFile("JEEVES_REPLAY_KEYS", true);
+    if (!raw) throw new Error("Missing replay keys");
+    replayKeys = createSealingKeys(keyRing().parse(raw), "jeeves.replay.v1");
+    return replayKeys;
+  } catch { throw new Error("Invalid setting JEEVES_REPLAY_KEYS"); }
+}

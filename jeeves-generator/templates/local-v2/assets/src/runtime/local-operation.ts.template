@@ -1,0 +1,395 @@
+/** Generated local replay boundary. Product definitions are registered before connections. */
+import { createHash } from "node:crypto";
+import { jsonBody, normalizedJsonDto } from "./hook-boundary.ts";
+import {
+  currentOperation,
+  assertOperation,
+  withLocalMutation,
+  withLocalPolicy,
+  withEffect,
+} from "./operation.ts";
+import {
+  transaction,
+  assertTransaction,
+  abortTransaction,
+  type TransactionPool,
+} from "./transaction.ts";
+import { requestHash, checkIdempotencyKey } from "./idempotency.ts";
+import type { SealingKeys } from "./keys.ts";
+type ReplayRouteRequest = Readonly<{
+  method: string;
+  rawPath: string;
+  headers: Readonly<Record<string, string | readonly string[] | undefined>>;
+  body: unknown;
+}>;
+
+export interface LocalCommands {
+  call(
+    name: string,
+    parameters: readonly unknown[],
+  ): Promise<Readonly<{ rows: readonly unknown[]; rowCount: number }>>;
+}
+export interface LocalResult {
+  readonly status: number;
+  readonly body: unknown;
+}
+export interface LocalOperation<Input, Dependencies> {
+  call(
+    dependencies: Dependencies,
+    request: Readonly<{ key: string; input: unknown }>,
+  ): Promise<LocalResult>;
+  route(
+    dependencies: Dependencies,
+    request: ReplayRouteRequest,
+  ): Promise<LocalResult & { headers: Record<string, string> }>;
+}
+interface Definition<Input, Dependencies> {
+  readonly database: keyof Dependencies & string;
+  readonly id: string;
+  readonly version: number;
+  readonly retentionSeconds: number;
+  readonly secret: boolean;
+  validate(input: unknown, caller: Readonly<{ subject: string }>): Input;
+  admit(
+    input: Readonly<Input>,
+    dependencies: Dependencies,
+    caller: Readonly<{ subject: string }>,
+  ): Promise<void>;
+  mutate(
+    input: Readonly<Input>,
+    commands: LocalCommands,
+    caller: Readonly<{ subject: string }>,
+  ): Promise<LocalResult>;
+}
+const definitions = new WeakMap<object, Definition<unknown, Record<string, unknown>>>();
+const bindings = new WeakMap<
+  object,
+  {
+    operation: object;
+    invoke(dependencies: unknown, request: { key: string; input: unknown }): Promise<LocalResult>;
+  }
+>();
+// Error fields have fixed value-free messages, shared by HTTP and callable paths.
+export class LocalOperationError extends Error {
+  readonly statusCode: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(code);
+    this.name = "LocalOperationError";
+    this.statusCode = status;
+    this.code = code;
+  }
+}
+function fail(status: number, code: string): never {
+  throw new LocalOperationError(status, code);
+}
+export function defineLocalOperation<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+): LocalOperation<Input, Dependencies> {
+  if (
+    !definition ||
+    Object.keys(definition).sort().join() !==
+      "admit,database,id,mutate,retentionSeconds,secret,validate,version" ||
+    !/^[a-z][a-z0-9-]{0,63}$/.test(definition.id) ||
+    typeof definition.database !== "string" ||
+    !definition.database ||
+    !Number.isSafeInteger(definition.version) ||
+    definition.version < 1 ||
+    definition.version > 1000000 ||
+    !Number.isSafeInteger(definition.retentionSeconds) ||
+    definition.retentionSeconds < 60 ||
+    definition.retentionSeconds > 604800 ||
+    typeof definition.secret !== "boolean" ||
+    ![definition.validate, definition.admit, definition.mutate].every(
+      (value) => typeof value === "function",
+    )
+  )
+    throw new Error("Invalid local operation declaration");
+  const call = async (dependencies: Dependencies, request: { key: string; input: unknown }) => {
+    assertOperation();
+    const handle = Object.getOwnPropertyDescriptor(dependencies, definition.database)?.value;
+    const bound = handle && bindings.get(handle);
+    if (!bound || bound.operation !== operation) throw new Error("Unconfigured local operation");
+    return bound.invoke(dependencies, request);
+  };
+  const operation = Object.freeze({
+    call,
+    async route(dependencies: Dependencies, request: ReplayRouteRequest) {
+      if (request.rawPath !== "/") fail(404, "LOCAL_OPERATION_PATH");
+      if (request.method !== "POST") fail(405, "LOCAL_OPERATION_METHOD");
+      const key = request.headers["idempotency-key"];
+      if (typeof key !== "string") fail(400, "IDEMPOTENCY_KEY_REQUIRED");
+      return {
+        ...(await call(dependencies, { key, input: request.body })),
+        headers: { "Cache-Control": "no-store" },
+      };
+    },
+  });
+  definitions.set(
+    operation,
+    Object.freeze({ ...definition }) as Definition<unknown, Record<string, unknown>>,
+  );
+  return operation;
+}
+/** Private preconnection check; descriptors cannot be fabricated by structural typing. */
+export function localOperationDefinition(operation: unknown, property: string, writable: boolean) {
+  if (operation === undefined) return undefined;
+  const definition =
+    operation && typeof operation === "object" ? definitions.get(operation) : undefined;
+  if (!definition) throw new Error("Invalid local operation declaration");
+  if (definition.database !== property) return undefined;
+  if (!writable) throw new Error("Local operation requires one writable database");
+  return { operation: operation as object, definition };
+}
+const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+/** The only bridge to SQL is a prepared RG07 command factory, on this reserved connection. */
+export function bindLocalOperation(
+  handle: object,
+  prepared: NonNullable<ReturnType<typeof localOperationDefinition>>,
+  options: {
+    tile: string;
+    module: string;
+    productRole: string;
+    pool: TransactionPool;
+    keys?: SealingKeys;
+    commands: (
+      execute: (
+        sql: string,
+        values: unknown[],
+        readOnly: boolean,
+      ) => Promise<{ rows: unknown[]; rowCount: number | null }>,
+    ) => LocalCommands;
+  },
+) {
+  const { definition, operation } = prepared;
+  if (definition.secret && !options.keys) throw new Error("Missing private replay keys");
+  const namespace = JSON.stringify([options.tile, options.module, definition.id]);
+  bindings.set(handle, {
+    operation,
+    async invoke(dependencies, request) {
+      assertOperation();
+      const subject = currentOperation()?.caller.subject;
+      if (!subject) fail(401, "SIGN_IN_REQUIRED");
+      if (
+        subject.includes("\u0000") ||
+        [...subject].length > 255 ||
+        Buffer.from(subject, "utf8").toString("utf8") !== subject
+      )
+        fail(400, "LOCAL_OPERATION_INPUT");
+      if (
+        !request ||
+        Object.keys(request).sort().join() !== "input,key" ||
+        !["input", "key"].every(
+          (key) => "value" in (Object.getOwnPropertyDescriptor(request, key) ?? {}),
+        )
+      )
+        fail(400, "LOCAL_OPERATION_INPUT");
+      const caller = Object.freeze({ subject });
+      let input: unknown;
+      try {
+        const rawInput = normalizedJsonDto(request.input);
+        input = withLocalPolicy(() => {
+          const checked = definition.validate(rawInput, caller);
+          // Observe rejected async policies before refusing them, within the denied policy scope.
+          if (
+            checked instanceof Promise ||
+            (checked !== null &&
+              typeof checked === "object" &&
+              typeof Object.getOwnPropertyDescriptor(checked, "then")?.value === "function")
+          ) {
+            void Promise.resolve(checked).catch(() => {});
+            throw new Error("Local input policy must be synchronous");
+          }
+          return normalizedJsonDto(checked);
+        });
+      } catch {
+        fail(400, "LOCAL_OPERATION_INPUT");
+      }
+      const identity = {
+        tile: namespace,
+        scope: { kind: "account", id: subject },
+        key: request.key,
+        hash: requestHash({
+          method: "POST",
+          route: `${namespace}@${definition.version}`,
+          body: { present: input !== undefined, value: input ?? null },
+        }),
+      };
+      try {
+        checkIdempotencyKey(identity);
+      } catch {
+        fail(400, "LOCAL_OPERATION_INPUT");
+      }
+      // Check declared mutation authority without restricting the subsequent new-work read phase.
+      withEffect("local-atomic-mutation", () => undefined);
+      const values = [namespace, "account", subject, request.key];
+      const binding = {
+        scope: hash(["account", subject]),
+        context: hash([...values, identity.hash]),
+      };
+      return transaction(options.pool, async (tx) => {
+        const where = "tile = $1 AND scope_kind = $2 AND scope_id = $3 AND idem_key = $4";
+        const recover = async (): Promise<LocalResult | undefined> => {
+          const { rows } = await tx.query(
+            `SELECT encode(request_hash, 'hex') AS hash, status, response, metadata, expires_at > clock_timestamp() AS valid FROM jeeves.idempotency_records WHERE ${where}`,
+            values,
+          );
+          const row = rows[0];
+          if (!row) return undefined;
+          if (row.hash !== identity.hash) fail(409, "IDEMPOTENCY_CONFLICT");
+          if (row.status === 0) fail(409, "IDEMPOTENCY_IN_PROGRESS");
+          if (!row.valid) fail(410, "IDEMPOTENCY_EXPIRED");
+          const metadata = row.metadata;
+          if (
+            !metadata ||
+            metadata.codec !== 1 ||
+            metadata.version !== definition.version ||
+            metadata.secret !== definition.secret ||
+            metadata.retentionSeconds !== definition.retentionSeconds ||
+            row.status < 200 ||
+            row.status > 299
+          )
+            fail(503, "REPLAY_UNAVAILABLE");
+          let result: LocalResult;
+          try {
+            if (definition.secret) {
+              const plain = options.keys!.open(row.response.sealed, binding);
+              if (plain === undefined) fail(503, "REPLAY_UNAVAILABLE");
+              result = JSON.parse(plain);
+            } else result = { status: row.status, body: row.response };
+            if (result.status !== row.status) fail(503, "REPLAY_UNAVAILABLE");
+            const json = jsonBody(result.body ?? null)!;
+            if (Buffer.byteLength(json) > 12288) fail(503, "REPLAY_UNAVAILABLE");
+          } catch {
+            fail(503, "REPLAY_UNAVAILABLE");
+          }
+          return normalizedJsonDto(result) as LocalResult;
+        };
+        const recovered = await recover();
+        if (recovered) return recovered;
+        const lock = await tx.query(
+          "SELECT pg_try_advisory_xact_lock(hashtextextended($1, 0)) AS locked",
+          [JSON.stringify(values)],
+        );
+        if (lock.rows[0]?.locked !== true) fail(409, "IDEMPOTENCY_IN_PROGRESS");
+        const raced = await recover();
+        if (raced) return raced;
+        // New-work admission is deliberately after BOTH committed-replay checks.
+        await withEffect("read", () =>
+          definition.admit(
+            input as Readonly<unknown>,
+            dependencies as Record<string, unknown>,
+            caller,
+          ),
+        );
+        await tx.query(
+          `INSERT INTO jeeves.idempotency_records (tile, scope_kind, scope_id, idem_key, request_hash, status, response, created_at, expires_at) VALUES ($1,$2,$3,$4,decode($5,'hex'),0,'{}',now(),now() + $6 * interval '1 second')`,
+          [...values, identity.hash, definition.retentionSeconds],
+        );
+        const pending = new Set<Promise<unknown>>();
+        let active = true;
+        const registered = options.commands((sql, parameters, readOnly) => {
+          if (readOnly)
+            throw new Error("Local mutation accepts registered commands only; use RETURNING");
+          if (!active) return Promise.reject(new Error("Local commands are closed"));
+          const work = tx.query(sql, parameters);
+          pending.add(work);
+          void work.catch(() => {});
+          return work;
+        });
+        const commands: LocalCommands = Object.freeze({
+          call(name: string, parameters: readonly unknown[]) {
+            if (!active) return Promise.reject(new Error("Local commands are closed"));
+            const work = registered
+              .call(name, parameters)
+              .catch((error: unknown) => abortTransaction(tx, error));
+            pending.add(work);
+            void work.catch(() => {});
+            return work;
+          },
+        });
+        let result: LocalResult;
+        if (!/^[a-z][a-z0-9_]{0,62}$/.test(options.productRole))
+          throw new Error("Invalid product role");
+        await tx.query(`SET LOCAL ROLE "${options.productRole}"`);
+        try {
+          result = await withLocalMutation(async () => {
+            const value = await definition.mutate(input as Readonly<unknown>, commands, caller);
+            active = false;
+            await Promise.allSettled([...pending]);
+            assertTransaction(tx);
+            jsonBody(value);
+            if (!value || Object.keys(value).sort().join() !== "body,status")
+              throw new Error("Invalid local operation result");
+            const json = jsonBody(value.body ?? null)!;
+            if (
+              !Number.isInteger(value.status) ||
+              value.status < 200 ||
+              value.status > 299 ||
+              ([204, 205].includes(value.status) && json !== "null") ||
+              Buffer.byteLength(json) > 12288
+            )
+              throw new Error("Invalid local operation result");
+            return normalizedJsonDto({
+              status: value.status,
+              body: JSON.parse(json),
+            }) as LocalResult;
+          });
+        } catch (error) {
+          active = false;
+          await Promise.allSettled([...pending]);
+          return abortTransaction(tx, error);
+        } finally {
+          active = false;
+        }
+        await tx.query("RESET ROLE");
+        const response = definition.secret
+          ? { sealed: options.keys!.seal(JSON.stringify(result), binding) }
+          : result.body;
+        await tx.query(
+          `UPDATE jeeves.idempotency_records SET status = $5, response = $6::jsonb, metadata = $7::jsonb, expires_at = clock_timestamp() + $8 * interval '1 second' WHERE ${where}`,
+          [
+            ...values,
+            result.status,
+            JSON.stringify(response),
+            JSON.stringify({
+              codec: 1,
+              version: definition.version,
+              secret: definition.secret,
+              retentionSeconds: definition.retentionSeconds,
+            }),
+            definition.retentionSeconds,
+          ],
+        );
+        return result;
+      });
+    },
+  });
+}
+
+export function validateLocalOperationBinding(
+  operation: unknown,
+  properties: readonly string[],
+): void {
+  if (operation === undefined) return;
+  const definition =
+    operation && typeof operation === "object" ? definitions.get(operation) : undefined;
+  if (!definition || !properties.includes(definition.database))
+    throw new Error("Local operation requires one declared writable database on a route module");
+}
+
+/** Generated same-process wiring uses the identical registered core, rather than a forged HTTP request. */
+export function invokeLocalModule(
+  operation: unknown,
+  dependencies: unknown,
+  request: unknown,
+  legacy: () => Promise<unknown>,
+): Promise<unknown> {
+  if (operation === undefined) return legacy();
+  if (!operation || typeof operation !== "object" || !definitions.has(operation))
+    throw new Error("Invalid local operation declaration");
+  return (operation as LocalOperation<unknown, object>).call(
+    dependencies as object,
+    request as { key: string; input: unknown },
+  );
+}

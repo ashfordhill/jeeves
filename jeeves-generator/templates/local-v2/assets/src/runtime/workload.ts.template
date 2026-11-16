@@ -325,15 +325,16 @@ export function serviceTarget(binding: {
   )
     throw new Error("Invalid service target binding");
   return Object.freeze({
-    async call(operation: string, request: Readonly<{ method: "GET" | "POST"; body?: unknown }>) {
+    async call(operation: string, request: Readonly<{ method: "GET" | "POST"; body?: unknown; key?: string }>) {
       assertOperation();
       assertNetworkAllowed();
       if (
         !allowed.has(operation) ||
         !request ||
         !["GET", "POST"].includes(request.method) ||
-        Object.keys(request).some((key) => !["method", "body"].includes(key)) ||
-        (request.method === "GET" && request.body !== undefined)
+        Object.keys(request).some((key) => !["method", "body", "key"].includes(key)) ||
+        (request.method === "GET" && (request.body !== undefined || request.key !== undefined)) ||
+        (request.key !== undefined && (typeof request.key !== "string" || !/^[\x21-\x7e]{1,255}$/.test(request.key)))
       )
         throw new OperationError("refused", "INVALID_SERVICE_CALL");
       let body: string | undefined;
@@ -347,6 +348,7 @@ export function serviceTarget(binding: {
         const context = currentOperation();
         const user = binding.forwardUser ? verifiedBearer() : undefined;
         const headers = {
+          ...(request.key === undefined ? {} : {"idempotency-key": request.key}),
           ...(body === undefined ? {} : { "content-type": "application/json" }),
           "x-jeeves-workload": `Bearer ${token}`,
           ...(user ? { authorization: `Bearer ${user}` } : {}),

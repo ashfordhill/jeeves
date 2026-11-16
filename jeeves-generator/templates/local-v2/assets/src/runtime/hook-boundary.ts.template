@@ -117,3 +117,16 @@ export function jsonBody(value: unknown): string | undefined {
   visit(value, 0);
   return JSON.stringify(value);
 }
+
+/** One transport-independent JSON value: no shared references, signed zero or object-order variants.
+ * Undefined root remains absent; nested undefined/accessors/non-DTOs refuse in jsonBody first. */
+export function normalizedJsonDto(value: unknown): unknown {
+  const json = jsonBody(value);
+  if (json === undefined) return undefined;
+  const ordered = (item: unknown): unknown => {
+    if (Array.isArray(item)) return item.map(ordered);
+    if (item && typeof item === "object") return Object.fromEntries(Object.keys(item).sort().map(key => [key, ordered((item as Record<string, unknown>)[key])]));
+    return item;
+  };
+  return immutable(ordered(JSON.parse(json)));
+}

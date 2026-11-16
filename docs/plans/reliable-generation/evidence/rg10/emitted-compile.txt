@@ -1,0 +1,118 @@
+localOperation 63 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative local operation API proof: src/modules/items-api/negative.ts(1,9): error TS2724: '"../../extension-api/index.ts"' has no exported member named 'bindLocalOperation'. Did you mean 'LocalOperation'?
+src/modules/items-api/negative.ts(1,28): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'privateReplayKeys'.
+src/modules/items-api/negative.ts(1,46): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'createSealingKeys'.
+src/modules/items-api/negative.ts(5,69): error TS2339: Property 'query' does not exist on type 'LocalCommands'.
+src/modules/items-api/negative.ts(5,94): error TS2339: Property 'execute' does not exist on type 'LocalCommands'.
+src/modules/items-api/negative.ts(5,123): error TS2339: Property 'transaction' does not exist on type 'LocalCommands'.
+src/modules/items-api/negative.ts(5,153): error TS2339: Property 'pool' does not exist on type 'ProductQueries'.
+src/modules/items-api/negative.ts(5,168): error TS2339: Property 'idempotent' does not exist on type 'ProductQueries'.
+src/modules/items-api/negative.ts(5,236): error TS2353: Object literal may only specify known properties, and 'scope' does not exist in type 'Readonly<{ key: string; input: unknown; }>'.
+src/modules/items-api/negative.ts(5,304): error TS2554: Expected 2 arguments, but got 3.
+
+keys 53 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative public API proof: src/modules/items-api/negative.ts(1,9): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'keyRing'.
+src/modules/items-api/negative.ts(1,17): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'secret'.
+src/modules/items-api/negative.ts(1,24): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'readSettings'.
+src/modules/items-api/negative.ts(3,59): error TS2339: Property 'current' does not exist on type 'SigningKeys'.
+src/modules/items-api/negative.ts(3,93): error TS2339: Property 'entries' does not exist on type 'SigningKeys'.
+src/modules/items-api/negative.ts(3,123): error TS2339: Property 'file' does not exist on type 'SigningKeys'.
+src/modules/items-api/negative.ts(3,159): error TS2741: Property 'context' is missing in type '{ scope: string; }' but required in type 'ValueContext'.
+
+zero 76 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+favorites 75 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+video 125 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+workload 55 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative service API proof: src/modules/caller/negative.ts(1,9): error TS2724: '"../../extension-api/index.ts"' has no exported member named 'serviceTarget'. Did you mean 'ServiceTarget'?
+src/modules/caller/negative.ts(1,23): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'workloadSettings'.
+src/modules/caller/negative.ts(1,40): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'verifiedBearer'.
+src/modules/caller/negative.ts(3,46): error TS2339: Property 'credentials' does not exist on type 'ServiceTarget'.
+src/modules/caller/negative.ts(3,67): error TS2339: Property 'audience' does not exist on type 'ServiceTarget'.
+src/modules/caller/negative.ts(3,85): error TS2339: Property 'request' does not exist on type 'ServiceTarget'.
+src/modules/caller/negative.ts(3,132): error TS2322: Type '"PUT"' is not assignable to type '"GET" | "POST"'.
+src/modules/caller/negative.ts(3,186): error TS2353: Object literal may only specify known properties, and 'headers' does not exist in type 'Readonly<{ method: "GET" | "POST"; body?: unknown; key?: string | undefined; }>'.
+
+Private workload boundary proof: src/modules/caller/negative.ts: forbidden private runtime import ../../runtime/workload.ts
+
+workloadUser 59 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 96 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+frozen-v2 79 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+v2-module-design 86 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stub-stack 60 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Pin review {
+  'frozen-v2': {
+    before: 79,
+    after: 79,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      'src/extension-api/index.ts',
+      'src/runtime/admission.ts',
+      'src/runtime/operation.ts',
+      'src/runtime/transaction.ts'
+    ]
+  },
+  'v2-module-design': {
+    before: 86,
+    after: 86,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      'src/extension-api/index.ts',
+      'src/runtime/admission.ts',
+      'src/runtime/operation.ts',
+      'src/runtime/settings.ts',
+      'src/runtime/transaction.ts'
+    ]
+  },
+  'stub-stack': {
+    before: 60,
+    after: 60,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      'src/extension-api/index.ts',
+      'src/runtime/operation.ts',
+      'src/runtime/settings.ts'
+    ]
+  }
+}

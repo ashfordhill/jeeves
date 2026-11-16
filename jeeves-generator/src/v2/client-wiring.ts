@@ -114,6 +114,12 @@ CREATE TABLE IF NOT EXISTS jeeves.idempotency_records (tile text NOT NULL, scope
 CREATE INDEX IF NOT EXISTS idempotency_records_expires ON jeeves.idempotency_records (expires_at);
 `,
 } as const;
+/** Append-only evolution: existing records and the historical 050 migration stay intact. */
+export const localOperationMigration = {
+  id: "051-jeeves-local-operations.sql",
+  sql: `ALTER TABLE jeeves.idempotency_records ADD COLUMN IF NOT EXISTS metadata jsonb;
+`,
+} as const;
 /** A writing tile's login on the idempotency records (QL04). */
 export const idempotencyGrant = (resource: string, host: string) => ({
   resource,
@@ -215,6 +221,7 @@ export function stubClients(
   // file without one (an older body) builds and runs with none.
   const declarations: string[] = [];
   const settingReads: string[] = [];
+  const localChecks: string[] = [];
   for (const { stub, module } of stubs) {
     const id = generationLocalIdentity(module.component).local;
     const alias = `${pascal(id)}Dependencies`;
@@ -232,6 +239,24 @@ export function stubClients(
     settingReads.push(`configuredSettings[${text(id)}] = ${read}`);
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
+    const databases =
+      stub.role === "route"
+        ? properties
+            .filter((item) => item.type === "DatabaseReadWriter")
+            .map((item) => item.property)
+        : [];
+    if (databases.length) {
+      imports.push({
+        from: "../runtime/local-operation.ts",
+        name: "validateLocalOperationBinding",
+      });
+      localChecks.push(
+        `validateLocalOperationBinding((${pascal(id)}Module as { localOperation?: unknown }).localOperation, ${JSON.stringify(databases)});`,
+      );
+    } else
+      localChecks.push(
+        `if ((${pascal(id)}Module as { localOperation?: unknown }).localOperation !== undefined) throw new Error("Local operation requires a writable database on a route module");`,
+      );
     const unavailable = (property: string, what: string, why: string) => {
       imports.push({ from: clients, name: "unavailable" });
       return `unavailable<${alias}[${text(property)}]>(${text(`${what} for ${module.name} (${why})`)})`;
@@ -263,6 +288,18 @@ export function stubClients(
         const deps = `dependencies[${text(generationLocalIdentity(target.component).local)}]`;
         if (called.role === "route") {
           imports.push({ from: entryTypes, name: "ModuleRequest", type: true });
+          if (
+            called.stores?.some((store) => store.kind === "database" && store.access !== "read")
+          ) {
+            imports.push({
+              from: "../runtime/local-operation.ts",
+              name: "invokeLocalModule",
+            });
+            return [
+              property,
+              `(input) => moduleCall(() => invokeLocalModule((${pascal(target.component)}Module as { localOperation?: unknown }).localOperation, ${deps}, input, () => ${entry}(${deps}, input as ModuleRequest)))`,
+            ];
+          }
           return [
             property,
             `(input) => moduleCall(() => ${entry}(${deps}, input as ModuleRequest))`,
@@ -302,7 +339,7 @@ export function stubClients(
               section: "database",
               name: "productDatabaseClient",
               call: `await productDatabaseClient(scope, probe, preparedProduct[${text(`product:${target.element}:${module.component}`)}])`,
-              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)} })`,
+              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation })`,
               check: {
                 name: "databaseEndpoint",
                 call: `databaseEndpoint(${text(store.resource)})`,
@@ -472,6 +509,7 @@ export function stubClients(
         "};",
         "const readModuleSettings = createSettingsReader();",
         "const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };",
+        ...localChecks,
         ...(list.some((client) => client.prepare)
           ? [
               "// Prepare all registered SQL and product credentials before any connection or probe.",
@@ -539,11 +577,12 @@ export function stubClients(
       // the tile's login there is the stub rows' own.
       local: written.length
         ? {
-            migrations: written.map((store) => ({
-              resource: store.resource,
-              id: idempotencyMigration.id,
-              sql: idempotencyMigration.sql,
-            })),
+            migrations: written.flatMap((store) =>
+              [idempotencyMigration, localOperationMigration].map((migration) => ({
+                resource: store.resource,
+                ...migration,
+              })),
+            ),
             grants: written.map((store) => idempotencyGrant(store.resource, process.tile)),
           }
         : {},

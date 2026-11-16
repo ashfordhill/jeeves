@@ -8,7 +8,7 @@ const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
 const clientLibraries: Record<ClientSection, string[]> = {
   // A stub's database client runs its transactions through transaction.ts (QL03) and its
   // idempotent calls on the records in idempotency.ts (QL04).
-  database: ["postgres", "transaction", "idempotency"],
+  database: ["postgres", "transaction", "idempotency", "local-operation"],
   // The broker's endpoint alone needs no library: its publisher and loops bring theirs.
   broker: [],
   queue: ["delivery", "amqp"],

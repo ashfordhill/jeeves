@@ -41,16 +41,20 @@ export function prepareProductOperations(
       async call(name: string, parameters: readonly unknown[]) {
         const entry = entries.get(name);
         if (!entry) throw new Error("Unregistered product SQL operation");
-        if (
-          !Array.isArray(parameters) ||
-          parameters.length !== entry.parameters ||
-          parameters.some(
-            (value) => value !== null && !["string", "number", "boolean"].includes(typeof value),
-          ) ||
-          parameters.some((value) => typeof value === "number" && !Number.isFinite(value))
-        )
+        if (!Array.isArray(parameters) || parameters.length !== entry.parameters)
           throw new Error("Invalid product SQL parameters");
-        const values = [...parameters];
+        const values = Array.from({ length: parameters.length }, (_, index) => {
+          const property = Object.getOwnPropertyDescriptor(parameters, String(index));
+          if (!property || !("value" in property))
+            throw new Error("Invalid product SQL parameters");
+          const value: unknown = property.value;
+          if (
+            (value !== null && !["string", "number", "boolean"].includes(typeof value)) ||
+            (typeof value === "number" && !Number.isFinite(value))
+          )
+            throw new Error("Invalid product SQL parameters");
+          return value;
+        });
         assertOperation();
         return withEffect(entry.kind === "query" ? "read" : "local-atomic-mutation", async () => {
           const result = await dependency({ mutation: entry.kind === "command" }, () =>

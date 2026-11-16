@@ -407,9 +407,13 @@ it("RG07 validates a later module's SQL and all credentials before opening or pr
     let opened = 0,
       probes = 0;
     let missingCredential = false;
+    let missingRuntimeCredential = false;
+    let localOperation = false;
     const readSecret = (name: string) => {
       if (missingCredential && name === "product-links-db--links-api")
         throw new Error("Missing product credential");
+      if (missingRuntimeCredential && name === "sql-links-db--links-api")
+        throw new Error("Missing private replay credential");
       return "fixture-only";
     };
     const prepare = new Function(
@@ -418,6 +422,8 @@ it("RG07 validates a later module's SQL and all credentials before opening or pr
       "databaseEndpoint",
       "readSecret",
       "prepareProductOperations",
+      "localOperationDefinition",
+      "localLogins",
       `${prepareSource}; return prepareProductDatabase;`,
     )(
       [maximum],
@@ -425,6 +431,8 @@ it("RG07 validates a later module's SQL and all credentials before opening or pr
       () => ({}),
       readSecret,
       (maximum: unknown, binding: unknown) => prepareProductOperations(maximum, binding, f.read),
+      () => (localOperation ? { definition: { secret: false } } : undefined),
+      plan.logins,
     );
     const check = new Function(`${checkSource}; return checkConfiguration;`)();
     const names = [
@@ -467,6 +475,13 @@ it("RG07 validates a later module's SQL and all credentials before opening or pr
     missingCredential = true;
     await expect(initialize(...values, { tile: "links-api" }, {})).rejects.toThrow(
       /Missing product credential/,
+    );
+    expect({ opened, probes }).toEqual({ opened: 0, probes: 0 });
+    missingCredential = false;
+    missingRuntimeCredential = true;
+    localOperation = true;
+    await expect(initialize(...values, { tile: "links-api" }, {})).rejects.toThrow(
+      /Missing private replay credential/,
     );
     expect({ opened, probes }).toEqual({ opened: 0, probes: 0 });
   } finally {

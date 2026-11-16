@@ -23,10 +23,19 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         "/** Registered parameterized product operations; no raw SQL, transaction or lifecycle handle. */",
         "export interface ProductQueries { call(name: string, parameters: readonly unknown[]): Promise<Readonly<{ rows: readonly unknown[]; rowCount: number }>>; }",
         "export interface UnavailableCapability { call(input: unknown): Promise<never>; }",
-        "export interface ServiceTarget { call(operation: string, request: Readonly<{ method: 'GET' | 'POST'; body?: unknown }>): Promise<Readonly<{ status: number; body: unknown }>>; }",
+        "export interface ServiceTarget { call(operation: string, request: Readonly<{ method: 'GET' | 'POST'; body?: unknown; key?: string }>): Promise<Readonly<{ status: number; body: unknown }>>; }",
         "export interface FavoritesHooks { eligible(itemId: string): boolean; }",
         "export type DatabaseReader = ProductQueries; export type DatabaseReadWriter = ProductQueries; export type QueueConsumer = UnavailableCapability; export type TokenVerifier = UnavailableCapability; export type HttpTarget = UnavailableCapability;",
       ];
+      if (
+        model.processes?.some((p) =>
+          p.stubs.some((s) => s.stores?.some((store) => store.kind === "database")),
+        )
+      )
+        publicLines.push(
+          'export { defineLocalOperation } from "../runtime/local-operation.ts";',
+          'export type { LocalOperation, LocalCommands, LocalResult } from "../runtime/local-operation.ts";',
+        );
       if (has("favorites"))
         publicLines.push(
           'export type { FavoritesCapability, Favorite, FavoritesPage } from "../runtime/favorites.ts";',

@@ -18633,3 +18633,34 @@ workload settings the same way.
   issuer call, Docker checkpoint, push, deployment or later unit. Root hashes, exact owner diff/
   modes and historical artifacts are preserved. Commit subject:
   `RG09: require workload identity on generated service calls`. Stop for acceptance.
+
+## 2026-11-16 — RG10 active after RG09 acceptance
+
+- Coordinator accepted RG09 commit `1bc45e0077b106d810df0138e6e878207c35602e`.
+  RG10 is the sole active unit: generated local operation ordering, atomic registered commands
+  and protected replay. No later unit has started.
+
+## 2026-11-16 — RG10 verified, local commit for acceptance
+
+- Extension API remains **v8**, adding declared local operations over one writable registered-SQL
+  binding. HTTP, authenticated internal POST and generated same-process calls share account/key/
+  canonical-input identity, committed replay before new-work admission, and atomic product/result
+  storage. DTO normalization preserves absent/null identity and removes order/reference/-0 variants;
+  malformed account encodings refuse before lookup. Internal service calls gain only a finite key.
+- The whole mutation and result snapshot run inside the denied effect scope under the product-only
+  role. Commands close/drain before protected storage; first failures poison caught/unawaited work.
+  Captured database/network handles, sparse/accessor parameters and result getters refuse. Private
+  purpose-bound sealed replay supports retained-key rotation; append-only 051 preserves old state.
+  Retention begins at storage; bounded cleanup starts independently of traffic and preserves active
+  records. Lost COMMIT stays unknown and recovers through durable replay without a second effect.
+- Final `pnpm check`: **128 files / 1,171 tests passed**, test phase **68.80 s**. Focused mechanisms
+  **109 passed**; actual emitted dependency assignment is included in the final **17-case** local
+  suite. E2e **78/78 passed**, including TinyURL and both mouse rebuilds; web build passed. Eleven
+  scratch variants pass checker/TS7, with negative private-key/raw-SQL/scope/callback proof. Off pins
+  reviewed **79→79 / 86→86 / 60→60**; frozen v1 unchanged. No authoring/chat description changed.
+- [Evidence, chronology and limits](plans/reliable-generation/evidence/rg10/README.md). PGlite,
+  intercepted authenticated HTTP and deterministic COMMIT loss are local proofs; native simultaneous
+  contention/issuer/login/migration remain RG14. Root hashes, exact owner diff/modes and historical
+  resources are preserved. No new provider/dependency, paid/live call, Docker checkpoint, owner
+  ports, push, deployment or later unit. Commit subject:
+  `RG10: own replay ordering and local mutation atomicity`. Stop for coordinator acceptance.

@@ -194,7 +194,14 @@ for (const name of ["transaction", "idempotency", "process"])
     ),
   );
 // Load the exact emitted registered SQL helpers, retaining their real shared operation context.
-for (const name of ["product-contract", "hook-boundary", "product-operations"]) {
+for (const name of [
+  "product-contract",
+  "hook-boundary",
+  "product-operations",
+  "keys",
+  "settings",
+  "local-operation",
+]) {
   fakes[`./${name}.ts`] = stripTypeScriptTypes(
     new TextDecoder().decode(
       bundle.files.find((file) => file.path === `src/runtime/${name}.ts`)?.bytes,
@@ -873,7 +880,9 @@ describe("a stub's database transaction (QL03)", () => {
     query(sql: string, values?: unknown[]): Promise<unknown[]>;
     execute(sql: string, values?: unknown[]): Promise<{ rowCount: number }>;
   };
-  type Database = Tx & { transaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T> };
+  type Database = Tx & {
+    transaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T>;
+  };
   beforeEach(() => environment(localEnvironment));
   afterEach(() => {
     fake.calls.length = 0;
@@ -1120,11 +1129,17 @@ describe("a stub's database transaction (QL03)", () => {
 });
 
 describe("a stub's idempotency records (QL04)", () => {
-  type Tx = { execute(sql: string, values?: unknown[]): Promise<{ rowCount: number }> };
+  type Tx = {
+    execute(sql: string, values?: unknown[]): Promise<{ rowCount: number }>;
+  };
   type Answer = { status: number; body: unknown };
   type Database = {
     idempotent(
-      request: { scope: { kind: string; id: string }; key: string; hash: string },
+      request: {
+        scope: { kind: string; id: string };
+        key: string;
+        hash: string;
+      },
       fn: (tx: Tx) => Promise<Answer>,
     ): Promise<Answer & { replayed: boolean }>;
   };
@@ -1314,7 +1329,7 @@ describe("a stub's idempotency records (QL04)", () => {
     await vi.advanceTimersByTimeAsync(0);
     const sweep = [
       lock,
-      "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
+      "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE status BETWEEN 200 AND 299 AND expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
       unlock,
       "release",
     ];
@@ -1350,7 +1365,7 @@ describe("a stub's idempotency records (QL04)", () => {
       await vi.advanceTimersByTimeAsync(60_000);
       expect(sweeps()[1]).toEqual([
         lock,
-        "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
+        "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE status BETWEEN 200 AND 299 AND expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
         "release discard",
       ]);
       expect(out.lines()).toEqual([
@@ -3072,4 +3087,113 @@ it("RG03 bounds mounted identity verification without cancelling another caller'
     vi.useRealTimers();
     delete (globalThis as { rg03Identity?: unknown }).rg03Identity;
   }
+});
+
+describe("RG10 captured capability isolation and independent cleanup", () => {
+  beforeEach(() =>
+    environment({
+      ...localEnvironment,
+      JEEVES_PUBSUB_PROJECT: "local",
+      JEEVES_EXTERNAL_TEST_URL: "https://example.test",
+    }),
+  );
+  afterEach(() => {
+    restoreEnvironment();
+    vi.useRealTimers();
+    fake.calls.length = 0;
+    fake.connections.length = 0;
+    fake.answer = undefined;
+    fake.pubsub = undefined;
+  });
+  it("refuses every captured public network adapter through nested reads before driver dispatch", async () => {
+    const { withLocalMutation, withEffect } = await import(
+      (await import("./operation.test.helpers.ts")).operationUrl
+    );
+    const scope = testScope();
+    const queue = await clients.queuePublisher(scope, probe, {
+      queue: "visits",
+      mode: "work-queue",
+    });
+    const pubsub = await pubsubClients.pubsubPublisher(scope, probe, { topic: "visits" });
+    const cache = await clients.cacheClient(scope, probe, { cache: "links-cache" });
+    const objects = await clients.objectClient(scope, probe, {
+      tile: "upload-api",
+      bucket: "archive",
+      access: "read-write",
+    });
+    const search = await clients.searchClient(scope, probe, { index: "stats-index" });
+    const http = clients.externalTarget("JEEVES_EXTERNAL_TEST_URL");
+    const before = fake.calls.length;
+    try {
+      for (const call of [
+        () => queue.publish(new Uint8Array()),
+        () => pubsub.publish(new Uint8Array()),
+        () => cache.get("key"),
+        () => cache.set("key", "value"),
+        () => cache.delete("key"),
+        () => objects.get("key"),
+        () => objects.put("key", new Uint8Array()),
+        () => search.search({}),
+        () => search.index("key", {}),
+        () => search.remove("key"),
+        () => http.request("/"),
+      ])
+        await expect(async () =>
+          withLocalMutation(() => withEffect("read", call)),
+        ).rejects.toMatchObject({ outcome: "refused", code: "EFFECT_NOT_ALLOWED" });
+      expect(fake.calls).toHaveLength(before);
+    } finally {
+      for (const close of scope.owned.reverse()) await close();
+    }
+  });
+  it("starts bounded expiry cleanup at configured startup without any operation call and stops on drain", async () => {
+    vi.useFakeTimers();
+    const localRuntime = await import(dataUrl(String(fakes["./local-operation.ts"])));
+    const local = localRuntime.defineLocalOperation({
+      database: "db",
+      id: "create",
+      version: 1,
+      retentionSeconds: 60,
+      secret: false,
+      validate: (input: unknown) => input,
+      admit: async () => {},
+      mutate: async () => ({ status: 201, body: null }),
+    });
+    const scope = testScope();
+    fake.answer = (sql: string) =>
+      sql.startsWith("SELECT pg_try_advisory_lock") ? { rows: [{ locked: true }] } : undefined;
+    const prepared = {
+      configuration: {
+        ...clients.databaseEndpoint("links-db"),
+        login: { user: "product", secret: "product", database: "db" },
+        poolSize: 10,
+        statementTimeoutMs: 2000,
+        connectionTimeoutMs: 2000,
+      },
+      operations: () => Object.freeze({ call: async () => ({ rows: [], rowCount: 0 }) }),
+      binding: { tile: "links-api", resource: "links-db", module: "create" },
+      local: localRuntime.localOperationDefinition(local, "db", true),
+      runtimeLogin: {
+        resource: "links-db",
+        host: "links-api",
+        database: "db",
+        user: "runtime",
+        secret: "runtime",
+      },
+    };
+    await clients.productDatabaseClient(scope, probe, prepared);
+    const sweeps = () =>
+      fake.connections
+        .flat()
+        .filter((sql) => sql.startsWith("DELETE FROM jeeves.idempotency_records WHERE (tile"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sweeps()).toHaveLength(1);
+    expect(sweeps()[0]).toContain("status BETWEEN 200 AND 299");
+    expect(sweeps()[0]).toContain("FOR UPDATE SKIP LOCKED");
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(sweeps()).toHaveLength(2);
+    for (const close of scope.owned.reverse()) await close();
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(sweeps()).toHaveLength(2);
+  });
 });

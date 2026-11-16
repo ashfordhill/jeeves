@@ -1843,3 +1843,17 @@ adding a checked internal endpoint is insufficient if a legacy route still invok
 product entry anonymously. Close those aliases and alternate methods/paths; retain browser
 routes only where public ingress is declared. Derive caller maxima from actual links, and keep
 audiences, credentials, verification and forwarding inside generated adapters.
+
+## 2026-11-16 RG10: replay identity and SQL authority span the whole operation
+
+Recover a committed result before checking dependencies needed only for new work. HTTP and
+in-process callers need one core and the same canonical identity, including absent versus null
+input and a valid UTF-8 account scope. Normalize JSON before product callbacks so the values they
+see match the values hashed. Scope and hashes belong to the framework, not product arguments.
+
+A local mutation must use one reserved connection for its commands and replay record. Keep its
+product-only role active for the entire callback and all issued commands; per-command role resets
+can interleave and accidentally restore broader authority. Close/drain commands and preserve a
+caught failure before restoring the private role. Captured handles need runtime effect checks,
+including ordinary same-database handles, since omitting a network argument does not remove a
+closure's authority. Lost COMMIT results remain unknown and recover through durable replay.

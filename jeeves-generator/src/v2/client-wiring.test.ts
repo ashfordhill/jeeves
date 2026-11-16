@@ -145,6 +145,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         migrations: [
           "infra/postgres/links-db/000-foundation.sql",
           "infra/postgres/links-db/050-jeeves-idempotency.sql",
+          "infra/postgres/links-db/051-jeeves-local-operations.sql",
         ],
         // Link reader writes it (Links API created it), so it has its own SQL file and schema.
         modules: [
@@ -448,7 +449,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     );
     // A module link calls the module it names, here a route stub with the caller's input.
     expect(links).toContain(
-      '    linkReader: (input) => moduleCall(() => linkReader(dependencies["link-reader"], input as ModuleRequest)),',
+      '    linkReader: (input) => moduleCall(() => invokeLocalModule((LinkReaderModule as { localOperation?: unknown }).localOperation, dependencies["link-reader"], input, () => linkReader(dependencies["link-reader"], input as ModuleRequest))),',
     );
     expect(links).toContain('    statsApi: clients["stats-api:stats-caller"],');
     // A stub with no connected slot still gets its own settings (QL05).
@@ -617,6 +618,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(plan(stack).databases.find((db) => db.resource === "links-db")?.migrations).toEqual([
       "infra/postgres/links-db/000-foundation.sql",
       migration,
+      "infra/postgres/links-db/051-jeeves-local-operations.sql",
     ]);
     expect(jeeves(stack)).toEqual([
       {
@@ -652,6 +654,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(plan(both).databases.find((db) => db.resource === "links-db")?.migrations).toEqual([
       "infra/postgres/links-db/000-foundation.sql",
       migration,
+      "infra/postgres/links-db/051-jeeves-local-operations.sql",
     ]);
     expect(jeeves(both).map((grant) => grant.host)).toEqual(["links-api", "visit-worker"]);
     // A design whose stubs only read a database (v2), or processes off: none.
@@ -872,6 +875,8 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         "  };",
         "  const readModuleSettings = createSettingsReader();",
         "  const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };",
+        '  validateLocalOperationBinding((FrontProbeModule as { localOperation?: unknown }).localOperation, ["store"]);',
+        '  validateLocalOperationBinding((FrontInternalGrantModule as { localOperation?: unknown }).localOperation, ["store"]);',
         "  // Prepare all registered SQL and product credentials before any connection or probe.",
       ].join("\n"),
     );
