@@ -452,6 +452,13 @@ describe("standalone local foundation", () => {
         "SELECT 1 FROM pg_roles WHERE rolname=$1",
         "SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', $1::text, $2::text) AS sql",
         `GRANT \${quote(login.user)} TO CURRENT_USER WITH INHERIT FALSE, SET TRUE`,
+        ...(bundle === processes
+          ? [
+              "SELECT 1 FROM pg_roles WHERE rolname=$1",
+              `CREATE ROLE \${quote(namespace.role)} NOLOGIN NOINHERIT`,
+              `GRANT \${quote(namespace.role)} TO \${quote(db.owner)} WITH INHERIT FALSE, SET TRUE`,
+            ]
+          : []),
         "SELECT pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname=$1",
         `CREATE DATABASE \${quote(db.database)} OWNER \${quote(db.owner)}`,
         `SET ROLE \${quote(db.owner)}`,

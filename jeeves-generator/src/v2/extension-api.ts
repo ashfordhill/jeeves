@@ -16,15 +16,15 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         model.processes?.some((p) => p.shape === "http") ||
         model.selections.some((s) => "host.requestTimeoutMs" in s.inputs);
       const publicLines = [
-        "/** Public extension API v6. Application contracts live in src/contracts/. */",
+        "/** Public extension API v7. Application contracts live in src/contracts/. */",
         'export class NotImplemented extends Error { constructor(what: string) { super("Not implemented: " + what); this.name = "NotImplemented"; } }',
         'export type { OperationContext, OperationFailure, EffectOutcome, PublisherOptions } from "../runtime/operation.ts";',
         'export { OperationError } from "../runtime/operation.ts";',
-        "/** Registered product queries are unavailable until a generated SQL binding installs them. */",
-        "export interface ProductQueries { call(name: string, input: Readonly<Record<string, unknown>>): Promise<unknown>; }",
+        "/** Registered parameterized product operations; no raw SQL, transaction or lifecycle handle. */",
+        "export interface ProductQueries { call(name: string, parameters: readonly unknown[]): Promise<Readonly<{ rows: readonly unknown[]; rowCount: number }>>; }",
         "export interface UnavailableCapability { call(input: unknown): Promise<never>; }",
         "export interface FavoritesHooks { eligible(itemId: string): boolean; }",
-        "export type DatabaseReader = UnavailableCapability; export type DatabaseReadWriter = UnavailableCapability; export type QueueConsumer = UnavailableCapability; export type TokenVerifier = UnavailableCapability; export type HttpTarget = UnavailableCapability;",
+        "export type DatabaseReader = ProductQueries; export type DatabaseReadWriter = ProductQueries; export type QueueConsumer = UnavailableCapability; export type TokenVerifier = UnavailableCapability; export type HttpTarget = UnavailableCapability;",
       ];
       if (has("favorites"))
         publicLines.push(
@@ -112,7 +112,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         gaps: model.selections.flatMap((s) => {
           const reason =
             s.binding.kind === "module-stub"
-              ? "Migrate legacy Custom code to src/extension-api/index.ts. Raw SQL, token verification and arbitrary HTTP target calls are unavailable until registered product handles/authenticated bindings are installed."
+              ? "Migrate legacy Custom code to src/extension-api/index.ts. Use registered product SQL names and positional values for database links. Raw SQL, token verification and arbitrary HTTP target calls remain unavailable."
               : s.binding.kind === "positive-cache-read"
                 ? "The loader receives an unavailable ProductQueries handle; registered product queries are not installed. Supply no raw SQL or private runtime import in the hook."
                 : undefined;

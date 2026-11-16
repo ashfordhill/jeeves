@@ -1,4 +1,3 @@
-import { PGlite } from "@electric-sql/pglite";
 import type { DesignDocument, StudioCommand } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
@@ -33,83 +32,35 @@ type ModuleRow = {
 const modules = (bundle: Bundle) =>
   (bundle.report as unknown as { modules: ModuleRow[] }).modules.filter((row) => row.sql);
 
-/** The product step (v3 contract, section 1), on the export's own `products.mjs`. */
-const products = (await import(
-  new URL("../../templates/local-v2/assets/scripts/products.mjs", import.meta.url).href
-)) as {
-  applyProductSql(
-    owner: Client,
-    db: Db,
-    quote: (name: string) => string,
-    read?: (path: string) => string,
-  ): Promise<void>;
-  grantProductSql(
-    owner: Client,
-    db: Db,
-    runtime: { user: string; host: string; provider?: string }[],
-    quote: (name: string) => string,
-  ): Promise<void>;
-};
-type Client = { query(sql: string, parameters?: unknown[]): Promise<unknown> };
-type Db = {
-  database: string;
-  productState?: {
-    schema: string;
-    access: {
-      host: string;
-      product: {
-        tables: { name: string; operations: string[] }[];
-        views: string[];
-      };
-    }[];
-  };
-  modules?: { module: string; host: string; schema: string; file: string }[];
-};
-/** `common.mjs`'s rule, without its side effects. */
-const quote = (name: string) => {
-  if (!/^[a-z][a-z0-9_]{0,62}$/.test(name)) throw new Error("Invalid bounded SQL identity");
-  return `"${name}"`;
-};
-
 describe("product tables and published views (v3 contract, section 1)", () => {
   const v2 = assemble(runStudioCommands(moduleAuthored(tileLevelTwin(), registry.installed), [on]));
   const v2Off = assemble(moduleAuthored(tileLevelTwin(), registry.installed));
   const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
 
-  it("gives each module that writes a database its own SQL file, a header only", () => {
-    const sql = (bundle: Bundle) =>
-      bundle.files.map((item) => item.path).filter((path) => path.includes("/modules/"));
-    expect(sql(v2).filter((path) => path.endsWith(".sql"))).toEqual([
-      "infra/postgres/metadata-db/modules/handler-writer.sql",
-      "infra/postgres/metadata-db/modules/upload-state-writer.sql",
-      "infra/postgres/view-counts/modules/counter-writer.sql",
+  it("emits one application-owned initial migration per namespace and no re-runnable module files", () => {
+    const migrations = v2.files.filter((item) => item.path.includes("/products/migrations/"));
+    expect(migrations.map((item) => item.path)).toEqual([
+      "infra/postgres/metadata-db/products/migrations/p_upload_owner/0001-initial.sql",
+      "infra/postgres/view-counts/products/migrations/m_counter_writer/0001-initial.sql",
     ]);
-    expect(sql(stack).filter((path) => path.endsWith(".sql"))).toEqual([
-      "infra/postgres/links-db/modules/link-reader.sql",
-    ]);
-    // Yours to write, like a hooks file: the manifest says so.
-    for (const path of sql(v2).filter((item) => item.endsWith(".sql")))
-      expect(v2.manifest.files.find((record) => record.path === path)?.ownership).toBe(
+    expect(v2.files.some((item) => /\/modules\/.*\.sql$/.test(item.path))).toBe(false);
+    for (const item of migrations) {
+      expect(v2.manifest.files.find((record) => record.path === item.path)?.ownership).toBe(
         "generated-extension",
       );
-    const header = text(v2, "infra/postgres/metadata-db/modules/handler-writer.sql");
-    expect(header.split("\n").every((line) => line === "" || line.startsWith("--"))).toBe(true);
-    for (const words of [
-      "-- Lifecycle writer in Video lifecycle worker writes Metadata database",
-      "the setup-only owner o_metadata_db of d_metadata_db",
-      "search_path p_upload_owner",
-      "Keep it re-runnable (IF NOT EXISTS, CREATE OR",
-      "Product namespace p_upload_owner belongs to logical owner upload-owner",
-      "CREATE OR REPLACE VIEW published.<name>",
-      "--   none",
-      "Template implementation tables are excluded",
-    ])
-      expect(header).toContain(words);
-    expect(text(v2, "infra/postgres/view-counts/modules/counter-writer.sql")).toContain(
-      "Template implementation tables are excluded",
+      expect(new TextDecoder().decode(item.bytes)).toContain(
+        "Append versions; never change an applied migration",
+      );
+    }
+    const declarations = json(v2, "infra/postgres/metadata-db/products.json");
+    expect(declarations.namespaces).toHaveLength(1);
+    expect(declarations.namespaces[0].schema).toBe("p_upload_owner");
+    expect(declarations.operations).toEqual([]);
+    expect(stack.files.some((item) => item.path.endsWith("/products/queries/example.sql"))).toBe(
+      true,
     );
-    expect(text(stack, "infra/postgres/links-db/modules/link-reader.sql")).toContain(
-      "-- Link reader, a Data access, in Links API writes Links database",
+    expect(stack.files.some((item) => item.path.endsWith("/products/commands/example.sql"))).toBe(
+      true,
     );
   });
 
@@ -128,13 +79,13 @@ describe("product tables and published views (v3 contract, section 1)", () => {
             module: "handler-writer",
             host: "completion-handler",
             schema: "p_upload_owner",
-            file: "infra/postgres/metadata-db/modules/handler-writer.sql",
+            file: "infra/postgres/metadata-db/products/migrations/p_upload_owner/0001-initial.sql",
           },
           {
             module: "upload-state-writer",
             host: "upload",
             schema: "p_upload_owner",
-            file: "infra/postgres/metadata-db/modules/upload-state-writer.sql",
+            file: "infra/postgres/metadata-db/products/migrations/p_upload_owner/0001-initial.sql",
           },
         ],
       ],
@@ -145,7 +96,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
             module: "counter-writer",
             host: "view-counter",
             schema: "m_counter_writer",
-            file: "infra/postgres/view-counts/modules/counter-writer.sql",
+            file: "infra/postgres/view-counts/products/migrations/m_counter_writer/0001-initial.sql",
           },
         ],
       ],
@@ -158,7 +109,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
         [
           {
             database: "view-counts",
-            file: "infra/postgres/view-counts/modules/counter-writer.sql",
+            file: "infra/postgres/view-counts/products/migrations/m_counter_writer/0001-initial.sql",
             schema: "m_counter_writer",
           },
         ],
@@ -168,7 +119,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
         [
           {
             database: "metadata-db",
-            file: "infra/postgres/metadata-db/modules/upload-state-writer.sql",
+            file: "infra/postgres/metadata-db/products/migrations/p_upload_owner/0001-initial.sql",
             schema: "p_upload_owner",
           },
         ],
@@ -178,7 +129,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
         [
           {
             database: "metadata-db",
-            file: "infra/postgres/metadata-db/modules/handler-writer.sql",
+            file: "infra/postgres/metadata-db/products/migrations/p_upload_owner/0001-initial.sql",
             schema: "p_upload_owner",
           },
         ],
@@ -205,8 +156,17 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     const added = migrate.split("\n").filter((line) => !original.split("\n").includes(line));
     expect(added).toEqual([
       'import { applyProductSql, grantProductSql } from "./products.mjs";',
-      "      // Product tables: each writer module's own SQL file, re-run every time in its schema.",
+      "    ...plan.productLogins,",
+      "    for (const namespace of db.productSql?.namespaces ?? []) {",
+      '      if (!(await admin.query("SELECT 1 FROM pg_roles WHERE rolname=$1", [namespace.role])).rowCount)',
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: exact emitted script assertion
+      "        await admin.query(`CREATE ROLE ${quote(namespace.role)} NOLOGIN NOINHERIT`);",
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: exact emitted script assertion
+      "      await admin.query(`GRANT ${quote(namespace.role)} TO ${quote(db.owner)} WITH INHERIT FALSE, SET TRUE`);",
+      "    const runtime = [...plan.logins, ...plan.providerLogins, ...plan.productLogins].filter(",
+      "      // Product migrations: ordered checksums under a restricted namespace role.",
       "      await applyProductSql(owner, db, quote);",
+      "        if (login.product) continue;",
       "      await grantProductSql(owner, db, runtime, quote);",
     ]);
     // After the views, before the template grants; its grants just before COMMIT.
@@ -266,171 +226,5 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     expect(rows(stack, "visit-worker").find((row) => row.store === "links-db")?.provisioned).toBe(
       "PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; no declared product access; no product DDL or migration credential)",
     );
-  });
-});
-
-describe("products.mjs on PostgreSQL (PGlite)", () => {
-  const file = "infra/postgres/items/modules/item-writer.sql";
-  const db: Db = {
-    database: "d_items",
-    productState: {
-      schema: "m_item_writer",
-      access: [
-        {
-          host: "item-counter",
-          product: {
-            tables: [
-              {
-                name: "items",
-                operations: ["SELECT", "INSERT", "UPDATE", "DELETE"],
-              },
-            ],
-            views: ["items"],
-          },
-        },
-        { host: "reader-api", product: { tables: [], views: ["items"] } },
-      ],
-    },
-    modules: [
-      {
-        module: "item-writer",
-        host: "item-counter",
-        schema: "m_item_writer",
-        file,
-      },
-    ],
-  };
-  const runtime = [
-    { user: "r_items__item_counter", host: "item-counter" },
-    { user: "r_items__reader_api", host: "reader-api" },
-  ];
-  const first = `-- header
-CREATE TABLE IF NOT EXISTS items (id text PRIMARY KEY, title text NOT NULL, visible boolean NOT NULL);
-INSERT INTO items VALUES ('a', 'Apple', true), ('b', 'Hidden', false) ON CONFLICT DO NOTHING;
-CREATE OR REPLACE VIEW published.items AS SELECT id, title FROM items WHERE visible;
-`;
-  /** The owner's one migration transaction, as migrate.mjs runs it. */
-  const migrate = async (pg: PGlite, sql: string) => {
-    const owner = {
-      query: (statement: string, parameters?: unknown[]) =>
-        parameters ? pg.query(statement, parameters) : pg.exec(statement),
-    };
-    await pg.exec("SET ROLE o_items; BEGIN");
-    try {
-      await products.applyProductSql(owner, db, quote, () => sql);
-      await products.grantProductSql(owner, db, runtime, quote);
-      await pg.exec("COMMIT");
-    } catch (error) {
-      await pg.exec("ROLLBACK");
-      throw error;
-    } finally {
-      await pg.exec("RESET ROLE");
-    }
-  };
-  const as = async (pg: PGlite, user: string, sql: string) => {
-    await pg.exec(`SET ROLE ${user}`);
-    try {
-      return (await pg.query<Record<string, unknown>>(sql)).rows;
-    } finally {
-      await pg.exec("RESET ROLE");
-    }
-  };
-  const denied = async (pg: PGlite, user: string, sql: string) => {
-    try {
-      await as(pg, user, sql);
-    } catch (error) {
-      return (error as Error).message;
-    }
-    return "allowed";
-  };
-  const database = async () => {
-    const pg = new PGlite();
-    await pg.exec(`CREATE ROLE o_items; CREATE ROLE r_items__item_counter; CREATE ROLE r_items__reader_api;
-      GRANT CREATE ON DATABASE postgres TO o_items;
-      SET ROLE o_items; CREATE SCHEMA item_count; CREATE TABLE item_count.totals (id text PRIMARY KEY, n int); RESET ROLE;`);
-    return pg;
-  };
-
-  it("grants only declared table operations and the named published view", async () => {
-    const pg = await database();
-    await migrate(pg, first);
-    expect(await as(pg, "r_items__reader_api", "SELECT * FROM published.items")).toEqual([
-      { id: "a", title: "Apple" },
-    ]);
-    expect(await denied(pg, "r_items__reader_api", "SELECT * FROM m_item_writer.items")).toBe(
-      "permission denied for schema m_item_writer",
-    );
-    expect(
-      await denied(pg, "r_items__reader_api", "INSERT INTO published.items VALUES ('c', 'C')"),
-    ).toMatch(/permission denied/);
-    // The writer's tile uses its tables, and reads published too; nobody reads public's.
-    await as(
-      pg,
-      "r_items__item_counter",
-      "INSERT INTO m_item_writer.items VALUES ('c', 'Cherry', true)",
-    );
-    expect(
-      await as(pg, "r_items__item_counter", "SELECT count(*)::int AS n FROM m_item_writer.items"),
-    ).toEqual([{ n: 3 }]);
-    expect(
-      await as(pg, "r_items__item_counter", "SELECT id FROM published.items ORDER BY id"),
-    ).toEqual([{ id: "a" }, { id: "c" }]);
-    // Unqualified names landed in the module's schema, and search_path was reset after.
-    expect(
-      (
-        await pg.query(
-          "SELECT table_schema FROM information_schema.tables WHERE table_name = 'items' ORDER BY 1",
-        )
-      ).rows,
-    ).toEqual([{ table_schema: "m_item_writer" }, { table_schema: "published" }]);
-    // Later views grant nothing: there are no blanket/default privileges.
-    await pg.exec(
-      "SET ROLE o_items; CREATE VIEW published.titles AS SELECT title FROM m_item_writer.items; RESET ROLE",
-    );
-    expect(await denied(pg, "r_items__reader_api", "SELECT * FROM published.titles")).toMatch(
-      /permission denied/,
-    );
-    await pg.close();
-  });
-
-  it("re-runs at every start: an edited file applies and data is kept; a failing one changes nothing", async () => {
-    const pg = await database();
-    await migrate(pg, first);
-    await as(
-      pg,
-      "r_items__item_counter",
-      "INSERT INTO m_item_writer.items VALUES ('c', 'Cherry', true)",
-    );
-    // The same file again is a no-op.
-    await migrate(pg, first);
-    // The next start's edited file: a new column and a wider view.
-    const edited = `${first}ALTER TABLE items ADD COLUMN IF NOT EXISTS price int NOT NULL DEFAULT 0;
-UPDATE items SET price = 3 WHERE id = 'c';
-CREATE OR REPLACE VIEW published.items AS SELECT id, title, price FROM items WHERE visible;
-`;
-    await migrate(pg, edited);
-    expect(
-      await as(pg, "r_items__reader_api", "SELECT * FROM published.items ORDER BY id"),
-    ).toEqual([
-      { id: "a", title: "Apple", price: 0 },
-      { id: "c", title: "Cherry", price: 3 },
-    ]);
-    // A failing file names itself and rolls the whole database back.
-    await expect(migrate(pg, `${edited}CREATE TABLE broken (;`)).rejects.toThrow(
-      `Product SQL ${file} failed`,
-    );
-    expect(
-      await as(pg, "r_items__reader_api", "SELECT count(*)::int AS n FROM published.items"),
-    ).toEqual([{ n: 2 }]);
-    expect((await pg.query("SELECT to_regclass('m_item_writer.broken') AS t")).rows).toEqual([
-      { t: null },
-    ]);
-    // A database without a product step (an identity's) is left alone.
-    await products.applyProductSql(
-      { query: () => Promise.reject(new Error("no")) },
-      { database: "i_x" },
-      quote,
-    );
-    await pg.close();
   });
 });

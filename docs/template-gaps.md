@@ -54,8 +54,19 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 Operation budgets/cancellation and typed refused/definite-failure/unknown outcomes now reach
 installed template and stub adapters. Queue identities/attributes are bounded; delivery gets a
 fresh execution budget. Private legacy target transport is destination/body/header bounded, but
-public SQL and authenticated target handles remain explicit selection-specific custom gaps.
+raw SQL and authenticated target handles remain unavailable; RG07 installs registered product SQL
+on declared stub database links with product-only credentials and READ ONLY queries. Template
+loaders without that binding remain explicit selection-specific gaps.
 Unknown effects go to the existing terminal queue path without intentional runner replay. This
 does not prevent broker redelivery after a crash; unguarded Custom external effects still require
 an installed recovery/idempotency capability. No provider/cloud or once-only-effect certification
 is claimed. [Unit evidence](plans/reliable-generation/evidence/rg03/README.md).
+
+## Versioned product state (RG07)
+
+New exports replace re-runnable module files with ordered checksummed migrations and one
+protected namespace history, with restricted product DDL roles and actual database denials for
+protected state. Registered parameterized operations remain inside compiled ownership/grant and
+module-link maxima. There is no arbitrary SQL handle or schema designer. Existing SQL requires
+a reviewed external baseline and explicit API v7 migration; no automatic data conversion occurs.
+Real concurrent migration/login proof remains RG14.

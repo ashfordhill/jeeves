@@ -93,7 +93,10 @@ describe("local.tile-processes", () => {
       "infra/postgres/links-db/000-foundation.sql",
       // Links API's stubs write it, so it has the idempotency records (QL04).
       "infra/postgres/links-db/050-jeeves-idempotency.sql",
-      "infra/postgres/links-db/modules/link-reader.sql",
+      "infra/postgres/links-db/products.json",
+      "infra/postgres/links-db/products/commands/example.sql",
+      "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
+      "infra/postgres/links-db/products/queries/example.sql",
       "scripts/products.mjs",
       "src/http-errors.hooks.ts",
       "src/modules/entry.ts",
@@ -112,6 +115,8 @@ describe("local.tile-processes", () => {
       "src/runtime/objects.ts",
       "src/runtime/postgres.ts",
       "src/runtime/process.ts",
+      "src/runtime/product-contract.ts",
+      "src/runtime/product-operations.ts",
       "src/runtime/search.ts",
       "src/runtime/tile-http.ts",
       "src/runtime/tile-loop.ts",
@@ -1659,7 +1664,7 @@ describe("stubs declare their settings and startup refuses an invalid one (QL05)
       const first = source.indexOf("  () => readSettings(");
       expect(source.indexOf("const declared = {"), tile).toBeLessThan(pass);
       expect(first, tile).toBeGreaterThan(pass);
-      expect(first, tile).toBeLessThan(source.indexOf("await databaseClient("));
+      expect(first, tile).toBeLessThan(source.indexOf("await productDatabaseClient("));
     }
   });
 });

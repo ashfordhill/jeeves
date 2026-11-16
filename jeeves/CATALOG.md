@@ -543,8 +543,11 @@ logical owner for chat. Normal forms contain identity, useful installed settings
 with API** choice, and exact database product access. `shareOwner` and `setDatabaseAccess` are
 shared mouse/chat commands. Same-owner product modules share a declared setup-owned namespace;
 process credentials remain distinct, application roles receive no DDL, and newly published views
-grant nothing by default. Conflicting owner connections refuse atomically. Extension API v6
-requires explicit migration from v5; existing product namespace changes require a fresh export
+grant nothing by default. Conflicting owner connections refuse atomically. Extension API v7
+adds checked product migration/query/command scaffolds and registered parameterized SQL handles
+on stub database links; product-only credentials remain separate from template privileges and
+queries run READ ONLY. Product migrations use namespace-only roles and one protected checksum
+history. Old re-runnable SQL requires an explicit reviewed external baseline and staged API migration; existing product namespace changes require a fresh export
 and explicit application/data migration. Removal
 previews and Undo still preserve declarations.
 V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new

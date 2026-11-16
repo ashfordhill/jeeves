@@ -25,6 +25,7 @@ export function abortTransaction(tx: Tx, error: unknown): never {
 async function executeTransaction<T>(
   pool: TransactionPool,
   effect: (tx: Tx) => Promise<T>,
+  options: { readOnly?: boolean },
 ): Promise<T> {
   const client = await pool.connect().catch((error: unknown) => {
     if (error instanceof Error)
@@ -45,7 +46,7 @@ async function executeTransaction<T>(
     discard = false;
   try {
     assertOperation();
-    await client.query("BEGIN");
+    await client.query(options.readOnly ? "BEGIN READ ONLY" : "BEGIN");
     began = true;
     const result = await effect(tx);
     assertTransaction(tx);
@@ -96,15 +97,15 @@ async function executeTransaction<T>(
 
 /** The underlying transaction retains its connection through final COMMIT/ROLLBACK settlement.
  * A caller timeout never releases the connection or grants permission to retry its mutation. */
-export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>): Promise<T> {
+export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>, options: {readOnly?: boolean} = {}): Promise<T> {
   return dependency(
     {
-      mutation: true,
+      mutation: !options.readOnly,
       preserveDefinite: true,
       definite: (error) => {
         return (error as { outcome?: string })?.outcome === "definite-failure";
       },
     },
-    () => executeTransaction(pool, effect),
+    () => executeTransaction(pool, effect, options),
   );
 }

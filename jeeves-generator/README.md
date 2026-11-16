@@ -1233,3 +1233,46 @@ HTTP/process drain completion and the existing ten-second final deadline.
 Updates from API v3 require `--ack-extension-api=4` and the staged interface/boundary check. Hooks
 are preserved; the shared formatter is added as an application-owned scaffold. Review assumptions
 about old provider-detail error bodies and automatic retries. No hook is silently rewritten.
+
+## Product SQL contract (extension API v7)
+
+Runnable exports use application-owned `infra/postgres/<database>/products.json`, ordered
+migrations under `products/migrations/<schema>/`, and registered SQL under `products/queries/`
+and `products/commands/`. Legacy `modules/*.sql` files are preserved but never executed.
+A namespace has one ordered checksum history; add a four-digit version instead of editing an
+applied file. Setup locks execution and commits product DDL and its protected ledger together.
+Failures roll back both. Real concurrent PostgreSQL migrator evidence belongs to RG14.
+
+The declaration lists `version: 1`, `namespaces` (`schema`, `migrations: [{version, file}]`),
+`tables` (`schema`, `name`), `views` (`schema`, published `name`, product view `source`), and
+`operations`. Each operation has a stable `name`, `host`, `module`, `kind` (`query` or `command`),
+`file`, `parameters` (0–32), and `relations: [{schema, name, operations}]`; relation operations
+are lowercase `select`, `insert`, `update`, `delete`. All arrays are bounded at 128 entries.
+The declaration can narrow the compiled diagram grants and actual module database links; it
+cannot add a dependency or name protected/foreign schemas. Create source views inside the
+product namespace; generated setup alone exposes declared views in `published`.
+
+A stub database dependency exposes only `call(name, positionalValues)`, returning copied/frozen
+`{rows, rowCount}`. Values are null, strings, finite numbers or booleans; bind them with `$1`
+through `$n`. Register one SELECT per query or one INSERT/UPDATE/DELETE per command. Queries
+execute in a database READ ONLY transaction, including when the same process can run commands.
+The generated transaction owns commit/rollback and keeps its existing unknown-outcome rules.
+Policies get no SQL handle. Template loaders without an installed registered binding remain gaps.
+
+Configuration is validated before connections. Product operations use separate exact product
+login credentials and pool scopes. Migration SQL runs as a namespace-only NOLOGIN/NOINHERIT role,
+with no CREATE on `published`, template-state or ledger authority. Setup owns the ledger and
+grant changes; its credential never reaches processes. The lexical checks reject transaction,
+role and lifecycle controls; they are not a SQL parser or hostile-code sandbox. PostgreSQL
+privileges and READ ONLY enforce the boundary.
+
+For an old export, preserve the application/database and review the actual schema/data first.
+Write an explicit initial baseline and subsequent migrations in a fresh export. Perform existing
+database baselining/data movement externally; neither the runner nor updater executes legacy SQL
+or infers a conversion. A prepared same-namespace update requires the declaration/migration files
+and `.jeeves/product-sql-migration.json` with `version: 1`, `mode: "external-reviewed"`, and
+`legacy: [{file, sha256}]` for every old module SQL file using its current hash. This records the
+application's external review, not database migration proof. Missing or stale material refuses
+without changing existing files, even with `--ack-extension-api=7`. Namespace changes still
+require a fresh export and explicit application/data migration. The complete generated migration
+guide is `.jeeves/extensions.md`; acknowledgement also requires its staged checker/TypeScript build.

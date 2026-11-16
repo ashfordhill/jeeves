@@ -85,9 +85,9 @@ async function snapshot(root: string): Promise<unknown> {
 
 describe("extension contract migration", () => {
   it("emits the installed capability guide/version and verifies real output responsibility", () => {
-    expect(real.manifest.extensionApi.version).toBe(6);
+    expect(real.manifest.extensionApi.version).toBe(7);
     expect(real.manifest.extensionApi.boundary).toBe("checked-extensions");
-    expect(real.report.extensionApi.version).toBe(6);
+    expect(real.report.extensionApi.version).toBe(7);
     expect(real.report.capabilities).toHaveLength(4);
     expect(
       Buffer.from(
@@ -175,20 +175,20 @@ describe("extension contract migration", () => {
   });
 });
 
-it("RG06 refuses a v5-to-v6 update until the exact database access migration is explicitly acknowledged", async () => {
+it("RG07 refuses a v6-to-v7 update until the exact database access migration is explicitly acknowledged", async () => {
   const root = await mkdtemp(join(tmpdir(), "jeeves-rg05-migration-"));
   roots.push(root);
   const app = join(root, "app");
   await exportNewDirectory(real.files, app);
   const manifest = {
     ...real.manifest,
-    extensionApi: { ...real.manifest.extensionApi, version: 5 },
+    extensionApi: { ...real.manifest.extensionApi, version: 6 },
   };
   await writeFile(join(app, ".jeeves/manifest.json"), JSON.stringify(manifest));
   const before = await snapshot(app);
   const result = await updateDirectory(real, app, { check: true });
-  expect(result.refused.join("\n")).toContain("Extension API 5 -> 6 requires migration");
-  expect(result.refused.join("\n")).toContain("--ack-extension-api=6");
+  expect(result.refused.join("\n")).toContain("Extension API 6 -> 7 requires migration");
+  expect(result.refused.join("\n")).toContain("--ack-extension-api=7");
   expect(result.refused.join("\n")).toContain("src/modules/account-api/favorite-items.hooks.ts");
   expect(await snapshot(app)).toEqual(before);
 });
@@ -251,7 +251,10 @@ it("RG06 refuses actual legacy-to-shared product namespace migration even with A
   await exportNewDirectory(prior.files, app);
   const sql =
     "-- application-owned product SQL must survive\nCREATE TABLE items(id text PRIMARY KEY);\n";
-  await writeFile(join(app, "infra/postgres/links-db/modules/link-reader.sql"), sql);
+  await writeFile(
+    join(app, "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql"),
+    sql,
+  );
   const next = assembleV2({ designJson: canonicalJson(ownershipDesign()) }, registry);
   // Current API and v5 both refuse; acknowledgements cannot authorize moving old product data.
   for (const version of [6, 5]) {
@@ -269,7 +272,10 @@ it("RG06 refuses actual legacy-to-shared product namespace migration even with A
       expect(result.refused.join("\n")).toContain("application/data explicitly");
       expect(await snapshot(app)).toEqual(before);
       expect(
-        await readFile(join(app, "infra/postgres/links-db/modules/link-reader.sql"), "utf8"),
+        await readFile(
+          join(app, "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql"),
+          "utf8",
+        ),
       ).toBe(sql);
     }
   }
@@ -300,4 +306,51 @@ it("RG06 named-view audience edits keep legacy writer schemas and need no namesp
   expect(db.productState.schema).toBeUndefined();
   expect(db.modules.map((item: { schema: string }) => item.schema)).toEqual(["m_link_reader"]);
   expect((await updateDirectory(next, app, { check: true })).refused).toEqual([]);
+});
+
+it("RG07 refuses legacy product SQL without an explicit external baseline, preserving all files even with API acknowledgement", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg07-baseline-"));
+  roots.push(root);
+  const app = join(root, "app");
+  const next = assembleV2({ designJson: canonicalJson(ownershipDesign()) }, registry);
+  await exportNewDirectory(next.files, app);
+  const oldFiles = ["link-reader", "visit-writer"].map((module) => {
+    const path = `infra/postgres/links-db/modules/${module}.sql`;
+    const sample = next.manifest.files.find((row) => row.ownership === "generated-extension");
+    if (!sample) throw new Error("missing extension sample");
+    return { ...sample, path, sha256: sha256("-- old scaffold\n"), bytes: 16 };
+  });
+  await mkdir(join(app, "infra/postgres/links-db/modules"));
+  for (const row of oldFiles) await writeFile(join(app, row.path), "-- old scaffold\n");
+  const manifest = {
+    ...next.manifest,
+    files: [...next.manifest.files, ...oldFiles],
+    extensionApi: { ...next.manifest.extensionApi, version: 6 },
+  };
+  await writeFile(join(app, ".jeeves/manifest.json"), JSON.stringify(manifest));
+  const legacy = "infra/postgres/links-db/modules/link-reader.sql";
+  const sql = "-- preserved legacy content\nCREATE TABLE items(id text PRIMARY KEY);\n";
+  await writeFile(join(app, legacy), sql);
+  const before = await snapshot(app);
+  for (const check of [true, false]) {
+    const result = await updateDirectory(next, app, { check, acknowledgeExtensionApi: 7 });
+    expect(result.refused.join("\n")).toContain("Product SQL baseline/migration required");
+    expect(result.refused.join("\n")).toContain("never executes old SQL or converts schemas");
+    expect(await snapshot(app)).toEqual(before);
+  }
+  // A stale receipt cannot acknowledge edited application SQL.
+  const rows = manifest.files
+    .filter((row) => /\/modules\/.*\.sql$/.test(row.path))
+    .map((row) => ({ file: row.path, sha256: row.sha256 }));
+  await writeFile(
+    join(app, ".jeeves/product-sql-migration.json"),
+    JSON.stringify({ version: 1, mode: "external-reviewed", legacy: rows }),
+  );
+  const withReceipt = await snapshot(app);
+  expect(
+    (await updateDirectory(next, app, { check: false, acknowledgeExtensionApi: 7 })).refused.join(
+      "\n",
+    ),
+  ).toContain("baseline/migration required");
+  expect(await snapshot(app)).toEqual(withReceipt);
 });

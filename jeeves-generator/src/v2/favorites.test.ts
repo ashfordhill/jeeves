@@ -200,7 +200,7 @@ CREATE INDEX ON "favorite_items"."favorites"(account, added_at DESC, item);
     expect(report(bundle).modules.find((item) => item.module === "favorite-items")?.sql).toEqual([
       {
         database: "favorites",
-        file: "infra/postgres/favorites/modules/favorite-items.sql",
+        file: "infra/postgres/favorites/products/migrations/m_favorite_items/0001-initial.sql",
         schema: "m_favorite_items",
       },
     ]);

@@ -433,10 +433,15 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
     });
     expect(services["app-completion-handler"]).toMatchObject({
       build: { context: ".", target: "app" },
-      secrets: ["sql-metadata-db--completion-handler", "broker-password"],
+      secrets: [
+        "sql-metadata-db--completion-handler",
+        "product-metadata-db--completion-handler",
+        "broker-password",
+      ],
     });
     expect(services["app-view-counter"]?.secrets).toEqual([
       "sql-view-counts--view-counter",
+      "product-view-counts--view-counter",
       "broker-password",
     ]);
     // The Index writer probes its index's search service too (tile-processes review row 8).

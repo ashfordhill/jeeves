@@ -262,6 +262,10 @@ private product tables and exact operations; `product.views[]` names the reader'
 shared `p_<owner ID>` schema and role audiences. Different process IDs retain different logins.
 Display renames change none of those identities. Template implementation grants are separate;
 product declarations cannot name them. There is no blanket published-view grant or runtime DDL
-credential. Versioned product migration execution and public registered SQL handles are not yet
-installed; extension API v6 refuses an unacknowledged v5 update, and namespace changes require an
-explicit application/data migration to a fresh export.
+credential. Extension API v7 adds application-owned versioned product declarations, checksummed
+namespace migrations and registered parameterized SQL on stub database links. Product-only runtime
+credentials remain separate from template credentials; queries run READ ONLY. Migration SQL uses
+a namespace-only role while setup owns the protected ledger and published-view grants. These
+scaffolds do not add diagram settings or a schema designer. Legacy SQL updates require an explicit
+external baseline and staged API migration; namespace changes still require a fresh export and
+explicit application/data migration. See the [product SQL contract](../jeeves-generator/README.md#product-sql-contract-extension-api-v7).

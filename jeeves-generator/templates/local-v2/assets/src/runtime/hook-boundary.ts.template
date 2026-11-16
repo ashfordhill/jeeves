@@ -33,7 +33,7 @@ export function productHooks<T>(hooks: T): T {
   return wrap(hooks, "") as T;
 }
 export function productQueries(module: string) {
-  return Object.freeze({ async call(_name: string, _input: Readonly<Record<string, unknown>>): Promise<never> {
+  return Object.freeze({ async call(_name: string, _input: readonly unknown[]): Promise<never> {
     throw new Error(`Not implemented: registered product queries for ${module}`);
   } });
 }

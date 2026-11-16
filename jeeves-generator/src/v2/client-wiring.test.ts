@@ -128,6 +128,15 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(plan.databases).toEqual([
       {
         resource: "links-db",
+        productSql: {
+          version: 1,
+          file: "infra/postgres/links-db/products.json",
+          namespaces: [{ schema: "m_link_reader", role: "pm_links_db_m_link_reader" }],
+          bindings: [
+            { host: "links-api", module: "link-reader", access: "read-write" },
+            { host: "visit-worker", module: "visit-writer", access: "read" },
+          ],
+        },
         database: "d_links_db",
         owner: "o_links_db",
         secret: "owner-links-db",
@@ -142,7 +151,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
             module: "link-reader",
             host: "links-api",
             schema: "m_link_reader",
-            file: "infra/postgres/links-db/modules/link-reader.sql",
+            file: "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
           },
         ],
       },
@@ -219,6 +228,8 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       "owner-links-db",
       "sql-links-db--links-api",
       "sql-links-db--visit-worker",
+      "product-links-db--links-api",
+      "product-links-db--visit-worker",
     ]);
     // Each process gets its credentials and waits for each provider it uses, healthy.
     const needs = (name: string) => [
@@ -227,7 +238,12 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     ];
     expect(needs("app-links-api")).toEqual([
       ["cache-links-cache", "local-broker", "local-postgres"],
-      ["sql-links-db--links-api", "cache-links-cache", "broker-password"],
+      [
+        "sql-links-db--links-api",
+        "product-links-db--links-api",
+        "cache-links-cache",
+        "broker-password",
+      ],
     ]);
     expect(needs("app-stats-api")).toEqual([["search-stats-index"], []]);
     expect(needs("app-upload-api")).toEqual([
@@ -236,7 +252,12 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     ]);
     expect(needs("app-visit-worker")).toEqual([
       ["local-broker", "local-objects", "local-postgres"],
-      ["sql-links-db--visit-worker", "s3-visit-worker", "broker-password"],
+      [
+        "sql-links-db--visit-worker",
+        "product-links-db--visit-worker",
+        "s3-visit-worker",
+        "broker-password",
+      ],
     ]);
     // Credentials are generated at first run (setup.mjs and bootstrap.mjs); none is in the export.
     expect(stack.files.some((file) => file.path.startsWith(".runtime/"))).toBe(false);
@@ -387,7 +408,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(plan.providers).toEqual(["local-broker"]);
     // Each such dependency answers "Not implemented" naming why; the export still compiles.
     expect(text(bundle, "src/processes/links-api.ts")).toContain(
-      'linksDb: unavailable<LinkReaderDependencies["linksDb"]>("Links database for Link reader (requires a registered product capability binding)"),',
+      'linksDb: unavailable<LinkReaderDependencies["linksDb"]>("Links database for Link reader (its provider isn\'t provisioned locally)"),',
     );
     expect(stores(bundle, "stats-api")).toEqual([
       expect.objectContaining({
@@ -404,7 +425,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         "  const probe = createProbeLog(config.tile);",
         "  const clients = {",
         '    "links-cache": await cacheClient(scope, probe, { cache: "links-cache" }),',
-        '    "links-db": await databaseClient(scope, probe, { tile: config.tile, resource: "links-db" }),',
+        '    "product:links-db:link-reader": await productDatabaseClient(scope, probe, preparedProduct["product:links-db:link-reader"]),',
         '    "stats-api": httpTarget({ tile: "stats-api" }),',
         '    "visits": await queuePublisher(scope, probe, { queue: "visits", mode: "topic" }, brokerState(config.tile, failure, "broker publish visits")),',
         "  };",
@@ -600,7 +621,9 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       "links-db visit-worker",
     ]);
     // Its product SQL header lists no Jeeves table as a template's.
-    expect(text(stack, "infra/postgres/links-db/modules/link-reader.sql")).not.toContain("jeeves");
+    expect(
+      text(stack, "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql"),
+    ).not.toContain("jeeves");
     // Two tiles that write it (one owner package): one migration, a grant for each.
     const shared = runStudioCommands(stubStackDesign(), [on]);
     const studio = shared.architecture?.studio;
@@ -708,8 +731,9 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    "events": await queuePublisher(scope, probe, { queue: "events", mode: "work-queue" }, brokerState(config.tile, failure, "broker publish events")),',
         '    "hot": await cacheClient(scope, probe, { cache: "hot" }),',
         '    "identity": identityTarget({ identity: "identity" }),',
+        '    "product:store:front-internal-grant": await productDatabaseClient(scope, probe, preparedProduct["product:store:front-internal-grant"]),',
+        '    "product:store:front-probe": await productDatabaseClient(scope, probe, preparedProduct["product:store:front-probe"]),',
         '    "provider": externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
-        '    "store": await databaseClient(scope, probe, { tile: config.tile, resource: "store" }),',
         "  };",
       ].join("\n"),
     );
@@ -717,7 +741,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       '    provider: unavailable<FrontProbeDependencies["provider"]>("Provider for Probe (requires a registered product capability binding)"),\n    identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),\n',
     );
     expect(front).toContain(
-      'import { brokerBinding, cacheClient, cacheClientEndpoint, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint, externalTarget, identityTarget, queuePublisher, unavailable } from "../runtime/module-clients.ts";',
+      'import { brokerBinding, cacheClient, cacheClientEndpoint, checkConfiguration, createProbeLog, databaseEndpoint, externalTarget, identityTarget, prepareProductDatabase, productDatabaseClient, queuePublisher, unavailable } from "../runtime/module-clients.ts";',
     );
     expect(front).toContain("requires a registered product capability binding");
     // Neither has a probe: each is built before the sign-in and the service, and reads its URL then.
@@ -739,10 +763,11 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         "    () => brokerBinding(),",
         '    () => cacheClientEndpoint("hot"),',
         '    () => identityTarget({ identity: "identity" }),',
-        '    () => externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
         '    () => databaseEndpoint("store"),',
+        '    () => externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),',
         '    () => readSecret("broker-password"),',
         '    () => readSecret("cache-hot"),',
+        '    () => readSecret("product-store--front"),',
         '    () => readSecret("sql-store--front"),',
         "    () => signInSettings(),",
         // Then each stub's declared settings (QL05).
@@ -779,6 +804,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    () => databaseEndpoint("tally-db"),',
         "    () => brokerBinding(),",
         '    () => readSecret("broker-password"),',
+        '    () => readSecret("product-tally-db--tally"),',
         '    () => readSecret("sql-tally-db--tally"),',
         '    () => readSettings("tally-count", declared["tally-count"]),',
         "  ]);",
@@ -786,7 +812,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       ].join("\n"),
     );
     expect(tally).toContain(
-      'import { brokerBinding, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint, unavailable } from "../runtime/module-clients.ts";',
+      'import { brokerBinding, checkConfiguration, createProbeLog, databaseEndpoint, prepareProductDatabase, productDatabaseClient } from "../runtime/module-clients.ts";',
     );
     expect(tally).not.toContain("signInSettings");
     const clients = text(probe, "src/runtime/module-clients.ts");
@@ -831,13 +857,17 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    "front-probe": (FrontProbeModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),',
         '    "front-internal-grant": (FrontInternalGrantModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),',
         "  };",
-        "  // Configuration:",
+        "  // Prepare all registered SQL and product credentials before any connection or probe.",
       ].join("\n"),
     );
     // Read in the pass, before any client is built or probed, then again for the dependencies.
     const pass = front.indexOf('    () => readSettings("front-probe", declared["front-probe"]),');
     expect(pass).toBeGreaterThan(front.indexOf("    () => signInSettings(),"));
-    for (const later of ["await queuePublisher(", "await databaseClient(", "createTileGuard({"])
+    for (const later of [
+      "await queuePublisher(",
+      "await productDatabaseClient(",
+      "createTileGuard({",
+    ])
       expect(pass, later).toBeLessThan(front.indexOf(later));
     expect(front).toContain(
       '    identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),\n    settings: readSettings("front-probe", declared["front-probe"]) as FrontProbeDependencies["settings"],\n  };',

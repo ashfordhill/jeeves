@@ -57,8 +57,9 @@ type Client = {
   key: string;
   section: Exclude<ClientSection, "broker" | "pubsub-loop">;
   call: string;
-  name?: "externalTarget" | "identityTarget";
+  name?: "externalTarget" | "identityTarget" | "productDatabaseClient";
   check?: { name: string; call: string };
+  prepare?: string;
 };
 
 /** An External API's base URL variable (QG20), `JEEVES_EXTERNAL_<ID>_URL`. */
@@ -293,6 +294,21 @@ export function stubClients(
             property,
             unavailable(property, target.name, "its provider isn't provisioned locally"),
           ];
+        if (kind === "database")
+          return [
+            property,
+            use({
+              key: `product:${target.element}:${module.component}`,
+              section: "database",
+              name: "productDatabaseClient",
+              call: `await productDatabaseClient(scope, probe, preparedProduct[${text(`product:${target.element}:${module.component}`)}])`,
+              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)} })`,
+              check: {
+                name: "databaseEndpoint",
+                call: `databaseEndpoint(${text(store.resource)})`,
+              },
+            }),
+          ];
         return [property, use(storeClient(store))];
       }
       if (kind === "application") {
@@ -322,16 +338,7 @@ export function stubClients(
     // Legacy clients remain private for startup/provisioning compatibility. Public extensions
     // receive a named gap until a registered SQL or authenticated target binding exists.
     for (const item of properties) {
-      if (
-        ![
-          "DatabaseReader",
-          "DatabaseReadWriter",
-          "QueueConsumer",
-          "TokenVerifier",
-          "HttpTarget",
-        ].includes(item.type)
-      )
-        continue;
+      if (!["QueueConsumer", "TokenVerifier", "HttpTarget"].includes(item.type)) continue;
       const value = values.find(([property]) => property === item.property);
       if (value)
         value[1] = unavailable(
@@ -350,7 +357,8 @@ export function stubClients(
   }
   // Every provisioned store gets its client and probe, even one only a library stub uses.
   for (const store of stores)
-    if (!store.unsupported && store.access !== "consume") use(storeClient(store));
+    if (!store.unsupported && store.access !== "consume" && store.kind !== "database")
+      use(storeClient(store));
   // A publisher and a stub's RabbitMQ loop read the broker's endpoint (`brokerBinding`); a loop on
   // a Pub/Sub topic consumes its tile's subscription (`pubsubLoop`, QG08), probed at its start.
   if (sections.has("queue") || stores.some((store) => store.access === "consume" && !store.pubsub))
@@ -375,6 +383,8 @@ export function stubClients(
         }[client.section],
     });
   if (probed) imports.push({ from: clients, name: "createProbeLog" });
+  if (list.some((client) => client.prepare))
+    imports.push({ from: clients, name: "prepareProductDatabase" });
   // The configuration pass (QG31): every reader these clients, their loops and the tile's sign-in
   // use, each once (by its text), so a wrong setting fails before any client is built or probed.
   const checks = new Map<string, { name: string; from: string }>();
@@ -392,8 +402,10 @@ export function stubClients(
   const secrets = new Set<string>();
   for (const store of stores) {
     if (store.unsupported) continue;
-    if (store.kind === "database") secrets.add(`sql-${store.resource}--${process.tile}`);
-    else if (store.kind === "cache") secrets.add(`cache-${store.resource}`);
+    if (store.kind === "database") {
+      secrets.add(`sql-${store.resource}--${process.tile}`);
+      secrets.add(`product-${store.resource}--${process.tile}`);
+    } else if (store.kind === "cache") secrets.add(`cache-${store.resource}`);
     else if (store.kind === "object-store") secrets.add(`s3-${process.tile}`);
   }
   if (sections.has("broker")) secrets.add("broker-password");
@@ -427,6 +439,16 @@ export function stubClients(
         "const declared = {",
         ...declarations,
         "};",
+        ...(list.some((client) => client.prepare)
+          ? [
+              "// Prepare all registered SQL and product credentials before any connection or probe.",
+              "const preparedProduct = {",
+              ...list
+                .filter((client) => client.prepare)
+                .map((client) => `  ${text(client.key)}: ${client.prepare},`),
+              "};",
+            ]
+          : []),
         "// Configuration: every variable these clients, the tile's sign-in and its stubs' settings read,",
         "// checked before any client is built or probed; one wrong setting fails startup naming it,",
         "// several are named together (a stub's first).",

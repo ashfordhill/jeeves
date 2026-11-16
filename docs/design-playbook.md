@@ -1824,3 +1824,13 @@ unrelated owners. Product modules share the declared owner's namespace, created 
 runs. Keep that namespace stable when permissions change. Grant table operations and published
 views by name: publishing a second view must not silently widen every reader's access. Template
 implementation tables remain separate from product declarations.
+
+## 2026-11-16 RG07: SQL names and SQL authority need separate checks
+
+A registered query's SELECT prefix does not establish a read effect: a function inside SELECT
+can write. Keep registered names, parameters and relation declarations finite, then enforce reads
+with a database READ ONLY transaction. Product execution needs its own credential scope when a
+process also has template-table grants; sharing a process must not accidentally share that pool.
+Migration DDL runs under the product namespace role while generated setup owns the locked checksum
+history and ledger transition in the same transaction. Lexical refusals catch ordinary control
+mistakes; database privileges enforce protected-state boundaries, without a SQL sandbox claim.

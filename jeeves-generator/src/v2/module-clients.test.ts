@@ -59,7 +59,7 @@ const check = `
     return value;
   };`;
 const fakes: Record<string, string> = {
-  "../features/local-bindings.ts": `export const localLogins = [{ resource: "links-db", host: "links-api", database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db--links-api" }, { resource: "links-db", host: "reader", database: "d_links_db", user: "r_reader", secret: "sql-reader" }];`,
+  "../features/local-bindings.ts": `export const localLogins = [{ resource: "links-db", host: "links-api", database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db--links-api" }, { resource: "links-db", host: "reader", database: "d_links_db", user: "r_reader", secret: "sql-reader" }]; export const productLogins = []; export const productDatabases = [];`,
   "./postgres.ts": `${check}
     export function createPostgres(options) {
       fake.endpoints.push(["postgres", options.hostname, options.port]);
@@ -190,6 +190,16 @@ for (const name of ["transaction", "idempotency", "process"])
       bundle.files.find((file) => file.path === `src/runtime/${name}.ts`)?.bytes,
     ),
   );
+// Load the exact emitted registered SQL helpers, retaining their real shared operation context.
+for (const name of ["product-contract", "hook-boundary", "product-operations"]) {
+  fakes[`./${name}.ts`] = stripTypeScriptTypes(
+    new TextDecoder().decode(
+      bundle.files.find((file) => file.path === `src/runtime/${name}.ts`)?.bytes,
+    ),
+  ).replace(/from "([^"]+)"/g, (match, from: string) =>
+    fakes[from] ? `from "${dataUrl(fakes[from])}"` : match,
+  );
+}
 // A stub loop's Pub/Sub subscriber (QG08) shares the loop's runtime: the exact delivery.ts, and a
 // stand-in for tile-loop.ts, whose subscriber tile-loop.test.ts runs.
 fakes["./delivery.ts"] = stripTypeScriptTypes(
@@ -286,6 +296,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
   afterEach(() => {
     fake.calls.length = 0;
     fake.endpoints.length = 0;
+    fake.connections.length = 0;
     fake.fail = undefined;
     fake.hang = undefined;
     lines.length = 0;
@@ -397,11 +408,50 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       expect(
         fake.calls.filter(([kind, user]) => kind === "createPostgres" && user === "r_reader"),
       ).toHaveLength(1);
+      // Registered product execution must never reuse the broader template/stub pool.
+      const prepared = {
+        configuration: {
+          ...clients.databaseEndpoint("links-db"),
+          login: {
+            resource: "links-db",
+            host: "links-api",
+            database: "d_links_db",
+            user: "pr_links_db__links_api",
+            secret: "product-links-db--links-api",
+            product: true,
+          },
+          poolSize: 10,
+          statementTimeoutMs: 2000,
+          connectionTimeoutMs: 2000,
+        },
+        binding: { tile: "links-api", resource: "links-db", module: "link-reader" },
+        operations: (
+          execute: (sql: string, values: unknown[], readOnly: boolean) => Promise<unknown>,
+        ) => ({ call: () => execute("SELECT $1", [3], true) }),
+      };
+      const registered = await clients.productDatabaseClient(a.scope, probe, prepared);
+      await clients.productDatabaseClient(a.scope, probe, {
+        ...prepared,
+        binding: { ...prepared.binding, module: "second-product" },
+      });
+      expect(fake.calls.filter(([kind]) => kind === "createPostgres")).toHaveLength(5);
+      expect(
+        fake.calls.filter(
+          ([kind, user]) => kind === "createPostgres" && user === "pr_links_db__links_api",
+        ),
+      ).toHaveLength(1);
+      await registered.call();
+      expect(fake.connections.at(-1)).toEqual([
+        "BEGIN READ ONLY",
+        "SELECT $1",
+        "COMMIT",
+        "release",
+      ]);
     } finally {
       await a.close();
       await b.close();
     }
-    expect(fake.calls.filter(([kind]) => kind === "end")).toHaveLength(4);
+    expect(fake.calls.filter(([kind]) => kind === "end")).toHaveLength(5);
   });
 
   it("closes opened emitted clients when initialization fails or a probe is cancelled", async () => {

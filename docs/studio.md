@@ -1511,24 +1511,25 @@ and cache also has a transport, `disable` (locally) or `verify-full` (TLS that c
 certificate and host name, with an optional CA file), and a deployment that sets
 `JEEVES_REQUIRE_TLS=true` makes each process refuse at startup a plain-text database or cache, a
 tile, External API, issuer or key set that isn't `https:`, and the Pub/Sub emulator.
-Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
-or a stub with a write link; an Event publisher's outbox doesn't count) gets its own SQL file,
-`infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`
-and every `start` run it as the setup-only owner after the template tables. Declared shared
-product state uses the logical owner's product schema; legacy undeclared modules retain their
-module schemas and receive no product grants. Keep the file re-runnable. Exact product access
-names both table operations and allowed `published` views; a new view grants nothing by default. A database a stub writes also gets Jeeves's own table
-`jeeves.idempotency_records` (`infra/postgres/<database>/050-jeeves-idempotency.sql`), which only
-the tiles whose stubs write it use: a stub's `idempotent` call runs a create or payment once per
-key, keeps a 2xx answer for 24 hours and replays it for the same request, answers a different
-request under the key with `IdempotencyConflict` (for the stub to answer 409), and rolls any other
-answer back; expired records are swept every 60 s. Preview's **Processes** list shows the edge's paths and each CDN's
+Runnable exports emit application-owned `infra/postgres/<database>/products.json`, ordered
+checksummed migrations per product namespace, and query/command SQL scaffolds. Setup applies each
+version once under a transaction lock and a restricted product DDL role; failure rolls back DDL
+and ledger. Append a version instead of editing applied SQL. Product-schema views are published
+by generated setup only for declared audiences. Old `modules/*.sql` files are preserved but never
+executed. Exact table/view declarations stay within the diagram's compiled owner/grant maximum;
+new relations receive no default grants. Stub database dependencies expose registered `call(name,
+values)` handles using product-only credentials, separate from template credentials. Reads run
+in database READ ONLY transactions; policy hooks have no SQL handle. Protected idempotency state
+and transaction controls remain inside generated code. Existing exports require an explicit
+external baseline and staged API v7 migration; see the
+[product SQL contract](../jeeves-generator/README.md#product-sql-contract-extension-api-v7).
+Preview's **Processes** list shows the edge's paths and each CDN's
 route, then each
 process with its service, shape, edge path, routes and loops ("loop on <queue>"), what is
 provisioned for its stubs ("Provisioned: Links database (database, read-write)", and under
 **Provisioned as** what each runs as, such as "Visits: Google Cloud Pub/Sub topic visits (locally
 the emulator local-pubsub)") or not ("Not provisioned: …"), each writer's file ("Product SQL: Link reader →
-infra/postgres/links-db/modules/link-reader.sql"), and whether the stack is runnable;
+infra/postgres/links-db/products/migrations/p_links_api_owner/0001-initial.sql"), and whether the stack is runnable;
 `first-run` starts the processes only while it is. With it off, the export is exactly as
 before.
 

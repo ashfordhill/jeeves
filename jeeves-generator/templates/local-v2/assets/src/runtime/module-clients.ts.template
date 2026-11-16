@@ -10,7 +10,8 @@ import { dependency, publisherOptions, OperationError, currentOperation } from "
 // <variable>`).
 import { readFileSync } from "node:fs";
 // @database-import-start
-import { localLogins } from "../features/local-bindings.ts";
+import { readSecret } from "./local.ts";
+import { localLogins, productLogins, productDatabases } from "../features/local-bindings.ts";
 import { createPostgres } from "./postgres.ts";
 import { assertTransaction, transaction, type TransactionPool } from "./transaction.ts";
 import {
@@ -23,6 +24,7 @@ import {
   type IdempotencyRecord,
 } from "./idempotency.ts";
 import { periodic } from "./process.ts";
+import { prepareProductOperations } from "./product-operations.ts";
 // @database-import-end
 // @queue-import-start
 import { createPublisher, type BrokerState } from "./amqp.ts";
@@ -363,6 +365,28 @@ async function idempotentCall<Body>(
       return { status: answer.status, body: answer.body, replayed: false };
     throw error;
   }
+}
+/** Public product SQL uses separate credentials, retaining credential scope in the RG02 key. */
+export function prepareProductDatabase(binding: {tile: string; resource: string; module: string}) {
+  const maximum = productDatabases.find((row) => row.resource === binding.resource);
+  const login = productLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
+  if (!maximum || !login) throw new Error("No scoped product SQL binding");
+  const configuration = { ...databaseEndpoint(binding.resource), login, poolSize: 10, statementTimeoutMs: 2000, connectionTimeoutMs: 2000 };
+  readSecret(login.secret);
+  const operations = prepareProductOperations(maximum, binding);
+  return {configuration, operations, binding};
+}
+export async function productDatabaseClient(
+  scope: ProcessScope, log: ProbeLog, prepared: ReturnType<typeof prepareProductDatabase>,
+) {
+  const {configuration, operations, binding} = prepared;
+  const pool = processClient(scope, "postgres", configuration, () => {
+    const pool = ownResource(scope, createPostgres(configuration), "end");
+    pool.on("error", () => {});
+    return pool;
+  });
+  await probed(log, {client: binding.resource, kind: "database", check: "SELECT 1"}, () => pool.query("SELECT 1"), scope.signal);
+  return operations((sql, values, readOnly) => transaction(pool, (tx) => tx.query(sql, values), {readOnly}));
 }
 /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
  * what another owner publishes when the tile may only read it. A stub's own tables need its

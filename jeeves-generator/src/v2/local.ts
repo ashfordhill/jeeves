@@ -1,9 +1,4 @@
-import {
-  generationCapabilities,
-  generationLocalIdentity,
-  generationRuntime,
-  studioComponentDefinitions,
-} from "@jeeves/spec";
+import { generationCapabilities, generationLocalIdentity, generationRuntime } from "@jeeves/spec";
 import { jsonFile, pointerPart, refuse } from "../json.ts";
 import {
   endpointId,
@@ -16,6 +11,7 @@ import {
   subscriberQueues,
   type V2LocalContribution,
 } from "./local-contract.ts";
+import { stubProperties } from "./module-stubs.ts";
 import {
   type V2Delivery,
   type V2Emitter,
@@ -47,6 +43,12 @@ type Database = {
   migrations: string[];
   /** Runnable processes only: each writer module's SQL file and schema (v3 contract, §1). */
   modules?: { module: string; host: string; schema: string; file: string }[];
+  productSql?: {
+    version: 1;
+    file: string;
+    namespaces: { schema: string; role: string }[];
+    bindings: { host: string; module: string; access: string }[];
+  };
   productState?: V2RenderContext["model"]["productState"][number];
 };
 const composeVariable = (name: string) => `\${${name}:?Set ${name}}`;
@@ -101,11 +103,27 @@ const productStep = [
   ],
   [
     "      for (const login of runtime) {\n        // Keycloak owns",
-    "      // Product tables: each writer module's own SQL file, re-run every time in its schema.\n      await applyProductSql(owner, db, quote);\n      for (const login of runtime) {\n        // Keycloak owns",
+    "      // Product migrations: ordered checksums under a restricted namespace role.\n      await applyProductSql(owner, db, quote);\n      for (const login of runtime) {\n        // Keycloak owns",
   ],
   [
     '      await owner.query("COMMIT");\n',
     '      await grantProductSql(owner, db, runtime, quote);\n      await owner.query("COMMIT");\n',
+  ],
+  [
+    "  for (const db of plan.databases) {\n    const existing",
+    `  for (const db of plan.databases) {
+    for (const namespace of db.productSql?.namespaces ?? []) {
+      if (!(await admin.query("SELECT 1 FROM pg_roles WHERE rolname=$1", [namespace.role])).rowCount)
+        await admin.query(\`CREATE ROLE \${quote(namespace.role)} NOLOGIN NOINHERIT\`);
+      await admin.query(\`GRANT \${quote(namespace.role)} TO \${quote(db.owner)} WITH INHERIT FALSE, SET TRUE\`);
+    }
+    const existing`,
+  ],
+  ["    ...plan.logins,\n", "    ...plan.logins,\n    ...plan.productLogins,\n"],
+  ["        // Keycloak owns", "        if (login.product) continue;\n        // Keycloak owns"],
+  [
+    "    const runtime = [...plan.logins, ...plan.providerLogins].filter(",
+    "    const runtime = [...plan.logins, ...plan.providerLogins, ...plan.productLogins].filter(",
   ],
 ] as const;
 export function migrateWithProducts(bytes: Uint8Array) {
@@ -127,8 +145,8 @@ function substituteOnce(
   return text;
 }
 /** A writer module's product SQL file in its database (v3 contract, section 1). */
-const productSqlPath = (database: string, module: string) =>
-  `infra/postgres/${database}/modules/${module}.sql`;
+const productSqlPath = (database: string, schema: string) =>
+  `infra/postgres/${database}/products/migrations/${schema}/0001-initial.sql`;
 
 /** Project owner composes specific local contributions. Contributors never write shared files. */
 export function createLocalFoundation(
@@ -778,7 +796,107 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   }
   const productSql = productFiles(model, databases, logins, views, grants);
   for (const row of productSql) provenance(row.sourcePaths);
-  files.push(...productSql.map((row) => row.file));
+  const productLogins: (Login & { product: true })[] = [];
+  for (const db of databases.filter((db) => db.modules)) {
+    const namespaces = [
+      ...new Set([
+        ...(db.modules ?? []).map((row) => row.schema),
+        ...(db.productState?.schema ? [db.productState.schema] : []),
+      ]),
+    ].sort();
+    db.productSql = {
+      version: 1,
+      file: `infra/postgres/${db.resource}/products.json`,
+      namespaces: namespaces.map((schema) => ({
+        schema,
+        role: sqlName(`pm_${db.resource.replaceAll("-", "_")}_${schema}`),
+      })),
+      bindings: (model.processes ?? []).flatMap((process) =>
+        process.stubs.flatMap((stub) => {
+          const module = model.selections.find(
+            (selection) => selection.id === stub.selection,
+          )?.module;
+          return module
+            ? stubProperties(module, false).flatMap(({ connection, use }) =>
+                connection.target.kind === "element" && connection.target.element === db.resource
+                  ? [{ host: process.tile, module: module.component, access: use }]
+                  : [],
+              )
+            : [];
+        }),
+      ),
+    };
+    const extensionFile = (path: string, content: string): V2TemplateFile => ({
+      ...file(path, content),
+      ownership: "generated-extension",
+    });
+    files.push(
+      extensionFile(
+        db.productSql.file,
+        jsonFile({
+          version: 1,
+          namespaces: namespaces.map((schema) => ({
+            schema,
+            migrations: [
+              {
+                version: "0001",
+                file: `infra/postgres/${db.resource}/products/migrations/${schema}/0001-initial.sql`,
+              },
+            ],
+          })),
+          tables: [
+            ...new Set(
+              db.productState?.access.flatMap((entry) =>
+                entry.product.tables.map((table) => table.name),
+              ) ?? [],
+            ),
+          ]
+            .sort()
+            .map((name) => ({ schema: db.productState?.schema, name })),
+          views: [],
+          operations: [],
+        }),
+      ),
+    );
+    for (const schema of namespaces)
+      files.push(
+        extensionFile(
+          `infra/postgres/${db.resource}/products/migrations/${schema}/0001-initial.sql`,
+          `-- Application-owned initial product migration for ${schema}.\n-- Append versions; never change an applied migration. No transaction/role controls.\n-- Create product views here; products.json publishes selected views through generated grants.\n`,
+        ),
+      );
+    for (const kind of ["queries", "commands"])
+      files.push(
+        extensionFile(
+          `infra/postgres/${db.resource}/products/${kind}/example.sql`,
+          `-- Application-owned parameterized ${kind === "queries" ? "SELECT" : "INSERT/UPDATE/DELETE"}.\n-- Register its name, module, host, parameter count and relations in ../products.json.\n`,
+        ),
+      );
+    for (const login of logins.filter((row) => row.resource === db.resource)) {
+      const credential = secret(`product-${db.resource}--${login.host}`);
+      setupSecrets.push(credential);
+      productLogins.push({
+        ...login,
+        user: sqlName(`pr_${db.resource.replaceAll("-", "_")}__${login.host.replaceAll("-", "_")}`),
+        secret: credential,
+        product: true,
+      });
+    }
+  }
+  if (model.processes)
+    files.push(
+      file(
+        "src/runtime/product-contract.ts",
+        context.asset(`${assets}src/runtime/product-contract.ts`),
+      ),
+    );
+  if (model.processes?.length)
+    files.push(
+      file(
+        "src/runtime/product-operations.ts",
+        context.asset(`${assets}src/runtime/product-operations.ts`),
+      ),
+    );
   if (broker.length) {
     secret("broker-password");
     services["local-broker"] = {
@@ -971,6 +1089,10 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
             "Service needs a contributed exact runtime SQL login.",
           );
         credentials.push(login.secret);
+        const product = productLogins.find(
+          (row) => row.resource === id && row.host === service.host,
+        );
+        if (product) credentials.push(product.secret);
       }
       for (const id of service.storage ?? []) {
         const binding = storage.find((s) => s.resource === id && s.host === service.host);
@@ -1155,6 +1277,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     resources,
     databases,
     logins,
+    ...(model.processes && { productLogins }),
     providerLogins: identity.map((i) => ({
       resource: i.id,
       database: i.database,
@@ -1193,7 +1316,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     ),
     file(
       "src/features/local-bindings.ts",
-      `// Foundation-owned exact contributed runtime logins.\nexport const localLogins: {resource:string;host:string;database:string;user:string;secret:string}[] = ${jsonFile(logins).trim()};\n`,
+      `// Foundation-owned exact contributed runtime logins.\nexport const localLogins: {resource:string;host:string;database:string;user:string;secret:string}[] = ${jsonFile(logins).trim()};\n${model.processes?.length ? `export const productLogins: {resource:string;host:string;database:string;user:string;secret:string;product:true}[] = ${jsonFile(productLogins).trim()};\nexport const productDatabases: import("../runtime/product-contract.ts").ProductMaximum[] = ${jsonFile(databases.filter((db) => db.modules).map((db) => ({ resource: db.resource, modules: db.modules, productSql: db.productSql, ...(db.productState && { productState: { schema: db.productState.schema, access: db.productState.access.map((entry) => ({ host: entry.host, product: entry.product })) } }) }))).trim()};\n` : ""}`,
       contributors.map((c) => c.emitter),
     ),
     file(
@@ -1323,7 +1446,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile\` then \`pnpm build\`. \`package.json\`, \`pnpm-lock.yaml\` and \`pnpm-workspace.yaml\` are yours: add a package with \`pnpm add <name>@<exact version>\`. \`pnpm-workspace.yaml\`'s \`allowBuilds\` says which packages' install scripts run: the template's dependencies run none (\`protobufjs: false\`), so neither command needs \`--ignore-scripts\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\n**Your own configuration.** \`compose.override.yaml\` beside \`compose.yaml\` is yours: export never writes it and \`update:v2\` never touches it. Docker Compose merges it into every command \`pnpm first-run\`, \`start\` and \`stop\` run, so give your modules their own \`environment\` and \`secrets\` there, or add a service of your own (for example a scheduler that calls your routes). A service of your own starts with \`pnpm start\` only when a generated service \`depends_on\` it, which your override may add; otherwise start it with your own \`docker compose up\`. Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next \`pnpm start\`.\n\nMigration owners/admin are mounted only into setup. \`scripts/migrate.mjs\` reaches PostgreSQL at \`PGHOST\` and \`PGPORT\` with \`JEEVES_MIGRATE_TLS\` (\`disable\`, or \`verify-full\` with an optional \`JEEVES_MIGRATE_CA_FILE\` and \`JEEVES_MIGRATE_TLS_SERVERNAME\`), read as a database's \`_TLS\` is; \`PGSSLMODE\` can't change it, and with \`JEEVES_REQUIRE_TLS=true\` it must be \`verify-full\` unless \`PGHOST\` is a socket directory. A credential is read from \`JEEVES_SECRET_<NAME>_FILE\` when that is set (an absolute path; \`<NAME>\` is the secret's name upper-cased, with \`-\` and \`.\` as \`_\`), else from \`SECRET_DIR/<name>\` (\`/run/secrets/<name>\`, where Compose mounts it). Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer readiness at \`GET /readyz\` (and \`/healthz\` for compatibility), and liveness at \`GET /livez\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT only on named published views and declared template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. A database a stub writes also has Jeeves's own \`jeeves.idempotency_records\` (\`infra/postgres/<database>/050-jeeves-idempotency.sql\`), which only the logins of the tiles whose stubs write it use: a stub's \`idempotent(...)\` keeps a 200–299 answer per scope and key for 24 hours and replays it for the same request (\`requestHash\` in \`src/runtime/idempotency.ts\`), a different request under the key throws \`IdempotencyConflict\`, and expired records are swept every 60 s. Each stub declares the settings it reads in its file's \`settings\` export (\`declareSettings\` with \`text()\`, \`integer()\`, \`url()\`, \`secret()\`, \`keyRing()\` and \`optional(kind)\` from \`src/runtime/settings.ts\`); its process reads them in its configuration pass, before any client is built or probed, and gives them to the stub as \`dependencies.settings\`: a missing or invalid one fails startup with \`Invalid setting <NAME>\`, never its value. \`compose.yaml\` sets none of them: set a setting in \`compose.override.yaml\`'s \`environment\`, and a \`secret()\` or \`keyRing()\` as a file read as a credential is (above), \`<name>\` being the setting's name lower-cased with \`_\` as \`-\` (\`PROBE_TOKEN\` is \`probe-token\`), through its \`secrets\`; \`processes.tiles[].stubSettings\` in .jeeves/report.json names the files each process reads them from. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in the declared shared logical-owner product schema (legacy modules retain \`m_<module>\`), so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only exact declared table operations and named published views are granted to each distinct process login. Undeclared relations and template implementation tables receive no product grants; no application login has product DDL authority. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer readiness at \`GET /readyz\` (and \`/healthz\` for compatibility), and liveness at \`GET /livez\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT only on named published views and declared template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. A database a stub writes also has Jeeves's own \`jeeves.idempotency_records\` (\`infra/postgres/<database>/050-jeeves-idempotency.sql\`), which only the logins of the tiles whose stubs write it use: a stub's \`idempotent(...)\` keeps a 200–299 answer per scope and key for 24 hours and replays it for the same request (\`requestHash\` in \`src/runtime/idempotency.ts\`), a different request under the key throws \`IdempotencyConflict\`, and expired records are swept every 60 s. Each stub declares the settings it reads in its file's \`settings\` export (\`declareSettings\` with \`text()\`, \`integer()\`, \`url()\`, \`secret()\`, \`keyRing()\` and \`optional(kind)\` from \`src/runtime/settings.ts\`); its process reads them in its configuration pass, before any client is built or probed, and gives them to the stub as \`dependencies.settings\`: a missing or invalid one fails startup with \`Invalid setting <NAME>\`, never its value. \`compose.yaml\` sets none of them: set a setting in \`compose.override.yaml\`'s \`environment\`, and a \`secret()\` or \`keyRing()\` as a file read as a credential is (above), \`<name>\` being the setting's name lower-cased with \`_\` as \`-\` (\`PROBE_TOKEN\` is \`probe-token\`), through its \`secrets\`; \`processes.tiles[].stubSettings\` in .jeeves/report.json names the files each process reads them from. Product SQL is application-owned: \`infra/postgres/<database>/products.json\` declares ordered migrations per namespace, tables, published views and registered parameterized queries/commands. Migrations run once under checksums and a transaction lock, as a namespace-only role; failed migrations roll back. Add versions, never edit applied SQL. Legacy \`modules/*.sql\` files are preserved but never executed. See .jeeves/extensions.md for the explicit baseline path. Product operations receive registered handles using separate product-only credentials; template tables remain protected. Only exact compiled table operations and named view audiences can be granted. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
           : ""
       }${pubsubReadme}`,
     ),
@@ -1411,14 +1534,8 @@ type View = {
   selectSql: string;
 };
 type Grant = NonNullable<V2LocalContribution["grants"]>[number];
-/** One comment line: names are the user's own text. */
+/** One comment line: names are the application's own text. */
 const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
-/** "Item writer, a Data access", or just "Lifecycle writer" when it has its kind's name. */
-const named = (writer: { name: string; kind: keyof typeof studioComponentDefinitions }) => {
-  const kind = studioComponentDefinitions[writer.kind].name;
-  const name = line(writer.name);
-  return name === kind ? name : `${name}, ${/^[AEIOU]/i.test(kind) ? "an" : "a"} ${kind},`;
-};
 const pointer = (path: readonly (string | number)[]) =>
   `/${path.map((part) => pointerPart(String(part))).join("/")}`;
 
@@ -1441,7 +1558,6 @@ function productFiles(
     database: string;
     path: string;
     schema: string;
-    file: V2TemplateFile;
     sourcePaths: (readonly (string | number)[])[];
   }[] = [];
   const processes = model.processes ?? [];
@@ -1474,7 +1590,7 @@ function productFiles(
           writer.module,
           "A module that writes a database needs its tile's runtime login there.",
         );
-      const path = productSqlPath(id, module.local);
+      const path = productSqlPath(id, schema);
       db.modules.push({ module: module.local, host: process.tile, schema, file: path });
       const selection = model.selections.find((item) => item.id === writer.selection);
       const sourcePaths = [
@@ -1482,46 +1598,12 @@ function productFiles(
         writer.sourcePath,
         ...writer.links,
       ];
-      const access = db.productState?.access ?? [];
-      const permissions = access.flatMap((entry) => {
-        const user = logins.find((item) => item.resource === id && item.host === entry.host)?.user;
-        return user
-          ? [
-              ...entry.product.tables.map(
-                (table) =>
-                  `--   ${user}: ${table.operations.join(", ")} on ${schema}.${table.name}`,
-              ),
-              ...entry.product.views.map((view) => `--   ${user}: SELECT on published.${view}`),
-            ]
-          : [];
-      });
       rows.push({
         module: writer.module,
         database: writer.database,
         path,
         schema,
         sourcePaths,
-        file: {
-          path,
-          content: `${[
-            `-- ${named(writer)} in ${line(process.name)} writes ${line(writer.databaseName)}: its product tables and published views.`,
-            "-- Write them here. Export never overwrites your edits: export afresh and carry them over.",
-            `-- first-run and start run this file every time, after the template migrations and views, as`,
-            `-- the setup-only owner ${db.owner} of ${db.database}, in one transaction with search_path ${schema}:`,
-            `-- unqualified names land in schema ${schema}. Keep it re-runnable (IF NOT EXISTS, CREATE OR`,
-            "-- REPLACE), with no BEGIN or COMMIT. A failure rolls the database back, and setup names this file.",
-            "--",
-            `-- Product namespace ${schema}${db.productState ? ` belongs to logical owner ${db.productState.owner}` : " is legacy; declare exact database access before use"}.`,
-            "-- All schemas are created before module SQL runs; module files execute in stable ID order.",
-            "-- Named published views use CREATE OR REPLACE VIEW published.<name> AS ... .",
-            "-- Exact application grants (no default grants; new relations grant nothing):",
-            ...(permissions.length ? permissions : ["--   none"]),
-            "-- Template implementation tables are excluded from product access declarations.",
-            "-- Application logins receive no CREATE, schema ownership or migration credentials.",
-          ].join("\n")}\n`,
-          ownership: "generated-extension",
-          sourcePaths: [...new Set(["/generation/processes", ...sourcePaths.map(pointer)])],
-        },
       });
     }
   for (const db of databases) db.modules?.sort((a, b) => v2Compare(a.module, b.module));

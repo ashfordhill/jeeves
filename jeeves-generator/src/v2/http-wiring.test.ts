@@ -385,7 +385,11 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         "cache-previews-cache": { condition: "service_healthy" },
         "local-postgres": { condition: "service_healthy" },
       },
-      secrets: ["sql-previews-db--preview-api", "cache-previews-cache"],
+      secrets: [
+        "sql-previews-db--preview-api",
+        "product-previews-db--preview-api",
+        "cache-previews-cache",
+      ],
     });
     // Links API's stubs use the cache, the database and the broker (client-wiring.test.ts).
     expect(Object.keys(services["app-links-api"].depends_on)).toEqual([
@@ -419,7 +423,12 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         "local-objects": { condition: "service_healthy" },
         "local-postgres": { condition: "service_healthy" },
       },
-      secrets: ["sql-metadata-db--upload", "s3-upload", "broker-password"],
+      secrets: [
+        "sql-metadata-db--upload",
+        "product-metadata-db--upload",
+        "s3-upload",
+        "broker-password",
+      ],
       environment: {
         OBJECT_PUBLIC_ENDPOINT: `http://127.0.0.1:\${LOCAL_OBJECT_PORT:?Set LOCAL_OBJECT_PORT}`,
       },

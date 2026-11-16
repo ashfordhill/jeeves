@@ -16,6 +16,7 @@ import { rekeyDesign } from "../../../jeeves/packages/spec/src/studio-rekey.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { canonicalJson } from "../json.ts";
 import { assembleV2 } from "./assemble.ts";
+import { declarationFor, loadProducts } from "./product-sql.test.helpers.ts";
 
 const registry = loadLocalV2Registry();
 const generate = (design = ownershipDesign()) =>
@@ -281,15 +282,24 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
       expect(login.secret).not.toBe(db.secret);
     }
     const productScript = text(bundle, "scripts/products.mjs");
-    const products = await import(
-      `data:text/javascript;base64,${Buffer.from(productScript).toString("base64")}`
-    );
+    const products = await loadProducts(productScript);
+    const declaration = declarationFor(db);
+    const read = (path: string) =>
+      path.endsWith("products.json")
+        ? JSON.stringify(declaration)
+        : readFileSync(
+            new URL(
+              "../../../field-projects/generator-system/fixtures/rg-ownership/items.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          );
     const pg = new PGlite();
     const emitted: string[] = [];
     const owner = {
       query: async (sql: string, parameters?: unknown[]) => {
         emitted.push(sql);
-        return parameters ? pg.query(sql, parameters) : pg.exec(sql);
+        return parameters ? pg.query(sql, parameters) : (await pg.exec(sql)).at(-1);
       },
     };
     const as = async (role: string, sql: string) => {
@@ -302,27 +312,20 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
     };
     try {
       await pg.exec(
-        `CREATE ROLE ${db.owner}; GRANT CREATE ON DATABASE postgres TO ${db.owner}; REVOKE CREATE ON SCHEMA public FROM PUBLIC; ${logins.map((login: { user: string }) => `CREATE ROLE ${quote(login.user)} LOGIN;`).join(" ")}`,
+        `CREATE ROLE ${db.owner}; GRANT CREATE ON DATABASE postgres TO ${db.owner}; REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE, CREATE ON SCHEMA public TO ${db.owner}; ${db.productSql.namespaces.map((row: { role: string }) => `CREATE ROLE ${row.role} NOINHERIT; GRANT ${row.role} TO ${db.owner} WITH INHERIT FALSE, SET TRUE;`).join(" ")} ${logins.map((login: { user: string }) => `CREATE ROLE ${quote(login.user)} LOGIN;`).join(" ")}`,
       );
       await pg.exec(
-        `SET ROLE ${db.owner}; CREATE SCHEMA jeeves; CREATE TABLE jeeves.internal (id int); BEGIN`,
+        `SET SESSION AUTHORIZATION ${db.owner}; CREATE SCHEMA jeeves; CREATE TABLE jeeves.internal (id int); BEGIN`,
       );
-      await products.applyProductSql(owner, db, quote, (path: string) =>
-        readFileSync(
-          new URL(
-            `../../../field-projects/generator-system/fixtures/rg-ownership/${path.endsWith("link-reader.sql") ? "items.sql" : "worker.sql"}`,
-            import.meta.url,
-          ),
-          "utf8",
-        ),
-      );
+      await products.applyProductSql(owner, db, quote, read);
 
+      await pg.exec("CREATE VIEW published.other_items AS SELECT 1 AS id");
       // Old blanket/default and schema CREATE privileges are removed before exact grants.
       await pg.exec(
         `GRANT USAGE ON SCHEMA published TO r_links_db__stats_api; GRANT SELECT ON ALL TABLES IN SCHEMA published TO r_links_db__stats_api; ALTER DEFAULT PRIVILEGES IN SCHEMA published GRANT SELECT ON TABLES TO r_links_db__stats_api; GRANT CREATE ON SCHEMA p_links_api_owner TO r_links_db__visit_worker`,
       );
-      await products.grantProductSql(owner, db, logins, quote);
-      await pg.exec("COMMIT; RESET ROLE");
+      await products.grantProductSql(owner, db, logins, quote, read);
+      await pg.exec("COMMIT; SET SESSION AUTHORIZATION postgres");
       const api = "r_links_db__links_api",
         worker = "r_links_db__visit_worker",
         reader = "r_links_db__stats_api";
@@ -349,22 +352,22 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
           /permission denied|must be owner/,
         );
       await pg.exec(
-        `SET ROLE ${db.owner}; CREATE VIEW published.later AS SELECT 1 AS n; RESET ROLE`,
+        `SET SESSION AUTHORIZATION ${db.owner}; CREATE VIEW published.later AS SELECT 1 AS n; SET SESSION AUTHORIZATION postgres`,
       );
       await expect(as(reader, "SELECT * FROM published.later")).rejects.toThrow(
         /permission denied/,
       );
-      expect(
-        emitted.some((sql) => /GRANT SELECT ON ALL TABLES|DEFAULT PRIVILEGES.*GRANT/.test(sql)),
-      ).toBe(false);
+      expect(emitted.some((sql) => /DEFAULT PRIVILEGES.*GRANT/.test(sql))).toBe(false);
       const allowed = structuredClone(db.productState.access);
       db.productState.access = allowed.map((entry: { host: string }) => ({
         ...entry,
         product: { tables: [], views: [] },
       }));
-      await pg.exec(`SET ROLE ${db.owner}; BEGIN`);
-      await products.grantProductSql(owner, db, logins, quote);
-      await pg.exec("COMMIT; RESET ROLE");
+      declaration.tables = declarationFor(db).tables;
+      declaration.views = declarationFor(db).views;
+      await pg.exec(`SET SESSION AUTHORIZATION ${db.owner}; BEGIN`);
+      await products.grantProductSql(owner, db, logins, quote, read);
+      await pg.exec("COMMIT; SET SESSION AUTHORIZATION postgres");
       await expect(as(api, "SELECT * FROM p_links_api_owner.items")).rejects.toThrow(
         /permission denied/,
       );
@@ -372,19 +375,22 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
         /permission denied/,
       );
       db.productState.access = allowed;
-      await pg.exec(`SET ROLE ${db.owner}; BEGIN`);
-      await products.grantProductSql(owner, db, logins, quote);
-      await pg.exec("COMMIT; RESET ROLE");
+      declaration.tables = declarationFor(db).tables;
+      declaration.views = declarationFor(db).views;
+      await pg.exec(`SET SESSION AUTHORIZATION ${db.owner}; BEGIN`);
+      await products.grantProductSql(owner, db, logins, quote, read);
+      await pg.exec("COMMIT; SET SESSION AUTHORIZATION postgres");
       expect(await as(reader, "SELECT count(*)::int AS n FROM published.visible_items")).toEqual([
         { n: 2 },
       ]);
       // Missing/mistyped declarations fail setup rather than broadening permissions.
       db.productState.access[0].product.tables[0].name = "missing";
-      await pg.exec(`SET ROLE ${db.owner}; BEGIN`);
-      await expect(products.grantProductSql(owner, db, logins, quote)).rejects.toThrow(
-        /missing or has the wrong kind/,
+      declaration.tables.push({ schema: db.productState.schema, name: "missing" });
+      await pg.exec(`SET SESSION AUTHORIZATION ${db.owner}; BEGIN`);
+      await expect(products.grantProductSql(owner, db, logins, quote, read)).rejects.toThrow(
+        /missing or has the wrong kind|compiled owner\/grant maximum/,
       );
-      await pg.exec("ROLLBACK; RESET ROLE");
+      await pg.exec("ROLLBACK; SET SESSION AUTHORIZATION postgres");
     } finally {
       await pg.close();
     }

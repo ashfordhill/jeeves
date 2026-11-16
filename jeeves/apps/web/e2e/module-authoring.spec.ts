@@ -852,7 +852,7 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
   expect(errors).toEqual([]);
 });
 
-test("with Runnable processes on, Preview lists each writer module's own product SQL file", async ({
+test("with Runnable processes on, Preview lists the versioned product migration scaffold", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -883,7 +883,8 @@ test("with Runnable processes on, Preview lists each writer module's own product
     await dialog.getByRole("button", { name: "Preview scaffold", exact: true }).click();
     const preview = await (await result).json();
     expect(preview.report.findings).toEqual([]);
-    const file = "infra/postgres/database/modules/microservice-data-access.sql";
+    const file =
+      "infra/postgres/database/products/migrations/m_microservice_data_access/0001-initial.sql";
     expect(
       preview.report.modules.map((item: { module: string; sql?: unknown }) => [
         item.module,

@@ -555,6 +555,75 @@ export async function updateDirectory(
   }
   const beforeVersion = extensionVersion(manifest);
   const nextVersion = bundle.manifest.extensionApi.version;
+  if (beforeVersion < 7 && nextVersion >= 7) {
+    const legacy = previous.filter(
+      (file) =>
+        file.ownership === extension &&
+        /^infra\/postgres\/[^/]+\/modules\/[^/]+\.sql$/.test(file.path) &&
+        disk.has(file.path),
+    );
+    if (legacy.length) {
+      try {
+        const receipt = JSON.parse(
+          new TextDecoder().decode(
+            await readRegular(join(root, ".jeeves/product-sql-migration.json")),
+          ),
+        );
+        if (
+          !isRecord(receipt) ||
+          receipt.version !== 1 ||
+          receipt.mode !== "external-reviewed" ||
+          !Array.isArray(receipt.legacy) ||
+          receipt.legacy.length !== legacy.length ||
+          legacy.some(
+            (file) =>
+              !(receipt.legacy as unknown[]).some(
+                (row: unknown) =>
+                  isRecord(row) && row.file === file.path && row.sha256 === disk.get(file.path),
+              ),
+          )
+        )
+          throw new Error("baseline receipt differs");
+        for (const resource of new Set(legacy.map((file) => file.path.split("/")[2]))) {
+          const declaration = JSON.parse(
+            new TextDecoder().decode(
+              await readRegular(join(root, `infra/postgres/${resource}/products.json`)),
+            ),
+          );
+          if (
+            !isRecord(declaration) ||
+            declaration.version !== 1 ||
+            !Array.isArray(declaration.namespaces) ||
+            !declaration.namespaces.length
+          )
+            throw new Error("versioned declaration required");
+          for (const namespace of declaration.namespaces) {
+            if (
+              !isRecord(namespace) ||
+              !Array.isArray(namespace.migrations) ||
+              !namespace.migrations.length
+            )
+              throw new Error("explicit baseline migration required");
+            for (const migration of namespace.migrations) {
+              if (
+                !isRecord(migration) ||
+                typeof migration.file !== "string" ||
+                !/^infra\/postgres\/[^/]+\/products\/migrations\/[a-z0-9_]+\/[a-zA-Z0-9_-]+\.sql$/.test(
+                  migration.file,
+                )
+              )
+                throw new Error("explicit baseline migration required");
+              await readRegular(join(root, migration.file));
+            }
+          }
+        }
+      } catch {
+        result.refused.push(
+          `Product SQL baseline/migration required for ${legacy.map((file) => file.path).join(", ")}. Supply reviewed products.json, ordered migration files and .jeeves/product-sql-migration.json (version 1, mode external-reviewed, legacy file/sha256 records). Perform database baseline/data migration externally; this updater never executes old SQL or converts schemas. Existing application bytes are preserved.`,
+        );
+      }
+    }
+  }
   const hooks = previous
     .filter(
       (file) =>
@@ -571,7 +640,7 @@ export async function updateDirectory(
       result.refused.push(
         `Resolve generated overrides before extension migration: ${overrides.join(", ")}`,
       );
-    else if (!plan.refused.length) {
+    else if (!result.refused.length) {
       try {
         await validateMigration(root, bundle, plan.actions);
       } catch (error) {

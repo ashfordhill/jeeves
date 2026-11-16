@@ -18541,3 +18541,37 @@ workload settings the same way.
   owner binary diff/modes, frozen v1, historical exports and existing Postgres are preserved.
   No live/paid eval, provider/cloud addition, Docker checkpoint, push, deployment or later unit.
   Commit subject: `RG06: enforce logical ownership and precise database access`. Stop for acceptance.
+
+## 2026-11-16 — RG07 active after RG06 acceptance
+
+- Coordinator accepted RG06 commit `0a059385ad9223b6c69c0acc73d5ce02c6fcd2a1`.
+  RG07 is the sole active unit: checksummed product migrations and scoped registered SQL
+  operations. No later unit has started; the approved RG sequence supersedes stale queues.
+
+## 2026-11-16 — RG07 verified, local commit for acceptance
+
+- Extension API **v7** replaces new re-runnable module SQL with application-owned bounded
+  declarations, ordered checksummed namespace migrations and query/command scaffolds. Setup
+  locks history/application and commits DDL+ledger atomically; changed/missing applied versions
+  refuse. Namespace-only NOLOGIN/NOINHERIT migration roles cannot touch protected template state,
+  foreign schemas or the ledger; generated setup owns ledger/grant transitions in that transaction.
+- Stub database links expose registered parameterized `call` handles through distinct product-only
+  credentials/pools. Preconnection preparation validates SQL/credentials, inherited effects cannot
+  widen, and queries run READ ONLY. Controls remain generated; policies get no SQL handle. Finite
+  lexical refusals are cooperative checks, not a complete SQL/JS sandbox. Template loaders without
+  an installed binding remain gaps; calls do not add multi-call atomicity or public replay APIs.
+- Old SQL never executes automatically. Missing/stale reviewed baseline declarations, migrations
+  or file-hash receipt refuse update with target bytes preserved, including with API acknowledgement.
+  `external-reviewed` is a manual application attestation, not DB migration proof. Namespace guards
+  remain unchanged; no bodies are rewritten or destructive conversion inferred.
+- Final `pnpm check`: **125 files / 1,122 tests passed**; full e2e **76/76 passed**, including TinyURL,
+  changed Preview mouse path, ownership controls and both complete rebuilds. Web build and offline
+  chat evals pass. Seven scratch variants and the new two-module RG07 fixture pass checker/TS7;
+  off pins reviewed **79→79 / 85→85 / 59→59**. Actual SQL capture records **18 outcomes**, including
+  protected generated idempotency-table denial and failed DDL/ledger rollback. Stale expectations,
+  missing runtime/fake imports and test-trace cleanup were diagnosed without weaker assertions.
+- [Evidence and limits](plans/reliable-generation/evidence/rg07/README.md). Root hashes, exact owner
+  diff/modes, frozen v1 and historical evidence/exports preserved. Native concurrent migrator/login
+  proof remains RG14. No new provider, live/paid call, Docker checkpoint, push, deployment or later
+  unit. Commit subject: `RG07: version product migrations and expose scoped SQL operations`.
+  Stop for coordinator acceptance.

@@ -57,6 +57,7 @@ const noEffect = new Set([
   "setImmediate",
 ]);
 const policyMethods = new Set([
+  "call",
   "query",
   "execute",
   "transaction",
@@ -179,6 +180,26 @@ for (const file of all) {
   const source = await readFile(file, "utf8");
   const policy = file.endsWith(".hooks.ts") && !source.includes("@jeeves-extension: operation");
   await inspect(file, policy, match[1]);
+}
+// Validate application-owned declarations against the immutable compiled owner/grant maximum.
+const local = JSON.parse(await readFile(resolve(root, "infra/local.json"), "utf8"));
+for (const database of local.databases.filter((row) => row.productSql)) {
+  const { validateProductDeclaration, checkedProductSql } = await import(
+    "../src/runtime/product-contract.ts"
+  );
+  try {
+    const declaration = validateProductDeclaration(
+      JSON.parse(await readFile(resolve(root, database.productSql.file), "utf8")),
+      database,
+    );
+    for (const operation of declaration.operations)
+      checkedProductSql(await readFile(resolve(root, operation.file), "utf8"), operation);
+    for (const namespace of declaration.namespaces)
+      for (const migration of namespace.migrations)
+        checkedProductSql(await readFile(resolve(root, migration.file), "utf8"));
+  } catch (error) {
+    errors.add(`${database.productSql.file}: ${error.message}`);
+  }
 }
 if (errors.size) {
   console.error([...errors].sort().join("\n"));

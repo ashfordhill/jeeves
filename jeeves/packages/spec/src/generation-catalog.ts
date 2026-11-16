@@ -182,7 +182,7 @@ export function knownGenerationPreset(ref: ExactContractRef) {
 
 /** Checked extension imports and DTO-only policy hooks, independent of saved-design versions. */
 export const generationExtensionApi = freezeRecord({
-  version: 6,
+  version: 7,
   publicApi: "src/extension-api/index.ts",
   boundary: "checked-extensions",
 });
