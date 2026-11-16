@@ -1,0 +1,175 @@
+// Private generated cryptography. Product code receives only a declared purpose-bound handle.
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  hkdfSync,
+  randomBytes,
+  timingSafeEqual,
+} from "node:crypto";
+import type { KeyRing } from "./settings.ts";
+
+/** Both fields are required and authenticated. Supply trusted account/tenant scope and operation context. */
+export interface ValueContext {
+  readonly scope: string;
+  readonly context: string;
+}
+declare const signingHandle: unique symbol;
+declare const sealingHandle: unique symbol;
+/** An opaque declared signing authority. Verification returns undefined for every invalid value. */
+export interface SigningKeys {
+  readonly [signingHandle]: true;
+  sign(value: string, binding: ValueContext): string;
+  verify(envelope: string, binding: ValueContext): string | undefined;
+}
+/** An opaque declared sealing authority. Opening returns undefined for every invalid value. */
+export interface SealingKeys {
+  readonly [sealingHandle]: true;
+  seal(value: string, binding: ValueContext): string;
+  open(envelope: string, binding: ValueContext): string | undefined;
+}
+// Limits are bytes, before allocation/decoding of untrusted envelope components.
+const maximumValue = 16384;
+const maximumEnvelope = 24576;
+const invalid = (): never => {
+  throw new Error("Invalid protected value input");
+};
+function utf8(value: unknown, maximum: number, empty = true): Buffer {
+  if (typeof value !== "string" || value.length > maximum || (!empty && !value.length))
+    return invalid();
+  const bytes = Buffer.from(value, "utf8");
+  if (bytes.length > maximum || bytes.toString("utf8") !== value) return invalid();
+  return bytes;
+}
+function bindingOf(value: ValueContext): readonly string[] {
+  if (!value || typeof value !== "object") return invalid();
+  utf8(value.scope, 512, false);
+  utf8(value.context, 512, false);
+  return [value.scope, value.context];
+}
+function decode(value: string, maximum: number, exact?: number): Buffer {
+  if (value.length > Math.ceil((maximum * 4) / 3) || !/^[A-Za-z0-9_-]*$/.test(value))
+    return invalid();
+  const bytes = Buffer.from(value, "base64url");
+  if (
+    bytes.length > maximum ||
+    (exact !== undefined && bytes.length !== exact) ||
+    bytes.toString("base64url") !== value
+  )
+    return invalid();
+  return bytes;
+}
+function parts(envelope: unknown, count: number): string[] {
+  if (typeof envelope !== "string" || envelope.length > maximumEnvelope) return invalid();
+  const result = envelope.split(".");
+  if (result.length !== count || !/^[A-Za-z0-9_-]{1,32}$/.test(result[1] ?? "")) return invalid();
+  return result;
+}
+function material(ring: KeyRing, purpose: string, mode: "sign" | "seal") {
+  if (typeof purpose !== "string" || !/^[a-z][a-z0-9.-]{0,63}$/.test(purpose)) return invalid();
+  // HKDF domain separation prevents a signing authority from becoming a sealing authority,
+  // even when configuration deliberately uses the same high-entropy ring for both.
+  return new Map(
+    ring.entries.map(({ id, key }) => [
+      id,
+      Buffer.from(hkdfSync("sha256", key, "jeeves.keys.v1", JSON.stringify([mode, purpose]), 32)),
+    ]),
+  );
+}
+const authenticated = (
+  version: string,
+  id: string,
+  purpose: string,
+  binding: ValueContext,
+  encoded?: string,
+) =>
+  Buffer.from(
+    JSON.stringify([
+      version,
+      id,
+      purpose,
+      ...bindingOf(binding),
+      ...(encoded === undefined ? [] : [encoded]),
+    ]),
+  );
+
+/** Internal constructor: current writes, retained-key reads; raw material stays in closures. */
+export function createSigningKeys(ring: KeyRing, purpose: string): SigningKeys {
+  const keys = material(ring, purpose, "sign");
+  const current = ring.current.id;
+  const mac = (id: string, binding: ValueContext, payload: string) => {
+    const key = keys.get(id);
+    if (!key) return invalid();
+    return createHmac("sha256", key)
+      .update(authenticated("jks1", id, purpose, binding, payload))
+      .digest();
+  };
+  return Object.freeze({
+    sign(value: string, binding: ValueContext) {
+      const payload = utf8(value, maximumValue).toString("base64url");
+      return `jks1.${current}.${payload}.${mac(current, binding, payload).toString("base64url")}`;
+    },
+    verify(envelope: string, binding: ValueContext) {
+      try {
+        const [version, id, payload, signature] = parts(envelope, 4) as [
+          string,
+          string,
+          string,
+          string,
+        ];
+        if (version !== "jks1") return undefined;
+        const bytes = decode(payload, maximumValue);
+        const received = decode(signature, 32, 32);
+        if (!timingSafeEqual(mac(id, binding, payload), received)) return undefined;
+        const value = bytes.toString("utf8");
+        return utf8(value, maximumValue).equals(bytes) ? value : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+  }) as SigningKeys;
+}
+
+/** Internal constructor. AES-256-GCM authenticates version/key ID/purpose/scope/context. */
+export function createSealingKeys(ring: KeyRing, purpose: string): SealingKeys {
+  const keys = material(ring, purpose, "seal");
+  const current = ring.current.id;
+  return Object.freeze({
+    seal(value: string, binding: ValueContext) {
+      const bytes = utf8(value, maximumValue);
+      const iv = randomBytes(12);
+      const cipher = createCipheriv("aes-256-gcm", keys.get(current)!, iv, {
+        authTagLength: 16,
+      });
+      cipher.setAAD(authenticated("jke1", current, purpose, binding));
+      const payload = Buffer.concat([cipher.update(bytes), cipher.final()]);
+      return `jke1.${current}.${iv.toString("base64url")}.${payload.toString("base64url")}.${cipher.getAuthTag().toString("base64url")}`;
+    },
+    open(envelope: string, binding: ValueContext) {
+      try {
+        const [version, id, nonce, payload, tag] = parts(envelope, 5) as [
+          string,
+          string,
+          string,
+          string,
+          string,
+        ];
+        const key = keys.get(id);
+        if (version !== "jke1" || !key) return undefined;
+        const iv = decode(nonce, 12, 12);
+        const bytes = decode(payload, maximumValue);
+        const authTag = decode(tag, 16, 16);
+        const cipher = createDecipheriv("aes-256-gcm", key, iv, {
+          authTagLength: 16,
+        });
+        cipher.setAAD(authenticated("jke1", id, purpose, binding));
+        cipher.setAuthTag(authTag);
+        const plain = Buffer.concat([cipher.update(bytes), cipher.final()]);
+        const value = plain.toString("utf8");
+        return utf8(value, maximumValue).equals(plain) ? value : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+  }) as SealingKeys;
+}

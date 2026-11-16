@@ -717,9 +717,9 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
         'import type { Dependencies } from "./redirector.slots.ts";',
         'import { declareSettings } from "../../extension-api/index.ts";',
         "",
-        "/** The settings this module reads, by name: text(), integer() or url();",
-        " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-        " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
+        "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
+        " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
+        " * bind every value to trusted scope and context. Protected credentials stay generated. */",
         "export const settings = declareSettings({});",
         "",
         "/** Answers any method on /modules/redirector and every path below it. */",
@@ -735,6 +735,6 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(text(stack, "src/modules/entry.ts")).toContain("export type ModuleRequest = {");
     expect(stackOff.files.map((file) => file.path)).not.toContain("src/modules/entry.ts");
     // A stub-only stack off has the same files as the stub stack alone.
-    expect(assemble(stubStackDesign()).files.length).toBe(59);
+    expect(assemble(stubStackDesign()).files.length).toBe(60);
   });
 });

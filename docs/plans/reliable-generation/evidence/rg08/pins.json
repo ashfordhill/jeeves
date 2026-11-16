@@ -1,0 +1,50 @@
+{
+  "frozen-v2": {
+    "before": 79,
+    "after": 79,
+    "added": [],
+    "removed": [],
+    "changed": [".jeeves/extensions.md", ".jeeves/manifest.json"]
+  },
+  "v2-module-design": {
+    "before": 85,
+    "after": 86,
+    "added": ["src/runtime/keys.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/report.json",
+      "src/extension-api/index.ts",
+      "src/modules/watch/watch-counts.ts",
+      "src/modules/watch/watch-views.ts",
+      "src/runtime/settings.ts"
+    ]
+  },
+  "stub-stack": {
+    "before": 59,
+    "after": 60,
+    "added": ["src/runtime/keys.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/report.json",
+      "src/extension-api/index.ts",
+      "src/modules/links-api/limiter.ts",
+      "src/modules/links-api/link-cache.ts",
+      "src/modules/links-api/link-reader.ts",
+      "src/modules/links-api/redirector.ts",
+      "src/modules/links-api/stats-caller.ts",
+      "src/modules/links-api/upload-consumer.ts",
+      "src/modules/links-api/visit-publisher.ts",
+      "src/modules/stats-api/stats-search.ts",
+      "src/modules/upload-api/archive-upload.ts",
+      "src/modules/upload-api/upload-publisher.ts",
+      "src/modules/visit-worker/archiver.ts",
+      "src/modules/visit-worker/visit-consumer.ts",
+      "src/modules/visit-worker/visit-writer.ts",
+      "src/runtime/settings.ts"
+    ]
+  }
+}

@@ -228,8 +228,8 @@ export function stubClients(
     declarations.push(
       `  ${text(id)}: (${pascal(id)}Module as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),`,
     );
-    const read = `readSettings(${text(id)}, declared[${text(id)}])`;
-    settingReads.push(read);
+    const read = `readModuleSettings(${text(id)}, declared[${text(id)}])`;
+    settingReads.push(`configuredSettings[${text(id)}] = ${read}`);
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
     const unavailable = (property: string, what: string, why: string) => {
@@ -347,7 +347,7 @@ export function stubClients(
           "requires a registered product capability binding",
         );
     }
-    values.push(["settings", `${read} as ${alias}["settings"]`]);
+    values.push(["settings", `configuredSettings[${text(id)}] as ${alias}["settings"]`]);
     assignments.push(
       ...(stub.role === "library"
         ? [`// ${line(module.name)} (library): called only through another module's link.`]
@@ -414,10 +414,12 @@ export function stubClients(
   if (tileGuard(process, selections))
     checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
   // Last, each stub's declared settings (QL05), in the order its dependencies are built.
-  for (const read of settingReads) checks.set(read, { name: "readSettings", from: settingsPath });
+  for (const read of settingReads)
+    checks.set(read, { name: "createSettingsReader", from: settingsPath });
   imports.push(
     { from: settingsPath, name: "declareSettings" },
     { from: settingsPath, name: "SettingsDeclaration", type: true },
+    { from: settingsPath, name: "SettingsOf", type: true },
     { from: clients, name: "checkConfiguration" },
   );
   for (const check of checks.values()) imports.push(check);
@@ -439,6 +441,8 @@ export function stubClients(
         "const declared = {",
         ...declarations,
         "};",
+        "const readModuleSettings = createSettingsReader();",
+        "const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };",
         ...(list.some((client) => client.prepare)
           ? [
               "// Prepare all registered SQL and product credentials before any connection or probe.",

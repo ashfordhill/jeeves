@@ -1022,12 +1022,14 @@ test("Generate project lists each module's status and previews its stubs", async
         "src/modules/dependencies.ts",
         "src/modules/microservice/microservice-rate-limiter.slots.ts",
         "src/modules/microservice/microservice-rate-limiter.ts",
+        "src/runtime/keys.ts",
         "src/runtime/settings.ts",
       ],
       [
         "src/modules/dependencies.ts",
         "src/modules/microservice/microservice-custom.slots.ts",
         "src/modules/microservice/microservice-custom.ts",
+        "src/runtime/keys.ts",
         "src/runtime/settings.ts",
       ],
     ]);

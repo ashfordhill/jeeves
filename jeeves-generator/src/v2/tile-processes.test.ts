@@ -1431,7 +1431,12 @@ describe("route stubs get a deadline signal and a route table (QL02)", () => {
 // SECRET_DIR.
 const stack = assemble(runStudioCommands(stubStackDesign(), [on]));
 const settingsRuntime = await import(
-  dataUrl(stripTypeScriptTypes(text(stack, "src/runtime/settings.ts")))
+  dataUrl(
+    stripTypeScriptTypes(text(stack, "src/runtime/settings.ts")).replaceAll(
+      '"./keys.ts"',
+      JSON.stringify(dataUrl(stripTypeScriptTypes(text(stack, "src/runtime/keys.ts")))),
+    ),
+  )
 );
 
 describe("stubs declare their settings and startup refuses an invalid one (QL05)", () => {
@@ -1661,7 +1666,7 @@ describe("stubs declare their settings and startup refuses an invalid one (QL05)
     for (const tile of ["links-api", "visit-worker"]) {
       const source = text(stack, `src/processes/${tile}.ts`);
       const pass = source.indexOf("checkConfiguration([");
-      const first = source.indexOf("  () => readSettings(");
+      const first = source.indexOf(" = readModuleSettings(");
       expect(source.indexOf("const declared = {"), tile).toBeLessThan(pass);
       expect(first, tile).toBeGreaterThan(pass);
       expect(first, tile).toBeLessThan(source.indexOf("await productDatabaseClient("));

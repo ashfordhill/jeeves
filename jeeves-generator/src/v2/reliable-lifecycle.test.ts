@@ -260,6 +260,9 @@ describe("RG02 process ownership and public boundary", () => {
     for (const [source, api] of [
       ['import pg from "pg";', "pg"],
       ['import "../../runtime/local.ts";', "private runtime import"],
+      ['import "../../runtime/settings.ts";', "private runtime import"],
+      ['import "../../runtime/keys.ts";', "private runtime import"],
+      ['import { readFileSync } from "node:fs";', "node:fs"],
       ['import "../other/private.ts";', "private cross-service import"],
       ['export const effect = () => fetch("https://example.test");', "fetch"],
       ['export const effect = (db: any) => db.query("COMMIT");', "policy effect API query"],

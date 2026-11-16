@@ -440,7 +440,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     );
     // A stub with no connected slot still gets its own settings (QL05).
     expect(links).toContain(
-      '  dependencies["redirector"] = {\n    settings: readSettings("redirector", declared["redirector"]) as RedirectorDependencies["settings"],\n  };',
+      '  dependencies["redirector"] = {\n    settings: configuredSettings["redirector"] as RedirectorDependencies["settings"],\n  };',
     );
     // Clients are built and probed before the loops subscribe and the service listens.
     expect(links.indexOf("const clients = {")).toBeLessThan(links.indexOf("startModuleLoop("));
@@ -771,8 +771,8 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    () => readSecret("sql-store--front"),',
         "    () => signInSettings(),",
         // Then each stub's declared settings (QL05).
-        '    () => readSettings("front-probe", declared["front-probe"]),',
-        '    () => readSettings("front-internal-grant", declared["front-internal-grant"]),',
+        '    () => configuredSettings["front-probe"] = readModuleSettings("front-probe", declared["front-probe"]),',
+        '    () => configuredSettings["front-internal-grant"] = readModuleSettings("front-internal-grant", declared["front-internal-grant"]),',
         "  ]);",
         "  signInSettings();",
         "  validateTemplateSettings(config.tile);",
@@ -806,7 +806,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    () => readSecret("broker-password"),',
         '    () => readSecret("product-tally-db--tally"),',
         '    () => readSecret("sql-tally-db--tally"),',
-        '    () => readSettings("tally-count", declared["tally-count"]),',
+        '    () => configuredSettings["tally-count"] = readModuleSettings("tally-count", declared["tally-count"]),',
         "  ]);",
         "  // Module clients",
       ].join("\n"),
@@ -844,7 +844,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     for (const line of [
       'import * as FrontProbeModule from "../modules/front/front-probe.ts";',
       'import * as FrontInternalGrantModule from "../modules/front/front-internal-grant.ts";',
-      'import { type SettingsDeclaration, declareSettings, readSettings } from "../runtime/settings.ts";',
+      'import { type SettingsDeclaration, type SettingsOf, createSettingsReader, declareSettings } from "../runtime/settings.ts";',
     ])
       expect(front).toContain(`\n${line}\n`);
     expect(front.indexOf("import * as FrontProbeModule")).toBeLessThan(
@@ -857,11 +857,15 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    "front-probe": (FrontProbeModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),',
         '    "front-internal-grant": (FrontInternalGrantModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),',
         "  };",
+        "  const readModuleSettings = createSettingsReader();",
+        "  const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };",
         "  // Prepare all registered SQL and product credentials before any connection or probe.",
       ].join("\n"),
     );
-    // Read in the pass, before any client is built or probed, then again for the dependencies.
-    const pass = front.indexOf('    () => readSettings("front-probe", declared["front-probe"]),');
+    // Read once in the pass, before any client opens; dependencies receive the captured value.
+    const pass = front.indexOf(
+      '    () => configuredSettings["front-probe"] = readModuleSettings("front-probe", declared["front-probe"]),',
+    );
     expect(pass).toBeGreaterThan(front.indexOf("    () => signInSettings(),"));
     for (const later of [
       "await queuePublisher(",
@@ -870,9 +874,10 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     ])
       expect(pass, later).toBeLessThan(front.indexOf(later));
     expect(front).toContain(
-      '    identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),\n    settings: readSettings("front-probe", declared["front-probe"]) as FrontProbeDependencies["settings"],\n  };',
+      '    identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),\n    settings: configuredSettings["front-probe"] as FrontProbeDependencies["settings"],\n  };',
     );
-    expect(front.match(/readSettings\(/g)).toHaveLength(4);
+    expect(front.match(/readModuleSettings\(/g)).toHaveLength(2);
+    expect(front.match(/createSettingsReader\(/g)).toHaveLength(1);
     // The report names each stub file a process reads settings from; Compose sets none of them.
     const rows = (probe.report as unknown as Report).processes.tiles as unknown as {
       tile: string;
@@ -893,7 +898,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     ]);
     expect(text(probe, "compose.yaml")).not.toContain("PROBE_");
     expect(text(probe, "README.md")).toContain(
-      "its process reads them in its configuration pass, before any client is built or probed, and gives them to the stub as `dependencies.settings`: a missing or invalid one fails startup with `Invalid setting <NAME>`, never its value. `compose.yaml` sets none of them:",
+      "its process reads them in its configuration pass, before any client is built or probed, and gives the same frozen values to the stub as `dependencies.settings` (rings yield purpose-bound handles, never raw keys): a missing or invalid one fails startup with `Invalid setting <NAME>`, never its value. `compose.yaml` sets none of them:",
     );
   });
 

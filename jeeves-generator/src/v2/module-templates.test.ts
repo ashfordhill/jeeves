@@ -116,6 +116,7 @@ describe("module-authored v2 and its tile-level twin", () => {
       "src/modules/watch/watch-counts.ts",
       "src/modules/watch/watch-views.slots.ts",
       "src/modules/watch/watch-views.ts",
+      "src/runtime/keys.ts",
       "src/runtime/settings.ts",
     ]);
     expect([...a.keys()].filter((path) => !b.has(path))).toEqual([]);
@@ -133,8 +134,9 @@ describe("module-authored v2 and its tile-level twin", () => {
     const afterApi = text(b.get("src/extension-api/index.ts")).split("\n");
     const stubApi = [
       'export type { CacheClient, ObjectReader, ObjectWriter, ObjectStore, QueuePublisher, SearchReader, SearchWriter, SearchIndex, ModuleCall } from "../modules/dependencies.ts";',
-      'export { declareSettings, text, integer, url, optional } from "../runtime/settings.ts";',
+      'export { declareSettings, text, integer, url, optional, signingKeys, sealingKeys } from "../runtime/settings.ts";',
       'export type { SettingsOf } from "../runtime/settings.ts";',
+      'export type { SigningKeys, SealingKeys, ValueContext } from "../runtime/keys.ts";',
     ];
     expect(afterApi.filter((line) => !beforeApi.includes(line))).toEqual(stubApi);
     expect(afterApi.filter((line) => !stubApi.includes(line))).toEqual(beforeApi);
@@ -208,6 +210,7 @@ describe("module-authored v2 and its tile-level twin", () => {
       "src/modules/dependencies.ts",
       "src/modules/watch/watch-counts.slots.ts",
       "src/modules/watch/watch-counts.ts",
+      "src/runtime/keys.ts",
       "src/runtime/settings.ts",
     ]);
     expect(tiles.report.modules).toBeUndefined();

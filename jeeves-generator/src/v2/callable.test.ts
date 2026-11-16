@@ -91,10 +91,9 @@ describe("RG05 checked callable bindings", () => {
     const dependencies = new Function(
       "favoritesCapability",
       "favoriteItems",
-      "readSettings",
-      "declared",
+      "configuredSettings",
       `const dependencies = {}; ${stripTypeScriptTypes(assignment)}; return dependencies["favorite-summary"];`,
-    )(runtime.favoritesCapability, { favorites: core }, () => ({}), {});
+    )(runtime.favoritesCapability, { favorites: core }, { "favorite-summary": {} });
     const handle = dependencies.favoriteItems;
     const result = await withCaller("alice", () => caller.favoriteSummary(dependencies, {}));
     expect(result).toEqual({

@@ -18575,3 +18575,33 @@ workload settings the same way.
   proof remains RG14. No new provider, live/paid call, Docker checkpoint, push, deployment or later
   unit. Commit subject: `RG07: version product migrations and expose scoped SQL operations`.
   Stop for coordinator acceptance.
+
+## 2026-11-16 — RG08 active after RG07 acceptance
+
+- Coordinator accepted RG07 commit `102da20db4c6b9f6192fef7f24a56d3707546b8e`.
+  RG08 is the sole active unit: private key rings, purpose-bound signing and authenticated
+  sealed values through the existing preconnection configuration pass. No later unit has started.
+
+## 2026-11-16 — RG08 verified, local commit for acceptance
+
+- Extension API remains **v7**, adding declared purpose-bound signing/sealing handles. Private
+  Node HKDF/HMAC/AES-GCM envelopes authenticate version/key/purpose/trusted scope/context, with
+  bounded canonical encodings, current-key writes and retained-key reads. Raw keys/files stay
+  private. `jeeves`/`jeeves.*` purposes are generated-only; later mechanisms must use that namespace.
+- Configuration snapshots settings once before clients, sharing reads by configured pathname.
+  Only built-in descriptor identities and registered optional derivatives are accepted: fabricated
+  parser callbacks refuse before any file/client dispatch. Tests execute actual emitted startup
+  for snapshot reuse and zero-read/zero-client forged-parser refusal. No policy handle is injected.
+- Final `pnpm check`: **126 files / 1,133 tests passed**. Crypto/settings/boundary **55 passed**;
+  affected regressions **96 passed**; eight scratch variants pass checker/TS7 with negative raw-key
+  API proof. Reviewed off pins **79→79 / 85→86 / 59→60**, adding only `src/runtime/keys.ts` to stubs.
+  E2e **75 passed**, then the exact Preview list updated for keys.ts and **1 passed**; TinyURL and
+  both complete mouse rebuilds passed. Web build passed. Stale expectations/harnesses were corrected
+  without weaker assertions. [Evidence and limits](plans/reliable-generation/evidence/rg08/README.md).
+- Private rings now cap files at 64 KiB and keys at 32–4096 bytes. Rotation requires restart;
+  verification supplies no expiry/auth/schema policy. Replay/workload identity/webhooks/sessions
+  remain future consumers. No authoring command/tool description changed; no offline eval rerun.
+  Root hashes, exact owner diff/modes, frozen v1 and historical exports/evidence are preserved.
+  No new provider/dependency, secret inspection, Docker checkpoint, paid/live call, push or deployment.
+- Commit subject: `RG08: provide purpose-bound keys and sealed values`. Stop for acceptance;
+  no later unit began. Native concurrent migrator/login proof remains RG14.

@@ -681,11 +681,20 @@ describe("updateDirectory", () => {
       });
     });
     await expect(update(directory)).rejects.toThrow("Invalid .jeeves/manifest.json");
-    // Without the files under it (local.ts, and the stubs' settings.ts since QL05), the old
+    // Without the exact runtime files under it (including RG08 keys), the old
     // manifest is valid but collides with the new one.
     await editManifest(directory, (records) => {
       const kept = records.filter((record) => !record.path.startsWith("src/runtime/"));
-      expect(records.length - kept.length).toBe(3);
+      expect(
+        records
+          .filter((record) => record.path.startsWith("src/runtime/"))
+          .map((record) => record.path),
+      ).toEqual([
+        "src/runtime/keys.ts",
+        "src/runtime/local.ts",
+        "src/runtime/operation.ts",
+        "src/runtime/settings.ts",
+      ]);
       records.splice(0, records.length, ...kept);
     });
     await expect(update(directory)).rejects.toThrow("OUTPUT_COLLISION at src/runtime");

@@ -836,32 +836,38 @@ the sweep (`sweepExpired`): then and every 60 s, under
 `idempotency sweep <tile>` failure line; the sweep is owned by the process's scope and stops at
 drain. The values are the generation catalog's `idempotency-policy`. Loop stubs may call it too.
 
-**Settings a stub declares** (QL05, owner decision D6). A stub's file exports the settings it
-reads: `export const settings = declareSettings({ NAME: kind, ... })` from
-`src/runtime/settings.ts` (written by `local.module-stubs` beside `dependencies.ts`). A name
-matches `^[A-Z][A-Z0-9_]{0,63}$` and isn't `JEEVES_*`, `OIDC_*`, `PG*`, `SECRET_DIR` or `PORT`;
-another throws `Reserved setting name <NAME>` when the module loads. The kinds are
-`text({ max? })` (at most `max` code points), `integer({ min?, max? })` (a safe integer, no
-sign but `-`, no leading zero), `url({ protocols? })` (absolute, `http:` and `https:` by default,
-no credentials, whitespace or control character), `secret()` (a `Uint8Array`) and `keyRing()` (a
-JSON array of 1–8 `{ "id", "key" }`, each `id` 1–32 of `[A-Za-z0-9_-]` and unique, each `key`
-unpadded base64url of at least 32 bytes; it gives `{ current, entries }` with `Buffer` keys,
-`current` the first), and `optional(kind)` (`undefined` when missing). text, integer and url read
-`process.env[NAME]`; secret and keyRing read the file `JEEVES_SECRET_<NAME>_FILE` names when that
-is set (an absolute path, as for a credential), else `SECRET_DIR/<name>`, `<name>` the setting's
-name lower-cased with `_` as `-` (`PROBE_TOKEN` is `probe-token`), with one trailing newline
-removed. Each process with stubs imports each stub's file whole and takes
-`(<Module> as { settings?: SettingsDeclaration }).settings ?? declareSettings({})`, so a stub
-file written before QL05, without the export, builds and runs with none; it reads every
-declaration with `readSettings("<module>", ...)` last in its configuration pass (below), before
-any client is built or probed, then again as `dependencies["<module>"].settings` (frozen). A
-missing (unset, empty or no file) or invalid setting fails startup with `Invalid setting <NAME>`
-in the `startup-failed` line, never its value; a stub's settings are read in declaration order,
-so its first wrong one is named, beside any other wrong setting in the pass. `compose.yaml` sets
-none of them: the application gives them in its `compose.override.yaml` (QG02), a value in the
-service's `environment` and a secret or ring through its `secrets`. The report's
-`processes.tiles[].stubSettings` lists each stub file a process reads them from; the names are the
-application's code, so `environment` doesn't list them.
+**Settings a stub declares.** A product operation module exports
+`settings = declareSettings({ NAME: kind, ... })` from `src/extension-api/index.ts`.
+Names match `^[A-Z][A-Z0-9_]{0,63}$`, excluding `JEEVES_*`, `OIDC_*`, `PG*`,
+`SECRET_DIR` and `PORT`. Public kinds are `text({ max? })`, `integer({ min?, max? })`,
+`url({ protocols? })`, `signingKeys(purpose)`, `sealingKeys(purpose)` and `optional(kind)`.
+Text/integer/URL values come from the environment. Configuration validates all declarations
+before any client opens, reads each ring file once per process, and passes the same frozen
+values as `dependencies.settings`. Missing/invalid values name only `Invalid setting <NAME>`.
+Only built-in descriptors and `optional` descriptors derived from them are accepted. Structural
+copies and custom parse callbacks refuse before file access. The report lists declaration files;
+Compose does not supply application-owned settings.
+
+Signing/sealing settings read `JEEVES_SECRET_<NAME>_FILE` (an absolute path) or
+`SECRET_DIR/<name>` (default `/run/secrets`, lower case with `_` replaced by `-`). Supply a JSON
+array of 1–8 unique `{ "id", "key" }` entries; IDs are 1–32 `[A-Za-z0-9_-]`, keys are
+high-entropy canonical unpadded base64url of 32–4096 bytes, and the file is at most 64 KiB.
+The first key writes; retained keys read. Rotate the file and restart each replica. Raw rings,
+secret bytes and file readers are private; product policies receive no handle.
+
+`signingKeys("cursor.items")` yields only `sign(value, {scope, context})` and
+`verify(envelope, {scope, context})`; `sealingKeys("private.receipt")` yields only `seal/open`.
+The purpose is fixed at declaration, 1–64 `[a-z][a-z0-9.-]*`; `jeeves` and the `jeeves.`
+prefix are reserved for private generated mechanisms. Supply trusted account/tenant
+scope and operation context, each nonempty and at most 512 UTF-8 bytes. Values are UTF-8 strings
+up to 16 KiB, envelopes up to 24 KiB. Invalid writes throw a value-free error; invalid reads
+return `undefined` without logging. Verification does not supply expiry, authorization or
+product-schema checks. Node HKDF-SHA256 separates purpose and mode keys; HMAC-SHA256 and
+AES-256-GCM authenticate structured version/key/purpose/scope/context fields. Sealing uses
+random 96-bit nonces and 128-bit tags. Canonical base64url refuses padding/aliases. Removed or
+unknown keys, changed contexts and corrupt envelopes refuse. See `.jeeves/extensions.md`.
+These are reusable primitives; replay, workload identity, webhook ingress and sessions are
+not added by declaring a handle.
 
 **Endpoints from the environment.** A process with stubs checks every variable its stubs' clients
 and its sign-in read, and its stubs' declared settings (QL05), in one pass, `checkConfiguration`

@@ -246,12 +246,14 @@ it("lists each module's status in the preview and exports a stub-only design", a
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-links.slots.ts",
         "src/modules/shorten/shorten-links.ts",
+        "src/runtime/keys.ts",
         "src/runtime/settings.ts",
       ],
       [
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-limit.slots.ts",
         "src/modules/shorten/shorten-limit.ts",
+        "src/runtime/keys.ts",
         "src/runtime/settings.ts",
       ],
     ]);

@@ -97,6 +97,12 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
           sourcePaths: selections.map((s) => pointer(s.sourcePath)),
         },
       ];
+      files.push({
+        path: "src/runtime/keys.ts",
+        content: asset("jeeves-generator/templates/local-v2/assets/src/runtime/keys.ts.template"),
+        ownership: "generated-scaffold",
+        sourcePaths: selections.map((s) => pointer(s.sourcePath)),
+      });
       const gaps: V2Gap[] = [];
       // With Runnable processes on, a route stub takes the request its tile's process routes to it
       // and a loop stub each message its loops consume (`src/modules/entry.ts`, written by the
@@ -322,9 +328,9 @@ function stubFiles(
     `import type { Dependencies } from "./${file(paths.slots)}";`,
     'import { declareSettings } from "../../extension-api/index.ts";',
     "",
-    "/** The settings this module reads, by name: text(), integer() or url();",
-    " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-    " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
+    "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
+    " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
+    " * bind every value to trusted scope and context. Protected credentials stay generated. */",
     "export const settings = declareSettings({});",
     "",
     ...(route

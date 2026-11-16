@@ -53,8 +53,9 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
       if (has("module-stub"))
         publicLines.push(
           'export type { CacheClient, ObjectReader, ObjectWriter, ObjectStore, QueuePublisher, SearchReader, SearchWriter, SearchIndex, ModuleCall } from "../modules/dependencies.ts";',
-          'export { declareSettings, text, integer, url, optional } from "../runtime/settings.ts";',
+          'export { declareSettings, text, integer, url, optional, signingKeys, sealingKeys } from "../runtime/settings.ts";',
           'export type { SettingsOf } from "../runtime/settings.ts";',
+          'export type { SigningKeys, SealingKeys, ValueContext } from "../runtime/keys.ts";',
         );
       if (model.processes?.some((p) => p.stubs.some((s) => s.role !== "library")))
         publicLines.push(

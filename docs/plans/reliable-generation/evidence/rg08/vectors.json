@@ -1,0 +1,14 @@
+{
+  "oracle": "Python hashlib/hmac HKDF-SHA256 and cryptography 41.0.7 AESGCM; independent from Node emitter",
+  "keyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "purpose": "cursor.items",
+  "binding": {
+    "scope": "account-7",
+    "context": "items.list.v1"
+  },
+  "value": "next:3",
+  "signed": "jks1.k1.bmV4dDoz.T0Y7jOEhrTj8_G7QbxVYmb06-n07V7gcbQMYwhPp1Ts",
+  "sealed": "jke1.k1.AAECAwQFBgcICQoL.s_FMb885.vjDNOhRPTMzW2A3MmrnjrA",
+  "signKeyHex": "60416aaf6c714410229694d9501b7bf77a114177667aacd61f565c49de3f64e5",
+  "sealKeyHex": "c6af6d9d96ff54f603635cc1787da69dfe888be2cedbf9440eac67c99bfff35f"
+}

@@ -152,9 +152,9 @@ describe("module stubs", () => {
         // The settings it reads, none until written (QL05, owner decision D6).
         'import { declareSettings } from "../../extension-api/index.ts";',
         "",
-        "/** The settings this module reads, by name: text(), integer() or url();",
-        " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-        " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
+        "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
+        " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
+        " * bind every value to trusted scope and context. Protected credentials stay generated. */",
         "export const settings = declareSettings({});",
         "",
         "export async function shortenCache(dependencies: Dependencies): Promise<void> {",
@@ -226,7 +226,12 @@ describe("module stubs", () => {
     expect(text(bundle, "src/modules/dependencies.ts")).not.toContain("settings");
     expect(
       bundle.files.filter((file) => file.path.startsWith("src/runtime/")).map((file) => file.path),
-    ).toEqual(["src/runtime/local.ts", "src/runtime/operation.ts", "src/runtime/settings.ts"]);
+    ).toEqual([
+      "src/runtime/keys.ts",
+      "src/runtime/local.ts",
+      "src/runtime/operation.ts",
+      "src/runtime/settings.ts",
+    ]);
     const settings = bundle.manifest.files.find((file) => file.path === "src/runtime/settings.ts");
     expect([settings?.ownership, settings?.owner]).toEqual([
       "generated-scaffold",
@@ -255,6 +260,7 @@ describe("module stubs", () => {
         "src/modules/dependencies.ts",
         "src/modules/shorten/shorten-limit.slots.ts",
         "src/modules/shorten/shorten-limit.ts",
+        "src/runtime/keys.ts",
         "src/runtime/settings.ts",
       ],
     });
