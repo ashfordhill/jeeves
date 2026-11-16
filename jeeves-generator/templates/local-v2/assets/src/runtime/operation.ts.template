@@ -28,7 +28,17 @@ export class OperationError extends Error {
     this.code = code;
   }
 }
-const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope }>();
+type EffectClass = "read" | "local-atomic-mutation" | "durable-external-work";
+const effectRank = { read: 0, "local-atomic-mutation": 1, "durable-external-work": 2 } as const;
+const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass }>();
+/** Private generated boundary: a nested capability cannot widen its caller's effect authority. */
+export function withEffect<T>(effect: EffectClass, dispatch: () => T): T {
+  assertOperation();
+  const parent = active.getStore();
+  if (parent?.effect && effectRank[effect] > effectRank[parent.effect])
+    throw new OperationError("refused", "EFFECT_NOT_ALLOWED");
+  return active.run({ ...parent, effect }, dispatch);
+}
 const contexts = new WeakSet<object>();
 export const currentOperation = () => active.getStore()?.context;
 export const currentProcess = () => active.getStore()?.scope;

@@ -280,11 +280,9 @@ and an entry's lane row runs `setEntryLane` (a lane either would refuse is disab
 reason as its tooltip). A new tile is named after its kind and
 numbered when taken ("Worker service 2", ID `worker-service-2`); a new link's ID is `source-target`, or
 `lane-target` for an entry. Chat sends the same commands, and these are the only commands that
-add or remove tiles and links ([studio guide](../docs/studio.md#chat)). IDs follow names: `edit`
-with a new name re-keys a tile ID that still has its creation form or its old name's slug to the
-new name's slug, with its following modules and every reference, in one batch (a `rekey`
-operation per ID); a clash refuses, and studies, designs with tile-level templates or a preset and
-other IDs keep theirs ([names and IDs](../docs/studio.md#inspector)). Link IDs never change.
+add or remove tiles and links ([studio guide](../docs/studio.md#chat)). IDs are assigned at creation and display renames preserve them, with target addresses, durable
+namespaces and hook paths. Explicit identity changes require application migration; raw `rekey`
+refuses ([names and IDs](../docs/studio.md#inspector)). Imported IDs remain readable.
 
 A **package** groups two or more independent applications; it has no language, provider or
 runtime. Packages stay in the format, but neither the canvas nor chat shows, creates or changes
@@ -315,7 +313,7 @@ slots and generation: `studioComponentDefinitions` in
 | `data-access` | Data access | `cylinder` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
 | `auth-guard` | Auth guard | `shield` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
 | `external-call` | External call | `box-out` | any | target: External API, an application or Identity · request | Stub |
-| `custom` | Custom | `puzzle` | any | uses: any tile, many | Stub |
+| `custom` | Custom | `puzzle` | any | uses: any tile, many; call: complete Favorites in its tile (optional) | Stub |
 | `multipart-uploads` | Multipart uploads | `cloud-up` | Uploads, Service | objects: Object storage · read & write | Lead of `owned-multipart` |
 | `lifecycle-writer` | Lifecycle writer | `pie` | Worker | state: Database · read & write | Lead of `asset-lifecycle` |
 | `video-encoder` | Video encoder | `play` | Worker | originals: Object storage · read | Lead of `video-hls` |
@@ -330,9 +328,9 @@ slots and generation: `studioComponentDefinitions` in
   and Billing tiles. Identity, Gateway and Browser tiles take no new modules (`moduleKinds`); older
   source keeps the browser-safe kinds it has.
 - **Slots:** a slot is one use of a tile through the host's link, and its arrow follows that link.
-  Every slot takes one connection except Custom's. The publisher's outbox is needed for jobs and
+  Every slot takes one connection except Custom's uses. The publisher's outbox is needed for jobs and
   publication, not for results. The Cache reader's **loader** and Favorites' **items** are the
-  in-process slots.
+  in-process slots, alongside Custom's optional **call** to a complete Favorites module.
   `moduleSlots` lists a module's slots and the links that fill them; `moduleLinkSlot` gives the slot
   a link fills.
 - **Generation:** a template is selected only by its lead, once every needed part in its tile is
@@ -371,8 +369,8 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 
 | Command | What it does |
 | --- | --- |
-| `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` with a new name re-keys an ID that still follows to `<host>-<slug(name)>`. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
-| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. A filled slot must be disconnected first. |
+| `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` changes the label and preserves the ID. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; other adapters and cross-process callable transports remain gaps. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
 

@@ -30,11 +30,15 @@ function load(path: string): string {
     /from "(\.\.?\/[^"]+)"/g,
     (_match, relative: string) => `from "${load(posix.join(posix.dirname(path), relative))}"`,
   );
-  const url = `data:text/javascript;base64,${Buffer.from(js).toString("base64")}`;
+  const linked = js.replace('from "zod"', `from "${import.meta.resolve("zod")}"`);
+  const url = `data:text/javascript;base64,${Buffer.from(linked).toString("base64")}`;
   urls.set(path, url);
   return url;
 }
-const { createFavorites, mountFavorites } = await import(load("src/runtime/favorites.ts"));
+const operations = await import(load("src/runtime/operation.ts"));
+const { createFavorites, mountFavorites, favoritesCapability } = await import(
+  load("src/runtime/favorites.ts")
+);
 const { notImplementedRoutes } = await import(load("src/runtime/tile-http.ts"));
 const { favoriteItemsHooks } = await import(
   load("src/modules/account-api/favorite-items.hooks.ts")
@@ -427,5 +431,48 @@ describe("the emitted Favorites routes and hooks file", () => {
       call("GET /modules/favorite-items/items", request(undefined, { after: "bad" })),
     ).rejects.toMatchObject({ statusCode: 400, code: "CURSOR" });
     expect(principal).toHaveBeenCalled();
+  });
+  it("uses the same real core, caller scope and refusals from HTTP and a callable handle", async () => {
+    const { engine, hooks } = await favorites(async (id) => id !== "hidden");
+    const open = routes();
+    mountFavorites(open, { base: "/items", favorites: engine, principal: async () => alice });
+    const handle = favoritesCapability(() => engine, "favorite-items");
+    const op = operations.operation({ maximumMs: 2000, caller: { subject: alice.subject } });
+    try {
+      await operations.withOperation(op.context, async () => {
+        const put = open.mounted.get("PUT /items/*");
+        if (!put) throw Error("No HTTP add adapter");
+        for (const id of ["", "a/b", "hidden"]) {
+          const direct = await handle.add({ itemId: id }).catch((e: unknown) => e);
+          const http = await put(request(id)).catch((e: unknown) => e);
+          if (!(http instanceof Error) || !("code" in http) || !("statusCode" in http))
+            throw Error("HTTP adapter did not refuse");
+          expect(direct).toMatchObject({ statusCode: id === "hidden" ? 404 : 400 });
+          expect({ code: direct.code, status: direct.statusCode }).toEqual({
+            code: http.code,
+            status: http.statusCode,
+          });
+        }
+        const added = await handle.add({ itemId: "item-1" });
+        expect(await engine.check(alice, "item-1")).toEqual(added);
+        await expect(engine.check(bob, "item-1")).rejects.toMatchObject({ code: "NOT_FAVORITE" });
+        expect(await handle.check({ itemId: "item-1" })).toEqual(added);
+        const page = await handle.list({});
+        expect(Object.isFrozen(page)).toBe(true);
+        expect(Object.isFrozen(page.items)).toBe(true);
+        expect(Object.isFrozen(page.items[0])).toBe(true);
+        await expect(
+          operations.withEffect("read", () => handle.remove({ itemId: "item-1" })),
+        ).rejects.toMatchObject({ code: "EFFECT_NOT_ALLOWED" });
+        expect(await engine.check(alice, "item-1")).toEqual(added);
+      });
+      expect(hooks.eligible).toHaveBeenCalledWith("item-1");
+    } finally {
+      op.close();
+    }
+    await expect(handle.check({ itemId: "item-1" })).rejects.toMatchObject({
+      statusCode: 401,
+      code: "SIGN_IN_REQUIRED",
+    });
   });
 });

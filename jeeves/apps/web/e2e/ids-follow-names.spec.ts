@@ -1,8 +1,4 @@
-/**
- * IDs follow names (tile processes plan, TP03): renaming a tile or module by mouse re-keys an ID
- * that still follows its kind or its name, with its modules, in one Undo step, and the selection
- * and the field being typed in stay on it. A study keeps its IDs; only the name changes.
- */
+/** Display labels preserve runtime identities, module hosts and handwritten paths (RG05). */
 import type { Page } from "@playwright/test";
 import {
   addModuleFrom,
@@ -50,12 +46,12 @@ async function typeOver(page: Page, text: string) {
   await page.keyboard.type(text);
 }
 
-test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo", async ({
+test("renaming a new Worker and its module preserves runtime IDs, selection and Undo", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  const id = await createStudy(page, "E2E IDs follow names", "blank");
+  const id = await createStudy(page, "E2E stable IDs", "blank");
   try {
     await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
     await pick(page, "User", "Add action", "Consume");
@@ -73,30 +69,28 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     await page.keyboard.type("Records each video's state.");
     await expect
       .poll(() => tiles(page, id))
-      .toContainEqual(["video-lifecycle-worker", "Video lifecycle worker"]);
+      .toContainEqual(["worker-service", "Video lifecycle worker"]);
     await expect(field(page, "Description")).toBeFocused();
     await page.keyboard.press("Tab");
     await expect
       .poll(async () =>
-        (await saved(page, id)).elements.find((item) => item.id === "video-lifecycle-worker"),
+        (await saved(page, id)).elements.find((item) => item.id === "worker-service"),
       )
       .toMatchObject({ description: "Records each video's state." });
     await expect(tile(page, "Video lifecycle worker")).toHaveClass(/selected/);
     await expect(field(page, "Name")).toHaveValue("Video lifecycle worker");
     await expect(field(page, "Description")).toHaveValue("Records each video's state.");
 
-    // A name whose ID another tile has waits in the field, with the reason, and saves nothing.
-    const revision = (await saved(page, id)).revision;
-    await field(page, "Name").click();
-    await typeOver(page, "Microservice");
-    await expect(inspector(page).locator(".studio-field-error")).toHaveText(
-      "Microservice would take the ID microservice, which Microservice already uses. Choose another name.",
-    );
-    await typeOver(page, "Video lifecycle worker");
+    // Duplicate display labels do not collide with runtime identities.
+    await field(page, "Name").fill("Microservice");
+    await field(page, "Description").click();
+    await expect.poll(() => tiles(page, id)).toContainEqual(["worker-service", "Microservice"]);
     await expect(inspector(page).locator(".studio-field-error")).toHaveCount(0);
-    await page.keyboard.press("Tab");
-    await page.waitForTimeout(700);
-    expect((await saved(page, id)).revision).toBe(revision);
+    await field(page, "Name").fill("Video lifecycle worker");
+    await field(page, "Description").click();
+    await expect
+      .poll(() => tiles(page, id))
+      .toContainEqual(["worker-service", "Video lifecycle worker"]);
 
     // A module from the Worker's `+`: its ID follows the Worker's, then its own new name.
     await tile(page, "Video lifecycle worker").click();
@@ -104,12 +98,12 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     await expect(field(page, "Name")).toBeFocused();
     await expect
       .poll(() => modules(page, id))
-      .toEqual([["video-lifecycle-worker-data-access", "video-lifecycle-worker", "Data access"]]);
+      .toEqual([["worker-service-data-access", "worker-service", "Data access"]]);
     await typeOver(page, "State writer");
     await page.keyboard.press("Tab");
     await expect
       .poll(() => modules(page, id))
-      .toEqual([["video-lifecycle-worker-state-writer", "video-lifecycle-worker", "State writer"]]);
+      .toEqual([["worker-service-data-access", "worker-service", "State writer"]]);
     // The module's page stays open on its new ID, and its row carries it.
     await expect(
       inspector(page).getByRole("button", { name: "Back to Video lifecycle worker", exact: true }),
@@ -118,7 +112,7 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     await tool(page, "Detailed").click();
     await ready(page);
     const row = page.locator(
-      '.board .lane-container-row[data-module="video-lifecycle-worker-state-writer"]',
+      '.board .lane-container-row[data-module="worker-service-data-access"]',
     );
     await expect(row).toHaveAttribute("data-mark", "open");
 
@@ -126,10 +120,10 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     await undo(page);
     await expect
       .poll(() => modules(page, id))
-      .toEqual([["video-lifecycle-worker-data-access", "video-lifecycle-worker", "Data access"]]);
+      .toEqual([["worker-service-data-access", "worker-service", "Data access"]]);
     await expect(field(page, "Name")).toHaveValue("Data access");
     await expect(
-      page.locator('.board .lane-container-row[data-module="video-lifecycle-worker-data-access"]'),
+      page.locator('.board .lane-container-row[data-module="worker-service-data-access"]'),
     ).toHaveAttribute("data-mark", "open");
 
     // Renaming the Worker again moves its module with it; Undo moves both back.
@@ -141,14 +135,14 @@ test("renaming a new Worker and its module by mouse re-keys their IDs, with Undo
     await page.keyboard.press("Tab");
     await expect
       .poll(() => modules(page, id))
-      .toEqual([["video-worker-data-access", "video-worker", "Data access"]]);
+      .toEqual([["worker-service-data-access", "worker-service", "Data access"]]);
     await expect(tile(page, "Video worker")).toHaveClass(/selected/);
     await undo(page);
     await expect
       .poll(() => tiles(page, id))
-      .toContainEqual(["video-lifecycle-worker", "Video lifecycle worker"]);
+      .toContainEqual(["worker-service", "Video lifecycle worker"]);
     expect(await modules(page, id)).toEqual([
-      ["video-lifecycle-worker-data-access", "video-lifecycle-worker", "Data access"],
+      ["worker-service-data-access", "worker-service", "Data access"],
     ]);
     await expect(tile(page, "Video lifecycle worker")).toHaveClass(/selected/);
     await expect(field(page, "Name")).toHaveValue("Video lifecycle worker");

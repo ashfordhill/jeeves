@@ -19,6 +19,7 @@ import {
   knownGenerationTemplate,
 } from "./generation-catalog.ts";
 import {
+  callableContractRefusal,
   type GenerationCallableContract,
   type GenerationInstalledSupport,
   type GenerationProcessKind,
@@ -114,6 +115,7 @@ export type NormalizedStubModule = {
     targets: StudioComponentTargetKind[];
     /** An in-process slot's module kind. */
     module?: StudioComponentKind;
+    callables?: GenerationCallableContract[];
     many?: true;
     connections: {
       /** The module link. */
@@ -394,6 +396,7 @@ function stubModule(
       need: slot.need,
       targets: [...slot.targets],
       ...(slot.module && { module: slot.module }),
+      ...(slot.callables && { callables: structuredClone([...slot.callables]) }),
       ...(slot.many && { many: true as const }),
       connections: filled.flatMap((item) => connection(item.id)),
     })),
@@ -1155,7 +1158,8 @@ export function resolveGeneration(
       );
       for (const contract of generationCallableContracts) {
         const implementation = installed.callables?.find(
-          (item) => item.contract.id === contract.id && item.contract.version === contract.version,
+          (item) =>
+            item.contract.id === contract.id && !callableContractRefusal(contract, item.contract),
         );
         if (!implementation)
           report(
@@ -1203,6 +1207,32 @@ export function resolveGeneration(
         });
       }
     }
+    for (const selection of normalized)
+      for (const slot of selection.module?.slots ?? []) {
+        if (!slot.callables) continue;
+        for (const connection of slot.connections)
+          for (const required of slot.callables) {
+            const target = connection.target;
+            const actual = model.capabilities.find(
+              (capability) =>
+                target.kind === "component" &&
+                capability.module === target.component &&
+                capability.contract.id === required.id,
+            );
+            const installedContract = installed.callables?.find(
+              (item) => item.contract.id === required.id,
+            )?.contract;
+            const reason =
+              installedContract && callableContractRefusal(required, installedContract);
+            if (reason || !actual)
+              report(
+                "NEEDS_TEMPLATE",
+                connection.sourcePath,
+                reason ||
+                  `No installed in-process adapter for ${required.id}@${required.version}; complete its callee and enable Runnable processes.`,
+              );
+          }
+      }
     model.capabilities.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const delivery = normalizedDelivery(design);
     if (delivery.length) model.delivery = delivery;

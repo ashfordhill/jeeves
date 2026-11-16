@@ -145,9 +145,9 @@ Every other tile keeps its Simple view size and face.
   twice (YouTube's Packager and Thumbnailer both write Transcoded videos: 25 relationships, 26
   lines). A relationship no module uses, an entry and the user's line attach at the header.
 - Of the links between modules of one tile, only an in-process slot's is drawn, the **Cache
-  reader's loader** or **Favorites' items**: a short arrow in the container's left gutter, from
-  that module's row to the Data access row it uses (the one a Cache reader loads from on a miss,
-  or whose database says which items Favorites may keep; the rows move right to make room). It
+  reader's loader**, **Favorites' items** or **Custom's call**: a short arrow in the container's left gutter, from
+  that module's row to the module it uses (a loader, an items Data access or the callable
+  Favorites module; the rows move right to make room). It
   turns blue while either module is open. Every other link between modules of one tile stays saved and is neither drawn nor
   authored, and decides nothing that is generated.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
@@ -511,6 +511,10 @@ onward.").
   The line still ends at the pointer, and a release on an allowed end connects as usual. The zoom
   stays, and the camera is then yours, as after any pan. At the fit everything is in view, so
   nothing pans.
+- **Custom's call** connects by dragging onto a complete Favorites module in the same tile.
+  The generated typed handle exposes add/remove/check/list with declared stable targets, verified
+  caller, bounded DTO checks and effect authority. The link mounts no HTTP endpoint; Favorites'
+  existing selection owns its four routes. Other callable adapters remain unavailable.
 - **The Cache reader's loader**, and **Favorites' items**, are a drag from its dot onto a Data
   access row in the same tile; that row stays bright with a dashed outline. Each is drawn as a
   gutter arrow.
@@ -679,21 +683,14 @@ saved and never sent to chat.
 
 A tile or action with a warning lists it, in orange, below its kind.
 
-**Names and IDs.** A tile's or module's ID follows its name while it still has the form it was
-created with (`worker-service`, `worker-service-2`; `<tile>-data-access`) or its current name's
-slug. Renaming it re-keys the ID: a tile becomes the new name's slug (`video-lifecycle-worker`),
-a module `<tile ID>-<slug>`, and a tile's following modules move to its new ID with it. Every
-reference moves in the same step (links, module links, entries, ownership, generation, operations
-and scope; derivation re-runs), so it is one Undo step, and Undo moves the IDs back. Link IDs never
-change. The re-key happens when the name's autosave commits (after 500ms or on blur), not per
-keystroke; the tile or module stays selected under its new ID, and a field being typed in keeps
-its focus and text. A name whose new ID something else already has waits in the field with the
-reason ("Microservice would take the ID microservice, which Microservice already uses. Choose
-another name.") and saves nothing until it is changed. A name whose slug is no ID (empty, or
-starting with a digit) keeps the ID; a long one is cut to 63 characters. **Pinned:** the studies,
-the frozen v2 project (a study origin), designs with a tile-level template or a feature preset, and
-IDs that follow neither form (hand-chosen, imported, or given to chat's `addTile`/`addModule`) keep
-their IDs; renaming changes only the name.
+**Names and IDs.** Creation assigns a tile or module its ID, using its initial name when one
+is supplied. Every display rename preserves that ID, including new diagrams and imported IDs.
+Targets, database/credential namespaces, selection IDs and handwritten hook paths stay stable.
+Names autosave after 500ms or on blur; the tile/module stays selected and Undo restores its label.
+Duplicate labels do not collide with IDs. An explicit runtime identity change requires an
+application migration; the raw `rekey` operation refuses it. Existing saved diagrams and history
+snapshots remain readable. Old Undo/Redo restores stored snapshots, including their historical IDs;
+it does not replay a rename or migrate an exported application's identities.
 
 Valid text autosaves after 500ms or on blur; selects commit at once. Selecting, opening a module
 and navigating flush pending valid edits; invalid unsent drafts are discarded. A rejected write stays
@@ -735,8 +732,8 @@ them. The three studies have none. The rules live in `studio-warnings.ts`.
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
 batch (an autosaved edit, an action's rename, an entry's lane switch, or adding, connecting,
 disconnecting or removing a module) or chat turn is one step; a new edit ends the redo chain. A
-rename that re-keyed IDs is one step too: Undo and Redo move the IDs back and again, and the
-selection (an open module included) follows them; the server's answer lists them as `renamed`. Selecting, opening a module or going Back,
+label rename is one step too: Undo and Redo restore the label while the runtime ID and selection
+stay stable. Selecting, opening a module or going Back,
 switching between Detailed and Simple, opening a fan or a module menu, hovering, a cancelled drag, panning,
 zooming and Fit add none and leave the design and blueprint unchanged. The history survives reloads.
 
@@ -832,7 +829,7 @@ on the design it runs on, through the same builder:
   `getDesign.editableSettings` with a new value (null clears a process setting). It is merged into
   the target's settings and sent whole, as the inspector field sends it, after a check against
   that target's normal controls; a refusal lists them with what each takes;
-- IDs follow names: `addTile` and `linkTiles` need no `id` or `linkId`, and `side` is gone;
+- IDs are assigned at creation and stay stable on rename; `addTile` and `linkTiles` need no `id` or `linkId`, and `side` is gone;
 - only what chat may send is listed: no legacy tile kinds, `changeKind` or raw component
   commands. The studio's own shapes (a settings object on `edit`, `editComponent`, `side`,
   `planned.label`) are still accepted, so a fix written the spec's way isn't refused for it.
@@ -851,9 +848,7 @@ refused with what to do (two calls in one response, which run in order). The app
 (one sent is ignored): a turn edits one working copy, and the commit still refuses a concurrent
 edit. Their results count readiness findings (a behavior profile, contracts, ownership
 declarations) under `notSpecified` instead of listing them beside design errors, and
-`reviewDesign` leads with `left`. Review fixes come back in the same commands. A rename re-keys IDs that
-follow their names, as the inspector does ([Names and IDs](#inspector)); results list them as
-`renamed: [{from, to}]`. An `addModule` with a name and no ID takes its ID from that name. The selected tile, line or entry is
+`reviewDesign` leads with `left`. Review fixes come back in the same commands. A rename preserves IDs, as the inspector does ([Names and IDs](#inspector)). An `addModule` with a name and no ID takes its ID from that name. The selected tile, line or entry is
 sent with each message, so "Add a cache after the selected service" works; the user, an action
 and the user's line to it have no design ID, so selecting one sends nothing. Chat can ask one
 focused question with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP,
@@ -1366,7 +1361,7 @@ and all twenty components, with nothing omitted and no findings.
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
   writes" until renamed, though it reads.
 - The inspector neither lists nor edits module links. The Detailed view draws a module's links
-  to other tiles, the Cache reader's loader and Favorites' items; other links between two modules
+  to other tiles, the Cache reader's loader, Favorites' items and Custom's call; other links between two modules
   of one tile (the studies' "Supplies code") are kept but neither drawn nor authored. Modules connect only in the
   Detailed view, whose rows read from about 0.6 zoom. Below 0.5 zoom a dot's grab area is only as
   tall as the row pitch (about 7–12px at the Detailed fits), though 16px wide. A

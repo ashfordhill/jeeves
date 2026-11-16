@@ -1,0 +1,16 @@
+$ pnpm --filter @jeeves/server exec tsx src/eval/runner.ts
+design scripted-good: v3-build 100, video-build 100, podcast-build 100, review 100; 53 requests, 2285.0 KB sent (≈ 584,955–779,940 tokens), 18.7 KB received; deterministic; not model-quality evidence
+design scripted-patterns: v3-build 86.3, video-build 98.2, podcast-build 98.2, review –; 12 requests, 660.9 KB sent (≈ 169,185–225,580 tokens), 4.8 KB received; deterministic; not model-quality evidence
+design scripted-bad: v3-build 1.7, video-build 18.5, podcast-build 18.5, review 5; 19 requests, 668.7 KB sent (≈ 171,185–228,246 tokens), 5.4 KB received; deterministic; not model-quality evidence
+synthetic replay video-build/rf00-ablation: deterministic; not model-quality evidence
+synthetic replay video-build/current: deterministic; not model-quality evidence
+synthetic replay video-publication-repair/rf00-ablation: deterministic; not model-quality evidence
+synthetic replay video-publication-repair/current: deterministic; not model-quality evidence
+synthetic replay checkout-build/rf00-ablation: deterministic; not model-quality evidence
+synthetic replay checkout-build/current: deterministic; not model-quality evidence
+synthetic replay checkout-late-notification-edit/rf00-ablation: deterministic; not model-quality evidence
+synthetic replay checkout-late-notification-edit/current: deterministic; not model-quality evidence
+synthetic replay tinyurl-response-cache-repair/rf00-ablation: deterministic; not model-quality evidence
+synthetic replay tinyurl-response-cache-repair/current: deterministic; not model-quality evidence
+synthetic replay tinyurl-unsupported-edit/rf00-ablation: deterministic; not model-quality evidence
+synthetic replay tinyurl-unsupported-edit/current: deterministic; not model-quality evidence

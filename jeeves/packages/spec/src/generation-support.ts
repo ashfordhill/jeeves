@@ -17,6 +17,16 @@ export const generationCallableContractSchema = z.strictObject({
   effect: z.enum(["read", "local-atomic-mutation", "durable-external-work"]),
 });
 export type GenerationCallableContract = z.infer<typeof generationCallableContractSchema>;
+/** Exact named input/output versions and effect authority; no structural schema guessing. */
+export function callableContractRefusal(
+  required: GenerationCallableContract,
+  actual: GenerationCallableContract,
+): string | undefined {
+  for (const key of ["id", "version", "input", "output", "effect"] as const)
+    if (required[key] !== actual[key])
+      return `Callable ${required.id}@${required.version} requires ${key} ${required[key]}; installed adapter declares ${actual[key]}.`;
+  return undefined;
+}
 export type GenerationInstalledCallable = {
   contract: GenerationCallableContract;
   /** Existing implementation output checked by the assembler. */

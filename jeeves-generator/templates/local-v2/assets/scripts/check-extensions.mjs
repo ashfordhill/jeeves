@@ -72,10 +72,13 @@ const policyMethods = new Set([
   "nack",
 ]);
 const safePackages = new Set(["zod", "node:crypto", "node:buffer", "node:url"]);
-async function inspect(file, policy, service) {
-  const visitKey = `${file}:${policy}:${service}`;
+async function inspect(file, policy, service, sharedScope = false) {
+  const visitKey = `${file}:${policy}:${service}:${sharedScope}`;
   if (visited.has(visitKey)) return;
   visited.add(visitKey);
+  const shared =
+    sharedScope || relative(root, file).split(sep).join("/").startsWith("src/contracts/");
+  policy ||= shared;
   const source = await readFile(file, "utf8");
   // The pinned TS7 compiler exposes its scanner; no extra parser/lint dependency is needed.
   // Strings/comments are tokens, so a quoted example cannot masquerade as an executable API.
@@ -151,25 +154,23 @@ async function inspect(file, policy, service) {
       continue;
     }
     const own = `src/modules/${service}/`;
-    if (
-      !(
-        path.startsWith("src/contracts/") ||
-        path.startsWith("src/helpers/") ||
-        path.startsWith(own)
-      )
-    ) {
+    if (!(path.startsWith("src/contracts/") || (!shared && path.startsWith(own)))) {
       report(file, `private cross-service import ${specifier}`);
       continue;
     }
     // Generated .slots files are checked by hash; they use only the generated public contract.
     if (generated.has(path)) continue;
-    if (all.includes(target)) await inspect(target, policy, service);
+    if (all.includes(target)) await inspect(target, policy, service, shared);
     else report(file, `unresolved shared import ${specifier}`);
   }
 }
 for (const file of all) {
   const path = relative(root, file).split(sep).join("/");
   const match = /^src\/modules\/([^/]+)\/.*\.ts$/.exec(path);
+  if (path.startsWith("src/contracts/") && !generated.has(path)) {
+    await inspect(file, true, "__shared_contracts__", true);
+    continue;
+  }
   if (path === "src/http-errors.hooks.ts") {
     await inspect(file, true, "__http_error_policy__");
     continue;

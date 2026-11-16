@@ -18,6 +18,7 @@ import {
 import { tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { promisify } from "node:util";
+import type { NormalizedGeneration } from "@jeeves/spec";
 import { assertDistinctPaths } from "./files.ts";
 import { sha256 } from "./json.ts";
 import type { assembleV2 } from "./v2/assemble.ts";
@@ -420,6 +421,45 @@ async function validateMigration(
   }
 }
 
+/** Existing stable targets and durable/handwritten namespaces cannot be re-keyed by regeneration.
+ * Additions are safe; removal/replacement needs an application/data migration outside this updater. */
+function runtimeIdentities(model: Partial<NormalizedGeneration>) {
+  const records = new Map<string, string>();
+  for (const process of model.processes ?? [])
+    records.set(
+      `process:${process.tile}`,
+      JSON.stringify({ tile: process.tile, kind: process.kind }),
+    );
+  for (const selection of model.selections ?? []) {
+    const module = selection.target.kind === "component" ? selection.target.component : undefined;
+    records.set(
+      `selection:${selection.id}`,
+      JSON.stringify({
+        host: selection.host,
+        module,
+        kind: selection.binding.kind,
+      }),
+    );
+    for (const resource of selection.resources)
+      records.set(
+        `resource:${selection.id}.${resource.field}`,
+        JSON.stringify({ element: resource.element, identity: resource.identity }),
+      );
+  }
+  for (const capability of model.capabilities ?? [])
+    records.set(
+      `callable:${capability.id}`,
+      JSON.stringify({
+        module: capability.module,
+        process: capability.process,
+        owner: capability.owner,
+        identity: capability.caller.identity,
+        guard: capability.caller.guard,
+      }),
+    );
+  return records;
+}
+
 /**
  * Regenerates an existing Jeeves v2 export in place from `bundle` (what `assembleV2` returns).
  * Generated files are rewritten and the application's own files kept, as `planUpdate` decides.
@@ -476,6 +516,31 @@ export async function updateDirectory(
     remove: named("remove"),
     orphan: named("orphan"),
   };
+  const normalizedPath = ".jeeves/normalized.json";
+  const oldRecord = previous.find((file) => file.path === normalizedPath);
+  const nextNormalized = bundle.files.find((file) => file.path === normalizedPath);
+  if (oldRecord && nextNormalized) {
+    if (disk.get(normalizedPath) !== oldRecord.sha256)
+      result.refused.push(
+        `Cannot verify prior runtime identities: restore ${normalizedPath} from the previous export.`,
+      );
+    else {
+      const oldModel = JSON.parse(
+        new TextDecoder().decode(await readRegular(join(root, normalizedPath))),
+      ) as Partial<NormalizedGeneration>;
+      const nextModel = JSON.parse(
+        new TextDecoder().decode(nextNormalized.bytes),
+      ) as Partial<NormalizedGeneration>;
+      const after = runtimeIdentities(nextModel);
+      const changed = [...runtimeIdentities(oldModel)]
+        .filter(([id, identity]) => after.get(id) !== identity)
+        .map(([id]) => id);
+      if (changed.length)
+        result.refused.push(
+          `Runtime identity/namespace migration required for ${changed.join(", ")}. Review ${normalizedPath} and application-owned hook paths (${result.orphan.join(", ") || "existing hooks"}); export to a fresh directory and migrate application/data explicitly. This updater cannot migrate identities; extension-API acknowledgement does not authorize it.`,
+        );
+    }
+  }
   const beforeVersion = extensionVersion(manifest);
   const nextVersion = bundle.manifest.extensionApi.version;
   const hooks = previous

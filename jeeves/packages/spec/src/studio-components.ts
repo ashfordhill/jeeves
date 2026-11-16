@@ -6,6 +6,8 @@
  * intended implementation; Jeeves code would only wire them.
  */
 import { z } from "zod";
+import { generationCallableContracts } from "./generation-catalog.ts";
+import type { GenerationCallableContract } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import type { StudioKind } from "./studio-model.ts";
 
@@ -371,6 +373,7 @@ export const studioModuleSlotIds = [
   "outputs",
   "index",
   "items",
+  "call",
 ] as const;
 export const studioModuleSlotIdSchema = z.enum(studioModuleSlotIds);
 export type StudioModuleSlotId = (typeof studioModuleSlotIds)[number];
@@ -387,6 +390,8 @@ export type StudioModuleSlot = {
   targets: readonly StudioComponentTargetKind[];
   /** For an in-process slot: the module kind it uses in the same tile. */
   module?: StudioComponentKind;
+  /** Exact bounded operation requirements, consumed by the installed callable adapter. */
+  callables?: readonly GenerationCallableContract[];
   use:
     | "read"
     | "write"
@@ -767,7 +772,17 @@ export const studioComponentDefinitions: {
     browserHost: true,
     hosts: anyHost,
     scope: "generic",
-    slots: [{ ...slot("uses", allTargets, "uses", "optional"), many: true }],
+    slots: [
+      { ...slot("uses", allTargets, "uses", "optional"), many: true },
+      {
+        id: "call",
+        targets: [],
+        module: "favorites",
+        use: "in-process",
+        need: "optional",
+        callables: generationCallableContracts,
+      },
+    ],
     generation: stub,
     targets: allTargets,
     fields: [],

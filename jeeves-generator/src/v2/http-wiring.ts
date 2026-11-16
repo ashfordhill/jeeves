@@ -704,7 +704,7 @@ function ownedMultipart(
  * /modules/<lead>/items, behind the tile's Required sign-in. Adding asks `eligible`, which reads
  * the items Data access's database when one is connected.
  */
-function favorites(
+export function favoritesMount(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
@@ -988,7 +988,7 @@ const templates: Record<
   "owned-multipart": ownedMultipart,
   "positive-cache-read": positiveCacheRead,
   "search-query": searchQuery,
-  favorites,
+  favorites: favoritesMount,
 };
 
 /** A route stub: any method on /modules/<module> and below, called with its dependencies

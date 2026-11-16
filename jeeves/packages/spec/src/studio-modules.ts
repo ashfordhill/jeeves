@@ -78,7 +78,7 @@ export function moduleKinds(design: DesignDocument, host: string): StudioCompone
 /**
  * A name and ID for a new module of this kind in `host`: the kind's name ("Data access"), then
  * "Data access 2"… (free among the host's modules), with an ID such as `shorten-data-access`.
- * Given a `name`, the ID follows it instead (`shorten-url-reader`), as a rename would re-key it.
+ * Given a `name`, the ID follows it instead (`shorten-url-reader`), and is then stable across label renames.
  */
 export function newModuleIdentity(
   design: DesignDocument,

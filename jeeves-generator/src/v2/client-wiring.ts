@@ -7,6 +7,7 @@ import {
 } from "@jeeves/spec";
 import {
   brokerState,
+  camel,
   type Import,
   line,
   type ProcessMount,
@@ -234,9 +235,23 @@ export function stubClients(
       imports.push({ from: clients, name: "unavailable" });
       return `unavailable<${alias}[${text(property)}]>(${text(`${what} for ${module.name} (${why})`)})`;
     };
-    const values = properties.map(({ property, connection, type }) => {
+    const values = properties.map(({ property, connection, type, slot }) => {
       const target = connection.target;
       if (target.kind === "component") {
+        if (slot.callables) {
+          const selection = selections.find(
+            (s) =>
+              s.target.kind === "component" &&
+              s.target.component === target.component &&
+              s.binding.kind === "favorites",
+          );
+          if (!selection) throw new Error(`No installed callable adapter for ${target.component}`);
+          imports.push({ from: "../runtime/favorites.ts", name: "favoritesCapability" });
+          return [
+            property,
+            `favoritesCapability(() => ${camel(selection.id)}.favorites, ${text(target.component)})`,
+          ];
+        }
         const called = process.stubs.find((item) => item.module === target.component);
         if (!called)
           return [property, unavailable(property, target.name, "a template's part, not a stub")];

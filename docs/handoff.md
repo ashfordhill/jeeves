@@ -18483,3 +18483,29 @@ workload settings the same way.
   Custom targets and webhook authentication/storage remain unavailable for their assigned units.
 - Commit subject: `RG04: unify HTTP errors limits health and request logging`.
   Stop for coordinator acceptance; the next unit can rely on this HTTP contract and API v4 guard.
+
+## 2026-11-16 — RG05 active after RG04 acceptance
+
+- Coordinator accepted RG04 commit `ac251e7a8754ea8ecddada6c17a70299ad2a238d`.
+  RG05 is the sole active unit: checked callable bindings, shared contracts and label-stable
+  identities. No later unit has started; the approved RG sequence supersedes stale queue text.
+
+## 2026-11-16 — RG05 verified, local commit for acceptance
+
+- Extension API **v5** binds Custom's optional `call` to the four installed Favorites operations
+  through typed handles/stable targets. HTTP and direct calls share strict finite Zod DTO contracts,
+  verified caller/input/effect checks and copied/frozen outputs; one core is constructed before
+  readiness and the link adds no HTTP mount. Unsupported adapters/cross-process calls stay gaps.
+- `src/contracts/` is the sole shared DTO/pure-definition location; checker follows it transitively
+  and refuses private service/effect imports. v4 migration refuses without acknowledgement/staged
+  checking and never rewrites hooks. Display labels preserve every ID/namespace/hook path; raw
+  rekey and same-version export identity replacement require explicit application/data migration.
+- Final `pnpm check`: **123 files / 1,107 tests passed**. Six scratch exports checker/TS7 pass,
+  including actual generated caller/negative type proof; reviewed off pins **79→79/85→85/59→59**.
+  Web build and existing offline evals pass with unchanged scripted scores. Full e2e **73 passed**;
+  historical Undo passed unchanged on targeted rerun, and strengthened callable mouse case passed.
+  [Evidence, failures diagnosed and limits](plans/reliable-generation/evidence/rg05/README.md).
+- Root/owner diff, frozen v1, historical exports and existing Postgres are preserved. No new
+  provider, rate/cache semantics, SQL/authenticated target handle, live/paid eval, generated-system
+  checkpoint or task Docker resource. Commit subject:
+  `RG05: bind callable capabilities through stable checked contracts`. Stop for acceptance.

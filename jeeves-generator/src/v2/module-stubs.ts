@@ -158,7 +158,7 @@ const linkUse = (slot: Slot, connection: Connection) => stubLinkUse(slot.use, co
 /** The minimal interface in `dependencies.ts` for a link of this use to this kind of target. */
 function dependencyType(slot: Slot, connection: Connection): string {
   const target = connection.target;
-  if (target.kind === "component") return "ModuleCall";
+  if (target.kind === "component") return slot.callables ? "FavoritesCapability" : "ModuleCall";
   const use = linkUse(slot, connection);
   switch (studioComponentTargetKind(target.tile)) {
     case "database":
@@ -268,6 +268,12 @@ function stubFiles(
                 module: target.component,
                 kind: target.module,
                 link: connection.link,
+                ...(slot.callables && {
+                  operations: slot.callables.map((contract) => ({
+                    target: `${target.component}.${contract.id}@${contract.version}`,
+                    contract,
+                  })),
+                }),
               }
             : {
                 slot: slot.id,

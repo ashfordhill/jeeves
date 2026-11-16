@@ -4,8 +4,9 @@ import type { z } from "zod";
 import { canonicalJson } from "./content-hash.ts";
 import type { DesignDocument } from "./design.ts";
 import { resolveGeneration } from "./generation-resolver.ts";
-import type { GenerationInstalledSupport } from "./generation-support.ts";
+import { callableContractRefusal, type GenerationInstalledSupport } from "./generation-support.ts";
 import { hasModuleSelections } from "./module-generation.ts";
+import { studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import { buildStudioCommand, studioCommandSchema } from "./studio-operations.ts";
 import { studioLinkFanKinds } from "./studio-tiles.ts";
@@ -101,6 +102,25 @@ export function buildSupportedAuthoringCommand(
     throw new Error(
       "Kind replacement has no supported normal workflow; custom replacement requires a generation gap.",
     );
+  if (command.type === "connectModule") {
+    const module = design.architecture?.studio?.components?.find(
+      (item) => item.id === command.module,
+    );
+    const slot =
+      module &&
+      studioComponentDefinitions[module.settings.kind].slots.find(
+        (item) => item.id === command.slot,
+      );
+    for (const required of slot?.callables ?? []) {
+      const actual = installed.callables?.find(
+        (item) => item.contract.id === required.id,
+      )?.contract;
+      const reason = actual
+        ? callableContractRefusal(required, actual)
+        : `Callable ${required.id}@${required.version} has no installed adapter.`;
+      if (reason) throw new Error(reason);
+    }
+  }
   if ((command.type !== "edit" && command.type !== "editComponent") || !command.settings)
     return buildStudioCommand(design, command);
   const studio = design.architecture?.studio;

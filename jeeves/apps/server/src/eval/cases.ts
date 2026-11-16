@@ -168,7 +168,7 @@ export const cases: EvalCase[] = [
       "Repair this video topology: Search indexer currently consumes Processing results directly, before the video owner commits publication. Search must consume a distinct owner-publication feed. Keep durable originals and their worker read, the search projection and Owner export bucket's exact identity/settings/purpose. Keep pending/failed status, duplicate jobs, same-owner completion and publication/read visibility as unresolved obligations wherever the current model cannot encode them." +
       context,
     seed: videoSeed,
-    protectedIds: ["originals", "owner-export-bucket"],
+    protectedIds: ["originals", "outputs"],
     obligations: [
       lifecycle,
       duplicate,

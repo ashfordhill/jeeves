@@ -327,7 +327,7 @@ describe("undo and redo", () => {
     expect((await client.design(id)).design.revision).toBe(2);
   });
 
-  it("re-keys a rename in one step, says so, and Undo and Redo move the IDs back and again", async () => {
+  it("preserves label identity in one step and Undo/Redo restore labels with the same IDs", async () => {
     const id = await client.createProject();
     const blank = (await client.design(id)).design;
     await client.edit(id, 0, [
@@ -356,25 +356,19 @@ describe("undo and redo", () => {
     const renamed = (await client.edit(id, 2, rename.ops)).body as DesignState & {
       renamed?: unknown;
     };
-    const forward = [
-      { from: "microservice", to: "upload-api" },
-      { from: "microservice-custom", to: "upload-api-custom" },
-    ];
     expect(renamed.design.revision).toBe(3);
-    expect(ids(renamed)).toEqual(["upload-api"]);
-    expect(renamed.renamed).toEqual(forward);
+    expect(ids(renamed)).toEqual(["microservice"]);
+    expect(renamed.design.elements[0]?.name).toBe("Upload API");
+    expect(renamed.renamed).toBeUndefined();
     // Reading the design never reports a re-key.
     expect((await client.design(id)) as { renamed?: unknown }).not.toHaveProperty("renamed");
 
     const undone = (await client.undo(id, 3)).body as DesignState & { renamed?: unknown };
     expect({ ...undone.design, revision: 0 }).toEqual({ ...before, revision: 0 });
-    expect(undone.renamed).toEqual([
-      { from: "upload-api-custom", to: "microservice-custom" },
-      { from: "upload-api", to: "microservice" },
-    ]);
+    expect(undone.renamed).toBeUndefined();
     const redone = (await client.redo(id, 4)).body as DesignState & { renamed?: unknown };
     expect({ ...redone.design, revision: 0 }).toEqual({ ...renamed.design, revision: 0 });
-    expect(redone.renamed).toEqual(forward);
+    expect(redone.renamed).toBeUndefined();
     // Undoing an edit that re-keyed nothing reports nothing.
     await client.undo(id, 5);
     const plain = (await client.undo(id, 6)).body as DesignState & { renamed?: unknown };

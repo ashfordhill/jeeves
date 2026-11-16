@@ -1,18 +1,10 @@
-/**
- * IDs follow names (tile processes contract, section 7). Renaming a tile or module re-keys its ID
- * while the ID still *follows*: it equals its creation form or its current name's slug, either
- * with an optional `-n`. A tile becomes `slug(name)` and a module `<host>-<slug(name)>`; a tile's
- * following modules move to its new prefix. A clash refuses. Designs with a study origin, a
- * tile-level selection or a preset, and IDs that don't follow, keep their IDs: the rename changes
- * only the name. Link IDs are never re-keyed.
- */
+/** Historical explicit reference utilities; display labels preserve every ID since RG05. */
 import { type DesignDocument, designSchema } from "./design.ts";
 import { designGeneration, type GenerationBinding } from "./generation.ts";
-import { idSchema } from "./ids.ts";
 import type { OperationInput } from "./operations.ts";
 import { studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
-import { slug, usedIds } from "./studio-ids.ts";
+import { slug } from "./studio-ids.ts";
 
 /** One ID a rename re-keys. */
 export type Rekey = { from: string; to: string };
@@ -34,7 +26,6 @@ export function idsPinned(design: DesignDocument): boolean {
 
 /** `text` cut to an ID's length, as `freshId` cuts it. */
 const fit = (text: string, room = 63) => text.slice(0, room).replace(/-+$/, "");
-const valid = (id: string) => idSchema.safeParse(id).success;
 
 /** Whether `id` is `base`, or `base-n`, either cut to fit an ID. */
 function followsBase(id: string, base: string) {
@@ -69,68 +60,9 @@ export function moduleIdFollows(design: DesignDocument, id: string): boolean {
   });
 }
 
-/** What uses an ID, in plain words ("Upload API", "Data access in Upload API", "a link"). */
-function idUser(design: DesignDocument, id: string): string {
-  const element = tileName(design, id);
-  if (element !== undefined) return element;
-  const module = modules(design).find((item) => item.id === id);
-  if (module) return `${module.name} in ${tileName(design, module.host) ?? module.host}`;
-  const studio = design.architecture?.studio;
-  if (design.connections.some((item) => item.id === id)) return "a link";
-  if (studio?.entries?.some((item) => item.id === id)) return "a lane entry";
-  if (studio?.componentConnections?.some((item) => item.id === id)) return "a module link";
-  const group = studio?.packages.find((item) => item.id === id);
-  if (group) return group.name;
-  const node = design.architecture?.nodes.find((item) => item.id === id);
-  if (node) return node.name;
-  return id === "system" ? "the system" : "a context relationship";
-}
-
-/**
- * The IDs renaming `target` to `name` re-keys: the tile's or module's own, then (for a tile) each
- * following module's, in order. Empty when nothing re-keys: a pinned design, an unchanged name, an
- * ID that doesn't follow, a name whose slug isn't a valid ID, or a slug the ID already has. Throws,
- * in plain words, when a new ID is already used.
- */
-export function planRename(design: DesignDocument, target: RenameTarget, name: string): Rekey[] {
-  if (idsPinned(design)) return [];
-  const renames: { from: string; to: string; who: string }[] = [];
-  if ("element" in target) {
-    const id = target.element;
-    if (name.trim() === tileName(design, id) || !tileIdFollows(design, id)) return [];
-    const to = fit(slug(name));
-    if (!valid(to) || to === id) return [];
-    renames.push({ from: id, to, who: name.trim() });
-    for (const module of modules(design)) {
-      if (module.host !== id || !moduleIdFollows(design, module.id)) continue;
-      const rest = slug(module.name);
-      const next = fit(rest ? `${to}-${rest}` : `${to}${module.id.slice(id.length)}`);
-      if (valid(next) && next !== module.id)
-        renames.push({ from: module.id, to: next, who: `${module.name} in ${name.trim()}` });
-    }
-  } else {
-    const id = target.component;
-    const module = modules(design).find((item) => item.id === id);
-    if (!module || name.trim() === module.name || !moduleIdFollows(design, id)) return [];
-    const rest = slug(name);
-    const to = fit(`${module.host}-${rest}`);
-    if (!rest || !valid(to) || to === id) return [];
-    renames.push({ from: id, to, who: name.trim() });
-  }
-  const used = usedIds(design);
-  const taken = new Set<string>();
-  for (const item of renames) {
-    if (used.has(item.to) || taken.has(item.to)) {
-      const user = used.has(item.to)
-        ? idUser(design, item.to)
-        : (renames.find((other) => other.to === item.to)?.who ?? item.to);
-      throw new Error(
-        `${item.who} would take the ID ${item.to}, which ${user} already uses. Choose another name.`,
-      );
-    }
-    taken.add(item.to);
-  }
-  return renames.map(({ from, to }) => ({ from, to }));
+/** Display labels never change runtime, durable or extension identities (RG05). */
+export function planRename(_design: DesignDocument, _target: RenameTarget, _name: string): Rekey[] {
+  return [];
 }
 
 /** Why renaming `target` to `name` is refused (an ID clash), or `undefined` when it isn't. */

@@ -171,6 +171,17 @@ export function planModules(
     }
   }
   settleAcrossTiles(view, leads, keptOwnership(design, previous));
+  for (const link of view.links) {
+    const slot = studioComponentDefinitions[link.module.settings.kind].slots.find(
+      (slot) => slot.id === link.slot,
+    );
+    if (!slot?.callables || !link.target) continue;
+    const target = leads.find((plan) => plan.lead.id === link.target?.id);
+    if (!target?.binding)
+      refuse(
+        `${link.module.name}'s ${slot.id} requires a complete callable ${link.target.name}: ${target?.missing ?? "no installed callable adapter"}.`,
+      );
+  }
   // One template of a kind per tile, and never the same template both ways.
   for (const plan of leads) {
     if (!plan.binding) continue;

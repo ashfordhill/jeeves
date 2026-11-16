@@ -28,9 +28,11 @@ reported by `GET /generation-support`. Module commands select templates: modules
 ownership save in one batch, and a schema-2 design is upgraded in that batch. There is no normal
 preset attachment; `buildGenerationPresetCommand` remains a source fixture for the reuse example
 and tests. Useful supported settings reuse existing source fields; TTL and concurrency mirrors update atomically. No parsing/reload migration occurs.
-A rename re-keys a tile or module ID that still follows its name (except in studies and designs
-with tile-level templates or a preset), so the blueprint's element, component, selection and owner
-IDs follow typed names; link IDs never change ([names and IDs](studio.md#inspector)).
+Display renames preserve element, component, selection, owner and link IDs, generated target
+addresses and durable/extension namespaces ([names and IDs](studio.md#inspector)). Explicit identity
+changes require application migration. Normalized Custom call slots carry the exact installed
+Favorites input/output/version/effect requirements and stable callee module ID; mismatches refuse
+with the required/installed difference. No cross-process callable transport is installed yet.
 
 Blueprint v3 retains all original settings, custom requirements and generation declarations,
 including unsupported preserved values hidden by the normal editor. Its generation resolver

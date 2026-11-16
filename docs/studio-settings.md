@@ -532,3 +532,8 @@ Generation preview and ZIP use these same installed consumer contracts. The dial
 selected-source support findings and emitted consumers/custom gaps; unsupported settings refuse
 export instead of becoming an honored JSON-only setting. Partial product hooks and experimental
 backend support remain separate from strict readiness and runtime evidence. See [export](studio.md#experimental-project-export).
+
+Display names preserve IDs, target addresses, durable namespaces and hook paths. Custom's optional
+**call** is a diagram link to a complete Favorites module in the same tile, not a configuration
+field. Its installed exact input/output/version/effect contracts are compiled metadata; there is
+no schema editor or Advanced setting. See [module connections](studio.md#adding-a-module).

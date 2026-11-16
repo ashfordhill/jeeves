@@ -3,10 +3,12 @@
 // Adding asks the product's `eligible` hook first; checking, listing and removing never do.
 import type { FastifyRequest } from "fastify";
 import type pg from "pg";
+import { z } from "zod";
 import { HttpError } from "./admission.ts";
 import { qualifiedRelation, type SqlRelation } from "./durable-sql.ts";
 import type { HttpRoutes } from "./http.ts";
 import type { VerifiedPrincipal } from "./identity.ts";
+import { assertOperation, currentOperation, withEffect } from "./operation.ts";
 import { transaction } from "./transaction.ts";
 
 /** The favorites policy's bounds, compiled into the process config. */
@@ -24,8 +26,7 @@ export type FavoritesBounds = {
 export interface FavoritesHooks {
   eligible(itemId: string): Promise<boolean>;
 }
-export type Favorite = { itemId: string; addedAt: string };
-export type FavoritesPage = { items: Favorite[]; next: string | null };
+
 
 const itemError = () => new HttpError(400, "ITEM_ID", "This item ID isn't valid.");
 const cursorError = () => new HttpError(400, "CURSOR", "This page cursor isn't valid.");
@@ -37,6 +38,23 @@ const full = () =>
   new HttpError(409, "FAVORITES_FULL", "This account has the most favorites it may keep.");
 /** A time as the list's cursor and answers carry it: UTC, to the microsecond. */
 const stamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
+/** Installed finite DTO schemas: the sole source for validation and public inferred types.
+ * These keys are the exact input/output names in the installed callable records. */
+const itemIdDto = z.string().regex(/^[A-Za-z0-9._:-]{1,200}$/);
+const itemRecordDto = z.strictObject({ itemId: itemIdDto, addedAt: z.string().regex(stamp) }).readonly();
+export const favoritesDtoContracts = {
+  "favorites.item": z.strictObject({ itemId: itemIdDto }).readonly(),
+  "favorites.page": z.strictObject({ after: z.string().min(1).max(1024).optional() }).readonly(),
+  "favorites.item-record": itemRecordDto,
+  "favorites.empty": z.undefined(),
+  "favorites.item-page": z.strictObject({ items: z.array(itemRecordDto).max(50).readonly(), next: z.string().min(1).max(1024).nullable() }).readonly(),
+} as const;
+export type Favorite = z.output<typeof favoritesDtoContracts["favorites.item-record"]>;
+export type FavoritesPage = z.output<typeof favoritesDtoContracts["favorites.item-page"]>;
+type EmptyOutput = z.output<typeof favoritesDtoContracts["favorites.empty"]>;
+type ItemInput = z.input<typeof favoritesDtoContracts["favorites.item"]>;
+type PageInput = z.input<typeof favoritesDtoContracts["favorites.page"]>;
+
 const addedAt = `to_char(added_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
 type Row = { item: string; added_at: string };
 const favorite = (row: Row): Favorite => ({ itemId: row.item, addedAt: row.added_at });
@@ -161,6 +179,55 @@ export function createFavorites(options: {
 }
 export type Favorites = ReturnType<typeof createFavorites>;
 
+/** Bounded DTO contracts for the four installed Favorites operations. */
+export interface FavoritesCapability {
+  readonly targets: Readonly<{ add: string; remove: string; check: string; list: string }>;
+  add(input: ItemInput): Promise<Favorite>;
+  remove(input: ItemInput): Promise<EmptyOutput>;
+  check(input: ItemInput): Promise<Favorite>;
+  list(input: PageInput): Promise<FavoritesPage>;
+}
+type Method = "add" | "remove" | "check" | "list";
+const signedIn = () => new HttpError(401, "SIGN_IN_REQUIRED", "Sign in to continue.");
+const invalid = () => new HttpError(400, "CALLABLE_INPUT", "This callable input isn't valid.");
+/** The same checked adapter serves HTTP and in-process calls; it never mounts a route. */
+export async function invokeFavorites(favorites: Favorites, method: Method, principal: VerifiedPrincipal | undefined, input: unknown): Promise<unknown> {
+  assertOperation();
+  if (!principal?.subject) throw signedIn();
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw invalid();
+  const value = Object.freeze({ ...input }) as Readonly<Record<string, unknown>>;
+  const key = method === "list" ? "after" : "itemId";
+  if (Object.keys(value).some((field) => field !== key)) throw invalid();
+  const parsed = favoritesDtoContracts[method === "list" ? "favorites.page" : "favorites.item"].safeParse(value);
+  if (!parsed.success) throw method === "list" ? cursorError() : itemError();
+  return withEffect(method === "check" || method === "list" ? "read" : "local-atomic-mutation", async () => {
+    const result = method === "list" ? await favorites.list(principal, value.after)
+      : method === "add" ? await favorites.add(principal, value.itemId)
+      : method === "check" ? await favorites.check(principal, value.itemId)
+      : await favorites.remove(principal, value.itemId);
+    const output = favoritesDtoContracts[method === "remove" ? "favorites.empty" : method === "list" ? "favorites.item-page" : "favorites.item-record"].safeParse(result);
+    if (!output.success) throw new Error("Invalid Favorites output contract");
+    // Zod strict parsing copies declared fields; readonly schemas freeze every nested DTO.
+    return output.data;
+  });
+}
+/** Generated target identity and lazy reference to the process's one constructed core. */
+export function favoritesCapability(core: () => Favorites, module: string): FavoritesCapability {
+  const call = (method: Method, input: unknown) => {
+    const context = currentOperation();
+    if (!context?.caller.subject) return Promise.reject(signedIn());
+    const principal = { subject: context.caller.subject, claims: { sub: context.caller.subject } };
+    return invokeFavorites(core(), method, principal, input);
+  };
+  return Object.freeze({
+    targets: Object.freeze({ add: `${module}.favorites.add@1`, remove: `${module}.favorites.remove@1`, check: `${module}.favorites.check@1`, list: `${module}.favorites.list@1` }),
+    add: (input: ItemInput) => call("add", input) as Promise<Favorite>,
+    remove: (input: ItemInput) => call("remove", input) as Promise<EmptyOutput>,
+    check: (input: ItemInput) => call("check", input) as Promise<Favorite>,
+    list: (input: PageInput) => call("list", input) as Promise<FavoritesPage>,
+  });
+}
+
 /**
  * Mounts the favorites routes under `base` (`/modules/<lead>/items`): PUT, DELETE and GET of one
  * item, and GET of the list. One item's path is a wildcard, so an ID may be longer than a route
@@ -181,13 +248,13 @@ export function mountFavorites(
   routes.route({
     method: "PUT",
     url: `${base}/*`,
-    handler: async (request) => favorites.add(await principal(request), itemOf(request)),
+    handler: async (request) => invokeFavorites(favorites, "add", await principal(request), { itemId: itemOf(request) }),
   });
   routes.route({
     method: "DELETE",
     url: `${base}/*`,
     handler: async (request, reply) => {
-      await favorites.remove(await principal(request), itemOf(request));
+      await invokeFavorites(favorites, "remove", await principal(request), { itemId: itemOf(request) });
       reply.code(204);
       return reply.send();
     },
@@ -195,12 +262,12 @@ export function mountFavorites(
   routes.route({
     method: "GET",
     url: `${base}/*`,
-    handler: async (request) => favorites.check(await principal(request), itemOf(request)),
+    handler: async (request) => invokeFavorites(favorites, "check", await principal(request), { itemId: itemOf(request) }),
   });
   routes.route({
     method: "GET",
     url: base,
     handler: async (request) =>
-      favorites.list(await principal(request), (request.query as { after?: unknown }).after),
+      invokeFavorites(favorites, "list", await principal(request), { after: (request.query as { after?: unknown }).after }),
   });
 }

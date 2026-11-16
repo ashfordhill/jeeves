@@ -106,184 +106,41 @@ function mouseDesign() {
   ]);
 }
 
-/** Every link, module link and entry ID replaced by its ends, so designs compare without them. */
-function withoutLinkIds(design: DesignDocument): unknown {
-  const studio = studioOf(design);
-  const names = new Map<string, string>([
-    ...design.connections.map(
-      (item) => [item.id, `link:${item.from.element}>${item.to.element}`] as const,
-    ),
-    ...(studio.componentConnections ?? []).map(
-      (item) => [item.id, `module-link:${item.from}>${item.to.id}`] as const,
-    ),
-    ...(studio.entries ?? []).map(
-      (item) => [item.id, `entry:${item.lane}>${item.element}`] as const,
-    ),
-  ]);
-  return JSON.parse(
-    JSON.stringify({ ...design, revision: 0 }, (_key, value) =>
-      typeof value === "string" ? (names.get(value) ?? value) : value,
-    ),
-  );
-}
-
-describe("IDs follow names", () => {
-  it("re-keys a renamed tile and its following modules, with every reference, in one batch", () => {
+describe("Label-stable runtime identities", () => {
+  it("preserves every tile/module/link/selection and ownership identity across label-only edits", () => {
     const before = mouseDesign();
     const { batch, design } = run(before, {
       type: "edit",
       element: "worker-service",
       name: "Video lifecycle worker",
     });
-    expect(renamedIds(batch.ops)).toEqual([
-      { from: "worker-service", to: "video-lifecycle-worker" },
-      { from: "worker-service-event-consumer", to: "video-lifecycle-worker-event-consumer" },
-      { from: "worker-service-data-access", to: "video-lifecycle-worker-data-access" },
-    ]);
-    expect(tileIds(design)).toEqual([
-      "microservice",
-      "cache",
-      "database",
-      "message-channel",
-      "video-lifecycle-worker",
-    ]);
-    const studio = studioOf(design);
-    // The hand-chosen ID stays; its host follows.
-    expect(studio.components?.map((item) => [item.id, item.host])).toEqual([
-      ["microservice-cache-reader", "microservice"],
-      ["microservice-data-access", "microservice"],
-      ["video-lifecycle-worker-event-consumer", "video-lifecycle-worker"],
-      ["video-lifecycle-worker-data-access", "video-lifecycle-worker"],
-      ["hand-chosen", "video-lifecycle-worker"],
-    ]);
-    // Links keep their IDs and follow their ends.
-    expect(design.connections.map((item) => [item.id, item.from.element, item.to.element])).toEqual(
-      before.connections.map((item) => [
-        item.id,
-        item.from.element,
-        item.to.element === "worker-service" ? "video-lifecycle-worker" : item.to.element,
-      ]),
+    expect(renamedIds(batch.ops)).toEqual([]);
+    expect(tileIds(design)).toEqual(tileIds(before));
+    expect(studioOf(design)).toEqual(studioOf(before));
+    expect(design.connections).toEqual(before.connections);
+    expect(designGeneration(design)).toEqual(designGeneration(before));
+    expect(designOwnership(design)).toEqual(designOwnership(before));
+    expect(design.elements.find((item) => item.id === "worker-service")?.name).toBe(
+      "Video lifecycle worker",
     );
-    expect(studio.componentConnections?.at(-1)).toEqual({
-      id: "worker-service-event-consumer-message-channel",
-      from: "video-lifecycle-worker-event-consumer",
-      to: { kind: "element", id: "message-channel", via: "message-channel-worker-service" },
-    });
-    // The stubs' selections follow the module IDs, in one revision with the name.
-    expect(designGeneration(design)?.selections.map((item) => item.id)).toEqual([
-      "microservice-cache-reader",
-      "video-lifecycle-worker-event-consumer",
-      "video-lifecycle-worker-data-access",
-      "hand-chosen",
-    ]);
-    expect(rekeyLeftovers(design, ["worker-service", "worker-service-event-consumer"])).toEqual([]);
-  });
-
-  it("re-keys ownership and its owner when a template's tile is renamed, then a module", () => {
-    const before = mouseDesign();
-    expect(designOwnership(before).owners).toEqual([
-      { id: "microservice-owner", name: "Microservice" },
-    ]);
-    let { design } = run(before, { type: "edit", element: "microservice", name: "Watch API" });
-    design = run(design, { type: "edit", element: "cache", name: "Metadata cache" }).design;
-    const ownership = designOwnership(design);
-    expect(ownership.owners).toEqual([{ id: "watch-api-owner", name: "Watch API" }]);
-    expect(ownership.roles).toEqual([
-      { element: "watch-api", owner: "watch-api-owner", kind: "api" },
-    ]);
-    expect(ownership.grants.map((item) => `${item.role}/${item.resource}`)).toEqual([
-      "watch-api/database",
-      "watch-api/metadata-cache",
-    ]);
-    expect(studioOf(design).entries?.map((item) => item.element)).toEqual(["watch-api"]);
-    const reader = designGeneration(design)?.selections[0];
-    expect(reader).toMatchObject({
-      id: "watch-api-cache-reader",
-      target: { kind: "component", component: "watch-api-cache-reader", host: "watch-api" },
-      binding: { kind: "positive-cache-read", cache: { resource: "metadata-cache" } },
-    });
-    // A module's own rename: its selection, its loader link and its status follow.
-    design = run(design, {
+    const next = run(design, {
       type: "editComponent",
-      component: "watch-api-data-access",
-      name: "Details reader",
-    }).design;
-    expect(moduleIds(design)).toContain("watch-api-details-reader");
-    expect(studioOf(design).componentConnections).toContainEqual(
-      expect.objectContaining({
-        from: "watch-api-cache-reader",
-        to: { kind: "component", id: "watch-api-details-reader" },
-      }),
+      component: "worker-service-data-access",
+      name: "State writer",
+    });
+    expect(renamedIds(next.batch.ops)).toEqual([]);
+    expect(moduleIds(next.design)).toEqual(moduleIds(before));
+    expect(studioOf(next.design).componentConnections).toEqual(
+      studioOf(before).componentConnections,
     );
-    expect(rekeyLeftovers(design, ["microservice", "cache", "watch-api-data-access"])).toEqual([]);
+    expect(designGeneration(next.design)).toEqual(designGeneration(before));
+    // Repeated owner tile labels preserve the logical owner and permissions too.
+    const api = run(before, { type: "edit", element: "microservice", name: "Watch API" }).design;
+    expect(designOwnership(api)).toEqual(designOwnership(before));
   });
 
-  it("equals the design built with the final IDs from the start, links aside", () => {
-    let renamed = mouseDesign();
-    for (const [element, name] of [
-      ["microservice", "Watch API"],
-      ["cache", "Metadata cache"],
-      ["database", "Metadata database"],
-      ["message-channel", "View events"],
-      ["worker-service", "View counter"],
-    ] as const)
-      renamed = runStudioCommand(renamed, { type: "edit", element, name });
-    renamed = runStudioCommand(renamed, {
-      type: "editComponent",
-      component: "view-counter-data-access",
-      name: "Count writer",
-    });
-    const tile = (from: string, id: string, name: string, kind: StudioKind): StudioCommand => ({
-      type: "addTile",
-      from: from === "upload" ? { lane: "upload" } : { tile: from },
-      side: "after",
-      tile: { id, name, kind },
-      linkId: `${from}-${id}`,
-      ...(from === "upload" && { system: { name: "Video" } }),
-    });
-    const fresh = runStudioCommands(emptyDesign(), [
-      tile("upload", "watch-api", "Watch API", "service"),
-      tile("watch-api", "metadata-cache", "Metadata cache", "cache"),
-      tile("watch-api", "metadata-database", "Metadata database", "database"),
-      { type: "addModule", host: "watch-api", kind: "cache-reader" },
-      { type: "addModule", host: "watch-api", kind: "data-access" },
-      {
-        type: "connectModule",
-        module: "watch-api-cache-reader",
-        slot: "cache",
-        target: { tile: "metadata-cache" },
-      },
-      {
-        type: "connectModule",
-        module: "watch-api-data-access",
-        slot: "database",
-        target: { tile: "metadata-database" },
-      },
-      {
-        type: "connectModule",
-        module: "watch-api-cache-reader",
-        slot: "loader",
-        target: { module: "watch-api-data-access" },
-      },
-      tile("watch-api", "view-events", "View events", "queue"),
-      tile("view-events", "view-counter", "View counter", "worker"),
-      { type: "addModule", host: "view-counter", kind: "event-consumer" },
-      { type: "addModule", host: "view-counter", kind: "data-access", name: "Count writer" },
-      { type: "addModule", host: "view-counter", kind: "custom", id: "hand-chosen" },
-      {
-        type: "connectModule",
-        module: "view-counter-event-consumer",
-        slot: "channel",
-        target: { tile: "view-events" },
-      },
-    ]);
-    expect(moduleIds(fresh)).toEqual(moduleIds(renamed));
-    expect(withoutLinkIds(renamed)).toEqual(withoutLinkIds(fresh));
-  });
-
-  it("rebuilds v2 renaming as it goes: equal to v2 built with the final IDs, and the v2 diff passes", () => {
-    // As the mouse does: each tile and module starts with its kind's name and ID and is renamed
-    // to v2's name at once; links take `source-target` from the IDs of the moment.
+  it("rebuilds v2 with stable creation IDs and matches the design built with those IDs", () => {
+    // As the mouse does: IDs start at creation and remain stable as labels change.
     const final = new Map<string, string>();
     const at = (id: string) => final.get(id) ?? id;
     const fixed: StudioCommand[] = [];
@@ -349,10 +206,10 @@ describe("IDs follow names", () => {
         fixed.push(connected);
       }
     }
-    // Every ID follows its name: `watch-api`, `watch-api-details-cache`…
-    expect(final.get("watch")).toBe("watch-api");
-    expect(final.get("watch-cache-reader")).toBe("watch-api-details-cache");
-    expect(final.get("completion-handler")).toBe("video-lifecycle-worker");
+    // Every ID preserves its creation identity after labels change.
+    expect(final.get("watch")).toBe("microservice");
+    expect(final.get("watch-cache-reader")).toBe("microservice-cache-reader");
+    expect(final.get("completion-handler")).toBe("worker-service-3");
     expect(tileIds(design)).toEqual(tileIds(v2ModuleDesign()).map(at));
     const built = runStudioCommands(emptyDesign(), fixed);
     expect({ ...design, revision: 0 }).toEqual({ ...built, revision: 0 });
@@ -388,10 +245,12 @@ describe("IDs follow names", () => {
         for (const path of paths) expect(valueAt(after, path)).toBe(to);
         for (const path of paths) shapes.add(path.replace(/\.\d+/g, ".*"));
         if (name === "the rest") continue;
-        // The operation does the same, and the result validates as the original did.
+        // Authoring refuses the explicit identity operation; direct helper remains import tooling.
         const result = applyOperations(design, [{ op: "rekey", from: id, to }]);
-        if (!result.ok) throw new Error(`${name}: ${id}: ${JSON.stringify(result.errors)}`);
-        expect({ ...result.design, revision: 0 }).toEqual({ ...after, revision: 0 });
+        expect(result).toMatchObject({
+          ok: false,
+          errors: [{ code: "INVALID_OPERATION", message: expect.stringContaining("migration") }],
+        });
       }
     expect([...shapes].sort()).toEqual(
       [
@@ -471,59 +330,22 @@ describe("IDs follow names", () => {
     expect(rekeyLeftovers(design, ["metadata-cache"])).toContain("architecture.relationships.0.to");
   });
 
-  it("refuses a rename that can't update every use of the old ID", () => {
-    const design = mouseDesign();
-    design.architecture?.relationships.push({
+  it("allows duplicate display labels and keeps context references intact", () => {
+    const before = mouseDesign();
+    before.architecture?.relationships.push({
       id: "context-worker",
       from: "system",
       to: "worker-service",
       description: "Runs it",
     });
-    expect(() =>
-      buildStudioCommand(design, { type: "edit", element: "worker-service", name: "Video worker" }),
-    ).toThrow(
-      "Renaming can't update every use of its old ID (architecture.relationships.0.to), so nothing was changed.",
-    );
-  });
-
-  it("refuses a clash in plain words: a tile's, a link's, a cascaded module's and a module's", () => {
-    let design = addTile(mouseDesign(), "message-channel", "worker");
-    expect(tileIds(design).at(-1)).toBe("worker-service-2");
-    const refusal = (command: StudioCommand) => () => buildStudioCommand(design, command);
-    expect(refusal({ type: "edit", element: "worker-service-2", name: "Worker service" })).toThrow(
-      "Worker service would take the ID worker-service, which Worker service already uses. Choose another name.",
-    );
-    expect(
-      renameRefusal(design, { element: "worker-service-2" }, "Message channel worker service"),
-    ).toBe(
-      "Message channel worker service would take the ID message-channel-worker-service, which a link already uses. Choose another name.",
-    );
-    design = runStudioCommand(design, {
+    const { design } = run(before, {
       type: "edit",
-      element: "worker-service-2",
-      name: "Video data access",
+      element: "worker-service",
+      name: "Microservice",
     });
-    expect(tileIds(design).at(-1)).toBe("video-data-access");
-    expect(refusal({ type: "edit", element: "worker-service", name: "Video" })).toThrow(
-      "Data access in Video would take the ID video-data-access, which Video data access already uses. Choose another name.",
-    );
-    design = runStudioCommand(design, {
-      type: "addModule",
-      host: "worker-service",
-      kind: "data-access",
-    });
-    expect(moduleIds(design)).toContain("worker-service-data-access-2");
-    expect(
-      refusal({
-        type: "editComponent",
-        component: "worker-service-data-access-2",
-        name: "Data access",
-      }),
-    ).toThrow(
-      "Data access would take the ID worker-service-data-access, which Data access in Worker service already uses. Choose another name.",
-    );
-    // No clash, no refusal; the rename is free again once the other moved away.
-    expect(renameRefusal(design, { element: "worker-service" }, "Video worker")).toBeUndefined();
+    expect(tileIds(design)).toEqual(tileIds(before));
+    expect(design.architecture?.relationships).toEqual(before.architecture?.relationships);
+    expect(renameRefusal(before, { element: "worker-service" }, "Microservice")).toBeUndefined();
   });
 
   it("keeps every ID in pinned designs and for IDs that don't follow; only the name changes", () => {
@@ -568,47 +390,26 @@ describe("IDs follow names", () => {
     expect(idsPinned(modules)).toBe(false);
     expect(planRename(modules, { element: "watch" }, "Watch service")).toEqual([]);
     expect(planRename(modules, { component: "watch-details" }, "Details")).toEqual([]);
-    // Its IDs that do follow re-key: `transcoder` and its `transcoder-packager`.
-    expect(planRename(modules, { element: "transcoder" }, "Video transcoder")).toEqual([
-      { from: "transcoder", to: "video-transcoder" },
-      { from: "transcoder-packager", to: "video-transcoder-packager" },
-    ]);
+    // IDs that historically followed names are preserved too.
+    expect(planRename(modules, { element: "transcoder" }, "Video transcoder")).toEqual([]);
   });
 
-  it("keeps the ID for an unchanged name or slug and a name that is no ID, and cuts a long one", () => {
-    const design = mouseDesign();
-    const plan = (name: string) => planRename(design, { element: "worker-service" }, name);
-    expect(plan("Worker service")).toEqual([]);
-    expect(plan("worker  SERVICE")).toEqual([]);
-    expect(plan("2nd worker")).toEqual([]);
-    expect(plan("!!!")).toEqual([]);
-    expect(planRename(design, { component: "worker-service-data-access" }, "???")).toEqual([]);
-    // A name that is no ID still renames the tile; its ID stays.
-    const renamed = run(design, { type: "edit", element: "worker-service", name: "2nd worker" });
-    expect(tileIds(renamed.design)).toEqual(tileIds(design));
-    // Kept IDs still follow their creation form, so a later rename re-keys them.
-    expect(planRename(renamed.design, { element: "worker-service" }, "Second worker")[0]).toEqual({
-      from: "worker-service",
-      to: "second-worker",
-    });
-    // A long name is cut like `freshId`: 63 characters, never ending in a hyphen.
-    const long = `${"Very long cache name ".repeat(5)}end`;
-    const cut = (name: string) => planRename(design, { element: "cache" }, name)[0]?.to;
-    expect(cut(long)).toBe("very-long-cache-name-very-long-cache-name-very-long-cache-name");
-    expect(cut(`${"a".repeat(62)} b`)).toBe("a".repeat(62));
-    // A tile cut to 63 characters leaves its modules no room for their own IDs: refused.
-    expect(() => plan(long)).toThrow(/would take the ID very-long-cache-name/);
-  });
-
-  it("refuses a rekey operation for an unknown ID or one in use", () => {
-    const design = mouseDesign();
-    expect(applyOperations(design, [{ op: "rekey", from: "missing", to: "free" }])).toMatchObject({
-      ok: false,
-      errors: [{ code: "UNKNOWN_REFERENCE" }],
-    });
-    expect(
-      applyOperations(design, [{ op: "rekey", from: "worker-service", to: "cache" }]),
-    ).toMatchObject({ ok: false, errors: [{ code: "DUPLICATE_ID" }] });
+  it("preserves IDs for repeated, punctuation and long labels, and refuses explicit rekey without migration", () => {
+    const before = mouseDesign();
+    for (const name of ["Worker service", "Second worker", "!!!", "a".repeat(120)]) {
+      const after = run(before, { type: "edit", element: "worker-service", name }).design;
+      expect(tileIds(after)).toEqual(tileIds(before));
+      expect(moduleIds(after)).toEqual(moduleIds(before));
+    }
+    for (const [from, to] of [
+      ["worker-service", "new-worker"],
+      ["missing", "free"],
+      ["worker-service", "cache"],
+    ] as const)
+      expect(applyOperations(before, [{ op: "rekey", from, to }])).toMatchObject({
+        ok: false,
+        errors: [{ code: "INVALID_OPERATION", message: expect.stringContaining("migration") }],
+      });
   });
 });
 

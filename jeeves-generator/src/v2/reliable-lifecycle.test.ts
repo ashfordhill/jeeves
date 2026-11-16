@@ -235,12 +235,11 @@ describe("RG02 process ownership and public boundary", () => {
       fileURLToPath(new URL("../../../node_modules/typescript", import.meta.url)),
       join(app, "node_modules/typescript"),
     );
-    await mkdir(join(app, "src/helpers"));
-    await writeFile(join(app, "src/helpers/pure.ts"), "export const yes = () => true;\n");
+    await writeFile(join(app, "src/contracts/pure.ts"), "export const yes = () => true;\n");
     const hook = "src/modules/account-api/favorite-items.hooks.ts";
     await writeFile(
       join(app, hook),
-      'import { yes } from "../../helpers/pure.ts";\nimport "../../contracts/index.ts";\nexport const favoriteItemsHooks = () => ({ eligible: yes });\n',
+      'import { yes } from "../../contracts/pure.ts";\nimport "../../contracts/index.ts";\nexport const favoriteItemsHooks = () => ({ eligible: yes });\n',
     );
     const check = async () => {
       try {
@@ -270,20 +269,39 @@ describe("RG02 process ownership and public boundary", () => {
       expect(result.stderr).toContain(hook);
       expect(result.stderr).toContain(api);
     }
+    await writeFile(
+      join(app, "src/contracts/index.ts"),
+      'import "../modules/account-api/private.ts"; export {};',
+    );
+    await writeFile(
+      join(app, "src/modules/account-api/private.ts"),
+      "export const privateValue = 1;",
+    );
+    await writeFile(
+      join(app, hook),
+      'import "../../contracts/index.ts"; export const policy = () => true;',
+    );
+    expect((await check()).stderr).toContain(
+      "src/contracts/index.ts: forbidden private cross-service import",
+    );
+    await writeFile(
+      join(app, "src/contracts/index.ts"),
+      "export interface Item { readonly id: string; }",
+    );
     // A shared helper cannot hide a forbidden effect from a policy importer.
     await writeFile(
       join(app, hook),
-      'import { effect } from "../../helpers/pure.ts"; export const x = effect;',
+      'import { effect } from "../../contracts/pure.ts"; export const x = effect;',
     );
     await writeFile(
-      join(app, "src/helpers/pure.ts"),
+      join(app, "src/contracts/pure.ts"),
       'export const effect = () => fetch("https://example.test");',
     );
-    expect((await check()).stderr).toContain("src/helpers/pure.ts: forbidden fetch");
+    expect((await check()).stderr).toContain("src/contracts/pure.ts: forbidden fetch");
     // A globally shared formatter is still pure policy, including transitive helpers.
     await writeFile(join(app, hook), "export const hook = () => true;");
     await writeFile(
-      join(app, "src/helpers/pure.ts"),
+      join(app, "src/contracts/pure.ts"),
       'export const effect = (db: any) => db.query("SELECT 1");',
     );
     await writeFile(
@@ -291,7 +309,7 @@ describe("RG02 process ownership and public boundary", () => {
       'import { effect } from "./helpers/pure.ts"; export const formatHttpError = effect;',
     );
     expect((await check()).stderr).toContain(
-      "src/helpers/pure.ts: forbidden policy effect API query",
+      "src/contracts/pure.ts: forbidden policy effect API query",
     );
     await writeFile(
       join(app, "src/http-errors.hooks.ts"),

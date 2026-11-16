@@ -1,0 +1,51 @@
+{
+  "frozen-v2": {
+    "beforeFiles": 79,
+    "afterFiles": 79,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/runtime/operation.ts"
+    ]
+  },
+  "v2-module-design": {
+    "beforeFiles": 85,
+    "afterFiles": 85,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/runtime/operation.ts"
+    ]
+  },
+  "stub-stack": {
+    "beforeFiles": 59,
+    "afterFiles": 59,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/modules/visit-worker/archiver.slots.ts",
+      "src/runtime/operation.ts"
+    ]
+  }
+}

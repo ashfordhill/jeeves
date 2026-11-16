@@ -82,9 +82,9 @@ async function snapshot(root: string): Promise<unknown> {
 
 describe("extension contract migration", () => {
   it("emits the installed capability guide/version and verifies real output responsibility", () => {
-    expect(real.manifest.extensionApi.version).toBe(4);
+    expect(real.manifest.extensionApi.version).toBe(5);
     expect(real.manifest.extensionApi.boundary).toBe("checked-extensions");
-    expect(real.report.extensionApi.version).toBe(4);
+    expect(real.report.extensionApi.version).toBe(5);
     expect(real.report.capabilities).toHaveLength(4);
     expect(
       Buffer.from(
@@ -172,20 +172,63 @@ describe("extension contract migration", () => {
   });
 });
 
-it("RG04 refuses a v3-to-v4 update until the HTTP contract migration is explicitly acknowledged", async () => {
-  const root = await mkdtemp(join(tmpdir(), "jeeves-rg04-migration-"));
+it("RG05 refuses a v4-to-v5 update until the callable contract migration is explicitly acknowledged", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg05-migration-"));
   roots.push(root);
   const app = join(root, "app");
   await exportNewDirectory(real.files, app);
   const manifest = {
     ...real.manifest,
-    extensionApi: { ...real.manifest.extensionApi, version: 3 },
+    extensionApi: { ...real.manifest.extensionApi, version: 4 },
   };
   await writeFile(join(app, ".jeeves/manifest.json"), JSON.stringify(manifest));
   const before = await snapshot(app);
   const result = await updateDirectory(real, app, { check: true });
-  expect(result.refused.join("\n")).toContain("Extension API 3 -> 4 requires migration");
-  expect(result.refused.join("\n")).toContain("--ack-extension-api=4");
+  expect(result.refused.join("\n")).toContain("Extension API 4 -> 5 requires migration");
+  expect(result.refused.join("\n")).toContain("--ack-extension-api=5");
   expect(result.refused.join("\n")).toContain("src/modules/account-api/favorite-items.hooks.ts");
   expect(await snapshot(app)).toEqual(before);
+});
+
+it("RG05 refuses same-version identity/namespace replacement and preserves the entire target", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg05-identity-"));
+  roots.push(root);
+  const app = join(root, "app");
+  await exportNewDirectory(real.files, app);
+  const source = favoritesStackDesign();
+  // Import tooling may legitimately introduce IDs. It is not an application/data migration.
+  const { rekeyDesign } = await import("../../jeeves/packages/spec/src/studio-rekey.ts");
+  rekeyDesign(source, "favorite-items", "saved-items");
+  const changed = assembleV2({ designJson: canonicalJson(source) }, registry);
+  expect(changed.manifest.extensionApi.version).toBe(real.manifest.extensionApi.version);
+  const before = await snapshot(app);
+  for (const check of [true, false]) {
+    const result = await updateDirectory(changed, app, { check, acknowledgeExtensionApi: 5 });
+    expect(result.refused.join("\n")).toContain("Runtime identity/namespace migration required");
+    expect(result.refused.join("\n")).toContain("selection:favorite-items");
+    expect(result.refused.join("\n")).toContain("favorite-items.hooks.ts");
+    expect(await snapshot(app)).toEqual(before);
+  }
+});
+
+it("RG05 a label-only export update preserves handwritten hook bytes and all identities", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg05-label-"));
+  roots.push(root);
+  const app = join(root, "app");
+  await exportNewDirectory(real.files, app);
+  const hook = "src/modules/account-api/favorite-items.hooks.ts";
+  const own = `${await readFile(join(app, hook), "utf8")}\nexport const applicationNote = "kept";\n`;
+  await writeFile(join(app, hook), own);
+  const { runStudioCommands } = await import(
+    "../../jeeves/packages/spec/src/fixtures/v2-modules.ts"
+  );
+  const source = runStudioCommands(favoritesStackDesign(), [
+    { type: "edit", element: "account-api", name: "Renamed API" },
+    { type: "editComponent", component: "favorite-items", name: "Saved items" },
+  ]);
+  const next = assembleV2({ designJson: canonicalJson(source) }, registry);
+  const result = await updateDirectory(next, app, { check: false });
+  expect(result.refused).toEqual([]);
+  expect(await readFile(join(app, hook), "utf8")).toBe(own);
+  expect(next.report.capabilities).toEqual(real.report.capabilities);
 });

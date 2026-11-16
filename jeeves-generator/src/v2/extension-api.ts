@@ -16,7 +16,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         model.processes?.some((p) => p.shape === "http") ||
         model.selections.some((s) => "host.requestTimeoutMs" in s.inputs);
       const publicLines = [
-        "/** Public extension API v4. Application contracts live in src/contracts/. */",
+        "/** Public extension API v5. Application contracts live in src/contracts/. */",
         'export class NotImplemented extends Error { constructor(what: string) { super("Not implemented: " + what); this.name = "NotImplemented"; } }',
         'export type { OperationContext, OperationFailure, EffectOutcome, PublisherOptions } from "../runtime/operation.ts";',
         'export { OperationError } from "../runtime/operation.ts";',
@@ -26,6 +26,10 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         "export interface FavoritesHooks { eligible(itemId: string): boolean; }",
         "export type DatabaseReader = UnavailableCapability; export type DatabaseReadWriter = UnavailableCapability; export type QueueConsumer = UnavailableCapability; export type TokenVerifier = UnavailableCapability; export type HttpTarget = UnavailableCapability;",
       ];
+      if (has("favorites"))
+        publicLines.push(
+          'export type { FavoritesCapability, Favorite, FavoritesPage } from "../runtime/favorites.ts";',
+        );
       if (http)
         publicLines.push(
           'export type { PublicHttpError, HttpErrorFormatter } from "../runtime/admission.ts";',

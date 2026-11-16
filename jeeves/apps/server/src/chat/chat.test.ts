@@ -669,14 +669,12 @@ describe("proposed-design review in ChatService", () => {
         };
       const review = toolOutput(request);
       if (round === 1) {
-        // The rename re-keyed the new tile's ID to its name; later commands use the new ID.
-        expect(toolOutputs(request)).toContainEqual(
-          expect.objectContaining({ renamed: [{ from: "uploads", to: "video-uploads" }] }),
-        );
+        // Label changes preserve the source ID used by subsequent commands.
+        expect(toolOutputs(request).some((output) => "renamed" in output)).toBe(false);
         expect(review.changes).toContainEqual(
           expect.objectContaining({
             type: "element",
-            id: "video-uploads",
+            id: "uploads",
             change: "added",
             name: "Video uploads",
           }),
@@ -684,7 +682,7 @@ describe("proposed-design review in ChatService", () => {
         expect(review.findings).toContainEqual(
           expect.objectContaining({
             code: "DESIGN_WARNING",
-            target: { element: "video-uploads" },
+            target: { element: "uploads" },
             introduced: true,
           }),
         );
@@ -692,7 +690,7 @@ describe("proposed-design review in ChatService", () => {
           toolCalls: [
             apply({
               ...originalStorage,
-              from: { tile: "video-uploads" },
+              from: { tile: "uploads" },
               linkId: "video-uploads-originals",
             }),
           ],
@@ -721,7 +719,7 @@ describe("proposed-design review in ChatService", () => {
     expect(turn.status).toBe("done");
     expect(fake.requests).toHaveLength(4);
     expect(state.design.revision).toBe(1);
-    expect(state.design.elements.map((item) => item.id)).toEqual(["video-uploads", "originals"]);
+    expect(state.design.elements.map((item) => item.id)).toEqual(["uploads", "originals"]);
     expect(turn.reply).toContain("Saved");
     expect(turn.reply).toContain("one Undo step");
     const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
@@ -745,7 +743,7 @@ describe("proposed-design review in ChatService", () => {
       }
       if (round === 3) return { text: "Finished again." };
       expect(toolOutput(request).changes).toContainEqual(
-        expect.objectContaining({ id: "still-missing-storage", name: "Still missing storage" }),
+        expect.objectContaining({ id: "uploads", name: "Still missing storage" }),
       );
       return { text: "Storage remains unresolved in this scope." };
     });
@@ -756,7 +754,7 @@ describe("proposed-design review in ChatService", () => {
     expect(state.findings).toContainEqual(
       expect.objectContaining({
         code: "DESIGN_WARNING",
-        target: { element: "still-missing-storage" },
+        target: { element: "uploads" },
       }),
     );
     expect(turn.reply).toContain("Unresolved: 1 design finding");
@@ -900,10 +898,10 @@ describe("proposed-design review in ChatService", () => {
       if (round <= 3)
         return {
           toolCalls: [
-            // Each rename re-keys the tile, so the next one names its new ID.
+            // Repeated label changes use the same stable source ID.
             apply({
               type: "edit",
-              element: round === 1 ? "uploads" : `repair-${round - 1}`,
+              element: "uploads",
               name: `Repair ${round}`,
             }),
             { name: "reviewDesign", arguments: {} },
@@ -1186,4 +1184,44 @@ describe("chat files", () => {
     });
     expect(noName.statusCode).toBe(400);
   });
+});
+
+it("RG05 chat uses the same checked Custom call connection as the mouse", async () => {
+  const { callableDesign } = await import(
+    "../../../../../field-projects/generator-system/fixtures/rg05/design.ts"
+  );
+  const { runStudioCommands } = await import(
+    "../../../../packages/spec/src/fixtures/v2-modules.ts"
+  );
+  const { studioStudySeedOperations } = await import("@jeeves/spec");
+  const fixture = callableDesign();
+  const link = fixture.architecture?.studio?.componentConnections?.find(
+    (item) => item.from === "favorite-summary",
+  );
+  if (!link) throw Error("No callable fixture link");
+  const seed = runStudioCommands(fixture, [{ type: "disconnectModule", link: link.id }]);
+  const h = harness((_request, round) =>
+    round === 0
+      ? {
+          toolCalls: [
+            apply({
+              type: "connectModule",
+              module: "favorite-summary",
+              slot: "call",
+              target: { module: "favorite-items" },
+            }),
+          ],
+        }
+      : { text: "Connected the installed in-process Favorites handle." },
+  );
+  const id = await h.project();
+  const saved = await h.call("POST", `/projects/${id}/operations`, {
+    baseRevision: 0,
+    source: "api",
+    ops: studioStudySeedOperations(seed),
+  });
+  expect(saved.status).toBe(200);
+  const result = await h.chat(id, "Connect Favorite summary's call to Favorite items");
+  expect(result.turn.status).toBe("done");
+  expect(result.state.design.architecture?.studio?.componentConnections).toContainEqual(link);
 });
