@@ -1,5 +1,11 @@
 # Jeeves <!-- omit from toc -->
 
+- [11/15/2026 (part II)](#11152026-part-ii)
+  - [Metrics](#metrics)
+    - [Lines of Code](#lines-of-code)
+    - [Design Review](#design-review)
+  - [Bugs](#bugs)
+  - [Next Steps](#next-steps)
 - [11/15/2026 (part I)](#11152026-part-i)
   - [Agents on the Loose!](#agents-on-the-loose)
   - [Results (part I)](#results-part-i)
@@ -24,7 +30,7 @@
       - [Diagrams](#diagrams)
       - [Features](#features)
       - [Missing features:](#missing-features)
-      - [Lines of Code](#lines-of-code)
+      - [Lines of Code](#lines-of-code-1)
 - [Archive](#archive)
   - [V0](#v0)
     - [Notes](#notes)
@@ -37,6 +43,63 @@
   - [Challenges](#challenges)
   - [UI/UX of generated apps](#uiux-of-generated-apps)
 
+
+## 11/15/2026 (part II)
+
+Qrwty is now live at [qrwty.io](https://qrwty.io), using the Jeeves-based implementation.
+
+### Metrics
+
+#### Lines of Code
+
+<p align="left"><img src=".docs/qrwty/loc-a-and-b.png" width="400"/></p>
+
+- `A` == Jeeves-generated + agent impl of qrwty, **this is what is hosted on qrwty.io**.
+- `B` == No diagram, no Jeeves generations. Just agent impl of qrwty
+
+- **41.52% of `A`'s code is Jeeves generated**
+    - There is opportunity to extract templates from qrwty's hand-written code to increase this percentage, particularly in the 'Sessions & Accounts' and 'Billing' sections, probably.
+
+#### Design Review
+
+I used Astra 6 (max) and Fable 5.2 (xhigh) to independently evaluate the backend architecture, design and layouts of the qrwty implementations.
+
+The full reports as well as the prompt fed to them can be found in [.docs/qrwty/evaluations](.docs/qrwty/evaluations/).
+
+They both concluded that `B`, the non-Jeeves implementation, was ***superior** as far as design quality. The reason for this seems to involve the Jeeves template designs and how they communicate with one another. Agents for `A` were forced to use Jeeves templates and stubs (they were specifically told to save the Jeeves-generated part separately and also to follow those parts without modifying them outside of stubs/things that needed to be filled). By pigeonholing them into a system that **needs design and architecture improvements** for its generated code, it affected the quality of the system design implementation. 
+
+The agents both came up with several ways to extract code from qrwty implementations to help Jeeves offer higher quality generated code.
+
+### Bugs
+
+After playing with the UI a bit, there are some bugs likely related to the backend:
+
+  - Sign in is a bit finicky. 
+      - Signing in using a Google account via the `auth0` implemention
+      - Navigated to a different page and it signed me out, but signed me back in again at some point
+      - **There is a smell in the 'Identity' tile in the Jeeves diagram** for qrwty (too many microservices connecting to the Identity/sign-in tile) that I noticed before all this and I wonder if it's related.
+        - <p align="left"><img src=".docs/qrwty/identity-smell.png" width="400"/></p>
+
+
+  - Click count for a link I generated told me to come back later for analytics but eventually showed:
+      - <p align="left"><img src=".docs/qrwty/click-count.png" width="400"/></p>
+
+
+### Next Steps
+
+I'm pleased with the progress and measurements so far - I think the next iteration of Jeeves can produce a better qrwty.
+
+- Updating Jeeves to include more templates extracted from the qrwty implementation
+- Updating some of Jeeves UI/UX for better readability with the arrows overlapping
+- Regenerating qrwty with improved Jeeves and measure design again against `B` (not going to regenerated `B`).
+
+And later on: 
+
+- Working on **dropshipping project**, but in *small* chunks
+    - Instead of doing all in one, I want it to do a chunk of impl, learn from that chunk to improve Jeeves. Then retry generation again as needed.
+    - I have purposely **not** spent resources on heavy testing over Jeeves components; with the code changing so often early on and still figuring out what's going to work, I don't want the agents fussing over  tests and  spending long periods of time running tests.
+      - One goal with testing would be end2end tests with mix and matching pieces of generated code to ensure things behave as expected **when linked together** and not just in isolation. So it could get pretty in-depth and time-consuming.
+ 
 
 ## 11/15/2026 (part I)
 
