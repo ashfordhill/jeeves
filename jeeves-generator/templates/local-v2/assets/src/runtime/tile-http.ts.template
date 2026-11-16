@@ -1,10 +1,10 @@
-import { operation, withOperation } from "./operation.ts";
+import { operation, withOperation, assertOperation } from "./operation.ts";
 import type { OperationContext } from "./operation.ts";
 import { immutable } from "./hook-boundary.ts";
 import type { FastifyRequest } from "fastify";
 import { HttpError } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
-import { isNotImplemented, notImplementedWhat, type NotImplementedLog } from "./tile-process.ts";
+import { isNotImplemented, type NotImplementedLog } from "./tile-process.ts";
 import type { Caller, ModuleRequest, ModuleResponse } from "../modules/entry.ts";
 
 /** A module's routes: "Not implemented" answers 501 with one rate-limited log line. Any other
@@ -25,11 +25,11 @@ export function notImplementedRoutes(
             if (!isNotImplemented(error)) throw error;
             log({
               module,
-              what: notImplementedWhat(error),
+              what: "handler",
               route: `${request.method} ${route.url}`,
               action: "answered 501",
             });
-            throw new HttpError(501, "NOT_IMPLEMENTED", error.message);
+            throw new HttpError(501, "NOT_IMPLEMENTED", "Not implemented.");
           }
         },
       });
@@ -103,6 +103,8 @@ export function stubRoutes(
     mounted.route({
       method: [...anyMethod],
       url,
+      bodyLimit: 65536,
+      rawBody: false,
       async handler(request, reply) {
         const callerFacts = await caller(request);
         const parent = request.operationContext;
@@ -117,6 +119,9 @@ export function stubRoutes(
           const response = await withOperation(running.context, async () =>
             entry(await moduleRequest(request, async () => callerFacts, running.context)),
           );
+          // A child budget may expire just before its parent timer; never let a late
+          // empty/success response win the outer admission deadline race.
+          assertOperation(running.context);
           reply.code(response.status ?? 200);
           for (const [name, value] of Object.entries(response.headers ?? {}))
             reply.header(name, Array.isArray(value) ? [...value] : value);

@@ -20,10 +20,10 @@ export type ModuleRequest = {
   readonly query: Readonly<Record<string, string | readonly string[] | undefined>>;
   /** A finite safe set; Authorization, Cookie and other credentials never reach product code. */
   readonly headers: Readonly<Record<string, string | readonly string[] | undefined>>;
-  /** Parsed JSON or text, up to 64 KiB; undefined when there is none. */
+  /** Parsed JSON or text, up to the generated route limit (64 KiB for stubs); undefined when absent. */
   readonly body: unknown;
-  /** The body's bytes exactly as received (JSON or text, up to 64 KiB), to check a signature over
-   * them; undefined when there is none. Don't change it. */
+  /** The body's bytes exactly as received (JSON or text, up to 64 KiB), retained before decoding; undefined when absent. Stub routes decode JSON; only a generated
+   * raw route defers decoding until its handler. This does not verify a signature. */
   readonly rawBody?: Uint8Array;
   readonly caller: Caller;
   /** Aborted with `Error("DEADLINE")` once the tile's Request timeout passes, or with

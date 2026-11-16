@@ -280,6 +280,26 @@ describe("RG02 process ownership and public boundary", () => {
       'export const effect = () => fetch("https://example.test");',
     );
     expect((await check()).stderr).toContain("src/helpers/pure.ts: forbidden fetch");
+    // A globally shared formatter is still pure policy, including transitive helpers.
+    await writeFile(join(app, hook), "export const hook = () => true;");
+    await writeFile(
+      join(app, "src/helpers/pure.ts"),
+      'export const effect = (db: any) => db.query("SELECT 1");',
+    );
+    await writeFile(
+      join(app, "src/http-errors.hooks.ts"),
+      'import { effect } from "./helpers/pure.ts"; export const formatHttpError = effect;',
+    );
+    expect((await check()).stderr).toContain(
+      "src/helpers/pure.ts: forbidden policy effect API query",
+    );
+    await writeFile(
+      join(app, "src/http-errors.hooks.ts"),
+      'import "./runtime/local.ts"; export const formatHttpError = () => ({});',
+    );
+    expect((await check()).stderr).toContain(
+      "src/http-errors.hooks.ts: forbidden private runtime import",
+    );
     const generated = join(app, "src/runtime/process.ts");
     await writeFile(generated, `${await readFile(generated, "utf8")}\n// manual edit\n`);
     expect((await check()).stderr).toContain("write to template-owned file");

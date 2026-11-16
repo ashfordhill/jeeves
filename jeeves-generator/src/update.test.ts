@@ -794,8 +794,8 @@ describe("updateDirectory", () => {
       { check: true },
     );
     expect(result.refused).toHaveLength(1);
-    expect(result.refused[0]).toContain("Extension API 1 -> 3 requires migration");
-    expect(result.refused[0]).toContain("--ack-extension-api=3");
+    expect(result.refused[0]).toContain("Extension API 1 -> 4 requires migration");
+    expect(result.refused[0]).toContain("--ack-extension-api=4");
     expect(result.refused[0]).toContain("src/modules/");
     // Its package.json override (template gap 8) is now the application's own file: kept, with
     // the shadow the override left still pending.

@@ -7,7 +7,8 @@ export interface HttpSettings {
 export class HttpError extends Error {
   readonly statusCode: number;
   readonly code: string;
-  constructor(statusCode: number, code: string, message: string) {
+  readonly allow?: string;
+  constructor(statusCode: number, code: string, message: string, allow?: string) {
     super(message);
     if (
       !Number.isInteger(statusCode) ||
@@ -18,7 +19,17 @@ export class HttpError extends Error {
       throw new Error("Invalid public HTTP error");
     this.statusCode = statusCode;
     this.code = code;
+    this.allow = allow;
+    if (statusCode === 405 && (!allow || !/^(?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)(?:, (?:DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT))*$/.test(allow)))
+      throw new Error("405 requires a finite Allow header");
   }
+}
+
+const admissionRefusals = new WeakSet<object>();
+function admissionRefusal(code: string, message: string) {
+  const error = new HttpError(503, code, message);
+  admissionRefusals.add(error);
+  return error;
 }
 
 /** The deadline bounds the response, not the underlying effect. The slot remains occupied
@@ -46,9 +57,9 @@ export function createAdmission(settings: HttpSettings) {
       await Promise.allSettled([...pending]);
     },
     async run<T>(handle: () => Promise<T> | T, budgetMs = settings.requestTimeoutMs): Promise<T> {
-      if (!accepting) throw new HttpError(503, "UNAVAILABLE", "Service unavailable.");
+      if (!accepting) throw admissionRefusal("UNAVAILABLE", "Service unavailable.");
       if (pending.size >= settings.concurrencyLimit)
-        throw new HttpError(503, "OVERLOADED", "Service is busy.");
+        throw admissionRefusal("OVERLOADED", "Service is busy.");
       let timer: ReturnType<typeof setTimeout> | undefined;
       const work = Promise.resolve()
         .then(handle)
@@ -67,7 +78,7 @@ export function createAdmission(settings: HttpSettings) {
                     "Request deadline exceeded; check status before retrying.",
                   ),
                 ),
-              Math.min(settings.requestTimeoutMs, budgetMs),
+              Math.ceil(Math.min(settings.requestTimeoutMs, budgetMs)),
             );
           }),
         ]);
@@ -76,4 +87,71 @@ export function createAdmission(settings: HttpSettings) {
       }
     },
   };
+}
+
+/** Safe public fields only: no exception, cause, headers, credentials or request body. */
+export interface PublicHttpError {
+  readonly status: number;
+  readonly code: string;
+  readonly message: string;
+  readonly retryable: boolean;
+  readonly requestId: string;
+  readonly correlationId: string;
+}
+export type HttpErrorFormatter = (error: Readonly<PublicHttpError>) => Readonly<Record<string, unknown>>;
+
+/** One classification for guards, parsing, admission, modules and mounted templates. */
+export function classifyHttpError(error: unknown) {
+  let status = 503, code = "UNAVAILABLE", message = "Service unavailable.", allow: string | undefined;
+  let unknown = false;
+  if (error instanceof HttpError) {
+    status = error.statusCode; code = error.code; message = error.message; allow = error.allow;
+  } else if (error && typeof error === "object" && "outcome" in error) {
+    unknown = error.outcome === "unknown";
+    const reason = "code" in error ? error.code : undefined;
+    code = unknown ? "OUTCOME_UNKNOWN" : reason === "INVALID_BUDGET" ? "INVALID_REQUEST" :
+      ["CONTEXT_EXPIRED", "INTERRUPTED"].includes(String(reason)) ? "DEADLINE" : "UNAVAILABLE";
+    status = reason === "INVALID_BUDGET" ? 400 : 503;
+    message = unknown ? "Outcome unknown; check status before retrying." :
+      code === "DEADLINE" ? "Request deadline exceeded; check status before retrying." :
+      status === 400 ? "Invalid request." : "Service unavailable.";
+  } else if (error && typeof error === "object" && "statusCode" in error &&
+      [400, 413, 415].includes(Number(error.statusCode)) && "code" in error &&
+      ["FST_ERR_CTP_INVALID_JSON_BODY", "FST_ERR_CTP_EMPTY_JSON_BODY", "FST_ERR_CTP_BODY_TOO_LARGE", "FST_ERR_CTP_INVALID_MEDIA_TYPE", "FST_ERR_CTP_INVALID_CONTENT_LENGTH", "FST_ERR_VALIDATION"].includes(String(error.code))) {
+    status = Number(error.statusCode); code = "INVALID_REQUEST"; message = "Invalid request.";
+  }
+  // Only an explicit pre-dispatch admission refusal authorizes automatic retry. A generic
+  // failure or timeout may hide an already dispatched mutation.
+  const retryable = error instanceof HttpError && admissionRefusals.has(error);
+  const headers: Record<string, string> = { "Cache-Control": "no-store" };
+  if (retryable) headers["Retry-After"] = "1";
+  if (status === 401) headers["WWW-Authenticate"] = "Bearer";
+  if (status === 405 && allow) headers.Allow = allow;
+  return { status, code, message, retryable, headers };
+}
+/** A pure formatter can change only a bounded JSON body. Failure retains the safe fallback. */
+export function formatHttpError(error: PublicHttpError, formatter?: HttpErrorFormatter): unknown {
+  const fallback = { error: error.code, message: error.message };
+  if (!formatter) return fallback;
+  try {
+    const value = formatter(Object.freeze({ ...error }));
+    if (value && typeof (value as { then?: unknown }).then === "function") {
+      void Promise.resolve(value).catch(() => {});
+      return fallback;
+    }
+    const inspect = (item: unknown, depth: number): void => {
+      if (depth > 8) throw Error("Invalid error body");
+      if (item === null || typeof item === "string" || typeof item === "boolean") return;
+      if (typeof item === "number" && Number.isFinite(item)) return;
+      if (!item || typeof item !== "object" ||
+          (!Array.isArray(item) && Object.getPrototypeOf(item) !== Object.prototype && Object.getPrototypeOf(item) !== null))
+        throw Error("Invalid error body");
+      for (const child of Object.values(item)) inspect(child, depth + 1);
+    };
+    if (!value || typeof value !== "object" || Array.isArray(value)) return fallback;
+    inspect(value, 0);
+    const json = JSON.stringify(value);
+    if (Buffer.byteLength(json) > 8192) return fallback;
+    return JSON.parse(json);
+  } catch { return fallback; }
 }

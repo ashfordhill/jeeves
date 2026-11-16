@@ -242,7 +242,7 @@ describe("Favorites with Runnable processes off", () => {
     const paths = off.files.map((item) => item.path);
     expect(paths).toContain("src/runtime/favorites.ts");
     expect(paths.filter((p) => p.startsWith("src/processes/"))).toEqual([]);
-    expect(paths.some((p) => p.endsWith(".hooks.ts"))).toBe(false);
+    expect(paths.filter((p) => p.endsWith(".hooks.ts"))).toEqual(["src/http-errors.hooks.ts"]);
     expect(paths).not.toContain("infra/postgres/favorites/100-favorite-items.sql");
     expect(
       report(off).gaps.find((item) => item.id === "favorites-application-bindings"),
@@ -397,10 +397,10 @@ describe("the emitted Favorites routes and hooks file", () => {
     ).rejects.toMatchObject({
       statusCode: 501,
       code: "NOT_IMPLEMENTED",
-      message: "Not implemented: eligible for Favorite items",
+      message: "Not implemented.",
     });
     expect(log).toHaveBeenCalledWith(
-      expect.objectContaining({ module: "favorite-items", what: "eligible for Favorite items" }),
+      expect.objectContaining({ module: "favorite-items", what: "handler" }),
     );
     // Written (here, a fake): the same routes add, check, list and remove.
     mount({ eligible: async () => true });

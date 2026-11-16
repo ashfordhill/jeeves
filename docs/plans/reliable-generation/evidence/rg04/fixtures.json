@@ -1,0 +1,47 @@
+{
+  "signIn": {
+    "files": 80,
+    "extensionApi": {
+      "version": 4,
+      "publicApi": "src/extension-api/index.ts",
+      "boundary": "checked-extensions"
+    },
+    "httpFormatter": true
+  },
+  "search": {
+    "files": 81,
+    "extensionApi": {
+      "version": 4,
+      "publicApi": "src/extension-api/index.ts",
+      "boundary": "checked-extensions"
+    },
+    "httpFormatter": true
+  },
+  "favorites": {
+    "files": 64,
+    "extensionApi": {
+      "version": 4,
+      "publicApi": "src/extension-api/index.ts",
+      "boundary": "checked-extensions"
+    },
+    "httpFormatter": true
+  },
+  "video": {
+    "files": 116,
+    "extensionApi": {
+      "version": 4,
+      "publicApi": "src/extension-api/index.ts",
+      "boundary": "checked-extensions"
+    },
+    "httpFormatter": true
+  },
+  "stubs": {
+    "files": 86,
+    "extensionApi": {
+      "version": 4,
+      "publicApi": "src/extension-api/index.ts",
+      "boundary": "checked-extensions"
+    },
+    "httpFormatter": true
+  }
+}

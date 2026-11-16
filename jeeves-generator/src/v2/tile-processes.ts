@@ -285,6 +285,16 @@ function reportRow(
             path: "/healthz",
             answers: "200 once ready, 503 before and while draining",
           },
+          {
+            method: "GET",
+            path: "/readyz",
+            answers: "200 once ready, 503 before and while draining",
+          },
+          {
+            method: "GET",
+            path: "/livez",
+            answers: "200 while the HTTP process can respond, including drain",
+          },
           ...mounts.flatMap((mount) => mount.routes),
         ]
       : [],
@@ -361,7 +371,12 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   // A tile with a sign-in mounts every module route through it.
   const guard = mounts.find((mount) => mount.guard)?.guard;
   const imports = importLines([
-    ...(http ? [{ from: "../runtime/http.ts", name: "createHttpService" }] : []),
+    ...(http
+      ? [
+          { from: "../runtime/http.ts", name: "createHttpService" },
+          { from: "../http-errors.hooks.ts", name: "formatHttpError" },
+        ]
+      : []),
     { from: "../runtime/process.ts", name: "runProcess" },
     { from: "../runtime/tile-process.ts", name: "createFailureLog" },
     ...(routed ? [{ from: "../runtime/tile-process.ts", name: "createNotImplementedLog" }] : []),
@@ -405,7 +420,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         "    stopping: scope.signal,",
         "    id: config.tile,",
         "    settings: config.settings,",
-        "    onFailure: failure,",
+        "    formatError: formatHttpError,",
         ...(configure.length
           ? [
               `    configure: (${guard ? "open" : "routes"}) => {`,

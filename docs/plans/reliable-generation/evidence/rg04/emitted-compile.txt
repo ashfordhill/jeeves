@@ -1,0 +1,20 @@
+signIn 80 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+search 81 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+favorites 64 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+video 116 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 86 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+

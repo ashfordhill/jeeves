@@ -170,6 +170,10 @@ async function inspect(file, policy, service) {
 for (const file of all) {
   const path = relative(root, file).split(sep).join("/");
   const match = /^src\/modules\/([^/]+)\/.*\.ts$/.exec(path);
+  if (path === "src/http-errors.hooks.ts") {
+    await inspect(file, true, "__http_error_policy__");
+    continue;
+  }
   if (!match || generated.has(path)) continue;
   const source = await readFile(file, "utf8");
   const policy = file.endsWith(".hooks.ts") && !source.includes("@jeeves-extension: operation");

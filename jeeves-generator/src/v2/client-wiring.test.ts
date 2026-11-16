@@ -1090,6 +1090,9 @@ export default function Fastify(options) {
   const failed = (error: string) => [
     { level: "error", event: "startup-failed", error: `Error: ${error}` },
     "Application startup failed",
+    ...["drain-started", "admission-stopped", "operations-cancelled", "drain-completed"].map(
+      (event) => ({ level: "info", event }),
+    ),
   ];
 
   it("fails startup naming JEEVES_EXTERNAL_<ID>_URL until it is set, never its value", async () => {
@@ -1121,8 +1124,7 @@ export default function Fastify(options) {
       501,
       {
         error: "NOT_IMPLEMENTED",
-        message:
-          "Not implemented: Partner API for Caller (requires a registered product capability binding)",
+        message: "Not implemented.",
       },
     ]);
     expect(fetch).not.toHaveBeenCalled();
@@ -1170,8 +1172,7 @@ export default function Fastify(options) {
       501,
       {
         error: "NOT_IMPLEMENTED",
-        message:
-          "Not implemented: Partner API for Caller (requires a registered product capability binding)",
+        message: "Not implemented.",
       },
     ]);
     expect(fetch).not.toHaveBeenCalled();

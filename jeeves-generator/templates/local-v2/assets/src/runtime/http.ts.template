@@ -1,29 +1,26 @@
-import {
-  operation,
-  withOperation,
-  OperationError,
-  withProcess,
-  currentProcess,
-} from "./operation.ts";
+import { operation, withOperation, withProcess, currentProcess, assertOperation } from "./operation.ts";
 import type { OperationContext } from "./operation.ts";
-import Fastify, { type HTTPMethods, type RouteHandlerMethod } from "fastify";
-import { createAdmission, HttpError, type HttpSettings } from "./admission.ts";
+import Fastify, { type HTTPMethods, type RouteHandlerMethod, type FastifyRequest, type FastifyReply } from "fastify";
+import { createAdmission, HttpError, classifyHttpError, formatHttpError, type HttpSettings, type HttpErrorFormatter } from "./admission.ts";
 export { HttpError, type HttpSettings } from "./admission.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
-    /** The body's bytes as received, for a JSON or text request with a body. */
+    /** Exact bounded bytes, retained before any JSON decoding. */
     rawBody?: Buffer;
     operationContext?: OperationContext;
   }
 }
 
-/** Configure routes before listening. Auth/JWKS and every dependency/effect belong inside
- * the awaited handler. No lifecycle/plugin hooks are exposed outside that handler budget. */
+export type HttpBodyLimit = 1024 | 16384 | 65536 | 1048576;
+/** Generated declarations only. Raw routes receive bytes as body, with no JSON decoding, so
+ * later signature verification can precede decoding. This does not authenticate a webhook. */
 export interface HttpRoutes {
   route(options: {
     method: HTTPMethods | HTTPMethods[];
     url: string;
+    bodyLimit?: HttpBodyLimit;
+    rawBody?: boolean;
     handler: RouteHandlerMethod;
   }): void;
 }
@@ -31,192 +28,204 @@ export async function createHttpService(options: {
   id: string;
   settings: HttpSettings;
   stopping?: AbortSignal;
+  formatError?: HttpErrorFormatter;
   configure: (routes: HttpRoutes) => void | Promise<void>;
   initialize: () => Promise<void>;
-  /** Told of each failed request: a 5xx other than 501, or an error that isn't a client error. */
+  /** Receives only a safe classified failure, never the original exception. */
   onFailure?: (what: string, error: unknown) => void;
 }) {
   const scope = currentProcess();
   const admission = createAdmission(options.settings);
   const app = Fastify({ logger: false, bodyLimit: 65536 });
-  // JSON and text are read as bytes and kept, so a route can check a signature over them; each
-  // parser gives the value and the errors Fastify's own gives (400 invalid or empty JSON, 413).
+  const requests = new WeakMap<object, { running: ReturnType<typeof operation>; started: number; dispatched: boolean; close(): void }>();
+  const errors = new WeakMap<object, ReturnType<typeof classifyHttpError>>();
+  const log = (entry: Record<string, unknown>) => {
+    try { console.log(JSON.stringify({ service: options.id, ...entry })); } catch { /* No response change. */ }
+  };
+  const begin = (request: FastifyRequest, reply: FastifyReply) => {
+    if (requests.has(request)) return;
+    const forwarded = ["/livez", "/readyz", "/healthz"].includes(request.routeOptions?.url ?? "")
+      ? undefined : request.headers?.["x-jeeves-remaining-ms"];
+    // Establish identities even for malformed budgets/parsers and unmatched routes.
+    const disconnect = new AbortController();
+    const running = operation({
+      maximumMs: options.settings.requestTimeoutMs,
+      correlationId: request.headers?.["x-correlation-id"],
+      signals: [options.stopping, disconnect.signal],
+    });
+    request.operationContext = running.context;
+    const closed = () => { if (!reply.raw.writableEnded) disconnect.abort(new Error("CLIENT_CLOSED")); };
+    reply.raw?.once("close", closed);
+    requests.set(request, { running, started: performance.now(), dispatched: false, close() {
+      reply.raw?.off("close", closed); running.close();
+    } });
+    if (forwarded !== undefined) {
+      const budget = typeof forwarded === "string" && /^\d{1,9}$/.test(forwarded) ? Number(forwarded) : NaN;
+      if (!Number.isFinite(budget)) throw new HttpError(400, "INVALID_REQUEST", "Invalid request.");
+      const bounded = operation({ maximumMs: options.settings.requestTimeoutMs, remainingMs: budget,
+        correlationId: running.context.correlationId, signals: [running.context.signal] });
+      request.operationContext = bounded.context;
+      const record = requests.get(request)!;
+      const close = record.close;
+      record.running = bounded;
+      record.close = () => { bounded.close(); close(); };
+    }
+  };
+  app.addHook("onRequest", async (request, reply) => {
+    begin(request, reply);
+    if (["/livez", "/readyz", "/healthz"].includes(request.routeOptions?.url ?? "")) return;
+    const context = request.operationContext!;
+    const expiredWhileReading = () => {
+      if (requests.get(request)?.dispatched || reply.sent || reply.raw.destroyed) return;
+      // Bound a stalled body as well as the handler. Flush the classified response before
+      // closing the unread input; no handler/effect may dispatch after this point.
+      reply.raw.once("finish", () => request.raw.destroy());
+      const error = options.stopping?.aborted
+        ? new HttpError(503, "UNAVAILABLE", "Service unavailable.")
+        : new HttpError(503, "DEADLINE", "Request deadline exceeded; check status before retrying.");
+      reply.send(publicBody(error, request, reply));
+    };
+    context.signal.addEventListener("abort", expiredWhileReading, { once: true });
+    const record = requests.get(request)!;
+    const close = record.close;
+    record.close = () => { context.signal.removeEventListener("abort", expiredWhileReading); close(); };
+  });
   app.decorateRequest("rawBody", undefined);
   app.decorateRequest("operationContext", undefined);
   app.removeContentTypeParser(["application/json", "text/plain"]);
   const parseJson = app.getDefaultJsonParser("error", "error");
-  app.addContentTypeParser(
-    "application/json",
-    { parseAs: "buffer", bodyLimit: 65536 },
-    (request, body: Buffer, done) => {
-      request.rawBody = body;
-      parseJson(request, body.toString("utf8"), done);
-    },
-  );
-  app.addContentTypeParser(
-    "text/plain",
-    { parseAs: "buffer", bodyLimit: 65536 },
-    (request, body: Buffer, done) => {
-      request.rawBody = body;
-      done(null, body.toString("utf8"));
-    },
-  );
+  const raw = (request: FastifyRequest) =>
+    (request.routeOptions.config as { rawBody?: boolean }).rawBody === true;
+  app.addContentTypeParser("application/json", { parseAs: "buffer" }, (request, body: Buffer, done) => {
+    request.rawBody = body;
+    if (raw(request)) done(null, body);
+    else parseJson(request, body.toString("utf8"), done);
+  });
+  app.addContentTypeParser("text/plain", { parseAs: "buffer" }, (request, body: Buffer, done) => {
+    request.rawBody = body;
+    done(null, raw(request) ? body : body.toString("utf8"));
+  });
+  app.addContentTypeParser("*", { parseAs: "buffer" }, (request, body: Buffer, done) => {
+    if (!raw(request)) return done(new HttpError(415, "INVALID_REQUEST", "Invalid request."));
+    request.rawBody = body;
+    done(null, body);
+  });
   let state: "uninitialized" | "ready" | "draining" = "uninitialized";
   let starting: Promise<string> | undefined;
   let shutdown: Promise<void> | undefined;
   let stopped = false;
-  app.get("/healthz", async (_request, reply) => {
-    if (state !== "ready") reply.code(503);
-    return { service: options.id, application: state };
-  });
-  app.addHook("onSend", async (_request, reply, payload) => {
+  // Liveness says the process can answer HTTP; dependency readiness is separate. /healthz is
+  // retained as the readiness alias used by existing local infrastructure.
+  app.get("/livez", async () => ({ service: options.id, application: "live" }));
+  for (const url of ["/healthz", "/readyz"])
+    app.get(url, async (_request, reply) => {
+      if (state !== "ready" || options.stopping?.aborted) reply.code(503);
+      return { service: options.id, application: state };
+    });
+  const publicBody = (error: unknown, request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.operationContext) {
+      try { begin(request, reply); } catch { /* Identity was established before budget validation. */ }
+    }
+    const selected = classifyHttpError(error);
+    errors.set(reply, selected);
+    reply.code(selected.status);
+    // Product headers cannot override generated retry/authentication semantics.
+    reply.removeHeader?.("Retry-After");
+    reply.removeHeader?.("Content-Length");
+    reply.header("Content-Type", "application/json; charset=utf-8");
+    for (const [name, value] of Object.entries(selected.headers)) reply.header(name, value);
+    const context = request.operationContext;
+    if (selected.status >= 500 && selected.status !== 501) {
+      try { options.onFailure?.(`request ${request.method} ${request.routeOptions?.url ?? "unmatched"}`,
+        new Error(selected.code)); } catch { /* Response stays selected. */ }
+    }
+    return formatHttpError({ status: selected.status, code: selected.code, message: selected.message,
+      retryable: selected.retryable, requestId: context?.requestId ?? "unassigned",
+      correlationId: context?.correlationId ?? "unassigned" }, options.formatError);
+  };
+  app.setErrorHandler((error, request, reply) => reply.send(publicBody(error, request, reply)));
+  app.addHook("onSend", async (request, reply, payload) => {
     reply.header("Cache-Control", "no-store");
+    const context = request.operationContext;
+    if (context) {
+      reply.header("X-Request-Id", context.requestId);
+      reply.header("X-Correlation-Id", context.correlationId);
+    }
+    // Table routes and template response adapters use the same classification/formatter, even
+    // when they returned an explicit error response instead of throwing.
+    if (reply.statusCode >= 400 && !errors.has(reply) &&
+        !["/healthz", "/readyz"].includes(request.routeOptions?.url ?? "")) {
+      // A returned JSON error has no trusted provenance. Never forward its message/code:
+      // product/provider data must not become safe merely by looking like an error response.
+      const defaults: Record<number, [string, string]> = {
+        400: ["INVALID_REQUEST", "Invalid request."], 401: ["SIGN_IN_REQUIRED", "Sign in to continue."],
+        403: ["FORBIDDEN", "Request refused."], 404: ["NOT_FOUND", "Route not found."],
+        405: ["METHOD_NOT_ALLOWED", "Method not allowed."], 501: ["NOT_IMPLEMENTED", "Not implemented."],
+      };
+      const [code, message] = defaults[reply.statusCode] ??
+        (reply.statusCode >= 500 ? ["UNAVAILABLE", "Service unavailable."] : ["INVALID_REQUEST", "Request refused."]);
+      const allow = reply.getHeader("Allow");
+      const error = new HttpError(reply.statusCode, code, message, typeof allow === "string" ? allow : undefined);
+      return JSON.stringify(publicBody(error, request, reply));
+    }
     return payload;
   });
-  app.setErrorHandler((error, request, reply) => {
-    const failed = () => {
-      try {
-        options.onFailure?.(
-          `request ${request.method} ${request.routeOptions?.url ?? "unmatched"}`,
-          error,
-        );
-      } catch {
-        /* The answer does not change. */
-      }
-    };
-    if (error instanceof OperationError) {
-      failed();
-      reply
-        .code(error.outcome === "refused" && error.code === "INVALID_BUDGET" ? 400 : 503)
-        .send({
-          error: error.outcome === "unknown" ? "OUTCOME_UNKNOWN" : error.code,
-          message:
-            error.outcome === "unknown"
-              ? "Outcome unknown; check status before retrying."
-              : "Operation unavailable.",
-        });
-      return;
-    }
-    if (error instanceof HttpError) {
-      if (error.statusCode >= 500 && error.statusCode !== 501) failed();
-      // A 503 (not accepting, at the concurrency limit, past the deadline, or a route's own) says
-      // when to retry: one second, unless the route already set its own Retry-After.
-      if (error.statusCode === 503 && !reply.hasHeader("Retry-After"))
-        reply.header("Retry-After", "1");
-      reply.code(error.statusCode).send({ error: error.code, message: error.message });
-      return;
-    }
-    const status =
-      error && typeof error === "object" && "statusCode" in error ? error.statusCode : undefined;
-    const clientError = status === 400 || status === 413 || status === 415;
-    if (!clientError) {
-      failed();
-      // Any other error (a dependency's, such as `Query read timeout`, or a stub's own) answers the
-      // fallback 503, which says when to retry too: one second, unless the route set its own.
-      if (!reply.hasHeader("Retry-After")) reply.header("Retry-After", "1");
-    }
-    reply.code(clientError ? status : 503).send({
-      error: clientError ? "INVALID_REQUEST" : "UNAVAILABLE",
-      message: clientError ? "Invalid request." : "Service unavailable.",
-    });
+  app.addHook("onResponse", async (request, reply) => {
+    const record = requests.get(request);
+    const context = request.operationContext;
+    log({ level: reply.statusCode >= 500 ? "error" : "info", event: errors.has(reply) ? "request-failed" : "request-completed",
+      requestId: context?.requestId, correlationId: context?.correlationId,
+      method: request.method, route: request.routeOptions?.url ?? "unmatched", status: reply.statusCode,
+      ...(errors.has(reply) ? { code: errors.get(reply)!.code, retryable: errors.get(reply)!.retryable } : {}),
+      durationMs: Math.round(performance.now() - (record?.started ?? performance.now())) });
+    record?.close(); requests.delete(request);
   });
-  app.setNotFoundHandler(async () => {
-    throw new HttpError(404, "NOT_FOUND", "Route not found.");
-  });
+  app.setNotFoundHandler(async () => { throw new HttpError(404, "NOT_FOUND", "Route not found."); });
   await options.configure({
-    route({ handler, ...route }) {
-      if (route.url === "/healthz") throw new Error("Reserved readiness route");
-      app.route({
-        ...route,
-        handler(request, reply) {
-          const forwarded = request.headers?.["x-jeeves-remaining-ms"];
-          const budget =
-            forwarded === undefined
-              ? undefined
-              : typeof forwarded === "string" && /^\d{1,9}$/.test(forwarded)
-                ? Number(forwarded)
-                : NaN;
-          let running: ReturnType<typeof operation>;
-          try {
-            running = operation({
-              maximumMs: options.settings.requestTimeoutMs,
-              remainingMs: budget,
-              correlationId: request.headers?.["x-correlation-id"],
-              signals: [options.stopping],
-            });
-          } catch (error) {
-            return Promise.reject(error);
-          }
-          request.operationContext = running.context;
-          const closed = () => {
-            if (!reply.raw.writableEnded) disconnect.abort(new Error("CLIENT_CLOSED"));
-          };
-          const disconnect = new AbortController();
-          const context = operation({
-            maximumMs: options.settings.requestTimeoutMs,
-            remainingMs: running.context.remainingMs(),
-            correlationId: running.context.correlationId,
-            signals: [running.context.signal, disconnect.signal],
-          });
-          request.operationContext = context.context;
-          reply.raw?.once("close", closed);
-          return admission
-            .run(
-              () =>
-                withProcess(scope, () =>
-                  withOperation(context.context, async () => {
-                    const result = await handler.call(this, request, reply);
-                    if (context.context.remainingMs() <= 0 || context.context.signal.aborted)
-                      throw new HttpError(
-                        503,
-                        "DEADLINE",
-                        "Request deadline exceeded; check status before retrying.",
-                      );
-                    return result;
-                  }),
-                ),
-              context.context.remainingMs(),
-            )
-            .finally(() => {
-              reply.raw?.off("close", closed);
-              context.close();
-              running.close();
-            });
-        },
-      });
+    route({ handler, rawBody = false, bodyLimit = 65536, ...route }) {
+      if (["/healthz", "/readyz", "/livez"].includes(route.url)) throw new Error("Reserved health route");
+      if (![1024, 16384, 65536, 1048576].includes(bodyLimit) || typeof rawBody !== "boolean")
+        throw new Error("Invalid HTTP body declaration");
+      app.route({ ...route, bodyLimit, config: { rawBody }, handler(request, reply) {
+        // Private test adapters can invoke a handler directly; real Fastify always begins in onRequest.
+        begin(request, reply);
+        const context = request.operationContext!;
+        requests.get(request)!.dispatched = true;
+        return admission.run(() => withProcess(scope, () => withOperation(context, async () => {
+          assertOperation(context);
+          const result = await handler.call(this, request, reply);
+          if (context.remainingMs() <= 0 || context.signal.aborted)
+            throw new HttpError(503, "DEADLINE", "Request deadline exceeded; check status before retrying.");
+          return result;
+        })), context.remainingMs());
+      } });
     },
   });
+  const stop = () => {
+    if (stopped) return;
+    stopped = true; state = "draining"; admission.stop();
+    log({ level: "info", event: "http-draining" });
+  };
   return {
-    /** Injection is useful for offline adapters; it does not advertise readiness before start. */
     inject: app.inject.bind(app),
     start(listen: { host: string; port: number }): Promise<string> {
       if (stopped || shutdown) return Promise.reject(new Error("HTTP service is draining"));
       return (starting ??= (async () => {
         await options.initialize();
-        if (stopped || shutdown) throw new Error("HTTP service is draining");
+        if (stopped || shutdown || options.stopping?.aborted) throw new Error("HTTP service is draining");
         const address = await app.listen(listen);
-        if (stopped || shutdown) throw new Error("HTTP service is draining");
-        state = "ready";
-        admission.open();
+        if (stopped || shutdown || options.stopping?.aborted) throw new Error("HTTP service is draining");
+        state = "ready"; admission.open();
         return address;
       })());
     },
-    stop() {
-      stopped = true;
-      state = "draining";
-      admission.stop();
-    },
+    stop,
     close(): Promise<void> {
-      stopped = true;
-      state = "draining";
-      admission.stop();
+      stop();
       return (shutdown ??= (async () => {
         await starting?.catch(() => {});
-        try {
-          await app.close();
-        } finally {
-          await admission.drain();
-        }
+        try { await app.close(); } finally { await admission.drain(); }
+        log({ level: "info", event: "http-drained" });
       })());
     },
   };

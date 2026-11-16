@@ -60,16 +60,16 @@ export const createRemoteJWKSet = () => async () => key;
 export async function jwtVerify(token, _keySet, options) {
   audiences.push(options.audience);
   const [head, body, signature] = token.split(".");
-  if (!options.algorithms.includes(decode(head).alg)) throw new Error("unexpected alg");
+  if (!options.algorithms.includes(decode(head).alg)) throw Object.assign(new Error("unexpected alg"), { code: "ERR_JOSE_ALG_NOT_ALLOWED" });
   if (!verify("RSA-SHA256", Buffer.from(head + "." + body), key, Buffer.from(signature, "base64url")))
-    throw new Error("signature verification failed");
+    throw Object.assign(new Error("signature verification failed"), { code: "ERR_JWS_SIGNATURE_VERIFICATION_FAILED" });
   const payload = decode(body);
-  if (payload.iss !== options.issuer) throw new Error('unexpected "iss" claim value');
+  if (payload.iss !== options.issuer) throw Object.assign(new Error('unexpected "iss" claim value'), { code: "ERR_JWT_CLAIM_VALIDATION_FAILED" });
   if (![payload.aud].flat().some((aud) => [options.audience].flat().includes(aud)))
-    throw new Error('unexpected "aud" claim value');
+    throw Object.assign(new Error('unexpected "aud" claim value'), { code: "ERR_JWT_CLAIM_VALIDATION_FAILED" });
   for (const claim of options.requiredClaims)
-    if (!(claim in payload)) throw new Error("missing required claim " + claim);
-  if (!(payload.exp > Date.now() / 1000)) throw new Error('"exp" claim timestamp check failed');
+    if (!(claim in payload)) throw Object.assign(new Error("missing required claim " + claim), { code: "ERR_JWT_CLAIM_VALIDATION_FAILED" });
+  if (!(payload.exp > Date.now() / 1000)) throw Object.assign(new Error('"exp" claim timestamp check failed'), { code: "ERR_JWT_CLAIM_VALIDATION_FAILED" });
   return { payload, protectedHeader: decode(head) };
 }`),
 };
@@ -129,7 +129,10 @@ const principal = { subject: "sub-1", claims: { sub: "sub-1", preferred_username
 /** A verifier that accepts only the token "good". */
 const verifier = () =>
   vi.fn(async (bearer: string) => {
-    if (bearer !== "good") throw new Error("signature verification failed");
+    if (bearer !== "good")
+      throw Object.assign(new Error("signature verification failed"), {
+        code: "ERR_JWS_SIGNATURE_VERIFICATION_FAILED",
+      });
     return principal;
   });
 const request = (authorization?: string) => ({
@@ -419,6 +422,12 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
     });
     return [response.statusCode, response.json()];
   };
+  const drainLines = [
+    "drain-started",
+    "admission-stopped",
+    "operations-cancelled",
+    "drain-completed",
+  ].map((event) => ({ level: "info", event }));
   const signedIn = [200, { signedIn: true, subject: "sub-1", username: "viewer" }];
   const refused = [401, { error: "SIGN_IN_REQUIRED", message: "Sign in to continue." }];
 
@@ -460,6 +469,7 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
           error: "Error: OIDC_AUDIENCE must name the audience of the sign-in tokens.",
         },
         "Application startup failed",
+        ...drainLines,
       ]);
       expect(process.exitCode).toBe(1);
       // It stopped before its HTTP service: no app was started.
@@ -493,6 +503,7 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
       expect(lines).toEqual([
         { level: "error", event: "startup-failed", error: `Error: ${error}` },
         "Application startup failed",
+        ...drainLines,
       ]);
       expect(process.exitCode).toBe(1);
       expect(app === undefined).toBe(true);
@@ -515,6 +526,7 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
         expect(lines, `${name} ${JSON.stringify(value)}`).toEqual([
           { level: "error", event: "startup-failed", error: `Error: Invalid endpoint ${name}` },
           "Application startup failed",
+          ...drainLines,
         ]);
         expect(process.exitCode).toBe(1);
         expect(app === undefined).toBe(true);
@@ -551,6 +563,7 @@ describe("the emitted sign-in's audience comes from OIDC_AUDIENCE (QG11)", () =>
     const failed = (error: string) => [
       { level: "error", event: "startup-failed", error: `Error: ${error}` },
       "Application startup failed",
+      ...drainLines,
     ];
     try {
       process.env.JEEVES_REQUIRE_TLS = "true";

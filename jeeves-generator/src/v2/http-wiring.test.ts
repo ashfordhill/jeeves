@@ -54,14 +54,18 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
   it("routes every stub, template and placeholder, with what each answers", () => {
     expect(stack.report.findings).toEqual([]);
     expect(rows(stack).runnable).toBe(true);
-    const ready = "GET /healthz → 200 once ready, 503 before and while draining";
+    const ready = [
+      "GET /healthz → 200 once ready, 503 before and while draining",
+      "GET /readyz → 200 once ready, 503 before and while draining",
+      "GET /livez → 200 while the HTTP process can respond, including drain",
+    ];
     const stub = (id: string, name: string) =>
       [`/modules/${id}`, `/modules/${id}/*`].map(
         (path) => `ANY ${path} → 501 "Not implemented: ${name}" until it is written`,
       );
     // Links API's six route stubs, in module order; its Upload consumer is a loop (TP06).
     expect(routes(stack, "links-api")).toEqual([
-      ready,
+      ...ready,
       ...stub("link-reader", "Link reader"),
       ...stub("link-cache", "Link cache"),
       ...stub("limiter", "Limiter"),
@@ -69,14 +73,14 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       ...stub("redirector", "Redirector"),
       ...stub("stats-caller", "Stats caller"),
     ]);
-    expect(routes(stack, "stats-api")).toEqual([ready, ...stub("stats-search", "Stats search")]);
+    expect(routes(stack, "stats-api")).toEqual([...ready, ...stub("stats-search", "Stats search")]);
     expect(routes(stack, "upload-api")).toEqual([
-      ready,
+      ...ready,
       ...stub("archive-upload", "Archive upload"),
       ...stub("upload-publisher", "Upload publisher"),
     ]);
     expect(routes(stack, "preview-api")).toEqual([
-      ready,
+      ...ready,
       'GET /modules/preview-reader/:key → 501 "Not implemented: key for Preview reader" until its hooks are written',
     ]);
     expect(routes(stack, "visit-worker")).toEqual([]);
@@ -84,7 +88,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     // reaches `validate` first; the cache read reaches `key`, and search query is a placeholder.
     const unknown = "404 UPLOAD_NOT_FOUND until an upload is started";
     expect(routes(v2, "upload")).toEqual([
-      ready,
+      ...ready,
       "GET /modules/upload-auth/me → 200 {signedIn, subject, username} for a signed-in caller; 401 SIGN_IN_REQUIRED for a missing or invalid token",
       'POST /modules/upload-multipart/uploads → 501 "Not implemented: validate for Multipart uploads" until its hooks are written',
       "GET /modules/upload-multipart/uploads → 200 the caller's uploads: none until one is started",
@@ -96,14 +100,14 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       ].map((route) => `${route} → ${unknown}`),
     ]);
     expect(routes(v2, "watch")).toEqual([
-      ready,
+      ...ready,
       'GET /modules/watch-cache-reader/:key → 501 "Not implemented: key for Details cache" until its hooks are written',
       ...stub("watch-counts", "View count reader"),
       ...stub("watch-views", "View publisher"),
     ]);
     // Search query reaches its Index writer's mapping first (V3-08).
     expect(routes(v2, "search")).toEqual([
-      ready,
+      ...ready,
       'GET /modules/search-query → 400 SEARCH_QUERY for a bad q or page; 501 "Not implemented: mapping for Index writer" until its hooks are written; then {q, page, pageSize, total, hits}, 20 to a page',
     ]);
     // The HTTP processes' templates; the worker templates run loops (loop-wiring.test.ts).
@@ -461,15 +465,19 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     const bundle = assemble(signInStackDesign());
     expect(bundle.report.findings).toEqual([]);
     expect(rows(bundle).runnable).toBe(true);
-    const ready = "GET /healthz → 200 once ready, 503 before and while draining";
+    const ready = [
+      "GET /healthz → 200 once ready, 503 before and while draining",
+      "GET /readyz → 200 once ready, 503 before and while draining",
+      "GET /livez → 200 while the HTTP process can respond, including drain",
+    ];
     expect(routes(bundle, "watch-api")).toEqual([
-      ready,
+      ...ready,
       "GET /modules/viewer-check/me → 200 {signedIn, subject, username} for a signed-in caller or {signedIn: false} without a token; 401 SIGN_IN_REQUIRED for an invalid token",
       'ANY /modules/hello → 501 "Not implemented: Hello" until it is written',
       'ANY /modules/hello/* → 501 "Not implemented: Hello" until it is written',
     ]);
-    expect(routes(bundle, "upload-api")?.slice(0, 3)).toEqual([
-      ready,
+    expect(routes(bundle, "upload-api")?.slice(0, 5)).toEqual([
+      ...ready,
       "GET /modules/creator-check/me → 200 {signedIn, subject, username} for a signed-in caller; 401 SIGN_IN_REQUIRED for a missing or invalid token",
       'POST /modules/multipart-uploads/uploads → 501 "Not implemented: validate for Multipart uploads" until its hooks are written',
     ]);

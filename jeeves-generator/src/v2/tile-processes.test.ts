@@ -95,6 +95,7 @@ describe("local.tile-processes", () => {
       "infra/postgres/links-db/050-jeeves-idempotency.sql",
       "infra/postgres/links-db/modules/link-reader.sql",
       "scripts/products.mjs",
+      "src/http-errors.hooks.ts",
       "src/modules/entry.ts",
       "src/processes/links-api.ts",
       "src/processes/stats-api.ts",
@@ -141,13 +142,13 @@ describe("local.tile-processes", () => {
     expect(idle).not.toContain("loopLog");
   });
 
-  it("gives every process one failure log, and passes it to the HTTP service", () => {
+  it("gives every process a failure log and every HTTP process the shared pure formatter", () => {
     const http = text(bundle, "src/processes/links-api.ts");
     expect(http).toMatch(
       /import \{[^}]*createFailureLog[^}]*\} from "\.\.\/runtime\/tile-process\.ts";/,
     );
     expect(http).toContain("  const failure = createFailureLog(config.tile);");
-    expect(http).toContain("    onFailure: failure,");
+    expect(http).toContain("    formatError: formatHttpError,");
     const worker = text(bundle, "src/processes/visit-worker.ts");
     expect(worker).toContain("  const failure = createFailureLog(config.tile);");
     expect(worker).not.toContain("onFailure: failure");
@@ -757,13 +758,13 @@ describe("emitted HTTP service and process runtime", () => {
     const http = await service((what, error) => failures.push([what, error]));
     await http.start({ host: "127.0.0.1", port: 3000 });
     expect(await get(http, "/boom")).toEqual(answers["/boom"]);
-    expect(failures).toEqual([["request GET /boom", new Error("boom")]]);
+    expect(failures).toEqual([["request GET /boom", new Error("UNAVAILABLE")]]);
     expect(await get(http, "/missing")).toEqual(answers["/missing"]);
     expect(await get(http, "/unwritten")).toEqual(answers["/unwritten"]);
     expect(failures).toHaveLength(1);
     expect(await get(http, "/busy")).toEqual(answers["/busy"]);
     expect(failures.map(([what]) => what)).toEqual(["request GET /boom", "request GET /busy"]);
-    expect(failures[1]?.[1]).toMatchObject({ statusCode: 503, code: "OVERLOADED" });
+    expect(failures[1]?.[1]).toEqual(new Error("OVERLOADED"));
     await http.close();
     // An onFailure that throws changes no answer.
     const throwing = await service(() => {
@@ -807,7 +808,9 @@ describe("emitted HTTP service and process runtime", () => {
     type Scope = { own(drain: () => void): void; fail(error?: unknown): void };
     await processRuntime.runProcess(async (scope: Scope) => scope.fail(new Error("x")));
     await vi.waitFor(() => expect(process.exitCode).toBe(1));
-    expect(lines).toEqual([{ level: "error", event: "process-failed", error: "Error: x" }]);
+    expect(lines).toEqual([
+      { level: "error", event: "process-failed", error: "Runtime operation failed" },
+    ]);
     // A drain that throws, on SIGTERM: one drain-failed line, and the exit code is 1.
     lines.length = 0;
     process.exitCode = undefined;
@@ -820,14 +823,16 @@ describe("emitted HTTP service and process runtime", () => {
     const stop = process.listeners("SIGTERM").find((listener) => !before.includes(listener));
     stop?.("SIGTERM");
     await vi.waitFor(() => expect(process.exitCode).toBe(1));
-    expect(lines).toEqual([{ level: "error", event: "drain-failed", error: "Error: pool stuck" }]);
+    expect(lines).toEqual([
+      { level: "error", event: "drain-failed", error: "Runtime operation failed" },
+    ]);
     // A failed startup says why, then the existing line.
     lines.length = 0;
     await processRuntime.runProcess(async () => {
       throw new TypeError("no database");
     });
     expect(lines).toEqual([
-      { level: "error", event: "startup-failed", error: "TypeError: no database" },
+      { level: "error", event: "startup-failed", error: "Runtime operation failed" },
       "Application startup failed",
     ]);
   });
@@ -984,11 +989,11 @@ describe("emitted HTTP service and process runtime", () => {
     body: response.json(),
   });
 
-  it("answers the admission's three 503s with Retry-After: 1, their status and body unchanged", async () => {
+  it("marks only admission refusals retryable; a deadline cannot authorize replay", async () => {
     const { http, release, reached } = await heldService();
     const busy = (error: string, message: string) => ({
       status: 503,
-      retryAfter: "1",
+      retryAfter: error === "DEADLINE" ? undefined : "1",
       cacheControl: "no-store",
       body: { error, message },
     });
@@ -1011,7 +1016,7 @@ describe("emitted HTTP service and process runtime", () => {
     await http.close();
   });
 
-  it("gives a handler's thrown 503 Retry-After: 1 unless it set its own, and a 404 or a 400 none", async () => {
+  it("keeps thrown errors public but strips product Retry-After; returned errors use safe defaults", async () => {
     const { HttpError } = realHttpRuntime;
     const entry = vi.fn(async (request: { path: string }) => {
       if (request.path === "/thrown") throw new HttpError(503, "DOWNSTREAM", "Try again.");
@@ -1049,7 +1054,7 @@ describe("emitted HTTP service and process runtime", () => {
     const get = async (url: string) => answer(await http.inject({ method: "GET", url }));
     const thrown = {
       status: 503,
-      retryAfter: "1",
+      retryAfter: undefined,
       cacheControl: "no-store",
       body: { error: "DOWNSTREAM", message: "Try again." },
     };
@@ -1057,14 +1062,14 @@ describe("emitted HTTP service and process runtime", () => {
     expect(await get("/modules/probe/thrown")).toEqual(thrown);
     expect(await get("/own")).toEqual({
       ...thrown,
-      retryAfter: "30",
+      retryAfter: undefined,
       body: { error: "DOWNSTREAM", message: "Try again later." },
     });
     expect(await get("/modules/probe/own")).toEqual({
       status: 503,
-      retryAfter: "7",
+      retryAfter: undefined,
       cacheControl: "no-store",
-      body: { error: "OWN" },
+      body: { error: "UNAVAILABLE", message: "Service unavailable." },
     });
     expect(await get("/nowhere")).toEqual({
       status: 404,
@@ -1081,7 +1086,7 @@ describe("emitted HTTP service and process runtime", () => {
     await http.close();
   });
 
-  it("gives the fallback 503 Retry-After: 1 unless the route set its own, a 400 none, and tells onFailure once (QG21)", async () => {
+  it("keeps generic failures non-retryable and reports only safe failure codes", async () => {
     // What a stub's dependency throws: pg's client-side bound (QG17), the bounded cache's
     // (QG04), and the Identity client's lost connection, marked as identityTarget marks it (QG20).
     const stalled = new Error("Query read timeout");
@@ -1137,21 +1142,21 @@ describe("emitted HTTP service and process runtime", () => {
     const get = async (url: string) => answer(await http.inject({ method: "GET", url }));
     const fallback = {
       status: 503,
-      retryAfter: "1",
+      retryAfter: undefined,
       cacheControl: "no-store",
       body: { error: "UNAVAILABLE", message: "Service unavailable." },
     };
     expect(await get("/stalled")).toEqual(fallback);
-    expect(failures).toEqual([["request GET /stalled", stalled]]);
-    for (const [path, error] of Object.entries(thrown)) {
+    expect(failures).toEqual([["request GET /stalled", new Error("UNAVAILABLE")]]);
+    for (const path of Object.keys(thrown)) {
       failures.length = 0;
       expect(await get(`/modules/probe${path}`)).toEqual(fallback);
-      expect(failures).toEqual([["request GET /modules/probe/*", error]]);
+      expect(failures).toEqual([["request GET /modules/probe/*", new Error("UNAVAILABLE")]]);
     }
     expect(entry).toHaveBeenCalledTimes(4);
     failures.length = 0;
-    expect(await get("/own")).toEqual({ ...fallback, retryAfter: "30" });
-    expect(failures).toEqual([["request GET /own", stalled]]);
+    expect(await get("/own")).toEqual({ ...fallback, retryAfter: undefined });
+    expect(failures).toEqual([["request GET /own", new Error("UNAVAILABLE")]]);
     failures.length = 0;
     expect(answer(await post(http, "/json", "application/json", '{"bad":'))).toEqual({
       status: 400,
@@ -1363,7 +1368,7 @@ describe("route stubs get a deadline signal and a route table (QL02)", () => {
     const answer = await http.inject({ method: "GET", url: "/modules/probe/slow" });
     expect([answer.statusCode, answer.headers["retry-after"], answer.json()]).toEqual([
       503,
-      "1",
+      undefined,
       { error: "DEADLINE", message: "Request deadline exceeded; check status before retrying." },
     ]);
     const [reason, elapsed] = await abort;

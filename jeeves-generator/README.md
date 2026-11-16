@@ -25,7 +25,7 @@
   only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
   projects use `local-v2`.
 
-New exports use extension API **v3 (`checked-extensions`)**. Product code imports types and
+New exports use extension API **v4 (`checked-extensions`)**. Product code imports types and
 helpers from `src/extension-api/index.ts`; shared DTOs and pure definitions belong in the
 application-owned `src/contracts/` directory. Run `pnpm check:extensions` offline (also part of
 `pnpm build`). It checks private runtime/driver/cross-service imports, policy effect APIs and
@@ -36,7 +36,7 @@ bridges retain transaction, guard, credentials and lifecycle authority. Custom S
 verification and arbitrary HTTP target handles are unavailable public capabilities and appear as
 selection-specific custom gaps; a cache loader's `ProductQueries` handle also remains unavailable
 until a registered query binding is installed. Existing unrestricted exports remain readable;
-an update from API v1 refuses until `--ack-extension-api=3` and a successful staged interface and
+an update from API v1 refuses until `--ack-extension-api=4` and a successful staged interface and
 boundary check. Handwritten bodies are preserved, never rewritten to claim compatibility.
 
 `pnpm test:generated` separately exports, builds and runs the Activity backend with real
@@ -381,14 +381,13 @@ and `stubs` tables) and contributes a `local.services` entry: `app-<id>` running
 `node dist/processes/<id>.js`, profile `application`, `init: true`, no restart policy, no
 published port, `depends_on` only on the providers its templates and stubs use, and a healthcheck
 on the ready marker. An HTTP process starts `createHttpService` on `0.0.0.0:3000`, answering
-`GET /healthz` (200 once ready, 503 before and while draining), its module routes, and 404
+`GET /readyz` (and compatibility alias `/healthz`) (200 once ready, 503 before and while draining), its module routes, and 404
 elsewhere; any process runs its loops, and a process with nothing to run holds an idle timer.
 Its admission answers a route with 503 `UNAVAILABLE` while it isn't accepting, `OVERLOADED` at
-the Concurrency limit and `DEADLINE` at the Request timeout. These, an `HttpError` 503 that a
-route throws, and the fallback 503 `UNAVAILABLE` that answers any other error a route or stub
-throws (a dependency's, such as `Query read timeout` or `Cache deadline`) carry `Retry-After: 1`
-unless the route already set its own `Retry-After`; a 503 that a stub returns as its response
-keeps the headers it gives. Each process writes the ready
+the Concurrency limit and `DEADLINE` at the Request timeout. Only the first two, before any
+handler dispatch, carry generated `Retry-After: 1`. A deadline, generic failure, explicit route
+error or returned 503 does not authorize automatic replay. Product Retry-After is removed from
+error responses. Each process writes the ready
 marker through `runProcess` once its loops have subscribed and its HTTP service listens; just
 before it, each mounted or placeholder template logs one `started` line
 naming what its startup ran (`{"level":"info","event":"started","tile","module","template","wiring",
@@ -447,8 +446,8 @@ bucket, or why it has none, and Preview shows them.
   tile is mounted through `guard.routes(...)`: **Required** answers 401
   `{"error":"SIGN_IN_REQUIRED","message":"Sign in to continue."}` without a valid
   `Authorization: Bearer` token; **Optional** treats a request without the header as anonymous
-  and still answers 401 for a token that fails verification (a key-set failure included).
-  `/healthz` stays open. `guard.caller(request)` gives `{signedIn: true, principal}` or
+  and answers 401 for invalid token/claim/signature verification. An unavailable key dependency
+  answers 503. `/healthz`, `/readyz` and `/livez` stay open. `guard.caller(request)` gives `{signedIn: true, principal}` or
   `{signedIn: false}`, verified once per request; `guard.require(request)` gives the principal or
   401. `GET /modules/<guard>/me` answers `{signedIn: true, subject, username}` (the token's
   `preferred_username`, or null) or `{signedIn: false}`. The guard declares no roles and has no
@@ -459,8 +458,9 @@ bucket, or why it has none, and Preview shows them.
   `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; public types come through
   `src/extension-api/index.ts` from the private scaffold `src/modules/entry.ts`. `request.body` is the parsed JSON or text (up to 64 KiB; 400
   for invalid or empty JSON, 413 over the limit, 415 for any other content type), and
-  `request.rawBody` the same body's bytes exactly as received, to check a signature over them
-  (undefined when there is no body). A `ModuleResponse.headers` value is a string or an array of
+  `request.rawBody` the same body's bytes exactly as received, retained before decoding
+  (undefined when there is no body). Stub JSON is already decoded before product code; only an
+  explicit generated raw route defers decoding for future verified ingress. A `ModuleResponse.headers` value is a string or an array of
   strings; an array sends the header once per value, such as two `Set-Cookie` lines.
   JSON DTO objects are copied and frozen; body bytes are copied. Headers include only `accept`,
   `content-type`, `if-none-match`, `if-modified-since` and `idempotency-key`; Authorization,
@@ -1037,9 +1037,9 @@ asserts needs no contributed mapping, so no `search-mappings` gap. The scaffold
 `src/runtime/tile-process.ts` holds `NotImplemented`, the rate-limited log and the `started`
 line, and `tile-http.ts` the 501 wrapper: an error that is a `NotImplemented` or whose message
 starts with "Not implemented" answers 501
-`{"error":"NOT_IMPLEMENTED","message":"Not implemented: …"}` and logs one JSON line
+`{"error":"NOT_IMPLEMENTED","message":"Not implemented."}` and logs one JSON line
 (`level`, `event: "not-implemented"`, `tile`, `module`, `what`, `route`, `action`) at most once a
-second per module and hook, the next line carrying a `suppressed` count. An `HttpError` keeps its
+second per module with the fixed `handler` label, the next line carrying a `suppressed` count. An `HttpError` keeps its
 status and anything else answers the existing 503. Fill a stub in its `<module>.ts` and a
 template in its `.hooks.ts`; no scaffold changes.
 
@@ -1187,3 +1187,43 @@ broker redelivery/crash still requires installed durable recovery. Custom SQL/au
 handles remain unavailable. Private target transport permits only its declared origin, manual
 redirects, safe headers and a 64 KiB response. See each export's `.jeeves/extensions.md` for v3
 migration and exact attribute bounds. Old exports/hooks are preserved and require explicit migration.
+
+
+## Generated HTTP contract (extension API v4)
+
+All mounted templates and route stubs use one HTTP classifier and the shared application-owned
+`src/http-errors.hooks.ts` body formatter. The formatter is synchronous pure policy, checked
+including its helper imports. It receives frozen safe code/message/status/retryability and
+request/correlation IDs, never an exception, credential, header or body. Generated code controls
+status, `WWW-Authenticate`, `Allow`, `Cache-Control` and retry metadata. Invalid, asynchronous,
+throwing or oversized formatter output falls back to `{error, message}`. Returned error bodies
+have no trusted provenance and are replaced with generated safe defaults. An explicit internal
+`HttpError` marks a safe public message. Not-implemented answers remain distinct 501 responses.
+
+Only a genuine refusal before admission (not accepting or overloaded) advertises
+`Retry-After: 1`. Deadlines, unknown effects and generic dependency failures never authorize blind
+replay. A token/claim/signature failure answers 401 with `WWW-Authenticate: Bearer`; unavailable
+JWKS/native key dependencies answer 503. A framework parser's known validation errors retain
+400/413/415 without exposing its exception. A provider's arbitrary `statusCode` is not trusted.
+
+Generated `HttpRoutes` support finite body limits of 1 KiB, 16 KiB, 64 KiB (default) and 1 MiB.
+Fastify enforces the selected route bound before buffering beyond it, including streamed bodies.
+The request budget starts in `onRequest`, after HTTP headers; a stalled body receives the same
+classified deadline response and unread input closes after that response flushes. Dispatch
+rechecks expiry before calling any module or template handler.
+A generated `rawBody: true` route receives exact bytes as `body` and `rawBody`, including malformed
+JSON; decoding is deferred to its handler. Default routes decode JSON/text as before. These are
+internal route declarations, with no inspector controls. Webhook authentication/storage is absent.
+
+`/livez` answers 200 while HTTP can respond, including drain. `/readyz` and `/healthz` answer 200
+after successful initialization/listen, then 503 during drain. Required failed startup prevents
+readiness; these are not continuous deep dependency probes. Health routes bypass product guards
+and admission. Safe completion/failure JSON lines contain route patterns (no URL/query), status,
+request/correlation IDs and classification. Authorization, Cookie, request/response bodies and
+original exceptions are excluded. Quoted unwritten-hook labels in the support report identify
+missing implementation; the public 501 body stays generic. Lifecycle milestones identify admission stop, cancellation,
+HTTP/process drain completion and the existing ten-second final deadline.
+
+Updates from API v3 require `--ack-extension-api=4` and the staged interface/boundary check. Hooks
+are preserved; the shared formatter is added as an application-owned scaffold. Review assumptions
+about old provider-detail error bodies and automatic retries. No hook is silently rewritten.

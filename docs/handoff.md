@@ -18453,3 +18453,33 @@ workload settings the same way.
   [Detailed evidence and limits](plans/reliable-generation/evidence/rg03/README.md).
 - Commit subject: `RG03: propagate operation budgets and preserve unknown effect outcomes`.
   Stop for coordinator acceptance; no later unit, push, deployment or task Docker resource.
+
+## 2026-11-16 — RG04 active after RG03 acceptance
+
+- Coordinator accepted RG03 commit `d3b0e3f58402f0d2192e8f206d0b8607d9569156`.
+  RG04 is the sole active unit: uniform HTTP errors, bounded/raw ingress, health and safe request
+  logging. No later unit has started; the approved RG sequence supersedes stale queue text.
+
+
+## 2026-11-16 — RG04 verified, local commit for acceptance
+
+- Extension API **v4** installs one HTTP classifier and shared pure body formatter for mounted
+  templates, guards and stubs. Status/auth/Allow/retry headers stay generated; formatter failure
+  falls back safely. Returned/provider error details are untrusted. Only actual pre-dispatch
+  admission refusal advertises retry; deadlines/unknown effects cannot authorize blind replay.
+- Finite route limits bound raw/decoded input; raw routes defer decoding. A stalled socket body
+  gets a complete deadline response with zero handler dispatch. A child-budget check fixes the
+  fractional deadline/empty-body race. Liveness/readiness are separate; safe request IDs/logs and
+  drain milestones exclude credentials, bodies, raw URLs and original exceptions. v3 migration
+  refuses without explicit acknowledgement and never rewrites hooks. No inspector setting added.
+- Final `pnpm check`: **122 files / 1,103 tests passed**; focused **145 passed**; five scratch
+  exports pass checker/TS7 (80/81/64/116/86 files); web build passed. E2e: **73 passed**, then the
+  strengthened complete health-route preview assertion **1 passed**; TinyURL and both mouse builds
+  passed. Earlier obsolete assertions and the real deadline race were diagnosed without weakening
+  checks. [Detailed evidence and limits](plans/reliable-generation/evidence/rg04/README.md).
+- Reviewed off pins: 78→79, 84→85, 59→59; only new shared formatter where HTTP is emitted.
+  Root hashes, owner diff/modes, frozen v1, old exports and existing Postgres preserved. No live
+  eval, generated-system/Docker checkpoint, push, deployment or later unit. SQL/authenticated
+  Custom targets and webhook authentication/storage remain unavailable for their assigned units.
+- Commit subject: `RG04: unify HTTP errors limits health and request logging`.
+  Stop for coordinator acceptance; the next unit can rely on this HTTP contract and API v4 guard.

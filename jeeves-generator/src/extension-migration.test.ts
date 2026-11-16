@@ -82,9 +82,9 @@ async function snapshot(root: string): Promise<unknown> {
 
 describe("extension contract migration", () => {
   it("emits the installed capability guide/version and verifies real output responsibility", () => {
-    expect(real.manifest.extensionApi.version).toBe(3);
+    expect(real.manifest.extensionApi.version).toBe(4);
     expect(real.manifest.extensionApi.boundary).toBe("checked-extensions");
-    expect(real.report.extensionApi.version).toBe(3);
+    expect(real.report.extensionApi.version).toBe(4);
     expect(real.report.capabilities).toHaveLength(4);
     expect(
       Buffer.from(
@@ -172,20 +172,20 @@ describe("extension contract migration", () => {
   });
 });
 
-it("RG03 refuses a v2-to-v3 update until the context migration is explicitly acknowledged", async () => {
-  const root = await mkdtemp(join(tmpdir(), "jeeves-rg03-migration-"));
+it("RG04 refuses a v3-to-v4 update until the HTTP contract migration is explicitly acknowledged", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg04-migration-"));
   roots.push(root);
   const app = join(root, "app");
   await exportNewDirectory(real.files, app);
   const manifest = {
     ...real.manifest,
-    extensionApi: { ...real.manifest.extensionApi, version: 2 },
+    extensionApi: { ...real.manifest.extensionApi, version: 3 },
   };
   await writeFile(join(app, ".jeeves/manifest.json"), JSON.stringify(manifest));
   const before = await snapshot(app);
   const result = await updateDirectory(real, app, { check: true });
-  expect(result.refused.join("\n")).toContain("Extension API 2 -> 3 requires migration");
-  expect(result.refused.join("\n")).toContain("--ack-extension-api=3");
+  expect(result.refused.join("\n")).toContain("Extension API 3 -> 4 requires migration");
+  expect(result.refused.join("\n")).toContain("--ack-extension-api=4");
   expect(result.refused.join("\n")).toContain("src/modules/account-api/favorite-items.hooks.ts");
   expect(await snapshot(app)).toEqual(before);
 });

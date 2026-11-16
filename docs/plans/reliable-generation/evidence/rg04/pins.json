@@ -1,0 +1,53 @@
+{
+  "frozen-v2": {
+    "before": 78,
+    "after": 79,
+    "added": ["src/http-errors.hooks.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/http.ts",
+      "src/runtime/process.ts"
+    ]
+  },
+  "v2-module-design": {
+    "before": 84,
+    "after": 85,
+    "added": ["src/http-errors.hooks.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/runtime/admission.ts",
+      "src/runtime/http.ts",
+      "src/runtime/process.ts"
+    ]
+  },
+  "stub-stack": {
+    "before": 59,
+    "after": 59,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts"
+    ]
+  }
+}

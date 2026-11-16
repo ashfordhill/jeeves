@@ -243,3 +243,9 @@ source or this API: v3 retains every ownership, operation, scope, legacy setting
 selection; v2 still refuses semantic loss. **Export diagram → Source & diagnostics** provides exact
 source JSON and read-only ownership/access, whose owner buttons select a logical owner for chat.
 Experimental generation support and strict TinyURL/runtime evidence remain distinct.
+
+
+The installed export extension contract is v4: shared pure HTTP body formatting, generated status/
+headers, bounded/raw route declarations, distinct liveness/readiness and safe request logs. This
+changes generated adapters, not diagram schema or blueprint eligibility. See the
+[generated HTTP contract](../jeeves-generator/README.md#generated-http-contract-extension-api-v4).

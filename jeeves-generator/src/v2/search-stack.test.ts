@@ -74,6 +74,8 @@ describe("the search stack (V3-08)", () => {
     ]);
     expect(row(stack, "search-api").routes.map((route) => route.answers)).toEqual([
       "200 once ready, 503 before and while draining",
+      "200 once ready, 503 before and while draining",
+      "200 while the HTTP process can respond, including drain",
       '400 SEARCH_QUERY for a bad q or page; 501 "Not implemented: mapping for Index writer" until its hooks are written; then {q, page, pageSize, total, hits}, 20 to a page',
     ]);
     expect(

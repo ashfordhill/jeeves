@@ -825,7 +825,7 @@ test("Runnable processes is saved by its checkbox: Preview lists the processes a
     // The edge publishes it; its stub answers any method on its own path.
     await expect(dialog.getByText("Edge app-edge: /api/microservice/")).toBeVisible();
     await expect(rows.nth(0)).toContainText(
-      "GET /healthz, ANY /modules/microservice-rate-limiter, ANY /modules/microservice-rate-limiter/*",
+      "GET /healthz, GET /readyz, GET /livez, ANY /modules/microservice-rate-limiter, ANY /modules/microservice-rate-limiter/*",
     );
     await dialog.getByRole("button", { name: "Close generate experimental project" }).click();
     // One Undo step unticks it.
