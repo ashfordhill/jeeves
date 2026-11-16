@@ -412,7 +412,13 @@ export function buildV3Reference(installed: GenerationInstalledSupport = testIns
         description: item.description,
       });
     }
-  for (const connection of V3_CONNECTIONS)
+  for (const connection of V3_CONNECTIONS) {
+    if (connection.host === "Video lifecycle" && connection.module === "Lifecycle writer")
+      build.run({
+        type: "shareOwner",
+        worker: build.tile("Video lifecycle"),
+        api: build.tile("Upload API"),
+      });
     build.run({
       type: "connectModule",
       module: build.module(connection.host, connection.module).id,
@@ -422,6 +428,7 @@ export function buildV3Reference(installed: GenerationInstalledSupport = testIns
           ? { tile: build.tile(connection.tile) }
           : { module: build.module(connection.host, connection.row).id },
     });
+  }
   for (const value of V3_VALUES) {
     const studio = build.design.architecture?.studio;
     if (value.module) {

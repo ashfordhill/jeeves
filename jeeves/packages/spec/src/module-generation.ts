@@ -641,12 +641,18 @@ function keptOwnership(design: DesignDocument, previous: readonly GenerationSele
   );
   const derivedBefore = (set: keyof typeof derived, key: string) =>
     derived[set].has(key) && !tileLevel[set].has(key);
+  const sharedRoles = new Set(
+    saved.roles.flatMap((role) => (role.sharedWith ? [role.element, role.sharedWith] : [])),
+  );
   const kept: Ownership = {
     owners: saved.owners,
-    roles: saved.roles.filter((item) => !derivedBefore("roles", item.element)),
+    roles: saved.roles.filter(
+      (item) => sharedRoles.has(item.element) || !derivedBefore("roles", item.element),
+    ),
     resources: saved.resources.filter((item) => !derivedBefore("resources", item.element)),
     grants: saved.grants.filter(
-      (item) => !derivedBefore("grants", `${item.role}/${item.resource}`),
+      (item) =>
+        item.product !== undefined || !derivedBefore("grants", `${item.role}/${item.resource}`),
     ),
     dependencies: saved.dependencies.filter(
       (item) => !derivedBefore("dependencies", item.connection),
@@ -806,6 +812,24 @@ function deriveOwnership(
       ),
     ].sort(byRank);
 
+  // A new writer never joins an existing owner's data merely by connecting to it.
+  // Saved legacy declarations with the same owner remain readable; new membership is explicit.
+  const saved = designOwnership(draft);
+  for (const store of stores) {
+    const peers = writers(store);
+    if (peers.length < 2) continue;
+    const authority = saved.resources.find((item) => item.element === store)?.authority;
+    const owners = peers.map((host) => saved.roles.find((role) => role.element === host)?.owner);
+    if (
+      owners.some((owner) => !owner) ||
+      new Set(owners).size !== 1 ||
+      (authority && owners.some((owner) => owner !== authority))
+    )
+      throw new Error(
+        `${name(store)} has multiple writers. Choose Share logical owner with API (shareOwner) explicitly before connecting a worker; unrelated owners are never merged.`,
+      );
+  }
+
   // Owners: the writers of one store share one; a host that only reads a projection joins its
   // owner; any other host, and each Identity a guard binds, gets its own.
   const sets = groups([...hosts, ...identities]);
@@ -922,7 +946,15 @@ function deriveOwnership(
     resources.push(
       projected && source
         ? { element: store, authority, kind: "projection", source }
-        : { element: store, authority, kind: "source" },
+        : {
+            element: store,
+            authority,
+            kind: "source",
+            ...(view.kindOf(store) === "database" &&
+            roles.some((role) => role.sharedWith && role.owner === authority)
+              ? { productNamespace: "owner" as const }
+              : {}),
+          },
     );
   }
 

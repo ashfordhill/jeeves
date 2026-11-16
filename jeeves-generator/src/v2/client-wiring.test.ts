@@ -40,7 +40,9 @@ type Store = {
   provisioned?: string;
   unsupported?: string;
 };
-type Report = { processes: { runnable: boolean; tiles: { tile: string; stores: Store[] }[] } };
+type Report = {
+  processes: { runnable: boolean; tiles: { tile: string; stores: Store[] }[] };
+};
 const processes = (bundle: Bundle) => (bundle.report as unknown as Report).processes;
 const stores = (bundle: Bundle, tile: string) =>
   processes(bundle).tiles.find((row) => row.tile === tile)?.stores ?? [];
@@ -255,7 +257,12 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     // Links API created Links database (read & write); Visit worker's Data access only reads it.
     const resources = json(stack, "infra/local.json").resources as {
       id: string;
-      users: { host: string; access?: string; channel?: string; boundary?: string }[];
+      users: {
+        host: string;
+        access?: string;
+        channel?: string;
+        boundary?: string;
+      }[];
     }[];
     const users = (id: string) =>
       resources
@@ -286,9 +293,12 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       ]),
     );
     expect(
-      (json(wide, "infra/local.json").storage as { host: string; resource: string }[]).filter(
-        (item) => item.host === "visit-worker",
-      ),
+      (
+        json(wide, "infra/local.json").storage as {
+          host: string;
+          resource: string;
+        }[]
+      ).filter((item) => item.host === "visit-worker"),
     ).toEqual([
       expect.objectContaining({ resource: "archive", read: true, write: true }),
       expect.objectContaining({ resource: "exports", read: false, write: true }),
@@ -318,7 +328,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         boundary: "published-read",
         modules: ["watch-counts"],
         provisioned:
-          "PostgreSQL database d_view_counts, login r_view_counts__watch (CONNECT, USAGE on public; SELECT on published; SELECT on its owner's template views counter_sum_public.totals)",
+          "PostgreSQL database d_view_counts, login r_view_counts__watch (CONNECT, USAGE on public; SELECT on its owner's template views counter_sum_public.totals; no declared product access; no product DDL or migration credential)",
       },
       {
         store: "view-events",
@@ -622,7 +632,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       stores(stack, "links-api").map((row) => `${row.store} ${row.access}: ${row.provisioned}`),
     ).toEqual([
       "links-cache read-write: Valkey cache-links-cache with its password",
-      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader; its idempotency records in jeeves.idempotency_records)",
+      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; no declared product access; its idempotency records in jeeves.idempotency_records; no product DDL or migration credential)",
       "uploaded consume: RabbitMQ work queue uploaded and its .failed",
       "visits publish: RabbitMQ exchange visits",
     ]);
@@ -630,7 +640,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       stores(stack, "visit-worker").map((row) => `${row.store} ${row.access}: ${row.provisioned}`),
     ).toEqual([
       "archive read: Garage bucket archive, key s3-visit-worker (read)",
-      "links-db read: PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; SELECT on published)",
+      "links-db read: PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; no declared product access; no product DDL or migration credential)",
       "visits consume: RabbitMQ subscriber visits--visit-worker and its .failed",
     ]);
     expect(stores(stack, "stats-api")).toEqual([
@@ -858,7 +868,10 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
   });
 
   it("sets the Identity's address inside the network for a stub tile that calls it, and no External API URL in Compose", () => {
-    type Service = { environment?: Record<string, string>; depends_on?: Record<string, unknown> };
+    type Service = {
+      environment?: Record<string, string>;
+      depends_on?: Record<string, unknown>;
+    };
     const composed = (bundle: Bundle) =>
       json(bundle, "compose.yaml").services as Record<string, Service>;
     // Front's sign-in reads OIDC_ISSUER, the browser's issuer, which a container can't reach
@@ -1068,7 +1081,9 @@ export default function Fastify(options) {
     vi.unstubAllGlobals();
   });
   afterAll(() => rmSync(markerDirectory, { recursive: true, force: true }));
-  type App = { inject(request: unknown): Promise<{ statusCode: number; json(): unknown }> };
+  type App = {
+    inject(request: unknown): Promise<{ statusCode: number; json(): unknown }>;
+  };
   let runs = 0;
   /** Starts the process with `values` set (undefined unsets one), keeping its console lines. */
   async function run(values: Partial<Record<(typeof names)[number], string | undefined>>) {

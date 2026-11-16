@@ -42,6 +42,7 @@ function apply(design: DesignDocument, pattern: ModulePattern) {
       "linkTiles",
       "addModule",
       "connectModule",
+      "shareOwner",
       "editComponent",
       "edit",
     ]).toContain(command.type);

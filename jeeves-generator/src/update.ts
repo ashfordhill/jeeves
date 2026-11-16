@@ -19,6 +19,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import type { NormalizedGeneration } from "@jeeves/spec";
+import { generationLocalIdentity } from "@jeeves/spec";
 import { assertDistinctPaths } from "./files.ts";
 import { sha256 } from "./json.ts";
 import type { assembleV2 } from "./v2/assemble.ts";
@@ -446,6 +447,17 @@ function runtimeIdentities(model: Partial<NormalizedGeneration>) {
         JSON.stringify({ element: resource.element, identity: resource.identity }),
       );
   }
+  for (const process of model.processes ?? [])
+    for (const writer of process.writers ?? []) {
+      const state = model.productState?.find((item) => item.resource === writer.database);
+      records.set(
+        `product:${writer.database}.${writer.module}`,
+        JSON.stringify({
+          owner: state?.schema ? state.owner : undefined,
+          schema: state?.schema ?? `m_${generationLocalIdentity(writer.module).sql}`,
+        }),
+      );
+    }
   for (const capability of model.capabilities ?? [])
     records.set(
       `callable:${capability.id}`,
@@ -563,7 +575,11 @@ export async function updateDirectory(
       try {
         await validateMigration(root, bundle, plan.actions);
       } catch (error) {
-        const detail = error as { stdout?: string; stderr?: string; message?: string };
+        const detail = error as {
+          stdout?: string;
+          stderr?: string;
+          message?: string;
+        };
         result.refused.push(
           `Extension migration build failed (${hooks.join(", ")}): ${detail.stdout || detail.stderr || detail.message}`,
         );

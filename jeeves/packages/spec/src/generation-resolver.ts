@@ -35,7 +35,12 @@ import {
 } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import { sameContractRef } from "./operation-records.ts";
-import { accessAllows, designOwnership } from "./ownership.ts";
+import {
+  accessAllows,
+  designOwnership,
+  ownershipFindings,
+  type ProductAccess,
+} from "./ownership.ts";
 import type {
   StudioComponent,
   StudioComponentKind,
@@ -133,7 +138,12 @@ export type NormalizedStubModule = {
             access?: StudioStoreAccess;
             channel?: "publish" | "consume";
           }
-        | { kind: "component"; component: string; name: string; module: StudioComponentKind };
+        | {
+            kind: "component";
+            component: string;
+            name: string;
+            module: StudioComponentKind;
+          };
     }[];
   }[];
 };
@@ -160,7 +170,10 @@ export type NormalizedProcess = {
   shape: "http" | "worker";
   /** HTTP only: public for a lane entry or a saved public exposure, else internal. */
   exposure?: "public" | "internal";
-  http?: { requestTimeoutMs: NormalizedProcessSetting; concurrencyLimit: NormalizedProcessSetting };
+  http?: {
+    requestTimeoutMs: NormalizedProcessSetting;
+    concurrencyLimit: NormalizedProcessSetting;
+  };
   /** A worker's loop concurrency: its template's, else the tile's Concurrency, else 1. Its stub
    * loops run it (v3 contract, section 4). */
   worker?: { concurrency: NormalizedProcessSetting };
@@ -184,11 +197,19 @@ export type NormalizedProcess = {
   /** Each module in the tile that writes a database other than through an outbox (v3 contract,
    * section 1): it gets its own SQL file and schema there. */
   writers?: NormalizedModuleWriter[];
+  productAccess?: {
+    resource: string;
+    owner: string;
+    schema?: string;
+    product: ProductAccess;
+  }[];
 };
 /**
  * A module that writes a database (v3 contract, section 1): a template's module whose resolved
  * access to it is write or read & write, or a stub whose link writes it (`stubLinkUse`, with
- * another owner's store read only). An Event publisher's outbox is its template's table, not one.
+ * another owner's store read only). Declared owner product SQL contributors remain when runtime
+ * grants become read-only or empty; revoking access never moves or removes their SQL namespace.
+ * An Event publisher's outbox is its template's table, not one.
  */
 export type NormalizedModuleWriter = {
   module: string;
@@ -198,7 +219,7 @@ export type NormalizedModuleWriter = {
   selection: string;
   database: string;
   databaseName: string;
-  access: "write" | "read-write";
+  access: "read" | "write" | "read-write";
   /** The module's source path. */
   sourcePath: Path;
   /** The module links that write the database. */
@@ -263,8 +284,18 @@ export type NormalizedCallableCapability = {
   roleSourcePath: Path;
   transport: "http" | "in-process" | "delivery-consumer" | "scheduled-task";
   dependencies: string[];
-  access: { resource: string; name: string; use: "read" | "write"; sourcePath: Path }[];
-  caller: { kind: "verified-principal"; identity: string; guard: string; sourcePath: Path };
+  access: {
+    resource: string;
+    name: string;
+    use: "read" | "write";
+    sourcePath: Path;
+  }[];
+  caller: {
+    kind: "verified-principal";
+    identity: string;
+    guard: string;
+    sourcePath: Path;
+  };
   lifecycle: { process: string; mechanism: string };
   extensionApiVersion: number;
 };
@@ -272,6 +303,13 @@ export type NormalizedGeneration = {
   version: 1;
   extensionApi: typeof generationExtensionApi;
   capabilities: NormalizedCallableCapability[];
+  /** Explicit product permissions in the existing ownership system; never template tables. */
+  productState: {
+    resource: string;
+    owner: string;
+    schema?: string;
+    access: { host: string; product: ProductAccess; sourcePath: Path }[];
+  }[];
   runtime: GenerationSelection["template"];
   preset?: GenerationSelection["template"];
   selections: NormalizedGenerationSelection[];
@@ -496,6 +534,7 @@ export function resolveGeneration(
     }
   }
   const ownership = designOwnership(design);
+  findings.push(...ownershipFindings(design).filter(isStructural));
   const studio = design.architecture?.studio;
   const element = (id: string) => studio?.elements.find((entry) => entry.element === id);
   const elementPath = (id: string): Path => [
@@ -1130,6 +1169,35 @@ export function resolveGeneration(
         version: 1,
         extensionApi: structuredClone(generationExtensionApi),
         capabilities: [],
+        productState: ownership.resources
+          .filter(
+            (resource) =>
+              studio?.elements.some(
+                (item) => item.element === resource.element && item.settings.kind === "database",
+              ) &&
+              ((resource.kind === "source" && resource.productNamespace) ||
+                ownership.grants.some(
+                  (grant) => grant.resource === resource.element && grant.product,
+                )),
+          )
+          .map((resource) => ({
+            resource: resource.element,
+            owner: resource.authority,
+            ...(resource.kind === "source" && resource.productNamespace === "owner"
+              ? { schema: `p_${generationLocalIdentity(resource.authority).sql}` }
+              : {}),
+            access: ownership.grants.flatMap((grant, index) =>
+              grant.resource === resource.element && grant.product
+                ? [
+                    {
+                      host: grant.role,
+                      product: structuredClone(grant.product),
+                      sourcePath: ["ownership", "grants", index],
+                    },
+                  ]
+                : [],
+            ),
+          })),
         runtime: structuredClone(generation.runtime),
         ...(generation.preset && { preset: structuredClone(generation.preset) }),
         selections: normalized,
@@ -1147,6 +1215,19 @@ export function resolveGeneration(
       ),
     );
   if (model?.processes) {
+    for (const process of model.processes) {
+      const access = model.productState.flatMap((state) =>
+        state.access
+          .filter((entry) => entry.host === process.tile)
+          .map((entry) => ({
+            resource: state.resource,
+            owner: state.owner,
+            schema: state.schema,
+            product: entry.product,
+          })),
+      );
+      if (access.length) process.productAccess = access;
+    }
     for (const selection of normalized) {
       if (selection.binding.kind !== "favorites" || selection.target.kind !== "component") continue;
       const binding = selection.binding;
@@ -1468,8 +1549,19 @@ function stubStore(
   const authority = ownership.resources.find((entry) => entry.element === target.element);
   const owner = ownership.roles.find((entry) => entry.element === host)?.owner;
   const foreign = !!authority && authority.authority !== owner;
-  const access = foreign ? ("read" as const) : storeAccess(use, target);
-  const narrowed = { ...base, access, ...(foreign && { boundary: "published-read" as const }) };
+  const grant = ownership.grants.find(
+    (entry) => entry.role === host && entry.resource === target.element,
+  );
+  const access = foreign
+    ? ("read" as const)
+    : grant?.product
+      ? grant.access
+      : storeAccess(use, target);
+  const narrowed = {
+    ...base,
+    access,
+    ...(foreign && { boundary: "published-read" as const }),
+  };
   return settings.kind === "object-store"
     ? { ...narrowed, kind: "object-store", objects: settings.access }
     : { ...narrowed, kind: settings.kind, engine: settings.engine };
@@ -1638,7 +1730,7 @@ function moduleWriters(
     component: StudioComponent,
     selection: string,
     database: string,
-    access: "write" | "read-write",
+    access: "read" | "write" | "read-write",
     link: Path,
   ) => {
     const key = `${component.id}\u0000${database}`;
@@ -1669,11 +1761,15 @@ function moduleWriters(
         if (slot.id === "outbox") continue;
         for (const { link, sourcePath, target } of slot.connections) {
           const store = stubStore(design, tile, slot.use, target, link, sourcePath);
-          if (
-            store?.kind !== "database" ||
-            (store.access !== "write" && store.access !== "read-write")
-          )
-            continue;
+          if (store?.kind !== "database" || store.access === "publish") continue;
+          const ownership = designOwnership(design);
+          const state = ownership.resources.find((resource) => resource.element === store.element);
+          const role = ownership.roles.find((role) => role.element === tile);
+          const productSql =
+            state?.kind === "source" &&
+            state.productNamespace === "owner" &&
+            role?.owner === state.authority;
+          if (store.access === "read" && !productSql) continue;
           add(component, item.id, store.element, store.access, sourcePath);
         }
       }

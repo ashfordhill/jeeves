@@ -47,6 +47,7 @@ type Database = {
   migrations: string[];
   /** Runnable processes only: each writer module's SQL file and schema (v3 contract, §1). */
   modules?: { module: string; host: string; schema: string; file: string }[];
+  productState?: V2RenderContext["model"]["productState"][number];
 };
 const composeVariable = (name: string) => `\${${name}:?Set ${name}}`;
 const assets = "jeeves-generator/templates/local-v2/assets/";
@@ -458,7 +459,12 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     user: string;
     secret: string;
   }[] = [];
-  const views: { resource: string; schema?: string; name: string; selectSql: string }[] = [];
+  const views: {
+    resource: string;
+    schema?: string;
+    name: string;
+    selectSql: string;
+  }[] = [];
   const grants: NonNullable<V2LocalContribution["grants"]>[number][] = [];
   const broker: { resource: string; exchange?: string; queues: string[] }[] = [];
   for (const r of byKind("queue")) {
@@ -597,9 +603,16 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           grant.relation,
           "Use finite explicit relation privileges.",
         );
+      // Internal idempotency needs its exact full mechanism grant even for write-only product access.
       if (
         (access.access === "read" && grant.privileges.some((p) => p !== "SELECT")) ||
-        (access.access === "write" && grant.privileges.includes("SELECT")) ||
+        (access.access === "write" &&
+          grant.privileges.includes("SELECT") &&
+          !(
+            grant.schema === "jeeves" &&
+            grant.relation === "idempotency_records" &&
+            grant.kind === "table"
+          )) ||
         (access.boundary === "published-read" && grant.kind !== "view")
       )
         refuse(
@@ -737,6 +750,32 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   pubsubTopics.sort(v2Compare);
   pubsubSubscriptionRows.sort((a, b) => v2Compare(String(a.name), String(b.name)));
   for (const db of databases) db.migrations.sort();
+  for (const state of model.processes ? model.productState : []) {
+    const db = databases.find(
+      (item) => item.resource === generationLocalIdentity(state.resource).local,
+    );
+    if (state.schema) {
+      sqlName(state.schema);
+      const templateSchemas = [
+        "public",
+        "published",
+        "jeeves",
+        ...views
+          .filter((view) => view.resource === generationLocalIdentity(state.resource).local)
+          .map((view) => view.schema ?? "public"),
+        ...grants
+          .filter((grant) => grant.resource === generationLocalIdentity(state.resource).local)
+          .map((grant) => grant.schema ?? "public"),
+      ];
+      if (templateSchemas.includes(state.schema))
+        refuse(
+          "LOCAL_RESOURCE_CONFLICT",
+          state.resource,
+          `Product schema ${state.schema} conflicts with a private template namespace. Choose distinct stable identities with explicit application/data migration; display-label renames preserve SQL identities.`,
+        );
+    }
+    if (db) db.productState = state;
+  }
   const productSql = productFiles(model, databases, logins, views, grants);
   for (const row of productSql) provenance(row.sourcePaths);
   files.push(...productSql.map((row) => row.file));
@@ -1284,7 +1323,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile\` then \`pnpm build\`. \`package.json\`, \`pnpm-lock.yaml\` and \`pnpm-workspace.yaml\` are yours: add a package with \`pnpm add <name>@<exact version>\`. \`pnpm-workspace.yaml\`'s \`allowBuilds\` says which packages' install scripts run: the template's dependencies run none (\`protobufjs: false\`), so neither command needs \`--ignore-scripts\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\n**Your own configuration.** \`compose.override.yaml\` beside \`compose.yaml\` is yours: export never writes it and \`update:v2\` never touches it. Docker Compose merges it into every command \`pnpm first-run\`, \`start\` and \`stop\` run, so give your modules their own \`environment\` and \`secrets\` there, or add a service of your own (for example a scheduler that calls your routes). A service of your own starts with \`pnpm start\` only when a generated service \`depends_on\` it, which your override may add; otherwise start it with your own \`docker compose up\`. Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next \`pnpm start\`.\n\nMigration owners/admin are mounted only into setup. \`scripts/migrate.mjs\` reaches PostgreSQL at \`PGHOST\` and \`PGPORT\` with \`JEEVES_MIGRATE_TLS\` (\`disable\`, or \`verify-full\` with an optional \`JEEVES_MIGRATE_CA_FILE\` and \`JEEVES_MIGRATE_TLS_SERVERNAME\`), read as a database's \`_TLS\` is; \`PGSSLMODE\` can't change it, and with \`JEEVES_REQUIRE_TLS=true\` it must be \`verify-full\` unless \`PGHOST\` is a socket directory. A credential is read from \`JEEVES_SECRET_<NAME>_FILE\` when that is set (an absolute path; \`<NAME>\` is the secret's name upper-cased, with \`-\` and \`.\` as \`_\`), else from \`SECRET_DIR/<name>\` (\`/run/secrets/<name>\`, where Compose mounts it). Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer readiness at \`GET /readyz\` (and \`/healthz\` for compatibility), and liveness at \`GET /livez\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT on the database's \`published\` views and on another owner's template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. A database a stub writes also has Jeeves's own \`jeeves.idempotency_records\` (\`infra/postgres/<database>/050-jeeves-idempotency.sql\`), which only the logins of the tiles whose stubs write it use: a stub's \`idempotent(...)\` keeps a 200–299 answer per scope and key for 24 hours and replays it for the same request (\`requestHash\` in \`src/runtime/idempotency.ts\`), a different request under the key throws \`IdempotencyConflict\`, and expired records are swept every 60 s. Each stub declares the settings it reads in its file's \`settings\` export (\`declareSettings\` with \`text()\`, \`integer()\`, \`url()\`, \`secret()\`, \`keyRing()\` and \`optional(kind)\` from \`src/runtime/settings.ts\`); its process reads them in its configuration pass, before any client is built or probed, and gives them to the stub as \`dependencies.settings\`: a missing or invalid one fails startup with \`Invalid setting <NAME>\`, never its value. \`compose.yaml\` sets none of them: set a setting in \`compose.override.yaml\`'s \`environment\`, and a \`secret()\` or \`keyRing()\` as a file read as a credential is (above), \`<name>\` being the setting's name lower-cased with \`_\` as \`-\` (\`PROBE_TOKEN\` is \`probe-token\`), through its \`secrets\`; \`processes.tiles[].stubSettings\` in .jeeves/report.json names the files each process reads them from. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in schema \`m_<module>\`, so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only its tile's login uses that schema; every login on the database may SELECT what it publishes as views in \`published\`, and nothing else of its tables. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer readiness at \`GET /readyz\` (and \`/healthz\` for compatibility), and liveness at \`GET /livez\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT only on named published views and declared template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. A database a stub writes also has Jeeves's own \`jeeves.idempotency_records\` (\`infra/postgres/<database>/050-jeeves-idempotency.sql\`), which only the logins of the tiles whose stubs write it use: a stub's \`idempotent(...)\` keeps a 200–299 answer per scope and key for 24 hours and replays it for the same request (\`requestHash\` in \`src/runtime/idempotency.ts\`), a different request under the key throws \`IdempotencyConflict\`, and expired records are swept every 60 s. Each stub declares the settings it reads in its file's \`settings\` export (\`declareSettings\` with \`text()\`, \`integer()\`, \`url()\`, \`secret()\`, \`keyRing()\` and \`optional(kind)\` from \`src/runtime/settings.ts\`); its process reads them in its configuration pass, before any client is built or probed, and gives them to the stub as \`dependencies.settings\`: a missing or invalid one fails startup with \`Invalid setting <NAME>\`, never its value. \`compose.yaml\` sets none of them: set a setting in \`compose.override.yaml\`'s \`environment\`, and a \`secret()\` or \`keyRing()\` as a file read as a credential is (above), \`<name>\` being the setting's name lower-cased with \`_\` as \`-\` (\`PROBE_TOKEN\` is \`probe-token\`), through its \`secrets\`; \`processes.tiles[].stubSettings\` in .jeeves/report.json names the files each process reads them from. Each module that writes a database has its own SQL file, \`infra/postgres/<database>/modules/<module>.sql\`, yours to write: \`first-run\` and \`start\` run it every time, after the template migrations and views, as the setup-only owner in the declared shared logical-owner product schema (legacy modules retain \`m_<module>\`), so keep it re-runnable (\`IF NOT EXISTS\`, \`CREATE OR REPLACE\`). Only exact declared table operations and named published views are granted to each distinct process login. Undeclared relations and template implementation tables receive no product grants; no application login has product DDL authority. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
           : ""
       }${pubsubReadme}`,
     ),
@@ -1311,8 +1350,11 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
  * in an optional custom gap `cdn-<cdn>`.
  */
 function deliveryRoutes(model: V2RenderContext["model"], resources: ReadonlyMap<string, Resource>) {
-  const routes: { cdn: string; bucket: string; sourcePaths: (readonly (string | number)[])[] }[] =
-    [];
+  const routes: {
+    cdn: string;
+    bucket: string;
+    sourcePaths: (readonly (string | number)[])[];
+  }[] = [];
   const gaps: V2Gap[] = [];
   const report: V2Delivery[] = [];
   if (!model.processes) return { routes, gaps, report };
@@ -1355,8 +1397,19 @@ function deliveryRoutes(model: V2RenderContext["model"], resources: ReadonlyMap<
   return { routes, gaps, report };
 }
 
-type Login = { resource: string; host: string; database: string; user: string; secret: string };
-type View = { resource: string; schema?: string; name: string; selectSql: string };
+type Login = {
+  resource: string;
+  host: string;
+  database: string;
+  user: string;
+  secret: string;
+};
+type View = {
+  resource: string;
+  schema?: string;
+  name: string;
+  selectSql: string;
+};
 type Grant = NonNullable<V2LocalContribution["grants"]>[number];
 /** One comment line: names are the user's own text. */
 const line = (text: string) => text.replace(/[\p{Cc}\u2028\u2029]/gu, " ");
@@ -1398,18 +1451,21 @@ function productFiles(
       const db = databases.find((item) => item.resource === id && item.modules);
       if (!db?.modules) continue;
       const module = generationLocalIdentity(writer.module);
-      const schema = sqlName(`m_${module.sql}`);
+      const schema = sqlName(db.productState?.schema ?? `m_${module.sql}`);
       const taken = [
         "public",
         "published",
         ...views.filter((v) => v.resource === id).map((v) => v.schema ?? "public"),
         ...grants.filter((g) => g.resource === id).map((g) => g.schema ?? "public"),
       ];
-      if (taken.includes(schema) || db.modules.some((item) => item.schema === schema))
+      if (
+        taken.includes(schema) ||
+        (!db.productState?.schema && db.modules.some((item) => item.schema === schema))
+      )
         refuse(
           "LOCAL_RESOURCE_CONFLICT",
           writer.module,
-          `Schema ${schema} is already taken in ${db.database}; rename the module.`,
+          `Schema ${schema} is already taken in ${db.database}; choose distinct stable identities with explicit application/data migration. Display-label renames preserve SQL identities.`,
         );
       const login = logins.find((item) => item.resource === id && item.host === process.tile);
       if (!login)
@@ -1426,25 +1482,19 @@ function productFiles(
         writer.sourcePath,
         ...writer.links,
       ];
-      const host = (tile: string) => processes.find((item) => item.tile === tile)?.name ?? tile;
-      const readers = logins
-        .filter((item) => item.resource === id)
-        .map((item) => `--   ${item.user} (${line(host(item.host))})`)
-        .sort();
-      // Jeeves's own tables (schema `jeeves`, QL04) aren't a template's for product SQL to read.
-      const tables = [
-        ...new Set(
-          grants
-            .filter((g) => g.resource === id && g.kind === "table" && g.schema !== "jeeves")
-            .map((g) => `${g.schema ?? "public"}.${g.relation}`),
-        ),
-      ].sort();
-      const published = views
-        .filter((v) => v.resource === id)
-        .map((v) => `${v.schema ?? "public"}.${v.name}`)
-        .sort();
-      const list = (items: readonly string[]) =>
-        items.length ? items.map((item) => `--   ${item}`) : ["--   none"];
+      const access = db.productState?.access ?? [];
+      const permissions = access.flatMap((entry) => {
+        const user = logins.find((item) => item.resource === id && item.host === entry.host)?.user;
+        return user
+          ? [
+              ...entry.product.tables.map(
+                (table) =>
+                  `--   ${user}: ${table.operations.join(", ")} on ${schema}.${table.name}`,
+              ),
+              ...entry.product.views.map((view) => `--   ${user}: SELECT on published.${view}`),
+            ]
+          : [];
+      });
       rows.push({
         module: writer.module,
         database: writer.database,
@@ -1461,14 +1511,13 @@ function productFiles(
             `-- unqualified names land in schema ${schema}. Keep it re-runnable (IF NOT EXISTS, CREATE OR`,
             "-- REPLACE), with no BEGIN or COMMIT. A failure rolls the database back, and setup names this file.",
             "--",
-            `-- Its own tables, in ${schema}: only ${login.user} (${line(process.name)}) selects, inserts, updates and deletes.`,
-            "-- What others may read goes in views in published (CREATE OR REPLACE VIEW published.<name> AS ...),",
-            "-- which every login on this database may select:",
-            ...readers,
-            "-- Template tables it may read, by qualified name:",
-            ...list(tables),
-            "-- Template views:",
-            ...list(published),
+            `-- Product namespace ${schema}${db.productState ? ` belongs to logical owner ${db.productState.owner}` : " is legacy; declare exact database access before use"}.`,
+            "-- All schemas are created before module SQL runs; module files execute in stable ID order.",
+            "-- Named published views use CREATE OR REPLACE VIEW published.<name> AS ... .",
+            "-- Exact application grants (no default grants; new relations grant nothing):",
+            ...(permissions.length ? permissions : ["--   none"]),
+            "-- Template implementation tables are excluded from product access declarations.",
+            "-- Application logins receive no CREATE, schema ownership or migration credentials.",
           ].join("\n")}\n`,
           ownership: "generated-extension",
           sourcePaths: [...new Set(["/generation/processes", ...sourcePaths.map(pointer)])],

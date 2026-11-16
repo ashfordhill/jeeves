@@ -304,7 +304,12 @@ describe("studio chat tools", () => {
     expect(workspace.pending).toEqual(ops);
     const tiles = run(workspace, "getDesign").tiles as {
       id: string;
-      modules?: { id: string; status?: string; reason?: string; unconnected?: string[] }[];
+      modules?: {
+        id: string;
+        status?: string;
+        reason?: string;
+        unconnected?: string[];
+      }[];
     }[];
     const shorten = tiles.find((tile) => tile.id === "shorten")?.modules;
     expect(shorten?.find((module) => module.id === "shorten-limit")).toMatchObject({
@@ -367,7 +372,11 @@ describe("studio chat tools", () => {
     );
     const tiles = run(workspace, "getDesign").tiles as {
       id: string;
-      modules?: { id: string; status?: string; settings?: { signIn?: string } }[];
+      modules?: {
+        id: string;
+        status?: string;
+        settings?: { signIn?: string };
+      }[];
     }[];
     const viewer = tiles.find((tile) => tile.id === "watch-api")?.modules?.[0];
     expect(viewer).toMatchObject({ id: "viewer-check", status: "template" });
@@ -402,7 +411,10 @@ describe("studio chat tools", () => {
       return batch.ops;
     });
     expect(workspace.pending).toEqual(ops);
-    type Tiles = { id: string; modules?: { id: string; status?: string; reason?: string }[] }[];
+    type Tiles = {
+      id: string;
+      modules?: { id: string; status?: string; reason?: string }[];
+    }[];
     const account = () =>
       (run(workspace, "getDesign").tiles as Tiles).find((tile) => tile.id === "account-api")
         ?.modules;
@@ -454,6 +466,54 @@ describe("studio chat tools", () => {
       slots: [{ id: "state" }, { id: "items", module: "data-access" }],
       generation: { kind: "lead", template: "favorites" },
     });
+  });
+
+  it("matches mouse commands for explicit API/worker ownership and exact product access", () => {
+    const base = { ...stubStackDesign(), revision: 3 };
+    const workspace = new Workspace(base);
+    const commands: StudioCommand[] = [
+      { type: "shareOwner", worker: "visit-worker", api: "links-api" },
+      {
+        type: "setDatabaseAccess",
+        role: "links-api",
+        database: "links-db",
+        product: {
+          tables: [{ name: "items", operations: ["SELECT", "INSERT"] }],
+          views: [],
+        },
+      },
+      {
+        type: "setDatabaseAccess",
+        role: "visit-worker",
+        database: "links-db",
+        product: {
+          tables: [{ name: "items", operations: ["UPDATE"] }],
+          views: [],
+        },
+      },
+    ];
+    let mouse = base;
+    const expected = commands.flatMap((command) => {
+      const batch = buildStudioCommand(mouse, command);
+      const result = applyOperations(mouse, batch.ops);
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      mouse = result.design;
+      return batch.ops;
+    });
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 3, commands }).ok).toBe(true);
+    expect(workspace.pending).toEqual(expected);
+    const before = structuredClone(workspace.pending);
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: 3,
+        commands: [{ type: "shareOwner", worker: "visit-worker", api: "stats-api" }],
+      }),
+    ).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("conflicting owners"),
+    });
+    expect(workspace.pending).toEqual(before);
+    expect(description("applyStudioCommands")).toContain("named published views");
   });
 
   it("turns Runnable processes on with the dialog's command, and refuses it on a study", () => {
@@ -777,7 +837,11 @@ describe("studio chat tools", () => {
     const workspace = new Workspace(base);
     const pattern = { id: "upload-pipeline", system: "Media", publication: "Publications" };
     const result = run(workspace, "applyPattern", { baseRevision: 2, pattern });
-    expect(result).toMatchObject({ ok: true, pattern: "upload-pipeline", commands: 36 });
+    expect(result).toMatchObject({
+      ok: true,
+      pattern: "upload-pipeline",
+      commands: 37,
+    });
     // The patterns' defaults are neutral role names: a design's names come from its brief.
     expect(result.added.tiles.map((item: { name: string }) => item.name)).toEqual([
       "Ingest API",

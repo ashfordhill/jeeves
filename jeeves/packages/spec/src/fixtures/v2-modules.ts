@@ -143,6 +143,7 @@ export const v2Modules: readonly StudioCommand[] = [
   add("completion-handler", "handler-writer", "lifecycle-writer"),
   add("completion-handler", "handler-publications", "event-publisher"),
   connect("handler-consumer", "channel", { tile: "completion-events" }),
+  { type: "shareOwner", worker: "completion-handler", api: "upload" },
   connect("handler-writer", "state", { tile: "metadata-db" }),
   connect("handler-publications", "channel", { tile: "publication-events" }),
   connect("handler-publications", "outbox", { tile: "metadata-db" }),

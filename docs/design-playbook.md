@@ -1815,3 +1815,12 @@ says what it can't yet express.
 report "this design names X; no installed template provides it" as a finding instead of silently
 substituting. That is a chat change (prompt or tool output), so it waits for an owner decision and
 an eval run.
+
+## 2026-11-16 RG06: process boundaries and data ownership are separate choices
+
+An API and a worker may share one logical owner's product state while keeping independent
+processes and credentials. Choose that relationship explicitly; a connection must never merge
+unrelated owners. Product modules share the declared owner's namespace, created before any module
+runs. Keep that namespace stable when permissions change. Grant table operations and published
+views by name: publishing a second view must not silently widen every reader's access. Template
+implementation tables remain separate from product declarations.

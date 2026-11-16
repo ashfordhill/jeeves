@@ -1,0 +1,19 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3326059) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3326078) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3326305) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 2 workers
+
+(node:3326396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3326401) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/logical-ownership.spec.ts:6:1 › chooses shared logical ownership and precise product permissions by mouse (8.5s)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/edit-history.spec.ts:5:1 › a historical preset design autosaves its useful TTL and pool controls through Undo, Redo and reload (12.4s)
+
+  2 passed (16.7s)

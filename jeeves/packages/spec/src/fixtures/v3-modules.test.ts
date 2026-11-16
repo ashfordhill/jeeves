@@ -158,8 +158,8 @@ describe("the v3 reference (contract section 5)", () => {
         : studio?.elements.find((item) => item.element === tile)?.settings;
       expect((settings as Record<string, unknown> | undefined)?.[value.key]).toBe(value.value);
     }
-    // 2 actions, 31 steps, 26 modules, 30 connections, 8 values and Runnable processes.
-    expect(commands).toHaveLength(98);
+    // 2 actions, 31 steps, 26 modules, explicit owner sharing, 30 connections, 8 values and Runnable processes.
+    expect(commands).toHaveLength(99);
   });
 
   it("compares by name: nothing against itself, and a different build's differences", () => {

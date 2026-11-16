@@ -1,0 +1,45 @@
+{
+  "frozen-v2": {
+    "before": 79,
+    "after": 79,
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "src/extension-api/index.ts"
+    ],
+    "added": [],
+    "removed": []
+  },
+  "v2-module-design": {
+    "before": 85,
+    "after": 85,
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/inputs/design.json",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "src/extension-api/index.ts"
+    ],
+    "added": [],
+    "removed": []
+  },
+  "stub-stack": {
+    "before": 59,
+    "after": 59,
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "src/extension-api/index.ts"
+    ],
+    "added": [],
+    "removed": []
+  }
+}

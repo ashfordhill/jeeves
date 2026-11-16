@@ -138,6 +138,10 @@ describe("module authoring rebuilds YouTube v2", () => {
     expected.dependencies = expected.dependencies.filter(
       (item) => item.connection !== "watch-counts-read",
     );
+    const shared = expected.roles.find((role) => role.element === "completion-handler");
+    if (shared) shared.sharedWith = "upload";
+    const database = expected.resources.find((resource) => resource.element === "metadata-db");
+    if (database?.kind === "source") database.productNamespace = "owner";
     expect(byMembers(designOwnership(built))).toEqual(byMembers(expected));
     // Owners are named after their group's first host in lane order.
     expect(designOwnership(built).owners).toEqual(
@@ -582,7 +586,11 @@ describe("module derivation", () => {
   it("gives the same result whatever order the modules were connected in", () => {
     const adds = v2Modules.filter((item) => item.type === "addModule");
     const links = v2Modules.filter((item) => item.type === "connectModule").reverse();
-    const other = runAll(v2Tiles(), [...adds, ...links]);
+    const other = runAll(v2Tiles(), [
+      ...adds,
+      { type: "shareOwner", worker: "completion-handler", api: "upload" },
+      ...links,
+    ]);
     expect(designGeneration(other)?.selections).toEqual(designGeneration(built)?.selections);
     expect(byMembers(designOwnership(other))).toEqual(byMembers(designOwnership(built)));
   });
@@ -678,16 +686,17 @@ describe("module derivation", () => {
     // Both templates complete in the same command: the Creator check's connection, last, which
     // completes the Upload API's sign-in and its multipart at once (a sign-in already derived
     // would replace the hand-declared Upload API role by key, MA05's clean-up).
+    const legacyCommands = v2Modules.filter((command) => command.type !== "shareOwner");
     const commands = [
-      ...v2Modules.slice(35, 40),
-      ...v2Modules.slice(16, 20),
-      ...v2Modules.slice(21, 25),
-      ...v2Modules.slice(20, 21),
+      ...legacyCommands.slice(35, 40),
+      ...legacyCommands.slice(16, 20),
+      ...legacyCommands.slice(21, 25),
+      ...legacyCommands.slice(20, 21),
     ];
     const last = commands.at(-1);
     if (!last) throw new Error();
     expect(refusal(runAll(design, commands.slice(0, -1)), last)).toBe(
-      "Upload API and Video lifecycle worker both write Metadata database, but they already have different owners (VIDEO and LIFECYCLE).",
+      "Metadata database has multiple writers. Choose Share logical owner with API (shareOwner) explicitly before connecting a worker; unrelated owners are never merged.",
     );
   });
 
@@ -712,7 +721,10 @@ describe("module derivation", () => {
   });
 
   it("keeps a search index a stub until a publisher's outbox feeds it", () => {
-    const design = runAll(v2Tiles(), [...v2Modules.slice(14, 16), ...v2Modules.slice(42)]);
+    const design = runAll(v2Tiles(), [
+      ...v2Modules.slice(14, 16),
+      ...v2Modules.filter((command) => command.type !== "shareOwner").slice(42),
+    ]);
     expect(moduleStatus(design, "indexer-writer")).toMatchObject({
       status: "stub",
       reason: "Needs an Event publisher with an outbox feeding Publication events.",
@@ -1453,6 +1465,7 @@ describe("module status and older designs", () => {
     const { model } = resolveGeneration(v2());
     expect(JSON.parse(JSON.stringify(model))).toEqual({
       ...normalized.default,
+      productState: [],
       extensionApi: generationExtensionApi,
       capabilities: [],
     });

@@ -1,0 +1,221 @@
+{
+  "database": {
+    "database": "d_links_db",
+    "migrations": [
+      "infra/postgres/links-db/000-foundation.sql",
+      "infra/postgres/links-db/050-jeeves-idempotency.sql"
+    ],
+    "modules": [
+      {
+        "file": "infra/postgres/links-db/modules/link-reader.sql",
+        "host": "links-api",
+        "module": "link-reader",
+        "schema": "p_links_api_owner"
+      },
+      {
+        "file": "infra/postgres/links-db/modules/visit-writer.sql",
+        "host": "visit-worker",
+        "module": "visit-writer",
+        "schema": "p_links_api_owner"
+      }
+    ],
+    "owner": "o_links_db",
+    "productState": {
+      "access": [
+        {
+          "host": "links-api",
+          "product": {
+            "tables": [
+              {
+                "name": "items",
+                "operations": ["SELECT", "INSERT"]
+              }
+            ],
+            "views": []
+          },
+          "sourcePath": ["ownership", "grants", 0]
+        },
+        {
+          "host": "visit-worker",
+          "product": {
+            "tables": [
+              {
+                "name": "items",
+                "operations": ["SELECT", "UPDATE"]
+              }
+            ],
+            "views": []
+          },
+          "sourcePath": ["ownership", "grants", 1]
+        },
+        {
+          "host": "stats-api",
+          "product": {
+            "tables": [],
+            "views": ["visible_items"]
+          },
+          "sourcePath": ["ownership", "grants", 2]
+        }
+      ],
+      "owner": "links-api-owner",
+      "resource": "links-db",
+      "schema": "p_links_api_owner"
+    },
+    "resource": "links-db",
+    "secret": "owner-links-db"
+  },
+  "logins": [
+    {
+      "database": "d_links_db",
+      "host": "links-api",
+      "resource": "links-db",
+      "secret": "sql-links-db--links-api",
+      "user": "r_links_db__links_api"
+    },
+    {
+      "database": "d_links_db",
+      "host": "stats-api",
+      "resource": "links-db",
+      "secret": "sql-links-db--stats-api",
+      "user": "r_links_db__stats_api"
+    },
+    {
+      "database": "d_links_db",
+      "host": "visit-worker",
+      "resource": "links-db",
+      "secret": "sql-links-db--visit-worker",
+      "user": "r_links_db__visit_worker"
+    }
+  ],
+  "templateGrants": [
+    {
+      "host": "links-api",
+      "kind": "table",
+      "privileges": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "relation": "idempotency_records",
+      "resource": "links-db",
+      "schema": "jeeves"
+    },
+    {
+      "host": "visit-worker",
+      "kind": "table",
+      "privileges": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "relation": "idempotency_records",
+      "resource": "links-db",
+      "schema": "jeeves"
+    }
+  ],
+  "assertions": [
+    {
+      "role": "r_links_db__links_api",
+      "sql": "INSERT INTO p_links_api_owner.items VALUES ('b','Banana')",
+      "outcome": "allowed",
+      "result": []
+    },
+    {
+      "role": "r_links_db__visit_worker",
+      "sql": "UPDATE p_links_api_owner.items SET title='Berry' WHERE id='b'",
+      "outcome": "allowed",
+      "result": []
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "SELECT title FROM published.visible_items ORDER BY id",
+      "outcome": "allowed",
+      "result": [
+        {
+          "title": "Apple"
+        },
+        {
+          "title": "Berry"
+        }
+      ]
+    },
+    {
+      "role": "r_links_db__links_api",
+      "sql": "UPDATE p_links_api_owner.items SET title='wrong'",
+      "outcome": "permission denied for table items"
+    },
+    {
+      "role": "r_links_db__visit_worker",
+      "sql": "INSERT INTO p_links_api_owner.items VALUES ('c','wrong')",
+      "outcome": "permission denied for table items"
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "SELECT * FROM published.other_items",
+      "outcome": "permission denied for view other_items"
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "SELECT * FROM p_links_api_owner.items",
+      "outcome": "permission denied for schema p_links_api_owner"
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "UPDATE p_links_api_owner.items SET title='wrong'",
+      "outcome": "permission denied for schema p_links_api_owner"
+    },
+    {
+      "role": "r_links_db__links_api",
+      "sql": "SELECT * FROM jeeves.internal",
+      "outcome": "permission denied for table internal"
+    },
+    {
+      "role": "r_links_db__links_api",
+      "sql": "CREATE SCHEMA forbidden",
+      "outcome": "permission denied for database postgres"
+    },
+    {
+      "role": "r_links_db__links_api",
+      "sql": "CREATE TEMP TABLE forbidden(id integer)",
+      "outcome": "permission denied to create temporary tables in database \"postgres\""
+    },
+    {
+      "role": "r_links_db__visit_worker",
+      "sql": "SELECT * FROM jeeves.internal",
+      "outcome": "permission denied for table internal"
+    },
+    {
+      "role": "r_links_db__visit_worker",
+      "sql": "CREATE SCHEMA forbidden",
+      "outcome": "permission denied for database postgres"
+    },
+    {
+      "role": "r_links_db__visit_worker",
+      "sql": "CREATE TEMP TABLE forbidden(id integer)",
+      "outcome": "permission denied to create temporary tables in database \"postgres\""
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "SELECT * FROM jeeves.internal",
+      "outcome": "permission denied for schema jeeves"
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "CREATE SCHEMA forbidden",
+      "outcome": "permission denied for database postgres"
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "CREATE TEMP TABLE forbidden(id integer)",
+      "outcome": "permission denied to create temporary tables in database \"postgres\""
+    },
+    {
+      "role": "r_links_db__links_api",
+      "sql": "CREATE TABLE p_links_api_owner.forbidden(id integer)",
+      "outcome": "permission denied for schema p_links_api_owner"
+    },
+    {
+      "role": "r_links_db__visit_worker",
+      "sql": "ALTER TABLE p_links_api_owner.items ADD COLUMN forbidden integer",
+      "outcome": "must be owner of table items"
+    },
+    {
+      "role": "r_links_db__stats_api",
+      "sql": "SELECT * FROM published.later",
+      "outcome": "permission denied for view later"
+    }
+  ],
+  "scope": "PGlite SET ROLE; not independent authenticated Postgres connections"
+}

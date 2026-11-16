@@ -24,6 +24,7 @@ import { ComponentForm, TargetInspector } from "../studio/InspectorForm.tsx";
 import { moduleGroupOf } from "../studio/module-groups.ts";
 import { generationWords, moduleGeneration } from "../studio/module-status.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
+import { DatabaseAccess } from "./DatabaseAccess.tsx";
 import { LaneIcon } from "./LaneIcon.tsx";
 import { GenerationDot, ModuleAddButton, type ModuleAdding } from "./ModuleMenu.tsx";
 import { HumanFigure } from "./tiles/HumanFigure.tsx";
@@ -311,9 +312,12 @@ export function TileInspector({
           <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
         }
         connections={
-          hasLines(graph, id) ? (
-            <ConnectionList design={design} graph={graph} id={id} name={nameOf} onJump={onJump} />
-          ) : undefined
+          <>
+            <DatabaseAccess projectId={projectId} design={design} tile={id} />
+            {hasLines(graph, id) ? (
+              <ConnectionList design={design} graph={graph} id={id} name={nameOf} onJump={onJump} />
+            ) : null}
+          </>
         }
         modules={
           modules.length || groups?.length ? (

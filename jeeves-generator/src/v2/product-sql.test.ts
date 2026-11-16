@@ -26,7 +26,10 @@ const text = (bundle: Bundle, path: string) => {
 const json = (bundle: Bundle, path: string) => JSON.parse(text(bundle, path));
 const asset = (path: string) =>
   registry.asset(`jeeves-generator/templates/local-v2/assets/${path}`);
-type ModuleRow = { module: string; sql?: { database: string; file: string; schema: string }[] };
+type ModuleRow = {
+  module: string;
+  sql?: { database: string; file: string; schema: string }[];
+};
 const modules = (bundle: Bundle) =>
   (bundle.report as unknown as { modules: ModuleRow[] }).modules.filter((row) => row.sql);
 
@@ -47,9 +50,19 @@ const products = (await import(
     quote: (name: string) => string,
   ): Promise<void>;
 };
-type Client = { query(sql: string): Promise<unknown> };
+type Client = { query(sql: string, parameters?: unknown[]): Promise<unknown> };
 type Db = {
   database: string;
+  productState?: {
+    schema: string;
+    access: {
+      host: string;
+      product: {
+        tables: { name: string; operations: string[] }[];
+        views: string[];
+      };
+    }[];
+  };
   modules?: { module: string; host: string; schema: string; file: string }[];
 };
 /** `common.mjs`'s rule, without its side effects. */
@@ -84,16 +97,16 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     for (const words of [
       "-- Lifecycle writer in Video lifecycle worker writes Metadata database",
       "the setup-only owner o_metadata_db of d_metadata_db",
-      "search_path m_handler_writer",
+      "search_path p_upload_owner",
       "Keep it re-runnable (IF NOT EXISTS, CREATE OR",
-      "only r_metadata_db__completion_handler (Video lifecycle worker) selects, inserts",
+      "Product namespace p_upload_owner belongs to logical owner upload-owner",
       "CREATE OR REPLACE VIEW published.<name>",
-      "--   r_metadata_db__watch (Watch API)",
-      "--   upload_multipart.assets",
+      "--   none",
+      "Template implementation tables are excluded",
     ])
       expect(header).toContain(words);
     expect(text(v2, "infra/postgres/view-counts/modules/counter-writer.sql")).toContain(
-      "-- Template views:\n--   counter_sum_public.totals\n",
+      "Template implementation tables are excluded",
     );
     expect(text(stack, "infra/postgres/links-db/modules/link-reader.sql")).toContain(
       "-- Link reader, a Data access, in Links API writes Links database",
@@ -114,13 +127,13 @@ describe("product tables and published views (v3 contract, section 1)", () => {
           {
             module: "handler-writer",
             host: "completion-handler",
-            schema: "m_handler_writer",
+            schema: "p_upload_owner",
             file: "infra/postgres/metadata-db/modules/handler-writer.sql",
           },
           {
             module: "upload-state-writer",
             host: "upload",
-            schema: "m_upload_state_writer",
+            schema: "p_upload_owner",
             file: "infra/postgres/metadata-db/modules/upload-state-writer.sql",
           },
         ],
@@ -156,7 +169,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
           {
             database: "metadata-db",
             file: "infra/postgres/metadata-db/modules/upload-state-writer.sql",
-            schema: "m_upload_state_writer",
+            schema: "p_upload_owner",
           },
         ],
       ],
@@ -166,7 +179,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
           {
             database: "metadata-db",
             file: "infra/postgres/metadata-db/modules/handler-writer.sql",
-            schema: "m_handler_writer",
+            schema: "p_upload_owner",
           },
         ],
       ],
@@ -243,13 +256,15 @@ describe("product tables and published views (v3 contract, section 1)", () => {
     type Store = { store: string; provisioned?: string };
     const rows = (bundle: Bundle, tile: string) =>
       (
-        bundle.report as unknown as { processes: { tiles: { tile: string; stores: Store[] }[] } }
+        bundle.report as unknown as {
+          processes: { tiles: { tile: string; stores: Store[] }[] };
+        }
       ).processes.tiles.find((row) => row.tile === tile)?.stores ?? [];
     expect(rows(stack, "links-api").find((row) => row.store === "links-db")?.provisioned).toBe(
-      "PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; SELECT on published; its own tables in m_link_reader; its idempotency records in jeeves.idempotency_records)",
+      "PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; no declared product access; its idempotency records in jeeves.idempotency_records; no product DDL or migration credential)",
     );
     expect(rows(stack, "visit-worker").find((row) => row.store === "links-db")?.provisioned).toBe(
-      "PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; SELECT on published)",
+      "PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; no declared product access; no product DDL or migration credential)",
     );
   });
 });
@@ -258,7 +273,32 @@ describe("products.mjs on PostgreSQL (PGlite)", () => {
   const file = "infra/postgres/items/modules/item-writer.sql";
   const db: Db = {
     database: "d_items",
-    modules: [{ module: "item-writer", host: "item-counter", schema: "m_item_writer", file }],
+    productState: {
+      schema: "m_item_writer",
+      access: [
+        {
+          host: "item-counter",
+          product: {
+            tables: [
+              {
+                name: "items",
+                operations: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+              },
+            ],
+            views: ["items"],
+          },
+        },
+        { host: "reader-api", product: { tables: [], views: ["items"] } },
+      ],
+    },
+    modules: [
+      {
+        module: "item-writer",
+        host: "item-counter",
+        schema: "m_item_writer",
+        file,
+      },
+    ],
   };
   const runtime = [
     { user: "r_items__item_counter", host: "item-counter" },
@@ -271,7 +311,10 @@ CREATE OR REPLACE VIEW published.items AS SELECT id, title FROM items WHERE visi
 `;
   /** The owner's one migration transaction, as migrate.mjs runs it. */
   const migrate = async (pg: PGlite, sql: string) => {
-    const owner = { query: (statement: string) => pg.exec(statement) };
+    const owner = {
+      query: (statement: string, parameters?: unknown[]) =>
+        parameters ? pg.query(statement, parameters) : pg.exec(statement),
+    };
     await pg.exec("SET ROLE o_items; BEGIN");
     try {
       await products.applyProductSql(owner, db, quote, () => sql);
@@ -308,7 +351,7 @@ CREATE OR REPLACE VIEW published.items AS SELECT id, title FROM items WHERE visi
     return pg;
   };
 
-  it("lets every login read published views, and only the writer's tile its own tables", async () => {
+  it("grants only declared table operations and the named published view", async () => {
     const pg = await database();
     await migrate(pg, first);
     expect(await as(pg, "r_items__reader_api", "SELECT * FROM published.items")).toEqual([
@@ -340,13 +383,13 @@ CREATE OR REPLACE VIEW published.items AS SELECT id, title FROM items WHERE visi
         )
       ).rows,
     ).toEqual([{ table_schema: "m_item_writer" }, { table_schema: "published" }]);
-    // A view the owner adds later is covered by the default privileges.
+    // Later views grant nothing: there are no blanket/default privileges.
     await pg.exec(
       "SET ROLE o_items; CREATE VIEW published.titles AS SELECT title FROM m_item_writer.items; RESET ROLE",
     );
-    expect(
-      await as(pg, "r_items__reader_api", "SELECT count(*)::int AS n FROM published.titles"),
-    ).toEqual([{ n: 3 }]);
+    expect(await denied(pg, "r_items__reader_api", "SELECT * FROM published.titles")).toMatch(
+      /permission denied/,
+    );
     await pg.close();
   });
 

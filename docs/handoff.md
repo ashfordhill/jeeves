@@ -18509,3 +18509,35 @@ workload settings the same way.
   provider, rate/cache semantics, SQL/authenticated target handle, live/paid eval, generated-system
   checkpoint or task Docker resource. Commit subject:
   `RG05: bind callable capabilities through stable checked contracts`. Stop for acceptance.
+
+## 2026-11-16 — RG06 active after RG05 acceptance
+
+- Coordinator accepted RG05 commit `7e0b02a5a2041c4bb7a93188c1d038c06eb9039d`.
+  RG06 is the sole active unit: explicit API/worker logical ownership and precise database
+  product/view grants. No later unit has started; the approved RG sequence supersedes stale queues.
+
+## 2026-11-16 — RG06 verified, local commit for acceptance
+
+- Extension API **v6** uses the existing ownership system for explicit API/worker membership,
+  stable owner-scoped product namespaces, exact table operations and named published-view readers.
+  Separate process logins/secrets stay separate; product declarations exclude template schemas.
+  New multi-writer connections require explicit matching owners; conflicts refuse atomically.
+- Mouse/chat share finite implemented API choices and commands. Historical/preset source remains
+  readable and keeps its existing inspector; new product controls require module authoring.
+  Permission clear/regrant preserves namespaces/SQL files; view audiences alone never relocate data.
+  Composed-name/private-schema conflicts refuse without writer files. Labels preserve identities.
+- Generated SQL removes blanket/default grants and grants no application DDL/migration authority.
+  The updater compares legacy/current product namespaces and refuses migration at the same API
+  version or with API acknowledgement, preserving target bytes. Product SQL still runs as setup
+  SQL; versioned migration execution and public registered SQL handles remain for RG07.
+- Final `pnpm check`: **124 files / 1,117 tests passed**. Test-only API-target coverage then passes
+  **8 ownership cases** and generator typecheck. E2e: **75 passed**, then the strict historical
+  case and RG06 mouse case **2 passed** after fixing the actual historical-control regression;
+  TinyURL and both full mouse rebuilds passed. Web build and existing offline chat evals pass.
+  Seven scratch exports pass checker/TS7; affected ownership/sign-in/video pass again after final
+  namespace work. PGlite executes emitted SQL, with 20 captured allow/deny outcomes; native login
+  authentication/roles remain RG14. Reviewed off pins **79→79 / 85→85 / 59→59**.
+- [Evidence, corrections and limits](plans/reliable-generation/evidence/rg06/README.md). Root hashes,
+  owner binary diff/modes, frozen v1, historical exports and existing Postgres are preserved.
+  No live/paid eval, provider/cloud addition, Docker checkpoint, push, deployment or later unit.
+  Commit subject: `RG06: enforce logical ownership and precise database access`. Stop for acceptance.

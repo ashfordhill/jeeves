@@ -510,21 +510,22 @@ function provisionedAs(
       const templateViews = views
         .filter((view) => view.resource === store.resource)
         .map((view) => `${view.schema ?? "public"}.${view.name}`);
-      // Every login reads the writers' published views (v3 contract, section 1); a stub that
-      // writes the database also has its own schema there.
-      const own = (process.writers ?? [])
-        .filter(
-          (writer) => writer.database === store.element && store.modules.includes(writer.module),
-        )
-        .map((writer) => `m_${generationLocalIdentity(writer.module).sql}`);
+      const access = process.productAccess?.find((entry) => entry.resource === store.element);
       return `PostgreSQL database ${localDatabase(store.resource)}, login ${localLogin(store.resource, host)} (${[
         "CONNECT, USAGE on public",
-        "SELECT on published",
         ...(store.boundary && templateViews.length
           ? [`SELECT on its owner's template views ${templateViews.join(", ")}`]
           : []),
-        ...(own.length ? [`its own tables in ${own.join(", ")}`] : []),
+        ...(access
+          ? [
+              ...access.product.tables.map(
+                (table) => `${table.operations.join(", ")} on ${access.schema}.${table.name}`,
+              ),
+              ...access.product.views.map((view) => `SELECT on published.${view}`),
+            ]
+          : ["no declared product access"]),
         ...(writesDatabase(store) ? ["its idempotency records in jeeves.idempotency_records"] : []),
+        "no product DDL or migration credential",
       ].join("; ")})`;
     }
     case "queue": {
@@ -566,7 +567,13 @@ export function stubTargetRows(
 ): V2ProcessReport["stores"] {
   const rows = new Map<
     string,
-    { store: string; name: string; kind: string; access: string; modules: string[] }
+    {
+      store: string;
+      name: string;
+      kind: string;
+      access: string;
+      modules: string[];
+    }
   >();
   for (const stub of process.stubs) {
     const module = selections.find((item) => item.id === stub.selection)?.module;

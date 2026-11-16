@@ -25,6 +25,13 @@ export const logicalOwnerSchema = z.strictObject({
   id: idSchema,
   name: z.string().trim().min(1).max(120),
 });
+export const sharedOwnerApiKinds = [
+  "service",
+  "uploads",
+  "redirect",
+  "gateway",
+  "billing",
+] as const;
 export const ownerRoleSchema = z.strictObject({
   /** The original element is the role identity, even when its owner is collapsed in a view. */
   element: idSchema,
@@ -32,9 +39,17 @@ export const ownerRoleSchema = z.strictObject({
   kind: z.enum(["api", "worker"]),
   /** Optional assignment intent only. Equal IDs grant nothing and imply no running process. */
   deployable: idSchema.optional(),
+  /** Explicit worker membership, chosen through shareOwner; never inferred from a connection. */
+  sharedWith: idSchema.optional(),
 });
 export const resourceAuthoritySchema = z.discriminatedUnion("kind", [
-  z.strictObject({ element: idSchema, authority: idSchema, kind: z.literal("source") }),
+  z.strictObject({
+    element: idSchema,
+    authority: idSchema,
+    kind: z.literal("source"),
+    /** Stable product namespace selected by owning-table authoring or explicit worker sharing. */
+    productNamespace: z.literal("owner").optional(),
+  }),
   z.strictObject({
     element: idSchema,
     authority: idSchema,
@@ -42,12 +57,30 @@ export const resourceAuthoritySchema = z.discriminatedUnion("kind", [
     source: idSchema,
   }),
 ]);
+export const productRelationSchema = z.string().regex(/^[a-z][a-z0-9_]{0,62}$/);
+export const productAccessSchema = z.strictObject({
+  tables: z
+    .array(
+      z.strictObject({
+        name: productRelationSchema,
+        operations: z
+          .array(z.enum(["SELECT", "INSERT", "UPDATE", "DELETE"]))
+          .min(1)
+          .max(4),
+      }),
+    )
+    .max(100),
+  views: z.array(productRelationSchema).max(100),
+});
+export type ProductAccess = z.infer<typeof productAccessSchema>;
 export const roleGrantSchema = z.strictObject({
   role: idSchema,
   resource: idSchema,
   access: declaredAccessSchema,
   /** An authority's deliberate published read boundary, never an implicit table permission. */
   boundary: z.literal("published-read").optional(),
+  /** Exact product relations only; template implementation tables are a separate mechanism. */
+  product: productAccessSchema.optional(),
 });
 export const dependencyAccessSchema = z.strictObject({
   connection: idSchema,
@@ -129,6 +162,16 @@ export function ownershipFindings(design: DesignDocument): Finding[] {
         `Logical owner ${role.owner} is missing.`,
       );
   });
+  model.roles.forEach((role, index) => {
+    if (!role.sharedWith) return;
+    const api = roles.get(role.sharedWith);
+    if (role.kind !== "worker" || api?.kind !== "api" || api.owner !== role.owner)
+      report(
+        "CONFIG_INVALID",
+        ["roles", index, "sharedWith"],
+        "A shared worker must explicitly name an API role in the same logical owner.",
+      );
+  });
   model.resources.forEach((resource, index) => {
     if (!exists.has(resource.element))
       report(
@@ -147,6 +190,28 @@ export function ownershipFindings(design: DesignDocument): Finding[] {
         "UNKNOWN_REFERENCE",
         ["resources", index, "authority"],
         `Resource authority ${resource.authority} is missing.`,
+      );
+    if (
+      kinds.get(resource.element) === "database" &&
+      resource.kind === "source" &&
+      resource.productNamespace === "owner" &&
+      !/^[a-z][a-z0-9_]{0,62}$/.test(`p_${resource.authority.replaceAll("-", "_")}`)
+    )
+      report(
+        "CONFIG_INVALID",
+        ["resources", index, "authority"],
+        "The logical owner's composed product schema must fit PostgreSQL's 63-byte identifier limit; explicit identity/data migration is required.",
+        { element: resource.element },
+      );
+    if (
+      resource.kind === "source" &&
+      resource.productNamespace &&
+      kinds.get(resource.element) !== "database"
+    )
+      report(
+        "CONFIG_INVALID",
+        ["resources", index, "productNamespace"],
+        "A product SQL namespace belongs only to a source database.",
       );
     if (resource.kind === "projection") {
       const source = resources.get(resource.source);
@@ -200,13 +265,66 @@ export function ownershipFindings(design: DesignDocument): Finding[] {
           `Cross-owner read of ${grant.resource} requires a deliberate published-read boundary or an owned projection.`,
         );
     }
-    if (grant.boundary)
+    if (grant.boundary && !grant.product)
       report(
         "CONFIG_REQUIRED",
         ["grants", index, "boundary"],
         `Published-read boundary ${grant.role} → ${grant.resource} has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.`,
         { element: grant.role },
       );
+    if (grant.product) {
+      const product = grant.product;
+      const duplicate = (names: string[]) => new Set(names).size !== names.length;
+      if (kinds.get(grant.resource) !== "database")
+        report(
+          "CONFIG_INVALID",
+          ["grants", index, "product"],
+          "Product access requires a database.",
+        );
+      if (
+        duplicate(product.tables.map((table) => table.name)) ||
+        duplicate(product.views) ||
+        product.tables.some((table) => duplicate(table.operations))
+      )
+        report(
+          "CONFIG_INVALID",
+          ["grants", index, "product"],
+          "Declare each product relation and operation once.",
+        );
+      if (
+        product.tables.length &&
+        (resource?.kind !== "source" || resource.productNamespace !== "owner")
+      )
+        report(
+          "CONFIG_INVALID",
+          ["grants", index, "product"],
+          "Private product tables require an explicit stable owner product namespace.",
+        );
+      if (role?.owner !== resource?.authority && product.tables.length)
+        report(
+          "CONFIG_INVALID",
+          ["grants", index, "product"],
+          "Another owner may read only its named published views, never private product tables.",
+        );
+      if (
+        product.tables.some((table) =>
+          table.operations.some(
+            (op) => !accessAllows(grant.access, op === "SELECT" ? "read" : "write"),
+          ),
+        )
+      )
+        report(
+          "CONFIG_INVALID",
+          ["grants", index, "product"],
+          "Product operations exceed the role's declared access.",
+        );
+      if (product.views.length && !accessAllows(grant.access, "read"))
+        report(
+          "CONFIG_INVALID",
+          ["grants", index, "product"],
+          "Published views require read access.",
+        );
+    }
     if (grant.boundary && grant.access !== "read")
       report(
         "CONFIG_INVALID",
@@ -319,6 +437,8 @@ export function pruneOwnership(
     links = new Set(connections),
     model = design.ownership;
   model.roles = model.roles.filter((x) => !removed.has(x.element));
+  for (const role of model.roles)
+    if (role.sharedWith && removed.has(role.sharedWith)) delete role.sharedWith;
   model.resources = model.resources.filter((x) => !removed.has(x.element));
   // Surviving projections with a removed source are refused rather than reclassified.
   model.grants = model.grants.filter((x) => !removed.has(x.role) && !removed.has(x.resource));

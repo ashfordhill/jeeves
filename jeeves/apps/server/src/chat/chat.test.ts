@@ -385,7 +385,7 @@ describe("design chat", () => {
           expect.objectContaining({
             tool: "applyPattern",
             ok: true,
-            summary: "Applied pattern upload-pipeline as 34 commands; 1 left to fix or check",
+            summary: "Applied pattern upload-pipeline as 35 commands; 1 left to fix or check",
           }),
           expect.objectContaining({
             tool: "reviewDetail",

@@ -17,6 +17,7 @@ import {
   newLinkId,
   newNamedTileId,
   normalSettingFields,
+  productAccessSchema,
   type StudioCommand,
   type StudioComponent,
   studioActionSchema,
@@ -147,6 +148,17 @@ const advertised = {
     type: z.literal("setRunnableProcesses"),
     on: z.boolean(),
   }),
+  shareOwner: z.strictObject({
+    type: z.literal("shareOwner"),
+    worker: id,
+    api: id,
+  }),
+  setDatabaseAccess: z.strictObject({
+    type: z.literal("setDatabaseAccess"),
+    role: id,
+    database: id,
+    product: productAccessSchema,
+  }),
 };
 export type ChatCommandType = keyof typeof advertised;
 export const chatCommandTypes = Object.keys(advertised) as ChatCommandType[];
@@ -235,6 +247,10 @@ export const chatCommandShapes: Record<ChatCommandType, string> = {
   disconnectModule: "disconnectModule {link: module link id}",
   removeModule: "removeModule {module}",
   editModule: "editModule {module, name?, description?}",
+  shareOwner:
+    "shareOwner {worker, api}: explicitly share an API logical owner; conflicting owned state refuses",
+  setDatabaseAccess:
+    "setDatabaseAccess {role, database, product: {tables: [{name, operations: [SELECT|INSERT|UPDATE|DELETE]}], views: [named published view]}}; exact access only, template tables excluded",
   setRunnableProcesses: "setRunnableProcesses {on: true|false}",
 };
 

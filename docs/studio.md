@@ -744,7 +744,15 @@ open (Export diagram, a removal's confirmation, Choose relationship) they do not
 
 ## Logical owners, roles and access
 
-Module commands derive who owns each store and who may read it; generation reads that.
+Module commands derive template ownership; generation reads it. A worker inspector's **Share
+logical owner with API** explicitly assigns the worker to an API owner before connecting shared
+owned state. It keeps separate process logins and refuses conflicting owned state atomically.
+New multi-writer template connections require that explicit choice; saved matching owners remain
+readable. The process inspector's database product access controls declare table names with
+SELECT/INSERT/UPDATE/DELETE and named published views. They compile exact grants, with no blanket
+view or default grants. Same-owner modules use the declared `p_<owner ID>` product namespace,
+created before module SQL runs. Template implementation tables remain outside product access.
+Application logins receive no product DDL authority or migration credential.
 **Export diagram → Source & diagnostics** shows it read-only, with the saved source. Removal
 previews still name the declarations a removal affects, and one Undo restores them; moving an
 entry that would clear operation bindings asks first.
@@ -822,6 +830,7 @@ Undo step. Warnings remain saveable; structural errors still refuse a batch.
 can write (`jeeves/apps/server/src/chat/commands.ts`). Each compiles to exactly one studio command
 on the design it runs on, through the same builder:
 
+- `shareOwner {worker, api}` chooses worker membership explicitly; `setDatabaseAccess {role, database, product: {tables: [{name, operations}], views: [name]}}` declares exact product grants.
 - a tile is always `tile` and a module `module`: `editTile {tile, name?, description?, owner?}`
   (owner is the tile that writes a store) and `editModule {module, name?, description?}` send the
   canvas's `edit` and `editComponent`;
@@ -1505,9 +1514,10 @@ tile, External API, issuer or key set that isn't `https:`, and the Pub/Sub emula
 Each module that writes a database (a Data access on a link that writes it, a Lifecycle writer,
 or a stub with a write link; an Event publisher's outbox doesn't count) gets its own SQL file,
 `infra/postgres/<database>/modules/<module>.sql`, a header only for you to write. `first-run`
-and every `start` run it in the module's own schema, after the template tables; only its tile
-may use its tables, and every tile on that database may read the views it puts in `published`
-(keep the file re-runnable). A database a stub writes also gets Jeeves's own table
+and every `start` run it as the setup-only owner after the template tables. Declared shared
+product state uses the logical owner's product schema; legacy undeclared modules retain their
+module schemas and receive no product grants. Keep the file re-runnable. Exact product access
+names both table operations and allowed `published` views; a new view grants nothing by default. A database a stub writes also gets Jeeves's own table
 `jeeves.idempotency_records` (`infra/postgres/<database>/050-jeeves-idempotency.sql`), which only
 the tiles whose stubs write it use: a stub's `idempotent` call runs a create or payment once per
 key, keeps a 2xx answer for 24 hours and replays it for the same request, answers a different

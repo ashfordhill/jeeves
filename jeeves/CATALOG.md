@@ -531,7 +531,7 @@ select `read`, `write` or `read-write`. Co-deployment and package membership gra
 `previewOwnership` / `buildOwnershipCommand` back explicit source commands; preview is pure, apply
 is atomic/revision protected and one Undo. Contradictory grants and foreign writes refuse; foreign
 reads need deliberate published-read intent or an owned projection. Missing declarations stay
-saveable/unresolved. The marker does not implement a published contract or runtime ACL. Complete
+saveable/unresolved. The marker alone does not implement a published contract or runtime ACL. Exact `grants[].product` table operations and named views now compile database grants; template implementation grants remain separate. Complete
 removal/transfer previews preserve unrelated custom requirements; surviving projections cannot
 silently lose their source.
 
@@ -539,7 +539,13 @@ The canvas shows canonical process tiles directly, without owner cards, role/dep
 expansion/collapse actions or fallback narration. The existing lane layout receives the canonical
 graph; view interaction changes no contracts. **Export diagram → Source & diagnostics** shows
 ownership/access read-only, with the saved source and its JSON download; its owner buttons select a
-logical owner for chat. Normal forms contain only identity and useful installed settings. Removal
+logical owner for chat. Normal forms contain identity, useful installed settings, a worker's explicit **Share logical owner
+with API** choice, and exact database product access. `shareOwner` and `setDatabaseAccess` are
+shared mouse/chat commands. Same-owner product modules share a declared setup-owned namespace;
+process credentials remain distinct, application roles receive no DDL, and newly published views
+grant nothing by default. Conflicting owner connections refuse atomically. Extension API v6
+requires explicit migration from v5; existing product namespace changes require a fresh export
+and explicit application/data migration. Removal
 previews and Undo still preserve declarations.
 V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new
 row with an exact path. Generic tiles supply no capability, template or runtime verification.

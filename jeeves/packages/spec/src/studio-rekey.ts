@@ -130,7 +130,10 @@ export function rekeyDesign(design: DesignDocument, from: string, to: string): v
     if (item.element) item.element = swap(item.element);
   const ownership = design.ownership;
   if (ownership) {
-    for (const role of ownership.roles) role.element = swap(role.element);
+    for (const role of ownership.roles) {
+      role.element = swap(role.element);
+      if (role.sharedWith) role.sharedWith = swap(role.sharedWith);
+    }
     for (const resource of ownership.resources) {
       resource.element = swap(resource.element);
       if (resource.kind === "projection") resource.source = swap(resource.source);

@@ -87,7 +87,7 @@ and adds:
 | `scope` | Exact nullable profile reference, finite included/excluded requirements with criticality, and up to eight unresolved custom requirements with optional element/connection targets. Requirements sort by feature, custom requirements by ID. Unknown well-formed profile versions remain unchanged. |
 | `profileStatus` | `known`, `unresolved` or `unspecified`; known means the scope record exists, never that its contracts are implemented. |
 | `unresolvedRequirements` | Namespaced `source` (`profile`, `requirement`, `contract`, `custom`), ID, requirement, criticality and optional targets. Includes unspecified legacy requirements, required incompatible behavior, missing contracts and unresolved custom behavior. Missing targets are diagnostic text; the stored original requirement survives. |
-| `ownership`, `ownershipStatus`, `ownershipFindings` | Complete explicit owners, canonical element roles, source/projection authority, role grants and dependency requests, plus targeted unresolved/refused declarations. Rows sort deterministically; status is declared or unspecified, never verified. |
+| `ownership`, `ownershipStatus`, `ownershipFindings` | Complete explicit owners, canonical element roles, source/projection authority, role grants (including exact product table operations and named published views), explicit worker `sharedWith` API membership and dependency requests, plus targeted unresolved/refused declarations. Rows sort deterministically; status is declared or unspecified, never verified. |
 | `operations`, `operationCatalog`, `operationFindings` | Complete exact receiver/caller bindings, immutable local operation and cache-policy identities and targeted structural/readiness findings. Binding IDs are distinct from role/edge IDs; unknown refs remain unknown. [Finite contracts](studio-contracts.md). |
 | `generation`, `generationFindings` (optional) | Schema3's exact runtime/preset/template selections, canonical targets and finite tagged bindings, detached without materializing absent declarations. Module-level selections, which the module commands derive, use the same fields: a component target, a lead's template, or `module-stub@0.1.0` with the binding `{kind: "module-stub"}`. Targeted source findings distinguish canonical contradictions and unavailable refs. Catalog presence installs nothing. [Actual interfaces](plans/reliable-foundations/youtube-v2/interfaces.md). |
 | `legacyOwnership`, `roleMeaning` | Qualify preserved `resources[].owner` as inferred writer and services as canonical application tiles, which are not independent logical owners or necessarily separate processes. |
@@ -240,14 +240,28 @@ separate from this read-only representation and strict readiness.
 
 The canvas renders canonical process tiles and the inspector starts with name/kind/useful installed
 settings. Logical-owner projection, role/deployable narration and declaration-only requirements/
-operation/ownership forms are absent from normal authoring. This presentation does not change the
+declaration-only operation forms are absent from normal authoring. Worker ownership choice and exact database product access are normal implemented controls. This presentation does not change the
 source or this API: v3 retains every ownership, operation, scope, legacy setting and generation
 selection; v2 still refuses semantic loss. **Export diagram → Source & diagnostics** provides exact
 source JSON and read-only ownership/access, whose owner buttons select a logical owner for chat.
 Experimental generation support and strict TinyURL/runtime evidence remain distinct.
 
 
-The installed export extension contract is v4: shared pure HTTP body formatting, generated status/
+The installed export extension contract is v6. Its HTTP surface includes shared pure body formatting, generated status/
 headers, bounded/raw route declarations, distinct liveness/readiness and safe request logs. This
 changes generated adapters, not diagram schema or blueprint eligibility. See the
 [generated HTTP contract](../jeeves-generator/README.md#generated-http-contract-extension-api-v4).
+
+
+RG06 database permissions use the existing `ownership` records. `roles[].sharedWith` explicitly
+names the API role sharing its logical owner with a worker. `resources[].productNamespace: "owner"`
+persists the owner-scoped product-state decision. Clearing grants keeps that namespace; a named-view
+audience alone leaves legacy namespaces unchanged. `grants[].product.tables[]` names
+private product tables and exact operations; `product.views[]` names the reader's permitted
+`published` views. Generation's normalized product state records the unambiguous logical owner,
+shared `p_<owner ID>` schema and role audiences. Different process IDs retain different logins.
+Display renames change none of those identities. Template implementation grants are separate;
+product declarations cannot name them. There is no blanket published-view grant or runtime DDL
+credential. Versioned product migration execution and public registered SQL handles are not yet
+installed; extension API v6 refuses an unacknowledged v5 update, and namespace changes require an
+explicit application/data migration to a fresh export.

@@ -193,6 +193,14 @@ describe("Label-stable runtime identities", () => {
         design = next;
         if (command.id) final.set(command.id, renamedIds(batch.ops)[0]?.to ?? created.id);
         fixed.push({ ...command, host, ...(command.id && { id: at(command.id) }) });
+      } else if (command.type === "shareOwner") {
+        const shared: StudioCommand = {
+          ...command,
+          worker: at(command.worker),
+          api: at(command.api),
+        };
+        design = runStudioCommand(design, shared);
+        fixed.push(shared);
       } else if (command.type === "connectModule") {
         const connected: StudioCommand = {
           ...command,
@@ -272,6 +280,7 @@ describe("Label-stable runtime identities", () => {
         "architecture.studio.componentConnections.*.to.id",
         "scope.customRequirements.*.element",
         "ownership.roles.*.element",
+        "ownership.roles.*.sharedWith",
         "ownership.resources.*.element",
         "ownership.resources.*.source",
         "ownership.grants.*.role",

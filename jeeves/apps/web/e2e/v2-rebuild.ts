@@ -1,3 +1,4 @@
+import { designOwnership, designSchema } from "@jeeves/spec";
 /**
  * YouTube v2 rebuilt from a blank project by mouse (module authoring plan, MA09; V3-03's clicks):
  * the plan's steps as data, and the helpers that perform them. Only pointer and UI interactions
@@ -371,6 +372,27 @@ export async function connectModules(
   await click(tool(page, "Connect"), log);
   const links = async () => (await saved(page, id)).architecture.studio.componentConnections ?? [];
   for (const connection of connections) {
+    if (
+      ["Video lifecycle worker", "Video lifecycle"].includes(connection.host) &&
+      connection.module === "Lifecycle writer"
+    ) {
+      await click(
+        tile(page, connection.host).getByText(connection.host, { exact: true }).first(),
+        log,
+      );
+      const api = (await saved(page, id)).elements.find((item) => item.name === "Upload API");
+      if (!api) throw new Error("Upload API missing");
+      await inspector(page).getByLabel("Share logical owner with API").selectOption(api.id);
+      await expect
+        .poll(async () => {
+          const design = await saved(page, id);
+          const worker = design.elements.find((item) => item.name === connection.host)?.id;
+          return designOwnership(designSchema.parse(design)).roles.find(
+            (role) => role.element === worker,
+          )?.sharedWith;
+        })
+        .toBe(api.id);
+    }
     const before = (await links()).length;
     const end =
       "tile" in connection
@@ -402,7 +424,12 @@ export async function connectModules(
 }
 
 /** A useful value: a tile's or one of its modules' inspector field (`label`), and its value. */
-export type Value = { tile: string; module?: string; label: string; value: number | string };
+export type Value = {
+  tile: string;
+  module?: string;
+  label: string;
+  value: number | string;
+};
 
 /**
  * Each value in the inspector, in Simple: the tile, its module's card when it is a module's, then

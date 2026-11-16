@@ -16,7 +16,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         model.processes?.some((p) => p.shape === "http") ||
         model.selections.some((s) => "host.requestTimeoutMs" in s.inputs);
       const publicLines = [
-        "/** Public extension API v5. Application contracts live in src/contracts/. */",
+        "/** Public extension API v6. Application contracts live in src/contracts/. */",
         'export class NotImplemented extends Error { constructor(what: string) { super("Not implemented: " + what); this.name = "NotImplemented"; } }',
         'export type { OperationContext, OperationFailure, EffectOutcome, PublisherOptions } from "../runtime/operation.ts";',
         'export { OperationError } from "../runtime/operation.ts";',

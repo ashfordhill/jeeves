@@ -1,0 +1,32 @@
+ownership 89 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+callable 66 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative type proof: src/modules/account-api/negative.ts(2,74): error TS2322: Type 'number' is not assignable to type 'string'.
+src/modules/account-api/negative.ts(2,138): error TS2339: Property 'push' does not exist on type 'readonly Readonly<{ itemId: string; addedAt: string; }>[]'.
+src/modules/account-api/negative.ts(2,172): error TS2540: Cannot assign to 'next' because it is a read-only property.
+
+signIn 80 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+search 81 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+favorites 64 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+video 116 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 86 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+

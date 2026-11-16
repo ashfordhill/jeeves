@@ -7,6 +7,7 @@
  * entries). Stores are end tiles. Browser apps take no links: the user is the client.
  */
 import type { ConnectionKind, DesignDocument } from "./design.ts";
+import { designOwnership } from "./ownership.ts";
 import type { StudioKind } from "./studio-model.ts";
 import type { StudioConnectionCreation } from "./studio-operations.ts";
 import { studioTileDefinitions } from "./studio-tiles.ts";
@@ -335,6 +336,18 @@ export function studioStoreAccess(
   const link = design.connections.find((item) => item.id === connection);
   const store = studio?.elements.find((item) => item.element === link?.to.element);
   if (!studio || !link || !store || studioLinkRole(store.settings.kind) !== "store") return;
+  const ownership = designOwnership(design);
+  const authority = ownership.resources.find((item) => item.element === store.element)?.authority;
+  const role = ownership.roles.find((item) => item.element === link.from.element);
+  if (
+    authority &&
+    role &&
+    (role.sharedWith ||
+      ownership.grants.some(
+        (grant) => grant.role === role.element && grant.resource === store.element && grant.product,
+      ))
+  )
+    return role.owner === authority ? "write" : "read";
   const owner = store.owner;
   const from = link.from.element;
   const writes =

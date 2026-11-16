@@ -1,6 +1,7 @@
 /** Shared studio commands build one batch against the caller's latest accepted revision. */
 import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
+import { databaseAuthoring } from "./database-authoring.ts";
 import { connectionSchema, type DesignDocument } from "./design.ts";
 import { emptyDesignScope } from "./design-scope.ts";
 import { designGeneration } from "./generation.ts";
@@ -13,6 +14,7 @@ import {
   type OperationInput,
   operationBatchSchema,
 } from "./operations.ts";
+import { designOwnership, productAccessSchema } from "./ownership.ts";
 import {
   createStudioComponentSettings,
   type StudioComponent,
@@ -125,6 +127,17 @@ function moduleCommandSchemas() {
 export const studioCommandSchema = z.discriminatedUnion("type", [
   ...laneCommandSchemas,
   z.strictObject({
+    type: z.literal("shareOwner"),
+    worker: idSchema,
+    api: idSchema,
+  }),
+  z.strictObject({
+    type: z.literal("setDatabaseAccess"),
+    role: idSchema,
+    database: idSchema,
+    product: productAccessSchema,
+  }),
+  z.strictObject({
     type: z.literal("edit"),
     element: idSchema,
     name: studioName.optional(),
@@ -199,6 +212,11 @@ export function buildStudioCommand(
 ): OperationBatchInput {
   const draft = structuredClone(design);
   const input = studioCommandSchema.parse(command);
+  if (input.type === "shareOwner" || input.type === "setDatabaseAccess")
+    return operationBatchSchema.parse({
+      baseRevision: design.revision,
+      ops: databaseAuthoring(design, input),
+    });
   if (input.type === "setRunnableProcesses") return runnableProcessesBatch(design, input.on);
   if (input.type === "editSystem") {
     if (draft.architecture)
@@ -597,6 +615,18 @@ function buildModuleCommand(
         throw new Error(
           `${possessive(who)} ${slot.id} already uses ${"tile" in other ? name(other.tile) : other.module}; disconnect it first.`,
         );
+      const ownership = designOwnership(draft);
+      const role = ownership.roles.find((item) => item.element === module.host);
+      const authority = ownership.resources.find((item) => item.element === tile);
+      if (
+        role?.sharedWith &&
+        authority &&
+        authority.authority !== role.owner &&
+        (slot.use === "write" || slot.use === "read-write")
+      )
+        throw new Error(
+          `${who} cannot connect owned state from another logical owner; the worker's explicit API owner conflicts. Nothing was changed.`,
+        );
       // The host's own link to the tile, in the slot's direction; the lane rules add one if none.
       const consume = slot.use === "consume";
       const channel = (id: string) =>
@@ -667,10 +697,9 @@ function buildModuleCommand(
  * lane order, then every other module in its tile, each with the `connectModule` it would run
  * (the slot that accepts it) or why not, in plain words. Pure; it changes nothing.
  */
-export type ModuleConnectOption = { target: { tile: string } | { module: string } } & (
-  | { command: ConnectModuleCommand }
-  | { refusal: string }
-);
+export type ModuleConnectOption = {
+  target: { tile: string } | { module: string };
+} & ({ command: ConnectModuleCommand } | { refusal: string });
 export function moduleConnectOptions(
   design: DesignDocument,
   module: string,

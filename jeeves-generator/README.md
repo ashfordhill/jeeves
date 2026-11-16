@@ -25,7 +25,7 @@
   only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
   projects use `local-v2`.
 
-New exports use extension API **v4 (`checked-extensions`)**. Product code imports types and
+New exports use extension API **v6 (`checked-extensions`)**. Product code imports types and
 helpers from `src/extension-api/index.ts`; shared DTOs and pure definitions belong in the
 application-owned `src/contracts/` directory. Run `pnpm check:extensions` offline (also part of
 `pnpm build`). It checks private runtime/driver/cross-service imports, policy effect APIs and
@@ -36,7 +36,7 @@ bridges retain transaction, guard, credentials and lifecycle authority. Custom S
 verification and arbitrary HTTP target handles are unavailable public capabilities and appear as
 selection-specific custom gaps; a cache loader's `ProductQueries` handle also remains unavailable
 until a registered query binding is installed. Existing unrestricted exports remain readable;
-an update from API v1 refuses until `--ack-extension-api=4` and a successful staged interface and
+an update from API v1 refuses until `--ack-extension-api=6` and a successful staged interface and
 boundary check. Handwritten bodies are preserved, never rewritten to claim compatibility.
 
 `pnpm test:generated` separately exports, builds and runs the Activity backend with real
@@ -673,7 +673,7 @@ scripts:
 
 | Store | Provisioned for each stub tile |
 | --- | --- |
-| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, and SELECT on its `published` views (product tables, below). A stub that writes it also has its own schema there, and `jeeves.idempotency_records` (Module clients, below). Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
+| Database | The database and its setup-only owner (`migrate.mjs`), and a runtime login `r_<db>__<tile>` with CONNECT and USAGE on `public`, exact declared product-table operations and named `published` views (below). Template mechanisms contribute their own private grants; a mutating stub may use `jeeves.idempotency_records` (Module clients, below). Read only of another owner's database: also SELECT on every view its templates contribute (for example `counter_sum_public.totals`). |
 | Queue | The broker; a topic's exchange or a work queue, and `<topic>--<tile>` for a consuming tile, each with `.failed` (`broker-init.mjs`); the broker credential |
 | Queue saved on Google Cloud, only stubs using it | A Pub/Sub topic with the queue's ID; for each loop stub that consumes it its own subscription `<topic>--<tile>--<module>`, which its tile's copies share (ack deadline 60 s, retries backing off 1–10 s, dead-letter topic `<subscription>.failed` after 100 attempts), and a pull subscription `<subscription>.failed`; locally the emulator `local-pubsub` and `setup-pubsub` (`pubsub-init.mjs`), no credential |
 | Cache | `cache-<id>` (Valkey) and its password |
@@ -706,46 +706,52 @@ admin and database passwords generated into `.runtime/secrets`. Each guarded pro
 `OIDC_JWKS_URL`, and `depends_on` Keycloak healthy; a deployment sets its own issuer's values.
 One Identity per design.
 
-**Product tables and published views** (v3 contract §1). With the option on, every module that
-writes a database other than through an Event publisher's outbox gets its own SQL file,
-`infra/postgres/<database id>/modules/<module id>.sql`: a writing Data access (a stub's or a
-template part's), a Lifecycle writer, and any stub whose link writes the database. The resolver
-lists them per process (`writers`, `NormalizedModuleWriter`): a template's module whose link fills
-a database field its template writes, and a stub's link with its `stubLinkUse` access, so a store
-another owner holds is read only and gives no file. The file is a `generated-extension` with a
-header only: the module, its tile and database, its schema `m_<module sql>`, the logins that may
-read `published`, and the database's template tables and views by qualified name. It is yours,
-like a hooks file: export never overwrites it, so carry it over to a fresh export.
+**Product tables and published views.** With Runnable processes on, database-writing modules
+contribute application-owned SQL files `infra/postgres/<database>/modules/<module>.sql`. A module
+in declared owner-scoped product state keeps its SQL file when its runtime grants become read-only
+or empty. Each file is a `generated-extension`: export never rewrites handwritten SQL.
 
-`infra/local.json` lists each database's writers (`databases[].modules`: module, host, schema,
-file), and the foundation substitutes `migrate.mjs`'s product step exactly once, refusing an
-asset whose anchor isn't there once; with the option off the asset keeps its bytes. The step is
-`scripts/products.mjs`, inside the database's one setup transaction run by its setup-only owner
-`o_<db>`: after the template migrations and views it creates `published` and each `m_<module>`
-(no PUBLIC access), runs each writer's file in module-ID order with `SET LOCAL search_path TO
-m_<module>` (so unqualified names land there), and after the template grants it grants again.
-Every runtime login on the database gets USAGE on `published` and SELECT on all its views, with
-default privileges for views added later; only the writer's tile login gets USAGE on its module
-schema and SELECT, INSERT, UPDATE and DELETE on its tables (USAGE, SELECT and UPDATE on its
-sequences), also with default privileges. No login can create objects, and a reader can't read
-a writer's tables: only what it publishes. This gives the cache read's source login its read.
+Use `shareOwner {worker, api}` (the worker inspector's **Share logical owner with API**) to choose
+shared logical ownership explicitly. Different process IDs keep different runtime logins and
+secrets. Conflicting owned state refuses the whole command/connection. These normal controls and
+commands require a module-authored design; historical study/preset declarations remain readable.
 
-**The file runs at every `first-run` and `start`**, not once, so an edited file applies at the
-next start (the composition hash covers the list, not the files' content, and `start` rebuilds
-the setup image). Keep it re-runnable: `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE … ADD COLUMN IF
-NOT EXISTS`, `INSERT … ON CONFLICT DO NOTHING`, `CREATE OR REPLACE VIEW`, and no `BEGIN` or
-`COMMIT`. Keep one definition per view and edit it in place: `CREATE OR REPLACE VIEW` may only add
-columns at the end, so an older, narrower definition left earlier in the file fails the next run.
-A failing file rolls the whole database back, and setup stops naming it (`Product SQL <file>
-failed: …`). Template tables stay their templates' (uploads, assets, receipts, outboxes, counter
-totals): a product file never creates them, and a template never touches `m_*` or `published`.
-Each writer's row in `report.modules` gains `sql` (`[{database, file, schema}]`, one per database
-it writes), and a stub store's `provisioned` text says `SELECT on published` and names the
-stub's own schema and, on a database a stub writes, its idempotency records in
-`jeeves.idempotency_records` (Idempotency records, below).
+`setDatabaseAccess {role, database, product: {tables: [{name, operations}], views: [name]}}` declares
+SELECT/INSERT/UPDATE/DELETE on exact product tables and SELECT on exact named views in `published`.
+Private product tables require the resource's logical owner. Foreign readers receive only named
+published views. Table/view names are bounded SQL identifiers; missing relations and the wrong
+relation kinds fail setup. No product declaration can name a template implementation schema.
+Generated template mechanisms retain their separately checked private grants, including the exact
+idempotency-record grant needed by a mutating stub; that never gives SELECT on its product tables.
+
+A source resource's stable `productNamespace: owner` declaration selects `p_<logical owner ID>`
+(with SQL normalization). It is persisted when private-table authoring or explicit worker sharing
+selects owner-scoped state. Clearing/regranting permissions never changes it. A views-only reader
+edit leaves legacy `m_<module>` schemas in place. The final composed identifier must fit 63 bytes,
+and private-template namespace collisions refuse even without writer files. Display renames
+preserve these identities and cannot fix an identity collision.
+
+`infra/local.json` records each database's product owner/schema, exact role audiences and module
+SQL files. Inside the setup-only owner's transaction, `scripts/products.mjs` creates every needed
+schema before any module SQL runs, then runs files in stable module-ID order with the declared
+schema as `search_path`. It revokes old blanket/default product grants before granting exact
+relations. New tables/views grant nothing by default; there are no implicit sequence grants.
+Application logins receive no CREATE, schema/database ownership or migration credential. Reports
+and SQL-file headers describe the actual product permissions, separately from template grants.
+
+**Product SQL still runs at every `first-run` and `start`.** Keep it re-runnable, without BEGIN or
+COMMIT; failure rolls back the database setup transaction and names the file. Versioned product
+migrations and registered public SQL execution are not installed yet. Product SQL runs with setup
+authority today; the product grant declarations are not a sandbox for arbitrary migration SQL.
+The checked extension API exposes no raw SQL/transaction handle to application hooks.
+
+API v6 requires explicit extension migration from older exports. Introducing or changing an
+existing product SQL namespace refuses even at the same API version, with no acknowledgement
+bypass. Export to a fresh directory and migrate application/data explicitly; never rewrite old
+product SQL or hook bodies to make an update pass. Historical exports remain unchanged.
 
 **Module clients (private implementation).** The scaffold `src/runtime/module-clients.ts` holds
-the internal adapters described below. Public extension API v2 supplies bounded cache/object/
+the internal adapters described below. The public extension API supplies bounded cache/object/
 queue/search/module handles; raw SQL, transaction, token and HTTP target APIs described here
 are not passed to product code and remain explicit custom gaps. Physical clients use the same
 per-process registry as template clients, keyed by complete configuration and credential identity;

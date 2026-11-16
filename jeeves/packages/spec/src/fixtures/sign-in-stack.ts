@@ -64,6 +64,7 @@ export const signInStackCommands: readonly StudioCommand[] = [
   module("video-lifecycle", "processing-consumer", "Processing consumer", "event-consumer"),
   module("video-lifecycle", "lifecycle-writer", "Lifecycle writer", "lifecycle-writer"),
   connect("processing-consumer", "channel", { tile: "processing-events" }),
+  { type: "shareOwner", worker: "video-lifecycle", api: "upload-api" },
   connect("lifecycle-writer", "state", { tile: "metadata" }),
 ];
 

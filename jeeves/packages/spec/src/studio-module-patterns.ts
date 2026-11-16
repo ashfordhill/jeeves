@@ -17,6 +17,7 @@ import type { DesignDocument } from "./design.ts";
 import type { GenerationInstalledSupport } from "./generation-support.ts";
 import { generationCapabilities } from "./generation-support.ts";
 import { guardSignIn } from "./module-generation.ts";
+import { designOwnership } from "./ownership.ts";
 import {
   type StudioComponent,
   type StudioComponentKind,
@@ -555,6 +556,11 @@ export function buildModulePattern(
       const processing = build.module(lifecycle, "event-consumer", "Event consumer");
       build.connect(processing, "channel", { tile: results });
       const writer = build.module(lifecycle, "lifecycle-writer", "Lifecycle writer");
+      if (
+        designOwnership(build.design).roles.find((role) => role.element === lifecycle)
+          ?.sharedWith !== service
+      )
+        build.run({ type: "shareOwner", worker: lifecycle, api: service });
       build.connect(writer, "state", { tile: metadata });
       if (publication) {
         const publisher = build.module(lifecycle, "event-publisher", "Event publisher");

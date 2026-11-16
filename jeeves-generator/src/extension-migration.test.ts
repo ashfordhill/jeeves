@@ -3,7 +3,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { ownershipDesign } from "../../field-projects/generator-system/fixtures/rg-ownership/design.ts";
 import { favoritesStackDesign } from "../../jeeves/packages/spec/src/fixtures/favorites-stack.ts";
+import { stubStackDesign } from "../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
+import { runStudioCommands } from "../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../templates/local-v2/index.ts";
 import { exportNewDirectory } from "./export.ts";
 import { canonicalJson, sha256 } from "./json.ts";
@@ -82,9 +85,9 @@ async function snapshot(root: string): Promise<unknown> {
 
 describe("extension contract migration", () => {
   it("emits the installed capability guide/version and verifies real output responsibility", () => {
-    expect(real.manifest.extensionApi.version).toBe(5);
+    expect(real.manifest.extensionApi.version).toBe(6);
     expect(real.manifest.extensionApi.boundary).toBe("checked-extensions");
-    expect(real.report.extensionApi.version).toBe(5);
+    expect(real.report.extensionApi.version).toBe(6);
     expect(real.report.capabilities).toHaveLength(4);
     expect(
       Buffer.from(
@@ -172,20 +175,20 @@ describe("extension contract migration", () => {
   });
 });
 
-it("RG05 refuses a v4-to-v5 update until the callable contract migration is explicitly acknowledged", async () => {
+it("RG06 refuses a v5-to-v6 update until the exact database access migration is explicitly acknowledged", async () => {
   const root = await mkdtemp(join(tmpdir(), "jeeves-rg05-migration-"));
   roots.push(root);
   const app = join(root, "app");
   await exportNewDirectory(real.files, app);
   const manifest = {
     ...real.manifest,
-    extensionApi: { ...real.manifest.extensionApi, version: 4 },
+    extensionApi: { ...real.manifest.extensionApi, version: 5 },
   };
   await writeFile(join(app, ".jeeves/manifest.json"), JSON.stringify(manifest));
   const before = await snapshot(app);
   const result = await updateDirectory(real, app, { check: true });
-  expect(result.refused.join("\n")).toContain("Extension API 4 -> 5 requires migration");
-  expect(result.refused.join("\n")).toContain("--ack-extension-api=5");
+  expect(result.refused.join("\n")).toContain("Extension API 5 -> 6 requires migration");
+  expect(result.refused.join("\n")).toContain("--ack-extension-api=6");
   expect(result.refused.join("\n")).toContain("src/modules/account-api/favorite-items.hooks.ts");
   expect(await snapshot(app)).toEqual(before);
 });
@@ -231,4 +234,70 @@ it("RG05 a label-only export update preserves handwritten hook bytes and all ide
   expect(result.refused).toEqual([]);
   expect(await readFile(join(app, hook), "utf8")).toBe(own);
   expect(next.report.capabilities).toEqual(real.report.capabilities);
+});
+
+it("RG06 refuses actual legacy-to-shared product namespace migration even with API acknowledgement", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg06-product-migration-"));
+  roots.push(root);
+  const app = join(root, "app");
+  const prior = assembleV2(
+    {
+      designJson: canonicalJson(
+        runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]),
+      ),
+    },
+    registry,
+  );
+  await exportNewDirectory(prior.files, app);
+  const sql =
+    "-- application-owned product SQL must survive\nCREATE TABLE items(id text PRIMARY KEY);\n";
+  await writeFile(join(app, "infra/postgres/links-db/modules/link-reader.sql"), sql);
+  const next = assembleV2({ designJson: canonicalJson(ownershipDesign()) }, registry);
+  // Current API and v5 both refuse; acknowledgements cannot authorize moving old product data.
+  for (const version of [6, 5]) {
+    await writeFile(
+      join(app, ".jeeves/manifest.json"),
+      JSON.stringify({
+        ...prior.manifest,
+        extensionApi: { ...prior.manifest.extensionApi, version },
+      }),
+    );
+    const before = await snapshot(app);
+    for (const check of [true, false]) {
+      const result = await updateDirectory(next, app, { check, acknowledgeExtensionApi: 6 });
+      expect(result.refused.join("\n")).toContain("product:links-db.link-reader");
+      expect(result.refused.join("\n")).toContain("application/data explicitly");
+      expect(await snapshot(app)).toEqual(before);
+      expect(
+        await readFile(join(app, "infra/postgres/links-db/modules/link-reader.sql"), "utf8"),
+      ).toBe(sql);
+    }
+  }
+});
+
+it("RG06 named-view audience edits keep legacy writer schemas and need no namespace migration", async () => {
+  const root = await mkdtemp(join(tmpdir(), "jeeves-rg06-view-audience-"));
+  roots.push(root);
+  const app = join(root, "app");
+  const source = runStudioCommands(stubStackDesign(), [{ type: "setRunnableProcesses", on: true }]);
+  const prior = assembleV2({ designJson: canonicalJson(source) }, registry);
+  await exportNewDirectory(prior.files, app);
+  const design = runStudioCommands(source, [
+    {
+      type: "setDatabaseAccess",
+      role: "visit-worker",
+      database: "links-db",
+      product: { tables: [], views: ["visible_items"] },
+    },
+  ]);
+  const next = assembleV2({ designJson: canonicalJson(design) }, registry);
+  const plan = JSON.parse(
+    Buffer.from(
+      next.files.find((file) => file.path === "infra/local.json")?.bytes ?? [],
+    ).toString(),
+  );
+  const db = plan.databases.find((db: { resource: string }) => db.resource === "links-db");
+  expect(db.productState.schema).toBeUndefined();
+  expect(db.modules.map((item: { schema: string }) => item.schema)).toEqual(["m_link_reader"]);
+  expect((await updateDirectory(next, app, { check: true })).refused).toEqual([]);
 });

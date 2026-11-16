@@ -391,7 +391,7 @@ is implemented.
 
 ## Explicit logical ownership and store access (schema v3)
 
-Optional top-level `ownership` uses `ownership.ts` and remains read-only under
+Optional top-level `ownership` uses `ownership.ts` and is visible under
 **Export diagram → Source & diagnostics → Ownership & access**. Absence means unspecified;
 reading never upgrades or derives declarations. Supported feature attachment writes its required
 rows atomically. Explicit source/chat commands retain pure previews and atomic validation.
@@ -399,15 +399,15 @@ rows atomically. Explicit source/chat commands retain pure previews and atomic v
 | Field | Finite values / limits |
 | --- | --- |
 | `owners[]` | Up to 50 distinct `{id, name}` records. Slug ID, trimmed name 1–120 chars. Logical responsibility, independent of studio packages. |
-| `roles[]` | Up to 500 distinct existing application element IDs: `{element, owner, kind: api/worker, deployable?}`. Owner must be declared; optional deployable is a slug assignment, supplies no permission and implies no running process. |
-| `resources[]` | Up to 500 distinct existing database/cache/storage/search element IDs: `{element, authority, kind: source}` or `{element, authority, kind: projection, source}`. Authority is a declared logical owner. A projection names a different declared source resource, with its own authority; projection chains/self references refuse. Population/freshness/failure behavior remains unresolved unless the exact compatible positive-cache contract below refines this specific projection. |
-| `grants[]` | Up to 500 distinct role/resource pairs: `{role, resource, access: read/write/read-write, boundary?: published-read}`. Both endpoints need declarations. This records permission intent, not an implemented ACL. |
+| `roles[]` | Up to 500 distinct existing application element IDs: `{element, owner, kind: api/worker, deployable?, sharedWith?}`. Owner must be declared; optional deployable is a slug assignment, supplies no permission and implies no running process. |
+| `resources[]` | Up to 500 distinct existing database/cache/storage/search element IDs: `{element, authority, kind: source, productNamespace?: owner}` or `{element, authority, kind: projection, source}`. Authority is a declared logical owner. A projection names a different declared source resource, with its own authority; projection chains/self references refuse. Population/freshness/failure behavior remains unresolved unless the exact compatible positive-cache contract below refines this specific projection. |
+| `grants[]` | Up to 500 distinct role/resource pairs: `{role, resource, access: read/write/read-write, boundary?: published-read}`. Both endpoints need declarations. Optional `product: {tables: [{name, operations: [SELECT/INSERT/UPDATE/DELETE]}], views: [name]}` compiles exact product grants when Runnable processes is on. Table/view names are bounded SQL identifiers; operations and names are unique. Private tables require the resource's logical owner; foreign readers name only published views. Template grants are independent and cannot be named through product access. |
 | `dependencies[]` | Up to 500 distinct canonical application → store connection IDs: `{connection, access: read/write/read-write}`. The actual endpoints determine the role/resource; labels do not. |
 
 A same-owner read stays read. Cache read and fill needs read-write; a read-only grant cannot
 satisfy it. A request exceeding a declared grant refuses atomically. Foreign-owner direct writes
 refuse even when deployables match. Cross-owner reads need an explicit `published-read` contract
-boundary or a reader-owned projection. The marker has targeted unresolved published-contract,
+boundary with named product views, or a reader-owned projection. A marker without a named product declaration retains targeted unresolved published-contract,
 freshness/failure and runtime-authorization findings; it supplies no API bypass or runtime proof.
 Missing legacy declarations/grants remain saveable readiness gaps, never inferred permission.
 
@@ -421,6 +421,20 @@ all declarations; unrelated persistent custom requirements survive, including mi
 The old binding `owner` and connection `access` remain the **legacy inferred writer/access**
 approximation above. They are separate from explicit authority/grants and remain unchanged by
 feature attachment. Exact operation bindings remain typed source below; strict runtime authorization remains unavailable.
+
+On a module-authored design, the worker inspector offers **Share logical owner with API** (`shareOwner {worker, api}`), with
+atomic refusal when the worker already owns conflicting state. It never copies credentials.
+The process inspector offers **Product table**, four operation checkboxes, and **Published view**
+(`setDatabaseAccess {role, database, product}`). Empty product access grants nothing. Shared
+membership and product grants survive later module commands and display renames. The source resource
+persists `productNamespace: owner` when private-table authoring or explicit worker sharing first selects
+owner-scoped product state; clearing/regranting allowlists never clears that namespace. Named-view
+audiences alone leave legacy module namespaces in place. All product
+schemas are setup-owned; application logins have no CREATE or migration credentials. A composed
+`p_<owner ID>` must fit 63 bytes, including for a read-only declaration with no writer file.
+
+Historical study/preset declarations remain readable; their forms do not offer new product-access
+authoring, since those designs cannot enable Runnable processes.
 
 Normal forms omit legacy writer/access controls and repeated owner/role/deployable explanations.
 The full saved source download retains legacy inference, explicit authority, grants, dependencies
