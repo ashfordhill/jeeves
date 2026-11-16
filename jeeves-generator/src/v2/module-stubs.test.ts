@@ -108,7 +108,9 @@ describe("module stubs", () => {
     expect(slots).toContain(
       "// Generated scaffold: Links writer, a Data access in Shorten service.",
     );
-    expect(slots).toContain('import type { DatabaseReadWriter } from "../dependencies.ts";');
+    expect(slots).toContain(
+      'import type { DatabaseReadWriter } from "../../extension-api/index.ts";',
+    );
     expect(slots).toContain(
       "  // database: Links database (Database) through shorten-to-links-db, read & write\n  linksDb: DatabaseReadWriter;",
     );
@@ -132,7 +134,7 @@ describe("module stubs", () => {
       ].join("\n"),
     );
     expect(limit.match(/^import .*$/gmu)).toEqual([
-      'import type { SettingsOf } from "../../runtime/settings.ts";',
+      'import type { SettingsOf } from "../../extension-api/index.ts";',
     ]);
     expect(limit).toContain("export const slots = [] as const;");
     // The loader names the module it uses; the cache slot it lacks is a comment.
@@ -148,11 +150,11 @@ describe("module stubs", () => {
         "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
         'import type { Dependencies } from "./shorten-cache.slots.ts";',
         // The settings it reads, none until written (QL05, owner decision D6).
-        'import { declareSettings } from "../../runtime/settings.ts";',
+        'import { declareSettings } from "../../extension-api/index.ts";',
         "",
-        "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+        "/** The settings this module reads, by name: text(), integer() or url();",
         " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-        " * SECRET_DIR files. */",
+        " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
         "export const settings = declareSettings({});",
         "",
         "export async function shortenCache(dependencies: Dependencies): Promise<void> {",
@@ -171,7 +173,7 @@ describe("module stubs", () => {
       expect(scaffold).toContain(`  settings: SettingsOf<typeof import("./${module}.ts")>;\n};`);
       expect(scaffold.match(/^ {2}settings:/gmu)).toHaveLength(1);
       expect(text(bundle, `src/modules/shorten/${module}.ts`)).toContain(
-        'import { declareSettings } from "../../runtime/settings.ts";\n\n/** The settings this module reads',
+        'import { declareSettings } from "../../extension-api/index.ts";\n\n/** The settings this module reads',
       );
     }
     const named = assemble(

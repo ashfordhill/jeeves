@@ -1,3 +1,4 @@
+import { immutable } from "./hook-boundary.ts";
 import type { FastifyRequest } from "fastify";
 import { HttpError } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
@@ -57,17 +58,20 @@ async function moduleRequest(
   signal: AbortSignal,
 ): Promise<ModuleRequest> {
   const rest = (request.params as { "*"?: string })["*"];
-  return {
+  return Object.freeze({
+    ...immutable({
     method: request.method,
     path: `/${rest ?? ""}`,
     rawPath: rawPathOf(request.url),
     query: request.query as ModuleRequest["query"],
-    headers: request.headers,
+    headers: Object.fromEntries(Object.entries(request.headers).filter(([name]) =>
+      ["accept", "content-type", "if-none-match", "if-modified-since", "idempotency-key"].includes(name.toLowerCase()))),
     body: request.body,
     rawBody: request.rawBody,
     caller: await caller(request),
+    }),
     signal,
-  };
+  });
 }
 /** A route stub answers any method on /modules/<module> and every path below it. `caller` is the
  * tile's Auth guard's, or anonymous. Its request's `signal` is aborted with `Error("DEADLINE")`
@@ -79,7 +83,7 @@ export function stubRoutes(
   log: NotImplementedLog,
   module: string,
   entry: (request: ModuleRequest) => Promise<ModuleResponse>,
-  limits: { deadlineMs: number },
+  limits: { deadlineMs: number; stopping?: AbortSignal },
   caller: (request: FastifyRequest) => Promise<Caller> = anonymous,
 ): void {
   const mounted = notImplementedRoutes(routes, log, module);
@@ -89,6 +93,9 @@ export function stubRoutes(
       url,
       async handler(request, reply) {
         const controller = new AbortController();
+        const stopping = () => controller.abort(new Error("PROCESS_STOPPING"));
+        if (limits.stopping?.aborted) stopping();
+        else limits.stopping?.addEventListener("abort", stopping, { once: true });
         const timer = setTimeout(() => controller.abort(new Error("DEADLINE")), limits.deadlineMs);
         // The response closes when it is written or when its connection goes first.
         const closed = () => {
@@ -103,6 +110,7 @@ export function stubRoutes(
           return response.body;
         } finally {
           clearTimeout(timer);
+          limits.stopping?.removeEventListener("abort", stopping);
           reply.raw.off("close", closed);
         }
       },

@@ -94,11 +94,13 @@ describe("the search stack (V3-08)", () => {
       'import { indexWriterHooks } from "../modules/indexer/index-writer.hooks.ts";',
     );
     expect(query).toContain(
-      "return createSearchHandler({ client, index, indexHooks, hooks: itemSearchHooks() });",
+      "return createSearchHandler({ client, index, indexHooks, hooks: productHooks(itemSearchHooks()) });",
     );
-    expect(text(stack, "src/modules/search-api/item-search.hooks.ts")).toContain(
-      'import type { IndexWriterDocument } from "../indexer/index-writer.hooks.ts";',
-    );
+    const queryHooks = text(stack, "src/modules/search-api/item-search.hooks.ts");
+    expect(queryHooks).not.toContain("../indexer/");
+    expect(queryHooks).toContain('from "../../extension-api/index.ts"');
+    expect(queryHooks).toContain("type Document = Record<string, unknown>;");
+    expect(text(stack, "src/contracts/index.ts")).toContain("Application-owned DTOs");
     for (const [file, hook, lead] of [
       ["src/modules/indexer/index-writer.hooks.ts", "mapping", "Index writer"],
       ["src/modules/indexer/index-writer.hooks.ts", "event", "Index writer"],

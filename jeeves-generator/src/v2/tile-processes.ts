@@ -367,6 +367,9 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
     ...(routed ? [{ from: "../runtime/tile-process.ts", name: "createNotImplementedLog" }] : []),
     ...(started.length ? [{ from: "../runtime/tile-process.ts", name: "logStarted" }] : []),
     ...(loops.length ? [{ from: "../runtime/tile-loop.ts", name: "createLoopLog" }] : []),
+    ...(mounts.some((mount) => mount.template)
+      ? [{ from: "../features/service-resources.ts", name: "validateTemplateSettings" }]
+      : []),
     ...mounts.flatMap((mount) => mount.imports),
   ]);
   const configure = block("configure");
@@ -388,10 +391,15 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         ]
       : []),
   ];
+  const validation = [
+    ...mounts.flatMap((mount) => mount.validation ?? []),
+    ...(mounts.some((mount) => mount.template) ? ["validateTemplateSettings(config.tile);"] : []),
+  ];
   const body = http
     ? [
         "await runProcess(async (scope) => {",
         ...logs,
+        ...indent(validation, 2),
         ...indent(setup, 2),
         "  const service = await createHttpService({",
         "    id: config.tile,",
@@ -415,6 +423,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
           : ["    initialize: async () => {},"]),
         "  });",
         "  // Draining stops admission first, then waits for admitted requests.",
+        "  scope.admission(() => service.stop());",
         "  scope.own(() => service.close());",
         "  await service.start(config.listen);",
         ...indent(
@@ -428,6 +437,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
     : [
         "await runProcess(async (scope) => {",
         ...logs,
+        ...indent(validation, 2),
         ...indent(setup, 2),
         ...(loops.length
           ? []

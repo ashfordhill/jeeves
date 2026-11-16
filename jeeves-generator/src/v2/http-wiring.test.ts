@@ -120,7 +120,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     // The process mounts each route through its 501 wrapper.
     const links = text(stack, "src/processes/links-api.ts");
     expect(links).toContain(
-      'stubRoutes(\n        routes,\n        log,\n        "link-reader",\n        (request) => linkReader(dependencies["link-reader"], request),\n        { deadlineMs: config.settings.requestTimeoutMs },\n      );',
+      'stubRoutes(\n        routes,\n        log,\n        "link-reader",\n        (request) => linkReader(dependencies["link-reader"], request),\n        { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },\n      );',
     );
     expect(links).toContain(
       'import type { Dependencies as LinkReaderDependencies } from "../modules/links-api/link-reader.slots.ts";',
@@ -290,7 +290,8 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
 
   it("gives each mounted lead a hooks file whose hooks throw, and names it in its gap", () => {
     const hooks = text(stack, "src/modules/preview-api/preview-reader.hooks.ts");
-    expect(hooks.split("\n").slice(0, 2)).toEqual([
+    expect(hooks.split("\n").slice(0, 3)).toEqual([
+      "// @jeeves-extension: operation",
       "// Preview reader (Cache reader) in Preview API: the product hooks its cache read template calls.",
       "// Write them here. Export never overwrites your edits: export afresh and carry them over.",
     ]);
@@ -303,15 +304,13 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     for (const hook of ["validate", "metadata", "response", "originalKey", "job"])
       expect(upload).toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
     expect(upload).toContain("const upload: UploadHooks<unknown, unknown> = {");
-    // V3-06: the tile's sign-in answers `principal`, and the asset lifecycle naming the upload
-    // answers `reserve`, `complete` and `closed`; nothing else to write there.
-    for (const hook of ["principal", "reserve", "complete", "closed"])
-      expect(upload).not.toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
-    expect(upload).toContain("      return resources.guard.require(request);");
-    expect(upload).toContain("      return resources.lifecycle.reserve(tx, record);");
-    expect(upload).toContain("      return resources.lifecycle.complete(tx, record, original);");
-    expect(upload).toContain("      return resources.lifecycle.closed(tx, record, terminal);");
-    expect(upload).toContain("  guard: TileGuard;");
+    // Generated bridges keep sign-in and lifecycle transaction authority out of product hooks.
+    for (const hook of ["principal(request)", "guard", "TileGuard", "resources.lifecycle", "tx,"])
+      expect(upload).not.toContain(hook);
+    expect(upload).toContain("reserve(record)");
+    expect(upload).toContain("complete(record, original)");
+    expect(upload).toContain("closed(record, terminal)");
+    expect(upload).toContain("  prefix: string;");
     // The worker templates' hooks files are in loop-wiring.test.ts.
     expect(
       v2.files
@@ -480,7 +479,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       '    configure: (open) => {\n      // Every module route checks its caller first: the tile\'s sign-in.\n      const routes = viewerCheck.routes(open);\n      viewerCheck.me(routes, "/modules/viewer-check/me");',
     );
     expect(watch).toContain(
-      '      stubRoutes(\n        routes,\n        log,\n        "hello",\n        (request) => hello(dependencies["hello"], request),\n        { deadlineMs: config.settings.requestTimeoutMs },\n        viewerCheck.caller,\n      );',
+      '      stubRoutes(\n        routes,\n        log,\n        "hello",\n        (request) => hello(dependencies["hello"], request),\n        { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },\n        viewerCheck.caller,\n      );',
     );
     expect(watch).toContain('      "signIn": "optional",');
     expect(text(bundle, "src/processes/upload-api.ts")).toContain('      "signIn": "required",');
@@ -489,8 +488,9 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(upload.indexOf("const creatorCheck = ")).toBeLessThan(
       upload.indexOf("const multipartUploads = "),
     );
-    expect(upload).toContain("      guard: creatorCheck,");
-    expect(upload).toContain("      lifecycle: lifecycle.uploadHooks,");
+    expect(upload).not.toContain("      guard: creatorCheck,");
+    expect(upload).toContain("principal: (request) => creatorCheck.require(request)");
+    expect(upload).toContain("}), lifecycle.uploadHooks);");
     // The upload's tile runs the lifecycle's upload hooks on the lifecycle worker's own binding.
     const config = (source: string) =>
       JSON.parse(source.slice(source.indexOf("= {") + 2, source.indexOf("} as const;") + 1));
@@ -558,7 +558,7 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     const hooks = text(alone, "src/modules/upload-api/multipart-uploads.hooks.ts");
     for (const hook of ["reserve", "complete", "closed"])
       expect(hooks).toContain(`throw new NotImplemented("${hook} for Multipart uploads");`);
-    expect(hooks).not.toContain("lifecycle");
+    expect(hooks).not.toContain("resources.lifecycle");
     expect(rows(alone).tiles.find((row) => row.tile === "upload-api")?.hooks[0]?.hooks).toEqual([
       "validate",
       "metadata",
@@ -696,13 +696,13 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       [
         "// Redirector, a Redirect responder in Links API: Answers with an HTTP redirect and edge cache headers.",
         "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
-        'import type { ModuleRequest, ModuleResponse } from "../entry.ts";',
+        'import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";',
         'import type { Dependencies } from "./redirector.slots.ts";',
-        'import { declareSettings } from "../../runtime/settings.ts";',
+        'import { declareSettings } from "../../extension-api/index.ts";',
         "",
-        "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+        "/** The settings this module reads, by name: text(), integer() or url();",
         " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-        " * SECRET_DIR files. */",
+        " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
         "export const settings = declareSettings({});",
         "",
         "/** Answers any method on /modules/redirector and every path below it. */",
@@ -718,6 +718,6 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
     expect(text(stack, "src/modules/entry.ts")).toContain("export type ModuleRequest = {");
     expect(stackOff.files.map((file) => file.path)).not.toContain("src/modules/entry.ts");
     // A stub-only stack off has the same files as the stub stack alone.
-    expect(assemble(stubStackDesign()).files.length).toBe(55);
+    expect(assemble(stubStackDesign()).files.length).toBe(58);
   });
 });

@@ -5,6 +5,7 @@ import { createLocalAssetLifecycle } from "../../src/v2/asset-lifecycle.ts";
 import { createLocalComposition } from "../../src/v2/composition.ts";
 import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalEventCounter } from "../../src/v2/event-counter.ts";
+import { createLocalExtensionApi } from "../../src/v2/extension-api.ts";
 import { createLocalFavorites } from "../../src/v2/favorites.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
 import { createLocalMediaWorker } from "../../src/v2/media-worker.ts";
@@ -45,6 +46,7 @@ export function loadLocalV2Registry(
       ? []
       : [
           createLocalComposition(closure),
+          createLocalExtensionApi(closure),
           createLocalModuleStubs(closure),
           createLocalTileProcesses(closure),
         ]),

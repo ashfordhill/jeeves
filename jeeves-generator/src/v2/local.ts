@@ -1192,6 +1192,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     "ffmpeg-os.lock",
     "src/runtime/local.ts",
     "scripts/status.mjs",
+    "scripts/check-extensions.mjs",
     "scripts/setup.mjs",
     "scripts/local.mjs",
     "scripts/migrate.mjs",

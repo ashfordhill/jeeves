@@ -67,7 +67,7 @@ import type {
   SearchIndex,
   Tx,
 } from "../modules/dependencies.ts";
-import type { ProcessScope } from "./process.ts";
+import { ownResource, processClient, type ProcessScope } from "./process.ts";
 import { createFailureLog, NotImplemented } from "./tile-process.ts";
 
 /** A dependency that isn't provisioned locally (another provider, an Identity no sign-in binds, a
@@ -220,11 +220,19 @@ async function probed(
   log: ProbeLog,
   client: { client: string; kind: string; check: string },
   check: () => Promise<unknown>,
+  signal?: AbortSignal,
 ) {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let abort: (() => void) | undefined;
   try {
+    signal?.throwIfAborted();
     await Promise.race([
       check(),
+      new Promise<never>((_resolve, reject) => {
+        if (!signal) return;
+        abort = () => reject(signal.reason);
+        signal.addEventListener("abort", abort, { once: true });
+      }),
       new Promise<never>((_, reject) => {
         timer = setTimeout(() => reject(new Error("Probe deadline (5 s)")), 5000);
       }),
@@ -234,6 +242,7 @@ async function probed(
     throw new Error(`Startup probe failed: ${client.kind} ${client.client}`);
   } finally {
     clearTimeout(timer);
+    if (abort) signal?.removeEventListener("abort", abort);
   }
   log({ level: "info", ...client, result: "ok" });
 }
@@ -369,26 +378,31 @@ export async function databaseClient(
   log: ProbeLog,
   binding: { tile: string; resource: string },
 ): Promise<DatabaseReadWriter> {
+  return processClient(scope, "database-handle", binding, async () => {
   const login = localLogins.find(
     (item) => item.resource === binding.resource && item.host === binding.tile,
   );
   if (!login) throw new Error(`No runtime login for ${binding.resource}`);
-  const pool = createPostgres({
+  const configuration = {
     ...databaseEndpoint(binding.resource),
     login,
     poolSize: 10,
     statementTimeoutMs: 2000,
     connectionTimeoutMs: 2000,
+  };
+  const pool = processClient(scope, "postgres", configuration, () => {
+    const pool = ownResource(scope, createPostgres(configuration), "end");
+    pool.on("error", () => {});
+    return pool;
   });
-  // An idle connection's error is not fatal: the next query reconnects.
-  pool.on("error", () => {});
   let ended = false;
   scope.own(() => {
     ended = true;
-    return pool.end();
+    return undefined;
   });
   await probed(log, { client: binding.resource, kind: "database", check: "SELECT 1" }, () =>
     pool.query("SELECT 1"),
+    scope.signal,
   );
   const run = (sql: string, values?: readonly unknown[]) =>
     pool.query(sql, values ? [...values] : undefined);
@@ -422,6 +436,7 @@ export async function databaseClient(
       );
     },
   };
+  });
 }
 // @database-end
 // @broker-start
@@ -449,6 +464,7 @@ export async function queuePublisher(
   binding: { queue: string; mode: "work-queue" | "topic" },
   onState?: BrokerState,
 ): Promise<QueuePublisher> {
+  return processClient(scope, "queuePublisher", binding, async () => {
   const topic = binding.mode === "topic";
   const broker = brokerBinding();
   let publisher: Awaited<ReturnType<typeof createPublisher>> | undefined;
@@ -456,18 +472,19 @@ export async function queuePublisher(
     log,
     { client: binding.queue, kind: "queue", check: "open the broker and a confirm channel" },
     async () => {
-      publisher = await createPublisher(
-        broker,
-        { exchange: topic ? binding.queue : "", routingKey: topic ? "" : binding.queue },
-        { onState },
-      );
+      const route = { exchange: topic ? binding.queue : "", routingKey: topic ? "" : binding.queue };
+      publisher = await processClient(scope, "amqp-publisher", { broker, route }, async () => {
+        const client = ownResource(scope, await createPublisher(broker, route, { onState }), "close");
+        scope.transport(client);
+        return client;
+      });
     },
+    scope.signal,
   );
   const opened = publisher;
   if (!opened) throw new Error(`No publisher for ${binding.queue}`);
-  scope.own(() => opened.close());
-  scope.transport(opened);
   return { publish: (message, options) => opened.publish(message, options?.messageId ?? randomUUID()) };
+  });
 }
 // @queue-end
 // @pubsub-start
@@ -512,6 +529,7 @@ export async function pubsubPublisher(
   log: ProbeLog,
   binding: { topic: string },
 ): Promise<QueuePublisher> {
+  return processClient(scope, "pubsubPublisher", binding, async () => {
   const client = new PubSub({
     projectId: pubsubProjectId(),
     ...pubsubChannel,
@@ -531,6 +549,7 @@ export async function pubsubPublisher(
       const [exists] = await topic.exists();
       if (!exists) throw new Error(`Pub/Sub topic ${binding.topic} not found`);
     },
+    scope.signal,
   );
   return {
     publish(message, options) {
@@ -557,6 +576,7 @@ export async function pubsubPublisher(
       return sent.then(() => undefined);
     },
   };
+  });
 }
 // @pubsub-end
 // @pubsub-loop-start
@@ -819,10 +839,12 @@ export async function cacheClient(
   log: ProbeLog,
   binding: { cache: string },
 ): Promise<CacheClient> {
+  return processClient(scope, "cacheClient", binding, async () => {
   const failure = createFailureLog(log.tile);
   const endpoints = cacheClientEndpoint(binding.cache);
-  const cache = await createValkeyCache({
-    binding: { ...endpoints, secret: `cache-${binding.cache}` },
+  const cacheBinding = { ...endpoints, secret: `cache-${binding.cache}` };
+  const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({
+    binding: cacheBinding,
     onState: (state, error) =>
       state === "unavailable"
         ? failure(`cache ${binding.cache}`, error ?? new Error("Cache unavailable"))
@@ -835,8 +857,7 @@ export async function cacheClient(
               state,
             }),
           ),
-  });
-  scope.own(() => cache.close());
+  }), "close"));
   const probe = { client: binding.cache, kind: "cache", check: "PING" };
   try {
     await cache.ping();
@@ -855,6 +876,7 @@ export async function cacheClient(
       await cache.delete(key);
     },
   };
+  });
 }
 // @cache-end
 // @objects-start
@@ -865,12 +887,13 @@ export async function objectClient(
   log: ProbeLog,
   binding: { tile: string; bucket: string; access: "read" | "write" | "read-write" },
 ): Promise<ObjectStore> {
-  const client = createObjects({
+  return processClient(scope, "objectClient", binding, async () => {
+  const configuration = {
     endpoint: "http://local-objects:3900",
     region: "garage",
     credentialSecret: `s3-${binding.tile}`,
-  });
-  scope.own(() => client.destroy());
+  };
+  const client = processClient(scope, "objects", configuration, () => ownResource(scope, createObjects(configuration), "destroy"));
   const Bucket = binding.bucket;
   const writeOnly = binding.access === "write";
   await probed(
@@ -886,6 +909,7 @@ export async function objectClient(
       const { UploadId } = await client.send(new CreateMultipartUploadCommand({ Bucket, Key }));
       return client.send(new AbortMultipartUploadCommand({ Bucket, Key, UploadId }));
     },
+    scope.signal,
   );
   return {
     async get(key) {
@@ -908,6 +932,7 @@ export async function objectClient(
       );
     },
   };
+  });
 }
 // @objects-end
 // @search-start
@@ -918,13 +943,15 @@ export async function searchClient(
   log: ProbeLog,
   binding: { index: string },
 ): Promise<SearchIndex> {
-  const client = createSearch({
+  return processClient(scope, "searchClient", binding, async () => {
+  const configuration = {
     endpoint: `http://search-${binding.index}:9200`,
     requestTimeoutMs: 5000,
-  });
-  scope.own(() => client.close());
+  };
+  const client = processClient(scope, "search", configuration, () => ownResource(scope, createSearch(configuration), "close"));
   await probed(log, { client: binding.index, kind: "search", check: "cluster health" }, () =>
     client.cluster.health(),
+    scope.signal,
   );
   const index = binding.index;
   return {
@@ -939,6 +966,7 @@ export async function searchClient(
       await client.delete({ index, id });
     },
   };
+  });
 }
 // @search-end
 // @http-start

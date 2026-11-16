@@ -82,8 +82,9 @@ async function snapshot(root: string): Promise<unknown> {
 
 describe("extension contract migration", () => {
   it("emits the installed capability guide/version and verifies real output responsibility", () => {
-    expect(real.manifest.extensionApi.version).toBe(1);
-    expect(real.report.extensionApi.version).toBe(1);
+    expect(real.manifest.extensionApi.version).toBe(2);
+    expect(real.manifest.extensionApi.boundary).toBe("checked-extensions");
+    expect(real.report.extensionApi.version).toBe(2);
     expect(real.report.capabilities).toHaveLength(4);
     expect(
       Buffer.from(

@@ -1,0 +1,44 @@
+/** Private generated bridge. Product code never receives a transaction or lifecycle object.
+ * Copies/freeze catch accidental DTO mutation; this is not a hostile-code sandbox. */
+export function immutable<T>(value: T): T {
+  if (value === undefined || value === null || typeof value !== "object") return value;
+  const copy = structuredClone(value);
+  const freeze = (item: unknown): void => {
+    if (!item || typeof item !== "object" || ArrayBuffer.isView(item)) return;
+    for (const child of Object.values(item)) freeze(child);
+    Object.freeze(item);
+  };
+  freeze(copy);
+  return copy;
+}
+const transactional = new Set(["upload.reserve", "upload.complete", "upload.closed", "failed", "job.construct", "publication.construct"]);
+export function productHooks<T>(hooks: T): T {
+  const wrap = (value: unknown, path: string): unknown => {
+    if (typeof value === "function") return (...args: unknown[]) => {
+      const bounded = transactional.has(path) ? args.slice(1) : args;
+      const result = value(...bounded.map(immutable));
+      if (path !== "load" && result && typeof result.then === "function") {
+        // Observe an invalid async rejection without allowing its result to become policy.
+        void Promise.resolve(result).catch(() => {});
+        throw new Error(`Policy hook ${path} must return synchronously`);
+      }
+      if (path === "eligible" && typeof result !== "boolean") throw new Error("Policy hook eligible must return boolean");
+      return result;
+    };
+    if (value && typeof value === "object") return Object.freeze(Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [key, wrap(child, path ? `${path}.${key}` : key)]),
+    ));
+    return value;
+  };
+  return wrap(hooks, "") as T;
+}
+export function productQueries(module: string) {
+  return Object.freeze({ async call(_name: string, _input: Readonly<Record<string, unknown>>): Promise<never> {
+    throw new Error(`Not implemented: registered product queries for ${module}`);
+  } });
+}
+
+export function bindFavoritesHooks(hooks: { eligible(itemId: string): boolean }) {
+  const guarded = productHooks(hooks);
+  return { eligible: async (itemId: string) => guarded.eligible(itemId) };
+}

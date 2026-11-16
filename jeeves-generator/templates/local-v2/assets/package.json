@@ -24,10 +24,11 @@
   "packageManager": "pnpm@12.16.1",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "pnpm check:extensions && tsc -p tsconfig.json",
     "first-run": "node scripts/local.mjs first-run",
     "start": "node scripts/local.mjs start",
-    "stop": "node scripts/local.mjs stop"
+    "stop": "node scripts/local.mjs stop",
+    "check:extensions": "node scripts/check-extensions.mjs"
   },
   "type": "module",
   "version": "0.0.0-experimental.2"

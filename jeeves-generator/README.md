@@ -25,6 +25,20 @@
   only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
   projects use `local-v2`.
 
+New exports use extension API **v2 (`checked-extensions`)**. Product code imports types and
+helpers from `src/extension-api/index.ts`; shared DTOs and pure definitions belong in the
+application-owned `src/contracts/` directory. Run `pnpm check:extensions` offline (also part of
+`pnpm build`). It checks private runtime/driver/cross-service imports, policy effect APIs and
+template-owned file hashes. This catches cooperative mistakes, not hostile JavaScript.
+
+Product policy callbacks are synchronous and receive copied, frozen DTO objects. Generated
+bridges retain transaction, guard, credentials and lifecycle authority. Custom SQL, token
+verification and arbitrary HTTP target handles are unavailable public capabilities and appear as
+selection-specific custom gaps; a cache loader's `ProductQueries` handle also remains unavailable
+until a registered query binding is installed. Existing unrestricted exports remain readable;
+an update from API v1 refuses until `--ack-extension-api=2` and a successful staged interface and
+boundary check. Handwritten bodies are preserved, never rewritten to claim compatibility.
+
 `pnpm test:generated` separately exports, builds and runs the Activity backend with real
 PostgreSQL, RabbitMQ and generated processes. Its core scenario asserts edge publication,
 a committed count and matching durable receipt; it does not replace the offline or studio
@@ -380,7 +394,12 @@ before it, each mounted or placeholder template logs one `started` line
 naming what its startup ran (`{"level":"info","event":"started","tile","module","template","wiring",
 "checks"}`, for example `"checks":["sweep at start","publication relay started","subscribed
 completion-events--completion-handler","sweep every 30 s"]`). It drains on SIGTERM in reverse: HTTP admission, then loops, then publishers,
-clients and pools. The foundation accepts process hosts with no selection, closes
+clients and pools. Configuration for templates and stubs is checked before any connection.
+Shutdown stops admission, signals cancellation and closes dependents in reverse construction
+order, once. Its final deadline is **10 seconds from first stop**, including unfinished startup;
+a hung hook exits 1 at that bound. Abandonment never proves rollback or that an external effect
+failed. Each process owns its own registry and cancellation state.
+The foundation accepts process hosts with no selection, closes
 `application-services` for them, and substitutes `scripts/local.mjs`'s startup gate (exactly
 once, or it refuses) so `first-run` and `start` read `report.processes.runnable` instead of
 `applicationComplete`. Composition and primitives also emit `src/runtime/process.ts`, `http.ts`
@@ -437,18 +456,22 @@ bucket, or why it has none, and Preview shows them.
   script did) and checks them in its own hooks.
 - A **route stub** (any stub in an HTTP tile that consumes no queue) answers any method on
   `/modules/<module id>` and every path below it. Its `<module>.ts` takes
-  `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; the types live in the
-  scaffold `src/modules/entry.ts`. `request.body` is the parsed JSON or text (up to 64 KiB; 400
+  `(dependencies, request: ModuleRequest): Promise<ModuleResponse>`; public types come through
+  `src/extension-api/index.ts` from the private scaffold `src/modules/entry.ts`. `request.body` is the parsed JSON or text (up to 64 KiB; 400
   for invalid or empty JSON, 413 over the limit, 415 for any other content type), and
   `request.rawBody` the same body's bytes exactly as received, to check a signature over them
   (undefined when there is no body). A `ModuleResponse.headers` value is a string or an array of
   strings; an array sends the header once per value, such as two `Set-Cookie` lines.
+  JSON DTO objects are copied and frozen; body bytes are copied. Headers include only `accept`,
+  `content-type`, `if-none-match`, `if-modified-since` and `idempotency-key`; Authorization,
+  Cookie and other credentials stay private. The live AbortSignal is preserved separately.
   `request.caller` is the tile's sign-in caller, and always
   `{signedIn: false}` in a tile with no guard. `request.signal` is aborted with `Error("DEADLINE")`
   once the tile's Request timeout passes after the stub starts (when the admission answers 503
   `DEADLINE`; the process passes `{ deadlineMs: config.settings.requestTimeoutMs }` to
   `stubRoutes`), or with `Error("CLIENT_CLOSED")` when the client goes before the answer is
-  written, and never once the stub has answered: pass it to downstream calls so they stop.
+  written, or with `Error("PROCESS_STOPPING")` on process shutdown, and never once the stub
+  has answered.
   `request.path` is decoded (`%2F` is a slash); `request.rawPath` is the same path as it was sent.
   `defineRoutes(table)`, in `entry.ts`, makes the stub's dispatch from a table keyed
   `"<METHOD> <pattern>"`: DELETE, GET, HEAD, OPTIONS, PATCH, POST or PUT, and a pattern of literal
@@ -462,8 +485,8 @@ bucket, or why it has none, and Preview shows them.
   is defined, so a table defined at the top of the stub's file fails startup;
   `defineRoutes<Dependencies>` gives `(request, dependencies)` and hands each handler the
   dependencies the stub passes as its second argument.
-  A stub that doesn't use it dispatches every method and path itself. Its `dependencies` are real
-  clients (provisioning for stubs, below). Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
+  A stub that doesn't use it dispatches every method and path itself. Its `dependencies` expose
+  bounded handles from the public API; restricted legacy SQL/target handles are named gaps. Library stubs (a Worker's stubs that consume nothing) keep their files, are compiled
   and get their clients, and are called only through another module's link.
 - **Multipart uploads** is mounted on its real libraries: its private schema (named from the
   selection ID) with the uploads table (`ownedUploadPersistence`) and a `jobs` outbox in
@@ -475,13 +498,10 @@ bucket, or why it has none, and Preview shows them.
   unfinished uploads still fails the sweep (at start, the start), with each upload's error
   beside it in an `AggregateError`. Its six operations are mounted at
   `/modules/<lead>/uploads…`. It needs its tile's Auth guard set to Required (the derivation
-  keeps it a stub otherwise): its hooks factory gets `guard`, and
-  `principal` is `return resources.guard.require(request);`, so a start with a valid token
-  reaches `validate` first. When an asset lifecycle names the upload, the upload's process also
-  builds that lifecycle (`createAssetLifecycle`, from the lifecycle's own hooks file and the same
-  binding its worker uses) and the factory gets `lifecycle`, its upload hooks: `reserve`,
-  `complete` and `closed` delegate to it, so their "Not implemented" comes from the lifecycle
-  hooks they reach (`metadata`, `job.construct`, `response`).
+  keeps it a stub otherwise). Generated HTTP code requires the verified principal before the
+  product's `validate` callback. The product factory receives the object key prefix only. When
+  an asset lifecycle names the upload, a private bridge binds its transaction callbacks;
+  product callbacks receive DTO arguments without transaction or lifecycle controls.
 - **Cache reader** is mounted with `createPositiveReader` on a source login (no grants) and the
   Valkey cache at `GET /modules/<lead>/:key`; null answers 404. The cache's host, port and
   transport come from `cacheEndpoint` (`valkey.ts`): `JEEVES_CACHE_<ID>_HOST`, `_PORT` and `_TLS`, not the bindings file. While the cache is down it reads
@@ -507,16 +527,15 @@ bucket, or why it has none, and Preview shows them.
   bound. The bounds come from the `favorites-policy` record (item ID size, **1,000 per
   account**, **50 to a page**) into the process config; the table's checks use the same values.
   The hooks file `src/modules/<host>/<lead>.hooks.ts` exports
-  `<lead>Hooks(resources: { items: pg.Pool }): FavoritesHooks` with one hook,
-  `eligible(itemId): Promise<boolean>`, which throws `Not implemented: eligible for <lead name>`
-  (501) until written; only adding asks it. `items` is a pool on the database its **items** Data
-  access reads (that Data access's Pool size and Statement timeout), whose login may select that
-  database's `published` views; with no items Data access the resources are empty. Its own pool
-  runs fixed at 10 connections and 2000 ms. With processes off it emits only the runtime file
-  and an unfinished `favorites-application-bindings` gap.
+  `<lead>Hooks(resources: Record<string, never>): FavoritesHooks` with one synchronous hook,
+  `eligible(itemId): boolean`, which throws `NotImplemented` (501) until written; only adding
+  asks it. Pools stay private to generated code. Its own pool runs at 10 connections and
+  2000 ms statements. With processes off it emits the runtime and an unfinished
+  `favorites-application-bindings` gap.
 - **Search query** (v3 contract §5) is mounted at `GET /modules/<lead>?q=&page=` on its index,
   with the mapping and document from the Index writer that fills that index: the process imports
-  that writer's hooks file, so the two can't drift. At start it checks the search service (cluster
+  that writer's hooks file in generated code. Product hooks do not import another service's
+  private hooks; shared product DTOs belong in `src/contracts/`. At start it checks the search service (cluster
   health) and, once the mapping is written, asserts the index (`openSearchIndex` in the scaffold
   `src/runtime/tile-search.ts`: created when missing, also when another process creates it at the
   same moment; refused when its mapping differs). A bad `q` (1–200 characters) or `page` (1–100)
@@ -725,8 +744,13 @@ it writes), and a stub store's `provisioned` text says `SELECT on published` and
 stub's own schema and, on a database a stub writes, its idempotency records in
 `jeeves.idempotency_records` (Idempotency records, below).
 
-**Module clients.** The scaffold `src/runtime/module-clients.ts` holds the real clients behind the
-stub interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
+**Module clients (private implementation).** The scaffold `src/runtime/module-clients.ts` holds
+the internal adapters described below. Public extension API v2 supplies bounded cache/object/
+queue/search/module handles; raw SQL, transaction, token and HTTP target APIs described here
+are not passed to product code and remain explicit custom gaps. Physical clients use the same
+per-process registry as template clients, keyed by complete configuration and credential identity;
+different logins, endpoints or configuration do not share a client. Physical cleanup runs once.
+The private adapters implement the internal interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
 `databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
 `execute`; a query that gets no reply in 2.5 s, as when PostgreSQL stalls, rejects `Query read
 timeout` and the pool discards its connection, and a template's pool has the same bound, 500 ms
@@ -995,7 +1019,7 @@ none of these variables, and they are optional, like `_CA_FILE`, so neither the 
 `environment` nor the export's README lists them per process; the README's intro gives the rule.
 
 Each mounted lead gets `src/modules/<host>/<lead>.hooks.ts` (a `generated-extension`): one
-factory over the template's generic resources whose every hook throws `NotImplemented("<hook>
+factory over its bounded public inputs whose every hook throws `NotImplemented("<hook>
 for <lead name>")`. The multipart's are `validate`, `metadata`, `response`, `originalKey` and
 `job`, plus `reserve`, `complete` and `closed` when no asset lifecycle names the upload
 (`principal` is the sign-in's); the cache reader's `key`, `codec`,

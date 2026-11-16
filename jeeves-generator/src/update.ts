@@ -394,6 +394,27 @@ async function validateMigration(
       [compiler, "--noEmit", "--project", join(stage, "tsconfig.json")],
       { cwd: stage, timeout: 120000, maxBuffer: 1024 * 1024 },
     );
+    if (bundle.files.some((file) => file.path === "scripts/check-extensions.mjs")) {
+      // The scratch copy deliberately excludes prior .jeeves state. Restore every target
+      // metadata payload, including unchanged records, before the complete-export hash check.
+      for (const file of bundle.files)
+        if (file.path.startsWith(".jeeves/") && file.path !== manifestPath)
+          await writeFileAtomically(stage, file.path, file.bytes);
+      await writeFileAtomically(
+        stage,
+        ".jeeves/manifest.json",
+        Buffer.from(JSON.stringify(bundle.manifest)),
+      );
+      await promisify(execFile)(
+        process.execPath,
+        [join(stage, "scripts/check-extensions.mjs"), stage],
+        {
+          cwd: stage,
+          timeout: 120000,
+          maxBuffer: 1024 * 1024,
+        },
+      );
+    }
   } finally {
     await rm(stage, { recursive: true, force: true });
   }

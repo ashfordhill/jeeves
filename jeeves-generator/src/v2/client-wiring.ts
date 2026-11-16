@@ -297,6 +297,27 @@ export function stubClients(
           : `${/^[AEIOU]/.test(named) ? "an" : "a"} ${named} isn't provisioned locally`;
       return [property, unavailable(property, target.name, why)];
     });
+    // Legacy clients remain private for startup/provisioning compatibility. Public extensions
+    // receive a named gap until a registered SQL or authenticated target binding exists.
+    for (const item of properties) {
+      if (
+        ![
+          "DatabaseReader",
+          "DatabaseReadWriter",
+          "QueueConsumer",
+          "TokenVerifier",
+          "HttpTarget",
+        ].includes(item.type)
+      )
+        continue;
+      const value = values.find(([property]) => property === item.property);
+      if (value)
+        value[1] = unavailable(
+          item.property,
+          item.connection.target.name,
+          "requires a registered product capability binding",
+        );
+    }
     values.push(["settings", `${read} as ${alias}["settings"]`]);
     assignments.push(
       ...(stub.role === "library"
@@ -379,7 +400,7 @@ export function stubClients(
     sections,
     mount: {
       imports,
-      setup: [
+      validation: [
         "// Each stub's own settings: what its file's `settings` export declares (none without one).",
         "const declared = {",
         ...declarations,
@@ -390,6 +411,8 @@ export function stubClients(
         "checkConfiguration([",
         ...[...checks.keys()].map((call) => `  () => ${call},`),
         "]);",
+      ],
+      setup: [
         ...(list.length
           ? [
               "// Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",

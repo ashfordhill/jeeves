@@ -3,11 +3,9 @@ WORKDIR /app
 RUN npm install --global pnpm@12.16.1
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
-COPY tsconfig.json ./
-COPY src ./src
+# Build checks the complete export, including its generated-file manifest and boundary script.
+COPY . .
 RUN pnpm build
-COPY scripts ./scripts
-COPY infra ./infra
 USER node
 CMD ["node", "scripts/status.mjs"]
 

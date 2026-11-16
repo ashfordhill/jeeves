@@ -9,24 +9,25 @@ export type Caller =
 
 /** One HTTP request to /modules/<module id> or a path below it. */
 export type ModuleRequest = {
-  method: string;
+  readonly method: string;
   /** The path below /modules/<module id>: "/" for the module's own path. Decoded: `%20` is a
    * space, and `%2F` a slash. */
-  path: string;
+  readonly path: string;
   /** The same path as it was sent, its escapes kept (`%20`, `%2F`): what `defineRoutes` matches. */
-  rawPath: string;
-  query: Record<string, string | string[] | undefined>;
-  headers: Record<string, string | string[] | undefined>;
+  readonly rawPath: string;
+  readonly query: Readonly<Record<string, string | readonly string[] | undefined>>;
+  /** A finite safe set; Authorization, Cookie and other credentials never reach product code. */
+  readonly headers: Readonly<Record<string, string | readonly string[] | undefined>>;
   /** Parsed JSON or text, up to 64 KiB; undefined when there is none. */
-  body: unknown;
+  readonly body: unknown;
   /** The body's bytes exactly as received (JSON or text, up to 64 KiB), to check a signature over
    * them; undefined when there is none. Don't change it. */
-  rawBody?: Uint8Array;
-  caller: Caller;
+  readonly rawBody?: Uint8Array;
+  readonly caller: Caller;
   /** Aborted with `Error("DEADLINE")` once the tile's Request timeout passes, or with
    * `Error("CLIENT_CLOSED")` when the client goes before the answer; never after an answer. Pass
    * it to downstream calls (`fetch(url, { signal })`) so they stop when no one waits for them. */
-  signal: AbortSignal;
+  readonly signal: AbortSignal;
 };
 
 /** What a route stub answers: 200 and no body unless it says otherwise. */

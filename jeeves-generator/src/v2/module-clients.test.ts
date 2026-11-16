@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { checkServerIdentity, type PeerCertificate } from "node:tls";
 import { pathToFileURL } from "node:url";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { favoritesStackDesign } from "../../../jeeves/packages/spec/src/fixtures/favorites-stack.ts";
 import { stubStackDesign } from "../../../jeeves/packages/spec/src/fixtures/stub-stack.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -54,7 +55,7 @@ const check = `
     return value;
   };`;
 const fakes: Record<string, string> = {
-  "../features/local-bindings.ts": `export const localLogins = [{ resource: "links-db", host: "links-api", database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db--links-api" }];`,
+  "../features/local-bindings.ts": `export const localLogins = [{ resource: "links-db", host: "links-api", database: "d_links_db", user: "r_links_db__links_api", secret: "sql-links-db--links-api" }, { resource: "links-db", host: "reader", database: "d_links_db", user: "r_reader", secret: "sql-reader" }];`,
   "./postgres.ts": `${check}
     export function createPostgres(options) {
       fake.endpoints.push(["postgres", options.hostname, options.port]);
@@ -315,7 +316,11 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     ]);
     expect(await db.query("SELECT $1", [1])).toEqual([{ sql: "SELECT $1", values: [1] }]);
     expect(await db.execute("DELETE FROM t")).toEqual({ rowCount: 3 });
-    expect(scope.owned).toHaveLength(1);
+    expect(scope.owned).toHaveLength(2);
+    // The handle's stop flag drains before its underlying pooled client.
+    await scope.owned[1]?.();
+    await scope.owned[0]?.();
+    expect(fake.calls.filter(([call]) => call === "end")).toHaveLength(1);
     await expect(
       clients.databaseClient(scope, probe, { tile: "visit-worker", resource: "links-db" }),
     ).rejects.toThrow("No runtime login for links-db");
@@ -332,6 +337,97 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       result: "failed",
       error: "Error: SELECT 1 refused",
     });
+  });
+
+  it("shares physical pools across emitted template/stub consumers, isolating credentials, configuration and processes", async () => {
+    const generated = assembleV2(
+      { designJson: canonicalJson(favoritesStackDesign()) },
+      loadLocalV2Registry(),
+    );
+    const source = new TextDecoder().decode(
+      generated.files.find((f) => f.path === "src/features/service-resources.ts")?.bytes,
+    );
+    const fakeSource = (path: string) => {
+      const source = fakes[path];
+      if (!source) throw Error(`Missing fake ${path}`);
+      return source;
+    };
+    const dependencies: Record<string, string> = {
+      "./application-bindings.ts": "export const selections = [];",
+      "./local-bindings.ts": fakeSource("../features/local-bindings.ts"),
+      "../runtime/local.ts": "export const readSecret = () => 'secret';",
+      "../runtime/postgres.ts": fakeSource("./postgres.ts"),
+      "../runtime/process.ts": fakeSource("./process.ts"),
+    };
+    const resources = await import(
+      dataUrl(
+        stripTypeScriptTypes(source).replace(/from "([^"]+)"/g, (match, from: string) =>
+          dependencies[from] ? `from "${dataUrl(dependencies[from])}"` : match,
+        ),
+      )
+    );
+    const { createProcessLifecycle } = await import(dataUrl(fakeSource("./process.ts")));
+    const a = createProcessLifecycle({ mark: () => {} }),
+      b = createProcessLifecycle({ mark: () => {} });
+    const selection = {
+      host: "links-api",
+      resources: { state: "links-db" },
+      inputs: { "state.poolSize": 10, "state.statementTimeoutMs": 2000 },
+    };
+    try {
+      const template = resources.pool(a.scope, selection, "state");
+      expect(resources.pool(a.scope, selection, "state")).toBe(template);
+      await clients.databaseClient(a.scope, probe, { tile: "links-api", resource: "links-db" });
+      expect(fake.calls.filter(([kind]) => kind === "createPostgres")).toHaveLength(1);
+      expect(
+        resources.pool(
+          a.scope,
+          { ...selection, inputs: { ...selection.inputs, "state.poolSize": 4 } },
+          "state",
+        ),
+      ).not.toBe(template);
+      await clients.databaseClient(a.scope, probe, { tile: "reader", resource: "links-db" });
+      expect(resources.pool(b.scope, selection, "state")).not.toBe(template);
+      expect(fake.calls.filter(([kind]) => kind === "createPostgres")).toHaveLength(4);
+      expect(
+        fake.calls.filter(([kind, user]) => kind === "createPostgres" && user === "r_reader"),
+      ).toHaveLength(1);
+    } finally {
+      await a.close();
+      await b.close();
+    }
+    expect(fake.calls.filter(([kind]) => kind === "end")).toHaveLength(4);
+  });
+
+  it("closes opened emitted clients when initialization fails or a probe is cancelled", async () => {
+    const { createProcessLifecycle } = await import(dataUrl(fakes["./process.ts"] ?? ""));
+    const exitCode = process.exitCode;
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const failed = createProcessLifecycle({ mark: () => {} });
+      await failed.start(async (scope: unknown) => {
+        await clients.databaseClient(scope, probe, { tile: "links-api", resource: "links-db" });
+        fake.fail = "SELECT 1";
+        await clients.databaseClient(scope, probe, { tile: "reader", resource: "links-db" });
+      });
+      expect(process.exitCode).toBe(1);
+      expect(fake.calls.filter(([kind]) => kind === "end")).toHaveLength(2);
+      expect(lines.at(-1)).toMatchObject({ result: "failed", error: "Error: SELECT 1 refused" });
+      const waiting = createProcessLifecycle({ mark: () => {} });
+      fake.hang = true;
+      const start = waiting.start(async (scope: unknown) => {
+        await clients.databaseClient(scope, probe, { tile: "links-api", resource: "links-db" });
+      });
+      await Promise.resolve();
+      await waiting.close();
+      await start;
+      expect(waiting.scope.signal.aborted).toBe(true);
+      expect(fake.calls.filter(([kind]) => kind === "end")).toHaveLength(3);
+      expect(lines.at(-1)).toMatchObject({ result: "failed", error: "Error: Process stopping" });
+    } finally {
+      errors.mockRestore();
+      process.exitCode = exitCode;
+    }
   });
 
   it("publishes to a topic's exchange or a work queue, with confirms and a fresh message ID", async () => {

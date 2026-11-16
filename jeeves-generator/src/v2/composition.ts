@@ -101,7 +101,7 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
         [
           "sql",
           selections.some((s) =>
-            s.resources.some((r) => ["state", "source", "counts"].includes(r.field)),
+            s.resources.some((r) => ["state", "source", "items", "counts"].includes(r.field)),
           ),
         ],
         [
@@ -113,7 +113,7 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
         ["broker", selections.some((s) => s.resources.some((r) => !!r.channel))],
         ["cache", selections.some((s) => s.binding.kind === "positive-cache-read")],
       ] as const) {
-        for (const name of [section, `${section}-import`])
+        for (const name of [section, `${section}-import`, `${section}-validation`])
           constructors = constructors.replace(
             new RegExp(`// @${name}-start[\\s\\S]*?// @${name}-end`, "g"),
             (block) => (required ? block.replace(/\/\/ @[^\n]+/g, "") : ""),

@@ -283,10 +283,12 @@ describe("standalone local foundation", () => {
       expect(Object.keys(stages)).toEqual(["app", "ffmpeg", "media"]);
       // Every build step runs as root first; only the run-time user changes.
       expect(stages.app.slice(-3)).toEqual([
-        "COPY infra ./infra",
+        "RUN pnpm build",
         "USER node",
         'CMD ["node", "scripts/status.mjs"]',
       ]);
+      expect(dockerfile.indexOf("COPY . .")).toBeLessThan(dockerfile.indexOf("RUN pnpm build"));
+      expect(text(bundle, "scripts/check-extensions.mjs")).toContain(".jeeves/manifest.json");
       expect(stages.media.slice(-3)).toEqual([
         "COPY --from=app /app /app",
         "USER node",
@@ -301,9 +303,9 @@ describe("standalone local foundation", () => {
         if (service.build) expect(service.user).toBeUndefined();
     }
     // At run time a process writes only its ready marker, under /tmp.
-    expect(text(processes, "src/runtime/process.ts")).toContain(
-      'const marker = "/tmp/application-ready";',
-    );
+    const lifecycle = text(processes, "src/runtime/process.ts");
+    expect(lifecycle).toContain('writeFileSync("/tmp/application-ready", "ready\\n")');
+    expect(lifecycle).toContain('rmSync("/tmp/application-ready", { force: true })');
   });
 
   it("sets each secret's mode after writing it, so the host umask can't narrow it (QG22)", () => {

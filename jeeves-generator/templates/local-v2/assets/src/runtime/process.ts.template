@@ -1,118 +1,165 @@
 import { writeFileSync, rmSync } from "node:fs";
+
 export interface ProcessScope {
-	own(close: () => void | Promise<void>): void;
-	transport(value: { closed: Promise<{ fatal: boolean }> }): void;
-	fail(error?: unknown): void;
-	ready(): void;
+  readonly signal: AbortSignal;
+  own(close: () => void | Promise<void>): void;
+  /** Stop admission before draining dependents in reverse construction order. */
+  admission(stop: () => void): void;
+  /** Include resource, configuration, credential and access scope in each key. */
+  once<T>(key: string, construct: () => T): T;
+  transport(value: { closed: Promise<{ fatal: boolean }> }): void;
+  fail(error?: unknown): void;
+  ready(): void;
 }
-/** One error line when startup, the process or a drain fails: why, as the error's name and
- * message in at most 300 characters. Writing it never throws. */
 function logError(event: string, error: unknown) {
-	try {
-		const why = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-		console.error(JSON.stringify({ level: "error", event, error: why.slice(0, 300) }));
-	} catch {
-		/* The drain still runs. */
-	}
+  try {
+    const why = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    console.error(JSON.stringify({ level: "error", event, error: why.slice(0, 300) }));
+  } catch { /* Cleanup still runs. */ }
 }
-/** One process owns its readiness and ordered drains. Register dependencies before dependents;
- * reverse close stops admission/consumers/timers before publishers, clients and pools. */
-export async function runProcess(
-	start: (scope: ProcessScope) => Promise<void>,
-) {
-	const marker = "/tmp/application-ready";
-	rmSync(marker, { force: true });
-	const drains: (() => void | Promise<void>)[] = [];
-	let stopping = false,
-		failed = false,
-		closing: Promise<void> | undefined;
-	const close = () => {
-		stopping = true;
-		rmSync(marker, { force: true });
-		return (closing ??= (async () => {
-			for (const drain of drains.reverse()) {
-				try {
-					await drain();
-				} catch (error) {
-					logError("drain-failed", error);
-					failed = true;
-				}
-			}
-			process.exitCode = failed ? 1 : 0;
-		})());
-	};
-	const scope: ProcessScope = {
-		own(drain) {
-			drains.push(drain);
-		},
-		transport(value) {
-			void value.closed.then((result) => {
-				if (!stopping) {
-					failed ||= result.fatal;
-					stopping = true;
-					rmSync(marker, { force: true });
-					void starting.finally(close).catch(() => {});
-				}
-			});
-		},
-		fail(error) {
-			if (error !== undefined) logError("process-failed", error);
-			failed = true;
-			stopping = true;
-			rmSync(marker, { force: true });
-			void starting.finally(close).catch(() => {});
-		},
-		ready() {
-			if (stopping) throw Error("Process stopped during startup");
-			writeFileSync(marker, "ready\n");
-			console.log("Application ready");
-		},
-	};
-	// Await startup before drain so a late constructor cannot escape ownership.
-	let starting: Promise<void>;
-	const signal = () => {
-		stopping = true;
-		rmSync(marker, { force: true });
-		void starting.finally(close).catch(() => {});
-	};
-	process.once("SIGTERM", signal);
-	process.once("SIGINT", signal);
-	starting = Promise.resolve().then(() => start(scope));
-	try {
-		await starting;
-	} catch (error) {
-		failed = true;
-		await close();
-		logError("startup-failed", error);
-		console.error("Application startup failed");
-	}
+/** Ten seconds from first stop, including unfinished startup. At the deadline exit 1. Abandoned
+ * work is NOT evidence of rollback or of a failed external effect. */
+export const shutdownBudgetMs = 10000;
+
+/** Injectable termination/marker seams are private test facilities, never product hooks. */
+export function createProcessLifecycle(options: {
+  budgetMs?: number;
+  terminate?: (code: number) => void;
+  mark?: (ready: boolean) => void;
+} = {}) {
+  const drains: (() => void | Promise<void>)[] = [];
+  const admission: (() => void)[] = [];
+  const instances = new Map<string, unknown>();
+  const cancellation = new AbortController();
+  let failed = false, closing: Promise<void> | undefined, starting: Promise<void> = Promise.resolve();
+  const mark = options.mark ?? ((ready: boolean) => {
+    if (ready) writeFileSync("/tmp/application-ready", "ready\n");
+    else rmSync("/tmp/application-ready", { force: true });
+  });
+  mark(false);
+  const close = () => {
+    if (closing) return closing;
+    mark(false);
+    // Assign before callbacks, so reentrant shutdown is idempotent too.
+    closing = Promise.resolve().then(async () => {
+      let deadline: ReturnType<typeof setTimeout> | undefined;
+      const expired = new Promise<void>((resolve) => {
+        deadline = setTimeout(() => {
+          failed = true;
+          logError("shutdown-deadline", new Error("Final shutdown deadline; outcomes may be unknown"));
+          process.exitCode = 1;
+          (options.terminate ?? ((code) => process.exit(code)))(1);
+          resolve();
+        }, options.budgetMs ?? shutdownBudgetMs);
+      });
+      const drain = async () => {
+        for (const stop of admission) {
+          try { stop(); } catch (error) { failed = true; logError("drain-failed", error); }
+        }
+        cancellation.abort(new Error("Process stopping"));
+        // Let a cancellable constructor settle before closing its dependencies. The final
+        // timer also covers a constructor or hook that ignores cancellation forever.
+        await starting.catch(() => {});
+        while (drains.length) {
+          try { await drains.pop()!(); }
+          catch (error) { failed = true; logError("drain-failed", error); }
+        }
+      };
+      await Promise.race([drain(), expired]);
+      clearTimeout(deadline);
+      process.exitCode = failed ? 1 : 0;
+    });
+    return closing;
+  };
+  const scope: ProcessScope = {
+    signal: cancellation.signal,
+    own(drain) { drains.push(drain); },
+    admission(stop) { if (cancellation.signal.aborted) stop(); else admission.push(stop); },
+    once<T>(key: string, construct: () => T): T {
+      if (cancellation.signal.aborted) throw cancellation.signal.reason;
+      if (!instances.has(key)) instances.set(key, construct());
+      return instances.get(key) as T;
+    },
+    transport(value) {
+      void value.closed.then((result) => {
+        if (!closing) { failed ||= result.fatal; void close(); }
+      }, (error) => scope.fail(error));
+    },
+    fail(error) {
+      if (error !== undefined) logError("process-failed", error);
+      failed = true;
+      void close();
+    },
+    ready() {
+      if (closing || cancellation.signal.aborted) throw Error("Process stopped during startup");
+      mark(true);
+      console.log("Application ready");
+    },
+  };
+  return {
+    scope, close,
+    async start(start: (scope: ProcessScope) => Promise<void>) {
+      starting = Promise.resolve().then(() => start(scope));
+      try { await starting; }
+      catch (error) {
+        failed = true;
+        logError("startup-failed", error);
+        console.error("Application startup failed");
+        await close();
+      }
+    },
+  };
+}
+export async function runProcess(start: (scope: ProcessScope) => Promise<void>) {
+  const lifecycle = createProcessLifecycle();
+  const signal = () => { void lifecycle.close().finally(() => {
+    process.removeListener("SIGTERM", signal);
+    process.removeListener("SIGINT", signal);
+  }); };
+  process.once("SIGTERM", signal);
+  process.once("SIGINT", signal);
+  await lifecycle.start(start);
+  if (lifecycle.scope.signal.aborted) signal();
 }
 export function periodic(
-	scope: ProcessScope,
-	effect: () => Promise<unknown>,
-	ms: number,
-	onFailure?: (error: unknown) => void,
+  scope: ProcessScope,
+  effect: () => Promise<unknown>,
+  ms: number,
+  onFailure?: (error: unknown) => void,
 ) {
-	let timer: ReturnType<typeof setTimeout> | undefined,
-		stopped = false,
-		running = Promise.resolve<unknown>(undefined);
-	const tick = () => {
-		running = effect()
-			.catch((error: unknown) => {
-				try {
-					onFailure?.(error);
-				} catch {
-					/* The next tick still runs. */
-				}
-			})
-			.finally(() => {
-				if (!stopped) timer = setTimeout(tick, ms);
-			});
-	};
-	tick();
-	scope.own(async () => {
-		stopped = true;
-		clearTimeout(timer);
-		await running;
-	});
+  let timer: ReturnType<typeof setTimeout> | undefined,
+    stopped = false,
+    running = Promise.resolve<unknown>(undefined);
+  const tick = () => {
+    running = effect().catch((error: unknown) => {
+      try { onFailure?.(error); } catch { /* The next tick still runs. */ }
+    }).finally(() => { if (!stopped) timer = setTimeout(tick, ms); });
+  };
+  tick();
+  scope.admission?.(() => { stopped = true; clearTimeout(timer); });
+  scope.own(async () => { stopped = true; clearTimeout(timer); await running; });
+}
+
+/** A reusable resource includes its full non-secret config and credential identity in the key.
+ * Factories register cleanup before their first awaited probe, so failed startup cannot leak it. */
+export function processClient<T>(scope: ProcessScope, kind: string, configuration: unknown, construct: () => T): T {
+  const key = `${kind}:${JSON.stringify(configuration, (_key, value) =>
+    value && typeof value === "object" && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+      : value)}`;
+  return scope.once ? scope.once(key, construct) : construct();
+}
+
+/** Register one physical client's close once, even when multiple generated dependents close it. */
+export function ownResource<T extends object>(scope: ProcessScope, resource: T, method: keyof T): T {
+  const original = (resource[method] as () => void | Promise<void>).bind(resource);
+  let closed = false;
+  let result: void | Promise<void>;
+  const close = () => {
+    if (!closed) { closed = true; result = original(); }
+    return result;
+  };
+  Object.defineProperty(resource, method, { value: close, configurable: true });
+  scope.own(close);
+  return resource;
 }

@@ -18362,3 +18362,59 @@ workload settings the same way.
   export was removed. [Fixture output](plans/reliable-generation/evidence/rg01/fixture.json).
   This agent's `.git` mount is read-only, so explicit staging failed without an index change;
   the coordinator creates the authorized single local unit commit from the exact unit paths.
+
+
+## 2026-11-16 — Reliable generation paused by owner during RG02
+
+- **Accepted:** RG01, commit `895d3260fb16a21c0e73e4d68973a224ec233eae`; its evidence and checks
+  are recorded above. Resume at RG02, not an older plan or RG01.
+- **RG02 is incomplete/unaccepted/uncommitted.** Preserve its working-tree implementation and
+  tests. No later unit started. Owner paused execution to restart with a fresh agent/session
+  with working command permissions; no worker or task command remains active.
+- Latest RG02 focused run: 133 passed / 5 unresolved failures. Coordinator's final unrestricted
+  lifecycle run passed all 6 tests; earlier sandbox lifecycle failures are superseded. Final
+  regression/e2e/build and generated-app compilation remain required.
+- [Resume details and remaining corrections](plans/reliable-generation/evidence/rg02/pause.md).
+  Owner's full-access authorization persists; protected paths and scope remain unchanged.
+  Do not repeat the stalled approval loop. No RG02 commit was attempted or completion claimed.
+
+
+## 2026-11-16 — RG02 implementation/check handoff, blocked before acceptance
+
+- RG02 remains **unaccepted and uncommitted** on RG01 `895d326`; no later unit started.
+  API v2 now uses public extension/contracts directories, copied policy DTOs and private callback
+  bridges; unavailable SQL/token/arbitrary-target handles have selection-specific custom gaps.
+  Unified per-process construction/close shares compatible physical clients and isolates logins,
+  configuration and process instances. Shutdown stops admission/cancels/drains once, with a
+  ten-second final bound, including late-startup admission and terminal HTTP stop.
+- Actual emitted template/stub pool sharing, failed initialization/probe cancellation cleanup,
+  safe request headers/DTOs/live AbortSignal, bridge adaptation and boundary misuse checks pass.
+  Five fresh exports (78/79/62/114/84 files) pass standalone checking and TS7 compilation offline;
+  reviewed off pins add three public/check files each. Historical exports/v1 remain unchanged.
+- Independent typecheck passed; final units: 1,082 passed / one unchanged board drag case failed,
+  then that exact case passed without edits. E2e: 73 passed / one stale gap-count failure, then
+  corrected/strengthened mouse case passed (1). Web build passed. No claim of passing `pnpm check`:
+  it stops at one Biome format error in protected RG01 `fixture.json`; owner exception is pending.
+- Preserve the reviewable unstaged unit diff. After the owner authorizes the exact whitespace-only
+  RG01 evidence correction, rerun required `pnpm check`, record results and create the authorized
+  single explicit-path RG02 commit. No commit/push/deployment occurred. Root hashes, owner changes,
+  historical evidence and the existing Postgres container are preserved; no task Docker resources.
+  [Detailed evidence and remaining action](plans/reliable-generation/evidence/rg02/README.md).
+
+
+## 2026-11-16 — RG02 verification complete, local commit for acceptance
+
+- Owner approved the exact whitespace-only RG01 `fixture.json` exception. Verified original hash,
+  identical JSON and non-whitespace bytes before applying; no other historical evidence changed.
+  The dated plan README amendment records execution authorization, superseded stale queues and
+  this sole exception. Earlier blocked/pause entries remain intact.
+- Required `pnpm check` now passes: Biome, all typechecks, **121 files / 1,083 tests**.
+  Prior e2e evidence is 73 successes plus the corrected/strengthened mouse case's targeted pass;
+  web build and five fresh emitted-app checker/TS7 compilation proofs pass. They were not repeated
+  after documentation/formatting-only changes. [Detailed evidence](plans/reliable-generation/evidence/rg02/README.md).
+- API v2, per-process client/lifecycle ownership, terminal stop/cancellation/ten-second final
+  shutdown bound and checked extension scaffolds are ready for coordinator acceptance. SQL/query
+  handles and authenticated targets remain explicit gaps for their assigned later units.
+- Single explicit-path local commit subject: `RG02: unify process lifecycle and restrict application extension APIs`.
+  Root files, owner diff/mode changes, frozen v1, old exports and the existing Postgres container
+  remain preserved. No push/deployment or later unit; stop here for coordinator review.

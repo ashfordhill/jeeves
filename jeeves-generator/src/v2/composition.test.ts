@@ -47,7 +47,12 @@ describe("reusable composition before product completion", () => {
     expect(design).toEqual(before);
     expect(a.report.applicationComplete).toBe(false);
     expect(a.report.selections.filter((s) => s.status === "unfinished")).toHaveLength(3);
-    expect(a.report.gaps.filter((g) => g.required)).toHaveLength(9);
+    expect(a.report.gaps.filter((g) => g.required)).toHaveLength(10);
+    expect(a.report.gaps.find((g) => g.id === "restricted-ready-reader")).toMatchObject({
+      required: true,
+      sourcePaths: ["/generation/selections/3"],
+      description: expect.stringContaining("registered product queries are not installed"),
+    });
     const plan = JSON.parse(read(a, "infra/local.json"));
     expect(plan.application).toEqual([]);
     expect(plan.identity[0].roles).toEqual([]);
@@ -176,9 +181,12 @@ describe("reusable composition before product completion", () => {
       "../runtime/postgres.ts": `import { EventEmitter } from "node:events";
         export const createPostgres = (options) =>
           Object.assign(new EventEmitter(), { options, end: async () => {} });`,
+      "../runtime/local.ts": "export const readSecret = () => 'secret';",
+      "../runtime/process.ts": stripTypeScriptTypes(read(bundle, "src/runtime/process.ts")),
+      "../runtime/valkey.ts": "export const cacheEndpoint = () => ({});",
       "../runtime/objects.ts": "export const createObjects = () => {};",
       "../runtime/amqp.ts":
-        "export const createConsumer = (binding) => ({ binding }), createPublisher = (binding) => ({ binding });",
+        "export const createConsumer = (binding) => ({ binding }), createPublisher = (binding) => ({ binding, close: async () => {}, closed: new Promise(() => {}) });",
       "../runtime/positive-cache.ts": "export const createPositiveReader = () => {};",
       // A CA file is read as the pool is built (QG10).
       "node:fs": 'export { readFileSync } from "node:fs";',
@@ -247,7 +255,7 @@ describe("reusable composition before product completion", () => {
 
   it("opens a template's pool and broker at the endpoints its environment names (QG06)", async () => {
     const resources = await emittedResources();
-    const scope = { own: () => {} };
+    const scope = { own: () => {}, transport: () => {} };
     const restore = withEnvironment({
       JEEVES_DATABASE_STATE_DB_HOST: "db.internal",
       JEEVES_DATABASE_STATE_DB_PORT: "6432",
@@ -273,7 +281,7 @@ describe("reusable composition before product completion", () => {
       };
       // What a mounted template's loop passes to loopConsumer, and its publisher and consumer.
       expect(resources.brokerBinding()).toEqual(broker);
-      expect(resources.publisher(counter, "events", scope).binding).toEqual(broker);
+      expect((await resources.publisher(counter, "events", scope)).binding).toEqual(broker);
       expect(resources.consumer(counter, "events", async () => {}).binding).toEqual(broker);
     } finally {
       restore();
@@ -307,7 +315,7 @@ describe("reusable composition before product completion", () => {
 
   it("gives a template's pool its transport, and refuses a plain-text one under JEEVES_REQUIRE_TLS (QG10)", async () => {
     const resources = await emittedResources();
-    const scope = { own: () => {} };
+    const scope = { own: () => {}, transport: () => {} };
     const directory = mkdtempSync(join(tmpdir(), "jeeves-qg10-"));
     const caFile = join(directory, "ca.pem");
     const caText = `test CA ${randomUUID()}\n`;

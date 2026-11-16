@@ -781,7 +781,7 @@ describe("updateDirectory", () => {
       expect(await read(directory, `.jeeves/generated/${path}`)).toEqual(generated(path));
   });
 
-  it("12. checks YouTube v4's app in place with nothing refused (QG03)", async () => {
+  it("12. refuses the historical YouTube v4 extension API until explicit migration (RG02)", async () => {
     const v4 = new URL("../../field-projects/youtube/v4/", import.meta.url);
     const app = fileURLToPath(new URL("app", v4));
     const before = await snapshot(join(app, ".jeeves"));
@@ -793,7 +793,10 @@ describe("updateDirectory", () => {
       app,
       { check: true },
     );
-    expect(result.refused).toEqual([]);
+    expect(result.refused).toHaveLength(1);
+    expect(result.refused[0]).toContain("Extension API 1 -> 2 requires migration");
+    expect(result.refused[0]).toContain("--ack-extension-api=2");
+    expect(result.refused[0]).toContain("src/modules/");
     // Its package.json override (template gap 8) is now the application's own file: kept, with
     // the shadow the override left still pending.
     expect(result.override).not.toContain("package.json");

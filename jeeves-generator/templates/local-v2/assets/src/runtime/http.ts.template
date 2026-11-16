@@ -52,6 +52,7 @@ export async function createHttpService(options: {
   let state: "uninitialized" | "ready" | "draining" = "uninitialized";
   let starting: Promise<string> | undefined;
   let shutdown: Promise<void> | undefined;
+  let stopped = false;
   app.get("/healthz", async (_request, reply) => {
     if (state !== "ready") reply.code(503);
     return { service: options.id, application: state };
@@ -112,19 +113,24 @@ export async function createHttpService(options: {
     /** Injection is useful for offline adapters; it does not advertise readiness before start. */
     inject: app.inject.bind(app),
     start(listen: { host: string; port: number }): Promise<string> {
-      if (shutdown) return Promise.reject(new Error("HTTP service is draining"));
+      if (stopped || shutdown) return Promise.reject(new Error("HTTP service is draining"));
       return (starting ??= (async () => {
         await options.initialize();
-        if (shutdown) throw new Error("HTTP service is draining");
+        if (stopped || shutdown) throw new Error("HTTP service is draining");
         const address = await app.listen(listen);
-        if (!shutdown) {
-          state = "ready";
-          admission.open();
-        }
+        if (stopped || shutdown) throw new Error("HTTP service is draining");
+        state = "ready";
+        admission.open();
         return address;
       })());
     },
+    stop() {
+      stopped = true;
+      state = "draining";
+      admission.stop();
+    },
     close(): Promise<void> {
+      stopped = true;
       state = "draining";
       admission.stop();
       return (shutdown ??= (async () => {

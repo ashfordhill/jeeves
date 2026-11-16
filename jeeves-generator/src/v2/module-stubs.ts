@@ -287,8 +287,10 @@ function stubFiles(
   const scaffold = [
     `// Generated scaffold: ${named} in ${line(module.hostName)}.`,
     `// Export rewrites this file; write the module in ${file(paths.module)}.`,
-    'import type { SettingsOf } from "../../runtime/settings.ts";',
-    ...(imports.length ? [`import type { ${imports.join(", ")} } from "../dependencies.ts";`] : []),
+    'import type { SettingsOf } from "../../extension-api/index.ts";',
+    ...(imports.length
+      ? [`import type { ${imports.join(", ")} } from "../../extension-api/index.ts";`]
+      : []),
     "",
     "/** What the module uses: one property per connected slot, and its own settings. */",
     `export type Dependencies = {`,
@@ -307,14 +309,16 @@ function stubFiles(
   const extension = [
     `// ${named} in ${line(module.hostName)}: ${line(description)}`,
     "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
-    ...(route ? ['import type { ModuleRequest, ModuleResponse } from "../entry.ts";'] : []),
-    ...(loop ? ['import type { ModuleMessage } from "../entry.ts";'] : []),
+    ...(route
+      ? ['import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";']
+      : []),
+    ...(loop ? ['import type { ModuleMessage } from "../../extension-api/index.ts";'] : []),
     `import type { Dependencies } from "./${file(paths.slots)}";`,
-    'import { declareSettings } from "../../runtime/settings.ts";',
+    'import { declareSettings } from "../../extension-api/index.ts";',
     "",
-    "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+    "/** The settings this module reads, by name: text(), integer() or url();",
     " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-    " * SECRET_DIR files. */",
+    " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
     "export const settings = declareSettings({});",
     "",
     ...(route

@@ -103,6 +103,7 @@ describe("local.tile-processes", () => {
       "src/runtime/admission.ts",
       "src/runtime/amqp.ts",
       "src/runtime/delivery.ts",
+      "src/runtime/hook-boundary.ts",
       "src/runtime/http.ts",
       // The stubs' database client keeps its idempotency records through it (QL04).
       "src/runtime/idempotency.ts",
@@ -528,7 +529,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     // The cache read takes its cache's host and port from the environment, not its bindings.
     const watch = text(v3, "src/processes/watch-api.ts");
     expect(watch).toContain(
-      "    binding: { ...cacheEndpoint(binding.resource), secret: binding.secret },",
+      "  const cacheBinding = { ...cacheEndpoint(binding.resource), secret: binding.secret };",
     );
   });
 
@@ -709,6 +710,47 @@ describe("emitted HTTP service and process runtime", () => {
     const response = await http.inject({ method: "GET", url });
     return [response.statusCode, response.json()];
   };
+
+  it("keeps stop terminal before start, during initialization and while listen is pending", async () => {
+    const slowFastify =
+      fakeFastify.replace(
+        'async listen() { return "http://fake"; }',
+        'async listen() { entered = true; await pending; return "http://fake"; }',
+      ) +
+      "\nexport let finish, entered = false; const pending = new Promise((resolve) => { finish = resolve; });";
+    for (const phase of ["before", "initialize", "listen"]) {
+      let release = () => {};
+      const initialization = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const runtime =
+        phase === "listen" ? await import(runtimeUrl("http", slowFastify)) : httpRuntime;
+      const http = await runtime.createHttpService({
+        id: "stopping",
+        settings: { requestTimeoutMs: 1000, concurrencyLimit: 1 },
+        configure: (routes: { route(route: unknown): void }) =>
+          routes.route({ method: "GET", url: "/work", handler: async () => "admitted" }),
+        initialize: () => (phase === "initialize" ? initialization : Promise.resolve()),
+      });
+      if (phase === "before") http.stop();
+      const start = http.start({ host: "127.0.0.1", port: 0 });
+      const refused = expect(start).rejects.toThrow("HTTP service is draining");
+      if (phase === "listen") {
+        await Promise.resolve();
+        const fastify = await import(dataUrl(slowFastify));
+        expect(fastify.entered).toBe(true);
+        http.stop();
+        fastify.finish();
+      } else if (phase === "initialize") {
+        http.stop();
+        release();
+      }
+      await refused;
+      expect((await http.inject({ method: "GET", url: "/healthz" })).statusCode).toBe(503);
+      expect((await http.inject({ method: "GET", url: "/work" })).statusCode).toBe(503);
+      await http.close();
+    }
+  });
 
   it("tells onFailure of a failed request (an error or a 5xx but 501), and never changes an answer", async () => {
     const failures: Failure[] = [];
@@ -900,7 +942,7 @@ describe("emitted HTTP service and process runtime", () => {
         method: "POST",
         path: "/events",
         body: { id: "evt_1", amount: 100 },
-        rawBody: payload,
+        rawBody: new Uint8Array(payload),
       }),
     );
     await http.close();
@@ -1176,6 +1218,54 @@ describe("route stubs get a deadline signal and a route table (QL02)", () => {
         return { status: 201 };
       },
     });
+
+  it("gives product code safe copied immutable DTOs and the live AbortSignal", async () => {
+    let seen = {} as {
+      headers: Record<string, string>;
+      body: { nested: { value: number } };
+      query: unknown;
+      caller: unknown;
+      signal: AbortSignal;
+      rawBody: Uint8Array;
+    };
+    const { http } = await stubService(async (request) => {
+      seen = request as typeof seen;
+      return { body: { ok: true } };
+    });
+    try {
+      const response = await http.inject({
+        method: "POST",
+        url: "/modules/probe/x?q=one&q=two",
+        headers: {
+          authorization: "Bearer secret",
+          cookie: "session=secret",
+          "x-api-key": "secret",
+          "content-type": "application/json",
+          accept: "application/json",
+          "idempotency-key": "key",
+        },
+        payload: { nested: { value: 1 } },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(seen.headers).toEqual({
+        "content-type": "application/json",
+        accept: "application/json",
+        "idempotency-key": "key",
+      });
+      expect(Object.isFrozen(seen)).toBe(true);
+      for (const dto of [seen.body, seen.body.nested, seen.query, seen.headers, seen.caller])
+        expect(Object.isFrozen(dto)).toBe(true);
+      expect(() => {
+        seen.body.nested.value = 2;
+      }).toThrow();
+      expect(seen.signal).toBeInstanceOf(AbortSignal);
+      expect(seen.signal.aborted).toBe(false);
+      expect(seen.rawBody).toBeInstanceOf(Uint8Array);
+      expect(Buffer.from(seen.rawBody).toString()).toBe('{"nested":{"value":1}}');
+    } finally {
+      await http.close();
+    }
+  });
 
   it("routes a table's keys by pattern and method, HEAD to GET, and answers 404, 405 with Allow", async () => {
     const seen: unknown[] = [];

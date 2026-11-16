@@ -125,7 +125,7 @@ describe("Favorites with Runnable processes on (v3 contract, section 3)", () => 
       'mountFavorites(notImplementedRoutes(routes, log, "favorite-items"), {',
     );
     expect(process).toContain("principal: (request) => accountCheck.require(request),");
-    expect(process).toContain("hooks: favoriteItemsHooks({ items }),");
+    expect(process).toContain("hooks: bindFavoritesHooks(favoriteItemsHooks({})),");
     expect(config().templates["favorite-items"]).toEqual({
       template: "favorites",
       lead: "favorite-items",
@@ -138,15 +138,18 @@ describe("Favorites with Runnable processes on (v3 contract, section 3)", () => 
       },
       routes: "/modules/favorite-items/items",
     });
-    // The hooks file is yours: `eligible` on the items Data access's pool.
+    // Product eligibility receives no pool; the generated template owns data access.
     const hooks = text(bundle, "src/modules/account-api/favorite-items.hooks.ts");
     expect(bundle.manifest.files.find((item) => item.path.endsWith(".hooks.ts"))?.ownership).toBe(
       "generated-extension",
     );
-    expect(hooks).toContain("export type FavoriteItemsResources = { items: pg.Pool };");
+    expect(hooks).toContain("export type FavoriteItemsResources = Record<string, never>;");
+    expect(hooks).not.toContain("pg.Pool");
+    expect(hooks).toContain("    eligible(itemId) {");
     expect(hooks).toContain('throw new NotImplemented("eligible for Favorite items");');
     // Its gap names the file; Catalog writer stays its own stub.
     expect(report(bundle).gaps.map((item) => [item.id, item.status, item.required])).toEqual([
+      ["restricted-catalog-writer", "custom", true],
       ["favorites-application-bindings", "custom", true],
       ["module-catalog-writer", "custom", true],
     ]);

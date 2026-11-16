@@ -38,6 +38,8 @@ export type ProcessMount = {
   imports: Import[];
   /** Inside `runProcess`, before an HTTP service is created; a worker's whole start. */
   setup: string[];
+  /** Configuration readers, before every module constructor and probe. */
+  validation?: string[];
   /** Inside `configure(routes)`. */
   configure: string[];
   /** Inside `initialize()`, before listening. */
@@ -119,10 +121,15 @@ export function hooksFile(
   return {
     path: moduleHooksPath(process.tile, lead.module),
     content: `${[
+      body.imports.some((value) => value.includes("ProductQueries"))
+        ? "// @jeeves-extension: operation"
+        : "// @jeeves-extension: policy",
       `// ${line(lead.name)} (${studioComponentDefinitions[lead.kind].name}) in ${line(process.name)}: the product hooks its ${template} template calls.`,
       "// Write them here. Export never overwrites your edits: export afresh and carry them over.",
-      ...body.imports,
-      'import { NotImplemented } from "../../runtime/tile-process.ts";',
+      ...body.imports.map((value) =>
+        value.replace(/from "[^"]*runtime\/[^"/]+\.ts"/, 'from "../../extension-api/index.ts"'),
+      ),
+      'import { NotImplemented } from "../../extension-api/index.ts";',
       "",
       ...body.types,
       "",
@@ -170,6 +177,10 @@ function positiveCacheRead(
       { from: "../runtime/positive-cache.ts", name: "createPositiveReader" },
       { from: "../runtime/valkey.ts", name: "cacheEndpoint" },
       { from: "../runtime/valkey.ts", name: "createValkeyCache" },
+      { from: "../runtime/process.ts", name: "ownResource" },
+      { from: "../runtime/process.ts", name: "processClient" },
+      { from: "../runtime/hook-boundary.ts", name: "productHooks" },
+      { from: "../runtime/hook-boundary.ts", name: "productQueries" },
       { from: tileHttp, name: "notImplementedRoutes" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
@@ -179,17 +190,17 @@ function positiveCacheRead(
       `  const s = selected("positive-cache-read", ${text(id)});`,
       `  const source = pool(scope, s, "source");`,
       `  const binding = positiveCacheBindings[${text(id)}].cache;`,
-      "  const cache = await createValkeyCache({",
+      "  const cacheBinding = { ...cacheEndpoint(binding.resource), secret: binding.secret };",
+      '  const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({',
       "    // The cache's endpoint is the environment's: JEEVES_CACHE_<ID>_HOST, _PORT and _TLS.",
-      "    binding: { ...cacheEndpoint(binding.resource), secret: binding.secret },",
+      "    binding: cacheBinding,",
       "    onState: (state, error) =>",
       '      state === "unavailable"',
       `        ? failure(${text(`cache ${lead.module}`)}, error ?? new Error("Cache unavailable"))`,
       `        : console.log(JSON.stringify({ level: "info", event: "cache", tile: config.tile, module: ${text(lead.module)}, state })),`,
-      "  });",
-      "  scope.own(() => cache.close());",
+      '  }), "close"));',
       "  const read = createPositiveReader({",
-      `    adapter: ${hooks}({ source }),`,
+      `    adapter: productHooks(${hooks}({ source: productQueries(${text(lead.module)}) })),`,
       "    cache,",
       `    ttlSeconds: input(s, "cache.ttlSeconds"),`,
       `    onFailure: (what, error) => failure(\`\${what} ${lead.module}\`, error),`,
@@ -219,14 +230,14 @@ function positiveCacheRead(
       members,
       file: hooksFile(process, selection, lead, "cache read", {
         imports: [
-          'import type pg from "pg";',
+          'import type { ProductQueries } from "../../extension-api/index.ts";',
           'import type { PositiveReadAdapter } from "../../runtime/positive-cache.ts";',
         ],
         types: [
           `/** What GET ${url} reads: the path's key. */`,
           `export type ${types}Input = { key: string };`,
-          "/** The template's generic resources: a pool on the source database's login. */",
-          `export type ${types}Resources = { source: pg.Pool };`,
+          "/** Registered product queries; unavailable until a SQL binding is installed. */",
+          `export type ${types}Resources = { source: ProductQueries };`,
         ],
         factory: [
           `export function ${hooks}(resources: ${types}Resources): PositiveReadAdapter<${types}Input, unknown> {`,
@@ -341,6 +352,7 @@ function verifiedIdentity(
       { from: "../runtime/tile-guard.ts", name: "createTileGuard" },
       { from: "../runtime/tile-guard.ts", name: "signInSettings" },
     ],
+    validation: ["signInSettings();"],
     setup: [
       `// ${line(lead.name)}: the tile's sign-in, ${signIn === "required" ? "Required: every module route needs a valid token" : "Optional: a token sent with a request is verified; none is anonymous"}.`,
       `const ${name} = (() => {`,
@@ -393,7 +405,7 @@ function ownedMultipart(
   selection: NormalizedGenerationSelection,
   lead: Lead,
   selections: readonly NormalizedGenerationSelection[],
-  processes: readonly NormalizedProcess[],
+  _processes: readonly NormalizedProcess[],
 ): ProcessMount {
   const id = selection.id;
   const name = camel(id);
@@ -448,23 +460,8 @@ function ownedMultipart(
     "    },",
   ];
   /** A hook the asset lifecycle naming this upload answers: it delegates to it. */
-  const delegated = (hook: string, signature: string, call: string, comment: string) =>
-    lifecycle
-      ? [
-          `    /** ${comment} The asset lifecycle answers it. */`,
-          `    ${signature} {`,
-          `      return resources.lifecycle.${hook}(${call});`,
-          "    },",
-        ]
-      : upload(hook, signature, comment);
-  // The lifecycle's lead and tile by name, for the hooks file.
-  const lifecycleProcess = processes.find((item) => item.tile === lifecycleHost);
-  const lifecycleName = lifecycle
-    ? `${
-        lifecycleProcess?.templates.find((item) => item.selection === lifecycle.selection.id)?.lead
-          ?.name ?? lifecycle.selection.id
-      } in ${lifecycleProcess?.name ?? lifecycleHost}`
-    : undefined;
+  const delegated = (hook: string, signature: string, _call: string, comment: string) =>
+    upload(hook, signature, comment);
   return {
     imports: [
       { from: resources, name: "objects" },
@@ -481,6 +478,8 @@ function ownedMultipart(
             },
           ]
         : []),
+      { from: "../runtime/hook-boundary.ts", name: "bindUploadHooks" },
+      ...(lifecycle ? [{ from: "../runtime/hook-boundary.ts", name: "bindAssetHooks" }] : []),
       { from: "../runtime/multipart-http.ts", name: "createMultipartHttpHandlers" },
       { from: "../runtime/multipart-objects.ts", name: "createMultipartObjects" },
       { from: "../runtime/multipart.ts", name: "createOwnedMultipart" },
@@ -490,6 +489,8 @@ function ownedMultipart(
       { from: "../runtime/process.ts", name: "periodic" },
       { from: "../runtime/transaction.ts", name: "transaction" },
       { from: "../runtime/transaction.ts", name: "Tx", type: true },
+      { from: "../runtime/hook-boundary.ts", name: "productHooks" },
+      { from: "../runtime/hook-boundary.ts", name: "productQueries" },
       { from: tileHttp, name: "notImplementedRoutes" },
       { from: tileProcess, name: "brokerState" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
@@ -500,38 +501,25 @@ function ownedMultipart(
       `  const s = selected("owned-multipart", ${text(id)});`,
       `  const binding = config.templates[${text(id)}];`,
       `  const db = pool(scope, s, "state");`,
-      "  const control = objects(s);",
-      "  const signing = objects(s, process.env.OBJECT_PUBLIC_ENDPOINT);",
-      "  scope.own(() => {",
-      "    control.destroy();",
-      "    signing.destroy();",
-      "  });",
+      "  const control = objects(scope, s);",
+      "  const signing = objects(scope, s, process.env.OBJECT_PUBLIC_ENDPOINT);",
       ...(lifecycle && lifecycleHooks
         ? [
             "  // The asset lifecycle that names this upload: its upload hooks run in this tile's",
             "  // transactions on the tables it shares with the lifecycle's worker.",
-            `  const lifecycleHooks = ${lifecycleHooks}();`,
+            `  const lifecycleHooks = bindAssetHooks(${lifecycleHooks}());`,
             "  const lifecycle = createAssetLifecycle(",
             "    { ...binding.lifecycle.binding, identities: lifecycleHooks.identities },",
-            ...(lifecycle.publication
-              ? [
-                  "    {",
-                  "      ...lifecycleHooks,",
-                  "      publication: {",
-                  "        ...lifecycleHooks.publication,",
-                  "        destination: binding.lifecycle.publication,",
-                  "      },",
-                  "    },",
-                ]
-              : ["    lifecycleHooks,"]),
+            lifecycle.publication
+              ? "    { ...lifecycleHooks, publication: { ...lifecycleHooks.publication, destination: binding.lifecycle.publication } },"
+              : "    lifecycleHooks,",
             "  );",
           ]
         : []),
-      `  const hooks = ${hooks}({`,
+      `  const hooks = bindUploadHooks(${hooks}({`,
       "    prefix: binding.prefix,",
-      `    guard: ${guard},`,
-      ...(lifecycle ? ["    lifecycle: lifecycle.uploadHooks,"] : []),
-      "  });",
+
+      `  })${lifecycle ? ", lifecycle.uploadHooks" : ""});`,
       "  const multipart = createOwnedMultipart({",
       "    repository: createOwnedUploads(",
       "      { ...binding.uploads, originalKey: hooks.originalKey },",
@@ -558,7 +546,7 @@ function ownedMultipart(
       "  return {",
       "    db,",
       "    multipart,",
-      "    http: createMultipartHttpHandlers({ multipart, principal: hooks.principal }),",
+      `    http: createMultipartHttpHandlers({ multipart, principal: (request) => ${guard}.require(request) }),`,
       "  };",
       "})();",
     ],
@@ -627,26 +615,12 @@ function ownedMultipart(
     hooks: {
       members,
       file: hooksFile(process, selection, lead, "multipart uploads", {
-        imports: [
-          'import type { FastifyRequest } from "fastify";',
-          'import type { VerifiedPrincipal } from "../../runtime/identity.ts";',
-          'import type { UploadFile, UploadHooks } from "../../runtime/owned-upload.ts";',
-          'import type { TileGuard } from "../../runtime/tile-guard.ts";',
-        ],
+        imports: ['import type { UploadFile, UploadHooks } from "../../runtime/owned-upload.ts";'],
         types: [
-          lifecycle
-            ? "/** The template's generic resources: the key prefix it owns, the tile's sign-in and the lifecycle's upload hooks. */"
-            : "/** The template's generic resources: the object key prefix it owns and the tile's sign-in. */",
+          "/** The generated object key prefix; sign-in and lifecycle controls remain private. */",
           `export type ${types}Resources = {`,
           "  prefix: string;",
-          "  /** The tile's Auth guard, set to Required. */",
-          "  guard: TileGuard;",
-          ...(lifecycle
-            ? [
-                `  /** The asset lifecycle (${line(lifecycleName ?? "")}): it records each upload's asset. */`,
-                '  lifecycle: Pick<UploadHooks<unknown, unknown>, "reserve" | "complete" | "closed">;',
-              ]
-            : []),
+
           "};",
         ],
         factory: [
@@ -661,28 +635,24 @@ function ownedMultipart(
           ...upload("response", "response(input)", "Parses a stored completion response."),
           ...delegated(
             "reserve",
-            "async reserve(tx, record)",
+            "reserve(record)",
             "tx, record",
             "Runs in the start transaction.",
           ),
           ...delegated(
             "complete",
-            "async complete(tx, record, original)",
+            "complete(record, original)",
             "tx, record, original",
             "Runs in the completion transaction: what completing answers.",
           ),
           ...delegated(
             "closed",
-            "async closed(tx, record, terminal)",
+            "closed(record, terminal)",
             "tx, record, terminal",
             "Runs when an upload is aborted, expires or fails.",
           ),
           "  };",
           "  return {",
-          "    /** The verified caller of a request: the tile's sign-in (401 without one). */",
-          "    async principal(request: FastifyRequest): Promise<VerifiedPrincipal> {",
-          "      return resources.guard.require(request);",
-          "    },",
           "    upload,",
           "    /** An upload's object key, under resources.prefix. */",
           "    originalKey(identity: { assetId: string; uploadId: string; file: UploadFile }): string {",
@@ -767,6 +737,7 @@ function favorites(
       { from: resources, name: "selected" },
       { from: "../runtime/favorites.ts", name: "createFavorites" },
       { from: "../runtime/favorites.ts", name: "mountFavorites" },
+      { from: "../runtime/hook-boundary.ts", name: "bindFavoritesHooks" },
       { from: tileHttp, name: "notImplementedRoutes" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
     ],
@@ -781,7 +752,7 @@ function favorites(
       "    db,",
       "    table: binding.table,",
       "    bounds: binding.bounds,",
-      `    hooks: ${hooks}({${items ? " items " : ""}}),`,
+      `    hooks: bindFavoritesHooks(${hooks}({})),`,
       "  });",
       `  return { db,${items ? " items," : ""} favorites };`,
       "})();",
@@ -826,24 +797,16 @@ function favorites(
     hooks: {
       members: ["eligible"],
       file: hooksFile(process, selection, lead, "favorites", {
-        imports: [
-          ...(items ? ['import type pg from "pg";'] : []),
-          'import type { FavoritesHooks } from "../../runtime/favorites.ts";',
+        imports: ['import type { FavoritesHooks } from "../../extension-api/index.ts";'],
+        types: [
+          "/** Synchronous product eligibility; no clients or credential access. */",
+          `export type ${types}Resources = Record<string, never>;`,
         ],
-        types: items
-          ? [
-              `/** The template's generic resources: a pool on ${items}, the database its items Data access reads. This tile's login there sees that database's published views. */`,
-              `export type ${types}Resources = { items: pg.Pool };`,
-            ]
-          : [
-              "/** The template's generic resources: none, until an items Data access is connected. */",
-              `export type ${types}Resources = Record<string, never>;`,
-            ],
         factory: [
           `export function ${hooks}(resources: ${types}Resources): FavoritesHooks {`,
           "  return {",
           "    /** Whether an item may be added to favorites; only adding asks. */",
-          "    async eligible(itemId) {",
+          "    eligible(itemId) {",
           `      ${throws("eligible", lead)}`,
           "    },",
           "  };",
@@ -913,7 +876,11 @@ function searchQuery(
       { from: "../features/search-bindings.ts", name: "searchBindings" },
       { from: "../runtime/http.ts", name: "HttpError" },
       { from: "../runtime/search.ts", name: "createSearch" },
+      { from: "../runtime/process.ts", name: "ownResource" },
+      { from: "../runtime/process.ts", name: "processClient" },
       { from: "../runtime/search-query.ts", name: "parseSearchInput" },
+      { from: "../runtime/hook-boundary.ts", name: "productHooks" },
+      { from: "../runtime/hook-boundary.ts", name: "productQueries" },
       { from: tileHttp, name: "notImplementedRoutes" },
       { from: "../runtime/tile-search.ts", name: "openSearchIndex" },
       { from: "../runtime/tile-search.ts", name: "createSearchHandler" },
@@ -928,16 +895,16 @@ function searchQuery(
       `const ${name} = await (async () => {`,
       `  const s = selected("search-query", ${text(id)});`,
       `  const binding = searchBindings[${text(id)}];`,
-      "  const client = createSearch({",
+      "  const searchConfiguration = {",
       "    endpoint: binding.index.endpoint,",
       `    requestTimeoutMs: input(s, "host.requestTimeoutMs"),`,
-      "  });",
-      "  scope.own(() => client.close());",
+      "  };",
+      '  const client = processClient(scope, "search", searchConfiguration, () => ownResource(scope, createSearch(searchConfiguration), "close"));',
       "  // The search service answers; the index is asserted once its mapping is written.",
       "  await client.cluster.health();",
-      `  const indexHooks = ${writerHooks.factory}();`,
+      `  const indexHooks = productHooks(${writerHooks.factory}());`,
       "  const index = await openSearchIndex(client, binding.index.resource, indexHooks);",
-      `  return createSearchHandler({ client, index, indexHooks, hooks: ${hooks}() });`,
+      `  return createSearchHandler({ client, index, indexHooks, hooks: productHooks(${hooks}()) });`,
       "})();",
     ],
     configure: [
@@ -980,11 +947,10 @@ function searchQuery(
         imports: [
           'import type { SearchQueryPreset } from "../../runtime/search-query.ts";',
           'import type { SearchQueryHooks } from "../../runtime/tile-search.ts";',
-          `import type { ${writerHooks.document} } from "../${writer.host}/${writerLead.module}.hooks.ts";`,
         ],
         types: [
           `/** A document of the index: ${line(writerLead.name)}'s, whose hooks file holds its mapping. */`,
-          `type Document = ${writerHooks.document};`,
+          "type Document = Record<string, unknown>;",
         ],
         reached: `a search reaches ${line(writerLead.name)}'s \`mapping\` first, then these; the first one it reaches answers 501`,
         factory: [
@@ -1054,7 +1020,7 @@ function routeStub(
       "  log,",
       `  ${text(id)},`,
       `  (request) => ${entry}(dependencies[${text(id)}], request),`,
-      "  { deadlineMs: config.settings.requestTimeoutMs },",
+      "  { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },",
       ...(guard ? [`  ${guard}.caller,`] : []),
       ");",
     ],

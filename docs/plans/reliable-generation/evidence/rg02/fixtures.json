@@ -1,0 +1,191 @@
+{
+  "node": "24.21.0",
+  "typescript": "7.0.2",
+  "dependencyDirectory": "/home/ash/github/qrwty/app/node_modules (read-only symlink in each scratch export)",
+  "installs": false,
+  "scratchCleanup": "finally removes each task-owned scratch root",
+  "fixtures": {
+    "signIn": {
+      "files": 78,
+      "exportCreatedAndRead": true,
+      "extensionApi": {
+        "version": 2,
+        "publicApi": "src/extension-api/index.ts",
+        "boundary": "checked-extensions"
+      },
+      "boundaryCheck": "passed",
+      "typescriptNoEmit": "passed",
+      "newPublicFiles": [
+        "scripts/check-extensions.mjs",
+        "src/contracts/index.ts",
+        "src/extension-api/index.ts"
+      ],
+      "restrictedGaps": [
+        {
+          "id": "restricted-hello",
+          "sourcePaths": ["/generation/selections/1"]
+        }
+      ]
+    },
+    "search": {
+      "files": 79,
+      "exportCreatedAndRead": true,
+      "extensionApi": {
+        "version": 2,
+        "publicApi": "src/extension-api/index.ts",
+        "boundary": "checked-extensions"
+      },
+      "boundaryCheck": "passed",
+      "typescriptNoEmit": "passed",
+      "newPublicFiles": [
+        "scripts/check-extensions.mjs",
+        "src/contracts/index.ts",
+        "src/extension-api/index.ts"
+      ],
+      "restrictedGaps": [
+        {
+          "id": "restricted-image-writer",
+          "sourcePaths": ["/generation/selections/2"]
+        },
+        {
+          "id": "restricted-item-auditor",
+          "sourcePaths": ["/generation/selections/5"]
+        },
+        {
+          "id": "restricted-item-cache",
+          "sourcePaths": ["/generation/selections/0"]
+        },
+        {
+          "id": "restricted-item-notifier",
+          "sourcePaths": ["/generation/selections/6"]
+        },
+        {
+          "id": "restricted-item-publisher",
+          "sourcePaths": ["/generation/selections/1"]
+        }
+      ]
+    },
+    "favorites": {
+      "files": 62,
+      "exportCreatedAndRead": true,
+      "extensionApi": {
+        "version": 2,
+        "publicApi": "src/extension-api/index.ts",
+        "boundary": "checked-extensions"
+      },
+      "boundaryCheck": "passed",
+      "typescriptNoEmit": "passed",
+      "newPublicFiles": [
+        "scripts/check-extensions.mjs",
+        "src/contracts/index.ts",
+        "src/extension-api/index.ts"
+      ],
+      "restrictedGaps": [
+        {
+          "id": "restricted-catalog-writer",
+          "sourcePaths": ["/generation/selections/2"]
+        }
+      ]
+    },
+    "video": {
+      "files": 114,
+      "exportCreatedAndRead": true,
+      "extensionApi": {
+        "version": 2,
+        "publicApi": "src/extension-api/index.ts",
+        "boundary": "checked-extensions"
+      },
+      "boundaryCheck": "passed",
+      "typescriptNoEmit": "passed",
+      "newPublicFiles": [
+        "scripts/check-extensions.mjs",
+        "src/contracts/index.ts",
+        "src/extension-api/index.ts"
+      ],
+      "restrictedGaps": [
+        {
+          "id": "restricted-watch-cache-reader",
+          "sourcePaths": ["/generation/selections/0"]
+        },
+        {
+          "id": "restricted-watch-counts",
+          "sourcePaths": ["/generation/selections/1"]
+        },
+        {
+          "id": "restricted-watch-views",
+          "sourcePaths": ["/generation/selections/2"]
+        }
+      ]
+    },
+    "stubs": {
+      "files": 84,
+      "exportCreatedAndRead": true,
+      "extensionApi": {
+        "version": 2,
+        "publicApi": "src/extension-api/index.ts",
+        "boundary": "checked-extensions"
+      },
+      "boundaryCheck": "passed",
+      "typescriptNoEmit": "passed",
+      "newPublicFiles": [
+        "scripts/check-extensions.mjs",
+        "src/contracts/index.ts",
+        "src/extension-api/index.ts"
+      ],
+      "restrictedGaps": [
+        {
+          "id": "restricted-archive-upload",
+          "sourcePaths": ["/generation/selections/8"]
+        },
+        {
+          "id": "restricted-archiver",
+          "sourcePaths": ["/generation/selections/12"]
+        },
+        {
+          "id": "restricted-limiter",
+          "sourcePaths": ["/generation/selections/2"]
+        },
+        {
+          "id": "restricted-link-cache",
+          "sourcePaths": ["/generation/selections/1"]
+        },
+        {
+          "id": "restricted-link-reader",
+          "sourcePaths": ["/generation/selections/0"]
+        },
+        {
+          "id": "restricted-redirector",
+          "sourcePaths": ["/generation/selections/4"]
+        },
+        {
+          "id": "restricted-stats-caller",
+          "sourcePaths": ["/generation/selections/5"]
+        },
+        {
+          "id": "restricted-stats-search",
+          "sourcePaths": ["/generation/selections/7"]
+        },
+        {
+          "id": "restricted-upload-consumer",
+          "sourcePaths": ["/generation/selections/6"]
+        },
+        {
+          "id": "restricted-upload-publisher",
+          "sourcePaths": ["/generation/selections/9"]
+        },
+        {
+          "id": "restricted-visit-consumer",
+          "sourcePaths": ["/generation/selections/10"]
+        },
+        {
+          "id": "restricted-visit-publisher",
+          "sourcePaths": ["/generation/selections/3"]
+        },
+        {
+          "id": "restricted-visit-writer",
+          "sourcePaths": ["/generation/selections/11"]
+        }
+      ]
+    }
+  }
+}

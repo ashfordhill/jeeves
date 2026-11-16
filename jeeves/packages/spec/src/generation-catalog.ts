@@ -180,12 +180,11 @@ export function knownGenerationPreset(ref: ExactContractRef) {
   return generationPresetCatalog.find((entry) => sameContractRef(entry.ref, ref));
 }
 
-/** The current unrestricted hook API, independent of saved-design and template versions.
- * Future guarded APIs must increment this version before changing handwritten interfaces. */
+/** Checked extension imports and DTO-only policy hooks, independent of saved-design versions. */
 export const generationExtensionApi = freezeRecord({
-  version: 1,
+  version: 2,
   publicApi: "src/extension-api/index.ts",
-  boundary: "legacy-unrestricted",
+  boundary: "checked-extensions",
 });
 
 /** Only existing callable operations. These names identify bounded contracts, not TS source. */

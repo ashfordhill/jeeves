@@ -377,7 +377,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(plan.providers).toEqual(["local-broker"]);
     // Each such dependency answers "Not implemented" naming why; the export still compiles.
     expect(text(bundle, "src/processes/links-api.ts")).toContain(
-      'linksDb: unavailable<LinkReaderDependencies["linksDb"]>("Links database for Link reader (its provider isn\'t provisioned locally)"),',
+      'linksDb: unavailable<LinkReaderDependencies["linksDb"]>("Links database for Link reader (requires a registered product capability binding)"),',
     );
     expect(stores(bundle, "stats-api")).toEqual([
       expect.objectContaining({
@@ -404,7 +404,9 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     expect(links).toContain(
       '    linkReader: (input) => linkReader(dependencies["link-reader"], input as ModuleRequest),',
     );
-    expect(links).toContain('    statsApi: clients["stats-api"],');
+    expect(links).toContain(
+      '    statsApi: unavailable<StatsCallerDependencies["statsApi"]>("Stats API for Stats caller (requires a registered product capability binding)"),',
+    );
     // A stub with no connected slot still gets its own settings (QL05).
     expect(links).toContain(
       '  dependencies["redirector"] = {\n    settings: readSettings("redirector", declared["redirector"]) as RedirectorDependencies["settings"],\n  };',
@@ -427,9 +429,9 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
     // An External API is an HTTP client at its base URL (QG20); an Identity no sign-in binds isn't
     // provisioned.
     expect(stats).toContain('    "partner": externalTarget("JEEVES_EXTERNAL_PARTNER_URL"),');
-    expect(stats).toContain('    partner: clients["partner"],');
+    expect(stats).toContain("requires a registered product capability binding");
     expect(stats).toContain(
-      '    login: unavailable<GateDependencies["login"]>("Login for Gate (an Identity isn\'t provisioned for stubs)"),',
+      '    login: unavailable<GateDependencies["login"]>("Login for Gate (requires a registered product capability binding)"),',
     );
     const visits = text(wide, "src/processes/visit-worker.ts");
     expect(visits).toContain('    visitWriter: () => visitWriter(dependencies["visit-writer"]),');
@@ -700,12 +702,12 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       ].join("\n"),
     );
     expect(front).toContain(
-      '    provider: clients["provider"],\n    identity: clients["identity"],\n',
+      '    provider: unavailable<FrontProbeDependencies["provider"]>("Provider for Probe (requires a registered product capability binding)"),\n    identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),\n',
     );
     expect(front).toContain(
-      'import { brokerBinding, cacheClient, cacheClientEndpoint, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint, externalTarget, identityTarget, queuePublisher } from "../runtime/module-clients.ts";',
+      'import { brokerBinding, cacheClient, cacheClientEndpoint, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint, externalTarget, identityTarget, queuePublisher, unavailable } from "../runtime/module-clients.ts";',
     );
-    expect(front).not.toContain("unavailable");
+    expect(front).toContain("requires a registered product capability binding");
     // Neither has a probe: each is built before the sign-in and the service, and reads its URL then.
     expect(front.indexOf("identityTarget(")).toBeLessThan(front.indexOf("createTileGuard({"));
     const clients = text(probe, "src/runtime/module-clients.ts");
@@ -735,6 +737,8 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         '    () => readSettings("front-probe", declared["front-probe"]),',
         '    () => readSettings("front-internal-grant", declared["front-internal-grant"]),',
         "  ]);",
+        "  signInSettings();",
+        "  validateTemplateSettings(config.tile);",
         "  // Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs",
         "  // use, each probed once before the process is ready; a failed probe fails startup, except",
         "  // a cache's, which is logged.",
@@ -770,7 +774,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
       ].join("\n"),
     );
     expect(tally).toContain(
-      'import { brokerBinding, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint } from "../runtime/module-clients.ts";',
+      'import { brokerBinding, checkConfiguration, createProbeLog, databaseClient, databaseEndpoint, unavailable } from "../runtime/module-clients.ts";',
     );
     expect(tally).not.toContain("signInSettings");
     const clients = text(probe, "src/runtime/module-clients.ts");
@@ -824,7 +828,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     for (const later of ["await queuePublisher(", "await databaseClient(", "createTileGuard({"])
       expect(pass, later).toBeLessThan(front.indexOf(later));
     expect(front).toContain(
-      '    identity: clients["identity"],\n    settings: readSettings("front-probe", declared["front-probe"]) as FrontProbeDependencies["settings"],\n  };',
+      '    identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),\n    settings: readSettings("front-probe", declared["front-probe"]) as FrontProbeDependencies["settings"],\n  };',
     );
     expect(front.match(/readSettings\(/g)).toHaveLength(4);
     // The report names each stub file a process reads settings from; Compose sets none of them.
@@ -961,7 +965,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     expect(api).toContain('    "partner": externalTarget("JEEVES_EXTERNAL_PARTNER_URL"),');
     // Token check's link verifies a token (a TokenVerifier), not an HTTP target.
     expect(api).toContain(
-      '    partner: unavailable<TokenCheckDependencies["partner"]>("Partner API for Token check (an External API isn\'t provisioned locally)"),',
+      '    partner: unavailable<TokenCheckDependencies["partner"]>("Partner API for Token check (requires a registered product capability binding)"),',
     );
     expect(stores(bundle, "api").map((row) => [row.store, row.modules])).toEqual([
       ["partner", ["caller"]],
@@ -969,7 +973,7 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
     // wider(): Gate's Login has no sign-in, so it isn't provisioned; nor is its address set.
     const wide = assemble(wider());
     expect(text(wide, "src/processes/stats-api.ts")).toContain(
-      '    login: unavailable<GateDependencies["login"]>("Login for Gate (an Identity isn\'t provisioned for stubs)"),',
+      '    login: unavailable<GateDependencies["login"]>("Login for Gate (requires a registered product capability binding)"),',
     );
     expect(services(wide)["app-stats-api"]).not.toHaveProperty("environment.OIDC_ISSUER");
     expect(services(wide)["app-stats-api"]).not.toHaveProperty(
@@ -1104,26 +1108,22 @@ export default function Fastify(options) {
     expect(lines).toEqual(failed("Insecure endpoint JEEVES_EXTERNAL_PARTNER_URL"));
   });
 
-  it("answers the External API's status through the stub once it is set, and its lost call 503", async () => {
+  it("keeps arbitrary external calls unavailable to guarded Custom code", async () => {
     const fetch = vi.fn(async () => new Response(null, { status: 418 }));
     vi.stubGlobal("fetch", fetch);
     const { lines, app } = await run({ JEEVES_EXTERNAL_PARTNER_URL: "http://127.0.0.1:47999" });
     expect(lines).toContain("Application ready");
     if (!app) throw new Error("The process did not start");
     const response = await app.inject({ method: "GET", url: "/modules/caller" });
-    expect([response.statusCode, response.json()]).toEqual([200, { status: 418 }]);
-    const [url, init] = fetch.mock.calls[0] as unknown as [URL, RequestInit];
-    expect(url).toEqual(new URL("http://127.0.0.1:47999/v1/charges?limit=1"));
-    expect(init.signal).toBeInstanceOf(AbortSignal);
-    // A lost connection to an outside host answers the fallback 503, as any stub error does.
-    fetch.mockRejectedValueOnce(new TypeError("fetch failed"));
-    // (Unset, Caller's optional CALLER_LIMIT is undefined, so its answer has no `limit`.)
-    const lost = await app.inject({ method: "GET", url: "/modules/caller" });
-    expect([lost.statusCode, lost.json()]).toEqual([
-      503,
-      { error: "UNAVAILABLE", message: "Service unavailable." },
+    expect([response.statusCode, response.json()]).toEqual([
+      501,
+      {
+        error: "NOT_IMPLEMENTED",
+        message:
+          "Not implemented: Partner API for Caller (requires a registered product capability binding)",
+      },
     ]);
-    // Token check still answers Not implemented.
+    expect(fetch).not.toHaveBeenCalled();
     expect((await app.inject({ method: "GET", url: "/modules/token-check" })).statusCode).toBe(501);
     const stop = process.listeners("SIGTERM").at(-1);
     if (!stop || listening.SIGTERM?.includes(stop)) throw new Error("No process runs");
@@ -1164,7 +1164,15 @@ export default function Fastify(options) {
       method: "GET",
       url: "/modules/caller",
     });
-    expect([response.statusCode, response.json()]).toEqual([200, { status: 418, limit: 7 }]);
+    expect([response.statusCode, response.json()]).toEqual([
+      501,
+      {
+        error: "NOT_IMPLEMENTED",
+        message:
+          "Not implemented: Partner API for Caller (requires a registered product capability binding)",
+      },
+    ]);
+    expect(fetch).not.toHaveBeenCalled();
     // Token check's older body, with no `settings` export, still runs and answers Not implemented.
     expect((await app.inject({ method: "GET", url: "/modules/token-check" })).statusCode).toBe(501);
     const stop = process.listeners("SIGTERM").at(-1);

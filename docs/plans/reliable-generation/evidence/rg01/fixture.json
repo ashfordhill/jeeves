@@ -16,13 +16,7 @@
         {
           "name": "favorites.items",
           "resource": "favorites",
-          "sourcePath": [
-            "generation",
-            "selections",
-            1,
-            "binding",
-            "state"
-          ],
+          "sourcePath": ["generation", "selections", 1, "binding", "state"],
           "use": "write"
         }
       ],
@@ -30,13 +24,7 @@
         "guard": "account-check",
         "identity": "sign-in",
         "kind": "verified-principal",
-        "sourcePath": [
-          "generation",
-          "selections",
-          1,
-          "binding",
-          "identity"
-        ]
+        "sourcePath": ["generation", "selections", 1, "binding", "identity"]
       },
       "contract": {
         "effect": "local-atomic-mutation",
@@ -45,9 +33,7 @@
         "output": "favorites.item-record",
         "version": 1
       },
-      "dependencies": [
-        "account-check"
-      ],
+      "dependencies": ["account-check"],
       "extensionApiVersion": 1,
       "id": "favorite-items.favorites.add",
       "lifecycle": {
@@ -58,17 +44,9 @@
       "owner": "account-api-owner",
       "process": "account-api",
       "role": "api",
-      "roleSourcePath": [
-        "ownership",
-        "roles",
-        0
-      ],
+      "roleSourcePath": ["ownership", "roles", 0],
       "selection": "favorite-items",
-      "sourcePath": [
-        "generation",
-        "selections",
-        1
-      ],
+      "sourcePath": ["generation", "selections", 1],
       "transport": "http"
     },
     {
@@ -76,13 +54,7 @@
         {
           "name": "favorites.items",
           "resource": "favorites",
-          "sourcePath": [
-            "generation",
-            "selections",
-            1,
-            "binding",
-            "state"
-          ],
+          "sourcePath": ["generation", "selections", 1, "binding", "state"],
           "use": "read"
         }
       ],
@@ -90,13 +62,7 @@
         "guard": "account-check",
         "identity": "sign-in",
         "kind": "verified-principal",
-        "sourcePath": [
-          "generation",
-          "selections",
-          1,
-          "binding",
-          "identity"
-        ]
+        "sourcePath": ["generation", "selections", 1, "binding", "identity"]
       },
       "contract": {
         "effect": "read",
@@ -105,9 +71,7 @@
         "output": "favorites.item-record",
         "version": 1
       },
-      "dependencies": [
-        "account-check"
-      ],
+      "dependencies": ["account-check"],
       "extensionApiVersion": 1,
       "id": "favorite-items.favorites.check",
       "lifecycle": {
@@ -118,17 +82,9 @@
       "owner": "account-api-owner",
       "process": "account-api",
       "role": "api",
-      "roleSourcePath": [
-        "ownership",
-        "roles",
-        0
-      ],
+      "roleSourcePath": ["ownership", "roles", 0],
       "selection": "favorite-items",
-      "sourcePath": [
-        "generation",
-        "selections",
-        1
-      ],
+      "sourcePath": ["generation", "selections", 1],
       "transport": "http"
     },
     {
@@ -136,13 +92,7 @@
         {
           "name": "favorites.items",
           "resource": "favorites",
-          "sourcePath": [
-            "generation",
-            "selections",
-            1,
-            "binding",
-            "state"
-          ],
+          "sourcePath": ["generation", "selections", 1, "binding", "state"],
           "use": "read"
         }
       ],
@@ -150,13 +100,7 @@
         "guard": "account-check",
         "identity": "sign-in",
         "kind": "verified-principal",
-        "sourcePath": [
-          "generation",
-          "selections",
-          1,
-          "binding",
-          "identity"
-        ]
+        "sourcePath": ["generation", "selections", 1, "binding", "identity"]
       },
       "contract": {
         "effect": "read",
@@ -165,9 +109,7 @@
         "output": "favorites.item-page",
         "version": 1
       },
-      "dependencies": [
-        "account-check"
-      ],
+      "dependencies": ["account-check"],
       "extensionApiVersion": 1,
       "id": "favorite-items.favorites.list",
       "lifecycle": {
@@ -178,17 +120,9 @@
       "owner": "account-api-owner",
       "process": "account-api",
       "role": "api",
-      "roleSourcePath": [
-        "ownership",
-        "roles",
-        0
-      ],
+      "roleSourcePath": ["ownership", "roles", 0],
       "selection": "favorite-items",
-      "sourcePath": [
-        "generation",
-        "selections",
-        1
-      ],
+      "sourcePath": ["generation", "selections", 1],
       "transport": "http"
     },
     {
@@ -196,13 +130,7 @@
         {
           "name": "favorites.items",
           "resource": "favorites",
-          "sourcePath": [
-            "generation",
-            "selections",
-            1,
-            "binding",
-            "state"
-          ],
+          "sourcePath": ["generation", "selections", 1, "binding", "state"],
           "use": "write"
         }
       ],
@@ -210,13 +138,7 @@
         "guard": "account-check",
         "identity": "sign-in",
         "kind": "verified-principal",
-        "sourcePath": [
-          "generation",
-          "selections",
-          1,
-          "binding",
-          "identity"
-        ]
+        "sourcePath": ["generation", "selections", 1, "binding", "identity"]
       },
       "contract": {
         "effect": "local-atomic-mutation",
@@ -225,9 +147,7 @@
         "output": "favorites.empty",
         "version": 1
       },
-      "dependencies": [
-        "account-check"
-      ],
+      "dependencies": ["account-check"],
       "extensionApiVersion": 1,
       "id": "favorite-items.favorites.remove",
       "lifecycle": {
@@ -238,17 +158,9 @@
       "owner": "account-api-owner",
       "process": "account-api",
       "role": "api",
-      "roleSourcePath": [
-        "ownership",
-        "roles",
-        0
-      ],
+      "roleSourcePath": ["ownership", "roles", 0],
       "selection": "favorite-items",
-      "sourcePath": [
-        "generation",
-        "selections",
-        1
-      ],
+      "sourcePath": ["generation", "selections", 1],
       "transport": "http"
     }
   ],

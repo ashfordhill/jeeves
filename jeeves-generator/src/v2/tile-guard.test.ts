@@ -87,10 +87,20 @@ function compile(path: string): string {
     )
     .replace('"/tmp/application-ready"', JSON.stringify(join(markerDirectory, "ready")));
 }
+// Audience tests run Watch's auth-only process. Globally emitted client constructors are
+// imported there but must never be called; their physical clients are covered separately.
+const unusedClients: Record<string, string> = {
+  "src/runtime/postgres.ts":
+    'export const createPostgres = () => { throw Error("Unexpected SQL client"); };',
+  "src/runtime/objects.ts":
+    'export const createObjects = () => { throw Error("Unexpected object client"); };',
+  "src/runtime/amqp.ts":
+    'export const createConsumer = () => { throw Error("Unexpected broker consumer"); }; export const createPublisher = () => { throw Error("Unexpected broker publisher"); };',
+};
 function load(path: string): string {
   const old = urls.get(path);
   if (old) return old;
-  const url = dataUrl(compile(path));
+  const url = dataUrl(unusedClients[path] ?? compile(path));
   urls.set(path, url);
   return url;
 }
@@ -278,7 +288,7 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
         query: {},
         headers: {},
         body,
-        rawBody,
+        rawBody: new Uint8Array(rawBody),
         caller: { signedIn: false },
         signal: expect.any(AbortSignal),
       },
@@ -291,23 +301,26 @@ describe("emitted tile-guard.ts (v3 contract, section 2)", () => {
     expect(headers[0]?.[1]).not.toBe(cookies);
     // The types a stub compiles against.
     const entryTypes = emitted("src/modules/entry.ts");
-    expect(entryTypes).toContain("  rawBody?: Uint8Array;\n");
+    expect(entryTypes).toContain("  readonly rawBody?: Uint8Array;\n");
     expect(entryTypes).toContain("  headers?: Record<string, string | readonly string[]>;\n");
   });
 });
 
 describe("emitted multipart hooks beside a sign-in and an asset lifecycle (V3-06)", () => {
-  it("answer principal from the guard and delegate reserve, complete and closed", async () => {
+  it("keeps guard authority private and delegates transaction hooks through the generated bridge", async () => {
     const guard = { require: vi.fn(async () => principal), caller: vi.fn() };
     const lifecycle = {
       reserve: vi.fn(async () => undefined),
       complete: vi.fn(async () => ({ assetId: "a", state: "pending" })),
       closed: vi.fn(async () => undefined),
     };
-    const hooks = multipartUploadsHooks({ prefix: "multipart-uploads/", guard, lifecycle });
-    const incoming = request("Bearer good");
-    expect(await hooks.principal(incoming)).toBe(principal);
-    expect(guard.require).toHaveBeenCalledWith(incoming);
+    const product = multipartUploadsHooks({ prefix: "multipart-uploads/" });
+    expect(product.principal).toBeUndefined();
+    const publicSource = emitted("src/modules/upload-api/multipart-uploads.hooks.ts");
+    expect(publicSource).not.toContain("guard:");
+    expect(publicSource).not.toContain("lifecycle:");
+    const { bindUploadHooks } = await import(load("src/runtime/hook-boundary.ts"));
+    const hooks = bindUploadHooks(product, lifecycle);
     const tx = { query: vi.fn() };
     const record = { assetId: "a", uploadId: "u" };
     const original = { key: "k", size: 1 };
@@ -320,6 +333,7 @@ describe("emitted multipart hooks beside a sign-in and an asset lifecycle (V3-06
     expect(lifecycle.reserve).toHaveBeenCalledWith(tx, record);
     expect(lifecycle.complete).toHaveBeenCalledWith(tx, record, original);
     expect(lifecycle.closed).toHaveBeenCalledWith(tx, record, { state: "aborted" });
+    expect(guard.require).not.toHaveBeenCalled();
     // The rest stay the product's to write.
     expect(() => hooks.upload.validate({}, principal)).toThrow(
       "Not implemented: validate for Multipart uploads",

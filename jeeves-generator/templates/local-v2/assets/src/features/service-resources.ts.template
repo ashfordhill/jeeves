@@ -1,5 +1,6 @@
 import { selections } from "./application-bindings.ts";
 import { localLogins } from "./local-bindings.ts";
+import { readSecret } from "../runtime/local.ts";
 // @sql-import-start
 import { readFileSync } from "node:fs";
 import { createPostgres, type DatabaseTls } from "../runtime/postgres.ts";
@@ -16,8 +17,9 @@ import {
 	type MessageHandler,
 } from "../runtime/amqp.ts";
 // @broker-import-end
-import type { ProcessScope } from "../runtime/process.ts";
+import { ownResource, processClient, type ProcessScope } from "../runtime/process.ts";
 // @cache-import-start
+import { cacheEndpoint } from "../runtime/valkey.ts";
 import { createPositiveReader, type PositiveReadAdapter, type PositiveCache } from "../runtime/positive-cache.ts";
 // @cache-import-end
 export type ServiceBinding = {
@@ -123,7 +125,7 @@ export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
 	if (!login) throw Error("Missing contributed login");
 	const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
 	const hostname = endpointHost(`${database}_HOST`, true);
-	const client = createPostgres({
+	const configuration = {
 		hostname,
 		port: endpointPort(`${database}_PORT`),
 		tls: databaseTls(database, hostname),
@@ -131,11 +133,13 @@ export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
 		poolSize: input(s, `${field}.poolSize`),
 		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),
 		connectionTimeoutMs: 2000,
-	});
+	};
+	return processClient(scope, "postgres", configuration, () => {
+	const client = ownResource(scope, createPostgres(configuration), "end");
 	// An idle connection's error is not fatal: the next query reconnects.
 	client.on("error", () => {});
-	scope.own(() => client.end());
 	return client;
+	});
 }
 // @sql-end
 // @broker-start
@@ -156,16 +160,18 @@ export function brokerBinding() {
 export function publisher(
 	s: ServiceBinding,
 	field: string,
-	_scope: ProcessScope,
+	scope: ProcessScope,
 	onState?: BrokerState,
 ) {
 	const id = resource(s, field),
 		work = s.inputs[`${field}.mode`] === "work-queue";
-	return createPublisher(
-		brokerBinding(),
-		{ exchange: work ? "" : id, routingKey: work ? id : "" },
-		{ onState },
-	);
+  const broker = brokerBinding();
+  const route = { exchange: work ? "" : id, routingKey: work ? id : "" };
+  return processClient(scope, "amqp-publisher", { broker, route }, async () => {
+    const client = ownResource(scope, await createPublisher(broker, route, { onState }), "close");
+    scope.transport(client);
+    return client;
+  });
 }
 export function consumer(
 	s: ServiceBinding,
@@ -188,14 +194,16 @@ export function consumer(
 // @broker-end
 // @objects-start
 export function objects(
+	scope: ProcessScope,
 	s: ServiceBinding,
 	endpoint = "http://local-objects:3900",
 ) {
-	return createObjects({
+	const configuration = {
 		endpoint,
 		region: "garage",
 		credentialSecret: `s3-${s.host}`,
-	});
+	};
+  return processClient(scope, "objects", configuration, () => ownResource(scope, createObjects(configuration), "destroy"));
 }
 
 // @objects-end
@@ -215,3 +223,39 @@ export function positiveReader<I, R>(
   return createPositiveReader({ adapter, cache, ttlSeconds: input(s, "cache.ttlSeconds") });
 }
 // @cache-end
+
+/** Pure configuration pass. No connection is opened here. */
+export function validateTemplateSettings(tile: string) {
+  for (const s of selections.filter((s) => s.host === tile)) {
+    // @sql-validation-start
+    for (const [field, id] of Object.entries(s.resources)) {
+      if (!["state", "source", "items", "counts"].includes(field)) continue;
+      const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
+      const hostname = endpointHost(`${database}_HOST`, true);
+      endpointPort(`${database}_PORT`);
+      databaseTls(database, hostname);
+      const login = localLogins.find((l) => l.resource === id && l.host === tile);
+      if (!login) throw Error("Missing contributed login");
+      readSecret(login.secret);
+      input(s, `${field}.poolSize`);
+      input(s, `${field}.statementTimeoutMs`);
+    }
+    // @sql-validation-end
+    // @broker-validation-start
+    if (Object.keys(s.resources).some((field) => ["jobs", "results", "events", "publication"].includes(field))) {
+      brokerBinding();
+      readSecret("broker-password");
+    }
+    // @broker-validation-end
+    // @objects-validation-start
+    if (Object.keys(s.resources).some((field) => ["objects", "originals", "outputs"].includes(field))) readSecret(`s3-${tile}`);
+    // @objects-validation-end
+    // @cache-validation-start
+    if (s.kind === "positive-cache-read") {
+      const id = resource(s, "cache");
+      cacheEndpoint(id);
+      readSecret(`cache-${id}`);
+    }
+    // @cache-validation-end
+  }
+}

@@ -88,13 +88,13 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       [
         "// Visit consumer, an Event consumer in Visit worker: Consumes events.",
         "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
-        'import type { ModuleMessage } from "../entry.ts";',
+        'import type { ModuleMessage } from "../../extension-api/index.ts";',
         'import type { Dependencies } from "./visit-consumer.slots.ts";',
-        'import { declareSettings } from "../../runtime/settings.ts";',
+        'import { declareSettings } from "../../extension-api/index.ts";',
         "",
-        "/** The settings this module reads, by name: text(), integer(), url(), secret() or keyRing();",
+        "/** The settings this module reads, by name: text(), integer() or url();",
         " * optional(kind) for an optional one. Values come from the process environment, secrets from",
-        " * SECRET_DIR files. */",
+        " * application-owned configuration. Protected credentials stay inside generated mechanisms. */",
         "export const settings = declareSettings({});",
         "",
         `/** Handles each message from the queues it consumes. "Not implemented" sends the message to its queue's .failed; any other error is retried. */`,
@@ -288,7 +288,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
   it("starts each template's worker in its process, with its hooks watched", () => {
     const lifecycle = text(v2, "src/processes/completion-handler.ts");
     expect(lifecycle).toContain(
-      'const hooks = watchHooks(handlerWriterHooks(), loopLog, "handler-writer");',
+      'const hooks = watchHooks(bindAssetHooks(handlerWriterHooks()), loopLog, "handler-writer");',
     );
     // Each template consumes its loop row's queue (tile-processes review row 6).
     expect(lifecycle).toContain(
@@ -308,11 +308,11 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       'loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), { ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-queue") }, brokerBinding()),',
     );
     expect(text(v2, "src/processes/view-counter.ts")).toContain(
-      'counter: createEventCounter(binding.tables, watchHooks(counterSumHooks(), loopLog, "counter-sum")),',
+      'counter: createEventCounter(binding.tables, watchHooks(productHooks(counterSumHooks()), loopLog, "counter-sum")),',
     );
     const indexer = text(v2, "src/processes/search-indexer.ts");
     expect(indexer).toContain(
-      'const hooks = watchHooks(indexerWriterHooks(), loopLog, "indexer-writer");',
+      'const hooks = watchHooks(productHooks(indexerWriterHooks()), loopLog, "indexer-writer");',
     );
     // The search service answers first; then the index opens from the hooks' mapping.
     expect(indexer.indexOf("await client.cluster.health();")).toBeLessThan(

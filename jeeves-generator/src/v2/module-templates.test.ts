@@ -122,9 +122,22 @@ describe("module-authored v2 and its tile-level twin", () => {
     const bindingsFile = "src/features/application-bindings.ts";
     expect(
       [...a.keys()].filter(
-        (path) => path !== bindingsFile && text(a.get(path)) !== text(b.get(path)),
+        (path) =>
+          path !== bindingsFile &&
+          path !== "src/extension-api/index.ts" &&
+          text(a.get(path)) !== text(b.get(path)),
       ),
     ).toEqual([]);
+    // Only module stubs install these public dependency and settings types/helpers.
+    const beforeApi = text(a.get("src/extension-api/index.ts")).split("\n");
+    const afterApi = text(b.get("src/extension-api/index.ts")).split("\n");
+    const stubApi = [
+      'export type { CacheClient, ObjectReader, ObjectWriter, ObjectStore, QueuePublisher, SearchReader, SearchWriter, SearchIndex, ModuleCall } from "../modules/dependencies.ts";',
+      'export { declareSettings, text, integer, url, optional } from "../runtime/settings.ts";',
+      'export type { SettingsOf } from "../runtime/settings.ts";',
+    ];
+    expect(afterApi.filter((line) => !beforeApi.includes(line))).toEqual(stubApi);
+    expect(afterApi.filter((line) => !stubApi.includes(line))).toEqual(beforeApi);
     // The application bindings differ only by the fixed values v2 declares explicitly.
     const before = bindings(text(a.get(bindingsFile)));
     const all = bindings(text(b.get(bindingsFile)));
