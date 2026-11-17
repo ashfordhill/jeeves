@@ -560,11 +560,7 @@ describe("RG11 finite atomic cache primitives", () => {
       await expect(async () =>
         operation.withLocalMutation(() => operation.withEffect("read", call)),
       ).rejects.toMatchObject({ outcome: "refused", code: "EFFECT_NOT_ALLOWED" });
-    for (const call of [
-      () => cache.set("item", "value"),
-      () => cache.delete("item"),
-      () => cache.setIfNewer("item", record()),
-    ])
+    for (const call of [() => cache.set("item", "value"), () => cache.delete("item")])
       await expect(async () => operation.withEffect("read", call)).rejects.toMatchObject({
         outcome: "refused",
         code: "EFFECT_NOT_ALLOWED",
@@ -577,6 +573,23 @@ describe("RG11 finite atomic cache primitives", () => {
     expect(
       await operation.withEffect("read", () => cache.admit("item", { limit: 1, windowMs: 1000 })),
     ).toMatchObject({ admitted: true });
-    expect(client.eval).toHaveBeenCalledTimes(1);
+    client.eval.mockResolvedValueOnce(1);
+    expect(
+      await operation.withEffect("read", () => cache.setIfNewer("jeeves:reader:item", record())),
+    ).toMatchObject({ status: "stored" });
+    expect(
+      await operation.withEffect("read", () =>
+        cache.fillImmutable("jeeves:reader:item", "value", { PXAT: Date.now() + 1000 }),
+      ),
+    ).toBe("OK");
+    expect(client.eval).toHaveBeenCalledTimes(2);
+    await expect(
+      operation.withLocalPolicy(() =>
+        cache.fillImmutable("jeeves:reader:item", "value", { PXAT: Date.now() + 1000 }),
+      ),
+    ).rejects.toMatchObject({ code: "EFFECT_NOT_ALLOWED" });
+    await expect(
+      cache.fillImmutable("jeeves:admission:item", "value", { PXAT: Date.now() + 1000 }),
+    ).rejects.toMatchObject({ code: "INVALID_CACHE_VALUE" });
   });
 });

@@ -227,9 +227,12 @@ test("mouse exports the selected supported v2 source and rejects changed ZIP byt
       required: true,
       sourcePaths: ["/generation/selections/3"],
     });
-    const loaderGap = page.getByText("The loader receives an unavailable ProductQueries handle;", {
-      exact: false,
-    });
+    const loaderGap = page.getByText(
+      "The loader receives a scoped registered read-only ProductQueries handle.",
+      {
+        exact: false,
+      },
+    );
     await expect(loaderGap).toBeVisible();
     const gaps = page.getByText("Support & custom gaps · 10 required", { exact: true });
     await gaps.click();

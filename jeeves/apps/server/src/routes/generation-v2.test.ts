@@ -114,7 +114,7 @@ it("exports actual saved v2 consumers deterministically, preserves partial hooks
         new TextDecoder().decode(updatedBundle.files.find((file) => file.path === path)?.bytes);
       expect(output("src/features/application-bindings.ts")).toContain('"cache.ttlSeconds":420');
       expect(output("src/features/service-resources.ts")).toContain(
-        'ttlSeconds: input(s, "cache.ttlSeconds")',
+        'const ttlSeconds = input(s, "cache.ttlSeconds")',
       );
       const spy = vi.spyOn(DesignService.prototype, "getDesign");
       spy.mockResolvedValueOnce(changed.state).mockResolvedValueOnce(undefined);
@@ -225,7 +225,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         status: "stub",
         selection: "shorten-links",
         reason: "No Generated module in Shorten service uses it, so you write it.",
-        unconnected: ["admission", "workload"],
+        unconnected: ["read", "admission", "workload"],
       },
       {
         module: "shorten-limit",

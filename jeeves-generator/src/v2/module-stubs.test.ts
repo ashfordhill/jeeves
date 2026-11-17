@@ -250,7 +250,7 @@ describe("module stubs", () => {
   it("lists every module in the report only for a module-level design", () => {
     const modules = modulesOf(bundle);
     expect(modules?.map((item) => [item.module, item.status, item.unconnected])).toEqual([
-      ["shorten-links", "stub", ["admission", "workload"]],
+      ["shorten-links", "stub", ["read", "admission", "workload"]],
       ["shorten-clicks", "stub", ["outbox", "workload"]],
       ["shorten-limit", "stub", ["store", "workload"]],
       ["shorten-cache", "stub", ["cache", "workload"]],

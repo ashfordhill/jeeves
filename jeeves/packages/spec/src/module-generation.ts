@@ -190,9 +190,9 @@ export function planModules(
     );
     if (!slot?.callables || !link.target) continue;
     const part = claims.get(link.module.id);
-    if (slot.id === "admission" && part?.binding)
+    if (["admission", "read"].includes(slot.id) && part?.binding)
       refuse(
-        `${link.module.name} is a part of ${part.lead.name} and has no standalone product operation for admission. Connect from Custom or a standalone Data access instead.`,
+        `${link.module.name} is a part of ${part.lead.name} and has no standalone product operation for ${slot.id}. Connect from Custom or a standalone Data access instead.`,
       );
     const target = leads.find((plan) => plan.lead.id === link.target?.id);
     if (!target?.binding)

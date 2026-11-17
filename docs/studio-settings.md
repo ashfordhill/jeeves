@@ -586,3 +586,12 @@ Admission links require an independent product operation. A Data access used as 
 (for example a positive reader's loader or Favorites' items) receives no standalone admission
 handle and refuses that link. Custom and standalone Data access modules remain supported; use
 one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.
+
+RG13 Cache reader offers only **Freshness**, **Exposure** and **Shared cache TTL**. Freshness is
+`immutable-positive` (legacy/default) or `versioned`; Exposure is `http` (legacy/default) or
+`in-process`. The emitted runtime consumes both choices. Versioned policies must supply a canonical
+uint64 decimal version and finite source expiry; cache TTL clamps absolute validity from the start
+of the authoritative lookup. Cached hits never renew it. L1, negative caching and other saved
+patterns remain schema-readable but unsupported. Both reader modes use the existing LRU store and
+therefore require a separate cache from admission. Custom/standalone Data access **read** slots
+consume the installed `cache-reader.read@1` contract; parts cannot consume these handles.

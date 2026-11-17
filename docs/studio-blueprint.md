@@ -31,7 +31,7 @@ and tests. Useful supported settings reuse existing source fields; TTL and concu
 Display renames preserve element, component, selection, owner and link IDs, generated target
 addresses and durable/extension namespaces ([names and IDs](studio.md#inspector)). Explicit identity
 changes require application migration. Normalized Custom call slots carry the exact installed
-Favorites and Rate limiter input/output/version/effect requirements and stable callee module ID; mismatches refuse
+Favorites, Rate limiter and Cache reader input/output/version/effect requirements and stable callee module ID; mismatches refuse
 with the required/installed difference. Cross-process installed-template adapters remain gaps;
 route stubs have API8 workload-authenticated GET/POST operation roots.
 
@@ -286,3 +286,19 @@ policy support is checked too. Custom/Data access **admission** slots carry the 
 `rate-limiter.admit@1` contract, `rate-limiter.empty` input and `rate-limiter.decision` output. Blueprint v3 retains the finite limit/window settings and component links; Preview/export adds the
 installed capability contracts and unfinished hook gaps separately. Neither claims the product
 caller has supplied or invoked the key policy.
+
+RG13 Preview/export records Cache reader's `cache-reader.read@1` read contract, public eligible-record
+caller policy, stable process/module/owner IDs, read-only source and private cache coordination
+access, and HTTP/in-process transport. Blueprint v3 retains `freshness`/`transport` settings and
+`read` component links. Registered source SELECTs narrow the existing product declaration/grant
+maximum. In-process output includes version and absolute validity; the optional HTTP adapter keeps
+the prior record body and exposes those facts in `X-Jeeves-Cache-Freshness`, `X-Jeeves-Cache-Version`
+and `X-Jeeves-Valid-Until` headers with `Cache-Control: no-store`.
+The normalized setting rows are `reader.freshness` and `reader.transport`; legacy absence keeps
+`immutable-positive` and `http`. Generated entry namespaces bind stable process/module/source IDs,
+`cache-reader.read@1`, freshness and TTL. Copies must use the same product key/codec/eligibility and
+source-version policies; changing these needs an explicit product policy/key migration. Changing
+scope IDs, freshness or TTL uses a different namespace. Hits never renew validity. Compare-version
+fencing lasts only while the key is retained: eviction, expiry or data loss removes the fence;
+there is no durable watermark or immediate invalidation. Absolute delivery checks assume compatible
+UTC clocks. Optional cache failure uses bounded authoritative fallback and recovery, not stale data.

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import {
+  cacheReaderCallableContracts,
   type ExactContractRef,
   exactContractRefSchema,
   type GenerationInstalledCallable,
@@ -226,9 +227,11 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
         const parsed = generationCallableContractSchema.safeParse(callable.contract);
         if (
           !parsed.success ||
-          ![...generationCallableContracts, ...rateLimiterCallableContracts].some(
-            (contract) => canonicalJson(contract) === canonicalJson(callable.contract),
-          )
+          ![
+            ...generationCallableContracts,
+            ...rateLimiterCallableContracts,
+            ...cacheReaderCallableContracts,
+          ].some((contract) => canonicalJson(contract) === canonicalJson(callable.contract))
         )
           refuse(
             "INVALID_REGISTRY",

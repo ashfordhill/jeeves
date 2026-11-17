@@ -231,7 +231,7 @@ const resourceRules = (r: GenerationResourceRequirement): GenerationSettingRule[
       add("ttlSeconds", integer(1, 604800), {
         required: true,
         consumer: "positive-cache-reader.ttlSeconds",
-        userNeed: "Choose how long eligible immutable records remain cached.",
+        userNeed: "Bound how long eligible records remain cached.",
         mirror: { component: "cache-reader", setting: "l2TtlSeconds", field: r.field },
       }),
     );
@@ -440,7 +440,28 @@ export const generationCapabilities = freezeRecord({
     "api",
     ["service", "redirect"],
     [store("source", "database", "read"), store("cache", "cache", "read-write", "projection")],
-    http,
+    [
+      ...http,
+      rule(
+        "reader.freshness",
+        "component",
+        "freshness",
+        choice("immutable-positive", "versioned"),
+        "cache-reader.freshness",
+        { component: "cache-reader", userNeed: "Choose immutable or versioned records." },
+      ),
+      rule(
+        "reader.transport",
+        "component",
+        "transport",
+        choice("http", "in-process"),
+        "cache-reader.transport",
+        {
+          component: "cache-reader",
+          userNeed: "Expose a GET adapter or only an in-process handle.",
+        },
+      ),
+    ],
     ["cache-reader"],
   ),
   "event-counter": capability(

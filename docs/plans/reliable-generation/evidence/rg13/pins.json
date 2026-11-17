@@ -1,0 +1,57 @@
+{
+  "frozen-v2": {
+    "before": 79,
+    "after": 80,
+    "added": ["src/runtime/hook-boundary.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/manifest.json",
+      ".jeeves/report.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/features/service-resources.ts",
+      "src/runtime/positive-cache.ts",
+      "src/runtime/valkey.ts"
+    ]
+  },
+  "v2-module-design": {
+    "before": 86,
+    "after": 87,
+    "added": ["src/runtime/hook-boundary.ts"],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/inputs/design.json",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/extension-api/index.ts",
+      "src/features/application-bindings.ts",
+      "src/features/service-resources.ts",
+      "src/modules/watch/watch-counts.slots.ts",
+      "src/runtime/positive-cache.ts",
+      "src/runtime/valkey.ts"
+    ]
+  },
+  "stub-stack": {
+    "before": 60,
+    "after": 60,
+    "added": [],
+    "removed": [],
+    "changed": [
+      ".jeeves/extensions.md",
+      ".jeeves/inputs/design.json",
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      ".jeeves/report.json",
+      "diagnostics/generation.json",
+      "scripts/check-extensions.mjs",
+      "src/modules/links-api/link-reader.slots.ts",
+      "src/modules/visit-worker/archiver.slots.ts",
+      "src/modules/visit-worker/visit-writer.slots.ts"
+    ]
+  }
+}

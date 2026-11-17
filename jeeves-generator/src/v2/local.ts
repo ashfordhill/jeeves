@@ -827,8 +827,16 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         schema,
         role: sqlName(`pm_${db.resource.replaceAll("-", "_")}_${schema}`),
       })),
-      bindings: (model.processes ?? []).flatMap((process) =>
-        process.stubs.flatMap((stub) => {
+      bindings: (model.processes ?? []).flatMap((process) => [
+        ...model.selections.flatMap((selection) =>
+          selection.host === process.tile &&
+          selection.binding.kind === "positive-cache-read" &&
+          selection.target.kind === "component" &&
+          selection.resources.some((r) => r.field === "source" && r.identity.local === db.resource)
+            ? [{ host: process.tile, module: selection.target.component, access: "read" }]
+            : [],
+        ),
+        ...process.stubs.flatMap((stub) => {
           const module = model.selections.find(
             (selection) => selection.id === stub.selection,
           )?.module;
@@ -840,7 +848,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
               )
             : [];
         }),
-      ),
+      ]),
     };
     const extensionFile = (path: string, content: string): V2TemplateFile => ({
       ...file(path, content),

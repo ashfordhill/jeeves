@@ -1,0 +1,633 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 1959 files in 619ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |server| src/routes/generation-v2.test.ts (2 tests | 1 failed) 7467ms
+   × exports actual saved v2 consumers deterministically, preserves partial hooks and refuses stale/unknown/unsupported source 4903ms
+ ❯ |server| src/chat/supported-authoring.test.ts (3 tests | 1 failed) 494ms
+   ❯ installed feature authoring (3)
+     × shares authoritative TTL editing with chat and actual generated constructors 393ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |server| src/chat/supported-authoring.test.ts > installed feature authoring > shares authoritative TTL editing with chat and actual generated constructors
+AssertionError: expected 'import { selections } from "./applica…' to contain 'ttlSeconds: input(s, "cache.ttlSecond…'
+
+- Expected
++ Received
+
+- ttlSeconds: input(s, "cache.ttlSeconds")
++ import { selections } from "./application-bindings.ts";
++ import { localLogins } from "./local-bindings.ts";
++ import { readSecret } from "../runtime/local.ts";
++
++ import { readFileSync } from "node:fs";
++ import { createPostgres, type DatabaseTls } from "../runtime/postgres.ts";
++
++
++ import { createObjects } from "../runtime/objects.ts";
++
++
++ import {
++ 	createConsumer,
++ 	createPublisher,
++ 	type BrokerState,
++ 	type ConsumerHooks,
++ 	type MessageHandler,
++ } from "../runtime/amqp.ts";
++
++ import { ownResource, processClient, type ProcessScope } from "../runtime/process.ts";
++
++
++ import { cacheEndpoint } from "../runtime/valkey.ts";
++ import { createCacheReader, cacheReaderNamespace, type PositiveReadAdapter, type CacheReadStore } from "../runtime/positive-cache.ts";
++
++ export type ServiceBinding = {
++ 	id: string;
++ 	kind: string;
++ 	host: string;
++ 	identity?: string;
++ 	inputs: Record<string, string | number>;
++ 	resources: Record<string, string>;
++ };
++ export function selected(kind: string, id?: string): ServiceBinding {
++ 	const rows = selections.filter(
++ 		(s) => s.kind === kind && (!id || s.id === id),
++ 	);
++ 	if (rows.length !== 1) throw Error("Expected one selected responsibility");
++ 	return rows[0]!;
++ }
++ export function input(s: ServiceBinding, key: string): number {
++ 	const value = s.inputs[key];
++ 	if (typeof value !== "number") throw Error(`Missing consumed setting ${key}`);
++ 	return value;
++ }
++ export function resource(s: ServiceBinding, field: string): string {
++ 	const id = s.resources[field];
++ 	if (!id) throw Error(`Missing selected resource ${field}`);
++ 	return id;
++ }
++ /** One endpoint from the process's environment (`JEEVES_*`, the tile ID upper-cased with `-` as
++  * `_`), read when its client is built. There is no default: a missing or invalid value fails
++  * startup naming the variable, never the value. A host is 1–253 letters, digits, `.` or `-`, or
++  * for a database an absolute path (a Unix socket directory, as `pg` reads it). */
++ export function endpointHost(name: string, socket = false): string {
++ 	const value = process.env[name];
++ 	if (
++ 		value !== undefined &&
++ 		(/^[A-Za-z0-9.-]{1,253}$/.test(value) ||
++ 			(socket && value.startsWith("/") && !/[\u0000-\u001f\u007f]/.test(value)))
++ 	)
++ 		return value;
++ 	throw Error(`Invalid endpoint ${name}`);
++ }
++ /** A port from the environment: an integer 1–65535. */
++ export function endpointPort(name: string): number {
++ 	const value = process.env[name];
++ 	if (value !== undefined && /^[1-9][0-9]{0,4}$/.test(value) && Number(value) <= 65535)
++ 		return Number(value);
++ 	throw Error(`Invalid endpoint ${name}`);
++ }
++
++ /** `JEEVES_REQUIRE_TLS` (QG10): `true` makes startup refuse a plain-text endpoint (`Insecure
++  * endpoint <variable>`); absent, nothing is refused; any other value fails naming it. */
++ function requireTls(): boolean {
++ 	const value = process.env.JEEVES_REQUIRE_TLS;
++ 	if (value === undefined) return false;
++ 	if (value !== "true") throw Error("Invalid endpoint JEEVES_REQUIRE_TLS");
++ 	// `0` turns off certificate checks for every client that leaves them to Node (`fetch`, the
++ 	// sign-in's key set), so under the switch only unset or `1` passes (QG30).
++ 	const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
++ 	if (verify !== undefined && verify !== "1")
++ 		throw Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
++ 	return true;
++ }
++ /** A database's transport, `<database>_TLS`: `disable` or `verify-full`, with no default. With
++  * `verify-full`, `_CA_FILE` is an optional PEM file, read now (one that can't be read fails
++  * `Unreadable CA file <variable>`), and `_TLS_SERVERNAME` the optional name the certificate
++  * carries when it isn't the host (1–253 letters, digits, `.` or `-`). With
++  * `JEEVES_REQUIRE_TLS=true`, `disable` fails `Insecure endpoint <database>_TLS`, except on a Unix
++  * socket directory, which is local transport. */
++ function databaseTls(database: string, hostname: string): DatabaseTls {
++ 	const strict = requireTls();
++ 	const mode = process.env[`${database}_TLS`];
++ 	if (mode !== "disable" && mode !== "verify-full")
++ 		throw Error(`Invalid endpoint ${database}_TLS`);
++ 	if (mode === "disable") {
++ 		if (strict && !hostname.startsWith("/")) throw Error(`Insecure endpoint ${database}_TLS`);
++ 		return { mode };
++ 	}
++ 	const servername = process.env[`${database}_TLS_SERVERNAME`];
++ 	if (servername !== undefined && !/^[A-Za-z0-9.-]{1,253}$/.test(servername))
++ 		throw Error(`Invalid endpoint ${database}_TLS_SERVERNAME`);
++ 	const path = process.env[`${database}_CA_FILE`];
++ 	let ca: string | undefined;
++ 	if (path !== undefined)
++ 		try {
++ 			ca = readFileSync(path, "utf8");
++ 		} catch (error) {
++ 			const code = (error as { code?: unknown } | null)?.code;
++ 			throw Error(
++ 				`Unreadable CA file ${database}_CA_FILE${typeof code === "string" && /^E[A-Z]+$/.test(code) ? ` (${code})` : ""}`,
++ 			);
++ 		}
++ 	return {
++ 		mode,
++ 		...(ca !== undefined && { ca }),
++ 		...(servername !== undefined && { servername }),
++ 	};
++ }
++ /** A template's pool on its tile's login, at `JEEVES_DATABASE_<ID>_HOST` and `_PORT`, with its
++  * transport `_TLS` (`databaseTls`). */
++ export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
++ 	const id = resource(s, field);
++ 	const login = localLogins.find((l) => l.resource === id && l.host === s.host);
++ 	if (!login) throw Error("Missing contributed login");
++ 	const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
++ 	const hostname = endpointHost(`${database}_HOST`, true);
++ 	const configuration = {
++ 		hostname,
++ 		port: endpointPort(`${database}_PORT`),
++ 		tls: databaseTls(database, hostname),
++ 		login,
++ 		poolSize: input(s, `${field}.poolSize`),
++ 		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),
++ 		connectionTimeoutMs: 2000,
++ 	};
++ 	return processClient(scope, "postgres", configuration, () => {
++ 	const client = ownResource(scope, createPostgres(configuration), "end");
++ 	// An idle connection's error is not fatal: the next query reconnects.
++ 	client.on("error", () => {});
++ 	return client;
++ 	});
++ }
++
++
++ /** The broker's runtime login at its endpoint, `JEEVES_BROKER_HOST` and `JEEVES_BROKER_PORT`, read
++  * when a publisher or consumer is built (a mounted template's loop passes it to `loopConsumer`). */
++ export function brokerBinding() {
++ 	return {
++ 		hostname: endpointHost("JEEVES_BROKER_HOST"),
++ 		port: endpointPort("JEEVES_BROKER_PORT"),
++ 		username: "runtime",
++ 		passwordSecret: "broker-password",
++ 		heartbeatSeconds: 10,
++ 		confirmTimeoutMs: 5000,
++ 	};
++ }
++ /** A broker publisher and consumer reconnect after a lost connection, telling `onState`; the
++  * process owns their drains (`scope.own`, `scope.transport`). */
++ export function publisher(
++ 	s: ServiceBinding,
++ 	field: string,
++ 	scope: ProcessScope,
++ 	onState?: BrokerState,
++ ) {
++ 	const id = resource(s, field),
++ 		work = s.inputs[`${field}.mode`] === "work-queue";
++   const broker = brokerBinding();
++   const route = { exchange: work ? "" : id, routingKey: work ? id : "" };
++   return processClient(scope, "amqp-publisher", { broker, route }, async () => {
++     const client = ownResource(scope, await createPublisher(broker, route, { onState }), "close");
++     scope.transport(client);
++     return client;
++   });
++ }
++ export function consumer(
++ 	s: ServiceBinding,
++ 	field: string,
++ 	handle: MessageHandler,
++ 	hooks: ConsumerHooks & { onState?: BrokerState } = {},
++ ) {
++ 	const id = resource(s, field),
++ 		work = s.inputs[`${field}.mode`] === "work-queue";
++ 	const queue = work ? id : `${id}--${s.host}`;
++ 	return createConsumer(brokerBinding(), {
++ 		queue,
++ 		failedQueue: `${queue}.failed`,
++ 		concurrency: input(s, "host.concurrency"),
++ 		retryLimit: input(s, `${field}.retryLimit`),
++ 		handle,
++ 		...hooks,
++ 	});
++ }
++
++
++ export function objects(
++ 	scope: ProcessScope,
++ 	s: ServiceBinding,
++ 	endpoint = "http://local-objects:3900",
++ ) {
++ 	const configuration = {
++ 		endpoint,
++ 		region: "garage",
++ 		credentialSecret: `s3-${s.host}`,
++ 	};
++   return processClient(scope, "objects", configuration, () => ownResource(scope, createObjects(configuration), "destroy"));
++ }
++
++
++ export function httpSettings(s: ServiceBinding) {
++ 	return {
++ 		requestTimeoutMs: input(s, "host.requestTimeoutMs"),
++ 		concurrencyLimit: input(s, "host.concurrencyLimit"),
++ 	};
++ }
++
++ /** Product completion supplies the record codec, eligibility and authoritative loader. */
++
++ export function positiveReader<I, R>(
++   s: ServiceBinding,
++   adapter: PositiveReadAdapter<I, R>,
++   cache?: CacheReadStore,
++ ) {
++   const ttlSeconds = input(s, "cache.ttlSeconds");
++   const read = createCacheReader({adapter, cache, ttlSeconds,
++     freshness: s.inputs["reader.freshness"] === "versioned" ? "versioned" : "immutable-positive",
++     namespace: cacheReaderNamespace(s.host,s.id,String(s.inputs["reader.freshness"] ?? "immutable-positive"),ttlSeconds)});
++   return async (input: I) => (await read(input))?.record ?? null;
++ }
++
++
++ /** Pure configuration pass. No connection is opened here. */
++ export function validateTemplateSettings(tile: string) {
++   for (const s of selections.filter((s) => s.host === tile)) {
++
++     for (const [field, id] of Object.entries(s.resources)) {
++       if (!["state", "source", "items", "counts"].includes(field)) continue;
++       const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
++       const hostname = endpointHost(`${database}_HOST`, true);
++       endpointPort(`${database}_PORT`);
++       databaseTls(database, hostname);
++       const login = localLogins.find((l) => l.resource === id && l.host === tile);
++       if (!login) throw Error("Missing contributed login");
++       readSecret(login.secret);
++       input(s, `${field}.poolSize`);
++       input(s, `${field}.statementTimeoutMs`);
++     }
++
++
++     if (Object.keys(s.resources).some((field) => ["jobs", "results", "events", "publication"].includes(field))) {
++       brokerBinding();
++       readSecret("broker-password");
++     }
++
++
++     if (Object.keys(s.resources).some((field) => ["objects", "originals", "outputs"].includes(field))) readSecret(`s3-${tile}`);
++
++
++     if (s.kind === "positive-cache-read") {
++       const id = resource(s, "cache");
++       cacheEndpoint(id);
++       readSecret(`cache-${id}`);
++     }
++
++   }
++ }
++
+
+ ❯ src/chat/supported-authoring.test.ts:100:22
+     98|       after.files.find((file) => file.path === "src/features/service-r…
+     99|     );
+    100|     expect(consumer).toContain('ttlSeconds: input(s, "cache.ttlSeconds…
+       |                      ^
+    101|   });
+    102|   it("fails closed for hidden alternatives, mirror editing and custom …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |server| src/routes/generation-v2.test.ts > exports actual saved v2 consumers deterministically, preserves partial hooks and refuses stale/unknown/unsupported source
+AssertionError: expected 'import { selections } from "./applica…' to contain 'ttlSeconds: input(s, "cache.ttlSecond…'
+
+- Expected
++ Received
+
+- ttlSeconds: input(s, "cache.ttlSeconds")
++ import { selections } from "./application-bindings.ts";
++ import { localLogins } from "./local-bindings.ts";
++ import { readSecret } from "../runtime/local.ts";
++
++ import { readFileSync } from "node:fs";
++ import { createPostgres, type DatabaseTls } from "../runtime/postgres.ts";
++
++
++ import { createObjects } from "../runtime/objects.ts";
++
++
++ import {
++ 	createConsumer,
++ 	createPublisher,
++ 	type BrokerState,
++ 	type ConsumerHooks,
++ 	type MessageHandler,
++ } from "../runtime/amqp.ts";
++
++ import { ownResource, processClient, type ProcessScope } from "../runtime/process.ts";
++
++
++ import { cacheEndpoint } from "../runtime/valkey.ts";
++ import { createCacheReader, cacheReaderNamespace, type PositiveReadAdapter, type CacheReadStore } from "../runtime/positive-cache.ts";
++
++ export type ServiceBinding = {
++ 	id: string;
++ 	kind: string;
++ 	host: string;
++ 	identity?: string;
++ 	inputs: Record<string, string | number>;
++ 	resources: Record<string, string>;
++ };
++ export function selected(kind: string, id?: string): ServiceBinding {
++ 	const rows = selections.filter(
++ 		(s) => s.kind === kind && (!id || s.id === id),
++ 	);
++ 	if (rows.length !== 1) throw Error("Expected one selected responsibility");
++ 	return rows[0]!;
++ }
++ export function input(s: ServiceBinding, key: string): number {
++ 	const value = s.inputs[key];
++ 	if (typeof value !== "number") throw Error(`Missing consumed setting ${key}`);
++ 	return value;
++ }
++ export function resource(s: ServiceBinding, field: string): string {
++ 	const id = s.resources[field];
++ 	if (!id) throw Error(`Missing selected resource ${field}`);
++ 	return id;
++ }
++ /** One endpoint from the process's environment (`JEEVES_*`, the tile ID upper-cased with `-` as
++  * `_`), read when its client is built. There is no default: a missing or invalid value fails
++  * startup naming the variable, never the value. A host is 1–253 letters, digits, `.` or `-`, or
++  * for a database an absolute path (a Unix socket directory, as `pg` reads it). */
++ export function endpointHost(name: string, socket = false): string {
++ 	const value = process.env[name];
++ 	if (
++ 		value !== undefined &&
++ 		(/^[A-Za-z0-9.-]{1,253}$/.test(value) ||
++ 			(socket && value.startsWith("/") && !/[\u0000-\u001f\u007f]/.test(value)))
++ 	)
++ 		return value;
++ 	throw Error(`Invalid endpoint ${name}`);
++ }
++ /** A port from the environment: an integer 1–65535. */
++ export function endpointPort(name: string): number {
++ 	const value = process.env[name];
++ 	if (value !== undefined && /^[1-9][0-9]{0,4}$/.test(value) && Number(value) <= 65535)
++ 		return Number(value);
++ 	throw Error(`Invalid endpoint ${name}`);
++ }
++
++ /** `JEEVES_REQUIRE_TLS` (QG10): `true` makes startup refuse a plain-text endpoint (`Insecure
++  * endpoint <variable>`); absent, nothing is refused; any other value fails naming it. */
++ function requireTls(): boolean {
++ 	const value = process.env.JEEVES_REQUIRE_TLS;
++ 	if (value === undefined) return false;
++ 	if (value !== "true") throw Error("Invalid endpoint JEEVES_REQUIRE_TLS");
++ 	// `0` turns off certificate checks for every client that leaves them to Node (`fetch`, the
++ 	// sign-in's key set), so under the switch only unset or `1` passes (QG30).
++ 	const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
++ 	if (verify !== undefined && verify !== "1")
++ 		throw Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
++ 	return true;
++ }
++ /** A database's transport, `<database>_TLS`: `disable` or `verify-full`, with no default. With
++  * `verify-full`, `_CA_FILE` is an optional PEM file, read now (one that can't be read fails
++  * `Unreadable CA file <variable>`), and `_TLS_SERVERNAME` the optional name the certificate
++  * carries when it isn't the host (1–253 letters, digits, `.` or `-`). With
++  * `JEEVES_REQUIRE_TLS=true`, `disable` fails `Insecure endpoint <database>_TLS`, except on a Unix
++  * socket directory, which is local transport. */
++ function databaseTls(database: string, hostname: string): DatabaseTls {
++ 	const strict = requireTls();
++ 	const mode = process.env[`${database}_TLS`];
++ 	if (mode !== "disable" && mode !== "verify-full")
++ 		throw Error(`Invalid endpoint ${database}_TLS`);
++ 	if (mode === "disable") {
++ 		if (strict && !hostname.startsWith("/")) throw Error(`Insecure endpoint ${database}_TLS`);
++ 		return { mode };
++ 	}
++ 	const servername = process.env[`${database}_TLS_SERVERNAME`];
++ 	if (servername !== undefined && !/^[A-Za-z0-9.-]{1,253}$/.test(servername))
++ 		throw Error(`Invalid endpoint ${database}_TLS_SERVERNAME`);
++ 	const path = process.env[`${database}_CA_FILE`];
++ 	let ca: string | undefined;
++ 	if (path !== undefined)
++ 		try {
++ 			ca = readFileSync(path, "utf8");
++ 		} catch (error) {
++ 			const code = (error as { code?: unknown } | null)?.code;
++ 			throw Error(
++ 				`Unreadable CA file ${database}_CA_FILE${typeof code === "string" && /^E[A-Z]+$/.test(code) ? ` (${code})` : ""}`,
++ 			);
++ 		}
++ 	return {
++ 		mode,
++ 		...(ca !== undefined && { ca }),
++ 		...(servername !== undefined && { servername }),
++ 	};
++ }
++ /** A template's pool on its tile's login, at `JEEVES_DATABASE_<ID>_HOST` and `_PORT`, with its
++  * transport `_TLS` (`databaseTls`). */
++ export function pool(scope: ProcessScope, s: ServiceBinding, field: string) {
++ 	const id = resource(s, field);
++ 	const login = localLogins.find((l) => l.resource === id && l.host === s.host);
++ 	if (!login) throw Error("Missing contributed login");
++ 	const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
++ 	const hostname = endpointHost(`${database}_HOST`, true);
++ 	const configuration = {
++ 		hostname,
++ 		port: endpointPort(`${database}_PORT`),
++ 		tls: databaseTls(database, hostname),
++ 		login,
++ 		poolSize: input(s, `${field}.poolSize`),
++ 		statementTimeoutMs: input(s, `${field}.statementTimeoutMs`),
++ 		connectionTimeoutMs: 2000,
++ 	};
++ 	return processClient(scope, "postgres", configuration, () => {
++ 	const client = ownResource(scope, createPostgres(configuration), "end");
++ 	// An idle connection's error is not fatal: the next query reconnects.
++ 	client.on("error", () => {});
++ 	return client;
++ 	});
++ }
++
++
++ /** The broker's runtime login at its endpoint, `JEEVES_BROKER_HOST` and `JEEVES_BROKER_PORT`, read
++  * when a publisher or consumer is built (a mounted template's loop passes it to `loopConsumer`). */
++ export function brokerBinding() {
++ 	return {
++ 		hostname: endpointHost("JEEVES_BROKER_HOST"),
++ 		port: endpointPort("JEEVES_BROKER_PORT"),
++ 		username: "runtime",
++ 		passwordSecret: "broker-password",
++ 		heartbeatSeconds: 10,
++ 		confirmTimeoutMs: 5000,
++ 	};
++ }
++ /** A broker publisher and consumer reconnect after a lost connection, telling `onState`; the
++  * process owns their drains (`scope.own`, `scope.transport`). */
++ export function publisher(
++ 	s: ServiceBinding,
++ 	field: string,
++ 	scope: ProcessScope,
++ 	onState?: BrokerState,
++ ) {
++ 	const id = resource(s, field),
++ 		work = s.inputs[`${field}.mode`] === "work-queue";
++   const broker = brokerBinding();
++   const route = { exchange: work ? "" : id, routingKey: work ? id : "" };
++   return processClient(scope, "amqp-publisher", { broker, route }, async () => {
++     const client = ownResource(scope, await createPublisher(broker, route, { onState }), "close");
++     scope.transport(client);
++     return client;
++   });
++ }
++ export function consumer(
++ 	s: ServiceBinding,
++ 	field: string,
++ 	handle: MessageHandler,
++ 	hooks: ConsumerHooks & { onState?: BrokerState } = {},
++ ) {
++ 	const id = resource(s, field),
++ 		work = s.inputs[`${field}.mode`] === "work-queue";
++ 	const queue = work ? id : `${id}--${s.host}`;
++ 	return createConsumer(brokerBinding(), {
++ 		queue,
++ 		failedQueue: `${queue}.failed`,
++ 		concurrency: input(s, "host.concurrency"),
++ 		retryLimit: input(s, `${field}.retryLimit`),
++ 		handle,
++ 		...hooks,
++ 	});
++ }
++
++
++ export function objects(
++ 	scope: ProcessScope,
++ 	s: ServiceBinding,
++ 	endpoint = "http://local-objects:3900",
++ ) {
++ 	const configuration = {
++ 		endpoint,
++ 		region: "garage",
++ 		credentialSecret: `s3-${s.host}`,
++ 	};
++   return processClient(scope, "objects", configuration, () => ownResource(scope, createObjects(configuration), "destroy"));
++ }
++
++
++ export function httpSettings(s: ServiceBinding) {
++ 	return {
++ 		requestTimeoutMs: input(s, "host.requestTimeoutMs"),
++ 		concurrencyLimit: input(s, "host.concurrencyLimit"),
++ 	};
++ }
++
++ /** Product completion supplies the record codec, eligibility and authoritative loader. */
++
++ export function positiveReader<I, R>(
++   s: ServiceBinding,
++   adapter: PositiveReadAdapter<I, R>,
++   cache?: CacheReadStore,
++ ) {
++   const ttlSeconds = input(s, "cache.ttlSeconds");
++   const read = createCacheReader({adapter, cache, ttlSeconds,
++     freshness: s.inputs["reader.freshness"] === "versioned" ? "versioned" : "immutable-positive",
++     namespace: cacheReaderNamespace(s.host,s.id,String(s.inputs["reader.freshness"] ?? "immutable-positive"),ttlSeconds)});
++   return async (input: I) => (await read(input))?.record ?? null;
++ }
++
++
++ /** Pure configuration pass. No connection is opened here. */
++ export function validateTemplateSettings(tile: string) {
++   for (const s of selections.filter((s) => s.host === tile)) {
++
++     for (const [field, id] of Object.entries(s.resources)) {
++       if (!["state", "source", "items", "counts"].includes(field)) continue;
++       const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
++       const hostname = endpointHost(`${database}_HOST`, true);
++       endpointPort(`${database}_PORT`);
++       databaseTls(database, hostname);
++       const login = localLogins.find((l) => l.resource === id && l.host === tile);
++       if (!login) throw Error("Missing contributed login");
++       readSecret(login.secret);
++       input(s, `${field}.poolSize`);
++       input(s, `${field}.statementTimeoutMs`);
++     }
++
++
++     if (Object.keys(s.resources).some((field) => ["jobs", "results", "events", "publication"].includes(field))) {
++       brokerBinding();
++       readSecret("broker-password");
++     }
++
++
++     if (Object.keys(s.resources).some((field) => ["objects", "originals", "outputs"].includes(field))) readSecret(`s3-${tile}`);
++
++
++     if (s.kind === "positive-cache-read") {
++       const id = resource(s, "cache");
++       cacheEndpoint(id);
++       readSecret(`cache-${id}`);
++     }
++
++   }
++ }
++
+
+ ❯ src/routes/generation-v2.test.ts:116:59
+    114|         new TextDecoder().decode(updatedBundle.files.find((file) => fi…
+    115|       expect(output("src/features/application-bindings.ts")).toContain…
+    116|       expect(output("src/features/service-resources.ts")).toContain(
+       |                                                           ^
+    117|         'ttlSeconds: input(s, "cache.ttlSeconds")',
+    118|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 129 passed (131)
+      Tests  2 failed | 1207 passed (1209)
+   Start at  18:27:33
+   Duration  122.21s (tests 77%, import 17%, transform 3%, environment 3%)
+
+    Isolate  131 workers spawned · ~249ms startup each (spawn + environment, per file)
+             at least ~7.90s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

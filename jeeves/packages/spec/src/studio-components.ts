@@ -6,7 +6,11 @@
  * intended implementation; Jeeves code would only wire them.
  */
 import { z } from "zod";
-import { generationCallableContracts, rateLimiterCallableContracts } from "./generation-catalog.ts";
+import {
+  cacheReaderCallableContracts,
+  generationCallableContracts,
+  rateLimiterCallableContracts,
+} from "./generation-catalog.ts";
 import type { GenerationCallableContract } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import type { StudioKind } from "./studio-model.ts";
@@ -92,6 +96,9 @@ export const studioCacheReaderSettingsSchema = z
   .strictObject({
     kind: z.literal("cache-reader"),
     pattern: cacheReaderPatternSchema,
+    /** Legacy absence preserves the immutable HTTP contract. */
+    freshness: z.enum(["immutable-positive", "versioned"]).optional(),
+    transport: z.enum(["http", "in-process"]).optional(),
     /** Absent means no in-process L1 tier. */
     l1MaxEntries: bounded(studioComponentLimits.l1MaxEntries).optional(),
     l1TtlSeconds: bounded(studioComponentLimits.l1TtlSeconds).optional(),
@@ -253,7 +260,13 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
       limit: 100,
       windowSeconds: 60,
     },
-    "cache-reader": { kind: "cache-reader", pattern: "cache-aside", stampede: "none" },
+    "cache-reader": {
+      kind: "cache-reader",
+      pattern: "cache-aside",
+      stampede: "none",
+      freshness: "immutable-positive",
+      transport: "http",
+    },
     "id-generator": { kind: "id-generator", strategy: "db-sequence", encoding: "base62" },
     "redirect-responder": { kind: "redirect-responder", status: "302" },
     "event-publisher": { kind: "event-publisher", outbox: "disabled" },
@@ -380,6 +393,7 @@ export const studioModuleSlotIds = [
   "index",
   "items",
   "call",
+  "read",
   "admission",
 ] as const;
 export const studioModuleSlotIdSchema = z.enum(studioModuleSlotIds);
@@ -613,12 +627,9 @@ export const studioComponentDefinitions: {
     generation: lead("positive-cache-read"),
     targets: ["cache"],
     fields: [
-      select("pattern", "Pattern", cacheReaderPatternSchema.options),
-      integer("l1MaxEntries", "L1 in-process size", L.l1MaxEntries, "entries", "Empty: no L1."),
-      integer("l1TtlSeconds", "L1 TTL", L.l1TtlSeconds, "s"),
+      select("freshness", "Freshness", ["immutable-positive", "versioned"]),
+      select("transport", "Exposure", ["http", "in-process"]),
       integer("l2TtlSeconds", "Shared cache TTL", L.l2TtlSeconds, "s"),
-      integer("negativeTtlSeconds", "Negative caching TTL", L.negativeTtlSeconds, "s"),
-      select("stampede", "Stampede protection", cacheStampedeSchema.options),
     ],
   }),
   "id-generator": component("id-generator", {
@@ -715,6 +726,14 @@ export const studioComponentDefinitions: {
     slots: [
       slot("database", ["database"], "read-write"),
       {
+        id: "read",
+        targets: [],
+        module: "cache-reader",
+        use: "in-process",
+        need: "optional",
+        callables: cacheReaderCallableContracts,
+      },
+      {
         id: "admission",
         targets: [],
         module: "rate-limiter",
@@ -798,6 +817,14 @@ export const studioComponentDefinitions: {
         use: "in-process",
         need: "optional",
         callables: generationCallableContracts,
+      },
+      {
+        id: "read",
+        targets: [],
+        module: "cache-reader",
+        use: "in-process",
+        need: "optional",
+        callables: cacheReaderCallableContracts,
       },
       {
         id: "admission",

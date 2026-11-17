@@ -59,6 +59,11 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
         modules.delete("valkey");
       // Likewise local.durability writes transaction.ts for its templates, and a stub's database
       // client then uses that same file.
+      if (
+        model.processes?.length &&
+        model.selections.some((s) => s.binding.kind === "positive-cache-read")
+      )
+        add(["transaction"], ["generation", "processes"]);
       if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
         modules.delete("transaction");
       for (const selection of model.selections) {

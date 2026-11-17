@@ -19,8 +19,13 @@ import {
 // @broker-import-end
 import { ownResource, processClient, type ProcessScope } from "../runtime/process.ts";
 // @cache-import-start
+// @cache-source-import-start
+import { productLogins, productDatabases } from "./local-bindings.ts";
+import { prepareProductOperations } from "../runtime/product-operations.ts";
+import { transaction } from "../runtime/transaction.ts";
+// @cache-source-import-end
 import { cacheEndpoint } from "../runtime/valkey.ts";
-import { createPositiveReader, type PositiveReadAdapter, type PositiveCache } from "../runtime/positive-cache.ts";
+import { createCacheReader, cacheReaderNamespace, type PositiveReadAdapter, type CacheReadStore } from "../runtime/positive-cache.ts";
 // @cache-import-end
 export type ServiceBinding = {
 	id: string;
@@ -215,12 +220,39 @@ export function httpSettings(s: ServiceBinding) {
 }
 // @cache-start
 /** Product completion supplies the record codec, eligibility and authoritative loader. */
+// @cache-source-start
+/** Configuration-only registration/credential checks run before any client opens. */
+export function prepareCacheSource(s: ServiceBinding, module: string) {
+  const id = resource(s, "source");
+  const maximum = productDatabases.find(row => row.resource === id);
+  const login = productLogins.find(row => row.resource === id && row.host === s.host);
+  if (!maximum || !login) throw Error("Missing cache source product binding");
+  const operations = prepareProductOperations(maximum, {tile: s.host, module});
+  const database = `JEEVES_DATABASE_${id.toUpperCase().replace(/-/g, "_")}`;
+  const hostname = endpointHost(`${database}_HOST`, true);
+  readSecret(login.secret);
+  return {operations, configuration: {hostname, port: endpointPort(`${database}_PORT`), tls: databaseTls(database, hostname), login,
+    poolSize: input(s, "source.poolSize"), statementTimeoutMs: input(s, "source.statementTimeoutMs"), connectionTimeoutMs: 2000}};
+}
+export function cacheSource(scope: ProcessScope, prepared: ReturnType<typeof prepareCacheSource>) {
+  const pool = processClient(scope, "postgres", prepared.configuration, () => {
+    const client = ownResource(scope, createPostgres(prepared.configuration), "end");
+    client.on("error", () => {}); return client;
+  });
+  return {queries: prepared.operations((sql, values) => transaction(pool, tx => tx.query(sql, values), {readOnly: true})),
+    probe: () => pool.query("SELECT 1")};
+}
+// @cache-source-end
 export function positiveReader<I, R>(
   s: ServiceBinding,
   adapter: PositiveReadAdapter<I, R>,
-  cache?: PositiveCache,
+  cache?: CacheReadStore,
 ) {
-  return createPositiveReader({ adapter, cache, ttlSeconds: input(s, "cache.ttlSeconds") });
+  const ttlSeconds = input(s, "cache.ttlSeconds");
+  const read = createCacheReader({adapter, cache, ttlSeconds,
+    freshness: s.inputs["reader.freshness"] === "versioned" ? "versioned" : "immutable-positive",
+    namespace: cacheReaderNamespace(s.host,s.id,String(s.inputs["reader.freshness"] ?? "immutable-positive"),ttlSeconds,resource(s,"source"))});
+  return async (input: I) => (await read(input))?.record ?? null;
 }
 // @cache-end
 

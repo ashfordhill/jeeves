@@ -1591,3 +1591,17 @@ Admission links require an independent product operation. A Data access used as 
 (for example a positive reader's loader or Favorites' items) receives no standalone admission
 handle and refuses that link. Custom and standalone Data access modules remain supported; use
 one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.
+
+RG13 adds a **read** connection from Custom or a standalone Data access to a complete Cache reader
+in the same tile. Its generated handle exposes `read({key})`; the product operation must call it.
+A template part has no standalone operation and cannot consume that connection. The reader's
+ordinary controls are Freshness (`immutable-positive` or `versioned`), Exposure (`http` or
+`in-process`) and shared TTL. Older absent values preserve immutable HTTP behavior; saved unsupported
+L1/negative/read-through settings remain readable and refuse generation. An in-process reader adds
+no reader endpoint. HTTP explicitly keeps its record body and supplies freshness/version/absolute
+validity headers; callable results supply those facts as immutable metadata. Versioned source
+records need an authoritative uint64 decimal version and finite absolute validity. The caller
+rechecks validity after another awaited operation. Product keys/codec/eligibility/version/expiry
+are pure; source loading uses registered read-only SELECTs under precise product grants, without a
+pool or raw SQL handle. Unfinished policies/queries remain named custom work. See the emitted
+`.jeeves/extensions.md` for bounds, namespace migration, optional-cache recovery and retention limits.

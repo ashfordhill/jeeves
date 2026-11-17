@@ -18,6 +18,8 @@ describe("the v2 rebuild diff", () => {
       "tile setting: Upload API.requestTimeoutMs",
       "tile setting: View counter.concurrency",
       "tile setting: Watch API.concurrencyLimit",
+      "module setting: Video details cache.freshness",
+      "module setting: Video details cache.transport",
       "module setting: Video details reader.poolSize",
       "module setting: Video details reader.statementTimeoutMs",
       "selection input: event-counter in View counter.host.concurrency",
@@ -25,6 +27,8 @@ describe("the v2 rebuild diff", () => {
       "selection input: owned-multipart in Upload API.host.requestTimeoutMs",
       "selection input: positive-cache-read in Watch API.cache.ttlSeconds",
       "selection input: positive-cache-read in Watch API.host.concurrencyLimit",
+      "selection input: positive-cache-read in Watch API.reader.freshness",
+      "selection input: positive-cache-read in Watch API.reader.transport",
       "selection input: positive-cache-read in Watch API.source.poolSize",
       "selection input: positive-cache-read in Watch API.source.statementTimeoutMs",
     ]);

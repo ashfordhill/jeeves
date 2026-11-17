@@ -388,7 +388,7 @@ describe("module commands", () => {
       ],
       [
         connect("watch-details", "index", { tile: "search-index" }),
-        "Details reader has no index connection; a Data access connects its database, admission or workload.",
+        "Details reader has no index connection; a Data access connects its database, read, admission or workload.",
       ],
       [
         connect("watch-details", "database", { tile: "metadata-db" }),
@@ -488,7 +488,8 @@ describe("module commands", () => {
       moduleConnectOptions(base, "watch-details").find((item) => "module" in item.target),
     ).toEqual({
       target: { module: "watch-cache-reader" },
-      refusal: "Details reader's admission must be a Rate limiter.",
+      refusal:
+        "Details reader's read requires a complete callable Details cache: a connection to a cache.",
     });
   });
 });

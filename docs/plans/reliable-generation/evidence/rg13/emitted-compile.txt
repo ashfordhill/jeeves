@@ -1,0 +1,133 @@
+(node:3727622) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+immutable 63 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+versioned 63 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative reader API: src/modules/preview-api/negative.ts(1,9): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'createCacheReader'.
+src/modules/preview-api/negative.ts(1,200): error TS2353: Object literal may only specify known properties, and 'caller' does not exist in type 'Readonly<{ key: string; }>'.
+src/modules/preview-api/negative.ts(1,219): error TS2339: Property 'cache' does not exist on type 'CacheReaderCapability'.
+src/modules/preview-api/negative.ts(1,227): error TS2339: Property 'close' does not exist on type 'CacheReaderCapability'.
+
+Private reader: src/modules/preview-api/negative.ts: forbidden private runtime import ../../runtime/positive-cache.ts
+
+Reader policy: src/modules/preview-api/negative.hooks.ts: forbidden policy effect API read
+
+versionedHttp 63 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+rateLimiter 71 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative limiter API: src/modules/items-api/negative.ts(1,9): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'createRateLimiter'.
+src/modules/items-api/negative.ts(1,27): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'rateLimitRefusal'.
+src/modules/items-api/negative.ts(1,44): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'createValkeyCache'.
+src/modules/items-api/negative.ts(1,263): error TS2322: Type 'string' is not assignable to type 'never'.
+src/modules/items-api/negative.ts(1,282): error TS2339: Property 'cache' does not exist on type 'RateLimiterCapability'.
+src/modules/items-api/negative.ts(1,290): error TS2339: Property 'close' does not exist on type 'RateLimiterCapability'.
+src/modules/items-api/negative.ts(1,317): error TS2353: Object literal may only specify known properties, and 'address' does not exist in type 'Readonly<{ subject: string; }>'.
+
+Private limiter boundary: src/modules/items-api/negative.ts: forbidden private runtime import ../../runtime/rate-limiter.ts
+
+Policy boundary: src/modules/items-api/negative.hooks.ts: forbidden policy effect API admit
+
+rateLimiterOff 49 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+video 125 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stubs 96 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Negative public API: src/modules/links-api/negative.ts(1,9): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'createValkeyCache'.
+src/modules/links-api/negative.ts(1,27): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'ADMIT_WINDOW'.
+src/modules/links-api/negative.ts(1,40): error TS2305: Module '"../../extension-api/index.ts"' has no exported member 'SET_IF_NEWER'.
+src/modules/links-api/negative.ts(3,38): error TS2339: Property 'admit' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,74): error TS2339: Property 'setIfNewer' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,131): error TS2339: Property 'getVersioned' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,153): error TS2339: Property 'eval' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,168): error TS2339: Property 'sendCommand' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,186): error TS2339: Property 'socket' does not exist on type 'CacheClient'.
+src/modules/links-api/negative.ts(3,195): error TS2339: Property 'client' does not exist on type 'CacheClient'.
+
+Private boundary: src/modules/links-api/negative.ts: forbidden private runtime import ../../runtime/valkey.ts
+
+frozen-v2 80 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+v2-module-design 87 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+stub-stack 60 files
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Pin review {
+  'frozen-v2': {
+    before: 79,
+    after: 80,
+    added: [ 'src/runtime/hook-boundary.ts' ],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/manifest.json',
+      '.jeeves/report.json',
+      'scripts/check-extensions.mjs',
+      'src/extension-api/index.ts',
+      'src/features/service-resources.ts',
+      'src/runtime/positive-cache.ts',
+      'src/runtime/valkey.ts'
+    ]
+  },
+  'v2-module-design': {
+    before: 86,
+    after: 87,
+    added: [ 'src/runtime/hook-boundary.ts' ],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/inputs/design.json',
+      '.jeeves/manifest.json',
+      '.jeeves/normalized.json',
+      '.jeeves/report.json',
+      'diagnostics/generation.json',
+      'scripts/check-extensions.mjs',
+      'src/extension-api/index.ts',
+      'src/features/application-bindings.ts',
+      'src/features/service-resources.ts',
+      'src/modules/watch/watch-counts.slots.ts',
+      'src/runtime/positive-cache.ts',
+      'src/runtime/valkey.ts'
+    ]
+  },
+  'stub-stack': {
+    before: 60,
+    after: 60,
+    added: [],
+    removed: [],
+    changed: [
+      '.jeeves/extensions.md',
+      '.jeeves/inputs/design.json',
+      '.jeeves/manifest.json',
+      '.jeeves/normalized.json',
+      '.jeeves/report.json',
+      'diagnostics/generation.json',
+      'scripts/check-extensions.mjs',
+      'src/modules/links-api/link-reader.slots.ts',
+      'src/modules/visit-worker/archiver.slots.ts',
+      'src/modules/visit-worker/visit-writer.slots.ts'
+    ]
+  }
+}

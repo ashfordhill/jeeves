@@ -310,7 +310,7 @@ slots and generation: `studioComponentDefinitions` in
 | `redirect-responder` | Redirect responder | `turn` | any | none: can't connect | Stub |
 | `event-publisher` | Event publisher | `megaphone` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
 | `event-consumer` | Event consumer | `inbox` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
-| `data-access` | Data access | `cylinder` | any | database: Database · read & write; admission: complete Rate limiter in its tile (optional) | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
+| `data-access` | Data access | `cylinder` | any | database: Database · read & write; read: complete Cache reader in its tile (optional); admission: complete Rate limiter in its tile (optional) | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
 | `auth-guard` | Auth guard | `shield` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
 | `external-call` | External call | `box-out` | any | target: External API, an application or Identity · request | Stub |
 | `custom` | Custom | `puzzle` | any | uses: any tile, many; call: complete Favorites in its tile (optional); admission: complete Rate limiter in its tile (optional) | Stub |
@@ -370,7 +370,7 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 | Command | What it does |
 | --- | --- |
 | `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` changes the label and preserves the ID. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
-| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; Custom/Data access `slot: "admission"` targets a complete Rate limiter in the same tile, exposing checked `admit({})`. Other installed-template adapters, including cross-process Favorites, remain gaps. A filled slot must be disconnected first. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; Custom/Data access `slot: "admission"` targets a complete Rate limiter in the same tile, exposing checked `admit({})`. Custom/standalone Data access `slot: "read"` targets a complete Cache reader and exposes checked `read({key})` with freshness metadata; the reader's Exposure controls its optional HTTP adapter. Other installed-template adapters, including cross-process Favorites/cache reads, remain gaps. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
 
@@ -598,3 +598,13 @@ Admission links require an independent product operation. A Data access used as 
 (for example a positive reader's loader or Favorites' items) receives no standalone admission
 handle and refuses that link. Custom and standalone Data access modules remain supported; use
 one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.
+
+RG13 installs `cache-reader.read@1` on the existing Cache reader lead. Custom and standalone Data
+access can connect their optional **read** slot to a complete reader in the same tile. Parts cannot
+consume it. Freshness is explicitly immutable-positive or versioned; Exposure is HTTP or in-process.
+Only these and shared TTL are ordinary controls. HTTP retains its record body with absolute
+validity/version headers; in-process returns immutable record/freshness/version/validity/source
+metadata and adds no endpoint. Registered source SELECTs have a compiled read-only module binding
+and product-only credential. Pure policy, optional-cache recovery, bounded actual fills/waiters,
+compare-version and absolute validity are generated; product SELECTs/eligibility/codec/load/version
+remain hooks, never silently completed. Native shared-cache proof remains RG14.

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "namespaces": [
+    {
+      "schema": "p_preview_api_owner",
+      "migrations": [
+        {
+          "version": "0001",
+          "file": "infra/postgres/previews-db/products/migrations/p_preview_api_owner/0001-initial.sql"
+        }
+      ]
+    }
+  ],
+  "tables": [{ "schema": "p_preview_api_owner", "name": "records" }],
+  "views": [],
+  "operations": [
+    {
+      "name": "read_record",
+      "module": "preview-reader",
+      "host": "preview-api",
+      "kind": "query",
+      "file": "infra/postgres/previews-db/products/queries/read.sql",
+      "parameters": 1,
+      "relations": [
+        { "schema": "p_preview_api_owner", "name": "records", "operations": ["select"] }
+      ]
+    }
+  ]
+}

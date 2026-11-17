@@ -57,6 +57,56 @@ const addCache = (baseRevision: number) => ({
 });
 
 describe("studio chat tools", () => {
+  it("RG13 chat and mouse select identical cache freshness/exposure and callable contracts", async () => {
+    const { cacheReaderDesign } = await import(
+      "../../../../../field-projects/generator-system/fixtures/rg-cache-reader/design.ts"
+    );
+    const source = cacheReaderDesign(),
+      workspace = new Workspace(source);
+    const command = {
+      type: "editComponent",
+      component: "preview-reader",
+      settings: {
+        kind: "cache-reader",
+        pattern: "cache-aside",
+        stampede: "single-flight",
+        freshness: "versioned",
+        transport: "in-process",
+      },
+    } as const;
+    expect(
+      run(workspace, "applyStudioCommands", { baseRevision: source.revision, commands: [command] })
+        .ok,
+    ).toBe(true);
+    const mouse = applyOperations(
+      source,
+      buildSupportedAuthoringCommand(source, command, installedGenerationSupport()).ops,
+    );
+    if (!mouse.ok) throw Error("mouse command");
+    expect(workspace.working).toEqual(mouse.design);
+    const catalog = run(workspace, "listStudioDefinitions").modules as {
+      kind: string;
+      slots: unknown[];
+      fields: unknown[];
+    }[];
+    expect(catalog.find((m) => m.kind === "custom")?.slots).toContainEqual(
+      expect.objectContaining({
+        id: "read",
+        module: "cache-reader",
+        callables: expect.arrayContaining([
+          expect.objectContaining({ id: "cache-reader.read", effect: "read" }),
+        ]),
+      }),
+    );
+    expect(JSON.stringify(run(workspace, "getDesign"))).toContain("reader.freshness");
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: workspace.working.revision,
+        commands: [{ ...command, settings: { ...command.settings, freshness: "eventual" } }],
+      }),
+    ).toMatchObject({ ok: false });
+  });
+
   it("RG12 chat edits only consumed rolling-window settings and connects the same callable offered by mouse", async () => {
     const { rateLimiterDesign } = await import(
       "../../../../../field-projects/generator-system/fixtures/rg-rate-limiter/design.ts"

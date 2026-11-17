@@ -1,4 +1,4 @@
-import { generationRuntime } from "@jeeves/spec";
+import { cacheReaderCallableContracts, generationRuntime } from "@jeeves/spec";
 import { jsonFile, pointerPart } from "../json.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
 import { mountedHooksGap } from "./module-stubs.ts";
@@ -34,9 +34,15 @@ export function createLocalPositiveCache(sourcePaths: readonly string[]): V2Emit
     version: "0.1.0-experimental.1",
     status: "implemented",
     description:
-      "Positive-only immutable lookup, single-flight, bounded cache fallback and explicit adapter bindings.",
+      "Callable immutable/versioned eligible reads with bounded coalescing and optional cache fallback.",
     sourcePaths,
     dependencies: [generationRuntime.ref],
+    provides: {
+      callables: cacheReaderCallableContracts.map((contract) => ({
+        contract,
+        outputPaths: ["src/runtime/positive-cache.ts"],
+      })),
+    },
     render: ({ model, asset }) => {
       const selections = model.selections.filter((s) => s.binding.kind === "positive-cache-read");
       const paths = selections.map(
@@ -84,14 +90,19 @@ export function createLocalPositiveCache(sourcePaths: readonly string[]): V2Emit
           },
         ],
         gaps: [
-          mountedHooksGap(model, selections, {
-            id: "positive-cache-application-bindings",
-            required: true,
-            status: "unfinished" as const,
-            description:
-              "Bind an immutable public-record codec, requested identity/eligibility, key and authoritative loader; contribute an explicit ready-only view/login and construct the reader with emitted TTL and actual cache client in the service. Dependency output alone installs no application.",
-            sourcePaths: paths,
-          }),
+          mountedHooksGap(
+            model,
+            selections,
+            {
+              id: "positive-cache-application-bindings",
+              required: true,
+              status: "unfinished" as const,
+              description:
+                "Bind a public-record codec, requested identity/eligibility, key and authoritative loader; register a read-only source SELECT under declared product grants, select immutable or versioned freshness and construct the reader with emitted TTL and actual cache client in the service. Dependency output alone installs no application.",
+              sourcePaths: paths,
+            },
+            "reads refuse until their product hooks and registered source query are written",
+          ),
         ],
       };
     },

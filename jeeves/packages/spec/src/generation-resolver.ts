@@ -11,6 +11,7 @@ import {
   generationSchema,
 } from "./generation.ts";
 import {
+  cacheReaderCallableContracts,
   generationCallableContracts,
   generationExtensionApi,
   generationPolicies,
@@ -301,12 +302,14 @@ export type NormalizedCallableCapability = {
     use: "read" | "write";
     sourcePath: Path;
   }[];
-  caller: {
-    kind: "verified-principal";
-    identity: string;
-    guard: string;
-    sourcePath: Path;
-  };
+  caller:
+    | { kind: "public" }
+    | {
+        kind: "verified-principal";
+        identity: string;
+        guard: string;
+        sourcePath: Path;
+      };
   lifecycle: { process: string; mechanism: string };
   extensionApiVersion: number;
 };
@@ -1173,7 +1176,7 @@ export function resolveGeneration(
     const source = studio?.components?.find((component) => component.id === link.from);
     if (
       source?.settings.kind === "data-access" &&
-      moduleLinkSlot(design, link)?.id === "admission" &&
+      ["admission", "read"].includes(moduleLinkSlot(design, link)?.id ?? "") &&
       !normalized.some(
         (selection) =>
           selection.binding.kind === "module-stub" &&
@@ -1184,7 +1187,7 @@ export function resolveGeneration(
       report(
         "CONFIG_INVALID",
         ["architecture", "studio", "componentConnections", index],
-        `${source.name} has no standalone product operation for admission; template parts receive no admission handle. Connect from Custom or a standalone Data access instead.`,
+        `${source.name} has no standalone product operation for ${moduleLinkSlot(design, link)?.id}; template parts receive no callable handle. Connect from Custom or a standalone Data access instead.`,
       );
   }
   // A structurally invalid model must never reach a renderer. Unsupported/uninstalled source
@@ -1383,6 +1386,47 @@ export function resolveGeneration(
       if (access.length) process.productAccess = access;
     }
     for (const selection of normalized) {
+      if (
+        selection.binding.kind === "positive-cache-read" &&
+        selection.target.kind === "component"
+      ) {
+        const contract = cacheReaderCallableContracts[0];
+        const implementation = installed.callables?.find(
+          (item) =>
+            item.contract.id === contract.id && !callableContractRefusal(contract, item.contract),
+        );
+        if (!implementation)
+          report(
+            "NEEDS_TEMPLATE",
+            [...selection.sourcePath, "template"],
+            `Required callable ${contract.id}@1 is not installed.`,
+          );
+        const role = ownership.roles.find((item) => item.element === selection.host);
+        if (implementation && role)
+          model.capabilities.push({
+            id: `${selection.target.component}.${contract.id}`,
+            contract: structuredClone(contract),
+            selection: selection.id,
+            module: selection.target.component,
+            process: selection.host,
+            owner: role.owner,
+            role: role.kind,
+            sourcePath: structuredClone(selection.sourcePath),
+            roleSourcePath: ["ownership", "roles", ownership.roles.indexOf(role)],
+            transport:
+              selection.inputs["reader.transport"] === "in-process" ? "in-process" : "http",
+            dependencies: [],
+            access: selection.resources.map((r) => ({
+              resource: r.element,
+              name: r.field === "source" ? "cache-reader.public-source" : "cache-reader.entries",
+              use: r.field === "source" ? ("read" as const) : ("write" as const),
+              sourcePath: r.sourcePath,
+            })),
+            caller: { kind: "public" },
+            lifecycle: { process: selection.host, mechanism: "src/runtime/process.ts" },
+            extensionApiVersion: generationExtensionApi.version,
+          });
+      }
       if (
         !["favorites", "rate-limiter"].includes(selection.binding.kind) ||
         selection.target.kind !== "component"

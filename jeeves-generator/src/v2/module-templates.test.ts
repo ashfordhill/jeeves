@@ -173,6 +173,12 @@ describe("module-authored v2 and its tile-level twin", () => {
       );
       return { ...row, inputs };
     });
+    for (const row of expected)
+      if (row.id === "watch-cache-reader")
+        Object.assign(row.inputs, {
+          "reader.freshness": "immutable-positive",
+          "reader.transport": "http",
+        });
     expect(after.rows).toEqual(expected);
     expect(dropped.length).toBeGreaterThan(0);
     for (const item of dropped) {

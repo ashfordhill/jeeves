@@ -67,12 +67,31 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
       ),
     );
 
-    // The structural diff: only the contract's intended differences.
+    // The structural diff: prior intended differences plus RG13's explicit legacy-equivalent
+    // immutable/HTTP defaults. Assert every additional row and its exact value.
     const support = await page.request.get("/api/generation-support");
     const installed = (await support.json()) as GenerationInstalledSupport;
     const rows = v2Diff(frozenV2Design(), saved, installed);
     const report = v2DiffReport(rows);
-    expect(report.unexpected).toEqual([]);
+    const cacheDefaults = [
+      {
+        area: "module setting",
+        key: "Video details cache.freshness",
+        candidate: "immutable-positive",
+      },
+      { area: "module setting", key: "Video details cache.transport", candidate: "http" },
+      {
+        area: "selection input",
+        key: "positive-cache-read in Watch API.reader.freshness",
+        candidate: "immutable-positive",
+      },
+      {
+        area: "selection input",
+        key: "positive-cache-read in Watch API.reader.transport",
+        candidate: "http",
+      },
+    ];
+    expect(report.unexpected).toEqual(cacheDefaults);
     expect(report.unused).toEqual([]);
 
     // Generate project → Preview, by mouse: v2's seven installed templates, the Creator check's
@@ -135,7 +154,8 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
           builtMs: built,
           diff: {
             rows: rows.length,
-            unexpected: report.unexpected,
+            explicitLegacyCacheDefaults: report.unexpected,
+            unexpected: [],
             intended: report.intended.map(({ rule, rows }) => ({
               area: rule.area,
               key: String(rule.key),

@@ -1,134 +1,210 @@
-/** A trusted adapter supplies only immutable eligible positive records, never totals,
- * private status or not-ready state. Schema validation cannot authenticate a poisoned cache. */
+/** Optional public-record cache. No private-record authority is granted by key or codec policy. */
+import { createHash } from "node:crypto";
+import { assertNetworkAllowed, assertOperation, currentOperation, dependency, OperationError, withEffect, withLocalPolicy } from "./operation.ts";
+import { normalizedJsonDto } from "./hook-boundary.ts";
+import type { ValkeyCache, VersionedValue } from "./valkey.ts";
 export interface PositiveCache {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, expiry: { PXAT: number }): Promise<unknown>;
 }
 export interface PositiveReadAdapter<I, R> {
-  /** Validate/canonicalize the request here. Include every input affecting loader/eligibility
-   * semantics in the key: same-key calls share one result. Caller/adapter owns canonical input. */
+  /** Include every loader/eligibility input in the canonical key. Only public eligible data. */
   key(input: I): string;
   codec: { parse(value: unknown): R };
-  /** Check requested identity AND domain eligibility on both cached and loaded records. */
+  /** Requested identity AND domain eligibility, checked on hits, fills and each caller delivery. */
   eligible(record: R, input: I): boolean;
-  /** Application-bound authoritative lookup; null is never cached. */
+  /** Only registered source queries are supplied by generated wiring. Null is never cached. */
   load(input: I): Promise<unknown | null>;
-  /** Absolute UTC milliseconds; null means no record expiry. */
+  /** Absolute source validity in UTC milliseconds; required and finite for versioned records.
+   * Never compute a new lifetime from the time a cached value is served. */
   expiresAt?(record: R): number | null;
+  /** Canonical uint64 decimal from the authoritative record, never a process-local counter. */
+  version?(record: R): string;
 }
-
-export function createPositiveReader<I, R>(options: {
+export interface CacheReadResult<R = unknown> {
+  readonly record: R;
+  readonly freshness: "immutable-positive" | "versioned";
+  readonly version: string | null;
+  /** Final validity bound. Recheck Date.now() < validUntil after another awaited operation. */
+  readonly validUntil: number | null;
+  readonly source: "cache" | "authoritative";
+}
+export interface CacheReaderCapability {
+  readonly targets: Readonly<{ read: string }>;
+  read(input: Readonly<{ key: string }>): Promise<CacheReadResult | null>;
+}
+export type CacheReadStore = Pick<ValkeyCache, "get" | "fillImmutable" | "getVersioned" | "setIfNewer">;
+const MAX_FILLS = 32, MAX_WAITERS = 128, MAX_KEY_WAITERS = 32;
+const invalid = (code: string): never => { throw new OperationError("refused", code); };
+function synchronous<T>(result: T): T {
+  if (result && typeof (result as {then?: unknown}).then === "function") {
+    void Promise.resolve(result).catch(() => {});
+    return invalid("CACHE_POLICY_ASYNC");
+  }
+  return result;
+}
+const alive = (until: number | null) => until === null || until > Date.now();
+const validVersion = (v: unknown): v is string => typeof v === "string" && /^(0|[1-9][0-9]{0,19})$/.test(v) && (v.length < 20 || v <= "18446744073709551615");
+const compareVersion = (a: string, b: string) => a.length - b.length || (a < b ? -1 : a > b ? 1 : 0);
+/** Generated constructor; product extensions receive only CacheReaderCapability. The fill map
+ * is an optimization. Shared-store compare-version and absolute validity provide correctness. */
+export function createCacheReader<I, R>(options: {
   adapter: PositiveReadAdapter<I, R>;
-  /** Required: pass the emitted binding's authoritative cache tile setting. No default. */
   ttlSeconds: number;
-  cache?: PositiveCache;
-  /** Told when the optional cache fails: a failed or corrupt cached read, or a failed fill. */
+  freshness: "immutable-positive" | "versioned";
+  cache?: CacheReadStore;
+  /** Fixed generated namespace. Kept separate from all product CacheClient keys. */
+  namespace?: string;
   onFailure?: (what: "cache read" | "cache fill", error: unknown) => void;
 }) {
-  const { adapter, cache, ttlSeconds } = options;
-  const failed = (what: "cache read" | "cache fill", error: unknown) => {
-    try {
-      options.onFailure?.(what, error);
-    } catch {
-      /* The read goes on as it would without the cache. */
-    }
+  const { cache, ttlSeconds, freshness } = options;
+  if (!Number.isInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 604800 || !["immutable-positive", "versioned"].includes(freshness)) throw Error("Invalid cache reader binding");
+  // Accessors, binding and invocation are all policy execution. No captured network/SQL handle.
+  const hooks = withLocalPolicy(() => {
+    const a = synchronous(options.adapter), c = synchronous(a.codec);
+    const bind = <T extends Function>(fn: T, owner: object): T => {
+      synchronous(fn);
+      if (typeof fn !== "function") throw Error("Invalid cache reader policy");
+      return fn.bind(owner) as unknown as T;
+    };
+    const expiresAt = synchronous(a.expiresAt), version = synchronous(a.version);
+    if (freshness === "versioned" && (!expiresAt || !version)) throw Error("Versioned reader requires version and absolute validity policies");
+    return { key: bind(a.key, a), parse: bind(c.parse, c), eligible: bind(a.eligible, a), load: bind(a.load, a), expiresAt: expiresAt && bind(expiresAt, a), version: version && bind(version, a) };
+  });
+  const policy = <T>(fn: () => T): T => withLocalPolicy(() => synchronous(fn()));
+  const dto = <T>(value: T): T => normalizedJsonDto(value) as T;
+  function decoded(raw: unknown, input: I) {
+    return policy(() => {
+      const record = dto(policy(() => hooks.parse(dto(raw))));
+      const eligible = policy(() => hooks.eligible(record, input));
+      if (typeof eligible !== "boolean") return invalid("CACHE_ELIGIBILITY");
+      if (!eligible) return null;
+      const until = policy(() => hooks.expiresAt?.(record)) ?? null;
+      if (until !== null && (!Number.isSafeInteger(until) || until < 0)) return invalid("CACHE_VALIDITY");
+      const version = freshness === "versioned" ? policy(() => hooks.version!(record)) : null;
+      if (freshness === "versioned" && (until === null || !validVersion(version))) return invalid("CACHE_VERSION");
+      return { record, until, version };
+    });
+  }
+  const fills = new Map<string, { work: Promise<CacheReadResult<R> | null>; waiters: number }>();
+  let waiters = 0, pendingCache = 0, skipUntil = 0;
+  const failed = (what: "cache read" | "cache fill", error: unknown, cooldown = true) => {
+    if (cooldown && !(error instanceof OperationError && error.code === "CACHE_SATURATED")) skipUntil = performance.now() + 5000;
+    try { options.onFailure?.(what, new OperationError(error instanceof OperationError ? error.outcome : "definite-failure", what === "cache read" ? "CACHE_READ_FAILED" : "CACHE_FILL_FAILED")); } catch { /* Optional logging cannot fail a read. */ }
   };
-  if (!Number.isInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 604800)
-    throw new Error("Invalid positive cache TTL");
-  const fills = new Map<string, Promise<R | null>>();
-  let skipUntil = 0;
-  let stalled = 0;
-  // Bound even an injected adapter. A phase past its deadline, or a cache call that rejects,
-  // makes this reader use the database alone for five seconds. A call past its deadline also
-  // keeps the cache unused until that call settles, so a cache that doesn't answer never piles
-  // up calls; once it settles, the cache is tried again after the five seconds. The real client
-  // also destroys its socket; arbitrary injected adapters must own cancellation/late completion
-  // themselves.
-  async function phase<T>(effect: () => Promise<T>): Promise<T> {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const call = Promise.resolve().then(effect);
-    try {
-      return await Promise.race([
-        call,
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(() => {
-            skipUntil = Date.now() + 5000;
-            stalled += 1;
-            // Promise.race doesn't cancel the call: it stays counted until it settles.
-            call
-              .finally(() => {
-                stalled -= 1;
-              })
-              .catch(() => {});
-            reject(new Error("Cache deadline"));
-          }, 150);
-        }),
-      ]);
-    } finally {
-      clearTimeout(timer);
+  // Actual unsettled calls keep a slot after the 150ms caller bound. A hung injected cache is
+  // bypassed until it settles; the RG11 client also owns bounded reconnect/socket teardown.
+  const usable = () => cache && pendingCache === 0 && performance.now() >= skipUntil;
+  const phase = <T>(effect: () => Promise<T>, mutation = false) => dependency({maximumMs: 150, mutation}, () => {
+    pendingCache++;
+    let work: Promise<T>;
+    try { work = effect(); } catch (error) { work = Promise.reject(error); }
+    return work.finally(() => { pendingCache--; });
+  });
+  const result = (value: NonNullable<ReturnType<typeof decoded>>, source: "cache" | "authoritative", bound = value.until): CacheReadResult<R> | null =>
+    alive(bound) ? Object.freeze({record: value.record, freshness, version: value.version, validUntil: bound, source}) : null;
+  const cached = async (input: I, key: string, minimum?: string, answered = () => {}): Promise<CacheReadResult<R> | null> => {
+    if (freshness === "versioned") {
+      const envelope = await phase(() => cache!.getVersioned(key));
+      answered();
+      if (!envelope || !alive(envelope.validUntil)) return null;
+      const value = decoded(JSON.parse(envelope.value), input);
+      if (!value || value.version !== envelope.version || (minimum && compareVersion(envelope.version, minimum) < 0)) return null;
+      // Both source validity and envelope validity apply; neither can extend the other.
+      return result(value, "cache", Math.min(value.until!, envelope.validUntil));
     }
-  }
-  function expiry(record: R): number | null {
-    const value = adapter.expiresAt?.(record) ?? null;
-    if (value !== null && (!Number.isSafeInteger(value) || value < 0))
-      throw new Error("Invalid positive record expiry");
-    return value;
-  }
-  const alive = (until: number | null) => until === null || until > Date.now();
-  async function read(input: I, key: string): Promise<R | null> {
-    if (cache && stalled === 0 && Date.now() >= skipUntil) {
-      let answered = false;
-      try {
-        const raw = await phase(() => cache.get(key));
-        answered = true;
-        if (raw !== null) {
-          const record = adapter.codec.parse(JSON.parse(raw));
-          if (adapter.eligible(record, input) && alive(expiry(record))) return record;
-        }
-      } catch (error) {
-        // Corrupt/unavailable cache is optional. The authoritative loader owns its errors. A get
-        // that rejects skips the cache for five seconds; a value that fails to decode is one bad
-        // entry and does not.
-        if (!answered) skipUntil = Date.now() + 5000;
-        failed("cache read", error);
-      }
-    }
-    const raw = await adapter.load(input);
+    const raw = await phase(() => cache!.get(key));
+    answered();
     if (raw === null) return null;
-    const record = adapter.codec.parse(raw);
-    if (!adapter.eligible(record, input)) return null;
-    const until = expiry(record);
-    if (!alive(until)) return null;
-    if (cache && stalled === 0 && Date.now() >= skipUntil) {
-      let encoded = false;
+    const value = decoded(JSON.parse(raw), input);
+    return value ? result(value, "cache") : null;
+  };
+  async function read(input: I, key: string): Promise<CacheReadResult<R> | null> {
+    if (usable()) {
+      let answered = false;
+      try { const hit = await cached(input, key, undefined, () => {answered = true;}); if (hit) return hit; }
+      catch (error) { if (error instanceof OperationError && error.code === "EFFECT_NOT_ALLOWED") throw error; failed("cache read", error, !answered); }
+    }
+    assertOperation();
+    // TTL starts before the authoritative lookup, never after transport/fill delay.
+    const started = Date.now();
+    const raw = await hooks.load(input);
+    assertOperation();
+    if (raw === null) return null;
+    const value = decoded(raw, input);
+    if (!value || !alive(value.until)) return null;
+    const until = Math.min(started + ttlSeconds * 1000, value.until ?? Number.MAX_SAFE_INTEGER);
+    if (usable() && until > Date.now()) {
+      let superseded = false;
       try {
-        const value = JSON.stringify(record);
-        if (value === undefined) throw new Error("Invalid positive record encoding");
-        encoded = true;
-        await phase(async () => {
-          const now = Date.now();
-          const PXAT = Math.min(now + ttlSeconds * 1000, until ?? Number.MAX_SAFE_INTEGER);
-          // No upward rounding. Skip subsecond remaining life; the valid record may still
-          // be returned. Absolute atomic expiry prevents transport delay extending its life.
-          if (PXAT - now >= 1000) await cache.set(key, value, { PXAT });
-        });
+        const encoded = policy(() => JSON.stringify(dto(value.record)));
+        if (freshness === "versioned") {
+          const write = await phase(() => cache!.setIfNewer(key, {version: value.version!, value: encoded, validUntil: until}), true);
+          if (write.status === "version-conflict") return invalid("CACHE_VERSION_CONFLICT");
+          if (write.status === "not-newer") {
+            superseded = true;
+            // A slower fill must not deliver its superseded result once the store fences it.
+            const newer = await cached(input, key, value.version!);
+            if (!newer) return invalid("CACHE_SUPERSEDED");
+            return newer;
+          }
+        } else if (until - Date.now() >= 1000) await phase(() => cache!.fillImmutable(key, encoded, {PXAT: until}), true);
       } catch (error) {
-        // A failed optional fill must preserve a successful authoritative lookup. A set that
-        // rejects skips the cache for five seconds.
-        if (encoded) skipUntil = Date.now() + 5000;
+        if (superseded) return invalid("CACHE_SUPERSEDED");
+        if (error instanceof OperationError && ["EFFECT_NOT_ALLOWED", "CACHE_VERSION_CONFLICT", "CACHE_SUPERSEDED"].includes(error.code)) throw error;
         failed("cache fill", error);
       }
     }
-    // Expiry can cross during fill. No expired result is returned, even after fill failure.
-    return alive(until) ? record : null;
+    return result(value, "authoritative", freshness === "versioned" ? until : value.until);
   }
-  return (input: I): Promise<R | null> => {
-    const key = adapter.key(input);
-    if (!key || key.length > 512) throw new Error("Invalid positive cache key");
-    const existing = fills.get(key);
-    if (existing) return existing;
-    const fill = read(input, key).finally(() => fills.delete(key));
-    fills.set(key, fill);
-    return fill;
-  };
+  return (raw: I): Promise<CacheReadResult<R> | null> => withEffect("read", async () => {
+    assertNetworkAllowed(); assertOperation();
+    const input = policy(() => dto(raw));
+    const key = policy(() => {
+      const value = policy(() => hooks.key(input));
+      if (typeof value !== "string" || !value || Buffer.byteLength(value) > 512 || Buffer.from(value, "utf8").toString("utf8") !== value || value.startsWith("jeeves:")) return invalid("INVALID_CACHE_KEY");
+      return options.namespace ? `jeeves:reader:${options.namespace}:${createHash("sha256").update(value).digest("hex")}` : value;
+    });
+    // Only identical normalized input and caller facts coalesce. Never reuse an eligibility
+    // decision across distinct callers, even if product keys accidentally collide.
+    const identity = JSON.stringify([key, input, currentOperation()?.caller.subject ?? null]);
+    let fill = fills.get(identity);
+    if (waiters >= MAX_WAITERS || (fill?.waiters ?? 0) >= MAX_KEY_WAITERS || (!fill && fills.size >= MAX_FILLS)) return invalid("CACHE_READER_SATURATED");
+    if (!fill) {
+      const work = read(input, key);
+      fill = {work, waiters: 0}; fills.set(identity, fill);
+      void work.finally(() => fills.delete(identity)).catch(() => {});
+    }
+    waiters++; fill.waiters++;
+    try {
+      const answer = await dependency({maximumMs: 2000}, () => fill!.work);
+      assertOperation();
+      if (!answer || !alive(answer.validUntil)) return null;
+      // Reapply product eligibility for every waiter, and give each a distinct immutable DTO.
+      const value = decoded(answer.record, input);
+      return value && alive(value.until) ? policy(() => dto(answer)) : null;
+    } finally { waiters--; fill.waiters--; }
+  });
+}
+/** Legacy internal immutable helper. New generated wiring uses the explicit metadata contract. */
+export function createPositiveReader<I, R>(options: {
+  adapter: PositiveReadAdapter<I, R>; ttlSeconds: number; cache?: PositiveCache;
+  onFailure?: (what: "cache read" | "cache fill", error: unknown) => void;
+}) {
+  const cache = options.cache;
+  const read = createCacheReader({...options, freshness: "immutable-positive", cache: cache && {
+    get: key => cache.get(key), fillImmutable: (key, value, expiry) => cache.set(key, value, expiry),
+    getVersioned: async () => null, setIfNewer: async (_key: string, _value: VersionedValue) => { throw Error("Immutable reader"); },
+  }});
+  return async (input: I) => (await read(input))?.record ?? null;
+}
+export function cacheReaderNamespace(process: string, module: string, freshness: string, ttlSeconds: number, source = ""): string {
+  return createHash("sha256").update(JSON.stringify([process, module, source, "cache-reader.read@1", freshness, ttlSeconds])).digest("hex");
+}
+export function cacheReaderCapability(core: () => (input: {key: string}) => Promise<CacheReadResult | null>, module: string): CacheReaderCapability {
+  return Object.freeze({targets: Object.freeze({read: `${module}.cache-reader.read@1`}), read(input: Readonly<{key: string}>) {
+    const dto = withLocalPolicy(() => normalizedJsonDto(input)) as {key?: unknown} | null;
+    if (!dto || typeof dto !== "object" || Object.keys(dto).length !== 1 || typeof dto.key !== "string" || !dto.key || Buffer.byteLength(dto.key) > 512) return Promise.reject(new OperationError("refused", "CACHE_READER_INPUT"));
+    return core()(dto as {key: string});
+  }});
 }

@@ -269,9 +269,18 @@ export function stubClients(
             (s) =>
               s.target.kind === "component" &&
               s.target.component === target.component &&
-              (s.binding.kind === "favorites" || s.binding.kind === "rate-limiter"),
+              (s.binding.kind === "favorites" ||
+                s.binding.kind === "rate-limiter" ||
+                s.binding.kind === "positive-cache-read"),
           );
           if (!selection) throw new Error(`No installed callable adapter for ${target.component}`);
+          if (selection.binding.kind === "positive-cache-read") {
+            imports.push({ from: "../runtime/positive-cache.ts", name: "cacheReaderCapability" });
+            return [
+              property,
+              `cacheReaderCapability(() => ${camel(selection.id)}.read, ${text(target.component)})`,
+            ];
+          }
           if (selection.binding.kind === "rate-limiter") {
             imports.push({ from: "../runtime/rate-limiter.ts", name: "rateLimiterCapability" });
             return [

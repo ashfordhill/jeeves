@@ -49,7 +49,11 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
           'export type { PublicHttpError, HttpErrorFormatter } from "../runtime/admission.ts";',
         );
       const safeTypes: [string, string, boolean][] = [
-        ["positive-cache", "PositiveReadAdapter", has("positive-cache-read")],
+        [
+          "positive-cache",
+          "PositiveReadAdapter, CacheReaderCapability, CacheReadResult",
+          has("positive-cache-read"),
+        ],
 
         ["event-counter", "CounterAdapter", has("event-counter")],
         ["media-worker", "MediaCodecs", has("video-hls")],
@@ -122,7 +126,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
             "/** Application-owned DTOs and pure shared definitions. Public across processes. */\nexport {};\n",
             true,
           ),
-          ...(model.processes?.length || has("rate-limiter")
+          ...(model.processes?.length || has("rate-limiter") || has("positive-cache-read")
             ? [file("src/runtime/hook-boundary.ts", boundary)]
             : []),
         ],
@@ -131,7 +135,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
             s.binding.kind === "module-stub"
               ? "Migrate legacy Custom code to src/extension-api/index.ts. Use registered product SQL names and positional values for database links. Raw SQL, token verification and arbitrary HTTP target calls remain unavailable."
               : s.binding.kind === "positive-cache-read"
-                ? "The loader receives an unavailable ProductQueries handle; registered product queries are not installed. Supply no raw SQL or private runtime import in the hook."
+                ? "The loader receives a scoped registered read-only ProductQueries handle. Register its named SELECT and declared relations in products.json, then supply the codec/eligibility/load policy; no raw SQL or private runtime import."
                 : undefined;
           return reason
             ? [

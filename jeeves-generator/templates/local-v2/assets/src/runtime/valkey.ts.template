@@ -35,6 +35,8 @@ export interface VersionWrite {
 export interface ValkeyCache {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, expiry?: { PXAT: number } | { EX: number }): Promise<unknown>;
+  /** Private generated immutable cache fill. Public product set remains effect-checked. */
+  fillImmutable(key: string, value: string, expiry: {PXAT: number}): Promise<unknown>;
   delete(key: string): Promise<unknown>;
   ping(): Promise<unknown>;
   /** One rolling log, at most limit admissions in any windowMs, using store TIME. Use a
@@ -350,6 +352,14 @@ export async function createValkeyCache(options: {
         return Object.freeze({ admitted: admitted === 1, count, resetAt });
       }, true, true);
     },
+    fillImmutable: async (key, value, expiry) => {
+      keyInput(key);
+      if (!key.startsWith("jeeves:reader:") || !validValue(value) || !validUntil(expiry.PXAT)) throw failure("refused", "INVALID_CACHE_VALUE");
+      return command(client => client.set(key, value, expiry), reply => {
+        if (reply !== "OK") throw Error("Invalid SET reply");
+        return reply;
+      }, true, true);
+    },
     getVersioned: async (key) => {
       keyInput(key);
       const record = await command((client) => client.get(key), (reply) => {
@@ -371,7 +381,7 @@ export async function createValkeyCache(options: {
       const status = await command((client) => client.eval(SET_IF_NEWER, { keys: [key], arguments: [encoded, version, String(until), value] }), (reply) => {
         if (reply !== 0 && reply !== 1 && reply !== 2 && reply !== 3) throw Error("Invalid compare reply");
         return (["not-newer", "stored", "expired", "version-conflict"] as const)[reply]!;
-      }, true);
+      }, true, true);
       return Object.freeze({ status: until <= Date.now() ? "expired" : status, validUntil: until });
     },
     close,

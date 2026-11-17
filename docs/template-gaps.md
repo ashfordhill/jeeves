@@ -113,3 +113,10 @@ admission logs on shared clients. Ordinary keys remain supported; existing appli
 that prefix need explicit migration. Immutable positive readers and admission refuse cache sharing
 because their eviction contracts differ. This is a finite runtime/compilation boundary, not a
 cache ACL provider or hostile-code sandbox.
+
+RG13 closes the cache-only callable/source-loader gap: Custom and standalone Data access consume
+`cache-reader.read@1`; source loading now uses registered read-only queries under existing RG07
+declarations/grants. Immutable and finite versioned modes are explicit. Cache policies and SQL
+remain application-owned completion work. Version fencing lasts only while the shared cache key
+is retained; no durable watermark, immediate invalidation, stale-serving mode, L1/negative cache,
+new provider or authenticated cross-process cache adapter is claimed. Native store proof is RG14.

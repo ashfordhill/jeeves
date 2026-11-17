@@ -251,29 +251,43 @@ function positiveCacheRead(
   const source = resource(selection, "source");
   const cache = resource(selection, "cache");
   const url = `/modules/${lead.module}/:key`;
-  const members = ["key", "codec", "eligible", "load", "expiresAt"];
+  const exposed = selection.inputs["reader.transport"] !== "in-process";
+  const versioned = selection.inputs["reader.freshness"] === "versioned";
+  const members = [
+    "key",
+    "codec",
+    "eligible",
+    "load",
+    "expiresAt",
+    ...(versioned ? ["version"] : []),
+  ];
   return {
     imports: [
       { from: resources, name: "input" },
-      { from: resources, name: "pool" },
+      { from: resources, name: "prepareCacheSource" },
+      { from: resources, name: "cacheSource" },
       { from: resources, name: "selected" },
       { from: "../features/positive-cache-bindings.ts", name: "positiveCacheBindings" },
       { from: "../runtime/http.ts", name: "HttpError" },
-      { from: "../runtime/positive-cache.ts", name: "createPositiveReader" },
+      { from: "../runtime/positive-cache.ts", name: "createCacheReader" },
+      { from: "../runtime/positive-cache.ts", name: "cacheReaderNamespace" },
+      { from: "../runtime/positive-cache.ts", name: "cacheReaderCapability" },
+      { from: "../runtime/operation.ts", name: "withLocalPolicy" },
       { from: "../runtime/valkey.ts", name: "cacheEndpoint" },
       { from: "../runtime/valkey.ts", name: "createValkeyCache" },
       { from: "../runtime/process.ts", name: "ownResource" },
       { from: "../runtime/process.ts", name: "processClient" },
-      { from: "../runtime/hook-boundary.ts", name: "productHooks" },
-      { from: "../runtime/hook-boundary.ts", name: "productQueries" },
       { from: tileHttp, name: "notImplementedRoutes" },
       { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
+    ],
+    validation: [
+      `const ${name}Source = prepareCacheSource(selected("positive-cache-read", ${text(id)}), ${text(lead.module)});`,
     ],
     setup: [
       `// ${line(lead.name)}: the cache read template's reader on the source login and the cache.`,
       `const ${name} = await (async () => {`,
       `  const s = selected("positive-cache-read", ${text(id)});`,
-      `  const source = pool(scope, s, "source");`,
+      `  const source = cacheSource(scope, ${name}Source);`,
       `  const binding = positiveCacheBindings[${text(id)}].cache;`,
       "  const cacheBinding = { ...cacheEndpoint(binding.resource), secret: binding.secret };",
       '  const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({',
@@ -284,30 +298,44 @@ function positiveCacheRead(
       `        ? failure(${text(`cache ${lead.module}`)}, error ?? new Error("Cache unavailable"))`,
       `        : console.log(JSON.stringify({ level: "info", event: "cache", tile: config.tile, module: ${text(lead.module)}, state })),`,
       '  }), "close"));',
-      "  const read = createPositiveReader({",
-      `    adapter: productHooks(${hooks}({ source: productQueries(${text(lead.module)}) })),`,
+      "  const core = createCacheReader({",
+      `    adapter: withLocalPolicy(() => ${hooks}({ source: source.queries })),`,
+      `    freshness: ${text(versioned ? "versioned" : "immutable-positive")},`,
+      `    namespace: cacheReaderNamespace(config.tile, ${text(lead.module)}, ${text(versioned ? "versioned" : "immutable-positive")}, input(s, "cache.ttlSeconds"), ${text(source)}),`,
       "    cache,",
       `    ttlSeconds: input(s, "cache.ttlSeconds"),`,
       `    onFailure: (what, error) => failure(\`\${what} ${lead.module}\`, error),`,
       "  });",
+      `  const read = cacheReaderCapability(() => core, ${text(lead.module)}).read;`,
       "  return { source, read };",
       "})();",
     ],
-    configure: [
-      `notImplementedRoutes(routes, log, ${text(lead.module)}).route({`,
-      `  method: "GET",`,
-      `  url: ${text(url)},`,
-      "  handler: async (request) => {",
-      `    const record = await ${name}.read({ key: (request.params as { key: string }).key });`,
-      `    if (record === null) throw new HttpError(404, "NOT_FOUND", "No record for this key.");`,
-      "    return record;",
-      "  },",
-      "});",
-    ],
-    initialize: [`await ${name}.source.query("SELECT 1");`],
+    configure: exposed
+      ? [
+          `notImplementedRoutes(routes, log, ${text(lead.module)}).route({`,
+          `  method: "GET",`,
+          `  url: ${text(url)},`,
+          "  handler: async (request, reply) => {",
+          '    reply.header("Cache-Control", "no-store");',
+          `    const record = await ${name}.read({ key: (request.params as { key: string }).key });`,
+          `    if (record === null) throw new HttpError(404, "NOT_FOUND", "No record for this key.");`,
+          '    reply.header("X-Jeeves-Cache-Freshness", record.freshness);',
+          '    if (record.validUntil !== null) reply.header("X-Jeeves-Valid-Until", String(record.validUntil));',
+          '    if (record.version !== null) reply.header("X-Jeeves-Cache-Version", record.version);',
+          "    return record.record;",
+          "  },",
+          "});",
+        ]
+      : [],
+    initialize: [`await ${name}.source.probe();`],
     started: [],
-    config: [id, { template: "positive-cache-read", lead: lead.module, route: url }],
-    routes: [{ method: "GET", path: url, answers: notImplementedAnswer(`key for ${lead.name}`) }],
+    config: [
+      id,
+      { template: "positive-cache-read", lead: lead.module, ...(exposed ? { route: url } : {}) },
+    ],
+    routes: exposed
+      ? [{ method: "GET", path: url, answers: notImplementedAnswer(`key for ${lead.name}`) }]
+      : [],
     loops: [],
     template: { selection: id, template: "positive-cache-read", level: "mounted" },
     startup: { module: lead.module, checks: ["SELECT 1 on its source login"] },
@@ -316,14 +344,15 @@ function positiveCacheRead(
       file: hooksFile(process, selection, lead, "cache read", {
         imports: [
           'import type { ProductQueries } from "../../extension-api/index.ts";',
-          'import type { PositiveReadAdapter } from "../../runtime/positive-cache.ts";',
+          'import type { PositiveReadAdapter } from "../../extension-api/index.ts";',
         ],
         types: [
-          `/** What GET ${url} reads: the path's key. */`,
+          `/** Read input shared by the callable and optional GET ${url} adapter. */`,
           `export type ${types}Input = { key: string };`,
-          "/** Registered product queries; unavailable until a SQL binding is installed. */",
+          "/** Scoped registered read-only source queries; register the reader lead in products.json. */",
           `export type ${types}Resources = { source: ProductQueries };`,
         ],
+        reached: "reads refuse until policies and a registered source SELECT are supplied",
         factory: [
           `export function ${hooks}(resources: ${types}Resources): PositiveReadAdapter<${types}Input, unknown> {`,
           "  return {",
@@ -349,6 +378,14 @@ function positiveCacheRead(
           "    expiresAt(record) {",
           `      ${throws("expiresAt", lead)}`,
           "    },",
+          ...(versioned
+            ? [
+                "    /** Authoritative monotonically ordered uint64 decimal version. */",
+                "    version(record) {",
+                `      ${throws("version", lead)}`,
+                "    },",
+              ]
+            : []),
           "  };",
           "}",
         ],

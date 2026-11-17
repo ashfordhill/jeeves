@@ -97,7 +97,7 @@ describe("installed feature authoring", () => {
     const consumer = new TextDecoder().decode(
       after.files.find((file) => file.path === "src/features/service-resources.ts")?.bytes,
     );
-    expect(consumer).toContain('ttlSeconds: input(s, "cache.ttlSeconds")');
+    expect(consumer).toContain('const ttlSeconds = input(s, "cache.ttlSeconds")');
   });
   it("fails closed for hidden alternatives, mirror editing and custom modules, preserving historical source", () => {
     const design = historical();

@@ -22,7 +22,11 @@ const source = (name: string) =>
   );
 const moduleUrl = (code: string) =>
   `data:text/javascript;base64,${Buffer.from(stripTypeScriptTypes(code)).toString("base64")}`;
-const { createPositiveReader } = await import(moduleUrl(source("positive-cache")));
+const boundaryUrl = moduleUrl(source("hook-boundary"));
+const readerRuntime = await import(
+  moduleUrl(source("positive-cache").replace('from "./hook-boundary.ts"', `from "${boundaryUrl}"`))
+);
+const { createPositiveReader } = readerRuntime;
 type Document = { slug: string; url: string; public: boolean; expires: number | null };
 const document = (slug = "guide"): Document => ({
   slug,
@@ -70,10 +74,11 @@ describe("emitted positive cache reader", () => {
     const cache = emptyCache();
     const read = createPositiveReader({ adapter: a, ttlSeconds: 3600, cache });
     const first = read("guide");
-    expect(read("guide")).toBe(first);
+    const second = read("guide");
     await vi.waitFor(() => expect(a.load).toHaveBeenCalledTimes(1));
     release(document());
     expect(await first).toEqual(document());
+    expect(await second).toEqual(document());
     expect(cache.set).toHaveBeenCalledTimes(1);
     cache.get.mockResolvedValue(JSON.stringify(document()));
     expect(await read("guide")).toEqual(document());
@@ -110,7 +115,10 @@ describe("emitted positive cache reader", () => {
     for (let i = 0; i < 3; i++) expect(await read("guide")).toBeNull();
     expect(cache.set).not.toHaveBeenCalled();
     a.load.mockRejectedValueOnce(new Error("Primary unavailable"));
-    await expect(read("guide")).rejects.toThrow("Primary unavailable");
+    await expect(read("guide")).rejects.toMatchObject({
+      code: "DEPENDENCY_FAILED",
+      cause: new Error("Primary unavailable"),
+    });
     expect(await read("guide")).toEqual(document());
     expect(a.load).toHaveBeenCalledTimes(5);
   });
@@ -214,8 +222,11 @@ describe("emitted positive cache reader", () => {
     expect(await read("guide")).toEqual(document());
     expect(a.load).toHaveBeenCalledTimes(1);
     expect(failures.map(([what]) => what)).toEqual(["cache read", "cache fill"]);
-    expect(failures[0]?.[1]).toBeInstanceOf(SyntaxError);
-    expect(failures[1]?.[1]).toEqual(new Error("Fill unavailable"));
+    expect(failures[0]?.[1]).toMatchObject({
+      code: "CACHE_READ_FAILED",
+      outcome: "definite-failure",
+    });
+    expect(failures[1]?.[1]).toMatchObject({ code: "CACHE_FILL_FAILED", outcome: "unknown" });
     // An onFailure that throws changes nothing.
     const guarded = createPositiveReader({
       adapter: a,

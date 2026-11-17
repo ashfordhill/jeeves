@@ -465,8 +465,10 @@ function runtimeIdentities(model: Partial<NormalizedGeneration>) {
         module: capability.module,
         process: capability.process,
         owner: capability.owner,
-        identity: capability.caller.identity,
-        guard: capability.caller.guard,
+        identity:
+          capability.caller.kind === "verified-principal" ? capability.caller.identity : undefined,
+        guard:
+          capability.caller.kind === "verified-principal" ? capability.caller.guard : undefined,
       }),
     );
   return records;

@@ -230,3 +230,14 @@ export const rateLimiterCallableContracts = freezeRecord([
     effect: "read",
   },
 ] as const);
+
+/** Public eligible-record reads; policy never grants access to private source data. */
+export const cacheReaderCallableContracts = freezeRecord([
+  {
+    id: "cache-reader.read",
+    version: 1,
+    input: "cache-reader.key",
+    output: "cache-reader.result",
+    effect: "read",
+  },
+] as const);

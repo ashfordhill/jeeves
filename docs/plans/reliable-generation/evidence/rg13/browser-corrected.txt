@@ -1,0 +1,22 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3733739) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3733758) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3733848) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 3 workers
+
+(node:3733904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3733905) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3733906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:184:1 › mouse exports the selected supported v2 source and rejects changed ZIP bytes (6.5s)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/cache-reader.spec.ts:5:1 › RG13 selects freshness/exposure and connects a callable cache read by mouse (8.0s)
+  ✓  3 [chromium] › jeeves/apps/web/e2e/v2-rebuild.spec.ts:30:1 › rebuilds YouTube v2 from a blank project by mouse (1.6m)
+
+  3 passed (1.7m)

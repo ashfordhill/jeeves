@@ -1,0 +1,843 @@
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/cache-reader.test.ts (12 tests | 2 failed) 2431ms
+   ❯ RG13 callable freshness (12)
+     × uses a generated registered SELECT binding under product grants, refusing commands 2114ms
+     × does not share authorization across inputs/callers and rechecks every waiter 5ms
+ ❯ |generator| src/v2/module-stubs.test.ts (4 tests | 1 failed) 704ms
+   ❯ module stubs (4)
+     × lists every module in the report only for a module-level design 5ms
+ ❯ |generator| src/v2/composition.test.ts (9 tests | 1 failed) 605ms
+   ❯ reusable composition before product completion (9)
+     × exports reusable mechanisms from a saved product design and leaves every product implementation custom 142ms
+ ❯ |generator| src/v2/http-wiring.test.ts (11 tests | 1 failed) 611ms
+   ❯ HTTP wiring (tile process contract, sections 2-4) (11)
+     × provisions what the mounted templates use: tables, logins and providers 8ms
+ ❯ |generator| src/v2/processes-off.test.ts (4 tests | 3 failed) 220ms
+   ❯ Runnable processes off (4)
+     × keeps frozen-v2's export 85ms
+     × keeps v2-module-design's export 83ms
+     × keeps stub-stack's export 51ms
+ ❯ |generator| src/v2/valkey-atomic.test.ts (16 tests | 1 failed) 40ms
+   ❯ RG11 finite atomic cache primitives (16)
+     × guards captured primitives through nested local effects; only private coordination may mutate in a read 8ms
+ ❯ |generator| src/v2/module-templates.test.ts (3 tests | 1 failed) 16ms
+   ❯ module-authored v2 and its tile-level twin (3)
+     × emit the same template payload, apart from the two stubs, v2's declared fixed values and the sign-in row 8ms
+ ❯ |server| src/routes/generation-v2.test.ts (2 tests | 1 failed) 5017ms
+   × lists each module's status in the preview and exports a stub-only design 1528ms
+ ❯ |spec| src/module-generation.test.ts (40 tests | 2 failed) 1513ms
+   ❯ module commands (7)
+     × refuse a connection the slot or the lane rules don't allow 51ms
+     × offer where a module's link may end, with the command or the reason 37ms
+ ❯ |spec| src/studio-rekey.test.ts (7 tests | 1 failed) 2086ms
+   ❯ Label-stable runtime identities (7)
+     × rebuilds v2 with stable creation IDs and matches the design built with those IDs 783ms
+ ❯ |spec| src/fixtures/v2-diff.test.ts (3 tests | 1 failed) 451ms
+   ❯ the v2 rebuild diff (3)
+     × finds only the useful values the command-built twin leaves at their initial values 250ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module commands > refuse a connection the slot or the lane rules don't allow
+AssertionError: expected 'Details reader has no index connectio…' to be 'Details reader has no index connectio…' // Object.is equality
+
+Expected: "Details reader has no index connection; a Data access connects its database, admission or workload."
+Received: "Details reader has no index connection; a Data access connects its database, read, admission or workload."
+
+ ❯ src/module-generation.test.ts:422:76
+    420|       ],
+    421|     ];
+    422|     for (const [command, message] of cases) expect(refusal(base, comma…
+       |                                                                            ^
+    423|   });
+    424|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module commands > offer where a module's link may end, with the command or the reason
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+
+- Expected
++ Received
+
+  {
+-   "refusal": "Details reader's admission must be a Rate limiter.",
++   "refusal": "Details reader's read requires a complete callable Details cache: a connection to a cache.",
+    "target": {
+      "module": "watch-cache-reader",
+    },
+  }
+
+ ❯ src/module-generation.test.ts:489:7
+    487|     expect(
+    488|       moduleConnectOptions(base, "watch-details").find((item) => "modu…
+    489|     ).toEqual({
+       |       ^
+    490|       target: { module: "watch-cache-reader" },
+    491|       refusal: "Details reader's admission must be a Rate limiter.",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  |spec| src/studio-rekey.test.ts > Label-stable runtime identities > rebuilds v2 with stable creation IDs and matches the design built with those IDs
+AssertionError: expected [ …(18) ] to have a length of 14 but got 18
+
+- Expected
++ Received
+
+- 14
++ 18
+
+ ❯ src/studio-rekey.test.ts:228:31
+    226|     const twin = v2DiffReport(v2Diff(frozenV2Design(), v2ModuleDesign(…
+    227|     expect(report.unexpected).toEqual(twin.unexpected);
+    228|     expect(report.unexpected).toHaveLength(14);
+       |                               ^
+    229|     expect(report.unused.map((rule) => rule.area)).toEqual(["module na…
+    230|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+ FAIL  |spec| src/fixtures/v2-diff.test.ts > the v2 rebuild diff > finds only the useful values the command-built twin leaves at their initial values
+AssertionError: expected [ …(18) ] to deeply equal [ …(14) ]
+
+- Expected
++ Received
+
+@@ -2,15 +2,19 @@
+    "tile setting: Metadata cache.ttlSeconds",
+    "tile setting: Upload API.concurrencyLimit",
+    "tile setting: Upload API.requestTimeoutMs",
+    "tile setting: View counter.concurrency",
+    "tile setting: Watch API.concurrencyLimit",
++   "module setting: Video details cache.freshness",
++   "module setting: Video details cache.transport",
+    "module setting: Video details reader.poolSize",
+    "module setting: Video details reader.statementTimeoutMs",
+    "selection input: event-counter in View counter.host.concurrency",
+    "selection input: owned-multipart in Upload API.host.concurrencyLimit",
+    "selection input: owned-multipart in Upload API.host.requestTimeoutMs",
+    "selection input: positive-cache-read in Watch API.cache.ttlSeconds",
+    "selection input: positive-cache-read in Watch API.host.concurrencyLimit",
++   "selection input: positive-cache-read in Watch API.reader.freshness",
++   "selection input: positive-cache-read in Watch API.reader.transport",
+    "selection input: positive-cache-read in Watch API.source.poolSize",
+    "selection input: positive-cache-read in Watch API.source.statementTimeoutMs",
+  ]
+
+ ❯ src/fixtures/v2-diff.test.ts:15:37
+     13|   it("finds only the useful values the command-built twin leaves at th…
+     14|     const report = v2DiffReport(v2Diff(frozenV2Design(), v2ModuleDesig…
+     15|     expect(keys(report.unexpected)).toEqual([
+       |                                     ^
+     16|       "tile setting: Metadata cache.ttlSeconds",
+     17|       "tile setting: Upload API.concurrencyLimit",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+ FAIL  |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > uses a generated registered SELECT binding under product grants, refusing commands
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "rowCount": 1,
++   "rows": [
++     {
++       "payload": {
++         "destination": "/v1",
++         "key": "guide",
++         "public": true,
++         "until": 1794874916255,
++         "version": "1",
++       },
++     },
++   ],
+  }
+
+ ❯ src/v2/cache-reader.test.ts:149:8
+    147|       );
+    148|       expect(await reader(adapter)({ key: "guide" })).toMatchObject({ …
+    149|       expect(await reader(adapter)({ key: "missing" })).toBeNull();
+       |        ^
+    150|       await expect(
+    151|         op.withLocalPolicy(() => reads.call("read_record", ["guide"])),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+
+ FAIL  |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > does not share authorization across inputs/callers and rechecks every waiter
+AssertionError: expected { freshness: 'versioned', …(4) } to deeply equal { freshness: 'versioned', …(4) }
+
+- Expected
++ Received
+
+@@ -6,8 +6,8 @@
+      "public": true,
+      "until": 1794874916353,
+      "version": "1",
+    },
+    "source": "authoritative",
+-   "validUntil": 1794874916351,
++   "validUntil": 1794874916353,
+    "version": "1",
+  }
+
+ ❯ src/v2/cache-reader.test.ts:368:24
+    366|     expect(results[0]).not.toBe(results[1]);
+    367|     expect(Object.isFrozen(results[0])).toBe(true);
+    368|     expect(results[2]).toEqual(results[0]);
+       |                        ^
+    369|     expect(results[3]).toBeNull();
+    370|     expect(eligible).toHaveBeenCalledTimes(6);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+
+ FAIL  |generator| src/v2/composition.test.ts > reusable composition before product completion > exports reusable mechanisms from a saved product design and leaves every product implementation custom
+AssertionError: expected { id: 'restricted-ready-reader', …(5) } to match object { required: true, …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "description": StringContaining "registered product queries are not installed",
++   "description": "The loader receives a scoped registered read-only ProductQueries handle. Register its named SELECT and declared relations in products.json, then supply the codec/eligibility/load policy; no raw SQL or private runtime import.",
+    "required": true,
+    "sourcePaths": [
+      "/generation/selections/3",
+    ],
+  }
+
+ ❯ src/v2/composition.test.ts:55:75
+     53|     expect(a.report.selections.filter((s) => s.status === "unfinished"…
+     54|     expect(a.report.gaps.filter((g) => g.required)).toHaveLength(10);
+     55|     expect(a.report.gaps.find((g) => g.id === "restricted-ready-reader…
+       |                                                                           ^
+     56|       required: true,
+     57|       sourcePaths: ["/generation/selections/3"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+
+ FAIL  |generator| src/v2/http-wiring.test.ts > HTTP wiring (tile process contract, sections 2-4) > provisions what the mounted templates use: tables, logins and providers
+AssertionError: expected '// Generated scaffold: Watch API (Mic…' to contain 'const source = pool(scope, s, "source…'
+
+- Expected
++ Received
+
+- const source = pool(scope, s, "source");
++ // Generated scaffold: Watch API (Microservice) runs as app-watch, an HTTP process.
++ // Export rewrites this file. Write modules in src/modules/; .jeeves/report.json lists what runs.
++ import { positiveCacheBindings } from "../features/positive-cache-bindings.ts";
++ import { cacheSource, input, prepareCacheSource, selected, validateTemplateSettings } from "../features/service-resources.ts";
++ import { formatHttpError } from "../http-errors.hooks.ts";
++ import { watchCacheReaderHooks } from "../modules/watch/watch-cache-reader.hooks.ts";
++ import type { Dependencies as WatchCountsDependencies } from "../modules/watch/watch-counts.slots.ts";
++ import * as WatchCountsModule from "../modules/watch/watch-counts.ts";
++ import { watchCounts } from "../modules/watch/watch-counts.ts";
++ import type { Dependencies as WatchViewsDependencies } from "../modules/watch/watch-views.slots.ts";
++ import * as WatchViewsModule from "../modules/watch/watch-views.ts";
++ import { watchViews } from "../modules/watch/watch-views.ts";
++ import { HttpError, createHttpService } from "../runtime/http.ts";
++ import { validateLocalOperationBinding } from "../runtime/local-operation.ts";
++ import { readSecret } from "../runtime/local.ts";
++ import { brokerBinding, checkConfiguration, createProbeLog, databaseEndpoint, prepareProductDatabase, productDatabaseClient, queuePublisher } from "../runtime/module-clients.ts";
++ import { withLocalPolicy } from "../runtime/operation.ts";
++ import { cacheReaderCapability, cacheReaderNamespace, createCacheReader } from "../runtime/positive-cache.ts";
++ import { ownResource, processClient, runProcess } from "../runtime/process.ts";
++ import { type SettingsDeclaration, type SettingsOf, createSettingsReader, declareSettings } from "../runtime/settings.ts";
++ import { notImplementedRoutes, stubRoutes } from "../runtime/tile-http.ts";
++ import { brokerState, createFailureLog, createNotImplementedLog, logStarted } from "../runtime/tile-process.ts";
++ import { cacheEndpoint, createValkeyCache } from "../runtime/valkey.ts";
++
++ /** Compiled configuration: nothing is read from disk at runtime. */
++ export const config = {
++   "tile": "watch",
++   "kind": "service",
++   "shape": "http",
++   "exposure": "public",
++   "settings": {
++     "requestTimeoutMs": 1000,
++     "concurrencyLimit": 2000
++   },
++   "listen": {
++     "host": "0.0.0.0",
++     "port": 3000
++   },
++   "templates": {
++     "watch-cache-reader": {
++       "template": "positive-cache-read",
++       "lead": "watch-cache-reader",
++       "route": "/modules/watch-cache-reader/:key"
++     }
++   },
++   "stubs": [
++     {
++       "module": "watch-counts",
++       "path": "/modules/watch-counts"
++     },
++     {
++       "module": "watch-views",
++       "path": "/modules/watch-views"
++     }
++   ]
++ } as const;
++
++ await runProcess(async (scope) => {
++   // A failure the process survives writes one error line, at most once a second for each.
++   const failure = createFailureLog(config.tile);
++   // "Not implemented" answers 501 with one log line per module and hook a second.
++   const log = createNotImplementedLog(config.tile);
++   // Each stub's own settings: what its file's `settings` export declares (none without one).
++   const declared = {
++     "watch-counts": (WatchCountsModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),
++     "watch-views": (WatchViewsModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),
++   };
++   const readModuleSettings = createSettingsReader();
++   const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };
++   validateLocalOperationBinding((WatchCountsModule as { localOperation?: unknown }).localOperation, ["viewCounts"]);
++   if ((WatchViewsModule as { localOperation?: unknown }).localOperation !== undefined) throw new Error("Local operation requires a writable database on a route module");
++   // Prepare all registered SQL and product credentials before any connection or probe.
++   const preparedProduct = {
++     "product:view-counts:watch-counts": prepareProductDatabase({ tile: config.tile, resource: "view-counts", module: "watch-counts", property: "viewCounts", writable: true, operation: (WatchCountsModule as { localOperation?: unknown }).localOperation }),
++   };
++   // Configuration: every variable these clients, the tile's sign-in and its stubs' settings read,
++   // checked before any client is built or probed; one wrong setting fails startup naming it,
++   // several are named together (a stub's first).
++   checkConfiguration([
++     () => databaseEndpoint("view-counts"),
++     () => brokerBinding(),
++     () => readSecret("broker-password"),
++     () => readSecret("product-view-counts--watch"),
++     () => readSecret("sql-view-counts--watch"),
++     () => configuredSettings["watch-counts"] = readModuleSettings("watch-counts", declared["watch-counts"]),
++     () => configuredSettings["watch-views"] = readModuleSettings("watch-views", declared["watch-views"]),
++   ]);
++   const watchCacheReaderSource = prepareCacheSource(selected("positive-cache-read", "watch-cache-reader"), "watch-cache-reader");
++   validateTemplateSettings(config.tile);
++   // Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs
++   // use, each probed once before the process is ready; a failed probe fails startup, except
++   // a cache's, which is logged.
++   const probe = createProbeLog(config.tile);
++   const clients = {
++     "product:view-counts:watch-counts": await productDatabaseClient(scope, probe, preparedProduct["product:view-counts:watch-counts"]),
++     "view-events": await queuePublisher(scope, probe, { queue: "view-events", mode: "topic" }, brokerState(config.tile, failure, "broker publish view-events")),
++   };
++   // Each stub's dependencies: its clients, and a module link calls that module's entry point.
++   const dependencies = {} as {
++     "watch-counts": WatchCountsDependencies;
++     "watch-views": WatchViewsDependencies;
++   };
++   dependencies["watch-counts"] = {
++     viewCounts: clients["product:view-counts:watch-counts"],
++     settings: configuredSettings["watch-counts"] as WatchCountsDependencies["settings"],
++   };
++   dependencies["watch-views"] = {
++     viewEvents: clients["view-events"],
++     settings: configuredSettings["watch-views"] as WatchViewsDependencies["settings"],
++   };
++   // Details cache: the cache read template's reader on the source login and the cache.
++   const watchCacheReader = await (async () => {
++     const s = selected("positive-cache-read", "watch-cache-reader");
++     const source = cacheSource(scope, watchCacheReaderSource);
++     const binding = positiveCacheBindings["watch-cache-reader"].cache;
++     const cacheBinding = { ...cacheEndpoint(binding.resource), secret: binding.secret };
++     const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({
++       // The cache's endpoint is the environment's: JEEVES_CACHE_<ID>_HOST, _PORT and _TLS.
++       binding: cacheBinding,
++       onState: (state, error) =>
++         state === "unavailable"
++           ? failure("cache watch-cache-reader", error ?? new Error("Cache unavailable"))
++           : console.log(JSON.stringify({ level: "info", event: "cache", tile: config.tile, module: "watch-cache-reader", state })),
++     }), "close"));
++     const core = createCacheReader({
++       adapter: withLocalPolicy(() => watchCacheReaderHooks({ source: source.queries })),
++       freshness: "immutable-positive",
++       namespace: cacheReaderNamespace(config.tile, "watch-cache-reader", "immutable-positive", input(s, "cache.ttlSeconds")),
++       cache,
++       ttlSeconds: input(s, "cache.ttlSeconds"),
++       onFailure: (what, error) => failure(`${what} watch-cache-reader`, error),
++     });
++     const read = cacheReaderCapability(() => core, "watch-cache-reader").read;
++     return { source, read };
++   })();
++   const service = await createHttpService({
++     stopping: scope.signal,
++     id: config.tile,
++     settings: config.settings,
++     formatError: formatHttpError,
++     configure: (routes) => {
++       notImplementedRoutes(routes, log, "watch-cache-reader").route({
++         method: "GET",
++         url: "/modules/watch-cache-reader/:key",
++         handler: async (request, reply) => {
++           reply.header("Cache-Control", "no-store");
++           const record = await watchCacheReader.read({ key: (request.params as { key: string }).key });
++           if (record === null) throw new HttpError(404, "NOT_FOUND", "No record for this key.");
++           reply.header("Cache-Control", "no-store");
++           reply.header("X-Jeeves-Cache-Freshness", record.freshness);
++           if (record.validUntil !== null) reply.header("X-Jeeves-Valid-Until", String(record.validUntil));
++           if (record.version !== null) reply.header("X-Jeeves-Cache-Version", record.version);
++           return record.record;
++         },
++       });
++       stubRoutes(
++         routes,
++         log,
++         "watch-counts",
++         (request) => watchCounts(dependencies["watch-counts"], request),
++         { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },
++       );
++       stubRoutes(
++         routes,
++         log,
++         "watch-views",
++         (request) => watchViews(dependencies["watch-views"], request),
++         { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },
++       );
++     },
++     initialize: async () => {
++       await watchCacheReader.source.probe();
++     },
++   });
++   // Draining stops admission first, then waits for admitted requests.
++   scope.admission(() => service.stop());
++   scope.own(() => service.close());
++   await service.start(config.listen);
++   logStarted(config.tile, {"module":"watch-cache-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]});
++   scope.ready();
++ });
++
+
+ ❯ src/v2/http-wiring.test.ts:443:19
+    441|     });
+    442|     const watch = text(v2, "src/processes/watch.ts");
+    443|     expect(watch).toContain('const source = pool(scope, s, "source");'…
+       |                   ^
+    444|     expect(watch).toContain('await watchCacheReader.source.query("SELE…
+    445|     const upload = text(v2, "src/processes/upload.ts");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+
+ FAIL  |generator| src/v2/module-stubs.test.ts > module stubs > lists every module in the report only for a module-level design
+AssertionError: expected [ …(4) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,11 @@
+  [
+    [
+      "shorten-links",
+      "stub",
+      [
++       "read",
+        "admission",
+        "workload",
+      ],
+    ],
+    [
+
+ ❯ src/v2/module-stubs.test.ts:252:82
+    250|   it("lists every module in the report only for a module-level design"…
+    251|     const modules = modulesOf(bundle);
+    252|     expect(modules?.map((item) => [item.module, item.status, item.unco…
+       |                                                                                  ^
+    253|       ["shorten-links", "stub", ["admission", "workload"]],
+    254|       ["shorten-clicks", "stub", ["outbox", "workload"]],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+
+ FAIL  |generator| src/v2/module-templates.test.ts > module-authored v2 and its tile-level twin > emit the same template payload, apart from the two stubs, v2's declared fixed values and the sign-in row
+AssertionError: expected [ { host: 'watch', …(4) }, …(6) ] to deeply equal [ { host: 'watch', …(4) }, …(6) ]
+
+- Expected
++ Received
+
+@@ -9,10 +9,12 @@
+        "host.concurrencyLimit": 2000,
+        "host.execution": "docker",
+        "host.exposure": "public",
+        "host.language": "typescript",
+        "host.requestTimeoutMs": 1000,
++       "reader.freshness": "immutable-positive",
++       "reader.transport": "http",
+        "source.engine": "postgresql",
+        "source.poolSize": 50,
+        "source.provider": "self-hosted",
+        "source.readRouting": "primary",
+        "source.statementTimeoutMs": 500,
+
+ ❯ src/v2/module-templates.test.ts:176:24
+    174|       return { ...row, inputs };
+    175|     });
+    176|     expect(after.rows).toEqual(expected);
+       |                        ^
+    177|     expect(dropped.length).toBeGreaterThan(0);
+    178|     for (const item of dropped) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps frozen-v2's export
+AssertionError: expected { files: 80, sha256: { …(80) } } to deeply equal { files: 79, sha256: { …(79) } }
+
+- Expected
++ Received
+
+@@ -1,15 +1,15 @@
+  {
+-   "files": 79,
++   "files": 80,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+      ".jeeves/extensions.md": "f84b0b53ec77797b67dcac3f66f6cfdefd863efc874b77a834e5ab0e9505319c",
+      ".jeeves/inputs/design.json": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+-     ".jeeves/manifest.json": "56293cac637d08a547a710e4bc362d0dc4c611be04d8743b4f6c3268aabbc8e0",
++     ".jeeves/manifest.json": "6300dbd02a46937b2866a580dc971b8ec9f11397c4b5200fc401595fe73e4f56",
+      ".jeeves/normalized.json": "1253b5ea453e613c5bc03e4b079203e577ad472983290da40428a38e6ef99cf3",
+-     ".jeeves/report.json": "0d31dd640460dd1e3cbd322fae87271170c90eed15cb4fbc2c8e00e49fa0369e",
++     ".jeeves/report.json": "a557b5f2e15474de6d33e19c43345c20427dc09f6fc8a82c64f9af238de864a1",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "8a0037b1b77966f5e6aeed60dcd3b6f5fb828d0ee4485bddeeebb025a7e7752d",
+      "diagnostics/generation.json": "1253b5ea453e613c5bc03e4b079203e577ad472983290da40428a38e6ef99cf3",
+      "ffmpeg-os.lock": "8ec109b1f0d8354d937debaa4f62b387c78d178c6236adc639c8e6183476382d",
+@@ -20,24 +20,24 @@
+      "package.json": "8fdb3ee7d8cbecdf26a5abddacb01b4a652a6e06e34942bea4f76d93cbc60d88",
+      "pnpm-lock.yaml": "3eee9f4b55ea6f9080b6c9ea8ba8f584bc07e2bfa82f7a3764779fd1ce63d61b",
+      "pnpm-workspace.yaml": "94382ae45766edbeab9ee6f732044adc039379b3869fd108427ac96428c18c9b",
+      "scripts/bootstrap.mjs": "bb867d991afb1eba6e212ca0b6d6863e56827390cacfa2f115bc7042a53a7f83",
+      "scripts/broker-init.mjs": "1020b0814dbfceecac52a5ca31779075038983ea3140dec5b88ee6352c2a38a1",
+-     "scripts/check-extensions.mjs": "c57655a585707f42895fd5f7ee21349cd5d46ca8e7d3115aa960992ddaf90e4d",
++     "scripts/check-extensions.mjs": "e328960a9191fbbf5d3e966ac40181175a202186235eba5797850a7430fd291b",
+      "scripts/common.mjs": "27a2fca4a6a5aefad36917f1f462ee3bcf79f51f76563353e02d7fdee87aeba0",
+      "scripts/local.mjs": "2555d7df79695c1afc8048724ef377a2e46dea87ab05c90d8425ba70f10d1165",
+      "scripts/migrate.mjs": "c1edabe31ceb746c68308ce4e4d67e89ee267cf5b2451746683a9ce9bf12eb40",
+      "scripts/setup.mjs": "15dc74ee01ac62b76d1658f3fa9e2cea705a7c3eafdfaed7b00725faa829e16b",
+      "scripts/status.mjs": "75cb3793c37a5f535b1fda7c459a50d1ab71e8bab32474b6ca8adf195f3ef988",
+      "scripts/storage-config.mjs": "8bfa5ef31e1ac6b639b1391541dbf9892b4da1589679e2fcac1c8947f0505801",
+      "src/contracts/index.ts": "843db8b20be176b4e0bc0c0d3f9cf298d8f816d1f0eef3b7b97d167e9eddbc34",
+-     "src/extension-api/index.ts": "b7145037f3c50b7c033ada421402487e7b270e4fe6ff669370cecc5bc5c0ce26",
++     "src/extension-api/index.ts": "e7bb9f43dc39bb07215c5680d267b5a7b91229715716b7adb4a3cc37ba0df27c",
+      "src/features/application-bindings.ts": "5d93f5e107a8776e396b83348ba398178887ae6f70a0a1138aebc871dff0aa69",
+      "src/features/local-bindings.ts": "ed1bb8f8ac379834a16e35a0b6e5d0f3480a50caa5d8400656fc8d58ae87f09b",
+      "src/features/positive-cache-bindings.ts": "d59726ee02bd7abb9e2a9851721b553953a211f9d30b863b8ac552027e567249",
+      "src/features/search-bindings.ts": "9e06fd6a6452e62e1ff5a3fa22762a57ec5c1476e80568fe8d561233e9d937cf",
+-     "src/features/service-resources.ts": "fbd04a27809bace08529bdd41948ca02a4c0316deb69a16487df11d3ed0ffd29",
++     "src/features/service-resources.ts": "c056091d47f9c4ed6207c6597a162f09789b50b61277b31430a72736a1e08840",
+      "src/features/video-runtime.ts": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "src/http-errors.hooks.ts": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+      "src/runtime/admission.ts": "bf0879ec012b2cb5316ea19e5e4f7d888d397ca8baba839909c7629cbf87071b",
+      "src/runtime/amqp.ts": "17ff847ff49892b17f21a459150f39eb6b1391a689739e80949c723b45b830c5",
+      "src/runtime/asset-identity.ts": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+@@ -49,10 +49,11 @@
+      "src/runtime/counter-worker.ts": "ee18019f80fa8461296d8e389277a32fac61a582f646d6d9720d2d4e85997a36",
+      "src/runtime/delivery.ts": "8ed960db42137f28e03001768f7bc066bec265b6995e7216697328a3ac348e0a",
+      "src/runtime/durable-sql.ts": "cc132555e522603e7f5c9dbe5906efbbb76c6bfbf70d6af536ecea652f518e0f",
+      "src/runtime/event-counter.ts": "40be1d8d6c77139ce7acb998d789e1451dbbcc2e7a11fd16aa0282dfec1bc418",
+      "src/runtime/event-identity.ts": "3de66a89c65728bf404831c60bb81e00cc71693b0cd23555f71462eaf9140eda",
++     "src/runtime/hook-boundary.ts": "bd29fb8f7d6f08baf62c03150b9a60417b397f3cbb4b62603a8e8ddbde22c884",
+      "src/runtime/http.ts": "40e463563c7fe66cc1073f9b727dac457a6a9146f1b9f7de72211ea9b511d9f5",
+      "src/runtime/identity.ts": "399f3de5f18da69ca6ecd03861050e51d18a6b4b5c49e701824a69afaf68b5f6",
+      "src/runtime/local.ts": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+      "src/runtime/media-objects.ts": "76276ecafe97097bc0ae2d4035e35d03d9aa7e606da50b79f7483a879e31c6cf",
+      "src/runtime/media-process.ts": "2d6b9291ac69ba058a485b41b8b07f57b10c451f3e9daaa0fc6c27aee9854a66",
+@@ -62,11 +63,11 @@
+      "src/runtime/multipart.ts": "b8e476e3b4304876b649030cba17a15385d94ead1850483d97adf4721660aed4",
+      "src/runtime/objects.ts": "623686c1041515d89bbb3de9b95cd5128c23ce438a964cb439e53333b8f63852",
+      "src/runtime/operation.ts": "f0a242572bf52c0b4fc1755dbd35c0f9fdc134f70674929b4e75fabbe82b0e6a",
+      "src/runtime/outbox.ts": "31d75d62004cf7a6a9eaf97a86e5866596b33e4997f8fe7e6340ed182967f22f",
+      "src/runtime/owned-upload.ts": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+-     "src/runtime/positive-cache.ts": "16f5ef9d6d330159871ec5added7c8b8ddc5e8df97bca8a1037d22781e4e2495",
++     "src/runtime/positive-cache.ts": "51f6c7545981a02e696f7f5604513592fa2859df35539d220cf7f4e4597a18f5",
+      "src/runtime/postgres.ts": "eb69801f563e92bd3a263583e9a9695db660b68c161730278bd6412ff655b906",
+      "src/runtime/process.ts": "63b080fc7c7cfdcd4ece094685cc2387ebda768b2a0475b7a6f75704553e9f27",
+      "src/runtime/receipts.ts": "4f311edcc8ecfb11a3287e9f1445470b10eda26bebd96a51bb5128e25bf50a93",
+      "src/runtime/search-contract.ts": "9d522d94420fa3b47516d546ec5e76cf4e3fffe703b356e26df4ae3c884888ce",
+      "src/runtime/search-indexer.ts": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+@@ -74,11 +75,11 @@
+      "src/runtime/search-query.ts": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "src/runtime/search-schema.ts": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "src/runtime/search.ts": "43fe4a54716625f4ed57cfeaff2daccd97fba061989e1bd2e740f3d52ebdf356",
+      "src/runtime/transaction.ts": "d5f6e89e5d85d89bc93df63a81f22876815bd5ece60872d5fb39b2e5948c1e71",
+      "src/runtime/upload-sql.ts": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+-     "src/runtime/valkey.ts": "d805bcc07f1810de1f289bc402460684cbc28d09b043c84b0aab03cdf4db89d4",
++     "src/runtime/valkey.ts": "f27e9b14c892707b486b7cf868649f678c5dbbe00bb53744410867efc04576b7",
+      "src/runtime/video-hls.ts": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "src/runtime/video-result.ts": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "tsconfig.json": "cb75a166099ee7fd34729d9a132a1858486436054003bd5ac936fa5378d0268d",
+    },
+  }
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps v2-module-design's export
+AssertionError: expected { files: 87, sha256: { …(87) } } to deeply equal { files: 86, sha256: { …(86) } }
+
+- Expected
++ Received
+
+@@ -1,47 +1,47 @@
+  {
+-   "files": 86,
++   "files": 87,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+      ".jeeves/extensions.md": "f84b0b53ec77797b67dcac3f66f6cfdefd863efc874b77a834e5ab0e9505319c",
+-     ".jeeves/inputs/design.json": "1a4a82fd0f79e6e84b34a288da9bbbb239acadef4e9ed351f4cb706618318d66",
+-     ".jeeves/manifest.json": "8161775469627083d2751b2c0de33373fe9117e1bf386d766d3654acba6a48c3",
+-     ".jeeves/normalized.json": "74a217d8584433b45187eec5020219d4181cd2baf0517c1bfb288b245e2db4f3",
+-     ".jeeves/report.json": "1c06f2aa2d4a4d837405d7c1a2023aef2b8bd7fca2d514631027fa7b4d167d6b",
++     ".jeeves/inputs/design.json": "06fad230900a9e6a8d01cfff295a887617a713ffae0ac9cd6c75e39ef0f7c215",
++     ".jeeves/manifest.json": "7c0ff258e3a369f58e78a6b2c95e8cddc5b90a26ab95955549c00345030862dd",
++     ".jeeves/normalized.json": "ae852ee823596da8adf46964626cff12c168cf4dc7fe3a7d237e7002f412dcda",
++     ".jeeves/report.json": "8cf18f20d397aed6ec399a11fdeaa08d4cae44b5c5a3212c454574551ed86cb0",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "8a0037b1b77966f5e6aeed60dcd3b6f5fb828d0ee4485bddeeebb025a7e7752d",
+-     "diagnostics/generation.json": "74a217d8584433b45187eec5020219d4181cd2baf0517c1bfb288b245e2db4f3",
++     "diagnostics/generation.json": "ae852ee823596da8adf46964626cff12c168cf4dc7fe3a7d237e7002f412dcda",
+      "ffmpeg-os.lock": "8ec109b1f0d8354d937debaa4f62b387c78d178c6236adc639c8e6183476382d",
+      "infra/local.json": "52ac3c4e62a883463bc40076f4a59b7ce89bc0cd2c3b436977c37c8c5153e344",
+      "infra/postgres/identity/000-foundation.sql": "aae1cbd63f25d27e2b36ab1c9c892cc4f922bd5a27bb609b4378095ccba8addc",
+      "infra/postgres/metadata-db/000-foundation.sql": "aae1cbd63f25d27e2b36ab1c9c892cc4f922bd5a27bb609b4378095ccba8addc",
+      "infra/postgres/view-counts/000-foundation.sql": "aae1cbd63f25d27e2b36ab1c9c892cc4f922bd5a27bb609b4378095ccba8addc",
+      "package.json": "8fdb3ee7d8cbecdf26a5abddacb01b4a652a6e06e34942bea4f76d93cbc60d88",
+      "pnpm-lock.yaml": "3eee9f4b55ea6f9080b6c9ea8ba8f584bc07e2bfa82f7a3764779fd1ce63d61b",
+      "pnpm-workspace.yaml": "94382ae45766edbeab9ee6f732044adc039379b3869fd108427ac96428c18c9b",
+      "scripts/bootstrap.mjs": "bb867d991afb1eba6e212ca0b6d6863e56827390cacfa2f115bc7042a53a7f83",
+      "scripts/broker-init.mjs": "1020b0814dbfceecac52a5ca31779075038983ea3140dec5b88ee6352c2a38a1",
+-     "scripts/check-extensions.mjs": "c57655a585707f42895fd5f7ee21349cd5d46ca8e7d3115aa960992ddaf90e4d",
++     "scripts/check-extensions.mjs": "e328960a9191fbbf5d3e966ac40181175a202186235eba5797850a7430fd291b",
+      "scripts/common.mjs": "27a2fca4a6a5aefad36917f1f462ee3bcf79f51f76563353e02d7fdee87aeba0",
+      "scripts/local.mjs": "2555d7df79695c1afc8048724ef377a2e46dea87ab05c90d8425ba70f10d1165",
+      "scripts/migrate.mjs": "c1edabe31ceb746c68308ce4e4d67e89ee267cf5b2451746683a9ce9bf12eb40",
+      "scripts/setup.mjs": "15dc74ee01ac62b76d1658f3fa9e2cea705a7c3eafdfaed7b00725faa829e16b",
+      "scripts/status.mjs": "75cb3793c37a5f535b1fda7c459a50d1ab71e8bab32474b6ca8adf195f3ef988",
+      "scripts/storage-config.mjs": "8bfa5ef31e1ac6b639b1391541dbf9892b4da1589679e2fcac1c8947f0505801",
+      "src/contracts/index.ts": "843db8b20be176b4e0bc0c0d3f9cf298d8f816d1f0eef3b7b97d167e9eddbc34",
+-     "src/extension-api/index.ts": "9d3387e9eb11590629ef7d0920b38467a7c0fe828a228cb217d95a4c4cb43935",
+-     "src/features/application-bindings.ts": "b02341c2b0e2a1846301b46a16731a93fb4a76033aed53213aa28158166f2beb",
++     "src/extension-api/index.ts": "324d2445185f49fa347b84ab41a283e880f600bb44984cd627eee98af9543cee",
++     "src/features/application-bindings.ts": "ee8badacc1fc6d6b9face40f90905fdde6f5db057500033be1d5145f26cf8375",
+      "src/features/local-bindings.ts": "ed1bb8f8ac379834a16e35a0b6e5d0f3480a50caa5d8400656fc8d58ae87f09b",
+      "src/features/positive-cache-bindings.ts": "5194e70dc0fd6aa1c1cbfa9b593ed9a5c6989d1c6c69894cb2eb6da2619ce31f",
+      "src/features/search-bindings.ts": "5cf371d3dda5caf2620e735a59e04ff06efa3f23e8584ea4a52acf8b5716ceda",
+-     "src/features/service-resources.ts": "fbd04a27809bace08529bdd41948ca02a4c0316deb69a16487df11d3ed0ffd29",
++     "src/features/service-resources.ts": "c056091d47f9c4ed6207c6597a162f09789b50b61277b31430a72736a1e08840",
+      "src/features/video-runtime.ts": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "src/http-errors.hooks.ts": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+      "src/modules/dependencies.ts": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+-     "src/modules/watch/watch-counts.slots.ts": "4f01003037f5a1e0b2fa64c2463f61f9506b569d0d6940eb3c629b5ae60c9d91",
++     "src/modules/watch/watch-counts.slots.ts": "34ffca73d74d7f8c231418a9dfb3765ce9a2220062838ba044a510a4b369d2cc",
+      "src/modules/watch/watch-counts.ts": "9ea6a6d01ad1e9dc934cb262fd2bc3aed384e38d4887d0ec394e7f710b79167f",
+      "src/modules/watch/watch-views.slots.ts": "8ddfe10a6e4246f0838e34949e79b3965f457b15dd4904582a443cfcea791c77",
+      "src/modules/watch/watch-views.ts": "07af644d6d729737f8f1ebbec483ab6a8cef83da17d182a599390e32ed1add25",
+      "src/runtime/admission.ts": "bf0879ec012b2cb5316ea19e5e4f7d888d397ca8baba839909c7629cbf87071b",
+      "src/runtime/amqp.ts": "17ff847ff49892b17f21a459150f39eb6b1391a689739e80949c723b45b830c5",
+@@ -54,10 +54,11 @@
+      "src/runtime/counter-worker.ts": "ee18019f80fa8461296d8e389277a32fac61a582f646d6d9720d2d4e85997a36",
+      "src/runtime/delivery.ts": "8ed960db42137f28e03001768f7bc066bec265b6995e7216697328a3ac348e0a",
+      "src/runtime/durable-sql.ts": "cc132555e522603e7f5c9dbe5906efbbb76c6bfbf70d6af536ecea652f518e0f",
+      "src/runtime/event-counter.ts": "40be1d8d6c77139ce7acb998d789e1451dbbcc2e7a11fd16aa0282dfec1bc418",
+      "src/runtime/event-identity.ts": "3de66a89c65728bf404831c60bb81e00cc71693b0cd23555f71462eaf9140eda",
++     "src/runtime/hook-boundary.ts": "bd29fb8f7d6f08baf62c03150b9a60417b397f3cbb4b62603a8e8ddbde22c884",
+      "src/runtime/http.ts": "40e463563c7fe66cc1073f9b727dac457a6a9146f1b9f7de72211ea9b511d9f5",
+      "src/runtime/identity.ts": "399f3de5f18da69ca6ecd03861050e51d18a6b4b5c49e701824a69afaf68b5f6",
+      "src/runtime/keys.ts": "1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb",
+      "src/runtime/local.ts": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+      "src/runtime/media-objects.ts": "76276ecafe97097bc0ae2d4035e35d03d9aa7e606da50b79f7483a879e31c6cf",
+@@ -68,11 +69,11 @@
+      "src/runtime/multipart.ts": "b8e476e3b4304876b649030cba17a15385d94ead1850483d97adf4721660aed4",
+      "src/runtime/objects.ts": "623686c1041515d89bbb3de9b95cd5128c23ce438a964cb439e53333b8f63852",
+      "src/runtime/operation.ts": "f0a242572bf52c0b4fc1755dbd35c0f9fdc134f70674929b4e75fabbe82b0e6a",
+      "src/runtime/outbox.ts": "31d75d62004cf7a6a9eaf97a86e5866596b33e4997f8fe7e6340ed182967f22f",
+      "src/runtime/owned-upload.ts": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+-     "src/runtime/positive-cache.ts": "16f5ef9d6d330159871ec5added7c8b8ddc5e8df97bca8a1037d22781e4e2495",
++     "src/runtime/positive-cache.ts": "51f6c7545981a02e696f7f5604513592fa2859df35539d220cf7f4e4597a18f5",
+      "src/runtime/postgres.ts": "eb69801f563e92bd3a263583e9a9695db660b68c161730278bd6412ff655b906",
+      "src/runtime/process.ts": "63b080fc7c7cfdcd4ece094685cc2387ebda768b2a0475b7a6f75704553e9f27",
+      "src/runtime/receipts.ts": "4f311edcc8ecfb11a3287e9f1445470b10eda26bebd96a51bb5128e25bf50a93",
+      "src/runtime/search-contract.ts": "9d522d94420fa3b47516d546ec5e76cf4e3fffe703b356e26df4ae3c884888ce",
+      "src/runtime/search-indexer.ts": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+@@ -81,11 +82,11 @@
+      "src/runtime/search-schema.ts": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "src/runtime/search.ts": "43fe4a54716625f4ed57cfeaff2daccd97fba061989e1bd2e740f3d52ebdf356",
+      "src/runtime/settings.ts": "446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90",
+      "src/runtime/transaction.ts": "d5f6e89e5d85d89bc93df63a81f22876815bd5ece60872d5fb39b2e5948c1e71",
+      "src/runtime/upload-sql.ts": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+-     "src/runtime/valkey.ts": "d805bcc07f1810de1f289bc402460684cbc28d09b043c84b0aab03cdf4db89d4",
++     "src/runtime/valkey.ts": "f27e9b14c892707b486b7cf868649f678c5dbbe00bb53744410867efc04576b7",
+      "src/runtime/video-hls.ts": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "src/runtime/video-result.ts": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "tsconfig.json": "cb75a166099ee7fd34729d9a132a1858486436054003bd5ac936fa5378d0268d",
+    },
+  }
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps stub-stack's export
+AssertionError: expected { files: 60, sha256: { …(60) } } to deeply equal { files: 60, sha256: { …(60) } }
+
+- Expected
++ Received
+
+@@ -2,26 +2,26 @@
+    "files": 60,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+      ".jeeves/extensions.md": "f84b0b53ec77797b67dcac3f66f6cfdefd863efc874b77a834e5ab0e9505319c",
+-     ".jeeves/inputs/design.json": "bd7aff4722e2f4a49de6f2b60ffa837b17f446334e020c3d0f4ef28244f7f333",
+-     ".jeeves/manifest.json": "76ad180127bb8976f2109782813ba9ebc67a8b1aa0281baf7905698b852a9abc",
+-     ".jeeves/normalized.json": "6246c1b6c8a292792e01bf5672b81567913223cfcd615836aff389d7efe3bd77",
+-     ".jeeves/report.json": "8de2aad1c8a4cff7e3ad4de464b20cb7203f95b811235a769d8442027a83c770",
++     ".jeeves/inputs/design.json": "58b00d48cd109f4f0d22bc71c578dae74ee1a481f6dd13172fdd27757417915e",
++     ".jeeves/manifest.json": "a940849e993d48554cbb259f7d527d97152704b3a9c42aaf07fa48b1377c7081",
++     ".jeeves/normalized.json": "f8b3d0ccf4d03989ebf60849e3053d691acb1acc3516400cae76231f6da33b36",
++     ".jeeves/report.json": "e2fd9af3482d361c7138c07bc5850597516fcc36dcd70800ba530be0ffaa874c",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "e15a715007167bb92b4cd42fe6fd8126751e2385af530b353cc0ebcf40c9e6e5",
+-     "diagnostics/generation.json": "6246c1b6c8a292792e01bf5672b81567913223cfcd615836aff389d7efe3bd77",
++     "diagnostics/generation.json": "f8b3d0ccf4d03989ebf60849e3053d691acb1acc3516400cae76231f6da33b36",
+      "ffmpeg-os.lock": "8ec109b1f0d8354d937debaa4f62b387c78d178c6236adc639c8e6183476382d",
+      "infra/local.json": "4ae189af08c36a48256db1b32cc4c1333a6858d3d00106f109a7ea9a2c0ef048",
+      "package.json": "8fdb3ee7d8cbecdf26a5abddacb01b4a652a6e06e34942bea4f76d93cbc60d88",
+      "pnpm-lock.yaml": "3eee9f4b55ea6f9080b6c9ea8ba8f584bc07e2bfa82f7a3764779fd1ce63d61b",
+      "pnpm-workspace.yaml": "94382ae45766edbeab9ee6f732044adc039379b3869fd108427ac96428c18c9b",
+      "scripts/bootstrap.mjs": "bb867d991afb1eba6e212ca0b6d6863e56827390cacfa2f115bc7042a53a7f83",
+      "scripts/broker-init.mjs": "1020b0814dbfceecac52a5ca31779075038983ea3140dec5b88ee6352c2a38a1",
+-     "scripts/check-extensions.mjs": "c57655a585707f42895fd5f7ee21349cd5d46ca8e7d3115aa960992ddaf90e4d",
++     "scripts/check-extensions.mjs": "e328960a9191fbbf5d3e966ac40181175a202186235eba5797850a7430fd291b",
+      "scripts/common.mjs": "27a2fca4a6a5aefad36917f1f462ee3bcf79f51f76563353e02d7fdee87aeba0",
+      "scripts/local.mjs": "2555d7df79695c1afc8048724ef377a2e46dea87ab05c90d8425ba70f10d1165",
+      "scripts/migrate.mjs": "c1edabe31ceb746c68308ce4e4d67e89ee267cf5b2451746683a9ce9bf12eb40",
+      "scripts/setup.mjs": "15dc74ee01ac62b76d1658f3fa9e2cea705a7c3eafdfaed7b00725faa829e16b",
+      "scripts/status.mjs": "75cb3793c37a5f535b1fda7c459a50d1ab71e8bab32474b6ca8adf195f3ef988",
+@@ -32,11 +32,11 @@
+      "src/modules/dependencies.ts": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+      "src/modules/links-api/limiter.slots.ts": "d94047b1b99a1d80cfa64cd1ce920c0e8c53aed3faba6576ac6b153824733189",
+      "src/modules/links-api/limiter.ts": "6c67c5cf24944d1e6a07570c26c8c8017c0d60f02e5df6060ee74a3ac7d1fe06",
+      "src/modules/links-api/link-cache.slots.ts": "b620926bf6fa074d139a28fad6a95c0bc27ab68dad5ece29a593e05ac3c283c1",
+      "src/modules/links-api/link-cache.ts": "4a9174c8a3ecb1d976e6dbef512f17b1445a496f60c3877cb3586b9810537485",
+-     "src/modules/links-api/link-reader.slots.ts": "8d02939ddcd39a536abad7617e5c84f65506426f5ce1fccd324cfd504f316d5d",
++     "src/modules/links-api/link-reader.slots.ts": "ab015fc40878aacdb46ba341aa8cc6d7c863430e51267c9de3c09939859a211c",
+      "src/modules/links-api/link-reader.ts": "88c834c8a00e65f610eea79264170d2a7030d1ee0527fbb79eaea2cf924d5d63",
+      "src/modules/links-api/redirector.slots.ts": "bf3251e0e1869e819b2674f38d204e7c23d6c0c56ceb6ae5349d65e494e867af",
+      "src/modules/links-api/redirector.ts": "b05deda09e7aeddb3a6a8bf4bb0ea1de94ca16901f1ab34bdae524e7af49bb10",
+      "src/modules/links-api/stats-caller.slots.ts": "def39bf3f72489bad484c6f544a66a95beb2f57bff730a5fc890c2fe20cd7220",
+      "src/modules/links-api/stats-caller.ts": "1df029d84f6f508bb7093b1f673a41cd53d87d23091c77a81b47b027e393cae9",
+@@ -48,15 +48,15 @@
+      "src/modules/stats-api/stats-search.ts": "5afa3512afbb2bb2d44e57ec7488fc18bccd053ba9185043d822fa01c60dd405",
+      "src/modules/upload-api/archive-upload.slots.ts": "d45d82cc1b424c4f91ede77dbc0e7725c7b560bd6fdf5f6e3979271ac3615a39",
+      "src/modules/upload-api/archive-upload.ts": "91771908bd9cbf52f5d4ca50479ef3e90d11118d9537297cad134bc47ddf2b98",
+      "src/modules/upload-api/upload-publisher.slots.ts": "343db7172ea048915a414e5fdf545c0117b24b8a194b03d5fc41d4a5139cf327",
+      "src/modules/upload-api/upload-publisher.ts": "72b1f95e7dc2c5155883c631f2a333a4d2882eae448c4613be0d7e417941292c",
+-     "src/modules/visit-worker/archiver.slots.ts": "b5a66ad924954df6f39c4804590f29cf2ff41cea061223cb74728d374a378b15",
++     "src/modules/visit-worker/archiver.slots.ts": "13b91f25fca9b677191e58ce21dc3f059ab03f99e7c284b73f30dccb47cceb8a",
+      "src/modules/visit-worker/archiver.ts": "f60098b339e0e94812f3e232a823388c1146c057a8defb056b85c78a69a4e552",
+      "src/modules/visit-worker/visit-consumer.slots.ts": "1be39418e722c7684594633aeacced1a6062857c26e2cf1c4c097c991363d341",
+      "src/modules/visit-worker/visit-consumer.ts": "89c9970083c5407032524b28d983410c023696c21b51e3f13dd288084c2ed44b",
+-     "src/modules/visit-worker/visit-writer.slots.ts": "53acef3da90539feb89e1b876dee44fd15a1ac4c405dc17e3ce0f1af4cc31d57",
++     "src/modules/visit-worker/visit-writer.slots.ts": "65d0bf58efdc047b4ecb9ac1c26d57af04876587fcec38f1f30e08172b098bf5",
+      "src/modules/visit-worker/visit-writer.ts": "d0dad7d14c96cc5598feaec6b0ac88431eb9c30f19c00be5ac27b2784fd141ee",
+      "src/runtime/keys.ts": "1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb",
+      "src/runtime/local.ts": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+      "src/runtime/operation.ts": "f0a242572bf52c0b4fc1755dbd35c0f9fdc134f70674929b4e75fabbe82b0e6a",
+      "src/runtime/settings.ts": "446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90",
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+
+ FAIL  |generator| src/v2/valkey-atomic.test.ts > RG11 finite atomic cache primitives > guards captured primitives through nested local effects; only private coordination may mutate in a read
+AssertionError: promise resolved "{ status: 'stored', …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "status": "stored",
++   "validUntil": 1700000010000,
+  }
+
+ ❯ src/v2/valkey-atomic.test.ts:568:67
+    566|       () => cache.setIfNewer("item", record()),
+    567|     ])
+    568|       await expect(async () => operation.withEffect("read", call)).rej…
+       |                                                                   ^
+    569|         outcome: "refused",
+    570|         code: "EFFECT_NOT_ALLOWED",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  |server| src/routes/generation-v2.test.ts > lists each module's status in the preview and exports a stub-only design
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -6,10 +6,11 @@
+      "name": "Data access",
+      "reason": "No Generated module in Shorten service uses it, so you write it.",
+      "selection": "shorten-links",
+      "status": "stub",
+      "unconnected": [
++       "read",
+        "admission",
+        "workload",
+      ],
+    },
+    {
+
+ ❯ src/routes/generation-v2.test.ts:219:26
+    217|     expect(response.statusCode).toBe(200);
+    218|     const data = response.json();
+    219|     expect(data.modules).toEqual([
+       |                          ^
+    220|       {
+    221|         module: "shorten-links",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  11 failed | 120 passed (131)
+      Tests  15 failed | 1193 passed (1208)
+   Start at  18:20:52
+   Duration  71.23s (tests 76%, import 17%, environment 4%, transform 3%)
+
+    Isolate  131 workers spawned · ~157ms startup each (spawn + environment, per file)
+             at least ~4.97s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.

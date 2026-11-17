@@ -58,6 +58,7 @@ const noEffect = new Set([
 ]);
 const policyMethods = new Set([
   "admit",
+  "read",
   "call",
   "query",
   "execute",

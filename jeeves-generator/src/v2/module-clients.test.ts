@@ -589,6 +589,14 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
         ),
     );
     const { createRateLimiter } = await import(limiterUrl);
+    const { createCacheReader } = await import(
+      dataUrl(
+        readTemplate("positive-cache").replace(
+          'from "./hook-boundary.ts"',
+          `from "${dataUrl(fakes["./hook-boundary.ts"] ?? "")}"`,
+        ),
+      )
+    );
     const instances = new Map<string, unknown>();
     const scope = {
       ...testScope(),
@@ -599,7 +607,15 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     };
     let key = "",
       count = 0;
+    const readerValues = new Map<string, string>();
     fake.cacheCommand = (name, args) => {
+      if (typeof args[0] === "string" && args[0].startsWith("jeeves:reader:")) {
+        if (name === "get") return readerValues.get(args[0]) ?? null;
+        if (name === "set") {
+          readerValues.set(args[0], String(args[1]));
+          return "OK";
+        }
+      }
       if (name === "eval") {
         const input = args[1] as { keys: string[] };
         key = input.keys[0] ?? "";
@@ -676,6 +692,43 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
         code: "RATE_LIMITED",
         decision: { count: 1, remaining: 0 },
       });
+      expect(count).toBe(1);
+      const callsBeforeReadWrite = fake.calls.length;
+      await expect(
+        op.withEffect("read", () => product.set("product:ordinary", "bad")),
+      ).rejects.toMatchObject({ code: "EFFECT_NOT_ALLOWED" });
+      expect(fake.calls).toHaveLength(callsBeforeReadWrite);
+      const load = vi.fn(async (input: { key: string }) => ({ key: input.key, public: true }));
+      const reader = createCacheReader({
+        cache: privateCache,
+        freshness: "immutable-positive",
+        ttlSeconds: 60,
+        namespace: "fixture",
+        adapter: {
+          key: (input: { key: string }) => `product:${input.key}`,
+          codec: { parse: (value: unknown) => value },
+          eligible: (value: { key: string; public: boolean }, input: { key: string }) =>
+            value.public && value.key === input.key,
+          load,
+        },
+      });
+      expect(await op.withOperation(context.context, () => reader({ key: "guide" }))).toMatchObject(
+        { source: "authoritative", record: { key: "guide", public: true } },
+      );
+      expect(await op.withOperation(context.context, () => reader({ key: "guide" }))).toMatchObject(
+        { source: "cache" },
+      );
+      expect(load).toHaveBeenCalledTimes(1);
+      const readerKey = [...readerValues.keys()][0];
+      expect(readerKey).toMatch(/^jeeves:reader:/);
+      const beforeProtectedReader = fake.calls.length;
+      for (const action of [
+        () => product.get(readerKey),
+        () => product.set(readerKey, "private"),
+        () => product.delete(readerKey),
+      ])
+        await expect(action()).rejects.toMatchObject({ code: "RESERVED_CACHE_KEY" });
+      expect(fake.calls).toHaveLength(beforeProtectedReader);
       expect(count).toBe(1);
     } finally {
       context.close();

@@ -4,6 +4,7 @@
  * them. The server's tests use the real registry.
  */
 import {
+  cacheReaderCallableContracts,
   generationCallableContracts,
   generationRuntime,
   generationTemplates,
@@ -13,7 +14,11 @@ import { type GenerationInstalledSupport, generationCapabilities } from "../gene
 
 export const testInstalledSupport: GenerationInstalledSupport = {
   runtime: generationRuntime.ref,
-  callables: [...generationCallableContracts, ...rateLimiterCallableContracts].map((contract) => ({
+  callables: [
+    ...generationCallableContracts,
+    ...rateLimiterCallableContracts,
+    ...cacheReaderCallableContracts,
+  ].map((contract) => ({
     contract,
     outputPaths: ["src/runtime/favorites.ts"],
   })),

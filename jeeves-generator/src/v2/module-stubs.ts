@@ -166,9 +166,11 @@ function dependencyType(slot: Slot, connection: Connection): string {
   const target = connection.target;
   if (target.kind === "component")
     return slot.callables
-      ? target.module === "rate-limiter"
-        ? "RateLimiterCapability"
-        : "FavoritesCapability"
+      ? target.module === "cache-reader"
+        ? "CacheReaderCapability"
+        : target.module === "rate-limiter"
+          ? "RateLimiterCapability"
+          : "FavoritesCapability"
       : "ModuleCall";
   const use = linkUse(slot, connection);
   switch (studioComponentTargetKind(target.tile)) {

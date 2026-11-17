@@ -440,8 +440,8 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       },
     });
     const watch = text(v2, "src/processes/watch.ts");
-    expect(watch).toContain('const source = pool(scope, s, "source");');
-    expect(watch).toContain('await watchCacheReader.source.query("SELECT 1");');
+    expect(watch).toContain("const source = cacheSource(scope, watchCacheReaderSource);");
+    expect(watch).toContain("await watchCacheReader.source.probe();");
     const upload = text(v2, "src/processes/upload.ts");
     expect(upload).toContain(
       'for (const item of (await uploadMultipart.multipart.sweep()).failed) failure("sweep upload-multipart", item.error, { upload: item.uploadId });',

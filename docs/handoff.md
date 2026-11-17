@@ -18754,3 +18754,38 @@ workload settings the same way.
   tests** and seven scratch variants pass; the final standard check after this correction is
   **130 files / 1,196 tests, 70.12 s**. Current evidence qualifies the boundary and retains all
   preceding outcomes. This is the final RG12 source correction; commit once and stop for acceptance.
+
+## 2026-11-16 — RG13 active after RG12 acceptance
+
+- RG12 `f11ba8a9233e65c0c59122d2de7241912b21244e` accepted; RG13 is the sole active unit.
+  Implementing callable public eligible-record reads with explicit immutable/versioned freshness
+  and HTTP/in-process exposure, guarded policies, private cache fills and bounded callers/fills.
+- Focused runtime/authoring checks and scratch export review are in progress. Native shared-cache
+  proof remains RG14. Owner changes/root files and historical artifacts are preserved.
+
+## 2026-11-16 — RG13 verified, local commit for acceptance
+
+- API **v8** adds `cache-reader.read@1` through Custom/standalone Data access read slots.
+  Freshness is explicitly immutable-positive or versioned; Exposure is HTTP or in-process.
+  In-process use adds no endpoint. HTTP preserves its record body and adds absolute validity/
+  freshness/version headers; callable results carry immutable metadata for a later final check.
+- Source loading now uses registered read-only RG07 queries, separate product credentials,
+  configuration before clients and READ ONLY transactions. Pure getter snapshots/policies,
+  canonical DTO bytes, per-waiter eligibility, private namespaces and public cache effect guards
+  preserve the boundary. Fenced old fills retrieve newer eligible data or refuse; expiry never
+  renews on hits. Bounds: 32 actual fills, 128 waiters/32 per fill, 2s caller/150ms cache phases,
+  recoverable monotonic 5s cache bypass; unknown fills never retry.
+- Final `pnpm check`: **132 files / 1,210 tests passed, 89.68s**. Focused **156 passed**;
+  ten scratch variants pass checker/TS7 with negative API/import/effect proofs. Emitted source
+  helper/PGlite seam proves credential selection/configuration/READ ONLY dispatch, not native
+  login enforcement. Off pins **79→80 / 86→87 / 60→60** reviewed; frozen v1 unchanged.
+- Full e2e **78/80**, then exact corrected expectations **3/3**: all **80 unique scenarios** pass,
+  including TinyURL, both complete mouse rebuilds and RG13 controls/link/blueprint/Preview.
+  Offline plain chat eval, web build and final lint pass. Initial failures/limits remain in
+  [RG13 evidence](plans/reliable-generation/evidence/rg13/README.md); no assertions/timeouts weakened.
+- Retained-key version fencing and compatible UTC clocks remain assumptions; no durable watermark,
+  immediate invalidation, stale serving, new provider, cache DSL or benchmark. Both modes retain
+  LRU and cannot share admission's no-eviction cache. Native shared-store/process/login proof
+  remains RG14. Root hashes, exact **34,001-byte** owner diff/modes and **42-container** inventory
+  preserved. No later unit, owner port, live/paid call, push or deployment. Commit subject:
+  `RG13: expose callable cache reads with enforceable freshness contracts`. Stop for acceptance.

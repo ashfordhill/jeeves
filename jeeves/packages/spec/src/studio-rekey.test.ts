@@ -225,7 +225,7 @@ describe("Label-stable runtime identities", () => {
     const report = v2DiffReport(v2Diff(frozenV2Design(), design));
     const twin = v2DiffReport(v2Diff(frozenV2Design(), v2ModuleDesign()));
     expect(report.unexpected).toEqual(twin.unexpected);
-    expect(report.unexpected).toHaveLength(14);
+    expect(report.unexpected).toHaveLength(18);
     expect(report.unused.map((rule) => rule.area)).toEqual(["module name"]);
   });
 

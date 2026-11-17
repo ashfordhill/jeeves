@@ -100,6 +100,11 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
       );
       for (const [section, required] of [
         [
+          "cache-source",
+          !!model.processes?.length &&
+            selections.some((s) => s.binding.kind === "positive-cache-read"),
+        ],
+        [
           "sql",
           selections.some((s) =>
             s.resources.some((r) => ["state", "source", "items", "counts"].includes(r.field)),

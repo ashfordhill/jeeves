@@ -55,7 +55,7 @@ describe("reusable composition before product completion", () => {
     expect(a.report.gaps.find((g) => g.id === "restricted-ready-reader")).toMatchObject({
       required: true,
       sourcePaths: ["/generation/selections/3"],
-      description: expect.stringContaining("registered product queries are not installed"),
+      description: expect.stringContaining("scoped registered read-only ProductQueries handle"),
     });
     const plan = JSON.parse(read(a, "infra/local.json"));
     expect(plan.application).toEqual([]);
@@ -74,7 +74,7 @@ describe("reusable composition before product completion", () => {
     ).toBe(false);
     expect(read(a, "src/features/video-runtime.ts")).toContain('["ffmpeg", "ffprobe"]');
     expect(read(a, "src/features/service-resources.ts")).toContain(
-      'ttlSeconds: input(s, "cache.ttlSeconds")',
+      'const ttlSeconds = input(s, "cache.ttlSeconds")',
     );
     const changed = structuredClone(design);
     const studio = required(changed.architecture?.studio);
@@ -191,7 +191,8 @@ describe("reusable composition before product completion", () => {
       "../runtime/objects.ts": "export const createObjects = () => {};",
       "../runtime/amqp.ts":
         "export const createConsumer = (binding) => ({ binding }), createPublisher = (binding) => ({ binding, close: async () => {}, closed: new Promise(() => {}) });",
-      "../runtime/positive-cache.ts": "export const createPositiveReader = () => {};",
+      "../runtime/positive-cache.ts":
+        "export const createCacheReader = () => {}, cacheReaderNamespace = () => 'namespace';",
       // A CA file is read as the pool is built (QG10).
       "node:fs": 'export { readFileSync } from "node:fs";',
     };
