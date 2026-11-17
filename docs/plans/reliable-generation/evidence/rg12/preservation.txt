@@ -1,0 +1,5 @@
+Root hashes: 7 / 7 unchanged.
+Owner diff/modes: exact 34,001-byte binary patch preserved.
+Container inventory: 42 identical before/after rows, including running jeeves-postgres-1 and all historical stopped containers. No generated-system resources created.
+Frozen local-v1, all YouTube inputs/exports and RG01–11 historical evidence have no changes.
+Owner ports 4300/4310 were not used; browser harness used 4301/4311 and jeeves_e2e, with only its own projects deleted.

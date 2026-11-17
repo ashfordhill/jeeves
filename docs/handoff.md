@@ -18691,3 +18691,66 @@ workload settings the same way.
   accepted container inventory remain intact. Commit subject:
   `RG11: add atomic cache operations and distinguish saturation from failure`. Stop for acceptance;
   no later unit began.
+
+## 2026-11-16 — RG12 active after RG11 acceptance
+
+- Coordinator accepted RG11 `a97c776ca0008a9fe61ef82fb597284a5d8a8ec9`; RG12 is the sole active
+  unit. API v8 adds callable rolling-window admission with Required verified identity, a pure
+  bounded subject-key hook, required non-evicting durable Valkey and protected refusal/retry timing.
+  Custom/Data access admission slots compose with RG10 new-work admission; replay spends nothing.
+- Runtime/authoring implementation is complete. `pnpm check` passes **130 files / 1,195 tests**;
+  offline chat eval and web build pass. Seven scratch variants pass extension checker/TS7, with
+  negative capability/private-import proofs. Actual limiter→RG10 PGlite/unknown rollback and
+  guarded HTTP formatter tests pass; unchanged exact Lua passes **66** offline assertions.
+- Final full browser run is pending at `/tmp/jeeves-rg12-browser.txt` on frozen source. The first
+  full run passed **74/79**, including TinyURL and both full rebuilds: three expectation/selector
+  issues were corrected, and two existing mouse timing failures occurred while source/HMR was
+  active; cause is not established. No assertion was weakened. Current logs use
+  `/tmp/jeeves-rg12-{check,compile,focused-final,chat-final,build-final,pins-final}.txt`;
+  evidence runner/review are under `docs/plans/reliable-generation/evidence/rg12/`.
+- Root hashes and exact **34,001-byte** owner diff remain preserved. No Docker generated-system
+  checkpoint, later unit, new provider/dependency, live/paid call, push or deployment. Finish the
+  pending browser verification, record exact evidence/limits, append completion and make the one
+  authorized RG12 commit, then stop for acceptance.
+
+## 2026-11-16 — RG12 verified, local commit for acceptance
+
+- API **v8** adds a callable Rate limiter lead for Service/Uploads: one private store-TIME rolling
+  log, required supported Valkey and own-host Required Auth guard, pure bounded verified-subject
+  key hook, and consumed limit/window controls with mouse/chat/blueprint/Preview parity. Legacy
+  algorithm/store/key choices stay readable and refused. No trusted address or per-copy fallback.
+- Custom/Data access admission handles work inside RG10 new-work admission; committed replay skips
+  spending. Generated coordination remains read-like while preserving unknown mutation outcomes;
+  pure/local scopes and arbitrary cache writes remain denied. Protected 429/Retry-After and typed
+  503 unknown/unavailable/saturation survive product formatting and local rollback.
+- Public cache get/set/delete now reserve **`jeeves:`** before dispatch, even on the exact shared
+  physical client; existing product keys there need explicit application migration. Ordinary keys
+  work. Positive readers and admission refuse cache sharing with the LRU/no-eviction reason.
+  Local admission uses noeviction/AOF/fsync-always; clocks and acknowledged state retention remain
+  assumptions. Native competing-copy, transport, persistence/crash and recovery proof remain RG14.
+- Final `pnpm check`: **130 files / 1,196 passed**, **69.83 s**; focused namespace/composition **118
+  passed**. Full frozen-source e2e **78 passed**, then corrected new mouse case **1 passed**: all
+  **79 unique cases** accounted for, including TinyURL and both full rebuilds. Added mouse refusal
+  check passes; offline chat and web build pass. Seven scratch variants pass checker/TS7; exact
+  unchanged Lua **66 assertions**. Off pins **79→79 / 86→86 / 60→60** reviewed. One unchanged Board
+  drag assertion failed in a prior run; unchanged targeted **15/15** and final standard run pass,
+  cause unestablished. Earlier expectation/harness failures and limits are retained in
+  [RG12 evidence](plans/reliable-generation/evidence/rg12/README.md).
+- Root hashes, exact **34,001-byte** owner diff/modes, historical artifacts and **42-container**
+  inventory preserved. No new provider/dependency, later unit, generated-system Docker checkpoint,
+  owner port, live/paid call, push or deployment. Commit subject:
+  `RG12: generate an atomic callable rate limiter`. Stop for coordinator acceptance.
+
+- RG12 final boundary review additionally guards the one-time `hooks.key` property snapshot,
+  function check and bind inside `withLocalPolicy`, as well as invocation. A captured public cache
+  read attempted by an accessor cannot dispatch. Affected **78 tests** and seven scratch variants
+  pass; final `pnpm check` after this correction is **130 files / 1,196 tests, 69.91 s**. Browser,
+  build and chat behavior are unchanged; prior check evidence is preserved. No further correction
+  remains before the single RG12 commit and acceptance stop.
+
+- RG12 admission links now explicitly require a **standalone** Data access operation: a Data access
+  used as another template's part receives no admission handle, so authoring and raw resolution
+  refuse that unconsumed link. Custom and standalone Data access remain supported. Affected **144
+  tests** and seven scratch variants pass; the final standard check after this correction is
+  **130 files / 1,196 tests, 70.12 s**. Current evidence qualifies the boundary and retains all
+  preceding outcomes. This is the final RG12 source correction; commit once and stop for acceptance.

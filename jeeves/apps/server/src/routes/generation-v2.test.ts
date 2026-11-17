@@ -225,7 +225,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         status: "stub",
         selection: "shorten-links",
         reason: "No Generated module in Shorten service uses it, so you write it.",
-        unconnected: ["workload"],
+        unconnected: ["admission", "workload"],
       },
       {
         module: "shorten-limit",
@@ -234,7 +234,7 @@ it("lists each module's status in the preview and exports a stub-only design", a
         kind: "rate-limiter",
         status: "stub",
         selection: "shorten-limit",
-        reason: "Jeeves doesn't generate Rate limiter modules; you write it.",
+        reason: "Needs a connection to a cache.",
         unconnected: ["store", "workload"],
       },
     ]);

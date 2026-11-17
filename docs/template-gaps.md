@@ -98,3 +98,18 @@ stub `CacheClient` remains unchanged: callable admission and mutable cache-reade
 not exposed by RG11. Optional immutable-cache fallback remains separate. Version fences last
 while a key is retained, not across cache eviction, expiry or data loss. Native competing-client
 and store recovery proof remains RG14. [Evidence](plans/reliable-generation/evidence/rg11/README.md).
+
+## Callable admission (RG12)
+
+The Rate limiter is now an installed callable lead for Service/Uploads with a required shared
+cache and Required Auth guard. It emits rolling-window decisions, protected denials/retry timing
+and a pure verified-subject key hook. Custom/Data access admission handles can be called inside
+RG10 new-work admission; replay returns first. Legacy unsupported choices remain preserved and
+refused. Address trust is still unavailable; the earlier edge-trust gap remains open. Product key
+policy and product caller bodies remain application work; real competing-copy/outage proof is RG14.
+
+RG12's public product cache wrapper reserves `jeeves:` before reads/writes/deletes, protecting
+admission logs on shared clients. Ordinary keys remain supported; existing application keys under
+that prefix need explicit migration. Immutable positive readers and admission refuse cache sharing
+because their eviction contracts differ. This is a finite runtime/compilation boundary, not a
+cache ACL provider or hostile-code sandbox.

@@ -1,5 +1,5 @@
 import { withStubWorkloads } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
-import { operationImports } from "./operation.test.helpers.ts";
+import { operationImports, operationUrl } from "./operation.test.helpers.ts";
 
 const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
 
@@ -49,6 +49,7 @@ type Calls = {
   fail?: string;
   hang?: boolean;
   pubsub?: { exists?: boolean; publish?: () => Promise<string> };
+  cacheCommand?: (name: string, args: unknown[]) => unknown;
 };
 const fake: Calls = { calls: [], endpoints: [], transports: [], connections: [] };
 (globalThis as { moduleClientsFake?: Calls }).moduleClientsFake = fake;
@@ -108,7 +109,7 @@ const fakes: Record<string, string> = {
         record(name, ...args);
         if (fake.hang && fake.fail === name) return new Promise(() => {});
         if (fake.fail === name) return Promise.reject(new Error(name + " refused"));
-        return Promise.resolve(typeof value === "function" ? value(...args) : value);
+        return Promise.resolve(fake.cacheCommand ? fake.cacheCommand(name, args) : typeof value === "function" ? value(...args) : value);
       };
       return {
         on: (event) => record("on", event),
@@ -124,6 +125,7 @@ const fakes: Record<string, string> = {
         get: reply("get", (key) => (key === "missing" ? null : "value")),
         set: reply("set", "OK"),
         del: reply("del", 1),
+        eval: reply("eval", undefined),
       };
     }`,
   "./local.ts": 'export const readSecret = (name) => "secret of " + name;',
@@ -317,6 +319,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     fake.connections.length = 0;
     fake.fail = undefined;
     fake.hang = undefined;
+    fake.cacheCommand = undefined;
     lines.length = 0;
     vi.useRealTimers();
     restoreEnvironment();
@@ -561,6 +564,124 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
     expect(dependencies).toContain(
       "publish(message: Uint8Array, options?: PublisherOptions): Promise<void>;",
     );
+  });
+
+  it("RG12 protects generated admission state from actual public cache handles sharing one generated client", async () => {
+    const op = await import(operationUrl);
+    const processRuntime = await import(dataUrl(fakes["./process.ts"] ?? ""));
+    const readTemplate = (name: string) =>
+      stripTypeScriptTypes(
+        readFileSync(
+          new URL(
+            `../../templates/local-v2/assets/src/runtime/${name}.ts.template`,
+            import.meta.url,
+          ),
+          "utf8",
+        ),
+      );
+    const admissionUrl = dataUrl(readTemplate("admission"));
+    const limiterUrl = dataUrl(
+      readTemplate("rate-limiter")
+        .replace('from "./admission.ts"', `from "${admissionUrl}"`)
+        .replace(
+          'from "./hook-boundary.ts"',
+          `from "${dataUrl(fakes["./hook-boundary.ts"] ?? "")}"`,
+        ),
+    );
+    const { createRateLimiter } = await import(limiterUrl);
+    const instances = new Map<string, unknown>();
+    const scope = {
+      ...testScope(),
+      once<T>(key: string, construct: () => T): T {
+        if (!instances.has(key)) instances.set(key, construct());
+        return instances.get(key) as T;
+      },
+    };
+    let key = "",
+      count = 0;
+    fake.cacheCommand = (name, args) => {
+      if (name === "eval") {
+        const input = args[1] as { keys: string[] };
+        key = input.keys[0] ?? "";
+        const admitted = count < 1;
+        if (admitted) count += 1;
+        const now = Date.now();
+        return [Number(admitted), count, now, now + 60000];
+      }
+      if (args[0] === key && ["set", "del"].includes(name)) count = 0;
+      return name === "get" ? "product-value" : name === "del" ? 1 : "OK";
+    };
+    const out = stdout();
+    const context = op.operation({ maximumMs: 10000, caller: { subject: "alice" } });
+    try {
+      const product = await clients.cacheClient(scope, probe, { cache: "links-cache" });
+      const binding = {
+        ...clients.cacheClientEndpoint("links-cache"),
+        secret: "cache-links-cache",
+      };
+      const privateCache = await processRuntime.processClient(scope, "valkey", binding, () => {
+        throw Error("Generated client was not shared");
+      });
+      let accessorRead: Promise<unknown> | undefined;
+      const beforeAccessor = fake.calls.length;
+      createRateLimiter({
+        process: "links-api",
+        module: "accessor",
+        limit: 1,
+        windowSeconds: 60,
+        cache: privateCache,
+        hooks: {
+          get key() {
+            accessorRead = product.get("product:ordinary");
+            return (caller: { subject: string }) => caller.subject;
+          },
+        },
+      });
+      expect(accessorRead).toBeDefined();
+      await expect(accessorRead).rejects.toMatchObject({
+        outcome: "refused",
+        code: "EFFECT_NOT_ALLOWED",
+      });
+      expect(fake.calls).toHaveLength(beforeAccessor);
+      const limiter = createRateLimiter({
+        process: "links-api",
+        module: "limit",
+        limit: 1,
+        windowSeconds: 60,
+        cache: privateCache,
+        hooks: { key: (caller: { subject: string }) => caller.subject },
+      });
+      const admit = () => op.withOperation(context.context, () => limiter.admit({}));
+      expect(await admit()).toMatchObject({ admitted: true, count: 1 });
+      expect(key).toMatch(/^jeeves:admission:/);
+      expect(fake.calls.filter((call) => call[0] === "createClient")).toHaveLength(1);
+      const before = fake.calls.length;
+      for (const reserved of ["jeeves:", "jeeves:admission:guess", key]) {
+        for (const call of [
+          () => product.get(reserved),
+          () => product.set(reserved, "reset"),
+          () => product.delete(reserved),
+        ])
+          await expect(call()).rejects.toMatchObject({
+            outcome: "refused",
+            code: "RESERVED_CACHE_KEY",
+          });
+      }
+      expect(fake.calls).toHaveLength(before);
+      expect(await product.get("product:ordinary")).toBe("product-value");
+      await product.set("product:ordinary", "value", 60);
+      await product.delete("product:ordinary");
+      await expect(admit()).rejects.toMatchObject({
+        statusCode: 429,
+        code: "RATE_LIMITED",
+        decision: { count: 1, remaining: 0 },
+      });
+      expect(count).toBe(1);
+    } finally {
+      context.close();
+      for (const close of scope.owned.reverse()) await close();
+      out.restore();
+    }
   });
 
   it("uses a cache with its password, after PING", async () => {

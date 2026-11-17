@@ -46,7 +46,7 @@ describe("reusable composition before product completion", () => {
     expect(resolveGeneration(design, registry.installed).findings).toHaveLength(4);
     // The video preset stays installed for designs that attached it; nothing attaches it now.
     expect(registry.installed.presets).toEqual([generationPresets.video.ref]);
-    expect(registry.installed.templates).toHaveLength(10);
+    expect(registry.installed.templates).toHaveLength(11);
     const a = assembleV2({ designJson: JSON.stringify(design) }, registry);
     expect(design).toEqual(before);
     expect(a.report.applicationComplete).toBe(false);

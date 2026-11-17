@@ -25,6 +25,15 @@ export class HttpError extends Error {
   }
 }
 
+const rateLimitRefusals = new WeakMap<object, { retryAfterMs?: number; outcome: "refused" | "unknown" }>();
+/** Private generated refusal: body formatters receive no status/retry/header authority. */
+export function rateLimitRefusal(code: "RATE_LIMITED" | "RATE_LIMIT_UNAVAILABLE" | "RATE_LIMIT_SATURATED" | "RATE_LIMIT_UNKNOWN", outcome: "refused" | "unknown", retryAfterMs?: number) {
+  if (retryAfterMs !== undefined && (!Number.isSafeInteger(retryAfterMs) || retryAfterMs < 0 || retryAfterMs > 604800000)) throw Error("Invalid admission retry");
+  const error = Object.assign(new HttpError(code === "RATE_LIMITED" ? 429 : 503, code,
+    code === "RATE_LIMITED" ? "Rate limit exceeded." : "Admission unavailable; no new work accepted."), { outcome, retryAfterMs });
+  rateLimitRefusals.set(error, { outcome, retryAfterMs });
+  return error;
+}
 const admissionRefusals = new WeakSet<object>();
 function admissionRefusal(code: string, message: string) {
   const error = new HttpError(503, code, message);
@@ -126,10 +135,12 @@ export function classifyHttpError(error: unknown) {
   }
   // Only an explicit pre-dispatch admission refusal authorizes automatic retry. A generic
   // failure or timeout may hide an already dispatched mutation.
-  const retryable = error instanceof HttpError && admissionRefusals.has(error);
+  const limited = error && typeof error === "object" ? rateLimitRefusals.get(error) : undefined;
+  if (limited?.outcome === "unknown") unknown = true;
+  const retryable = (error instanceof HttpError && admissionRefusals.has(error)) || limited?.retryAfterMs !== undefined;
   const headers: Record<string, string> = { "Cache-Control": "no-store" };
   if (unknown) headers["X-Jeeves-Outcome"] = "unknown";
-  if (retryable) headers["Retry-After"] = "1";
+  if (retryable) headers["Retry-After"] = limited?.retryAfterMs !== undefined ? String(Math.ceil(limited.retryAfterMs / 1000)) : "1";
   if (status === 401) headers["WWW-Authenticate"] = "Bearer";
   if (status === 405 && allow) headers.Allow = allow;
   return { status, code, message, retryable, headers };

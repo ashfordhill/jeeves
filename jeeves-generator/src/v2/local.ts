@@ -963,7 +963,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       command: [
         "sh",
         "-ec",
-        `exec valkey-server --requirepass "$$(cat /run/secrets/${name})" --maxmemory 128mb --maxmemory-policy allkeys-lru --appendonly yes`,
+        `exec valkey-server --requirepass "$$(cat /run/secrets/${name})" --maxmemory 128mb --maxmemory-policy ${model.selections.some((s) => s.binding.kind === "rate-limiter" && s.resources.some((binding) => binding.identity.local === r.id)) ? "noeviction" : "allkeys-lru"} --appendonly yes${model.selections.some((s) => s.binding.kind === "rate-limiter" && s.resources.some((binding) => binding.identity.local === r.id)) ? " --appendfsync always" : ""}`,
       ],
       secrets: [name],
       volumes: [volume(`cache-${r.id}`, "/data")],

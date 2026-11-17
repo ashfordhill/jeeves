@@ -334,10 +334,13 @@ function capability(
   const retryLimit = kind === "video-hls" ? 3 : kind === "asset-lifecycle" ? 10 : 5;
   const resolved = resources
     .flatMap(resourceRules)
+    .filter((setting) => kind !== "rate-limiter" || setting.setting !== "ttlSeconds")
     .map((setting) =>
-      setting.setting === "retryLimit"
-        ? { ...setting, supported: choice(retryLimit), default: retryLimit }
-        : setting,
+      kind === "rate-limiter" && setting.setting === "eviction"
+        ? { ...setting, supported: choice("none"), default: "none" }
+        : setting.setting === "retryLimit"
+          ? { ...setting, supported: choice(retryLimit), default: retryLimit }
+          : setting,
     );
   return {
     template: generationTemplates[kind].ref,
@@ -388,6 +391,49 @@ export const generationCapabilities = freezeRecord({
     ],
     worker("jobs", true),
     ["video-encoder"],
+  ),
+  "rate-limiter": capability(
+    "rate-limiter",
+    "api",
+    ["service", "uploads"],
+    [store("cache", "cache", "read-write")],
+    [
+      ...http,
+      rule("limiter.limit", "component", "limit", integer(1, 10000), "rate-limiter.limit", {
+        component: "rate-limiter",
+        required: true,
+        userNeed: "Bound admissions per trusted key in the rolling window.",
+      }),
+      rule(
+        "limiter.windowSeconds",
+        "component",
+        "windowSeconds",
+        integer(1, 604800),
+        "rate-limiter.windowSeconds",
+        {
+          component: "rate-limiter",
+          required: true,
+          userNeed: "Choose the rolling window duration.",
+        },
+      ),
+      rule(
+        "limiter.algorithm",
+        "component",
+        "algorithm",
+        choice("sliding-window"),
+        "rate-limiter.algorithm",
+        { component: "rate-limiter", required: true },
+      ),
+      rule("limiter.store", "component", "store", choice("redis"), "rate-limiter.store", {
+        component: "rate-limiter",
+        required: true,
+      }),
+      rule("limiter.key", "component", "key", choice("policy"), "rate-limiter.key", {
+        component: "rate-limiter",
+        required: true,
+      }),
+    ],
+    ["rate-limiter"],
   ),
   "positive-cache-read": capability(
     "positive-cache-read",

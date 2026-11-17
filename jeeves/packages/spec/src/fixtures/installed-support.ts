@@ -7,12 +7,13 @@ import {
   generationCallableContracts,
   generationRuntime,
   generationTemplates,
+  rateLimiterCallableContracts,
 } from "../generation-catalog.ts";
 import { type GenerationInstalledSupport, generationCapabilities } from "../generation-support.ts";
 
 export const testInstalledSupport: GenerationInstalledSupport = {
   runtime: generationRuntime.ref,
-  callables: generationCallableContracts.map((contract) => ({
+  callables: [...generationCallableContracts, ...rateLimiterCallableContracts].map((contract) => ({
     contract,
     outputPaths: ["src/runtime/favorites.ts"],
   })),

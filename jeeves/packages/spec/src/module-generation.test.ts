@@ -247,6 +247,7 @@ describe("module catalog records", () => {
       "search-query": ["search-query"],
       "verified-identity": ["auth-guard"],
       favorites: ["favorites"],
+      "rate-limiter": ["rate-limiter"],
       "youtube-upload": ["custom"],
       "youtube-watch": ["custom"],
       "youtube-search": ["custom"],
@@ -387,7 +388,7 @@ describe("module commands", () => {
       ],
       [
         connect("watch-details", "index", { tile: "search-index" }),
-        "Details reader has no index connection; a Data access connects its database or workload.",
+        "Details reader has no index connection; a Data access connects its database, admission or workload.",
       ],
       [
         connect("watch-details", "database", { tile: "metadata-db" }),
@@ -487,7 +488,7 @@ describe("module commands", () => {
       moduleConnectOptions(base, "watch-details").find((item) => "module" in item.target),
     ).toEqual({
       target: { module: "watch-cache-reader" },
-      refusal: "Details reader connects to tiles, not to other modules.",
+      refusal: "Details reader's admission must be a Rate limiter.",
     });
   });
 });
@@ -1407,11 +1408,7 @@ describe("module status and older designs", () => {
         "Needs a connection to object storage.",
         ["objects", "workload"],
       ],
-      "upload-limit": [
-        "stub",
-        "Jeeves doesn't generate Rate limiter modules; you write it.",
-        ["store", "workload"],
-      ],
+      "upload-limit": ["stub", "Needs a connection to a cache.", ["store", "workload"]],
       // A part no lead beside it uses is a normal stub, never told to add a lead or move.
       "watch-views": [
         "stub",

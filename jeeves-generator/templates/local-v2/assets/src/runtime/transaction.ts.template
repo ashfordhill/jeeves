@@ -78,7 +78,8 @@ async function executeTransaction<T>(
         await client.query("ROLLBACK");
         if (
           error instanceof Error &&
-          !(error instanceof OperationError)
+          !(error instanceof OperationError) &&
+          !["refused", "unknown"].includes(String((error as { outcome?: unknown }).outcome))
         )
           Object.defineProperty(error, "outcome", {
             value: "definite-failure",

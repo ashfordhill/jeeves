@@ -28,6 +28,7 @@ function load(name: string): string {
 }
 const { createHttpService, HttpError } = await import(load("runtime/http"));
 const { createTileGuard } = await import(load("runtime/tile-guard"));
+const { createRateLimiter } = await import(load("runtime/rate-limiter"));
 const { OperationError } = await import(load("runtime/operation"));
 const { defineRoutes } = await import(load("modules/entry"));
 const { stubRoutes, notImplementedRoutes } = await import(load("runtime/tile-http"));
@@ -294,6 +295,61 @@ describe("RG04 shared HTTP contract", () => {
       message: "Request deadline exceeded; check status before retrying.",
     });
     expect(calls).toBe(0);
+  });
+
+  it("RG12 keeps denial status and computed Retry-After through the actual limiter, guarded HTTP route and product formatter", async () => {
+    const admit = vi.fn(async () => ({ admitted: false, count: 1, resetAt: Date.now() + 1500 }));
+    const limiter = createRateLimiter({
+      process: "api",
+      module: "limit",
+      limit: 1,
+      windowSeconds: 60,
+      cache: { admit },
+      hooks: { key: (caller: { subject: string }) => caller.subject },
+    });
+    const guard = createTileGuard({
+      signIn: "required",
+      verify: async () => ({ subject: "alice" }),
+    });
+    const app = await service(
+      (routes) => {
+        stubRoutes(
+          routes,
+          () => {},
+          "limited",
+          async () => {
+            await limiter.admit({});
+            return { status: 200, body: { ok: true } };
+          },
+          { deadlineMs: 1000 },
+          guard.caller,
+        );
+      },
+      { formatError: () => ({ status: 200, headers: { "Retry-After": "0" }, shaped: true }) },
+    );
+    const missing = await app.inject({ method: "POST", url: "/modules/limited", payload: {} });
+    expect(missing.statusCode).toBe(401);
+    expect(admit).not.toHaveBeenCalled();
+    const response = await app.inject({
+      method: "POST",
+      url: "/modules/limited",
+      headers: { authorization: "Bearer fixture" },
+      payload: {},
+    });
+    expect(response.statusCode).toBe(429);
+    expect(response.headers["retry-after"]).toBe("2");
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.json()).toMatchObject({ shaped: true });
+    admit.mockRejectedValueOnce(new OperationError("unknown", "CACHE_REPLY_INVALID"));
+    const unknown = await app.inject({
+      method: "POST",
+      url: "/modules/limited",
+      headers: { authorization: "Bearer fixture" },
+      payload: {},
+    });
+    expect(unknown.statusCode).toBe(503);
+    expect(unknown.headers["x-jeeves-outcome"]).toBe("unknown");
+    expect(unknown.headers["retry-after"]).toBeUndefined();
   });
 
   it("distinguishes invalid-token 401 from transient JWKS/native dependency 503 without provider details", async () => {

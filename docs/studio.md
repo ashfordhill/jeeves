@@ -449,9 +449,9 @@ last group explains the dots:
 
 | Dot | Word | Means | A Microservice's | A Worker service's |
 | --- | --- | --- | --- | --- |
-| Full | **Generated** | It leads an installed template once its connections are made: Jeeves writes working code, and you fill in one short hooks file | Cache reader, Auth guard, Multipart uploads, Search query, Favorites | Lifecycle writer, Video encoder, Event counter, Index writer |
+| Full | **Generated** | It leads an installed template once its connections are made: Jeeves writes working code, and you fill in one short hooks file | Rate limiter, Cache reader, Auth guard, Multipart uploads, Search query, Favorites | Lifecycle writer, Video encoder, Event counter, Index writer |
 | Half | **Building block** | It fills a connection of a template led by another module in the tile: generated once that module is connected to it, until then yours to write | Event publisher, Data access | Event publisher, Event consumer, Data access, Video packager, Video thumbnailer |
-| Empty | **You write it** | It is generated as an empty, typed stub there, for your own code | Rate limiter, ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
+| Empty | **You write it** | It is generated as an empty, typed stub there, for your own code | ID generator, Redirect responder, Event consumer, External call, Custom | Rate limiter, Cache reader, ID generator, Redirect responder, Auth guard, External call, Custom |
 
 These are the studio's words (`generationWords` in `module-status.ts`), on the menu, the
 inspector's module cards and the module page; chat, the generator's reports and Generate project's
@@ -514,7 +514,7 @@ onward.").
 - **Custom's call** connects by dragging onto a complete Favorites module in the same tile.
   The generated typed handle exposes add/remove/check/list with declared stable targets, verified
   caller, bounded DTO checks and effect authority. The link mounts no HTTP endpoint; Favorites'
-  existing selection owns its four routes. Other callable adapters remain unavailable.
+  existing selection owns its four routes. Custom and Data access also offer **admission** to a complete Rate limiter in their own tile. Its typed `admit({})` handle runs the same generated checks without an extra HTTP endpoint. Other callable adapters remain unavailable.
 - **The Cache reader's loader**, and **Favorites' items**, are a drag from its dot onto a Data
   access row in the same tile; that row stays bright with a dashed outline. Each is drawn as a
   gutter arrow.
@@ -1568,3 +1568,26 @@ adapters, public schemas, service construction and edge composition are removed 
 generation. The retained v2 design exports generic upload/lifecycle/HLS/cache/search/count
 modules with required custom gaps; the historical field application remains independently
 runnable. [Corrected baseline and count](plans/reliable-foundations/youtube-v2-generic-baseline.md).
+
+### Callable rate limiting (RG12)
+
+A Rate limiter in a Service or Uploads uses its required cache connection and the tile's Required
+Auth guard. Its inspector offers **Limit per window** and **Window**, matching chat. The pure key
+hook sees only verified subject facts; the generated runtime owns the shared rolling-window
+log, denial and retry interval. Address/header keys and local memory fallback are unavailable.
+
+Connect a Custom or Data access module's **admission** slot to that limiter by dragging its dot to
+the limiter row. The application operation must call `dependencies.<limiter>.admit({})` during
+`localOperation.admit`; a committed replay then returns before spending admission. Wiring a handle
+does not implement or certify the caller's unfinished product stub. Denial throws 429 with protected
+`Retry-After`; unavailable/saturated/unknown decisions refuse new work with 503.
+
+The positive Cache reader and limiter require separate caches (LRU versus no eviction); a mouse
+or chat connection that combines them is refused with that reason. Public product cache handles
+reserve `jeeves:` for generated state. Ordinary application keys continue to work; old product
+keys under the reserved prefix require explicit application migration.
+
+Admission links require an independent product operation. A Data access used as a template part
+(for example a positive reader's loader or Favorites' items) receives no standalone admission
+handle and refuses that link. Custom and standalone Data access modules remain supported; use
+one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.

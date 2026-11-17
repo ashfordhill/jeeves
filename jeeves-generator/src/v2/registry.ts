@@ -12,6 +12,7 @@ import {
   knownGenerationPreset,
   knownGenerationTemplate,
   type NormalizedGeneration,
+  rateLimiterCallableContracts,
   sameContractRef,
 } from "@jeeves/spec";
 import { assertDistinctPaths, assertSafeOutputPath } from "../files.ts";
@@ -225,7 +226,7 @@ export function createV2Registry(sources: readonly V2Source[], emitters: readonl
         const parsed = generationCallableContractSchema.safeParse(callable.contract);
         if (
           !parsed.success ||
-          !generationCallableContracts.some(
+          ![...generationCallableContracts, ...rateLimiterCallableContracts].some(
             (contract) => canonicalJson(contract) === canonicalJson(callable.contract),
           )
         )

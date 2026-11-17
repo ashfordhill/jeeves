@@ -6,7 +6,7 @@
  * intended implementation; Jeeves code would only wire them.
  */
 import { z } from "zod";
-import { generationCallableContracts } from "./generation-catalog.ts";
+import { generationCallableContracts, rateLimiterCallableContracts } from "./generation-catalog.ts";
 import type { GenerationCallableContract } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import type { StudioKind } from "./studio-model.ts";
@@ -18,7 +18,7 @@ export const studioComponentLimits = {
   description: 240,
   action: 60,
   rateLimit: { min: 1, max: 1_000_000 },
-  windowSeconds: { min: 1, max: 86_400 },
+  windowSeconds: { min: 1, max: 604_800 },
   l1MaxEntries: { min: 1, max: 10_000_000 },
   l1TtlSeconds: { min: 1, max: 86_400 },
   l2TtlSeconds: { min: 1, max: 604_800 },
@@ -60,7 +60,7 @@ export const studioComponentKindSchema = z.enum(studioComponentKinds);
 export type StudioComponentKind = z.infer<typeof studioComponentKindSchema>;
 
 export const rateLimiterAlgorithmSchema = z.enum(["token-bucket", "sliding-window"]);
-export const rateLimiterKeySchema = z.enum(["ip", "api-key", "user"]);
+export const rateLimiterKeySchema = z.enum(["ip", "api-key", "user", "policy"]);
 export const rateLimiterStoreSchema = z.enum(["memory", "redis"]);
 export const cacheReaderPatternSchema = z.enum(["cache-aside", "read-through"]);
 export const cacheStampedeSchema = z.enum(["none", "single-flight"]);
@@ -247,9 +247,11 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
   const defaults: StudioComponentSettingsByKind = {
     "rate-limiter": {
       kind: "rate-limiter",
-      algorithm: "token-bucket",
-      key: "ip",
-      store: "memory",
+      algorithm: "sliding-window",
+      key: "policy",
+      store: "redis",
+      limit: 100,
+      windowSeconds: 60,
     },
     "cache-reader": { kind: "cache-reader", pattern: "cache-aside", stampede: "none" },
     "id-generator": { kind: "id-generator", strategy: "db-sequence", encoding: "base62" },
@@ -356,6 +358,7 @@ export const studioModuleTemplates = [
   "search-projection",
   "search-query",
   "favorites",
+  "rate-limiter",
 ] as const;
 export type StudioModuleTemplate = (typeof studioModuleTemplates)[number];
 /** The slot names across the catalog. */
@@ -377,6 +380,7 @@ export const studioModuleSlotIds = [
   "index",
   "items",
   "call",
+  "admission",
 ] as const;
 export const studioModuleSlotIdSchema = z.enum(studioModuleSlotIds);
 export type StudioModuleSlotId = (typeof studioModuleSlotIds)[number];
@@ -581,26 +585,18 @@ export const studioComponentDefinitions: {
 } = Object.freeze({
   "rate-limiter": component("rate-limiter", {
     name: "Rate limiter",
-    description: "Rejects requests above a per-key limit.",
-    thirdParty: ["Redis"],
+    description:
+      "Atomically limits each trusted key in a shared rolling window. Requires a cache and Required sign-in.",
+    thirdParty: ["Valkey"],
     browserHost: false,
     hosts: anyHost,
     scope: "generic",
-    slots: [slot("store", ["cache"], "read-write", "optional")],
-    generation: stub,
+    slots: [slot("store", ["cache"], "read-write")],
+    generation: lead("rate-limiter"),
     targets: ["cache"],
     fields: [
-      select("algorithm", "Algorithm", rateLimiterAlgorithmSchema.options),
-      integer("limit", "Limit per window", L.rateLimit, "requests"),
-      integer("windowSeconds", "Window", L.windowSeconds, "s"),
-      select("key", "Key", rateLimiterKeySchema.options),
-      select(
-        "store",
-        "Store",
-        rateLimiterStoreSchema.options,
-        "Options",
-        "Redis needs a connection to a cache.",
-      ),
+      integer("limit", "Limit per window", { min: 1, max: 10_000 }, "requests"),
+      integer("windowSeconds", "Window", { min: 1, max: 604_800 }, "s"),
     ],
   }),
   "cache-reader": component("cache-reader", {
@@ -716,7 +712,17 @@ export const studioComponentDefinitions: {
     browserHost: false,
     hosts: anyHost,
     scope: "generic",
-    slots: [slot("database", ["database"], "read-write")],
+    slots: [
+      slot("database", ["database"], "read-write"),
+      {
+        id: "admission",
+        targets: [],
+        module: "rate-limiter",
+        use: "in-process",
+        need: "optional",
+        callables: rateLimiterCallableContracts,
+      },
+    ],
     generation: part("owned-multipart", "positive-cache-read", "event-counter", "favorites"),
     targets: ["database"],
     fields: [
@@ -792,6 +798,14 @@ export const studioComponentDefinitions: {
         use: "in-process",
         need: "optional",
         callables: generationCallableContracts,
+      },
+      {
+        id: "admission",
+        targets: [],
+        module: "rate-limiter",
+        use: "in-process",
+        need: "optional",
+        callables: rateLimiterCallableContracts,
       },
     ],
     generation: stub,
@@ -924,9 +938,7 @@ export function studioComponentRequirements(settings: StudioComponentSettings): 
   const need = (kinds: readonly StudioComponentTargetKind[], reason: string) => [{ kinds, reason }];
   switch (settings.kind) {
     case "rate-limiter":
-      return settings.store === "redis"
-        ? need(["cache"], "A Redis-backed rate limiter needs a cache connection.")
-        : [];
+      return need(["cache"], "A distributed rate limiter requires a shared cache connection.");
     case "cache-reader":
       return need(["cache"], "A cache reader needs a cache connection.");
     case "id-generator":

@@ -122,6 +122,7 @@ export const generationTemplates = freezeRecord({
   "verified-identity": template("verified-identity", []),
   /** An account's favorite items behind a Required sign-in (v3 contract, section 3). */
   favorites: template("favorites", [generationPolicies.favorites.ref]),
+  "rate-limiter": template("rate-limiter", []),
   "youtube-upload": template("youtube-upload", [generationPolicies.publicVideo.ref]),
   "youtube-watch": template("youtube-watch", [generationPolicies.publicVideo.ref]),
   "youtube-search": template("youtube-search", [generationPolicies.publicVideo.ref]),
@@ -215,6 +216,17 @@ export const generationCallableContracts = freezeRecord([
     version: 1,
     input: "favorites.page",
     output: "favorites.item-page",
+    effect: "read",
+  },
+] as const);
+
+/** Generated coordination is read-like to product operations; it grants no product writes. */
+export const rateLimiterCallableContracts = freezeRecord([
+  {
+    id: "rate-limiter.admit",
+    version: 1,
+    input: "rate-limiter.empty",
+    output: "rate-limiter.decision",
     effect: "read",
   },
 ] as const);

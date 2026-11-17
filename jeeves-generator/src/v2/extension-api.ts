@@ -36,6 +36,10 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
           'export { defineLocalOperation } from "../runtime/local-operation.ts";',
           'export type { LocalOperation, LocalCommands, LocalResult } from "../runtime/local-operation.ts";',
         );
+      if (has("rate-limiter"))
+        publicLines.push(
+          'export type { RateLimiterCapability, RateLimiterHooks, RateLimitDecision } from "../runtime/rate-limiter.ts";',
+        );
       if (has("favorites"))
         publicLines.push(
           'export type { FavoritesCapability, Favorite, FavoritesPage } from "../runtime/favorites.ts";',
@@ -118,7 +122,9 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
             "/** Application-owned DTOs and pure shared definitions. Public across processes. */\nexport {};\n",
             true,
           ),
-          ...(model.processes?.length ? [file("src/runtime/hook-boundary.ts", boundary)] : []),
+          ...(model.processes?.length || has("rate-limiter")
+            ? [file("src/runtime/hook-boundary.ts", boundary)]
+            : []),
         ],
         gaps: model.selections.flatMap((s) => {
           const reason =

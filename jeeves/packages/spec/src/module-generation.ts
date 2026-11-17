@@ -77,6 +77,7 @@ const templateWords: Record<StudioModuleTemplate, string> = {
   "search-projection": "search indexing",
   "search-query": "search query",
   favorites: "favorites",
+  "rate-limiter": "rate limiting",
 };
 
 type ModuleLink = {
@@ -171,11 +172,28 @@ export function planModules(
     }
   }
   settleAcrossTiles(view, leads, keptOwnership(design, previous));
+  for (const limiter of leads) {
+    if (limiter.binding?.kind !== "rate-limiter") continue;
+    for (const reader of leads)
+      if (
+        reader.binding?.kind === "positive-cache-read" &&
+        reader.binding.cache.resource === limiter.binding.cache.resource
+      )
+        refuse(
+          `${reader.lead.name} and ${limiter.lead.name} cannot share a cache: the immutable reader uses LRU eviction; admission requires no eviction. Connect separate caches.`,
+        );
+  }
+
   for (const link of view.links) {
     const slot = studioComponentDefinitions[link.module.settings.kind].slots.find(
       (slot) => slot.id === link.slot,
     );
     if (!slot?.callables || !link.target) continue;
+    const part = claims.get(link.module.id);
+    if (slot.id === "admission" && part?.binding)
+      refuse(
+        `${link.module.name} is a part of ${part.lead.name} and has no standalone product operation for admission. Connect from Custom or a standalone Data access instead.`,
+      );
     const target = leads.find((plan) => plan.lead.id === link.target?.id);
     if (!target?.binding)
       refuse(
@@ -259,6 +277,24 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
           kind: "verified-identity",
           identity: { element: identity.tile, guard: lead.id },
         };
+      break;
+    }
+    case "rate-limiter": {
+      const settings = lead.settings;
+      if (settings.kind !== "rate-limiter") break;
+      if (settings.algorithm !== "sliding-window" || settings.store !== "redis")
+        refuse(
+          `${lead.name} generates only shared-cache sliding-window admission; saved algorithm/store choices are preserved and must be explicitly migrated.`,
+        );
+      if (settings.key !== "policy")
+        refuse(
+          `${lead.name} requires a pure key policy over verified subject facts. Address keys require an installed trusted-address capability (none is installed); forwarded headers and unverified API keys are not trusted.`,
+        );
+      const cache = dependency(own("store"));
+      const guard = requiredGuard(view, lead.host);
+      if (!cache) needs.push(connected("cache"));
+      if (!guard) needs.push(`${article(kindName("auth-guard"))} set to Required in ${host}`);
+      if (cache && guard) plan.binding = { kind: "rate-limiter", cache, identity: guard };
       break;
     }
     case "owned-multipart": {
@@ -1072,7 +1108,7 @@ function writeValues(draft: DesignDocument, view: ModuleView, complete: LeadPlan
       if (requirement.kind === "search") unspecified(store, "engine", "opensearch");
       if (requirement.kind === "cache") {
         unspecified(store, "engine", "redis-compatible");
-        fix(store, "ttlSeconds", initial.ttlSeconds);
+        if (binding.kind !== "rate-limiter") fix(store, "ttlSeconds", initial.ttlSeconds);
       }
       if (requirement.kind === "queue" && requirement.mode === "topic")
         fix(store, "mode", "topic", "work-queue");

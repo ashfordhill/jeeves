@@ -867,6 +867,11 @@ export function cacheClientEndpoint(cache: string) {
     tls: transport("CACHE", cache, hostname),
   };
 }
+/** Product keys cannot read or mutate generated coordination state on a shared resource. */
+function productCacheKey(key: string): void {
+  if (typeof key === "string" && key.startsWith("jeeves:"))
+    throw new OperationError("refused", "RESERVED_CACHE_KEY");
+}
 /** A cache (Valkey) with its password, through the cache read's bounded client
  * (`createValkeyCache`): a caller settles within 150 ms and at most 32 actual commands remain pending; while no client is
  * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
@@ -908,14 +913,17 @@ export async function cacheClient(
   return {
     async get(key) {
       assertNetworkAllowed();
+      productCacheKey(key);
       return (await cache.get(key)) ?? undefined;
     },
     async set(key, value, ttlSeconds) {
       assertNetworkAllowed(true);
+      productCacheKey(key);
       await cache.set(key, value, ttlSeconds ? { EX: ttlSeconds } : undefined);
     },
     async delete(key) {
       assertNetworkAllowed(true);
+      productCacheKey(key);
       await cache.delete(key);
     },
   };

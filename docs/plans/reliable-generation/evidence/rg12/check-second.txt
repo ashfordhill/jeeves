@@ -1,0 +1,156 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 1951 files in 830ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/composition.test.ts (9 tests | 1 failed) 792ms
+   ❯ reusable composition before product completion (9)
+     × exports reusable mechanisms from a saved product design and leaves every product implementation custom 66ms
+ ❯ |generator| src/v2/callable.test.ts (4 tests | 1 failed) 267ms
+   ❯ RG05 checked callable bindings (4)
+     × refuses unavailable and incompatible contracts and exposes the same mouse/chat connection 145ms
+ ❯ |server| src/routes/generation-v2.test.ts (2 tests | 1 failed) 8344ms
+   × lists each module's status in the preview and exports a stub-only design 2948ms
+ ❯ |web| src/canvas/ModuleMenu.test.tsx (3 tests | 1 failed) 325ms
+   ❯ ModuleAddButton (2)
+     × toggles the menu, closes it on a press elsewhere, the wheel or Escape, and reports a pick 294ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |server| src/routes/generation-v2.test.ts > lists each module's status in the preview and exports a stub-only design
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -6,10 +6,11 @@
+      "name": "Data access",
+      "reason": "No Generated module in Shorten service uses it, so you write it.",
+      "selection": "shorten-links",
+      "status": "stub",
+      "unconnected": [
++       "admission",
+        "workload",
+      ],
+    },
+    {
+      "host": "shorten",
+
+ ❯ src/routes/generation-v2.test.ts:219:26
+    217|     expect(response.statusCode).toBe(200);
+    218|     const data = response.json();
+    219|     expect(data.modules).toEqual([
+       |                          ^
+    220|       {
+    221|         module: "shorten-links",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |generator| src/v2/callable.test.ts > RG05 checked callable bindings > refuses unavailable and incompatible contracts and exposes the same mouse/chat connection
+AssertionError: expected { …(2) } to have property "command"
+ ❯ src/v2/callable.test.ts:219:19
+    217|       (item) => "module" in item.target && item.target.module === "fav…
+    218|     );
+    219|     expect(mouse).toHaveProperty("command");
+       |                   ^
+    220|     if (!mouse || !("command" in mouse)) throw Error("Missing mouse ch…
+    221|     const batch = buildStudioCommand(disconnected, mouse.command);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |generator| src/v2/composition.test.ts > reusable composition before product completion > exports reusable mechanisms from a saved product design and leaves every product implementation custom
+AssertionError: expected [ { ref: { …(3) }, …(1) }, …(10) ] to have a length of 10 but got 11
+
+- Expected
++ Received
+
+- 10
++ 11
+
+ ❯ src/v2/composition.test.ts:49:42
+     47|     // The video preset stays installed for designs that attached it; …
+     48|     expect(registry.installed.presets).toEqual([generationPresets.vide…
+     49|     expect(registry.installed.templates).toHaveLength(11);
+       |                                          ^
+     50|     const a = assembleV2({ designJson: JSON.stringify(design) }, regis…
+     51|     expect(design).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |web| src/canvas/ModuleMenu.test.tsx > ModuleAddButton > toggles the menu, closes it on a press elsewhere, the wheel or Escape, and reports a pick
+AssertionError: expected [ [ 'lead', 'Generated' ], …(2) ] to deeply equal [ [ 'lead', 'Generated' ], …(2) ]
+
+- Expected
++ Received
+
+@@ -6,9 +6,9 @@
+    [
+      "part",
+      "Building block",
+    ],
+    [
+-     "stub",
+-     "You write it",
++     "lead",
++     "Generated",
+    ],
+  ]
+
+ ❯ src/canvas/ModuleMenu.test.tsx:135:7
+    133|         dot(name)?.getAttribute("title"),
+    134|       ]),
+    135|     ).toEqual([
+       |       ^
+    136|       ["lead", "Generated"],
+    137|       ["part", "Building block"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  4 failed | 126 passed (130)
+      Tests  4 failed | 1191 passed (1195)
+   Start at  17:18:46
+   Duration  116.96s (tests 74%, import 17%, environment 4%, transform 4%)
+
+    Isolate  130 workers spawned · ~279ms startup each (spawn + environment, per file)
+             at least ~8.80s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

@@ -70,18 +70,22 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
             (requirement) => requirement.field === resource.field,
           )?.kind;
           const names =
-            kind === "database"
-              ? ["postgres"]
-              : kind === "queue"
-                ? ["delivery", "amqp"]
-                : kind === "object-store"
-                  ? ["objects"]
-                  : kind === "search"
-                    ? ["search"]
-                    : [];
+            kind === "cache" && selection.binding.kind === "rate-limiter"
+              ? ["valkey"]
+              : kind === "database"
+                ? ["postgres"]
+                : kind === "queue"
+                  ? ["delivery", "amqp"]
+                  : kind === "object-store"
+                    ? ["objects"]
+                    : kind === "search"
+                      ? ["search"]
+                      : [];
           add(names, resource.sourcePath);
         }
       }
+      if (model.selections.some((selection) => selection.binding.kind === "positive-cache-read"))
+        modules.delete("valkey");
       return {
         files: [...modules]
           .sort(([a], [b]) => v2Compare(a, b))

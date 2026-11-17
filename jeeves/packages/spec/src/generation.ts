@@ -45,6 +45,11 @@ export const generationBindingSchema = z.discriminatedUnion("kind", [
     results: dep,
   }),
   z.strictObject({ kind: z.literal("positive-cache-read"), source: dep, cache: dep }),
+  z.strictObject({
+    kind: z.literal("rate-limiter"),
+    cache: dep,
+    identity: generationIdentitySchema,
+  }),
   z.strictObject({ kind: z.literal("event-counter"), state: dep, events: dep }),
   z.strictObject({ kind: z.literal("search-projection"), index: dep, events: dep }),
   z.strictObject({ kind: z.literal("search-query"), index: dep }),
@@ -140,6 +145,9 @@ export function generationReferences(binding: GenerationBinding) {
       resource("outputs", binding.outputs, "object-store");
       resource("jobs", binding.jobs, "queue", "consume");
       resource("results", binding.results, "queue", "publish");
+      break;
+    case "rate-limiter":
+      resource("cache", binding.cache, "cache");
       break;
     case "positive-cache-read":
       resource("source", binding.source, "database");

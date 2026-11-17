@@ -758,17 +758,19 @@ export function moduleConnectOptions(
       ),
     ];
   });
-  const loader = definition.slots.find((each) => each.module);
+  const loaders = definition.slots.filter((each) => each.module);
   const modules = (studio.components ?? [])
     .filter((other) => other.host === item.host && other.id !== module)
-    .map((other) =>
-      attempt(
+    .map((other) => {
+      const loader = loaders.find((each) => each.module === other.settings.kind);
+      const first = loaders[0];
+      return attempt(
         { module: other.id },
-        loader && other.settings.kind === loader.module ? loader.id : undefined,
-        loader?.module
-          ? `${possessive(who)} ${loader.id} must be ${article(studioComponentDefinitions[loader.module].name)}.`
+        loader?.id,
+        first?.module
+          ? `${possessive(who)} ${first.id} must be ${article(studioComponentDefinitions[first.module].name)}.`
           : `${who} connects to tiles, not to other modules.`,
-      ),
-    );
+      );
+    });
   return [...tiles, ...modules];
 }

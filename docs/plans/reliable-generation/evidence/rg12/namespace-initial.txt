@@ -1,0 +1,27 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/module-clients.test.ts (72 tests | 1 failed | 71 skipped) 16ms
+   ❯ emitted module-clients.ts (tile process contract, sections 4 and 6) (15)
+     × RG12 protects generated admission state from actual public cache handles sharing one generated client 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/module-clients.test.ts > emitted module-clients.ts (tile process contract, sections 4 and 6) > RG12 protects generated admission state from actual public cache handles sharing one generated client
+Error: Admission code RATE_LIMIT_UNAVAILABLE; driver calls createClient,on,on,connect,PING
+ ❯ src/v2/module-clients.test.ts:634:77
+    632|       });
+    633|       const admit = () => op.withOperation(context.context, () => limi…
+    634|       const result = await admit().catch((error: {code?:string}) => { …
+       |                                                                             ^
+    635|       expect(result).toMatchObject({ admitted: true, count: 1 });
+    636|       expect(key).toMatch(/^jeeves:admission:/);
+ ❯ src/v2/module-clients.test.ts:634:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 71 skipped (72)
+   Start at  17:38:43
+   Duration  1.25s (import 50%, transform 48%, tests 1%)

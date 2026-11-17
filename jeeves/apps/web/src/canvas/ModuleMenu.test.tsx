@@ -32,7 +32,7 @@ describe("moduleMenuGroups", () => {
         "Requests",
         "api",
         [
-          "Rate limiter: stub",
+          "Rate limiter: lead",
           "Redirect responder: stub",
           "Auth guard: lead",
           "External call: stub",
@@ -135,7 +135,7 @@ describe("ModuleAddButton", () => {
     ).toEqual([
       ["lead", "Generated"],
       ["part", "Building block"],
-      ["stub", "You write it"],
+      ["lead", "Generated"],
     ]);
     // Under the last group, the legend: each dot, its word and what it means.
     const legend = menu()?.querySelector(".lane-module-menu-legend");

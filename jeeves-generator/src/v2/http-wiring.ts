@@ -153,6 +153,91 @@ export function indexHooks(process: { tile: string }, lead: Lead) {
 export const throws = (hook: string, lead: Lead) =>
   `throw new NotImplemented(${text(`${hook} for ${lead.name}`)});`;
 
+/** Callable-only limiter: each host uses the same atomic cache namespace; no new HTTP endpoint. */
+function rateLimiterMount(
+  process: NormalizedProcess,
+  selection: NormalizedGenerationSelection,
+  lead: Lead,
+  selections: readonly NormalizedGenerationSelection[],
+): ProcessMount {
+  const id = selection.id,
+    name = camel(id),
+    hooks = `${camel(lead.module)}Hooks`;
+  if (selection.binding.kind !== "rate-limiter") throw Error("Rate limiter binding required");
+  const identity = selection.binding.identity;
+  if (
+    !selections.some(
+      (s) =>
+        s.host === process.tile &&
+        s.binding.kind === "verified-identity" &&
+        s.target.kind === "component" &&
+        s.target.component === identity.guard &&
+        s.inputs["guard.signIn"] === "required",
+    )
+  )
+    refuse(
+      "INVALID_LOCAL_CONTRIBUTION",
+      id,
+      "Rate limiter requires its own host's Required Auth guard.",
+    );
+  const cache = resource(selection, "cache");
+  return {
+    imports: [
+      { from: resources, name: "input" },
+      { from: resources, name: "selected" },
+      { from: "../runtime/rate-limiter.ts", name: "createRateLimiter" },
+      { from: "../runtime/valkey.ts", name: "cacheEndpoint" },
+      { from: "../runtime/valkey.ts", name: "createValkeyCache" },
+      { from: "../runtime/local.ts", name: "readSecret" },
+      { from: "../runtime/process.ts", name: "ownResource" },
+      { from: "../runtime/process.ts", name: "processClient" },
+      { from: "../runtime/operation.ts", name: "withLocalPolicy" },
+      { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
+    ],
+    validation: [`cacheEndpoint(${text(cache)});`, `readSecret(${text(`cache-${cache}`)});`],
+    setup: [
+      `const ${name} = await (async () => {`,
+      `  const s = selected("rate-limiter", ${text(id)});`,
+      `  const cacheBinding = { ...cacheEndpoint(${text(cache)}), secret: ${text(`cache-${cache}`)} };`,
+      '  const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({ binding: cacheBinding,',
+      `    onState: (state, error) => state === "unavailable" ? failure(${text(`admission ${lead.module}`)}, error ?? new Error("Admission unavailable")) : console.log(JSON.stringify({ level: "info", event: "admission", tile: config.tile, module: ${text(lead.module)}, state })),`,
+      '  }), "close"));',
+      `  const limiter = createRateLimiter({ process: config.tile, module: ${text(lead.module)}, limit: input(s, "limiter.limit"), windowSeconds: input(s, "limiter.windowSeconds"), cache, hooks: withLocalPolicy(() => ${hooks}({})) });`,
+      "  return { cache, limiter };",
+      "})();",
+    ],
+    configure: [],
+    initialize: [`await ${name}.cache.ping();`],
+    started: [],
+    config: [id, { template: "rate-limiter", lead: lead.module }],
+    routes: [],
+    loops: [],
+    template: { selection: id, template: "rate-limiter", level: "mounted" },
+    startup: { module: lead.module, checks: ["PING on required admission cache"] },
+    hooks: {
+      members: ["key"],
+      file: hooksFile(process, selection, lead, "rate-limiter", {
+        imports: ['import type { RateLimiterHooks } from "../../extension-api/index.ts";'],
+        types: [
+          "/** Pure policy receives only verified subject facts; no raw request or address trust. */",
+        ],
+        factory: [
+          `export function ${hooks}(_resources: Record<string, never>): RateLimiterHooks {`,
+          "  return {",
+          "    key(caller) {",
+          `      ${throws("key", lead)}`,
+          "    },",
+          "  };",
+          "}",
+        ],
+        reached: "admission refuses until the key policy is written",
+      }),
+    },
+    service: { ...service(), dependsOn: [cache], cache: [cache] },
+    local: {},
+  };
+}
+
 /** Cache reader: the positive reader on its source login and cache, at GET /modules/<lead>/:key. */
 function positiveCacheRead(
   process: NormalizedProcess,
@@ -989,6 +1074,7 @@ const templates: Record<
   "positive-cache-read": positiveCacheRead,
   "search-query": searchQuery,
   favorites: favoritesMount,
+  "rate-limiter": rateLimiterMount,
 };
 
 /** A route stub: any method on /modules/<module> and below, called with its dependencies

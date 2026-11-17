@@ -17,6 +17,7 @@ import {
   generationRuntime,
   knownGenerationPreset,
   knownGenerationTemplate,
+  rateLimiterCallableContracts,
 } from "./generation-catalog.ts";
 import {
   callableContractRefusal,
@@ -973,7 +974,7 @@ export function resolveGeneration(
         report(
           "NEEDS_TEMPLATE",
           source?.path ?? base,
-          `Unsupported ${rule.input}=${value}; supported values are ${JSON.stringify(rule.supported)}. Source is preserved.`,
+          `Unsupported ${rule.input}=${value}; supported values are ${JSON.stringify(rule.supported)}. Source is preserved.${selection.binding.kind === "rate-limiter" && rule.setting === "key" ? " A pure policy over verified subject facts is required. Address keys need an installed trusted-address capability; forwarding headers and unverified API keys are not trusted." : ""}`,
         );
       else {
         row.inputs[rule.input] = value;
@@ -1168,6 +1169,24 @@ export function resolveGeneration(
         );
     }
   });
+  for (const [index, link] of (studio?.componentConnections ?? []).entries()) {
+    const source = studio?.components?.find((component) => component.id === link.from);
+    if (
+      source?.settings.kind === "data-access" &&
+      moduleLinkSlot(design, link)?.id === "admission" &&
+      !normalized.some(
+        (selection) =>
+          selection.binding.kind === "module-stub" &&
+          selection.target.kind === "component" &&
+          selection.target.component === source.id,
+      )
+    )
+      report(
+        "CONFIG_INVALID",
+        ["architecture", "studio", "componentConnections", index],
+        `${source.name} has no standalone product operation for admission; template parts receive no admission handle. Connect from Custom or a standalone Data access instead.`,
+      );
+  }
   // A structurally invalid model must never reach a renderer. Unsupported/uninstalled source
   // can still yield a partial diagnostic model, but complete stays false.
   const processes = generation.processes
@@ -1364,15 +1383,25 @@ export function resolveGeneration(
       if (access.length) process.productAccess = access;
     }
     for (const selection of normalized) {
-      if (selection.binding.kind !== "favorites" || selection.target.kind !== "component") continue;
+      if (
+        !["favorites", "rate-limiter"].includes(selection.binding.kind) ||
+        selection.target.kind !== "component"
+      )
+        continue;
+      if (selection.binding.kind !== "favorites" && selection.binding.kind !== "rate-limiter")
+        continue;
       const binding = selection.binding;
       const identity = normalized.find(
         (item) =>
           item.binding.kind === "verified-identity" &&
+          item.host === selection.host &&
+          item.inputs["guard.signIn"] === "required" &&
           item.target.kind === "component" &&
           item.target.component === binding.identity.guard,
       );
-      for (const contract of generationCallableContracts) {
+      for (const contract of selection.binding.kind === "rate-limiter"
+        ? rateLimiterCallableContracts
+        : generationCallableContracts) {
         const implementation = installed.callables?.find(
           (item) =>
             item.contract.id === contract.id && !callableContractRefusal(contract, item.contract),
@@ -1390,7 +1419,9 @@ export function resolveGeneration(
             `Callable ${contract.id} requires a verified-identity selection for guard ${binding.identity.guard}.`,
           );
         const role = ownership.roles.find((item) => item.element === selection.host);
-        const state = selection.resources.find((item) => item.field === "state");
+        const state = selection.resources.find(
+          (item) => item.field === (binding.kind === "rate-limiter" ? "cache" : "state"),
+        );
         if (!implementation || !identity || !role || !state) continue;
         model.capabilities.push({
           id: `${selection.target.component}.${contract.id}`,
@@ -1402,13 +1433,18 @@ export function resolveGeneration(
           role: role.kind,
           sourcePath: structuredClone(selection.sourcePath),
           roleSourcePath: ["ownership", "roles", ownership.roles.indexOf(role)],
-          transport: "http",
+          transport: binding.kind === "rate-limiter" ? "in-process" : "http",
           dependencies: [identity.id],
           access: [
             {
               resource: state.element,
-              name: "favorites.items",
-              use: contract.effect === "read" ? "read" : "write",
+              name: binding.kind === "rate-limiter" ? "rate-limiter.admission" : "favorites.items",
+              use:
+                binding.kind === "rate-limiter"
+                  ? "write"
+                  : contract.effect === "read"
+                    ? "read"
+                    : "write",
               sourcePath: state.sourcePath,
             },
           ],

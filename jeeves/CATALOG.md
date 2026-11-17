@@ -304,16 +304,16 @@ slots and generation: `studioComponentDefinitions` in
 
 | Kind | Name | Icon | Hosts | Slots: target · use | Generation |
 | --- | --- | --- | --- | --- | --- |
-| `rate-limiter` | Rate limiter | `gauge` | any | store: Cache · read & write | Stub |
+| `rate-limiter` | Rate limiter | `gauge` | any | store: Cache · read & write (required) | Lead of `rate-limiter` (Service, Uploads) |
 | `cache-reader` | Cache reader | `bolt` | any | cache: Cache · read & write; loader: a Data access in its tile | Lead of `positive-cache-read` |
 | `id-generator` | ID generator | `hash` | any | store: Database or Cache · read & write | Stub |
 | `redirect-responder` | Redirect responder | `turn` | any | none: can't connect | Stub |
 | `event-publisher` | Event publisher | `megaphone` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
 | `event-consumer` | Event consumer | `inbox` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
-| `data-access` | Data access | `cylinder` | any | database: Database · read & write | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
+| `data-access` | Data access | `cylinder` | any | database: Database · read & write; admission: complete Rate limiter in its tile (optional) | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
 | `auth-guard` | Auth guard | `shield` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
 | `external-call` | External call | `box-out` | any | target: External API, an application or Identity · request | Stub |
-| `custom` | Custom | `puzzle` | any | uses: any tile, many; call: complete Favorites in its tile (optional) | Stub |
+| `custom` | Custom | `puzzle` | any | uses: any tile, many; call: complete Favorites in its tile (optional); admission: complete Rate limiter in its tile (optional) | Stub |
 | `multipart-uploads` | Multipart uploads | `cloud-up` | Uploads, Service | objects: Object storage · read & write | Lead of `owned-multipart` |
 | `lifecycle-writer` | Lifecycle writer | `pie` | Worker | state: Database · read & write | Lead of `asset-lifecycle` |
 | `video-encoder` | Video encoder | `play` | Worker | originals: Object storage · read | Lead of `video-hls` |
@@ -370,7 +370,7 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 | Command | What it does |
 | --- | --- |
 | `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` changes the label and preserves the ID. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
-| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; other installed-template adapters, including cross-process Favorites, remain gaps. A filled slot must be disconnected first. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; Custom/Data access `slot: "admission"` targets a complete Rate limiter in the same tile, exposing checked `admit({})`. Other installed-template adapters, including cross-process Favorites, remain gaps. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
 
@@ -581,3 +581,20 @@ mouse/chat attachment offers video only; existing generic settings remain editab
 invalid bindings and unsupported settings still refuse export. Exact-v1 compatibility and strict
 readiness semantics remain separate.
 [Corrected generation boundary and count](../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md).
+
+Rate limiter uses one store-time rolling log with an atomic TIME/ZSET script. It needs its cache
+and its own host's Required Auth guard; its key policy sees only validated immutable subject facts.
+New modules default to 100 admissions per 60 seconds. Only limit (1–10,000) and window seconds
+(1–604,800) are normal settings; old memory/token-bucket/address/API-key/user choices stay readable
+and unsupported. Standalone self-hosted Valkey uses noeviction, AOF and appendfsync always for
+admission. Lost/uncertain replies fail closed without blind retry; no per-copy allowance exists.
+
+A positive Cache reader and limiter cannot share the same cache: the command refuses their
+LRU/no-eviction incompatibility. Public product cache get/set/delete deny the reserved `jeeves:`
+namespace before dispatch, including when sharing the same physical Valkey client. Application
+keys using that prefix must migrate explicitly; no automatic key rewrite or deletion is generated.
+
+Admission links require an independent product operation. A Data access used as a template part
+(for example a positive reader's loader or Favorites' items) receives no standalone admission
+handle and refuses that link. Custom and standalone Data access modules remain supported; use
+one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.

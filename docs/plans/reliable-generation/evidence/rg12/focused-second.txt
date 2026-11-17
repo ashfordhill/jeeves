@@ -1,0 +1,59 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |server| src/chat/tools.test.ts (26 tests | 1 failed) 976ms
+   ❯ studio chat tools (26)
+     × RG12 chat edits only consumed rolling-window settings and connects the same callable offered by mouse 164ms
+ ❯ |spec| src/module-generation.test.ts (40 tests | 1 failed) 1020ms
+   ❯ module commands (7)
+     × offer where a module's link may end, with the command or the reason 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module commands > offer where a module's link may end, with the command or the reason
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+
+- Expected
++ Received
+
+  {
+-   "refusal": "Details reader's admission must be a Rate limiter in Watch API.",
++   "refusal": "Details reader's admission must be a Rate limiter.",
+    "target": {
+      "module": "watch-cache-reader",
+    },
+  }
+
+ ❯ src/module-generation.test.ts:489:7
+    487|     expect(
+    488|       moduleConnectOptions(base, "watch-details").find((item) => "modu…
+    489|     ).toEqual({
+       |       ^
+    490|       target: { module: "watch-cache-reader" },
+    491|       refusal: "Details reader's admission must be a Rate limiter in W…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |server| src/chat/tools.test.ts > studio chat tools > RG12 chat edits only consumed rolling-window settings and connects the same callable offered by mouse
+AssertionError: expected { ok: false, …(3) } to match object { ok: false, …(1) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "error": StringContaining "no installed, useful editable consumer",
++   "error": "Nothing changed: 1 command needs fixing. Command 1 (editComponent): Create limit has no editable setting \"store\". Create limit's editable settings: limit (an integer 1–10000, now 5); windowSeconds (an integer 1–604800, now 120).",
+    "ok": false,
+  }
+
+ ❯ src/chat/tools.test.ts:69:166
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 5 passed (7)
+      Tests  2 failed | 115 passed (117)
+   Start at  17:15:10
+   Duration  3.95s (tests 54%, transform 24%, import 22%)

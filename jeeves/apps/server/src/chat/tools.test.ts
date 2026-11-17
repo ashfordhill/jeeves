@@ -57,6 +57,51 @@ const addCache = (baseRevision: number) => ({
 });
 
 describe("studio chat tools", () => {
+  it("RG12 chat edits only consumed rolling-window settings and connects the same callable offered by mouse", async () => {
+    const { rateLimiterDesign } = await import(
+      "../../../../../field-projects/generator-system/fixtures/rg-rate-limiter/design.ts"
+    );
+    const source = rateLimiterDesign();
+    const workspace = new Workspace(source);
+    const command = {
+      type: "editComponent",
+      component: "create-limit",
+      settings: {
+        kind: "rate-limiter",
+        algorithm: "sliding-window",
+        store: "redis",
+        key: "policy",
+        limit: 5,
+        windowSeconds: 120,
+      },
+    } as const;
+    expect(
+      run(workspace, "applyStudioCommands", { baseRevision: source.revision, commands: [command] })
+        .ok,
+    ).toBe(true);
+    const mouse = applyOperations(
+      source,
+      buildSupportedAuthoringCommand(source, command, installedGenerationSupport()).ops,
+    );
+    if (!mouse.ok) throw Error();
+    expect(workspace.working).toEqual(mouse.design);
+    expect(
+      run(workspace, "applyStudioCommands", {
+        baseRevision: source.revision,
+        commands: [{ ...command, settings: { ...command.settings, store: "memory" } }],
+      }),
+    ).toMatchObject({ ok: false, error: expect.stringContaining('no editable setting "store"') });
+    const catalog = run(workspace, "listStudioDefinitions").modules as {
+      kind: string;
+      slots: unknown[];
+      generation: unknown;
+    }[];
+    expect(catalog.find((m) => m.kind === "rate-limiter")).toMatchObject({
+      generation: { kind: "lead", template: "rate-limiter" },
+    });
+    expect(JSON.stringify(run(workspace, "getDesign"))).toContain("limiter.windowSeconds");
+  });
+
   it("RG09 chat exposes the same missing-workload refusal and fixes it with workload links", async () => {
     const { workloadDesign } = await import(
       "../../../../../field-projects/generator-system/fixtures/rg-workload/design.ts"
@@ -344,7 +389,7 @@ describe("studio chat tools", () => {
     const shorten = tiles.find((tile) => tile.id === "shorten")?.modules;
     expect(shorten?.find((module) => module.id === "shorten-limit")).toMatchObject({
       status: "stub",
-      reason: "Jeeves doesn't generate Rate limiter modules; you write it.",
+      reason: "Needs a connection to a cache.",
       unconnected: ["store", "workload"],
     });
     // A kind its tile can't hold, and a slot it doesn't have, are refused in plain words.

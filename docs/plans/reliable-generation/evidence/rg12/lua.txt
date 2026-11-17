@@ -1,0 +1,4 @@
+(node:3651154) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Actual emitted Lua 5.1 scripts: 66 independent assertions passed; 145 stand-in Redis commands.
+Limits: deterministic Redis/TIME/cjson doubles; no native Valkey, transport, competing processes or eviction/durability proof.

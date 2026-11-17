@@ -547,7 +547,7 @@ describe("RG11 finite atomic cache primitives", () => {
     request.close();
   });
 
-  it("guards captured primitives through nested local effects and prevents mutations inside read admission", async () => {
+  it("guards captured primitives through nested local effects; only private coordination may mutate in a read", async () => {
     setup();
     const { cache, client } = await open();
     for (const call of [
@@ -561,7 +561,8 @@ describe("RG11 finite atomic cache primitives", () => {
         operation.withLocalMutation(() => operation.withEffect("read", call)),
       ).rejects.toMatchObject({ outcome: "refused", code: "EFFECT_NOT_ALLOWED" });
     for (const call of [
-      () => cache.admit("item", { limit: 1, windowMs: 1000 }),
+      () => cache.set("item", "value"),
+      () => cache.delete("item"),
       () => cache.setIfNewer("item", record()),
     ])
       await expect(async () => operation.withEffect("read", call)).rejects.toMatchObject({
@@ -572,5 +573,10 @@ describe("RG11 finite atomic cache primitives", () => {
     expect(client.get).not.toHaveBeenCalled();
     expect(client.ping).not.toHaveBeenCalled();
     expect(client.destroy).not.toHaveBeenCalled();
+    client.eval.mockResolvedValue([1, 1, Date.now(), Date.now() + 1000]);
+    expect(
+      await operation.withEffect("read", () => cache.admit("item", { limit: 1, windowMs: 1000 })),
+    ).toMatchObject({ admitted: true });
+    expect(client.eval).toHaveBeenCalledTimes(1);
   });
 });

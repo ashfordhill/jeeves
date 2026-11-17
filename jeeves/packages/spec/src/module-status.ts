@@ -66,6 +66,7 @@ export const moduleTemplateNames: Record<GenerationBinding["kind"], string> = {
   "search-projection": "Search indexing",
   "search-query": "Search query",
   favorites: "Favorites",
+  "rate-limiter": "Rate limiter",
   "youtube-upload": "YouTube upload",
   "youtube-watch": "YouTube watch",
   "youtube-search": "YouTube search",

@@ -316,7 +316,7 @@ its `description`.
 
 | Kind | Settings (default first) |
 | --- | --- |
-| `rate-limiter` | `algorithm` token-bucket / sliding-window; `limit?`; `windowSeconds?`; `key` ip / api-key / user; `store` memory / redis |
+| `rate-limiter` | New: `limit` 100 (1–10,000), `windowSeconds` 60 (1–604,800). Fixed generated policy: `algorithm: sliding-window`, `key: policy`, `store: redis`. Legacy token-bucket / ip / api-key / user / memory values remain readable but unsupported. |
 | `cache-reader` | `pattern` cache-aside / read-through; `l1MaxEntries?` (absent = no L1); `l1TtlSeconds?` (needs L1 size); `l2TtlSeconds?`; `negativeTtlSeconds?` (absent = off); `stampede` none / single-flight |
 | `id-generator` | `strategy` db-sequence / redis-counter / range-allocation / snowflake / random; `blockSize?` (range allocation only); `encoding` base62 / base58 / base36 / decimal; `minLength?` |
 | `redirect-responder` | `status` 302 / 301 / 307; `edgeMaxAgeSeconds?` |
@@ -559,3 +559,30 @@ need it too. Callee route stubs may export `allowedCallers` in product code to n
 process callers; there is no audience/credential override control. An Auth guard first connects
 user identity, then workload on another Identity drag; other supported module Identity dots choose
 workload. Browser hosts cannot hold these credentials. See the emitted API8 guide.
+
+### Distributed admission (RG12)
+
+A Service or Uploads Rate limiter becomes generated after its required **store** cache link and its
+own tile's Required Auth guard are connected. Only **Limit per window** and **Window** are normal
+editable settings, in inspector and chat. They feed the private single-key rolling-window log;
+the cache's generic TTL is not used. The installed local provider is standalone self-hosted
+Redis-compatible Valkey, with no eviction and AOF fsync on every write. Unsupported provider,
+eviction, algorithm and key-trust choices refuse with the preserved source value.
+
+The pure key hook receives only an immutable verified subject, and returns 1–256 well-formed UTF-8
+bytes without control characters. No address capability is installed: `X-Forwarded-For` never
+establishes trust. Old key choices require an explicit product-policy migration; reading does not
+rewrite them. Missing/optional sign-in leaves the lead incomplete; callable connections require
+the complete lead. Custom and Data access have an optional **admission** slot to it.
+
+The immutable positive Cache reader and Rate limiter cannot share one cache: the reader uses LRU
+and admission requires no eviction. Connecting that combination refuses immediately with this
+reason. Product `CacheClient.get/set/delete` reject the literal `jeeves:` prefix before dispatch,
+so ordinary product handles sharing the limiter resource cannot read/reset generated admission
+state. Existing application-owned keys under that prefix require an explicit migration to a
+product namespace; regeneration does not rewrite hooks, remap keys or delete stored data.
+
+Admission links require an independent product operation. A Data access used as a template part
+(for example a positive reader's loader or Favorites' items) receives no standalone admission
+handle and refuses that link. Custom and standalone Data access modules remain supported; use
+one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.

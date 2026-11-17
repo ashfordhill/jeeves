@@ -13,6 +13,7 @@ import { createLocalModuleStubs } from "../../src/v2/module-stubs.ts";
 import { createLocalMultipart } from "../../src/v2/multipart.ts";
 import { createLocalPositiveCache } from "../../src/v2/positive-cache.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
+import { createLocalRateLimiter } from "../../src/v2/rate-limiter.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
 import { createLocalSearch } from "../../src/v2/search.ts";
 import { createLocalTileProcesses } from "../../src/v2/tile-processes.ts";
@@ -124,6 +125,7 @@ export function loadLocalV2Registry(
     mediaWorker,
     createLocalPositiveCache(distinct),
     createLocalFavorites(distinct),
+    createLocalRateLimiter(distinct),
     eventCounter,
     search,
     ...features,

@@ -31,7 +31,7 @@ and tests. Useful supported settings reuse existing source fields; TTL and concu
 Display renames preserve element, component, selection, owner and link IDs, generated target
 addresses and durable/extension namespaces ([names and IDs](studio.md#inspector)). Explicit identity
 changes require application migration. Normalized Custom call slots carry the exact installed
-Favorites input/output/version/effect requirements and stable callee module ID; mismatches refuse
+Favorites and Rate limiter input/output/version/effect requirements and stable callee module ID; mismatches refuse
 with the required/installed difference. Cross-process installed-template adapters remain gaps;
 route stubs have API8 workload-authenticated GET/POST operation roots.
 
@@ -277,3 +277,12 @@ a namespace-only role while setup owns the protected ledger and published-view g
 scaffolds do not add diagram settings or a schema designer. Legacy SQL updates require an explicit
 external baseline and staged API migration; namespace changes still require a fresh export and
 explicit application/data migration. See the [product SQL contract](../jeeves-generator/README.md#product-sql-contract-extension-api-v7).
+
+The normalized export/Preview RG12 model records Rate limiter as an `in-process` callable with the read effect class (private admission
+coordination, no product write authority), its own host's Required verified-identity dependency,
+cache write access, stable module/process/owner IDs and API v8. Its `limiter.limit` and
+`limiter.windowSeconds` inputs are the two useful settings; fixed sliding-window/shared-cache/key
+policy support is checked too. Custom/Data access **admission** slots carry the exact
+`rate-limiter.admit@1` contract, `rate-limiter.empty` input and `rate-limiter.decision` output. Blueprint v3 retains the finite limit/window settings and component links; Preview/export adds the
+installed capability contracts and unfinished hook gaps separately. Neither claims the product
+caller has supplied or invoked the key policy.

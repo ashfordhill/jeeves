@@ -278,8 +278,12 @@ export async function createValkeyCache(options: {
     effect: (client: Generation["client"]) => Promise<unknown>,
     parse: (reply: unknown) => T,
     mutation = false,
+    coordination = false,
   ): Promise<T> => {
-    assertNetworkAllowed(mutation);
+    // Admission changes only private generated coordination state. Product read-like admission
+    // may use it; arbitrary cache writes still require mutation authority. Local/pure scopes deny
+    // all network, and mutation=true below still makes lost replies UNKNOWN.
+    assertNetworkAllowed(mutation && !coordination);
     assertOperation();
     const generation = current;
     if (closed || !generation?.ready) throw failure("refused", "CACHE_UNAVAILABLE", "Cache unavailable");
@@ -344,7 +348,7 @@ export async function createValkeyCache(options: {
         if ((admitted !== 0 && admitted !== 1) || !Number.isSafeInteger(count) || count < 1 || count > limit || (admitted === 0 && count !== limit) || !validUntil(now) || !validUntil(resetAt) || resetAt <= now || resetAt > now + windowMs)
           throw Error("Invalid window reply");
         return Object.freeze({ admitted: admitted === 1, count, resetAt });
-      }, true);
+      }, true, true);
     },
     getVersioned: async (key) => {
       keyInput(key);

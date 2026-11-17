@@ -1,0 +1,104 @@
+/** Generated rolling-window admission. No per-process allowance or automatic effect retry. */
+import { createHash } from "node:crypto";
+import type { ValkeyCache } from "./valkey.ts";
+import { currentOperation, assertOperation, assertNetworkAllowed, withEffect, withLocalPolicy, OperationError } from "./operation.ts";
+import { normalizedJsonDto } from "./hook-boundary.ts";
+import { HttpError, rateLimitRefusal } from "./admission.ts";
+
+/** Only verified identity facts, never request headers, addresses, credentials or clients. */
+export interface RateLimiterHooks {
+  key(caller: Readonly<{ subject: string }>): string;
+}
+export interface RateLimitDecision {
+  readonly admitted: boolean;
+  readonly count: number;
+  readonly remaining: number;
+  /** Absolute UTC milliseconds from the store clock. Clocks must agree. */
+  readonly resetAt: number;
+  /** Remaining wait at delivery, clamped to [0, windowMs]; successful admission is zero. */
+  readonly retryAfterMs: number;
+}
+export interface RateLimiterCapability {
+  readonly targets: Readonly<{ admit: string }>;
+  /** Throws protected 429 on denial, typed 503 on unavailable/saturated/unknown admission. */
+  admit(input: Readonly<Record<string, never>>): Promise<RateLimitDecision>;
+}
+export function createRateLimiter(options: {
+  process: string;
+  module: string;
+  limit: number;
+  windowSeconds: number;
+  cache: Pick<ValkeyCache, "admit">;
+  hooks: RateLimiterHooks;
+}) {
+  const { process, module, limit, windowSeconds, cache, hooks } = options;
+  if (!/^[a-z][a-z0-9-]{0,119}$/.test(process) || !/^[a-z][a-z0-9-]{0,119}$/.test(module) ||
+      !Number.isSafeInteger(limit) || limit < 1 || limit > 10000 ||
+      !Number.isSafeInteger(windowSeconds) || windowSeconds < 1 || windowSeconds > 604800)
+    throw Error("Invalid rate limiter binding");
+  const keyPolicy = withLocalPolicy(() => {
+    // Reading a product accessor is also policy execution, before a key function is bound.
+    const key = hooks?.key;
+    if (typeof key !== "function") throw Error("Invalid rate limiter binding");
+    return key.bind(hooks);
+  });
+  const windowMs = windowSeconds * 1000;
+  // A different module/process, contract or fixed limit/window cannot reuse another policy's log.
+  const namespace = createHash("sha256").update(JSON.stringify([process, module, "rate-limiter.admit@1", limit, windowMs])).digest("hex");
+  return Object.freeze({
+    async admit(input: unknown): Promise<RateLimitDecision> {
+      return withEffect("read", async () => {
+        assertOperation();
+        // Even captured generated handles cannot run in a pure policy or local mutation.
+        assertNetworkAllowed();
+        const subject = currentOperation()?.caller.subject;
+        if (typeof subject !== "string" || !subject || [...subject].length > 255 ||
+            Buffer.from(subject, "utf8").toString("utf8") !== subject || subject.includes("\u0000"))
+          throw new HttpError(401, "SIGN_IN_REQUIRED", "Sign-in required.");
+        try {
+          const dto = normalizedJsonDto(input);
+          if (!dto || typeof dto !== "object" || Array.isArray(dto) || Object.keys(dto).length) throw Error("Invalid input");
+        } catch { throw new HttpError(400, "RATE_LIMIT_INPUT", "Rate limiter requires an empty input object."); }
+        const key = withLocalPolicy(() => {
+          const value = keyPolicy(Object.freeze({ subject }));
+          if (value && typeof (value as unknown as { then?: unknown }).then === "function") {
+            void Promise.resolve(value).catch(() => {});
+            throw new OperationError("refused", "RATE_LIMIT_KEY");
+          }
+          if (typeof value !== "string" || !value || Buffer.byteLength(value) > 256 ||
+              Buffer.from(value, "utf8").toString("utf8") !== value || /[\u0000-\u001f\u007f]/.test(value))
+            throw new OperationError("refused", "RATE_LIMIT_KEY");
+          return `jeeves:admission:${namespace}:${createHash("sha256").update(value).digest("hex")}`;
+        });
+        let result: Awaited<ReturnType<ValkeyCache["admit"]>>;
+        try { result = await cache.admit(key, { limit, windowMs }); }
+        catch (error) {
+          if (error instanceof OperationError && error.code === "EFFECT_NOT_ALLOWED") throw error;
+          const unknown = error instanceof OperationError && error.outcome === "unknown";
+          const saturated = error instanceof OperationError && error.code === "CACHE_SATURATED";
+          throw rateLimitRefusal(unknown ? "RATE_LIMIT_UNKNOWN" : saturated ? "RATE_LIMIT_SATURATED" : "RATE_LIMIT_UNAVAILABLE", unknown ? "unknown" : "refused");
+        }
+        // Private adapter checks the store reply. Keep output finite even for another internal binding.
+        if (typeof result.admitted !== "boolean" || !Number.isSafeInteger(result.count) || result.count < 1 || result.count > limit ||
+            (!result.admitted && result.count !== limit) || !Number.isSafeInteger(result.resetAt) || result.resetAt <= 0)
+          throw rateLimitRefusal("RATE_LIMIT_UNKNOWN", "unknown");
+        const decision: RateLimitDecision = Object.freeze({
+          admitted: result.admitted, count: result.count, remaining: limit - result.count, resetAt: result.resetAt,
+          retryAfterMs: result.admitted ? 0 : Math.max(0, Math.min(windowMs, result.resetAt - Date.now())),
+        });
+        if (!decision.admitted) {
+          const error = rateLimitRefusal("RATE_LIMITED", "refused", decision.retryAfterMs);
+          Object.defineProperty(error, "decision", { value: decision });
+          throw error;
+        }
+        return decision;
+      });
+    },
+  });
+}
+export function rateLimiterCapability(core: () => ReturnType<typeof createRateLimiter>, module: string): RateLimiterCapability {
+  return Object.freeze({
+    targets: Object.freeze({ admit: `${module}.rate-limiter.admit@1` }),
+    admit: (input: Readonly<Record<string, never>>) => core().admit(input),
+  });
+}

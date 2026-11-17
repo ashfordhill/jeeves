@@ -1,0 +1,53 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 1951 files in 573ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(61,30): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+jeeves-generator typecheck:   Type 'undefined' is not assignable to type 'string'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(61,74): error TS18048: 'windowMs' is possibly 'undefined'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(62,38): error TS18048: 'limit' is possibly 'undefined'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(64,16): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+jeeves-generator typecheck:   Type 'undefined' is not assignable to type 'string'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(65,51): error TS2532: Object is possibly 'undefined'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(65,61): error TS18048: 'windowMs' is possibly 'undefined'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(389,50): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.
+jeeves-generator typecheck: src/v2/rate-limiter.test.ts(409,42): error TS2353: Object literal may only specify known properties, and 'signIn' does not exist in type '{ kind: "rate-limiter"; algorithm: "sliding-window" | "token-bucket"; limit?: number | undefined; windowSeconds?: number | undefined; key: "api-key" | "ip" | "policy" | "user"; store: "memory" | "redis"; }'.
+jeeves-generator typecheck: Failed
+[ELIFECYCLE] Command failed with exit code 1.
+jeeves/apps/web typecheck: Done
+Error: ERR_PNPM_RECURSIVE_FAIL
+
+  × "pnpm recursive run" failed in 1 packages
+
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

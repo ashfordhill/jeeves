@@ -72,7 +72,7 @@ const moduleLinks = async (page: Page, id: string) =>
  * media, Custom): [name, word].
  */
 const SERVICE = [
-  ["Rate limiter", "You write it"],
+  ["Rate limiter", "Generated"],
   ["Redirect responder", "You write it"],
   ["Auth guard", "Generated"],
   ["External call", "You write it"],
@@ -999,9 +999,7 @@ test("Generate project lists each module's status and previews its stubs", async
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(0)).toContainText("Rate limiter in Microservice");
     await expect(rows.nth(0).locator(".lane-module-status")).toHaveAttribute("data-status", "stub");
-    await expect(rows.nth(0)).toContainText(
-      "StubJeeves doesn't generate Rate limiter modules; you write it.",
-    );
+    await expect(rows.nth(0)).toContainText("StubNeeds a connection to a cache.");
     await expect(rows.nth(1)).toContainText("Custom in Microservice");
     await expect(rows.nth(1)).toContainText("StubYour own logic: you write it.");
     const result = page.waitForResponse((response) =>

@@ -269,9 +269,16 @@ export function stubClients(
             (s) =>
               s.target.kind === "component" &&
               s.target.component === target.component &&
-              s.binding.kind === "favorites",
+              (s.binding.kind === "favorites" || s.binding.kind === "rate-limiter"),
           );
           if (!selection) throw new Error(`No installed callable adapter for ${target.component}`);
+          if (selection.binding.kind === "rate-limiter") {
+            imports.push({ from: "../runtime/rate-limiter.ts", name: "rateLimiterCapability" });
+            return [
+              property,
+              `rateLimiterCapability(() => ${camel(selection.id)}.limiter, ${text(target.component)})`,
+            ];
+          }
           imports.push({ from: "../runtime/favorites.ts", name: "favoritesCapability" });
           return [
             property,

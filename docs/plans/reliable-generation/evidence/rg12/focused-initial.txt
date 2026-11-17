@@ -1,0 +1,249 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/valkey-atomic.test.ts (16 tests | 1 failed) 42ms
+   ❯ RG11 finite atomic cache primitives (16)
+     × guards captured primitives through nested local effects and prevents mutations inside read admission 6ms
+ ❯ |generator| src/v2/module-stubs.test.ts (4 tests | 2 failed) 509ms
+   ❯ module stubs (4)
+     × exports a typed stub per module, with a dependency per connected slot 12ms
+     × lists every module in the report only for a module-level design 2ms
+ ❯ |spec| src/module-generation.test.ts (40 tests | 6 failed) 1006ms
+   ❯ module catalog records (2)
+     × names each template's lead as its only component target 7ms
+   ❯ module commands (7)
+     × refuse a connection the slot or the lane rules don't allow 36ms
+     × offer where a module's link may end, with the command or the reason 33ms
+   ❯ module derivation (10)
+     × keeps facts no module-level selection needed, and refuses a contradicting one 26ms
+     × refuses two writers of one store that already have different owners 24ms
+   ❯ module status and older designs (5)
+     × explains each stub 33ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module catalog records > names each template's lead as its only component target
+AssertionError: expected { …(14) } to deeply equal { …(13) }
+
+- Expected
++ Received
+
+@@ -13,10 +13,13 @@
+      "multipart-uploads",
+    ],
+    "positive-cache-read": [
+      "cache-reader",
+    ],
++   "rate-limiter": [
++     "rate-limiter",
++   ],
+    "search-projection": [
+      "index-writer",
+    ],
+    "search-query": [
+      "search-query",
+
+ ❯ src/module-generation.test.ts:240:7
+    238|         ]),
+    239|       ),
+    240|     ).toEqual({
+       |       ^
+    241|       "owned-multipart": ["multipart-uploads"],
+    242|       "asset-lifecycle": ["lifecycle-writer"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module commands > refuse a connection the slot or the lane rules don't allow
+AssertionError: expected 'Details reader has no index connectio…' to be 'Details reader has no index connectio…' // Object.is equality
+
+Expected: "Details reader has no index connection; a Data access connects its database or workload."
+Received: "Details reader has no index connection; a Data access connects its database, admission or workload."
+
+ ❯ src/module-generation.test.ts:421:76
+    419|       ],
+    420|     ];
+    421|     for (const [command, message] of cases) expect(refusal(base, comma…
+       |                                                                            ^
+    422|   });
+    423|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module commands > offer where a module's link may end, with the command or the reason
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+
+- Expected
++ Received
+
+  {
+-   "refusal": "Details reader connects to tiles, not to other modules.",
++   "refusal": "Details reader's admission must be a Rate limiter.",
+    "target": {
+      "module": "watch-cache-reader",
+    },
+  }
+
+ ❯ src/module-generation.test.ts:488:7
+    486|     expect(
+    487|       moduleConnectOptions(base, "watch-details").find((item) => "modu…
+    488|     ).toEqual({
+       |       ^
+    489|       target: { module: "watch-cache-reader" },
+    490|       refusal: "Details reader connects to tiles, not to other modules…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module derivation > keeps facts no module-level selection needed, and refuses a contradicting one
+Error: Rate limiter can't go in Search indexer; it goes in a service or an upload service.
+ ❯ buildModuleCommand src/studio-operations.ts:523:15
+    521|       const definition = studioComponentDefinitions[input.kind];
+    522|       if (!kinds.includes(input.kind))
+    523|         throw new Error(
+       |               ^
+    524|           kinds.length
+    525|             ? `${definition.name} can't go in ${name(input.host)}; it …
+ ❯ buildStudioCommand src/studio-operations.ts:414:19
+ ❯ runStudioCommand src/fixtures/v2-modules.ts:25:17
+ ❯ withOwnership src/module-generation.test.ts:188:19
+ ❯ src/module-generation.test.ts:625:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module derivation > refuses two writers of one store that already have different owners
+Error: Rate limiter can't go in Search indexer; it goes in a service or an upload service.
+ ❯ buildModuleCommand src/studio-operations.ts:523:15
+    521|       const definition = studioComponentDefinitions[input.kind];
+    522|       if (!kinds.includes(input.kind))
+    523|         throw new Error(
+       |               ^
+    524|           kinds.length
+    525|             ? `${definition.name} can't go in ${name(input.host)}; it …
+ ❯ buildStudioCommand src/studio-operations.ts:414:19
+ ❯ runStudioCommand src/fixtures/v2-modules.ts:25:17
+ ❯ withOwnership src/module-generation.test.ts:188:19
+ ❯ src/module-generation.test.ts:679:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module status and older designs > explains each stub
+AssertionError: expected { 'upload-multipart': [ …(3) ], …(4) } to deeply equal { 'upload-multipart': [ …(3) ], …(4) }
+
+- Expected
++ Received
+
+@@ -8,11 +8,11 @@
+        "workload",
+      ],
+    ],
+    "upload-limit": [
+      "stub",
+-     "Jeeves doesn't generate Rate limiter modules; you write it.",
++     "Needs a connection to a cache.",
+      [
+        "store",
+        "workload",
+      ],
+    ],
+
+ ❯ src/module-generation.test.ts:1404:21
+    1402|       ]),
+    1403|     );
+    1404|     expect(reasons).toEqual({
+       |                     ^
+    1405|       "upload-multipart": [
+    1406|         "stub",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |generator| src/v2/module-stubs.test.ts > module stubs > exports a typed stub per module, with a dependency per connected slot
+AssertionError: expected '// Generated scaffold: Rate limiter i…' to contain '  // store: not connected (Cache, rea…'
+
+- Expected
++ Received
+
+-   // store: not connected (Cache, read & write, optional)
++ // Generated scaffold: Rate limiter in Shorten service.
++ // Export rewrites this file; write the module in shorten-limit.ts.
++ import type { SettingsOf } from "../../extension-api/index.ts";
++
++ /** What the module uses: one property per connected slot, and its own settings. */
++ export type Dependencies = {
++   // store: not connected (Cache, read & write)
+    // workload: not connected (Identity, verify, optional)
+    // settings: the values shorten-limit.ts's `settings` export declares.
+    settings: SettingsOf<typeof import("./shorten-limit.ts")>;
+  };
++
++ /** Each connected slot: the tile or module it uses, through which link, and how. */
++ export const slots = [] as const;
++
+
+ ❯ src/v2/module-stubs.test.ts:128:19
+    126|     // An unconnected module has no slot properties and imports only i…
+    127|     const limit = text(bundle, "src/modules/shorten/shorten-limit.slot…
+    128|     expect(limit).toContain(
+       |                   ^
+    129|       [
+    130|         "  // store: not connected (Cache, read & write, optional)",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |generator| src/v2/module-stubs.test.ts > module stubs > lists every module in the report only for a module-level design
+AssertionError: expected [ …(4) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,11 @@
+  [
+    [
+      "shorten-links",
+      "stub",
+      [
++       "admission",
+        "workload",
+      ],
+    ],
+    [
+      "shorten-clicks",
+
+ ❯ src/v2/module-stubs.test.ts:252:82
+    250|   it("lists every module in the report only for a module-level design"…
+    251|     const modules = modulesOf(bundle);
+    252|     expect(modules?.map((item) => [item.module, item.status, item.unco…
+       |                                                                                  ^
+    253|       ["shorten-links", "stub", ["workload"]],
+    254|       ["shorten-clicks", "stub", ["outbox", "workload"]],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |generator| src/v2/valkey-atomic.test.ts > RG11 finite atomic cache primitives > guards captured primitives through nested local effects and prevents mutations inside read admission
+AssertionError: expected OperationError: Operation unknown: CACHE_… { …(2) } to match object { outcome: 'refused', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "EFFECT_NOT_ALLOWED",
+-   "outcome": "refused",
++ OperationError {
++   "code": "CACHE_REPLY_INVALID",
++   "outcome": "unknown",
+  }
+
+ ❯ src/v2/valkey-atomic.test.ts:567:67
+    565|       () => cache.setIfNewer("item", record()),
+    566|     ])
+    567|       await expect(async () => operation.withEffect("read", call)).rej…
+       |                                                                   ^
+    568|         outcome: "refused",
+    569|         code: "EFFECT_NOT_ALLOWED",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  3 failed | 1 passed (4)
+      Tests  9 failed | 69 passed (78)
+   Start at  17:10:39
+   Duration  3.07s (tests 41%, transform 31%, import 27%)
