@@ -1,0 +1,4161 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-17T02:32:56.309Z",
+    "value": [
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-app-gateway-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-app-items-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-app-items-worker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-cache-admission-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-cache-records-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-identity-sign-in-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-c3a0f2e0-4191-4d74-843d-e191699b879b-1-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "05a72f6b7627002047d35bf3f0cc9a686366a91212baeb52e63f426f757ee750",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922482,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.835160871Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:50.094423322-06:00",
+                "End": "2026-11-16T20:32:50.138386544-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:55.139452895-06:00",
+                "End": "2026-11-16T20:32:55.183983388-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:00.185050547-06:00",
+                "End": "2026-11-16T20:33:00.229827611-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83e28fb9cebe91bed0f60ea71f5315dc612d6f128649e4682b8d455f1747fb97",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923349,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:57.250636359Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:02.533780629-06:00",
+                "End": "2026-11-16T20:33:02.580761211-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-gateway",
+    "containers": [
+      {
+        "id": "3587bf855e2bec6207866ab0f26da9395b068c69bbe948e505febf9dd3b8d0d2",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3922416,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:44.528641182Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:32:49.757766086-06:00",
+                "End": "2026-11-16T20:32:49.804054269-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:54.805270878-06:00",
+                "End": "2026-11-16T20:32:54.84948463-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:32:59.850128531-06:00",
+                "End": "2026-11-16T20:32:59.89468215-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "c1f485919feb3c80a64d90b65a46dfb2151e0a883351fcb6a420365615e4bfdd",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3923257,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:32:56.878619713Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:02.171264865-06:00",
+                "End": "2026-11-16T20:33:02.216347719-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "healthPhase": "after initialization/startup",
+    "probes": [
+      {
+        "path": "/livez",
+        "status": 200
+      },
+      {
+        "path": "/readyz",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-a",
+    "subject": "6abb4b77-f9aa-4222-9e58-c2d771e08c85",
+    "status": 201
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-b",
+    "subject": "74e76384-3b37-4186-84a3-94f7b79d2fb5",
+    "status": 201
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-a",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-b",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/items-api/modules/create",
+    "status": 404,
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Route not found."
+    },
+    "elapsedMs": 1
+  },
+  {
+    "sql": "SELECT count(*) FROM public.jeeves_product_migrations WHERE version='0002'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT version||'|'||sha256 FROM public.jeeves_product_migrations WHERE version='0002'",
+    "result": "0002|8bd93054344b62e53ea6fa65e3e23e707f3feeabb77a07fccf52268efb1b6697"
+  },
+  {
+    "sql": "SELECT id FROM p_items_api_owner.foundation_checkpoint",
+    "result": "applied-once"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.foundation_checkpoint",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.items WHERE id='replay' OR id LIKE 'burst-%'",
+    "result": "2"
+  },
+  {
+    "sql": "INSERT INTO p_items_api_owner.records VALUES('race',jsonb_build_object('key','race','public',true,'version','1','validUntil',1794882829263,'destination','old','gate','old-fill'))",
+    "result": "INSERT 0 1"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT 1;",
+    "result": "1",
+    "at": "2026-11-17T02:33:19.543Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT pg_advisory_lock(710014);",
+    "result": "",
+    "at": "2026-11-17T02:33:19.554Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='advisory';",
+    "result": "0",
+    "at": "2026-11-17T02:33:19.567Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='advisory';",
+    "result": "1",
+    "at": "2026-11-17T02:33:19.828Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "UPDATE p_items_api_owner.records SET payload=(payload-'gate')||'{\"version\":\"2\",\"destination\":\"new\"}'::jsonb WHERE key='race';",
+    "result": "",
+    "at": "2026-11-17T02:33:19.838Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='advisory';",
+    "result": "1",
+    "at": "2026-11-17T02:33:20.378Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT pg_advisory_unlock(710014);",
+    "result": "t",
+    "at": "2026-11-17T02:33:20.388Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "closed": true,
+    "exitCode": 0
+  },
+  {
+    "sql": "INSERT INTO p_items_api_owner.records VALUES('expires',jsonb_build_object('key','expires','public',true,'version','18446744073709551615','validUntil',1794882803899,'destination','finite'))",
+    "result": "INSERT 0 1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.items WHERE id='unknown-admission'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.idempotency_records WHERE idem_key='unknown-admission'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.items WHERE id='commit-lost'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT (response ? 'sealed')::text||'|'||(position('sealed-foundation-receipt' in response::text)=0)::text FROM jeeves.idempotency_records WHERE idem_key='commit-lost'",
+    "result": "true|true"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='PgSleep'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='PgSleep'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='PgSleep'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='PgSleep'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='PgSleep'",
+    "result": "0"
+  },
+  {
+    "boundary": "task admission cache abrupt crash",
+    "container": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45"
+  },
+  {
+    "healthPhase": "required admission cache unavailable",
+    "probes": [
+      {
+        "path": "/livez",
+        "status": 200
+      },
+      {
+        "path": "/readyz",
+        "status": 503
+      }
+    ]
+  },
+  {
+    "boundary": "cache-admission start",
+    "at": "2026-11-17T02:33:32.334Z",
+    "container": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+    "result": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:03.300207582-06:00",
+                "End": "2026-11-16T20:33:03.331276268-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-admission",
+    "containers": [
+      {
+        "id": "c9faa67bf64076f8552c2160a03397e7f621a1fa66e1739cbcc5f1b9bd66cc45",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3931140,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:32.068916252Z",
+          "FinishedAt": "2026-11-17T02:33:30.612787749Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:11.913744957-06:00",
+                "End": "2026-11-16T20:33:11.942962277-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:16.943568461-06:00",
+                "End": "2026-11-16T20:33:16.9717466-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:21.972442574-06:00",
+                "End": "2026-11-16T20:33:21.999814777-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.001059467-06:00",
+                "End": "2026-11-16T20:33:27.030944934-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.332193167-06:00",
+                "End": "2026-11-16T20:33:37.360676317-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "sql": "INSERT INTO p_items_api_owner.records VALUES('recovery',jsonb_build_object('key','recovery','public',true,'version','2','validUntil',1794882938076,'destination','recovery'))",
+    "result": "INSERT 0 1"
+  },
+  {
+    "boundary": "cache-records stop",
+    "at": "2026-11-17T02:33:39.033Z",
+    "container": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+    "result": "Flag --time has been deprecated, use --timeout instead\nc55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec"
+  },
+  {
+    "boundary": "cache-records start",
+    "at": "2026-11-17T02:33:43.549Z",
+    "container": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+    "result": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:17.811377842-06:00",
+                "End": "2026-11-16T20:33:17.838223043-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "cache-records",
+    "containers": [
+      {
+        "id": "c55845faea1ae6d550994c923a29ad7ed2d42317e5d24c2c5474eebc6ceea7ec",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3933071,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:43.278982383Z",
+          "FinishedAt": "2026-11-17T02:33:38.678762952Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.839242171-06:00",
+                "End": "2026-11-16T20:33:22.86624058-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:27.867128455-06:00",
+                "End": "2026-11-16T20:33:27.897291702-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:32.897767057-06:00",
+                "End": "2026-11-16T20:33:32.924533898-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:37.925358141-06:00",
+                "End": "2026-11-16T20:33:37.953288338-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T20:33:48.547171201-06:00",
+                "End": "2026-11-16T20:33:48.574673883-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "boundary": "local-postgres stop",
+    "at": "2026-11-17T02:33:50.490Z",
+    "container": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+    "result": "Flag --time has been deprecated, use --timeout instead\n352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928"
+  },
+  {
+    "healthPhase": "PostgreSQL unavailable",
+    "probes": [
+      {
+        "path": "/livez",
+        "status": 200
+      },
+      {
+        "path": "/readyz",
+        "status": 503
+      }
+    ]
+  },
+  {
+    "boundary": "local-postgres start",
+    "at": "2026-11-17T02:33:51.538Z",
+    "container": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+    "result": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:22.45162889-06:00",
+                "End": "2026-11-16T20:33:22.48133947-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "local-postgres",
+    "containers": [
+      {
+        "id": "352435c5cee783e276171a1b6e94a5b675c8ef5e5b54514ad509c68aaf9c6928",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3934882,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T02:33:51.258661818Z",
+          "FinishedAt": "2026-11-17T02:33:50.051249345Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T20:33:27.482519607-06:00",
+                "End": "2026-11-16T20:33:27.512581303-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:32.513655616-06:00",
+                "End": "2026-11-16T20:33:32.545998586-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:37.5471305-06:00",
+                "End": "2026-11-16T20:33:37.58000636-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:46.167470649-06:00",
+                "End": "2026-11-16T20:33:46.196846011-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              },
+              {
+                "Start": "2026-11-16T20:33:56.517830442-06:00",
+                "End": "2026-11-16T20:33:56.554073106-06:00",
+                "ExitCode": 0,
+                "Output": "/var/run/postgresql:5432 - accepting connections\n"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,44 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts (1 test | 1 failed) 108855ms
+   × RG14: foundations enforce the contract across independent native process copies 108854ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts > RG14: foundations enforce the contract across independent native process copies
+AssertionError: expected { protectedRows: '0', …(2) } to match object { productCode: '42501', …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "productCode": "42501",
+    "readOnly": "25006",
+    "setupMounted": false,
+  }
+
+ ❯ jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:162:27
+    160| `,
+    161|           );
+    162|           expect(runtime).toMatchObject({
+       |                           ^
+    163|             productCode: "42501",
+    164|             readOnly: "25006",
+ ❯ check jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:32:24
+ ❯ beforeStart jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:129:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:363:5
+ ❯ jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:22:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:18:57
+   Duration  109.03s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-1/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-1/junit.xml

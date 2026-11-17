@@ -1,4 +1,4 @@
-import { dependency, currentProcess, assertOperation, OperationError } from "./operation.ts";
+import { dependency, currentProcess, assertOperation, OperationError, withProcess } from "./operation.ts";
 import { checkServerIdentity, type PeerCertificate } from "node:tls";
 import pg from "pg";
 import { readSecret, type SqlLogin } from "./local.ts";
@@ -61,8 +61,49 @@ export function createPostgres(options: {
     query_timeout: options.statementTimeoutMs + 500,
     connectionTimeoutMillis: options.connectionTimeoutMs,
   });
+  const readiness = {};
+  let closed = false, probing = false;
+  let retry: ReturnType<typeof setTimeout> | undefined;
+  const recovered = () => {
+    if (closed) return;
+    operationScope?.dependencyReady?.(readiness, true);
+    schedule();
+  };
+  const unavailable = () => {
+    if (!operationScope?.dependencyReady || closed || operationScope.signal.aborted) return;
+    operationScope.dependencyReady(readiness, false);
+    schedule();
+  };
+  const schedule = () => {
+    if (!operationScope?.dependencyReady || closed || operationScope.signal.aborted) return;
+    if (retry || probing) return;
+    // One fixed safe health probe, including idle processes with no remaining pooled socket.
+    // Never retry a business query. The budget is independent of any originating request.
+    retry = setTimeout(() => withProcess(operationScope, () => {
+      retry = undefined;
+      if (closed || operationScope.signal.aborted) return;
+      probing = true;
+      const probe = { text: "SELECT 1", query_timeout: 2000 };
+      const work = pool.query(probe).then(recovered, () => {
+        operationScope.dependencyReady?.(readiness, false);
+      }).finally(() => { probing = false; schedule(); });
+      operationScope.track?.(work);
+      void work.catch(() => {});
+    }), 5000);
+    retry.unref?.();
+  };
+  operationScope?.admission?.(() => { closed = true; clearTimeout(retry); retry = undefined; });
+  // pg-pool observes idle-client errors only. Observe checked-out errors once per physical
+  // client too; query rejection/unknown/discard and the pool's idle error handling stay intact.
+  pool.on("connect", (client) => { recovered(); client.on("error", unavailable); });
+  pool.on("error", unavailable);
+  schedule();
   return new Proxy(pool, {
     get(target, key) {
+      if (key === "connect") return async () => {
+        try { return await target.connect(); }
+        catch (error) { unavailable(); throw error; }
+      };
       if (key === "query")
         return (sql: string, values?: unknown[]) =>
           dependency(
@@ -74,6 +115,7 @@ export function createPostgres(options: {
             },
             async () => {
               const client = await target.connect().catch((error: unknown) => {
+                unavailable();
                 throw new OperationError("definite-failure", "DATABASE_CONNECT_FAILED", {
                   cause: error,
                 });
@@ -86,6 +128,7 @@ export function createPostgres(options: {
                 return await client.query(sql, values);
               } catch (error) {
                 discard = sent && !sqlFailure(error);
+                if (discard) unavailable();
                 throw error;
               } finally {
                 client.release(discard);

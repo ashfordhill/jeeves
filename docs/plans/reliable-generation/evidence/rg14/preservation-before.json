@@ -1,0 +1,16 @@
+{
+  "revision": "925e917e879033196d5f41a3cf1155dfe3afc5f2",
+  "rootHashes": {
+    ".nvmrc": "73fb1b615e2043a933be1c0895cde4358036acc28d785692509b822aa53c761f",
+    ".gitignore": "bf2a95d3826849a43bcc8493d0d517b7a55ad8e5e83dfccfab7110c944f7729c",
+    "README.md": "60dbba7e6b4bc1bbe4b66a1c453b26c2656fccf48eff466138390deb5f9cdc50",
+    "AGENTS.md": "93be3161357e473984657582e2fbdee2f9e54fe5d70b2fd3dfd93cb8da70542c",
+    "pnpm-workspace.yaml": "ac8836b85db1bfd9a2e6dd2240efcdcd89d352b33f3625e8cd3e36091b4ac24c",
+    "package.json": "8cb4505922585832ded44f72249851312d609d8dcb605524eb1521f1bd9f5e99",
+    "pnpm-lock.yaml": "6335059bacb8c2853e4fe3d728ee89640db951e3c1d3fbfa4d9b554b310f696a"
+  },
+  "rootsMatch": true,
+  "ownerDiffBytes": 34001,
+  "ownerDiffMatches": true,
+  "containerCount": 42
+}

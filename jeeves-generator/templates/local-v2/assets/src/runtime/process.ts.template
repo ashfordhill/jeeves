@@ -1,5 +1,5 @@
 import { writeFileSync, rmSync } from "node:fs";
-import { withProcess } from "./operation.ts";
+import { withProcess, dependency } from "./operation.ts";
 
 export interface ProcessScope {
   readonly signal: AbortSignal;
@@ -12,6 +12,9 @@ export interface ProcessScope {
   transport(value: { closed: Promise<{ fatal: boolean }> }): void;
   fail(error?: unknown): void;
   ready(): void;
+  /** Private generated adapters report known required-dependency availability. */
+  dependencyReady?(resource: object, ready: boolean): void;
+  dependenciesReady?(): boolean;
 }
 function logError(event: string, error: unknown) {
   try {
@@ -40,8 +43,9 @@ export function createProcessLifecycle(options: {
   const drains: (() => void | Promise<void>)[] = [];
   const admission: (() => void)[] = [];
   const instances = new Map<string, unknown>();
+  const unavailable = new Set<object>();
   const cancellation = new AbortController();
-  let failed = false, closing: Promise<void> | undefined, starting: Promise<void> = Promise.resolve();
+  let failed = false, initialized = false, closing: Promise<void> | undefined, starting: Promise<void> = Promise.resolve();
   const mark = options.mark ?? ((ready: boolean) => {
     if (ready) writeFileSync("/tmp/application-ready", "ready\n");
     else rmSync("/tmp/application-ready", { force: true });
@@ -110,9 +114,16 @@ export function createProcessLifecycle(options: {
     },
     ready() {
       if (closing || cancellation.signal.aborted) throw Error("Process stopped during startup");
-      mark(true);
+      if (unavailable.size) throw Error("Required dependency unavailable during startup");
+      initialized = true;
+      mark(unavailable.size === 0);
       console.log("Application ready");
     },
+    dependencyReady(resource, ready) {
+      if (ready) unavailable.delete(resource); else unavailable.add(resource);
+      if (initialized) mark(!closing && !cancellation.signal.aborted && unavailable.size === 0);
+    },
+    dependenciesReady: () => unavailable.size === 0,
   };
   return {
     scope, close,
@@ -156,6 +167,39 @@ export function periodic(
   tick();
   scope.admission?.(() => { stopped = true; clearTimeout(timer); });
   scope.own(async () => { stopped = true; clearTimeout(timer); await running; });
+}
+
+/** Fixed safe provider reads only, never business operations. The actual probe owns the slot
+ * past the two-second caller bound; shutdown cancels future work and ignores late completion. */
+export function probeDependency(
+  scope: (Partial<ProcessScope> & Pick<ProcessScope, "signal">) | undefined,
+  resource: object,
+  probe: (signal: AbortSignal) => Promise<unknown>,
+) {
+  if (!scope?.dependencyReady) return;
+  let stopped = false, running = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const schedule = () => {
+    if (stopped || scope.signal.aborted || running || timer) return;
+    timer = setTimeout(() => withProcess(scope, () => {
+      timer = undefined;
+      if (stopped || scope.signal.aborted) return;
+      running = true;
+      let dispatched = false;
+      void dependency({ scope, maximumMs: 2000 }, signal => {
+        dispatched = true;
+        let work: Promise<unknown>;
+        try { work = probe(signal); } catch (error) { work = Promise.reject(error); }
+        return work.finally(() => { running = false; schedule(); });
+      }).then(
+        () => { if (!stopped) scope.dependencyReady?.(resource, true); },
+        () => { if (!stopped) scope.dependencyReady?.(resource, false); if (!dispatched) { running = false; schedule(); } },
+      );
+    }), 5000);
+    timer.unref?.();
+  };
+  scope.admission?.(() => { stopped = true; clearTimeout(timer); timer = undefined; });
+  schedule();
 }
 
 /** A reusable resource includes its full non-secret config and credential identity in the key.

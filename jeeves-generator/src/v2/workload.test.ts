@@ -107,7 +107,7 @@ function loader(user = false, publicCallee = false) {
     "src/runtime/operation.ts": operationUrl,
     "src/runtime/local.ts": data('export const readSecret=()=>"unit-secret";'),
     "src/runtime/process.ts": data(
-      `import {withProcess} from ${JSON.stringify(operationUrl)};export async function runProcess(start){await withProcess({signal:new AbortController().signal,track(){},ready(){},own(){},admission(){}},()=>start({signal:new AbortController().signal,ready(){},own(){},admission(){}}));} export const ownResource=()=>{};export const processClient=()=>{};`,
+      `import {withProcess} from ${JSON.stringify(operationUrl)};export async function runProcess(start){await withProcess({signal:new AbortController().signal,track(){},ready(){},own(){},admission(){}},()=>start({signal:new AbortController().signal,ready(){},own(){},admission(){}}));} export const ownResource=()=>{};export const processClient=()=>{};export const probeDependency=()=>{};`,
     ),
   };
   function load(path: string): string {

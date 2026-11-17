@@ -18789,3 +18789,112 @@ workload settings the same way.
   remains RG14. Root hashes, exact **34,001-byte** owner diff/modes and **42-container** inventory
   preserved. No later unit, owner port, live/paid call, push or deployment. Commit subject:
   `RG13: expose callable cache reads with enforceable freshness contracts`. Stop for acceptance.
+
+
+## 2026-11-16 — RG14 independent foundation review active
+
+- RG13 `925e917e879033196d5f41a3cf1155dfe3afc5f2` is accepted; RG14 is the sole active unit.
+  Independent review is deriving expectations from the approved contract and emitted boundaries.
+- New source fixture: `field-projects/generator-system/fixtures/rg-foundations/`; existing harness
+  registration/scenario will exercise two service copies, separate worker credentials, native
+  PostgreSQL/Valkey/Keycloak, contention, failures and bounded shutdown. Review/results go in
+  `docs/plans/reliable-generation/evidence/rg14/review.md`.
+- No native stack has started. Root files, owner changes and historical artifacts remain preserved.
+  No later unit, delegation, owner studio port, external issuer or deployment is authorized here.
+
+
+- RG14 pre-native milestone: independent source review corrected unsupported internal HTTP reader
+  exposure to a clear generation refusal, without adding an adapter. Fixture export boundary/TS
+  build pass. Main check passed 133 files / 1,211 tests; a later frozen-fixture check passed 1,210
+  and hit the unchanged Board immediate-drag class timing failure; unchanged focused Board 15/15
+  passes. Full browser 79/81, then corrected 422-refusal expectation and unchanged Favorites case
+  3/3 pass: all 81 unique cases accounted. Web build passes.
+- Native scenario now gates old snapshot completion until v2 is observed stored, competes on an
+  unapplied checksummed 0002 migration, checks exact native roles and protected DDL, exercises
+  32 actual cache calls, unknown admission/COMMIT recovery, active-window AOF crash retention,
+  store restarts and an entered hung hook. Starting the existing `rg-foundations` suite with
+  artifacts under `plans/reliable-generation/evidence/rg14/native-1/`; exact run.json cleanup is
+  owned by the existing finally harness. Initial full Docker inventory is 42 containers and all
+  root hashes / the exact 34,001-byte owner patch match. No later unit or owner studio port used.
+
+
+- RG14 native-1 completed and cleaned (110.15s): both-copy generated authentication and all
+  product-login privilege assertions passed. An extra assertion incorrectly expected private
+  framework `r_*` to deny its host's product SELECT; source `grantProductSql` deliberately applies
+  the same compiled host maximum to both runtime classes. The corrected oracle asserts that
+  maximum and still denies excess writes/DDL; no production permission changed. Registered
+  mutation now checks native `current_user` for the product callback role. Later cases were not
+  reached. All 42 baseline container IDs/names/states are preserved. Focused native-2 rerun is
+  active under the existing suite/cleanup harness and `evidence/rg14/native-2/`.
+
+
+- RG14 native-2 passed the first four named sections, then old-fill observation consumed the
+  existing 1s SQL bound. Native-3 was interrupted during startup to restore an accidentally
+  removed explicit v2-committed assertion; its exact SIGINT cleanup completed. Observations and
+  update now reuse the existing SqlSession, retaining assertions/timeouts. Native-4 passed six
+  sections, including real old-fill fencing, uint64 expiry, 32 actual pending cache calls and
+  unknown admission through SQL rollback. Its lost-COMMIT proxy exposed an unhandled secondary
+  pg.Client error. Factory fix observes errors once per physical client, retaining rejected
+  queries/unknown/discard/idle handling; 94 focused tests pass. Off pins reviewed: only postgres
+  payload/manifest changed (80/87/60 files unchanged); no frozen v1 changes. Required regressions
+  for this production correction are running before the affected native checkpoint rerun.
+  All 42 baseline container IDs/names/states remain unchanged after each exact task teardown.
+
+
+- RG14 native-5 passed eight named sections, including native lost-COMMIT sealed replay and the
+  100ms receiver/generated-POST paths (103/101ms). Store proof reached PG shutdown, where a fresh
+  harness workload client could not mint a token because disposable Keycloak shares that DB;
+  the next case uses the actual running gateway's already-cached generated credential. The run
+  also captured required-cache-down readiness200/liveness200, a real common-contract gap.
+- Bounded correction now uses private process dependency state for HTTP/worker readiness,
+  shared-client required-Valkey registration and fixed5s safe SELECT1/PING probes (actual work
+  serialized/tracked, no business retry, no late reopening after drain). Optional caches stay
+  excluded; health queue saturation preserves the connected client. Focused lifecycle/health
+  tests pass (118, then21 affected cases); final required regressions are active before native-6.
+  No public hook API/normal setting/provider/framework change. All prior attempts/results and
+  exact cleanup remain preserved; the checkpoint is not yet complete.
+
+
+- RG14 native-6 passed the first nine named sections, including required-cache/PG live200/ready503,
+  optional-cache live200/ready200, traffic-independent worker marker recovery, AOF active-window
+  retention and unchanged service IDs. Shutdown remained unproved: a fresh harness credential
+  helper failed before hook entry after disposable Keycloak's shared DB interruption. The actual
+  cached gateway now dispatches it; marker/receiving-copy/deadline/exit assertions are retained.
+- Required-adapter audit extended private readiness to existing AMQP/PubSub state, bounded safe
+  metadata/search reads and installed Garage quorum health (private3903, no admin credential,
+  no host publication, unchanged grants/startup checks). Actual no-DB PubSub/all-stub/installed
+  feature exports pass extension checks and generated TS; focused helper/provider tests cover
+  actual-promise serialization, AND recovery, stale request context and no late drain reopening.
+  Final D11 checks are running before the frozen finite native rerun. All prior failures remain
+  visible in RG14 evidence; all 42 baseline containers/root hashes/owner patch are preserved.
+
+
+- RG14 final production regressions pass: 135 files / 1,223 tests, all type/lint checks,
+  browser 81/81 including TinyURL and both full mouse rebuilds, web build. Native-7 then passed
+  five sections and stopped at the pending probe's post-settlement PING: artificial CLIENT PAUSE
+  60ms can exceed the runtime's fixed 150ms command bound through server scheduling. The harness
+  now invokes 32 actual calls and the 33rd in one synchronous turn, retaining every fulfillment,
+  saturation, same-client/PONG/state and separate unknown-stall assertion. Focused scenario
+  lint/type checks pass; no production timeout/result changed. Native-8 is active, all prior
+  attempts and exact cleanup receipts retained, all 42 baseline ID/name/states preserved.
+
+
+## 2026-11-16 — RG14 independent foundation checkpoint complete
+
+- Independent source review corrected internal-only HTTP reader generation refusal, physical
+  PostgreSQL secondary-error observation, and required-dependency readiness after startup.
+  Existing private lifecycle/adapter mechanisms cover PG, required Valkey, AMQP/PubSub and safe
+  Garage/search health; optional reader caches stay excluded. No public capability, normal
+  setting, provider, business retry or monitoring framework was added.
+- New application-owned rg-foundations fixture and existing harness suite prove all ten named
+  native cases across two API and two gateway copies with actual PG/Valkey/Keycloak. Final
+  native-8 passes (147.29s scenario), including actual entered hung-hook self-exit 1 in 10,476ms.
+  Exact cleanup leaves no task containers/networks/volumes/images or temporary directory.
+- Final pnpm check: 135 files / 1,223 tests, all lint/types; browser 81/81 including TinyURL,
+  refusal and both full mouse rebuilds; web build. Harness-only synchronous pending correction
+  then passes focused lint/types and native-8. Earlier failures, corrections and native versus
+  controlled-adapter limits remain in evidence/rg14/review.md; no Board assertion/timing changed.
+- Effective final source: e4dce7b32b09831c2a883a24dd544ea4a110d7a9392f87d29444aca3c0ea5400.
+  Full inventories remain 42 containers / 9 networks / 23 volumes / 43 images; every original container
+  ID/name/state, seven root hashes and exact 34,001-byte owner patch preserved. One local RG14
+  commit follows; stop for coordinator acceptance, no later unit/push/deployment.

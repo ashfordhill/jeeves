@@ -1,0 +1,53 @@
+{
+  "numTotalTestSuites": 1,
+  "numPassedTestSuites": 0,
+  "numFailedTestSuites": 1,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 1,
+  "numPassedTests": 0,
+  "numFailedTests": 1,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794880253572,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG14: foundations enforce the contract across independent native process copies",
+          "status": "failed",
+          "title": "RG14: foundations enforce the contract across independent native process copies",
+          "duration": 135665.11375400002,
+          "failureMessages": [
+            "Error: docker exec exit 1\nfile:///app/dist/runtime/workload.js:10\nconst unavailable = () => new OperationError(\"definite-failure\", \"IDENTITY_UNAVAILABLE\");\n                          ^\n\nOperationError: Operation definite-failure: IDENTITY_UNAVAILABLE\n    at unavailable (file:///app/dist/runtime/workload.js:10:27)\n    at Object.acquire (file:///app/dist/runtime/workload.js:220:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///app/[eval1]:10:14\n    at async file:///app/[eval1]:9:14 {\n  outcome: 'definite-failure',\n  code: 'IDENTITY_UNAVAILABLE'\n}\n\nNode.js v24.21.0\n\n    at ChildProcess.<anonymous> (/home/ash/github/jeeves/jeeves-generator/integration/harness/process.ts:97:11)\n    at ChildProcess.wrapper (node:events:639:12)\n    at ChildProcess.emit (node:events:514:28)\n    at maybeClose (node:internal/child_process:1141:16)\n    at Process.ChildProcess._handle.onexit (node:internal/child_process:306:5)"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794880253741,
+      "endTime": 1794880389406.1138,
+      "status": "failed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/rg-foundations.system.test.ts"
+    }
+  ]
+}

@@ -67,7 +67,12 @@ async function open() {
   scopes.push(abort);
   const tracked: Promise<unknown>[] = [];
   const onState = vi.fn();
-  const scope = { signal: abort.signal, track: (work: Promise<unknown>) => tracked.push(work) };
+  const dependencyReady = vi.fn();
+  const scope = {
+    signal: abort.signal,
+    track: (work: Promise<unknown>) => tracked.push(work),
+    dependencyReady,
+  };
   const cache = await operation.withProcess(scope, () =>
     runtime.createValkeyCache({
       binding: {
@@ -83,7 +88,7 @@ async function open() {
   caches.push(cache);
   const client = clients.at(-1);
   if (!client) throw Error("Client missing");
-  return { cache, client, tracked, onState, abort };
+  return { cache, client, tracked, onState, abort, dependencyReady };
 }
 afterEach(() => {
   for (const cache of caches.splice(0)) cache.close();
@@ -102,6 +107,67 @@ const record = (version = "9007199254740993", validUntil = Date.now() + 10000) =
 const envelope = (value = record()) => JSON.stringify({ v: 1, ...value });
 
 describe("RG11 finite atomic cache primitives", () => {
+  it("RG14 a saturated health probe preserves a healthy required shared client", async () => {
+    setup();
+    const { cache, client, dependencyReady } = await open();
+    cache.required();
+    await vi.advanceTimersByTimeAsync(4990);
+    const complete: ((value: null) => void)[] = [];
+    client.get.mockImplementation(() => new Promise((resolve) => complete.push(resolve)));
+    const pending = Array.from({ length: 32 }, () => cache.get("work"));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(dependencyReady).toHaveBeenLastCalledWith(expect.any(Object), true);
+    expect(client.destroy).not.toHaveBeenCalled();
+    expect(clients).toHaveLength(1);
+    expect(client.ping).not.toHaveBeenCalled();
+    for (const resolve of complete) resolve(null);
+    await Promise.all(pending);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(client.ping).toHaveBeenCalledOnce();
+  });
+  it("RG14 keeps a health slot until the actual PING settles and does not probe or reopen after close", async () => {
+    setup();
+    const { cache, client, dependencyReady } = await open();
+    let complete!: (value: string) => void;
+    client.ping.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          complete = resolve;
+        }),
+    );
+    cache.required();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(client.ping).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(clients.reduce((count, row) => count + row.ping.mock.calls.length, 0)).toBe(1);
+    cache.close();
+    const calls = dependencyReady.mock.calls.length;
+    complete("PONG");
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(dependencyReady).toHaveBeenCalledTimes(calls);
+    expect(clients.reduce((count, row) => count + row.ping.mock.calls.length, 0)).toBe(1);
+  });
+  it("RG14 optional caches do not affect readiness; a shared client can become required without another connection or listeners", async () => {
+    setup();
+    const { cache, client, dependencyReady } = await open();
+    expect(dependencyReady).not.toHaveBeenCalled();
+    const listeners = client.on.mock.calls.length;
+    cache.required();
+    cache.required();
+    const key = dependencyReady.mock.calls[0]?.[0];
+    expect(dependencyReady).toHaveBeenLastCalledWith(key, true);
+    expect(client.on.mock.calls).toHaveLength(listeners);
+    expect(clients).toHaveLength(1);
+    client.emit("end");
+    expect(dependencyReady).toHaveBeenLastCalledWith(key, false);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(dependencyReady).toHaveBeenLastCalledWith(key, true);
+    expect(clients).toHaveLength(2);
+    cache.close();
+    const calls = dependencyReady.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(dependencyReady).toHaveBeenCalledTimes(calls);
+  });
   it("uses one key and fixed script/arguments, unique admission identities, immutable typed results", async () => {
     setup();
     const { cache, client } = await open();

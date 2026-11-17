@@ -205,6 +205,7 @@ export function objects(
 ) {
 	const configuration = {
 		endpoint,
+		...(endpoint === "http://local-objects:3900" ? { healthEndpoint: "http://local-objects:3903/health" } : {}),
 		region: "garage",
 		credentialSecret: `s3-${s.host}`,
 	};

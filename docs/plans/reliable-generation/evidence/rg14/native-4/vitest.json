@@ -1,0 +1,53 @@
+{
+  "numTotalTestSuites": 1,
+  "numPassedTestSuites": 0,
+  "numFailedTestSuites": 1,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 1,
+  "numPassedTests": 0,
+  "numFailedTests": 1,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794879126528,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG14: foundations enforce the contract across independent native process copies",
+          "status": "failed",
+          "title": "RG14: foundations enforce the contract across independent native process copies",
+          "duration": 111702.652127,
+          "failureMessages": [
+            "Error: docker exec exit 1\nnode:events:505\n    throw er; // Unhandled 'error' event\n    ^\n\nError: Connection terminated unexpectedly\n    at Connection.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:204:73)\n    at Connection.wrapper (node:events:639:12)\n    at Connection.emit (node:events:514:28)\n    at Socket.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)\n    at Socket.emit (node:events:514:28)\n    at TCP.<anonymous> (node:net:362:12)\nEmitted 'error' event on Client instance at:\n    at Client._handleErrorEvent (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:422:10)\n    at Connection.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:222:16)\n    at Connection.wrapper (node:events:639:12)\n    at Connection.emit (node:events:514:28)\n    at Socket.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)\n    at Socket.emit (node:events:514:28)\n    at TCP.<anonymous> (node:net:362:12)\n\nNode.js v24.21.0\n\n    at ChildProcess.<anonymous> (/home/ash/github/jeeves/jeeves-generator/integration/harness/process.ts:97:11)\n    at ChildProcess.wrapper (node:events:639:12)\n    at ChildProcess.emit (node:events:514:28)\n    at maybeClose (node:internal/child_process:1141:16)\n    at Process.ChildProcess._handle.onexit (node:internal/child_process:306:5)"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794879126695,
+      "endTime": 1794879238397.652,
+      "status": "failed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/rg-foundations.system.test.ts"
+    }
+  ]
+}

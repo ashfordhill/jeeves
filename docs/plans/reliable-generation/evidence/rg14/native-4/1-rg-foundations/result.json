@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-foundations",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: docker exec exit 1\nnode:events:505\n    throw er; // Unhandled 'error' event\n    ^\n\nError: Connection terminated unexpectedly\n    at Connection.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:204:73)\n    at Connection.wrapper (node:events:639:12)\n    at Connection.emit (node:events:514:28)\n    at Socket.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)\n    at Socket.emit (node:events:514:28)\n    at TCP.<anonymous> (node:net:362:12)\nEmitted 'error' event on Client instance at:\n    at Client._handleErrorEvent (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:422:10)\n    at Connection.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:222:16)\n    at Connection.wrapper (node:events:639:12)\n    at Connection.emit (node:events:514:28)\n    at Socket.<anonymous> (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)\n    at Socket.emit (node:events:514:28)\n    at TCP.<anonymous> (node:net:362:12)\n\nNode.js v24.21.0\n"
+}

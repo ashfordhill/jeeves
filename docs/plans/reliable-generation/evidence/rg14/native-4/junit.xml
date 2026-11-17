@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="111.703266825">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" timestamp="2026-11-17T01:34:10.140Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="111.703266825">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" name="RG14: foundations enforce the contract across independent native process copies" time="111.702652127">
+            <failure message="docker exec exit 1
+node:events:505
+    throw er; // Unhandled &apos;error&apos; event
+    ^
+
+Error: Connection terminated unexpectedly
+    at Connection.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:204:73)
+    at Connection.wrapper (node:events:639:12)
+    at Connection.emit (node:events:514:28)
+    at Socket.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)
+    at Socket.emit (node:events:514:28)
+    at TCP.&lt;anonymous&gt; (node:net:362:12)
+Emitted &apos;error&apos; event on Client instance at:
+    at Client._handleErrorEvent (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:422:10)
+    at Connection.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:222:16)
+    at Connection.wrapper (node:events:639:12)
+    at Connection.emit (node:events:514:28)
+    at Socket.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)
+    at Socket.emit (node:events:514:28)
+    at TCP.&lt;anonymous&gt; (node:net:362:12)
+
+Node.js v24.21.0
+" type="Error">
+Error: docker exec exit 1
+node:events:505
+    throw er; // Unhandled &apos;error&apos; event
+    ^
+
+Error: Connection terminated unexpectedly
+    at Connection.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:204:73)
+    at Connection.wrapper (node:events:639:12)
+    at Connection.emit (node:events:514:28)
+    at Socket.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)
+    at Socket.emit (node:events:514:28)
+    at TCP.&lt;anonymous&gt; (node:net:362:12)
+Emitted &apos;error&apos; event on Client instance at:
+    at Client._handleErrorEvent (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:422:10)
+    at Connection.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:222:16)
+    at Connection.wrapper (node:events:639:12)
+    at Connection.emit (node:events:514:28)
+    at Socket.&lt;anonymous&gt; (/app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12)
+    at Socket.emit (node:events:514:28)
+    at TCP.&lt;anonymous&gt; (node:net:362:12)
+
+Node.js v24.21.0
+
+ ❯ Connection.&lt;anonymous&gt; ../../../../app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:204:73
+ ❯ Socket.&lt;anonymous&gt; ../../../../app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12
+ ❯ Client._handleErrorEvent ../../../../app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:422:10
+ ❯ Connection.&lt;anonymous&gt; ../../../../app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/client.js:222:16
+ ❯ Socket.&lt;anonymous&gt; ../../../../app/node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/connection.js:64:12
+ ❯ ChildProcess.&lt;anonymous&gt; jeeves-generator/integration/harness/process.ts:97:11
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

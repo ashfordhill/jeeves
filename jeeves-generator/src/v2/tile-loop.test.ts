@@ -691,6 +691,7 @@ type PubsubFake = {
   calls: unknown[][];
   subscriptions: FakeSubscription[];
   exists: () => Promise<[boolean]>;
+  metadata?: () => Promise<unknown>;
   publish: (message: { data: Buffer; attributes: Record<string, string> }) => Promise<string>;
 };
 const pubsubFake: PubsubFake = {
@@ -717,6 +718,8 @@ const fakeSdk = `import { EventEmitter } from "node:events";
       const subscription = Object.assign(new EventEmitter(), {
         name,
         options,
+        isOpen: true,
+        getMetadata: () => { fake.calls.push(["metadata", name]); return fake.metadata?.() ?? Promise.resolve([{}]); },
         exists: () => (fake.calls.push(["exists", name]), fake.exists()),
         close: async () => {
           fake.calls.push(["close subscription", name]);
@@ -752,7 +755,9 @@ const pubsubClients = await import(
     emittedClients.replace(
       /import\s*\{([^}]*)\}\s*from\s*"([^"]+)";/g,
       (statement, names: string, from: string) => {
-        const runtime = /^\.\/(delivery|tile-loop|tile-process)\.ts$/.exec(from)?.[1];
+        const runtime = /^\.\/(delivery|tile-loop|tile-process|operation|process)\.ts$/.exec(
+          from,
+        )?.[1];
         if (runtime) return statement.replace(`"${from}"`, `"${moduleUrl(runtime)}"`);
         if (from === "@google-cloud/pubsub")
           return statement.replace(`"${from}"`, `"${dataUrl(fakeSdk)}"`);
@@ -779,6 +784,7 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
     pubsubFake.calls.length = 0;
     pubsubFake.subscriptions.length = 0;
     pubsubFake.exists = async () => [true];
+    pubsubFake.metadata = undefined;
     pubsubFake.publish = async () => "copy-1";
   });
   afterEach(() => {
@@ -836,6 +842,42 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
         throw new Error(`${id} not settled yet`);
     });
   const after = (index: number) => pubsubFake.calls.slice(index);
+
+  it("RG14 uses actual metadata reads and stream state to clear required Pub/Sub loss without message traffic", async () => {
+    vi.useFakeTimers();
+    const operation = await import(moduleUrl("operation"));
+    const unavailable = new Set<object>();
+    const stops: (() => void)[] = [];
+    const scope = {
+      signal: new AbortController().signal,
+      admission: (stop: () => void) => stops.push(stop),
+      dependencyReady(resource: object, ready: boolean) {
+        if (ready) unavailable.delete(resource);
+        else unavailable.add(resource);
+      },
+    };
+    const transport = pubsubClients.pubsubLoop(probe);
+    const consumer = await operation.withProcess(scope, () =>
+      transport.open({ ...visitsLoop, handle: async () => {} }),
+    );
+    const current = pubsubFake.subscriptions.at(-1);
+    if (!current) throw Error("Missing subscription");
+    current.emit("error", Error("Transient stream unavailable"));
+    expect(unavailable.size).toBe(1);
+    pubsubFake.metadata = async () => {
+      throw Error("Provider down");
+    };
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(unavailable.size).toBe(2);
+    pubsubFake.metadata = async () => [{}];
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(unavailable.size).toBe(0);
+    expect(pubsubFake.calls.filter((call) => call[0] === "metadata")).toHaveLength(2);
+    for (const stop of stops) stop();
+    await consumer.close();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(pubsubFake.calls.filter((call) => call[0] === "metadata")).toHaveLength(2);
+  });
 
   it("streams its tile's subscription once it exists, holding at most its Concurrency in hand", async () => {
     const { scope, consumer } = await pubsubStarted(async () => {});

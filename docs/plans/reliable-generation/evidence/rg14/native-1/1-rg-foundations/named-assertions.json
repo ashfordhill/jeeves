@@ -1,0 +1,20 @@
+[
+  {
+    "name": "authenticated generated calls and independent user identity",
+    "expected": "Each gateway copy forwards a verified user over its own generated audience-bound workload client; missing either identity refuses",
+    "outcome": "passed",
+    "actual": {
+      "gatewayCopies": 2,
+      "noWorkload": 401,
+      "noUser": 401,
+      "wrongCaller": 403,
+      "userAsWorkload": 401,
+      "anonymousAliases": 0
+    }
+  },
+  {
+    "name": "precise native product and framework credentials",
+    "expected": "API SELECT/INSERT; same-owner worker SELECT/UPDATE; gateway only named published SELECT; product logins cannot read protected state or assume setup/DDL roles",
+    "outcome": "failed"
+  }
+]

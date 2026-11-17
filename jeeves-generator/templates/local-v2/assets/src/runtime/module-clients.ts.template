@@ -1,4 +1,4 @@
-import { dependency, publisherOptions, OperationError, currentOperation, assertNetworkAllowed } from "./operation.ts";
+import { dependency, publisherOptions, OperationError, currentOperation, currentProcess, assertNetworkAllowed } from "./operation.ts";
 // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
 // one per store or channel a tile's stubs use. Export rewrites this file. First the process file's
 // configuration pass (`checkConfiguration`) runs each client's endpoint reader and the sign-in's
@@ -70,7 +70,7 @@ import type {
   SearchIndex,
   Tx,
 } from "../modules/dependencies.ts";
-import { ownResource, processClient, type ProcessScope } from "./process.ts";
+import { ownResource, processClient, probeDependency, type ProcessScope } from "./process.ts";
 import { createFailureLog, NotImplemented } from "./tile-process.ts";
 
 /** A dependency that isn't provisioned locally (another provider, an Identity no sign-in binds, a
@@ -601,6 +601,7 @@ export async function pubsubPublisher(
     },
     scope.signal,
   );
+  probeDependency(scope, topic, () => topic.getMetadata({ timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 }));
   return {
     publish(message, options) {
       if (closed) return Promise.reject(new OperationError("refused", "PUBLISHER_CLOSED"));
@@ -705,7 +706,9 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
   let retry: ReturnType<typeof setTimeout> | undefined;
   let shutdown: Promise<void> | undefined;
   let reported: "available" | "unavailable" | undefined;
+  const consumerScope = currentProcess(), readiness = {};
   const report = (state: "available" | "unavailable", error?: unknown) => {
+    consumerScope?.dependencyReady?.(readiness, state === "available");
     if (state === reported) return;
     reported = state;
     try {
@@ -852,6 +855,11 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
   }
   current = open(first);
   report("available");
+  probeDependency(consumerScope, client, async () => {
+    if (!current || current.lost) throw Error("Subscriber unavailable");
+    await current.subscription.getMetadata({ timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 });
+    if (!closing && current && !current.lost && current.subscription.isOpen) report("available");
+  });
   return { close, closed };
 }
 // @pubsub-loop-end
@@ -941,6 +949,7 @@ export async function objectClient(
   return processClient(scope, "objectClient", binding, async () => {
   const configuration = {
     endpoint: "http://local-objects:3900",
+    healthEndpoint: "http://local-objects:3903/health",
     region: "garage",
     credentialSecret: `s3-${binding.tile}`,
   };

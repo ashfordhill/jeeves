@@ -1,4 +1,4 @@
-import { operationImports } from "./operation.test.helpers.ts";
+import { operationImports, operationUrl } from "./operation.test.helpers.ts";
 
 const stripTypeScriptTypes = (source: string) => operationImports(stripTypes(source));
 
@@ -231,6 +231,40 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
+});
+
+const operationRuntime = await import(operationUrl);
+it("RG14 required publisher and consumer availability compose with AND readiness and recover independently", async () => {
+  const broker = fakeBroker();
+  const unavailable = new Set<object>();
+  const stop = new AbortController();
+  const scope = {
+    signal: stop.signal,
+    dependencyReady(resource: object, ready: boolean) {
+      if (ready) unavailable.delete(resource);
+      else unavailable.add(resource);
+    },
+  };
+  const publisher = await operationRuntime.withProcess(scope, () =>
+    createPublisher(binding, topic),
+  );
+  const consumer = await operationRuntime.withProcess(scope, () =>
+    createConsumer(
+      binding,
+      consumerOptions(async () => {}),
+    ),
+  );
+  expect(unavailable.size).toBe(0);
+  broker.connection(0).lose(new Error("Publisher transport lost"));
+  broker.connection(1).lose(new Error("Consumer transport lost"));
+  expect(unavailable.size).toBe(2);
+  broker.state.connects.push(() => Promise.reject(Error("Publisher still down")));
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(unavailable.size).toBe(1);
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(unavailable.size).toBe(0);
+  await publisher.close();
+  await consumer.close();
 });
 
 describe("emitted broker publisher reconnects", () => {

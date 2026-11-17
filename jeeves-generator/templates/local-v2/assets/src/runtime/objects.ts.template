@@ -2,12 +2,15 @@ import { dependency, currentProcess } from "./operation.ts";
 import { S3Client, UploadPartCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { readSecret } from "./local.ts";
+import { probeDependency } from "./process.ts";
 
 export function createObjects(options: {
   endpoint: string;
   region: string;
   credentialSecret: string;
   credential?: (secret: string) => string;
+  /** Installed Garage's private unauthenticated quorum health endpoint, never a product URL. */
+  healthEndpoint?: string;
 }) {
   const credentials: unknown = JSON.parse(
     (options.credential ?? readSecret)(options.credentialSecret),
@@ -35,6 +38,12 @@ export function createObjects(options: {
     maxAttempts: 1,
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
+  });
+  const healthEndpoint = options.healthEndpoint;
+  if (healthEndpoint) probeDependency(operationScope, client, async signal => {
+    const response = await fetch(healthEndpoint, { signal, redirect: "manual", credentials: "omit" });
+    await response.body?.cancel();
+    if (response.status !== 200) throw Error("Object provider unavailable");
   });
   return new Proxy(client, {
     get(target, key) {

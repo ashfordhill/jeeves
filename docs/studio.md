@@ -1605,3 +1605,32 @@ rechecks validity after another awaited operation. Product keys/codec/eligibilit
 are pure; source loading uses registered read-only SELECTs under precise product grants, without a
 pool or raw SQL handle. Unfinished policies/queries remain named custom work. See the emitted
 `.jeeves/extensions.md` for bounds, namespace migration, optional-cache recovery and retention limits.
+
+
+HTTP Cache reader exposure on an internal service refuses because no workload-authenticated
+template adapter is installed. Select `in-process` and invoke it through an authenticated route
+module. Public eligible-record HTTP exposure remains supported.
+
+
+Required runtime dependencies affect readiness after startup. Each process keeps private
+availability state for its required resources. PostgreSQL, required admission Valkey, AMQP,
+Pub/Sub, object storage and search affect HTTP `/readyz`/`/healthz` and the worker ready marker;
+`/livez` remains independent. Optional reader-cache loss keeps authoritative fallback available
+and does not make the process unready. A shared Valkey client can become required without
+another connection.
+
+Fixed adapter-owned 5-second safe reads detect idle loss and recovery. PostgreSQL caps query
+work at 2 seconds plus its configured connection-acquisition bound (default 2 seconds), giving a
+default detection budget of about 9 seconds including cadence. Required Valkey uses its existing
+150ms command bound; other safe provider reads use 2 seconds, giving budgets of about 5.15 and
+7 seconds. Socket/stream callbacks can detect loss sooner; AMQP retains its configured heartbeat
+and reconnection behavior. At most one actual probe per resource runs even after its caller times
+out. Saturated Valkey stays connected and does not become unready merely because its queue is
+full. These probes never retry a business operation.
+
+The installed Garage provider uses its private Compose-network quorum-health listener on 3903,
+without host publication or an admin credential. Application S3 grants and the startup bucket/grant
+checks remain in force. Availability probes assume those configured resources and grants remain;
+they do not continually revalidate every administrator change. Shutdown cancels future probes,
+tracks active work and ignores late readiness restoration. Readiness is a bounded observation,
+not instantaneous knowledge of every failure.

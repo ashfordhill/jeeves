@@ -1,0 +1,44 @@
+{
+  "frozen-v2": {
+    "beforeFiles": 80,
+    "afterFiles": 80,
+    "changed": [
+      ".jeeves/manifest.json",
+      "scripts/setup.mjs",
+      "src/features/service-resources.ts",
+      "src/runtime/amqp.ts",
+      "src/runtime/http.ts",
+      "src/runtime/objects.ts",
+      "src/runtime/operation.ts",
+      "src/runtime/postgres.ts",
+      "src/runtime/process.ts",
+      "src/runtime/search.ts",
+      "src/runtime/valkey.ts"
+    ],
+    "added": []
+  },
+  "v2-module-design": {
+    "beforeFiles": 87,
+    "afterFiles": 87,
+    "changed": [
+      ".jeeves/manifest.json",
+      "scripts/setup.mjs",
+      "src/features/service-resources.ts",
+      "src/runtime/amqp.ts",
+      "src/runtime/http.ts",
+      "src/runtime/objects.ts",
+      "src/runtime/operation.ts",
+      "src/runtime/postgres.ts",
+      "src/runtime/process.ts",
+      "src/runtime/search.ts",
+      "src/runtime/valkey.ts"
+    ],
+    "added": []
+  },
+  "stub-stack": {
+    "beforeFiles": 60,
+    "afterFiles": 60,
+    "changed": [".jeeves/manifest.json", "scripts/setup.mjs", "src/runtime/operation.ts"],
+    "added": []
+  }
+}

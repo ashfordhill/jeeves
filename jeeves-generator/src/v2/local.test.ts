@@ -391,6 +391,17 @@ describe("standalone local foundation", () => {
       for (const [name, mode] of Object.entries(modes))
         expect([name, mode]).toEqual([name, name === "garage.toml" ? 0o600 : 0o644]);
       expect(statSync(secrets).mode & 0o777).toBe(0o700);
+      // RG14: private pinned-Garage quorum health, with no management credential or host surface.
+      const garage = readFileSync(join(secrets, "garage.toml"), "utf8");
+      expect(garage).toContain(
+        '[admin]\napi_bind_addr = "[::]:3903"\nmetrics_require_token = true',
+      );
+      expect(garage).not.toMatch(/(?:admin|metrics)_token\s*=/);
+      const compose = JSON.parse(text(full, "compose.yaml"));
+      expect(compose.services["local-objects"].image).toContain("v2.4.1");
+      expect(compose.services["local-objects"].ports).toEqual([
+        `127.0.0.1:\${LOCAL_OBJECT_PORT:?Set LOCAL_OBJECT_PORT}:3900`,
+      ]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

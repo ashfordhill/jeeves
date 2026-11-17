@@ -608,3 +608,22 @@ metadata and adds no endpoint. Registered source SELECTs have a compiled read-on
 and product-only credential. Pure policy, optional-cache recovery, bounded actual fills/waiters,
 compare-version and absolute validity are generated; product SELECTs/eligibility/codec/load/version
 remain hooks, never silently completed. Native shared-cache proof remains RG14.
+
+
+HTTP Cache reader exposure on an internal service refuses because no workload-authenticated
+template adapter is installed. Select `in-process` and invoke it through an authenticated route
+module. Public eligible-record HTTP exposure remains supported.
+
+
+Required runtime dependencies affect readiness after startup. Each process keeps its own private
+required-resource availability state: PostgreSQL and the limiter's required Valkey update the
+HTTP `/readyz`/`/healthz` result and the worker ready marker; `/livez` remains independent. Optional
+reader-cache loss keeps authoritative fallback available and does not make the process unready.
+A shared Valkey client can become required without another connection. Fixed adapter-owned
+5-second `SELECT 1`/`PING` probes detect idle or silent loss and recovery, with at most one actual
+probe in flight. PostgreSQL caps the query phase at 2 seconds plus its configured acquisition
+bound; Valkey uses its existing 150ms command bound. Socket errors can detect loss sooner.
+These probes never retry a business operation. Shutdown cancels future probes, tracks active work
+and ignores late readiness restoration. Saturated Valkey stays connected and does not become
+unready merely because its queue is full. Readiness is a bounded observation, not instantaneous
+knowledge of every possible dependency failure.

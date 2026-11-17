@@ -1,0 +1,37 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts (1 test | 1 failed) 106031ms
+   × RG14: foundations enforce the contract across independent native process copies 106030ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts > RG14: foundations enforce the contract across independent native process copies
+AssertionError: expected '0' to be '1' // Object.is equality
+
+Expected: "1"
+Received: "0"
+
+ ❯ jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:368:15
+    366|                 "d_items_db",
+    367|               ),
+    368|             ).toBe("1");
+       |               ^
+    369|             await gate.run("SELECT pg_advisory_unlock(710014);");
+    370|             older = await old;
+ ❯ check jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:32:24
+ ❯ beforeStart jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:324:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:363:5
+ ❯ jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:22:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:24:41
+   Duration  106.20s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-2/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-2/junit.xml

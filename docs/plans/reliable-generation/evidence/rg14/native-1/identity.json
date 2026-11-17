@@ -1,0 +1,12 @@
+{
+  "id": "gs-d3dde420-4f93-4460-ae78-c0fd4411d9cc",
+  "selected": ["rg-foundations"],
+  "commit": "925e917e879033196d5f41a3cf1155dfe3afc5f2",
+  "dirty": "M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/suites.ts\n M jeeves/packages/spec/src/generation-resolver.ts\n?? field-projects/generator-system/fixtures/rg-foundations/\n?? jeeves-generator/integration/harness/rg-foundations.ts\n?? jeeves-generator/integration/scenarios/rg-foundations.system.test.ts\n?? jeeves-generator/src/v2/foundation-review.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

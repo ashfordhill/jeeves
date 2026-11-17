@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="115.507430302">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" timestamp="2026-11-17T03:14:36.525Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="115.507430302">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" name="RG14: foundations enforce the contract across independent native process copies" time="115.50666101">
+            <failure message="docker exec exit 1
+file:///app/dist/runtime/valkey.js:22
+    const error = new OperationError(outcome, code);
+                  ^
+
+OperationError: Cache unavailable
+    at failure (file:///app/dist/runtime/valkey.js:22:19)
+    at command (file:///app/dist/runtime/valkey.js:298:19)
+    at Object.ping (file:///app/dist/runtime/valkey.js:367:21)
+    at file:///app/[eval1]:11:70
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:644:9)
+    at process.processTimers (node:internal/timers:618:7)
+    at async file:///app/[eval1]:8:14 {
+  outcome: &apos;refused&apos;,
+  code: &apos;CACHE_UNAVAILABLE&apos;
+}
+
+Node.js v24.21.0
+" type="Error">
+Error: docker exec exit 1
+file:///app/dist/runtime/valkey.js:22
+    const error = new OperationError(outcome, code);
+                  ^
+
+OperationError: Cache unavailable
+    at failure (file:///app/dist/runtime/valkey.js:22:19)
+    at command (file:///app/dist/runtime/valkey.js:298:19)
+    at Object.ping (file:///app/dist/runtime/valkey.js:367:21)
+    at file:///app/[eval1]:11:70
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:644:9)
+    at process.processTimers (node:internal/timers:618:7)
+    at async file:///app/[eval1]:8:14 {
+  outcome: &apos;refused&apos;,
+  code: &apos;CACHE_UNAVAILABLE&apos;
+}
+
+Node.js v24.21.0
+
+ ❯ failure ../../../../app/dist/runtime/valkey.js:22:19
+ ❯ command ../../../../app/dist/runtime/valkey.js:298:19
+ ❯ Object.ping ../../../../app/dist/runtime/valkey.js:367:21
+ ❯ ../../../../app/[eval1]:11:70
+ ❯ ChildProcess.&lt;anonymous&gt; jeeves-generator/integration/harness/process.ts:97:11
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

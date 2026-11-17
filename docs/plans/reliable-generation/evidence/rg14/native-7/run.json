@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-085e68a3-d7ff-44da-a945-984997833040",
+  "suite": "rg-foundations",
+  "temporary": "/tmp/jeeves-system-tIMjWE",
+  "stacks": [
+    {
+      "project": "gs-085e68a3-d7ff-44da-a945-984997833040-1",
+      "fixture": "rg-foundations",
+      "application": "/tmp/jeeves-system-tIMjWE/1-rg-foundations",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-7/1-rg-foundations",
+      "ports": [33135, 45183, 35539]
+    }
+  ]
+}

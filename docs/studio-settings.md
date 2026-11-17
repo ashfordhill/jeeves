@@ -595,3 +595,8 @@ of the authoritative lookup. Cached hits never renew it. L1, negative caching an
 patterns remain schema-readable but unsupported. Both reader modes use the existing LRU store and
 therefore require a separate cache from admission. Custom/standalone Data access **read** slots
 consume the installed `cache-reader.read@1` contract; parts cannot consume these handles.
+
+
+HTTP Cache reader exposure on an internal service refuses because no workload-authenticated
+template adapter is installed. Select `in-process` and invoke it through an authenticated route
+module. Public eligible-record HTTP exposure remains supported.

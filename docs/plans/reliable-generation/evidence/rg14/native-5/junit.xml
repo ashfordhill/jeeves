@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="135.665851774">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" timestamp="2026-11-17T01:53:23.751Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="135.665851774">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" name="RG14: foundations enforce the contract across independent native process copies" time="135.665113754">
+            <failure message="docker exec exit 1
+file:///app/dist/runtime/workload.js:10
+const unavailable = () =&gt; new OperationError(&quot;definite-failure&quot;, &quot;IDENTITY_UNAVAILABLE&quot;);
+                          ^
+
+OperationError: Operation definite-failure: IDENTITY_UNAVAILABLE
+    at unavailable (file:///app/dist/runtime/workload.js:10:27)
+    at Object.acquire (file:///app/dist/runtime/workload.js:220:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///app/[eval1]:10:14
+    at async file:///app/[eval1]:9:14 {
+  outcome: &apos;definite-failure&apos;,
+  code: &apos;IDENTITY_UNAVAILABLE&apos;
+}
+
+Node.js v24.21.0
+" type="Error">
+Error: docker exec exit 1
+file:///app/dist/runtime/workload.js:10
+const unavailable = () =&gt; new OperationError(&quot;definite-failure&quot;, &quot;IDENTITY_UNAVAILABLE&quot;);
+                          ^
+
+OperationError: Operation definite-failure: IDENTITY_UNAVAILABLE
+    at unavailable (file:///app/dist/runtime/workload.js:10:27)
+    at Object.acquire (file:///app/dist/runtime/workload.js:220:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///app/[eval1]:10:14
+    at async file:///app/[eval1]:9:14 {
+  outcome: &apos;definite-failure&apos;,
+  code: &apos;IDENTITY_UNAVAILABLE&apos;
+}
+
+Node.js v24.21.0
+
+ ❯ unavailable ../../../../app/dist/runtime/workload.js:10:27
+ ❯ Object.acquire ../../../../app/dist/runtime/workload.js:220:19
+ ❯ ../../../../app/[eval1]:10:14
+ ❯ ChildProcess.&lt;anonymous&gt; jeeves-generator/integration/harness/process.ts:97:11
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

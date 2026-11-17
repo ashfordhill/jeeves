@@ -1,4 +1,4 @@
-import { dependency, OperationError, currentProcess, assertNetworkAllowed, assertOperation } from "./operation.ts";
+import { dependency, OperationError, currentProcess, assertNetworkAllowed, assertOperation, withProcess } from "./operation.ts";
 import { readFileSync } from "node:fs";
 import { createClient, ErrorReply } from "redis";
 import { randomUUID } from "node:crypto";
@@ -33,6 +33,8 @@ export interface VersionWrite {
   readonly validUntil: number;
 }
 export interface ValkeyCache {
+  /** Private generated consumer requirement, including when an optional client was shared first. */
+  required(): void;
   get(key: string): Promise<string | null>;
   set(key: string, value: string, expiry?: { PXAT: number } | { EX: number }): Promise<unknown>;
   /** Private generated immutable cache fill. Public product set remains effect-checked. */
@@ -221,7 +223,35 @@ export async function createValkeyCache(options: {
   let connecting = false;
   let pending = 0;
   let reported: "available" | "unavailable" | undefined;
+  let required = false;
+  const readiness = {};
+  let healthTimer: ReturnType<typeof setTimeout> | undefined;
+  let healthRunning = false;
+  const health = () => {
+    if (!required || closed || healthTimer || healthRunning) return;
+    healthTimer = setTimeout(() => withProcess(operationScope, () => {
+      healthTimer = undefined;
+      if (closed || !required) return;
+      if (!current?.ready) { health(); return; }
+      healthRunning = true;
+      const generation = current;
+      let dispatched = false;
+      // The actual driver promise keeps the slot after a caller timeout. A silent store cannot
+      // accumulate health commands; the existing bounded disconnect/reconnect path owns recovery.
+      void command(client => {
+        dispatched = true;
+        return client.ping().finally(() => { healthRunning = false; health(); });
+      }, reply => { if (reply !== "PONG") throw Error("Invalid PING reply"); return reply; })
+        .then(() => { if (!closed && generation === current && current.ready) operationScope?.dependencyReady?.(readiness, true); })
+        .catch(error => {
+          if (!closed && generation === current && !(error instanceof OperationError && error.code === "CACHE_SATURATED")) operationScope?.dependencyReady?.(readiness, false);
+          if (!dispatched) { healthRunning = false; health(); }
+        });
+    }), 5000);
+    healthTimer.unref?.();
+  };
   const report = (state: "available" | "unavailable", error?: unknown) => {
+    if (required) operationScope?.dependencyReady?.(readiness, state === "available");
     if (state === reported) return;
     reported = state;
     try { options.onState?.(state, error); } catch { /* Reporting cannot change cache behavior. */ }
@@ -233,6 +263,7 @@ export async function createValkeyCache(options: {
     if (closed) return;
     closed = true;
     clearTimeout(retry);
+    clearTimeout(healthTimer);
     retry = undefined;
     operationScope?.signal.removeEventListener("abort", close);
     if (current) destroy(current);
@@ -321,6 +352,11 @@ export async function createValkeyCache(options: {
     return reply as string | null;
   };
   return {
+    required() {
+      required = true;
+      operationScope?.dependencyReady?.(readiness, !closed && current?.ready === true);
+      health();
+    },
     get: async (key) => { keyInput(key); return command((client) => client.get(key), stringReply); },
     set: async (key, value, expiry) => {
       keyInput(key);

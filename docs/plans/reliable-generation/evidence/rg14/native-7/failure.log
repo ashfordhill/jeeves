@@ -1,0 +1,52 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts (1 test | 1 failed) 115507ms
+   × RG14: foundations enforce the contract across independent native process copies 115507ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts > RG14: foundations enforce the contract across independent native process copies
+Error: docker exec exit 1
+file:///app/dist/runtime/valkey.js:22
+    const error = new OperationError(outcome, code);
+                  ^
+
+OperationError: Cache unavailable
+    at failure (file:///app/dist/runtime/valkey.js:22:19)
+    at command (file:///app/dist/runtime/valkey.js:298:19)
+    at Object.ping (file:///app/dist/runtime/valkey.js:367:21)
+    at file:///app/[eval1]:11:70
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:644:9)
+    at process.processTimers (node:internal/timers:618:7)
+    at async file:///app/[eval1]:8:14 {
+  outcome: 'refused',
+  code: 'CACHE_UNAVAILABLE'
+}
+
+Node.js v24.21.0
+
+ ❯ failure ../../../../app/dist/runtime/valkey.js:22:19
+ ❯ command ../../../../app/dist/runtime/valkey.js:298:19
+ ❯ Object.ping ../../../../app/dist/runtime/valkey.js:367:21
+ ❯ ../../../../app/[eval1]:11:70
+ ❯ ChildProcess.<anonymous> jeeves-generator/integration/harness/process.ts:97:11
+     95|       else
+     96|         reject(
+     97|           new Error(
+       |           ^
+     98|             `${program} ${args[0] ?? ""} ${signal ? `interrupted (${si…
+     99|           ),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:12:32
+   Duration  115.67s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-7/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-7/junit.xml

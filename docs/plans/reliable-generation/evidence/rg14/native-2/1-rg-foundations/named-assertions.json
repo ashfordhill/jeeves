@@ -1,0 +1,242 @@
+[
+  {
+    "name": "authenticated generated calls and independent user identity",
+    "expected": "Each gateway copy forwards a verified user over its own generated audience-bound workload client; missing either identity refuses",
+    "outcome": "passed",
+    "actual": {
+      "gatewayCopies": 2,
+      "noWorkload": 401,
+      "noUser": 401,
+      "wrongCaller": 403,
+      "userAsWorkload": 401,
+      "anonymousAliases": 0
+    }
+  },
+  {
+    "name": "precise native product and framework credentials",
+    "expected": "API SELECT/INSERT; same-owner worker SELECT/UPDATE; gateway only named published SELECT; product logins cannot read protected state or assume setup/DDL roles",
+    "outcome": "passed",
+    "actual": {
+      "products": [
+        {
+          "host": "items-api",
+          "user": "pr_items_db__items_api",
+          "outcomes": [
+            {
+              "name": "select-items",
+              "code": "OK"
+            },
+            {
+              "name": "insert-items",
+              "code": "OK"
+            },
+            {
+              "name": "update-items",
+              "code": "42501"
+            },
+            {
+              "name": "delete-items",
+              "code": "42501"
+            },
+            {
+              "name": "select-records",
+              "code": "OK"
+            },
+            {
+              "name": "published-view",
+              "code": "42501"
+            },
+            {
+              "name": "protected-replay",
+              "code": "42501"
+            },
+            {
+              "name": "protected-ledger",
+              "code": "42501"
+            },
+            {
+              "name": "product-ddl",
+              "code": "42501"
+            },
+            {
+              "name": "owner-role",
+              "code": "42501"
+            },
+            {
+              "name": "migration-role",
+              "code": "42501"
+            }
+          ]
+        },
+        {
+          "host": "items-worker",
+          "user": "pr_items_db__items_worker",
+          "outcomes": [
+            {
+              "name": "select-items",
+              "code": "OK"
+            },
+            {
+              "name": "insert-items",
+              "code": "42501"
+            },
+            {
+              "name": "update-items",
+              "code": "OK"
+            },
+            {
+              "name": "delete-items",
+              "code": "42501"
+            },
+            {
+              "name": "select-records",
+              "code": "42501"
+            },
+            {
+              "name": "published-view",
+              "code": "42501"
+            },
+            {
+              "name": "protected-replay",
+              "code": "42501"
+            },
+            {
+              "name": "protected-ledger",
+              "code": "42501"
+            },
+            {
+              "name": "product-ddl",
+              "code": "42501"
+            },
+            {
+              "name": "owner-role",
+              "code": "42501"
+            },
+            {
+              "name": "migration-role",
+              "code": "42501"
+            }
+          ]
+        },
+        {
+          "host": "gateway",
+          "user": "pr_items_db__gateway",
+          "outcomes": [
+            {
+              "name": "select-items",
+              "code": "42501"
+            },
+            {
+              "name": "insert-items",
+              "code": "42501"
+            },
+            {
+              "name": "update-items",
+              "code": "42501"
+            },
+            {
+              "name": "delete-items",
+              "code": "42501"
+            },
+            {
+              "name": "select-records",
+              "code": "42501"
+            },
+            {
+              "name": "published-view",
+              "code": "OK"
+            },
+            {
+              "name": "protected-replay",
+              "code": "42501"
+            },
+            {
+              "name": "protected-ledger",
+              "code": "42501"
+            },
+            {
+              "name": "product-ddl",
+              "code": "42501"
+            },
+            {
+              "name": "owner-role",
+              "code": "42501"
+            },
+            {
+              "name": "migration-role",
+              "code": "42501"
+            }
+          ]
+        }
+      ],
+      "runtime": {
+        "productCode": "OK",
+        "denied": ["42501", "42501", "42501"],
+        "protectedRows": "0",
+        "readOnly": "25006",
+        "setupMounted": false
+      },
+      "workerResult": {
+        "rows": [
+          {
+            "id": "seed",
+            "marked": true
+          }
+        ],
+        "rowCount": 1
+      },
+      "ddl": [
+        {
+          "name": "own-namespace-ddl",
+          "code": "OK"
+        },
+        {
+          "name": "template-table",
+          "code": "42501"
+        },
+        {
+          "name": "protected-ledger",
+          "code": "42501"
+        },
+        {
+          "name": "foreign-ddl",
+          "code": "42501"
+        }
+      ]
+    }
+  },
+  {
+    "name": "concurrent native migration serialization",
+    "expected": "Two native setup processes compete on unapplied 0002: both succeed, one marker and one exact checksummed ledger entry; rerun skips it and altered history refuses",
+    "outcome": "passed",
+    "actual": {
+      "processes": 2,
+      "marker": "applied-once",
+      "history": "0002|8bd93054344b62e53ea6fa65e3e23e707f3feeabb77a07fccf52268efb1b6697",
+      "checksumRefused": true,
+      "rerunSkipped": true
+    }
+  },
+  {
+    "name": "competing replay and atomic admission",
+    "expected": "One mutation for a shared key; at most two new admissions total across both copies; replay does not spend another slot",
+    "outcome": "passed",
+    "actual": {
+      "same": [409, 409, 409, 201, 409, 409, 409, 409, 409, 409, 409, 409],
+      "burst": [429, 201, 429, 429, 429, 429],
+      "replay": [201, 201],
+      "cache": [
+        {
+          "count": 2,
+          "ttl": 59267
+        }
+      ],
+      "productMutations": 2
+    }
+  },
+  {
+    "name": "old version fill fencing and absolute validity",
+    "expected": "The old native SELECT snapshot finishes after v2 but cannot replace or deliver v1; hits do not renew source validity",
+    "outcome": "failed"
+  }
+]

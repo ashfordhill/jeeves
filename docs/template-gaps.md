@@ -120,3 +120,26 @@ declarations/grants. Immutable and finite versioned modes are explicit. Cache po
 remain application-owned completion work. Version fencing lasts only while the shared cache key
 is retained; no durable watermark, immediate invalidation, stale-serving mode, L1/negative cache,
 new provider or authenticated cross-process cache adapter is claimed. Native store proof is RG14.
+
+
+RG14 review found that explicit HTTP cache-reader exposure on an internal service emitted an
+alternate route without a workload-authenticated template adapter. This composition now refuses;
+use the installed in-process reader behind an authenticated route stub. Public eligible-record
+HTTP exposure remains supported. No cross-process template adapter was added. Native foundation
+results and limits are recorded in [RG14 review](plans/reliable-generation/evidence/rg14/review.md).
+
+
+RG14's native COMMIT-reply loss test found a PostgreSQL client lifecycle gap: pg-pool observes
+idle errors, while a checked-out client can emit a later transport error after rejecting its
+query. The generated factory now observes that error once per physical client so it cannot crash
+Node before unknown-outcome recovery. Query rejection, discard, private replay and idle-pool
+error handling retain their semantics. See the RG14 review for native evidence and limits.
+
+
+RG14 also found that initialized readiness could stay successful while required admission
+storage was known unavailable, contrary to the common contract. Private lifecycle availability
+now drives HTTP and worker readiness, with bounded adapter-owned PostgreSQL/required-Valkey
+health probes and recovery. Required AMQP/PubSub state and bounded safe object/search reads
+use the same private readiness state. The installed Garage listener is private with no admin
+credential or grant expansion. Optional cache fallback stays available. No new normal control,
+provider, business retry or monitoring service was added; see the RG14 review for exact evidence.

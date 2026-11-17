@@ -1,0 +1,97 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 2080 files in 636ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/workload.test.ts (17 tests | 3 failed) 2094ms
+   ❯ RG09 generated caller adapter (9)
+     × private callee has no anonymous or user-only legacy alias, method or wildcard bypass 27ms
+     × retained private legacy tile transport refuses every request without dispatch 1ms
+     × runs actual emitted caller and callee routes with independent user/workload authentication 81ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+SyntaxError: The requested module '[encoded emitted test module omitted]' does not provide an export named 'probeDependency'
+ ❯ src/v2/workload.test.ts:398:5
+    396|       vi.stubEnv(name, value);
+    397|     const before = apps.length;
+    398|     await import(l.load("src/processes/callee.ts"));
+       |     ^
+    399|     const app = apps[before];
+    400|     const receiver = await import(l.load("src/modules/callee/receive.t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG09 generated caller adapter > retained private legacy tile transport refuses every request without dispatch
+SyntaxError: The requested module '[encoded emitted test module omitted]' does not provide an export named 'probeDependency'
+ ❯ src/v2/workload.test.ts:447:21
+    445|     const fetch = vi.fn();
+    446|     vi.stubGlobal("fetch", fetch);
+    447|     const clients = await import(l.load("src/runtime/module-clients.ts…
+       |                     ^
+    448|     await expect(
+    449|       clients.httpTarget({ tile: "callee" }).request("/modules/receive…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG09 generated caller adapter > runs actual emitted caller and callee routes with independent user/workload authentication
+SyntaxError: The requested module '[encoded emitted test module omitted]' does not provide an export named 'probeDependency'
+ ❯ src/v2/workload.test.ts:594:5
+    592|       vi.stubEnv(name, value);
+    593|     const before = apps.length;
+    594|     await import(generated.load("src/processes/callee.ts"));
+       |     ^
+    595|     const callee = apps[before];
+    596|     const workload = token();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 134 passed (135)
+      Tests  3 failed | 1220 passed (1223)
+   Start at  21:04:43
+   Duration  89.62s (tests 73%, import 18%, environment 5%, transform 3%)
+
+    Isolate  135 workers spawned · ~238ms startup each (spawn + environment, per file)
+             at least ~7.81s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

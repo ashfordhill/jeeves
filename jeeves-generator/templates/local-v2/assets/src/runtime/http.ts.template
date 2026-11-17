@@ -119,7 +119,7 @@ export async function createHttpService(options: {
   app.get("/livez", async () => ({ service: options.id, application: "live" }));
   for (const url of ["/healthz", "/readyz"])
     app.get(url, async (_request, reply) => {
-      if (state !== "ready" || options.stopping?.aborted) reply.code(503);
+      if (state !== "ready" || options.stopping?.aborted || scope?.dependenciesReady?.() === false) reply.code(503);
       return { service: options.id, application: state };
     });
   const publicBody = (error: unknown, request: FastifyRequest, reply: FastifyReply) => {

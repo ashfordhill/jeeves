@@ -57,6 +57,9 @@ root_domain = ".s3.garage.localhost"
 bind_addr = "[::]:3902"
 root_domain = ".web.garage.localhost"
 index = "index.html"
+[admin]
+api_bind_addr = "[::]:3903"
+metrics_require_token = true
 `,
       0o600,
     );

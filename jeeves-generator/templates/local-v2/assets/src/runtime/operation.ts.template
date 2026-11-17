@@ -4,6 +4,8 @@ interface ProcessScope {
   readonly signal: AbortSignal;
   track?<T>(work: Promise<T>): void;
   admission?(stop: () => void): void;
+  dependencyReady?(resource: object, ready: boolean): void;
+  dependenciesReady?(): boolean;
 }
 
 /** Durations cross machines; monotonic timestamps never do. Contexts are runtime-owned. */

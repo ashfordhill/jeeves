@@ -1247,6 +1247,20 @@ export function resolveGeneration(
       ),
     );
   if (model?.processes) {
+    for (const selection of normalized) {
+      if (
+        selection.binding.kind === "positive-cache-read" &&
+        selection.inputs["reader.transport"] !== "in-process" &&
+        model.processes.some(
+          (process) => process.tile === selection.host && process.exposure === "internal",
+        )
+      )
+        report(
+          "NEEDS_TEMPLATE",
+          selection.sourcePath,
+          "HTTP Cache reader exposure on an internal service has no workload-authenticated template adapter; select in-process and call it through an authenticated route module.",
+        );
+    }
     // A workload selector provisions the finite local client-credentials contract without an
     // Auth guard or browser. Saved source is readable; runnable generation reports missing setup.
     for (const process of model.processes) {

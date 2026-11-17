@@ -138,6 +138,7 @@ const fakes: Record<string, string> = {
         record("topic", name, options);
         return {
           exists: () => outcome("exists", [fake.pubsub?.exists ?? true]),
+          getMetadata: () => outcome("topic metadata", [{}]),
           publishMessage: (message) => {
             record("publishMessage", Buffer.from(message.data).toString(), message.attributes);
             return fake.pubsub?.publish ? fake.pubsub.publish() : Promise.resolve("1");
@@ -2725,7 +2726,7 @@ describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
   );
   const pools: Record<string, unknown>[] = [];
   (globalThis as { postgresPoolsFake?: unknown[] }).postgresPoolsFake = pools;
-  const pgFake = `export default { Pool: class { constructor(options) { globalThis.postgresPoolsFake.push(options); } } };`;
+  const pgFake = `export default { Pool: class { constructor(options) { globalThis.postgresPoolsFake.push(options); } on() {return this;} } };`;
   const loaded = import(
     dataUrl(
       stripTypeScriptTypes(source).replace(/from "([^"]+)"/g, (match, from: string) =>
@@ -2968,6 +2969,23 @@ describe("RG03 emitted dependency contexts and uncertain effects", () => {
     for (const close of scope.owned.reverse()) await close();
   });
 
+  it("RG14 required Pub/Sub publishers recover through bounded metadata reads without publishing business messages", async () => {
+    vi.useFakeTimers();
+    const app = processRuntime.createProcessLifecycle({ mark() {}, terminate() {} });
+    await app.start(async (scope: unknown) => {
+      await pubsubClients.pubsubPublisher(scope, probe, { topic: "visits" });
+    });
+    fake.fail = "topic metadata";
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(app.scope.dependenciesReady()).toBe(false);
+    fake.fail = undefined;
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(app.scope.dependenciesReady()).toBe(true);
+    expect(fake.calls.filter(([name]) => name === "topic metadata")).toHaveLength(2);
+    expect(fake.calls.filter(([name]) => name === "publishMessage")).toHaveLength(0);
+    await app.close();
+  });
+
   it("keeps a late Pub/Sub publish tracked through process drain, preserving stable identity and attributes", async () => {
     vi.useFakeTimers();
     let settle!: (id: string) => void;
@@ -3159,7 +3177,7 @@ it("RG03 rechecks the context after a template pool's delayed connection acquisi
   };
   (globalThis as { rg03Pool?: unknown }).rg03Pool = state;
   const fakePg = dataUrl(
-    "export default { Pool: class { connect() { return globalThis.rg03Pool.acquire(); } } };",
+    "export default { Pool: class { on() {return this;} connect() { return globalThis.rg03Pool.acquire(); } } };",
   );
   const source = stripTypeScriptTypes(
     new TextDecoder().decode(

@@ -1,0 +1,12 @@
+{
+  "id": "gs-085e68a3-d7ff-44da-a945-984997833040",
+  "selected": ["rg-foundations"],
+  "commit": "925e917e879033196d5f41a3cf1155dfe3afc5f2",
+  "dirty": "M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/suites.ts\n M jeeves-generator/src/v2/amqp.test.ts\n M jeeves-generator/src/v2/cache-reader.test.ts\n M jeeves-generator/src/v2/fixtures/processes-off.json\n M jeeves-generator/src/v2/http-wiring.ts\n M jeeves-generator/src/v2/local.test.ts\n M jeeves-generator/src/v2/module-clients.test.ts\n M jeeves-generator/src/v2/reliable-http.test.ts\n M jeeves-generator/src/v2/reliable-lifecycle.test.ts\n M jeeves-generator/src/v2/tile-loop.test.ts\n M jeeves-generator/src/v2/valkey-atomic.test.ts\n M jeeves-generator/src/v2/workload.test.ts\n M jeeves-generator/templates/local-v2/assets/scripts/setup.mjs\n M jeeves-generator/templates/local-v2/assets/src/features/service-resources.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/amqp.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/http.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/module-clients.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/objects.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/operation.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/postgres.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/process.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/search.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/valkey.ts.template\n M jeeves/packages/spec/src/generation-resolver.ts\n?? field-projects/generator-system/fixtures/rg-foundations/\n?? jeeves-generator/integration/harness/rg-foundations.ts\n?? jeeves-generator/integration/scenarios/rg-foundations.system.test.ts\n?? jeeves-generator/src/v2/dependency-readiness.test.ts\n?? jeeves-generator/src/v2/foundation-review.test.ts\n?? jeeves-generator/src/v2/postgres-recovery.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

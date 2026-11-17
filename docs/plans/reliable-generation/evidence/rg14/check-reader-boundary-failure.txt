@@ -1,0 +1,86 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 2062 files in 659ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/cache-reader.test.ts (12 tests | 1 failed) 4443ms
+   ❯ RG13 callable freshness (12)
+     × does not share authorization across inputs/callers and rechecks every waiter 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > does not share authorization across inputs/callers and rechecks every waiter
+AssertionError: expected { freshness: 'versioned', …(4) } to deeply equal { freshness: 'versioned', …(4) }
+
+- Expected
++ Received
+
+@@ -6,8 +6,8 @@
+      "public": true,
+      "until": 1794882301194,
+      "version": "1",
+    },
+    "source": "authoritative",
+-   "validUntil": 1794882301193,
++   "validUntil": 1794882301194,
+    "version": "1",
+  }
+
+ ❯ src/v2/cache-reader.test.ts:369:24
+    367|     expect(results[0]).not.toBe(results[1]);
+    368|     expect(Object.isFrozen(results[0])).toBe(true);
+    369|     expect(results[2]).toEqual(results[0]);
+       |                        ^
+    370|     expect(results[3]).toBeNull();
+    371|     expect(eligible).toHaveBeenCalledTimes(6);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 133 passed (134)
+      Tests  1 failed | 1217 passed (1218)
+   Start at  20:23:10
+   Duration  125.03s (tests 76%, import 17%, transform 4%, environment 3%)
+
+    Isolate  134 workers spawned · ~256ms startup each (spawn + environment, per file)
+             at least ~8.31s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "namespaces": [
+    {
+      "schema": "p_items_api_owner",
+      "migrations": [
+        {
+          "version": "0001",
+          "file": "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql"
+        },
+        {
+          "version": "0002",
+          "file": "infra/postgres/items-db/products/migrations/p_items_api_owner/0002-checkpoint.sql"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "schema": "p_items_api_owner",
+      "name": "items"
+    },
+    {
+      "schema": "p_items_api_owner",
+      "name": "records"
+    }
+  ],
+  "views": [
+    {
+      "schema": "p_items_api_owner",
+      "name": "visible_items",
+      "source": "visible_items"
+    }
+  ],
+  "operations": [
+    {
+      "name": "create_item",
+      "module": "create",
+      "host": "items-api",
+      "kind": "command",
+      "file": "infra/postgres/items-db/products/commands/create.sql",
+      "parameters": 1,
+      "relations": [
+        {
+          "schema": "p_items_api_owner",
+          "name": "items",
+          "operations": ["insert"]
+        }
+      ]
+    },
+    {
+      "name": "mark_item",
+      "module": "worker-access",
+      "host": "items-worker",
+      "kind": "command",
+      "file": "infra/postgres/items-db/products/commands/worker.sql",
+      "parameters": 1,
+      "relations": [
+        {
+          "schema": "p_items_api_owner",
+          "name": "items",
+          "operations": ["select", "update"]
+        }
+      ]
+    },
+    {
+      "name": "published_items",
+      "module": "published",
+      "host": "gateway",
+      "kind": "query",
+      "file": "infra/postgres/items-db/products/queries/published.sql",
+      "parameters": 0,
+      "relations": [
+        {
+          "schema": "published",
+          "name": "visible_items",
+          "operations": ["select"]
+        }
+      ]
+    },
+    {
+      "name": "read_record",
+      "module": "record-reader",
+      "host": "items-api",
+      "kind": "query",
+      "file": "infra/postgres/items-db/products/queries/read.sql",
+      "parameters": 1,
+      "relations": [
+        {
+          "schema": "p_items_api_owner",
+          "name": "records",
+          "operations": ["select"]
+        }
+      ]
+    },
+    {
+      "name": "slow_read",
+      "module": "slow",
+      "host": "items-api",
+      "kind": "query",
+      "file": "infra/postgres/items-db/products/queries/slow.sql",
+      "parameters": 0,
+      "relations": [
+        {
+          "schema": "p_items_api_owner",
+          "name": "items",
+          "operations": ["select"]
+        }
+      ]
+    }
+  ]
+}

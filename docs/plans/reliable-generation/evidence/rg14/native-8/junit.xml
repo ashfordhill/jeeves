@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="0" errors="0" time="147.126543709">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" timestamp="2026-11-17T03:18:34.763Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="0" time="147.126543709">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" name="RG14: foundations enforce the contract across independent native process copies" time="147.125427701">
+        </testcase>
+    </testsuite>
+</testsuites>

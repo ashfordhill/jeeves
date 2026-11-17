@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-foundations",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: docker exec exit 1\nfile:///app/dist/runtime/valkey.js:22\n    const error = new OperationError(outcome, code);\n                  ^\n\nOperationError: Cache unavailable\n    at failure (file:///app/dist/runtime/valkey.js:22:19)\n    at command (file:///app/dist/runtime/valkey.js:298:19)\n    at Object.ping (file:///app/dist/runtime/valkey.js:367:21)\n    at file:///app/[eval1]:11:70\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at listOnTimeout (node:internal/timers:644:9)\n    at process.processTimers (node:internal/timers:618:7)\n    at async file:///app/[eval1]:8:14 {\n  outcome: 'refused',\n  code: 'CACHE_UNAVAILABLE'\n}\n\nNode.js v24.21.0\n"
+}

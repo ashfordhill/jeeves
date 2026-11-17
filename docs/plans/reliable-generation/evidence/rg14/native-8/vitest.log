@@ -1,0 +1,13 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/rg-foundations.system.test.ts (1 test) 147127ms
+   ✓ RG14: foundations enforce the contract across independent native process copies 147125ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  21:15:52
+   Duration  147.29s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-8/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-8/junit.xml

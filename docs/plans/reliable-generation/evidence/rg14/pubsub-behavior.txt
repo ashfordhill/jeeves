@@ -1,0 +1,28 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/tile-loop.test.ts (29 tests | 1 failed) 744ms
+   ❯ emitted Pub/Sub stub loops (QG08) (12)
+     × RG14 uses actual metadata reads and stream state to clear required Pub/Sub loss without message traffic 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/tile-loop.test.ts > emitted Pub/Sub stub loops (QG08) > RG14 uses actual metadata reads and stream state to clear required Pub/Sub loss without message traffic
+TypeError: transport is not a function
+ ❯ src/v2/tile-loop.test.ts:861:7
+    859|     const transport = pubsubClients.pubsubLoop(probe);
+    860|     const consumer = await operation.withProcess(scope, () =>
+    861|       transport({}, { ...visitsLoop, handle: async () => {} }),
+       |       ^
+    862|     );
+    863|     const current = pubsubFake.subscriptions.at(-1);
+ ❯ Module.withProcess ../[encoded emitted test module omitted]:68:17
+ ❯ src/v2/tile-loop.test.ts:860:38
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 101 passed (102)
+   Start at  21:01:33
+   Duration  1.84s (transform 35%, import 34%, tests 31%)

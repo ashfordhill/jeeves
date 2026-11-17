@@ -1,0 +1,25 @@
+{
+  "revision": "925e917e879033196d5f41a3cf1155dfe3afc5f2",
+  "effectiveSourceSha256": "e4dce7b32b09831c2a883a24dd544ea4a110d7a9392f87d29444aca3c0ea5400",
+  "effectiveSourceFiles": 464,
+  "currentSourceMatchesNative8": true,
+  "native7To8Changed": ["jeeves-generator/integration/scenarios/rg-foundations.system.test.ts"],
+  "rootHashesMatch": true,
+  "ownerDiffBytes": 34001,
+  "ownerDiffMatches": true,
+  "baseline42ContainerIdNameStatesPreserved": true,
+  "inventoryCountsBefore": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43
+  },
+  "inventoryCountsAfter": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43
+  },
+  "exactCleanupEmpty": true,
+  "temporaryRemoved": true
+}

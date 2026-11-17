@@ -360,7 +360,9 @@ describe("RG13 callable freshness", () => {
     const other = within("b", () => read({ key: "guide" }));
     const wrong = within("a", () => read({ key: "private" }));
     expect(a.load).toHaveBeenCalledTimes(3);
-    const sharedValue = record();
+    // This case compares authorization/results across independent fills. Make the common source
+    // bound decisive, so millisecond differences in each fill's TTL start cannot change metadata.
+    const sharedValue = record("1", Date.now() + 30000);
     for (const release of releases) release(sharedValue);
     const results = await Promise.all([one, same, other, wrong]);
     expect(results[0]).toEqual(results[1]);

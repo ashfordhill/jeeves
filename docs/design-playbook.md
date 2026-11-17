@@ -1857,3 +1857,13 @@ can interleave and accidentally restore broader authority. Close/drain commands 
 caught failure before restoring the private role. Captured handles need runtime effect checks,
 including ordinary same-database handles, since omitting a network argument does not remove a
 closure's authority. Lost COMMIT results remain unknown and recover through durable replay.
+
+
+## 2026-11-16 RG14: observe physical-client errors across every pool state
+
+A pool's idle error handler does not cover borrowed clients. Native COMMIT-reply loss can reject
+an awaited query and then emit a separate client error before recovery completes. Generated
+resource setup must observe errors once per physical connection, including after discard; keep
+query rejection, unknown-outcome classification and idle pool handling intact. Registering on
+every checkout accumulates listeners. Verify the actual driver/store failure, since a rejected
+promise in a fake does not reproduce the later EventEmitter error.

@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-foundations",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: docker exec exit 1\nfile:///app/dist/runtime/workload.js:10\nconst unavailable = () => new OperationError(\"definite-failure\", \"IDENTITY_UNAVAILABLE\");\n                          ^\n\nOperationError: Operation definite-failure: IDENTITY_UNAVAILABLE\n    at unavailable (file:///app/dist/runtime/workload.js:10:27)\n    at Object.acquire (file:///app/dist/runtime/workload.js:220:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///app/[eval1]:10:14\n    at async file:///app/[eval1]:9:14 {\n  outcome: 'definite-failure',\n  code: 'IDENTITY_UNAVAILABLE'\n}\n\nNode.js v24.21.0\n"
+}

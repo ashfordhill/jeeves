@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-foundations",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected { protectedRows: '0', …(2) } to match object { productCode: '42501', …(2) }\n(1 matching property omitted from actual)"
+}

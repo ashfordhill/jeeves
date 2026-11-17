@@ -1,0 +1,5 @@
+{
+  "outcome": "failed",
+  "phase": "interrupted-or-runner",
+  "signal": "SIGINT"
+}

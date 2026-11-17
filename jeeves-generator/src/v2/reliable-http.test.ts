@@ -29,7 +29,7 @@ function load(name: string): string {
 const { createHttpService, HttpError } = await import(load("runtime/http"));
 const { createTileGuard } = await import(load("runtime/tile-guard"));
 const { createRateLimiter } = await import(load("runtime/rate-limiter"));
-const { OperationError } = await import(load("runtime/operation"));
+const { OperationError, withProcess } = await import(load("runtime/operation"));
 const { defineRoutes } = await import(load("modules/entry"));
 const { stubRoutes, notImplementedRoutes } = await import(load("runtime/tile-http"));
 const closed: { close(): Promise<void> }[] = [];
@@ -72,6 +72,25 @@ const shaped = (e: { code: string; message: string; retryable: boolean; requestI
 });
 
 describe("RG04 shared HTTP contract", () => {
+  it("RG14 required loss changes readiness without changing liveness or refusing recoverable reads", async () => {
+    let available = true;
+    const scope = { signal: new AbortController().signal, dependenciesReady: () => available };
+    const app = await withProcess(scope, () =>
+      service((routes) =>
+        routes.route({ method: "GET", url: "/read", handler: async () => ({ replay: true }) }),
+      ),
+    );
+    expect((await app.inject({ url: "/readyz" })).statusCode).toBe(200);
+    available = false;
+    expect((await app.inject({ url: "/readyz" })).statusCode).toBe(503);
+    expect((await app.inject({ url: "/livez" })).statusCode).toBe(200);
+    expect((await app.inject({ url: "/read" })).statusCode).toBe(200);
+    available = true;
+    expect((await app.inject({ url: "/healthz" })).statusCode).toBe(200);
+    app.stop();
+    expect((await app.inject({ url: "/readyz" })).statusCode).toBe(503);
+    expect((await app.inject({ url: "/livez" })).statusCode).toBe(200);
+  });
   it("formats guard, validation, framework parsing, table and template failures with generated status/headers", async () => {
     const guard = createTileGuard({
       signIn: "required",

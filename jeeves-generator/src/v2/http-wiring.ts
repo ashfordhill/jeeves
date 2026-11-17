@@ -202,6 +202,7 @@ function rateLimiterMount(
       '  const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({ binding: cacheBinding,',
       `    onState: (state, error) => state === "unavailable" ? failure(${text(`admission ${lead.module}`)}, error ?? new Error("Admission unavailable")) : console.log(JSON.stringify({ level: "info", event: "admission", tile: config.tile, module: ${text(lead.module)}, state })),`,
       '  }), "close"));',
+      "  cache.required();",
       `  const limiter = createRateLimiter({ process: config.tile, module: ${text(lead.module)}, limit: input(s, "limiter.limit"), windowSeconds: input(s, "limiter.windowSeconds"), cache, hooks: withLocalPolicy(() => ${hooks}({})) });`,
       "  return { cache, limiter };",
       "})();",

@@ -1,0 +1,13 @@
+services:
+  setup-migrate:
+    volumes:
+      - ./infra/postgres/items-db/products.json:/app/infra/postgres/items-db/products.json:ro
+      - ./infra/postgres/items-db/products:/app/infra/postgres/items-db/products:ro
+  app-items-api:
+    environment:
+      JEEVES_SECRET_JEEVES_REPLAY_KEYS_FILE: /run/secrets/fixture-replay
+    secrets:
+      - fixture-replay
+secrets:
+  fixture-replay:
+    file: ../rg14-replay-keys.json

@@ -1,0 +1,446 @@
+app-items-worker-1  | 2026-11-17T01:52:08.209338035Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-worker-1  | 2026-11-17T01:52:08.209897010Z Application ready
+local-postgres-1    | 2026-11-17T01:51:14.724985321Z The files belonging to this database system will be owned by user "postgres".
+local-postgres-1    | 2026-11-17T01:51:14.725020785Z This user must also own the server process.
+local-postgres-1    | 2026-11-17T01:51:14.725023192Z
+local-postgres-1    | 2026-11-17T01:51:14.725024770Z The database cluster will be initialized with locale "en_US.utf8".
+local-postgres-1    | 2026-11-17T01:51:14.725026321Z The default database encoding has accordingly been set to "UTF8".
+local-postgres-1    | 2026-11-17T01:51:14.725027800Z The default text search configuration will be set to "english".
+local-postgres-1    | 2026-11-17T01:51:14.725029243Z
+cache-records-1     | 2026-11-17T01:51:19.140380090Z 7:M 17 Nov 2026 01:51:19.140 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-records-1     | 2026-11-17T01:51:19.140421794Z 7:M 17 Nov 2026 01:51:19.140 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-records-1     | 2026-11-17T01:51:19.140424815Z 7:M 17 Nov 2026 01:51:19.140 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-records-1     | 2026-11-17T01:51:19.140426979Z 7:M 17 Nov 2026 01:51:19.140 * Configuration loaded
+cache-records-1     | 2026-11-17T01:51:19.140743702Z 7:M 17 Nov 2026 01:51:19.140 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-records-1     | 2026-11-17T01:51:19.140749148Z 7:M 17 Nov 2026 01:51:19.140 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-17T01:51:19.141241266Z 7:M 17 Nov 2026 01:51:19.141 * Running mode=standalone, port=6379.
+app-gateway-1       | 2026-11-17T01:52:08.877994787Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-gateway-1       | 2026-11-17T01:52:08.922904717Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-gateway-1       | 2026-11-17T01:52:08.923771059Z Application ready
+app-gateway-1       | 2026-11-17T01:52:31.840592991Z {"service":"gateway","level":"info","event":"request-failed","requestId":"20e98acf-861d-4832-acfc-3fd07ae44348","correlationId":"20e98acf-861d-4832-acfc-3fd07ae44348","method":"POST","route":"/modules/forward","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":85}
+app-gateway-2       | 2026-11-17T01:52:21.646460283Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-edge-1          | 2026-11-17T01:52:14.483991584Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+app-edge-1          | 2026-11-17T01:52:14.484024911Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+app-gateway-2       | 2026-11-17T01:52:21.680808002Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-gateway-2       | 2026-11-17T01:52:21.681382010Z Application ready
+app-gateway-2       | 2026-11-17T01:52:32.100266937Z {"service":"gateway","level":"info","event":"request-failed","requestId":"42dfddec-5225-44bb-b780-2efb55f1ab11","correlationId":"42dfddec-5225-44bb-b780-2efb55f1ab11","method":"POST","route":"/modules/forward","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":66}
+app-gateway-1       | 2026-11-17T01:52:55.973129844Z {"service":"gateway","level":"error","event":"request-failed","requestId":"7912da37-033a-4bf5-baf7-b47600a782a1","correlationId":"7912da37-033a-4bf5-baf7-b47600a782a1","method":"POST","route":"/modules/forward","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":6}
+app-items-api-1     | 2026-11-17T01:52:09.217485051Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+cache-admission-1   | 2026-11-17T01:51:15.129339348Z 8:M 17 Nov 2026 01:51:15.129 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-admission-1   | 2026-11-17T01:51:15.129393099Z 8:M 17 Nov 2026 01:51:15.129 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-17T01:51:15.129395768Z 8:M 17 Nov 2026 01:51:15.129 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=8, just started
+local-postgres-1    | 2026-11-17T01:51:14.725030577Z Data page checksums are disabled.
+local-postgres-1    | 2026-11-17T01:51:14.725033318Z
+local-postgres-1    | 2026-11-17T01:51:14.725068467Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+identity-sign-in-1  | 2026-11-17T01:51:28.583224221Z Updating the configuration and installing your custom providers, if any. Please wait.
+identity-sign-in-1  | 2026-11-17T01:51:30.873472661Z 2026-11-17 01:51:30,872 WARN  [org.keycloak.common.Profile] (build-18) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+cache-admission-1   | 2026-11-17T01:51:15.129397806Z 8:M 17 Nov 2026 01:51:15.129 * Configuration loaded
+cache-admission-1   | 2026-11-17T01:51:15.129634963Z 8:M 17 Nov 2026 01:51:15.129 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-admission-1   | 2026-11-17T01:51:15.129639797Z 8:M 17 Nov 2026 01:51:15.129 * monotonic clock: POSIX clock_gettime
+cache-admission-1   | 2026-11-17T01:51:15.130144771Z 8:M 17 Nov 2026 01:51:15.130 * Running mode=standalone, port=6379.
+cache-admission-1   | 2026-11-17T01:51:15.130492658Z 8:M 17 Nov 2026 01:51:15.130 * Server initialized
+cache-admission-1   | 2026-11-17T01:51:15.161471102Z 8:M 17 Nov 2026 01:51:15.161 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-admission-1   | 2026-11-17T01:51:15.221330223Z 8:M 17 Nov 2026 01:51:15.221 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-17T01:51:15.221346625Z 8:M 17 Nov 2026 01:51:15.221 * Ready to accept connections tcp
+cache-admission-1   | 2026-11-17T01:52:56.658429371Z 7:M 17 Nov 2026 01:52:56.658 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-admission-1   | 2026-11-17T01:52:56.658468758Z 7:M 17 Nov 2026 01:52:56.658 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-17T01:52:56.658472761Z 7:M 17 Nov 2026 01:52:56.658 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-admission-1   | 2026-11-17T01:52:56.658476161Z 7:M 17 Nov 2026 01:52:56.658 * Configuration loaded
+cache-admission-1   | 2026-11-17T01:52:56.658651191Z 7:M 17 Nov 2026 01:52:56.658 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+app-edge-1          | 2026-11-17T01:52:14.484665294Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+app-items-api-2     | 2026-11-17T01:52:21.339603025Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-2     | 2026-11-17T01:52:21.340670854Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+cache-admission-1   | 2026-11-17T01:52:56.658659333Z 7:M 17 Nov 2026 01:52:56.658 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-17T01:51:19.141512986Z 7:M 17 Nov 2026 01:51:19.141 * Server initialized
+cache-records-1     | 2026-11-17T01:51:19.173738758Z 7:M 17 Nov 2026 01:51:19.173 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-records-1     | 2026-11-17T01:51:19.219745988Z 7:M 17 Nov 2026 01:51:19.219 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-records-1     | 2026-11-17T01:51:19.219765708Z 7:M 17 Nov 2026 01:51:19.219 * Ready to accept connections tcp
+cache-records-1     | 2026-11-17T01:53:06.619537478Z 7:signal-handler (1794880386) Received SIGTERM scheduling shutdown...
+cache-records-1     | 2026-11-17T01:53:06.670856208Z 7:M 17 Nov 2026 01:53:06.670 * User requested shutdown...
+cache-records-1     | 2026-11-17T01:53:06.670887687Z 7:M 17 Nov 2026 01:53:06.670 * Calling fsync() on the AOF file.
+cache-records-1     | 2026-11-17T01:53:06.670943755Z 7:M 17 Nov 2026 01:53:06.670 * Saving the final RDB snapshot before exiting.
+cache-records-1     | 2026-11-17T01:53:06.701185513Z 7:M 17 Nov 2026 01:53:06.701 * DB saved on disk
+cache-records-1     | 2026-11-17T01:53:06.701208452Z 7:M 17 Nov 2026 01:53:06.701 # Valkey is now ready to exit, bye bye...
+app-items-api-1     | 2026-11-17T01:52:09.218420951Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+identity-sign-in-1  | 2026-11-17T01:51:42.772896335Z 2026-11-17 01:51:42,772 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 13535ms
+app-items-api-2     | 2026-11-17T01:52:21.376470090Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+cache-admission-1   | 2026-11-17T01:52:56.659075147Z 7:M 17 Nov 2026 01:52:56.659 * Running mode=standalone, port=6379.
+app-items-api-2     | 2026-11-17T01:52:21.398923791Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-2     | 2026-11-17T01:52:21.439983885Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-2     | 2026-11-17T01:52:21.440009150Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+identity-sign-in-1  | 2026-11-17T01:51:43.402463284Z Running the server in development mode. DO NOT use this configuration in production.
+identity-sign-in-1  | 2026-11-17T01:51:45.055136538Z 2026-11-17 01:51:43,858 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+identity-sign-in-1  | 2026-11-17T01:51:45.056279316Z 2026-11-17 01:51:44,125 WARN  [org.keycloak.models.sessions.infinispan.InfinispanStickySessionEncoderProviderFactory] (main) The option `shouldAttachRoute` is deprecated and will be removed in a future release. Disable it by setting `spi-sticky-session-encoder--infinispan--should-attach-route` to `false`
+identity-sign-in-1  | 2026-11-17T01:51:45.062306180Z 2026-11-17 01:51:45,048 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: enabled
+app-items-api-1     | 2026-11-17T01:52:09.252002315Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-1     | 2026-11-17T01:52:09.276053550Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-17T01:52:09.315569425Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-1     | 2026-11-17T01:52:09.315588406Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-1     | 2026-11-17T01:52:09.315591328Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-1     | 2026-11-17T01:52:09.316333802Z Application ready
+app-items-api-1     | 2026-11-17T01:52:26.952102489Z {"service":"items-api","level":"info","event":"request-completed","requestId":"4bd546b4-3617-474c-9ec7-b29ece68211a","correlationId":"4bd546b4-3617-474c-9ec7-b29ece68211a","method":"GET","route":"/livez","status":200,"durationMs":2}
+app-items-api-1     | 2026-11-17T01:52:26.952562260Z {"service":"items-api","level":"info","event":"request-completed","requestId":"b939f9f9-93c0-457c-b40a-f2a5d03ffd62","correlationId":"b939f9f9-93c0-457c-b40a-f2a5d03ffd62","method":"GET","route":"/readyz","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-17T01:52:32.097777189Z {"service":"items-api","level":"info","event":"request-failed","requestId":"64c1f090-7a10-49f9-9f4d-0a61fa5eabab","correlationId":"42dfddec-5225-44bb-b780-2efb55f1ab11","method":"POST","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":30}
+app-edge-1          | 2026-11-17T01:52:14.518221041Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+app-edge-1          | 2026-11-17T01:52:14.526088043Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+app-edge-1          | 2026-11-17T01:52:14.526247593Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+app-edge-1          | 2026-11-17T01:52:14.526397763Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+cache-admission-1   | 2026-11-17T01:52:56.659323907Z 7:M 17 Nov 2026 01:52:56.659 * Server initialized
+cache-admission-1   | 2026-11-17T01:52:56.659620282Z 7:M 17 Nov 2026 01:52:56.659 * Reading RDB base file on AOF loading...
+cache-admission-1   | 2026-11-17T01:52:56.659625846Z 7:M 17 Nov 2026 01:52:56.659 * Loading RDB produced by Valkey version 8.1.10
+cache-admission-1   | 2026-11-17T01:52:56.659629137Z 7:M 17 Nov 2026 01:52:56.659 * RDB age 101 seconds
+cache-admission-1   | 2026-11-17T01:52:56.659632266Z 7:M 17 Nov 2026 01:52:56.659 * RDB memory usage when created 0.84 Mb
+cache-admission-1   | 2026-11-17T01:52:56.659646423Z 7:M 17 Nov 2026 01:52:56.659 * RDB is base AOF
+cache-admission-1   | 2026-11-17T01:52:56.659648479Z 7:M 17 Nov 2026 01:52:56.659 * Done loading RDB, keys loaded: 0, keys expired: 0.
+local-postgres-1    | 2026-11-17T01:51:14.731803315Z creating subdirectories ... ok
+local-postgres-1    | 2026-11-17T01:51:14.731881718Z selecting dynamic shared memory implementation ... posix
+local-postgres-1    | 2026-11-17T01:51:14.753606944Z selecting default "max_connections" ... 100
+local-postgres-1    | 2026-11-17T01:51:14.775672369Z selecting default "shared_buffers" ... 128MB
+local-postgres-1    | 2026-11-17T01:51:14.812068349Z selecting default time zone ... UTC
+local-postgres-1    | 2026-11-17T01:51:14.812625000Z creating configuration files ... ok
+local-postgres-1    | 2026-11-17T01:51:14.944026214Z running bootstrap script ... ok
+local-postgres-1    | 2026-11-17T01:51:15.144968407Z sh: locale: not found
+local-postgres-1    | 2026-11-17T01:51:15.145029543Z 2026-11-17 01:51:15.144 UTC [35] WARNING:  no usable system locales were found
+local-postgres-1    | 2026-11-17T01:51:19.212349756Z performing post-bootstrap initialization ... ok
+local-postgres-1    | 2026-11-17T01:51:19.717585288Z initdb: warning: enabling "trust" authentication for local connections
+cache-records-1     | 2026-11-17T01:53:07.689161689Z 7:M 17 Nov 2026 01:53:07.689 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-records-1     | 2026-11-17T01:53:07.691643250Z 7:M 17 Nov 2026 01:53:07.689 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-records-1     | 2026-11-17T01:53:07.691651383Z 7:M 17 Nov 2026 01:53:07.689 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-records-1     | 2026-11-17T01:53:07.691654990Z 7:M 17 Nov 2026 01:53:07.689 * Configuration loaded
+cache-records-1     | 2026-11-17T01:53:07.691665477Z 7:M 17 Nov 2026 01:53:07.689 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-records-1     | 2026-11-17T01:53:07.691668885Z 7:M 17 Nov 2026 01:53:07.689 * monotonic clock: POSIX clock_gettime
+identity-sign-in-1  | 2026-11-17T01:51:45.800930112Z 2026-11-17 01:51:45,800 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+identity-sign-in-1  | 2026-11-17T01:51:45.829588130Z 2026-11-17 01:51:45,829 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-17T01:51:46.484071160Z 2026-11-17 01:51:46,483 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+identity-sign-in-1  | 2026-11-17T01:51:59.836788373Z 2026-11-17 01:51:59,836 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+identity-sign-in-1  | 2026-11-17T01:52:00.064457842Z 2026-11-17 01:52:00,064 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_643995, Site name: null, Cluster name: ISPN
+identity-sign-in-1  | 2026-11-17T01:52:00.199441968Z 2026-11-17 01:52:00,199 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 13:52, then every PT12H
+identity-sign-in-1  | 2026-11-17T01:52:00.279621928Z 2026-11-17 01:52:00,279 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+identity-sign-in-1  | 2026-11-17T01:52:00.468560563Z 2026-11-17 01:52:00,468 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+identity-sign-in-1  | 2026-11-17T01:52:01.476382577Z 2026-11-17 01:52:01,476 INFO  [org.keycloak.exportimport.singlefile.SingleFileImportProvider] (main) Full importing from file /opt/keycloak/bin/../data/import/realm.json
+identity-sign-in-1  | 2026-11-17T01:52:02.459714080Z 2026-11-17 01:52:02,459 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'sign-in' imported
+identity-sign-in-1  | 2026-11-17T01:52:02.459742610Z 2026-11-17 01:52:02,459 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+identity-sign-in-1  | 2026-11-17T01:52:02.459855918Z 2026-11-17 01:52:02,459 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+identity-sign-in-1  | 2026-11-17T01:52:02.538378990Z 2026-11-17 01:52:02,538 INFO  [org.keycloak.services] (main) KC-SERVICES0077: Created temporary admin user with username admin
+identity-sign-in-1  | 2026-11-17T01:52:02.686787341Z 2026-11-17 01:52:02,686 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 13.274000 seconds
+identity-sign-in-1  | 2026-11-17T01:52:02.756097791Z 2026-11-17 01:52:02,755 INFO  [io.quarkus] (main) Keycloak 26.8.1 on JVM (powered by Quarkus 3.40.1) started in 16.249s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+identity-sign-in-1  | 2026-11-17T01:52:02.756132254Z 2026-11-17 01:52:02,756 INFO  [io.quarkus] (main) Profile dev activated.
+identity-sign-in-1  | 2026-11-17T01:52:02.756193723Z 2026-11-17 01:52:02,756 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
+identity-sign-in-1  | 2026-11-17T01:52:31.418026172Z 2026-11-17 01:52:31,417 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client '[REDACTED]' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-17T01:52:31.559094818Z 2026-11-17 01:52:31,558 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client '[REDACTED]' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-17T01:53:14.252110728Z 2026-11-17 01:53:14,251 ERROR [org.keycloak.services.error.KeycloakErrorHandler] (executor-thread-1) Uncaught server error: org.keycloak.models.ModelException: Database operation failed
+identity-sign-in-1  | 2026-11-17T01:53:14.252144533Z 	at org.keycloak.connections.jpa.support.EntityManagerProxy.convert(EntityManagerProxy.java:254)
+identity-sign-in-1  | 2026-11-17T01:53:14.252148617Z 	at org.keycloak.connections.jpa.support.EntityManagerProxy.invoke(EntityManagerProxy.java:157)
+identity-sign-in-1  | 2026-11-17T01:53:14.252151881Z 	at jdk.proxy2/jdk.proxy2.$Proxy54.find(Unknown Source)
+identity-sign-in-1  | 2026-11-17T01:53:14.252155164Z 	at org.keycloak.models.jpa.session.JpaUserSessionPersisterProvider.loadClientSession(JpaUserSessionPersisterProvider.java:459)
+identity-sign-in-1  | 2026-11-17T01:53:14.252158374Z 	at org.keycloak.models.sessions.infinispan.changes.ClientSessionPersistentChangelogBasedTransaction.getSessionEntityFromPersister(ClientSessionPersistentChangelogBasedTransaction.java:136)
+identity-sign-in-1  | 2026-11-17T01:53:14.252165218Z 	at org.keycloak.models.sessions.infinispan.changes.ClientSessionPersistentChangelogBasedTransaction.get(ClientSessionPersistentChangelogBasedTransaction.java:80)
+cache-records-1     | 2026-11-17T01:53:07.691696712Z 7:M 17 Nov 2026 01:53:07.689 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-17T01:53:07.691698759Z 7:M 17 Nov 2026 01:53:07.690 * Server initialized
+cache-records-1     | 2026-11-17T01:53:07.691711446Z 7:M 17 Nov 2026 01:53:07.690 * Reading RDB base file on AOF loading...
+identity-sign-in-1  | 2026-11-17T01:53:14.252168671Z 	at org.keycloak.models.sessions.infinispan.PersistentUserSessionProvider.getClientSession(PersistentUserSessionProvider.java:312)
+identity-sign-in-1  | 2026-11-17T01:53:14.252171962Z 	at org.keycloak.models.sessions.infinispan.PersistentUserSessionProvider.getClientSession(PersistentUserSessionProvider.java:105)
+identity-sign-in-1  | 2026-11-17T01:53:14.252186255Z 	at org.keycloak.models.sessions.infinispan.UserSessionAdapter.getAuthenticatedClientSessionByClient(UserSessionAdapter.java:120)
+identity-sign-in-1  | 2026-11-17T01:53:14.252188437Z 	at org.keycloak.protocol.oidc.TokenManager.attachAuthenticationSession(TokenManager.java:514)
+identity-sign-in-1  | 2026-11-17T01:53:14.252190348Z 	at org.keycloak.protocol.oidc.TokenManager.attachAuthenticationSession(TokenManager.java:502)
+identity-sign-in-1  | 2026-11-17T01:53:14.252192278Z 	at org.keycloak.protocol.oidc.grants.ClientCredentialsGrantType.process(ClientCredentialsGrantType.java:133)
+identity-sign-in-1  | 2026-11-17T01:53:14.252194262Z 	at org.keycloak.protocol.oidc.endpoints.TokenEndpoint.processGrantRequest(TokenEndpoint.java:180)
+identity-sign-in-1  | 2026-11-17T01:53:14.252196200Z 	at org.keycloak.protocol.oidc.endpoints.TokenEndpoint$quarkusrestinvoker$processGrantRequest_3903cccf0670c489ab77dc2ba1ba757573ec6d78.invoke(Unknown Source)
+identity-sign-in-1  | 2026-11-17T01:53:14.252198220Z 	at org.jboss.resteasy.reactive.server.handlers.InvocationHandler.handle(InvocationHandler.java:29)
+identity-sign-in-1  | 2026-11-17T01:53:14.252200880Z 	at org.keycloak.quarkus.runtime.integration.resteasy.TransactionalSessionHandler.handle(TransactionalSessionHandler.java:85)
+app-items-api-2     | 2026-11-17T01:52:21.440012189Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-edge-1          | 2026-11-17T01:52:14.528077815Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+app-edge-1          | 2026-11-17T01:52:14.529055815Z /docker-entrypoint.sh: Configuration complete; ready for start up
+cache-records-1     | 2026-11-17T01:53:07.691713619Z 7:M 17 Nov 2026 01:53:07.690 * Loading RDB produced by Valkey version 8.1.10
+cache-records-1     | 2026-11-17T01:53:07.691715521Z 7:M 17 Nov 2026 01:53:07.690 * RDB age 108 seconds
+cache-records-1     | 2026-11-17T01:53:07.691717316Z 7:M 17 Nov 2026 01:53:07.690 * RDB memory usage when created 0.84 Mb
+local-postgres-1    | 2026-11-17T01:51:19.717612330Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+local-postgres-1    | 2026-11-17T01:51:19.717593016Z syncing data to disk ... ok
+local-postgres-1    | 2026-11-17T01:51:19.717618687Z
+local-postgres-1    | 2026-11-17T01:51:19.717620535Z
+local-postgres-1    | 2026-11-17T01:51:19.717622186Z Success. You can now start the database server using:
+local-postgres-1    | 2026-11-17T01:51:19.717629471Z
+local-postgres-1    | 2026-11-17T01:51:19.717631176Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+local-postgres-1    | 2026-11-17T01:51:19.717632880Z
+local-postgres-1    | 2026-11-17T01:51:19.790234695Z waiting for server to start....2026-11-17 01:51:19.790 UTC [41] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-17T01:51:19.807558476Z 2026-11-17 01:51:19.807 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-17T01:51:19.874683503Z 2026-11-17 01:51:19.874 UTC [44] LOG:  database system was shut down at 2026-11-17 01:51:19 UTC
+local-postgres-1    | 2026-11-17T01:51:19.895141236Z 2026-11-17 01:51:19.895 UTC [41] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-17T01:51:19.938458907Z  done
+local-postgres-1    | 2026-11-17T01:51:19.938493308Z server started
+local-postgres-1    | 2026-11-17T01:51:19.952984755Z
+local-postgres-1    | 2026-11-17T01:51:19.952999236Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+local-postgres-1    | 2026-11-17T01:51:19.953001905Z
+local-postgres-1    | 2026-11-17T01:51:19.953706797Z waiting for server to shut down....2026-11-17 01:51:19.953 UTC [41] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-17T01:51:19.973834425Z 2026-11-17 01:51:19.973 UTC [41] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-17T01:51:19.975813933Z 2026-11-17 01:51:19.975 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+local-postgres-1    | 2026-11-17T01:51:19.976029901Z 2026-11-17 01:51:19.975 UTC [42] LOG:  shutting down
+local-postgres-1    | 2026-11-17T01:51:19.993623625Z 2026-11-17 01:51:19.993 UTC [42] LOG:  checkpoint starting: shutdown immediate
+cache-records-1     | 2026-11-17T01:53:07.691719299Z 7:M 17 Nov 2026 01:53:07.690 * RDB is base AOF
+cache-records-1     | 2026-11-17T01:53:07.691721121Z 7:M 17 Nov 2026 01:53:07.690 * Done loading RDB, keys loaded: 0, keys expired: 0.
+cache-records-1     | 2026-11-17T01:53:07.691723060Z 7:M 17 Nov 2026 01:53:07.690 * DB loaded from base file appendonly.aof.1.base.rdb: 0.000 seconds
+cache-records-1     | 2026-11-17T01:53:07.691724926Z 7:M 17 Nov 2026 01:53:07.690 * DB loaded from incr file appendonly.aof.1.incr.aof: 0.000 seconds
+cache-records-1     | 2026-11-17T01:53:07.691726802Z 7:M 17 Nov 2026 01:53:07.690 * DB loaded from append only file: 0.000 seconds
+app-items-api-2     | 2026-11-17T01:52:21.440560761Z Application ready
+app-items-api-2     | 2026-11-17T01:52:31.838111881Z {"service":"items-api","level":"info","event":"request-failed","requestId":"29fafe89-91d2-441a-b303-1679fae73343","correlationId":"20e98acf-861d-4832-acfc-3fd07ae44348","method":"POST","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":28}
+app-items-api-2     | 2026-11-17T01:52:42.692715067Z {"service":"items-api","level":"info","event":"request-failed","requestId":"a6ac6684-26ac-4cdb-9c39-9a93bcffc94e","correlationId":"a6ac6684-26ac-4cdb-9c39-9a93bcffc94e","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":24}
+app-items-api-2     | 2026-11-17T01:52:42.695011985Z {"service":"items-api","level":"info","event":"request-failed","requestId":"3b740b21-6cd2-49ed-8195-52abe5b5716f","correlationId":"3b740b21-6cd2-49ed-8195-52abe5b5716f","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":26}
+app-items-api-2     | 2026-11-17T01:52:42.695032814Z {"service":"items-api","level":"info","event":"request-failed","requestId":"118dc822-09c6-4bd7-88a7-05645aa76cec","correlationId":"118dc822-09c6-4bd7-88a7-05645aa76cec","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":26}
+app-items-api-2     | 2026-11-17T01:52:42.695042318Z {"service":"items-api","level":"info","event":"request-failed","requestId":"35d81a3e-7b9c-4006-b869-322268b0bad8","correlationId":"35d81a3e-7b9c-4006-b869-322268b0bad8","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":23}
+app-items-api-2     | 2026-11-17T01:52:42.695884702Z {"service":"items-api","level":"info","event":"request-failed","requestId":"f68b14f5-1896-4a98-865e-fe32a9f52adf","correlationId":"f68b14f5-1896-4a98-865e-fe32a9f52adf","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":29}
+app-items-api-2     | 2026-11-17T01:52:42.720540206Z {"service":"items-api","level":"info","event":"request-completed","requestId":"181d0b00-4f0f-425d-a9fa-1774960f3c30","correlationId":"181d0b00-4f0f-425d-a9fa-1774960f3c30","method":"POST","route":"/internal/modules/create","status":201,"durationMs":53}
+app-items-api-2     | 2026-11-17T01:52:42.745525717Z {"service":"items-api","level":"info","event":"request-failed","requestId":"9a354801-486d-488e-aceb-b28b395b88cf","correlationId":"9a354801-486d-488e-aceb-b28b395b88cf","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":23}
+app-items-api-2     | 2026-11-17T01:52:42.745887959Z {"service":"items-api","level":"info","event":"request-failed","requestId":"25d1f057-3ec3-4ce8-83cb-8249d0bf1294","correlationId":"25d1f057-3ec3-4ce8-83cb-8249d0bf1294","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":23}
+app-items-api-2     | 2026-11-17T01:52:42.754713631Z {"service":"items-api","level":"info","event":"request-completed","requestId":"cace8191-94b9-4d55-91e7-b8fe6878a8e7","correlationId":"cace8191-94b9-4d55-91e7-b8fe6878a8e7","method":"POST","route":"/internal/modules/create","status":201,"durationMs":33}
+app-items-api-2     | 2026-11-17T01:52:42.757923338Z {"service":"items-api","level":"info","event":"request-completed","requestId":"d8ee2ac1-5c6f-4781-96f0-e09a41304f7f","correlationId":"d8ee2ac1-5c6f-4781-96f0-e09a41304f7f","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-2     | 2026-11-17T01:52:44.262439952Z {"service":"items-api","level":"info","event":"request-completed","requestId":"7ebad1f6-8d0e-42ee-8d4e-736c54049da0","correlationId":"7ebad1f6-8d0e-42ee-8d4e-736c54049da0","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":9}
+app-items-api-2     | 2026-11-17T01:52:45.239276073Z {"service":"items-api","level":"info","event":"request-completed","requestId":"4c690694-5512-4769-a962-9956603bdc8d","correlationId":"4c690694-5512-4769-a962-9956603bdc8d","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":2}
+app-items-api-2     | 2026-11-17T01:52:48.532361046Z {"service":"items-api","level":"info","event":"request-failed","requestId":"9df74784-19d5-4b06-9b4a-185d27ffc77c","correlationId":"9df74784-19d5-4b06-9b4a-185d27ffc77c","method":"POST","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":4}
+app-items-api-2     | 2026-11-17T01:52:51.433142030Z {"service":"items-api","level":"info","event":"request-completed","requestId":"7a2da799-c7f5-4680-8b66-8fd1f2df7233","correlationId":"7a2da799-c7f5-4680-8b66-8fd1f2df7233","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+local-postgres-1    | 2026-11-17T01:51:20.125721065Z 2026-11-17 01:51:20.125 UTC [42] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.048 s, sync=0.014 s, total=0.150 s; sync files=2, longest=0.007 s, average=0.007 s; distance=0 kB, estimate=0 kB; lsn=0/14EF2C8, redo lsn=0/14EF2C8
+local-postgres-1    | 2026-11-17T01:51:20.131258239Z 2026-11-17 01:51:20.131 UTC [41] LOG:  database system is shut down
+local-postgres-1    | 2026-11-17T01:51:20.153976372Z  done
+local-postgres-1    | 2026-11-17T01:51:20.154013144Z server stopped
+local-postgres-1    | 2026-11-17T01:51:20.154811299Z
+app-items-api-2     | 2026-11-17T01:52:54.996033833Z {"level":"error","event":"failure","tile":"items-api","what":"admission create-limit","error":"Error: Socket closed unexpectedly"}
+app-items-api-2     | 2026-11-17T01:52:55.971506673Z {"service":"items-api","level":"error","event":"request-failed","requestId":"20a95892-73e1-4f1e-b16e-a25635e1865c","correlationId":"7912da37-033a-4bf5-baf7-b47600a782a1","method":"POST","route":"/internal/modules/create","status":503,"code":"RATE_LIMIT_UNAVAILABLE","retryable":false,"durationMs":3}
+app-items-api-2     | 2026-11-17T01:52:56.215259345Z {"service":"items-api","level":"info","event":"request-completed","requestId":"69eb9ba3-5ef9-43d5-8dbe-8962e9c72a2a","correlationId":"69eb9ba3-5ef9-43d5-8dbe-8962e9c72a2a","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-2     | 2026-11-17T01:52:59.998974815Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-2     | 2026-11-17T01:53:06.436948948Z {"service":"items-api","level":"info","event":"request-completed","requestId":"ffe3bee2-420d-4b61-b569-3331e54070be","correlationId":"ffe3bee2-420d-4b61-b569-3331e54070be","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":10}
+app-items-api-2     | 2026-11-17T01:53:06.703300250Z {"level":"error","event":"failure","tile":"items-api","what":"cache record-reader","error":"Error: Socket closed unexpectedly"}
+app-items-api-2     | 2026-11-17T01:53:07.249628842Z {"level":"error","event":"failure","tile":"items-api","what":"cache read record-reader","error":"OperationError: Operation refused: CACHE_READ_FAILED"}
+app-items-api-2     | 2026-11-17T01:53:07.250809312Z {"service":"items-api","level":"info","event":"request-completed","requestId":"5684ff9c-eb7f-4449-af14-6e10a027fe32","correlationId":"5684ff9c-eb7f-4449-af14-6e10a027fe32","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":2}
+app-items-api-2     | 2026-11-17T01:53:11.735411050Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-2     | 2026-11-17T01:53:13.168264896Z {"service":"items-api","level":"info","event":"request-completed","requestId":"4da216f7-86dc-4873-b1ba-3c768eba10b4","correlationId":"4da216f7-86dc-4873-b1ba-3c768eba10b4","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":3}
+cache-records-1     | 2026-11-17T01:53:07.691728632Z 7:M 17 Nov 2026 01:53:07.690 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+identity-sign-in-1  | 2026-11-17T01:53:14.252202909Z 	at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:195)
+cache-records-1     | 2026-11-17T01:53:07.691730580Z 7:M 17 Nov 2026 01:53:07.690 * Ready to accept connections tcp
+cache-admission-1   | 2026-11-17T01:52:56.659669723Z 7:M 17 Nov 2026 01:52:56.659 * DB loaded from base file appendonly.aof.1.base.rdb: 0.000 seconds
+cache-admission-1   | 2026-11-17T01:52:56.659744348Z 7:M 17 Nov 2026 01:52:56.659 * DB loaded from incr file appendonly.aof.1.incr.aof: 0.000 seconds
+cache-admission-1   | 2026-11-17T01:52:56.659747658Z 7:M 17 Nov 2026 01:52:56.659 * DB loaded from append only file: 0.000 seconds
+cache-admission-1   | 2026-11-17T01:52:56.659749551Z 7:M 17 Nov 2026 01:52:56.659 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-17T01:52:56.659751598Z 7:M 17 Nov 2026 01:52:56.659 * Ready to accept connections tcp
+local-postgres-1    | 2026-11-17T01:51:20.154816411Z PostgreSQL init process complete; ready for start up.
+local-postgres-1    | 2026-11-17T01:51:20.154818927Z
+local-postgres-1    | 2026-11-17T01:51:20.206698807Z 2026-11-17 01:51:20.206 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-17T01:51:20.206733505Z 2026-11-17 01:51:20.206 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-17T01:51:20.206736327Z 2026-11-17 01:51:20.206 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-17T01:51:20.241797754Z 2026-11-17 01:51:20.241 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+app-items-api-1     | 2026-11-17T01:52:32.305780794Z {"service":"items-api","level":"info","event":"request-failed","requestId":"74d6c192-505f-40dc-8173-67c22f653c83","correlationId":"74d6c192-505f-40dc-8173-67c22f653c83","method":"POST","route":"/internal/modules/create","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-17T01:52:32.540195354Z {"service":"items-api","level":"info","event":"request-failed","requestId":"12105552-3a09-412d-913d-79b57cf15e56","correlationId":"12105552-3a09-412d-913d-79b57cf15e56","method":"POST","route":"/internal/modules/create","status":401,"code":"SIGN_IN_REQUIRED","retryable":false,"durationMs":0}
+app-items-api-1     | 2026-11-17T01:52:32.806126461Z {"service":"items-api","level":"info","event":"request-failed","requestId":"5cb47004-4ee2-498d-a913-1c1fe004b617","correlationId":"5cb47004-4ee2-498d-a913-1c1fe004b617","method":"POST","route":"/internal/modules/forbidden","status":403,"code":"WORKLOAD_FORBIDDEN","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-17T01:52:33.014429331Z {"service":"items-api","level":"info","event":"request-failed","requestId":"a6206627-94da-40c7-a0cb-c577fd384eda","correlationId":"a6206627-94da-40c7-a0cb-c577fd384eda","method":"POST","route":"/internal/modules/create","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-17T01:52:33.251930994Z {"service":"items-api","level":"info","event":"request-failed","requestId":"81fd9ef8-d4d4-41b5-8416-12b52b226101","correlationId":"81fd9ef8-d4d4-41b5-8416-12b52b226101","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+app-items-api-1     | 2026-11-17T01:52:33.502614202Z {"service":"items-api","level":"info","event":"request-failed","requestId":"b3ba1a4e-2436-4999-85cd-24f5ec4c85d4","correlationId":"b3ba1a4e-2436-4999-85cd-24f5ec4c85d4","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+app-items-api-1     | 2026-11-17T01:52:42.696111030Z {"service":"items-api","level":"info","event":"request-failed","requestId":"cd5fe2e8-5bcc-4c25-a3ea-ce0b0a6e4109","correlationId":"cd5fe2e8-5bcc-4c25-a3ea-ce0b0a6e4109","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":29}
+app-items-api-1     | 2026-11-17T01:52:42.696833820Z {"service":"items-api","level":"info","event":"request-failed","requestId":"cf0202f3-f5b5-4e45-9da2-cae3de0f3f03","correlationId":"cf0202f3-f5b5-4e45-9da2-cae3de0f3f03","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":31}
+app-items-api-1     | 2026-11-17T01:52:42.697692741Z {"service":"items-api","level":"info","event":"request-failed","requestId":"56376bcd-f561-454a-b304-b44f71f15fbd","correlationId":"56376bcd-f561-454a-b304-b44f71f15fbd","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":31}
+app-items-api-1     | 2026-11-17T01:52:42.697986887Z {"service":"items-api","level":"info","event":"request-failed","requestId":"9a9215d6-6afa-4cc7-b94e-25fdedad8516","correlationId":"9a9215d6-6afa-4cc7-b94e-25fdedad8516","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":22}
+app-items-api-1     | 2026-11-17T01:52:42.698534989Z {"service":"items-api","level":"info","event":"request-failed","requestId":"fabbdef3-0474-4827-bf87-1a7bc4bab1f9","correlationId":"fabbdef3-0474-4827-bf87-1a7bc4bab1f9","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":26}
+app-items-api-1     | 2026-11-17T01:52:42.698852695Z {"service":"items-api","level":"info","event":"request-failed","requestId":"653fc59e-edf3-4407-8b6e-37ded5d406ae","correlationId":"653fc59e-edf3-4407-8b6e-37ded5d406ae","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":23}
+app-items-api-1     | 2026-11-17T01:52:42.745525744Z {"service":"items-api","level":"info","event":"request-failed","requestId":"8caf592e-a79b-4a58-9ec9-08b4c5824083","correlationId":"8caf592e-a79b-4a58-9ec9-08b4c5824083","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":23}
+app-items-api-1     | 2026-11-17T01:52:42.745704237Z {"service":"items-api","level":"info","event":"request-failed","requestId":"f6d3f669-821c-44b5-98ac-a2bab39637dd","correlationId":"f6d3f669-821c-44b5-98ac-a2bab39637dd","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":23}
+app-items-api-1     | 2026-11-17T01:52:42.745937869Z {"service":"items-api","level":"info","event":"request-failed","requestId":"2fd2decd-68d2-4666-82ad-4bc85af87c09","correlationId":"2fd2decd-68d2-4666-82ad-4bc85af87c09","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":23}
+app-items-api-1     | 2026-11-17T01:52:42.758042598Z {"service":"items-api","level":"info","event":"request-completed","requestId":"d6dc16f7-0f34-458d-ba79-d006d485ed51","correlationId":"d6dc16f7-0f34-458d-ba79-d006d485ed51","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-1     | 2026-11-17T01:52:43.121948087Z {"service":"items-api","level":"info","event":"request-failed","requestId":"bb56cfe6-4208-478c-a444-4735e6fe480d","correlationId":"bb56cfe6-4208-478c-a444-4735e6fe480d","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_CONFLICT","retryable":false,"durationMs":2}
+app-items-api-1     | 2026-11-17T01:52:44.592094857Z {"service":"items-api","level":"info","event":"request-completed","requestId":"629d6d71-639a-463b-9564-74592bf61d19","correlationId":"629d6d71-639a-463b-9564-74592bf61d19","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":620}
+app-items-api-1     | 2026-11-17T01:52:44.974613088Z {"service":"items-api","level":"info","event":"request-completed","requestId":"8b979e1f-9ea2-464e-817b-32f1ba455032","correlationId":"8b979e1f-9ea2-464e-817b-32f1ba455032","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":3}
+app-items-api-1     | 2026-11-17T01:52:52.046305536Z {"service":"items-api","level":"error","event":"request-failed","requestId":"ab873fce-9165-46f5-bbae-adb5ca458eca","correlationId":"rg14-deadline","method":"POST","route":"/internal/modules/slow","status":503,"code":"DEADLINE","retryable":false,"durationMs":101}
+app-items-api-1     | 2026-11-17T01:52:54.996042652Z {"level":"error","event":"failure","tile":"items-api","what":"admission create-limit","error":"Error: Socket closed unexpectedly"}
+app-items-api-1     | 2026-11-17T01:52:55.476636458Z {"service":"items-api","level":"info","event":"request-completed","requestId":"716454d0-540a-4b83-b5d9-2f5c0c3cffbc","correlationId":"716454d0-540a-4b83-b5d9-2f5c0c3cffbc","method":"GET","route":"/livez","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-17T01:52:55.476871515Z {"service":"items-api","level":"info","event":"request-completed","requestId":"bae04a9a-e8f8-419a-ac9c-c0f36c3c44d2","correlationId":"bae04a9a-e8f8-419a-ac9c-c0f36c3c44d2","method":"GET","route":"/readyz","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-17T01:52:55.757798130Z {"service":"items-api","level":"error","event":"request-failed","requestId":"33e947a2-c78d-45e2-8b8a-d99feead05a7","correlationId":"33e947a2-c78d-45e2-8b8a-d99feead05a7","method":"POST","route":"/internal/modules/create","status":503,"code":"RATE_LIMIT_UNAVAILABLE","retryable":false,"durationMs":12}
+app-items-api-1     | 2026-11-17T01:53:00.000064943Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-17T01:53:02.141573071Z {"service":"items-api","level":"info","event":"request-failed","requestId":"0b153ed1-9069-4c09-9539-c198baeb7dbb","correlationId":"0b153ed1-9069-4c09-9539-c198baeb7dbb","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":3}
+app-items-api-1     | 2026-11-17T01:53:06.703275435Z {"level":"error","event":"failure","tile":"items-api","what":"cache record-reader","error":"Error: Socket closed unexpectedly"}
+app-items-api-1     | 2026-11-17T01:53:11.740511708Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+identity-sign-in-1  | 2026-11-17T01:53:14.252204920Z 	at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:150)
+identity-sign-in-1  | 2026-11-17T01:53:14.252206868Z 	at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:695)
+identity-sign-in-1  | 2026-11-17T01:53:14.252209032Z 	at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2651)
+identity-sign-in-1  | 2026-11-17T01:53:14.252210997Z 	at org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2630)
+identity-sign-in-1  | 2026-11-17T01:53:14.252212855Z 	at org.jboss.threads.EnhancedQueueExecutor.runThreadBody(EnhancedQueueExecutor.java:1622)
+identity-sign-in-1  | 2026-11-17T01:53:14.252214821Z 	at org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1589)
+identity-sign-in-1  | 2026-11-17T01:53:14.252216687Z 	at org.jboss.threads.DelegatingRunnable.run(DelegatingRunnable.java:11)
+identity-sign-in-1  | 2026-11-17T01:53:14.252218482Z 	at org.jboss.threads.ThreadLocalResettingRunnable.run(ThreadLocalResettingRunnable.java:11)
+identity-sign-in-1  | 2026-11-17T01:53:14.252220474Z 	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+identity-sign-in-1  | 2026-11-17T01:53:14.252222341Z 	at java.base/java.lang.Thread.run(Thread.java:1583)
+identity-sign-in-1  | 2026-11-17T01:53:14.252224234Z Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due to administrator command
+identity-sign-in-1  | 2026-11-17T01:53:14.252226137Z 	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2993)
+identity-sign-in-1  | 2026-11-17T01:53:14.252227977Z 	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2656)
+identity-sign-in-1  | 2026-11-17T01:53:14.252229825Z 	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:446)
+local-postgres-1    | 2026-11-17T01:51:20.281259798Z 2026-11-17 01:51:20.281 UTC [55] LOG:  database system was shut down at 2026-11-17 01:51:20 UTC
+local-postgres-1    | 2026-11-17T01:51:20.304335196Z 2026-11-17 01:51:20.304 UTC [1] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-17T01:51:45.837591192Z 2026-11-17 01:51:45.837 UTC [104] ERROR:  relation "migration_model" does not exist at character 25
+local-postgres-1    | 2026-11-17T01:51:45.837617820Z 2026-11-17 01:51:45.837 UTC [104] STATEMENT:  SELECT ID, VERSION FROM MIGRATION_MODEL ORDER BY UPDATE_TIME DESC
+local-postgres-1    | 2026-11-17T01:51:46.433572530Z 2026-11-17 01:51:46.433 UTC [105] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+identity-sign-in-1  | 2026-11-17T01:53:14.252231746Z 	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:533)
+local-postgres-1    | 2026-11-17T01:51:46.433606136Z 2026-11-17 01:51:46.433 UTC [105] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock
+local-postgres-1    | 2026-11-17T01:52:33.735147514Z 2026-11-17 01:52:33.735 UTC [173] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-17T01:52:33.735171851Z 2026-11-17 01:52:33.735 UTC [173] STATEMENT:  UPDATE p_items_api_owner.items SET marked=true WHERE id='seed'
+local-postgres-1    | 2026-11-17T01:52:33.735526483Z 2026-11-17 01:52:33.735 UTC [173] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-17T01:52:33.735542236Z 2026-11-17 01:52:33.735 UTC [173] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-17T01:52:33.736598829Z 2026-11-17 01:52:33.736 UTC [173] ERROR:  permission denied for schema published at character 15
+local-postgres-1    | 2026-11-17T01:52:33.736604438Z 2026-11-17 01:52:33.736 UTC [173] STATEMENT:  SELECT * FROM published.visible_items
+local-postgres-1    | 2026-11-17T01:52:33.736606512Z 2026-11-17 01:52:33.736 UTC [173] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-17T01:52:33.736608216Z 2026-11-17 01:52:33.736 UTC [173] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-17T01:52:33.736731242Z 2026-11-17 01:52:33.736 UTC [173] ERROR:  permission denied for schema public at character 15
+local-postgres-1    | 2026-11-17T01:52:33.736736066Z 2026-11-17 01:52:33.736 UTC [173] STATEMENT:  SELECT * FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-17T01:52:33.737099105Z 2026-11-17 01:52:33.737 UTC [173] ERROR:  permission denied for schema p_items_api_owner at character 14
+identity-sign-in-1  | 2026-11-17T01:53:14.252237291Z 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:449)
+identity-sign-in-1  | 2026-11-17T01:53:14.252239212Z 	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:197)
+identity-sign-in-1  | 2026-11-17T01:53:14.252241051Z 	at org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:140)
+identity-sign-in-1  | 2026-11-17T01:53:14.252242981Z 	at io.agroal.pool.wrapper.PreparedStatementWrapper.executeQuery(PreparedStatementWrapper.java:76)
+identity-sign-in-1  | 2026-11-17T01:53:14.252244947Z 	at org.hibernate.sql.results.jdbc.internal.DeferredResultSetAccess.executeQuery(DeferredResultSetAccess.java:269)
+identity-sign-in-1  | 2026-11-17T01:53:14.252247039Z 	at org.hibernate.sql.results.jdbc.internal.DeferredResultSetAccess.getResultSet(DeferredResultSetAccess.java:188)
+identity-sign-in-1  | 2026-11-17T01:53:14.252248959Z 	at org.hibernate.sql.results.jdbc.internal.JdbcValuesResultSetImpl.<init>(JdbcValuesResultSetImpl.java:71)
+identity-sign-in-1  | 2026-11-17T01:53:14.252250988Z 	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.resolveJdbcValues(JdbcSelectExecutorStandardImpl.java:422)
+identity-sign-in-1  | 2026-11-17T01:53:14.252252954Z 	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.resolveJdbcValuesSource(JdbcSelectExecutorStandardImpl.java:349)
+identity-sign-in-1  | 2026-11-17T01:53:14.252254865Z 	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.doExecuteQuery(JdbcSelectExecutorStandardImpl.java:143)
+identity-sign-in-1  | 2026-11-17T01:53:14.252256813Z 	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.executeQuery(JdbcSelectExecutorStandardImpl.java:100)
+local-postgres-1    | 2026-11-17T01:52:33.737103740Z 2026-11-17 01:52:33.737 UTC [173] STATEMENT:  CREATE TABLE p_items_api_owner.forbidden(id text)
+local-postgres-1    | 2026-11-17T01:52:33.737374071Z 2026-11-17 01:52:33.737 UTC [173] ERROR:  permission denied to set role "o_items_db"
+local-postgres-1    | 2026-11-17T01:52:33.737381204Z 2026-11-17 01:52:33.737 UTC [173] STATEMENT:  SET ROLE o_items_db
+local-postgres-1    | 2026-11-17T01:52:33.737555260Z 2026-11-17 01:52:33.737 UTC [173] ERROR:  permission denied to set role "pm_items_db_p_items_api_owner"
+local-postgres-1    | 2026-11-17T01:52:33.737560706Z 2026-11-17 01:52:33.737 UTC [173] STATEMENT:  SET ROLE pm_items_db_p_items_api_owner
+local-postgres-1    | 2026-11-17T01:52:33.927072423Z 2026-11-17 01:52:33.926 UTC [174] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-17T01:52:33.927091873Z 2026-11-17 01:52:33.926 UTC [174] STATEMENT:  INSERT INTO p_items_api_owner.items(id) VALUES ('privilege-items-worker')
+local-postgres-1    | 2026-11-17T01:52:33.935644661Z 2026-11-17 01:52:33.935 UTC [174] ERROR:  permission denied for table items
+identity-sign-in-1  | 2026-11-17T01:53:14.252258725Z 	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.executeQuery(JdbcSelectExecutor.java:63)
+identity-sign-in-1  | 2026-11-17T01:53:14.252260600Z 	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.list(JdbcSelectExecutor.java:137)
+identity-sign-in-1  | 2026-11-17T01:53:14.252262476Z 	at org.hibernate.loader.ast.internal.SingleIdLoadPlan.load(SingleIdLoadPlan.java:139)
+identity-sign-in-1  | 2026-11-17T01:53:14.252264369Z 	at org.hibernate.loader.ast.internal.SingleIdEntityLoaderStandardImpl.load(SingleIdEntityLoaderStandardImpl.java:75)
+identity-sign-in-1  | 2026-11-17T01:53:14.252266272Z 	at org.hibernate.loader.ast.internal.AbstractEntityBatchLoader.load(AbstractEntityBatchLoader.java:89)
+identity-sign-in-1  | 2026-11-17T01:53:14.252268139Z 	at org.hibernate.loader.ast.internal.AbstractEntityBatchLoader.load(AbstractEntityBatchLoader.java:52)
+identity-sign-in-1  | 2026-11-17T01:53:14.252269987Z 	at org.hibernate.loader.ast.internal.EntityBatchLoaderInPredicate.load(EntityBatchLoaderInPredicate.java:107)
+identity-sign-in-1  | 2026-11-17T01:53:14.252271881Z 	at org.hibernate.persister.entity.AbstractEntityPersister.doLoad(AbstractEntityPersister.java:3684)
+identity-sign-in-1  | 2026-11-17T01:53:14.252273711Z 	at org.hibernate.persister.entity.AbstractEntityPersister.load(AbstractEntityPersister.java:3673)
+identity-sign-in-1  | 2026-11-17T01:53:14.252275632Z 	at org.hibernate.event.internal.DefaultLoadEventListener.loadFromDatasource(DefaultLoadEventListener.java:580)
+identity-sign-in-1  | 2026-11-17T01:53:14.252277525Z 	at org.hibernate.event.internal.DefaultLoadEventListener.loadFromCacheOrDatasource(DefaultLoadEventListener.java:554)
+identity-sign-in-1  | 2026-11-17T01:53:14.252279419Z 	at org.hibernate.event.internal.DefaultLoadEventListener.load(DefaultLoadEventListener.java:538)
+identity-sign-in-1  | 2026-11-17T01:53:14.252293152Z 	at org.hibernate.event.internal.DefaultLoadEventListener.doLoad(DefaultLoadEventListener.java:521)
+identity-sign-in-1  | 2026-11-17T01:53:14.252295298Z 	at org.hibernate.event.internal.DefaultLoadEventListener.load(DefaultLoadEventListener.java:187)
+identity-sign-in-1  | 2026-11-17T01:53:14.252297300Z 	at org.hibernate.event.internal.DefaultLoadEventListener.proxyOrLoad(DefaultLoadEventListener.java:224)
+identity-sign-in-1  | 2026-11-17T01:53:14.252299211Z 	at org.hibernate.event.internal.DefaultLoadEventListener.doOnLoad(DefaultLoadEventListener.java:97)
+identity-sign-in-1  | 2026-11-17T01:53:14.252301141Z 	at org.hibernate.event.internal.DefaultLoadEventListener.onLoad(DefaultLoadEventListener.java:56)
+identity-sign-in-1  | 2026-11-17T01:53:14.252303008Z 	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:149)
+identity-sign-in-1  | 2026-11-17T01:53:14.252304928Z 	at org.hibernate.internal.SessionImpl.fireLoadNoChecks(SessionImpl.java:1282)
+identity-sign-in-1  | 2026-11-17T01:53:14.252306786Z 	at org.hibernate.internal.SessionImpl.fireLoad(SessionImpl.java:1269)
+identity-sign-in-1  | 2026-11-17T01:53:14.252308670Z 	at org.hibernate.internal.SessionImpl.load(SessionImpl.java:1252)
+identity-sign-in-1  | 2026-11-17T01:53:14.252310474Z 	at org.hibernate.loader.internal.IdentifierLoadAccessImpl.doLoad(IdentifierLoadAccessImpl.java:178)
+identity-sign-in-1  | 2026-11-17T01:53:14.252312367Z 	at org.hibernate.loader.internal.IdentifierLoadAccessImpl.lambda$load$0(IdentifierLoadAccessImpl.java:164)
+identity-sign-in-1  | 2026-11-17T01:53:14.252314288Z 	at org.hibernate.loader.internal.IdentifierLoadAccessImpl.perform(IdentifierLoadAccessImpl.java:127)
+identity-sign-in-1  | 2026-11-17T01:53:14.252316181Z 	at org.hibernate.loader.internal.IdentifierLoadAccessImpl.load(IdentifierLoadAccessImpl.java:164)
+identity-sign-in-1  | 2026-11-17T01:53:14.252318066Z 	at org.hibernate.internal.SessionImpl.find(SessionImpl.java:2178)
+identity-sign-in-1  | 2026-11-17T01:53:14.252319915Z 	at org.hibernate.internal.SessionImpl.find(SessionImpl.java:2147)
+identity-sign-in-1  | 2026-11-17T01:53:14.252321745Z 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+identity-sign-in-1  | 2026-11-17T01:53:14.252323621Z 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+identity-sign-in-1  | 2026-11-17T01:53:14.252325496Z 	at org.keycloak.connections.jpa.support.EntityManagerProxy.invoke(EntityManagerProxy.java:140)
+identity-sign-in-1  | 2026-11-17T01:53:14.252327426Z 	... 25 more
+identity-sign-in-1  | 2026-11-17T01:53:14.252329211Z
+identity-sign-in-1  | 2026-11-17T01:53:14.253574694Z 2026-11-17 01:53:14,253 WARN  [com.arjuna.ats.jta] (executor-thread-1) ARJUNA016045: attempted rollback of < formatId=131077, gtrid_length=35, bqual_length=36, tx_uid=0:ffffac180005:9637:6afbb331:113, node_name=quarkus, branch_uid=0:ffffac180005:9637:6afbb331:116, subordinatenodename=null, eis_name=0 > (io.agroal.narayana.LocalXAResource@457ad6e2) failed with exception code XAException.XAER_RMERR: javax.transaction.xa.XAException: Error trying to transactionRollback local transaction: This connection has been closed.
+identity-sign-in-1  | 2026-11-17T01:53:14.253583062Z 	at io.agroal.narayana.XAExceptionUtils.xaException(XAExceptionUtils.java:21)
+identity-sign-in-1  | 2026-11-17T01:53:14.253585425Z 	at io.agroal.narayana.XAExceptionUtils.xaException(XAExceptionUtils.java:9)
+identity-sign-in-1  | 2026-11-17T01:53:14.253594947Z 	at io.agroal.narayana.LocalXAResource.rollback(LocalXAResource.java:89)
+identity-sign-in-1  | 2026-11-17T01:53:14.253597002Z 	at com.arjuna.ats.internal.jta.resources.arjunacore.XAResourceRecord.topLevelAbort(XAResourceRecord.java:322)
+identity-sign-in-1  | 2026-11-17T01:53:14.253598959Z 	at com.arjuna.ats.arjuna.coordinator.BasicAction.doAbort(BasicAction.java:3203)
+identity-sign-in-1  | 2026-11-17T01:53:14.253600835Z 	at com.arjuna.ats.arjuna.coordinator.BasicAction.doAbort(BasicAction.java:3182)
+identity-sign-in-1  | 2026-11-17T01:53:14.253602818Z 	at com.arjuna.ats.arjuna.coordinator.BasicAction.Abort(BasicAction.java:1731)
+identity-sign-in-1  | 2026-11-17T01:53:14.253604676Z 	at com.arjuna.ats.arjuna.coordinator.TwoPhaseCoordinator.cancel(TwoPhaseCoordinator.java:99)
+identity-sign-in-1  | 2026-11-17T01:53:14.253606579Z 	at com.arjuna.ats.arjuna.AtomicAction.abort(AtomicAction.java:159)
+identity-sign-in-1  | 2026-11-17T01:53:14.253608454Z 	at com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple.rollbackAndDisassociate(TransactionImple.java:1397)
+identity-sign-in-1  | 2026-11-17T01:53:14.253610348Z 	at com.arjuna.ats.internal.jta.transaction.arjunacore.BaseTransaction.rollback(BaseTransaction.java:121)
+identity-sign-in-1  | 2026-11-17T01:53:14.253612259Z 	at io.quarkus.narayana.jta.runtime.NotifyingTransactionManager.rollback(NotifyingTransactionManager.java:94)
+identity-sign-in-1  | 2026-11-17T01:53:14.253614162Z 	at org.keycloak.transaction.JtaTransactionWrapper.rollback(JtaTransactionWrapper.java:116)
+identity-sign-in-1  | 2026-11-17T01:53:14.253616074Z 	at org.keycloak.services.DefaultKeycloakTransactionManager.lambda$rollbackWithTracing$2(DefaultKeycloakTransactionManager.java:236)
+identity-sign-in-1  | 2026-11-17T01:53:14.253618021Z 	at org.keycloak.tracing.NoopTracingProvider.trace(NoopTracingProvider.java:59)
+identity-sign-in-1  | 2026-11-17T01:53:14.253619897Z 	at org.keycloak.tracing.NoopTracingProvider.trace(NoopTracingProvider.java:69)
+identity-sign-in-1  | 2026-11-17T01:53:14.253622097Z 	at org.keycloak.services.DefaultKeycloakTransactionManager.rollbackWithTracing(DefaultKeycloakTransactionManager.java:235)
+local-postgres-1    | 2026-11-17T01:52:33.935668592Z 2026-11-17 01:52:33.935 UTC [174] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-17T01:52:33.936269976Z 2026-11-17 01:52:33.936 UTC [174] ERROR:  permission denied for table records
+local-postgres-1    | 2026-11-17T01:52:33.936275549Z 2026-11-17 01:52:33.936 UTC [174] STATEMENT:  SELECT * FROM p_items_api_owner.records
+local-postgres-1    | 2026-11-17T01:52:33.936568478Z 2026-11-17 01:52:33.936 UTC [174] ERROR:  permission denied for schema published at character 15
+local-postgres-1    | 2026-11-17T01:52:33.936574357Z 2026-11-17 01:52:33.936 UTC [174] STATEMENT:  SELECT * FROM published.visible_items
+local-postgres-1    | 2026-11-17T01:52:33.936808773Z 2026-11-17 01:52:33.936 UTC [174] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-17T01:52:33.936811902Z 2026-11-17 01:52:33.936 UTC [174] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-17T01:52:33.937039493Z 2026-11-17 01:52:33.936 UTC [174] ERROR:  permission denied for schema public at character 15
+local-postgres-1    | 2026-11-17T01:52:33.937044831Z 2026-11-17 01:52:33.936 UTC [174] STATEMENT:  SELECT * FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-17T01:52:33.937300736Z 2026-11-17 01:52:33.937 UTC [174] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-17T01:52:33.937303964Z 2026-11-17 01:52:33.937 UTC [174] STATEMENT:  CREATE TABLE p_items_api_owner.forbidden(id text)
+local-postgres-1    | 2026-11-17T01:52:33.937531527Z 2026-11-17 01:52:33.937 UTC [174] ERROR:  permission denied to set role "o_items_db"
+local-postgres-1    | 2026-11-17T01:52:33.937536865Z 2026-11-17 01:52:33.937 UTC [174] STATEMENT:  SET ROLE o_items_db
+local-postgres-1    | 2026-11-17T01:52:33.937793329Z 2026-11-17 01:52:33.937 UTC [174] ERROR:  permission denied to set role "pm_items_db_p_items_api_owner"
+local-postgres-1    | 2026-11-17T01:52:33.937796855Z 2026-11-17 01:52:33.937 UTC [174] STATEMENT:  SET ROLE pm_items_db_p_items_api_owner
+local-postgres-1    | 2026-11-17T01:52:34.125034882Z 2026-11-17 01:52:34.124 UTC [175] ERROR:  permission denied for schema p_items_api_owner at character 15
+local-postgres-1    | 2026-11-17T01:52:34.125060915Z 2026-11-17 01:52:34.124 UTC [175] STATEMENT:  SELECT * FROM p_items_api_owner.items
+local-postgres-1    | 2026-11-17T01:52:34.125346810Z 2026-11-17 01:52:34.125 UTC [175] ERROR:  permission denied for schema p_items_api_owner at character 13
+local-postgres-1    | 2026-11-17T01:52:34.125350191Z 2026-11-17 01:52:34.125 UTC [175] STATEMENT:  INSERT INTO p_items_api_owner.items(id) VALUES ('privilege-gateway')
+local-postgres-1    | 2026-11-17T01:52:34.125602795Z 2026-11-17 01:52:34.125 UTC [175] ERROR:  permission denied for schema p_items_api_owner at character 8
+local-postgres-1    | 2026-11-17T01:52:34.125607638Z 2026-11-17 01:52:34.125 UTC [175] STATEMENT:  UPDATE p_items_api_owner.items SET marked=true WHERE id='seed'
+local-postgres-1    | 2026-11-17T01:52:34.125847104Z 2026-11-17 01:52:34.125 UTC [175] ERROR:  permission denied for schema p_items_api_owner at character 13
+local-postgres-1    | 2026-11-17T01:52:34.125852243Z 2026-11-17 01:52:34.125 UTC [175] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-17T01:52:34.126068337Z 2026-11-17 01:52:34.125 UTC [175] ERROR:  permission denied for schema p_items_api_owner at character 15
+identity-sign-in-1  | 2026-11-17T01:53:14.253624063Z 	at org.keycloak.services.DefaultKeycloakTransactionManager.rollback(DefaultKeycloakTransactionManager.java:216)
+identity-sign-in-1  | 2026-11-17T01:53:14.253625965Z 	at org.keycloak.services.DefaultKeycloakTransactionManager.rollback(DefaultKeycloakTransactionManager.java:208)
+identity-sign-in-1  | 2026-11-17T01:53:14.253627868Z 	at org.keycloak.services.DefaultKeycloakSession.closeTransactionManager(DefaultKeycloakSession.java:424)
+identity-sign-in-1  | 2026-11-17T01:53:14.253629752Z 	at org.keycloak.services.DefaultKeycloakSession.close(DefaultKeycloakSession.java:391)
+identity-sign-in-1  | 2026-11-17T01:53:14.253631610Z 	at org.keycloak.models.KeycloakBeanProducer_ProducerMethod_getKeycloakSession_tTDz_QOoPgdSCsZ1pnarMe9p64A_ClientProxy.close(Unknown Source)
+identity-sign-in-1  | 2026-11-17T01:53:14.253633558Z 	at org.keycloak.quarkus.runtime.transaction.TransactionalSessionHandler.close(TransactionalSessionHandler.java:50)
+identity-sign-in-1  | 2026-11-17T01:53:14.253635478Z 	at org.keycloak.quarkus.runtime.integration.jaxrs.CloseSessionFilter.closeSession(CloseSessionFilter.java:79)
+identity-sign-in-1  | 2026-11-17T01:53:14.253637408Z 	at org.keycloak.quarkus.runtime.integration.jaxrs.CloseSessionFilter.filter(CloseSessionFilter.java:75)
+identity-sign-in-1  | 2026-11-17T01:53:14.253643242Z 	at org.jboss.resteasy.reactive.server.handlers.ResourceResponseFilterHandler.handle(ResourceResponseFilterHandler.java:31)
+identity-sign-in-1  | 2026-11-17T01:53:14.253645253Z 	at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:204)
+identity-sign-in-1  | 2026-11-17T01:53:14.253647182Z 	at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:150)
+identity-sign-in-1  | 2026-11-17T01:53:14.253649121Z 	at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:695)
+identity-sign-in-1  | 2026-11-17T01:53:14.253651123Z 	at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2651)
+identity-sign-in-1  | 2026-11-17T01:53:14.253652980Z 	at org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2630)
+identity-sign-in-1  | 2026-11-17T01:53:14.253654820Z 	at org.jboss.threads.EnhancedQueueExecutor.runThreadBody(EnhancedQueueExecutor.java:1622)
+identity-sign-in-1  | 2026-11-17T01:53:14.253656668Z 	at org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1589)
+identity-sign-in-1  | 2026-11-17T01:53:14.253658607Z 	at org.jboss.threads.DelegatingRunnable.run(DelegatingRunnable.java:11)
+identity-sign-in-1  | 2026-11-17T01:53:14.253660419Z 	at org.jboss.threads.ThreadLocalResettingRunnable.run(ThreadLocalResettingRunnable.java:11)
+identity-sign-in-1  | 2026-11-17T01:53:14.253662421Z 	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+identity-sign-in-1  | 2026-11-17T01:53:14.253664369Z 	at java.base/java.lang.Thread.run(Thread.java:1583)
+identity-sign-in-1  | 2026-11-17T01:53:14.253666272Z Caused by: org.postgresql.util.PSQLException: This connection has been closed.
+identity-sign-in-1  | 2026-11-17T01:53:14.253668075Z 	at org.postgresql.jdbc.PgConnection.checkClosed(PgConnection.java:1050)
+identity-sign-in-1  | 2026-11-17T01:53:14.253669933Z 	at org.postgresql.jdbc.PgConnection.rollback(PgConnection.java:1057)
+identity-sign-in-1  | 2026-11-17T01:53:14.253675739Z 	at io.agroal.pool.ConnectionHandler.transactionRollback(ConnectionHandler.java:445)
+identity-sign-in-1  | 2026-11-17T01:53:14.253677660Z 	at io.agroal.narayana.LocalXAResource.rollback(LocalXAResource.java:86)
+identity-sign-in-1  | 2026-11-17T01:53:14.253679554Z 	... 34 more
+identity-sign-in-1  | 2026-11-17T01:53:14.253681357Z
+identity-sign-in-1  | 2026-11-17T01:53:14.253816532Z 2026-11-17 01:53:14,253 WARN  [io.agroal.pool] (executor-thread-1) Datasource '<default>': This connection has been closed.
+local-postgres-1    | 2026-11-17T01:52:34.126074316Z 2026-11-17 01:52:34.125 UTC [175] STATEMENT:  SELECT * FROM p_items_api_owner.records
+local-postgres-1    | 2026-11-17T01:52:34.127556190Z 2026-11-17 01:52:34.127 UTC [175] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-17T01:52:34.127561600Z 2026-11-17 01:52:34.127 UTC [175] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-17T01:52:34.127792455Z 2026-11-17 01:52:34.127 UTC [175] ERROR:  permission denied for schema public at character 15
+local-postgres-1    | 2026-11-17T01:52:34.127796666Z 2026-11-17 01:52:34.127 UTC [175] STATEMENT:  SELECT * FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-17T01:52:34.128078603Z 2026-11-17 01:52:34.127 UTC [175] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-17T01:52:34.128083923Z 2026-11-17 01:52:34.127 UTC [175] STATEMENT:  CREATE TABLE p_items_api_owner.forbidden(id text)
+local-postgres-1    | 2026-11-17T01:52:34.128334002Z 2026-11-17 01:52:34.128 UTC [175] ERROR:  permission denied to set role "o_items_db"
+local-postgres-1    | 2026-11-17T01:52:34.128339394Z 2026-11-17 01:52:34.128 UTC [175] STATEMENT:  SET ROLE o_items_db
+local-postgres-1    | 2026-11-17T01:52:34.128587614Z 2026-11-17 01:52:34.128 UTC [175] ERROR:  permission denied to set role "pm_items_db_p_items_api_owner"
+local-postgres-1    | 2026-11-17T01:52:34.128604278Z 2026-11-17 01:52:34.128 UTC [175] STATEMENT:  SET ROLE pm_items_db_p_items_api_owner
+local-postgres-1    | 2026-11-17T01:52:34.326555431Z 2026-11-17 01:52:34.326 UTC [176] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-17T01:52:34.326574637Z 2026-11-17 01:52:34.326 UTC [176] STATEMENT:  UPDATE p_items_api_owner.items SET marked=false WHERE id='seed'
+local-postgres-1    | 2026-11-17T01:52:34.326865051Z 2026-11-17 01:52:34.326 UTC [176] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-17T01:52:34.326870227Z 2026-11-17 01:52:34.326 UTC [176] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-17T01:52:34.327195734Z 2026-11-17 01:52:34.327 UTC [176] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-17T01:52:34.327201766Z 2026-11-17 01:52:34.327 UTC [176] STATEMENT:  CREATE TABLE p_items_api_owner.framework_ddl(id text)
+local-postgres-1    | 2026-11-17T01:52:34.328610169Z 2026-11-17 01:52:34.328 UTC [176] ERROR:  cannot execute INSERT in a read-only transaction
+local-postgres-1    | 2026-11-17T01:52:34.328613496Z 2026-11-17 01:52:34.328 UTC [176] STATEMENT:  INSERT INTO p_items_api_owner.items(id) VALUES ('readonly-forbidden')
+local-postgres-1    | 2026-11-17T01:52:35.322229560Z 2026-11-17 01:52:35.322 UTC [178] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-17T01:52:35.322253753Z 2026-11-17 01:52:35.322 UTC [178] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-17T01:52:35.322887915Z 2026-11-17 01:52:35.322 UTC [178] ERROR:  permission denied for schema public at character 13
+local-postgres-1    | 2026-11-17T01:52:35.322898573Z 2026-11-17 01:52:35.322 UTC [178] STATEMENT:  DELETE FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-17T01:52:35.323398236Z 2026-11-17 01:52:35.323 UTC [178] ERROR:  permission denied for schema public at character 14
+local-postgres-1    | 2026-11-17T01:52:35.323406080Z 2026-11-17 01:52:35.323 UTC [178] STATEMENT:  CREATE TABLE public.rg14_forbidden(id text)
+local-postgres-1    | 2026-11-17T01:53:13.351248139Z 2026-11-17 01:53:13.351 UTC [1] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-17T01:53:13.367353019Z 2026-11-17 01:53:13.367 UTC [1] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-17T01:53:13.367393289Z 2026-11-17 01:53:13.367 UTC [380] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-17T01:53:13.367397509Z 2026-11-17 01:53:13.367 UTC [401] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-17T01:53:13.367400918Z 2026-11-17 01:53:13.367 UTC [105] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-17T01:53:13.367404173Z 2026-11-17 01:53:13.367 UTC [121] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-17T01:53:13.367407374Z 2026-11-17 01:53:13.367 UTC [104] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-17T01:53:13.370507875Z 2026-11-17 01:53:13.370 UTC [1] LOG:  background worker "logical replication launcher" (PID 58) exited with exit code 1
+local-postgres-1    | 2026-11-17T01:53:13.372185004Z 2026-11-17 01:53:13.372 UTC [53] LOG:  shutting down
+local-postgres-1    | 2026-11-17T01:53:13.389508045Z 2026-11-17 01:53:13.389 UTC [53] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-17T01:53:13.732528806Z 2026-11-17 01:53:13.732 UTC [53] LOG:  checkpoint complete: wrote 2438 buffers (14.9%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.061 s, sync=0.196 s, total=0.361 s; sync files=1285, longest=0.030 s, average=0.001 s; distance=13314 kB, estimate=13314 kB; lsn=0/21EFE40, redo lsn=0/21EFE40
+local-postgres-1    | 2026-11-17T01:53:13.746132758Z 2026-11-17 01:53:13.746 UTC [1] LOG:  database system is shut down

@@ -1,0 +1,1272 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-17T01:33:29.865Z",
+    "value": [
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-app-gateway-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-app-items-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-app-items-worker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-cache-admission-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-cache-records-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-identity-sign-in-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-eec20b7f-3a7b-4134-b289-c72b9f329812-1-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-items-api",
+    "containers": [
+      {
+        "id": "82d40823baa4e57b6a60f829123684f0b70c07216a62870bd95721ec3524baf4",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803192,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.423178692Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.686824186-06:00",
+                "End": "2026-11-16T19:33:20.736639806-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.670790865-06:00",
+                "End": "2026-11-16T19:33:28.718631316-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.719403674-06:00",
+                "End": "2026-11-16T19:33:33.765292138-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a1724f116add2d9412146c5ef88b337e561b57af03c93d1c63821b83d01ac517",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804022,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.470172687Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:35.727883402-06:00",
+                "End": "2026-11-16T19:33:35.773950808-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-gateway",
+    "containers": [
+      {
+        "id": "4e5611a476c663a58d824d3581871d8d67305a4d5c62037e1def691fac709a52",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803123,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.081580736Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.342848746-06:00",
+                "End": "2026-11-16T19:33:20.388809616-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.322724545-06:00",
+                "End": "2026-11-16T19:33:28.369628434-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.370445052-06:00",
+                "End": "2026-11-16T19:33:33.418024612-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a55c52396a35ef2741e8e535e4e7b4bdeacb6a4b5ca37ec450f90604d1a964bd",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804134,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.806359707Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-gateway",
+    "containers": [
+      {
+        "id": "4e5611a476c663a58d824d3581871d8d67305a4d5c62037e1def691fac709a52",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3803123,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:15.081580736Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:20.342848746-06:00",
+                "End": "2026-11-16T19:33:20.388809616-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:28.322724545-06:00",
+                "End": "2026-11-16T19:33:28.369628434-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-16T19:33:33.370445052-06:00",
+                "End": "2026-11-16T19:33:33.418024612-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "a55c52396a35ef2741e8e535e4e7b4bdeacb6a4b5ca37ec450f90604d1a964bd",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 3804134,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-17T01:33:30.806359707Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-16T19:33:36.078227102-06:00",
+                "End": "2026-11-16T19:33:36.125953816-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-a",
+    "subject": "47ca54e1-e5c5-4de3-8e9f-130245599e3d",
+    "status": 201
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "account-b",
+    "subject": "9d91773a-1e30-4850-9a69-037c4faa05ee",
+    "status": 201
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-a",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "account-b",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/items-api/modules/create",
+    "status": 404,
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Route not found."
+    },
+    "elapsedMs": 2
+  },
+  {
+    "sql": "SELECT count(*) FROM public.jeeves_product_migrations WHERE version='0002'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT version||'|'||sha256 FROM public.jeeves_product_migrations WHERE version='0002'",
+    "result": "0002|8bd93054344b62e53ea6fa65e3e23e707f3feeabb77a07fccf52268efb1b6697"
+  },
+  {
+    "sql": "SELECT id FROM p_items_api_owner.foundation_checkpoint",
+    "result": "applied-once"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.foundation_checkpoint",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.items WHERE id='replay' OR id LIKE 'burst-%'",
+    "result": "2"
+  },
+  {
+    "sql": "INSERT INTO p_items_api_owner.records VALUES('race',jsonb_build_object('key','race','public',true,'version','1','validUntil',1794879259452,'destination','old','gate','old-fill'))",
+    "result": "INSERT 0 1"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT 1;",
+    "result": "1",
+    "at": "2026-11-17T01:33:49.734Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT pg_advisory_lock(710014);",
+    "result": "",
+    "at": "2026-11-17T01:33:49.744Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='advisory';",
+    "result": "0",
+    "at": "2026-11-17T01:33:49.758Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='advisory';",
+    "result": "1",
+    "at": "2026-11-17T01:33:50.018Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "UPDATE p_items_api_owner.records SET payload=(payload-'gate')||'{\"version\":\"2\",\"destination\":\"new\"}'::jsonb WHERE key='race';",
+    "result": "",
+    "at": "2026-11-17T01:33:50.028Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_items_db' AND usename='pr_items_db__items_api' AND wait_event='advisory';",
+    "result": "1",
+    "at": "2026-11-17T01:33:50.595Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "sql": "SELECT pg_advisory_unlock(710014);",
+    "result": "t",
+    "at": "2026-11-17T01:33:50.605Z"
+  },
+  {
+    "session": "rg14-old-fill-gate",
+    "closed": true,
+    "exitCode": 0
+  },
+  {
+    "sql": "INSERT INTO p_items_api_owner.records VALUES('expires',jsonb_build_object('key','expires','public',true,'version','18446744073709551615','validUntil',1794879234115,'destination','finite'))",
+    "result": "INSERT 0 1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_items_api_owner.items WHERE id='unknown-admission'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.idempotency_records WHERE idem_key='unknown-admission'",
+    "result": "0"
+  }
+]

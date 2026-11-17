@@ -1,0 +1,60 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/items-db/products.json",
+      "ownership": "generated-extension",
+      "sha256": "296d18408165f6f9ffde9b8b892253c347e13786da325a7e4228d04d137c076d"
+    },
+    {
+      "path": "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql",
+      "ownership": "generated-extension",
+      "sha256": "a1820cce349b10a2fb7a08069e198673b8e1804dbd9a66e6878741ed516f7631"
+    },
+    {
+      "path": "src/modules/gateway/forward.ts",
+      "ownership": "generated-extension",
+      "sha256": "51b44c3a4814a033cce5ad1951f0e41317f161ff07c35c5526a2626cf6120045"
+    },
+    {
+      "path": "src/modules/gateway/published.ts",
+      "ownership": "generated-extension",
+      "sha256": "6f3908f9cfc579b9e88e3aa32a1e7a3d2cac6d8bd598d5b2a6df87bae86de0c6"
+    },
+    {
+      "path": "src/modules/items-api/create-limit.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "f20b007e6480786273e5f4b4a3a61761c6ce8a6c6f0bba365be26e354c762309"
+    },
+    {
+      "path": "src/modules/items-api/create.ts",
+      "ownership": "generated-extension",
+      "sha256": "e385392802d67c40ffbc8c98c2b2da6487a60b0690a7bb7ea65d6c01d0230b73"
+    },
+    {
+      "path": "src/modules/items-api/forbidden.ts",
+      "ownership": "generated-extension",
+      "sha256": "97d8f8f7d4a29e726d019202f1499573362105da10816734aca3d7a4979625be"
+    },
+    {
+      "path": "src/modules/items-api/read-record.ts",
+      "ownership": "generated-extension",
+      "sha256": "e9fa5b3b0c02bd71bf0d2fe3c5fc17649c2d508512071fbf54edcb80a8300013"
+    },
+    {
+      "path": "src/modules/items-api/record-reader.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "50e8db84a1124639bfa0732f4c5e43424d2d2ea490d5fe5ea65f2e70ddee80cb"
+    },
+    {
+      "path": "src/modules/items-api/slow.ts",
+      "ownership": "generated-extension",
+      "sha256": "f062fe88748db81d60935c2ddf88be5f5bba06dd7986f4d341f00cd5d37428c6"
+    },
+    {
+      "path": "src/modules/items-worker/worker-access.ts",
+      "ownership": "generated-extension",
+      "sha256": "9c837e94da3d5dd7d540446208a262c42286c370bb28d11fe49afa66de1ecb2a"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

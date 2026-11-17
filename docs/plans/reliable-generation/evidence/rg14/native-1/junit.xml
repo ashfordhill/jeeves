@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="108.85470951">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" timestamp="2026-11-17T01:20:54.945Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="108.85470951">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-foundations.system.test.ts" name="RG14: foundations enforce the contract across independent native process copies" time="108.854047046">
+            <failure message="expected { protectedRows: &apos;0&apos;, …(2) } to match object { productCode: &apos;42501&apos;, …(2) }
+(1 matching property omitted from actual)" type="AssertionError">
+AssertionError: expected { protectedRows: &apos;0&apos;, …(2) } to match object { productCode: &apos;42501&apos;, …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   &quot;productCode&quot;: &quot;42501&quot;,
+    &quot;readOnly&quot;: &quot;25006&quot;,
+    &quot;setupMounted&quot;: false,
+  }
+
+ ❯ jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:162:27
+ ❯ check jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:32:24
+ ❯ beforeStart jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:129:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:363:5
+ ❯ jeeves-generator/integration/scenarios/rg-foundations.system.test.ts:22:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

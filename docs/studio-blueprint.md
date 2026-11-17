@@ -302,3 +302,8 @@ scope IDs, freshness or TTL uses a different namespace. Hits never renew validit
 fencing lasts only while the key is retained: eviction, expiry or data loss removes the fence;
 there is no durable watermark or immediate invalidation. Absolute delivery checks assume compatible
 UTC clocks. Optional cache failure uses bounded authoritative fallback and recovery, not stale data.
+
+
+HTTP Cache reader exposure on an internal service refuses because no workload-authenticated
+template adapter is installed. Select `in-process` and invoke it through an authenticated route
+module. Public eligible-record HTTP exposure remains supported.

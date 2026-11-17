@@ -18,7 +18,7 @@ type Manifest = { files: { path: string; sha256: string; ownership: string }[] }
 type Attachment = {
   source: string;
   destination: string;
-  role: "stub" | "hooks" | "sql" | "override";
+  role: "stub" | "hooks" | "sql" | "product" | "contract" | "override";
   module?: string;
 };
 async function freePorts() {
@@ -45,7 +45,11 @@ async function freePorts() {
 /** How setup installs the export: `ignore-scripts` is its Dockerfile's command (no dependency's
  * install script runs); `plain` is its README's `pnpm install --frozen-lockfile`, which its own
  * `pnpm-workspace.yaml` makes pass (QG09's P8, the pubsub suite). */
-export type SetupOptions = { install?: "ignore-scripts" | "plain" };
+export type SetupOptions = {
+  install?: "ignore-scripts" | "plain";
+  /** Test-owned credentials/configuration, outside generated source, before first-run. */
+  beforeStart?: (app: Application) => Promise<void>;
+};
 
 export class Application {
   readonly observations: unknown[] = [];
@@ -242,6 +246,9 @@ export async function setupApplication(
   );
   assert(app.report.selections.every((row) => row.status === "implemented"));
   app.attachments = await json<Attachment[]>(join(fixture, "attachments.json"));
+  const plan = await json<{ databases: { resource: string; productSql?: { file: string } }[] }>(
+    join(app.directory, "infra/local.json"),
+  );
   assert.equal(new Set(app.attachments.map((row) => row.destination)).size, app.attachments.length);
   for (const attachment of app.attachments) {
     assertSafeOutputPath(attachment.source);
@@ -254,7 +261,7 @@ export async function setupApplication(
         attachment.destination === "compose.override.yaml" && !file && !attachment.module,
         `Override attachment must be compose.override.yaml, which export never writes: ${attachment.destination}`,
       );
-    else
+    else if (attachment.role !== "contract" && attachment.role !== "product")
       assert.equal(
         file?.ownership,
         "generated-extension",
@@ -264,20 +271,33 @@ export async function setupApplication(
     const valid =
       attachment.role === "override"
         ? true
-        : attachment.role === "hooks"
-          ? app.report.processes?.tiles.some((tile) =>
-              tile.hooks.some(
-                (hook) =>
-                  hook.selection === module?.selection && hook.file === attachment.destination,
-              ),
-            )
-          : attachment.role === "sql"
-            ? module?.sql?.some((row) => row.file === attachment.destination)
-            : module?.status === "stub" &&
-              module.files.includes(attachment.destination) &&
-              !attachment.destination.endsWith(".slots.ts");
+        : attachment.role === "contract"
+          ? attachment.destination.startsWith("src/contracts/") &&
+            attachment.destination.endsWith(".ts") &&
+            (!file || file.ownership === "generated-extension")
+          : attachment.role === "product"
+            ? plan.databases.some(
+                (db) =>
+                  db.productSql &&
+                  (attachment.destination === db.productSql.file ||
+                    attachment.destination.startsWith(`infra/postgres/${db.resource}/products/`)),
+              ) &&
+              (!file || file.ownership === "generated-extension")
+            : attachment.role === "hooks"
+              ? app.report.processes?.tiles.some((tile) =>
+                  tile.hooks.some(
+                    (hook) =>
+                      hook.selection === module?.selection && hook.file === attachment.destination,
+                  ),
+                )
+              : attachment.role === "sql"
+                ? module?.sql?.some((row) => row.file === attachment.destination)
+                : module?.status === "stub" &&
+                  module.files.includes(attachment.destination) &&
+                  !attachment.destination.endsWith(".slots.ts");
     assert(valid, `Attachment not reported for ${attachment.module}: ${attachment.destination}`);
     assert(!attachment.destination.startsWith(".jeeves/"));
+    await mkdir(dirname(join(app.directory, attachment.destination)), { recursive: true });
     assert(
       (await lstat(join(fixture, attachment.source))).isFile(),
       "Attachment source must be a file, not a symlink",
@@ -302,6 +322,7 @@ export async function setupApplication(
     before.sha256,
     "Source changed during export/install/build",
   );
+  await options.beforeStart?.(app);
   await app.execute("first-run", "pnpm", ["first-run"], 600_000);
   await poll(
     "all generated application containers healthy",

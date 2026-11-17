@@ -52,6 +52,32 @@ afterEach(async () => {
 const lifecycle = () => runtime.createProcessLifecycle({ mark: () => {}, terminate: () => {} });
 
 describe("RG02 process ownership and public boundary", () => {
+  it("RG14 keeps the worker marker false for startup/known required loss, restores it on recovery, and never reopens during drain", async () => {
+    const marks: boolean[] = [];
+    const app = runtime.createProcessLifecycle({
+      mark: (ready: boolean) => marks.push(ready),
+      terminate: () => {},
+    });
+    const database = {},
+      admission = {};
+    app.scope.dependencyReady(database, false);
+    expect(() => app.scope.ready()).toThrow("Required dependency unavailable");
+    expect(marks).toEqual([false]);
+    app.scope.dependencyReady(database, true);
+    app.scope.ready();
+    expect(marks.at(-1)).toBe(true);
+    app.scope.dependencyReady(database, false);
+    app.scope.dependencyReady(admission, false);
+    expect(marks.at(-1)).toBe(false);
+    app.scope.dependencyReady(database, true);
+    expect(marks.at(-1)).toBe(false);
+    app.scope.dependencyReady(admission, true);
+    expect(marks.at(-1)).toBe(true);
+    await app.close();
+    app.scope.dependencyReady(database, true);
+    expect(marks.at(-1)).toBe(false);
+    expect(() => app.scope.ready()).toThrow("Process stopped");
+  });
   it("constructs two modules once before readiness, sharing only compatible credential/access scopes", async () => {
     const first = lifecycle(),
       second = lifecycle();
@@ -329,7 +355,7 @@ describe("RG02 process ownership and public boundary", () => {
 
 it("RG03 terminates at the final drain bound with an underlying dependency still unsettled", () => {
   const operation = data(text(bundle, "src/runtime/operation.ts"));
-  const child = `${stripTypeScriptTypes(processSource)}\nimport { dependency } from ${JSON.stringify(operation)};\nconst app = createProcessLifecycle({ budgetMs: 30, mark: () => {} });\nawait app.start(async () => { const result = await dependency({ maximumMs: 5, mutation: true }, () => new Promise(() => {})).catch(e => e); if(result.outcome !== 'unknown') throw Error('Lost unknown outcome'); setInterval(() => {}, 1000); });\nawait app.close();`;
+  const child = `${stripTypeScriptTypes(processSource)}\nimport { dependency as pendingDependency } from ${JSON.stringify(operation)};\nconst app = createProcessLifecycle({ budgetMs: 30, mark: () => {} });\nawait app.start(async () => { const result = await pendingDependency({ maximumMs: 5, mutation: true }, () => new Promise(() => {})).catch(e => e); if(result.outcome !== 'unknown') throw Error('Lost unknown outcome'); setInterval(() => {}, 1000); });\nawait app.close();`;
 
   try {
     execFileSync(process.execPath, ["--input-type=module", "-e", child], {

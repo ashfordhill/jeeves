@@ -76,8 +76,10 @@ async function quietly(target: { close(): Promise<void> }) {
 }
 /** A state hook called only when the state changes; a hook that throws changes nothing. */
 function stateReport(onState?: BrokerState) {
+  const scope = currentProcess(), readiness = {};
   let reported: "available" | "unavailable" | undefined;
   return (state: "available" | "unavailable", error?: unknown) => {
+    scope?.dependencyReady?.(readiness, state === "available");
     if (state === reported) return;
     reported = state;
     try {

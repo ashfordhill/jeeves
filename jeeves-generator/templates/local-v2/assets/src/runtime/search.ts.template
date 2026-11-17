@@ -1,5 +1,6 @@
 import { dependency, currentProcess } from "./operation.ts";
 import { Client } from "@opensearch-project/opensearch";
+import { probeDependency } from "./process.ts";
 
 /** No index/mapping/query or product policy is inferred from the endpoint. */
 export function createSearch(options: { endpoint: string; requestTimeoutMs: number }) {
@@ -8,6 +9,13 @@ export function createSearch(options: { endpoint: string; requestTimeoutMs: numb
     node: options.endpoint,
     requestTimeout: options.requestTimeoutMs,
     maxRetries: 0,
+  });
+  probeDependency(operationScope, client, async signal => {
+    const work = client.cluster.health({}, { requestTimeout: 2000, maxRetries: 0 });
+    const cancel = () => work.abort?.();
+    signal.addEventListener("abort", cancel, { once: true });
+    try { const result = await work; if (result.body.status === "red") throw Error("Search unavailable"); }
+    finally { signal.removeEventListener("abort", cancel); }
   });
   const wrap = (owner: object): object => new Proxy(owner, {
     get(target, key) {

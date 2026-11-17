@@ -1,0 +1,7 @@
+{
+  "id": "gs-eec20b7f-3a7b-4134-b289-c72b9f329812",
+  "selected": ["rg-foundations"],
+  "outcome": "failed",
+  "elapsedMs": 112993,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg14/native-4/run.json"
+}

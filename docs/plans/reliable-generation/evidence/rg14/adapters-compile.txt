@@ -1,0 +1,10 @@
+pubsubNoDatabase 86 files []
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+allStubAdapters 96 files []
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+installedFeatures 125 files []
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
