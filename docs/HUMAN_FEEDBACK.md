@@ -222,3 +222,11 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Resolution update (2026-11-13):** UI12 done: each chat reply shows small chips with its tokens in, cached and out, and a panel above the message box shows how full the model's context is, the conversation's tokens in and out and, when every reply reported one, its cost. It was tested with the scripted model and a made-up catalogue, not a live model; UI13–UI14 remain.
 - **Resolution update (2026-11-13):** UI13 done: dark mode now steps from the bars to the canvas, the rails, menus and dialogs, then the tiles, as the preview's ramp; Mantine's controls are steel, text boxes are inset in both themes, and the washed-out fills (warnings, the Refused pill, chat chips and the question card) are solid shades of their colour. UI14's review remains.
 - **Resolution update (2026-11-13):** UI14 reviewed the refresh: everything matches the preview in both themes and sizes, and one real defect was fixed (exported PNGs drew every new icon as a black shape, and the loader arrow as a black bar). The [review](plans/ui-refresh/review.md) lists what is yours to decide (the module menu's height, the dark blue and chat bubble, the warning mark on yellow, chat's icon names) and the first live runs of Sign in with ChatGPT, the custom endpoint and models.dev.
+
+## 2026-11-17 — Overlapping lines are hard to trace
+
+[Sketch](human-feedback/2026-11-17-line-ports-sketch.png)
+
+- **Problem:** in recent Detailed diagrams (QRWTY revision 84) lines share runs and merge before a tile, so a route can't be followed from one end to the other.
+- **Decision:** none yet. The owner's idea: each line into a tile gets its own dot on the tile's edge, with a gap between dots; lines take colours; the dots may replace arrowheads.
+- **Resolution:** not started; arrow layout is outside the reliable-generation plan. Suggested next step, awaiting the owner: a preview on the revision 84 diagram with one dot per line, a colour per source tile (the diagram has too many lines for a colour each), dashes kept for async, and an arrowhead only where a line runs right to left.
