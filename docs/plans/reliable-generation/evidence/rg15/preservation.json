@@ -1,0 +1,12 @@
+{
+  "acceptedBase": "b8191719e6698ac8735d89b2131527fec276699c",
+  "rootHashesMatch": true,
+  "ownerDiffBytes": 34001,
+  "ownerDiffMatches": true,
+  "indexEmpty": true,
+  "frozenV1Unchanged": true,
+  "noTaskDockerResourcesCreated": true,
+  "remoteDecisionPending": true,
+  "baseline42ContainerIdNameStatesPreserved": true,
+  "containers": 42
+}

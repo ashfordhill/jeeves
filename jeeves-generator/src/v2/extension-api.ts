@@ -34,7 +34,11 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
       )
         publicLines.push(
           'export { defineLocalOperation } from "../runtime/local-operation.ts";',
+          'export { defineWorkloadOperation } from "../runtime/local-operation.ts";',
+          'export type { WorkloadCaller, WorkloadOperation } from "../runtime/local-operation.ts";',
           'export type { LocalOperation, LocalCommands, LocalResult } from "../runtime/local-operation.ts";',
+          'export { defineDurableWork } from "../runtime/durable-work.ts";',
+          'export type { DurableWork, WorkStatus, WorkState } from "../runtime/durable-work.ts";',
         );
       if (has("rate-limiter"))
         publicLines.push(

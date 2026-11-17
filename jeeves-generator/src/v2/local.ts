@@ -637,14 +637,14 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           grant.relation,
           "Use finite explicit relation privileges.",
         );
-      // Internal idempotency needs its exact full mechanism grant even for write-only product access.
+      // Private replay/work mechanisms need their exact grants even for write-only product access.
       if (
         (access.access === "read" && grant.privileges.some((p) => p !== "SELECT")) ||
         (access.access === "write" &&
           grant.privileges.includes("SELECT") &&
           !(
             grant.schema === "jeeves" &&
-            grant.relation === "idempotency_records" &&
+            ["idempotency_records", "work_records", "work_tickets"].includes(grant.relation) &&
             grant.kind === "table"
           )) ||
         (access.boundary === "published-read" && grant.kind !== "view")

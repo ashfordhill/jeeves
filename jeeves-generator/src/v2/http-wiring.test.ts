@@ -374,16 +374,16 @@ describe("HTTP wiring (tile process contract, sections 2-4)", () => {
       user: "r_previews_db__preview_api",
       secret: "sql-previews-db--preview-api",
     });
-    expect(plan.grants).toEqual([
-      {
+    expect(plan.grants).toEqual(
+      ["idempotency_records", "work_records", "work_tickets"].map((relation) => ({
         resource: "links-db",
         host: "links-api",
         schema: "jeeves",
-        relation: "idempotency_records",
+        relation,
         kind: "table",
         privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
-      },
-    ]);
+      })),
+    );
     const services = json(stack, "compose.yaml").services;
     expect(services["app-preview-api"]).toMatchObject({
       depends_on: {

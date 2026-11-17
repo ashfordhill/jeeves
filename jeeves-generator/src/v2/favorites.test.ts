@@ -183,6 +183,14 @@ CREATE INDEX ON "favorite_items"."favorites"(account, added_at DESC, item);
         resource: "catalog",
         schema: "jeeves",
       },
+      ...["work_records", "work_tickets"].map((relation) => ({
+        host: "account-api",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+        relation,
+        resource: "catalog",
+        schema: "jeeves",
+      })),
       {
         host: "account-api",
         kind: "table",

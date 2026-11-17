@@ -3,19 +3,15 @@ import { createHash } from "node:crypto";
 import { jsonBody, normalizedJsonDto } from "./hook-boundary.ts";
 import {
   currentOperation,
+  currentWorkload,
   assertOperation,
-  withLocalMutation,
   withLocalPolicy,
   withEffect,
 } from "./operation.ts";
-import {
-  transaction,
-  assertTransaction,
-  abortTransaction,
-  type TransactionPool,
-} from "./transaction.ts";
+import { transaction, type TransactionPool } from "./transaction.ts";
 import { requestHash, checkIdempotencyKey } from "./idempotency.ts";
 import type { SealingKeys } from "./keys.ts";
+import { productMutation } from "./product-mutation.ts";
 type ReplayRouteRequest = Readonly<{
   method: string;
   rawPath: string;
@@ -61,12 +57,20 @@ interface Definition<Input, Dependencies> {
     caller: Readonly<{ subject: string }>,
   ): Promise<LocalResult>;
 }
-const definitions = new WeakMap<object, Definition<unknown, Record<string, unknown>>>();
+const definitions = new WeakMap<
+  object,
+  Definition<unknown, Record<string, unknown>> & { workload: boolean }
+>();
 const bindings = new WeakMap<
   object,
   {
     operation: object;
-    invoke(dependencies: unknown, request: { key: string; input: unknown }): Promise<LocalResult>;
+    invoke(
+      dependencies: unknown,
+      request: { key: string; input: unknown },
+      ticket?: string,
+    ): Promise<LocalResult>;
+    prepare(request: { key: string; input: unknown }): Promise<string>;
   }
 >();
 // Error fields have fixed value-free messages, shared by HTTP and callable paths.
@@ -86,6 +90,64 @@ function fail(status: number, code: string): never {
 export function defineLocalOperation<Input, Dependencies extends object>(
   definition: Definition<Input, Dependencies>,
 ): LocalOperation<Input, Dependencies> {
+  return defineOperation(definition, false);
+}
+declare const workloadOperationBrand: unique symbol;
+/** Opaque opt-in consumed by generated wiring only; no public invocation/ticket controls. */
+export interface WorkloadOperation<Input, Dependencies> {
+  readonly [workloadOperationBrand]: (input: Input, dependencies: Dependencies) => void;
+}
+export interface WorkloadCaller {
+  readonly processId: string;
+}
+export function defineWorkloadOperation<Input, Dependencies extends object>(
+  definition: Omit<Definition<Input, Dependencies>, "validate" | "admit" | "mutate"> & {
+    validate(input: unknown, caller: WorkloadCaller): Input;
+    admit(
+      input: Readonly<Input>,
+      dependencies: Dependencies,
+      caller: WorkloadCaller,
+    ): Promise<void>;
+    mutate(
+      input: Readonly<Input>,
+      commands: LocalCommands,
+      caller: WorkloadCaller,
+    ): Promise<LocalResult>;
+  },
+): WorkloadOperation<Input, Dependencies> {
+  if (
+    !definition ||
+    Object.getOwnPropertyNames(definition).some(
+      (name) => !("value" in (Object.getOwnPropertyDescriptor(definition, name) ?? {})),
+    )
+  )
+    throw new Error("Invalid workload operation declaration");
+  const snapshot = Object.freeze({ ...definition });
+  return defineOperation(
+    {
+      ...snapshot,
+      validate: (input, caller) =>
+        snapshot.validate(input, Object.freeze({ processId: caller.subject })),
+      admit: (input, dependencies, caller) =>
+        snapshot.admit(input, dependencies, Object.freeze({ processId: caller.subject })),
+      mutate: (input, commands, caller) =>
+        snapshot.mutate(input, commands, Object.freeze({ processId: caller.subject })),
+    },
+    true,
+  );
+}
+function defineOperation<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+  workload: false,
+): LocalOperation<Input, Dependencies>;
+function defineOperation<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+  workload: true,
+): WorkloadOperation<Input, Dependencies>;
+function defineOperation<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+  workload: boolean,
+): LocalOperation<Input, Dependencies> | WorkloadOperation<Input, Dependencies> {
   if (
     !definition ||
     Object.keys(definition).sort().join() !==
@@ -105,6 +167,17 @@ export function defineLocalOperation<Input, Dependencies extends object>(
     )
   )
     throw new Error("Invalid local operation declaration");
+  if (workload) {
+    const descriptor = Object.freeze({}) as WorkloadOperation<Input, Dependencies>;
+    definitions.set(
+      descriptor,
+      Object.freeze({ ...definition, workload: true }) as Definition<
+        unknown,
+        Record<string, unknown>
+      > & { workload: boolean },
+    );
+    return descriptor;
+  }
   const call = async (dependencies: Dependencies, request: { key: string; input: unknown }) => {
     assertOperation();
     const handle = Object.getOwnPropertyDescriptor(dependencies, definition.database)?.value;
@@ -127,7 +200,9 @@ export function defineLocalOperation<Input, Dependencies extends object>(
   });
   definitions.set(
     operation,
-    Object.freeze({ ...definition }) as Definition<unknown, Record<string, unknown>>,
+    Object.freeze({ ...definition, workload }) as Definition<unknown, Record<string, unknown>> & {
+      workload: boolean;
+    },
   );
   return operation;
 }
@@ -166,9 +241,34 @@ export function bindLocalOperation(
   const namespace = JSON.stringify([options.tile, options.module, definition.id]);
   bindings.set(handle, {
     operation,
-    async invoke(dependencies, request) {
+    async prepare(request) {
+      const subject = currentWorkload();
+      if (!definition.workload || !subject) fail(403, "WORKLOAD_OPERATION_REQUIRED");
+      if (!request || typeof request.key !== "string" || !/^[\x21-\x7e]{1,255}$/.test(request.key))
+        fail(400, "LOCAL_OPERATION_INPUT");
+      const inputHash = hash({
+        input: normalizedJsonDto(request.input) ?? null,
+        present: request.input !== undefined,
+      });
+      return transaction(options.pool, async (tx) => {
+        const values = [namespace, subject, request.key];
+        await tx.query(
+          "INSERT INTO jeeves.work_tickets(namespace,caller,work_key,input_hash,version,ticket,expires_at) VALUES($1,$2,$3,$4,$5,gen_random_uuid()::text,clock_timestamp()+$6::int*interval '1 second') ON CONFLICT DO NOTHING",
+          [...values, inputHash, definition.version, definition.retentionSeconds],
+        );
+        const { rows } = await tx.query(
+          "SELECT ticket,input_hash,version FROM jeeves.work_tickets WHERE namespace=$1 AND caller=$2 AND work_key=$3",
+          values,
+        );
+        const row = rows[0];
+        if (!row || row.input_hash !== inputHash || row.version !== definition.version)
+          fail(409, "IDEMPOTENCY_CONFLICT");
+        return row.ticket as string;
+      });
+    },
+    async invoke(dependencies, request, ticket) {
       assertOperation();
-      const subject = currentOperation()?.caller.subject;
+      const subject = definition.workload ? currentWorkload() : currentOperation()?.caller.subject;
       if (!subject) fail(401, "SIGN_IN_REQUIRED");
       if (
         subject.includes("\u0000") ||
@@ -207,7 +307,7 @@ export function bindLocalOperation(
       }
       const identity = {
         tile: namespace,
-        scope: { kind: "account", id: subject },
+        scope: { kind: definition.workload ? "workload" : "account", id: subject },
         key: request.key,
         hash: requestHash({
           method: "POST",
@@ -222,9 +322,9 @@ export function bindLocalOperation(
       }
       // Check declared mutation authority without restricting the subsequent new-work read phase.
       withEffect("local-atomic-mutation", () => undefined);
-      const values = [namespace, "account", subject, request.key];
+      const values = [namespace, identity.scope.kind, subject, request.key];
       const binding = {
-        scope: hash(["account", subject]),
+        scope: hash([identity.scope.kind, subject]),
         context: hash([...values, identity.hash]),
       };
       return transaction(options.pool, async (tx) => {
@@ -274,6 +374,26 @@ export function bindLocalOperation(
         if (lock.rows[0]?.locked !== true) fail(409, "IDEMPOTENCY_IN_PROGRESS");
         const raced = await recover();
         if (raced) return raced;
+        const requireTicket = async () => {
+          if (definition.workload) {
+            const valid = await tx.query(
+              "SELECT ticket FROM jeeves.work_tickets WHERE namespace=$1 AND caller=$2 AND work_key=$3 AND ticket=$4 AND input_hash=$5 AND version=$6 AND expires_at>clock_timestamp() FOR UPDATE",
+              [
+                namespace,
+                subject,
+                request.key,
+                ticket ?? "",
+                hash({
+                  input: normalizedJsonDto(request.input) ?? null,
+                  present: request.input !== undefined,
+                }),
+                definition.version,
+              ],
+            );
+            if (!valid.rows.length) fail(410, "WORK_TICKET_EXPIRED");
+          }
+        };
+        await requireTicket();
         // New-work admission is deliberately after BOTH committed-replay checks.
         await withEffect("read", () =>
           definition.admit(
@@ -286,38 +406,13 @@ export function bindLocalOperation(
           `INSERT INTO jeeves.idempotency_records (tile, scope_kind, scope_id, idem_key, request_hash, status, response, created_at, expires_at) VALUES ($1,$2,$3,$4,decode($5,'hex'),0,'{}',now(),now() + $6 * interval '1 second')`,
           [...values, identity.hash, definition.retentionSeconds],
         );
-        const pending = new Set<Promise<unknown>>();
-        let active = true;
-        const registered = options.commands((sql, parameters, readOnly) => {
-          if (readOnly)
-            throw new Error("Local mutation accepts registered commands only; use RETURNING");
-          if (!active) return Promise.reject(new Error("Local commands are closed"));
-          const work = tx.query(sql, parameters);
-          pending.add(work);
-          void work.catch(() => {});
-          return work;
-        });
-        const commands: LocalCommands = Object.freeze({
-          call(name: string, parameters: readonly unknown[]) {
-            if (!active) return Promise.reject(new Error("Local commands are closed"));
-            const work = registered
-              .call(name, parameters)
-              .catch((error: unknown) => abortTransaction(tx, error));
-            pending.add(work);
-            void work.catch(() => {});
-            return work;
-          },
-        });
-        let result: LocalResult;
-        if (!/^[a-z][a-z0-9_]{0,62}$/.test(options.productRole))
-          throw new Error("Invalid product role");
-        await tx.query(`SET LOCAL ROLE "${options.productRole}"`);
-        try {
-          result = await withLocalMutation(async () => {
+        await requireTicket(); // Admission may have awaited dependencies past the callee-owned deadline.
+        const result = await productMutation(
+          tx,
+          options.productRole,
+          options.commands,
+          async (commands) => {
             const value = await definition.mutate(input as Readonly<unknown>, commands, caller);
-            active = false;
-            await Promise.allSettled([...pending]);
-            assertTransaction(tx);
             jsonBody(value);
             if (!value || Object.keys(value).sort().join() !== "body,status")
               throw new Error("Invalid local operation result");
@@ -334,15 +429,8 @@ export function bindLocalOperation(
               status: value.status,
               body: JSON.parse(json),
             }) as LocalResult;
-          });
-        } catch (error) {
-          active = false;
-          await Promise.allSettled([...pending]);
-          return abortTransaction(tx, error);
-        } finally {
-          active = false;
-        }
-        await tx.query("RESET ROLE");
+          },
+        );
         const response = definition.secret
           ? { sealed: options.keys!.seal(JSON.stringify(result), binding) }
           : result.body;
@@ -370,12 +458,20 @@ export function bindLocalOperation(
 export function validateLocalOperationBinding(
   operation: unknown,
   properties: readonly string[],
+  authority: { workload: boolean; requiredUser: boolean } = {
+    workload: false,
+    requiredUser: false,
+  },
 ): void {
   if (operation === undefined) return;
   const definition =
     operation && typeof operation === "object" ? definitions.get(operation) : undefined;
   if (!definition || !properties.includes(definition.database))
     throw new Error("Local operation requires one declared writable database on a route module");
+  if (definition.workload && (!authority.workload || authority.requiredUser))
+    throw new Error(
+      "Workload operation requires an authenticated service caller and cannot bypass a Required user Auth guard",
+    );
 }
 
 /** Generated same-process wiring uses the identical registered core, rather than a forged HTTP request. */
@@ -388,8 +484,80 @@ export function invokeLocalModule(
   if (operation === undefined) return legacy();
   if (!operation || typeof operation !== "object" || !definitions.has(operation))
     throw new Error("Invalid local operation declaration");
+  if (definitions.get(operation)?.workload) fail(403, "WORKLOAD_OPERATION_REQUIRED");
   return (operation as LocalOperation<unknown, object>).call(
     dependencies as object,
     request as { key: string; input: unknown },
+  );
+}
+
+/** Private generated route, independent of the product stub handler. No user impersonation. */
+export async function invokeWorkProtocol(
+  operation: unknown,
+  dependencies: object,
+  request: ReplayRouteRequest,
+): Promise<LocalResult> {
+  const definition =
+    operation && typeof operation === "object" ? definitions.get(operation) : undefined;
+  if (!definition?.workload || !currentWorkload()) fail(403, "WORKLOAD_OPERATION_REQUIRED");
+  if (request.method !== "POST" || request.rawPath !== "/") fail(405, "LOCAL_OPERATION_METHOD");
+  const body = normalizedJsonDto(request.body) as {
+    phase?: unknown;
+    key?: unknown;
+    input?: unknown;
+    ticket?: unknown;
+    protocol?: unknown;
+    version?: unknown;
+  };
+  if (
+    !body ||
+    typeof body.key !== "string" ||
+    !["prepare", "execute"].includes(String(body.phase)) ||
+    Object.keys(body).sort().join() !==
+      (body.phase === "prepare" ? "input,key,phase" : "input,key,phase,protocol,ticket,version")
+  )
+    fail(400, "LOCAL_OPERATION_INPUT");
+  const handle = Object.getOwnPropertyDescriptor(dependencies, definition.database)?.value;
+  const bound = handle && bindings.get(handle);
+  if (!bound || bound.operation !== operation) throw new Error("Unconfigured workload operation");
+  if (body.phase === "prepare") {
+    // The descriptor is framework-owned; product responses cannot assert checkpoint safety.
+    // RG15 has no sealed durable-work result checkpoint. Refuse before allocating/executing work.
+    if (definition.secret) fail(422, "WORK_SECRET_CHECKPOINT_UNSUPPORTED");
+    return {
+      status: 200,
+      body: {
+        protocol: 1,
+        version: definition.version,
+        secret: false,
+        ticket: await bound.prepare({ key: body.key, input: body.input }),
+      },
+    };
+  }
+  if (definition.secret) fail(422, "WORK_SECRET_CHECKPOINT_UNSUPPORTED");
+  if (body.protocol !== 1 || body.version !== definition.version)
+    fail(409, "WORK_PROTOCOL_CONFLICT");
+  if (typeof body.ticket !== "string") fail(400, "LOCAL_OPERATION_INPUT");
+  // Always send protocol JSON, including operation 204/205 whose HTTP bodies are suppressed.
+  return {
+    status: 200,
+    body: {
+      protocol: 1,
+      version: definition.version,
+      secret: false,
+      result: await bound.invoke(dependencies, { key: body.key, input: body.input }, body.ticket),
+    },
+  };
+}
+/** Expired tickets authorize nothing. The caller must never replace a durably selected ticket. */
+export function sweepWorkTickets(pool: TransactionPool) {
+  return transaction(
+    pool,
+    async (tx) =>
+      (
+        await tx.query(
+          "DELETE FROM jeeves.work_tickets WHERE ticket IN (SELECT ticket FROM jeeves.work_tickets WHERE expires_at<=clock_timestamp() ORDER BY expires_at LIMIT 1000 FOR UPDATE SKIP LOCKED)",
+        )
+      ).rowCount ?? 0,
   );
 }

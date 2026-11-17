@@ -33,7 +33,11 @@ addresses and durable/extension namespaces ([names and IDs](studio.md#inspector)
 changes require application migration. Normalized Custom call slots carry the exact installed
 Favorites, Rate limiter and Cache reader input/output/version/effect requirements and stable callee module ID; mismatches refuse
 with the required/installed difference. Cross-process installed-template adapters remain gaps;
-route stubs have API8 workload-authenticated GET/POST operation roots.
+route stubs have API8 workload-authenticated GET/POST operation roots. Writable database stubs also
+emit a private POST/root-only `/internal/work/<module>` protocol route, reported as requiring an
+explicit workload-operation opt-in. Its presence does not make an unfinished product stub runnable.
+Durable-work declarations are application extension code, with no extra blueprint settings;
+see the [generator contract](../jeeves-generator/README.md#durable-work-contract-additive-extension-api-v8).
 
 An explicit component-link `slot: "workload"` distinguishes a module's Identity
 selector from their legacy generic Identity dependency. Blueprint v3 retains that finite tag;

@@ -263,6 +263,7 @@ async function fixture() {
       denyLock = true;
     },
     files,
+    commands,
   };
 }
 

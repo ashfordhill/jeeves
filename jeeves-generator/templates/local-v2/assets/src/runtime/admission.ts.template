@@ -114,9 +114,12 @@ export function classifyHttpError(error: unknown) {
   let status = 503, code = "UNAVAILABLE", message = "Service unavailable.", allow: string | undefined;
   let unknown = false;
   if (error && typeof error === "object" && (error as Error).name === "LocalOperationError" && "statusCode" in error && "code" in error &&
-    [400,401,404,405,409,410,503].includes(Number(error.statusCode)) &&
-    ["SIGN_IN_REQUIRED","LOCAL_OPERATION_PATH","LOCAL_OPERATION_METHOD","IDEMPOTENCY_KEY_REQUIRED","LOCAL_OPERATION_INPUT","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_IN_PROGRESS","IDEMPOTENCY_EXPIRED","REPLAY_UNAVAILABLE"].includes(String(error.code))) {
+    [400,401,403,404,405,409,410,422,503].includes(Number(error.statusCode)) &&
+    ["SIGN_IN_REQUIRED","LOCAL_OPERATION_PATH","LOCAL_OPERATION_METHOD","IDEMPOTENCY_KEY_REQUIRED","LOCAL_OPERATION_INPUT","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_IN_PROGRESS","IDEMPOTENCY_EXPIRED","REPLAY_UNAVAILABLE","WORKLOAD_OPERATION_REQUIRED","WORK_TICKET_EXPIRED","WORK_SECRET_CHECKPOINT_UNSUPPORTED","WORK_PROTOCOL_CONFLICT"].includes(String(error.code))) {
     status = Number(error.statusCode); code = String(error.code); message = code; if (status === 405) allow = "POST";
+  } else if (error && typeof error === "object" && (error as Error).name === "WorkError" && "statusCode" in error && "code" in error &&
+      ((error.statusCode === 400 && error.code === "WORK_INPUT") || (error.statusCode === 409 && ["WORK_IDENTITY_CONFLICT","WORK_CONFIGURATION_CONFLICT","WORK_LEASE_LOST"].includes(String(error.code))))) {
+    status = Number(error.statusCode); code = String(error.code); message = code;
   } else if (error instanceof HttpError) {
     status = error.statusCode; code = error.code; message = error.message; allow = error.allow;
   } else if (error && typeof error === "object" && "outcome" in error) {

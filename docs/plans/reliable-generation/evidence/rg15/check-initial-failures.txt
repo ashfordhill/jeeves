@@ -1,0 +1,343 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/favorites.test.ts > Favorites with Runnable processes on (v3 contract, section 3) > creates the template's own table and grants its tile only select, insert and delete
+AssertionError: expected [ { host: 'account-api', …(5) }, …(3) ] to deeply equal [ { host: 'account-api', …(5) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -16,10 +16,36 @@
+      "host": "account-api",
+      "kind": "table",
+      "privileges": [
+        "SELECT",
+        "INSERT",
++       "UPDATE",
++       "DELETE",
++     ],
++     "relation": "work_records",
++     "resource": "catalog",
++     "schema": "jeeves",
++   },
++   {
++     "host": "account-api",
++     "kind": "table",
++     "privileges": [
++       "SELECT",
++       "INSERT",
++       "UPDATE",
++       "DELETE",
++     ],
++     "relation": "work_tickets",
++     "resource": "catalog",
++     "schema": "jeeves",
++   },
++   {
++     "host": "account-api",
++     "kind": "table",
++     "privileges": [
++       "SELECT",
++       "INSERT",
+        "DELETE",
+      ],
+      "relation": "favorites",
+      "resource": "favorites",
+      "schema": "favorite_items",
+
+ ❯ src/v2/favorites.test.ts:176:26
+    174|     );
+    175|     const local = JSON.parse(text(bundle, "infra/local.json"));
+    176|     expect(local.grants).toEqual([
+       |                          ^
+    177|       // Catalog writer, a stub, writes Catalog: the idempotency recor…
+    178|       {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |generator| src/v2/http-wiring.test.ts > HTTP wiring (tile process contract, sections 2-4) > provisions what the mounted templates use: tables, logins and providers
+AssertionError: expected [ { host: 'links-api', …(5) }, …(2) ] to deeply equal [ { resource: 'links-db', …(5) } ]
+
+- Expected
++ Received
+
+@@ -10,6 +10,32 @@
+      ],
+      "relation": "idempotency_records",
+      "resource": "links-db",
+      "schema": "jeeves",
+    },
++   {
++     "host": "links-api",
++     "kind": "table",
++     "privileges": [
++       "SELECT",
++       "INSERT",
++       "UPDATE",
++       "DELETE",
++     ],
++     "relation": "work_records",
++     "resource": "links-db",
++     "schema": "jeeves",
++   },
++   {
++     "host": "links-api",
++     "kind": "table",
++     "privileges": [
++       "SELECT",
++       "INSERT",
++       "UPDATE",
++       "DELETE",
++     ],
++     "relation": "work_tickets",
++     "resource": "links-db",
++     "schema": "jeeves",
++   },
+  ]
+
+ ❯ src/v2/http-wiring.test.ts:377:25
+    375|       secret: "sql-previews-db--preview-api",
+    376|     });
+    377|     expect(plan.grants).toEqual([
+       |                         ^
+    378|       {
+    379|         resource: "links-db",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > clears and regrants permissions without moving an API-only product namespace or SQL file
+GeneratorRefusal: INVALID_LOCAL_CONTRIBUTION at work_records: Relation grant exceeds normalized access/published boundary.
+ ❯ refuse src/json.ts:17:9
+     15| }
+     16| export function refuse(code: string, path: string, message: string): n…
+     17|   throw new GeneratorRefusal(code, path, message);
+       |         ^
+     18| }
+     19| export const sha256 = (bytes: string | Uint8Array) =>
+ ❯ renderFoundation src/v2/local.ts:652:9
+ ❯ Object.render src/v2/local.ts:178:26
+ ❯ assembleV2 src/v2/assemble.ts:65:30
+ ❯ generate src/v2/logical-ownership.test.ts:24:3
+ ❯ plan src/v2/logical-ownership.test.ts:230:23
+ ❯ src/v2/logical-ownership.test.ts:263:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps frozen-v2's export
+AssertionError: expected { files: 80, sha256: { …(80) } } to deeply equal { files: 80, sha256: { …(80) } }
+
+- Expected
++ Received
+
+@@ -1,13 +1,13 @@
+  {
+    "files": 80,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+-     ".jeeves/extensions.md": "bad992e9cfe40cd0a916da47536b0e1f548544ec567458468c8f5ffa621c437f",
++     ".jeeves/extensions.md": "80dfefa01ad6402be8c4835bb548c3d3e7b4810a35712ea005c53dcb5e0ed55a",
+      ".jeeves/inputs/design.json": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+-     ".jeeves/manifest.json": "1c875922ec39d659cd30802acc98bf58bd8763b964a88532df7fb5ec85dce84a",
++     ".jeeves/manifest.json": "2f9706afc2c6a938c9300d9aa672d47d65a62bc1e4952b98a622d81fac0bb03d",
+      ".jeeves/normalized.json": "1253b5ea453e613c5bc03e4b079203e577ad472983290da40428a38e6ef99cf3",
+      ".jeeves/report.json": "ba25d9645ba84f4bff00b99fde0482cd707281ff610da900a005070838eeb36a",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "8a0037b1b77966f5e6aeed60dcd3b6f5fb828d0ee4485bddeeebb025a7e7752d",
+@@ -36,11 +36,11 @@
+      "src/features/positive-cache-bindings.ts": "d59726ee02bd7abb9e2a9851721b553953a211f9d30b863b8ac552027e567249",
+      "src/features/search-bindings.ts": "9e06fd6a6452e62e1ff5a3fa22762a57ec5c1476e80568fe8d561233e9d937cf",
+      "src/features/service-resources.ts": "4fe5506e6b56c49a94d50dca40f339d963f96bec579244ace5db0e5fac354208",
+      "src/features/video-runtime.ts": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "src/http-errors.hooks.ts": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+-     "src/runtime/admission.ts": "bf0879ec012b2cb5316ea19e5e4f7d888d397ca8baba839909c7629cbf87071b",
++     "src/runtime/admission.ts": "003ac615d771e9f88b2662d30698ad26dbc43234d9ee3018882aa481ecbfb6a4",
+      "src/runtime/amqp.ts": "83131dfe0a6748f9e8b92d2d9256ba5aebf10c92e302f46b42d1491d081fa523",
+      "src/runtime/asset-identity.ts": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "src/runtime/asset-lifecycle.ts": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "src/runtime/asset-sql.ts": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "src/runtime/asset-worker.ts": "0988efa530faa51a146e4062d6135c181d9fe908ddb7a95480c65e3a265b2f78",
+@@ -60,11 +60,11 @@
+      "src/runtime/media-worker.ts": "6621a1776ef8d80360b2e43fa8986ad2ab32dd709b7f735956332e1d3f3030d6",
+      "src/runtime/multipart-http.ts": "95b8dadb6c24f46d084b726ec49f04c204474618e3f85b7a1c2646e14b79b906",
+      "src/runtime/multipart-objects.ts": "84864780ce18eb04f9fd3a8fa9bf47e0ba3b2bc18a7ba33b9e5d00df642b7bee",
+      "src/runtime/multipart.ts": "b8e476e3b4304876b649030cba17a15385d94ead1850483d97adf4721660aed4",
+      "src/runtime/objects.ts": "94349e8434ffebf741344f4e60256ea8123e4f7ebdabf33b0b168d53e928d7db",
+-     "src/runtime/operation.ts": "f8ffd5ff768339fc237e3c204db13aac4c1579f37a12f83cf8c789af684ce522",
++     "src/runtime/operation.ts": "bf5a7d5614586237139692eec2a36f8d8c271d874fc11e78d14ecb64b8768133",
+      "src/runtime/outbox.ts": "31d75d62004cf7a6a9eaf97a86e5866596b33e4997f8fe7e6340ed182967f22f",
+      "src/runtime/owned-upload.ts": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+      "src/runtime/positive-cache.ts": "d0ad6e6b0c3bade8d193e6bcb2495f8996a0325d9a3b50c896777e70da67f529",
+      "src/runtime/postgres.ts": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+      "src/runtime/process.ts": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+@@ -73,11 +73,11 @@
+      "src/runtime/search-indexer.ts": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+      "src/runtime/search-projection.ts": "2a0e9e053a59ea422e682828ff643cadcbf9baf484b225ef72e1362de70e923f",
+      "src/runtime/search-query.ts": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "src/runtime/search-schema.ts": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "src/runtime/search.ts": "7dc8817bce1cea1ca630351db9366279edd0a9d44e52aee274773f266005a1ad",
+-     "src/runtime/transaction.ts": "d5f6e89e5d85d89bc93df63a81f22876815bd5ece60872d5fb39b2e5948c1e71",
++     "src/runtime/transaction.ts": "9b37439c3dca06eaa463c549ac064fe14a9f10836ac09a0c4e91bc4c16c65f2c",
+      "src/runtime/upload-sql.ts": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+      "src/runtime/valkey.ts": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+      "src/runtime/video-hls.ts": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "src/runtime/video-result.ts": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "tsconfig.json": "cb75a166099ee7fd34729d9a132a1858486436054003bd5ac936fa5378d0268d",
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps v2-module-design's export
+AssertionError: expected { files: 87, sha256: { …(87) } } to deeply equal { files: 87, sha256: { …(87) } }
+
+- Expected
++ Received
+
+@@ -1,13 +1,13 @@
+  {
+    "files": 87,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+-     ".jeeves/extensions.md": "bad992e9cfe40cd0a916da47536b0e1f548544ec567458468c8f5ffa621c437f",
++     ".jeeves/extensions.md": "80dfefa01ad6402be8c4835bb548c3d3e7b4810a35712ea005c53dcb5e0ed55a",
+      ".jeeves/inputs/design.json": "06fad230900a9e6a8d01cfff295a887617a713ffae0ac9cd6c75e39ef0f7c215",
+-     ".jeeves/manifest.json": "3c23c2ec43e421ca2e40f1cc40d204a09d99865726245aa332d8b2d87e6c868a",
++     ".jeeves/manifest.json": "25a7a218517e4b47192334677f5a6804591f6e89496b3313d56e7f4f6af95e79",
+      ".jeeves/normalized.json": "ae852ee823596da8adf46964626cff12c168cf4dc7fe3a7d237e7002f412dcda",
+      ".jeeves/report.json": "35018b8306793c170c8c2d37e9836c3081f78c4554784de98bdf145abb66d196",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "8a0037b1b77966f5e6aeed60dcd3b6f5fb828d0ee4485bddeeebb025a7e7752d",
+@@ -41,11 +41,11 @@
+      "src/modules/dependencies.ts": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+      "src/modules/watch/watch-counts.slots.ts": "34ffca73d74d7f8c231418a9dfb3765ce9a2220062838ba044a510a4b369d2cc",
+      "src/modules/watch/watch-counts.ts": "9ea6a6d01ad1e9dc934cb262fd2bc3aed384e38d4887d0ec394e7f710b79167f",
+      "src/modules/watch/watch-views.slots.ts": "8ddfe10a6e4246f0838e34949e79b3965f457b15dd4904582a443cfcea791c77",
+      "src/modules/watch/watch-views.ts": "07af644d6d729737f8f1ebbec483ab6a8cef83da17d182a599390e32ed1add25",
+-     "src/runtime/admission.ts": "bf0879ec012b2cb5316ea19e5e4f7d888d397ca8baba839909c7629cbf87071b",
++     "src/runtime/admission.ts": "003ac615d771e9f88b2662d30698ad26dbc43234d9ee3018882aa481ecbfb6a4",
+      "src/runtime/amqp.ts": "83131dfe0a6748f9e8b92d2d9256ba5aebf10c92e302f46b42d1491d081fa523",
+      "src/runtime/asset-identity.ts": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "src/runtime/asset-lifecycle.ts": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "src/runtime/asset-sql.ts": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "src/runtime/asset-worker.ts": "0988efa530faa51a146e4062d6135c181d9fe908ddb7a95480c65e3a265b2f78",
+@@ -66,11 +66,11 @@
+      "src/runtime/media-worker.ts": "6621a1776ef8d80360b2e43fa8986ad2ab32dd709b7f735956332e1d3f3030d6",
+      "src/runtime/multipart-http.ts": "95b8dadb6c24f46d084b726ec49f04c204474618e3f85b7a1c2646e14b79b906",
+      "src/runtime/multipart-objects.ts": "84864780ce18eb04f9fd3a8fa9bf47e0ba3b2bc18a7ba33b9e5d00df642b7bee",
+      "src/runtime/multipart.ts": "b8e476e3b4304876b649030cba17a15385d94ead1850483d97adf4721660aed4",
+      "src/runtime/objects.ts": "94349e8434ffebf741344f4e60256ea8123e4f7ebdabf33b0b168d53e928d7db",
+-     "src/runtime/operation.ts": "f8ffd5ff768339fc237e3c204db13aac4c1579f37a12f83cf8c789af684ce522",
++     "src/runtime/operation.ts": "bf5a7d5614586237139692eec2a36f8d8c271d874fc11e78d14ecb64b8768133",
+      "src/runtime/outbox.ts": "31d75d62004cf7a6a9eaf97a86e5866596b33e4997f8fe7e6340ed182967f22f",
+      "src/runtime/owned-upload.ts": "b0a85a464f4a3b284b4ec42868a1f229f4e479b5a89defa098b3a11ec2de38f2",
+      "src/runtime/positive-cache.ts": "d0ad6e6b0c3bade8d193e6bcb2495f8996a0325d9a3b50c896777e70da67f529",
+      "src/runtime/postgres.ts": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+      "src/runtime/process.ts": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+@@ -80,11 +80,11 @@
+      "src/runtime/search-projection.ts": "2a0e9e053a59ea422e682828ff643cadcbf9baf484b225ef72e1362de70e923f",
+      "src/runtime/search-query.ts": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "src/runtime/search-schema.ts": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "src/runtime/search.ts": "7dc8817bce1cea1ca630351db9366279edd0a9d44e52aee274773f266005a1ad",
+      "src/runtime/settings.ts": "446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90",
+-     "src/runtime/transaction.ts": "d5f6e89e5d85d89bc93df63a81f22876815bd5ece60872d5fb39b2e5948c1e71",
++     "src/runtime/transaction.ts": "9b37439c3dca06eaa463c549ac064fe14a9f10836ac09a0c4e91bc4c16c65f2c",
+      "src/runtime/upload-sql.ts": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+      "src/runtime/valkey.ts": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+      "src/runtime/video-hls.ts": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "src/runtime/video-result.ts": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+      "tsconfig.json": "cb75a166099ee7fd34729d9a132a1858486436054003bd5ac936fa5378d0268d",
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps stub-stack's export
+AssertionError: expected { files: 60, sha256: { …(60) } } to deeply equal { files: 60, sha256: { …(60) } }
+
+- Expected
++ Received
+
+@@ -1,13 +1,13 @@
+  {
+    "files": 60,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+-     ".jeeves/extensions.md": "bad992e9cfe40cd0a916da47536b0e1f548544ec567458468c8f5ffa621c437f",
++     ".jeeves/extensions.md": "80dfefa01ad6402be8c4835bb548c3d3e7b4810a35712ea005c53dcb5e0ed55a",
+      ".jeeves/inputs/design.json": "58b00d48cd109f4f0d22bc71c578dae74ee1a481f6dd13172fdd27757417915e",
+-     ".jeeves/manifest.json": "5cd647381bc15980e6e6ebcc5634610ffc8c2112115bd22e6935a9e13d765d24",
++     ".jeeves/manifest.json": "4e139c848828c1e5d9d78c70c6505ee1772f9f605eb757cbf719cf82f51e5687",
+      ".jeeves/normalized.json": "f8b3d0ccf4d03989ebf60849e3053d691acb1acc3516400cae76231f6da33b36",
+      ".jeeves/report.json": "e2fd9af3482d361c7138c07bc5850597516fcc36dcd70800ba530be0ffaa874c",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "e15a715007167bb92b4cd42fe6fd8126751e2385af530b353cc0ebcf40c9e6e5",
+@@ -56,10 +56,10 @@
+      "src/modules/visit-worker/visit-consumer.ts": "89c9970083c5407032524b28d983410c023696c21b51e3f13dd288084c2ed44b",
+      "src/modules/visit-worker/visit-writer.slots.ts": "65d0bf58efdc047b4ecb9ac1c26d57af04876587fcec38f1f30e08172b098bf5",
+      "src/modules/visit-worker/visit-writer.ts": "d0dad7d14c96cc5598feaec6b0ac88431eb9c30f19c00be5ac27b2784fd141ee",
+      "src/runtime/keys.ts": "1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb",
+      "src/runtime/local.ts": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+-     "src/runtime/operation.ts": "f8ffd5ff768339fc237e3c204db13aac4c1579f37a12f83cf8c789af684ce522",
++     "src/runtime/operation.ts": "bf5a7d5614586237139692eec2a36f8d8c271d874fc11e78d14ecb64b8768133",
+      "src/runtime/settings.ts": "446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90",
+      "tsconfig.json": "cb75a166099ee7fd34729d9a132a1858486436054003bd5ac936fa5378d0268d",
+    },
+  }
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |generator| src/v2/product-migrations.test.ts > RG07 validates a later module's SQL and all credentials before opening or probing any client
+AssertionError: expected [Function] to throw error matching /lifecycle/ but got 'durableWorkDefinition is not defined'
+
+- Expected:
+/lifecycle/
+
++ Received:
+"durableWorkDefinition is not defined"
+
+ ❯ src/v2/product-migrations.test.ts:472:67
+    470|       stripTypeScriptTypes([...(mount.validation ?? []), ...(mount.set…
+    471|     );
+    472|     await expect(initialize(...values, { tile: "links-api" }, {})).rej…
+       |                                                                   ^
+    473|     expect({ opened, probes }).toEqual({ opened: 0, probes: 0 });
+    474|     f.files.set(query, "SELECT title FROM p_links_api_owner.items");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  5 failed | 131 passed (136)
+      Tests  7 failed | 1233 passed (1240)
+   Start at  17:29:40
+   Duration  138.97s (tests 78%, import 16%, environment 3%, transform 3%)
+
+    Isolate  136 workers spawned · ~258ms startup each (spawn + environment, per file)
+             at least ~8.52s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

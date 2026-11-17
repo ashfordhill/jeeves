@@ -1330,3 +1330,62 @@ updates existing clients. Use a fresh disposable runtime or a reviewed external 
 The record attests that review, not issuer-state proof. API7→8 changes the former unavailable
 HTTP dependency signature, so updates require `--ack-extension-api=8` and a passing staged
 checker/TypeScript build. Migrate handwritten calls yourself; the updater preserves their bytes.
+
+## Durable work contract (additive extension API v8)
+
+A writable database-backed stub can export an application-owned `durableWork` declaration using
+`defineDurableWork({database, id, version, retentionSeconds, maxAttempts, integration, validate,
+complete})`. The generated API exposes scoped `accept(dependencies, {key, input})` and
+`status(dependencies, key)` only. Acknowledge acceptance after storage resolves. Input validation
+and integration mapping are synchronous bounded JSON policies. Reusing a retained key with
+changed input conflicts. The completion hook receives frozen input/caller/result DTOs and named
+same-database product commands; it has no client, SQL, commit, ACK, holder, lease or fence control.
+Generated processes drain work independently of the accepting request, under the existing
+bounded lifecycle. This is not a scheduler or webhook feature.
+
+Protected `052-jeeves-durable-work.sql` stores intent, attempts, database-time leases and exact
+bigint fences. Restricted-role product effects, every issued command's actual drain and the
+final holder/fence/unexpired-lease check share one transaction. Stale completion rolls back all
+product effects. Compatible local-only handlers can run in separate logical-owner roles with
+their existing distinct credentials. Cross-database atomic completion is refused. Actual pending
+transactions/transports keep their execution slot after caller timeout. Crashed work is
+reclaimable; retries use 250ms doubling backoff capped at30s, with1–20 attempts. Unresolved remote
+outcomes remain unknown. Fixed30s leases and bounded batches are implementation policy, not
+normal configuration controls. Only expired completed records are deleted, at most100 per drain;
+accepted/unfinished/failed/unknown records remain available for application review.
+
+`integration: null` selects local work. The sole installed remote integration is a declared,
+authenticated generated `ServiceTarget`, selected with `{target, operation, map}`. The callee
+exports the opaque `defineWorkloadOperation` descriptor as `localOperation`. It has no public
+`call`/`route`; generated `/internal/work/<module>` POST/root-only framing owns prepare and execute
+independently of the product stub entrypoint. The receiver requires explicit workload opt-in,
+compiled audience/caller grants and immutable `{processId}` facts. Required-user guards remain
+required and cannot become background targets. Account `defineLocalOperation` still offers
+`call`/`route` with verified account scope and sealed secret replay. No user bearer is persisted,
+no account is impersonated, and arbitrary providers/URLs/headers/test lookalikes remain unsupported.
+
+The callee issues an opaque, expiring recovery ticket using its own database clock. The caller
+persists canonical mapped input and a work-acceptance UUID, then commits the chosen ticket and
+validated receiver protocol/version before any execute dispatch. Unknown ticket COMMIT means
+no speculative execute: reclaim reads durable state first. A selected ticket is never replaced,
+even if missing or expired remotely. The stable remote key excludes holder/attempt/fence.
+The callee checks the ticket both before and after awaited admission, immediately before new
+mutation. Retained committed replay can recover after ticket expiry. After replay/ticket cleanup,
+a missing or expired selected ticket cannot execute again; the unresolved item remains unknown.
+No caller/callee clock comparison or permanent per-key marker is required. Ticket cleanup is
+bounded at1000 with replay cleanup. Protocol JSON separates HTTP status from operation result
+status, preserving204/205 null results. Known remote results can finish locally without another
+dispatch. This does not claim exactly-once external execution or a two-database atomic commit.
+
+The initial durable result checkpoint refuses declared `secret: true` workload operations before
+execution with `WORK_SECRET_CHECKPOINT_UNSUPPORTED`; no secret result is persisted plaintext.
+The declaration and refusal come from generated receiver framing, not a product response claim.
+Remote recovery is supported across copies of the same compiled workload/process identity.
+Another role skips incompatible claims, and colliding acceptance reports
+`WORK_CONFIGURATION_CONFLICT`; credentials are never merged. Changing handler version, stable
+work/database/owner identity or remote process identity requires explicit draining or reviewed
+application migration; old records and handwritten hook bodies are preserved. Safe work-failure
+logs carry operation/correlation IDs and an opaque work hash, excluding keys, inputs, subjects,
+tickets, results and original exception values. Deterministic PGlite/failure-point evidence is in
+`docs/plans/reliable-generation/evidence/rg15/`; native process-kill evidence remains a later
+checkpoint.

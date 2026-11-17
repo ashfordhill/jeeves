@@ -1131,9 +1131,18 @@ function routeStub(
   const from = (path: string) => `../${path.slice("src/".length)}`;
   const answers = `501 ${text(`Not implemented: ${module.name}`)} until it is written`;
   const internalOnly = !!process.workloadCallers?.length && process.exposure !== "public";
+  const workProtocol =
+    !!process.workload &&
+    !!process.workloadCallers?.length &&
+    !!process.stubs
+      .find((stub) => stub.module === module.component)
+      ?.stores?.some((store) => store.kind === "database" && store.access !== "read");
   return {
     imports: [
       { from: tileHttp, name: "stubRoutes" },
+      ...(workProtocol
+        ? [{ from: "../runtime/local-operation.ts", name: "invokeWorkProtocol" }]
+        : []),
       ...(process.workload && process.workloadCallers?.length
         ? [{ from: "../runtime/workload.ts", name: "workloadRoutes" }]
         : []),
@@ -1166,12 +1175,35 @@ function routeStub(
             `  ${guard ? `${guard}.caller` : "undefined"},`,
             '  "/internal/modules",',
             ");",
+            ...(workProtocol
+              ? [
+                  "stubRoutes(",
+                  `  workloadRoutes(routes, workload, allowedCallers[${text(id)}]),`,
+                  "  log,",
+                  `  ${text(id)},`,
+                  `  (request) => invokeWorkProtocol((${pascal(id)}Module as { localOperation?: unknown }).localOperation, dependencies[${text(id)}], request),`,
+                  "  { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },",
+                  `  ${guard ? `${guard}.caller` : "undefined"},`,
+                  '  "/internal/work",',
+                  ");",
+                ]
+              : []),
           ]
         : []),
     ],
     initialize: [],
     started: [],
     routes: [
+      ...(workProtocol
+        ? [
+            {
+              method: "POST",
+              path: `/internal/work/${id}`,
+              answers:
+                "Root-only generated ticket/replay protocol; refuses unless the module explicitly declares a workload-only operation (Required user guards remain required)",
+            },
+          ]
+        : []),
       ...(process.workload && process.workloadCallers?.length
         ? [
             {

@@ -18898,3 +18898,53 @@ workload settings the same way.
   Full inventories remain 42 containers / 9 networks / 23 volumes / 43 images; every original container
   ID/name/state, seven root hashes and exact 34,001-byte owner patch preserved. One local RG14
   commit follows; stop for coordinator acceptance, no later unit/push/deployment.
+
+## 2026-11-16 — RG15 partial; owner remote-authority decision pending
+
+- Accepted base remains RG14 `b8191719e6698ac8735d89b2131527fec276699c`. RG15 is
+  **unaccepted, uncommitted and incomplete**; coordinator requested a stop at this decision boundary.
+- Local templates/wiring add protected052 work records, canonical accept/status, private bounded
+  claim/renew/fail/retry/retention and same-database holder/fence/DB-time completion. Shared private
+  product-mutation role/command drain preserves RG10. No public lease/fence/SQL/commit/ACK control.
+- Focused PGlite + RG10 **25/25 pass**; actual scratch export **66files**, extension checker and
+  pinned TypeScript7.0.2 pass; generator typecheck/relevant lint pass. Existing focused wiring:
+  **127pass/5fail** from exact migration/path/validation expectations not yet migrated. Broad D11
+  (`pnpm check`, e2e, web build) not run; no pins or acceptance claims changed.
+- Remote implementation paused: existing RG10 account operations need a transient verified user
+  bearer, so restarted work lacks declared authority. Owner question is explicit workload-only
+  callee opt-in plus a callee-owned recovery deadline/ticket, or leaving remote unavailable.
+  [Decision and evidence](plans/reliable-generation/evidence/rg15/README.md) record scope/horizon
+  requirements and limits. Resume this same unit only after the owner's explicit decision.
+- Seven root hashes, exact34,001-byte owner diff, frozen v1 and all42 container ID/name/states
+  preserved; index empty, HEAD unchanged. No later unit, live/paid call, push or deployment.
+
+## 2026-11-17 — RG15 recovery resumed after daemon loss
+
+- RG15 remains unaccepted and uncommitted on accepted RG14 `b8191719`; preserved implementation
+  resumed in the primary checkout after daemon loss. The owner approved workload-only generated
+  operations and callee-owned expiring tickets; the plan README/decision record contains approval.
+  The preceding partial-stop entry is historical, not the current authority boundary.
+- Inspecting the existing local/remote implementation and finishing protocol/checkpoint safety,
+  focused behavioral coverage and final D11 checks. Earlier partial checks are not final acceptance.
+  No other unit, root file, owner service, live/paid call, delegation, push or deployment authorized.
+
+## 2026-11-17 — RG15 durable work complete for coordinator review
+
+- Protected052 work/ticket state and private accept/claim/renew/complete/fail runtime persist intent,
+  use exact advancing fences/DB-time leases, finite backoff/attempts and completed-only cleanup.
+  Product-role callback, actual command drain and final lease/fence check commit atomically.
+- Approved remote path uses actual authenticated generated prepare/execute framing, opaque callee
+  declarations, durably selected expiring tickets/protocol metadata and stable acceptance UUIDs.
+  Missing/expired selected tickets cannot reopen execution after replay cleanup. Known results
+  finish locally; unresolved dispatches remain unknown. No exactly-once/cross-database claim.
+- Limits: remote recovery across copies of one compiled workload identity; cross-role takeover
+  conflicts/skips without credential merging. Secret-result integrations explicitly fail before
+  execution with WORK_SECRET_CHECKPOINT_UNSUPPORTED; account sealed replay is preserved. Handler/
+  identity/version changes require explicit draining/migration. Local-only shared-owner work stays.
+- Final pnpm check:136files/1240tests plus lint/types pass; focused51/51; final deterministic expiry
+  file15/15 + generator types/lint pass. Native browser81/81, affected final6/6, final web build,
+  both scratch exports (67/78files, actual checker/TS7.0.2), offline chat eval and reviewed off-pins
+  pass. Earlier failures/corrections and PGlite/native limits are in evidence/rg15/README.md.
+- Root7 hashes, exact34001-byte owner diff/modes, frozen v1 and42 original container ID/name/states
+  preserved. No later unit, native matrix, owner studio/database, paid/live call, push or deployment.
+  One local commit follows: `RG15: persist durable work and fence completion across replicas`.

@@ -1,0 +1,19 @@
+RG15 partial scratch: 66 files
+New emitted paths: [
+  'infra/postgres/items-db/052-jeeves-durable-work.sql',
+  'src/runtime/durable-work.ts',
+  'src/runtime/product-mutation.ts'
+]
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+src/runtime/durable-work.ts(122,25): error TS2739: Type 'QueryResultRow' is missing the following properties from type '{ state: WorkState; attempts: number; error: string | null; }': state, attempts, error
+src/runtime/durable-work.ts(128,35): error TS2739: Type 'QueryResultRow' is missing the following properties from type '{ state: WorkState; attempts: number; error: string | null; }': state, attempts, error
+src/runtime/durable-work.ts(154,75): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Readonly<unknown>'.
+src/runtime/durable-work.ts(174,43): error TS2345: Argument of type '1' is not assignable to parameter of type '10'.
+src/runtime/product-mutation.ts(21,10): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/runtime/product-mutation.ts(21,16): error TS7006: Parameter 'parameters' implicitly has an 'any' type.
+
+Pinned TypeScript: Version 7.0.2
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves-generator

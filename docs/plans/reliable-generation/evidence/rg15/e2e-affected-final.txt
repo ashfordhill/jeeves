@@ -1,0 +1,30 @@
+$ pnpm db:up && playwright test -c jeeves/playwright.config.ts jeeves/apps/web/e2e/generation.spec.ts jeeves/apps/web/e2e/workload.spec.ts jeeves/apps/web/e2e/logical-ownership.spec.ts
+$ docker compose -f jeeves/compose.yaml up -d --wait
+ Container jeeves-postgres-1 Running
+ Container jeeves-postgres-1 Waiting
+ Container jeeves-postgres-1 Healthy
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:2902755) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2902774) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:2902871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 3 workers
+
+(node:2902928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2902927) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2902929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:139:1 › normal TinyURL source reports unsupported and keeps the mouse canvas usable (4.7s)
+  ✓  3 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:184:1 › mouse exports the selected supported v2 source and rejects changed ZIP bytes (8.6s)
+  ✓  4 [chromium] › jeeves/apps/web/e2e/logical-ownership.spec.ts:6:1 › chooses shared logical ownership and precise product permissions by mouse (6.4s)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:21:1 › mouse previews and downloads the actual partial scaffold; stale source and project switch cannot download (14.1s)
+  ✓  6 [chromium] › jeeves/apps/web/e2e/workload.spec.ts:91:1 › Auth guard adds workload identity by mouse after its user identity is connected (6.1s)
+  ✓  5 [chromium] › jeeves/apps/web/e2e/workload.spec.ts:5:1 › workload links fix private-network generation refusal by mouse without a user Sign-in (9.9s)
+
+  6 passed (21.8s)

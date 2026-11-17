@@ -98,7 +98,7 @@ async function executeTransaction<T>(
 
 /** The underlying transaction retains its connection through final COMMIT/ROLLBACK settlement.
  * A caller timeout never releases the connection or grants permission to retry its mutation. */
-export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>, options: {readOnly?: boolean} = {}): Promise<T> {
+export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>, options: {readOnly?: boolean; observe?: (actual: Promise<T>) => void} = {}): Promise<T> {
   assertDatabaseAllowed();
   return dependency(
     {
@@ -108,6 +108,12 @@ export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promis
         return (error as { outcome?: string })?.outcome === "definite-failure";
       },
     },
-    () => executeTransaction(pool, effect, options),
+    () => {
+      const actual = executeTransaction(pool, effect, options);
+      // Private work runners keep their slot through actual COMMIT/ROLLBACK and release,
+      // independently of the caller deadline race. No observer reaches product extensions.
+      options.observe?.(actual);
+      return actual;
+    },
   );
 }

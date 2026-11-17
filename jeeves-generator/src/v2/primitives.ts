@@ -8,7 +8,15 @@ const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
 const clientLibraries: Record<ClientSection, string[]> = {
   // A stub's database client runs its transactions through transaction.ts (QL03) and its
   // idempotent calls on the records in idempotency.ts (QL04).
-  database: ["postgres", "transaction", "idempotency", "local-operation"],
+  database: [
+    "postgres",
+    "transaction",
+    "idempotency",
+    "local-operation",
+    "product-mutation",
+    "durable-work",
+    "work-integration",
+  ],
   // The broker's endpoint alone needs no library: its publisher and loops bring theirs.
   broker: [],
   queue: ["delivery", "amqp"],
@@ -45,7 +53,8 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       // A stub's clients use the libraries of the stores it is provisioned (tile process contract,
       // section 6); its cache client uses the cache read's bounded client, valkey.ts.
       for (const process of model.processes ?? []) {
-        if (process.workload) add(["admission", "http"], ["generation", "processes"]);
+        if (process.workload)
+          add(["admission", "http", "work-integration"], ["generation", "processes"]);
         if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
         if (process.stubs.some((stub) => stub.consumes?.length))
           add(["delivery", "amqp"], ["generation", "processes"]);

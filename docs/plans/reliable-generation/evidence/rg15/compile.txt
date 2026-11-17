@@ -1,0 +1,10 @@
+RG15 partial scratch: 66 files
+New emitted paths: [
+  'infra/postgres/items-db/052-jeeves-durable-work.sql',
+  'src/runtime/durable-work.ts',
+  'src/runtime/product-mutation.ts'
+]
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+
+Pinned TypeScript: Version 7.0.2

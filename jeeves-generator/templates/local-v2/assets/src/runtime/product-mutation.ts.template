@@ -1,0 +1,64 @@
+/** Private shared local-mutation boundary. The role covers the callback AND every issued command. */
+import { withLocalMutation } from "./operation.ts";
+import { abortTransaction, assertTransaction, type Tx } from "./transaction.ts";
+export interface ScopedCommands {
+  call(
+    name: string,
+    parameters: readonly unknown[],
+  ): Promise<Readonly<{ rows: readonly unknown[]; rowCount: number }>>;
+}
+export type CommandFactory = (
+  execute: (
+    sql: string,
+    values: unknown[],
+    readOnly: boolean,
+  ) => Promise<{ rows: unknown[]; rowCount: number | null }>,
+) => ScopedCommands;
+export async function productMutation<T>(
+  tx: Tx,
+  role: string,
+  factory: CommandFactory,
+  effect: (commands: ScopedCommands) => Promise<T>,
+): Promise<T> {
+  if (!/^[a-z][a-z0-9_]{0,62}$/.test(role)) throw new Error("Invalid product role");
+  const pending = new Set<Promise<unknown>>();
+  let active = true;
+  const registered = factory((sql, values, readOnly) => {
+    if (readOnly) throw new Error("Local mutation accepts registered commands only; use RETURNING");
+    if (!active) return Promise.reject(new Error("Local commands are closed"));
+    const work = tx.query(sql, values);
+    pending.add(work);
+    void work.catch(() => {});
+    return work;
+  });
+  const commands: ScopedCommands = Object.freeze({
+    call(name: string, parameters: readonly unknown[]) {
+      if (!active) return Promise.reject(new Error("Local commands are closed"));
+      const work = registered
+        .call(name, parameters)
+        .catch((error: unknown) => abortTransaction(tx, error));
+      pending.add(work);
+      void work.catch(() => {});
+      return work;
+    },
+  });
+  await tx.query(`SET LOCAL ROLE "${role}"`);
+  let result: T;
+  try {
+    result = await withLocalMutation(async () => {
+      const value = await effect(commands);
+      active = false;
+      await Promise.allSettled([...pending]);
+      assertTransaction(tx);
+      return value;
+    });
+  } catch (error) {
+    active = false;
+    await Promise.allSettled([...pending]);
+    return abortTransaction(tx, error);
+  } finally {
+    active = false;
+  }
+  await tx.query("RESET ROLE");
+  return result;
+}

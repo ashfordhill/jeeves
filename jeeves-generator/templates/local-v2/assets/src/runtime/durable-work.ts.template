@@ -1,0 +1,711 @@
+/** Private durable work engine. Product extensions see only accept/status and scoped commands. */
+import { createHash, randomUUID } from "node:crypto";
+import { normalizedJsonDto } from "./hook-boundary.ts";
+import {
+  currentOperation,
+  operation,
+  withOperation,
+  withLocalPolicy,
+  withEffect,
+  OperationError,
+  assertOperation,
+} from "./operation.ts";
+import { transaction, type TransactionPool } from "./transaction.ts";
+import { productMutation, type ScopedCommands, type CommandFactory } from "./product-mutation.ts";
+import { periodic, type ProcessScope } from "./process.ts";
+import { workTarget, type WorkTransport } from "./work-integration.ts";
+
+export type WorkState = "accepted" | "running" | "retry" | "unknown" | "completed" | "failed";
+export interface WorkStatus {
+  readonly state: WorkState;
+  readonly attempts: number;
+  readonly error: string | null;
+}
+export interface DurableWork<Input, Dependencies> {
+  accept(
+    dependencies: Dependencies,
+    request: Readonly<{ key: string; input: unknown }>,
+  ): Promise<WorkStatus>;
+  status(dependencies: Dependencies, key: string): Promise<WorkStatus | undefined>;
+}
+interface Definition<Input, Dependencies> {
+  readonly database: keyof Dependencies & string;
+  readonly id: string;
+  readonly version: number;
+  readonly retentionSeconds: number;
+  readonly maxAttempts: number;
+  /** External mutation support requires an installed recovery AND background-authority contract. */
+  readonly integration: null | {
+    readonly target: keyof Dependencies & string;
+    readonly operation: string;
+    map(input: Readonly<Input>): unknown;
+  };
+  validate(input: unknown): Input;
+  complete(
+    input: Readonly<Input>,
+    commands: ScopedCommands,
+    caller: Readonly<{ subject?: string }>,
+    remote: Readonly<{ status: number; body: unknown }> | null,
+  ): Promise<void>;
+}
+type StoredDefinition = Definition<unknown, Record<string, unknown>>;
+const definitions = new WeakMap<object, StoredDefinition>();
+const bindings = new WeakMap<object, { work: object; store: ReturnType<typeof createWorkStore> }>();
+const snapshot = (row: { state: WorkState; attempts: number; error: string | null }): WorkStatus =>
+  Object.freeze({ state: row.state, attempts: row.attempts, error: row.error });
+export class WorkError extends Error {
+  readonly code: string;
+  readonly statusCode: number;
+  constructor(code: string, statusCode = 409) {
+    super(code);
+    this.name = "WorkError";
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+function key(value: unknown): string {
+  if (typeof value !== "string" || !/^[\x21-\x7e]{1,255}$/.test(value))
+    throw new WorkError("WORK_INPUT", 400);
+  return value;
+}
+function scope() {
+  const subject = currentOperation()?.caller.subject;
+  if (
+    subject !== undefined &&
+    (subject.includes("\u0000") ||
+      [...subject].length > 255 ||
+      Buffer.from(subject, "utf8").toString("utf8") !== subject)
+  )
+    throw new WorkError("WORK_INPUT", 400);
+  return JSON.stringify(subject ? { subject } : {});
+}
+function pure<T>(effect: () => T): T {
+  return withLocalPolicy(() => {
+    const value = effect();
+    if (
+      value instanceof Promise ||
+      (value &&
+        typeof value === "object" &&
+        typeof Object.getOwnPropertyDescriptor(value, "then")?.value === "function")
+    ) {
+      void Promise.resolve(value).catch(() => {});
+      throw new Error("Work policy must be synchronous");
+    }
+    return normalizedJsonDto(value) as T;
+  });
+}
+export function defineDurableWork<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+): DurableWork<Input, Dependencies> {
+  const fields = [
+    "database",
+    "id",
+    "version",
+    "retentionSeconds",
+    "maxAttempts",
+    "integration",
+    "validate",
+    "complete",
+  ];
+  if (
+    !definition ||
+    Object.keys(definition).sort().join() !== fields.sort().join() ||
+    fields.some((name) => !("value" in (Object.getOwnPropertyDescriptor(definition, name) ?? {})))
+  )
+    throw new Error("Invalid durable work declaration");
+  if (
+    definition.integration !== null &&
+    (!definition.integration ||
+      Object.keys(definition.integration).sort().join() !== "map,operation,target" ||
+      Object.keys(definition.integration).some(
+        (name) =>
+          !("value" in (Object.getOwnPropertyDescriptor(definition.integration!, name) ?? {})),
+      ) ||
+      typeof definition.integration.target !== "string" ||
+      !/^[a-z][a-z0-9-]{0,127}$/.test(definition.integration.operation) ||
+      typeof definition.integration.map !== "function")
+  )
+    throw new Error(
+      "Durable external work requires an installed restart-safe authority and recovery protocol",
+    );
+  if (
+    typeof definition.database !== "string" ||
+    !definition.database ||
+    !/^[a-z][a-z0-9-]{0,63}$/.test(definition.id) ||
+    !Number.isSafeInteger(definition.version) ||
+    definition.version < 1 ||
+    definition.version > 1000000 ||
+    !Number.isSafeInteger(definition.retentionSeconds) ||
+    definition.retentionSeconds < 60 ||
+    definition.retentionSeconds > 604800 ||
+    !Number.isSafeInteger(definition.maxAttempts) ||
+    definition.maxAttempts < 1 ||
+    definition.maxAttempts > 20 ||
+    typeof definition.validate !== "function" ||
+    typeof definition.complete !== "function"
+  )
+    throw new Error("Invalid durable work declaration");
+  definition = Object.freeze({
+    ...definition,
+    integration: definition.integration ? Object.freeze({ ...definition.integration }) : null,
+  });
+  const bound = (dependencies: Dependencies) => {
+    assertOperation();
+    const handle = Object.getOwnPropertyDescriptor(dependencies, definition.database)?.value;
+    const binding = handle && bindings.get(handle);
+    if (!binding || binding.work !== work) throw new Error("Unconfigured durable work");
+    return binding.store;
+  };
+  const work = Object.freeze({
+    async accept(dependencies: Dependencies, request: { key: string; input: unknown }) {
+      const store = bound(dependencies);
+      if (
+        !request ||
+        Object.keys(request).sort().join() !== "input,key" ||
+        ["key", "input"].some(
+          (name) => !("value" in (Object.getOwnPropertyDescriptor(request, name) ?? {})),
+        )
+      )
+        throw new WorkError("WORK_INPUT", 400);
+      key(request.key);
+      let input: unknown;
+      try {
+        input = pure(() => definition.validate(normalizedJsonDto(request.input)));
+      } catch {
+        throw new WorkError("WORK_INPUT", 400);
+      }
+      let remote: unknown = null;
+      try {
+        if (definition.integration) {
+          remote = pure(() => definition.integration!.map(input as Readonly<Input>));
+          if (remote === undefined) throw new Error("Remote input must be JSON");
+        }
+      } catch {
+        throw new WorkError("WORK_INPUT", 400);
+      }
+      return withEffect("local-atomic-mutation", () =>
+        store.accept(scope(), request.key, input, remote),
+      );
+    },
+    async status(dependencies: Dependencies, id: string) {
+      return bound(dependencies).status(scope(), key(id));
+    },
+  });
+  definitions.set(work, Object.freeze({ ...definition }) as StoredDefinition);
+  return work;
+}
+export function validateDurableWorkBinding(
+  work: unknown,
+  properties: readonly string[],
+  targets: readonly string[] = [],
+): void {
+  if (work === undefined) return;
+  const definition = work && typeof work === "object" ? definitions.get(work) : undefined;
+  if (!definition || !properties.includes(definition.database))
+    throw new Error(
+      "Durable work requires one declared writable database; cross-database atomic completion is unsupported",
+    );
+  if (definition.integration && !targets.includes(definition.integration.target))
+    throw new Error(
+      "Durable external work requires an installed authenticated generated-operation target",
+    );
+}
+export function durableWorkDefinition(work: unknown, property: string, writable: boolean) {
+  if (work === undefined) return undefined;
+  const definition = work && typeof work === "object" ? definitions.get(work) : undefined;
+  if (!definition) throw new Error("Invalid durable work declaration");
+  if (definition.database !== property) return undefined;
+  if (!writable) throw new Error("Durable work requires one writable database");
+  return { work: work as object, definition };
+}
+const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const envelope = (value: unknown) => ({ present: value !== undefined, value: value ?? null });
+interface Row {
+  work_id: string;
+  scope_key: string;
+  work_key: string;
+  input: { present: boolean; value: unknown };
+  state: WorkState;
+  attempts: number;
+  fence: string;
+  holder: string;
+  error: string | null;
+  remote_input: unknown;
+  remote_ticket: string | null;
+  remote_protocol: { protocol: 1; version: number; secret: false } | null;
+  remote_result: { status: number; body: unknown } | null;
+  external_state: string;
+}
+const claims = new WeakMap<object, { store: object; row: Row }>();
+type WorkLogFields = { operation: string; correlationId?: string; work?: string };
+const failureWork = new WeakMap<object, { work: string }>();
+export interface WorkClaim {
+  readonly identity: string;
+}
+/** Fixed bookkeeping bounds are generated defaults, never diagram settings or hook controls. */
+export const workPolicy = Object.freeze({ leaseMs: 30000, batch: 10, sweep: 100, pollMs: 1000 });
+export function createWorkStore(options: {
+  namespace: string;
+  process?: string;
+  definition: StoredDefinition;
+  pool: TransactionPool;
+  productRole: string;
+  commands: CommandFactory;
+}) {
+  const { definition, pool, namespace } = options;
+  // Tickets/replay bind the authenticated process principal, not its logical owner's other roles.
+  if (
+    definition.integration &&
+    (!options.process || !/^[a-z][a-z0-9-]{0,127}$/.test(options.process))
+  )
+    throw new Error("Durable remote work requires compiled process affinity");
+  const configuration = digest([
+    definition.id,
+    definition.version,
+    definition.retentionSeconds,
+    definition.maxAttempts,
+    definition.integration
+      ? [definition.integration.target, definition.integration.operation, options.process]
+      : "local",
+  ]);
+  let transport: WorkTransport | undefined;
+  const held = (claim: WorkClaim) => {
+    const value = claims.get(claim);
+    if (!value || value.store !== store) throw new WorkError("WORK_LEASE_LOST");
+    const { row } = value;
+    return [namespace, row.scope_key, row.work_key, row.holder, row.fence];
+  };
+  const where =
+    "namespace=$1 AND scope_key=$2 AND work_key=$3 AND holder=$4 AND fence=$5::bigint AND state='running' AND lease_until>clock_timestamp()";
+  // Keep the actual transaction slot after a caller timeout, including command drain and COMMIT.
+  const active = new Set<Promise<unknown>>();
+  const observe = (actual: Promise<unknown>) => {
+    active.add(actual);
+    void actual.finally(() => active.delete(actual)).catch(() => {});
+  };
+  const storageFailures = new WeakSet<object>();
+  const storage: typeof transaction = async (pool, effect, options = {}) => {
+    try {
+      return await transaction(pool, effect, { ...options, observe });
+    } catch (error) {
+      if (error && typeof error === "object" && !(error instanceof WorkError))
+        storageFailures.add(error);
+      throw error;
+    }
+  };
+  const store = {
+    configureTarget(handle: unknown) {
+      transport = workTarget(handle);
+    },
+    async accept(
+      scopeKey: string,
+      workKey: string,
+      input: unknown,
+      remote: unknown = null,
+    ): Promise<WorkStatus> {
+      const canonical = envelope(input),
+        identity = digest([canonical, remote]);
+      return storage(pool, async (tx) => {
+        await tx.query(
+          "INSERT INTO jeeves.work_records(namespace,scope_key,work_key,input,input_hash,configuration,max_attempts,retention_seconds,remote_input) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9::jsonb) ON CONFLICT DO NOTHING",
+          [
+            namespace,
+            scopeKey,
+            workKey,
+            JSON.stringify(canonical),
+            identity,
+            configuration,
+            definition.maxAttempts,
+            definition.retentionSeconds,
+            JSON.stringify(envelope(remote)),
+          ],
+        );
+        const { rows } = await tx.query<WorkStatus & { input_hash: string; configuration: string }>(
+          "SELECT state,attempts,error,input_hash,configuration FROM jeeves.work_records WHERE namespace=$1 AND scope_key=$2 AND work_key=$3",
+          [namespace, scopeKey, workKey],
+        );
+        const row = rows[0];
+        if (!row || row.input_hash !== identity) throw new WorkError("WORK_IDENTITY_CONFLICT");
+        if (row.configuration !== configuration) throw new WorkError("WORK_CONFIGURATION_CONFLICT");
+        return snapshot(row);
+      });
+    },
+    async status(scopeKey: string, workKey: string): Promise<WorkStatus | undefined> {
+      return storage(
+        pool,
+        async (tx) => {
+          const { rows } = await tx.query<WorkStatus>(
+            "SELECT state,attempts,error FROM jeeves.work_records WHERE namespace=$1 AND scope_key=$2 AND work_key=$3",
+            [namespace, scopeKey, workKey],
+          );
+          return rows[0] ? snapshot(rows[0]) : undefined;
+        },
+        { readOnly: true },
+      );
+    },
+    async claim(limit: number = workPolicy.batch): Promise<readonly WorkClaim[]> {
+      if (!Number.isSafeInteger(limit) || limit < 1 || limit > 25)
+        throw new Error("Invalid work batch");
+      return storage(pool, async (tx) => {
+        const { rows } = await tx.query<Row>(
+          `WITH due AS (SELECT namespace,scope_key,work_key FROM jeeves.work_records WHERE namespace=$1 AND configuration=$2 AND ((state IN ('accepted','retry') AND next_attempt_at<=clock_timestamp()) OR (state='running' AND lease_until<=clock_timestamp())) ORDER BY created_at,scope_key,work_key LIMIT $3 FOR UPDATE SKIP LOCKED) UPDATE jeeves.work_records AS w SET state=CASE WHEN attempts>=max_attempts THEN CASE WHEN external_state='dispatched' THEN 'unknown' ELSE 'failed' END ELSE 'running' END, error=CASE WHEN attempts>=max_attempts THEN CASE WHEN external_state='dispatched' THEN 'WORK_OUTCOME_UNKNOWN' ELSE 'WORK_ATTEMPTS_EXHAUSTED' END ELSE NULL END, holder=CASE WHEN attempts>=max_attempts THEN NULL ELSE $4 END, lease_until=CASE WHEN attempts>=max_attempts THEN NULL ELSE clock_timestamp()+$5::int*interval '1 millisecond' END, attempts=CASE WHEN attempts>=max_attempts THEN attempts ELSE attempts+1 END, fence=fence+1 FROM due WHERE w.namespace=due.namespace AND w.scope_key=due.scope_key AND w.work_key=due.work_key RETURNING w.*`,
+          [namespace, configuration, limit, randomUUID(), workPolicy.leaseMs],
+        );
+        return rows
+          .filter((row) => row.state === "running")
+          .map((row) => {
+            const claim = Object.freeze({ identity: digest([namespace, row.work_id]) });
+            claims.set(claim, { store, row });
+            return claim;
+          });
+      });
+    },
+    async renew(claim: WorkClaim): Promise<boolean> {
+      return storage(
+        pool,
+        async (tx) =>
+          !!(
+            await tx.query(
+              `UPDATE jeeves.work_records SET lease_until=clock_timestamp()+$6::int*interval '1 millisecond' WHERE ${where} RETURNING fence`,
+              [...held(claim), workPolicy.leaseMs],
+            )
+          ).rowCount,
+      );
+    },
+    async complete(claim: WorkClaim): Promise<void> {
+      const parameters = held(claim);
+      let productFailure = false;
+      try {
+        await transaction(
+          pool,
+          async (tx) => {
+            const { rows } = await tx.query<Row>(
+              `SELECT * FROM jeeves.work_records WHERE ${where} FOR UPDATE`,
+              parameters,
+            );
+            const row = rows[0];
+            if (!row) throw new WorkError("WORK_LEASE_LOST");
+            const input = normalizedJsonDto(row.input.present ? row.input.value : undefined);
+            const caller = normalizedJsonDto(JSON.parse(row.scope_key)) as Readonly<{
+              subject?: string;
+            }>;
+            try {
+              if (definition.integration && row.external_state !== "done")
+                throw new WorkError("WORK_REMOTE_INCOMPLETE");
+              await productMutation(tx, options.productRole, options.commands, (commands) =>
+                definition.complete(
+                  input as Readonly<unknown>,
+                  commands,
+                  caller,
+                  normalizedJsonDto(row.remote_result) as Row["remote_result"],
+                ),
+              );
+            } catch (error) {
+              productFailure = true;
+              throw error;
+            }
+            const updated = await tx.query(
+              `UPDATE jeeves.work_records SET state='completed',holder=NULL,lease_until=NULL,error=NULL,completed_at=clock_timestamp(),expires_at=clock_timestamp()+retention_seconds*interval '1 second' WHERE ${where} RETURNING work_key`,
+              parameters,
+            );
+            if (!updated.rowCount) throw new WorkError("WORK_LEASE_LOST");
+          },
+          { observe },
+        );
+      } catch (error) {
+        const code = (error as { code?: unknown })?.code;
+        if (
+          error &&
+          typeof error === "object" &&
+          (!productFailure ||
+            (typeof code === "string" &&
+              /^(08|53|57P0|ECONN|EPIPE$|ENOTFOUND$|EAI_AGAIN$)/.test(code)))
+        )
+          storageFailures.add(error);
+        throw error;
+      }
+    },
+    async fail(claim: WorkClaim, uncertain = false): Promise<boolean> {
+      const values = held(claim);
+      return storage(
+        pool,
+        async (tx) =>
+          !!(
+            await tx.query(
+              `UPDATE jeeves.work_records SET state=CASE WHEN $6::boolean THEN 'unknown' WHEN attempts>=max_attempts THEN CASE WHEN external_state='dispatched' THEN 'unknown' ELSE 'failed' END ELSE 'retry' END,error=CASE WHEN $6::boolean OR external_state='dispatched' THEN 'WORK_OUTCOME_UNKNOWN' WHEN attempts>=max_attempts THEN 'WORK_ATTEMPTS_EXHAUSTED' ELSE 'WORK_HANDLER_FAILED' END,next_attempt_at=CASE WHEN $6::boolean THEN NULL ELSE clock_timestamp()+LEAST(30000,250*power(2,LEAST(attempts-1,7)))::int*interval '1 millisecond' END,holder=NULL,lease_until=NULL WHERE ${where} RETURNING work_key`,
+              [...values, uncertain],
+            )
+          ).rowCount,
+      );
+    },
+    async refuseSecret(claim: WorkClaim): Promise<void> {
+      await storage(pool, async (tx) =>
+        tx.query(
+          `UPDATE jeeves.work_records SET state='failed',error='WORK_SECRET_CHECKPOINT_UNSUPPORTED',holder=NULL,lease_until=NULL WHERE ${where}`,
+          held(claim),
+        ),
+      );
+    },
+    async dispatch(claim: WorkClaim): Promise<boolean> {
+      if (!definition.integration) return true;
+      if (!transport) throw new Error("Missing installed work transport");
+      const parameters = held(claim),
+        integration = definition.integration;
+      const beforeDispatch = async () => {
+        if (!(await store.renew(claim))) throw new WorkError("WORK_LEASE_LOST");
+      };
+      const read = () =>
+        storage(
+          pool,
+          async (tx) =>
+            (await tx.query<Row>(`SELECT * FROM jeeves.work_records WHERE ${where}`, parameters))
+              .rows[0],
+        );
+      let row = await read();
+      if (!row) throw new WorkError("WORK_LEASE_LOST");
+      if (row.external_state === "done") return true;
+      const remoteInput = (row.remote_input as { present: boolean; value: unknown }).value;
+      const update = async (sql: string, values: unknown[]) => {
+        const changed = await storage(
+          pool,
+          async (tx) =>
+            (
+              await tx.query(
+                `UPDATE jeeves.work_records SET ${sql} WHERE ${where} RETURNING work_key`,
+                [...parameters, ...values],
+              )
+            ).rowCount,
+        );
+        if (!changed) throw new WorkError("WORK_LEASE_LOST");
+      };
+      if (!row.remote_ticket) {
+        if (!(await store.renew(claim))) throw new WorkError("WORK_LEASE_LOST");
+        const result = await transport(
+          integration.operation,
+          { phase: "prepare", key: claim.identity, input: remoteInput },
+          observe,
+          beforeDispatch,
+        );
+        const body = normalizedJsonDto(result.body) as {
+          ticket?: unknown;
+          protocol?: unknown;
+          version?: unknown;
+          secret?: unknown;
+        };
+        if (result.status === 422) throw new WorkError("WORK_SECRET_CHECKPOINT_UNSUPPORTED");
+        if (
+          result.status !== 200 ||
+          !body ||
+          Object.keys(body).sort().join() !== "protocol,secret,ticket,version" ||
+          body.protocol !== 1 ||
+          body.secret !== false ||
+          !Number.isSafeInteger(body.version) ||
+          Number(body.version) < 1 ||
+          Number(body.version) > 1000000 ||
+          typeof body.ticket !== "string" ||
+          !/^[0-9a-f-]{36}$/.test(body.ticket)
+        )
+          throw new WorkError("WORK_REMOTE_REFUSED");
+        // No external effect is dispatched until this COMMIT has definitely succeeded.
+        await update("remote_ticket=$6,remote_protocol=$7::jsonb,external_state='prepared'", [
+          body.ticket,
+          JSON.stringify({ protocol: body.protocol, version: body.version, secret: body.secret }),
+        ]);
+        row = await read();
+        if (!row) throw new WorkError("WORK_LEASE_LOST");
+      }
+      if (!(await store.renew(claim))) throw new WorkError("WORK_LEASE_LOST");
+      await update("external_state='dispatched'", []);
+      if (
+        !row.remote_protocol ||
+        row.remote_protocol.protocol !== 1 ||
+        row.remote_protocol.secret !== false
+      )
+        throw new WorkError("WORK_REMOTE_REFUSED");
+      const result = await transport(
+        integration.operation,
+        {
+          phase: "execute",
+          key: claim.identity,
+          input: remoteInput,
+          ticket: row.remote_ticket,
+          protocol: row.remote_protocol.protocol,
+          version: row.remote_protocol.version,
+        },
+        observe,
+        beforeDispatch,
+      );
+      if (result.status === 410) {
+        await store.fail(claim, true);
+        return false;
+      }
+      const body = normalizedJsonDto(result.body) as {
+        protocol?: unknown;
+        version?: unknown;
+        secret?: unknown;
+        result?: unknown;
+      };
+      if (
+        result.status !== 200 ||
+        !body ||
+        Object.keys(body).sort().join() !== "protocol,result,secret,version" ||
+        body.protocol !== 1 ||
+        body.version !== row.remote_protocol.version ||
+        body.secret !== false
+      )
+        throw new WorkError("WORK_REMOTE_REFUSED");
+      const checked = body.result as { status: number; body: unknown };
+      if (
+        !checked ||
+        Object.keys(checked).sort().join() !== "body,status" ||
+        !Number.isInteger(checked.status) ||
+        checked.status < 200 ||
+        checked.status > 299 ||
+        ([204, 205].includes(checked.status) && checked.body !== null)
+      )
+        throw new WorkError("WORK_REMOTE_REFUSED");
+      await update("remote_result=$6::jsonb,external_state='done'", [JSON.stringify(checked)]);
+      return true;
+    },
+    async sweep(limit: number = workPolicy.sweep): Promise<number> {
+      if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1000)
+        throw new Error("Invalid work retention batch");
+      return storage(
+        pool,
+        async (tx) =>
+          (
+            await tx.query(
+              "DELETE FROM jeeves.work_records WHERE (namespace,scope_key,work_key) IN (SELECT namespace,scope_key,work_key FROM jeeves.work_records WHERE namespace=$1 AND state='completed' AND expires_at<=clock_timestamp() ORDER BY expires_at LIMIT $2 FOR UPDATE SKIP LOCKED)",
+              [namespace, limit],
+            )
+          ).rowCount ?? 0,
+      );
+    },
+    async runBatch(log: (event: string, fields: WorkLogFields) => void): Promise<void> {
+      const emit = (event: string, claim: WorkClaim) =>
+        log(event, {
+          operation: definition.id,
+          correlationId: currentOperation()?.correlationId,
+          work: claim.identity,
+        });
+      for (let i = 0; i < workPolicy.batch && !active.size; i++) {
+        assertOperation();
+        const [claim] = await store.claim(1);
+        if (!claim) break;
+        try {
+          if (await store.dispatch(claim)) await store.complete(claim);
+        } catch (error) {
+          if (error instanceof WorkError && error.code === "WORK_LEASE_LOST") {
+            emit("work lease lost", claim);
+            continue;
+          }
+          if (error instanceof WorkError && error.code === "WORK_SECRET_CHECKPOINT_UNSUPPORTED") {
+            await store.refuseSecret(claim);
+            emit("work integration refused", claim);
+            continue;
+          }
+          // Local unknown COMMIT is recovered from the atomic state; never infer rollback from timeout.
+          if (error instanceof OperationError && error.outcome === "unknown") {
+            emit("work outcome unknown", claim);
+            // An expired execution cannot open more SQL. Its persisted running/dispatched row
+            // remains reclaimable; keep the actual transport/transaction slot until settlement.
+            const context = currentOperation();
+            if (
+              definition.integration &&
+              !context?.signal.aborted &&
+              (context?.remainingMs() ?? 1) > 0
+            ) {
+              try {
+                await store.deferUnknown(claim);
+              } catch (error) {
+                if (
+                  !(
+                    error instanceof OperationError &&
+                    ["CONTEXT_EXPIRED", "PROCESS_STOPPING"].includes(error.code)
+                  )
+                )
+                  throw error;
+              }
+            }
+            break;
+          }
+          if (error && typeof error === "object" && storageFailures.has(error)) {
+            failureWork.set(error, { work: claim.identity });
+            throw error;
+          }
+          if (await store.fail(claim)) emit("work handler failed", claim);
+        }
+      }
+    },
+    async deferUnknown(claim: WorkClaim) {
+      // Retain the selected ticket. Reclaims may execute only that ticket, never prepare another.
+      await storage(pool, async (tx) =>
+        tx.query(
+          `UPDATE jeeves.work_records SET state=CASE WHEN attempts>=max_attempts THEN 'unknown' ELSE 'retry' END,error='WORK_OUTCOME_UNKNOWN',next_attempt_at=clock_timestamp()+interval '1 second',holder=NULL,lease_until=NULL WHERE ${where}`,
+          held(claim),
+        ),
+      );
+    },
+  };
+  return store;
+}
+export function bindDurableWork(
+  handle: object,
+  prepared: NonNullable<ReturnType<typeof durableWorkDefinition>>,
+  options: {
+    namespace: string;
+    process?: string;
+    pool: TransactionPool;
+    productRole: string;
+    commands: CommandFactory;
+  },
+) {
+  const store = createWorkStore({ ...options, definition: prepared.definition });
+  bindings.set(handle, { work: prepared.work, store });
+  return store;
+}
+/** Generated process code alone activates the work drain. No public tick, claim or completion method. */
+export function startDurableWork(
+  work: unknown,
+  dependencies: object,
+  scope: ProcessScope,
+  log: (event: string, fields: WorkLogFields) => void,
+) {
+  if (work === undefined) return;
+  const definition = definitions.get(work as object);
+  const handle =
+    definition && Object.getOwnPropertyDescriptor(dependencies, definition.database)?.value;
+  const binding = handle && bindings.get(handle);
+  if (!binding || binding.work !== work) throw new Error("Unconfigured durable work");
+  if (definition!.integration)
+    binding.store.configureTarget(
+      Object.getOwnPropertyDescriptor(dependencies, definition!.integration.target)?.value,
+    );
+  periodic(
+    scope,
+    async () => {
+      const execution = operation({ maximumMs: 30000, signals: [scope.signal] });
+      try {
+        await withOperation(execution.context, async () => {
+          await binding.store.runBatch(log);
+          if (!execution.context.signal.aborted) await binding.store.sweep();
+        });
+      } catch (error) {
+        if (
+          scope.signal.aborted ||
+          (error instanceof OperationError &&
+            ["CONTEXT_EXPIRED", "PROCESS_STOPPING"].includes(error.code))
+        )
+          return;
+        log("work storage unavailable", {
+          operation: definition!.id,
+          correlationId: execution.context.correlationId,
+          ...(error && typeof error === "object" ? failureWork.get(error) : {}),
+        });
+      } finally {
+        execution.close();
+      }
+    },
+    workPolicy.pollMs,
+  );
+}

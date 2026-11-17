@@ -211,7 +211,10 @@ for (const name of [
   "product-operations",
   "keys",
   "settings",
+  "product-mutation",
+  "work-integration",
   "local-operation",
+  "durable-work",
 ]) {
   fakes[`./${name}.ts`] = stripTypeScriptTypes(
     new TextDecoder().decode(

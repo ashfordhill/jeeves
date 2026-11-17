@@ -1,0 +1,19 @@
+/** Private installed generated-operation transport registry; structural lookalikes cannot bind. */
+export type WorkTransport = (
+  operation: string,
+  request: unknown,
+  observe?: (actual: Promise<unknown>) => void,
+  beforeDispatch?: () => Promise<void>,
+) => Promise<Readonly<{ status: number; body: unknown }>>;
+const targets = new WeakMap<object, WorkTransport>();
+export function registerWorkTarget(handle: object, transport: WorkTransport) {
+  targets.set(handle, transport);
+}
+export function workTarget(handle: unknown): WorkTransport {
+  const transport = handle && typeof handle === "object" ? targets.get(handle) : undefined;
+  if (!transport)
+    throw new Error(
+      "Durable external work requires an installed authenticated generated-operation target",
+    );
+  return transport;
+}

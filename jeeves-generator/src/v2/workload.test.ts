@@ -926,3 +926,587 @@ it("RG10 authenticated internal POST and the in-process core share replay identi
     await f.pg.close();
   }
 });
+
+it("RG15 emits and reports the framework-owned opt-in work protocol without making an unfinished stub runnable", async () => {
+  const { remoteDurableWorkDesign } = await import(
+    "../../../field-projects/generator-system/fixtures/rg-durable-work/design.ts"
+  );
+  const bundle = assembleV2(
+    { designJson: JSON.stringify(await remoteDurableWorkDesign()) },
+    registry,
+  );
+  const text = (path: string) =>
+    new TextDecoder().decode(bundle.files.find((file) => file.path === path)?.bytes);
+  expect(text("src/processes/callee.ts")).toContain(
+    'invokeWorkProtocol((ReceiveModule as { localOperation?: unknown }).localOperation, dependencies["receive"], request)',
+  );
+  expect(text("src/processes/callee.ts")).toContain('"/internal/work"');
+  const report = JSON.parse(text(".jeeves/report.json"));
+  const callee = report.processes.tiles.find(
+    (process: { tile: string }) => process.tile === "callee",
+  );
+  expect(callee.routes).toContainEqual({
+    method: "POST",
+    path: "/internal/work/receive",
+    answers: expect.stringContaining(
+      "refuses unless the module explicitly declares a workload-only operation",
+    ),
+  });
+  expect(callee.templates).not.toContainEqual(expect.objectContaining({ level: "mounted" }));
+
+  expect(text("src/runtime/module-clients.ts")).toContain("process: binding.tile");
+});
+
+it("RG15 uses the actual authenticated generated protocol for restart-safe work and finite ticket recovery", async () => {
+  const helpers = await import("./local-operation.test.helpers.ts");
+  const { durableWorkMigration } = await import("./client-wiring.ts");
+  const local = await import(helpers.load("local-operation"));
+  const workRuntime = await import(helpers.load("durable-work"));
+  const caller = await helpers.fixture(),
+    callee = await helpers.fixture();
+  for (const f of [caller, callee])
+    await f.pg.exec(
+      `${durableWorkMigration.sql} GRANT SELECT,INSERT,UPDATE,DELETE ON jeeves.work_records,jeeves.work_tickets TO runtime;`,
+    );
+  const generated = loader();
+  const serviceRuntime = await import(generated.load("src/runtime/workload.ts"));
+  const { createHttpService } = await import(generated.load("src/runtime/http.ts"));
+  const { stubRoutes } = await import(generated.load("src/runtime/tile-http.ts"));
+  const remoteDefinition = {
+    database: "db",
+    id: "remote-item",
+    version: 1,
+    retentionSeconds: 60,
+    secret: false,
+    validate: (input: unknown) => input,
+    admit: async () => {},
+    mutate: async (
+      input: { id: string },
+      commands: { call(name: string, values: unknown[]): Promise<unknown> },
+      principal: { processId: string },
+    ) => {
+      await commands.call("insert", [input.id, principal.processId]);
+      const empty = /^empty-(204|205)$/.exec(input.id);
+      return empty
+        ? { status: Number(empty[1]), body: null }
+        : { status: 201, body: { id: input.id } };
+    },
+  };
+  let remote = local.defineWorkloadOperation(remoteDefinition);
+  expect(Object.keys(remote)).toEqual([]);
+  await expect(
+    (async () => local.invokeLocalModule(remote, {}, {}, async () => null))(),
+  ).rejects.toMatchObject({ code: "WORKLOAD_OPERATION_REQUIRED" });
+  const bindRemote = () =>
+    local.bindLocalOperation(
+      callee.dependencies.db,
+      local.localOperationDefinition(remote, "db", true),
+      {
+        tile: "callee",
+        module: "receive",
+        productRole: "product",
+        pool: callee.pool,
+        commands: callee.commands,
+        keys: helpers.ring(),
+      },
+    );
+  expect(() =>
+    local.validateLocalOperationBinding(remote, ["db"], { workload: true, requiredUser: true }),
+  ).toThrow(/Required user/);
+  expect(() =>
+    local.validateLocalOperationBinding(remote, ["db"], { workload: false, requiredUser: false }),
+  ).toThrow(/authenticated/);
+  bindRemote();
+  const credential = serviceRuntime.createWorkload(
+    { ...settings, client: "jeeves-workload-callee", audience: "jeeves-service-callee" },
+    [],
+  );
+  const server = await createHttpService({
+    id: "work-protocol",
+    settings: { requestTimeoutMs: 10000, concurrencyLimit: 10 },
+    initialize: async () => {},
+    configure(routes: unknown) {
+      stubRoutes(
+        serviceRuntime.workloadRoutes(routes, credential, ["caller"]),
+        () => {},
+        "receive",
+        (request: unknown) => local.invokeWorkProtocol(remote, callee.dependencies, request),
+        { deadlineMs: 10000 },
+        undefined,
+        "/internal/work",
+      );
+    },
+  });
+  vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+  const log = vi.spyOn(console, "log").mockImplementation(() => {});
+  const traffic: {
+    phase: string;
+    key: string;
+    ticket?: string;
+    headers: Record<string, string>;
+  }[] = [];
+  let drop: "prepare" | "execute" | undefined;
+  let holdExecute: undefined | (() => Promise<void>);
+  const tokenValue = token();
+  let freshCredentials = 0;
+  let duringCredential: undefined | (() => Promise<void>);
+  const target = serviceRuntime.serviceTarget({
+    tile: "callee",
+    operations: ["receive"],
+    forwardUser: true,
+    credentials: {
+      acquire: async () => {
+        freshCredentials++;
+        await duringCredential?.();
+        return tokenValue;
+      },
+    },
+  });
+  const definition = {
+    database: "db",
+    id: "replicate",
+    version: 1,
+    retentionSeconds: 60,
+    maxAttempts: 4,
+    integration: { target: "remote", operation: "receive", map: (input: unknown) => input },
+    validate: (input: unknown) => input,
+    complete: async (
+      input: { id: string },
+      commands: { call(name: string, values: unknown[]): Promise<unknown> },
+      _principal: unknown,
+      result: { status: number; body: { id: string } },
+    ) => {
+      const empty = /^empty-(204|205)$/.exec(input.id);
+      expect(result).toEqual(
+        empty ? { status: Number(empty[1]), body: null } : { status: 201, body: { id: input.id } },
+      );
+      if (!empty) expect(Object.isFrozen(result.body)).toBe(true);
+      await commands.call("insert", [input.id, "local"]);
+    },
+  };
+  const absent = workRuntime.defineDurableWork({
+    ...definition,
+    integration: { ...definition.integration, map: () => undefined },
+  });
+  const absentDependencies = { db: {}, remote: target };
+  workRuntime.bindDurableWork(
+    absentDependencies.db,
+    workRuntime.durableWorkDefinition(absent, "db", true),
+    {
+      process: "caller",
+      namespace: "absent",
+      pool: caller.pool,
+      productRole: "product",
+      commands: caller.commands,
+    },
+  );
+  const beforeAbsent = caller.trace.length;
+  await expect(
+    within(
+      () => absent.accept(absentDependencies, { key: "absent", input: { id: "absent" } }),
+      10000,
+    ),
+  ).rejects.toMatchObject({ code: "WORK_INPUT" });
+  expect(caller.trace).toHaveLength(beforeAbsent);
+  const descriptor = workRuntime.defineDurableWork(definition);
+  const dependencies = { db: caller.dependencies.db, remote: target };
+  let ticketFault: "committed" | "rolled-back" | undefined,
+    ticketWrite = false;
+  const connect = caller.pool.connect.bind(caller.pool);
+  const pool = {
+    connect: async () => {
+      const client = await connect();
+      return {
+        ...client,
+        query: async (sql: string, values?: unknown[]) => {
+          if (sql.includes("SET remote_ticket=")) ticketWrite = true;
+          if (sql === "COMMIT" && ticketWrite && ticketFault) {
+            const fault = ticketFault;
+            ticketFault = undefined;
+            ticketWrite = false;
+            await client.query(fault === "committed" ? "COMMIT" : "ROLLBACK");
+            throw Object.assign(Error("ticket commit response lost"), { code: "EPIPE" });
+          }
+          if (sql === "COMMIT") ticketWrite = false;
+          return client.query(sql, values);
+        },
+      };
+    },
+  };
+  const options = {
+    process: "caller",
+    namespace: '["db","owner","replicate"]',
+    pool,
+    productRole: "product",
+    commands: caller.commands,
+  };
+  const store = workRuntime.bindDurableWork(
+    dependencies.db,
+    workRuntime.durableWorkDefinition(descriptor, "db", true),
+    options,
+  );
+  store.configureTarget(target);
+  expect(() => store.configureTarget({ call: async () => ({ status: 200, body: {} }) })).toThrow(
+    /installed/,
+  );
+  const reclaim = async () => {
+    await caller.pg.exec(
+      "UPDATE jeeves.work_records SET lease_until=clock_timestamp()-interval '1 second',next_attempt_at=clock_timestamp()-interval '1 second' WHERE state='running' OR state='retry'",
+    );
+    return (await store.claim(1))[0];
+  };
+  let stage = "start";
+  try {
+    await server.start({ host: "127.0.0.1", port: 0 });
+    for (const [bearer, status] of [
+      [undefined, 401],
+      [token({ aud: "wrong" }), 401],
+      [token({ azp: "jeeves-workload-other", jeeves_workload: "other" }), 403],
+    ] as const) {
+      expect(
+        (
+          await server.inject({
+            method: "POST",
+            url: "/internal/work/receive",
+            headers: bearer ? { "x-jeeves-workload": `Bearer ${bearer}` } : {},
+            payload: { phase: "prepare", key: "auth", input: { id: "auth" } },
+          })
+        ).statusCode,
+      ).toBe(status);
+    }
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: URL | string, init: RequestInit) => {
+        const body = JSON.parse(String(init.body));
+        const headers = Object.fromEntries(new Headers(init.headers));
+        traffic.push({ ...body, headers });
+        expect(new URL(url).pathname).toBe("/internal/work/receive");
+        const response = await server.inject({
+          method: init.method,
+          url: new URL(url).pathname,
+          headers,
+          payload: init.body,
+        });
+        if (drop === body.phase) {
+          drop = undefined;
+          throw Error("response lost after callee settlement");
+        }
+        if (body.phase === "execute") await holdExecute?.();
+        return new Response(response.body, {
+          status: response.statusCode,
+          headers: response.headers,
+        });
+      }),
+    );
+    for (const fault of ["committed", "rolled-back"] as const) {
+      stage = fault;
+      await within(
+        () => descriptor.accept(dependencies, { key: fault, input: { id: fault } }),
+        10000,
+      );
+      const [first] = await store.claim(1);
+      ticketFault = fault;
+      const before = traffic.length;
+      await expect(within(() => store.dispatch(first), 10000)).rejects.toMatchObject({
+        outcome: "unknown",
+        code: "COMMIT_RESPONSE_LOST",
+      });
+      expect(traffic.slice(before).map((row) => row.phase)).toEqual(["prepare"]);
+      const saved = (
+        await caller.pg.query<{ remote_ticket: string | null }>(
+          "SELECT remote_ticket FROM jeeves.work_records WHERE work_key=$1",
+          [fault],
+        )
+      ).rows[0]?.remote_ticket;
+      expect(!!saved).toBe(fault === "committed");
+      const worker = workRuntime.createWorkStore({ ...options, process: "worker", definition });
+      worker.configureTarget(target);
+      expect(await worker.claim(1)).toEqual([]);
+      await expect(worker.accept("{}", fault, { id: fault }, { id: fault })).rejects.toMatchObject({
+        code: "WORK_CONFIGURATION_CONFLICT",
+      });
+      expect(
+        (
+          await caller.pg.query<{ remote_ticket: string | null }>(
+            "SELECT remote_ticket FROM jeeves.work_records WHERE work_key=$1",
+            [fault],
+          )
+        ).rows[0]?.remote_ticket,
+      ).toBe(saved);
+      const next = await reclaim();
+      expect(next.identity).toBe(first.identity);
+      await within(() => store.dispatch(next), 10000);
+      await store.complete(next);
+      expect(traffic.slice(before).map((row) => row.phase)).toEqual(
+        fault === "committed" ? ["prepare", "execute"] : ["prepare", "prepare", "execute"],
+      );
+    }
+    for (const phase of ["prepare", "execute"] as const) {
+      stage = phase;
+      await within(
+        () =>
+          descriptor.accept(dependencies, { key: `lost-${phase}`, input: { id: `lost-${phase}` } }),
+        10000,
+      );
+      drop = phase;
+      const events: string[] = [];
+      await within(() => store.runBatch((event: string) => events.push(event)), 10000);
+      expect(events).toEqual(["work outcome unknown"]);
+      const before = traffic.length;
+      if (phase === "execute")
+        await callee.pg.query(
+          "UPDATE jeeves.work_tickets SET expires_at=clock_timestamp()-interval '1 second' WHERE work_key=$1",
+          [traffic.at(-1)?.key],
+        );
+      const next = await reclaim();
+      await within(() => store.dispatch(next), 10000);
+      await store.complete(next);
+      expect(traffic.slice(before).map((row) => row.phase)).toEqual(
+        phase === "prepare" ? ["prepare", "execute"] : ["execute"],
+      );
+      const attempts = traffic.filter(
+        (row) => row.key === next.identity && row.phase === "execute",
+      );
+      expect(new Set(attempts.map((row) => row.ticket)).size).toBe(1);
+    }
+    for (const status of [204, 205]) {
+      stage = `empty-${status}`;
+      await within(
+        () => descriptor.accept(dependencies, { key: stage, input: { id: stage } }),
+        10000,
+      );
+      drop = "execute";
+      const events: string[] = [];
+      await within(() => store.runBatch((event: string) => events.push(event)), 10000);
+      expect(events).toEqual(["work outcome unknown"]);
+      const next = await reclaim();
+      await within(() => store.dispatch(next), 10000);
+      await store.complete(next);
+      expect(await descriptor.status(dependencies, stage)).toMatchObject({
+        state: "completed",
+        attempts: 2,
+      });
+      expect(
+        (await callee.pg.query("SELECT count(*)::int n FROM p_app.items WHERE id=$1", [stage]))
+          .rows,
+      ).toEqual([{ n: 1 }]);
+    }
+    stage = "known";
+    // Known remote result survives a crash before local completion; another replica never redispatches it.
+    await within(
+      () => descriptor.accept(dependencies, { key: "known", input: { id: "known" } }),
+      10000,
+    );
+    const [known] = await store.claim(1);
+    await within(() => store.dispatch(known), 10000);
+    const beforeKnown = traffic.length;
+    const other = workRuntime.createWorkStore({ ...options, definition });
+    other.configureTarget(target);
+    await caller.pg.exec(
+      "UPDATE jeeves.work_records SET lease_until=clock_timestamp()-interval '1 second' WHERE work_key='known'",
+    );
+    const [recovered] = await other.claim(1);
+    await within(() => other.dispatch(recovered), 10000);
+    await other.complete(recovered);
+    expect(traffic).toHaveLength(beforeKnown);
+    stage = "expiry";
+    // Existing uncertain work retains its original ticket even after BOTH callee tables are cleaned.
+    await within(
+      () => descriptor.accept(dependencies, { key: "expired", input: { id: "expired" } }),
+      10000,
+    );
+    drop = "execute";
+    await within(() => store.runBatch(() => {}), 10000);
+    await callee.pg.exec(
+      "UPDATE jeeves.work_tickets SET expires_at=clock_timestamp()-interval '1 second'; UPDATE jeeves.idempotency_records SET expires_at=clock_timestamp()-interval '1 second'",
+    );
+    await local.sweepWorkTickets(callee.pool);
+    await helpers.sweepExpired(callee.pool);
+    const beforeExpired = traffic.length;
+    const expired = await reclaim();
+    expect(await within(() => store.dispatch(expired), 10000)).toBe(false);
+    expect(traffic.slice(beforeExpired).map((row) => row.phase)).toEqual(["execute"]);
+    expect(await descriptor.status(dependencies, "expired")).toMatchObject({ state: "unknown" });
+    expect(
+      (await callee.pg.query("SELECT count(*)::int n FROM p_app.items WHERE id='expired'")).rows,
+    ).toEqual([{ n: 1 }]);
+    stage = "reuse";
+    // Reuse after declared local retention is a new acceptance generation and remote identity.
+    await caller.pg.exec(
+      "UPDATE jeeves.work_records SET expires_at=clock_timestamp()-interval '1 second' WHERE work_key='known'",
+    );
+    await store.sweep();
+    await within(
+      () => descriptor.accept(dependencies, { key: "known", input: { id: "new-generation" } }),
+      10000,
+    );
+    const [newGeneration] = await store.claim(1);
+    expect(newGeneration.identity).not.toBe(known.identity);
+    await within(() => store.dispatch(newGeneration), 10000);
+    await store.complete(newGeneration);
+    expect(freshCredentials).toBe(traffic.length);
+    stage = "secret";
+    remote = local.defineWorkloadOperation({ ...remoteDefinition, secret: true });
+    bindRemote();
+    await within(
+      () => descriptor.accept(dependencies, { key: "secret", input: { id: "private-result" } }),
+      10000,
+    );
+    const [secret] = await store.claim(1);
+    const beforeSecret = traffic.length;
+    await expect(within(() => store.dispatch(secret), 10000)).rejects.toMatchObject({
+      code: "WORK_SECRET_CHECKPOINT_UNSUPPORTED",
+    });
+    expect(traffic.slice(beforeSecret).map((row) => row.phase)).toEqual(["prepare"]);
+    expect(
+      (
+        await caller.pg.query(
+          "SELECT remote_ticket,remote_protocol,remote_result,external_state FROM jeeves.work_records WHERE work_key='secret'",
+        )
+      ).rows,
+    ).toEqual([
+      { remote_ticket: null, remote_protocol: null, remote_result: null, external_state: "none" },
+    ]);
+    expect(
+      (await callee.pg.query("SELECT * FROM p_app.items WHERE id='private-result'")).rows,
+    ).toEqual([]);
+    await store.refuseSecret(secret);
+    expect(await descriptor.status(dependencies, "secret")).toEqual({
+      state: "failed",
+      attempts: 1,
+      error: "WORK_SECRET_CHECKPOINT_UNSUPPORTED",
+    });
+    await within(
+      () =>
+        descriptor.accept(dependencies, { key: "secret-drain", input: { id: "private-drain" } }),
+      10000,
+    );
+    const refused: string[] = [];
+    await within(() => store.runBatch((event: string) => refused.push(event)), 10000);
+    expect(refused).toEqual(["work integration refused"]);
+    expect(await descriptor.status(dependencies, "secret-drain")).toEqual({
+      state: "failed",
+      attempts: 1,
+      error: "WORK_SECRET_CHECKPOINT_UNSUPPORTED",
+    });
+    remote = local.defineWorkloadOperation(remoteDefinition);
+    bindRemote();
+    stage = "protocol";
+    const request = async (body: unknown) =>
+      server.inject({
+        method: "POST",
+        url: "/internal/work/receive",
+        headers: { "x-jeeves-workload": `Bearer ${tokenValue}` },
+        payload: body,
+      });
+    const issued = JSON.parse(
+      (await request({ phase: "prepare", key: "direct", input: { id: "direct" } })).body,
+    );
+    expect(issued).toMatchObject({ protocol: 1, version: 1, secret: false });
+    expect(
+      (
+        await request({
+          phase: "execute",
+          key: "direct",
+          input: { id: "direct" },
+          ticket: issued.ticket,
+          protocol: 1,
+          version: 2,
+        })
+      ).statusCode,
+    ).toBe(409);
+    expect((await callee.pg.query("SELECT * FROM p_app.items WHERE id='direct'")).rows).toEqual([]);
+    stage = "admission-expiry";
+    let admitted = false;
+    remote = local.defineWorkloadOperation({
+      ...remoteDefinition,
+      admit: async () => {
+        admitted = true;
+        // Trusted fault injection on the test connection after the first ticket check.
+        await callee.pg.exec(
+          "UPDATE jeeves.work_tickets SET expires_at=clock_timestamp()-interval '1 second' WHERE work_key='late'",
+        );
+      },
+    });
+    bindRemote();
+    const late = JSON.parse(
+      (await request({ phase: "prepare", key: "late", input: { id: "late" } })).body,
+    );
+    expect(
+      (
+        await request({
+          phase: "execute",
+          key: "late",
+          input: { id: "late" },
+          ticket: late.ticket,
+          protocol: 1,
+          version: 1,
+        })
+      ).statusCode,
+    ).toBe(410);
+    expect(admitted).toBe(true);
+    expect((await callee.pg.query("SELECT * FROM p_app.items WHERE id='late'")).rows).toEqual([]);
+    remote = local.defineWorkloadOperation(remoteDefinition);
+    bindRemote();
+    stage = "credential-lease";
+    await within(
+      () => descriptor.accept(dependencies, { key: "lease", input: { id: "lease" } }),
+      10000,
+    );
+    const [lease] = await store.claim(1);
+    const beforeLease = traffic.length;
+    duringCredential = async () => {
+      await caller.pg.exec(
+        "UPDATE jeeves.work_records SET lease_until=clock_timestamp()-interval '1 second' WHERE work_key='lease'",
+      );
+    };
+    await expect(within(() => store.dispatch(lease), 10000)).rejects.toMatchObject({
+      code: "WORK_LEASE_LOST",
+    });
+    expect(traffic).toHaveLength(beforeLease);
+    duringCredential = undefined;
+    const nextLease = await reclaim();
+    await within(() => store.dispatch(nextLease), 10000);
+    await store.complete(nextLease);
+    stage = "hung-transport";
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    holdExecute = () => blocked;
+    await within(
+      () => descriptor.accept(dependencies, { key: "hung", input: { id: "hung" } }),
+      10000,
+    );
+    const events: string[] = [];
+    await within(() => store.runBatch((event: string) => events.push(event)), 1000);
+    expect(events).toEqual(["work outcome unknown"]);
+    const beforeHung = traffic.length;
+    await store.runBatch((event: string) => events.push(event));
+    expect(traffic).toHaveLength(beforeHung);
+    expect(events).toEqual(["work outcome unknown"]);
+    release();
+    holdExecute = undefined;
+    await new Promise((resolve) => setImmediate(resolve));
+    const nextHung = await reclaim();
+    await within(() => store.dispatch(nextHung), 10000);
+    await store.complete(nextHung);
+    expect(
+      (await callee.pg.query("SELECT count(*)::int n FROM p_app.items WHERE id='hung'")).rows,
+    ).toEqual([{ n: 1 }]);
+    expect(traffic.every((row) => !row.headers.authorization)).toBe(true);
+    expect((await callee.pg.query("SELECT DISTINCT account FROM p_app.items")).rows).toEqual([
+      { account: "caller" },
+    ]);
+    expect((await caller.pg.query("SELECT count(*)::int n FROM p_app.items")).rows).toEqual([
+      { n: 10 },
+    ]);
+  } catch (error) {
+    throw new Error(`RG15 stage ${stage}`, { cause: error });
+  } finally {
+    await server.close();
+    log.mockRestore();
+    await caller.pg.close();
+    await callee.pg.close();
+  }
+});

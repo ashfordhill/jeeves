@@ -23,6 +23,17 @@ protected paths, historical evidence/exports, root files and owner changes remai
 
 ## Intended result
 
+### Owner amendment — 2026-11-17 (RG15)
+
+The owner approved explicit background application/workload identity ("I see. Yes then") after
+the restart-authority gap was explained. RG15 may add explicitly opted-in workload-only generated
+operations, a separate workload replay scope and callee-owned expiring recovery tickets.
+Required-user guards remain required; callers/audiences remain enforced. No saved user bearer,
+account impersonation or new provider/session/delegation framework is authorized. Remote work
+identity remains stable across holders/fences. Ticket expiry must refuse mutation reexecution
+even after replay cleanup; unresolved outcomes remain unknown. See
+[the decision record](evidence/rg15/authority-decision.md).
+
 Independently running, horizontally scalable services assembled from reliable mechanisms.
 Generated code owns coordination, transaction completion, acknowledgements, credentials,
 recovery and resource lifecycle. Handwritten code supplies product decisions through narrow,

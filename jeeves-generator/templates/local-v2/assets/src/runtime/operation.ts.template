@@ -32,7 +32,10 @@ export class OperationError extends Error {
 }
 type EffectClass = "read" | "local-atomic-mutation" | "durable-external-work";
 const effectRank = { read: 0, "local-atomic-mutation": 1, "durable-external-work": 2 } as const;
-const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass; networkDenied?: boolean; localMutation?: boolean }>();
+const active = new AsyncLocalStorage<{ context?: OperationContext; scope?: ProcessScope; effect?: EffectClass; networkDenied?: boolean; localMutation?: boolean; workload?: string }>();
+/** Only the generated workload verifier establishes this principal; a user subject is distinct. */
+export const currentWorkload = () => active.getStore()?.workload;
+export function withWorkload<T>(process: string, effect: () => T): T { return active.run({...active.getStore(),workload:process},effect); }
 /** Private generated boundary: a nested capability cannot widen its caller's effect authority. */
 export function withEffect<T>(effect: EffectClass, dispatch: () => T): T {
   assertOperation();
@@ -148,6 +151,7 @@ export async function dependency<T>(
     definite?: (error: unknown) => boolean;
     preserveDefinite?: boolean;
     deadlineMessage?: string;
+    observe?: (actual: Promise<T>) => void;
   },
   dispatch: (signal: AbortSignal, remainingMs: number) => Promise<T>,
 ): Promise<T> {
@@ -176,6 +180,7 @@ export async function dependency<T>(
       { cause: error },
     );
   }
+  options.observe?.(work);
   scope?.track?.(work);
   const stopped = new Promise<never>((_resolve, reject) => {
     cancel = () => {

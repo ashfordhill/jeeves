@@ -1,0 +1,347 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/product-sql.test.ts (5 tests | 1 failed) 29ms
+   ❯ product tables and published views (v3 contract, section 1) (5)
+     × applies a stub's idempotency records (050-) before template migrations (100-) and product SQL (QL04) 4ms
+ ❯ |generator| src/v2/client-wiring.test.ts (18 tests | 3 failed) 1417ms
+   ❯ provisioning for stubs (tile process contract, section 6) (9)
+     × provisions every store and channel a stub links to, by kind 7ms
+     × gives each database a stub writes the idempotency records, granted to its writing tiles only (QL04) 1ms
+   ❯ External API and Identity tiles give stubs a configured HTTP client (QG20) (6)
+     × reads each stub's declared settings last in the pass and gives them to its dependencies (QL05) 61ms
+ ❯ |generator| src/v2/tile-processes.test.ts (36 tests | 1 failed) 2263ms
+   ❯ local.tile-processes (9)
+     × adds an entry point per application tile and the libraries a process needs 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/client-wiring.test.ts > provisioning for stubs (tile process contract, section 6) > provisions every store and channel a stub links to, by kind
+AssertionError: expected [ …(2) ] to deeply equal [ Array(2) ]
+
+- Expected
++ Received
+
+@@ -3,10 +3,11 @@
+      "database": "d_links_db",
+      "migrations": [
+        "infra/postgres/links-db/000-foundation.sql",
+        "infra/postgres/links-db/050-jeeves-idempotency.sql",
+        "infra/postgres/links-db/051-jeeves-local-operations.sql",
++       "infra/postgres/links-db/052-jeeves-durable-work.sql",
+      ],
+      "modules": [
+        {
+          "file": "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
+          "host": "links-api",
+
+ ❯ src/v2/client-wiring.test.ts:129:28
+    127|     const plan = json(stack, "infra/local.json");
+    128|     // Database: the database, its setup-only owner and one runtime lo…
+    129|     expect(plan.databases).toEqual([
+       |                            ^
+    130|       {
+    131|         resource: "links-db",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |generator| src/v2/client-wiring.test.ts > provisioning for stubs (tile process contract, section 6) > gives each database a stub writes the idempotency records, granted to its writing tiles only (QL04)
+AssertionError: expected [ …(4) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    "infra/postgres/links-db/000-foundation.sql",
+    "infra/postgres/links-db/050-jeeves-idempotency.sql",
+    "infra/postgres/links-db/051-jeeves-local-operations.sql",
++   "infra/postgres/links-db/052-jeeves-durable-work.sql",
+  ]
+
+ ❯ src/v2/client-wiring.test.ts:618:88
+    616|       "generated-scaffold",
+    617|     );
+    618|     expect(plan(stack).databases.find((db) => db.resource === "links-d…
+       |                                                                                        ^
+    619|       "infra/postgres/links-db/000-foundation.sql",
+    620|       migration,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |generator| src/v2/client-wiring.test.ts > External API and Identity tiles give stubs a configured HTTP client (QG20) > reads each stub's declared settings last in the pass and gives them to its dependencies (QL05)
+AssertionError: expected '// Generated scaffold: Front (Microse…' to contain '  // Each stub\'s own settings: what …'
+
+- Expected
++ Received
+
++ // Generated scaffold: Front (Microservice) runs as app-front, an HTTP process.
++ // Export rewrites this file. Write modules in src/modules/; .jeeves/report.json lists what runs.
++ import { validateTemplateSettings } from "../features/service-resources.ts";
++ import { formatHttpError } from "../http-errors.hooks.ts";
++ import type { Dependencies as FrontInternalGrantDependencies } from "../modules/front/front-internal-grant.slots.ts";
++ import * as FrontInternalGrantModule from "../modules/front/front-internal-grant.ts";
++ import { frontInternalGrant } from "../modules/front/front-internal-grant.ts";
++ import type { Dependencies as FrontProbeDependencies } from "../modules/front/front-probe.slots.ts";
++ import * as FrontProbeModule from "../modules/front/front-probe.ts";
++ import { frontProbe } from "../modules/front/front-probe.ts";
++ import { startDurableWork, validateDurableWorkBinding } from "../runtime/durable-work.ts";
++ import { createHttpService } from "../runtime/http.ts";
++ import { createPrincipalVerifier } from "../runtime/identity.ts";
++ import { validateLocalOperationBinding } from "../runtime/local-operation.ts";
++ import { readSecret } from "../runtime/local.ts";
++ import { brokerBinding, cacheClient, cacheClientEndpoint, checkConfiguration, createProbeLog, databaseEndpoint, externalTarget, identityTarget, prepareProductDatabase, productDatabaseClient, queuePublisher, unavailable } from "../runtime/module-clients.ts";
++ import { runProcess } from "../runtime/process.ts";
++ import { type SettingsDeclaration, type SettingsOf, createSettingsReader, declareSettings } from "../runtime/settings.ts";
++ import { createTileGuard, signInSettings } from "../runtime/tile-guard.ts";
++ import { stubRoutes } from "../runtime/tile-http.ts";
++ import { brokerState, createFailureLog, createNotImplementedLog, logStarted } from "../runtime/tile-process.ts";
++
++ /** Compiled configuration: nothing is read from disk at runtime. */
++ export const config = {
++   "tile": "front",
++   "kind": "service",
++   "shape": "http",
++   "exposure": "public",
++   "settings": {
++     "requestTimeoutMs": 1000,
++     "concurrencyLimit": 1000
++   },
++   "listen": {
++     "host": "0.0.0.0",
++     "port": 3000
++   },
++   "templates": {
++     "front-sign-in": {
++       "template": "verified-identity",
++       "lead": "front-sign-in",
++       "identity": "identity",
++       "signIn": "optional",
++       "me": "/modules/front-sign-in/me"
++     }
++   },
++   "stubs": [
++     {
++       "module": "front-probe",
++       "path": "/modules/front-probe"
++     },
++     {
++       "module": "front-internal-grant",
++       "path": "/modules/front-internal-grant"
++     }
++   ]
++ } as const;
++
++ await runProcess(async (scope) => {
++   // A failure the process survives writes one error line, at most once a second for each.
++   const failure = createFailureLog(config.tile);
++   // "Not implemented" answers 501 with one log line per module and hook a second.
++   const log = createNotImplementedLog(config.tile);
+    // Each stub's own settings: what its file's `settings` export declares (none without one).
+    const declared = {
+      "front-probe": (FrontProbeModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),
+      "front-internal-grant": (FrontInternalGrantModule as { settings?: SettingsDeclaration }).settings ?? declareSettings({}),
+    };
+    const readModuleSettings = createSettingsReader();
+    const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };
++   validateDurableWorkBinding((FrontProbeModule as { durableWork?: unknown }).durableWork, ["store"]);
+    validateLocalOperationBinding((FrontProbeModule as { localOperation?: unknown }).localOperation, ["store"]);
++   validateDurableWorkBinding((FrontInternalGrantModule as { durableWork?: unknown }).durableWork, ["store"]);
+    validateLocalOperationBinding((FrontInternalGrantModule as { localOperation?: unknown }).localOperation, ["store"]);
+    // Prepare all registered SQL and product credentials before any connection or probe.
++   const preparedProduct = {
++     "product:store:front-internal-grant": prepareProductDatabase({ tile: config.tile, resource: "store", module: "front-internal-grant", property: "store", writable: true, operation: (FrontInternalGrantModule as { localOperation?: unknown }).localOperation, work: (FrontInternalGrantModule as { durableWork?: unknown }).durableWork, owner: "front" }),
++     "product:store:front-probe": prepareProductDatabase({ tile: config.tile, resource: "store", module: "front-probe", property: "store", writable: true, operation: (FrontProbeModule as { localOperation?: unknown }).localOperation, work: (FrontProbeModule as { durableWork?: unknown }).durableWork, owner: "front" }),
++   };
++   // Configuration: every variable these clients, the tile's sign-in and its stubs' settings read,
++   // checked before any client is built or probed; one wrong setting fails startup naming it,
++   // several are named together (a stub's first).
++   checkConfiguration([
++     () => brokerBinding(),
++     () => cacheClientEndpoint("hot"),
++     () => identityTarget({ identity: "identity" }),
++     () => databaseEndpoint("store"),
++     () => externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),
++     () => readSecret("broker-password"),
++     () => readSecret("cache-hot"),
++     () => readSecret("product-store--front"),
++     () => readSecret("sql-store--front"),
++     () => signInSettings(),
++     () => configuredSettings["front-probe"] = readModuleSettings("front-probe", declared["front-probe"]),
++     () => configuredSettings["front-internal-grant"] = readModuleSettings("front-internal-grant", declared["front-internal-grant"]),
++   ]);
++   signInSettings();
++   validateTemplateSettings(config.tile);
++   // Module clients (src/runtime/module-clients.ts): one per store or channel this tile's stubs
++   // use, each probed once before the process is ready; a failed probe fails startup, except
++   // a cache's, which is logged.
++   const probe = createProbeLog(config.tile);
++   const clients = {
++     "events": await queuePublisher(scope, probe, { queue: "events", mode: "work-queue" }, brokerState(config.tile, failure, "broker publish events")),
++     "hot": await cacheClient(scope, probe, { cache: "hot" }),
++     "identity": identityTarget({ identity: "identity" }),
++     "product:store:front-internal-grant": await productDatabaseClient(scope, probe, preparedProduct["product:store:front-internal-grant"]),
++     "product:store:front-probe": await productDatabaseClient(scope, probe, preparedProduct["product:store:front-probe"]),
++     "provider": externalTarget("JEEVES_EXTERNAL_PROVIDER_URL"),
++   };
++   // Each stub's dependencies: its clients, and a module link calls that module's entry point.
++   const dependencies = {} as {
++     "front-probe": FrontProbeDependencies;
++     "front-internal-grant": FrontInternalGrantDependencies;
++   };
++   dependencies["front-probe"] = {
++     store: clients["product:store:front-probe"],
++     hot: clients["hot"],
++     events: clients["events"],
++     provider: unavailable<FrontProbeDependencies["provider"]>("Provider for Probe (requires a registered product capability binding)"),
++     identity: unavailable<FrontProbeDependencies["identity"]>("Identity for Probe (requires a registered product capability binding)"),
++     settings: configuredSettings["front-probe"] as FrontProbeDependencies["settings"],
++   };
++   dependencies["front-internal-grant"] = {
++     store: clients["product:store:front-internal-grant"],
++     settings: configuredSettings["front-internal-grant"] as FrontInternalGrantDependencies["settings"],
++   };
++   // Sign-in: the tile's sign-in, Optional: a token sent with a request is verified; none is anonymous.
++   const frontSignIn = (() => {
++     const binding = config.templates["front-sign-in"];
++     // Its audience, issuer and key set are the deployment's, checked by signInSettings (tile-guard.ts).
++     const settings = signInSettings();
++     return createTileGuard({
++       signIn: binding.signIn,
++       verify: createPrincipalVerifier({
++         issuer: settings.issuer,
++         audience: settings.audience,
++         jwksUrl: settings.jwksUrl,
++         algorithms: ["RS256"],
++         jwksTimeoutMs: 3000,
++       }),
++     });
++   })();
++   const service = await createHttpService({
++     stopping: scope.signal,
++     id: config.tile,
++     settings: config.settings,
++     formatError: formatHttpError,
++     configure: (open) => {
++       // Every module route checks its caller first: the tile's sign-in.
++       const routes = frontSignIn.routes(open);
++       frontSignIn.me(routes, "/modules/front-sign-in/me");
++       stubRoutes(
++         routes,
++         log,
++         "front-probe",
++         (request) => frontProbe(dependencies["front-probe"], request),
++         { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },
++         frontSignIn.caller,
++       );
++       stubRoutes(
++         routes,
++         log,
++         "front-internal-grant",
++         (request) => frontInternalGrant(dependencies["front-internal-grant"], request),
++         { deadlineMs: config.settings.requestTimeoutMs, stopping: scope.signal },
++         frontSignIn.caller,
++       );
++     },
++     initialize: async () => {
++       startDurableWork((FrontProbeModule as { durableWork?: unknown }).durableWork, dependencies["front-probe"], scope, (event) => createFailureLog(config.tile)(event, new Error(event)));
++       startDurableWork((FrontInternalGrantModule as { durableWork?: unknown }).durableWork, dependencies["front-internal-grant"], scope, (event) => createFailureLog(config.tile)(event, new Error(event)));
++     },
++   });
++   // Draining stops admission first, then waits for admitted requests.
++   scope.admission(() => service.stop());
++   scope.own(() => service.close());
++   await service.start(config.listen);
++   logStarted(config.tile, {"module":"front-sign-in","template":"verified-identity","wiring":"mounted","checks":["sign-in Optional on every module route"]});
++   scope.ready();
++ });
++
+
+ ❯ src/v2/client-wiring.test.ts:869:19
+    867|       front.indexOf("import { frontProbe }"),
+    868|     );
+    869|     expect(front).toContain(
+       |                   ^
+    870|       [
+    871|         "  // Each stub's own settings: what its file's `settings` exp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |generator| src/v2/product-sql.test.ts > product tables and published views (v3 contract, section 1) > applies a stub's idempotency records (050-) before template migrations (100-) and product SQL (QL04)
+AssertionError: expected [ …(4) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    "infra/postgres/links-db/000-foundation.sql",
+    "infra/postgres/links-db/050-jeeves-idempotency.sql",
+    "infra/postgres/links-db/051-jeeves-local-operations.sql",
++   "infra/postgres/links-db/052-jeeves-durable-work.sql",
+  ]
+
+ ❯ src/v2/product-sql.test.ts:197:43
+    195|         (db: { resource: string }) => db.resource === resource,
+    196|       )?.migrations as string[];
+    197|     expect(migrations(stack, "links-db")).toEqual([
+       |                                           ^
+    198|       "infra/postgres/links-db/000-foundation.sql",
+    199|       "infra/postgres/links-db/050-jeeves-idempotency.sql",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |generator| src/v2/tile-processes.test.ts > local.tile-processes > adds an entry point per application tile and the libraries a process needs
+AssertionError: expected [ 'infra/edge/nginx.conf', …(38) ] to deeply equal [ 'infra/edge/nginx.conf', …(35) ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,11 @@
+  [
+    "infra/edge/nginx.conf",
+    "infra/postgres/links-db/000-foundation.sql",
+    "infra/postgres/links-db/050-jeeves-idempotency.sql",
+    "infra/postgres/links-db/051-jeeves-local-operations.sql",
++   "infra/postgres/links-db/052-jeeves-durable-work.sql",
+    "infra/postgres/links-db/products.json",
+    "infra/postgres/links-db/products/commands/example.sql",
+    "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
+    "infra/postgres/links-db/products/queries/example.sql",
+    "infra/postgres/workload-issuer/000-foundation.sql",
+@@ -16,19 +17,21 @@
+    "src/processes/upload-api.ts",
+    "src/processes/visit-worker.ts",
+    "src/runtime/admission.ts",
+    "src/runtime/amqp.ts",
+    "src/runtime/delivery.ts",
++   "src/runtime/durable-work.ts",
+    "src/runtime/hook-boundary.ts",
+    "src/runtime/http.ts",
+    "src/runtime/idempotency.ts",
+    "src/runtime/local-operation.ts",
+    "src/runtime/module-clients.ts",
+    "src/runtime/objects.ts",
+    "src/runtime/postgres.ts",
+    "src/runtime/process.ts",
+    "src/runtime/product-contract.ts",
++   "src/runtime/product-mutation.ts",
+    "src/runtime/product-operations.ts",
+    "src/runtime/search.ts",
+    "src/runtime/tile-http.ts",
+    "src/runtime/tile-loop.ts",
+    "src/runtime/tile-process.ts",
+
+ ❯ src/v2/tile-processes.test.ts:92:72
+     90|   it("adds an entry point per application tile and the libraries a pro…
+     91|     const paths = (b: Bundle) => b.files.map((file) => file.path);
+     92|     expect(paths(bundle).filter((path) => !paths(off).includes(path)))…
+       |                                                                        ^
+     93|       "infra/edge/nginx.conf",
+     94|       "infra/postgres/links-db/000-foundation.sql",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  3 failed | 1 passed (4)
+      Tests  5 failed | 127 passed (132)
+   Start at  21:35:19
+   Duration  3.98s (import 40%, tests 40%, transform 20%)

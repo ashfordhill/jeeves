@@ -95,6 +95,7 @@ describe("local.tile-processes", () => {
       // Links API's stubs write it, so it has the idempotency records (QL04).
       "infra/postgres/links-db/050-jeeves-idempotency.sql",
       "infra/postgres/links-db/051-jeeves-local-operations.sql",
+      "infra/postgres/links-db/052-jeeves-durable-work.sql",
       "infra/postgres/links-db/products.json",
       "infra/postgres/links-db/products/commands/example.sql",
       "infra/postgres/links-db/products/migrations/m_link_reader/0001-initial.sql",
@@ -110,6 +111,7 @@ describe("local.tile-processes", () => {
       "src/runtime/admission.ts",
       "src/runtime/amqp.ts",
       "src/runtime/delivery.ts",
+      "src/runtime/durable-work.ts",
       "src/runtime/hook-boundary.ts",
       "src/runtime/http.ts",
       // The stubs' database client keeps its idempotency records through it (QL04).
@@ -120,6 +122,7 @@ describe("local.tile-processes", () => {
       "src/runtime/postgres.ts",
       "src/runtime/process.ts",
       "src/runtime/product-contract.ts",
+      "src/runtime/product-mutation.ts",
       "src/runtime/product-operations.ts",
       "src/runtime/search.ts",
       "src/runtime/tile-http.ts",
@@ -129,6 +132,7 @@ describe("local.tile-processes", () => {
       "src/runtime/transaction.ts",
       // The stubs' cache (Links cache) uses the cache read's bounded client.
       "src/runtime/valkey.ts",
+      "src/runtime/work-integration.ts",
       "src/runtime/workload.ts",
     ]);
     expect(paths(off).filter((path) => !paths(bundle).includes(path))).toEqual([]);

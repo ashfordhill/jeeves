@@ -120,6 +120,31 @@ export const localOperationMigration = {
   sql: `ALTER TABLE jeeves.idempotency_records ADD COLUMN IF NOT EXISTS metadata jsonb;
 `,
 } as const;
+/** Protected intent/lease state is separate from product namespaces and migration authority. */
+export const durableWorkMigration = {
+  id: "052-jeeves-durable-work.sql",
+  sql: `CREATE TABLE IF NOT EXISTS jeeves.work_records (
+  namespace text NOT NULL, scope_key text NOT NULL, work_key text NOT NULL, work_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  input jsonb NOT NULL, input_hash text NOT NULL, configuration text NOT NULL,
+  remote_input jsonb, remote_ticket text, remote_protocol jsonb, remote_result jsonb, external_state text NOT NULL DEFAULT 'none' CHECK(external_state IN ('none','prepared','dispatched','done')),
+  state text NOT NULL DEFAULT 'accepted' CHECK (state IN ('accepted','running','retry','unknown','completed','failed')),
+  attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0), max_attempts integer NOT NULL CHECK (max_attempts BETWEEN 1 AND 20),
+  retention_seconds integer NOT NULL CHECK (retention_seconds BETWEEN 60 AND 604800),
+  holder text, fence bigint NOT NULL DEFAULT 0 CHECK (fence >= 0), lease_until timestamptz,
+  next_attempt_at timestamptz DEFAULT clock_timestamp(), error text,
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(), completed_at timestamptz, expires_at timestamptz,
+  PRIMARY KEY (namespace,scope_key,work_key),
+  CHECK ((state='running') = (holder IS NOT NULL AND lease_until IS NOT NULL)),
+  CHECK (state<>'completed' OR (completed_at IS NOT NULL AND expires_at IS NOT NULL))
+);
+CREATE INDEX IF NOT EXISTS work_records_due ON jeeves.work_records(namespace,next_attempt_at,lease_until) WHERE state IN ('accepted','running','retry');
+CREATE INDEX IF NOT EXISTS work_records_expiry ON jeeves.work_records(namespace,expires_at) WHERE state='completed';
+REVOKE ALL ON jeeves.work_records FROM PUBLIC;
+CREATE TABLE IF NOT EXISTS jeeves.work_tickets(namespace text NOT NULL,caller text NOT NULL,work_key text NOT NULL,input_hash text NOT NULL,version integer NOT NULL,ticket text NOT NULL UNIQUE,expires_at timestamptz NOT NULL,PRIMARY KEY(namespace,caller,work_key));
+CREATE INDEX IF NOT EXISTS work_tickets_expiry ON jeeves.work_tickets(expires_at);
+REVOKE ALL ON jeeves.work_tickets FROM PUBLIC;
+`,
+} as const;
 /** A writing tile's login on the idempotency records (QL04). */
 export const idempotencyGrant = (resource: string, host: string) => ({
   resource,
@@ -239,6 +264,26 @@ export function stubClients(
     settingReads.push(`configuredSettings[${text(id)}] = ${read}`);
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
+    const workDatabases = properties
+      .filter((item) => item.type === "DatabaseReadWriter")
+      .map((item) => item.property);
+    if (workDatabases.length) {
+      imports.push({
+        from: "../runtime/durable-work.ts",
+        name: "validateDurableWorkBinding",
+      });
+      imports.push({
+        from: "../runtime/durable-work.ts",
+        name: "startDurableWork",
+      });
+      imports.push({ from: tileProcess, name: "createFailureLog" });
+      localChecks.push(
+        `validateDurableWorkBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))});`,
+      );
+    } else
+      localChecks.push(
+        `if ((${pascal(id)}Module as { durableWork?: unknown }).durableWork !== undefined) throw new Error("Durable work requires one writable database");`,
+      );
     const databases =
       stub.role === "route"
         ? properties
@@ -251,7 +296,7 @@ export function stubClients(
         name: "validateLocalOperationBinding",
       });
       localChecks.push(
-        `validateLocalOperationBinding((${pascal(id)}Module as { localOperation?: unknown }).localOperation, ${JSON.stringify(databases)});`,
+        `validateLocalOperationBinding((${pascal(id)}Module as { localOperation?: unknown }).localOperation, ${JSON.stringify(databases)}, { workload: ${!!process.workloadCallers?.length}, requiredUser: ${selections.some((s) => s.host === process.tile && s.binding.kind === "verified-identity" && s.inputs["guard.signIn"] === "required")} });`,
       );
     } else
       localChecks.push(
@@ -355,7 +400,7 @@ export function stubClients(
               section: "database",
               name: "productDatabaseClient",
               call: `await productDatabaseClient(scope, probe, preparedProduct[${text(`product:${target.element}:${module.component}`)}])`,
-              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation })`,
+              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: (${pascal(id)}Module as { durableWork?: unknown }).durableWork, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)} })`,
               check: {
                 name: "databaseEndpoint",
                 call: `databaseEndpoint(${text(store.resource)})`,
@@ -566,7 +611,16 @@ export function stubClients(
         ...assignments.flatMap((item) => item.split("\n")),
       ],
       configure: [],
-      initialize: [],
+      initialize: stubs
+        .filter(({ module, stub }) =>
+          stubProperties(module, stub.role === "loop").some(
+            (item) => item.type === "DatabaseReadWriter",
+          ),
+        )
+        .map(({ module }) => {
+          const id = generationLocalIdentity(module.component).local;
+          return `startDurableWork((${pascal(id)}Module as { durableWork?: unknown }).durableWork, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields));`;
+        }),
       started: [],
       routes: [],
       loops: [],
@@ -594,12 +648,21 @@ export function stubClients(
       local: written.length
         ? {
             migrations: written.flatMap((store) =>
-              [idempotencyMigration, localOperationMigration].map((migration) => ({
-                resource: store.resource,
-                ...migration,
-              })),
+              [idempotencyMigration, localOperationMigration, durableWorkMigration].map(
+                (migration) => ({
+                  resource: store.resource,
+                  ...migration,
+                }),
+              ),
             ),
-            grants: written.map((store) => idempotencyGrant(store.resource, process.tile)),
+            grants: written.flatMap((store) => [
+              idempotencyGrant(store.resource, process.tile),
+              {
+                ...idempotencyGrant(store.resource, process.tile),
+                relation: "work_records",
+              },
+              { ...idempotencyGrant(store.resource, process.tile), relation: "work_tickets" },
+            ]),
           }
         : {},
     },
@@ -632,7 +695,11 @@ function provisionedAs(
               ...access.product.views.map((view) => `SELECT on published.${view}`),
             ]
           : ["no declared product access"]),
-        ...(writesDatabase(store) ? ["its idempotency records in jeeves.idempotency_records"] : []),
+        ...(writesDatabase(store)
+          ? [
+              "its private replay and work records in jeeves.idempotency_records and jeeves.work_records",
+            ]
+          : []),
         "no product DDL or migration credential",
       ].join("; ")})`;
     }

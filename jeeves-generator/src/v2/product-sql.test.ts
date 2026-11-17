@@ -198,6 +198,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
       "infra/postgres/links-db/000-foundation.sql",
       "infra/postgres/links-db/050-jeeves-idempotency.sql",
       "infra/postgres/links-db/051-jeeves-local-operations.sql",
+      "infra/postgres/links-db/052-jeeves-durable-work.sql",
     ]);
     expect(migrations(v2, "metadata-db")).toEqual([
       "infra/postgres/metadata-db/000-foundation.sql",
@@ -226,7 +227,7 @@ describe("product tables and published views (v3 contract, section 1)", () => {
         }
       ).processes.tiles.find((row) => row.tile === tile)?.stores ?? [];
     expect(rows(stack, "links-api").find((row) => row.store === "links-db")?.provisioned).toBe(
-      "PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; no declared product access; its idempotency records in jeeves.idempotency_records; no product DDL or migration credential)",
+      "PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; no declared product access; its private replay and work records in jeeves.idempotency_records and jeeves.work_records; no product DDL or migration credential)",
     );
     expect(rows(stack, "visit-worker").find((row) => row.store === "links-db")?.provisioned).toBe(
       "PostgreSQL database d_links_db, login r_links_db__visit_worker (CONNECT, USAGE on public; no declared product access; no product DDL or migration credential)",

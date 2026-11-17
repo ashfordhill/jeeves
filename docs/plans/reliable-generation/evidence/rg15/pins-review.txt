@@ -1,0 +1,3 @@
+frozen-v2 {"oldFiles":80,"newFiles":80,"added":[],"removed":[],"changed":[".jeeves/extensions.md",".jeeves/manifest.json","src/runtime/admission.ts","src/runtime/operation.ts","src/runtime/transaction.ts"]}
+v2-module-design {"oldFiles":87,"newFiles":87,"added":[],"removed":[],"changed":[".jeeves/extensions.md",".jeeves/manifest.json","src/runtime/admission.ts","src/runtime/operation.ts","src/runtime/transaction.ts"]}
+stub-stack {"oldFiles":60,"newFiles":60,"added":[],"removed":[],"changed":[".jeeves/extensions.md",".jeeves/manifest.json","src/runtime/operation.ts"]}

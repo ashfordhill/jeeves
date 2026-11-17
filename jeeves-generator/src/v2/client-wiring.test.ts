@@ -146,6 +146,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
           "infra/postgres/links-db/000-foundation.sql",
           "infra/postgres/links-db/050-jeeves-idempotency.sql",
           "infra/postgres/links-db/051-jeeves-local-operations.sql",
+          "infra/postgres/links-db/052-jeeves-durable-work.sql",
         ],
         // Link reader writes it (Links API created it), so it has its own SQL file and schema.
         modules: [
@@ -184,6 +185,22 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         host: "links-api",
         schema: "jeeves",
         relation: "idempotency_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "work_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "work_tickets",
         kind: "table",
         privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       },
@@ -619,6 +636,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       "infra/postgres/links-db/000-foundation.sql",
       migration,
       "infra/postgres/links-db/051-jeeves-local-operations.sql",
+      "infra/postgres/links-db/052-jeeves-durable-work.sql",
     ]);
     expect(jeeves(stack)).toEqual([
       {
@@ -626,6 +644,22 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
         host: "links-api",
         schema: "jeeves",
         relation: "idempotency_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "work_records",
+        kind: "table",
+        privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      },
+      {
+        resource: "links-db",
+        host: "links-api",
+        schema: "jeeves",
+        relation: "work_tickets",
         kind: "table",
         privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       },
@@ -655,8 +689,16 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       "infra/postgres/links-db/000-foundation.sql",
       migration,
       "infra/postgres/links-db/051-jeeves-local-operations.sql",
+      "infra/postgres/links-db/052-jeeves-durable-work.sql",
     ]);
-    expect(jeeves(both).map((grant) => grant.host)).toEqual(["links-api", "visit-worker"]);
+    expect(jeeves(both).map((grant) => grant.host)).toEqual([
+      "links-api",
+      "links-api",
+      "links-api",
+      "visit-worker",
+      "visit-worker",
+      "visit-worker",
+    ]);
     // A design whose stubs only read a database (v2), or processes off: none.
     for (const bundle of [v2, stackOff]) {
       expect(bundle.files.some((file) => file.path.endsWith("/050-jeeves-idempotency.sql"))).toBe(
@@ -671,7 +713,7 @@ describe("provisioning for stubs (tile process contract, section 6)", () => {
       stores(stack, "links-api").map((row) => `${row.store} ${row.access}: ${row.provisioned}`),
     ).toEqual([
       "links-cache read-write: Valkey cache-links-cache with its password",
-      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; no declared product access; its idempotency records in jeeves.idempotency_records; no product DDL or migration credential)",
+      "links-db read-write: PostgreSQL database d_links_db, login r_links_db__links_api (CONNECT, USAGE on public; no declared product access; its private replay and work records in jeeves.idempotency_records and jeeves.work_records; no product DDL or migration credential)",
       "uploaded consume: RabbitMQ work queue uploaded and its .failed",
       "visits publish: RabbitMQ exchange visits",
     ]);
@@ -875,8 +917,10 @@ describe("External API and Identity tiles give stubs a configured HTTP client (Q
         "  };",
         "  const readModuleSettings = createSettingsReader();",
         "  const configuredSettings = {} as { [Name in keyof typeof declared]: SettingsOf<(typeof declared)[Name]> };",
-        '  validateLocalOperationBinding((FrontProbeModule as { localOperation?: unknown }).localOperation, ["store"]);',
-        '  validateLocalOperationBinding((FrontInternalGrantModule as { localOperation?: unknown }).localOperation, ["store"]);',
+        '  validateDurableWorkBinding((FrontProbeModule as { durableWork?: unknown }).durableWork, ["store"], []);',
+        '  validateLocalOperationBinding((FrontProbeModule as { localOperation?: unknown }).localOperation, ["store"], { workload: false, requiredUser: false });',
+        '  validateDurableWorkBinding((FrontInternalGrantModule as { durableWork?: unknown }).durableWork, ["store"], []);',
+        '  validateLocalOperationBinding((FrontInternalGrantModule as { localOperation?: unknown }).localOperation, ["store"], { workload: false, requiredUser: false });',
         "  // Prepare all registered SQL and product credentials before any connection or probe.",
       ].join("\n"),
     );

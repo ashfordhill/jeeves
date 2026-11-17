@@ -1,0 +1,2 @@
+PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH pnpm exec tsc --noEmit -p jeeves-generator/tsconfig.json
+Exit 0; no diagnostics.

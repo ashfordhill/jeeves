@@ -24,7 +24,8 @@ import {
   type IdempotencyRecord,
 } from "./idempotency.ts";
 import { periodic } from "./process.ts";
-import { bindLocalOperation, localOperationDefinition } from "./local-operation.ts";
+import { bindLocalOperation, localOperationDefinition, sweepWorkTickets } from "./local-operation.ts";
+import { bindDurableWork, durableWorkDefinition } from "./durable-work.ts";
 import { privateReplayKeys } from "./settings.ts";
 import { prepareProductOperations } from "./product-operations.ts";
 // @database-import-end
@@ -369,7 +370,7 @@ async function idempotentCall<Body>(
   }
 }
 /** Public product SQL uses separate credentials, retaining credential scope in the RG02 key. */
-export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown}) {
+export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown; work?: unknown; owner?: string}) {
   const maximum = productDatabases.find((row) => row.resource === binding.resource);
   const login = productLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
   if (!maximum || !login) throw new Error("No scoped product SQL binding");
@@ -377,11 +378,12 @@ export function prepareProductDatabase(binding: {tile: string; resource: string;
   readSecret(login.secret);
   const operations = prepareProductOperations(maximum, binding);
   const local = localOperationDefinition(binding.operation, binding.property ?? "", binding.writable ?? false);
+  const work = durableWorkDefinition(binding.work, binding.property ?? "", binding.writable ?? false);
   const keys = local?.definition.secret ? privateReplayKeys() : undefined;
   const runtimeLogin = localLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
-  if (local && !runtimeLogin) throw new Error("Missing private replay database binding");
-  if (local && runtimeLogin) readSecret(runtimeLogin.secret);
-  return {configuration, operations, binding, local, keys, runtimeLogin};
+  if ((local || work) && !runtimeLogin) throw new Error("Missing private replay/work database binding");
+  if ((local || work) && runtimeLogin) readSecret(runtimeLogin.secret);
+  return {configuration, operations, binding, local, work, keys, runtimeLogin};
 }
 export async function productDatabaseClient(
   scope: ProcessScope, log: ProbeLog, prepared: ReturnType<typeof prepareProductDatabase>,
@@ -394,16 +396,17 @@ export async function productDatabaseClient(
   });
   await probed(log, {client: binding.resource, kind: "database", check: "SELECT 1"}, () => pool.query("SELECT 1"), scope.signal);
   const handle = operations((sql, values, readOnly) => transaction(pool, (tx) => tx.query(sql, values), {readOnly}));
-  if (prepared.local && prepared.runtimeLogin) {
+  if ((prepared.local || prepared.work) && prepared.runtimeLogin) {
     const runtimeConfiguration = {...configuration, login: prepared.runtimeLogin};
     const replayPool = processClient(scope, "postgres", runtimeConfiguration, () => {
       const client = ownResource(scope, createPostgres(runtimeConfiguration), "end");
       client.on("error", () => {});
       return client;
     });
-    bindLocalOperation(handle, prepared.local, {...binding, productRole: configuration.login.user, pool: replayPool, keys: prepared.keys, commands: operations});
-    processClient(scope, "replay-cleanup", runtimeConfiguration, () => {
-      periodic(scope, () => sweepExpired(replayPool), idempotencyPolicy.sweepSeconds * 1000,
+    if (prepared.work) bindDurableWork(handle, prepared.work, {namespace: JSON.stringify([binding.resource,binding.owner ?? binding.tile,prepared.work.definition.id]), process: binding.tile, pool: replayPool, productRole: configuration.login.user, commands: operations});
+    if (prepared.local) bindLocalOperation(handle, prepared.local, {...binding, productRole: configuration.login.user, pool: replayPool, keys: prepared.keys, commands: operations});
+    if (prepared.local) processClient(scope, "replay-cleanup", runtimeConfiguration, () => {
+      periodic(scope, async () => { await sweepExpired(replayPool); await sweepWorkTickets(replayPool); }, idempotencyPolicy.sweepSeconds * 1000,
         (error) => createFailureLog(binding.tile)("local replay cleanup", error));
       return true;
     });
