@@ -91,3 +91,13 @@ a57e555727fc qrwty-5174-qrwty-web-1 exited
 a9f678e7893c qrwty-5174-qrwty-db-1 exited
 7be10d5a9227 qrwty-qrwty-db-1 exited
 c0fbbc2996fe jeeves-postgres-1 running
+
+Post-owner-archive completion receipt:
+Owner d67afee9a0c5f3a9aa517fe6d149852009d52c26 and c8e41d0dd66b25f65379c7c39f16833f2880be4e preserved.
+Owner c8e41d0 absorbed staged RG17 implementation/earlier evidence/handoff during the staging race; it also independently archived README/.docs and tracked the approved plan packet. No agent commit/history rewrite occurred at that point.
+Original other27 paths compare byte-exact (33513 bytes) against immutable accepted RG16 base.
+Original .docs Zone.Identifier remapped to .docs/readme/v0/youtube-v3/YouTube-v3-r171-detailed.pngZone.Identifier; accepted old blob equals owner archived blob; current archived-path deletion exactly matches original binary deletion after path remapping.
+Six non-README original root hashes still match; continuing external README SHA256 4740df6f73b13970cadc98fea08df32d49750aa250f429251953779948198aeb preserved/excluded.
+All42 original container ID/name/states still match; frozen local-v1 untouched.
+The existing RG16 browser screenshot call overwrote historical evidence by7bytes during full regression and owner c8e41d0 captured that artifact. Coordinator explicitly authorized restoring only this accepted RG16 image.
+RG16 screenshot restored exact accepted SHA256 2c85f87bd9311ce1f7293ecd560f8cf52f902d3ecee6aaab77029dcb3f7f1aa3. Both RG16 and RG17 screenshot destinations now use testInfo.outputPath; only the selected RG17 screenshot is explicitly copied into its own evidence. Focused mouse3/3, web types and lint pass.

@@ -21,7 +21,7 @@ import {
 test("RG16 edits both task intervals and connects a queue-free timer Worker by mouse with export parity", async ({
   page,
   tinyurl,
-}) => {
+}, testInfo) => {
   await expect(tile(page, "Redirect service")).toBeVisible();
   const id = await createStudy(page, "E2E RG16 schedules", "blank");
   try {
@@ -79,7 +79,7 @@ test("RG16 edits both task intervals and connects a queue-free timer Worker by m
       await expect(inspector.getByLabel("Retries", { exact: true })).toHaveCount(0);
     }
     await page.screenshot({
-      path: "docs/plans/reliable-generation/evidence/rg16/mouse-task-controls.png",
+      path: testInfo.outputPath("mouse-task-controls.png"),
       fullPage: true,
     });
     const blueprint = await (

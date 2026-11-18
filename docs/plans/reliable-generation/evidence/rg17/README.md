@@ -1,8 +1,13 @@
 # RG17 — authenticated webhook inbox
 
-Implemented on accepted RG16 `f75304e1c430cab021e75f672be68bbd2a8bfb81`. The independent owner
-feedback parent `f15e5af638588a058d1ec5ab7adeb13f8e8ed7ae` is preserved. Pending coordinator
-acceptance; no later unit or native generated-system matrix was run.
+Implemented on accepted RG16 `f75304e1c430cab021e75f672be68bbd2a8bfb81`. During explicit
+unit staging, the owner advanced main through `d67afee9a0c5f3a9aa517fe6d149852009d52c26` to
+`c8e41d0dd66b25f65379c7c39f16833f2880be4e`. That external README/archive commit also absorbed
+the staged RG17 implementation, earlier evidence and handoff. Those owner parents are preserved;
+no amend/reset/history repair or artificial source edit is performed. Source provenance is the
+owner `c8e41d0` parent plus this unit's explicit completion commit of final evidence and the
+narrow screenshot-harness preservation fix. The owner independently tracked the approved plan
+packet in that archive commit. Pending coordinator acceptance; no later unit/native matrix run.
 
 The Service-only receiver has finite body/window settings shared by inspector/chat/blueprint and
 generated consumers, an RG08 private HMAC ring/verifier, a separate pure mapper and an opaque
@@ -30,7 +35,7 @@ tests. [Final pnpm check](check-namespace-final.txt) passes lint/types and **140
 work-ID collision and two compiled receivers with copied application work IDs.
 [Final web build](build-final.txt) passes. The final changes after that broad check are guide/comment
 wording and the browser test awaiting its actual module save; [focused prose/pins](prose-pins.txt)
-pass4/4 and [prose lint](prose-lint.txt) passes, with final web typecheck recorded separately. The focused mechanism tests
+pass4/4 and [prose lint](prose-lint.txt) passes, with [final web typecheck](web-types-final.txt) passing separately. The focused mechanism tests
 use actual generated Fastify/raw-body parsing, RG08 key code, PGlite SQL/roles/transactions and two
 work-engine instances. PGlite serializes connections: this is controlled protocol/recovery/fencing
 proof, not native simultaneous-replica or process-kill proof. The later assigned checkpoint owns
@@ -87,3 +92,16 @@ external `.docs/` deletions/moves appeared alongside ongoing README edits; the o
 owner patch remains exact34001 bytes when compared separately. Those external changes are preserved
 and excluded, rather than claiming the entire owner diff stayed unchanged. No issuer/cloud/paid call,
 root lock/dependency edit, unrelated Docker cleanup, push or deployment occurs.
+
+## Completion preservation correction
+
+The full regression's existing RG16 screenshot call wrote into historical evidence; owner c8e41d0
+captured a seven-byte change. On explicit coordinator instruction, this completion restores only
+that image from accepted RG16, byte-for-byte. Both existing Scheduled task and new Webhook tests
+now write screenshots to testInfo.outputPath; the selected RG17 output is copied explicitly into
+this unit's evidence. [Focused mouse3/3](screenshot-harness-mouse.txt),
+[web types](screenshot-harness-types.txt) and [lint](screenshot-harness-lint.txt) pass.
+The original other27 protected paths remain exact; the remaining .docs Zone.Identifier deletion
+is compared through its owner archive remapping. [The receipt](preservation.txt) records this and
+continuing external README edits. Owner files/history/packet are excluded from the completion
+commit. Broad backend checks are unchanged and were not repeated solely for screenshot paths.

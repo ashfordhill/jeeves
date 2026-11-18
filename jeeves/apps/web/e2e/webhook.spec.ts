@@ -20,7 +20,7 @@ import {
 test("RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity", async ({
   page,
   tinyurl,
-}) => {
+}, testInfo) => {
   await expect(tile(page, "Redirect service")).toBeVisible();
   const id = await createStudy(page, "E2E RG17 webhook", "blank");
   try {
@@ -87,7 +87,7 @@ test("RG17 connects and configures authenticated webhook ingress by mouse with b
       .toContain('"replayWindowSeconds":60');
     await expect(inspector.getByLabel("Retries", { exact: true })).toHaveCount(0);
     await page.screenshot({
-      path: "docs/plans/reliable-generation/evidence/rg17/mouse-webhook.png",
+      path: testInfo.outputPath("mouse-webhook.png"),
       fullPage: true,
     });
     const blueprint = await (

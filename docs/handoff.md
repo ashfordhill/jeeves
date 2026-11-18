@@ -19026,3 +19026,18 @@ workload settings the same way.
   original container ID/name/states preserved. Ongoing owner README archive/new39 .docs changes and
   feedback parentf15e5af are preserved/excluded. No later unit, owner service/DB, paid/live call,
   root edit, push/deploy. One local commit follows: `RG17: generate authenticated webhook ingestion and durable inbox processing`.
+
+## 2026-11-17 — RG17 completion provenance and screenshot preservation
+
+- External owner commits `d67afee` and `c8e41d0` landed during explicit staging; `c8e41d0` absorbed
+  RG17 implementation/earlier evidence/handoff alongside the owner's README archive/approved
+  packet. Preserve those parents; this completion adds only final evidence and the narrow harness
+  correction, without history repair or artificial source changes.
+- Existing RG16 screenshot output had overwritten historical evidence by7bytes. Explicitly
+  authorized restoration matches accepted `f75304e` exactly; both scheduled/webhook tests now use
+  per-test output paths, with the selected RG17 screenshot retained in its own evidence.
+- Focused mouse3/3, final web types/lint and protected checks pass; prior140files/1261tests,
+  focused97/97,67file checker/TS, web build/offline and84-case browser accounting remain valid.
+  Other27 original protected paths match exactly; archived Zone.Identifier deletion matches via
+  owner remapping; six non-README root hashes/all42 containers match. Ongoing owner changes excluded.
+- One explicit-path completion commit follows with the assigned RG17 subject; stop for review.
