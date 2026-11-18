@@ -424,6 +424,7 @@ it("RG07 validates a later module's SQL and all credentials before opening or pr
       "prepareProductOperations",
       "localOperationDefinition",
       "durableWorkDefinition",
+      "receiptConsumerDefinition",
       "localLogins",
       `${prepareSource}; return prepareProductDatabase;`,
     )(
@@ -433,6 +434,7 @@ it("RG07 validates a later module's SQL and all credentials before opening or pr
       readSecret,
       (maximum: unknown, binding: unknown) => prepareProductOperations(maximum, binding, f.read),
       () => (localOperation ? { definition: { secret: false } } : undefined),
+      () => undefined,
       () => undefined,
       plan.logins,
     );

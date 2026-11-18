@@ -1,0 +1,140 @@
+/** Private receipt binding; public extensions declare mapping and scoped commands only. */
+import { randomUUID } from "node:crypto";
+import { normalizedJsonDto } from "./hook-boundary.ts";
+import { withLocalPolicy, operation, withOperation, withProcess } from "./operation.ts";
+import { productMutation, type ScopedCommands, type CommandFactory } from "./product-mutation.ts";
+import { createReceipts, ReceiptConflict, validateReceiptRetention } from "./receipts.ts";
+import { durableIdentity } from "./durable-sql.ts";
+import { NonRetryable, unreachable } from "./delivery.ts";
+import { transaction, type TransactionPool, type Tx } from "./transaction.ts";
+import { periodic, type ProcessScope } from "./process.ts";
+
+export interface ReceiptEvent { readonly id: string; readonly payload: unknown; }
+declare const receiptBrand: unique symbol;
+export interface ReceiptConsumer<Dependencies> { readonly [receiptBrand]: Dependencies; }
+interface Definition {
+  database: string;
+  deliveryHorizonSeconds: number;
+  retentionSeconds: number;
+  map(input: unknown, messageId: string): ReceiptEvent;
+  complete(event: ReceiptEvent, commands: ScopedCommands): Promise<void>;
+}
+const definitions = new WeakMap<object, Readonly<Definition>>();
+const bindings = new WeakMap<object, { definition: Readonly<Definition>; run(message: { body: Uint8Array; messageId?: string }): Promise<void>; start(scope: ProcessScope): void }>();
+export function defineReceiptConsumer<Dependencies>(definition: Definition & { database: keyof Dependencies & string }): ReceiptConsumer<Dependencies> {
+  if (!definition || Object.keys(definition).sort().join() !== "complete,database,deliveryHorizonSeconds,map,retentionSeconds" ||
+    Object.values(Object.getOwnPropertyDescriptors(definition)).some(p => !("value" in p)) ||
+    typeof definition.database !== "string" || !definition.database || typeof definition.map !== "function" ||
+    typeof definition.complete !== "function") throw Error("Invalid receipt consumer declaration");
+  validateReceiptRetention(definition);
+  const value = Object.freeze({}) as ReceiptConsumer<Dependencies>;
+  definitions.set(value, Object.freeze({ ...definition }));
+  return value;
+}
+export function receiptConsumerDefinition(value: unknown, property: string, writable: boolean) {
+  if (value === undefined) return undefined;
+  const definition = value && typeof value === "object" ? definitions.get(value) : undefined;
+  if (!definition) throw Error("Invalid receipt consumer declaration");
+  if (definition.database !== property) return undefined;
+  if (!writable) throw Error("Receipt consumer requires writable owned state");
+  return { value: value as object, definition };
+}
+export function validateReceiptConsumerBinding(value: unknown, databases: readonly string[], loop: boolean) {
+  if (value === undefined) return;
+  const definition = value && typeof value === "object" ? definitions.get(value) : undefined;
+  if (!definition || !loop || !databases.includes(definition.database))
+    throw Error("Receipt consumer requires a delivery loop and writable owned state");
+}
+/** One actual transaction slot stays occupied after the caller deadline, through rollback/release. */
+export async function receiptTransaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>): Promise<T> {
+  let actual: Promise<T> | undefined;
+  try { return await transaction(pool, effect, { observe: pending => { actual = pending; } }); }
+  finally { await actual?.catch(() => {}); }
+}
+export function bindReceiptConsumer(handle: object, declared: NonNullable<ReturnType<typeof receiptConsumerDefinition>>, options: {
+  namespace: string; consumerId: string; pool: TransactionPool; productRole: string; commands: CommandFactory;
+}) {
+  const { definition } = declared;
+  const namespace = durableIdentity(options.namespace), consumerId = durableIdentity(options.consumerId), workerId = randomUUID();
+  const receipts = createReceipts({ schema: "jeeves", table: "consumer_receipts" }, {
+    payload: input => normalizedJsonDto(input) as ReceiptEvent,
+    result: input => { if (input !== true) throw Error("Invalid receipt result"); return true; },
+  }, definition);
+  let inFlight = 0;
+  let state: "running" | "storage-unavailable" | "unknown" | "stopped" = "running";
+  let started = false;
+  let maintenanceCorrelationId: string | undefined;
+  const engine = {
+    definition,
+    async ready() {
+      // Required schema/grants are validated before the loop can subscribe or the process is ready.
+      await receiptTransaction(options.pool, async tx => {
+        await receipts.sweep(tx);
+        await receipts.heartbeat(tx, { workerId, consumerId, inFlight, progressed: false, state, backlog: null });
+      });
+    },
+    async run(message: { body: Uint8Array; messageId?: string }) {
+      let event: ReceiptEvent;
+      try {
+        if (!message.messageId || message.body.byteLength > 65536) throw Error("Invalid envelope");
+        const input = normalizedJsonDto(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(message.body)));
+        const mapped = withLocalPolicy(() => {
+          const value: unknown = definition.map(input, durableIdentity(message.messageId!));
+          if (value instanceof Promise) {
+            void value.catch(() => {});
+            throw Error("Asynchronous receipt mapping is unsupported");
+          }
+          return normalizedJsonDto(value);
+        }) as ReceiptEvent;
+        if (!mapped || Object.keys(mapped).sort().join() !== "id,payload" || mapped.id !== message.messageId)
+          throw Error("Invalid receipt event");
+        event = normalizedJsonDto({ id: durableIdentity(mapped.id), payload: mapped.payload }) as ReceiptEvent;
+      } catch { throw new NonRetryable("MALFORMED_MESSAGE"); }
+      inFlight++;
+      try {
+        await receiptTransaction(options.pool, async tx => {
+          await receipts.withEffect(tx, { scopeKey: namespace, eventId: event.id, payload: event },
+            async sameTx => { await productMutation(sameTx, options.productRole, options.commands,
+              commands => definition.complete(event, commands)); return true; });
+          await receipts.heartbeat(tx, { workerId, consumerId, inFlight, progressed: true, state: "running", backlog: null });
+        });
+        state = "running";
+      } catch (error) {
+        if (error instanceof ReceiptConflict) throw new NonRetryable(error.code);
+        state = (error as { outcome?: string })?.outcome === "unknown" ? "unknown" : unreachable(error) ? "storage-unavailable" : state;
+        throw error;
+      } finally { inFlight--; }
+    },
+    start(scope: ProcessScope) {
+      if (started) return;
+      started = true;
+      periodic(scope, async () => {
+        const execution = operation({ maximumMs: 5000, signals: [scope.signal] });
+        maintenanceCorrelationId = execution.context.correlationId;
+        try { await withProcess(scope, () => withOperation(execution.context, () => receiptTransaction(options.pool, async tx => {
+          await receipts.sweep(tx);
+          await receipts.heartbeat(tx, { workerId, consumerId, inFlight, progressed: false, state, backlog: null });
+        }))); }
+        finally { execution.close(); }
+      }, 15000, () => { console.error(JSON.stringify({ event: "receipt-maintenance-unavailable", operation: consumerId,
+        correlationId: maintenanceCorrelationId ?? randomUUID() })); });
+    },
+    status() { return receiptTransaction(options.pool, tx => receipts.status(tx, consumerId)); },
+  };
+  bindings.set(handle, engine);
+  return engine;
+}
+function engine(value: unknown, dependencies: object) {
+  const definition = value && typeof value === "object" ? definitions.get(value) : undefined;
+  if (!definition) throw Error("Invalid receipt consumer declaration");
+  const handle = (dependencies as Record<string, object>)[definition.database];
+  const bound = handle && bindings.get(handle);
+  if (!bound || bound.definition !== definition) throw Error("Receipt consumer binding unavailable");
+  return bound;
+}
+export function invokeReceiptConsumer(value: unknown, dependencies: object, message: { body: Uint8Array; messageId?: string }, legacy: () => Promise<void>) {
+  return value === undefined ? legacy() : engine(value, dependencies).run(message);
+}
+export function startReceiptConsumer(value: unknown, dependencies: object, scope: ProcessScope) {
+  if (value !== undefined) engine(value, dependencies).start(scope);
+}

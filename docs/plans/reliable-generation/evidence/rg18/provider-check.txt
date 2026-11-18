@@ -1,0 +1,30 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |server| src/chat/receipt-consumer.test.ts (1 test | 1 failed) 225ms
+   ❯ RG18 receipt authoring parity (1)
+     × consumes the finite horizon in mouse/chat/blueprint/export and exposes optional owned consumer state 224ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |server| src/chat/receipt-consumer.test.ts > RG18 receipt authoring parity > consumes the finite horizon in mouse/chat/blueprint/export and exposes optional owned consumer state
+AssertionError: expected [Function] to throw error including 'NEEDS_TEMPLATE' but got 'INVALID_LOCAL_CONTRIBUTION at events:…'
+
+Expected: "NEEDS_TEMPLATE"
+Received: "INVALID_LOCAL_CONTRIBUTION at events: Contribution requires an actual selected local resource of the matching kind."
+
+ ❯ src/chat/receipt-consumer.test.ts:71:81
+     69|     const refused = resolveGeneration(unsupported, registry.installed);
+     70|     expect(refused.findings.some(finding => finding.code === "NEEDS_TE…
+     71|     expect(() => assembleV2({designJson:JSON.stringify(unsupported)},r…
+       |                                                                                 ^
+     72|   });
+     73| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 46 passed (47)
+   Start at  19:58:17
+   Duration  2.34s (tests 39%, transform 39%, import 22%)

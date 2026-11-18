@@ -6,6 +6,10 @@ import {
   studioDefinitions,
 } from "@jeeves/spec";
 import {
+  receiptLifecycleSchema,
+  receiptSchema,
+} from "../../templates/local-v2/assets/src/runtime/durable-sql.ts";
+import {
   brokerState,
   camel,
   type Import,
@@ -34,6 +38,12 @@ const guardPath = "../runtime/tile-guard.ts";
 const localPath = "../runtime/local.ts";
 const settingsPath = "../runtime/settings.ts";
 const entryTypes = "../modules/entry.ts";
+export const consumerReceiptMigration = {
+  id: "053-jeeves-consumer-receipts.sql",
+  sql:
+    receiptSchema({ schema: "jeeves", table: "consumer_receipts" }) +
+    receiptLifecycleSchema({ schema: "jeeves", table: "consumer_receipts" }),
+} as const;
 /** The sections of `src/runtime/module-clients.ts` a design's processes use; the rest are left
  * out, so the scaffold imports only the libraries the export has. `broker` is the broker's
  * endpoint, for a stub's publisher and its RabbitMQ loops; `pubsub` a Pub/Sub topic's publisher
@@ -273,6 +283,19 @@ export function stubClients(
       .map((item) => item.property);
     if (workDatabases.length) {
       imports.push({
+        from: "../runtime/receipt-consumer.ts",
+        name: "validateReceiptConsumerBinding",
+      });
+      imports.push({ from: "../runtime/receipt-consumer.ts", name: "startReceiptConsumer" });
+      localChecks.push(
+        `validateReceiptConsumerBinding((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, ${JSON.stringify(workDatabases)}, ${stub.role === "loop"});`,
+      );
+    } else
+      localChecks.push(
+        `if ((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer !== undefined) throw new Error("Receipt consumer requires writable owned state");`,
+      );
+    if (workDatabases.length) {
+      imports.push({
         from: "../runtime/durable-work.ts",
         name: "validateDurableWorkBinding",
       });
@@ -421,7 +444,7 @@ export function stubClients(
               section: "database",
               name: "productDatabaseClient",
               call: `await productDatabaseClient(scope, probe, preparedProduct[${text(`product:${target.element}:${module.component}`)}])`,
-              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: ${workValue}, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)} })`,
+              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: ${workValue}, receipt: (${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)} })`,
               check: {
                 name: "databaseEndpoint",
                 call: `databaseEndpoint(${text(store.resource)})`,
@@ -563,6 +586,16 @@ export function stubClients(
     imports.push({ from: tileProcess, name: "brokerState" });
   const provisioned = stores.filter((store) => !store.unsupported);
   const written = stores.filter(writesDatabase);
+  const receiptResources = new Set(
+    process.stubs
+      .filter((stub) => stub.role === "loop")
+      .flatMap(
+        (stub) =>
+          stub.stores
+            ?.filter((store) => store.kind === "database" && store.access !== "read")
+            .map((store) => store.element) ?? [],
+      ),
+  );
   const issuer = list.find((client) => client.name === "identityTarget")?.key;
   if (process.workload && process.workloadCallers?.length)
     imports.push({ from: "../runtime/workload.ts", name: "callerAllowlist" });
@@ -652,7 +685,7 @@ export function stubClients(
             stub.role === "webhook-receiver"
               ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork)`
               : `(${pascal(id)}Module as { durableWork?: unknown }).durableWork`;
-          return `${start}(${engine}, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields)${interval});`;
+          return `${start}(${engine}, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields)${interval});\nstartReceiptConsumer((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, dependencies[${text(id)}], scope);`;
         }),
       started: [],
       routes: [],
@@ -681,12 +714,15 @@ export function stubClients(
       local: written.length
         ? {
             migrations: written.flatMap((store) =>
-              [idempotencyMigration, localOperationMigration, durableWorkMigration].map(
-                (migration) => ({
-                  resource: store.resource,
-                  ...migration,
-                }),
-              ),
+              [
+                idempotencyMigration,
+                localOperationMigration,
+                durableWorkMigration,
+                ...(receiptResources.has(store.element) ? [consumerReceiptMigration] : []),
+              ].map((migration) => ({
+                resource: store.resource,
+                ...migration,
+              })),
             ),
             grants: written.flatMap((store) => [
               idempotencyGrant(store.resource, process.tile),
@@ -695,6 +731,16 @@ export function stubClients(
                 relation: "work_records",
               },
               { ...idempotencyGrant(store.resource, process.tile), relation: "work_tickets" },
+              ...(receiptResources.has(store.element)
+                ? [
+                    "consumer_receipts",
+                    "consumer_receipts_maintenance",
+                    "consumer_receipts_workers",
+                  ].map((relation) => ({
+                    ...idempotencyGrant(store.resource, process.tile),
+                    relation,
+                  }))
+                : []),
             ]),
           }
         : {},

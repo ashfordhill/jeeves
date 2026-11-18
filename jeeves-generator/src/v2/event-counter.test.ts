@@ -84,7 +84,7 @@ async function database() {
   return { db, pool, query };
 }
 describe("emitted receipt counter", () => {
-  it("commits one increment per aggregate/event, ignores transport time and preserves case-sensitive non-video keys", async () => {
+  it("commits one increment per stable event, ignores transport time and preserves case-sensitive non-video keys", async () => {
     const { db, pool, query } = await database();
     const counter = createEventCounter(tables, adapter);
     const read = createTotalReader({
@@ -100,9 +100,12 @@ describe("emitted receipt counter", () => {
       expect(await apply(notice())).toBe(true);
       expect(await apply(notice(1, "Manual:A", "2026-11-08T13:00:00Z"))).toBe(false);
       expect(await apply(notice(2))).toBe(true);
-      expect(await apply(notice(1, "Manual:B"))).toBe(true); // Event identity is scoped to aggregate.
-      expect(await apply(notice(1, "manual:a"))).toBe(true);
+      expect(await apply(notice(4, "Manual:B"))).toBe(true);
+      expect(await apply(notice(5, "manual:a"))).toBe(true);
       expect(decodes).toBe(5);
+      await expect(apply(notice(1, "Manual:B"))).rejects.toMatchObject({
+        code: "RECEIPT_IDENTITY_CONFLICT",
+      });
       expect(await read("Manual:A")).toBe("2");
       expect(await read("Manual:B")).toBe("1");
       expect(await read("manual:a")).toBe("1");

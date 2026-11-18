@@ -63,6 +63,8 @@ export type ProcessMount = {
   /** A template's `started` line, logged just before the ready marker: what its startup ran. */
   startup?: { module: string; checks: string[] };
   hooks?: { file: V2TemplateFile; members: string[] };
+  /** Private generated operator entry points, never HTTP routes or product hook dependencies. */
+  operations?: V2TemplateFile[];
   /** The tile's sign-in (an Auth guard's): every module route of the process is mounted through
    * `<guard>.routes(...)`, and route stubs get `<guard>.caller`. */
   guard?: string;

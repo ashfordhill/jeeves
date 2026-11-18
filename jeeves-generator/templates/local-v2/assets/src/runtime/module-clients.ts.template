@@ -26,6 +26,7 @@ import {
 import { periodic } from "./process.ts";
 import { bindLocalOperation, localOperationDefinition, sweepWorkTickets } from "./local-operation.ts";
 import { bindDurableWork, durableWorkDefinition, durableWorkNamespace } from "./durable-work.ts";
+import { receiptConsumerDefinition, bindReceiptConsumer } from "./receipt-consumer.ts";
 import { privateReplayKeys } from "./settings.ts";
 import { prepareProductOperations } from "./product-operations.ts";
 // @database-import-end
@@ -37,7 +38,7 @@ import { PubSub } from "@google-cloud/pubsub";
 // @pubsub-import-end
 // @pubsub-loop-import-start
 import { Duration, type Message, type Subscription } from "@google-cloud/pubsub";
-import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Delivery } from "./delivery.ts";
+import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, createConsumerProgress, type Delivery } from "./delivery.ts";
 import {
   failureStep,
   type LoopConsumer,
@@ -370,7 +371,7 @@ async function idempotentCall<Body>(
   }
 }
 /** Public product SQL uses separate credentials, retaining credential scope in the RG02 key. */
-export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown; work?: unknown; owner?: string}) {
+export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown; work?: unknown; receipt?: unknown; owner?: string}) {
   const maximum = productDatabases.find((row) => row.resource === binding.resource);
   const login = productLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
   if (!maximum || !login) throw new Error("No scoped product SQL binding");
@@ -379,12 +380,13 @@ export function prepareProductDatabase(binding: {tile: string; resource: string;
   const operations = prepareProductOperations(maximum, binding);
   const local = localOperationDefinition(binding.operation, binding.property ?? "", binding.writable ?? false);
   const work = durableWorkDefinition(binding.work, binding.property ?? "", binding.writable ?? false);
+  const receipt = receiptConsumerDefinition(binding.receipt, binding.property ?? "", binding.writable ?? false);
   const namespace = work && durableWorkNamespace(binding.resource, binding.owner ?? binding.tile, work.work, binding.module);
   const keys = local?.definition.secret ? privateReplayKeys() : undefined;
   const runtimeLogin = localLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
-  if ((local || work) && !runtimeLogin) throw new Error("Missing private replay/work database binding");
-  if ((local || work) && runtimeLogin) readSecret(runtimeLogin.secret);
-  return {configuration, operations, binding, local, work, namespace, keys, runtimeLogin};
+  if ((local || work || receipt) && !runtimeLogin) throw new Error("Missing private replay/work database binding");
+  if ((local || work || receipt) && runtimeLogin) readSecret(runtimeLogin.secret);
+  return {configuration, operations, binding, local, work, receipt, namespace, keys, runtimeLogin};
 }
 export async function productDatabaseClient(
   scope: ProcessScope, log: ProbeLog, prepared: ReturnType<typeof prepareProductDatabase>,
@@ -397,7 +399,7 @@ export async function productDatabaseClient(
   });
   await probed(log, {client: binding.resource, kind: "database", check: "SELECT 1"}, () => pool.query("SELECT 1"), scope.signal);
   const handle = operations((sql, values, readOnly) => transaction(pool, (tx) => tx.query(sql, values), {readOnly}));
-  if ((prepared.local || prepared.work) && prepared.runtimeLogin) {
+  if ((prepared.local || prepared.work || prepared.receipt) && prepared.runtimeLogin) {
     const runtimeConfiguration = {...configuration, login: prepared.runtimeLogin};
     const replayPool = processClient(scope, "postgres", runtimeConfiguration, () => {
       const client = ownResource(scope, createPostgres(runtimeConfiguration), "end");
@@ -405,6 +407,11 @@ export async function productDatabaseClient(
       return client;
     });
     if (prepared.work) bindDurableWork(handle, prepared.work, {namespace: prepared.namespace!, process: binding.tile, pool: replayPool, productRole: configuration.login.user, commands: operations});
+    if (prepared.receipt) await bindReceiptConsumer(handle, prepared.receipt, {
+      namespace: JSON.stringify([binding.resource, binding.owner ?? binding.tile, "consumer-v1", binding.module]),
+      consumerId: binding.module,
+      pool: replayPool, productRole: configuration.login.user, commands: operations,
+    }).ready();
     if (prepared.local) bindLocalOperation(handle, prepared.local, {...binding, productRole: configuration.login.user, pool: replayPool, keys: prepared.keys, commands: operations});
     if (prepared.local) processClient(scope, "replay-cleanup", runtimeConfiguration, () => {
       periodic(scope, async () => { await sweepExpired(replayPool); await sweepWorkTickets(replayPool); }, idempotencyPolicy.sweepSeconds * 1000,
@@ -706,6 +713,9 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
   type Generation = { subscription: Subscription; lost: boolean; stop: AbortController };
   let current: Generation | undefined;
   const inFlight = new Set<Promise<void>>();
+  // Keep actual publisher requests bounded even when the caller deadline has already nacked.
+  const publications = new Set<Promise<string>>();
+  const progress = createConsumerProgress(options, () => inFlight.size);
   let closing = false;
   let retry: ReturnType<typeof setTimeout> | undefined;
   let shutdown: Promise<void> | undefined;
@@ -742,6 +752,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
       let failure: unknown;
       try {
         await options.handle(message.data, delivery);
+        progress.completed();
         if (!generation.lost) message.ack();
         return;
       } catch (error) {
@@ -751,6 +762,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
       const next = failureStep(failure, attempt, options.retryLimit);
       if (next.step === "retry") return message.nack();
       if (next.step === "wait") {
+        progress.state("storage-unavailable");
         // The store failed, not the message: keep it and run it again with the same attempt.
         await pause(UNREACHABLE_WAIT_MS, generation.stop.signal);
         if (generation.lost) return;
@@ -758,14 +770,26 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
         continue;
       }
       try {
+        // A terminal result reached during shutdown stays unacked for broker redelivery.
+        if (closing || generation.stop.signal.aborted) return;
+        if (next.code === "OUTCOME_UNKNOWN") progress.state("unknown");
+        if (publications.size >= options.concurrency) {
+          message.nack();
+          report("unavailable", new Error("Pub/Sub quarantine publication capacity"));
+          return;
+        }
+        const publication = failedTopic.publishMessage({
+          data: message.data,
+          attributes: { ...message.attributes, messageId: delivery.messageId ?? message.id, "x-terminal-code": next.code },
+        });
+        publications.add(publication);
+        void publication.finally(() => publications.delete(publication)).catch(() => {});
         await within(
-          failedTopic.publishMessage({
-            data: message.data,
-            attributes: { ...message.attributes, "x-terminal-code": next.code },
-          }),
+          publication,
           pubsubDeadlineMs,
           "Publish deadline",
         );
+        progress.quarantined();
         if (!generation.lost) message.ack();
       } catch (error) {
         // Redelivered: the message is never lost, and the next delivery tries the copy again.
@@ -792,7 +816,8 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
       report("available");
       const task = deliver(generation, message);
       inFlight.add(task);
-      void task.finally(() => inFlight.delete(task)).catch(() => {});
+      progress.report();
+      void task.finally(() => { inFlight.delete(task); progress.report(); }).catch(() => {});
     });
     return generation;
   }
@@ -838,10 +863,13 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
     current?.stop.abort();
     return (shutdown = (async () => {
       await Promise.allSettled([...inFlight]);
+      // An admitted handler may have added a publication while its drain was settling.
+      await Promise.allSettled([...publications]);
       const generation = current;
       current = undefined;
       if (generation) await generation.subscription.close().catch(() => {});
       await client.close().catch(() => {});
+      progress.stop();
       finishClosed({ fatal: false });
     })());
   }
@@ -855,6 +883,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
     );
   } catch (error) {
     await client.close().catch(() => {});
+    progress.stop();
     throw error;
   }
   current = open(first);

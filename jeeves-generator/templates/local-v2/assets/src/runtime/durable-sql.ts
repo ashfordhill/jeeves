@@ -59,3 +59,41 @@ CREATE TABLE ${table} (
 );
 `;
 }
+
+/** Append-only upgrade. Existing completed receipts start a fresh conservative retention window.
+ * No event-provided timestamp participates in identity or expiry. */
+export function receiptLifecycleSchema(
+  binding: SqlRelation,
+  legacyRetentionSeconds = 2592000,
+): string {
+  if (
+    !Number.isSafeInteger(legacyRetentionSeconds) ||
+    legacyRetentionSeconds < 1 ||
+    legacyRetentionSeconds > 2592000
+  )
+    throw new Error("Invalid legacy receipt retention");
+  const table = qualifiedRelation(binding);
+  const maintenance = qualifiedRelation({ ...binding, table: `${binding.table}_maintenance` });
+  const workers = qualifiedRelation({ ...binding, table: `${binding.table}_workers` });
+  return `ALTER TABLE ${table} ADD COLUMN completed_at timestamptz, ADD COLUMN retain_until timestamptz;
+UPDATE ${table} SET completed_at=clock_timestamp(),retain_until=clock_timestamp()+interval '${legacyRetentionSeconds} seconds' WHERE result IS NOT NULL;
+CREATE INDEX ON ${table}(retain_until,scope_key,event_id) WHERE result IS NOT NULL AND completed_at IS NOT NULL;
+CREATE TABLE ${maintenance} (
+ singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton),
+ last_success_at timestamptz NOT NULL,
+ backlog boolean NOT NULL,
+ removed integer NOT NULL CHECK(removed>=0)
+);
+CREATE TABLE ${workers} (
+ worker_id text PRIMARY KEY,
+ consumer_id text NOT NULL CHECK(length(consumer_id) BETWEEN 1 AND 512),
+ heartbeat_at timestamptz NOT NULL,
+ last_progress_at timestamptz,
+ in_flight integer NOT NULL CHECK(in_flight>=0),
+ backlog bigint CHECK(backlog>=0),
+ state text NOT NULL CHECK(state IN ('running','storage-unavailable','unknown','stopped'))
+);
+CREATE INDEX ON ${workers}(heartbeat_at DESC,worker_id);
+CREATE INDEX ON ${workers}(consumer_id,heartbeat_at DESC,worker_id);
+`;
+}

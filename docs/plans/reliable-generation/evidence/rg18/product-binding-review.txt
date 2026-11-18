@@ -1,0 +1,23 @@
+infra/postgres/items/products.json {"namespaces":[{"migrations":[{"file":"infra/postgres/items/products/migrations/p_projector_owner/0001-initial.sql","version":"0001"}],"schema":"p_projector_owner"}],"operations":[],"tables":[{"name":"items","schema":"p_projector_owner"}],"version":1,"views":[]}
+
+src/modules/projector/apply-item.slots.ts // Generated scaffold: Event consumer in Projector.
+// Export rewrites this file; write the module in apply-item.ts.
+import type { SettingsOf } from "../../extension-api/index.ts";
+import type { DatabaseReadWriter } from "../../extension-api/index.ts";
+
+/** What the module uses: one property per connected slot, and its own settings. */
+export type Dependencies = {
+  // channel: Events (Message channel) through projector-events, consume
+  // events: its loop delivers each message to the entry point.
+  // state: Items (Database) through projector-items, read & write
+  items: DatabaseReadWriter;
+  // workload: not connected (Identity, verify, optional)
+  // settings: the values apply-item.ts's `settings` export declares.
+  settings: SettingsOf<typeof import("./apply-item.ts")>;
+};
+
+/** Each connected slot: the tile or module it uses, through which link, and how. */
+export const slots = [
+  {"slot":"channel","property":"events","tile":"events","kind":"queue","connection":"projector-events","link":"apply-item-events","use":"consume"},
+  {"slot":"state","property":"items","tile":"items","kind":"database","connection":"projector-items","link":"apply-item-items","use":"read-write","access":"write"},
+] as const;

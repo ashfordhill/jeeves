@@ -1421,7 +1421,7 @@ describe("module status and older designs", () => {
       "watch-consumer": [
         "stub",
         "No Generated module in Watch API uses it, so you write it.",
-        ["channel", "workload"],
+        ["channel", "state", "workload"],
       ],
       "transcoder-cache": [
         "stub",
@@ -1468,8 +1468,12 @@ describe("module status and older designs", () => {
       }
     );
     const { model } = resolveGeneration(v2());
+    const expected = structuredClone(normalized.default);
+    for (const selection of expected.selections)
+      if (selection.binding.kind === "event-counter")
+        Object.assign(selection.inputs, { "receipt.deliveryHorizonSeconds": 604800 });
     expect(JSON.parse(JSON.stringify(model))).toEqual({
-      ...normalized.default,
+      ...expected,
       productState: [],
       extensionApi: generationExtensionApi,
       capabilities: [],

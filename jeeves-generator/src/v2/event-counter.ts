@@ -4,6 +4,10 @@ import {
   counterSchema,
   counterTotalsSelect,
 } from "../../templates/local-v2/assets/src/runtime/counter-sql.ts";
+import {
+  qualifiedRelation,
+  receiptLifecycleSchema,
+} from "../../templates/local-v2/assets/src/runtime/durable-sql.ts";
 import { pointerPart } from "../json.ts";
 import type { SqlRelation } from "./durability.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
@@ -30,6 +34,11 @@ export function eventCounterPersistence(binding: {
         id: binding.migrationId,
         sql: counterSchema(binding.tables, binding.publicView),
       },
+      {
+        resource: binding.resource,
+        id: `101-${binding.migrationId.replace(/^\d+-/, "").replace(/\.sql$/, "")}-receipt-lifecycle.sql`,
+        sql: counterReceiptUpgrade(binding.tables),
+      },
     ],
     views: [
       {
@@ -40,15 +49,34 @@ export function eventCounterPersistence(binding: {
       },
     ],
     logins: [{ resource: binding.resource, host: binding.writerHost }],
-    grants: [binding.tables.receipts, binding.tables.totals].map((relation) => ({
+    grants: [
+      binding.tables.receipts,
+      binding.tables.totals,
+      { ...binding.tables.receipts, table: `${binding.tables.receipts.table}_maintenance` },
+      { ...binding.tables.receipts, table: `${binding.tables.receipts.table}_workers` },
+    ].map((relation) => ({
       resource: binding.resource,
       host: binding.writerHost,
       schema: relation.schema,
       relation: relation.table,
       kind: "table",
-      privileges: ["SELECT", "INSERT", "UPDATE"],
+      privileges:
+        relation.table === binding.tables.totals.table
+          ? ["SELECT", "INSERT", "UPDATE"]
+          : ["SELECT", "INSERT", "UPDATE", "DELETE"],
     })),
   };
+}
+export function counterReceiptUpgrade(tables: CounterTables): string {
+  const table = qualifiedRelation(tables.receipts);
+  return `DO $$ BEGIN
+ IF EXISTS(SELECT event_id FROM ${table} GROUP BY event_id HAVING count(*)>1) THEN
+  RAISE EXCEPTION 'COUNTER_LEGACY_DUPLICATE_ID_REQUIRES_RECONCILIATION';
+ END IF;
+END $$;
+UPDATE ${table} SET scope_key='event-counter-v2';
+CREATE UNIQUE INDEX ON ${table}(event_id);
+${receiptLifecycleSchema(tables.receipts, 604800)}`;
 }
 export function eventCounterReadAccess(binding: {
   resource: string;

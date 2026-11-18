@@ -1654,3 +1654,12 @@ reserved for the later approved integration checkpoint.
 ### Authenticated webhook ingestion (RG17)
 
 A **Webhook receiver** module in a Service uses writable owned database state and Runnable processes. Its Service owns a lifecycle-driven durable processor; no queue is required. The separate mapper receives only authenticated bounded JSON, and the operation receives scoped product commands. Required user Auth guards in the same Service refuse composition. The receiver supports only the documented generic Jeeves HMAC protocol. A 202 follows durable acceptance; completion and bounded retry happen later. Changed raw bytes under one identity refuse409. See the exact envelope and retention limits in [RG17 evidence](plans/reliable-generation/evidence/rg17/README.md).
+
+Event counter's Delivery horizon declares how long deliveries may repeat (up to seven days).
+The generated worker keeps receipt identity independent of aggregation dates and commits its
+increment before ACK. A standalone Event consumer may connect optional owned state; its checked
+receipt declaration maps immutable events and invokes registered product commands. Independent
+maintenance reports heartbeat, durable progress, unknown broker backlog and bounded cleanup
+backlog separately. Generated internal operations inspect counter state and explicitly requeue a
+selected quarantined delivery after reconciliation; ambiguous effects refuse blind requeue.
+[Receipt lifecycle and migration details](plans/reliable-generation/evidence/rg18/protocol.md).

@@ -1,0 +1,47 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 2144 files in 950ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: e2e/receipt-consumer.spec.ts(50,56): error TS2339: Property 'componentConnections' does not exist on type '{ elements: { element: string; settings: Record<string, unknown>; }[]; components: { name: string; settings: Record<string, unknown>; }[]; entries: { id: string; lane: string; element: string; }[]; actions?: { ...; }[] | undefined; }'.
+jeeves/apps/web typecheck: e2e/receipt-consumer.spec.ts(51,12): error TS7006: Parameter 'c' implicitly has an 'any' type.
+jeeves/apps/web typecheck: Failed
+[ELIFECYCLE] Command failed with exit code 1.
+jeeves/apps/server typecheck: Done
+Error: ERR_PNPM_RECURSIVE_FAIL
+
+  × "pnpm recursive run" failed in 1 packages
+
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

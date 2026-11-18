@@ -128,7 +128,8 @@ const fakes: Record<string, string> = {
         eval: reply("eval", undefined),
       };
     }`,
-  "./local.ts": 'export const readSecret = (name) => "secret of " + name;',
+  "./local.ts":
+    'export const readSecret = (name) => "secret of " + name; export const quoteSqlIdentifier = name => String.fromCharCode(34) + name + String.fromCharCode(34);',
   "@google-cloud/pubsub": `${check}
     // A loop's subscriber (tile-loop.test.ts runs it) imports Duration too.
     export class Duration { static from(like) { return { like }; } }
@@ -232,6 +233,15 @@ fakes["./delivery.ts"] = stripTypeScriptTypes(
     "utf8",
   ),
 );
+for (const name of ["durable-sql", "receipts", "receipt-consumer"]) {
+  fakes[`./${name}.ts`] = stripTypeScriptTypes(
+    new TextDecoder().decode(
+      bundle.files.find((file) => file.path === `src/runtime/${name}.ts`)?.bytes,
+    ),
+  ).replace(/from "([^"]+)"/g, (match, from: string) =>
+    fakes[from] ? `from "${dataUrl(fakes[from])}"` : match,
+  );
+}
 fakes["./tile-loop.ts"] =
   'export const failureStep = () => { throw new Error("Not used by these tests"); };';
 const tileProcess = dataUrl(

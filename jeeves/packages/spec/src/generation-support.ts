@@ -530,7 +530,22 @@ export const generationCapabilities = freezeRecord({
     "worker",
     ["worker"],
     [store("state", "database", "read-write"), queue("events", "consume", "topic")],
-    worker("events"),
+    [
+      ...worker("events"),
+      rule(
+        "receipt.deliveryHorizonSeconds",
+        "component",
+        "deliveryHorizonSeconds",
+        integer(1, 604800),
+        "event-counter.deliveryHorizonSeconds",
+        {
+          component: "event-counter",
+          default: 604800,
+          userNeed:
+            "Declare the maximum delivery/replay delay; generated receipts retain seven days after completion.",
+        },
+      ),
+    ],
     ["event-counter"],
   ),
   "search-projection": capability(

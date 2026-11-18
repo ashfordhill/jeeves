@@ -1,0 +1,59 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+docs/plans/reliable-generation/evidence/rg18/docker-after.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+      1   1 │   [
+      2     │ - ··[
+      3     │ - ····"15a461f56f5397fa513a12c1b2390ba6e27e9c069190732b4c2770eeaa1d4e47",
+      4     │ - ····"excalidraw",
+      5     │ - ····"exited"
+      6     │ - ··],
+          2 │ + ··["15a461f56f5397fa513a12c1b2390ba6e27e9c069190732b4c2770eeaa1d4e47",·"excalidraw",·"exited"],
+      7   3 │     [
+      8   4 │       "1d8158c2b6f1ed8a6bbb4800fb06ff478113fd16f0396f36535d6cf1ba2f15f4",
+    ······· │
+     80  76 │       "exited"
+     81  77 │     ],
+     82     │ - ··[
+     83     │ - ····"6b2fa6a33c0cc18ae230a54d53fd3e9076cd8ffdfcc2649972e2cedc6651331a",
+     84     │ - ····"qrwty-qrwty-1",
+     85     │ - ····"exited"
+     86     │ - ··],
+         78 │ + ··["6b2fa6a33c0cc18ae230a54d53fd3e9076cd8ffdfcc2649972e2cedc6651331a",·"qrwty-qrwty-1",·"exited"],
+     87  79 │     [
+     88  80 │       "713f74a859a54595313a360f09221d7afe62657a7af758e43071674c39ac58ce",
+
+
+Checked 2145 files in 731ms. No fixes applied.
+Found 1 error.
+Found 1 info.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+
+
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

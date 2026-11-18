@@ -172,6 +172,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
             : []),
           ...processes.map((process) => entryFile(process, mounts.get(process.tile) ?? [])),
           ...all.flatMap((mount) => (mount.hooks ? [mount.hooks.file] : [])),
+          ...all.flatMap((mount) => mount.operations ?? []),
           // "Not implemented" and the failure log (every process and the stubs' clients use
           // them), the 501 wrapper and the loops, beside the processes that use them.
           ...[

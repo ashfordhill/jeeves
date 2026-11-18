@@ -309,7 +309,7 @@ slots and generation: `studioComponentDefinitions` in
 | `id-generator` | ID generator | `hash` | any | store: Database or Cache · read & write | Stub |
 | `redirect-responder` | Redirect responder | `turn` | any | none: can't connect | Stub |
 | `event-publisher` | Event publisher | `megaphone` | any | channel: Queue · publish; outbox: Database · write | Part of `owned-multipart`, `asset-lifecycle`, `video-hls` |
-| `event-consumer` | Event consumer | `inbox` | any | channel: Queue · consume | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
+| `event-consumer` | Event consumer | `inbox` | any | channel: Queue · consume; optional state: Database · read-write | Part of `asset-lifecycle`, `video-hls`, `event-counter`, `search-projection` |
 | `data-access` | Data access | `cylinder` | any | database: Database · read & write; read: complete Cache reader in its tile (optional); admission: complete Rate limiter in its tile (optional) | Part of `owned-multipart`, `positive-cache-read`, `event-counter`, `favorites` |
 | `auth-guard` | Auth guard | `shield` | any | identity: Identity or External API · verify | Lead of `verified-identity` (Service, Uploads) |
 | `external-call` | External call | `box-out` | any | target: External API, an application or Identity · request | Stub |
@@ -643,3 +643,10 @@ still takes message work from a queue/topic. Logical ownership and exact grants 
 ### Authenticated webhook receiver
 
 `webhook-receiver` (**Webhook receiver**, inbox icon) is installed in Service only, with writable owned PostgreSQL state and Runnable processes. It generates bounded raw ingress, private generic HMAC verification, pure mapping scaffold and an opaque durable processing declaration. Protected052 records provide accept/store/process, recovery/fencing and completed-only retention; no separate inbox framework or provider SDK is added. Two normal controls set body bytes and signature window. Required-user host guards refuse composition. [Exact generic protocol and limits](../docs/plans/reliable-generation/evidence/rg17/README.md).
+
+Event counter consumes a declared 1–604800s delivery horizon and keeps completed receipts for seven
+days using store time. Stable event IDs span aggregation dates. Standalone Event consumer stubs
+with owned state can opt into the checked receipt/scoped-product declaration; legacy void handlers
+keep durable progress unknown. Cleanup and heartbeat run independently of arrivals. Internal
+quarantine commands require receipt support and refuse unknown effects; Pub/Sub retry/ACK policy
+is preserved and automatic Pub/Sub quarantine requeue remains unavailable.

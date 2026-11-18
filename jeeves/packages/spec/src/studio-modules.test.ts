@@ -84,7 +84,9 @@ describe("modules", () => {
     // A publisher reaches the queue only through a publish link; a consumer in the publisher's
     // host finds none, and the click publisher already uses Click events.
     const consumer = addModule(tinyurl(), "redirect", "event-consumer");
-    expect(moduleLinkChoices(consumer.design, consumer.id)).toEqual([]);
+    expect(moduleLinkChoices(consumer.design, consumer.id)).toEqual([
+      { element: "url-db", id: "redirect-event-consumer-url-db", via: "redirect-db" },
+    ]);
     expect(
       moduleLinkChoices(tinyurl(), "redirect-click-publisher").map((item) => item.element),
     ).toEqual(["url-db"]);

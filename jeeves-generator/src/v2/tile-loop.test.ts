@@ -275,7 +275,7 @@ describe("emitted stub loops (tile process contract, section 5)", () => {
       queue: "visits--visit-worker",
       messageId: "first",
       attempt: 1,
-      error: "TypeError: boom",
+      error: "PROCESSING_FAILED",
       action: "retry 1 of 5 in 250 ms",
     });
     // The fifth delivery (four retries so far) waits 4 s before its last retry.
@@ -329,7 +329,7 @@ describe("emitted stub loops (tile process contract, section 5)", () => {
         queue: "visits--visit-worker",
         messageId: "lost",
         attempt: 5,
-        error: "Error: Connection terminated unexpectedly",
+        error: "DEPENDENCY_UNAVAILABLE",
         action: "store unreachable, retry in 5000 ms (attempt not counted)",
       },
     ]);
@@ -599,7 +599,7 @@ describe("emitted template loops", () => {
         queue: lifecycle.queue,
         messageId: "e1",
         attempt: 11,
-        error: "Error: terminating connection due to administrator command",
+        error: "DEPENDENCY_UNAVAILABLE",
         action: "store unreachable, retry in 5000 ms (attempt not counted)",
       },
     ]);
@@ -1004,7 +1004,7 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
       queue: "visits--visit-worker",
       messageId: "first",
       attempt: 1,
-      error: "TypeError: boom",
+      error: "PROCESSING_FAILED",
       action: "retry 1 of 5",
     });
     // Delivery attempt 5 is the last retry, as a RabbitMQ loop's fifth delivery is.
@@ -1076,6 +1076,50 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
     await scope.stop();
   });
 
+  it("preserves the original native Pub/Sub identity when copying a message without application ID into quarantine", async () => {
+    const { scope, deliver } = await pubsubStarted(async () => {
+      throw new NonRetryable("MALFORMED_MESSAGE");
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("native", { attributes: { trace: "t" } }));
+    await handled("native");
+    expect(after(start)).toEqual([
+      [
+        "publish",
+        "visits--visit-worker.failed",
+        "body of native",
+        { trace: "t", messageId: "server-native", "x-terminal-code": "MALFORMED_MESSAGE" },
+      ],
+      ["ack", "native"],
+    ]);
+    await scope.stop();
+  });
+  it("leaves a late terminal result unacked during shutdown and closes without starting another quarantine publish", async () => {
+    let release!: () => void, entered!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const admitted = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const { scope, deliver } = await pubsubStarted(async () => {
+      entered();
+      await gate;
+      throw new NonRetryable("MALFORMED_MESSAGE");
+    });
+    const start = pubsubFake.calls.length;
+    deliver(message("late-terminal"));
+    await admitted;
+    const closing = scope.stop();
+    release();
+    await closing;
+    expect(after(start)).toEqual([
+      ["close subscription", "visits--visit-worker"],
+      ["close client"],
+    ]);
+    expect(scope.fail).not.toHaveBeenCalled();
+  });
+
   it("nacks a terminal message whose .failed copy fails or misses its 2000 ms deadline, telling the state hook", async () => {
     vi.useFakeTimers();
     const { scope, deliver } = await pubsubStarted(async () => {
@@ -1094,7 +1138,11 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
       error: "Error: 14 UNAVAILABLE",
     });
     // A copy Pub/Sub never answers is given up after 2000 ms, and the message is nacked.
-    pubsubFake.publish = () => new Promise<string>(() => {});
+    const confirmations: ((id: string) => void)[] = [];
+    pubsubFake.publish = () =>
+      new Promise<string>((resolve) => {
+        confirmations.push(resolve);
+      });
     const hung = pubsubFake.calls.length;
     deliver(message("m2"));
     await vi.advanceTimersByTimeAsync(1999);
@@ -1106,7 +1154,24 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
     ]);
     expect(pubsubFake.calls.some((call) => call[0] === "ack")).toBe(false);
     expect(scope.fail).not.toHaveBeenCalled();
-    await scope.stop();
+    // Each timed-out actual publisher request retains its slot across new deliveries.
+    deliver(message("m3"));
+    deliver(message("m4"));
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(confirmations).toHaveLength(visitsLoop.concurrency);
+    const saturated = pubsubFake.calls.length;
+    deliver(message("m5"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(after(saturated)).toEqual([["nack", "m5"]]);
+    let stopped = false;
+    const closing = scope.stop().then(() => {
+      stopped = true;
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(stopped).toBe(false);
+    for (const confirm of confirmations) confirm("confirmed-late");
+    await closing;
+    expect(stopped).toBe(true);
   });
 
   it("keeps a message whose store is unreachable and runs it again 5 s later with the same attempt", async () => {
@@ -1139,7 +1204,7 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
         queue: "visits--visit-worker",
         messageId: "lost",
         attempt: 4,
-        error: "Error: connect ECONNREFUSED",
+        error: "DEPENDENCY_UNAVAILABLE",
         action: "store unreachable, retry in 5000 ms (attempt not counted)",
       },
       expect.objectContaining({

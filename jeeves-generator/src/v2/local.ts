@@ -644,7 +644,14 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           grant.privileges.includes("SELECT") &&
           !(
             grant.schema === "jeeves" &&
-            ["idempotency_records", "work_records", "work_tickets"].includes(grant.relation) &&
+            [
+              "idempotency_records",
+              "work_records",
+              "work_tickets",
+              "consumer_receipts",
+              "consumer_receipts_maintenance",
+              "consumer_receipts_workers",
+            ].includes(grant.relation) &&
             grant.kind === "table"
           )) ||
         (access.boundary === "published-read" && grant.kind !== "view")

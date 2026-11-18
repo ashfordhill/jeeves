@@ -1883,3 +1883,14 @@ by itself cannot stop stale completion. Interval edits must preserve accepted wo
 retention must cover the longest supported interval so cleanup cannot recreate a current tick.
 Failed/unknown outcomes need a visible halt, not an endlessly growing backlog or a healthy idle
 appearance. Keep retries and fences inside the mechanism, outside ordinary controls.
+
+## 2026-11-17 RG18: retention and aggregation must not redefine delivery identity
+
+A date-derived aggregate is a destination, not an event identity scope. Store one stable receipt
+identity for each consumer and compare the complete effect-relevant mapped content, so changing a
+date cannot count an event again. Store the retention deadline using database time at completion;
+cleanup must honor each accepted promise across configuration changes. A fixed cleanup batch is
+bounded work, not a throughput guarantee. Heartbeat, committed product progress, broker backlog
+and cleanup backlog answer different questions; absent provider depth remains unknown. Quarantine
+requeue preserves original bytes and identity and requires a receipt-backed effect contract, since
+an uncertain copy can itself create duplicate deliveries.

@@ -322,3 +322,12 @@ and the handler scaffold separately from runtime evidence. No synthetic queue is
 ### Webhook receiver binding (RG17)
 
 `webhook-receiver` is a Service module and installed binding with a declared writable `state` database dependency, explicit API logical owner and Runnable processes. Blueprint module settings preserve `bodyLimitBytes` and `replayWindowSeconds`; normalized consumer inputs are `webhook.bodyLimitBytes` and `webhook.replayWindowSeconds`. Selection identity may differ from stable module identity. The latter binds signing/route/work namespaces; generated settings lookup uses selection identity. Pure mapper callbacks and product SQL remain owned extension inputs, never normalized JSON functions/type expressions. [Envelope and lifecycle](plans/reliable-generation/evidence/rg17/README.md).
+
+### Receipt-backed consumers (RG18)
+
+Event counter settings include `deliveryHorizonSeconds`; the normalized selection consumes it as
+`receipt.deliveryHorizonSeconds`, and its process config passes the value with fixed seven-day
+retention to the counter. Event consumer has an optional writable owned `state` connection. A
+standalone consumer remains an application stub; exporting `receiptConsumer = defineReceiptConsumer`
+opts its existing delivery loop into generated receipt/scoped-product processing. Blueprint state
+connections and precise product declarations remain authoritative. This adds no public admin route.

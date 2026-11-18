@@ -992,6 +992,7 @@ export function resolveGeneration(
         // the edit command still accepts only a supported value (V3-18).
         normalControl:
           !!rule.userNeed &&
+          paths.length > 0 &&
           !!consumer &&
           runtimeInstalled &&
           value !== undefined &&

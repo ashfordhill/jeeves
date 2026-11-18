@@ -5,22 +5,96 @@ import {
   type SqlRelation,
 } from "./durable-sql.ts";
 import { abortTransaction, assertTransaction, type Tx } from "./transaction.ts";
-import type { PayloadCodec } from "./outbox.ts";
+
+export interface ReceiptRetention {
+  deliveryHorizonSeconds: number;
+  retentionSeconds: number;
+}
+export function validateReceiptRetention(policy: ReceiptRetention): void {
+  if (![policy.deliveryHorizonSeconds, policy.retentionSeconds].every(Number.isSafeInteger) ||
+    policy.deliveryHorizonSeconds < 1 || policy.retentionSeconds < policy.deliveryHorizonSeconds ||
+    policy.retentionSeconds > 2592000) throw new Error("Insufficient or invalid receipt retention");
+}
+export class ReceiptConflict extends Error {
+  readonly code = "RECEIPT_IDENTITY_CONFLICT";
+  constructor() { super("Conflicting or incomplete receipt"); }
+}
 
 /** Inbox/receipt and effect share this exact transaction. Await it and commit before ack.
  * Effects are compiled SQL adapters, never network publication or saved-source code. */
 export function createReceipts<Payload, Result>(
   binding: SqlRelation,
   codec: {
-    payload: PayloadCodec<Payload>;
+    payload(input: unknown, eventId?: string): Payload;
     /** Validated stable business identity, excluding regenerated transport timestamps.
      * Default compares the complete parsed payload. Never omit fields relevant to the effect. */
     identity?: (payload: Payload) => unknown;
     result: (input: unknown) => Result;
   },
+  retention?: ReceiptRetention,
 ) {
   const table = qualifiedRelation(binding);
+  if (retention) { validateReceiptRetention(retention); retention = Object.freeze({ ...retention }); }
+  const maintenance = qualifiedRelation({ ...binding, table: `${binding.table}_maintenance` });
+  const workers = qualifiedRelation({ ...binding, table: `${binding.table}_workers` });
   return {
+    /** One bounded indexed sweep, safe against active transactions and independent of arrivals. */
+    async sweep(tx: Tx, batch = 100): Promise<{ removed: number; backlog: boolean }> {
+      assertTransaction(tx);
+      if (!retention || !Number.isSafeInteger(batch) || batch < 1 || batch > 1000)
+        throw new Error("Invalid receipt retention batch");
+      const removed = await tx.query(`WITH expired AS (
+        SELECT scope_key,event_id FROM ${table}
+        WHERE result IS NOT NULL AND completed_at IS NOT NULL AND retain_until < clock_timestamp()
+        ORDER BY retain_until,scope_key,event_id LIMIT $1 FOR UPDATE SKIP LOCKED
+      ) DELETE FROM ${table} r USING expired e
+        WHERE r.scope_key=e.scope_key AND r.event_id=e.event_id RETURNING r.event_id`,
+        [batch]);
+      const result = await tx.query<{ backlog: boolean }>(`SELECT EXISTS(
+        SELECT 1 FROM ${table} WHERE result IS NOT NULL AND completed_at IS NOT NULL
+        AND retain_until < clock_timestamp() LIMIT 1) AS backlog`);
+      const backlog = result.rows[0]?.backlog === true;
+      await tx.query(`INSERT INTO ${maintenance}(last_success_at,backlog,removed)
+        VALUES(clock_timestamp(),$1,$2) ON CONFLICT(singleton) DO UPDATE
+        SET last_success_at=EXCLUDED.last_success_at,backlog=EXCLUDED.backlog,removed=EXCLUDED.removed`,
+        [backlog, removed.rowCount]);
+      await tx.query(`WITH stale AS (SELECT worker_id FROM ${workers}
+        WHERE heartbeat_at < clock_timestamp()-interval '1 day' ORDER BY heartbeat_at LIMIT $1)
+        DELETE FROM ${workers} w USING stale s WHERE w.worker_id=s.worker_id
+        AND w.heartbeat_at < clock_timestamp()-interval '1 day'`, [batch]);
+      return { removed: removed.rowCount ?? 0, backlog };
+    },
+    async heartbeat(tx: Tx, input: { workerId: string; consumerId?: string; inFlight: number; progressed: boolean;
+      state: "running" | "storage-unavailable" | "unknown" | "stopped"; backlog: number | null }) {
+      assertTransaction(tx);
+      if (!retention || !Number.isSafeInteger(input.inFlight) || input.inFlight < 0 ||
+        (input.backlog !== null && (!Number.isSafeInteger(input.backlog) || input.backlog < 0)))
+        throw new Error("Invalid receipt progress");
+      await tx.query(`INSERT INTO ${workers}(worker_id,heartbeat_at,last_progress_at,in_flight,backlog,state,consumer_id)
+        VALUES($1,clock_timestamp(),CASE WHEN $3 THEN clock_timestamp() END,$2,$4,$5,$6)
+        ON CONFLICT(worker_id) DO UPDATE SET heartbeat_at=clock_timestamp(),
+        last_progress_at=CASE WHEN $3 THEN clock_timestamp() ELSE ${workers}.last_progress_at END,
+        in_flight=$2,backlog=$4,state=$5,consumer_id=$6`,
+        [durableIdentity(input.workerId), input.inFlight, input.progressed, input.backlog, input.state,
+          durableIdentity(input.consumerId ?? `${binding.schema}.${binding.table}`)]);
+    },
+    async status(tx: Tx, consumerId?: string) {
+      assertTransaction(tx);
+      if (!retention) throw new Error("Receipt lifecycle not declared");
+      const workersResult = await tx.query(`SELECT worker_id,consumer_id,heartbeat_at,last_progress_at,in_flight,backlog,state,
+          heartbeat_at < clock_timestamp()-interval '45 seconds' AS stale FROM ${workers}
+          WHERE $1::text IS NULL OR consumer_id=$1
+          ORDER BY heartbeat_at DESC,worker_id LIMIT 101`, [consumerId === undefined ? null : durableIdentity(consumerId)]);
+      return {
+        workerScope: consumerId ?? "all-consumers-in-receipt-store",
+        cleanupScope: binding.schema === "jeeves" && binding.table === "consumer_receipts"
+          ? "database-consumer-receipts" : "receipt-store",
+        workersState: workersResult.rows.length ? "observed" : "unknown",
+        workersTruncated: workersResult.rows.length > 100,
+        cleanup: (await tx.query(`SELECT last_success_at,backlog,removed FROM ${maintenance}`)).rows[0] ?? null,
+        workers: workersResult.rows.slice(0,100),
+      };
+    },
     async withEffect(
       tx: Tx,
       input: { scopeKey: string; eventId: string; payload: unknown },
@@ -44,15 +118,16 @@ export function createReceipts<Payload, Result>(
             [scopeKey, eventId, payload],
           );
           const row = existing.rows[0];
-          if (!row?.result) throw new Error("Conflicting or incomplete receipt");
+          if (!row?.result) throw new ReceiptConflict();
           return { applied: false, result: codec.result(row.result.value) };
         }
         const result = codec.result(await effect(tx, parsed));
         jsonPayload(result);
-        await tx.query(`UPDATE ${table} SET result=$3::jsonb WHERE scope_key=$1 AND event_id=$2`, [
+        await tx.query(`UPDATE ${table} SET result=$3::jsonb${retention ? ",completed_at=clock_timestamp(),retain_until=clock_timestamp()+($4*interval '1 second')" : ""} WHERE scope_key=$1 AND event_id=$2`, [
           scopeKey,
           eventId,
           jsonPayload({ value: result }),
+          ...(retention ? [retention.retentionSeconds] : []),
         ]);
         return { applied: true, result };
       } catch (error) {

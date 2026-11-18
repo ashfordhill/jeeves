@@ -1,0 +1,49 @@
+Evidence sanitization: embedded data-URL source addresses elided; failure messages/assertions/locations retained.
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/loop-wiring.test.ts (0 test)
+ ❯ |generator| src/v2/event-counter.test.ts (3 tests | 1 failed) 2803ms
+   ❯ emitted receipt counter (3)
+     × commits one increment per aggregate/event, ignores transport time and preserves case-sensitive non-video keys 1585ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/loop-wiring.test.ts [ jeeves-generator/src/v2/loop-wiring.test.ts ]
+Error: No module at undefined
+ ❯ ../jeeves/packages/spec/src/fixtures/v2-modules.ts:195:43
+    193|             const component = studio?.components?.[index as number]?.i…
+    194|             const row = rows?.components?.find((item) => item.id === c…
+    195|             if (!component || !row) throw Error(`No module at ${index}…
+       |                                           ^
+    196|             return { type: "editComponent" as const, component, settin…
+    197|           })();
+ ❯ moduleAuthored ../jeeves/packages/spec/src/fixtures/v2-modules.ts:197:12
+ ❯ src/v2/loop-wiring.test.ts:44:41
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/event-counter.test.ts > emitted receipt counter > commits one increment per aggregate/event, ignores transport time and preserves case-sensitive non-video keys
+Error: Conflicting or incomplete receipt
+ ❯ Object.withEffect ../[generated-module address elided]:116:35
+ ❯ Object.record ../[generated-module address elided]:56:22
+ ❯ executeTransaction ../[generated-module address elided]:51:20
+ ❯ dependency ../[generated-module address elided]:198:12
+ ❯ src/v2/event-counter.test.ts:103:14
+    101|       expect(await apply(notice(1, "Manual:A", "2026-11-08T13:00:00Z")…
+    102|       expect(await apply(notice(2))).toBe(true);
+    103|       expect(await apply(notice(1, "Manual:B"))).toBe(true); // Event …
+       |              ^
+    104|       expect(await apply(notice(1, "manual:a"))).toBe(true);
+    105|       expect(decodes).toBe(5);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  1 failed | 6 passed (7)
+   Start at  19:16:56
+   Duration  4.68s (tests 81%, transform 13%, import 6%)

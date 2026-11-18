@@ -1,0 +1,25 @@
+frozen-v2 80 unchanged paths; changed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  '.jeeves/normalized.json',
+  '.jeeves/report.json',
+  'diagnostics/generation.json',
+  'src/features/application-bindings.ts',
+  'src/runtime/amqp.ts',
+  'src/runtime/counter-worker.ts',
+  'src/runtime/delivery.ts',
+  'src/runtime/durable-sql.ts',
+  'src/runtime/event-counter.ts',
+  'src/runtime/receipts.ts'
+]
+/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg18/pins.ts:13
+ if(changes.some(p=>!allowed.has(p)))throw Error(`Unreviewed output changes: ${changes}`);
+                                           ^
+
+Error: Unreviewed output changes: .jeeves/extensions.md,.jeeves/manifest.json,.jeeves/normalized.json,.jeeves/report.json,diagnostics/generation.json,src/features/application-bindings.ts,src/runtime/amqp.ts,src/runtime/counter-worker.ts,src/runtime/delivery.ts,src/runtime/durable-sql.ts,src/runtime/event-counter.ts,src/runtime/receipts.ts
+    at <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg18/pins.ts:13:44)
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves-generator

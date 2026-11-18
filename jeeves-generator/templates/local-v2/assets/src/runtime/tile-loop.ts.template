@@ -37,6 +37,8 @@ export type LoopConsumerOptions = {
   retryLimit: number;
   handle: MessageHandler;
   onState?: BrokerState;
+  onProgress?: ConsumerHooks["onProgress"];
+  durableCompletion?: boolean;
 };
 /** An open consumer: `close` stops taking messages and lets those in hand settle before it closes;
  * `closed` resolves only after `close()`. */
@@ -96,7 +98,9 @@ function wait(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 const describe = (error: unknown) =>
-  (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).slice(0, 300);
+  error instanceof NonRetryable ? error.code : error instanceof OperationError ?
+    error.outcome === "unknown" ? "OUTCOME_UNKNOWN" : error.outcome === "refused" ? "OPERATION_REFUSED" : "PROCESSING_FAILED" :
+    unreachable(error) ? "DEPENDENCY_UNAVAILABLE" : "PROCESSING_FAILED";
 const messageId = (delivery: Delivery) =>
   delivery.messageId === undefined ? {} : { messageId: delivery.messageId };
 /** The delivery runner waits out an unreachable store itself and keeps the attempt. */

@@ -17,6 +17,44 @@ export interface ConsumerHooks {
   onTerminal?: (body: Buffer, delivery: Delivery, error: unknown) => Promise<void>;
   /** Notification only; do not await close from a handler or terminal hook in its own drain. */
   onFatal?: (error: unknown) => void;
+  /** Private generated observation; no provider queue-depth support means unknown, never zero. */
+  onProgress?: (state: ConsumerProgress) => void;
+  /** Only generated receipt/transaction binders may assert durable completion. */
+  durableCompletion?: boolean;
+}
+export interface ConsumerProgress {
+  heartbeatAt: number;
+  lastDurableProgressAt: number | null;
+  inFlight: number;
+  backlog: number | null;
+  quarantined: number;
+  state: "running" | "storage-unavailable" | "unknown" | "stopped";
+}
+export function consumerLiveness(progress: ConsumerProgress, now = Date.now()): "live" | "stale" | "stopped" {
+  return progress.state === "stopped" ? "stopped" : now - progress.heartbeatAt > 45000 ? "stale" : "live";
+}
+export function createConsumerProgress(hooks: ConsumerHooks, inFlight: () => number) {
+  const value: ConsumerProgress = { heartbeatAt: Date.now(), lastDurableProgressAt: null,
+    inFlight: 0, backlog: null, quarantined: 0, state: "running" };
+  function report() {
+    value.heartbeatAt = Date.now();
+    value.inFlight = inFlight();
+    try { hooks.onProgress?.(Object.freeze({ ...value })); } catch { /* Observation only. */ }
+  }
+  const heartbeat = setInterval(report, 15000);
+  heartbeat.unref?.();
+  return {
+    report,
+    snapshot: () => Object.freeze({ ...value, inFlight: inFlight() }),
+    completed() {
+      if (hooks.durableCompletion) value.lastDurableProgressAt = Date.now();
+      value.state = "running";
+      report();
+    },
+    state(state: ConsumerProgress["state"]) { value.state = state; report(); },
+    quarantined() { value.quarantined++; report(); },
+    stop() { clearInterval(heartbeat); value.state = "stopped"; report(); },
+  };
 }
 export interface DeliveryMessage<Receipt> {
   body: Buffer;
@@ -36,6 +74,25 @@ export interface DeliveryTransport<Receipt> {
   ack(receipt: Receipt): void;
   /** Close channel before connection, after cancellation and admitted work. */
   close(): Promise<void>;
+}
+
+/** Internal operator operation, after reconciling poison/configuration. Call only with a delivery
+ * consumed from the configured quarantine. Original body/ID survive, confirm precedes source ACK.
+ * An unknown effect requires reconciliation and is deliberately not blindly replayable. */
+export async function requeueQuarantinedDelivery<Receipt>(options: DeliveryBinding & {
+  sourceQueue: string; message: DeliveryMessage<Receipt>; transport: DeliveryTransport<Receipt>;
+}): Promise<void> {
+  validateDeliveryBinding(options);
+  const { message } = options;
+  const terminal = message.headers["x-terminal-code"];
+  if (options.sourceQueue !== options.failedQueue || !message.messageId ||
+    typeof terminal !== "string" || !/^[A-Z][A-Z0-9_]{0,79}$/.test(terminal) ||
+    terminal === "OUTCOME_UNKNOWN" || terminal === "RECEIPT_IDENTITY_CONFLICT")
+    throw new Error("QUARANTINE_REQUEUE_REFUSED");
+  const headers: Record<string, unknown> = { ...message.headers, "x-delivery-attempt": 0 };
+  delete headers["x-terminal-code"];
+  await options.transport.republish(options.queue, message, headers);
+  options.transport.ack(message.receipt);
 }
 
 /** The wait before a message whose store was unreachable goes back to its queue. */
@@ -127,6 +184,7 @@ export function createDeliveryRunner<Receipt>(
   let fatalClosure = false;
   let shutdown: Promise<void> | undefined;
   const inFlight = new Set<Promise<void>>();
+  const progress = createConsumerProgress(options, () => inFlight.size);
   // close() ends every wait for an unreachable store at once.
   const stopping = new AbortController();
   let finishClosed!: (result: { fatal: boolean }) => void;
@@ -166,6 +224,7 @@ export function createDeliveryRunner<Receipt>(
       await options.transport.cancel().catch(() => {});
       await Promise.allSettled([...inFlight]);
       await options.transport.close().catch(() => {});
+      progress.stop();
       finishClosed({ fatal: fatalClosure });
     })());
   }
@@ -173,6 +232,7 @@ export function createDeliveryRunner<Receipt>(
     closed,
     close,
     fatal,
+    progress: progress.snapshot,
     accept(message: DeliveryMessage<Receipt>) {
       if (closing) return; // Unacked deliveries return to the broker when the channel closes.
       const task = Promise.resolve().then(async () => {
@@ -193,11 +253,13 @@ export function createDeliveryRunner<Receipt>(
         };
         try {
           await options.handle(message.body, delivery);
+          progress.completed();
           if (!fatalClosure) options.transport.ack(message.receipt);
         } catch (error) {
           if (fatalClosure) return;
           const unknown = error instanceof Error && "outcome" in error && error.outcome === "unknown";
           if (!unknown && unreachable(error) && !(error instanceof NonRetryable)) {
+            progress.state("storage-unavailable");
             // The store failed, not the message: the attempt doesn't count.
             await wait(UNREACHABLE_WAIT_MS);
             // Unacked, the delivery returns to the broker when the channel closes.
@@ -211,6 +273,7 @@ export function createDeliveryRunner<Receipt>(
             return;
           }
           const terminal = unknown || error instanceof NonRetryable || attempts >= options.retryLimit;
+          if (unknown) progress.state("unknown");
           try {
             if (terminal) await options.onTerminal?.(message.body, delivery, error);
             if (fatalClosure) return;
@@ -228,6 +291,7 @@ export function createDeliveryRunner<Receipt>(
                   : {}),
               },
             );
+            if (terminal) progress.quarantined();
             if (!fatalClosure) options.transport.ack(message.receipt);
           } catch (failure) {
             fatal(failure);
@@ -235,7 +299,8 @@ export function createDeliveryRunner<Receipt>(
         }
       });
       inFlight.add(task);
-      void task.finally(() => inFlight.delete(task)).catch(fatal);
+      progress.report();
+      void task.finally(() => { inFlight.delete(task); progress.report(); }).catch(fatal);
     },
   };
 }

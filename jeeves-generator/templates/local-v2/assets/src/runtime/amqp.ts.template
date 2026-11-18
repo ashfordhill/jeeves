@@ -4,6 +4,7 @@ import { readSecret } from "./local.ts";
 import {
   createDeliveryRunner,
   validateDeliveryBinding,
+  requeueQuarantinedDelivery,
   type ConsumerHooks,
   type MessageHandler,
 } from "./delivery.ts";
@@ -22,6 +23,33 @@ export interface BrokerBinding {
   heartbeatSeconds: number;
   confirmTimeoutMs: number;
   credential?: (secret: string) => string;
+}
+
+/** One explicitly selected head-of-quarantine delivery. No public administration endpoint.
+ * Generated counter operation binds both queues; mismatched IDs and unknown outcomes refuse. */
+export async function requeueCounterQuarantine(binding: BrokerBinding,
+  options: { queue: string; failedQueue: string; retryLimit: number }, expectedMessageId: string) {
+  validateDeliveryBinding(options);
+  if (!expectedMessageId || expectedMessageId.length > 512) throw Error("QUARANTINE_REQUEUE_REFUSED");
+  const { channel, connection } = await confirmChannel(binding);
+  try {
+    const message = await channel.get(options.failedQueue, { noAck: false });
+    if (!message || message.properties.messageId !== expectedMessageId)
+      throw Error("QUARANTINE_REQUEUE_REFUSED");
+    await requeueQuarantinedDelivery({ ...options, sourceQueue: options.failedQueue,
+      message: { body: message.content, messageId: message.properties.messageId,
+        headers: message.properties.headers ?? {}, redelivered: message.fields.redelivered, receipt: message },
+      transport: {
+        async cancel() {},
+        async close() {},
+        republish(destination, original, headers) {
+          return confirmed(binding.confirmTimeoutMs, (done) => channel.sendToQueue(destination,
+            original.body, { ...message.properties, persistent: true, headers }, done));
+        },
+        ack(receipt) { channel.ack(receipt); },
+      },
+    });
+  } finally { await quietly(channel); await quietly(connection); }
 }
 /** Told when a broker client's connection changes: `available` once a generation is open
  * (startup reports it once), `unavailable` with the error once that generation is lost. */
@@ -284,6 +312,8 @@ export async function createConsumer(
         retryLimit: options.retryLimit,
         handle: options.handle,
         onTerminal: options.onTerminal,
+        onProgress: options.onProgress,
+        durableCompletion: options.durableCompletion,
         // A failed republish or ack loses this generation, not the consumer.
         onFatal: (error) => lose(generation, error),
         transport: {

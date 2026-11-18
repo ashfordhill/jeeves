@@ -261,7 +261,7 @@ describe("Pub/Sub channels for stubs (QG07)", () => {
     const clients = text(cloudExport, "src/runtime/module-clients.ts");
     expect(clients).toContain("export function pubsubLoop(log: ProbeLog): LoopTransport {");
     expect(clients).toContain(
-      'import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Delivery } from "./delivery.ts";',
+      'import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, createConsumerProgress, type Delivery } from "./delivery.ts";',
     );
     expect(clients).not.toContain("// @");
     // A publisher-only Pub/Sub export has no subscriber.

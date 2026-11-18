@@ -1,0 +1,38 @@
+frozen-v2 80 unchanged paths; changed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  '.jeeves/normalized.json',
+  '.jeeves/report.json',
+  'diagnostics/generation.json',
+  'src/features/application-bindings.ts',
+  'src/runtime/amqp.ts',
+  'src/runtime/counter-worker.ts',
+  'src/runtime/delivery.ts',
+  'src/runtime/durable-sql.ts',
+  'src/runtime/event-counter.ts',
+  'src/runtime/receipts.ts'
+]
+v2-module-design 87 unchanged paths; changed [
+  '.jeeves/extensions.md',
+  '.jeeves/inputs/design.json',
+  '.jeeves/manifest.json',
+  '.jeeves/normalized.json',
+  '.jeeves/report.json',
+  'diagnostics/generation.json',
+  'src/features/application-bindings.ts',
+  'src/runtime/amqp.ts',
+  'src/runtime/counter-worker.ts',
+  'src/runtime/delivery.ts',
+  'src/runtime/durable-sql.ts',
+  'src/runtime/event-counter.ts',
+  'src/runtime/receipts.ts'
+]
+stub-stack 60 unchanged paths; changed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  '.jeeves/normalized.json',
+  '.jeeves/report.json',
+  'diagnostics/generation.json',
+  'src/modules/links-api/upload-consumer.slots.ts',
+  'src/modules/visit-worker/visit-consumer.slots.ts'
+]

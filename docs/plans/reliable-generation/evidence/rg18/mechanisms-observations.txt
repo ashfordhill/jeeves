@@ -1,0 +1,8 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  19:46:12
+   Duration  16.05s (tests 95%, transform 3%, import 1%)

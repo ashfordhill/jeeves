@@ -1,0 +1,1425 @@
+Evidence sanitization: embedded data-URL source addresses elided; failure messages/assertions/locations retained.
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/loop-wiring.test.ts (8 tests | 2 failed) 218ms
+   ❯ consume loops (tile process contract, sections 3-5) (8)
+     × starts each template's worker in its process, with its hooks watched 16ms
+     × provisions the templates' tables, logins, subscriber and the media image 3ms
+ ❯ |generator| src/v2/tile-loop.test.ts (29 tests | 5 failed) 778ms
+   ❯ emitted stub loops (tile process contract, section 5) (7)
+     × retries other errors 5 times, waiting 250 ms doubling up to 10 s, then RETRY_EXHAUSTED 8ms
+     × leaves an unreachable store to the runner: one 5 s wait, the attempt not counted 2ms
+   ❯ emitted template loops (6)
+     × logs an unreachable store as a wait that keeps the attempt, past the template's limit 1ms
+   ❯ emitted Pub/Sub stub loops (QG08) (12)
+     × nacks another error at once, for the subscription to space, until a failure on attempt 6 ends in .failed as RETRY_EXHAUSTED 6ms
+     × keeps a message whose store is unreachable and runs it again 5 s later with the same attempt 3ms
+ ❯ |generator| src/v2/module-clients.test.ts (0 test)
+ ❯ |generator| src/v2/pubsub.test.ts (15 tests | 1 failed) 1461ms
+   ❯ Pub/Sub channels for stubs (QG07) (8)
+     × runs a loop stub on a Pub/Sub topic on its own subscription through pubsubLoop (QG08) 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/module-clients.test.ts [ jeeves-generator/src/v2/module-clients.test.ts ]
+TypeError: Failed to resolve module specifier "./receipt-consumer.ts" from "[generated-module address elided]": Invalid relative URL or base scheme is not hierarchical.
+Caused by: TypeError: Invalid URL
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_INVALID_URL', input: './receipt-consumer.ts', base: '[generated-module address elided]' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/loop-wiring.test.ts > consume loops (tile process contract, sections 3-5) > starts each template's worker in its process, with its hooks watched
+AssertionError: expected '// Generated scaffold: View counter (…' to contain 'counter: createEventCounter(binding.t…'
+
+- Expected
++ Received
+
+- counter: createEventCounter(binding.tables, watchHooks(productHooks(counterSumHooks()), loopLog, "counter-sum")),
++ // Generated scaffold: View counter (Worker service) runs as app-view-counter, a worker process.
++ // Export rewrites this file. Write modules in src/modules/; .jeeves/report.json lists what runs.
++ import { brokerBinding, pool, selected, validateTemplateSettings } from "../features/service-resources.ts";
++ import { counterSumHooks } from "../modules/view-counter/counter-sum.hooks.ts";
++ import { startCounterWorker } from "../runtime/counter-worker.ts";
++ import { createEventCounter } from "../runtime/event-counter.ts";
++ import { productHooks } from "../runtime/hook-boundary.ts";
++ import { runProcess } from "../runtime/process.ts";
++ import { createLoopLog, loopConsumer, templateHandler, watchHooks } from "../runtime/tile-loop.ts";
++ import { brokerState, createFailureLog, logStarted } from "../runtime/tile-process.ts";
++
++ /** Compiled configuration: nothing is read from disk at runtime. */
++ export const config = {
++   "tile": "view-counter",
++   "kind": "worker",
++   "shape": "worker",
++   "templates": {
++     "counter-sum": {
++       "template": "event-counter",
++       "lead": "counter-sum",
++       "tables": {
++         "receipts": {
++           "schema": "counter_sum",
++           "table": "receipts"
++         },
++         "totals": {
++           "schema": "counter_sum",
++           "table": "totals"
++         }
++       },
++       "receiptRetention": {
++         "deliveryHorizonSeconds": 604800,
++         "retentionSeconds": 604800
++       }
++     }
++   },
++   "loops": [
++     {
++       "module": "counter-sum",
++       "queue": "view-events--view-counter",
++       "failedQueue": "view-events--view-counter.failed",
++       "retryLimit": 5,
++       "concurrency": 8
++     }
++   ]
++ } as const;
++
++ await runProcess(async (scope) => {
++   // A failure the process survives writes one error line, at most once a second for each.
++   const failure = createFailureLog(config.tile);
++   // Loops subscribe before the process is ready. "Not implemented" sends a message to its
++   // queue's .failed with one log line per module and hook a second; stopping drains them.
++   const loopLog = createLoopLog(config.tile);
++   validateTemplateSettings(config.tile);
++   // Receipt and increment: the event counter's worker on its tables and its events subscriber.
++   await (async () => {
++     const s = selected("event-counter", "counter-sum");
++     const binding = config.templates["counter-sum"];
++     const db = pool(scope, s, "state");
++     await db.query("SELECT 1");
++     const worker = await startCounterWorker({
++       pool: db,
++       counter: createEventCounter(binding.tables, watchHooks(productHooks(counterSumHooks()), loopLog, "counter-sum"), binding.receiptRetention),
++       openConsumer: (handle) =>
++         loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), {
++           onState: brokerState(config.tile, failure, "broker consume view-events--view-counter"),
++         }, brokerBinding()),
++     });
++     scope.own(() => worker.close());
++     scope.transport(worker);
++   })();
++   logStarted(config.tile, {"module":"counter-sum","template":"event-counter","wiring":"mounted","checks":["SELECT 1 on its state login","subscribed view-events--view-counter"]});
++   scope.ready();
++ });
++
+
+ ❯ src/v2/loop-wiring.test.ts:311:55
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |generator| src/v2/loop-wiring.test.ts > consume loops (tile process contract, sections 3-5) > provisions the templates' tables, logins, subscriber and the media image
+AssertionError: expected [ …(11) ] to deeply equal [ …(9) ]
+
+- Expected
++ Received
+
+@@ -3,9 +3,11 @@
+    "completion-handler upload_multipart.assets SELECT,UPDATE",
+    "completion-handler upload_multipart.outbox SELECT,INSERT,UPDATE",
+    "completion-handler upload_multipart.receipts SELECT,INSERT,UPDATE",
+    "upload upload_multipart.uploads SELECT,INSERT,UPDATE",
+    "upload upload_multipart.outbox SELECT,INSERT,UPDATE",
+-   "view-counter counter_sum.receipts SELECT,INSERT,UPDATE",
++   "view-counter counter_sum.receipts SELECT,INSERT,UPDATE,DELETE",
+    "view-counter counter_sum.totals SELECT,INSERT,UPDATE",
++   "view-counter counter_sum.receipts_maintenance SELECT,INSERT,UPDATE,DELETE",
++   "view-counter counter_sum.receipts_workers SELECT,INSERT,UPDATE,DELETE",
+    "watch counter_sum_public.totals SELECT",
+  ]
+
+ ❯ src/v2/loop-wiring.test.ts:396:7
+    394|           `${item.host} ${item.schema}.${item.relation} ${item.privile…
+    395|       ),
+    396|     ).toEqual([
+       |       ^
+    397|       "upload upload_multipart.assets SELECT,INSERT,UPDATE",
+    398|       "completion-handler upload_multipart.assets SELECT,UPDATE",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |generator| src/v2/pubsub.test.ts > Pub/Sub channels for stubs (QG07) > runs a loop stub on a Pub/Sub topic on its own subscription through pubsubLoop (QG08)
+AssertionError: expected 'import { dependency, publisherOptions…' to contain 'import { UNREACHABLE_WAIT_MS, validat…'
+
+- Expected
++ Received
+
+- import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Delivery } from "./delivery.ts";
++ import { dependency, publisherOptions, OperationError, currentOperation, currentProcess, assertNetworkAllowed } from "./operation.ts";
++ // Generated scaffold: real clients behind the module stubs' interfaces (src/modules/dependencies.ts),
++ // one per store or channel a tile's stubs use. Export rewrites this file. First the process file's
++ // configuration pass (`checkConfiguration`) runs each client's endpoint reader and the sign-in's
++ // check, so a wrong setting fails startup before any client is built or probed (QG31). Then each
++ // client reads its endpoint from the environment again (`JEEVES_*`; compose.yaml sets the local
++ // ones) and runs one bounded startup probe that its access allows; a failed probe fails the
++ // process's startup, but a cache that is down is logged and the process starts without it. With
++ // JEEVES_REQUIRE_TLS=true, a plain-text or emulator endpoint fails startup (`Insecure endpoint
++ // <variable>`).
++ import { readFileSync } from "node:fs";
++ import { readSecret } from "./local.ts";
++ import { localLogins, productLogins, productDatabases } from "../features/local-bindings.ts";
++ import { createPostgres } from "./postgres.ts";
++ import { assertTransaction, transaction, type TransactionPool } from "./transaction.ts";
++ import {
++   checkIdempotencyKey,
++   idempotencyPolicy,
++   storedStatus,
++   storeResult,
++   sweepExpired,
++   takeKey,
++   type IdempotencyRecord,
++ } from "./idempotency.ts";
++ import { periodic } from "./process.ts";
++ import { bindLocalOperation, localOperationDefinition, sweepWorkTickets } from "./local-operation.ts";
++ import { bindDurableWork, durableWorkDefinition, durableWorkNamespace } from "./durable-work.ts";
++ import { receiptConsumerDefinition, bindReceiptConsumer } from "./receipt-consumer.ts";
++ import { privateReplayKeys } from "./settings.ts";
++ import { prepareProductOperations } from "./product-operations.ts";
++ import { createPublisher, type BrokerState } from "./amqp.ts";
++ import { PubSub } from "@google-cloud/pubsub";
++ import { Duration, type Message, type Subscription } from "@google-cloud/pubsub";
++ import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, createConsumerProgress, type Delivery } from "./delivery.ts";
++ import {
++   failureStep,
++   type LoopConsumer,
++   type LoopConsumerOptions,
++   type LoopTransport,
++ } from "./tile-loop.ts";
++ import { createValkeyCache } from "./valkey.ts";
++ import {
++   AbortMultipartUploadCommand,
++   CreateMultipartUploadCommand,
++   GetObjectCommand,
++   HeadBucketCommand,
++   PutObjectCommand,
++ } from "@aws-sdk/client-s3";
++ import { createObjects } from "./objects.ts";
++ import { createSearch } from "./search.ts";
++ import type {
++   CacheClient,
++   DatabaseReadWriter,
++   HttpTarget,
++   IdempotentResult,
++   ObjectStore,
++   QueuePublisher,
++   SearchIndex,
++   Tx,
++ } from "../modules/dependencies.ts";
++ import { ownResource, processClient, probeDependency, type ProcessScope } from "./process.ts";
++ import { createFailureLog, NotImplemented } from "./tile-process.ts";
++
++ /** A dependency that isn't provisioned locally (another provider, an Identity no sign-in binds, a
++  * stub's token check, a CDN, a tile that runs no process): calling it, or any of its members,
++  * answers "Not implemented: <what>". */
++ export function unavailable<T extends object>(what: string): T {
++   const fail = () => Promise.reject(new NotImplemented(what));
++   return new Proxy(fail, {
++     get: (_target, property) =>
++       typeof property === "string" && property !== "then" ? fail : undefined,
++   }) as unknown as T;
++ }
++
++ /** An endpoint's variable, `JEEVES_<KIND>_<ID>_<PART>`: the tile ID upper-cased, `-` as `_`. */
++ const variable = (kind: string, id: string, part: string) =>
++   `JEEVES_${kind}_${id.toUpperCase().replace(/-/g, "_")}_${part}`;
++ /** One endpoint from the process's environment, read when its client is built and before its
++  * probe. There is no default: a missing or invalid value fails startup naming the variable,
++  * never the value. */
++ function endpoint<T>(name: string, parse: (value: string) => T | undefined): T {
++   const value = process.env[name];
++   const parsed = value === undefined ? undefined : parse(value);
++   if (parsed === undefined) throw new Error(`Invalid endpoint ${name}`);
++   return parsed;
++ }
++ /** A host: 1–253 letters, digits, `.` or `-`; for a database also an absolute path (a Unix
++  * socket directory, as `pg` reads it). */
++ const host =
++   (socket = false) =>
++   (value: string) =>
++     /^[A-Za-z0-9.-]{1,253}$/.test(value) ||
++     (socket && value.startsWith("/") && !/[\u0000-\u001f\u007f]/.test(value))
++       ? value
++       : undefined;
++ /** A port: an integer 1–65535. */
++ const port = (value: string) =>
++   /^[1-9][0-9]{0,4}$/.test(value) && Number(value) <= 65535 ? Number(value) : undefined;
++ /** A URL: absolute `http:` or `https:`, with no credentials, query, fragment or whitespace (which
++  * `new URL` trims, drops or encodes, so the value checked would not be the one set). */
++ const url = (value: string) => {
++   if (/\s/.test(value)) return undefined;
++   let parsed: URL;
++   try {
++     parsed = new URL(value);
++   } catch {
++     return undefined;
++   }
++   return (parsed.protocol === "http:" || parsed.protocol === "https:") &&
++     !parsed.username &&
++     !parsed.password &&
++     !value.includes("?") &&
++     !value.includes("#")
++     ? value
++     : undefined;
++ };
++
++ /** `JEEVES_REQUIRE_TLS` (QG10): `true` makes startup refuse a plain-text or emulator endpoint
++  * (`Insecure endpoint <variable>`); absent, nothing is refused; any other value fails naming it. */
++ function requireTls(): boolean {
++   const value = process.env.JEEVES_REQUIRE_TLS;
++   if (value === undefined) return false;
++   if (value !== "true") throw new Error("Invalid endpoint JEEVES_REQUIRE_TLS");
++   // `0` turns off certificate checks for every client that leaves them to Node (`fetch`, the
++   // sign-in's key set), so under the switch only unset or `1` passes (QG30).
++   const verify = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
++   if (verify !== undefined && verify !== "1")
++     throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
++   return true;
++ }
++ /** How a client reaches a database or cache (QG10). `disable`: plain text (for a database also a
++  * Unix socket). `verify-full`: TLS that checks the certificate chain against `ca` (PEM; else
++  * Node's roots) and the host name, or `servername` when the certificate carries another name. */
++ type Transport = { mode: "disable" } | { mode: "verify-full"; ca?: string; servername?: string };
++ /**
++  * A database's or cache's transport from the environment, read with its endpoint: `JEEVES_<KIND>_
++  * <ID>_TLS`, `disable` or `verify-full`, with no default. With `verify-full`, `_CA_FILE` is an
++  * optional PEM file, read now (one that can't be read fails `Unreadable CA file <variable>`), and
++  * `_TLS_SERVERNAME` the optional name the certificate carries when it isn't the host (a host
++  * name, by the host rule). With
++  * `JEEVES_REQUIRE_TLS=true`, `disable` fails `Insecure endpoint <the _TLS variable>`, except on a
++  * database's Unix socket directory, which is local transport.
++  */
++ function transport(kind: "DATABASE" | "CACHE", id: string, hostname: string): Transport {
++   const strict = requireTls();
++   const name = variable(kind, id, "TLS");
++   const mode = endpoint(name, (value) =>
++     value === "disable" || value === "verify-full" ? value : undefined,
++   );
++   if (mode === "disable") {
++     if (strict && !hostname.startsWith("/")) throw new Error(`Insecure endpoint ${name}`);
++     return { mode };
++   }
++   const named = variable(kind, id, "TLS_SERVERNAME");
++   const certified =
++     process.env[named] === undefined ? undefined : endpoint(named, host());
++   const caFile = variable(kind, id, "CA_FILE");
++   const path = process.env[caFile];
++   let ca: string | undefined;
++   if (path !== undefined)
++     try {
++       ca = readFileSync(path, "utf8");
++     } catch (error) {
++       const code = (error as { code?: unknown } | null)?.code;
++       throw new Error(
++         `Unreadable CA file ${caFile}${typeof code === "string" && /^E[A-Z]+$/.test(code) ? ` (${code})` : ""}`,
++       );
++     }
++   return {
++     mode,
++     ...(ca !== undefined && { ca }),
++     ...(certified !== undefined && { servername: certified }),
++   };
++ }
++ /** Runs every check before any client is built or probed (QG31): each reads and checks its
++  * variables as its client will. One failing check fails startup with its own error; several with
++  * `Invalid configuration: <message>; <message>`, in the order given, each message once. A message
++  * names a variable, never its value. */
++ export function checkConfiguration(checks: readonly (() => unknown)[]): void {
++   const failures: unknown[] = [];
++   const messages: string[] = [];
++   for (const check of checks)
++     try {
++       check();
++     } catch (error) {
++       const message = error instanceof Error ? error.message : String(error);
++       if (!messages.includes(message)) {
++         messages.push(message);
++         failures.push(error);
++       }
++     }
++   if (failures.length === 1) throw failures[0];
++   if (failures.length) throw new Error(`Invalid configuration: ${messages.join("; ")}`);
++ }
++
++ /** The probe log; it names its tile, for a client's own lines after startup. */
++ export type ProbeLog = ((entry: Record<string, unknown>) => void) & { readonly tile: string };
++ /** One JSON line per client probe: `ok` once it passes, `unavailable` for a cache that is down,
++  * or the error before startup fails. */
++ export function createProbeLog(tile: string): ProbeLog {
++   return Object.assign(
++     (entry: Record<string, unknown>) =>
++       console.log(JSON.stringify({ event: "probe", tile, ...entry })),
++     { tile },
++   );
++ }
++ const describe = (error: unknown) =>
++   (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).slice(0, 300);
++ /** Runs one bounded startup check (5 s); a failure is logged and fails startup. */
++ async function probed(
++   log: ProbeLog,
++   client: { client: string; kind: string; check: string },
++   check: () => Promise<unknown>,
++   signal?: AbortSignal,
++ ) {
++   let timer: ReturnType<typeof setTimeout> | undefined;
++   let abort: (() => void) | undefined;
++   try {
++     signal?.throwIfAborted();
++     await Promise.race([
++       check(),
++       new Promise<never>((_resolve, reject) => {
++         if (!signal) return;
++         abort = () => reject(signal.reason);
++         signal.addEventListener("abort", abort, { once: true });
++       }),
++       new Promise<never>((_, reject) => {
++         timer = setTimeout(() => reject(new Error("Probe deadline (5 s)")), 5000);
++       }),
++     ]);
++   } catch (error) {
++     log({ level: "error", ...client, result: "failed", error: describe(error) });
++     throw new Error(`Startup probe failed: ${client.kind} ${client.client}`);
++   } finally {
++     clearTimeout(timer);
++     if (abort) signal?.removeEventListener("abort", abort);
++   }
++   log({ level: "info", ...client, result: "ok" });
++ }
++
++ /** A database's endpoint, `JEEVES_DATABASE_<ID>_HOST` (a host or a Unix socket directory) and
++  * `_PORT`, and its transport `_TLS` (`transport`), read in that order: the configuration pass
++  * checks it, and `databaseClient` reads it again as it builds its pool. */
++ export function databaseEndpoint(resource: string) {
++   const hostname = endpoint(variable("DATABASE", resource, "HOST"), host(true));
++   return {
++     hostname,
++     port: endpoint(variable("DATABASE", resource, "PORT"), port),
++     tls: transport("DATABASE", resource, hostname),
++   };
++ }
++ /** SQL a stub may not send in a transaction: `transaction` sends BEGIN, COMMIT and ROLLBACK. */
++ const transactionControl =
++   /^\s*(?:begin|start\s+transaction|commit|end|rollback|abort|savepoint|release|prepare\s+transaction)\b/i;
++ /** An error's SQLSTATE: five digits or capital letters, never a Node error code such as `EPIPE`. */
++ function sqlState(error: unknown): string | undefined {
++   const code = (error as { code?: unknown } | null)?.code;
++   return typeof code === "string" && /^[0-9A-Z]{5}$/.test(code) && !/^E[A-Z]+$/.test(code)
++     ? code
++     : undefined;
++ }
++ /**
++  * A stub's transaction (QL03): `fn` on one connection reserved from the pool, between BEGIN and
++  * COMMIT (`transaction.ts`, which rolls back when `fn` throws or a statement fails). Its `Tx`
++  * refuses SQL that starts with transaction control, before sending it; a `Tx` used after its
++  * transaction ended rejects. A statement `fn` didn't await settles before COMMIT. A serialization
++  * failure or deadlock (40001, 40P01) reruns `fn` on a new transaction 20 ms later, then 40 ms; the
++  * third is rethrown. When `fn` resolved and the COMMIT then failed on the connection (SQLSTATE
++  * class 08, 57P01, 57P02 or none), whether it committed is unknown: it rejects
++  * `TransactionOutcomeUnknown` (`Transaction outcome unknown`, with the COMMIT's error as its
++  * `cause`), never the result.
++  */
++ async function scopedTransaction<T>(pool: TransactionPool, fn: (tx: Tx) => Promise<T>): Promise<T> {
++   for (let attempt = 1; ; attempt += 1) {
++     let committing = false;
++     try {
++       return await transaction(pool, async (scope) => {
++         const sent = new Set<Promise<unknown>>();
++         const send = <R>(
++           sql: string,
++           values: readonly unknown[] | undefined,
++           answer: (result: { rows: unknown[]; rowCount: number | null }) => R,
++         ): Promise<R> => {
++           if (transactionControl.test(sql))
++             return Promise.reject(new Error("Transaction control is owned by transaction()"));
++           const result = (async () =>
++             answer(await scope.query(sql, values ? [...values] : undefined)))();
++           sent.add(result);
++           // Its failure fails the transaction (`transaction.ts`), whether or not `fn` awaits it.
++           result.catch(() => {});
++           return result;
++         };
++         const value = await fn({
++           query: <Row = Record<string, unknown>>(sql: string, values?: readonly unknown[]) =>
++             send(sql, values, (result) => result.rows as Row[]),
++           execute: (sql, values) =>
++             send(sql, values, (result) => ({ rowCount: result.rowCount ?? 0 })),
++         });
++         await Promise.allSettled(sent);
++         assertTransaction(scope);
++         committing = true;
++         return value;
++       });
++     } catch (error) {
++       if (error instanceof OperationError) throw error;
++       const state = sqlState(error);
++       if (
++         committing &&
++         (state === undefined || state.startsWith("08") || state === "57P01" || state === "57P02")
++       ) {
++         const unknown = new Error("Transaction outcome unknown", { cause: error });
++         unknown.name = "TransactionOutcomeUnknown";
++         throw unknown;
++       }
++       if ((state === "40001" || state === "40P01") && attempt < 3) {
++         await new Promise((resolve) => setTimeout(resolve, 20 * attempt));
++         continue;
++       }
++       throw error;
++     }
++   }
++ }
++ /**
++  * A stub's idempotent call (QL04), in one `scopedTransaction`: the key is checked before BEGIN
++  * (`checkIdempotencyKey`), then `takeKey` takes it or finds its record. A stored answer is
++  * returned `replayed` without running `fn`; a different hash rejects `IdempotencyConflict` after
++  * ROLLBACK. `fn`'s 200–299 answer is stored (`storeResult`) and committed with its writes; any
++  * other status rolls the transaction back and is returned, not stored.
++  */
++ async function idempotentCall<Body>(
++   pool: TransactionPool,
++   record: IdempotencyRecord,
++   fn: (tx: Tx) => Promise<{ status: number; body: Body }>,
++ ): Promise<IdempotentResult<Body>> {
++   // An answer that isn't stored leaves the transaction by this error, so it rolls back.
++   const unstored = new Error("Idempotent answer not stored");
++   const held: { answer?: { status: number; body: Body } } = {};
++   try {
++     return await scopedTransaction(pool, async (tx) => {
++       held.answer = undefined;
++       const taken = await takeKey(tx, record);
++       if (!taken.taken) return { status: taken.status, body: taken.body as Body, replayed: true };
++       const result = await fn(tx);
++       if (!storedStatus(result.status)) {
++         held.answer = result;
++         throw unstored;
++       }
++       await storeResult(tx, record, result);
++       return { status: result.status, body: result.body, replayed: false };
++     });
++   } catch (error) {
++     const answer = held.answer;
++     if (error === unstored && answer)
++       return { status: answer.status, body: answer.body, replayed: false };
++     throw error;
++   }
++ }
++ /** Public product SQL uses separate credentials, retaining credential scope in the RG02 key. */
++ export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown; work?: unknown; receipt?: unknown; owner?: string}) {
++   const maximum = productDatabases.find((row) => row.resource === binding.resource);
++   const login = productLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
++   if (!maximum || !login) throw new Error("No scoped product SQL binding");
++   const configuration = { ...databaseEndpoint(binding.resource), login, poolSize: 10, statementTimeoutMs: 2000, connectionTimeoutMs: 2000 };
++   readSecret(login.secret);
++   const operations = prepareProductOperations(maximum, binding);
++   const local = localOperationDefinition(binding.operation, binding.property ?? "", binding.writable ?? false);
++   const work = durableWorkDefinition(binding.work, binding.property ?? "", binding.writable ?? false);
++   const receipt = receiptConsumerDefinition(binding.receipt, binding.property ?? "", binding.writable ?? false);
++   const namespace = work && durableWorkNamespace(binding.resource, binding.owner ?? binding.tile, work.work, binding.module);
++   const keys = local?.definition.secret ? privateReplayKeys() : undefined;
++   const runtimeLogin = localLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
++   if ((local || work || receipt) && !runtimeLogin) throw new Error("Missing private replay/work database binding");
++   if ((local || work || receipt) && runtimeLogin) readSecret(runtimeLogin.secret);
++   return {configuration, operations, binding, local, work, receipt, namespace, keys, runtimeLogin};
++ }
++ export async function productDatabaseClient(
++   scope: ProcessScope, log: ProbeLog, prepared: ReturnType<typeof prepareProductDatabase>,
++ ) {
++   const {configuration, operations, binding} = prepared;
++   const pool = processClient(scope, "postgres", configuration, () => {
++     const pool = ownResource(scope, createPostgres(configuration), "end");
++     pool.on("error", () => {});
++     return pool;
++   });
++   await probed(log, {client: binding.resource, kind: "database", check: "SELECT 1"}, () => pool.query("SELECT 1"), scope.signal);
++   const handle = operations((sql, values, readOnly) => transaction(pool, (tx) => tx.query(sql, values), {readOnly}));
++   if ((prepared.local || prepared.work || prepared.receipt) && prepared.runtimeLogin) {
++     const runtimeConfiguration = {...configuration, login: prepared.runtimeLogin};
++     const replayPool = processClient(scope, "postgres", runtimeConfiguration, () => {
++       const client = ownResource(scope, createPostgres(runtimeConfiguration), "end");
++       client.on("error", () => {});
++       return client;
++     });
++     if (prepared.work) bindDurableWork(handle, prepared.work, {namespace: prepared.namespace!, process: binding.tile, pool: replayPool, productRole: configuration.login.user, commands: operations});
++     if (prepared.receipt) bindReceiptConsumer(handle, prepared.receipt, {
++       namespace: JSON.stringify([binding.resource, binding.owner ?? binding.tile, "consumer-v1", binding.module]),
++       pool: replayPool, productRole: configuration.login.user, commands: operations,
++     });
++     if (prepared.local) bindLocalOperation(handle, prepared.local, {...binding, productRole: configuration.login.user, pool: replayPool, keys: prepared.keys, commands: operations});
++     if (prepared.local) processClient(scope, "replay-cleanup", runtimeConfiguration, () => {
++       periodic(scope, async () => { await sweepExpired(replayPool); await sweepWorkTickets(replayPool); }, idempotencyPolicy.sweepSeconds * 1000,
++         (error) => createFailureLog(binding.tile)("local replay cleanup", error));
++       return true;
++     });
++   }
++   return handle;
++ }
++ /** A database through the tile's own runtime login: CONNECT and USAGE on public, and SELECT on
++  * what another owner publishes when the tile may only read it. A stub's own tables need its
++  * product SQL; on a database a stub writes, its login also uses the Jeeves-owned
++  * `jeeves.idempotency_records` (QL04). Its endpoint and transport come from `databaseEndpoint`.
++  * `query` and `execute` each take a connection from the pool; `transaction`
++  * (`scopedTransaction`) and `idempotent` (`idempotentCall`) reserve one for their statements. The
++  * first `idempotent` call starts the sweep of expired records (`sweepExpired`): then and every
++  * 60 s, owned by `scope`, so it stops at drain; a failed sweep logs an `idempotency sweep <tile>`
++  * failure line. Probe: SELECT 1. */
++ export async function databaseClient(
++   scope: ProcessScope,
++   log: ProbeLog,
++   binding: { tile: string; resource: string },
++ ): Promise<DatabaseReadWriter> {
++   return processClient(scope, "database-handle", binding, async () => {
++   const login = localLogins.find(
++     (item) => item.resource === binding.resource && item.host === binding.tile,
++   );
++   if (!login) throw new Error(`No runtime login for ${binding.resource}`);
++   const configuration = {
++     ...databaseEndpoint(binding.resource),
++     login,
++     poolSize: 10,
++     statementTimeoutMs: 2000,
++     connectionTimeoutMs: 2000,
++   };
++   const pool = processClient(scope, "postgres", configuration, () => {
++     const pool = ownResource(scope, createPostgres(configuration), "end");
++     pool.on("error", () => {});
++     return pool;
++   });
++   let ended = false;
++   scope.own(() => {
++     ended = true;
++     return undefined;
++   });
++   await probed(log, { client: binding.resource, kind: "database", check: "SELECT 1" }, () =>
++     pool.query("SELECT 1"),
++     scope.signal,
++   );
++   const run = (sql: string, values?: readonly unknown[]) =>
++     dependency({ scope, mutation: true }, () => pool.query(sql, values ? [...values] : undefined));
++   const failure = createFailureLog(binding.tile);
++   let sweeping = false;
++   const sweep = () => {
++     if (sweeping || ended) return;
++     sweeping = true;
++     periodic(
++       scope,
++       () => (ended ? Promise.resolve() : sweepExpired(pool)),
++       idempotencyPolicy.sweepSeconds * 1000,
++       (error) => failure(`idempotency sweep ${binding.tile}`, error),
++     );
++   };
++   return {
++     async query<Row = Record<string, unknown>>(sql: string, values?: readonly unknown[]) {
++       return (await run(sql, values)).rows as Row[];
++     },
++     async execute(sql, values) {
++       return { rowCount: (await run(sql, values)).rowCount ?? 0 };
++     },
++     transaction: (fn) => scopedTransaction(pool, fn),
++     async idempotent(request, fn) {
++       checkIdempotencyKey(request);
++       sweep();
++       return idempotentCall(
++         pool,
++         { tile: binding.tile, scope: request.scope, key: request.key, hash: request.hash },
++         fn,
++       );
++     },
++   };
++   });
++ }
++ /** The broker's runtime login at its endpoint, `JEEVES_BROKER_HOST` and `JEEVES_BROKER_PORT`, read
++  * by the configuration pass and again when a publisher or a stub's loop is built. */
++ export function brokerBinding() {
++   return {
++     hostname: endpoint("JEEVES_BROKER_HOST", host()),
++     port: endpoint("JEEVES_BROKER_PORT", port),
++     username: "runtime",
++     passwordSecret: "broker-password",
++     heartbeatSeconds: 10,
++     confirmTimeoutMs: 5000,
++   };
++ }
++ /** A work queue or topic a module publishes to, with publisher confirms; each message gets the
++  * module's `messageId`, or else a fresh ID, and `key` is not used locally. After a lost broker
++  * connection it reconnects every 5 s, telling `onState`, as a loop's consumer does; a publish
++  * while the broker is away fails at once. Probe: opening the broker and a confirm channel. */
++ export async function queuePublisher(
++   scope: ProcessScope,
++   log: ProbeLog,
++   binding: { queue: string; mode: "work-queue" | "topic" },
++   onState?: BrokerState,
++ ): Promise<QueuePublisher> {
++   return processClient(scope, "queuePublisher", binding, async () => {
++   const topic = binding.mode === "topic";
++   const broker = brokerBinding();
++   let publisher: Awaited<ReturnType<typeof createPublisher>> | undefined;
++   await probed(
++     log,
++     { client: binding.queue, kind: "queue", check: "open the broker and a confirm channel" },
++     async () => {
++       const route = { exchange: topic ? binding.queue : "", routingKey: topic ? "" : binding.queue };
++       publisher = await processClient(scope, "amqp-publisher", { broker, route }, async () => {
++         const client = ownResource(scope, await createPublisher(broker, route, { onState }), "close");
++         scope.transport(client);
++         return client;
++       });
++     },
++     scope.signal,
++   );
++   const opened = publisher;
++   if (!opened) throw new Error(`No publisher for ${binding.queue}`);
++   return { publish: (message, options) => {
++     assertNetworkAllowed(true);
++       const checked = publisherOptions(options);
++     return dependency({ scope, mutation: true, maximumMs: broker.confirmTimeoutMs }, () => opened.publish(message, checked.messageId, checked.attributes));
++   } };
++   });
++ }
++ /** A Google Cloud project ID, optionally `<domain>:` scoped: a lowercase letter, then up to 29
++  * lowercase letters, digits or `-`. */
++ const pubsubProject = (value: string) =>
++   /^(?:[a-z0-9.-]{1,63}:)?[a-z][a-z0-9-]{0,29}$/.test(value) ? value : undefined;
++ /** A publish settles within this (the client's own deadline too), and at most this many are
++  * outstanding in a process. */
++ const pubsubDeadlineMs = 2000;
++ const pubsubOutstanding = 1000;
++ /** Every Pub/Sub client's gRPC channel tries a lost connection again after 500 ms, doubling to at
++  * most 2000 ms (gRPC's own maximum is 120 s), so it reconnects soon after Pub/Sub is back (QG09). */
++ const pubsubChannel = {
++   "grpc.initial_reconnect_backoff_ms": 500,
++   "grpc.max_reconnect_backoff_ms": 2000,
++ };
++ /** With `JEEVES_REQUIRE_TLS=true`, a set `PUBSUB_EMULATOR_HOST` (a plain-text emulator) fails
++  * `Insecure endpoint PUBSUB_EMULATOR_HOST` before a Pub/Sub client is built. */
++ function refuseEmulator() {
++   if (requireTls() && process.env.PUBSUB_EMULATOR_HOST !== undefined)
++     throw new Error("Insecure endpoint PUBSUB_EMULATOR_HOST");
++ }
++ /** The Pub/Sub project every Pub/Sub client is built in, `JEEVES_PUBSUB_PROJECT`, after the
++  * emulator refusal: the configuration pass checks it, and each client reads it again as it is
++  * built. */
++ export function pubsubProjectId(): string {
++   refuseEmulator();
++   return endpoint("JEEVES_PUBSUB_PROJECT", pubsubProject);
++ }
++ /** A Google Cloud Pub/Sub topic a module publishes to, through the official client, in the project
++  * `JEEVES_PUBSUB_PROJECT` with Application Default Credentials; locally `PUBSUB_EMULATOR_HOST`
++  * points the client at the emulator. `publish` resolves only once Pub/Sub has acknowledged the
++  * message, which carries the module's `messageId` (else a fresh ID) as its `messageId` attribute:
++  * Pub/Sub gives a resent message a new ID, so a consumer deduplicates on the attribute. `key` is not
++  * used. A publish fails after 2000 ms (`Publish deadline`), and while 1000 are outstanding the next
++  * fails at once (`Publisher queue full`), with the client's default batching. Processes never
++  * create or change topics or subscriptions. Closing waits for outstanding publishes, then closes
++  * the client. Probe: the topic exists. */
++ export async function pubsubPublisher(
++   scope: ProcessScope,
++   log: ProbeLog,
++   binding: { topic: string },
++ ): Promise<QueuePublisher> {
++   return processClient(scope, "pubsubPublisher", binding, async () => {
++   const client = new PubSub({
++     projectId: pubsubProjectId(),
++     ...pubsubChannel,
++   });
++   const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 } });
++   const outstanding = new Set<Promise<unknown>>();
++   let closed = false;
++   scope.own(async () => {
++     closed = true;
++     await Promise.allSettled([...outstanding]);
++     await client.close();
++   });
++   await probed(
++     log,
++     { client: binding.topic, kind: "queue", check: "the Pub/Sub topic exists" },
++     async () => {
++       const [exists] = await topic.exists();
++       if (!exists) throw new Error(`Pub/Sub topic ${binding.topic} not found`);
++     },
++     scope.signal,
++   );
++   probeDependency(scope, topic, () => topic.getMetadata({ timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 }));
++   return {
++     publish(message, options) {
++       if (closed) return Promise.reject(new OperationError("refused", "PUBLISHER_CLOSED"));
++       if (outstanding.size >= pubsubOutstanding)
++         return Promise.reject(new OperationError("refused", "PUBLISHER_FULL"));
++       assertNetworkAllowed(true);
++       const checked = publisherOptions(options);
++       return dependency({ scope, maximumMs: pubsubDeadlineMs, mutation: true, deadlineMessage: `Publish deadline (${pubsubDeadlineMs} ms)` }, () => {
++         const sent = topic.publishMessage({ data: Buffer.from(message), attributes: { ...checked.attributes, messageId: checked.messageId } });
++         outstanding.add(sent);
++         void sent.finally(() => outstanding.delete(sent)).catch(() => {});
++         return sent.then(() => undefined);
++       });
++     },
++   };
++   });
++ }
++ /** The wait before a subscriber that closed on an error opens again, and between its checks. */
++ const pubsubReopenMs = 5000;
++ /** `work`, or a rejection `<what> (<ms> ms)` once `ms` pass. */
++ function within<T>(work: Promise<T>, ms: number, what: string): Promise<T> {
++   let timer: ReturnType<typeof setTimeout> | undefined;
++   return Promise.race([
++     work,
++     new Promise<never>((_, reject) => {
++       timer = setTimeout(() => reject(new Error(`${what} (${ms} ms)`)), ms);
++     }),
++   ]).finally(() => clearTimeout(timer));
++ }
++ /** Resolves after `ms`, or at once when `signal` aborts. */
++ function pause(ms: number, signal: AbortSignal): Promise<void> {
++   if (signal.aborted) return Promise.resolve();
++   return new Promise((resolve) => {
++     const done = () => {
++       clearTimeout(timer);
++       signal.removeEventListener("abort", done);
++       resolve();
++     };
++     const timer = setTimeout(done, ms);
++     signal.addEventListener("abort", done, { once: true });
++   });
++ }
++ /**
++  * A loop's transport on its own Pub/Sub subscription `<topic>--<tile>--<module>` (QG08), through
++  * the official client in `JEEVES_PUBSUB_PROJECT` with Application Default Credentials (locally
++  * `PUBSUB_EMULATOR_HOST`), with the contract a RabbitMQ loop has:
++  * - one streaming-pull subscriber per loop, handing over at most the loop's Concurrency messages
++  *   at a time (`maxMessages`, no excess); the client extends each one's lease while it is in hand,
++  *   for at least the subscription's 60 s ack deadline (`minAckDeadline`), renewing it at most about
++  *   54 s apart, so a 5 s store wait has a wide margin; a consumer that crashes holding a message
++  *   gives it back only when that lease ends, up to 60 s later;
++  * - a message is acknowledged only after its handler resolves;
++  * - a retryable failure is nacked, and the subscription's retry policy spaces its redelivery;
++  * - a terminal one (a `NonRetryable`, or a failure on delivery attempt retry limit + 1) is
++  *   published to `<subscription>.failed` with its attributes and `x-terminal-code`, then
++  *   acknowledged once Pub/Sub has that copy (within 2000 ms); if it hasn't, the message is nacked;
++  * - an unreachable store keeps the message: 5 s later the handler runs again with the same message
++  *   and attempt;
++  * - a subscriber error, or a failed `.failed` copy, tells `onState` `unavailable` once, and
++  *   `available` when a message arrives again; a subscriber that closes on an error opens again 5 s
++  *   later, once its messages in hand have settled and its subscription answers (`available`), or
++  *   tries again 5 s after that. Nothing here fails the process.
++  * Closing stops taking messages, cuts a wait short (that message is nacked) and lets the handlers
++  * in hand settle, then closes the subscription, which nacks what it held back, and the client. A
++  * message's `attempt` is Pub/Sub's delivery attempt, which every redelivery counts, a nack at
++  * close or a lost lease too. Processes never create or change subscriptions. Probe: the
++  * subscription exists.
++  */
++ export function pubsubLoop(log: ProbeLog): LoopTransport {
++   return { retries: "transport", open: (options) => pubsubConsumer(log, options) };
++ }
++ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Promise<LoopConsumer> {
++   validateDeliveryBinding(options);
++   if (
++     !Number.isSafeInteger(options.concurrency) ||
++     options.concurrency < 1 ||
++     options.concurrency > 100000
++   )
++     throw new Error("Invalid consumer concurrency");
++   const client = new PubSub({
++     projectId: pubsubProjectId(),
++     ...pubsubChannel,
++   });
++   // The client's own lease starts at 10 s, which would shorten the subscription's 60 s deadline.
++   const subscribe = () =>
++     client.subscription(options.queue, {
++       flowControl: { maxMessages: options.concurrency, allowExcessMessages: false },
++       minAckDeadline: Duration.from({ seconds: 60 }),
++     });
++   const failedTopic = client.topic(options.failedQueue, { gaxOpts: { timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 } });
++   const answers = async (subscription: Subscription) => {
++     const [exists] = await subscription.exists();
++     if (!exists) throw new Error(`Pub/Sub subscription ${options.queue} not found`);
++   };
++   /** One subscriber: a lost one takes no message, and its client has nacked those it held. */
++   type Generation = { subscription: Subscription; lost: boolean; stop: AbortController };
++   let current: Generation | undefined;
++   const inFlight = new Set<Promise<void>>();
++   const progress = createConsumerProgress(options, () => inFlight.size);
++   let closing = false;
++   let retry: ReturnType<typeof setTimeout> | undefined;
++   let shutdown: Promise<void> | undefined;
++   let reported: "available" | "unavailable" | undefined;
++   const consumerScope = currentProcess(), readiness = {};
++   const report = (state: "available" | "unavailable", error?: unknown) => {
++     consumerScope?.dependencyReady?.(readiness, state === "available");
++     if (state === reported) return;
++     reported = state;
++     try {
++       options.onState?.(state, error);
++     } catch {
++       /* The consumer goes on as it would without the report. */
++     }
++   };
++   let finishClosed!: (result: { fatal: boolean }) => void;
++   const closed = new Promise<{ fatal: boolean }>((resolve) => {
++     finishClosed = resolve;
++   });
++
++   async function deliver(generation: Generation, message: Message) {
++     const attempt =
++       Number.isSafeInteger(message.deliveryAttempt) && message.deliveryAttempt >= 1
++         ? message.deliveryAttempt
++         : 1;
++     const id = message.attributes.messageId;
++     const delivery: Delivery = {
++       messageId: typeof id === "string" && id !== "" ? id : message.id,
++       headers: { ...message.attributes },
++       deliveryCount: attempt,
++       redelivered: attempt > 1,
++     };
++     for (;;) {
++       let failure: unknown;
++       try {
++         await options.handle(message.data, delivery);
++         progress.completed();
++         if (!generation.lost) message.ack();
++         return;
++       } catch (error) {
++         failure = error;
++       }
++       if (generation.lost) return;
++       const next = failureStep(failure, attempt, options.retryLimit);
++       if (next.step === "retry") return message.nack();
++       if (next.step === "wait") {
++         progress.state("storage-unavailable");
++         // The store failed, not the message: keep it and run it again with the same attempt.
++         await pause(UNREACHABLE_WAIT_MS, generation.stop.signal);
++         if (generation.lost) return;
++         if (closing) return message.nack();
++         continue;
++       }
++       try {
++         if (next.code === "OUTCOME_UNKNOWN") progress.state("unknown");
++         await within(
++           failedTopic.publishMessage({
++             data: message.data,
++             attributes: { ...message.attributes, "x-terminal-code": next.code },
++           }),
++           pubsubDeadlineMs,
++           "Publish deadline",
++         );
++         progress.quarantined();
++         if (!generation.lost) message.ack();
++       } catch (error) {
++         // Redelivered: the message is never lost, and the next delivery tries the copy again.
++         if (!generation.lost) message.nack();
++         report("unavailable", error);
++       }
++       return;
++     }
++   }
++   function open(subscription: Subscription): Generation {
++     const generation: Generation = { subscription, lost: false, stop: new AbortController() };
++     let cause: unknown;
++     subscription.on("error", (error: unknown) => {
++       cause = error;
++       if (!generation.lost && !closing) report("unavailable", error);
++     });
++     subscription.on("close", () =>
++       lose(generation, cause ?? new Error("Pub/Sub subscriber closed")),
++     );
++     // Adding the listener starts the streaming pull.
++     subscription.on("message", (message: Message) => {
++       // Draining or lost, a message stays with the client, which nacks it as it closes.
++       if (closing || generation.lost) return;
++       report("available");
++       const task = deliver(generation, message);
++       inFlight.add(task);
++       progress.report();
++       void task.finally(() => { inFlight.delete(task); progress.report(); }).catch(() => {});
++     });
++     return generation;
++   }
++   // A subscriber that closes on its own lost its stream for good: its client nacked what it held.
++   function lose(generation: Generation, error: unknown) {
++     if (closing || generation.lost) return;
++     generation.lost = true;
++     generation.stop.abort();
++     if (generation !== current) return;
++     current = undefined;
++     report("unavailable", error);
++     later();
++   }
++   function later() {
++     if (closing || retry) return;
++     retry = setTimeout(() => {
++       retry = undefined;
++       void reopen();
++     }, pubsubReopenMs);
++   }
++   async function reopen() {
++     // As a RabbitMQ consumer does, the next subscriber opens only after the lost one's messages
++     // settle, so the messages in hand never exceed the Concurrency.
++     await Promise.allSettled([...inFlight]);
++     if (closing) return;
++     const subscription = subscribe();
++     try {
++       await within(answers(subscription), 5000, "Pub/Sub check deadline");
++     } catch (error) {
++       report("unavailable", error);
++       later();
++       return;
++     }
++     if (closing) return;
++     current = open(subscription);
++     report("available");
++   }
++   function close(): Promise<void> {
++     if (shutdown) return shutdown;
++     closing = true;
++     clearTimeout(retry);
++     retry = undefined;
++     current?.stop.abort();
++     return (shutdown = (async () => {
++       await Promise.allSettled([...inFlight]);
++       const generation = current;
++       current = undefined;
++       if (generation) await generation.subscription.close().catch(() => {});
++       await client.close().catch(() => {});
++       progress.stop();
++       finishClosed({ fatal: false });
++     })());
++   }
++
++   const first = subscribe();
++   try {
++     await probed(
++       log,
++       { client: options.queue, kind: "queue", check: "the Pub/Sub subscription exists" },
++       () => answers(first),
++     );
++   } catch (error) {
++     await client.close().catch(() => {});
++     progress.stop();
++     throw error;
++   }
++   current = open(first);
++   report("available");
++   probeDependency(consumerScope, client, async () => {
++     if (!current || current.lost) throw Error("Subscriber unavailable");
++     await current.subscription.getMetadata({ timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 });
++     if (!closing && current && !current.lost && current.subscription.isOpen) report("available");
++   });
++   return { close, closed };
++ }
++ /** A stub cache's endpoint, `JEEVES_CACHE_<ID>_HOST` (a host, never a path) and `_PORT`, and its
++  * transport `_TLS` (`transport`), read in that order: the configuration pass checks it, and
++  * `cacheClient` reads it again as it builds its client. */
++ export function cacheClientEndpoint(cache: string) {
++   const hostname = endpoint(variable("CACHE", cache, "HOST"), host());
++   return {
++     hostname,
++     port: endpoint(variable("CACHE", cache, "PORT"), port),
++     tls: transport("CACHE", cache, hostname),
++   };
++ }
++ /** Product keys cannot read or mutate generated coordination state on a shared resource. */
++ function productCacheKey(key: string): void {
++   if (typeof key === "string" && key.startsWith("jeeves:"))
++     throw new OperationError("refused", "RESERVED_CACHE_KEY");
++ }
++ /** A cache (Valkey) with its password, through the cache read's bounded client
++  * (`createValkeyCache`): a caller settles within 150 ms and at most 32 actual commands remain pending; while no client is
++  * connected a command fails at once (`Cache unavailable`). A lost or stalled client is destroyed
++  * and a new one tried every 5 s; queue saturation preserves a healthy client. Each change is logged, a `cache <cache>` failure line when it
++  * is lost and an info line when it is available. Closing destroys the client, so a drain never
++  * waits on the cache. Its endpoint and transport come from `cacheClientEndpoint`. Probe: PING; a
++  * cache that is down at startup logs `unavailable` and the process starts without it. */
++ export async function cacheClient(
++   scope: ProcessScope,
++   log: ProbeLog,
++   binding: { cache: string },
++ ): Promise<CacheClient> {
++   return processClient(scope, "cacheClient", binding, async () => {
++   const failure = createFailureLog(log.tile);
++   const endpoints = cacheClientEndpoint(binding.cache);
++   const cacheBinding = { ...endpoints, secret: `cache-${binding.cache}` };
++   const cache = await processClient(scope, "valkey", cacheBinding, async () => ownResource(scope, await createValkeyCache({
++     binding: cacheBinding,
++     onState: (state, error) =>
++       state === "unavailable"
++         ? failure(`cache ${binding.cache}`, error ?? new Error("Cache unavailable"))
++         : console.log(
++             JSON.stringify({
++               level: "info",
++               event: "cache",
++               tile: log.tile,
++               cache: binding.cache,
++               state,
++             }),
++           ),
++   }), "close"));
++   const probe = { client: binding.cache, kind: "cache", check: "PING" };
++   try {
++     await cache.ping();
++     log({ level: "info", ...probe, result: "ok" });
++   } catch {
++     log({ level: "warn", ...probe, result: "unavailable" });
++   }
++   return {
++     async get(key) {
++       assertNetworkAllowed();
++       productCacheKey(key);
++       return (await cache.get(key)) ?? undefined;
++     },
++     async set(key, value, ttlSeconds) {
++       assertNetworkAllowed(true);
++       productCacheKey(key);
++       await cache.set(key, value, ttlSeconds ? { EX: ttlSeconds } : undefined);
++     },
++     async delete(key) {
++       assertNetworkAllowed(true);
++       productCacheKey(key);
++       await cache.delete(key);
++     },
++   };
++   });
++ }
++ /** A bucket through the tile's own key (`s3-<tile>`) with its link's read, write or both. Probe:
++  * HeadBucket, or for a write-only key opening and aborting a multipart upload. */
++ export async function objectClient(
++   scope: ProcessScope,
++   log: ProbeLog,
++   binding: { tile: string; bucket: string; access: "read" | "write" | "read-write" },
++ ): Promise<ObjectStore> {
++   return processClient(scope, "objectClient", binding, async () => {
++   const configuration = {
++     endpoint: "http://local-objects:3900",
++     healthEndpoint: "http://local-objects:3903/health",
++     region: "garage",
++     credentialSecret: `s3-${binding.tile}`,
++   };
++   const client = processClient(scope, "objects", configuration, () => ownResource(scope, createObjects(configuration), "destroy"));
++   const Bucket = binding.bucket;
++   const writeOnly = binding.access === "write";
++   await probed(
++     log,
++     {
++       client: Bucket,
++       kind: "object-store",
++       check: writeOnly ? "open and abort a multipart upload" : "HeadBucket",
++     },
++     async () => {
++       if (!writeOnly) return client.send(new HeadBucketCommand({ Bucket }));
++       const Key = `.probe/${binding.tile}`;
++       const { UploadId } = await client.send(new CreateMultipartUploadCommand({ Bucket, Key }));
++       return client.send(new AbortMultipartUploadCommand({ Bucket, Key, UploadId }));
++     },
++     scope.signal,
++   );
++   return {
++     async get(key) {
++       assertNetworkAllowed();
++       try {
++         return await dependency({ scope, definite: (error) => error instanceof Error && error.name === "NoSuchKey", preserveDefinite: true }, async (signal) => {
++           const object = await client.send(new GetObjectCommand({ Bucket, Key: key }), { abortSignal: signal });
++           return object.Body ? await object.Body.transformToByteArray() : new Uint8Array();
++         });
++       } catch (error) {
++         if (error instanceof Error && error.name === "NoSuchKey") return undefined;
++         throw error;
++       }
++     },
++     async put(key, body, contentType) {
++       assertNetworkAllowed(true);
++       await dependency({ scope, mutation: true }, (signal) => client.send(
++         new PutObjectCommand({
++           Bucket,
++           Key: key,
++           Body: body,
++           ...(contentType && { ContentType: contentType }),
++         }), { abortSignal: signal },
++       ));
++     },
++   };
++   });
++ }
++ /** A search index on its OpenSearch service. No index is created: a module's own mapping is custom
++  * work. Probe: cluster health. */
++ export async function searchClient(
++   scope: ProcessScope,
++   log: ProbeLog,
++   binding: { index: string },
++ ): Promise<SearchIndex> {
++   return processClient(scope, "searchClient", binding, async () => {
++   const configuration = {
++     endpoint: `http://search-${binding.index}:9200`,
++     requestTimeoutMs: 5000,
++   };
++   const client = processClient(scope, "search", configuration, () => ownResource(scope, createSearch(configuration), "close"));
++   await probed(log, { client: binding.index, kind: "search", check: "cluster health" }, () =>
++     client.cluster.health(),
++     scope.signal,
++   );
++   const index = binding.index;
++   return {
++     async search<Hit = Record<string, unknown>>(query: Record<string, unknown>) {
++       assertNetworkAllowed();
++       const result = await dependency({ scope }, () => client.search({ index, body: query }));
++       return result.body.hits.hits.map((hit) => hit._source as Hit);
++     },
++     async index(id, document) {
++       assertNetworkAllowed(true);
++       await dependency({ scope, mutation: true }, () => client.index({ index, id, body: document }));
++     },
++     async remove(id) {
++       assertNetworkAllowed(true);
++       await dependency({ scope, mutation: true }, () => client.delete({ index, id }));
++     },
++   };
++   });
++ }
++ /** An HTTP client on the base URL in the environment variable `name`, read now (an absolute
++  * `http:` or `https:` URL, else `Invalid endpoint <name>`; with `JEEVES_REQUIRE_TLS=true` it must
++  * be `https:`, else `Insecure endpoint <name>`). `request(path, init)` resolves `path` against the
++  * base and passes `init` to `fetch` as it is, so a stub bounds a call with
++  * `signal: AbortSignal.timeout(ms)` and adds its own headers (a credential from a `SECRET_DIR`
++  * file); the client reads no credential. It has no probe. With `internal`, a rejected `fetch` is
++  * marked `Symbol.for("jeeves.internal-call")`, so a lost connection waits as a store's does. */
++ function target(name: string, internal: boolean): HttpTarget {
++   const base = endpoint(name, url);
++   if (requireTls() && new URL(base).protocol !== "https:")
++     throw new Error(`Insecure endpoint ${name}`);
++   return {
++     request: async (path, init = {}) => {
++       assertNetworkAllowed();
++       if (init.signal?.aborted) throw new OperationError("refused", "CONTEXT_EXPIRED");
++       const destination = new URL(path, base);
++       const declared = new URL(base);
++       if (destination.origin !== declared.origin || destination.username || destination.password || destination.hash || init.credentials === "include")
++         throw new OperationError("refused", "UNDECLARED_DESTINATION");
++       const headers = new Headers(init.headers);
++       if ([...headers.keys()].some((key) => !["accept", "content-type", "if-none-match", "if-modified-since", "idempotency-key"].includes(key)))
++         throw new OperationError("refused", "PROTECTED_HEADER");
++       const context = currentOperation();
++       if (context) {
++         headers.set("x-jeeves-remaining-ms", String(Math.max(0, Math.floor(context.remainingMs()))));
++         headers.set("x-correlation-id", context.correlationId);
++       }
++       const mutation = !["GET", "HEAD"].includes((init.method ?? "GET").toUpperCase());
++       assertNetworkAllowed(mutation);
++       try {
++         return await dependency({ mutation }, async (signal) => {
++           const response = await fetch(destination, { ...init, headers, redirect: "manual", credentials: "omit", signal: init.signal ? AbortSignal.any([signal, init.signal]) : signal });
++           const chunks: Uint8Array[] = [];
++           let length = 0;
++           const reader = response.body?.getReader();
++           try {
++             while (reader) {
++               const part = await reader.read();
++               if (part.done) break;
++               length += part.value.byteLength;
++               if (length > 65536) { await reader.cancel(); throw new OperationError(mutation ? "unknown" : "definite-failure", "RESPONSE_TOO_LARGE"); }
++               chunks.push(part.value);
++             }
++           } finally { reader?.releaseLock(); }
++           return new Response(response.body === null ? null : Buffer.concat(chunks), { status: response.status, statusText: response.statusText, headers: response.headers });
++         });
++       } catch (error) {
++         if (internal && typeof error === "object" && error !== null && !(error instanceof OperationError && error.outcome === "unknown")) Reflect.set(error, Symbol.for("jeeves.internal-call"), true);
++         throw error;
++       }
++     },
++   };
++ }
++ /** Another application tile's process at `JEEVES_TILE_<ID>_URL` (locally `http://app-<id>:3000`,
++  * inside the network; with `JEEVES_REQUIRE_TLS=true` it must be `https:`, or startup fails
++  * `Insecure endpoint JEEVES_TILE_<ID>_URL`). It has no probe and no `depends_on`: that process may
++  * start after this one. Its failures count as an unreachable service: a rejected `fetch` is marked
++  * `Symbol.for("jeeves.internal-call")`, so a lost connection to that process waits as a store's
++  * does, not as an outside call. */
++ export function httpTarget(binding: { tile: string }): HttpTarget {
++   target(variable("TILE", binding.tile, "URL"), true);
++   return Object.freeze({ request: async () => { throw new OperationError("refused", "WORKLOAD_BINDING_REQUIRED"); } });
++ }
++ /** An External API at the base URL in the variable `base`, its `JEEVES_EXTERNAL_<ID>_URL`. The
++  * application sets it (locally in `compose.override.yaml`; `compose.yaml` doesn't), so until it is
++  * set startup fails `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL`; with `JEEVES_REQUIRE_TLS=true` it
++  * must be `https:`. A rejected `fetch` is not marked: an outside call keeps the normal retries. */
++ export function externalTarget(base: string): HttpTarget {
++   return target(base, false);
++ }
++ /** The Identity a sign-in binds, at `JEEVES_IDENTITY_<ID>_URL`: its base URL as this process
++  * reaches it (locally Keycloak inside the network, `http://identity-<id>:8080`, so a stub adds the
++  * realm's paths, `/realms/<id>/...`; a deployment sets its issuer's origin, or another address its
++  * processes reach; with `JEEVES_REQUIRE_TLS=true` it must be `https:`). A sign-in's `OIDC_ISSUER`
++  * is what tokens carry, which a container can't always reach, so it isn't the base. A provisioned
++  * service: a rejected `fetch` is marked `Symbol.for("jeeves.internal-call")`, so a lost connection
++  * waits as a store's does. */
++ export function identityTarget(binding: { identity: string }): HttpTarget {
++   return target(variable("IDENTITY", binding.identity, "URL"), true);
++ }
++
+
+ ❯ src/v2/pubsub.test.ts:263:21
+    261|     const clients = text(cloudExport, "src/runtime/module-clients.ts");
+    262|     expect(clients).toContain("export function pubsubLoop(log: ProbeLo…
+    263|     expect(clients).toContain(
+       |                     ^
+    264|       'import { UNREACHABLE_WAIT_MS, validateDeliveryBinding, type Del…
+    265|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |generator| src/v2/tile-loop.test.ts > emitted stub loops (tile process contract, section 5) > retries other errors 5 times, waiting 250 ms doubling up to 10 s, then RETRY_EXHAUSTED
+AssertionError: expected { level: 'error', …(8) } to deeply equal { level: 'error', …(8) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  {
+    "action": "retry 1 of 5 in 250 ms",
+    "attempt": 1,
+-   "error": "TypeError: boom",
++   "error": "PROCESSING_FAILED",
+    "event": "loop-error",
+    "level": "error",
+    "messageId": "first",
+    "module": "visit-consumer",
+    "queue": "visits--visit-worker",
+
+ ❯ src/v2/tile-loop.test.ts:270:22
+    268|       { ack: "first" },
+    269|     ]);
+    270|     expect(lines[0]).toEqual({
+       |                      ^
+    271|       level: "error",
+    272|       event: "loop-error",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |generator| src/v2/tile-loop.test.ts > emitted stub loops (tile process contract, section 5) > leaves an unreachable store to the runner: one 5 s wait, the attempt not counted
+AssertionError: expected [ { level: 'error', …(8) } ] to deeply equal [ { level: 'error', …(8) } ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  [
+    {
+      "action": "store unreachable, retry in 5000 ms (attempt not counted)",
+      "attempt": 5,
+-     "error": "Error: Connection terminated unexpectedly",
++     "error": "DEPENDENCY_UNAVAILABLE",
+      "event": "loop-error",
+      "level": "error",
+      "messageId": "lost",
+      "module": "visit-consumer",
+      "queue": "visits--visit-worker",
+
+ ❯ src/v2/tile-loop.test.ts:323:19
+    321|       { ack: "lost" },
+    322|     ]);
+    323|     expect(lines).toEqual([
+       |                   ^
+    324|       {
+    325|         level: "error",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |generator| src/v2/tile-loop.test.ts > emitted template loops > logs an unreachable store as a wait that keeps the attempt, past the template's limit
+AssertionError: expected [ { level: 'error', …(8) } ] to deeply equal [ { level: 'error', …(8) } ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  [
+    {
+      "action": "store unreachable, retry in 5000 ms (attempt not counted)",
+      "attempt": 11,
+-     "error": "Error: terminating connection due to administrator command",
++     "error": "DEPENDENCY_UNAVAILABLE",
+      "event": "loop-error",
+      "level": "error",
+      "messageId": "e1",
+      "module": "handler-writer",
+      "queue": "completion-events--completion-handler",
+
+ ❯ src/v2/tile-loop.test.ts:593:19
+    591|     // Rethrown unchanged, so the runner sees it and waits.
+    592|     await expect(handle(Buffer.from("{}"), delivery(11))).rejects.toBe…
+    593|     expect(lines).toEqual([
+       |                   ^
+    594|       {
+    595|         level: "error",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |generator| src/v2/tile-loop.test.ts > emitted Pub/Sub stub loops (QG08) > nacks another error at once, for the subscription to space, until a failure on attempt 6 ends in .failed as RETRY_EXHAUSTED
+AssertionError: expected { level: 'error', …(8) } to deeply equal { level: 'error', …(8) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  {
+    "action": "retry 1 of 5",
+    "attempt": 1,
+-   "error": "TypeError: boom",
++   "error": "PROCESSING_FAILED",
+    "event": "loop-error",
+    "level": "error",
+    "messageId": "first",
+    "module": "visit-consumer",
+    "queue": "visits--visit-worker",
+
+ ❯ src/v2/tile-loop.test.ts:999:26
+    997|     // No retryDelay wait: the subscription's retry policy spaces the …
+    998|     expect(after(start)).toEqual([["nack", "first"]]);
+    999|     expect(lines.at(-1)).toEqual({
+       |                          ^
+    1000|       level: "error",
+    1001|       event: "loop-error",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |generator| src/v2/tile-loop.test.ts > emitted Pub/Sub stub loops (QG08) > keeps a message whose store is unreachable and runs it again 5 s later with the same attempt
+AssertionError: expected [ { level: 'error', …(8) }, …(1) ] to deeply equal [ { level: 'error', …(8) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  [
+    {
+      "action": "store unreachable, retry in 5000 ms (attempt not counted)",
+      "attempt": 4,
+-     "error": "Error: connect ECONNREFUSED",
++     "error": "DEPENDENCY_UNAVAILABLE",
+      "event": "loop-error",
+      "level": "error",
+      "messageId": "lost",
+      "module": "visit-consumer",
+      "queue": "visits--visit-worker",
+
+ ❯ src/v2/tile-loop.test.ts:1133:65
+    1131|       Array(3).fill(expect.objectContaining({ messageId: "lost", attem…
+    1132|     );
+    1133|     expect(lines.filter((line) => line.event === "loop-error")).toEqua…
+       |                                                                 ^
+    1134|       {
+    1135|         level: "error",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  4 failed | 1 passed (5)
+      Tests  8 failed | 47 passed (55)
+   Start at  19:24:45
+   Duration  3.68s (tests 55%, import 24%, transform 21%)

@@ -1,0 +1,54 @@
+Evidence sanitization: embedded data-URL source addresses elided; failure messages/assertions/locations retained.
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/receipt-lifecycle.test.ts (9 tests | 2 failed) 9029ms
+   ❯ RG18 receipt lifecycle (4)
+     × uses immutable store-time deadlines, refuses insufficient retention and sweeps bounded indexed backlog without arrivals 1286ms
+   ❯ RG18 scoped generic consumer (3)
+     × refuses getter/async mapping, captured handles, wrong binding and poison without raw ACK or SQL access 2872ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/receipt-lifecycle.test.ts > RG18 receipt lifecycle > uses immutable store-time deadlines, refuses insufficient retention and sweeps bounded indexed backlog without arrivals
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "expiry": "2026-11-24 12:00:00+00",
++     "expiry": "2026-11-24 06:00:00-06",
+    },
+  ]
+
+ ❯ src/v2/receipt-lifecycle.test.ts:42:110
+     40|   mutable.retentionSeconds=1;
+     41|   for(let i=0;i<4;i++)await transaction(f.pool,(tx:unknown)=>store.wit…
+     42|   expect((await f.pg.query("SELECT DISTINCT retain_until::text expiry …
+       |                                                                                                              ^
+     43|   expect(()=>createReceipts({schema:"jeeves",table:"consumer_receipts"…
+     44|   await f.pg.exec("INSERT INTO jeeves.consumer_receipts(scope_key,even…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > refuses getter/async mapping, captured handles, wrong binding and poison without raw ACK or SQL access
+Error: Receipt consumer binding unavailable
+ ❯ engine ../[generated-module address elided]:113:56
+ ❯ Module.invokeReceiptConsumer ../[generated-module address elided]:117:43
+ ❯ src/v2/receipt-lifecycle.test.ts:125:24
+    123|   expect(()=>runtime.validateReceiptConsumerBinding(captured.declarati…
+    124|   expect(()=>runtime.validateReceiptConsumerBinding(captured.declarati…
+    125|   await expect(runtime.invokeReceiptConsumer(captured.declaration,{}, …
+       |                        ^
+    126|  });
+    127|  it("holds the actual transaction after caller timeout and never relea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  19:27:36
+   Duration  9.72s (tests 94%, transform 4%, import 2%)

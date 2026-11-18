@@ -28,7 +28,7 @@ import {
   uploadLifecycle,
 } from "./http-wiring.ts";
 import { pubsubSubscription, stubPubsub, subscriberQueue } from "./local-contract.ts";
-import { moduleEntryName, moduleStubPaths } from "./module-stubs.ts";
+import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs.ts";
 
 const tileLoop = "../runtime/tile-loop.ts";
 const tileSearch = "../runtime/tile-search.ts";
@@ -517,6 +517,10 @@ const eventCounter: Builder = (process, selection, lead, selections, index) => {
     sourcePaths: [pointer(selection.sourcePath)],
   });
   const loop = templateQueue({ process, selections }, selection, lead, "events");
+  const receiptRetention = {
+    deliveryHorizonSeconds: Number(selection.inputs["receipt.deliveryHorizonSeconds"]),
+    retentionSeconds: 604800,
+  };
   const hook = (name: string, signature: string, comment: string) => [
     `    /** ${comment} */`,
     `    ${signature} {`,
@@ -546,7 +550,7 @@ const eventCounter: Builder = (process, selection, lead, selections, index) => {
       `  await db.query("SELECT 1");`,
       "  const worker = await startCounterWorker({",
       "    pool: db,",
-      `    counter: createEventCounter(binding.tables, watchHooks(productHooks(${hooks}()), loopLog, ${text(lead.module)})),`,
+      `    counter: createEventCounter(binding.tables, watchHooks(productHooks(${hooks}()), loopLog, ${text(lead.module)}), binding.receiptRetention),`,
       "    openConsumer: (handle) =>",
       ...consumer(index, loop.queue),
       "  });",
@@ -556,7 +560,44 @@ const eventCounter: Builder = (process, selection, lead, selections, index) => {
     configure: [],
     initialize: [],
     started: [],
-    config: [id, { template: "event-counter", lead: lead.module, tables }],
+    config: [id, { template: "event-counter", lead: lead.module, tables, receiptRetention }],
+    operations: [
+      {
+        path: `src/operations/${process.tile}-${lead.module}-receipts.ts`,
+        ownership: "generated-scaffold",
+        sourcePaths: [pointer(selection.sourcePath)],
+        content: `/** Internal operator command. Run under this worker's existing precise credentials.
+ * node dist/operations/${process.tile}-${lead.module}-receipts.js status
+ * node dist/operations/${process.tile}-${lead.module}-receipts.js requeue <head-message-id>
+ * Reconcile poison/configuration first. Unknown effects refuse requeue. */
+import { createProcessLifecycle } from "../runtime/process.ts";
+import { operation, withOperation, dependency } from "../runtime/operation.ts";
+import { selected, pool, brokerBinding, validateTemplateSettings } from "../features/service-resources.ts";
+import { createReceipts } from "../runtime/receipts.ts";
+import { transaction } from "../runtime/transaction.ts";
+import { requeueCounterQuarantine } from "../runtime/amqp.ts";
+const args = process.argv.slice(2);
+if (!(args.length === 1 && args[0] === "status") && !(args.length === 2 && args[0] === "requeue"))
+  throw Error("RECEIPT_OPERATION_ARGUMENTS");
+const lifecycle = createProcessLifecycle({ mark: () => {} });
+await lifecycle.start(async (scope) => {
+  validateTemplateSettings(${text(process.tile)});
+  const execution = operation({ maximumMs: 5000, signals: [scope.signal] });
+  try { await withOperation(execution.context, async () => {
+    if (args[0] === "status") {
+      const receipts = createReceipts(${JSON.stringify(tables.receipts)}, { payload: input => input, result: input => input }, ${JSON.stringify(receiptRetention)});
+      const db = pool(scope, selected("event-counter", ${text(id)}), "state");
+      console.log(JSON.stringify(await transaction(db, tx => receipts.status(tx), { readOnly: true })));
+    } else {
+      await dependency({ mutation: true }, () => requeueCounterQuarantine(brokerBinding(), ${JSON.stringify({ queue: loop.queue, failedQueue: loop.failedQueue, retryLimit: loop.retryLimit })}, args[1]!));
+      console.log(JSON.stringify({ requeued: true }));
+    }
+  }); } finally { execution.close(); }
+});
+await lifecycle.close();
+`,
+      },
+    ],
     routes: [],
     loops: [
       {
@@ -746,6 +787,9 @@ function stubLoops(
   const from = (path: string) => `../${path.slice("src/".length)}`;
   // A Worker's Concurrency (v3 contract, section 4); one message at a time beside HTTP routes.
   const concurrency = process.worker?.concurrency.value ?? 1;
+  const stubPropertiesForReceipt = stub.stores?.some(
+    (store) => store.kind === "database" && store.access !== "read",
+  );
   const templated = generationTemplateQueues(selections);
   // Which loops consume a Pub/Sub topic, in the order of `loops`.
   const pubsub = (stub.consumes ?? []).map((queue) =>
@@ -768,6 +812,9 @@ function stubLoops(
   return {
     imports: [
       { from: tileLoop, name: "startModuleLoop" },
+      ...(stubPropertiesForReceipt
+        ? [{ from: "../runtime/receipt-consumer.ts", name: "invokeReceiptConsumer" }]
+        : []),
       ...(loops.length ? [brokerStateImport] : []),
       ...(pubsub.some((item) => !item)
         ? [{ from: "../runtime/module-clients.ts", name: "brokerBinding" }]
@@ -782,7 +829,9 @@ function stubLoops(
     setup: loops.flatMap((loop, offset) => [
       `// ${line(module.name)}: a loop on ${pubsub[offset] ? "the Pub/Sub subscription " : ""}${loop.queue}.`,
       `await startModuleLoop(scope, loopLog, ${loopLine(first + offset)}, (message) =>`,
-      `  ${entry}(dependencies[${text(id)}], message),`,
+      stubPropertiesForReceipt
+        ? `  invokeReceiptConsumer((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, dependencies[${text(id)}], message, () => ${entry}(dependencies[${text(id)}], message)),`
+        : `  ${entry}(dependencies[${text(id)}], message),`,
       `  ${brokerState(`broker consume ${loop.queue}`)},`,
       pubsub[offset] ? "  pubsubLoop(probe)," : "  brokerBinding(),",
       ");",
@@ -792,6 +841,98 @@ function stubLoops(
     started: [],
     routes: [],
     loops,
+    operations: stubPropertiesForReceipt
+      ? [
+          ...loops.map((loop, offset) => ({
+            path: `src/operations/${process.tile}-${id}-requeue-${offset}.ts`,
+            ownership: "generated-scaffold" as const,
+            sourcePaths: [pointer(selection.sourcePath)],
+            content: `/** Internal explicit requeue, under the existing worker credentials. */
+import * as Module from "../modules/${process.tile}/${id}.ts";
+import { validateReceiptConsumerBinding } from "../runtime/receipt-consumer.ts";
+import { createProcessLifecycle } from "../runtime/process.ts";
+import { operation, withOperation, dependency } from "../runtime/operation.ts";
+${pubsub[offset] ? "" : 'import { brokerBinding } from "../runtime/module-clients.ts";'}
+${pubsub[offset] ? "" : 'import { requeueCounterQuarantine } from "../runtime/amqp.ts";'}
+const args = process.argv.slice(2);
+if (args.length !== 1) throw Error("RECEIPT_OPERATION_ARGUMENTS");
+const declaration = (Module as { receiptConsumer?: unknown }).receiptConsumer;
+validateReceiptConsumerBinding(declaration, ${JSON.stringify(
+              stubProperties(module, true)
+                .filter((p) => p.type === "DatabaseReadWriter")
+                .map((p) => p.property),
+            )}, true);
+if (!declaration) throw Error("UNGUARDED_REQUEUE_UNSUPPORTED");
+${
+  pubsub[offset]
+    ? 'throw Error("PUBSUB_REQUEUE_UNSUPPORTED");'
+    : `const lifecycle = createProcessLifecycle({ mark: () => {} });
+await lifecycle.start(async (scope) => {
+  const execution = operation({ maximumMs: 5000, signals: [scope.signal] });
+  try { await withOperation(execution.context, () => dependency({ mutation: true },
+    () => requeueCounterQuarantine(brokerBinding(), ${JSON.stringify({ queue: loop.queue, failedQueue: loop.failedQueue, retryLimit: loop.retryLimit })}, args[0]!)));
+    console.log(JSON.stringify({ requeued: true }));
+  } finally { execution.close(); }
+});
+await lifecycle.close();`
+}
+`,
+          })),
+          {
+            path: `src/operations/${process.tile}-${id}-receipt-status.ts`,
+            ownership: "generated-scaffold" as const,
+            sourcePaths: [pointer(selection.sourcePath)],
+            content: `/** Internal bounded observation under this process's precise framework login.
+ * Creates no worker heartbeat and never marks a stopped consumer as live. */
+import * as Module from "../modules/${process.tile}/${id}.ts";
+import { receiptConsumerDefinition } from "../runtime/receipt-consumer.ts";
+import { createProcessLifecycle } from "../runtime/process.ts";
+import { operation, withOperation } from "../runtime/operation.ts";
+import { prepareProductDatabase } from "../runtime/module-clients.ts";
+import { createPostgres } from "../runtime/postgres.ts";
+import { createReceipts } from "../runtime/receipts.ts";
+import { transaction } from "../runtime/transaction.ts";
+if (process.argv.length !== 2) throw Error("RECEIPT_OPERATION_ARGUMENTS");
+const declaration = (Module as { receiptConsumer?: unknown }).receiptConsumer;
+if (!declaration) throw Error("UNGUARDED_RECEIPT_STATUS_UNSUPPORTED");
+const candidates = ${JSON.stringify(
+              stubProperties(module, true)
+                .filter(
+                  (p) => p.type === "DatabaseReadWriter" && p.connection.target.kind === "element",
+                )
+                .map((p) => {
+                  const target = p.connection.target;
+                  if (target.kind !== "element") throw Error("Database target required");
+                  return {
+                    tile: process.tile,
+                    module: module.component,
+                    resource: generationLocalIdentity(target.element).local,
+                    property: p.property,
+                    writable: true,
+                    owner:
+                      process.productAccess?.find((access) => access.resource === target.element)
+                        ?.owner ?? process.tile,
+                  };
+                }),
+            )};
+const selected = candidates.find(binding => receiptConsumerDefinition(declaration,binding.property,true));
+if (!selected) throw Error("RECEIPT_STATUS_BINDING_UNAVAILABLE");
+const prepared = prepareProductDatabase({...selected,receipt:declaration});
+if (!prepared.receipt || !prepared.runtimeLogin) throw Error("RECEIPT_STATUS_BINDING_UNAVAILABLE");
+const configuration = {...prepared.configuration,login:prepared.runtimeLogin};
+const lifecycle = createProcessLifecycle({mark:()=>{}});
+await lifecycle.start(async scope => {
+  const db = createPostgres(configuration); db.on("error",()=>{}); scope.own(()=>db.end());
+  const receipts = createReceipts({schema:"jeeves",table:"consumer_receipts"},{payload:input=>input,result:input=>input},prepared.receipt!.definition);
+  const execution = operation({maximumMs:5000,signals:[scope.signal]});
+  try {console.log(JSON.stringify(await withOperation(execution.context,()=>transaction(db,tx=>receipts.status(tx,${text(module.component)}),{readOnly:true}))));}
+  finally {execution.close();}
+});
+await lifecycle.close();
+`,
+          },
+        ]
+      : [],
     service: service(),
     local: {},
   };

@@ -1,6 +1,6 @@
 import { durableIdentity, jsonPayload, qualifiedRelation } from "./durable-sql.ts";
 import { validateCounterTables, type CounterTables } from "./counter-sql.ts";
-import { createReceipts } from "./receipts.ts";
+import { createReceipts, type ReceiptRetention } from "./receipts.ts";
 import { type Tx } from "./transaction.ts";
 
 export interface CounterAdapter<Event> {
@@ -29,7 +29,7 @@ function counterEvent(input: unknown, eventId?: string): CounterEvent {
 }
 /** No qualification, arbitrary amount or network effect: every accepted event adds exactly one.
  * Caller owns the transaction, so receipt and increment commit before delivery acknowledgement. */
-export function createEventCounter<Event>(binding: CounterTables, adapter: CounterAdapter<Event>) {
+export function createEventCounter<Event>(binding: CounterTables, adapter: CounterAdapter<Event>, retention?: ReceiptRetention) {
   validateCounterTables(binding);
   const totals = qualifiedRelation(binding.totals);
   const receipts = createReceipts(binding.receipts, {
@@ -39,8 +39,10 @@ export function createEventCounter<Event>(binding: CounterTables, adapter: Count
       if (value !== true) throw new Error("Invalid counter receipt result");
       return true as const;
     },
-  });
+  }, retention);
   return {
+    receipts,
+    lifecycle: retention ? receipts : undefined,
     parse(input: unknown, messageId?: string): CounterEvent {
       if (messageId !== undefined) durableIdentity(messageId);
       const event = adapter.event(input, messageId);
@@ -53,7 +55,8 @@ export function createEventCounter<Event>(binding: CounterTables, adapter: Count
     async record(tx: Tx, event: CounterEvent): Promise<boolean> {
       const result = await receipts.withEffect(
         tx,
-        { scopeKey: event.aggregateKey, eventId: event.eventId, payload: event },
+        // The aggregation destination may contain a date. It is content, never receipt scope.
+        { scopeKey: "event-counter-v2", eventId: event.eventId, payload: event },
         async (sameTx, parsed) => {
           if (parsed.aggregateKey !== event.aggregateKey) throw new Error("Counter aggregate mismatch");
           await sameTx.query(

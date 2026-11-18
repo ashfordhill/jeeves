@@ -309,7 +309,7 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       'loopConsumer(config.loops[0], templateHandler(loopLog, config.loops[0], handle), { ...consumerHooks, onState: brokerState(config.tile, failure, "broker consume upload-queue") }, brokerBinding()),',
     );
     expect(text(v2, "src/processes/view-counter.ts")).toContain(
-      'counter: createEventCounter(binding.tables, watchHooks(productHooks(counterSumHooks()), loopLog, "counter-sum")),',
+      'counter: createEventCounter(binding.tables, watchHooks(productHooks(counterSumHooks()), loopLog, "counter-sum"), binding.receiptRetention),',
     );
     const indexer = text(v2, "src/processes/search-indexer.ts");
     expect(indexer).toContain(
@@ -400,8 +400,10 @@ describe("consume loops (tile process contract, sections 3-5)", () => {
       "completion-handler upload_multipart.receipts SELECT,INSERT,UPDATE",
       "upload upload_multipart.uploads SELECT,INSERT,UPDATE",
       "upload upload_multipart.outbox SELECT,INSERT,UPDATE",
-      "view-counter counter_sum.receipts SELECT,INSERT,UPDATE",
+      "view-counter counter_sum.receipts SELECT,INSERT,UPDATE,DELETE",
       "view-counter counter_sum.totals SELECT,INSERT,UPDATE",
+      "view-counter counter_sum.receipts_maintenance SELECT,INSERT,UPDATE,DELETE",
+      "view-counter counter_sum.receipts_workers SELECT,INSERT,UPDATE,DELETE",
       // Watch's View count reader stub reads another owner's database: its published view only.
       "watch counter_sum_public.totals SELECT",
     ]);

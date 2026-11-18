@@ -16,6 +16,10 @@ const clientLibraries: Record<ClientSection, string[]> = {
     "product-mutation",
     "durable-work",
     "work-integration",
+    "receipt-consumer",
+    "receipts",
+    "durable-sql",
+    "delivery",
   ],
   // The broker's endpoint alone needs no library: its publisher and loops bring theirs.
   broker: [],
@@ -75,6 +79,16 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
         add(["transaction"], ["generation", "processes"]);
       if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
         modules.delete("transaction");
+      if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
+        modules.delete("durable-sql");
+      if (
+        model.selections.some(
+          (selection) =>
+            durableKinds.includes(selection.binding.kind) && selection.binding.kind !== "favorites",
+        )
+      ) {
+        modules.delete("receipts");
+      }
       if (model.selections.some((s) => s.binding.kind === "webhook-receiver"))
         add(["webhook"], ["generation", "processes"]);
       for (const selection of model.selections) {
@@ -107,7 +121,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
           .sort(([a], [b]) => v2Compare(a, b))
           .map(([name, paths]) => ({
             path: `src/runtime/${name}.ts`,
-            content: asset(`${assets}${name}.ts.template`),
+            content: asset(`${assets}${name}.ts${name === "durable-sql" ? "" : ".template"}`),
             ownership: "generated-scaffold" as const,
             sourcePaths: [...paths].sort(),
           })),

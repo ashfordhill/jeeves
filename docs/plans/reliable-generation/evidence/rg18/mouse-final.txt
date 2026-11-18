@@ -1,0 +1,45 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3714980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3714999) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3715093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:3715152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › jeeves/apps/web/e2e/receipt-consumer.spec.ts:10:1 › RG18 edits the receipt delivery horizon by mouse and exports guarded consumer operations (7.1s)
+
+
+  1) [chromium] › jeeves/apps/web/e2e/receipt-consumer.spec.ts:10:1 › RG18 edits the receipt delivery horizon by mouse and exports guarded consumer operations
+
+    TypeError: Cannot read properties of undefined (reading 'findings')
+
+      83 |     await page.getByRole("button", { name: "Preview scaffold", exact: true }).click();
+      84 |     const result = await (await preview).json();
+    > 85 |     expect(result.report.findings).toEqual([]);
+         |                          ^
+      86 |     const download = page.waitForEvent("download");
+      87 |     await page.getByRole("button", { name: "Download project ZIP", exact: true }).click();
+      88 |     expect((await download).suggestedFilename()).toMatch(/\.zip$/);
+        at /home/ash/github/jeeves/jeeves/apps/web/e2e/receipt-consumer.spec.ts:85:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › jeeves/apps/web/e2e/receipt-consumer.spec.ts:10:1 › RG18 edits the receipt delivery horizon by mouse and exports guarded consumer operations

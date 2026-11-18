@@ -1,0 +1,33 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |server| src/chat/receipt-consumer.test.ts (1 test | 1 failed) 287ms
+   ❯ RG18 receipt authoring parity (1)
+     × consumes the finite horizon in mouse/chat/blueprint/export and exposes optional owned consumer state 286ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |server| src/chat/receipt-consumer.test.ts > RG18 receipt authoring parity > consumes the finite horizon in mouse/chat/blueprint/export and exposes optional owned consumer state
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/chat/receipt-consumer.test.ts:70:132
+     68|     events.settings.provider = "google-cloud";
+     69|     const refused = resolveGeneration(unsupported, registry.installed);
+     70|     expect(refused.findings.some(finding => finding.code === "CONFIG_U…
+       |                                                                                                                                    ^
+     71|     expect(() => assembleV2({designJson:JSON.stringify(unsupported)},r…
+     72|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:57:15
+   Duration  1.22s (transform 55%, tests 25%, import 20%)

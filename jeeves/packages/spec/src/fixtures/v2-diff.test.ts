@@ -18,6 +18,7 @@ describe("the v2 rebuild diff", () => {
       "tile setting: Upload API.requestTimeoutMs",
       "tile setting: View counter.concurrency",
       "tile setting: Watch API.concurrencyLimit",
+      "module setting: Receipt and increment.deliveryHorizonSeconds",
       "module setting: Video details cache.freshness",
       "module setting: Video details cache.transport",
       "module setting: Video details reader.poolSize",

@@ -19041,3 +19041,59 @@ workload settings the same way.
   Other27 original protected paths match exactly; archived Zone.Identifier deletion matches via
   owner remapping; six non-README root hashes/all42 containers match. Ongoing owner changes excluded.
 - One explicit-path completion commit follows with the assigned RG17 subject; stop for review.
+
+## 2026-11-17 — RG18 receipt lifecycle active, unaccepted/uncommitted
+
+- Sole assigned RG18 on accepted RG17 `9818976`; reviewing receipt/counter/delivery adapters before
+  adding store-time retention, independent bounded maintenance and truthful consumer progress.
+- Existing aggregate-scoped counter receipts allow date-derived aggregate changes to evade event
+  dedupe. The unit will use stable event scope and append migrations, preserving applied100/052 SQL;
+  ambiguous legacy duplicate event IDs require explicit reconciliation rather than silent merge.
+- Final mechanism/export/D11 checks, evidence, final handoff and one explicit-path commit remain.
+  No later unit, native matrix, root edit, owner service/database, paid/live call, push or deployment.
+
+## 2026-11-17 — RG18 implementation/checkpoint active, unaccepted/uncommitted
+
+- Receipt-backed Event counter now uses global event identity, fixed seven-day store-time retained
+  deadlines and append-only101 migration (legacy duplicates refuse). Original100/052 bytes unchanged.
+  API8 `defineReceiptConsumer` binds existing owned-state delivery stubs to scoped product commands;
+  protected053 receipt/progress state, independent maintenance and transactional durable progress
+  are implemented. Consumer IDs, bounded status/truncation and honest unknown/stale state are exposed.
+- Internal counter status/requeue and generic status/requeue entry points are generated; generic
+  status uses precise framework credentials and read-only queries without inventing a heartbeat.
+  Conflict/unknown requeue refuse. Total horizon includes retry/quarantine/operator delay; effects
+  may repeat after retention cleanup outside that declared window. No public admin service added.
+- Actual91/74/71-file combined/generic/API exports pass real checker/TS7.0.2; updated generic status
+  export recheck is running. Focused14/14 mechanism/observation proofs pass. Full check lint/types
+  pass and1275/1276 tests: untouched Board's selected chrome raced layout readiness; unchanged
+  focused rerun pending. Browser84/85: new state/horizon mouse passes; long rebuild only needs an
+  exact expected horizon row, now corrected with the existing assertions retained; rerun is active.
+- Final review found Pub/Sub terminal copies must preserve fallback native message ID and bound
+  actual pending publications past timeout. Fixes/standalone Pub/Sub compilation, final full check,
+  evidence/preservation receipt/final handoff and one explicit-path commit remain. No later unit,
+  native matrix, root edit, owner studio/DB, paid/live call, push or deployment. Owner feedback
+  parent `a3a26fa` is preserved. Six non-README root hashes/all42 containers/original owner diff match.
+
+## 2026-11-17 — RG18 bounded receipt lifecycle complete for coordinator review
+
+- Event counter now dedupes globally across aggregate/date changes; conflicting content quarantines.
+  Append-only101 refuses ambiguous legacy IDs and preserves applied100 SQL. Generic owned-state
+  Event consumers opt into API8 receiptConsumer/scoped commands; protected053, actual command drain,
+  receipt/effect/progress commit before ACK. Accepted052/final durable-work fences stay unchanged.
+- Immutable DB-time retention deadlines survive shorter configurations; indexed independent bounded
+  cleanup exposes backlog/last success without capacity claims. Consumer-attributed heartbeat,
+  transactionally durable progress, unknown broker depth and stale/truncated observations remain
+  distinct. Generated bounded counter/generic status reads do not fabricate a worker heartbeat.
+- Internal requeue preserves original identity/bytes and confirms before ACK, refusing conflict/
+  unknown/unguarded loops. Total horizon includes retries/quarantine/operator delay; out-of-horizon
+  replay requires reconciliation after cleanup. Pub/Sub retains native retries/nacks, original IDs
+  in quarantine and bounded actual pending copies/drain; its requeue CLI explicitly refuses.
+- Final pnpm check lint/types142files/1278tests pass. Actual92/75/76/71-file combined/generic/PubSub/
+  API scratch exports pass checker/TS7.0.2; web build/offline chat pass. Browser84/85 plus affected
+  long rebuild1/1 accounts85 unique; final new state/horizon mouse/export1/1. Earlier stale exact
+  expectations/one untouched Board mount race and corrections remain in [evidence](plans/reliable-generation/evidence/rg18/README.md).
+- Controlled PGlite/SDK proofs do not claim native competing-process/broker-kill certification;
+  the later assigned checkpoint remains. All RG18 E2E projects removed. Six original non-README
+  root hashes, exact original owner patch under archive remapping, frozen v1 and42 container
+  IDs/names/states match. Owner `a3a26fa`/README work preserved and excluded. One explicit-path local
+  commit follows: `RG18: bound receipt lifecycle and expose truthful consumer progress`; no push/deploy.

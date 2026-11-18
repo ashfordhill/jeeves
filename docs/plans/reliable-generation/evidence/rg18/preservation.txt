@@ -1,0 +1,8 @@
+Six original non-README root files unchanged; owner README current SHA256 4740df6f73b13970cadc98fea08df32d49750aa250f429251953779948198aeb
+Original 28-path 34001-byte owner patch preserved exactly after owner archive mapping; normalized patch: 34021 bytes 41ae1b776e3d9e3f27d0d44560f3a4f9f61f60fea78e2b5abef813809cbe3f15
+All 42 original container IDs/names/states unchanged
+Frozen v1 untouched
+100 counter SQL builder and original receiptSchema bytes unchanged
+Accepted052 literal unchanged: 75707a0b45af22539c77359dd9ea9543fa63e44e62213c630b8dbeee205ccf3c
+HEAD a3a26fa9f18ce1e7e28c2739c24cdf4f0d6063e5
+Index paths: (empty)

@@ -23,6 +23,7 @@ export const studioComponentLimits = {
   action: 60,
   intervalSeconds: { min: 1, max: 604_800 },
   replayWindowSeconds: { min: 30, max: 300 },
+  deliveryHorizonSeconds: { min: 1, max: 604_800 },
   rateLimit: { min: 1, max: 1_000_000 },
   windowSeconds: { min: 1, max: 604_800 },
   l1MaxEntries: { min: 1, max: 10_000_000 },
@@ -207,6 +208,7 @@ export const studioVideoThumbnailerSettingsSchema = z.strictObject({
 });
 export const studioEventCounterSettingsSchema = z.strictObject({
   kind: z.literal("event-counter"),
+  deliveryHorizonSeconds: bounded(studioComponentLimits.deliveryHorizonSeconds).default(604800),
 });
 export const studioIndexWriterSettingsSchema = z.strictObject({ kind: z.literal("index-writer") });
 export const studioSearchQuerySettingsSchema = z.strictObject({ kind: z.literal("search-query") });
@@ -303,7 +305,7 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
     "video-encoder": { kind: "video-encoder" },
     "video-packager": { kind: "video-packager" },
     "video-thumbnailer": { kind: "video-thumbnailer" },
-    "event-counter": { kind: "event-counter" },
+    "event-counter": { kind: "event-counter", deliveryHorizonSeconds: 604800 },
     "index-writer": { kind: "index-writer" },
     "search-query": { kind: "search-query" },
     favorites: { kind: "favorites" },
@@ -776,9 +778,12 @@ export const studioComponentDefinitions: {
     browserHost: false,
     hosts: anyHost,
     scope: "generic",
-    slots: [slot("channel", ["queue"], "consume")],
+    slots: [
+      slot("channel", ["queue"], "consume"),
+      slot("state", ["database"], "read-write", "optional"),
+    ],
     generation: part("asset-lifecycle", "video-hls", "event-counter", "search-projection"),
-    targets: ["queue"],
+    targets: ["queue", "database"],
     channelUse: "consume",
     fields: [
       integer("concurrency", "Concurrency", L.concurrency),
@@ -982,7 +987,7 @@ export const studioComponentDefinitions: {
   }),
   "event-counter": component("event-counter", {
     name: "Event counter",
-    description: "Counts each event once.",
+    description: "Counts stable event identities within the declared delivery horizon.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
     hosts: ["worker"],
@@ -990,7 +995,15 @@ export const studioComponentDefinitions: {
     slots: [],
     generation: lead("event-counter"),
     targets: [],
-    fields: [],
+    fields: [
+      integer(
+        "deliveryHorizonSeconds",
+        "Delivery horizon",
+        L.deliveryHorizonSeconds,
+        "s",
+        "Maximum delivery or replay delay; receipts retain seven days after completion.",
+      ),
+    ],
   }),
   "index-writer": component("index-writer", {
     name: "Index writer",

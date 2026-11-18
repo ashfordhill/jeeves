@@ -39,6 +39,8 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
           'export type { LocalOperation, LocalCommands, LocalResult } from "../runtime/local-operation.ts";',
           'export { defineDurableWork } from "../runtime/durable-work.ts";',
           'export type { DurableWork, WorkStatus, WorkState } from "../runtime/durable-work.ts";',
+          'export { defineReceiptConsumer } from "../runtime/receipt-consumer.ts";',
+          'export type { ReceiptConsumer, ReceiptEvent } from "../runtime/receipt-consumer.ts";',
         );
       if (has("webhook-receiver"))
         publicLines.push(

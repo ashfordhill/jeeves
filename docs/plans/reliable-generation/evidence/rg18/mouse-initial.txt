@@ -1,0 +1,51 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3689468) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3689487) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3689608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:3689664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › jeeves/apps/web/e2e/receipt-consumer.spec.ts:10:1 › RG18 edits the receipt delivery horizon by mouse and exports guarded consumer operations (11.2s)
+
+
+  1) [chromium] › jeeves/apps/web/e2e/receipt-consumer.spec.ts:10:1 › RG18 edits the receipt delivery horizon by mouse and exports guarded consumer operations
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "\"slot\":\"state\""
+    Received string:    "{\"schemaVersion\":3,\"revision\":2,\"architecture\":{\"studio\":{\"version\":1,\"elements\":[{\"element\":\"source\",\"definition\":{\"id\":\"studio-service\",\"version\":\"1.0.0\"},\"settings\":{\"kind\":\"service\",\"language\":\"typescript\",\"exposure\":\"internal\",\"execution\":\"docker\"}},{\"element\":\"events\",\"definition\":{\"id\":\"studio-queue\",\"version\":\"1.0.0\"},\"settings\":{\"kind\":\"queue\",\"mode\":\"topic\",\"provider\":\"self-hosted\"},\"owner\":{\"kind\":\"element\",\"id\":\"source\"}},{\"element\":\"counter\",\"definition\":{\"id\":\"studio-worker\",\"version\":\"1.0.0\"},\"settings\":{\"kind\":\"worker\",\"language\":\"typescript\",\"concurrency\":4,\"execution\":\"docker\"}},{\"element\":\"totals\",\"definition\":{\"id\":\"studio-database\",\"version\":\"1.0.0\"},\"settings\":{\"kind\":\"database\",\"engine\":\"postgresql\",\"provider\":\"self-hosted\"},\"owner\":{\"kind\":\"element\",\"id\":\"counter\"}},{\"element\":\"projector\",\"definition\":{\"id\":\"studio-worker\",\"version\":\"1.0.0\"},\"settings\":{\"kind\":\"worker\",\"language\":\"typescript\",\"execution\":\"docker\"}},{\"element\":\"items\",\"definition\":{\"id\":\"studio-database\",\"version\":\"1.0.0\"},\"settings\":{\"kind\":\"database\",\"engine\":\"unspecified\",\"provider\":\"unspecified\"},\"owner\":{\"kind\":\"element\",\"id\":\"projector\"}}],\"packages\":[],\"connections\":[{\"connection\":\"publish-events\",\"settings\":{\"channelUse\":\"publish\"}},{\"connection\":\"counter-events\",\"settings\":{\"channelUse\":\"consume\"}},{\"connection\":\"counter-totals\",\"settings\":{}},{\"connection\":\"projector-events\",\"settings\":{\"channelUse\":\"consume\"}},{\"connection\":\"projector-items\",\"settings\":{}}],\"components\":[{\"id\":\"counter-input\",\"host\":\"counter\",\"name\":\"Event consumer\",\"settings\":{\"kind\":\"event-consumer\"}},{\"id\":\"count-events\",\"host\":\"counter\",\"name\":\"Event counter\",\"settings\":{\"kind\":\"event-counter\",\"deliveryHorizonSeconds\":604800}},{\"id\":\"counter-state\",\"host\":\"counter\",\"name\":\"Data access\",\"settings\":{\"kind\":\"data-access\",\"poolSize\":10,\"readRouting\":\"primary\",\"statementTimeoutMs\":2000}},{\"id\":\"apply-item\",\"host\":\"projector\",\"name\":\"Event consumer\",\"settings\":{\"kind\":\"event-consumer\"}}],\"componentConnections\":[{\"id\":\"counter-input-events\",\"from\":\"counter-input\",\"to\":{\"kind\":\"element\",\"id\":\"events\",\"via\":\"counter-events\"}},{\"id\":\"counter-state-totals\",\"from\":\"counter-state\",\"to\":{\"kind\":\"element\",\"id\":\"totals\",\"via\":\"counter-totals\"}},{\"id\":\"apply-item-events\",\"from\":\"apply-item\",\"to\":{\"kind\":\"element\",\"id\":\"events\",\"via\":\"projector-events\"}},{\"id\":\"apply-item-items\",\"from\":\"apply-item\",\"to\":{\"kind\":\"element\",\"id\":\"items\",\"via\":\"projector-items\"}}],\"entries\":[{\"id\":\"source-entry\",\"lane\":\"download\",\"element\":\"source\"}],\"actions\":[{\"lane\":\"download\",\"name\":\"Consume\"}]},\"system\":{\"name\":\"Receipt consumers\",\"description\":\"\"},\"nodes\":[],\"relationships\":[]},\"elements\":[{\"id\":\"source\",\"name\":\"Source\",\"classification\":{\"kind\":\"Application\"}},{\"id\":\"events\",\"name\":\"Events\",\"classification\":{\"kind\":\"Data store\"}},{\"id\":\"counter\",\"name\":\"Counter\",\"classification\":{\"kind\":\"Application\"}},{\"id\":\"totals\",\"name\":\"Totals\",\"classification\":{\"kind\":\"Data store\"}},{\"id\":\"projector\",\"name\":\"Projector\",\"classification\":{\"kind\":\"Application\"}},{\"id\":\"items\",\"name\":\"Items\",\"classification\":{\"kind\":\"Data store\"}}],\"connections\":[{\"id\":\"publish-events\",\"kind\":\"depends-on\",\"from\":{\"element\":\"source\"},\"to\":{\"element\":\"events\"},\"planned\":{\"label\":\"Publishes\",\"protocol\":\"Messaging\",\"interaction\":\"Asynchronous\",\"security\":\"Private network\"}},{\"id\":\"counter-events\",\"kind\":\"depends-on\",\"from\":{\"element\":\"events\"},\"to\":{\"element\":\"counter\"},\"planned\":{\"label\":\"Consumes\",\"protocol\":\"Messaging\",\"interaction\":\"Asynchronous\",\"security\":\"Private network\"}},{\"id\":\"counter-totals\",\"kind\":\"uses-database\",\"from\":{\"element\":\"counter\"},\"to\":{\"element\":\"totals\"},\"planned\":{\"label\":\"Reads & writes\",\"protocol\":\"SQL\",\"interaction\":\"Request / response\",\"security\":\"Private network\"}},{\"id\":\"projector-events\",\"kind\":\"depends-on\",\"from\":{\"element\":\"events\"},\"to\":{\"element\":\"projector\"},\"planned\":{\"label\":\"Consumes\",\"protocol\":\"Messaging\",\"interaction\":\"Asynchronous\",\"security\":\"Private network\"}},{\"id\":\"projector-items\",\"kind\":\"uses-database\",\"from\":{\"element\":\"projector\"},\"to\":{\"element\":\"items\"},\"planned\":{\"label\":\"Reads & writes\",\"protocol\":\"SQL\",\"interaction\":\"Request / response\",\"security\":\"Private network\"}}],\"scope\":{\"profile\":null,\"requirements\":[],\"customRequirements\":[]},\"ownership\":{\"owners\":[{\"id\":\"projector-owner\",\"name\":\"Projector\"},{\"id\":\"counter-owner\",\"name\":\"Counter\"}],\"roles\":[{\"element\":\"projector\",\"owner\":\"projector-owner\",\"kind\":\"worker\"},{\"element\":\"counter\",\"owner\":\"counter-owner\",\"kind\":\"worker\"}],\"resources\":[{\"element\":\"items\",\"authority\":\"projector-owner\",\"kind\":\"source\",\"productNamespace\":\"owner\"},{\"element\":\"totals\",\"authority\":\"counter-owner\",\"kind\":\"source\"}],\"grants\":[{\"role\":\"projector\",\"resource\":\"items\",\"access\":\"read-write\",\"product\":{\"tables\":[{\"name\":\"items\",\"operations\":[\"SELECT\",\"INSERT\"]}],\"views\":[]}},{\"role\":\"counter\",\"resource\":\"totals\",\"access\":\"read-write\"}],\"dependencies\":[{\"connection\":\"projector-items\",\"access\":\"read-write\"},{\"connection\":\"counter-totals\",\"access\":\"read-write\"}]},\"generation\":{\"version\":1,\"runtime\":{\"id\":\"local-runtime\",\"version\":\"0.1.0\",\"sha256\":\"71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec\"},\"processes\":true,\"selections\":[{\"id\":\"count-events\",\"target\":{\"kind\":\"component\",\"component\":\"count-events\",\"host\":\"counter\"},\"template\":{\"id\":\"event-counter\",\"version\":\"0.1.0\",\"sha256\":\"ecd5f9cc6abcee0fa0c73dfc2422550ee19c6676f0e09b20ef1e4ab3e17e1635\"},\"binding\":{\"kind\":\"event-counter\",\"state\":{\"resource\":\"totals\",\"connection\":\"counter-totals\"},\"events\":{\"resource\":\"events\",\"connection\":\"counter-events\"}}},{\"id\":\"apply-item\",\"target\":{\"kind\":\"component\",\"component\":\"apply-item\",\"host\":\"projector\"},\"template\":{\"id\":\"module-stub\",\"version\":\"0.1.0\",\"sha256\":\"07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d\"},\"binding\":{\"kind\":\"module-stub\"}}]}}"
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      48 |     await expect
+      49 |       .poll(async () => JSON.stringify(await design(page, id)))
+    > 50 |       .toContain('"slot":"state"');
+         |        ^
+      51 |     await page.getByRole("button", { name: "Pointer", exact: true }).click();
+      52 |     await stillBoard(page);
+      53 |     await page
+        at /home/ash/github/jeeves/jeeves/apps/web/e2e/receipt-consumer.spec.ts:50:8
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace jeeves/test-results/receipt-consumer-RG18-edit-9ed60-guarded-consumer-operations-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › jeeves/apps/web/e2e/receipt-consumer.spec.ts:10:1 › RG18 edits the receipt delivery horizon by mouse and exports guarded consumer operations

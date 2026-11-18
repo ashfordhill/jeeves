@@ -1,4 +1,7 @@
-import { NonRetryable, type MessageHandler } from "./delivery.ts";
+import { randomUUID } from "node:crypto";
+import { NonRetryable, unreachable, type MessageHandler } from "./delivery.ts";
+import { ReceiptConflict, type createReceipts } from "./receipts.ts";
+import { operation, withOperation, currentProcess, withProcess } from "./operation.ts";
 import type { CounterEvent } from "./event-counter.ts";
 import { transaction, type TransactionPool, type Tx } from "./transaction.ts";
 
@@ -13,9 +16,41 @@ export async function startCounterWorker(options: {
   counter: {
     parse(input: unknown, messageId?: string): CounterEvent;
     record(tx: Tx, event: CounterEvent): Promise<boolean>;
+    lifecycle?: Pick<ReturnType<typeof createReceipts>, "sweep" | "heartbeat" | "status">;
   };
   openConsumer(handle: MessageHandler): Promise<CounterConsumer>;
 }) {
+  const lifecycle = options.counter.lifecycle, workerId = randomUUID(), scope = currentProcess();
+  let inFlight = 0;
+  let state: "running" | "storage-unavailable" | "unknown" | "stopped" = "running";
+  let stopping = false, timer: ReturnType<typeof setTimeout> | undefined;
+  let maintenance: Promise<void> = Promise.resolve();
+  // A deadline never frees this slot before the actual DB promise/connection settles.
+  async function settledTransaction<T>(effect: (tx: Tx) => Promise<T>): Promise<T> {
+    let actual: Promise<T> | undefined;
+    try { return await transaction(options.pool, effect, { observe: (pending) => { actual = pending; } }); }
+    finally { await actual?.catch(() => {}); }
+  }
+  async function tick(required = false) {
+    if (!lifecycle) return;
+    const execution = operation({ maximumMs: 5000, signals: [scope?.signal] });
+    try {
+      await withProcess(scope, () => withOperation(execution.context, () => settledTransaction(async (tx) => {
+        await lifecycle.sweep(tx);
+        await lifecycle.heartbeat(tx, { workerId, inFlight, progressed: false, state, backlog: null });
+      })));
+    } catch (error) {
+      // Failed observation leaves the last committed heartbeat/backlog intact; it becomes stale.
+      if (required) throw error;
+    } finally { execution.close(); }
+  }
+  function schedule() {
+    if (stopping || !lifecycle) return;
+    timer = setTimeout(() => {
+      maintenance = tick().finally(schedule);
+    }, 15000);
+    timer.unref?.();
+  }
   const handle: MessageHandler = async (body, delivery) => {
     let event: CounterEvent;
     try {
@@ -24,14 +59,43 @@ export async function startCounterWorker(options: {
     } catch {
       throw new NonRetryable("MALFORMED_MESSAGE");
     }
-    await transaction(options.pool, (tx) => options.counter.record(tx, event));
+    inFlight++;
+    try {
+      await settledTransaction(async (tx) => {
+        await options.counter.record(tx, event);
+        await lifecycle?.heartbeat(tx, { workerId, inFlight, progressed: true, state: "running", backlog: null });
+      });
+      state = "running";
+    } catch (error) {
+      if (error instanceof ReceiptConflict) throw new NonRetryable(error.code);
+      state = (error as { outcome?: string })?.outcome === "unknown" ? "unknown" :
+        unreachable(error) ? "storage-unavailable" : state;
+      throw error;
+    } finally { inFlight--; }
   };
+  await tick(true);
   const consumer = await options.openConsumer(handle);
+  schedule();
   let closing: Promise<void> | undefined;
-  return {
-    closed: consumer.closed,
+  let finish!: (result: { fatal: boolean }) => void;
+  let fatal = false;
+  const closed = new Promise<{ fatal: boolean }>(resolve => { finish = resolve; });
+  const worker = {
+    closed,
     close(): Promise<void> {
-      return (closing ??= consumer.close());
+      if (closing) return closing;
+      stopping = true;
+      clearTimeout(timer);
+      return (closing = (async () => {
+        try {
+          await consumer.close();
+          await maintenance;
+          state = "stopped";
+          await tick();
+        } finally { finish({ fatal }); }
+      })());
     },
   };
+  void consumer.closed.then(result => { fatal ||= result.fatal; void worker.close(); });
+  return worker;
 }

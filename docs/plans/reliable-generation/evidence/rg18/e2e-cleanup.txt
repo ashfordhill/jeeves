@@ -1,0 +1,4 @@
+Read-only final verification in jeeves_e2e (owner jeeves database untouched):
+SELECT count(*) FROM projects WHERE name LIKE 'E2E RG18%';
+0
+All unit browser helpers delete their own project in finally.

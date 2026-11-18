@@ -618,3 +618,14 @@ unfinished accepted work; changing the handler/version/identity needs explicit m
 ### Webhook receiver (RG17)
 
 The Service-only **Webhook receiver** exposes **Body limit** (`bodyLimitBytes`: string choice `1024`, `16384`, `65536`; default `65536`) and **Signature window** (`replayWindowSeconds`:30–300; default300). Inspector/chat/blueprint and generated receiver limits use these same values. HMAC-SHA256 is the fixed installed protocol; no provider/verifier/ACK/retry setting is offered. The private RG08 ring is configured through a secret file, outside the diagram and product settings. Required user guards refuse this host combination. [Protocol, secret filename and retention](plans/reliable-generation/evidence/rg17/README.md).
+
+### Consumer receipts (RG18)
+
+Event counter exposes **Delivery horizon** (`deliveryHorizonSeconds`:1–604800 seconds; default604800).
+The declared maximum includes original delivery, retries, quarantine/operator delay and subsequent delivery together. Generated counter receipts
+retain identity for seven days after database-time completion. Dates and aggregation destinations
+never scope receipt identity. A repeat with different effect-relevant data conflicts.
+Retention, cleanup batches, heartbeat and ACK controls are generated internals, without inspector
+fields. A standalone Event consumer can connect optional writable owned **state** and declare a
+scoped `receiptConsumer` in its application module; its retention must cover its delivery horizon.
+See [the emitted extension contract](plans/reliable-generation/evidence/rg18/protocol.md).
